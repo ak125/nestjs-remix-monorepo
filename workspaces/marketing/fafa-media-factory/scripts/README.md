@@ -20,6 +20,7 @@ contenu exact. Le verdict des gates ne pose aucun des trois flags. Après rendu 
 du MP4 exact, `content_approved=true` et `render_approved=true` permettent `APPROVED`. `publish_approved` reste false ; une
 autorisation de publication distincte et une diffusion réelle sont nécessaires pour `PUBLISHED`.
 
+L'owner seul pose les approbations, conformément à la règle AI2 du vault (`ledger/rules/rules-ai-cos.md`, ADR-036).
 Une chaîne non vide dans `*_approved_by`, l'auteur d'une PR ou un commentaire JSON ne prouvent ni l'identité de l'owner ni son
 approbation. La preuve visée est un acte de revue humain autorisé, relu dans son contexte authentifié et lié au commit, à la
 révision et au MP4 exacts. Sa collecte et sa vérification restent à implémenter ; les validateurs locaux ne l'accordent jamais.

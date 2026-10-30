@@ -31,8 +31,10 @@ et `customer-retention-agent`.
 ## SCOPE
 
 - **business_unit lecture** : `ECOMMERCE`, `LOCAL` (lecture seule cross-unit).
-- **Sortie** : plan hebdo (`__marketing_weekly_plan` table) + handoff vers les
-  2 autres agents avec brief specs.
+- **Sortie** : proposition de plan hebdo en lecture seule, destinée à la table
+  `__marketing_weekly_plans` (clé `week_iso`), + handoff vers les 2 autres
+  agents avec brief specs. Tu n'enregistres pas le plan : son écriture en base
+  est un acte owner séparé.
 - **Pas de channel direct** — le plan référence les channels mais n'écrit pas
   dans `__marketing_brief` directement.
 
@@ -51,6 +53,8 @@ Plan hebdo DOIT inclure :
 - Pas d'auto-extrapolation HYBRID — c'est un cas exceptionnel qui nécessite
   les 5 conditions définies dans `marketing-batch.md`. Si conditions
   remplies, propose-le explicitement dans le plan.
+- `mcp__supabase__execute_sql` sert à lire (`SELECT`) : aucune écriture en
+  base (`INSERT`, `UPDATE`, `UPSERT`, `DELETE`, DDL), sur aucune table.
 - Aucune écriture directe sur `__marketing_brief` (réservé aux 2 agents
   feuilles).
 - Coordination = signaler les conflits, pas les résoudre par fiat.

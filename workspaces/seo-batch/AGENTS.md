@@ -6,7 +6,7 @@
 
 Chaque rôle R0..R8 a **un seul agent / service / skill canon LIVE**. Tout autre générateur est soit `DEPRECATED` (sunset documenté) soit `ARCHIVED` (déplacé en `archive/`).
 
-Référentiel comportemental : **`packages/seo-role-contracts/`** (Phase 2 PR-F, à venir). Tant que ce package n'existe pas, les enrichers backend gardent leurs constants in-place avec note JSDoc `@see ADR-047`.
+Référentiel comportemental : **`packages/seo-role-contracts/`**, présent dans le dépôt. Vérifier le contrat et son consommateur pour le rôle concerné ; sa présence ne prouve pas son branchement runtime.
 
 ---
 
@@ -14,10 +14,10 @@ Référentiel comportemental : **`packages/seo-role-contracts/`** (Phase 2 PR-F,
 
 | Rôle | Générateur LIVE | Type | Fichier | Contract (Phase 2) |
 |------|-----------------|------|---------|---------------------|
-| **R0_HOME** | `R0HomeAggregatorService` | NestJS service | `backend/src/modules/admin/services/r0-home-aggregator.service.ts` | `packages/seo-role-contracts/src/contracts/r0.ts` (TBD Phase 2) |
+| **R0_HOME** | _aucun enricher dédié_ (composé via R1+R6+R7, cf. `contracts/r0.ts`) | — | — | `packages/seo-role-contracts/src/contracts/r0.ts` |
 | **R1_ROUTER** | _aucun_ (retiré 2026-07) | — | — | `r1.ts` |
 | **R2_PRODUCT** | `R2EnricherService` | NestJS service | `backend/src/modules/admin/services/r2-enricher.service.ts` | `r2.ts` |
-| **R3_CONSEILS** | `ConseilEnricherService` | NestJS service | `backend/src/modules/admin/services/conseil-enricher.service.ts` | `r3.ts` |
+| **R3_CONSEILS** | _aucun_ (retiré 2026-07) | — | — | `r3.ts` |
 | **R4_REFERENCE** | `R4ContentEnricherService` | NestJS service | `backend/src/modules/admin/services/r4-content-enricher.service.ts` | `r4.ts` |
 | **R6_GUIDE_ACHAT** | `BuyingGuideEnricherService` | NestJS service | `backend/src/modules/admin/services/buying-guide-enricher.service.ts` | `r6.ts` |
 | **R7_BRAND** | `R7BrandEnricherService` | NestJS service | `backend/src/modules/admin/services/r7-brand-enricher.service.ts` | `r7.ts` |
@@ -31,15 +31,15 @@ Référentiel comportemental : **`packages/seo-role-contracts/`** (Phase 2 PR-F,
 
 ## Skills Claude Code complémentaires (pas de génération canon)
 
-Les agents `.claude/agents/` de ce workspace orchestrent le LLM Claude Code pour les cas où le 0-LLM template ne suffit pas (richesse RAG insuffisante, content polish). Ils consomment toujours le contract R\* (Phase 2) en runtime, ne dupliquent pas la logique.
+Les agents `.claude/agents/` de ce workspace orchestrent le LLM Claude Code pour les cas où le 0-LLM template ne suffit pas (richesse des sources WIKI validées insuffisante, content polish). Ils consomment toujours le contract R\* (Phase 2) en runtime, ne dupliquent pas la logique.
 
 | Agent | Rôle ciblé | Usage |
 |-------|------------|-------|
 | `r1-content-batch.md` | R1_ROUTER | **NEUTRALISÉ** (2026-07-19) — agent inerte, redirige vers `seo-content-loop` |
-| `conseil-batch.md` | R3_CONSEILS | Multi-section orchestration |
-| `r4-content-batch.md` | R4_REFERENCE | Definition + sections génération LLM |
-| `r6-content-batch.md` | R6_GUIDE_ACHAT | Comparison + tier polish |
-| `r7-brand-rag-generator.md` | R7_BRAND | Brand FAQ + common issues (depuis brands RAG mirror) |
+| `conseil-batch.md` | R3_CONSEILS | **NEUTRALISÉ** (2026-07-19) — agent inerte, redirige vers `seo-content-loop` |
+| `r4-content-batch.md` | R4_REFERENCE | **NEUTRALISÉ** (2026-10-05) — agent inerte, redirige vers `seo-content-loop` |
+| `r6-content-batch.md` | R6_GUIDE_ACHAT | **NEUTRALISÉ** (2026-07-19) — agent inerte, redirige vers `seo-content-loop` |
+| `r7-brand-rag-generator.md` | R7_BRAND | **NEUTRALISÉ** (2026-07-19) — agent inerte, redirige vers `wiki-proposal-writer` |
 | `keyword-planner.md` | tous | Génère `__seo_r{N}_keyword_plan` depuis Google Ads CSV |
 | `agentic-planner.md` / `agentic-critic.md` / `agentic-solver.md` | meta | Orchestration multi-rôles, audit cross-cutting |
 

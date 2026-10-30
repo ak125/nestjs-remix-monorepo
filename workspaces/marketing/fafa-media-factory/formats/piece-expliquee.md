@@ -67,11 +67,11 @@ Constaté dans le code, sans rendu lancé :
 
 ## Gates critiques
 
-- **G1 Truth** : `pieceFunction`, `wearSigns`, `whenToChange` DOIVENT avoir evidence (wiki diagnostic, OEM, catalogue TecDoc). Sans evidence → ratio FAIL.
-- **G2 Safety** : si `whenToChange` porte une implication de sécurité (ex: « plaquettes usées = freinage compromis »), claim de type `safety` → validation humaine obligatoire (G2 STRICT, 1 seul claim sans validation = FAIL).
+- **G1 Truth** : `pieceFunction`, `wearSigns`, `whenToChange` DOIVENT avoir evidence (wiki diagnostic, OEM, catalogue TecDoc). Sans preuve rattachée ou sans `status` `verified`, chaque claim hors `procedure` et `safety` compte (pas de ratio) : un seul suffit au FAIL.
+- **G2 Safety** : si `whenToChange` porte une implication de sécurité (ex: « plaquettes usées = freinage compromis »), claim de type `safety` → validation humaine obligatoire (G2 : un seul claim sans `validatedBy` = FAIL).
 - **G3 Brand** : aucun prix, aucune promo. CTA pédagogique uniquement.
-- **G4 Platform** : durée 30-50s ±10% (27-55s acceptable).
-- **G6 Visual Honesty** : photos pièces neuves OK (truth_dependency=`reference`), photos pièces usées en macro OK pour illustration. JAMAIS « voici l'usure de votre pièce » si pas photo client.
+- **G4 Platform** : le code lit la plage de `brief.type`, `short` = 15-60 s élargie de 10 % (13,5-66 s) ; la durée cible 30-50 s est éditoriale, aucune gate ne la mesure.
+- **G6 `visual_role`** : photos pièces neuves OK (truth_dependency=`reference`), photos pièces usées en macro OK pour illustration. JAMAIS « voici l'usure de votre pièce » si pas photo client.
 
 ## Voir aussi
 

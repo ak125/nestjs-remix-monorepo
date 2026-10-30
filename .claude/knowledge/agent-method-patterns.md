@@ -8,15 +8,15 @@
 
 ## 1. Phases — `DISCOVER → DECIDE → PLAN → PATCH → VERIFY → HANDOFF`
 
-Vocabulaire de lecture/sortie — **PAS** un orchestrateur, PAS un gate CI, PAS une pipeline.
+Vocabulaire de lecture/sortie, pas une séquence obligatoire : appliquer seulement les étapes utiles à la tâche.
 
 | Phase | Mécanisme autoritaire (déjà là) |
 |---|---|
-| **DISCOVER** | [CLAUDE.md](../../CLAUDE.md) « analyser AVANT muter » → `canonical.json → REPO_MAP → knowledge → ADR vault → grep` |
-| **DECIDE** | [continuous-improvement-global](../skills/continuous-improvement-global/SKILL.md) + CLAUDE.md « Prefer extension over creation » |
-| **PLAN** | CLAUDE.md « Discipline de périmètre » + worktree dédié ([deployment.md](../rules/deployment.md)) |
+| **DISCOVER** | [CLAUDE.md](../../CLAUDE.md) invariant 1 : fichiers connus/recherche ciblée ; registry filtré pour exploration transverse |
+| **DECIDE** | Arbitrage valeur/risque/complexité identifié ou demandé : [continuous-improvement-global](../skills/continuous-improvement-global/SKILL.md) ; sinon appliquer le contrat commun |
+| **PLAN** | Planifier les tâches complexes ; respecter le mandat et les règles d’isolation de [deployment.md](../rules/deployment.md) |
 | **PATCH** | CLAUDE.md « périmètre minimal » |
-| **VERIFY** | champ *Test* de continuous-improvement + vérification runtime PRE-PR / POST-MERGE |
+| **VERIFY** | preuve proportionnée au changement ; runtime si le comportement servi est concerné |
 | **HANDOFF** | [agent-exit-contract.md](../canon-mirrors/agent-exit-contract.md) (coverage manifest, anti-overclaim) |
 
 ## 2. Danger-zone — POINTE vers les guards (ne réécrit rien)
@@ -43,19 +43,17 @@ Niveaux : **BLOCK** (refusé, guard local) · **WARN** (averti, autorisé) · **
 
 > #879 = durcissement owner-gated — **renforcer, jamais affaiblir** un guard.
 
-## 3. Freeze scope — rituel par tâche
+## 3. Périmètre autorisé
 
-Discipline : CLAUDE.md « Discipline de périmètre » + [ownership.yaml](../../.spec/00-canon/repository-registry/ownership.yaml) + worktree.
-
-```
-Allowed:   <chemins du bounded-context concerné>
-Forbidden: <tout le reste — ex. payments/, orders/, migrations non demandées>
-Hors scope trouvé → report only, jamais de patch.
-```
+Définir les chemins concernés et préserver les changements préexistants selon le
+contrat commun et [ownership.yaml](../../.spec/00-canon/repository-registry/ownership.yaml).
+Signaler les constats hors périmètre sans les corriger ; aucun formulaire supplémentaire n'est requis.
 
 ## 4. QA = report-only par défaut
 
-**La QA produit d'abord un rapport, jamais un patch auto. Tout fix = GO explicite.**
+Une demande d'audit seul reste en lecture seule. Si le mandat inclut les corrections,
+les appliquer dans ce périmètre sans redemander le même accord. Les zones STOP,
+permissions et approbations imposées restent applicables.
 Autorité = code runtime + [prod-smoke-tests.yml](../../.github/workflows/prod-smoke-tests.yml) +
 [Playwright E2E](../../frontend/playwright.config.ts) + Lighthouse CI + skills `responsive-audit` /
 `web-vitals-audit` / `runtime-truth-audit`.
@@ -69,8 +67,9 @@ Non-couvert par un test existant → **candidat signalé**, pas de nouveau skill
 
 ## 5. Second avis = advisory only
 
-[code-review](../skills/code-review/SKILL.md) + CodeRabbit *si disponible* + éventuel avis
-multi-modèle — **jamais autoritaire** ; owner = décision finale. 5 questions standard :
+Un second avis répond à une demande ou à un risque restant identifié ; il n'est pas
+systématique. [code-review](../skills/code-review/SKILL.md), CodeRabbit *si disponible*
+ou avis multi-modèle restent consultatifs. Questions utiles :
 architecture parallèle inventée ? hors scope touché ? rollback oublié ? invariant métier
 cassé ? `DONE` sur-déclaré alors que `PARTIAL` ?
 
@@ -78,8 +77,11 @@ cassé ? `DONE` sur-déclaré alors que `PARTIAL` ?
 
 - Mémoire = aide au rappel, **jamais** source de vérité — couches `MEMORY.md` / `CLAUDE.md` /
   vault / WIKI / DB / RAG : voir [agent-doc-search.md](../rules/agent-doc-search.md).
-- Routing autoritaire = [agent-operating-map.yaml](../../.spec/00-canon/ai-registry/agent-operating-map.yaml)
-  + [role-matrix.md](../../.spec/00-canon/role-matrix.md) + [departments-map](../../audit/automecanik-departments-map.md).
+- L'[agent-operating-map.yaml](../../.spec/00-canon/ai-registry/agent-operating-map.yaml)
+  est une carte de référence non normative, pas un orchestrateur ni une preuve de capacités.
+  [role-matrix.md](../../.spec/00-canon/role-matrix.md) décrit les rôles SEO ;
+  [departments-map](../../audit/automecanik-departments-map.md) décrit les responsabilités.
+  Leurs périmètres ne se confondent pas avec les outils et permissions réellement disponibles.
 
 ## 7. Refusés (de gstack)
 
@@ -99,7 +101,7 @@ maison — réutilise l'existant. Décision = [continuous-improvement-global](..
 | Juge = gate existant | [.size-limit.json](../../frontend/.size-limit.json) · `tsc` · ratchets [audit-compare-baseline.js](../../scripts/cleanup/audit-compare-baseline.js) / `*-ratchet.yml` |
 | Isolation | worktree dédié ([deployment.md](../rules/deployment.md)) — jamais éditer `main` ni un chemin servi par DEV:3000 |
 | Mesure | baseline → change → re-mesure (métrique bruitée → médiane de N + delta minimum) |
-| Verdict | [improvement-report.schema.json](../../.spec/00-canon/improvement-report.schema.json) + [agent-exit-contract.md](../canon-mirrors/agent-exit-contract.md) |
+| Verdict | Improvement Check du skill déjà utilisé + [agent-exit-contract.md](../canon-mirrors/agent-exit-contract.md) ; le [schéma historique](../../.spec/00-canon/improvement-report.schema.json) ne sert qu’aux anciens rapports |
 | Promotion | **PR owner-gated** (branch protection §2) — **jamais d'auto-merge d'une boucle** |
 
 **Garde-fou n°1 — anti-faux-vert : holdout LARGE + contrôle baseline.** Un test étroit vert ne
@@ -118,65 +120,39 @@ holdout 8-fichiers vert aurait livré 73 tests cassés — détail dans `audit/k
 > La boucle **garde** le gain réel et sûr, **rejette** le reste : améliorer le chiffre en cassant
 > autre chose (SEO, tests, DI) = surapprentissage, refusé. Le « keep » exige score↑ **et** holdout vert.
 
-## 9. Contrat de preuve runtime — routage VERIFY → vérificateur existant
+## 9. Preuve runtime — choisir le vérificateur existant
 
-Détaille la phase **VERIFY** (§1) : une modification à **surface runtime** n'est vérifiée que
-lorsqu'on **exécute le flux touché et qu'on observe le comportement réel** — CI verte ≠ observé
-(mémoire `feedback-runtime-verification-mandatory` : GATE 1 chemin prouvé *avant* PR, GATE 2
-observation runtime *après* merge). Ce contrat **route** le diff vers un vérificateur **déjà
-existant** ; il ne crée ni skill, ni script, ni schéma, ni gate.
+Appliquer les invariants 7 à 9 de [CLAUDE.md](../../CLAUDE.md) : preuve adaptée au
+risque, distinction entre code, CI et comportement servi, respect du mandat et des
+zones STOP. Une observation runtime exige d'exécuter le flux concerné et d'en observer
+le résultat dans un environnement autorisé ; une CI verte ne la remplace pas.
 
 **Routage — surface du diff → vérificateur (déjà là) → ce qu'on observe :**
 
 | Surface | Piloter avec (existant) | Observer |
 |---|---|---|
-| frontend | skills `/run` ou `/verify` · [Playwright E2E](../../frontend/playwright.config.ts) · [responsive-audit](../skills/responsive-audit/SKILL.md) · [web-vitals-audit](../skills/web-vitals-audit/SKILL.md) *(INP/LCP/CLS uniquement)* | navigation, hydratation, console, réseau, responsive 375/768/1024/1440, CWV (INP/LCP/CLS) |
+| frontend | [Playwright E2E](../../frontend/playwright.config.ts) · [responsive-audit](../skills/responsive-audit/SKILL.md) · [web-vitals-audit](../skills/web-vitals-audit/SKILL.md) *(INP/LCP/CLS uniquement)* | navigation, hydratation, console, réseau, responsive 375/768/1024/1440, CWV (INP/LCP/CLS) |
 | backend | vraie requête HTTP (`curl http://localhost:3000/...`) · [prod-smoke-tests.yml](../../.github/workflows/prod-smoke-tests.yml) | status, corps, effet de bord observable |
-| seo | `curl` de la page servie (`http://localhost:3000/<page>`) + extraction du champ HTML servi (`grep -oP`) — matrice « SEO HTML » de la mémoire `feedback-runtime-verification-mandatory` | status, canonical, robots, meta, H1, JSON-LD, duplication (HTML servi) |
+| seo | `curl` de la page servie (`http://localhost:3000/<page>`) + extraction du champ HTML servi (`grep -oP`) | status, canonical, robots, meta, H1, JSON-LD, duplication (HTML servi) |
 | projection | [runtime-truth-audit](../skills/runtime-truth-audit/SKILL.md) — flags OFF/ON, allowlist, fallback, provenance | sortie servie selon l'état du flag |
 | edge | `curl -I` **read-only** de l'URL servie · [config/caddy/Caddyfile](../../config/caddy/Caddyfile) · invariant `Cache-Control` single-owner (arbitre `entry.server`) | cache, confidentialité, `Cache-Control` des headers servis |
 | pipeline | trace `RAW → WIKI → projection → consommateur` (jamais de writer RAG) — gates du contrat d'export WIKI (`quality-gates` / AEC-hash / slug-uniqueness) | lignage & provenance de la source |
-| commerce | **sandbox + owner GO** — matrice « Panier » / « Paiement » de la mémoire `feedback-runtime-verification-mandatory` (sandbox paiement impératif) | flux réel en env sûr ; jamais de mutation PROD live |
+| commerce | **sandbox + owner GO** — [payments.md](../rules/payments.md) pour le paiement | flux réel en env sûr ; jamais de mutation PROD live |
 
-**Verdict = axe d'observation runtime** (distinct de la décision §DECIDE et du GATE 1 chemin) :
+Conserver l'environnement, le commit ou l'image vérifié, la commande ou le parcours,
+le résultat observé et les limites dans la PR, `audit/` ou les artefacts existants.
+Une preuve DEV/PREPROD ne vaut pas preuve PROD. Si la cible n'est pas accessible dans
+le mandat, signaler ce qui reste non observé sans déclencher de déploiement ni de
+mutation pour compléter le rapport. Les interventions PROD restent manuelles par Marwane
+([deployment.md](../rules/deployment.md)).
 
-| Verdict | Sens |
-|---|---|
-| `PASS` | comportement réellement observé, correct |
-| `FAIL` | comportement observé incorrect |
-| `BLOCKED` | environnement / prérequis indisponible — non observé |
-| `SKIP` | aucune surface runtime à observer (doc / test-only) |
+Le [contrat de sortie](../canon-mirrors/agent-exit-contract.md) porte la restitution ;
+ce guide n'ajoute ni verdict concurrent, ni gate issu d'une mémoire, ni revue ou boucle
+obligatoire. Réutiliser les preuves pertinentes inchangées ; reprendre une vérification
+seulement pour un changement, un échec ou un risque restant identifié.
 
-Ce verdict **alimente** le champ *Evidence after* de [continuous-improvement-global](../skills/continuous-improvement-global/SKILL.md) — il ne le remplace pas :
-`PASS` = prérequis d'un `GO` / `GO_WITH_WATCH` · `FAIL` → `FIX_AND_RETEST` ou `ROLLBACK_REQUIRED` ·
-`BLOCKED` → `OWNER_DECISION` ou prérequis manquant noté · `SKIP` seulement si rien à observer.
-
-**Crosswalk avec la mémoire (une seule vérité runtime, pas un 2ᵉ vocabulaire)** : `PASS` ↔
-`LIVE_CONFIRMED` · `FAIL` ↔ `LIVE_FAILED` **et** `LIVE_PARTIAL` (un effet seulement partiel = **pas**
-`PASS` ; il reste `FAIL` → `FIX_AND_RETEST` — ne jamais surdéclarer un demi-fix, cf. incident PR #762) ·
-`BLOCKED` ↔ `NOT_DEPLOYED` · `SKIP` = aucune surface runtime (pas d'équivalent GATE 2).
-
-**Deux gates séparés** : un `PASS` obtenu en **pré-merge** ou **hors env-cible** (DEV:3000, Docker)
-**ne clôt PAS** GATE 2. Une surface à cible PROD (SEO indexé, redirection, webhook, GA4, panier…) doit
-une vérification LIVE **distincte** en env cible après tag `v*` — env & commande **par type** dans la
-**matrice de la mémoire** `feedback-runtime-verification-mandatory` (pointer, ne pas la recopier ici).
-
-**Preuve** : la conserver dans la PR / `audit/` / artefacts Playwright / logs smoke / trace `curl` —
-**jamais** dans `.local/governance-vault/` (déprécié, `.gitignored`, refusé par pre-commit).
-
-**Boucle bornée** : modifier → vérifier → corriger → re-vérifier, avec **nombre max de tentatives**
-et **cause d'arrêt** (jamais de boucle infinie ; > 3 cycles sans convergence → `OWNER_DECISION`,
-cf. anti-patterns continuous-improvement).
-
-**Garde-fous (inchangés — restatés)** : paiement · prix runtime · stock · panier · commande · RLS ·
-migration DB destructive · SEO indexé · PROD = mode **Full** (§ risk-modes continuous-improvement) +
-environnement sûr (Docker isolé) ou vérification **read-only** + preuve complète + **décision owner
-explicite**. Un agent *prépare et vérifie* ces changements ; il ne s'auto-autorise **jamais** une
-mutation PROD, et le **même agent ne s'auto-approuve jamais** un changement critique (l'owner arbitre).
-
-**Ce n'est PAS** : un nouveau skill `/verify` (les built-ins `/verify` + `/run` existent déjà) · un
-script dupliqué · un nouveau schéma JSON / registry · Percy · une règle de plus dans `CLAUDE.md`.
-Pointeur mince uniquement, zéro autorité.
+Ne pas stocker de preuve dans `.local/governance-vault/` (déprécié). Les procédures des
+skills cités ne s'appliquent que lorsque le skill pertinent est effectivement utilisé.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Use when reviewing a PR, diff, or recent changes for security, architecture, performance, and business compliance against AutoMecanik monorepo checklists (HMAC payment safety, RLS, RPC contracts, ADR adherence, no-bricolage). Triggers — "review PR #N", "code review this branch", "audit this diff for production readiness", or before merging any non-trivial PR. For your own change before commit/push, use code-auto-review instead.
+description: Use when reviewing a PR, diff, or recent changes for security, architecture, performance, and business compliance against AutoMecanik monorepo checklists (HMAC payment safety, RLS, RPC contracts, ADR adherence, no-bricolage). Triggers — "review PR #N", "code review this branch", "audit this diff for production readiness", only when a review is requested or a specific unresolved risk warrants it. For an explicit review of your own change, use code-auto-review instead.
 type: technique
 status: stable
 owners: ['@ak125']
@@ -20,16 +20,16 @@ metadata:
 
 # Code Review Skill
 
-Revue systématique de code ou PR couvrant sécurité, architecture, performance et logique métier.
+Revue ciblée de code ou PR couvrant sécurité, architecture, performance et logique métier.
 
 ## Quand proposer ce skill
 
-| Contexte detecte | Proposition |
-|------------------|------------|
-| PR ouverte ou diff avec 5+ fichiers | `/code-review [PR-number]` |
-| Avant push sur main (validation) | `/code-review` |
-| Refactor touchant 3+ modules | `/code-review [fichier]` |
-| Modification `modules/payments/` | `/code-review` + `.claude/rules/payments.md` (zone STOP : GO owner nominatif) |
+Sur demande explicite de revue ou pour un risque restant identifié. Une PR ouverte,
+un nombre de fichiers ou de modules, un commit ou un push ne déclenchent pas seuls
+cette procédure. Préciser le diff et le risque à examiner ; appliquer seulement les
+checklists pertinentes. Pour sa propre modification, utiliser `code-auto-review`
+si cette relecture est demandée. Les zones STOP et validations imposées restent
+celles du contrat commun et des règles du domaine, notamment `payments.md`.
 
 ---
 
@@ -102,10 +102,15 @@ Appliquer les checklists pertinentes selon la Phase 1.
 
 ### Phase 4 — Testing Validation
 
-- [ ] Les tests existants passent-ils toujours ?
-- [ ] Y a-t-il de nouveaux tests pour les nouvelles fonctionnalites ?
-- [ ] TypeScript compile sans erreur (`npm run typecheck`)
-- [ ] Lint passe (`npm run lint`)
+- [ ] Identifier les validations applicables au diff et les preuves déjà disponibles.
+- [ ] Vérifier les tests du comportement concerné ; signaler une couverture manquante.
+- [ ] Vérifier typecheck et lint lorsque les fichiers touchés le nécessitent, au périmètre utile.
+- [ ] Réutiliser une preuve verte si ses sources, dépendances, configuration et données
+      sont inchangées ; conserver les contrôles imposés par le dépôt et la CI.
+
+Une modification de prose seule ne justifie pas un typecheck ou une suite applicative
+complète. Distinguer les résultats exécutés, les preuves réutilisées et les vérifications
+non réalisées ; ne pas transformer une absence de preuve en résultat vert.
 
 ---
 
@@ -196,5 +201,5 @@ Appliquer les checklists pertinentes selon la Phase 1.
 
 | Skill | Direction | Declencheur |
 |-------|-----------|-------------|
-| `code-auto-review` | ↔ complementaire | Relecture de SA propre modification avant commit/push (celui-ci : PR ou branche d'un tiers, lecture seule) |
+| `code-auto-review` | ↔ complementaire | Relecture explicitement demandée de SA propre modification (celui-ci : PR ou branche d'un tiers, lecture seule) |
 | `db-migration` | → verifie | Si diff contient des fichiers `.sql`, verifier les patterns migration |

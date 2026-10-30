@@ -34,6 +34,7 @@ import {
   CreateUserSchema,
   UpdateUserSchema,
   UpdateOwnProfileSchema,
+  UpdateMarketingConsentSchema,
   UserFiltersSchema,
 } from './dto/user.dto';
 
@@ -143,6 +144,70 @@ export class UsersFinalController {
           error instanceof Error
             ? error.message
             : 'Erreur lors de la mise à jour du profil',
+      });
+    }
+  }
+
+  /**
+   * GET /api/users/profile/marketing-consent - Consentement marketing
+   * (ADR-036) du client connecté. Une lecture impossible répond 500, jamais
+   * « pas de consentement ».
+   */
+  @Get('profile/marketing-consent')
+  @UseGuards(AuthenticatedGuard)
+  async getMarketingConsent(@Req() req: RequestWithUser) {
+    const user = req.user;
+    if (!user?.id) {
+      throw new AuthenticationException({ message: 'Non authentifié' });
+    }
+
+    try {
+      const consent = await this.usersService.getMarketingConsent(
+        user.id as string,
+      );
+      return { success: true, data: consent };
+    } catch (error: unknown) {
+      this.logger.error('Erreur getMarketingConsent:', error);
+      throw new OperationFailedException({
+        message: 'Lecture du consentement impossible',
+      });
+    }
+  }
+
+  /**
+   * PUT /api/users/profile/marketing-consent - Donner ou retirer son
+   * consentement marketing depuis les paramètres du compte. Corps :
+   * `{ granted: boolean }` ; la source enregistrée est `account_settings`.
+   */
+  @Put('profile/marketing-consent')
+  @UseGuards(AuthenticatedGuard)
+  async updateMarketingConsent(
+    @Req() req: RequestWithUser,
+    @Body() body: unknown,
+  ) {
+    const user = req.user;
+    if (!user?.id) {
+      throw new AuthenticationException({ message: 'Non authentifié' });
+    }
+
+    const parsed = UpdateMarketingConsentSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new DomainValidationException({
+        message: 'Corps attendu : { "granted": true | false }',
+      });
+    }
+
+    try {
+      const consent = await this.usersService.setMarketingConsent(
+        user.id as string,
+        parsed.data.granted,
+        'account_settings',
+      );
+      return { success: true, data: consent };
+    } catch (error: unknown) {
+      this.logger.error('Erreur updateMarketingConsent:', error);
+      throw new OperationFailedException({
+        message: 'Enregistrement du consentement impossible',
       });
     }
   }

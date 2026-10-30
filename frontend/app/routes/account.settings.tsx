@@ -1,4 +1,4 @@
-import { Bell, Eye, Globe, Trash2, Download } from "lucide-react";
+import { Bell, Eye, Trash2, Download } from "lucide-react";
 import {
   redirect,
   type ActionFunctionArgs,
@@ -14,6 +14,13 @@ import {
 } from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import {
+  getMarketingConsent,
+  updateMarketingConsent,
+  type MarketingConsent,
+} from "~/services/profile.server";
+import { formatDate } from "~/utils/date";
+import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { Badge } from "../components/ui/badge";
@@ -39,26 +46,24 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-export const loader = async ({ context }: LoaderFunctionArgs) => {
+// Même libellé qu'à l'inscription : le client consent à la même chose.
+const MARKETING_CONSENT_LABEL =
+  "Je souhaite recevoir les offres et actualités AutoMecanik";
+
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await requireUser({ context });
 
-  // Récupérer les préférences utilisateur (à implémenter côté backend)
-  const preferences = {
-    notifications: {
-      email: true,
-      orderUpdates: true,
-      promotions: false,
-      newsletter: true,
-    },
-    privacy: {
-      showProfile: false,
-      showOrders: false,
-    },
-    language: "fr",
-    currency: "EUR",
-  };
+  // Consentement enregistré (ADR-036). Sans lecture, pas de case affichée :
+  // un état par défaut pourrait être renvoyé tel quel et retirer un accord.
+  let marketingConsent: MarketingConsent | null = null;
+  try {
+    const result = await getMarketingConsent(request);
+    if (result.ok) marketingConsent = result.consent;
+  } catch (error) {
+    logger.error("[Settings] Lecture du consentement impossible:", error);
+  }
 
-  return { user, preferences };
+  return { user, marketingConsent };
 };
 
 export const action = async ({ request, context }: ActionFunctionArgs) => {
@@ -66,12 +71,34 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const action = formData.get("_action");
 
-  if (action === "updatePreferences") {
-    // TODO: Implémenter la mise à jour des préférences
-    return {
-      success: true,
-      message: "Préférences mises à jour avec succès",
-    };
+  if (action === "updateMarketingConsent") {
+    // Case non cochée = absente du formulaire = retrait du consentement.
+    const granted = formData.get("marketingConsent") === "on";
+    try {
+      const result = await updateMarketingConsent(request, granted);
+      if (result.ok) {
+        return {
+          success: true,
+          message: result.consent.granted
+            ? "C'est noté : vous recevrez nos offres et actualités."
+            : "C'est noté : vous ne recevrez plus nos offres et actualités.",
+        };
+      }
+      if (result.status === 401) return redirect("/login");
+    } catch (error) {
+      logger.error(
+        "[Settings] Enregistrement du consentement impossible:",
+        error,
+      );
+    }
+    return data(
+      {
+        success: false,
+        error:
+          "Votre choix n'a pas pu être enregistré. Réessayez dans quelques instants.",
+      },
+      { status: 500 },
+    );
   }
 
   if (action === "exportData") {
@@ -103,7 +130,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
 };
 
 export default function AccountSettings() {
-  const { preferences } = useLoaderData<typeof loader>();
+  const { marketingConsent } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>() as
     | { success?: boolean; message?: string; error?: string }
     | undefined;
@@ -145,101 +172,58 @@ export default function AccountSettings() {
         </Alert>
       )}
 
-      {/* Notifications */}
+      {/* Offres et actualités (consentement marketing) */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Notifications
+            Offres et actualités
           </CardTitle>
           <CardDescription>
-            Gérez vos préférences de notification
+            Ce choix ne concerne pas les e-mails liés à vos commandes.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Form method="post" className="space-y-4">
-            <input type="hidden" name="_action" value="updatePreferences" />
+          {marketingConsent ? (
+            <Form method="post" className="space-y-4">
+              <input
+                type="hidden"
+                name="_action"
+                value="updateMarketingConsent"
+              />
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label htmlFor="emailNotif" className="text-base">
-                    Notifications par email
-                  </Label>
-                  <p className="text-sm text-gray-600">
-                    Recevoir des emails sur l'activité de votre compte
-                  </p>
-                </div>
+              <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
-                  id="emailNotif"
-                  name="emailNotif"
-                  defaultChecked={preferences.notifications.email}
-                  className="h-4 w-4"
+                  id="marketingConsent"
+                  name="marketingConsent"
+                  defaultChecked={marketingConsent.granted}
+                  className="mt-1 h-4 w-4"
                 />
-              </div>
-
-              <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <Label htmlFor="orderUpdates" className="text-base">
-                    Mises à jour des commandes
+                  <Label htmlFor="marketingConsent" className="text-base">
+                    {MARKETING_CONSENT_LABEL}
                   </Label>
-                  <p className="text-sm text-gray-600">
-                    Être informé du statut de vos commandes
-                  </p>
+                  {marketingConsent.grantedAt && (
+                    <p className="text-sm text-gray-600">
+                      Accord donné le {formatDate(marketingConsent.grantedAt)}
+                    </p>
+                  )}
                 </div>
-                <input
-                  type="checkbox"
-                  id="orderUpdates"
-                  name="orderUpdates"
-                  defaultChecked={preferences.notifications.orderUpdates}
-                  className="h-4 w-4"
-                />
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label htmlFor="promotions" className="text-base">
-                    Offres promotionnelles
-                  </Label>
-                  <p className="text-sm text-gray-600">
-                    Recevoir les offres et réductions
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  id="promotions"
-                  name="promotions"
-                  defaultChecked={preferences.notifications.promotions}
-                  className="h-4 w-4"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Label htmlFor="newsletter" className="text-base">
-                    Newsletter
-                  </Label>
-                  <p className="text-sm text-gray-600">
-                    Actualités et nouveautés du site
-                  </p>
-                </div>
-                <input
-                  type="checkbox"
-                  id="newsletter"
-                  name="newsletter"
-                  defaultChecked={preferences.notifications.newsletter}
-                  className="h-4 w-4"
-                />
-              </div>
-            </div>
-
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? "Enregistrement..."
-                : "Enregistrer les préférences"}
-            </Button>
-          </Form>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Enregistrement..." : "Enregistrer mon choix"}
+              </Button>
+            </Form>
+          ) : (
+            <Alert className="border-destructive bg-destructive/10">
+              <AlertDescription className="text-red-800">
+                Votre choix actuel n'a pas pu être chargé. Réessayez dans
+                quelques instants.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
@@ -276,54 +260,6 @@ export default function AccountSettings() {
               <Badge variant="outline">Privé</Badge>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Langue et région */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Langue et région
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form method="post" className="space-y-4">
-            <input type="hidden" name="_action" value="updatePreferences" />
-
-            <div className="space-y-2">
-              <Label htmlFor="language">Langue</Label>
-              <select
-                id="language"
-                name="language"
-                defaultValue={preferences.language}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="fr">Français</option>
-                <option value="en">English</option>
-                <option value="es">Español</option>
-                <option value="de">Deutsch</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currency">Devise</Label>
-              <select
-                id="currency"
-                name="currency"
-                defaultValue={preferences.currency}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="EUR">EUR (€)</option>
-                <option value="USD">USD ($)</option>
-                <option value="GBP">GBP (£)</option>
-              </select>
-            </div>
-
-            <Button type="submit" disabled={isSubmitting}>
-              Enregistrer
-            </Button>
-          </Form>
         </CardContent>
       </Card>
 

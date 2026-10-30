@@ -42,7 +42,7 @@
         "render_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$", "description": "Empreinte exacte du rendu approuvé; aucune approbation transférable à un autre rendu." },
         "content_approved": {
           "type": "boolean",
-          "description": "Approbation humaine explicite du script, des claims, des preuves et du disclaimer sur leur version exacte. Le verdict du skill est une entrée de revue, jamais une approbation."
+          "description": "Approbation humaine explicite du script, des claims, des preuves et du disclaimer sur leur version exacte. Le verdict du skill est une entrée de revue, jamais une approbation (règle AI2 du vault). Le schéma ne vérifie que la présence d'un nom, pas l'identité ni l'acte humain."
         },
         "content_approved_by": {
           "type": ["string", "null"]

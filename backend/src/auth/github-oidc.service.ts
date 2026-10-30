@@ -1,7 +1,7 @@
 /**
  * GithubOidcService — JWT validation for GitHub Actions OIDC tokens.
  *
- * Phase 1/11 of sitemap regen auth plan (`docs/superpowers/plans/2026-05-16-sitemap-regen-auth-impl.md`).
+ * Phase 1/11 of sitemap regen auth plan (`docs/plans/2026-05-16-sitemap-regen-auth-impl.md`).
  *
  * **Paradigm (Phase 0.6)**: validation invariants are HARDCODED as `static readonly`
  * class constants, NOT env vars. They don't change between deployments of this code

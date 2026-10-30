@@ -84,7 +84,23 @@ export async function piecesVehicleLoader({
   request,
   url: documentUrl,
 }: LoaderFunctionArgs) {
-  const startTime = Date.now();
+  const startTime = performance.now();
+  // Durations overlap when work runs in parallel; do not sum these metrics.
+  // This measures the critical loader path, not deferred work or SSR rendering.
+  const timings: string[] = [];
+  const timed = async <T>(name: string, work: () => Promise<T>): Promise<T> => {
+    const start = performance.now();
+    try {
+      return await work();
+    } finally {
+      timings.push(`${name};dur=${(performance.now() - start).toFixed(1)}`);
+    }
+  };
+  const serverTiming = () =>
+    [
+      ...timings,
+      `r2_loader;dur=${(performance.now() - startTime).toFixed(1)}`,
+    ].join(", ");
 
   // Debug URL complete
   const url = new URL(request.url);
@@ -148,10 +164,12 @@ export async function piecesVehicleLoader({
   let vehicleIds: Awaited<ReturnType<typeof resolveVehicleIds>>;
   let gammeId: number;
   try {
-    [vehicleIds, gammeId] = await Promise.all([
-      resolveVehicleIds(rawMarque, rawModele, rawType),
-      resolveGammeId(rawGamme),
-    ]);
+    [vehicleIds, gammeId] = await timed("r2_resolve", () =>
+      Promise.all([
+        resolveVehicleIds(rawMarque, rawModele, rawType),
+        resolveGammeId(rawGamme),
+      ]),
+    );
   } catch (resolveErr) {
     // Si la resolution echoue (API down, params invalides), retourner 404
     logger.error(
@@ -224,19 +242,19 @@ export async function piecesVehicleLoader({
   // Returns: products, grouped_pieces, vehicleInfo, gamme, seo, oemRefs, crossSelling, filters
 
   // LCP V8: Lancer hierarchy immediatement (pour catalogueMameFamille deferred)
-  const hierarchyPromise = fetchJsonOrNull<HierarchyData>(
-    `http://127.0.0.1:3000/api/catalog/homepage-families`,
-    3000,
+  const hierarchyPromise = timed("r2_hierarchy", () =>
+    fetchJsonOrNull<HierarchyData>(
+      `http://127.0.0.1:3000/api/catalog/homepage-families`,
+      3000,
+    ),
   );
 
   // SEO switches pour anchor text varies
   const seoSwitchesPromise = fetchSeoSwitches(gammeId, 3000);
 
   // RM V2: Single RPC for ALL data (~400ms, cached in Redis)
-  const rmV2Promise = fetchRmPageV2(
-    gammeId,
-    vehicleIds.typeId,
-    INITIAL_PRODUCTS_LIMIT,
+  const rmV2Promise = timed("r2_catalogue", () =>
+    fetchRmPageV2(gammeId, vehicleIds.typeId, INITIAL_PRODUCTS_LIMIT),
   ).then(
     (response) => ({ absentFromCatalogue: false as const, response }),
     async (err) => {
@@ -331,6 +349,7 @@ export async function piecesVehicleLoader({
     };
     let alternativesData: RmAlternativesResponse | null = null;
     let alternativesFetchOk = false;
+    const alternativesStart = performance.now();
     try {
       const altResp = await fetch(
         `http://127.0.0.1:3000/api/rm/alternatives?gamme_id=${gammeId}&type_id=${vehicleIds.typeId}&limit=12`,
@@ -374,6 +393,10 @@ export async function piecesVehicleLoader({
         }`,
       );
     }
+
+    timings.push(
+      `r2_alternatives;dur=${(performance.now() - alternativesStart).toFixed(1)}`,
+    );
 
     // Construire le label vehicule lisible depuis les params URL
     const vehicleLabel = [rawMarque, rawModele, rawType]
@@ -444,6 +467,7 @@ export async function piecesVehicleLoader({
         headers: {
           "X-Robots-Tag": "noindex, follow",
           "Cache-Control": cacheControl,
+          "Server-Timing": serverTiming(),
         },
       },
     );
@@ -462,7 +486,7 @@ export async function piecesVehicleLoader({
   let loaderData: ReturnType<typeof mapRmV2ToLoaderData>;
   try {
     loaderData = mapRmV2ToLoaderData(rmV2Response, {
-      loadTime: Date.now() - startTime,
+      loadTime: performance.now() - startTime,
     });
   } catch (mapErr) {
     logger.error(
@@ -557,12 +581,11 @@ export async function piecesVehicleLoader({
       hierarchyPromise,
     );
     // Await hierarchy (already fetched in parallel with RM V2, should be resolved)
-    const catalogueMameFamille = await catalogueMameFamillePromise.catch(
-      () => null,
+    const catalogueMameFamille = await timed(
+      "r2_hierarchy_wait",
+      () => catalogueMameFamillePromise,
     );
     const catalogueTop8 = catalogueMameFamille?.items?.slice(0, 8) ?? [];
-
-    const loadTime = Date.now() - startTime;
 
     // Filters from RM V2 (already includes counts)
     const filtersData: FiltersData | null = rmV2Response.filters
@@ -658,7 +681,7 @@ export async function piecesVehicleLoader({
           compSwitch2: rmV2Response.seo?.compSwitch2 ?? [],
         },
         performance: {
-          loadTime,
+          loadTime: Math.round(performance.now() - startTime),
           source: "rm-v2",
           cacheHit: rmV2Response.cacheHit || false,
           rmDuration: rmV2Response.duration_ms,
@@ -677,6 +700,7 @@ export async function piecesVehicleLoader({
       },
       {
         headers: {
+          "Server-Timing": serverTiming(),
           "Cache-Control":
             "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600",
         },

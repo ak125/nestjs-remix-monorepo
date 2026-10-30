@@ -103,8 +103,8 @@ Toute action de suppression, refactor, ou fusion de module DOIT passer par ces d
 | Fichier | Couvre |
 |---|---|
 | [ops/safe-delete-procedure.md](ops/safe-delete-procedure.md) | Runbook en 4 étapes + script `validate-before-delete.sh` + anti-patterns |
-| [ops/cleanup-targets.md](ops/cleanup-targets.md) | Backlog structuré : 76 scripts obsolètes, 147 dead components, fusions candidates, 17 cycles classifiés |
-| [ops/cycle-resolution-playbook.md](ops/cycle-resolution-playbook.md) | 5 patterns pour casser les cycles (fortuit / inversion / pipeline / acceptable / React Router) |
+| [ops/cleanup-targets.md](ops/cleanup-targets.md) | Backlog daté : candidats, décisions et observations historiques à requalifier sur le checkout courant |
+| [ops/cycle-resolution-playbook.md](ops/cycle-resolution-playbook.md) | Diagnostic des cycles, réutilisation des contrats existants, contrôles et validation avant/après |
 | [ops/supplier-brand-price-load-procedure.md](ops/supplier-brand-price-load-procedure.md) | Procédure 7 étapes pour charger les tarifs d'une marque/fournisseur dans `pieces_price` (feed → dry-run → vérif live portail/EAN → commit taggé + rollback → contrôle 30j → MAJ incrémentale). 1er run : NK/DCA, 30621 prix |
 
 Outils associés :

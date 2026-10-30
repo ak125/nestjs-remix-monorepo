@@ -55,6 +55,7 @@ function tarif(venteTtc: number): SellablePriceRow {
     pri_vente_ttc_n: venteTtc,
     pri_consigne_ttc_n: 0,
     pri_vente_ht_n: null,
+    pri_achat_ht_n: null,
     pri_consigne_ht_n: null,
     pri_qte_vente: '1',
     pri_tva_n: null,

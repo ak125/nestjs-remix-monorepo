@@ -66,6 +66,7 @@ const COLONNES_TARIF = [
   'pri_vente_ttc_n',
   'pri_consigne_ttc_n',
   'pri_vente_ht_n',
+  'pri_achat_ht_n',
   'pri_consigne_ht_n',
   'pri_qte_vente',
   'pri_tva_n',
@@ -84,6 +85,7 @@ export interface SellablePriceRow {
   pri_vente_ttc_n: number | null;
   pri_consigne_ttc_n: number | null;
   pri_vente_ht_n: number | null;
+  pri_achat_ht_n: number | null;
   pri_consigne_ht_n: number | null;
   pri_qte_vente: string | null;
   pri_tva_n: number | null;

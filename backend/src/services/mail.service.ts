@@ -13,6 +13,13 @@ import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { SITE_ORIGIN } from '../config/app.config';
 
+/**
+ * Issue réelle d'un envoi. `dry-run` = transport non configuré : rien n'est
+ * parti, seule une ligne de log a été écrite. Un appelant qui persiste un état
+ * « envoyé » doit exiger `sent`.
+ */
+export type MailDelivery = 'sent' | 'dry-run';
+
 export interface MailOptions {
   to: string;
   subject: string;
@@ -269,7 +276,7 @@ export class MailService {
     unsubscribeUrl: string;
     trackingPixelUrl: string;
     step: '1h' | '24h' | '72h';
-  }): Promise<void> {
+  }): Promise<MailDelivery> {
     const {
       to,
       firstName,
@@ -343,7 +350,7 @@ export class MailService {
       <img src="${trackingPixelUrl}" width="1" height="1" alt="" style="display:none;" />`;
 
     const html = this.wrapLayout('Votre panier vous attend', '#f59e0b', body);
-    await this.doSendWithHeaders(to, subject, html, {
+    return this.doSendWithHeaders(to, subject, html, {
       'List-Unsubscribe': `<${unsubscribeUrl}>`,
       'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
     });
@@ -403,10 +410,10 @@ export class MailService {
     subject: string,
     html: string,
     headers: Record<string, string>,
-  ): Promise<void> {
+  ): Promise<MailDelivery> {
     if (!this.isConfigured || !this.transporter) {
       this.logger.warn(`[DRY-RUN] Email to ${to}: ${subject}`);
-      return;
+      return 'dry-run';
     }
 
     try {
@@ -418,6 +425,7 @@ export class MailService {
         headers,
       });
       this.logger.log(`Email sent to ${to}: ${subject}`);
+      return 'sent';
     } catch (error) {
       this.logger.error(`Failed to send email to ${to}:`, error);
       throw error;

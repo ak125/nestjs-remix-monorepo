@@ -1,7 +1,7 @@
 /**
  * TrendSignalsModule — middle-ground trend signals ingestion.
  *
- * Cf. spec docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.6
+ * Cf. spec docs/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.6
  * Tasks 1.10 + 1.11 — service + BullMQ processor (monthly cadence).
  *
  * Wire-up :

@@ -151,6 +151,15 @@
       "status": "LIVE"
     },
     {
+      "dependsOn": [],
+      "id": "runtime:backend/src/auth/command-center-digest-key.guard.ts",
+      "kind": "other",
+      "path": "backend/src/auth/command-center-digest-key.guard.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
       "dependsOn": [
         "runtime:backend/src/auth/auth.service.ts",
         "runtime:backend/src/auth/local-auth.guard.ts",
@@ -625,6 +634,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/command-center-digest-key.guard.ts",
         "runtime:backend/src/config/feature-flags.module.ts",
         "runtime:backend/src/config/operating-matrix.module.ts",
         "runtime:backend/src/database/database.module.ts",
@@ -1056,6 +1066,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/command-center-digest-key.guard.ts",
         "runtime:backend/src/auth/internal-api-key.guard.ts",
         "runtime:backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
@@ -1638,6 +1649,7 @@
         "runtime:backend/src/config/content-write-gate.service.ts",
         "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/enricher-text-utils.service.ts",
+        "runtime:backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
         "runtime:backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
@@ -4340,6 +4352,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/orders/services/order-actions.service.ts",
+        "runtime:backend/src/modules/orders/services/orders.service.ts",
         "runtime:backend/src/services/mail.service.ts"
       ],
       "id": "runtime:backend/src/modules/orders/controllers/order-actions.controller.ts",

@@ -78,8 +78,10 @@ export class R8SnapshotReaderService extends SupabaseBaseService {
       return cached;
     }
 
-    // 2. SQL query : JOIN __seo_r8_pages.current_snapshot_id
-    const { data, error } = await this.supabase
+    // 2. SQL query : JOIN __seo_r8_pages.current_snapshot_id. type_id is TEXT
+    //    and not unique there (one row per page_key) : read every row of the
+    //    vehicle — __seo_r8_publish_snapshot repoints them together.
+    const { data: rows, error } = await this.supabase
       .from('__seo_r8_pages')
       .select(
         `
@@ -96,8 +98,7 @@ export class R8SnapshotReaderService extends SupabaseBaseService {
         )
       `,
       )
-      .eq('type_id', typeId)
-      .maybeSingle();
+      .eq('type_id', String(typeId));
 
     if (error) {
       this.logger.error(
@@ -111,7 +112,27 @@ export class R8SnapshotReaderService extends SupabaseBaseService {
       };
     }
 
-    if (!data || !data.current_snapshot_id || !data.snapshot) {
+    const pointers = new Set(
+      (rows ?? [])
+        .map((row) => row.current_snapshot_id)
+        .filter((id) => id !== null && id !== undefined),
+    );
+    if (pointers.size > 1) {
+      // Pages of one vehicle pointing at different snapshots : no version is
+      // picked silently, and the result is not cached so a repair is re-read.
+      this.logger.error(
+        `getLatestSnapshot(${typeId}) pages disagree on current_snapshot_id: ${[...pointers].join(', ')}`,
+      );
+      return {
+        found: false,
+        reason: 'r8_snapshot_unavailable',
+      };
+    }
+
+    const data = (rows ?? []).find(
+      (row) => row.current_snapshot_id && row.snapshot,
+    );
+    if (!data) {
       const result: R8SnapshotReadResult = {
         found: false,
         reason: 'r8_snapshot_unavailable',

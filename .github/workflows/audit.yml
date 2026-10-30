@@ -84,6 +84,14 @@ jobs:
         # container temp-file write from ever coming back.
         run: npm run test:prod-ssr-probe
 
+      - name: 🔭 PROD observation report — behavioural proof vs stubbed docker (BLOCKING)
+        # prod-observation-report.mjs runs ONLY in prod-smoke-tests.yml, on the PROD
+        # host, where its verdict is all anyone sees. This drives it against a stubbed
+        # docker and synthetic Caddy lines: payment tiers counted from arrival, the L2
+        # DoD7 limiter verdicts, "non vérifié" on any failed read or unknown log file,
+        # and nothing printed that identifies a client or measures traffic volume.
+        run: node --test scripts/ci/prod-observation-report.test.mjs
+
       - name: 📈 PROD SEO collector env writer — behavioural proof on a scratch .env (BLOCKING)
         # prod-seo-collector-env.sh runs ONLY in deploy-prod.yml, on the real PROD
         # .env. This executes it against scratch .env files: a GSC/GA4 private key

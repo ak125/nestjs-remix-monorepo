@@ -28,6 +28,7 @@ import { logger } from "~/utils/logger";
 import { safeLazy } from "~/utils/resilient-lazy";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";
+import BottomNav from "./components/layout/BottomNav";
 import { Navbar } from "./components/Navbar";
 import {
   NotificationContainer,
@@ -43,12 +44,14 @@ import animationsStylesheet from "./styles/animations.css?url";
 
 // GlobalFooter n'est plus déclaré ici : rendu via <LazyFooter/> (composant partagé,
 // specifier canonique unique `~/components/home/Footer`) — voir components/home/LazyFooter.
-// ChatWidget/BottomNav passent par safeLazy (durcissement fulfill-with-undefined).
+// ChatWidget passe par safeLazy (durcissement fulfill-with-undefined).
+// BottomNav est importé directement : rendu dans la coquille, il est là dès le
+// premier affichage et s'hydrate avec elle. En lazy, il arrivait en fin de flux,
+// et React supprimait puis recréait sa frontière Suspense quand AppShell se
+// re-rendait avant le chargement du chunk : MobileBottomBar, placée au-dessus
+// de lui, se déplaçait à chaque fois.
 const ChatWidget = safeLazy(() => import("./components/rag/ChatWidget"), {
   name: "ChatWidget",
-});
-const BottomNav = safeLazy(() => import("./components/layout/BottomNav"), {
-  name: "BottomNav",
 });
 const LazyToaster = lazy(() =>
   import("sonner").then((m) => ({ default: m.Toaster })),
@@ -352,13 +355,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         <div className="grow">{children}</div>
       </main>
       {!hideGlobalFooter && <LazyFooter />}
-      {!hideBottomNav && (
-        <LazyBoundary name="BottomNav">
-          <Suspense fallback={null}>
-            <BottomNav />
-          </Suspense>
-        </LazyBoundary>
-      )}
+      {!hideBottomNav && <BottomNav />}
       <NotificationContainer />
       <button
         onClick={scrollToTop}
