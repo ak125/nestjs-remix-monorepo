@@ -22,6 +22,17 @@ const REPO = path.resolve(process.env.FH_REPO || path.join(DOSSIER, '../../..'))
 const OUT = path.join(DOSSIER, 'preview');
 const readJson = (rel) => JSON.parse(fs.readFileSync(path.join(DOSSIER, rel), 'utf8'));
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+/** Nombre de caractères hors balises : un compte, pas une chaîne assainie (le bloc n'est jamais réinjecté). */
+const textLength = (html) => {
+  let n = 0;
+  let inTag = false;
+  for (const c of String(html)) {
+    if (c === '<') inTag = true;
+    else if (c === '>' && inTag) inTag = false;
+    else if (!inTag) n += c.length;
+  }
+  return n;
+};
 
 // --- Fonctions du dépôt -------------------------------------------------------------------------------------------
 function loadRepoFunctions() {
@@ -103,7 +114,7 @@ function buildR1(fns, assets) {
   const table = `<table><thead><tr><th>Élément</th><th>Comment vérifier</th></tr></thead><tbody>${s.r1s_safe_table_rows.texte.map((r) => `<tr><td>${esc(r.element)}</td><td>${esc(r.howToCheck)}</td></tr>`).join('')}</tbody></table>`;
   const faq = s.r1s_faq.texte.map((f) => `<details open><summary>${esc(f.question)}</summary><p>${esc(f.answer)}</p></details>`).join('');
   const micro = s.r1s_micro_seo_block;
-  const microLen = micro.texte.replace(/<[^>]+>/g, '').length;
+  const microLen = textLength(micro.texte);
 
   const body = `
 <section class="grid hero">
