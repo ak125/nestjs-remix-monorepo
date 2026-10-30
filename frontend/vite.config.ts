@@ -105,6 +105,14 @@ export default defineConfig({
         // Vendor chunking — only pure third-party node_modules (never react-router)
         // Previous race condition was caused by splitting Remix internals; this config avoids that
         manualChunks(id) {
+          // Keep tooltip-only code with its consumers instead of forcing it
+          // into the UI chunk fetched by every catalogue page.
+          if (
+            id.includes("/@radix-ui/react-tooltip/") ||
+            id.endsWith("/app/components/ui/tooltip.tsx")
+          ) {
+            return;
+          }
           // ─── Vendor chunks (node_modules) ────────────────────
           if (id.includes("node_modules")) {
             // Sentry SDK — loaded asynchronously post-hydration via dynamic
