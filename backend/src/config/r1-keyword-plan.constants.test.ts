@@ -28,10 +28,9 @@ describe('R1_S4_MICRO_SEO — bornes alignées sur le contrat R1', () => {
     });
   });
 
-  it('un bloc de 1 850 caractères, ou de 1 663 sans sa phrase conditionnelle, passe les bornes', () => {
-    for (const length of [1850, 1663]) {
-      expect(length).toBeGreaterThanOrEqual(R1_S4_MICRO_SEO_BOUNDS.min_chars);
-      expect(length).toBeLessThanOrEqual(R1_S4_MICRO_SEO_BOUNDS.max_chars);
-    }
+  it('le micro-SEO du lot (1 570 caractères après FH-12) passe les bornes', () => {
+    const length = 1570;
+    expect(length).toBeGreaterThanOrEqual(R1_S4_MICRO_SEO_BOUNDS.min_chars);
+    expect(length).toBeLessThanOrEqual(R1_S4_MICRO_SEO_BOUNDS.max_chars);
   });
 });
