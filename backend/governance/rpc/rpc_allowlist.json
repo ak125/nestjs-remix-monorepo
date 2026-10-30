@@ -400,6 +400,26 @@
       "reason": "Guide-link policy read-path (SECURITY DEFINER, ADR-103 D5) — replaces direct .from() reads of 4 RLS tables broken under anon (ADR-028, DB row_security=off)"
     },
     {
+      "name": "get_vehicle_api_brands",
+      "volatility": "STABLE",
+      "reason": "Vehicle API brands read-path (SECURITY DEFINER) — replaces direct auto_marque .from() reads broken under anon (ADR-028, DB row_security=off)"
+    },
+    {
+      "name": "get_vehicle_api_brand_models",
+      "volatility": "STABLE",
+      "reason": "Vehicle API models read-path (SECURITY DEFINER) — replaces direct auto_modele .from() reads broken under anon (ADR-028, DB row_security=off)"
+    },
+    {
+      "name": "get_vehicle_api_types_by_models",
+      "volatility": "STABLE",
+      "reason": "Vehicle API types-by-models read-path (SECURITY DEFINER) — replaces direct auto_type .from() reads broken under anon (ADR-028, DB row_security=off)"
+    },
+    {
+      "name": "get_vehicle_api_model_types",
+      "volatility": "STABLE",
+      "reason": "Vehicle API model types read-path (SECURITY DEFINER) — replaces direct auto_type .from() reads broken under anon (ADR-028, DB row_security=off)"
+    },
+    {
       "name": "get_listing_products_extended",
       "volatility": "STABLE",
       "reason": "SELECT only"

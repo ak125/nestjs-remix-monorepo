@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21761,
+      "loc_total": 21794,
       "has_barrel": true
     },
     "dev-only": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 211,
-      "loc_total": 49580,
+      "files_count": 212,
+      "loc_total": 49696,
       "has_barrel": true
     },
     "search": {
@@ -814,7 +814,7 @@
         "backend/src/modules/seo-projection"
       ],
       "files_count": 22,
-      "loc_total": 5352,
+      "loc_total": 5777,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 321,
-      "loc_total": 61852,
+      "files_count": 322,
+      "loc_total": 62172,
       "has_barrel": true
     },
     "upload": {
@@ -1006,7 +1006,7 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 30,
-      "loc_total": 8914,
+      "loc_total": 8995,
       "has_barrel": false
     },
     "wiki": {

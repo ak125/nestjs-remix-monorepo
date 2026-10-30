@@ -7,6 +7,7 @@
  * Temps d'exécution: ~30s
  */
 
+import { createHash } from 'node:crypto';
 import { test, expect } from './fixtures';
 
 // ============================================
@@ -71,6 +72,41 @@ test.describe('URL Validation - Critical Pages (200)', () => {
       expect(response.status(), `${name} should return ${expectedStatus}`).toBe(expectedStatus);
     });
   }
+});
+
+// Lectures du sélecteur de véhicule de l'accueil. Sur PREPROD (clé anon,
+// ADR-028 option D), elles passent par les fonctions DEFINER de la migration
+// 20261026_vehicle_api_definer_reads : une lecture refusée (42501) ou une
+// fonction absente (PGRST202) remonte ici en 5xx. TOYOTA (164) a des modèles
+// en 2008 ; les motorisations du premier modèle peuvent être vides, seul leur
+// statut est vérifié. Statut, taille, empreinte du corps et durée de chaque
+// lecture sont écrits dans le journal du job, pour comparer PREPROD à PROD.
+const VEHICLE_BRAND_ID = 164;
+const VEHICLE_YEAR = 2008;
+
+test.describe('URL Validation - Vehicle selector API (200)', () => {
+  test('brands, years, models and types return 200', async ({ request }) => {
+    const read = async (url: string) => {
+      const startedAt = Date.now();
+      const response = await request.get(url);
+      const raw = await response.body();
+      const sha256 = createHash('sha256').update(raw).digest('hex');
+      console.log(
+        `vehicle-selector ${url} ${response.status()} ${raw.length}o sha256=${sha256} ${Date.now() - startedAt}ms`,
+      );
+      expect(response.status(), `${url} should return 200`).toBe(200);
+      const body = JSON.parse(raw.toString('utf8'));
+      expect(body.success, `${url}: success`).toBe(true);
+      expect(Array.isArray(body.data), `${url}: data array`).toBe(true);
+      return body.data as Array<{ modele_id?: number }>;
+    };
+
+    expect((await read('/api/vehicles/brands')).length).toBeGreaterThan(0);
+    expect((await read(`/api/vehicles/brands/${VEHICLE_BRAND_ID}/years`)).length).toBeGreaterThan(0);
+    const models = await read(`/api/vehicles/brands/${VEHICLE_BRAND_ID}/models?year=${VEHICLE_YEAR}`);
+    expect(models.length).toBeGreaterThan(0);
+    await read(`/api/vehicles/models/${models[0].modele_id}/types?year=${VEHICLE_YEAR}`);
+  });
 });
 
 test.describe('URL Validation - Expected Errors', () => {

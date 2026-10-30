@@ -3017,6 +3017,7 @@
       "scripts/registry/build-rpc-registry.js",
       "scripts/registry/build-runtime-registry.js",
       "scripts/registry/check-new-files.js",
+      "scripts/registry/check-new-files.test.ts",
       "scripts/registry/seed-ownership.js",
       "scripts/registry/validate-automation-overlay.test.ts",
       "scripts/registry/validate-automation-overlay.ts",
@@ -3042,7 +3043,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1632,
+  "runtime_files_count": 1633,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4652,6 +4653,7 @@
     "scripts/registry/build-rpc-registry.js",
     "scripts/registry/build-runtime-registry.js",
     "scripts/registry/check-new-files.js",
+    "scripts/registry/check-new-files.test.ts",
     "scripts/registry/seed-ownership.js",
     "scripts/registry/validate-automation-overlay.test.ts",
     "scripts/registry/validate-automation-overlay.ts",

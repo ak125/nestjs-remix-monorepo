@@ -1,6 +1,7 @@
 import { TABLES, AutoType } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import {
   VehicleModel,
@@ -39,8 +40,12 @@ export interface ModelStats {
 export class VehicleModelsService extends SupabaseBaseService {
   protected readonly logger = new Logger(VehicleModelsService.name);
 
-  constructor(private readonly cacheService: VehicleCacheService) {
+  constructor(
+    private readonly cacheService: VehicleCacheService,
+    rpcGate: RpcGateService,
+  ) {
     super();
+    this.rpcGate = rpcGate;
     this.logger.log('🚗 VehicleModelsService initialisé');
   }
 
@@ -206,14 +211,23 @@ export class VehicleModelsService extends SupabaseBaseService {
         const offset = page * limit;
 
         // 🔧 Étape 1: Récupérer TOUS les modèles de la marque
-        const { data: allModels, error: modelsError } = await this.client
-          .from(TABLES.auto_modele)
-          .select('modele_id')
-          .eq('modele_marque_id', marqueId);
+        // Fonctions SECURITY DEFINER (migration 20261026) et non `.from()` : le
+        // backend PREPROD tourne en `anon` (ADR-028 option D) et la base a
+        // `row_security=off`, donc une lecture directe d'une table sous RLS lève
+        // 42501. Mêmes filtres, tri et pagination qu'avant, posés par PostgREST.
+        const { data: allModels, error: modelsError } = await this.callRpc<
+          Array<{ modele_id: number }>
+        >(
+          'get_vehicle_api_brand_models',
+          { p_marque_id: marqueId },
+          { source: 'api', role: 'service_role' },
+          { get: true, refine: (rpc) => rpc.select('modele_id') },
+        );
 
         if (modelsError || !allModels) {
-          this.logger.error('Erreur récupération modèles:', modelsError);
-          throw modelsError;
+          const cause = modelsError && this.rpcFailure(modelsError);
+          this.logger.error('Erreur récupération modèles:', cause);
+          throw cause;
         }
 
         const allModelIds = allModels.map((m) => m.modele_id);
@@ -233,15 +247,24 @@ export class VehicleModelsService extends SupabaseBaseService {
         const typesBatchSize = 1000;
 
         while (true) {
-          const { data: batch, error: typesError } = await this.client
-            .from(TABLES.auto_type)
-            .select(typesSelect)
-            .in('type_modele_id', allModelIdsStr)
-            .range(typesOffset, typesOffset + typesBatchSize - 1);
+          const from = typesOffset;
+          const { data: batch, error: typesError } = await this.callRpc<
+            TypePartial[]
+          >(
+            'get_vehicle_api_types_by_models',
+            { p_modele_ids: allModelIdsStr },
+            { source: 'api', role: 'service_role' },
+            {
+              get: true,
+              refine: (rpc) =>
+                rpc.select(typesSelect).range(from, from + typesBatchSize - 1),
+            },
+          );
 
           if (typesError) {
-            this.logger.error('Erreur récupération types:', typesError);
-            throw typesError;
+            const cause = this.rpcFailure(typesError);
+            this.logger.error('Erreur récupération types:', cause);
+            throw cause;
           }
 
           if (!batch || batch.length === 0) break;
@@ -311,34 +334,42 @@ export class VehicleModelsService extends SupabaseBaseService {
 
         // 📋 Construire la requête principale avec filtre sur les modèles ayant des motorisations
         // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
-        // Utiliser modele_marque_id directement
-        let query = this.client
-          .from(TABLES.auto_modele)
-          .select('*', { count: 'exact' })
-          .eq('modele_marque_id', marqueId)
-          .in('modele_id', modelIdsWithTypes);
+        // La fonction ne renvoie que les modèles de la marque (modele_marque_id)
+        const { data, error, count } = await this.callRpc<
+          Record<string, unknown>[]
+        >(
+          'get_vehicle_api_brand_models',
+          { p_marque_id: marqueId },
+          { source: 'api', role: 'service_role' },
+          {
+            get: true,
+            count: 'exact',
+            refine: (rpc) => {
+              let query = rpc.select('*').in('modele_id', modelIdsWithTypes);
 
-        if (!options.includeAll) {
-          query = query.eq('modele_display', 1);
-        }
+              if (!options.includeAll) {
+                query = query.eq('modele_display', 1);
+              }
 
-        if (search?.trim()) {
-          // Recherche par alias OU par nom
-          query = query.or(
-            `modele_alias.ilike.%${search}%,modele_name.ilike.%${search}%`,
-          );
-        }
+              if (search?.trim()) {
+                // Recherche par alias OU par nom
+                query = query.or(
+                  `modele_alias.ilike.%${search}%,modele_name.ilike.%${search}%`,
+                );
+              }
 
-        query = query
-          .limit(limit)
-          .range(offset, offset + limit - 1)
-          .order('modele_name');
-
-        const { data, error, count } = await query;
+              return query
+                .limit(limit)
+                .range(offset, offset + limit - 1)
+                .order('modele_name');
+            },
+          },
+        );
 
         if (error) {
-          this.logger.error('Erreur getModelsByBrand:', error);
-          throw error;
+          const cause = this.rpcFailure(error);
+          this.logger.error('Erreur getModelsByBrand:', cause);
+          throw cause;
         }
 
         // Enrichir chaque modèle avec motorisationsCount et fuel_types

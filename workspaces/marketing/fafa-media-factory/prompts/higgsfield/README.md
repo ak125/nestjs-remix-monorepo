@@ -25,12 +25,12 @@ V1 = prouver que la chaîne éditoriale Fafa Media Factory tient. Higgsfield est
 - ❌ NE PAS intégrer en runtime (pas de dépendance hard backend V1)
 - ❌ NE PAS publier automatiquement (`publish_approved=false` strict)
 
-## Règles strictes (PASS/FAIL Brand Safety Reviewer)
+## Règles strictes (hors gates, sauf la première : G6 `visual_role`, après rendu)
 
 | Règle | Pourquoi |
 |---|---|
-| ❌ Aucun asset généré n'est utilisé comme **preuve** mécanique | G6 Visual Honesty STRICT : 1 visuel-preuve = FAIL |
-| ❌ Aucune transformation d'asset source concurrent | G5 Reuse Risk — statut `INSPIRED_PATTERN_ONLY` obligatoire |
+| ❌ Aucun asset généré n'est utilisé comme **preuve** mécanique | G6 `visual_role` : chaque visuel du rendu relevé comme preuve compte, un seul = FAIL |
+| ❌ Aucune transformation d'asset source concurrent | Statut `INSPIRED_PATTERN_ONLY` obligatoire ; G5 Reuse Risk ne le lit pas (score de similarité du script seul, sans producteur au 18/10) |
 | ❌ Aucune auto-publication | Workflow V1 = owner-only (`publish_approved=false` strict) |
 | ✅ Tout asset stocké S3 (`s3://automecanik-renders/higgsfield/`) | Anti-binaires-en-git (`.gitignore` racine) |
 | ✅ Manifest JSON dans `manifests/renders/*.json` avec `provider: "higgsfield"` + `model: "..."` | Traçabilité + reproductibilité |
@@ -43,8 +43,8 @@ V1 = prouver que la chaîne éditoriale Fafa Media Factory tient. Higgsfield est
 3. Personnaliser le prompt avec contexte vidéo (gamme, scène, durée, style)
 4. Invoquer Higgsfield MCP (manuel cette V1) avec modèle choisi
 5. Récupérer asset → upload S3 → manifest JSON
-6. Skill `fafa-brand-safety-reviewer` valide gates G5 + G6
-7. Si verdict PASS → asset utilisable comme `truth_dependency=illustration` ou `reference` (jamais `proof`)
+6. Après rendu, le skill `fafa-brand-safety-reviewer` rejoue les 7 gates sur le dossier de la vidéo ; aucune ne juge l'asset seul
+7. Asset utilisable comme `truth_dependency=illustration` ou `reference` (jamais `proof`), après relecture de l'owner ; G6 ne rend jamais PASS (0 visuel relevé = WARN)
 
 ## Schéma manifest
 
