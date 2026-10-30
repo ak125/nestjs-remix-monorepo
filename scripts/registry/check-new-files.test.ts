@@ -29,6 +29,9 @@ import { dirname, join, resolve } from "node:path";
 const ROOT = resolve(__dirname, "../..");
 const SCRIPT = "scripts/registry/check-new-files.js";
 const OVERLAY = ".spec/00-canon/repository-registry";
+// No global or system git config: like the CI runner, which has no identity,
+// so every git call that writes a commit (merge included) must carry its own.
+const GIT_ENV = { ...process.env, GIT_CONFIG_NOSYSTEM: "1", GIT_CONFIG_GLOBAL: "/dev/null" };
 
 test("gate counts only the files the branch adds since its merge-base", async (t) => {
   const fixture = mkdtempSync(join(tmpdir(), "check-new-files-"));
@@ -37,21 +40,22 @@ test("gate counts only the files the branch adds since its merge-base", async (t
     writeFileSync(join(fixture, file), contents);
   };
   const git = (...args: string[]) =>
-    execFileSync("git", args, { cwd: fixture, stdio: "pipe" });
+    execFileSync(
+      "git",
+      [
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "-c",
+        "commit.gpgsign=false",
+        ...args,
+      ],
+      { cwd: fixture, stdio: "pipe", env: GIT_ENV },
+    );
   const commit = (message: string) => {
     git("add", "-A");
-    git(
-      "-c",
-      "user.name=Fixture",
-      "-c",
-      "user.email=fixture@example.invalid",
-      "-c",
-      "commit.gpgsign=false",
-      "commit",
-      "--quiet",
-      "-m",
-      message,
-    );
+    git("commit", "--quiet", "-m", message);
   };
   const gate = () => {
     const r = spawnSync(process.execPath, [SCRIPT, "--base", "main", "--json"], {
