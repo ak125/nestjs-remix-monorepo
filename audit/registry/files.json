@@ -4569,7 +4569,7 @@
         "backend/src/config/r1-keyword-plan.constants.ts"
       ],
       "kind": "test",
-      "loc": 38,
+      "loc": 37,
       "owner": "__unassigned__",
       "path": "backend/src/config/r1-keyword-plan.constants.test.ts",
       "risk": "low",
@@ -66119,7 +66119,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 206,
+      "loc": 216,
       "owner": "__unassigned__",
       "path": "frontend/vite.config.ts",
       "risk": "low",

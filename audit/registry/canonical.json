@@ -33166,7 +33166,7 @@
         "backend/src/config/r1-keyword-plan.constants.ts"
       ],
       "kind": "test",
-      "loc": 38,
+      "loc": 37,
       "owner": "@ak125",
       "path": "backend/src/config/r1-keyword-plan.constants.test.ts",
       "risk": "medium",
@@ -96981,7 +96981,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 206,
+      "loc": 216,
       "owner": "__unassigned__",
       "path": "frontend/vite.config.ts",
       "risk": "low",
@@ -106039,11 +106039,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "2cbd96f1a1d33295954de3ed31042c390bd9866d5ab2665f84dd8556b3280859",
+      "audit/registry/files.json": "9a6e33dcaef4a2f6cc6d09b39077e321f7c8563702ea2f430d34fa4fe7c3ce3a",
       "audit/registry/rpc.json": "7897ffc88fa007be0b96ee19cc110f99f71d0639c30747fa5c4df34d48f0af4a",
       "audit/registry/runtime.json": "a6b7bb34f935b3f73f8d20c118fcaa5040e50b33fabbb344943df0a202fa5d19"
     },
-    "sotFingerprint": "5abc7d5c4858"
+    "sotFingerprint": "eed1de155494"
   },
   "runtime": [
     {
