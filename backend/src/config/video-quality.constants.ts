@@ -226,7 +226,7 @@ export const VISUAL_REQUIRES_VALIDATION: readonly VisualType[] = [
 
 export const FORBIDDEN_PATTERNS_SOCLE: readonly RegExp[] = [
   /\bachetez?\b/i,
-  /\bcommandez?\b/i,
+  /\b(?:commandez|commande\s+(?:ta|votre|vos))\b/i,
   /\bpromotion\b/i,
   /\bprix\b/i,
   /\b(pas cher|meilleur prix)\b/i,
@@ -240,9 +240,9 @@ export const FORBIDDEN_PATTERNS_SOCLE: readonly RegExp[] = [
 export const FORBIDDEN_PATTERNS_SHORT: readonly RegExp[] = [
   ...FORBIDDEN_PATTERNS_SOCLE,
   /\burgent\b/i,
-  /\bdepêchez/i,
+  /\bd[ée]pêchez/i,
   /\bne ratez pas\b/i,
-  /\bdernier(e|s)?\s+(chance|jour)/i,
+  /\bderni(?:er|ère|ers|ères)\s+(chance|jour)/i,
 ] as const;
 
 // ─────────────────────────────────────────────────────────────

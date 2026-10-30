@@ -123,7 +123,7 @@ export interface VideoGateResult {
   gate: VideoGateName;
   verdict: GateVerdict;
   details: string[];
-  measured: number;
+  measured: number | null;
   warnThreshold: number;
   failThreshold: number;
   triggerItems?: Array<{

@@ -1,11 +1,15 @@
 /**
  * PostprocessService — Calls renderer /postprocess after render success.
  *
- * Auto-triggered from the video execution processor when render completes.
+ * Runs only when explicitly called; the execution processor does not invoke it.
  * Stores variant metadata in __video_variants table.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -14,6 +18,7 @@ export interface PostprocessInput {
   executionLogId: number;
   renderOutputPath: string;
   audioS3Key?: string;
+  audioMergeMode?: 'replace' | 'mix';
   videoType: string;
 }
 
@@ -24,6 +29,10 @@ export interface VariantRecord {
   resolution: string;
   fileSizeBytes: number;
   durationSecs: number | null;
+  /** Transported renderer observations; absent for historical variants. */
+  inspection?: unknown;
+  audioMergeMode?: 'replace' | 'mix' | null;
+  audioNormalization?: unknown;
 }
 
 export interface PostprocessResult {
@@ -76,7 +85,7 @@ export class PostprocessService extends SupabaseBaseService {
 
   /**
    * Run post-processing on a completed render.
-   * Auto-triggered from the video execution processor.
+   * No automatic worker invocation or publication approval is implied.
    */
   async postprocess(
     input: PostprocessInput,
@@ -98,6 +107,7 @@ export class PostprocessService extends SupabaseBaseService {
       executionLogId: input.executionLogId,
       inputS3Key: input.renderOutputPath,
       audioS3Key: input.audioS3Key ?? null,
+      audioMergeMode: input.audioMergeMode,
       variants,
       normalizeLoudness: true,
       loudnessTarget: this.loudnessTarget,
@@ -177,7 +187,7 @@ export class PostprocessService extends SupabaseBaseService {
       );
 
       if (error) {
-        this.logger.error(
+        throw new Error(
           `[PP] storeVariant error (${v.name}): ${error.message}`,
         );
       }
@@ -190,17 +200,22 @@ export class PostprocessService extends SupabaseBaseService {
     totalDurationMs: number,
     srtS3Path: string | null,
   ): Promise<void> {
-    const { error } = await this.client
+    const { data, error } = await this.client
       .from('__video_execution_log')
       .update({
         postprocess_variants: variants,
         postprocess_duration_ms: totalDurationMs,
         srt_s3_path: srtS3Path,
       })
-      .eq('id', executionLogId);
+      .eq('id', executionLogId)
+      .select('id')
+      .single();
 
     if (error) {
-      this.logger.error(`[PP] updateExecutionLog error: ${error.message}`);
+      throw new Error(`[PP] updateExecutionLog error: ${error.message}`);
+    }
+    if (!data) {
+      throw new Error(`[PP] No execution updated: ${executionLogId}`);
     }
   }
 
@@ -216,7 +231,7 @@ export class PostprocessService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`listVariants error: ${error.message}`);
-      return [];
+      throw new ServiceUnavailableException('Video variants unavailable');
     }
 
     return (data ?? []).map((row) => ({

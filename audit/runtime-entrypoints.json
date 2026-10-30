@@ -2906,6 +2906,7 @@
       ".github/workflows/registry-deps-self-heal.yml",
       ".github/workflows/registry-fresh.yml",
       ".github/workflows/registry-new-file-gate.yml",
+      ".github/workflows/renderer-validation.yml",
       ".github/workflows/replay-projection-regression.yml",
       ".github/workflows/secrets-history-audit.yml",
       ".github/workflows/seo-matrix-check.yml",
@@ -3043,7 +3044,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1633,
+  "runtime_files_count": 1634,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3096,6 +3097,7 @@
     ".github/workflows/registry-deps-self-heal.yml",
     ".github/workflows/registry-fresh.yml",
     ".github/workflows/registry-new-file-gate.yml",
+    ".github/workflows/renderer-validation.yml",
     ".github/workflows/replay-projection-regression.yml",
     ".github/workflows/secrets-history-audit.yml",
     ".github/workflows/seo-matrix-check.yml",
