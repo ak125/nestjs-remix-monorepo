@@ -32,7 +32,7 @@ montage, texte exact). Un clone plan-pour-plan avec script réécrit + visuels d
 → `shot-by-shot functional rebuild` = OK · `frame-by-frame copy` = FAIL, rebrand non opposable.
 
 En V1, G5 passe d'ailleurs pour tout script : aucun module ne produit `similarityScore`, que le code compte 0 s'il manque
-(`backend/src/modules/media-factory/services/video-gates.service.ts:277`), et aucun texte de référence n'est conservé (pattern
+(`backend/src/modules/media-factory/services/video-gates.service.ts:286`), et aucun texte de référence n'est conservé (pattern
 structurel, source vue en analyse éphémère). Le détail est dans le skill `creative-pattern-extractor` (« G5 Reuse Risk en V1 »).
 
 ## Format JSONL de référence (un pattern par ligne)
@@ -84,9 +84,10 @@ de commentateur ni un extrait de transcript.
 4. Seulement après → passage en `DRAFT_ONLY`
 
 Aucun contrôle automatique ne vérifie cette signature : G5 du code ne lit que `similarityScore`
-(`video-gates.service.ts:273-287`), et la G5 de `fafa-brand-safety-reviewer` (§ G5 Reuse Risk) décrit un cosinus. Elle relève de
-la relecture de l'owner avant qu'il pose `content_approved` (`governance/approval-record.schema.json:41-44`) ; le schéma ne
-contrôle que la présence d'un nom dans `content_approved_by` (l.77-84), pas qu'un humain a relu.
+(`video-gates.service.ts:282-296`), dont aucun producteur n'existe au 22/10 ; `fafa-brand-safety-reviewer` rend donc G5 UNKNOWN
+et signale à part une signature manquante. La signature relève de la relecture de l'owner avant qu'il pose `content_approved`
+(`governance/approval-record.schema.json:43-46`) ; le schéma ne contrôle que la présence d'un nom dans `content_approved_by`
+(l.79-86), pas qu'un humain a relu.
 
 ## Voir aussi
 
