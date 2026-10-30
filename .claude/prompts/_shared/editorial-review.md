@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.1.0 — 2026-10-30.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.2.0 — 2026-10-30.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -11,6 +11,9 @@
 > Une règle modifiée pendant un essai invalide l'essai.
 > Pilote 1.1.0 : séparation des sources internes et du texte public, selon le mandat
 > utilisateur du 30 octobre. Les résultats d'un essai 1.0.0 ne qualifient pas cette version.
+> Pilote 1.2.0 : contrat « Lecture, application et déclaration », après un essai où la
+> relecture était déclarée appliquée sur une lecture qui s'arrêtait avant « Sortie attendue ».
+> Les résultats d'un essai 1.1.0 ne qualifient pas cette version.
 
 ## 1. Ce que fait la relecture
 
@@ -27,6 +30,37 @@ dans RAW ni dans WIKI, et ne remplace aucun contrôle existant.
   raisons + signalements de fond (§10).
 - **Pas de source identifiable ⇒ pas de relecture** : verdict `BLOQUÉ_SOURCE`. Sans source, on
   ne peut pas vérifier qu'une reformulation est fidèle.
+
+### Lecture, application et déclaration
+
+Lire ce fichier n'est pas appliquer sa méthode. La méthode est appliquée quand ses étapes ont
+produit leur trace dans la sortie.
+
+1. **Lire les sections opérantes, en entier, avant de relire** : « Ce que fait la relecture »,
+   « Ordre de priorité », « Faits protégés », « Champs modifiables et champs protégés » avec
+   « Sources et sortie publique », « Ce que la relecture corrige », « Typographie française »,
+   « Ton par format », « Sortie attendue » et « Règles de Humanizer écartées ou adaptées ».
+   S'y ajoute « Fafa, vidéo et social : aucune invention » pour un script ou une copie sociale.
+   Les « Exemples AutoMecanik » et l'« Attribution et licence » sont lus en cas de doute.
+2. **Lire les références que le périmètre exige** : les sources du brouillon ; le miroir
+   `.claude/canon-mirrors/marketing-voice.md` pour les interdits et les mentions obligatoires ;
+   `fafa-persona-canon` pour un script Fafa.
+3. **Consigner les lectures** : pour chaque fichier, les sections lues, désignées par leur titre.
+   Si un fichier est lu par morceaux, noter aussi les plages réellement lues. Un fichier cité
+   dans une liste de lectures ne prouve ni sa lecture complète ni son application.
+4. **Exécuter les étapes**, chacune avec sa trace dans la sortie :
+   - identifier l'original et ses sources, sinon `BLOQUÉ_SOURCE` ;
+   - délimiter les champs modifiables ;
+   - appliquer les règles RE-xx et RE-Tx, chaque changement avec sa règle et sa raison ;
+   - relever les signalements de fond ;
+   - faire le contrôle de fidélité, catégorie par catégorie ;
+   - rendre le verdict.
+5. **Déclarer l'état** : écrire « relecture appliquée » seulement si les points 1 à 4 sont
+   remplis. Sinon, écrire « relecture partielle » et nommer les sections non lues, les
+   références manquantes et les étapes non exécutées.
+
+La sortie suit « Sortie attendue ». Un champ qui ne peut pas être produit est nommé, avec sa
+cause ; il n'est ni omis en silence ni remplacé par un résumé.
 
 ## 2. Ordre de priorité
 
@@ -323,6 +357,9 @@ Pour chaque brouillon :
   **rejetée**. Une nouvelle génération ne l'efface pas du relevé.
 - **`verdict`** : `PROPOSITION`, `AUCUN_CHANGEMENT_UTILE`, `BLOQUÉ_SOURCE` ou `HORS_PÉRIMÈTRE`.
   Jamais « publié », « validé » ni « opérationnel ».
+- **`lecture`** : les sections et plages réellement lues, les références consultées, les
+  étapes exécutées et non exécutées, puis « relecture appliquée » ou « relecture partielle »
+  avec ce qui manque (« Lecture, application et déclaration »).
 
 Une proposition sans altération critique n'est pas acceptée pour autant : elle va au validateur
 du circuit concerné (§1).
