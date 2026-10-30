@@ -5,7 +5,7 @@
 import { type GammePagePurchaseGuideData } from "~/types/gamme-page-contract.types";
 import { dedupeStrings } from "~/utils/dedupe-strings";
 import { validateFaqItems } from "~/utils/faq-validator";
-import { mergeR1Faq } from "~/utils/r1-faq-merge";
+import { resolveR1Faq } from "~/utils/r1-faq-merge";
 import { buildCanonicalUrl } from "~/utils/seo/canonical";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -143,7 +143,9 @@ export function buildGammeJsonLd(params: {
     fallbackFaq,
   } = params;
 
-  const faqItems = mergeR1Faq(faq, fallbackFaq).filter(
+  // Mêmes questions que la FAQ affichée (resolveR1Faq) : le FAQPage ne déclare
+  // aucune question absente de la page.
+  const faqItems = resolveR1Faq(faq, fallbackFaq).items.filter(
     (f) => f.question?.trim() && f.answer?.trim(),
   );
   const cappedFaq = validateFaqItems(faqItems);
