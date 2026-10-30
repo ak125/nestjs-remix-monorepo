@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 157,
-      "loc_total": 44016,
+      "files_count": 159,
+      "loc_total": 45383,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110705,
+      "loc_total": 110700,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 211,
-      "loc_total": 49497,
+      "loc_total": 49580,
       "has_barrel": true
     },
     "search": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 279,
-      "loc_total": 59631,
+      "files_count": 282,
+      "loc_total": 59795,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 318,
-      "loc_total": 61572,
+      "files_count": 321,
+      "loc_total": 61852,
       "has_barrel": true
     },
     "upload": {
@@ -1064,7 +1064,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 73
+      "count": 74
     },
     {
       "from": "admin",
@@ -1094,7 +1094,7 @@
     {
       "from": "admin",
       "to": "seo",
-      "count": 11
+      "count": 14
     },
     {
       "from": "admin",
@@ -1737,6 +1737,11 @@
       "count": 353
     },
     {
+      "from": "frontend-shared",
+      "to": "uncategorized",
+      "count": 1
+    },
+    {
       "from": "gamme-rest",
       "to": "backend-core",
       "count": 2
@@ -2350,7 +2355,22 @@
     },
     {
       "from": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+      "to": "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "to": "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+      "to": "backend/src/modules/seo/utils/seo-balise-collision-gate.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+      "to": "backend/src/modules/seo/utils/seo-fingerprint-core.ts",
       "rule": "no-deep-module-access"
     },
     {
