@@ -609,7 +609,7 @@
         }
       ],
       "definedInMigrations": [
-        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+        "20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.sql"
       ],
       "domain": "UNKNOWN",
       "id": "public.__seo_r8_publish_snapshot",

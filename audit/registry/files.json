@@ -6053,7 +6053,7 @@
         "backend/src/utils/promise-helpers.ts"
       ],
       "kind": "service",
-      "loc": 539,
+      "loc": 572,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/supabase-base.service.ts",
       "risk": "low",
@@ -28608,7 +28608,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 596,
+      "loc": 907,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-writer-role-scope.test.ts",
       "risk": "low",
@@ -28644,7 +28644,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 869,
+      "loc": 983,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-writer.service.ts",
       "risk": "low",
@@ -30774,7 +30774,7 @@
         "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts"
       ],
       "kind": "test",
-      "loc": 292,
+      "loc": 358,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/services/__tests__/r8-snapshot-reader.test.ts",
       "risk": "low",
@@ -31176,7 +31176,7 @@
         "backend/src/modules/seo/r2/schemas/r8-snapshot.schema.ts"
       ],
       "kind": "service",
-      "loc": 228,
+      "loc": 249,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts",
       "risk": "low",
@@ -38439,11 +38439,12 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 662,
+      "loc": 697,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
       "risk": "low",
@@ -38468,11 +38469,12 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 774,
+      "loc": 805,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "risk": "low",
@@ -38498,12 +38500,13 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 700,
+      "loc": 715,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
       "risk": "low",
@@ -42145,6 +42148,25 @@
       "loc": 60,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/users.controller.dashboard-level.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/vehicle-api-definer-reads.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 284,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/vehicle-api-definer-reads.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -63403,7 +63425,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 214,
+      "loc": 250,
       "owner": "__unassigned__",
       "path": "frontend/tests/e2e/url-validation.spec.ts",
       "risk": "low",
