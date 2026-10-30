@@ -8,10 +8,10 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { createReadStream, statSync, existsSync } from "fs";
-import { join } from "path";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import pino from "pino";
 import {
+  createPostprocessPath,
   resizeVideo,
   normalizeAudio,
   mergeAudio,
@@ -275,21 +275,19 @@ async function downloadFromS3(s3Key: string, prefix: string): Promise<string> {
   const bucket = match[1];
   const key = match[2];
   const ext = key.endsWith(".mp3") ? ".mp3" : ".mp4";
-  const localPath = join("/tmp/postprocess", `${prefix}${ext}`);
-
-  execSync(`mkdir -p /tmp/postprocess`);
-
-  // Use AWS CLI or MinIO client to download
+  const localPath = createPostprocessPath(`${prefix}${ext}`);
   const endpoint = process.env.S3_ENDPOINT;
-  const endpointFlag = endpoint ? `--endpoint-url ${endpoint}` : "";
+  const args = ["s3", "cp", `s3://${bucket}/${key}`, localPath];
+  if (endpoint) args.push("--endpoint-url", endpoint);
 
-  execSync(`aws s3 cp "s3://${bucket}/${key}" "${localPath}" ${endpointFlag}`, {
-    timeout: 60_000,
-    stdio: "pipe",
-  });
-
-  if (!existsSync(localPath) || statSync(localPath).size === 0) {
-    throw new Error(`Failed to download from S3: ${s3Key}`);
+  try {
+    execFileSync("aws", args, { timeout: 60_000, stdio: "pipe" });
+    if (!existsSync(localPath) || statSync(localPath).size === 0) {
+      throw new Error(`Failed to download from S3: ${s3Key}`);
+    }
+  } catch (error) {
+    cleanupPostprocessFiles([localPath]);
+    throw error;
   }
 
   return localPath;

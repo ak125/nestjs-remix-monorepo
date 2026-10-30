@@ -5,15 +5,22 @@
  * Uses ffmpeg/ffprobe already available in the renderer container.
  */
 
-import { execSync, execFileSync, spawnSync } from "child_process";
-import { existsSync, writeFileSync, unlinkSync } from "fs";
-import { join } from "path";
+import { execFileSync, spawnSync } from "child_process";
+import {
+  existsSync,
+  writeFileSync,
+  unlinkSync,
+  mkdtempSync,
+  rmdirSync,
+} from "fs";
+import { join, dirname, basename } from "path";
+import { tmpdir } from "os";
 import pino from "pino";
 import { inspectVideo, type MediaInspection } from "./media-inspection";
 
 const logger = pino({ name: "FFmpegPostprocess" });
 
-const WORK_DIR = "/tmp/postprocess";
+const TEMP_PREFIX = "automecanik-postprocess-";
 
 export interface VariantSpec {
   name: string;
@@ -32,11 +39,17 @@ export interface PostprocessResult {
   inspection: MediaInspection;
 }
 
-/**
- * Ensure work directory exists.
- */
-function ensureWorkDir(): void {
-  execSync(`mkdir -p ${WORK_DIR}`);
+/** Allocate a private directory atomically; request names cannot escape it. */
+export function createPostprocessPath(filename: string): string {
+  if (
+    !filename ||
+    /[\\/\x00]/.test(filename) ||
+    filename === "." ||
+    filename === ".."
+  ) {
+    throw new Error("Invalid postprocess filename");
+  }
+  return join(mkdtempSync(join(tmpdir(), TEMP_PREFIX)), filename);
 }
 
 /**
@@ -56,8 +69,9 @@ export function resizeVideo(
           ? "required"
           : "forbidden",
   });
-  ensureWorkDir();
-  const outputPath = join(WORK_DIR, `${outputSuffix}-${variant.name}.mp4`);
+  const outputPath = createPostprocessPath(
+    `${outputSuffix}-${variant.name}.mp4`,
+  );
 
   const codecFlag = variant.codec === "h265" ? "libx265" : "libx264";
 
@@ -181,8 +195,7 @@ export function normalizeAudio(
       measuredOutputLufs: null,
     };
   }
-  ensureWorkDir();
-  const outputPath = join(WORK_DIR, `${outputSuffix}-normalized.mp4`);
+  const outputPath = createPostprocessPath(`${outputSuffix}-normalized.mp4`);
   try {
     const measured = loudnormReport([
       "-y",
@@ -262,8 +275,7 @@ export function mergeAudio(
   const source = inspectVideo(videoPath, {
     audio: mode === "mix" ? "required" : "optional",
   });
-  ensureWorkDir();
-  const outputPath = join(WORK_DIR, `${outputSuffix}-merged.mp4`);
+  const outputPath = createPostprocessPath(`${outputSuffix}-merged.mp4`);
   const duration = source.video.durationSecs;
   const filter =
     mode === "mix"
@@ -399,10 +411,18 @@ function pad(n: number, width: number): string {
  * Write SRT to a file.
  */
 export function writeSrtFile(srtContent: string, outputSuffix: string): string {
-  ensureWorkDir();
-  const outputPath = join(WORK_DIR, `${outputSuffix}.srt`);
-  writeFileSync(outputPath, srtContent, "utf-8");
-  return outputPath;
+  const outputPath = createPostprocessPath(`${outputSuffix}.srt`);
+  try {
+    writeFileSync(outputPath, srtContent, {
+      encoding: "utf-8",
+      flag: "wx",
+      mode: 0o600,
+    });
+    return outputPath;
+  } catch (error) {
+    cleanupPostprocessFiles([outputPath]);
+    throw error;
+  }
 }
 
 /**
@@ -412,6 +432,14 @@ export function cleanupPostprocessFiles(paths: string[]): void {
   for (const p of paths) {
     try {
       if (existsSync(p)) unlinkSync(p);
+      const directory = dirname(p);
+      // Remove only our empty, private artifact directory; never recurse.
+      if (
+        dirname(directory) === tmpdir() &&
+        basename(directory).startsWith(TEMP_PREFIX)
+      ) {
+        rmdirSync(directory);
+      }
     } catch {
       logger.warn({ path: p }, "Failed to cleanup postprocess file");
     }

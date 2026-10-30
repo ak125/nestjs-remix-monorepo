@@ -59,7 +59,7 @@ const realRead = fs.readFileSync;
 const realStat = fs.statSync;
 const realExists = fs.existsSync;
 const output = (p) =>
-  typeof p === "string" && p.startsWith("/tmp/postprocess/");
+  typeof p === "string" && p.includes("/automecanik-postprocess-");
 let transformProbe, durationFor, commands, uploads, removed, writes, events;
 beforeEach(() => {
   durationFor = () => "2.000000";
@@ -173,7 +173,10 @@ test("HTTP does not upload videos when subtitle file creation fails", async () =
   const response = await post(request);
   assert.equal(response.statusCode, 500);
   assert.equal(uploads.mock.callCount(), 0);
-  assert.equal(removed.mock.callCount(), 3);
+  assert.equal(removed.mock.callCount(), 4);
+  assert.ok(
+    removed.mock.calls.some(({ arguments: [p] }) => p.endsWith(".srt")),
+  );
 });
 test("HTTP exports exact-bound subtitles only after checking every variant", async () => {
   const response = await post(request);
@@ -303,3 +306,23 @@ for (const result of [
     assert.equal(uploads.mock.callCount(), 0);
   });
 }
+
+test("S3 download keeps shell metacharacters as literal argv values", async () => {
+  const previous = process.env.S3_ENDPOINT;
+  const endpoint = "https://storage.example/$(touch injected); echo ignored";
+  const source = 's3://test/input"; touch injected; #.mp4';
+  process.env.S3_ENDPOINT = endpoint;
+  try {
+    const response = await post({ ...request, inputS3Key: source });
+    assert.equal(response.statusCode, 200);
+    const call = cp.execFileSync.mock.calls.find(
+      ({ arguments: args }) => args[0] === "aws",
+    );
+    assert.equal(call.arguments[1][2], source);
+    assert.equal(call.arguments[1][5], endpoint);
+    assert.equal(cp.execSync.mock.callCount(), 0);
+  } finally {
+    if (previous === undefined) delete process.env.S3_ENDPOINT;
+    else process.env.S3_ENDPOINT = previous;
+  }
+});

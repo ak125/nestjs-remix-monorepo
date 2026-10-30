@@ -15,3 +15,27 @@ for (const [startSecs, endSecs, expected] of [
     );
   });
 }
+
+test("SRT artifacts use distinct private directories and reject traversal", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const {
+    writeSrtFile,
+    cleanupPostprocessFiles,
+  } = require("../src/lib/ffmpeg-postprocess.ts");
+  const first = writeSrtFile("first", "same-execution");
+  const second = writeSrtFile("second", "same-execution");
+  try {
+    assert.notEqual(first, second);
+    assert.equal(fs.readFileSync(first, "utf8"), "first");
+    assert.equal(fs.readFileSync(second, "utf8"), "second");
+    assert.equal(fs.statSync(path.dirname(first)).mode & 0o777, 0o700);
+    assert.equal(fs.statSync(first).mode & 0o777, 0o600);
+    assert.throws(() => writeSrtFile("escape", "../outside"), /filename/);
+    assert.throws(() => writeSrtFile("escape", "..\\outside"), /filename/);
+  } finally {
+    cleanupPostprocessFiles([first, second]);
+  }
+  assert.equal(fs.existsSync(path.dirname(first)), false);
+  assert.equal(fs.existsSync(path.dirname(second)), false);
+});
