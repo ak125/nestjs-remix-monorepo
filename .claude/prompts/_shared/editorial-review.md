@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.0.0 — 2026-10-17.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.1.0 — 2026-10-30.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -9,6 +9,8 @@
 >
 > Toute modification d'une règle change la version et ouvre une nouvelle version de pilote.
 > Une règle modifiée pendant un essai invalide l'essai.
+> Pilote 1.1.0 : séparation des sources internes et du texte public, selon le mandat
+> utilisateur du 30 octobre. Les résultats d'un essai 1.0.0 ne qualifient pas cette version.
 
 ## 1. Ce que fait la relecture
 
@@ -49,7 +51,7 @@ La relecture ne modifie pas, ne retire pas et n'ajoute pas :
   « 3 000 ») ;
 - normes, intervalles, quantités, prix datés, conditions commerciales, mentions obligatoires
   (miroir `marketing-voice.md`, « Obligatoires ») ;
-- citations, provenance, dates, degré de certitude ;
+- citations et provenance conservées dans le dossier interne (§4.1), dates, degré de certitude ;
 - conditions, négations, exclusions et ordre des vérifications.
 
 **Altération critique** : tout écart sur l'un de ces points. Retirer une condition, élargir une
@@ -89,6 +91,30 @@ FAQ, `script_voice` d'un script Fafa).
 - script Fafa : `cta`, `disclaimer` et signature sont protégés ; pour `hook`, `hook_variants` et
   `screen_text`, les propositions sont seulement signalées (l'owner a déjà choisi l'accroche).
 
+### 4.1 Sources et sortie publique
+
+Les pages, scripts, sous-titres, légendes et aperçus destinés au visiteur ne nomment
+ni ne lient les sources de recherche ou d'inspiration. La traçabilité reste complète
+dans le dossier interne : source, passage utilisé, portée, date et statut d'admission.
+Les étiquettes par phrase (`admis`, `catalogue`, `éditorial`, `candidat`), les claims
+et le journal de relecture appartiennent aussi à ce dossier, pas au texte client.
+La présentation de revue identifie le brouillon et ses limites séparément de ce texte.
+
+Dans la proposition publique, déplacer une attribution de recherche vers le dossier
+interne est permis et consigné ; l'original reste intact. Ce déplacement n'autorise
+aucune altération du fait ni de sa portée : ne pas transformer l'avis d'une source
+ou une consigne propre à un véhicule en vérité générale. Si la suppression de
+l'attribution change le sens, conserver la phrase gelée et sa source dans la revue
+interne (§3), hors de l'aperçu client jusqu'à une formulation validée. Le bloc qui
+en dépend reste non admissible ; signaler son absence dans la présentation de revue,
+sans supprimer une condition ou une précaution pour faire paraître la page complète.
+
+Préserver les marques, modèles, motorisations et références nécessaires à la
+compatibilité ou à la description du produit. Cette règle ne retire ni mention
+obligatoire ni attribution exigée par les droits d'un asset ; si cette attribution
+est incompatible avec le brief, choisir un autre asset admissible. Elle ne masque
+pas les précautions et ne convertit pas une proposition en contenu validé.
+
 ## 5. Ce que la relecture corrige
 
 Ces règles sont adaptées de Humanizer v3.1.0 (attribution §12). Le numéro H§ renvoie à sa
@@ -109,9 +135,8 @@ plusieurs signes, ou une gêne réelle de lecture. Chaque règle a son cas « ga
 ### Rythme
 
 - **RE-05 Triade réflexe** (H§6). Trois éléments posés par réflexe et non par la source. Jamais
-  retirer un élément sourcé pour casser une triade. Garder : « MAHLE cite trois caractéristiques
-  importantes de qualité d'un filtre à huile : le papier filtrant, le clapet de dérivation
-  (by-pass) et le clapet anti-retour ».
+  retirer un élément sourcé pour casser une triade. Garder : « le papier filtrant, le clapet
+  de dérivation (by-pass) et le clapet anti-retour ». La source reste dans le dossier interne.
 - **RE-06 Débuts répétés** (H§7), en prose seulement. Les listes de symptômes et les étapes
   numérotées gardent leur parallélisme.
 - **RE-07 Réserves empilées** (H§9). *Faible seul.* Ne retirer qu'une réserve sans fondement
@@ -140,8 +165,10 @@ plusieurs signes, ou une gêne réelle de lecture. Chaque règle a son cas « ga
 - **RE-14 Langage commercial et superlatif non sourcé** (H§16). Les interdits du miroir
   `marketing-voice.md` s'appliquent tels quels.
 - **RE-15 Autorité vague** (H§17). « les experts recommandent », « selon les spécialistes »,
-  « de nombreux mécaniciens ». Nommer la source **si elle figure dans les sources du
-  brouillon**, sinon supprimer. Ne jamais inventer une source.
+  « de nombreux mécaniciens ». Si le fait est sourcé, retirer l'autorité vague de la
+  proposition publique et consigner la source dans le dossier interne (§4.1), sans
+  changer la portée du fait. Ne pas la remplacer par le nom de la source. Sans preuve
+  identifiable, signaler l'affirmation (F-2) ; une suppression de style ne la valide pas.
 - **RE-16 Détour autour de « est » et « a »** (H§18). « se positionne comme », « s'impose
   comme », « constitue », « dispose de ». Revenir à « est » ou à « a » quand le sens est le
   même.
@@ -224,9 +251,10 @@ construites pour montrer le défaut.
   les experts, il empêche les impuretés d'entrer dans le circuit de lubrification, garantissant
   ainsi la qualité de l'huile et les performances du moteur. »
 - Proposition : « Le filtre à huile empêche les impuretés d'entrer dans le circuit de
-  lubrification (MAHLE), garantissant ainsi la qualité de l'huile et les performances du
-  moteur. » MAHLE figure dans les sources du brouillon. Le segment « garantissant ainsi… » est
-  gelé.
+  lubrification, garantissant ainsi la qualité de l'huile et les performances du
+  moteur. » Le segment « garantissant ainsi… » est gelé.
+- Dossier interne : MAHLE figure dans les sources du brouillon ; cette attribution
+  n'est pas ajoutée à la proposition publique.
 - Signalement F-1 : la source dit « aide à préserver », le brouillon dit « garantissant ». La
   relecture ne corrige pas le verbe, et RE-13 ne s'applique donc pas à ce segment. La
   formulation sourcée est proposée au validateur.
@@ -276,7 +304,8 @@ Pour chaque brouillon :
 
 - **`original`** : chemin ou table + identifiant, et sha256 du texte relu. Il n'est jamais
   modifié.
-- **`proposition`** : le texte complet proposé.
+- **`proposition`** : le texte complet proposé, sans références de recherche ni annotations
+  internes (§4.1). Son statut de brouillon et ses limites figurent dans la revue séparée.
 - **`changements`** : la liste `{avant, après, règle, raison}`, avec un code de règle RE-xx ou
   RE-Tx.
 - **`signalements_de_fond`** : la liste `{extrait, type, source citée, formulation sourcée
@@ -287,8 +316,10 @@ Pour chaque brouillon :
   - F-4 promesse commerciale ou mention obligatoire ;
   - F-5 expérience ou témoignage inventé ;
   - F-6 conflit de ton non tranché.
-- **`controle_fidelite`** : pour chaque catégorie du §3, `inchangé` ou l'écart exact. Un écart
-  non expliqué par une règle RE-Tx est une **altération critique**, et la proposition est alors
+- **`controle_fidelite`** : pour chaque catégorie du §3, `inchangé` ou l'écart exact. Consigner
+  tout déplacement d'attribution prévu au §4.1 et son emplacement interne ; il ne permet
+  aucun changement de fait, de portée ou de mention obligatoire. Tout autre écart non
+  expliqué par une règle RE-Tx est une **altération critique**, et la proposition est alors
   **rejetée**. Une nouvelle génération ne l'efface pas du relevé.
 - **`verdict`** : `PROPOSITION`, `AUCUN_CHANGEMENT_UTILE`, `BLOQUÉ_SOURCE` ou `HORS_PÉRIMÈTRE`.
   Jamais « publié », « validé » ni « opérationnel ».

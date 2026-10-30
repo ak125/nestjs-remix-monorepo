@@ -74,6 +74,46 @@ supports utiles ; tracer les URL, les éléments réellement consultés, les pro
 retenus et la valeur originale apportée. Séparer l'inspiration créative de la preuve
 technique. Réutiliser les skills créatifs et la relecture française existants.
 
+### Livraison sur les pages existantes
+
+Pour chaque page, relever l'URL, le rôle, les sections/composants et les champs
+réellement utilisés, puis montrer ce qui est conservé, amélioré et ajouté. Garder
+les URL et les contrats existants ; aucune page parallèle ni nouveau producteur
+par défaut. Préférer un aperçu dans le rendu existant en DEV. Si seul un HTML
+autonome est possible, le nommer **simulation non intégrée**, avec correspondance
+explicite vers les sections cibles ; il ne prouve pas une modification du site.
+
+Les images font partie du livrable : examiner celles déjà servies, réutiliser les
+assets admissibles et les slots/composants d'images existants, puis intégrer les
+fichiers réellement disponibles dans l'aperçu. Vérifier le sens mécanique, la
+portée véhicule, les droits, le texte alternatif, la légende utile, le chargement
+et le rendu mobile/desktop. Ne pas illustrer un prix non vérifié ni présenter un
+emplacement comme universel. Une image non obtenue reste un manque explicite ;
+une liste d'assets, un prompt ou un emplacement vide ne valent pas intégration.
+
+Séparer le texte destiné au visiteur du dossier de revue : noms et liens des
+sources de recherche ou d'inspiration, statuts par phrase et tables de preuves
+restent internes. Appliquer **Sources et sortie publique** dans la relecture
+partagée ; conserver les noms nécessaires à la compatibilité et les mentions
+obligatoires. L'aperçu client montre la proposition lisible ; les annotations et
+son statut de brouillon restent dans la présentation de revue distincte.
+
+Avant toute restitution de ce programme, appliquer la relecture française adaptée
+de Humanizer dans `.claude/prompts/_shared/editorial-review.md` aux textes et scripts.
+Elle est requise ici, même si une procédure générique la présente comme facultative ;
+elle ne valide aucun fait et ne remplace aucune gate. Tracer son chemin, sa version,
+les corrections et la fidélité dans le dossier existant. Un skill `humanizer`
+annoncé sur le VPS doit être retrouvé et lu dans ce runtime avant d'en revendiquer
+l'application ; ne pas déduire sa présence ou ses règles d'une autre session.
+
+Vérifier les instructions dans le checkout de la mission avant de rédiger, sans
+attendre un rappel utilisateur. Une correction disponible dans une PR non intégrée
+n'est pas réputée chargée dans Desktop ou sur le VPS. Signaler le chemin ou la
+révision inaccessible et poursuivre les étapes indépendantes avec les sources
+vérifiées ; ne pas copier des réglages distants ni élargir les permissions.
+
+### Admission et raccordement
+
 La recherche, la conception, la rédaction et les scripts **candidats non servis**
 peuvent avancer pendant l'enrichissement. La fiche WIKI existante ne limite pas les
 questions à traiter ni la recherche de nouvelles preuves. Identifier dans le dossier
@@ -84,11 +124,20 @@ Un fait non admis bloque l'affirmation ou la partie qui en dépend, pas les trav
 indépendants. Des médias ou droits manquants bloquent le rendu qui les nécessite,
 pas la préparation du script et des scènes originales.
 
+Un blocage de raccordement précise l'étage concerné, la révision et la preuve :
+producteur, export, admission, projection, lecteur, flag ou version déployée.
+Inspecter l'existant avant de déclarer toute la chaîne absente ; une lecture
+legacy ne démontre pas à elle seule une provenance RAG du contenu servi. Les
+besoins confiés à Claude CLI visent le défaut localisé et réutilisent les contrats.
+
 Rattacher chaque contenu à une action utile et disponible : identifier une référence
 compatible, préparer l'entretien ou utiliser l'orientation diagnostique selon le besoin.
 Une impression, un score interne ou un script livré ne prouve ni classement ni vente.
 Consigner les livrables, dépendances et prochaines actions dans les dossiers et la
 mémoire existants ; ne pas créer un second registre ou un skill par gamme.
+Recommander une accroche principale motivée et les variantes utiles sans suspendre
+la préparation sur ce choix ; conserver les approbations humaines effectivement
+requises pour le texte, la sécurité, le rendu et la publication.
 
 ## Mémoire et reprise
 
