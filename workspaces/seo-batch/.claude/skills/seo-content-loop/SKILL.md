@@ -1,25 +1,44 @@
 ---
 name: seo-content-loop
-description: "Méthode opératoire canonique du contenu SEO AutoMecanik : la BOUCLE scraping LARGE → RAW → WIKI → CONSUMER → mesure SCORE → itérer jusqu'au score. NO-RAG (RAG = chatbot only). Pointe vers le canon vault (ADR-031/046/059/083/086), ne le duplique pas. Use when: planifier/exécuter du contenu R1-R8, enrichir une gamme/motorisation, débloquer le pipeline, ou décider 'comment produire du contenu qui ranke'."
+description: "Enrichissement, admission et projection des faits techniques AutoMecanik : recherche/RAW → WIKI approuvé → consommateurs, selon le canon vault ADR-031/046/059/083/086. Utiliser pour compléter les preuves d'une gamme/motorisation, préparer leur admission ou diagnostiquer ce pipeline. Pour la création éditoriale ou vidéo, suivre d'abord le brief et les méthodes créatives ; ce skill traite les faits à admettre et ne choisit ni le premier lot ni l'angle. NO-RAG pour la production de contenu."
 license: Internal - Automecanik
-version: "1.0"
+version: "1.1"
 argument-hint: "[gamme-name | vehicle-slug | status]"
 disable-model-invocation: false
 allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep, Bash
 ---
 
-# SEO Content Loop — la boucle canonique du contenu (NO-RAG)
+# SEO Content Loop — enrichissement, admission et projection (NO-RAG)
 
 > **Skill = méthode opératoire, PAS canon.** La gouvernance vit au **vault** :
 > ADR-031 (raw/wiki/rag/seo separation) · ADR-046 (RAG = retrieval chatbot only) ·
 > ADR-059 (SEO Runtime Projection) · ADR-083 (tiered WIKI promotion) · ADR-086 (Content Excellence Contract).
 > Ce skill **pointe** vers eux, ne les réécrit jamais.
 
+## Portée dans une mission éditoriale ou vidéo
+
+Suivre d'abord la gamme prioritaire, le brief et les rôles de pages demandés.
+Pour le programme catalogue, lire **Programme éditorial et média** dans
+`.claude/knowledge/workspaces.md` (chemin relatif à la racine du dépôt).
+Ne pas sélectionner le lot suivant d'après une fiche WIKI disponible ou un ancien pilote.
+
+La recherche de références, les angles, la composition et les brouillons non servis
+peuvent avancer avant l'admission de nouveaux faits. Utiliser les méthodes créatives
+pertinentes et distinguer les références d'inspiration des preuves techniques.
+Tracer les affirmations candidates, leurs sources, leur portée et leur statut dans
+le dossier existant. Une fiche WIKI incomplète ne borne pas la recherche éditoriale.
+
+Appliquer la chaîne ci-dessous aux faits à enrichir, admettre et projeter avant leur
+mise à disposition dans les consommateurs. Conserver toutes les validations de
+promotion, de sécurité et de publication. Ne pas étendre le blocage d'une affirmation
+aux parties indépendantes du dossier. Un score qualité interne ne prouve ni un rang
+Google ni une hausse des ventes.
+
 ## Axiome n°0 (non-négociable)
 > **Le contenu ne crée jamais l'information.** Il structure, clarifie, expose ce qui est **sourcé et vérifié**.
 > En cas de doute : s'abstenir. Jamais d'invention LLM, jamais de number-swapping, jamais de filler générique.
 
-## La BOUCLE (ordre non négociable)
+## La BOUCLE d'admission et de projection (ordre inchangé)
 
 ```
 SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (shadow, sur le WIKI)
@@ -124,7 +143,9 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
   **jamais** directement en WIKI/PROD ni dans une page R sans promotion.
 
 ## Quand l'utiliser
-Toute tâche « produire/améliorer du contenu pour ranker » (R1-R8, gamme, motorisation), débloquer le pipeline,
-ou trancher « comment ». Voir mémoires : `feedback_seo_content_pipeline_scrape_raw_wiki_kw`,
+Enrichir les preuves d'une gamme/motorisation, préparer leur admission WIKI, vérifier
+leur projection ou débloquer ce pipeline. Pour une production éditoriale ou vidéo,
+l'appliquer aux faits concernés sans remplacer le brief ni les méthodes créatives.
+Voir mémoires : `feedback_seo_content_pipeline_scrape_raw_wiki_kw`,
 `feedback_no_rag_for_content_legacy_code_is_not_strategy`, `project_r8_content_solidity_phaseab_20260614`,
 `reference_engine_code_mapping_auto_type_motor_code`.

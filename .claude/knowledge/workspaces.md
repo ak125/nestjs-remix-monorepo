@@ -43,7 +43,8 @@ Points d'entrée usuels (sélection ciblée, pas un nouvel inventaire exhaustif)
 | Relecture de sa propre modification explicitement demandée | `.claude/skills/code-auto-review/SKILL.md` |
 | Qualifier une capacité et ses preuves d'exécution | `.claude/skills/capability-acceptance/SKILL.md` |
 | Orientation diagnostique et limites catalogue | `.claude/skills/diagnostic-orientation/SKILL.md` |
-| Contenu gamme/véhicule, WIKI vers consommateurs SEO | `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md` |
+| Production éditoriale et média d'une gamme/véhicule | Section **Programme éditorial et média** ci-dessous, contrats de page et skills créatifs pertinents |
+| Enrichissement, admission des faits et projection WIKI vers consommateurs | `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md` |
 | Audit SEO d'une gamme | `workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md` |
 | Connaissance à proposer au WIKI | `workspaces/wiki/.claude/skills/wiki-proposal-writer/SKILL.md` |
 | Analyse d'une référence créative | `workspaces/marketing/.claude/skills/creative-pattern-extractor/SKILL.md` |
@@ -54,6 +55,40 @@ Pour une relecture française, lire aussi
 `.claude/prompts/_shared/editorial-review.md` ; préserver les affirmations admises,
 les chiffres, les conditions et le périmètre du contenu. Les autres skills se
 sélectionnent par leur description dans le workspace utile, sans recopier leur contenu.
+
+## Programme éditorial et média
+
+Mandat utilisateur du 30 octobre 2026 : **le premier dossier est le filtre à huile**.
+Vérifier son identifiant catalogue. Les dossiers plaquettes déjà préparés restent
+conservés pour un lot ultérieur ; leur existence ou celle d'une fiche WIKI ne change
+pas la priorité. Poursuivre ensuite l'ordre attribué, sauf nouvelle instruction utilisateur.
+
+Partir du besoin client et du rôle de chaque page : compréhension, choix et
+compatibilité, entretien, questions diagnostiques pertinentes et prochaine action.
+Livrer les textes R1/R3 et les scripts vidéo effectivement demandés, avec les
+adaptations véhicule utiles selon les contrats existants. Un audit ou un seul
+micro-sujet déjà visible dans Search Console ne remplace pas ce dossier complet.
+
+Rechercher et analyser des références éditoriales et vidéo pertinentes sur les
+supports utiles ; tracer les URL, les éléments réellement consultés, les procédés
+retenus et la valeur originale apportée. Séparer l'inspiration créative de la preuve
+technique. Réutiliser les skills créatifs et la relecture française existants.
+
+La recherche, la conception, la rédaction et les scripts **candidats non servis**
+peuvent avancer pendant l'enrichissement. La fiche WIKI existante ne limite pas les
+questions à traiter ni la recherche de nouvelles preuves. Identifier dans le dossier
+les faits nouveaux et leurs sources, portée et statut d'admission. Leur mise à
+disposition dans les consommateurs reste soumise à la chaîne WIKI/projection et
+aux validations existantes ; aucune écriture RAW directe dans les pages publiques.
+Un fait non admis bloque l'affirmation ou la partie qui en dépend, pas les travaux
+indépendants. Des médias ou droits manquants bloquent le rendu qui les nécessite,
+pas la préparation du script et des scènes originales.
+
+Rattacher chaque contenu à une action utile et disponible : identifier une référence
+compatible, préparer l'entretien ou utiliser l'orientation diagnostique selon le besoin.
+Une impression, un score interne ou un script livré ne prouve ni classement ni vente.
+Consigner les livrables, dépendances et prochaines actions dans les dossiers et la
+mémoire existants ; ne pas créer un second registre ou un skill par gamme.
 
 ## Mémoire et reprise
 
