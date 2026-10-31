@@ -1,0 +1,73 @@
+{
+  "objet": "Baseline Search Console du lot filtre à huile (FH-13), avant mise en ligne : une ligne par rôle, aux colonnes de __seo_gamme_gsc_baseline.",
+  "mesure": {
+    "lue_le": "2026-10-30",
+    "tables": ["__seo_gsc_daily_pages (clics, impressions, position)", "__seo_gsc_daily (requêtes)"],
+    "fenetre": ["2026-07-30", "2026-10-27"],
+    "jours_exportes_dans_la_fenetre": 90,
+    "dernier_fetch_export": "2026-10-30T03:00:00Z",
+    "filtre": "page = page_url (égalité exacte) ; position moyenne pondérée par les impressions ; requêtes : 10 premières par impressions",
+    "acces": "lecture seule (transaction read-only via le pooler)",
+    "couverture": "l'export de la fenêtre contient 65 pages /blog-pieces-auto/conseils/ (73 193 impressions) et 87 pages /reference-auto/ (7 775) : l'absence de R3 et R4 est mesurée, pas un trou de l'export"
+  },
+  "table_cible": {
+    "nom": "__seo_gamme_gsc_baseline",
+    "etat_au_2026-10-30": "0 ligne, toutes gammes ; aucun écrivain ni lecteur dans le code (seules la migration RLS 20260422 et les types générés la citent)",
+    "insertion": "non faite : écriture en base partagée avec la PROD"
+  },
+  "lignes": [
+    {
+      "role": "R1",
+      "pg_id": 7,
+      "pg_alias": "filtre-a-huile",
+      "baseline_date": "2026-10-27",
+      "page_url": "https://www.automecanik.com/pieces/filtre-a-huile-7.html",
+      "clicks": 0,
+      "impressions": 1785,
+      "ctr": 0,
+      "position": 48.9,
+      "days": 90,
+      "source": "__seo_gsc_daily_pages 2026-07-30..2026-10-27",
+      "top_queries": [
+        { "query": "filtre a huile", "impressions": 354, "clicks": 0, "position": 57.1 },
+        { "query": "prix filtre à huile", "impressions": 277, "clicks": 0, "position": 32.6 },
+        { "query": "filtre à huile", "impressions": 224, "clicks": 0, "position": 57.6 },
+        { "query": "filtre huile", "impressions": 122, "clicks": 0, "position": 64.2 },
+        { "query": "filtres huile", "impressions": 100, "clicks": 0, "position": 65.8 },
+        { "query": "filtre à huile prix", "impressions": 88, "clicks": 0, "position": 36.2 },
+        { "query": "filtre huile moteur", "impressions": 85, "clicks": 0, "position": 54.7 },
+        { "query": "filtre à huile voiture", "impressions": 71, "clicks": 0, "position": 53.2 },
+        { "query": "correspondance filtre a huile", "impressions": 54, "clicks": 0, "position": 44.4 },
+        { "query": "filtres (air, huile, essence)", "impressions": 46, "clicks": 0, "position": 57.2 }
+      ]
+    },
+    {
+      "role": "R3",
+      "pg_id": 7,
+      "pg_alias": "filtre-a-huile",
+      "baseline_date": "2026-10-27",
+      "page_url": "https://www.automecanik.com/blog-pieces-auto/conseils/filtre-a-huile",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": null,
+      "position": null,
+      "days": 90,
+      "source": "__seo_gsc_daily_pages 2026-07-30..2026-10-27 : aucune ligne pour cette page",
+      "top_queries": []
+    },
+    {
+      "role": "R4",
+      "pg_id": 7,
+      "pg_alias": "filtre-a-huile",
+      "baseline_date": "2026-10-27",
+      "page_url": "https://www.automecanik.com/reference-auto/filtre-a-huile",
+      "clicks": 0,
+      "impressions": 0,
+      "ctr": null,
+      "position": null,
+      "days": 90,
+      "source": "__seo_gsc_daily_pages 2026-07-30..2026-10-27 : aucune ligne pour cette page",
+      "top_queries": []
+    }
+  ]
+}
