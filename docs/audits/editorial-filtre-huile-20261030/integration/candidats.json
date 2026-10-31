@@ -1,5 +1,5 @@
 {
-  "objet": "Blocs prêts à servir APRÈS admission WIKI des faits candidats. Non servis tant que la fiche gamme:filtre-a-huile ne les porte pas, validés humainement.",
+  "objet": "Blocs prêts à servir APRÈS admission WIKI des faits candidats. Non servis tant que la fiche gamme:filtre-a-huile ne les porte pas, admis par la route ADR-119 (capture RAW, revision_of, auto-review de sens, décision du décideur).",
   "revision": "révision 4, 31/10/2026",
   "regle": "Un bloc n'est intégré que si TOUS les faits qu'il cite sont admis. Sinon la version servie de r3.json reste en place. Aucune valeur chiffrée (couple, tours, délai, kilométrage) n'est introduite.",
   "faits": [

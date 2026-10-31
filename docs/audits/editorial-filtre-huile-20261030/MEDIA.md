@@ -11,13 +11,14 @@ compositions citées sont celles de [ak125/nestjs-remix-monorepo#1936](https://g
 
 | Vidéo | Question | Script prêt | Visuels | Voix | Composition faisable | Rendu | Publication |
 |---|---|---|---|---|---|---|---|
-| V1 `fafa-filtre-huile-001` (principal) | Vissé ou cartouche, quand le changer, comment ne pas se tromper ? | écrit (dossier `scripts/draft/fafa-filtre-huile-001/`) ; 3 claims sans validation humaine (validateur : sortie 1 le 30/10, non relancé) | aucun emplacement : `PieceExpliquee` n'affiche que du texte | non : aucun outil de synthèse vocale dans la session | oui, `PieceExpliquee` avec `hook`, `titles` et `windowWarnings` (FH-9) | non | non |
+| V1 `fafa-filtre-huile-001` (principal) | Vissé ou cartouche, quand le changer, comment ne pas se tromper ? | écrit (dossier `scripts/draft/fafa-filtre-huile-001/`) ; 3 claims sans le `human_validated` du contrat vidéo G2 (validateur : sortie 1 le 30/10, non relancé) | aucun emplacement : `PieceExpliquee` n'affiche que du texte | non : aucun outil de synthèse vocale dans la session | oui, `PieceExpliquee` avec `hook`, `titles` et `windowWarnings` (FH-9) | non | non |
 | C1 | Voyant d'huile allumé : faut-il changer le filtre ? | écrit (§ 7.1), sans dossier ; 1 claim `safety` à valider | 4 pictogrammes sur 4 (31/10) | non | oui, `SequencesCourtes` (FH-10) | non | non |
 | C2 | Deux filtres identiques sont-ils interchangeables ? | écrit (§ 7.2), sans dossier | coupe de principe ; P-04 manque | non | oui, `SequencesCourtes` | non | non |
 | C3 | À quoi servent les clapets d'un filtre vissé ? | écrit (§ 7.3), sans dossier | coupe de principe, une image fixe par séquence ; animation par clapet absente | non | oui, `SequencesCourtes` | non | non |
 | C4 | Comment serrer un filtre vissé ? | **bloqué** par F-C2 à F-C4 (§ 7.4) | P-07, P-08 manquent | non | — | non | non |
 
-Aucun rendu n'est lancé : il faudrait une voix, la validation humaine des claims (G1, G2) et la fusion de #1936. Les
+Aucun rendu n'est lancé : il faudrait une voix, le `human_validated` des claims exigé par le contrat vidéo (G1, G2, distinct des fiches
+WIKI) et la fusion de #1936. Les
 services de rendu externes connectés à la session ne sont pas utilisés : ils enverraient des claims non validés hors du
 dépôt.
 
@@ -80,7 +81,7 @@ Contrôles faits (30/10) :
 - G3 recalculée avec les 14 motifs `FORBIDDEN_PATTERNS_SHORT` du code sur les 17 lignes dites ou affichées : 0
   violation, aucun appel à l'action.
 - Validateur `scripts/marketing/fafa-pilot-governance.cjs` : sortie 1, `INVALID_claim-table` (les claims `procedure`
-  et `safety` exigent `human_validated: true`). G1 et G2 : UNKNOWN jusqu'à la validation humaine.
+  et `safety` exigent `human_validated: true`). G1 et G2 : UNKNOWN jusqu'au `human_validated` des claims (contrat vidéo, distinct des fiches WIKI).
 - G4, G5, G6 : UNKNOWN, rien à mesurer avant rendu. G7 : FAIL (`approvalRecord.stages` absent du schéma ; aucune étape
   `script_text` approuvée).
 - Persona (`personas/fafa.md`) : identité IA dite à 4 s et dans le bandeau ; aucune promesse absolue, aucun prix,
@@ -212,7 +213,7 @@ colonne Voix ; sous-titres : mêmes segments, 42 caractères par ligne au plus.
 ### 7.1 C1 — « Voyant d'huile allumé : faut-il changer le filtre ? »
 
 Destination : `/diagnostic-auto` (200). Sources : fiche WIKI, Symptômes & diagnostic, FAQ (admis). Claims : 1 `safety`
-(validation humaine requise).
+(`human_validated` requis par le contrat vidéo G2).
 
 | Temps | Voix | À l'écran | Démonstration |
 |---|---|---|---|
@@ -230,7 +231,7 @@ impératif et un signal sonore, arrêt impératif, contact coupé, contrôle du 
 d'acheter une pièce : diagnostic AutoMecanik. Conseil informatif ; Fafa est un mécano IA. » Mesure : sessions `utm_campaign` C1 sur `/diagnostic-auto` (GA4).
 
 Dépendances : composition `SequencesCourtes` (#1936, non fusionnée) ; pictogrammes livrés le 31/10
-(`assets/picto-*.webp`, `integration/assets.json`) ; voix ; validation humaine du claim `safety`.
+(`assets/picto-*.webp`, `integration/assets.json`) ; voix ; `human_validated` du claim `safety` (contrat vidéo G2).
 
 ### 7.2 C2 — « Deux filtres identiques sont-ils interchangeables ? »
 
@@ -290,8 +291,8 @@ désormais sur l'instruction du fabricant du filtre.
 | 23-27 s | « Trop serré ou avec un outil inadapté, son revêtement peut s'abîmer, rouiller, puis fuir. » | « Revêtement abîmé → fuite » | — |
 | 27-30 s | « Suis toujours les instructions de ton constructeur. Le détail est dans le guide AutoMecanik. » | « Le guide filtre à huile » | — |
 
-Vignette, légende et mesure : à rédiger après admission. Dépendances : admission de F-C2 à F-C4 ; validation humaine
-des 3 claims ; prises de vue de mains ; pictogrammes.
+Vignette, légende et mesure : à rédiger après admission. Dépendances : admission de F-C2 à F-C4 (ADR-119) ; `human_validated`
+des 3 claims (contrat vidéo G2) ; prises de vue de mains ; pictogrammes.
 
 ## 8. Correspondance pages et vidéos
 

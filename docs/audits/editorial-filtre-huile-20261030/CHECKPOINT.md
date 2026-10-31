@@ -1,8 +1,8 @@
 # Checkpoint — lot 1 éditorial filtre à huile, 31 octobre 2026
 
 Objectif : premier dossier du programme recadré le 30/10. Filtre à huile (`pg_id` 7) : pages R1 et R3 existantes
-améliorées (textes, images, scripts), script vidéo principal et courts, faits à admettre, raccordements. Statut
-REVIEW_REQUIRED ; rien n'est validé ni servi.
+améliorées (textes, images, scripts), script vidéo principal et courts, faits à admettre, raccordements. Statut :
+auto-revu (lint, rendu DEV par surcouche de lecture, HANDOFF § 6) ; rien n'est écrit en base ni servi.
 
 Cible : Claude Code Desktop, worktree `C:\Users\Marwane\nestjs-remix-monorepo-editorial`, branche
 `docs/editorial-filtre-huile-dossier-20261030`, base `980b2f8a7` (`origin/main` au 30/10), `main` refusionné depuis
@@ -87,7 +87,7 @@ Révision 2 : noms de sources retirés du texte servi.
 
 ## Limites
 
-- Fiche WIKI promue automatiquement, sans relecture humaine.
+- Fiche WIKI promue TIER A par son décideur ; auto-review de sens ADR-119 ABSENT, consultative hors sécurité (D3).
 - Aucun producteur WIKI → R1 ; R3 en canari seulement (FH-3, HANDOFF § 4). Le chemin d'écriture gouverné reste à
   identifier par Claude CLI.
 - R3 S4 à S6 restent courts tant que F-C2 à F-C6 ne sont pas admis ; F-C2 est contredit par une notice (3/4 de tour à
@@ -110,10 +110,10 @@ Hermes : checkpoint **non enregistré**, `automecanik_continuity` indisponible d
   "objective": "Lot 1 filtre à huile (pg_id 7) : pages R1/R3 existantes améliorées (textes, images, scripts) et intégration en DEV par Claude CLI.",
   "authorization": "Mandats utilisateur des 2026-10-30 et 2026-10-31 : travail réversible ; push de la branche filtre à huile et PR brouillon de revue autorisés, sans fusion ni déploiement ; aucune écriture en base partagée ; plaquettes en attente, sans push ni PR.",
   "environment": "Claude Code Desktop, worktree nestjs-remix-monorepo-editorial, branche docs/editorial-filtre-huile-dossier-20261030, base 980b2f8a7 ; fiche WIKI a4783348 (blob c0f7a257).",
-  "state": "REVIEW_REQUIRED. Révision 4 : fiches par champ R1 et par section R3, S2_DIAG en 4 lignes (intentions R5), 8 visuels de page et 4 pictogrammes vidéo, parcours R1-R8, état des vidéos. Accessible : PR brouillon ak125/nestjs-remix-monorepo#1935. Révision 3 prise en charge par Claude CLI (#1936 brouillon, vérifiée en DEV en lecture). Révision 4 transmise : non ; prise en charge : non ; intégrée : non.",
+  "state": "Auto-revu (HANDOFF § 6). Révision 4 : fiches par champ R1 et par section R3, S2_DIAG en 4 lignes (intentions R5), 8 visuels de page et 4 pictogrammes vidéo, parcours R1-R8, état des vidéos. Accessible : PR brouillon ak125/nestjs-remix-monorepo#1935. Révision 3 prise en charge par Claude CLI (#1936 brouillon, vérifiée en DEV en lecture). Révision 4 prise en charge par Claude CLI le 31/10 : rendu vérifié en DEV par surcouche (banc sur 67f7ce304) ; écrite : non ; intégrée : non.",
   "changes": "docs/audits/editorial-filtre-huile-20261030/ : AUDIT, MEDIA, HANDOFF, CHECKPOINT, PROMPTS, integration/, assets/, tools/, preview/ ; .spec/00-canon/repository-registry/ownership.yaml : glob docs/audits/editorial-*/** (D5).",
   "checks": "lint-integration PASS (68 unités, 0 constat) ; build-preview sur e3d644a04 : routage sg_content 2/1/1/1, badge Sécurité seul, 0 image cassée en 375 et 1280 px ; build-pictos : témoin identique à l'octet ; état servi relevé le 2026-10-31T05:33Z.",
   "decisions": "Aucun symptôme attribué au filtre ; aucune valeur universelle ; F-C2 non universel ; LOCATION désélectionnée ; PRICE et OG remplacés sans prix ni délai ; title, meta et H1 non modifiés ; 19052 et 19053 séparés.",
-  "next_action": "Claude CLI : reprendre la révision 4 (HANDOFF § 1 note, § 2) dans #1936 et vérifier le rendu DEV. Owner : spot-check WIKI, admission F-C1 à F-C11, claims V1, décisions FH-15 et FH-16, libellés codés, prises de vue PROMPTS.md."
+  "next_action": "Écriture du lot (integration/publication-batch.json) et H2 « Qualité, prix et marques » : accord nominatif (zone STOP). F-C1 à F-C11 : route ADR-119 (capture RAW, revision_of, auto-review de sens, décision du décideur). Claims V1 : human_validated du contrat vidéo G2. Prises de vue PROMPTS.md. Détail : HANDOFF § 6, « Cinq périmètres » et « Restant »."
 }
 ```

@@ -4,7 +4,8 @@ Lot 1 du programme recadré le 30 octobre 2026 : premier dossier prioritaire. Ba
 `docs/editorial-filtre-huile-dossier-20261030`, worktree isolé. Lectures seules : site public, base (SQL en lecture
 seule), WIKI par l'API GitHub, sources externes. Aucune écriture dans RAW, WIKI ou la base ; aucune publication.
 
-Statut : **REVIEW_REQUIRED**. Textes et scripts proposés ; rien n'est validé, rendu ni publié. Médias :
+Statut : auto-revu (lint, rendu DEV par surcouche de lecture, HANDOFF § 6) ; aucune vidéo rendue, rien n'est écrit
+en base ni publié. Médias :
 [MEDIA.md](MEDIA.md). Raccordements pour Claude CLI : [HANDOFF.md](HANDOFF.md). Reprise : [CHECKPOINT.md](CHECKPOINT.md).
 Le dossier plaquettes reste en attente (commit `2a63da58a`, branche non poussée, aucune PR).
 
@@ -21,7 +22,7 @@ Statut de chaque phrase proposée :
 
 | Marque | Sens | Servable |
 |---|---|---|
-| **[admis]** | fait de la fiche WIKI `wiki/gamme/filtre-a-huile.md`, commit `a4783348`, section citée | oui, après relecture humaine |
+| **[admis]** | fait de la fiche WIKI `wiki/gamme/filtre-a-huile.md`, commit `a4783348`, section citée | oui : fiche promue TIER A par son décideur (`a478334`) ; auto-review de sens ABSENT, consultative hors sécurité (ADR-119 D3) |
 | **[catalogue]** | mesure en base du 30/10/2026, lecture seule | oui, si la donnée est relue au moment de la mise en ligne |
 | **[éditorial]** | orientation ou prudence, sans fait technique nouveau | oui |
 | **[candidat]** | sourcé hors WIKI, non admis (§ 6) | **non** : reste dans ce dossier |
@@ -286,7 +287,7 @@ Détail, scènes, sous-titres, vignettes et légendes : [MEDIA.md](MEDIA.md).
 
 | Vidéo | Question | Format | État |
 |---|---|---|---|
-| V1 `fafa-filtre-huile-001` (principal) | Vissé ou cartouche, quand le changer, comment ne pas se tromper ? | `piece-expliquee`, 40 s | script écrit ; dossier `scripts/draft/fafa-filtre-huile-001/` ; validateur en sortie 1 (validation humaine requise) ; non rendu |
+| V1 `fafa-filtre-huile-001` (principal) | Vissé ou cartouche, quand le changer, comment ne pas se tromper ? | `piece-expliquee`, 40 s | script écrit ; dossier `scripts/draft/fafa-filtre-huile-001/` ; validateur en sortie 1 (contrat vidéo G2 : `human_validated` des claims, distinct des fiches WIKI) ; non rendu |
 | C1 | Voyant d'huile allumé : faut-il changer le filtre ? | court 35 s, sans composition | script écrit ; dépendance : composition |
 | C2 | Deux filtres identiques sont-ils interchangeables ? | court 30 s, démonstration | script écrit ; dépendances : composition, prises de vue |
 | C3 | À quoi servent les clapets d'un filtre vissé ? | court 35 s, schéma animé | script écrit ; dépendance : schéma (WIKI `function_diagram` DEFERRED) |
@@ -321,7 +322,7 @@ Choix tranchés :
   du stock, zones STOP ; elles sont seulement signalées.
 - **Portée véhicule** : 19052 et 19053 restent distincts (§ 8.3). L'exemple Clio III ne figure dans aucun texte servi.
 - **Procédures prêtes mais retenues** : les étapes de dépose et de repose sont rédigées et marquées [candidat] ; elles
-  attendent l'admission (§ 6) et une validation humaine (claims `procedure`).
+  attendent l'admission ADR-119 (§ 6) et, pour la vidéo, le `human_validated` des claims `procedure` (contrat G2).
 - **Format** : seul `PieceExpliquee` rend V1 sans inventer de cause. `NeChangePasTropVite` exige trois causes et
   `SymptomeTroisCauses` affiche « 3 causes possibles » en dur : la fiche n'en fournit pas trois pour le voyant.
 
@@ -446,8 +447,9 @@ Liens servis cassés :
 
 ## 6. Faits encore à admettre
 
-Aucun n'est servi. Route : capture RAW de la source, proposition par `wiki-proposal-writer`, relecture humaine,
-promotion. Ce dossier n'écrit ni dans RAW ni dans le WIKI.
+Aucun n'est servi. Route (ADR-119) : capture RAW de la source (ADR-096), proposition `revision_of` par
+`wiki-proposal-writer`, auto-review de sens, décision du décideur ; `revision_of` attend `CANON_REVISION_ADR` (HANDOFF
+§ 6, « Admission WIKI »). Ce dossier n'écrit ni dans RAW ni dans le WIKI.
 
 | Id | Affirmation candidate | Source lue | Portée | Statut | Bloque |
 |---|---|---|---|---|---|
@@ -472,7 +474,7 @@ filtre ». Blocs prêts après admission : `integration/candidats.json`.
 | Besoin | Pour | État |
 |---|---|---|
 | Voix Fafa (`audioUrl`) | V1 | absente : sans elle, le rendu est muet |
-| Validation humaine des 3 claims de V1 | V1 | requise (G2) ; décision de l'owner |
+| `human_validated` des 3 claims de V1 | V1 | requis par le contrat vidéo G2 (`fafa-pilot-governance.cjs`), distinct des fiches WIKI |
 | Étape `script_text` approuvée et `stages` dans `approval.json` | V1 | décision de l'owner ; écart de schéma connu |
 | Schéma du circuit et des clapets | R3 S1, C3 | WIKI `function_diagram` en DEFERRED |
 | Prises de vue : filtre vissé et cartouche neufs, deux filtres semblables, filtre en coupe (membrane anti-retour), boîtier de cartouche, main qui serre | C2, C3, C4, R3 | aucune ; photo hero `filtre-a-huile.webp` disponible (licence `owned`) |
@@ -511,7 +513,7 @@ Raccordements techniques : [HANDOFF.md](HANDOFF.md).
 |---|---|
 | Isolation | worktree `nestjs-remix-monorepo-editorial`, branche créée depuis `origin/main` `980b2f8a7`, sans suivi distant |
 | Fiche WIKI lue | `wiki/gamme/filtre-a-huile.md`, commit `a47833486352626442939dd04b5a6fd3674cb0a7` (promotion #100, 30/09), blob `c0f7a257f58596b55525dd8efe86f16a87235824` ; WIKI `main` `edae4a96` le 30/10 |
-| Mode de promotion | `auto_promoted: true`, `validation_mode: automatic`, sans spot-check humain ; `exportable.seo: true` |
+| Mode de promotion | `auto_promoted: true`, `validation_mode: automatic` : promotion TIER A par le décideur ; `exportable.seo: true` ; auto-review de sens ADR-119 ABSENT (HANDOFF § 6) |
 | Pages lues | R1, R3, R4, deux pages véhicule Clio III, `/diagnostic-auto`, le 2026-10-30T11:11:37Z ; sha256 du texte R1 `7adaf365…8564`, R3 `231e6692…b4a8`. R1, R3, R4 et la page 19052 relues à 11:47:47Z, après le tag du jour : écarts du § 8.4 inchangés |
 | PR #1924 | lue au commit `6ccff0e8`, puis à la tête `3288b50a` (30/10, ouverte, non fusionnée) : depuis `6ccff0e8`, deux fusions de `main` (#1927, #1928, #1929) et des resynchronisations de projections (registre, inventaire PR-8). Aucun fichier de ce dossier touché ; rien fusionné ici |
 | Hermes `automecanik_continuity` | indisponible depuis cette session ; checkpoint préparé dans [CHECKPOINT.md](CHECKPOINT.md) |

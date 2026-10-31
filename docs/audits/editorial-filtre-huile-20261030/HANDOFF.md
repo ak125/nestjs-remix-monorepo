@@ -5,6 +5,11 @@ Révision 3, 30/10/2026. Remplace la liste de raccordements de la révision 2. R
 filtre à huile : les 13 besoins du dossier plaquettes ne sont pas des prérequis (FH-5 compteur et FH-11 `stages` les
 recoupent parce que le filtre à huile en a besoin pour son compte).
 
+Mise à jour du 31/10 par Claude CLI, après la rectification du mandat (auto-review, pas de relecture humaine des
+fiches) : § 2 (statuts), fin du § 3, § 4 (admission) et compte rendu du § 6 recalés sur ADR-119 et sur la tête
+`bbc7e8ed8` de #1936. Le compte rendu sépare désormais cinq périmètres, consigne l'admission WIKI et le lot de
+publication, préparé et non exécuté. Aucune ligne du dossier ne demande plus de relecture humaine d'une fiche WIKI.
+
 ## Consigne de démarrage
 
 > Lis `docs/audits/editorial-filtre-huile-20261030/HANDOFF.md` sur la branche
@@ -35,8 +40,8 @@ vidéo pour `SequencesCourtes`.
 
 | Fichier | Contenu | Statut |
 |---|---|---|
-| `integration/r1.json` | champs `r1s_*` (hero, sélecteur, 4 badges, intros, tableau de vérification, FAQ au format `{question, answer}`, bloc micro-SEO 1 570 caractères après FH-12) ; `sg_content` en 5 blocs H2 routés vers choose, price, location, reference ; ancien → nouveau par bloc. Révision 4 : `fiche` par champ et `fiche_par_bloc` (cible, question résolue, preuve interne, portée véhicule, statut d'admission, dépendance, image) ; `propositions_libelles_codes` : H2 « Qualité, prix et marques », texte et badge de `EquipementiersSection.tsx` | REVIEW_REQUIRED ; libellés codés : décision de l'owner |
-| `integration/r3.json` | 12 sections `__seo_gamme_conseil` par `sgc_id`, titres, HTML conforme aux composants de rendu, provenance proposée, image par section ; META conservée. Révision 4 : `fiche` par section ; S2_DIAG en 4 lignes (la dernière répond aux intentions R5 fuite, bruit, odeur et vibration, consolidées sur `#diagnostic-rapide`, sans désigner le filtre) ; proposition de slogan R3 (`visual-intent.ts:186`) | REVIEW_REQUIRED |
+| `integration/r1.json` | champs `r1s_*` (hero, sélecteur, 4 badges, intros, tableau de vérification, FAQ au format `{question, answer}`, bloc micro-SEO 1 570 caractères après FH-12) ; `sg_content` en 5 blocs H2 routés vers choose, price, location, reference ; ancien → nouveau par bloc. Révision 4 : `fiche` par champ et `fiche_par_bloc` (cible, question résolue, preuve interne, portée véhicule, statut d'admission, dépendance, image) ; `propositions_libelles_codes` : H2 « Qualité, prix et marques », texte et badge de `EquipementiersSection.tsx` | auto-revu (lint, banc DEV) ; non écrit, écriture en zone STOP. Badge et accroche retirés par `67f7ce304` (#1936) ; H2 « Qualité, prix et marques » : décision nominative (SEO indexé) |
+| `integration/r3.json` | 12 sections `__seo_gamme_conseil` par `sgc_id`, titres, HTML conforme aux composants de rendu, provenance proposée, image par section ; META conservée. Révision 4 : `fiche` par section ; S2_DIAG en 4 lignes (la dernière répond aux intentions R5 fuite, bruit, odeur et vibration, consolidées sur `#diagnostic-rapide`, sans désigner le filtre) ; proposition de slogan R3 (`visual-intent.ts:186`) | auto-revu (lint, banc DEV) ; non écrit, écriture en zone STOP. Slogan R3 vidé par `67f7ce304` (#1936) |
 | `integration/candidats.json` | F-C1 à F-C11 et blocs prêts après admission (S4, S5, S6, huile et filtre usagés ; révision 4 : ligne S2_DIAG « fuite juste après remplacement », F-C3 et F-C4) | non servables avant admission |
 | `integration/assets.json` | 8 visuels de page et 4 pictogrammes vidéo : slot, `rip_id`, fichier, alt, légende, mécanisme, état de vérification ; révision 4 : droits, portée et affichage attendu par visuel, consommateur `SequencesCourtes` (#1936) pour les pictogrammes ; LOCATION à désélectionner | fichiers produits |
 | `PROMPTS.md` | images et scènes manquantes, moyen réel pour chacune | manques |
@@ -74,8 +79,10 @@ moment de la reproduction.
 | FH-15 | R1 : `r1s_faq` au format `{q, a}` → FAQ générique servie ; « au meilleur prix » × 1, « plus de 50 marques » × 2, « homologations constructeur » × 1 ; h3 codé « Niveaux de qualité » × 1 | données (`__seo_r1_gamme_slots`) + code (`pieces.$slug.tsx`) | servi | champs de `r1.json` ; libellés codés : proposition (la page n'a pas de niveaux de prix) | FAQ du lot servie en DEV (5 questions) ; 0 promesse non vérifiée |
 | FH-16 | R3 : « Source vérifiée » × 3 sous les cartes (provenance `web` humanisée) ; badges calculés « Difficulté Intermédiaire » et « Temps estimé ~45 min » (5 min par étape S4) ; CTA codé « Comparez les prix » | code commun à tous les guides (`source-provenance.util.ts`, `section-config.tsx:401-439`, route conseils l.602-607) + données (`sgc_sources`) ; encart bas de page codé « au meilleur prix parmi nos fournisseurs » × 1 (route conseils, encart après les sections) | servi | provenance du lot en `wiki` ; badges et encarts : correction minimale proposée et testée, sans déploiement. Avec le lot, les badges calculés deviennent « Facile » et « ~15 min » (3 étapes S4) : non sourcés | 0 « Source vérifiée » et 0 « meilleur prix » sur la page en DEV ; décision consignée pour les badges |
 
-Hors Claude CLI : prix et stock servis (« à partir de », « En stock ») ; champs protégés ; spot-check humain de la fiche
-WIKI ; admission de F-C1 à F-C11 ; validation humaine des claims de V1 ; prises de vue ; déploiement PROD.
+Hors Claude CLI : prix et stock servis (« à partir de », « En stock ») ; champs protégés ; admission de F-C1 à F-C11
+par la route ADR-119 (capture RAW, `revision_of`, auto-review de sens, décision du décideur) ; validation des claims de
+V1 au sens du contrat vidéo G2 (`human_validated`, propre aux vidéos, distinct des fiches WIKI) ; prises de vue ;
+déploiement PROD.
 
 ## 4. FH-3 par étape
 
@@ -83,7 +90,7 @@ WIKI ; admission de F-C1 à F-C11 ; validation humaine des claims de V1 ; prises
 |---|---|
 | Producteur | R1 : aucun (script neutralisé, enrichisseur retiré). R3 : lot conseil neutralisé |
 | Export | `wiki-exports-seo-generate.yml` ; export filtre-a-huile : 12 blocs (6 R3_CONSEILS, 3 R4, 3 R6), `content_hash` 773367f7, pointeur 88017732 ; aucun rôle R1 |
-| Admission | partielle : contrôle d'intégrité seulement ; ADR-119 non prouvée ; fiche promue automatiquement |
+| Admission | partielle : contrôle d'intégrité seulement ; ADR-119 non prouvée ; fiche promue automatiquement ; précisé au § 6 (« Admission WIKI ») |
 | Projection | R3 : `seo-projection-feeder` → `__seo_content_blocks`, 6 blocs actifs pour pg 7. R1 : aucune (`feature-flags.service.ts:173-186`) |
 | Lecteur | R1 : historique (`__seo_r1_gamme_slots`, `__seo_gamme.sg_content`). R3 : historique `blog-seo.service.ts` sauf canari `READY_FOR_RENDER` (`r3-guide.service.ts:162-170`) |
 | Activation | `SEO_PROJECTION_READ_V1` à false ; canari vide ; refusé sous ADR-106 D7 (1 381 contre 9 128 caractères, −84,9 %, pas de FAQPage) |
@@ -91,7 +98,7 @@ WIKI ; admission de F-C1 à F-C11 ; validation humaine des claims de V1 ; prises
 
 Les textes servis R1 viennent d'une migration (`20260106_filtres_content_v2.sql`) et d'enrichissements ; leur
 provenance RAG n'est prouvée que pour R3 (`sgc_sources` de type `rag`). Le lot ne crée pas de producteur : il fournit
-des textes relus, issus de la fiche WIKI, à faire passer par le chemin d'écriture existant.
+des textes tirés de la fiche WIKI et auto-revus (§ 6), à faire passer par le chemin d'écriture existant.
 
 ## 5. FH-14 — investigation `pg_pic` / `pg_img`
 
@@ -135,18 +142,52 @@ Le 30/10 : `filtre-habitacle` et `filtre-boite-auto` (`pg_pic`) 400 ; `filtre-d-
 ### Compte rendu de Claude CLI
 
 Session Claude Code ouverte sur le dépôt, 30 et 31/10/2026. Code : PR brouillon #1936, branche
-`fix/editorial-filtre-huile-fh-20261030`, tête `e3d644a04`. Dossier : #1935. Rien n'est fusionné, déployé ni écrit en
-base.
+`fix/editorial-filtre-huile-fh-20261030`, tête `bbc7e8ed8`, merge-base avec `main` `2a49166e2`. Dossier : #1935. Rien
+n'est fusionné, déployé ni écrit en base.
 
 #### État
 
 | État | Statut au 31/10 | Preuve |
 |---|---|---|
-| implémenté | oui | code de FH-2, 4, 5, 6, 7, 9, 10, 11, 14, 15 et 16 dans #1936 ; textes du dossier pour FH-1, 12 et 13 (`integration/`) |
+| implémenté | oui | code de FH-2, 4, 5, 6, 7, 9, 10, 11, 14, 15 et 16 dans #1936, plus `67f7ce304` (libellés R1 et R3), `da17a3814` et `6e57bb6c7` (gates et score vidéo), `573c022b4` et `500e9c4fd` (skills seo-batch), `c0a6c7d96` (consignes) ; textes du dossier pour FH-1, 12 et 13 (`integration/`) ; lot de publication préparé (`integration/publication-batch.json`) |
 | intégré | non | #1936 en brouillon, non fusionnée : absente de `main`, de PREPROD et de PROD. Textes et images du lot non écrits |
-| vérifié | en DEV, par surcouche de lecture | critères du § 3 ci-dessous ; CI de #1936 verte sur `e3d644a04` (40 contrôles réussis, 9 ignorés, 0 échec) |
+| vérifié | en DEV, par surcouche de lecture | critères du § 3 ci-dessous ; banc de la révision 4 sur `67f7ce304` ; CI de #1936 verte sur `bbc7e8ed8` (43 contrôles réussis, 9 ignorés, 0 échec) |
 | opérationnel | non | aucun visiteur ne voit ces changements |
 | bloqué | écriture des textes et des images | base, stockage et imgproxy partagés avec la PROD, pages indexées : zone STOP (« Restant ») |
+
+#### Cinq périmètres distincts
+
+| Périmètre | Constat au 31/10 | Ce qui manque |
+|---|---|---|
+| Auto-review technique | #1936 : revue indépendante par un sous-agent sur `e3d644a04` (5 constats corrigés dans `b9009d913`, 10 rapportés ; un plantage réfuté, son résidu rapporté ; un constat réfuté ; un confirmé, qui est la limite PREPROD de FH-6) ; Codex sur `ee70555b0` (1 constat, corrigé par `6e57bb6c7` avec 2 tests), puis sur le delta de `6e57bb6c7` (0 constat) ; `6e57bb6c7..bbc7e8ed8` ne change que des projections. C'est le niveau B que propose ADR-120. #1935 : niveau A (lint PASS, JSON valides) | ADR-120 (vault #389) n'est pas fusionnée : DoD2 v1.0.0 exige encore une approbation humaine, la case reste non cochée. Aucune approbation GitHub n'est tirée de ces revues |
+| Auto-review et admission WIKI | fiche `gamme/filtre-a-huile` promue TIER A par son décideur (`a478334`) ; auto-review de sens ADR-119 ABSENT, consultative hors sécurité (D3) | exécuteur isolé (lacune technique) ; captures RAW de F-C1 à F-C11 (lacune probatoire) ; détail ci-dessous |
+| Décision de gouvernance | ADR-120 (#389) ouverte, non ratifiée ; ADR-107 D5 demande une « validation owner » pour modifier une fiche promue, et ADR-119 ne l'amende pas | fusion de #389 ; arbitrage de la divergence D5 au vault |
+| Autorisation de mutation PROD | aucune | accord nominatif sur l'écriture du lot (`integration/publication-batch.json`) et sur le H2 « Qualité, prix et marques » ; GO de tag pour le code |
+| Intégration et observation réelles | aucune. La surcouche DEV prouve le rendu, pas la persistance | fusion de #1935 et #1936, PREPROD, tag, écriture du lot, puis observation en PROD |
+
+Rôles : Desktop prépare et relit les contenus selon les méthodes applicables ; Claude CLI corrige et intègre ; Codex
+contre-vérifie sur un SHA figé ; Hermes suit les preuves et les relais. Aucun de ces rôles n'attend une relecture
+humaine de fiche WIKI.
+
+#### Admission WIKI (ADR-119)
+
+- Fiche `wiki/gamme/filtre-a-huile.md`, promue TIER A par `a478334` (WIKI #100, 01/10/2026) : `review_status: approved`,
+  `exportable.seo: true`, `exportable.rag: false`. `is_safety` est faux : D3 n'est que rapporté pour elle.
+- Auto-review de sens, lue sur WIKI `main` `6c82c5c` : `semantic_review` ABSENT (`pass: false`, `runs: []`, sortie 1),
+  clé `ffd95e3b…`, `text_sha256` `e77c51ec…`, `protocol_revision` `883b8514…`, paquet de 60 segments et 3 captures RAW
+  (RAW `main` `5fe757b`, #60). ABSENT n'est ni PASS ni FAIL : il ne bloque pas (D3) et ne prouve pas le sens.
+- Décision en vigueur : la promotion TIER A. `exportable.seo` n'est pas modifié à la main et aucune gate n'est rouverte.
+- Lacunes techniques : aucun relecteur isolé ne tourne (pas de clé d'API sur DEV, étalonnage de l'étape 2 non commencé) ;
+  `CANON_REVISION_ADR` vaut `None` (`promotion_decision.py:702`), donc une `revision_of` sort en
+  `CANON_REVISION_NOT_RATIFIED`.
+- Lacunes probatoires : F-C1 à F-C11 n'ont pas de capture RAW. Route : capture (ADR-096), `revision_of`, auto-review de
+  sens, décision du décideur. Aucun n'est servi : le lint n'admet dans les textes que des éléments [admis], [catalogue]
+  ou [éditorial].
+- Modifier la fiche promue relève aussi d'ADR-107 D5 (nouvelle proposition, gates ADR-088, décideur ADR-083,
+  « validation owner »). Divergence avec ADR-119 D1 signalée, non arbitrée ici.
+- Effet sur le lot : l'admission ne bloque pas l'écriture des textes, c'est l'autorisation de mutation PROD qui la bloque.
+- D7 : le lot ne sert aucune plage numérique tirée d'un fait candidat. Si l'autorité d'une source est inconnue, sa
+  validation reste humaine, une fois, sur la source et non sur la fiche.
 
 #### Base DEV et méthode (étape 1)
 
@@ -204,6 +245,16 @@ Pages R1 `/pieces/filtre-a-huile-7.html`, R3 `/blog-pieces-auto/conseils/filtre-
   - `dev-r3-375-1.webp` et `dev-r3-375-2.webp` : la page R3 en 375 px, en deux moitiés de 375 × 10 898 ;
   - `dev-r3-1280.webp` (1 280 × 10 616).
 
+Banc de la révision 4 (code `67f7ce304`, dossier `5f42bd91f`), même proxy :
+
+- R1, R3 et R4 en 375 et 1 280 px : 0 image cassée, 0 réponse ≥ 400, 0 défilement horizontal, 0 requête vers l'image
+  LOCATION. title, meta description, H1, canonical et robots identiques à la révision 3.
+- Proxy : 29 appels `__seo_outbox_claim_batch` refusés en 405 et 6 POST bloqués ; aucune écriture n'atteint la base.
+- « Marque de confiance » 6 → 0 ; « Nous sélectionnons des équipementiers » 1 → 0 ; « Tout savoir sur les » 1 → 0 ; le
+  `<p>` du slogan R3 n'est plus rendu. Le H2 « Qualité, prix et marques » reste servi (« Restant »).
+- Les captures de `verification-dev/` sont celles de la révision 3. Le delta jusqu'à `bbc7e8ed8` ne touche que le
+  backend vidéo et des projections, aucun gabarit : le banc vaut pour la tête.
+
 #### Critères du § 3
 
 Comptes sur le texte rendu, surcouche DEV / DEV `main`.
@@ -215,7 +266,7 @@ Comptes sur le texte rendu, surcouche DEV / DEV `main`.
 | FH-3 | chemin d'écriture identifié (« Raccordement des textes ») | aucun producteur créé, aucune écriture RAG | écriture (« Restant ») |
 | FH-4 | `783f1beb6` : bornes lues dans `R1_ROUTER_CONTRACT` ; `1495a0f8f` : test sur le bloc livré | jest 3/3. Le bloc fait 1 570 caractères après FH-12 ; les valeurs 1 850 / 1 663 du § 3 le précèdent | — |
 | FH-5 | `b4bd0f3d7` : compteur et avatars retirés ; `sg_content` et FAQ du lot | « case D.2 » 0 / 6 ; « majoritairement des filtres cartouche » 0 / 3 ; « 2 847 » 0 / 1 | repli FAQ des autres gammes (« Restant ») |
-| FH-6 | `681078f83`, `202d5b9e9` : lien seulement vers un diagnostic publié ; symptôme sans diagnostic en texte ; valeur vide non rendue | 3 tests `filterPublishedSlugs` ; liens `/diagnostic-auto/<texte>` 0 / 5 ; liens vides 0 / 5 | données (« Restant ») |
+| FH-6 | `681078f83`, `202d5b9e9` : lien seulement vers un diagnostic publié ; symptôme sans diagnostic en texte ; valeur vide non rendue | 3 tests `filterPublishedSlugs` ; liens `/diagnostic-auto/<texte>` 0 / 5 ; liens vides 0 / 5. `filterPublishedSlugs` lit `__seo_observable` : en PREPROD (anon), lecture refusée (42501), aucun lien et l'avertissement `[R4-DIAG-LINKS]` attendu ; en PROD (`service_role`), seule l'absence de cet avertissement compte | données (« Restant ») |
 | FH-7 | `3092064d9` : parenthèse de marques retirée, avec test | « Brembo » 0 / 1 sur 19052. PROD publique à 20:20:30Z : « Brembo » 1, « montées à l'arrière » 0 ; version déployée non constatée, faute d'accès PROD | — |
 | FH-8 | recompte en lecture seule | 19052 : 74 affichés, dont 24 vissés et 0 cartouche ; 19053 : 73, 23 et 0, comme au § 3. Le lot ne sert aucune forme par véhicule | confirmation (« Restant ») |
 | FH-9 | `9f63de8aa` : accroche, titres et avertissements par fenêtre en props | tests de rendu 6/6 ; sans ces props, rendu identique octet pour octet à `main` | — |
@@ -224,7 +275,7 @@ Comptes sur le texte rendu, surcouche DEV / DEV `main`.
 | FH-12 | page non trouvée : la fiche produit (`get_piece_detail`) ne sert que les critères de niveau 1 (« Type de filtre », Quantité). Dimensions et « avec joint d'étanchéité » sont de niveau 2 | phrases `data-condition="FH-12"` retirées ; ligne Dimensions remplacée par « Ne pas confondre avec » ; « joint torique fourni » retiré (R1 micro-SEO et point 3 de `sg_content`, R3 S1 et S4_REPOSE, candidat S4_REPOSE) | — |
 | FH-13 | `integration/gsc-baseline.json` | R1 : 0 clic, 1 785 impressions, position 48,9, du 30/07 au 27/10. R3 et R4 : 0 ligne, alors que l'export contient 65 pages conseils et 87 pages `/reference-auto/` | insertion (« Restant ») |
 | FH-14 | `d9fcac6e0` : `pg_img` lu via `get_homepage_families` (DEFINER), repli `pg_pic` avec avertissement | 3 tests ; 4 vignettes R1 en 200 en DEV | résiduel (« Restant ») |
-| FH-15 | `8bc63c059` : FAQPage construit avec `resolveR1Faq` ; `mergeR1Faq` et h3 « Niveaux de qualité » retirés ; `r1s_faq` du lot | FAQ du lot servie, 5 questions ; « au meilleur prix » 0 / 1 ; « plus de 50 marques » 0 / 2 ; « homologations constructeur » 0 / 1 ; « Niveaux de qualité » 0 / 1 | libellés codés (« Restant ») |
+| FH-15 | `8bc63c059` : le FAQPage déclare la résolution `resolveR1Faq`, celle de la partie non éditoriale de la FAQ affichée ; `mergeR1Faq` et h3 « Niveaux de qualité » retirés ; `r1s_faq` du lot | 5 questions affichées, 5 déclarées (avant, PROD et DEV `main` : 1 pseudo-question et 3 questions affichées, 6 déclarées) ; « au meilleur prix » 0 / 1 ; « plus de 50 marques » 0 / 2 ; « homologations constructeur » 0 / 1 ; « Niveaux de qualité » 0 / 1 | parseur `mergeFaqBlocks` et H2 « Qualité, prix et marques » (« Restant ») |
 | FH-16 | `fa14e8b2b` : `deriveDifficulty` ne calcule plus difficulté ni durée ; `totalTime` retiré ; CTA et encart sans promesse de prix ; provenance du lot en `wiki` | « Source vérifiée » 0 / 3 ; « Comparez les prix » 0 / 1 ; « meilleur prix » 0 / 1 ; « Difficulté » 0 / 1 ; « Temps estimé » 0 / 1 | portée (« Restant ») |
 
 Décision sur les badges (FH-16) : la prévision du § 3 (« Facile », « ~15 min ») est inexacte. Elle venait de
@@ -271,11 +322,72 @@ Les deux écrivent en PROD sur des pages indexées.
 | R3 HERO 12, S2 13, S3 14 | `PATCH /api/admin/r3-image-prompts/:id/set-image-url` (l.123) puis `approve` (l.110) | pas d'upload ni de chemin de stockage défini pour `r3/` : il faut déposer le fichier par un autre moyen. Le HERO devient og:image R3 (route conseils l.393) : `catalogue/filtre-a-huile.webp` sur `main`, `r3/filtre-a-huile-hero.webp` avec le lot |
 | alt et légendes R3 | aucun | `r3-image-prompt.b5-closure.test.ts:49` n'admet en écriture que `rip_image_url` et `rip_status`. L'alt affiché du hero est `page.title` (route conseils l.544), pas `rip_alt_text` |
 
+#### Section technique (Claude CLI, 31/10)
+
+Commits de #1936 après `b9009d913`, hors resync des projections. Rien n'est fusionné ni déployé ; le code ne dépend
+pas de #1935.
+
+| SHA | Objet | Preuve |
+|---|---|---|
+| `da17a3814` | gates vidéo : mesure absente = WARN `NOT_MEASURED` (`measured: null`), mesure invalide = FAIL, zéro réel = PASS ; un WARN mesuré exige un `final_publish` signé | test du contrôleur 7/7 (1 échec sur 6 sans la correction) ; tests du service |
+| `990bfd245` | skills et notes marketing recalés sur ce traitement | `fafa-pilot-governance.test.cjs` 69/69 |
+| `573c022b4` | skill `seo-gamme-audit` v5.0 : WIKI → export → projection → rendu servi, sans RAG ; SELECT bornés, en lecture seule ; quatre axes, sans score composite | 19 requêtes jouées en lecture seule sur `pg_id` 7 et le type 19052 |
+| `500e9c4fd` | skill `seo-content-loop` : chaîne d'autorité, « projeté ≠ servi », quatre axes, reprises bornées | prose de skill, sans test exécutable |
+| `67f7ce304` | R1 : « Marque de confiance » et l'accroche retirés d'`EquipementiersSection` ; R3 : slogan `blog-conseil` vidé | 2 tests ; vitest 37/37 ; banc de la révision 4 |
+| `c0a6c7d96` | `seo-content-loop`, `conseil-batch`, `seo-content` et `wiki-proposal-writer` suivent ADR-119 : plus de relecture humaine de fiche | `validate-agents-md.sh` : 0 blocage |
+| `6e57bb6c7` | score vidéo `null` quand un drapeau n'a pas de pénalité (`NOT_MEASURED`, `GATE_FAIL`, `REVIEW_REQUIRED`), au lieu de 100 | 2 tests ; suites vidéo 126/126 ; `tsc` 0 |
+
+Autres preuves sur `67f7ce304` : jest backend 17 suites et 220 tests, eslint 0 erreur, `npm run typecheck` exit 0,
+ast-grep exit 0, gitleaks sans fuite. Sur `bbc7e8ed8` : CI 43 réussis, 9 ignorés, 0 échec. Rollback : `git revert` du
+commit, sans état de base ni de cache à défaire.
+
+H2 « Qualité, prix et marques » (`pieces.$slug.tsx:900`), non modifié. Sur DEV `main`, `#qualite-prix` sert le bloc
+`sg_content` « Filtre à huile prix : fourchettes selon le type et la marque » : le mot « prix » y est étayé.
+`integration/r1.json` retire ce bloc ; une fois le lot écrit, la section ne garde que « Qualité d'un filtre à huile :
+ce qui compte » et les équipementiers. Le libellé est commun à toutes les R1 : le changer avant l'écriture retirerait
+« prix » d'un H2 indexé partout alors que le bloc prix est encore servi. Il se traite avec l'écriture du lot, sur
+décision nominative (SEO indexé).
+
+Constats laissés à leurs écrivains :
+
+- `approval.json` du dossier : G5 vaut `0.0` ; le schéma type `measured` en nombre, alors que le code accepte `null` ;
+- gates vidéo : aucun producteur ne fournit durée, similarité ni rôles visuels, qui restent `NOT_MEASURED` ; la
+  correspondance entre ces drapeaux et des pénalités n'est pas définie, d'où le score `null`. L'écran
+  `admin.video-hub.productions.$briefId.tsx:252-262` envoie `brief.videoType`, alors que le service lit `brief.type`,
+  sans texte ni durée. La branche « Unknown video type » (`video-gates.service.ts:319`) n'a pas de test ;
+- R8 : le type 19053 a deux lignes pour la même canonical (REVIEW_REQUIRED et INDEX), rattachées à FH-8 ;
+- projection : le run actif porte le WIKI `a4783348`, alors que WIKI `main` est `6c82c5c4d`, écart non expliqué ;
+- R4 : slogan `role-piece` « Comprendre le role des {gamme} » (sans accent, pluriel devant un singulier), servi seulement
+  avec `HeroRole`, absent de `/reference-auto/filtre-a-huile` qui affiche `HeroReference` ;
+- R1 : description backend « N références disponibles » (`gamme-response-builder.service.ts:416`), qui compte des
+  références du catalogue, pas un stock ;
+- `agents/seo-content/AGENTS.md:32,95` cite encore un « score rank-#1 capable ».
+
+#### Lot de publication (préparé, non exécuté)
+
+`integration/publication-batch.json`, produit sans accès à la base à partir des relevés en lecture seule :
+
+- 50 cibles texte (16 champs `__seo_r1_gamme_slots`, `__seo_gamme.sg_content`, 33 champs `__seo_gamme_conseil` par
+  `sgc_id`), chacune avec clé, longueur et sha256 avant et après ;
+- 4 champs protégés à garder identiques (`r1s_h1_override`, `sg_title`, `sg_descrip`, META R3), avec leur hash ;
+- images R1 31, 32, 33, 35 et R3 12, 13, 14 : objet avant (taille, type, eTag), fichier après (sha256, dimensions) ;
+- exécution : relecture et arrêt sur écart, sauvegarde, une transaction dont chaque UPDATE est conditionné au sha256
+  « avant » (CAS) ; invalidations par cache ; contrôles post-écriture ; rollback par cible.
+
+Constats du lot :
+
+- l'invalidation Redis R1 (`POST /api/gamme-rest/7/cache/invalidate`) n'a pas de garde d'authentification ; Redis R3
+  n'a aucun endpoint d'invalidation ;
+- les 4 objets R1 actuels sont des PNG servis sous un nom `.webp` ;
+- aucun endpoint ne défait `set-image-url` ou `approve` en R3 : le rollback R3 passe par SQL, même zone STOP ;
+- l'upload R1 réécrit l'objet au même chemin alors qu'imgproxy sert `immutable` pour un an : sans purge CDN, l'ancienne
+  image reste servie, et les navigateurs la gardent.
+
 #### Restant, par étape
 
 | Étape | Point | Dépendance ou décision |
 |---|---|---|
-| admission | fiche WIKI filtre à huile | admission ADR-119 non prouvée (§ 4), préalable à l'écriture des textes |
+| admission | fiche WIKI filtre à huile | promotion TIER A en vigueur ; auto-review de sens ABSENT, consultative (D3), ne bloque pas l'écriture. F-C1 à F-C11 : capture RAW, puis `revision_of`, bloquée tant que `CANON_REVISION_ADR` vaut `None` (« Admission WIKI ») |
 | données, zone STOP | textes R1 (`r1s_*`, `sg_content`) et R3 (`sgc_*` par `sgc_id`) | choix d'une des deux voies (« Raccordement des textes »), avec accord nominatif pour une écriture PROD sur des pages indexées |
 | stockage, zone STOP | images R1 31, 32, 33 et 35 ; dépôt des fichiers R3 puis `set-image-url` et `approve` de 12, 13 et 14 | accord nominatif. og:image R1 change d'image, og:image R3 change d'URL : balises protégées |
 | code | alt et légendes R1 et R3 ; retrait de LOCATION 34 ; mise en page de `#emplacement` sans image ; alt du hero R3 | aucun mécanisme existant ; pour R3, la clôture B5 interdit l'écriture applicative des alt |
@@ -284,7 +396,11 @@ Les deux écrivent en PROD sur des pages indexées.
 | données | FH-8 : forme du filtre pour 19052 et 19053 | confirmation par le propriétaire du catalogue, véhicule par véhicule |
 | données | FH-13 : 3 lignes de `gsc-baseline.json` dans `__seo_gamme_gsc_baseline` (vide, sans écrivain ni lecteur dans le code) | écriture en base |
 | migration | FH-14 : 11 gammes sans famille (`mc_mf_prime` = 0) gardent `pg_pic`. 141 et 1375 restent cassées alors que leur `pg_img` existe ; les 9 autres n'ont aucun des deux fichiers | modifier `get_gamme_page_data_optimized` |
-| code | R1, libellés codés hors liste : H2 « Qualité, prix et marques » (`pieces.$slug.tsx:900`) ; « Marque de confiance » et « pour garantir performance, sécurité et longévité » (`EquipementiersSection.tsx:110`, `:55`) | correction à proposer |
+| code, SEO indexé | R1 : H2 « Qualité, prix et marques » (`pieces.$slug.tsx:900`). « Marque de confiance » et l'accroche d'`EquipementiersSection` sont retirés par `67f7ce304` | décision nominative, avec l'écriture du lot (« Section technique ») |
+| code | R1 : `mergeFaqBlocks` ne lit que les `<h3>`. 61 lignes `__seo_gamme` sur 177 ont un H2 de FAQ, toutes en `<details><summary>`, `pg_id` 7 compris avant le lot : le titre de section est affiché comme une question. Défaut antérieur à #1936 | correctif dans une PR à part |
+| code | invalidation Redis R1 sans garde d'authentification (« Lot de publication ») | correctif dans une PR à part |
 | champ protégé | meta description R1 : « …pas cher dès 5€… En stock, livraison 24-48h. » | non modifiée : meta protégée, prix et stock en zone STOP |
-| code | sous-titre R3 « Tout savoir sur les filtre-a-huile » : alias brut (route conseils l.510, `visual-intent.ts:186`), servi aussi en PROD | correction à proposer, commune à tous les guides |
-| revue | #1936 : FH-16 retire « Difficulté » et « Temps estimé » de tous les guides R3 ; les autres changements touchent tous les gabarits listés dans la PR | revue humaine (DoD2), puis fusion par l'owner ; déploiement hors mandat |
+| code | sous-titre R3 « Tout savoir sur les filtre-a-huile » : alias brut (route conseils l.510, `visual-intent.ts:186`) | corrigé par `67f7ce304` pour tous les guides ; servi en PROD tant que #1936 n'est pas déployée |
+| gouvernance | #1936 : FH-16 retire « Difficulté » et « Temps estimé » de tous les guides R3 ; les autres changements touchent tous les gabarits listés dans la PR | auto-review de niveau B enregistrée (« Cinq périmètres ») ; ADR-120 (#389) non fusionnée, donc DoD2 v1.0.0 reste un écart. Fusion par l'owner ; déploiement hors mandat |
+| gouvernance | modifier la fiche promue : ADR-107 D5 (« validation owner ») contre ADR-119 D1 | arbitrage au vault |
+| code | `scripts/wiki-generators/auto_review_wiki_proposal.py:82`, `:540-555` émet `HUMAN_SPOT_CHECK` pour une proposition de sécurité à source forte, contre ADR-119 D1. Aucun appelant dans le dépôt : seuls son test, `.gitignore`, `ownership.yaml` et `audit/wiki-auto-review-2026-05-29.md` le citent | à aligner sur la décision WIKI (`promotion_decision.py`, `SAFETY_AUTO_APPROVAL_ADR` à `None`) ou à retirer, dans une PR à part |

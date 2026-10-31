@@ -2,7 +2,7 @@
   "page": "/pieces/filtre-a-huile-7.html",
   "pg_id": 7,
   "revision": "révision 4, 31/10/2026",
-  "statut": "REVIEW_REQUIRED : textes servables après relecture humaine ; aucune écriture faite",
+  "statut": "auto-revu (lint, rendu DEV par surcouche, HANDOFF § 6) ; écriture en zone STOP, sur accord nominatif ; aucune écriture faite",
   "sources_servies_constatees": {
     "__seo_r1_gamme_slots": "r1s_* : hero, sélecteur, badges, intro motorisations, ligne équipementiers, intro famille, tableau de vérification ; r1s_micro_seo_block et r1s_faq présents dans les données de la page mais non affichés (FAQ au format {q, a} rejetée, repli sur la FAQ générique du sélecteur)",
     "__seo_gamme.sg_content": "blocs éditoriaux répartis par editorial-parser.ts selon le H2 (choose, price, location, reference)",

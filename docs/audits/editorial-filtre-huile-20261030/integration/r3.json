@@ -2,7 +2,7 @@
   "page": "/blog-pieces-auto/conseils/filtre-a-huile",
   "pg_id": 7,
   "revision": "révision 4, 31/10/2026",
-  "statut": "REVIEW_REQUIRED : texte servable après relecture humaine ; aucune écriture faite",
+  "statut": "auto-revu (lint, rendu DEV par surcouche, HANDOFF § 6) ; écriture en zone STOP, sur accord nominatif ; aucune écriture faite",
   "lecteur_servi": "blog-seo.service.ts lit __seo_gamme_conseil (sgc_title, sgc_content, sgc_section_type, sgc_order, sgc_sources) ; projection R3 en canari seulement (FH-3)",
   "contraintes_de_rendu_constatees": [
     "Le bloc « L'essentiel en N points » reprend la première phrase (30 caractères au moins) de S1, S2, S3, S4_DEPOSE, S5, S6 et S_GARAGE (section-config.tsx:369-390) : chaque section ci-dessous ouvre sur une phrase autonome.",
