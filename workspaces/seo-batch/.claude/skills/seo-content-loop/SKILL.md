@@ -31,6 +31,9 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
 > **2 scores à 2 étapes** : substance (sur le WIKI, tôt) ≠ surface SEO (après composition+rendu, tard) ;
 > **construire le scorer ≠ l'exécuter**. Verdict terminal de page = `PAGE_QUALITY_COMPOSITE_PASS`
 > (ADR-094, **shadow/gated** jusqu'à calibration — cf. §« scoring en transition » plus bas).
+>
+> **Chaîne d'autorité** : besoin client → recherche → RAW → WIKI admis → exports/projections → consommateurs.
+> RAG = consommateur chatbot : ni source, ni étape de cette chaîne.
 
 1. **SCRAPING LARGE** (web → `automecanik-raw/sources/web-research/<gamme>/`) — la 1ʳᵉ étape, pas RAW directement.
    - **Méthode de scraping = run web-research `RUN_TARGETED_RAW_TO_WIKI <gamme>`** (label du run, pas un CLI) :
@@ -44,14 +47,19 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
    - Le handoff `raw-to-wiki` (état **PARTIAL**, gate **`human_review_required`**) est tracé dans la projection
      **de référence** (non-canon) `.spec/00-canon/ai-registry/agent-operating-map.yaml` ; le **canon** est au
      vault (**ADR-031** raw→wiki, **ADR-059** projection, **ADR-083** promotion tiered).
-   - **PROFONDEUR > LARGEUR (gravé 2026-06-15, [[feedback_rank_1_objective_and_content_excellence_bar]])** :
+   - **Point de départ = besoin client** : les questions réelles de la gamme/motorisation (choix, compatibilité,
+     symptômes, entretien, PAA), chacune rattachée à un `target_wiki_field`. La recherche répond à ces questions ;
+     elle ne cherche pas à « saturer » le sujet.
+   - **PROFONDEUR > LARGEUR (owner 2026-06-15, [[feedback_rank_1_objective_and_content_excellence_bar]])** :
      re-synthétiser les **mêmes blogs distributeurs/médias qui rankent déjà** (Oscaro/Vroomly/Mister-Auto…) = contenu
-     **dérivé** → **ne dépasse jamais ce qu'il recopie** → ne rank JAMAIS #1. Viser à **BATTRE** le SERP : **sources
-     primaires/autoritaires** (OE technique/datasheets, **texte réglementaire brut** UNECE/ISO/SAE, registres
-     FMSI/WVA), **data réelle**, angles/comparatifs uniques, et la **data catalogue AutoMecanik par véhicule**
-     (réf/fitment/specs — l'edge que les concurrents n'ont pas). **Motorisation-aware** = condition des variants R2.
-   - **LARGE et comprehensif** : multi-source, **par gamme ET par motorisation**, **saturer tout l'espace du
-     sujet**. **OBJECTIF = RANKER #1**. JAMAIS de gap-filling myope (ne pas s'isoler sur un champ/une norme).
+     **dérivé**, qui ne dépasse pas ce qu'il recopie. Préférer les **sources primaires/autoritaires** (OE
+     technique/datasheets, **texte réglementaire brut** UNECE/ISO/SAE, registres FMSI/WVA), la **data réelle**, des
+     angles/comparatifs uniques et la **data catalogue AutoMecanik par véhicule** (réf/fitment/specs).
+     **Motorisation-aware** = condition des variants R2.
+   - **Multi-source, par gamme ET par motorisation**, sans gap-filling myope (ne pas s'isoler sur un champ/une norme).
+     **Borne** : la recherche d'une question s'arrête dès qu'une passe n'ajoute aucune source citable nouvelle, et au
+     plus au nombre de passes fixé par le brief du run. Une question restée sans source est notée `non sourcée` dans
+     `extraction-report.json` ; elle ne bloque pas les questions sourcées du même lot.
    - Angles à saturer : rôle, symptômes, diagnostic, procédure, critères de choix, **qualité + équipementiers
      réels**, normes, comparatifs, **PAA / People-Also-Ask**, prix, compatibilité, **problèmes par code moteur**,
      OEM/OE, durées de vie, couples (sourcés).
@@ -91,17 +99,27 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
    ajv. **Promotion = gouvernée ADR-083 tiered** (TIER A auto fail-closed · TIER B humain · vagues mesurées).
    Jamais un GO big-bang. Seul `WIKI_ACCEPTED` promu alimente PROD/indexable.
 4. **CONSUMER** (R1/R2/R8…) — lisent la **projection WIKI→DB** (ADR-059). Flags OFF par défaut, additif,
-   fallback explicite logué. Jamais RAG, jamais candidat non promu en PROD.
-5. **SCORE — gate rank-#1 (l'étape qui empêche de livrer du médiocre, [[feedback_rank_1_objective_and_content_excellence_bar]])**.
-   Les gates WIKI existants (`_scripts/gates/` : claim/source/contradiction/risk/confidence) vérifient que le contenu
-   n'est pas **faux** — ils **ne mesurent pas l'excellence**. Ajouter une **mesure rank-#1 capable** (ancrée
-   **ADR-086 Content Excellence Contract** + `gamme.schema` + `diversity_score`/sibling-distinctness), 5 axes :
-   **① profondeur vs SERP** (couvre les tops +davantage) · **② autorité des sources** (primaire/OE/réglementaire vs
-   blog secondaire) · **③ différenciation/unicité** (data/angles que les concurrents n'ont pas, dont catalogue
-   AutoMecanik) · **④ motorisation-awareness** (permet les variants R2 + autorité R1) · **⑤ complétude topique**
-   (entité+PAA+comparatifs+intents). **Seuil promotion = rank-#1 capable** (ex. ≥85/100, aucun axe <60).
-   Si < seuil → **re-scraper plus PROFOND (pas plus large) / ré-enrichir → re-tourner** jusqu'au score. Jamais
-   déclarer « fait » sans score rank-#1 capable.
+   fallback explicite logué. Jamais RAG, jamais candidat non promu en PROD. **Projeté ≠ servi** : une version
+   active en DB n'est lue que sous `SEO_PROJECTION_READ_V1` + jeton `<ROLE>@<entity_id>` de
+   `SEO_PROJECTION_READ_CANARY` ; sinon le rendu sert le legacy (constat filtre à huile, 2026-10-31).
+5. **MESURE — quatre axes séparés, aucun ne compense un autre** (ambition éditoriale :
+   [[feedback_rank_1_objective_and_content_excellence_bar]]) :
+   - **① Validation factuelle** — gates WIKI existants (`_scripts/gates/` : claim/source/contradiction/risk/confidence)
+     et admission ADR-083/119 : le contenu n'est pas **faux**, chaque claim est sourcé. Bloquant.
+   - **② Qualité éditoriale** — mesure d'excellence ancrée **ADR-086 Content Excellence Contract** + `gamme.schema` +
+     `diversity_score`/sibling-distinctness : profondeur vs SERP, autorité des sources, différenciation (dont
+     catalogue AutoMecanik), motorisation-awareness, complétude topique. Seuils = ceux du scorer gouverné en place
+     (cf. étape 1, « scoring en transition ») ; ce skill n'en fixe aucun.
+   - **③ Conformité technique** — rendu servi : statut, robots, canonical, H1, JSON-LD conforme au visible, liens
+     valides, bornes du contrat de rendu (skill `seo-gamme-audit`).
+   - **④ Performance observée** — GSC/GA4 après mise en ligne, période citée ; jamais inventée, sinon `non mesurée`.
+     Un rang (« #1 ») est une **observation**, ni une garantie ni un critère de promotion.
+   - **Itération bornée** : sous le seuil ②, reprise ciblée sur la dimension faible (re-scraper plus **profond** sur
+     les questions concernées, pas plus large), puis re-mesure. Arrêt dès que le seuil est atteint, qu'une reprise ne
+     fait plus progresser la mesure, ou au maximum de reprises fixé par le brief : le lot est alors livré `à revoir`
+     avec ses manques, pas relancé indéfiniment. Ne jamais relever une note, retirer un critère ni assouplir un seuil
+     pour passer. Une règle ou un seuil canonique change par son circuit de gouvernance (vault/ADR), jamais par une
+     édition de ce skill ou d'un miroir.
 
 ## Différenciation = réelle, sur le bon AXE (anti-bricolage)
 - **Jamais fabriquée** : si deux sœurs (ex. 105 std vs 105 4Motion) sont proches pour une gamme, l'assumer ;
