@@ -11742,12 +11742,14 @@
         "backend/src/modules/blog/blog.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "@common/utils/error.utils",
         "backend/src/modules/blog/services/r3-guide.service.ts"
       ],
       "kind": "controller",
-      "loc": 55,
+      "loc": 81,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/controllers/r3-guide.controller.ts",
       "risk": "low",
@@ -12478,7 +12480,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 687,
+      "loc": 701,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r3-guide.service.ts",
       "risk": "low",
@@ -17248,13 +17250,15 @@
         "backend/src/modules/gamme-rest/gamme-rest.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@cache/cache.service",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/index.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 172,
+      "loc": 181,
       "owner": "__unassigned__",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "low",
@@ -40776,6 +40780,25 @@
       "loc": 29,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/gamme-data-transformer.catalogue-famille.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/gamme-r3-cache-invalidation.http-guards.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 225,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/gamme-r3-cache-invalidation.http-guards.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
