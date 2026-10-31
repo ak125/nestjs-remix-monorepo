@@ -15,7 +15,8 @@ contrôles du § 4. Textes : [integration/social.json](integration/social.json),
 | Légende de C4, titres et tags YouTube de V1 à C4 | `social.json` (`courts_legendes`, `youtube`) | C4 : vérifiés, non admis | avec la vidéo |
 | Sous-titres de C1 à C4 | `tools/build-srt.cjs` écrit `subtitles/c1.srt` à `c4.srt`, non versionnés (`.gitignore` : sous-titres avec les rendus, hors dépôt) | voix de MEDIA.md § 7 | après calage sur la voix enregistrée |
 
-Les légendes Instagram et Facebook vouvoient (canon marketing-voice) ; la voix de Fafa tutoie (persona V1).
+Les légendes Instagram et Facebook vouvoient (canon marketing-voice, décision de l'owner du 31/10) ; la voix de Fafa
+tutoie (persona V1).
 
 ## 2. Carrousel A — « Vissé ou cartouche ? »
 
@@ -68,9 +69,10 @@ Le lint ne prouve pas la vérité technique : elle vient de la fiche WIKI (faits
 
 ## 5. Écarts laissés à l'owner
 
-- **Tutoiement sur Instagram.** `brand-rules-seed.ts` demande le « tu », le canon marketing-voice le « vous ». Les
-  textes suivent le canon. Les appels à l'action de la liste du seed sont tutoyés (« Sauvegarde ce post ») : le lint
-  accepte leur forme vouvoyée.
+- **Tutoiement sur Instagram : tranché le 31/10.** `brand-rules-seed.ts` demande le « tu », le canon marketing-voice
+  le « vous ». Décision de l'owner pour ce dossier : vouvoiement sur Instagram et Facebook, tutoiement pour la voix de
+  Fafa. Les appels à l'action de la liste du seed sont tutoyés (« Sauvegarde ce post ») : le lint accepte leur forme
+  vouvoyée. Le seed garde le « tu » : l'aligner reste une modification de code, hors de ce dossier.
 - **Envoi de la plaque ou de la carte grise.** Le canon le propose ; aucun canal d'envoi n'est vérifié. Les textes
   renvoient à la recherche par véhicule ou par type mine, que R1 sert.
 - **Logo.** Le logo servi (`frontend/public/logo-navbar*`) porte le slogan « pièces auto à prix pas cher », qui contient

@@ -39,7 +39,8 @@ Preuves :
 
 Limites propres à la révision 5 : aucune photo neuve (P-02, P-04, P-05, P-07, P-08, S-03) ; aucune voix ni aucun
 rendu ; polices de la charte non installées (Arial) ; logo servi porteur d'un slogan de prix, remplacé par un
-logotype texte ; tutoiement du seed et vouvoiement du canon non arbitrés ; rien publié ni programmé.
+logotype texte ; rien publié ni programmé. Vouvoiement sur Instagram et Facebook : décision de l'owner du 31/10
+(SOCIAL.md § 5), le seed de marque garde le tutoiement.
 
 Relais : révision 4 prise en charge par Claude CLI le 31/10 (HANDOFF § 6) ; la mention « transmise : non » ci-dessous
 est caduque. Révision 5 : relayée par HANDOFF § 1, sans changement de `r1.json`, `r3.json`, `assets.json` ni
@@ -150,6 +151,6 @@ Hermes : checkpoint **non enregistré**, `automecanik_continuity` indisponible d
   "changes": "docs/audits/editorial-filtre-huile-20261030/ : CHECKPOINT, HANDOFF (§ 1, § 2), AUDIT, MEDIA, SOCIAL, integration/candidats.json, integration/social.json, assets/social/, tools/build-social.cjs, tools/build-srt.cjs, tools/lint-integration.cjs.",
   "checks": "lint-integration PASS (158 unités, 0 constat ; 34 contrôles de canal, 0 échec) ; planches contact des 18 visuels relues ; r1.json et r3.json inchangés.",
   "decisions": "Aucun symptôme attribué au filtre ; aucune valeur universelle (nombre de tours, couple, intervalle) ; aucune source nommée dans un texte public ; carrousel B, FB-B et C4 publiables seulement après admission ou décision de l'owner ; logotype texte faute de logo sans slogan de prix ; 19052 et 19053 séparés.",
-  "next_action": "Owner : arbitrer tutoiement/vouvoiement, logo, publication des déclinaisons. F-C1 à F-C11 : route ADR-119. Prises de vue P-02, P-04, P-05, P-07, P-08, S-03. Voix, rendu et human_validated des courts. Claude CLI : point d'entrée commun et intégration (HANDOFF § 1 et § 6)."
+  "next_action": "Owner : logo sans slogan de prix, publication des déclinaisons (vouvoiement retenu le 31/10). F-C1 à F-C11 : route ADR-119. Prises de vue P-02, P-04, P-05, P-07, P-08, S-03. Voix, rendu et human_validated des courts. Claude CLI : point d'entrée commun et intégration (HANDOFF § 1 et § 6)."
 }
 ```
