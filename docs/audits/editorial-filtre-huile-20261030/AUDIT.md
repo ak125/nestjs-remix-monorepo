@@ -9,7 +9,7 @@ seule), WIKI par l'API GitHub, sources externes. Aucune écriture dans RAW, WIKI
 
 Statut : auto-revu (lint, rendu DEV par surcouche de lecture, HANDOFF § 6) ; aucune vidéo rendue, rien n'est écrit
 en base ni publié. Médias :
-[MEDIA.md](MEDIA.md). Raccordements pour Claude CLI : [HANDOFF.md](HANDOFF.md). Reprise : [CHECKPOINT.md](CHECKPOINT.md).
+[MEDIA.md](MEDIA.md). Raccordements historiques d'intégration CLI : [HANDOFF.md](HANDOFF.md). Reprise : [CHECKPOINT.md](CHECKPOINT.md).
 Le dossier plaquettes reste en attente (commit `2a63da58a`, branche non poussée, aucune PR).
 
 Révision 3 (30/10) : les textes à intégrer sont dans `integration/r1.json` et `integration/r3.json`, sous les noms des
@@ -119,13 +119,20 @@ décision du décideur (ADR-119). Ce dossier n'écrit ni dans RAW ni dans le WIK
 
 ### 0.6 Responsables, livrables et état réel d'intégration
 
+**Mandat utilisateur du 1er novembre 2026 pour les nouveaux lots.**
+ChatGPT/Work est l'auteur éditorial principal ; le Studio documentaire/Space
+porte les brouillons et décisions de rédaction, et Codex reçoit l'intégration
+du nouveau pilote. Ce mandat n'annule pas les auteurs, engagements techniques
+et validations des révisions déjà produites. Les fichiers de bibliothèque ne
+sont ni automatiquement lus par Codex ni synchronisés au dépôt.
+
 | Responsable | Livre | Dans ce dossier |
 |---|---|---|
-| Claude Code Desktop | production éditoriale et préparations médias : textes, images, scripts, prompts | `integration/`, `assets/`, `MEDIA.md`, `PROMPTS.md`, `CHECKPOINT.md` |
-| Claude CLI | organisation technique et intégration : raccordements au code et aux contrats existants, vérification en DEV, préparation du lot d'écriture | `HANDOFF.md` § 6, `integration/publication-batch.json`, ce brief |
-| Codex | contre-vérification sur un SHA figé | compte rendu cité dans la PR concernée |
-| Hermes | suivi des preuves et relais | checkpoint (`CHECKPOINT.md`, charge à reporter) |
-| Décideur WIKI | admission des faits F-C* (ADR-119) | § 6 |
+| ChatGPT (Studio/Space ; Work si accessible) | recherche sourcée, rédaction principale, scripts candidats et suivi éditorial | Studio `AutoMecanik — Studio éditorial` ; livrables à transmettre par version et empreinte |
+| Codex (nouveaux lots éditoriaux) | intégration au code existant, tests et remise de PR ; revue indépendante séparée de l'auteur | `HANDOFF.md` § 6 et lot figé, après preuve de réception ; aucune mission Codex présumée exécutée |
+| Claude Desktop / Claude CLI (historique du lot) | livrables déjà préparés, raccordements et corrections de code déjà confiées | `integration/`, `assets/`, `MEDIA.md`, `PROMPTS.md`, `CHECKPOINT.md`, `HANDOFF.md` § 6 ; provenance conservée |
+| Hermes (passation) | fonctions de suivi et relais existantes jusqu'à leur remplacement vérifié | `CHECKPOINT.md` ; ne bloque plus les nouvelles rédactions |
+| Décideur WIKI | admission des faits F-C* (ADR-119), inchangée | § 6 |
 | Owner | fusion des PR, accord nominatif en zone STOP (écriture PROD sur pages indexées, déploiement) | — |
 
 État relevé le 2026-10-31T13:05Z, complété à 14:10Z (correctifs de code, déclinaisons sociales). « Présent » : dans
@@ -144,9 +151,11 @@ le dépôt ; « servi » : constaté sur la page publique.
 
 Détail des dépendances restantes, étape par étape : `HANDOFF.md` § 6, « Restant, par étape ».
 
-Transmission de ce brief : aucune preuve de transmission à Claude Code Desktop, Codex ou Hermes au 31/10. Une
-transmission se consigne ici avec son destinataire, sa date et la preuve de réception ; la présence du fichier dans le
-dépôt n'en est pas une.
+Transmission de ce brief : au relevé historique du 31/10, aucune preuve de réception
+par Claude Code Desktop, Codex ou Hermes. Au 1er novembre, la mise à disposition
+d'un lot dans le Studio ne prouve pas davantage la réception par Codex.
+Consigner pour chaque transfert le destinataire, la révision, l'empreinte,
+la date et une preuve de prise en charge ; la présence d'un fichier ne suffit pas.
 
 ### 0.7 Réutiliser ce dossier pour une autre gamme ou un véhicule
 
