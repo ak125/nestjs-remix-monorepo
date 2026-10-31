@@ -791,15 +791,18 @@ describe("production form feedback through the real router", () => {
       },
     );
   });
-  it("saves a new script through its form and reports completion after waiting", async () => {
+  it("saves a new script through the real action and reloads its persisted text after redirect", async () => {
     let finish!: () => void;
     const pending = new Promise<void>((resolve) => {
       finish = resolve;
     });
-    await show({}, async () => {
+    const prod = production();
+    fetchMock.mockImplementationOnce(async (_target, init) => {
       await pending;
-      return data({ ok: true });
+      prod.scriptText = JSON.parse(init.body).scriptText;
+      return response({ success: true });
     });
+    const { router } = await show({ production: prod }, action);
     fireEvent.click(screen.getByRole("button", { name: "Script" }));
     fireEvent.click(screen.getByRole("button", { name: "EDITER" }));
     expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("");
@@ -817,7 +820,17 @@ describe("production form feedback through the real router", () => {
     await act(async () => {
       finish();
     });
-    expect(await screen.findByText("Script sauvegarde")).toBeTruthy();
+    expect(await screen.findByText("Script genere")).toBeTruthy();
+    expect(router.state.location.pathname).toBe(url.pathname);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      scriptText: "Nouveau script synthétique",
+    });
+    fireEvent.click(screen.getByRole("button", { name: "ANNULER" }));
+    expect(
+      screen.getAllByText("Nouveau script synthétique").length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText("Script sauvegarde")).toBeNull();
   });
   it("shows returned gates separately from stored verdicts without changing approval evidence", async () => {
     const prod = production({ gateResults: [gates[2]] });
