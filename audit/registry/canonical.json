@@ -72366,6 +72366,86 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D5",
+      "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-assets.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 317,
+      "owner": "@ak125/content-team",
+      "path": "docs/audits/editorial-filtre-huile-20261030/tools/build-assets.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D5",
+      "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-pictos.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 76,
+      "owner": "@ak125/content-team",
+      "path": "docs/audits/editorial-filtre-huile-20261030/tools/build-pictos.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D5",
+      "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-preview.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 281,
+      "owner": "@ak125/content-team",
+      "path": "docs/audits/editorial-filtre-huile-20261030/tools/build-preview.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D5",
+      "id": "docs/audits/editorial-filtre-huile-20261030/tools/lint-integration.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 108,
+      "owner": "@ak125/content-team",
+      "path": "docs/audits/editorial-filtre-huile-20261030/tools/lint-integration.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "reachability"
       ],
       "domain": "UNKNOWN",
@@ -96846,7 +96926,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 206,
+      "loc": 216,
       "owner": "__unassigned__",
       "path": "frontend/vite.config.ts",
       "risk": "low",
@@ -105840,15 +105920,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "0a46b151341cbccf2485294dba1a1a48465cc1b2a28b38372657df4dc3c7b60b",
+      ".spec/00-canon/repository-registry/ownership.yaml": "4f11fa4ddbeaa8cdeabe4afe3759a7f2ecdc9746e0abe467d7ca81f7eba3800b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "01b23f19c2f49276cb4e409d4409ec56e5b77e16b0f463f2d6005497d11ecb2e",
+      "audit/registry/files.json": "7124525b4e29e34cc96c31c5ce0dffadd915534eafd417d90ea758eeb9925047",
       "audit/registry/rpc.json": "7897ffc88fa007be0b96ee19cc110f99f71d0639c30747fa5c4df34d48f0af4a",
       "audit/registry/runtime.json": "ef81db8d0cbc0c753d3ec159a5a45ed293ed44842b1ba8e658199b8628daae83"
     },
-    "sotFingerprint": "08702791e80f"
+    "sotFingerprint": "58dc04ea999e"
   },
   "runtime": [
     {
