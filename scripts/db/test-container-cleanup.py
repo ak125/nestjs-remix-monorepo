@@ -25,6 +25,7 @@ SCRIPTS = [
     "test-seo-gsc-page-totals-migrations.sh",
     "test-tecdoc-api-surface-lockdown.sh",
     "test-vehicle-cache-trigger-observable.sh",
+    "test-video-capture-media-factory-schema.sh",
 ]
 HOOK = r'''
 set -T
