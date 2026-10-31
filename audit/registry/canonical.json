@@ -100941,6 +100941,46 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "scripts/agents/check-editorial-review.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 924,
+      "owner": "@ak125",
+      "path": "scripts/agents/check-editorial-review.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "scripts/agents/check-editorial-review.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 586,
+      "owner": "@ak125",
+      "path": "scripts/agents/check-editorial-review.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "scripts/audit/__fixtures__/repo-broken/.dependency-cruiser.generated.cjs",
       "importedBy": [],
       "imports": [],
@@ -106162,15 +106202,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "e489aad6cca7e23a82ebd66917c1c6ad3b76e42bcd22362529cc8c26a7f1613c",
+      ".spec/00-canon/repository-registry/ownership.yaml": "d41affe3845277f0221f9ec55a95ef167a7219c056b2362b7fc4e083317654ab",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "7f3df8af9fca8feca02932571c42c8917501ae9c166602a2229ddb04132d9345",
+      "audit/registry/files.json": "28763d80f2a7f13e37dfbda25f7ba0a26d78687a44667b80c05eb34061712bb8",
       "audit/registry/rpc.json": "294f506d203e5fa10be7f8aa1c8413414776431d9d0a9509dd5f8ea140daf6a4",
       "audit/registry/runtime.json": "a6b7bb34f935b3f73f8d20c118fcaa5040e50b33fabbb344943df0a202fa5d19"
     },
-    "sotFingerprint": "449eeeacc356"
+    "sotFingerprint": "fd8a9265dadc"
   },
   "runtime": [
     {
