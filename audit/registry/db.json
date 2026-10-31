@@ -10731,49 +10731,400 @@
       ]
     },
     {
-      "columns": [],
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "serial PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "asset_key",
+          "nullable": true,
+          "type": "text NOT NULL UNIQUE"
+        },
+        {
+          "hasDefault": false,
+          "name": "tags",
+          "nullable": true,
+          "type": "text[]"
+        },
+        {
+          "hasDefault": false,
+          "name": "file_path",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": true,
+          "name": "validated",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": false,
+          "name": "validated_by",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamptz"
+        }
+      ],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",
       "id": "__video_assets",
-      "inMigrations": [],
+      "inMigrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
       "indexes": [],
       "name": "__video_assets",
       "owner": "__unassigned__",
       "risk": "low",
-      "rlsEnabled": false,
+      "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
+      "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/media-factory/services/video-data.service.ts"
       ]
     },
     {
-      "columns": [],
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "serial PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "cache_key",
+          "nullable": true,
+          "type": "text NOT NULL UNIQUE"
+        },
+        {
+          "hasDefault": false,
+          "name": "url",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "voice",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "char_count",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamptz"
+        }
+      ],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",
       "id": "__video_audio_cache",
-      "inMigrations": [],
+      "inMigrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
       "indexes": [],
       "name": "__video_audio_cache",
       "owner": "__unassigned__",
       "risk": "low",
-      "rlsEnabled": false,
+      "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
+      "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/media-factory/services/audio-cache.service.ts"
       ]
     },
     {
-      "columns": [],
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "serial PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "brief_id",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "video_type",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "vertical",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "gamme_alias",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": true,
+          "name": "status",
+          "nullable": false,
+          "type": "varchar"
+        },
+        {
+          "hasDefault": false,
+          "name": "bullmq_job_id",
+          "nullable": true,
+          "type": "varchar"
+        },
+        {
+          "hasDefault": false,
+          "name": "trigger_source",
+          "nullable": false,
+          "type": "varchar"
+        },
+        {
+          "hasDefault": false,
+          "name": "trigger_job_id",
+          "nullable": true,
+          "type": "varchar"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        {
+          "hasDefault": false,
+          "name": "started_at",
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        {
+          "hasDefault": false,
+          "name": "completed_at",
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        {
+          "hasDefault": false,
+          "name": "artefact_check",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "gate_results",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "can_publish",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": false,
+          "name": "quality_score",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "quality_flags",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "error_message",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "duration_ms",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": true,
+          "name": "attempt_number",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "feature_flags",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "engine_name",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "engine_version",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "render_status",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "render_output_path",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "render_metadata",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "render_duration_ms",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "render_error_code",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "engine_resolution",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": true,
+          "name": "retryable",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": true,
+          "name": "is_canary",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": true,
+          "name": "canary_fallback",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": false,
+          "name": "canary_error_message",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "canary_error_code",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "tts_audio_url",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": true,
+          "name": "tts_cached",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": false,
+          "name": "tts_cost_chars",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "postprocess_variants",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "postprocess_duration_ms",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "srt_s3_path",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "parent_brief_id",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "derivative_index",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "batch_id",
+          "nullable": true,
+          "type": "text"
+        }
+      ],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",
       "id": "__video_execution_log",
-      "inMigrations": [],
+      "inMigrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
       "indexes": [],
       "name": "__video_execution_log",
       "owner": "__unassigned__",
@@ -10781,7 +11132,7 @@
       "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
+      "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/media-factory/services/postprocess.service.ts",
@@ -10790,19 +11141,184 @@
       ]
     },
     {
-      "columns": [],
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "serial PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "brief_id",
+          "nullable": true,
+          "type": "text NOT NULL UNIQUE"
+        },
+        {
+          "hasDefault": false,
+          "name": "vertical",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "gamme_alias",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "template_id",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "knowledge_contract",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "claim_table",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "evidence_pack",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "disclaimer_plan",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "approval_record",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "quality_score",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "quality_flags",
+          "nullable": true,
+          "type": "text[]"
+        },
+        {
+          "hasDefault": false,
+          "name": "gate_results",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_by",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        {
+          "hasDefault": true,
+          "name": "updated_at",
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        {
+          "hasDefault": false,
+          "name": "script_text",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "script_generated_at",
+          "nullable": true,
+          "type": "timestamptz"
+        },
+        {
+          "hasDefault": false,
+          "name": "script_model",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "narrative_style_pack",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "derivative_policy",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": false,
+          "name": "master_audio_url",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "tts_voice",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "parent_brief_id",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "derivative_index",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": true,
+          "name": "content_role",
+          "nullable": true,
+          "type": "text"
+        }
+      ],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",
       "id": "__video_productions",
-      "inMigrations": [],
+      "inMigrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
       "indexes": [],
       "name": "__video_productions",
       "owner": "__unassigned__",
       "risk": "low",
-      "rlsEnabled": false,
+      "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
+      "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/media-factory/services/derivative-engine.service.ts",
@@ -10812,38 +11328,140 @@
       ]
     },
     {
-      "columns": [],
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "serial PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "template_id",
+          "nullable": true,
+          "type": "text NOT NULL UNIQUE"
+        },
+        {
+          "hasDefault": true,
+          "name": "version",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "allowed_use_cases",
+          "nullable": true,
+          "type": "text[]"
+        },
+        {
+          "hasDefault": false,
+          "name": "forbidden_use_cases",
+          "nullable": true,
+          "type": "text[]"
+        },
+        {
+          "hasDefault": false,
+          "name": "duration_range",
+          "nullable": true,
+          "type": "int4range"
+        },
+        {
+          "hasDefault": false,
+          "name": "structure",
+          "nullable": true,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamptz"
+        }
+      ],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",
       "id": "__video_templates",
-      "inMigrations": [],
+      "inMigrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
       "indexes": [],
       "name": "__video_templates",
       "owner": "__unassigned__",
       "risk": "low",
-      "rlsEnabled": false,
+      "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
+      "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/media-factory/services/video-data.service.ts"
       ]
     },
     {
-      "columns": [],
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "serial PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "brief_id",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "variant_name",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "s3_path",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "codec",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "resolution",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "file_size_bytes",
+          "nullable": true,
+          "type": "bigint"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamptz"
+        }
+      ],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",
       "id": "__video_variants",
-      "inMigrations": [],
+      "inMigrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
       "indexes": [],
       "name": "__video_variants",
       "owner": "__unassigned__",
       "risk": "low",
-      "rlsEnabled": false,
+      "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
+      "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/media-factory/services/postprocess.service.ts"
