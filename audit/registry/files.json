@@ -39869,7 +39869,7 @@
         "backend/src/workers/types/video-execution.types.ts"
       ],
       "kind": "service",
-      "loc": 463,
+      "loc": 468,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/video-execution.processor.ts",
       "risk": "low",
@@ -42369,7 +42369,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 714,
+      "loc": 747,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/video-execution.processor.test.ts",
       "risk": "low",
