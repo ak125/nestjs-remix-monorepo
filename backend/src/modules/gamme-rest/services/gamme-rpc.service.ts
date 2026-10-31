@@ -1,4 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { CacheService } from '@cache/cache.service';
@@ -485,7 +489,7 @@ export class GammeRpcService extends SupabaseBaseService {
       { source: 'api' },
     );
     if (error) throw error;
-    await this.invalidateCache(String(pgId));
+    await this.purgeAfterDbWrite([pgId], 'reconstruction');
     return Boolean(data);
   }
 
@@ -499,8 +503,29 @@ export class GammeRpcService extends SupabaseBaseService {
       .update({ stale: true, stale_reason: reason }, { count: 'exact' })
       .in('pg_id', pgIds);
     if (error) throw error;
-    for (const id of pgIds) await this.invalidateCache(String(id));
+    await this.purgeAfterDbWrite(pgIds, 'marquage stale');
     return { marked: count ?? pgIds.length };
+  }
+
+  /**
+   * Purge Redis après une écriture en base déjà validée. Un échec ne l'annule
+   * pas : il est signalé comme état partiel (503 rejouable), jamais comme succès.
+   */
+  private async purgeAfterDbWrite(
+    pgIds: number[],
+    write: string,
+  ): Promise<void> {
+    try {
+      for (const id of pgIds) await this.invalidateCache(String(id));
+    } catch (error) {
+      this.logger.error(
+        `Purge du cache incomplète après ${write} des gammes ${pgIds.join(',')}: ${error}`,
+      );
+      throw new ServiceUnavailableException({
+        message: 'Écriture en base appliquée, purge du cache incomplète',
+        retryable: true,
+      });
+    }
   }
 
   async getDbCacheStats(): Promise<{

@@ -180,7 +180,8 @@ export class GammeRestRpcV2Controller {
         `Invalidation du cache gamme ${pgId} échouée: ${error}`,
       );
       throw new ServiceUnavailableException({
-        message: 'Cache indisponible : invalidation non effectuée',
+        message:
+          'Cache indisponible : invalidation non effectuée ou incomplète',
         retryable: true,
       });
     }

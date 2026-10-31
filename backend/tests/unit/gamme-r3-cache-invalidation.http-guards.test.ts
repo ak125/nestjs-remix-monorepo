@@ -17,10 +17,13 @@
  *   (aucun des deux 403 n'est vacant) ;
  * - Redis indisponible (CacheService réel : client absent, ou DEL rejeté) → 503,
  *   aucun message de succès ;
+ * - routes admin `gamme-cache` rebuild et mark-stale : l'écriture en base est
+ *   faite avant la purge ; Redis indisponible → 503 qui annonce l'état partiel ;
  * - les routes de lecture restent publiques.
  *
  * Aucun appel réseau : CacheService est un double en mémoire, ou le service réel
- * sans connexion (`onModuleInit` neutralisé sur l'instance) ; services mockés.
+ * sans connexion (`onModuleInit` neutralisé sur l'instance) ; services mockés,
+ * écriture en base simulée sur l'instance de GammeRpcService.
  */
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -30,12 +33,14 @@ import request from 'supertest';
 import { AuthenticatedGuard } from '../../src/auth/authenticated.guard';
 import { IsAdminGuard } from '../../src/auth/is-admin.guard';
 import { CacheService } from '../../src/cache/cache.service';
+import { RpcGateService } from '../../src/security/rpc-gate/rpc-gate.service';
 import { R3GuideController } from '../../src/modules/blog/controllers/r3-guide.controller';
 import { BlogArticleDataService } from '../../src/modules/blog/services/blog-article-data.service';
 import { BlogArticleRelationService } from '../../src/modules/blog/services/blog-article-relation.service';
 import { BlogSeoService } from '../../src/modules/blog/services/blog-seo.service';
 import { R3GuideService } from '../../src/modules/blog/services/r3-guide.service';
 import { R3ProjectionDecisionService } from '../../src/modules/blog/services/r3-projection-decision.service';
+import { AdminGammeCacheController } from '../../src/modules/gamme-rest/controllers/admin-gamme-cache.controller';
 import { GammeRestRpcV2Controller } from '../../src/modules/gamme-rest/gamme-rest-rpc-v2.controller';
 import { GammeResponseBuilderService } from '../../src/modules/gamme-rest/services';
 import { GammeRpcService } from '../../src/modules/gamme-rest/services/gamme-rpc.service';
@@ -69,6 +74,10 @@ const R3_KEYS = [
 ];
 const R1_PATH = `/api/gamme-rest/${PG_ID}/cache/invalidate`;
 const R3_PATH = `/api/r3-guide/${PG_ALIAS}/cache/invalidate`;
+const DOWN_MESSAGE: Record<string, string> = {
+  [R1_PATH]: 'Cache indisponible : invalidation non effectuée ou incomplète',
+  [R3_PATH]: 'Cache indisponible : invalidation non effectuée',
+};
 
 /** CacheService réduit à get/set/del sur une Map ; les clés R1 et R3 y sont posées. */
 function makeCache() {
@@ -106,6 +115,33 @@ function realCacheService(redis: { status: string; del: jest.Mock } | null) {
     redisReady: redis !== null,
   });
   return service;
+}
+
+/** Redis indisponible : client absent, ou client prêt dont le DEL est rejeté. */
+function redisDown(): Array<
+  [string, { status: string; del: jest.Mock } | null]
+> {
+  return [
+    ['client Redis absent', null],
+    [
+      'DEL rejeté par Redis',
+      {
+        status: 'ready',
+        del: jest.fn().mockRejectedValue(new Error('ECONNRESET')),
+      },
+    ],
+  ];
+}
+
+/** Session Passport simulée (en PROD : express-session + passport.session()). */
+function simulatedSession(req: Request, _res: Response, next: NextFunction) {
+  const persona = PERSONAS[req.header('x-test-persona') ?? ''];
+  const session = req.header('x-test-session') !== 'none';
+  Object.assign(req, {
+    user: persona,
+    isAuthenticated: () => session && persona !== undefined,
+  });
+  next();
 }
 
 async function makeApp(
@@ -155,18 +191,59 @@ async function makeApp(
   }
   const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication({ logger: false });
-  // Session Passport simulée (en PROD : express-session + passport.session()).
-  app.use((req: Request, _res: Response, next: NextFunction) => {
-    const persona = PERSONAS[req.header('x-test-persona') ?? ''];
-    const session = req.header('x-test-session') !== 'none';
-    Object.assign(req, {
-      user: persona,
-      isAuthenticated: () => session && persona !== undefined,
-    });
-    next();
-  });
+  app.use(simulatedSession);
   await app.init();
   return app;
+}
+
+/**
+ * AdminGammeCacheController réel devant un GammeRpcService réel dont l'écriture
+ * en base est simulée (`callRpc` et `client` remplacés sur l'instance) ; la purge
+ * passe par le CacheService fourni. `dbWrites` relève les écritures faites.
+ */
+async function makeAdminCacheApp(
+  cache: CacheService | ReturnType<typeof makeCache>['cache'],
+) {
+  // Contrôleur hérité de SupabaseBaseService : configuration factice, aucune requête émise.
+  process.env.SUPABASE_URL =
+    process.env.SUPABASE_URL || 'http://localhost:54321';
+  process.env.SUPABASE_SERVICE_ROLE_KEY =
+    process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key';
+  const dbWrites: string[] = [];
+  const rpcService = Object.create(
+    GammeRpcService.prototype,
+  ) as GammeRpcService;
+  Object.assign(rpcService, {
+    cacheService: cache,
+    logger: { log: jest.fn(), debug: jest.fn(), error: jest.fn() },
+    callRpc: jest.fn(async (fn: string) => {
+      dbWrites.push(fn);
+      return { data: true, error: null };
+    }),
+  });
+  Object.defineProperty(rpcService, 'client', {
+    value: {
+      from: (table: string) => ({
+        update: () => ({
+          in: async (_column: string, ids: number[]) => {
+            dbWrites.push(`${table}.stale`);
+            return { error: null, count: ids.length };
+          },
+        }),
+      }),
+    },
+  });
+  const moduleRef = await Test.createTestingModule({
+    controllers: [AdminGammeCacheController],
+    providers: [
+      { provide: GammeRpcService, useValue: rpcService },
+      { provide: RpcGateService, useValue: {} },
+    ],
+  }).compile();
+  const app = moduleRef.createNestApplication({ logger: false });
+  app.use(simulatedSession);
+  await app.init();
+  return { app, dbWrites };
 }
 
 function post(
@@ -281,16 +358,7 @@ describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
     }
   });
 
-  it.each([
-    ['client Redis absent', null],
-    [
-      'DEL rejeté par Redis',
-      {
-        status: 'ready',
-        del: jest.fn().mockRejectedValue(new Error('ECONNRESET')),
-      },
-    ],
-  ])(
+  it.each(redisDown())(
     'Redis indisponible (%s) → 503 sur R1 et R3, aucun message de succès',
     async (_label, redis) => {
       const down = await makeApp(cacheDouble, {
@@ -300,6 +368,7 @@ describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
         for (const path of [R1_PATH, R3_PATH]) {
           const res = await post(down, path, 'adminFlag');
           expect(res.status).toBe(503);
+          expect(res.body.message).toBe(DOWN_MESSAGE[path]);
           expect(JSON.stringify(res.body)).not.toContain('Cache invalidé');
           expect(res.body.keys).toBeUndefined();
         }
@@ -318,4 +387,64 @@ describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual({ cached: R3_KEYS[0] });
   });
+});
+
+describe('Routes admin gamme-cache — purge Redis après écriture en base (HTTP)', () => {
+  const REBUILD_PATH = `/api/admin/gamme-cache/rebuild/${PG_ID}`;
+  const MARK_STALE_PATH = '/api/admin/gamme-cache/mark-stale';
+  const RPC_KEYS = R1_KEYS.slice(0, 2);
+
+  it('Redis disponible → 201 : écriture en base puis purge des clés RPC', async () => {
+    const cacheDouble = makeCache();
+    cacheDouble.seed();
+    const { app, dbWrites } = await makeAdminCacheApp(cacheDouble.cache);
+    try {
+      const rebuild = await post(app, REBUILD_PATH, 'adminFlag');
+      expect(rebuild.status).toBe(201);
+      expect(rebuild.body.data).toEqual({ pg_id: Number(PG_ID), built: true });
+      const stale = await post(app, MARK_STALE_PATH, 'adminFlag').send({
+        pg_ids: [Number(PG_ID)],
+      });
+      expect(stale.status).toBe(201);
+      expect(stale.body.data).toEqual({ marked: 1 });
+      expect(dbWrites).toEqual([
+        'rebuild_gamme_page_cache',
+        '__gamme_page_cache.stale',
+      ]);
+      expect(cacheDouble.deleted()).toEqual([...RPC_KEYS, ...RPC_KEYS]);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it.each(redisDown())(
+    'Redis indisponible (%s) → 503 « écriture appliquée, purge incomplète »',
+    async (_label, redis) => {
+      const { app, dbWrites } = await makeAdminCacheApp(
+        realCacheService(redis),
+      );
+      try {
+        const rebuild = await post(app, REBUILD_PATH, 'adminFlag');
+        const stale = await post(app, MARK_STALE_PATH, 'adminFlag').send({
+          pg_ids: [Number(PG_ID), 8],
+        });
+        for (const res of [rebuild, stale]) {
+          expect(res.status).toBe(503);
+          expect(res.body).toEqual({
+            message: 'Écriture en base appliquée, purge du cache incomplète',
+            retryable: true,
+          });
+        }
+        // L'écriture en base précède la purge : le 503 ne l'annule pas.
+        expect(dbWrites).toEqual([
+          'rebuild_gamme_page_cache',
+          '__gamme_page_cache.stale',
+        ]);
+        // Un DEL par route : mark-stale s'arrête au premier rejet.
+        if (redis) expect(redis.del).toHaveBeenCalledTimes(2);
+      } finally {
+        await app.close();
+      }
+    },
+  );
 });
