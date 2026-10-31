@@ -1698,3 +1698,12 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+  # restore_french_accents (fonction des quatre triggers d'accents des contenus
+  # R1/R3/R6) : balises et URL protégées, quatre entrées fausses retirées
+  # (PR #1941). Couvre .sql + .down.sql. Glob exact : les migrations ne sont
+  # pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261031_accents_protected_segments*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
