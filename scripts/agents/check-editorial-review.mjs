@@ -125,6 +125,8 @@ function countLines(text) {
 
 // Espaces ordinaires et retours à la ligne ramenés à une espace ; insécables conservées (RE-T1).
 export const norm = (s) => s.replace(/[ \t\r\n]+/g, " ").trim();
+// Comme norm(), mais un saut forcé Markdown (deux espaces en fin de ligne) reste un retour à la ligne.
+const keepBreaks = (s) => s.replace(/[ \t\r\n]+/g, (m) => (/ {2}\r?\n/.test(m) ? "\n" : " ")).trim();
 
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
@@ -753,6 +755,12 @@ function displayCheck(rel, prose, roots) {
   }
   const texts = [["l'original", o.texte], ["la proposition", rel.proposition]].filter(([, t]) => typeof t === "string" && t.trim());
   const shown = norm(prose);
+  // Repli YAML d'un champ ou retours à la ligne restent admis ; les espaces d'un saut forcé Markdown
+  // sont du texte livré, que norm() effacerait.
+  if (texts.some(([, t]) => keepBreaks(prose).includes(keepBreaks(t)))) return {};
+  if (shown.includes(norm(o.texte))) {
+    return { ecart: `relecture ${id} : la réponse affiche l'original du bloc aux espaces de fin de ligne près seulement (saut forcé Markdown) : l'original n'est pas le brouillon livré tel qu'il est affiché (§10)` };
+  }
   if (texts.some(([, t]) => shown.includes(norm(t)))) return {};
   const shownTypo = typoShape(shown);
   const match = texts.find(([, t]) => shownTypo.includes(typoShape(norm(t))));
@@ -889,6 +897,11 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
   for (const msg of displayEcarts) report.erreurs.push(`original inexact — ${msg}`);
   // Même règle : un contrôle passé sur le seul bloc ne porte pas sur la sortie livrée.
   for (const msg of entreesIncompletes) report.erreurs.push(`entrée incomplète — ${msg}`);
+  // Même règle quelle que soit la provenance de l'original : la prose qui précède le bloc
+  // (brouillon, tableaux, limites) fait partie de la sortie livrée.
+  if (!prose.trim() && !entreesIncompletes.length) {
+    report.erreurs.push("entrée incomplète — l'entrée ne contient que le bloc final : passer au contrôle la réponse entière telle qu'elle est livrée, prose comprise (§10)");
+  }
   // Même règle : une référence qui ne désigne pas le texte reproduit, ou un champ structuré désigné
   // par la seule syntaxe du document, est inexacte, même quand la relecture sort du périmètre.
   for (const msg of referencesInexactes) report.erreurs.push(`référence inexacte — ${msg}`);

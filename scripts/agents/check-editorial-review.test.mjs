@@ -119,6 +119,8 @@ function nestedFiche(b, name) {
 }
 const FIELD = "entity_data.editorial.selection_criteria.content_md";
 const MD = `## Filtre à huile\n\n- **Rôle**${NB}: retient les impuretés du circuit.\n- **Précaution**${NB}: ne le remplacez pas moteur chaud.`;
+// Deux espaces en fin de ligne : saut forcé en Markdown, à reproduire dans l'original.
+const MD_BR = `**Scène 1 — Ouverture**  \nLe filtre retient les impuretés du circuit de lubrification.  \nNe le remplacez pas moteur chaud${NB}: l'huile peut être brûlante.`;
 
 const output = (b, prose = "Relecture : voir le bloc final.") => `${prose}\n\n\`\`\`json\n${JSON.stringify(b, null, 2)}\n\`\`\`\n`;
 const run = (text) => checkOutput(text, { roots: [REPO, dir] });
@@ -224,6 +226,18 @@ describe("cas acceptés", () => {
 
   test("brouillon Markdown reproduit tel qu'affiché, intertitre et puces compris : appliquee", () => {
     const r = run(output(unchangedBlock(MD), `Brouillon :\n\n${MD}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("brouillon Markdown à sauts forcés reproduit avec ses espaces de fin de ligne : appliquee", () => {
+    const r = run(output(unchangedBlock(MD_BR), `Brouillon :\n\n${MD_BR}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("champ affiché dans sa source YAML repliée (>-), original = valeur du champ : appliquee", () => {
+    const value = "Choisissez la forme prévue pour le moteur, filtre vissé complet ou cartouche pour boîtier démontable. Ne vous fiez pas à l'apparence.";
+    const yaml = ["```yaml", "selection_criteria:", "  content_md: >-", "    Choisissez la forme prévue pour le moteur, filtre vissé complet ou", "    cartouche pour boîtier démontable. Ne vous fiez pas à l'apparence.", "```"].join("\n");
+    const r = run(output(unchangedBlock(value), `Bloc proposé :\n\n${yaml}\n\nRelecture appliquée.`));
     assert.equal(r.resultat, "appliquee", errors(r));
   });
 
@@ -507,6 +521,24 @@ describe("cas rejetés", () => {
     const r = run(output(unchangedBlock(plain), `Brouillon :\n\n${MD}\n\nRelecture appliquée.`));
     assert.equal(r.resultat, "rejetee");
     assert.match(errors(r), /original inexact.*au balisage Markdown près/);
+  });
+
+  test("original privé des espaces de fin de ligne d'un brouillon à sauts forcés, même en partielle", () => {
+    const amputated = MD_BR.replace(/ {2}\n/g, "\n");
+    for (const etat of ["appliquée", "partielle"]) {
+      const r = run(output(unchangedBlock(amputated, etat), `Brouillon :\n\n${MD_BR}\n\nRelecture ${etat}.`));
+      assert.equal(r.resultat, "rejetee", errors(r));
+      assert.match(errors(r), /original inexact.*l'original du bloc aux espaces de fin de ligne près seulement/);
+    }
+  });
+
+  test("contrôle passé sur le seul bloc final, original désigné par un fichier de provenance", () => {
+    const b = block();
+    b.relectures[0].original.provenance = { chemin: nestedFiche(b, "fiche-bloc-seul.md"), lignes: "5", champ: FIELD };
+    assert.equal(run(output(b)).resultat, "appliquee", errors(run(output(b))));
+    const r = run(`\`\`\`json\n${JSON.stringify(b, null, 2)}\n\`\`\`\n`);
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /entrée incomplète — l'entrée ne contient que le bloc final/);
   });
 
   test("original en texte brut dont chaque ligne est courte ou affichée telle quelle", () => {
