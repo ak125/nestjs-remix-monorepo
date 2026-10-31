@@ -10,6 +10,7 @@ import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 import { GammeRpcAggregatedDataSchema } from './gamme-rpc.schema';
 import { HomepageRpcService } from '../../catalog/services/homepage-rpc.service';
+import { R6_GUIDE_LINK_CACHE_SEGMENTS } from '../../seo/services/r6-guide-link-policy.service';
 
 /** Champs de get_homepage_families lus pour les vignettes gamme. */
 interface HomepageFamiliesShape {
@@ -85,6 +86,25 @@ export class GammeRpcService extends SupabaseBaseService {
    */
   private getStaleCacheKey(pgId: string): string {
     return `gamme:rpc:v2:stale:${pgId}`;
+  }
+
+  /**
+   * 🔑 Génère la clé du cache de réponse construite (2e couche, contrôleur RPC V2).
+   * La réponse dépend du drapeau de consolidation R6 (liens guide, ADR-103 D5).
+   */
+  getResponseCacheKey(pgId: string, segment: string): string {
+    return `gamme:resp:v2:${segment}:${pgId}`;
+  }
+
+  /** Clés Redis d'une gamme : données RPC, copie de secours, réponse par segment R6. */
+  private cacheKeysOf(pgId: string): string[] {
+    return [
+      this.getCacheKey(pgId),
+      this.getStaleCacheKey(pgId),
+      ...R6_GUIDE_LINK_CACHE_SEGMENTS.map((segment) =>
+        this.getResponseCacheKey(pgId, segment),
+      ),
+    ];
   }
 
   /**
@@ -319,14 +339,11 @@ export class GammeRpcService extends SupabaseBaseService {
   }
 
   /**
-   * 🗑️ Invalide le cache d'une gamme
+   * 🗑️ Invalide le cache d'une gamme : ses 4 clés en un seul DEL.
    * Lève si Redis est indisponible : l'appelant n'annonce pas une purge non faite.
    */
   async invalidateCache(pgId: string): Promise<void> {
-    await this.cacheService.delStrict([
-      this.getCacheKey(pgId),
-      this.getStaleCacheKey(pgId),
-    ]);
+    await this.cacheService.delStrict(this.cacheKeysOf(pgId));
 
     this.logger.log(`🗑️ Cache invalidé pour gamme ${pgId}`);
   }
@@ -508,24 +525,28 @@ export class GammeRpcService extends SupabaseBaseService {
   }
 
   /**
-   * Purge Redis après une écriture en base déjà validée. Un échec ne l'annule
-   * pas : il est signalé comme état partiel (503 rejouable), jamais comme succès.
+   * Purge Redis après une écriture en base déjà validée : les 4 clés de chaque
+   * gamme en un seul DEL. Un échec ne l'annule pas : il est signalé comme état
+   * partiel (503), jamais comme succès ; les deux écritures se rejouent sans risque.
    */
   private async purgeAfterDbWrite(
     pgIds: number[],
     write: string,
   ): Promise<void> {
+    const ids = pgIds.map(String);
     try {
-      for (const id of pgIds) await this.invalidateCache(String(id));
+      await this.cacheService.delStrict(
+        ids.flatMap((id) => this.cacheKeysOf(id)),
+      );
     } catch (error) {
       this.logger.error(
-        `Purge du cache incomplète après ${write} des gammes ${pgIds.join(',')}: ${error}`,
+        `Purge du cache non confirmée après ${write} des gammes ${ids.join(',')}: ${error}`,
       );
-      throw new ServiceUnavailableException({
-        message: 'Écriture en base appliquée, purge du cache incomplète',
-        retryable: true,
-      });
+      throw new ServiceUnavailableException(
+        'Écriture en base appliquée, purge du cache non confirmée : opération rejouable',
+      );
     }
+    this.logger.log(`🗑️ Cache invalidé pour gammes ${ids.join(',')}`);
   }
 
   async getDbCacheStats(): Promise<{

@@ -67,7 +67,7 @@ export class R3GuideController {
    * POST /api/r3-guide/:pg_alias/cache/invalidate
    * Efface le payload caché (TTL 24 h) pour les deux segments du drapeau R6,
    * sur le modèle de `POST /api/gamme-rest/:pgId/cache/invalidate`.
-   * Redis indisponible → 503 : aucune réponse de succès sans purge effective.
+   * Redis indisponible → 503 : aucune réponse de succès sans purge confirmée.
    */
   @Post(':pg_alias/cache/invalidate')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
@@ -79,10 +79,9 @@ export class R3GuideController {
       this.logger.error(
         `Invalidation du cache du guide "${pg_alias}" échouée: ${getErrorMessage(error)}`,
       );
-      throw new ServiceUnavailableException({
-        message: 'Cache indisponible : invalidation non effectuée',
-        retryable: true,
-      });
+      throw new ServiceUnavailableException(
+        'Cache indisponible : invalidation non confirmée',
+      );
     }
     return {
       status: 200,
