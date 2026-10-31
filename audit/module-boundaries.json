@@ -103,8 +103,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 40,
-      "loc_total": 14701,
+      "files_count": 41,
+      "loc_total": 14710,
       "has_barrel": false
     },
     "bot-guard": {
@@ -186,8 +186,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 103,
-      "loc_total": 25071,
+      "files_count": 104,
+      "loc_total": 25157,
       "has_barrel": true
     },
     "customers": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114985,
+      "loc_total": 114996,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 586,
-      "loc_total": 110734,
+      "loc_total": 110621,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 19,
-      "loc_total": 6383,
+      "loc_total": 6440,
       "has_barrel": true
     },
     "health": {
@@ -440,7 +440,7 @@
         "backend/src/modules/media-factory/types"
       ],
       "files_count": 24,
-      "loc_total": 4932,
+      "loc_total": 5068,
       "has_barrel": false
     },
     "merchant-center": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 213,
-      "loc_total": 50039,
+      "loc_total": 50055,
       "has_barrel": true
     },
     "search": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 282,
-      "loc_total": 59882,
+      "files_count": 283,
+      "loc_total": 59993,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -938,6 +938,7 @@
         "backend/tests/unit/seo-control",
         "backend/tests/unit/seo-monitoring",
         "backend/tests/unit/trend-signals",
+        "docs/audits/editorial-filtre-huile-20261030/tools",
         "frontend",
         "frontend/frontend/tests/e2e",
         "frontend/tests/e2e",
@@ -959,8 +960,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 336,
-      "loc_total": 65214,
+      "files_count": 347,
+      "loc_total": 67154,
       "has_barrel": true
     },
     "upload": {
@@ -1028,7 +1029,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5098,
+      "loc_total": 5105,
       "has_barrel": false
     }
   },
@@ -1751,7 +1752,7 @@
     {
       "from": "gamme-rest",
       "to": "catalog",
-      "count": 4
+      "count": 5
     },
     {
       "from": "gamme-rest",
@@ -2628,6 +2629,11 @@
     {
       "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "to": "backend/src/modules/seo/types/resolved-seo-field.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
+      "to": "backend/src/modules/catalog/services/homepage-rpc.service.ts",
       "rule": "no-deep-module-access"
     },
     {

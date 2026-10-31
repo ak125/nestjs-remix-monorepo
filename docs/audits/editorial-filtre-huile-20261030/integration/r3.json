@@ -1,0 +1,325 @@
+{
+  "page": "/blog-pieces-auto/conseils/filtre-a-huile",
+  "pg_id": 7,
+  "revision": "révision 4, 31/10/2026",
+  "statut": "auto-revu (lint, rendu DEV par surcouche, HANDOFF § 6) ; écriture en zone STOP, sur accord nominatif ; aucune écriture faite",
+  "lecteur_servi": "blog-seo.service.ts lit __seo_gamme_conseil (sgc_title, sgc_content, sgc_section_type, sgc_order, sgc_sources) ; projection R3 en canari seulement (FH-3)",
+  "contraintes_de_rendu_constatees": [
+    "Le bloc « L'essentiel en N points » reprend la première phrase (30 caractères au moins) de S1, S2, S3, S4_DEPOSE, S5, S6 et S_GARAGE (section-config.tsx:369-390) : chaque section ci-dessous ouvre sur une phrase autonome.",
+    "S1 s'affiche dans la carte « Avant de commencer » (GuideChecklist, variante before), hors corps de page.",
+    "S2_DIAG s'affiche en tableau (MiniDiagnosticTable) : contenu en <table>.",
+    "S4 : un contenu en <ol> est conservé tel quel (normalizeStepHtml).",
+    "S8 : le JSON-LD FAQPage n'est produit qu'avec au moins 3 paires au format <details><summary><b>Q</b></summary><p>R</p></details>.",
+    "sgc_sources est affiché sous chaque carte après humanisation (source-provenance.util.ts) : un type « web » s'affiche « Source vérifiée ». La provenance proposée est la fiche WIKI (type wiki, affiché « Base de connaissances AutoMecanik »).",
+    "Badges du hero « Difficulté » et « Temps estimé » calculés par le code à partir du nombre d'étapes de S4_DEPOSE (5 min par étape) : non sourcés, voir HANDOFF FH-16."
+  ],
+  "regles": [
+    "Aucun nom de source dans le texte servi ; le modèle de véhicule cité en S2_DIAG borne la portée de la consigne, il n'en devient pas une règle générale.",
+    "Aucun intervalle, couple, nombre de tours, délai, prix.",
+    "Title, meta description et H1 non modifiés (proposition META séparée, sous autorisation).",
+    "Statuts : admis = fiche WIKI gamme:filtre-a-huile ; catalogue = donnée du catalogue ; editorial = orientation sans fait nouveau ; candidat = non servi avant admission (candidats.json)."
+  ],
+  "provenance_proposee_sgc_sources": "[{\"type\":\"wiki\",\"ref\":\"wiki/gamme/filtre-a-huile.md\",\"field\":\"<section>\"}]",
+  "sections": [
+    {
+      "sgc_id": "18",
+      "sgc_section_type": "S1",
+      "action": "amélioré",
+      "titre_actuel": "Fonction du filtre à huile :",
+      "titre_propose": "Avant de remplacer le filtre à huile",
+      "statut": "admis + catalogue",
+      "retire": [
+        "« protégeant pistons, bielles et arbre à cames »",
+        "renvois vers des sites tiers",
+        "« Trouvez le type de filtre »"
+      ],
+      "html": "<p>Le filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification du moteur, et il se remplace aux échéances fixées par le constructeur du véhicule.</p>\n<p>Avant de commencer, réunissez :</p>\n<ul>\n<li><strong>la référence prévue pour votre motorisation</strong>, choisie à partir du véhicule et non d'après l'apparence de l'ancien filtre ;</li>\n<li><strong>les instructions du constructeur du véhicule et du fabricant du filtre</strong> : ce guide ne donne pas de consigne de serrage valable pour tous les filtres ;</li>\n<li><strong>la forme prévue</strong> : un filtre vissé se change en entier ; avec une cartouche, seul l'élément filtrant est renouvelé et le boîtier reste en place.</li>\n</ul>\n<p>Sans ces instructions, confiez l'intervention à un professionnel.</p>",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id 18 (S1)",
+        "question_resolue": "Que réunir avant de remplacer le filtre à huile ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Définition, Rôle technique, Entretien & bonnes pratiques ; catalogue : référence par motorisation",
+        "portee_vehicule": "tous véhicules ; référence et instructions propres au véhicule et au filtre",
+        "statut_admission": "admis + catalogue ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune dans la section ; image de la page : HERO rip 12 (assets/r3-hero-filtre-visse-usage.webp)"
+      }
+    },
+    {
+      "sgc_id": "20",
+      "sgc_section_type": "S2",
+      "image": "rip_id 13 (S2) : assets/r3-s2-filtre-colmate-by-pass.webp",
+      "action": "amélioré",
+      "titre_actuel": "Quand changer les filtre à huile :",
+      "titre_propose": "Quand remplacer le filtre à huile",
+      "statut": "admis",
+      "retire": [
+        "« tous les 10 000 à 30 000 km »",
+        "fourchettes par type de moteur",
+        "« ou 1 an »"
+      ],
+      "html": "<p>Le filtre à huile se remplace aux échéances d'entretien fixées par le constructeur du véhicule : reportez-vous au carnet d'entretien ou à la notice. Aucune durée ni aucun kilométrage ne vaut pour tous les véhicules.</p>\n<p>Un filtre gardé trop longtemps peut se colmater. Son clapet de dérivation (by-pass) s'ouvre alors pour continuer d'alimenter le moteur, avec une huile qui n'est plus filtrée. Plus l'intervalle prévu par le constructeur est long, plus la qualité du filtre compte.</p>",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id 20 (S2)",
+        "question_resolue": "Quand remplacer le filtre, et que risque-t-on à dépasser l'échéance ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Entretien & bonnes pratiques (échéance, échéance dépassée), Fonctionnement (by-pass)",
+        "portee_vehicule": "échéance fixée par le constructeur de chaque véhicule ; aucun intervalle universel ; pression d'ouverture du by-pass selon le moteur",
+        "statut_admission": "admis ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "rip 13 (S2) : assets/r3-s2-filtre-colmate-by-pass.webp, schéma de principe"
+      }
+    },
+    {
+      "sgc_id": "conseil-7-S2_DIAG-1774724299375",
+      "sgc_section_type": "S2_DIAG",
+      "action": "amélioré",
+      "titre_actuel": "Diagnostic rapide du filtre à huile :",
+      "titre_propose": "Voyant d'huile ou autre signe : par où commencer",
+      "statut": "admis (Symptômes & diagnostic, consigne propre au véhicule cité) + editorial",
+      "retire": [
+        "tableau symptôme → « Filtre colmaté » et autres causes attribuées au filtre sans source (voyant, claquement, huile noire, baisse de niveau, odeur)"
+      ],
+      "html": "<p>Un symptôme seul ne désigne pas le filtre à huile. Les deux premières lignes du tableau donnent la consigne d'un véhicule précis ; pour un autre véhicule, suivez sa propre notice.</p>\n<table><thead><tr><th>Situation</th><th>À faire</th></tr></thead><tbody>\n<tr><td>Renault Clio 5 phase 1 : le témoin de pression d'huile s'allume à la mise du contact, puis s'éteint après quelques secondes.</td><td>C'est le fonctionnement décrit par la notice de ce véhicule.</td></tr>\n<tr><td>Renault Clio 5 phase 1 : le témoin s'allume en roulant, avec le témoin d'arrêt impératif et un signal sonore.</td><td>S'arrêter impérativement, couper le contact et vérifier le niveau d'huile. Si le niveau est normal, l'alerte a une autre cause : la notice demande de faire appel à un représentant de la marque.</td></tr>\n<tr><td>Autre véhicule : témoin de pression d'huile allumé.</td><td>Suivre la notice du véhicule. Pour orienter la recherche avant d'acheter une pièce, commencer par le <a href=\"/diagnostic-auto\">diagnostic</a>.</td></tr>\n<tr><td>Fuite, bruit, odeur ou vibration, quel que soit le véhicule.</td><td>Un de ces signes, seul, ne désigne pas le filtre à huile. Pour en rechercher la cause, commencer par le <a href=\"/diagnostic-auto\">diagnostic</a>.</td></tr>\n</tbody></table>",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id conseil-7-S2_DIAG-1774724299375 (S2_DIAG)",
+        "question_resolue": "Voyant d'huile allumé, fuite, bruit, odeur ou vibration : le filtre est-il en cause, et par où commencer ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Symptômes & diagnostic (« Un symptôme seul ne désigne pas le filtre à huile », recherche de la cause par l'outil de diagnostic) ; notice Renault Clio 5 phase 1 portée par la fiche (lignes 1 et 2)",
+        "portee_vehicule": "lignes 1 et 2 : Renault Clio 5 phase 1 seulement ; ligne 3 : tout autre véhicule, renvoyé à sa notice ; ligne 4 : tout véhicule, sans cause attribuée",
+        "statut_admission": "admis + éditorial ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6) ; l'ancre #diagnostic-rapide reçoit les redirections 301 des cinq pages R5 consolidées (voyant-, fuite-, bruit-, odeur-, vibration-filtre-a-huile, constat du 31/10) ; la ligne « fuite juste après le remplacement » reste candidate (candidats.json, F-C3, F-C4)",
+        "image_associee": "aucune"
+      },
+      "ajoute": [
+        "ligne « Fuite, bruit, odeur ou vibration » (31/10) : les cinq pages R5 consolidées arrivent sur cette ancre, quatre n'y trouvaient pas leur signe"
+      ]
+    },
+    {
+      "sgc_id": "conseil-7-S3-1771371936696",
+      "sgc_section_type": "S3",
+      "image": "rip_id 14 (S3) : assets/r3-s3-coupe-filtre-visse.webp",
+      "action": "amélioré",
+      "titre_actuel": "Comment choisir vos filtre à huile :",
+      "titre_propose": "Choisir le bon filtre à huile",
+      "statut": "admis (Critères de choix, Fonctionnement, Marques & qualité) + catalogue",
+      "ajoute": [
+        "explication des trois clapets, déplacée de S1 et illustrée par la coupe (rip 14)"
+      ],
+      "retire": [
+        "liste générique marque/modèle/motorisation sans explication"
+      ],
+      "html": "<p>Le filtre à huile se choisit à partir du véhicule, jamais d'après son aspect ou une dimension approchée.</p>\n<ol>\n<li><strong>Partez du véhicule.</strong> Dans le catalogue, sélectionnez la marque, le modèle, l'année et la motorisation exacte. Deux versions d'un même modèle peuvent recevoir des références différentes.</li>\n<li><strong>Prenez la forme prévue</strong> par le moteur : filtre vissé ou cartouche.</li>\n<li><strong>Ne vous fiez pas à l'apparence.</strong> Beaucoup de filtres se ressemblent mais diffèrent à l'intérieur selon le moteur : clapet anti-retour, filetage de raccordement, pression d'ouverture du by-pass, média filtrant, finesse de filtration, surpression admissible.</li>\n<li><strong>Regardez la qualité.</strong> Le papier filtrant, le by-pass et le clapet anti-retour font partie des caractéristiques de qualité d'un filtre.</li>\n</ol>\n<h3>Les clapets d'un filtre vissé</h3>\n<p>Selon sa conception, fixée par le constructeur du moteur ou du véhicule, un filtre vissé peut comporter trois types de clapets :</p>\n<ul>\n<li><strong>anti-retour</strong> : le plus souvent une membrane en caoutchouc, il empêche l'huile de quitter le filtre moteur arrêté, surtout quand le filtre est monté à l'horizontale ou tête en bas ;</li>\n<li><strong>de dérivation (by-pass)</strong> : quand le filtre est colmaté ou que l'huile froide est trop épaisse, il s'ouvre pour que le moteur reste alimenté, même avec une huile non filtrée. Sa pression d'ouverture diffère selon le moteur ;</li>\n<li><strong>anti-siphon</strong> : placé côté huile propre, il garde le filtre plein ; au démarrage, l'huile arrive vite au moteur, ce qui réduit fortement le frottement à sec.</li>\n</ul>\n<p>Ces différences ne se voient pas de l'extérieur. Les filtres rattachés à votre motorisation sont listés sur la page <a href=\"/pieces/filtre-a-huile-7.html\">filtre à huile</a> du catalogue.</p>",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id conseil-7-S3-1771371936696 (S3)",
+        "question_resolue": "Comment choisir le filtre de mon véhicule sans me tromper ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Critères de choix selon le véhicule, Fonctionnement, Marques & qualité ; catalogue : sélection par motorisation",
+        "portee_vehicule": "choix par motorisation exacte ; présence et réglage des clapets selon le filtre et le moteur",
+        "statut_admission": "admis + catalogue ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "rip 14 (S3) : assets/r3-s3-coupe-filtre-visse.webp, coupe de principe ; P-04 et P-05 manquants (PROMPTS.md)"
+      }
+    },
+    {
+      "sgc_id": "21",
+      "sgc_section_type": "S4_DEPOSE",
+      "action": "amélioré",
+      "titre_actuel": "Procédure de remplacement du filtre à huile :",
+      "titre_propose": "Déposer l'ancien filtre",
+      "statut": "admis + catalogue",
+      "hors_texte_servi": "étapes outillées en candidat (F-C2, F-C3, F-C6) : candidats.json, non servi avant admission",
+      "retire": [
+        "texte anglais copié d'un site tiers, avec le nom du site",
+        "étapes non sourcées"
+      ],
+      "html": "<p>La dépose dépend de la forme du filtre et du moteur : suivez les instructions du constructeur du véhicule et du fabricant du filtre.</p>\n<ol>\n<li>Vérifiez que le filtre neuf est la référence prévue pour votre motorisation.</li>\n<li>Repérez la forme : un filtre vissé se dépose en entier ; avec une cartouche, seul l'élément filtrant sort du boîtier, qui reste en place.</li>\n<li>Déposez l'ancien filtre ou l'ancien élément en suivant l'instruction du constructeur du véhicule.</li>\n</ol>",
+      "apres_admission": "voir candidats.json, bloc S4_DEPOSE",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id 21 (S4_DEPOSE)",
+        "question_resolue": "Comment déposer l'ancien filtre ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Définition (filtre vissé ou cartouche)",
+        "portee_vehicule": "selon la forme du filtre et le moteur ; aucun geste outillé servi",
+        "statut_admission": "texte servi admis (admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission) ; gestes outillés candidats (F-C2 reformulé, F-C3, F-C6), non servis",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6) ; bloc candidats.json S4_DEPOSE après admission de ses faits",
+        "image_associee": "aucune ; P-08 (ancien joint resté sur la portée) manquante, prise de vue réelle après admission de F-C3"
+      }
+    },
+    {
+      "sgc_id": "22",
+      "sgc_section_type": "S4_REPOSE",
+      "action": "amélioré",
+      "titre_actuel": "Remontage d'un filtre à huile :",
+      "titre_propose": "Monter le filtre neuf",
+      "statut": "admis + catalogue",
+      "hors_texte_servi": "gestes de montage en candidat (F-C2 à F-C6) : candidats.json, non servi avant admission",
+      "retire": [
+        "« identique à celui démonté »",
+        "gestes et serrages non sourcés"
+      ],
+      "html": "<p>Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté.</p>\n<ol>\n<li>Montez le filtre neuf en suivant les instructions du constructeur du véhicule et du fabricant du filtre : ce guide ne donne pas de consigne de serrage valable pour tous les filtres.</li>\n</ol>",
+      "apres_admission": "voir candidats.json, bloc S4_REPOSE",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id 22 (S4_REPOSE)",
+        "question_resolue": "Comment monter le filtre neuf ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Entretien & bonnes pratiques (« Montage »)",
+        "portee_vehicule": "tous filtres ; serrage selon l'instruction du constructeur du véhicule et du fabricant du filtre, aucune valeur servie",
+        "statut_admission": "texte servi admis (admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission) ; gestes de montage candidats (F-C2 reformulé, F-C3, F-C4, F-C6), non servis",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6) ; bloc candidats.json S4_REPOSE après admission de ses faits",
+        "image_associee": "aucune ; P-07 (joint neuf huilé) manquante, prise de vue réelle après admission de F-C3"
+      }
+    },
+    {
+      "sgc_id": "conseil-7-S5-1771371936739",
+      "sgc_section_type": "S5",
+      "action": "amélioré",
+      "titre_actuel": "Erreurs à éviter avec les filtre à huile :",
+      "titre_propose": "Erreurs à éviter",
+      "statut": "admis",
+      "hors_texte_servi": "erreurs de montage en candidat (F-C2, F-C3) : candidats.json, non servi avant admission",
+      "retire": [
+        "« Le filtre à huile est remplacé à chaque vidange »",
+        "« dommages coûteux »"
+      ],
+      "html": "<ul>\n<li>Choisir le filtre d'après son apparence ou une dimension approchée, au lieu de partir du véhicule.</li>\n<li>Dépasser l'échéance du constructeur : le filtre peut se colmater et laisser passer, par le by-pass, une huile non filtrée.</li>\n<li>Attribuer un voyant d'huile au filtre sans rechercher la cause.</li>\n</ul>",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id conseil-7-S5-1771371936739 (S5)",
+        "question_resolue": "Quelles erreurs éviter ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Critères de choix, Entretien & bonnes pratiques, Symptômes & diagnostic",
+        "portee_vehicule": "tous véhicules",
+        "statut_admission": "admis ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission ; deux erreurs de montage candidates (F-C2, F-C3)",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6) ; ajout candidats.json S5 après admission",
+        "image_associee": "aucune ; P-08 envisagée après admission de F-C3"
+      }
+    },
+    {
+      "sgc_id": "conseil-7-S6-1771938637895",
+      "sgc_section_type": "S6",
+      "action": "amélioré",
+      "titre_actuel": "Vérifications après remplacement du filtre à huile :",
+      "titre_propose": "Après le remplacement",
+      "statut": "admis",
+      "hors_texte_servi": "contrôles de niveau et d'étanchéité en candidat (F-C5) : candidats.json, non servi avant admission",
+      "retire": [
+        "« 5 minutes après le premier démarrage »",
+        "« 2 minutes »",
+        "« un quart de tour maximum »"
+      ],
+      "html": "<p>Après le remplacement, si le témoin de pression d'huile s'allume, suivez la notice de votre véhicule.</p>",
+      "apres_admission": "voir candidats.json, bloc S6",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id conseil-7-S6-1771938637895 (S6)",
+        "question_resolue": "Que vérifier après le remplacement ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Symptômes & diagnostic (témoin de pression d'huile : suivre la notice)",
+        "portee_vehicule": "tous véhicules, renvoyés à leur notice",
+        "statut_admission": "admis ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission ; contrôles et consignes de déchets candidats (F-C5, F-C10, F-C11)",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6) ; bloc candidats.json S6 après admission",
+        "image_associee": "aucune ; P-09 (récipient fermé) après admission de F-C10 et F-C11"
+      }
+    },
+    {
+      "sgc_id": "conseil-7-S_GARAGE-1772504383540",
+      "sgc_section_type": "S_GARAGE",
+      "action": "amélioré",
+      "titre_actuel": "Quand confier le remplacement du filtre à huile à un professionnel :",
+      "titre_propose": "Quand confier l'intervention à un professionnel",
+      "statut": "editorial fondé sur admis",
+      "retire": [
+        "« Plusieurs causes possibles de… » (attribution de symptômes)"
+      ],
+      "html": "<p>Si vous n'avez pas les instructions de montage du constructeur et du fabricant du filtre, confiez l'intervention à un professionnel.</p>\n<p>Si le témoin de pression d'huile s'allume en roulant, suivez la notice du véhicule. Celle de la Renault Clio 5 phase 1 demande, si le niveau d'huile est normal, de faire appel à un représentant de la marque.</p>",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id conseil-7-S_GARAGE-1772504383540 (S_GARAGE)",
+        "question_resolue": "Quand confier l'intervention à un professionnel ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Entretien & bonnes pratiques (instructions de montage), Symptômes & diagnostic (notice Renault Clio 5 phase 1)",
+        "portee_vehicule": "première phrase : tous véhicules ; consigne « représentant de la marque » : Renault Clio 5 phase 1 seulement",
+        "statut_admission": "éditorial fondé sur des faits admis ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
+    },
+    {
+      "sgc_id": "conseil-7-S7-1771371936783",
+      "sgc_section_type": "S7",
+      "action": "amélioré",
+      "titre_actuel": "Pièces à contrôler et à remplacer avec les filtre à huile :",
+      "titre_propose": "Pièces liées au filtre à huile",
+      "statut": "admis (related_parts) + catalogue",
+      "retire": [
+        "six liens vers /pieces/<slug> en 410 (dont huile moteur, non affichée au catalogue, et joint de vidange carter, sans gamme)"
+      ],
+      "liens_verifies": "200 le 30/10 : /pieces/bouchon-de-vidange-593.html, /pieces/filtre-a-air-8.html, /pieces/filtre-a-carburant-9.html, /pieces/filtre-d-habitacle-424.html",
+      "html": "<ul>\n<li><a href=\"/pieces/bouchon-de-vidange-593.html\">Bouchon de vidange</a></li>\n<li><a href=\"/pieces/filtre-a-air-8.html\">Filtre à air</a></li>\n<li><a href=\"/pieces/filtre-a-carburant-9.html\">Filtre à carburant</a></li>\n<li><a href=\"/pieces/filtre-d-habitacle-424.html\">Filtre d'habitacle</a></li>\n</ul>\n<p>Ces filtres traitent d'autres fluides que l'huile et ont chacun leur propre référence.</p>",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id conseil-7-S7-1771371936783 (S7)",
+        "question_resolue": "Quelles pièces voir avec le filtre à huile ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : related_parts ; liens vérifiés en 200 le 30/10 (liens_verifies)",
+        "portee_vehicule": "tous véhicules ; chaque pièce a sa propre référence",
+        "statut_admission": "admis + catalogue ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
+    },
+    {
+      "sgc_id": "conseil-7-S8-1771509122681",
+      "sgc_section_type": "S8",
+      "action": "amélioré",
+      "titre_actuel": "Questions fréquentes sur les filtre à huile :",
+      "titre_propose": "Questions fréquentes sur le filtre à huile",
+      "statut": "admis (FAQ) + catalogue",
+      "retire": [
+        "« OES (Bosch) ou adaptables (Mann, Mahle) offrent une qualité équivalente » et réponses non sourcées"
+      ],
+      "html": "<details><summary><b>Que remplace-t-on lors de l'entretien ?</b></summary><p>Un filtre vissé se change en entier, car son boîtier et son élément filtrant forment un seul bloc. Avec une cartouche, seul l'élément filtrant est renouvelé.</p></details>\n<details><summary><b>Quand remplacer le filtre à huile ?</b></summary><p>Aux échéances d'entretien prévues par le constructeur du véhicule. Aucune durée ni aucun kilométrage ne vaut pour tous les véhicules.</p></details>\n<details><summary><b>Peut-on choisir un filtre à sa taille ou à son apparence ?</b></summary><p>Non. Des filtres qui se ressemblent peuvent être très différents à l'intérieur selon le moteur. Le choix se fait à partir du véhicule.</p></details>\n<details><summary><b>Le voyant de pression d'huile vient-il du filtre ?</b></summary><p>Ce voyant ne désigne pas à lui seul le filtre. Suivez la notice du véhicule, puis faites rechercher la cause.</p></details>\n<details><summary><b>À quoi sert le clapet anti-retour ?</b></summary><p>Il empêche l'huile de quitter le filtre quand le moteur est arrêté, surtout quand le filtre est monté à l'horizontale ou tête en bas. Tous les filtres vissés n'en ont pas : cela dépend du moteur.</p></details>",
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id conseil-7-S8-1771509122681 (S8)",
+        "question_resolue": "Réponses courtes aux questions fréquentes (FAQPage)",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : FAQ ; catalogue pour le choix par véhicule",
+        "portee_vehicule": "tous véhicules ; aucune valeur universelle",
+        "statut_admission": "admis + catalogue ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6) ; données structurées FAQPage générées depuis S8 (5 paires, parseFAQFromS8)",
+        "image_associee": "aucune"
+      }
+    },
+    {
+      "sgc_id": "conseil-7-META-20260321",
+      "sgc_section_type": "META",
+      "action": "conservé",
+      "motif": "meta_title et meta_description optimisés : modification soumise à autorisation (CLAUDE.md, invariant 6)",
+      "proposition_sous_autorisation": {
+        "meta_title": "Filtre à huile : quand le changer et comment le choisir",
+        "meta_description": "Échéances du constructeur, filtre vissé ou cartouche, clapets, montage : les points à vérifier avant de remplacer votre filtre à huile.",
+        "motif": "la description servie (« Voyant huile allumé, cliquetis au ralenti ») attribue des symptômes au filtre"
+      },
+      "fiche": {
+        "cible": "R3 /blog-pieces-auto/conseils/filtre-a-huile · __seo_gamme_conseil sgc_id conseil-7-META-20260321 (META)",
+        "question_resolue": "sans objet : title, meta description et H1 protégés",
+        "preuve_interne": "sans objet",
+        "portee_vehicule": "sans objet",
+        "statut_admission": "conservé ; proposition séparée, appliquée seulement sur autorisation",
+        "dependance": "autorisation explicite et tests (champs SEO protégés)",
+        "image_associee": "sans objet"
+      }
+    }
+  ],
+  "elements_de_page_hors_base": {
+    "cta_code": "« Besoin de cette piece ? Comparez les prix et trouvez la piece compatible avec votre vehicule. » codé en dur (blog-pieces-auto.conseils.$pg_alias.tsx:602-607), commun à tous les guides : hors lot, signalé",
+    "libelles_resume": "« L'essentiel » étiquette S2 « Signes d'usure » et S3 « Compatibilité » (SECTION_STYLES) : libellés communs, signalés"
+  },
+  "images": "voir assets.json (HERO rip 12, S2 rip 13, S3 rip 14 ; pas de ligne S4, insertion interdite par B5)",
+  "lecture_fiche": {
+    "cible": "page servie et champ écrit",
+    "action": "champ existant du bloc : conservé, amélioré ou ajouté",
+    "question_resolue": "besoin du visiteur auquel le bloc répond",
+    "preuve_interne": "source interne du fait ; jamais citée dans le texte servi",
+    "portee_vehicule": "véhicules auxquels le contenu s'applique",
+    "statut_admission": "admis, catalogue, éditorial ou candidat, avec la condition de service",
+    "dependance": "ce qui doit exister avant de servir le bloc",
+    "image_associee": "visuel du bloc (integration/assets.json) ou manque (PROMPTS.md)"
+  },
+  "propositions_libelles_codes": [
+    {
+      "emplacement": "sous-titre du hero R3 : sloganTemplate « Tout savoir sur les {gamme} » (frontend/app/config/visual-intent.ts:186), rempli avec l'alias brut (route conseils l.510)",
+      "servi": "Tout savoir sur les filtre-a-huile",
+      "proposition": "Guide : filtre à huile",
+      "motif": "alias technique affiché ; la forme « Guide : {nom de la gamme} » évite d'accorder l'article pour chaque gamme",
+      "portee": "toutes les pages R3 : décision owner, correction de code par Claude CLI"
+    }
+  ]
+}

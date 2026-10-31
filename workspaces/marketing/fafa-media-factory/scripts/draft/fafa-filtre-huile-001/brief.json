@@ -1,0 +1,14 @@
+{
+  "video_id": "fafa-filtre-huile-001",
+  "format": "piece-expliquee",
+  "mode": "SHORT",
+  "vertical": "MOTEUR",
+  "gamme": "filtre-a-huile",
+  "platforms": ["tiktok", "instagram_reels", "youtube_shorts", "facebook_reels"],
+  "target_duration_sec": 40,
+  "template": "PieceExpliquee",
+  "url_cible": "https://www.automecanik.com/pieces/filtre-a-huile-7.html",
+  "inspiration_pattern_id": null,
+  "created_at": "2026-10-30T11:35:00Z",
+  "status": "DRAFT_ONLY"
+}

@@ -2,9 +2,9 @@
   "name": "remotion-renderer",
   "version": "1.0.0",
   "private": true,
-  "description": "AutoMecanik video render service \u2014 Remotion + FFmpeg + S3",
+  "description": "AutoMecanik video render service — Remotion + FFmpeg + S3",
   "scripts": {
-    "test": "node --require tsx/cjs --test test/*.test.cjs",
+    "test": "tsx --test --test-concurrency=1 test/*.test.cjs test/*.test.ts",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",

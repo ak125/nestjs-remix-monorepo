@@ -389,53 +389,12 @@ export function extractSummaryPoints(
   return points.length >= 3 ? points : [];
 }
 
-// --- Hero badges (heuristic) ---
+// --- Hero badges (métadonnées de page calculées par le backend) ---
 
 export interface HeroBadge {
   label: string;
   value: string;
   color: "green" | "amber" | "red" | "blue" | "slate";
-}
-
-/** Derive hero badges from conseil sections (heuristic, no DB metadata) */
-export function deriveHeroBadges(conseil: GammeConseil[] | null): HeroBadge[] {
-  if (!conseil) return [];
-  const badges: HeroBadge[] = [];
-
-  // Difficulty from S4_DEPOSE step count
-  const depose = conseil.find((c) => c.sectionType === "S4_DEPOSE");
-  if (depose) {
-    const normalized = normalizeStepHtml(depose.content);
-    const stepCount = (normalized.match(/<li>/gi) || []).length;
-    if (stepCount <= 4) {
-      badges.push({ label: "Difficulté", value: "Facile", color: "green" });
-    } else if (stepCount <= 8) {
-      badges.push({
-        label: "Difficulté",
-        value: "Intermédiaire",
-        color: "amber",
-      });
-    } else {
-      badges.push({ label: "Difficulté", value: "Avancé", color: "red" });
-    }
-    // Estimated time: ~5 min per step
-    const minutes = stepCount * 5;
-    badges.push({
-      label: "Temps estimé",
-      value: minutes < 60 ? `~${minutes} min` : `~${Math.round(minutes / 60)}h`,
-      color: "blue",
-    });
-  }
-
-  // Safety from S5 presence
-  const hasS5 = conseil.some((c) => c.sectionType === "S5");
-  badges.push({
-    label: "Sécurité",
-    value: hasS5 ? "Précautions requises" : "Standard",
-    color: hasS5 ? "amber" : "green",
-  });
-
-  return badges;
 }
 
 // --- Source de vérité canonique (Phase B) ---

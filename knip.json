@@ -2,7 +2,38 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     ".": {
-      "entry": ["scripts/**/*.{js,ts,mjs,cjs}"],
+      "entry": [
+        "scripts/audit/impeccable-baseline-write.mjs",
+        "scripts/audit/pricing-profitability-projection.ts",
+        "scripts/audit/r2-eligibility-calibration.ts",
+        "scripts/audit/r2-modele-family-audit.ts",
+        "scripts/audit/render-dependency-modernization-matrix.ts",
+        "scripts/check-missing-vehicle-images.ts",
+        "scripts/ci/prod-admin-guard-probe.mjs",
+        "scripts/ci/sample-smoke-urls.ts",
+        "scripts/convert-logos.js",
+        "scripts/governance/validate-role-coherence.js",
+        "scripts/insert-missing-keywords.ts",
+        "scripts/marketing/export-publish-queue.ts",
+        "scripts/marketing/generate-copy-batch.ts",
+        "scripts/marketing/generate-weekly-plan.ts",
+        "scripts/marketing/run-reactivation-pilot.ts",
+        "scripts/marketing/simulation-no-network.cjs",
+        "scripts/seo/audit-cross-gamme-overlap.ts",
+        "scripts/seo/backfill-vehicle-page-cache.ts",
+        "scripts/seo/build-keyword-clusters.ts",
+        "scripts/seo/export-canon-forbidden.ts",
+        "scripts/seo/gsc-5xx-evidence-batch.ts",
+        "scripts/seo/r1-readiness.ts",
+        "scripts/seo/seo-r3-consolidation-evidence.ts",
+        "scripts/seo/seo-readiness.ts",
+        "scripts/ui-audit/cli.ts",
+        "scripts/validate-gamme-schema.ts",
+        "scripts/verify-supabase-images.js",
+        "scripts/wiki/print-diag-canon-jsonschema.ts",
+        "scripts/wiki/validate-proposal.ts",
+        "scripts/wiki/verify-diag-canon-parse.ts"
+      ],
       "project": ["scripts/**/*.{js,ts,mjs,cjs}"],
       "ignore": [
         "audit-monorepo/**",
@@ -11,7 +42,8 @@
         "gates/**",
         ".spec/**",
         ".codex",
-        ".local/**"
+        ".local/**",
+        "scripts/**/__fixtures__/**"
       ]
     },
     "backend": {
@@ -51,11 +83,7 @@
         "build/**",
         "public/build/**",
         ".cache/**"
-      ],
-      "remix": {
-        "config": "remix.config.js",
-        "entry": ["app/root.tsx", "app/entry.client.tsx", "app/entry.server.tsx"]
-      }
+      ]
     },
     "packages/*": {
       "entry": ["src/index.ts", "src/index.tsx"],

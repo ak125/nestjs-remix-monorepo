@@ -1,0 +1,77 @@
+{
+  "video_id": "fafa-filtre-huile-001",
+  "evidence": [
+    {
+      "doc_id": "wiki-gamme-filtre-a-huile-a4783348#formes",
+      "source_type": "wiki_diagnostic",
+      "source_url": "https://github.com/ak125/automecanik-wiki/blob/a47833486352626442939dd04b5a6fd3674cb0a7/wiki/gamme/filtre-a-huile.md",
+      "wiki_reference": {
+        "path": "wiki/gamme/filtre-a-huile.md",
+        "commit": "a47833486352626442939dd04b5a6fd3674cb0a7",
+        "section": "Définition ; entity_data.editorial.variants",
+        "approved_by": "skill:promoter@1e8003c",
+        "approved_at": "2026-09-30T22:42:35Z"
+      },
+      "excerpt": "Filtre vissé — le boîtier et l'élément filtrant forment un seul bloc, qui se change en entier. Cartouche — pour les filtres à boîtier démontable : au lieu de remplacer tout le filtre, on ne renouvelle que l'élément filtrant sale.",
+      "confidence": 0.92,
+      "extracted_at": "2026-10-30T11:35:00Z",
+      "claim_refs": [
+        "claim-1"
+      ]
+    },
+    {
+      "doc_id": "wiki-gamme-filtre-a-huile-a4783348#remplacement",
+      "source_type": "wiki_diagnostic",
+      "source_url": "https://github.com/ak125/automecanik-wiki/blob/a47833486352626442939dd04b5a6fd3674cb0a7/wiki/gamme/filtre-a-huile.md",
+      "wiki_reference": {
+        "path": "wiki/gamme/filtre-a-huile.md",
+        "commit": "a47833486352626442939dd04b5a6fd3674cb0a7",
+        "section": "Entretien & bonnes pratiques > Ce que l'on remplace ; entity_data.editorial.replacement_guidance",
+        "approved_by": "skill:promoter@1e8003c",
+        "approved_at": "2026-09-30T22:42:35Z"
+      },
+      "excerpt": "Un filtre vissé se change en entier ; avec une cartouche, seul l'élément filtrant est renouvelé. Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté : suivre les instructions du constructeur du véhicule et du fabricant du filtre.",
+      "confidence": 0.92,
+      "extracted_at": "2026-10-30T11:35:00Z",
+      "claim_refs": [
+        "claim-1"
+      ]
+    },
+    {
+      "doc_id": "wiki-gamme-filtre-a-huile-a4783348#symptomes",
+      "source_type": "wiki_diagnostic",
+      "source_url": "https://github.com/ak125/automecanik-wiki/blob/a47833486352626442939dd04b5a6fd3674cb0a7/wiki/gamme/filtre-a-huile.md",
+      "wiki_reference": {
+        "path": "wiki/gamme/filtre-a-huile.md",
+        "commit": "a47833486352626442939dd04b5a6fd3674cb0a7",
+        "section": "Symptômes & diagnostic ; FAQ > Le voyant de pression d'huile vient-il du filtre ?",
+        "approved_by": "skill:promoter@1e8003c",
+        "approved_at": "2026-09-30T22:42:35Z"
+      },
+      "excerpt": "Un symptôme seul ne désigne pas le filtre à huile. […] Ce voyant ne désigne pas à lui seul le filtre. Il faut suivre la notice du véhicule, puis faire rechercher la cause.",
+      "confidence": 0.92,
+      "extracted_at": "2026-10-30T11:35:00Z",
+      "claim_refs": [
+        "claim-2"
+      ]
+    },
+    {
+      "doc_id": "wiki-gamme-filtre-a-huile-a4783348#echeances",
+      "source_type": "wiki_diagnostic",
+      "source_url": "https://github.com/ak125/automecanik-wiki/blob/a47833486352626442939dd04b5a6fd3674cb0a7/wiki/gamme/filtre-a-huile.md",
+      "wiki_reference": {
+        "path": "wiki/gamme/filtre-a-huile.md",
+        "commit": "a47833486352626442939dd04b5a6fd3674cb0a7",
+        "section": "Entretien & bonnes pratiques > Quand le remplacer ; Si l'échéance est dépassée",
+        "approved_by": "skill:promoter@1e8003c",
+        "approved_at": "2026-09-30T22:42:35Z"
+      },
+      "excerpt": "Le filtre à huile se remplace aux échéances d'entretien fixées par le constructeur du véhicule. Un filtre gardé trop longtemps peut se colmater : le by-pass s'ouvre alors pour continuer d'alimenter le moteur, avec une huile qui n'est plus filtrée.",
+      "confidence": 0.92,
+      "extracted_at": "2026-10-30T11:35:00Z",
+      "claim_refs": [
+        "claim-3"
+      ]
+    }
+  ]
+}

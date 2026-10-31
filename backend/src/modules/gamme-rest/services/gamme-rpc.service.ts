@@ -5,6 +5,16 @@ import { CacheService } from '@cache/cache.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 import { GammeRpcAggregatedDataSchema } from './gamme-rpc.schema';
+import { HomepageRpcService } from '../../catalog/services/homepage-rpc.service';
+
+/** Champs de get_homepage_families lus pour les vignettes gamme. */
+interface HomepageFamiliesShape {
+  catalog?: {
+    families?: Array<{
+      gammes?: Array<{ pg_id: number | string; pg_img?: string | null }>;
+    }>;
+  };
+}
 
 interface SeoFragmentRow {
   sis_id: number;
@@ -52,6 +62,7 @@ export class GammeRpcService extends SupabaseBaseService {
   constructor(
     private readonly transformer: GammeDataTransformerService,
     private readonly cacheService: CacheService,
+    private readonly homepageRpcService: HomepageRpcService,
     rpcGate: RpcGateService,
   ) {
     super();
@@ -361,6 +372,42 @@ export class GammeRpcService extends SupabaseBaseService {
     for (const row of data ?? []) {
       if (row.pm_name) {
         map.set(String(row.pm_name).toUpperCase(), row.pm_logo ?? null);
+      }
+    }
+    return map;
+  }
+
+  /**
+   * Récupère les vignettes (pieces_gamme.pg_img) des gammes du catalogue famille.
+   * La RPC n'expose que pg_pic (image hero), dont le nom ne correspond pas
+   * toujours à un objet du dossier catalogue/ (filtre-habitacle.webp → 400) ;
+   * pg_img est la vignette lue par les cartes gamme de la home. Lecture via
+   * get_homepage_families (DEFINER, cache Redis homepage) : pieces_gamme n'est
+   * pas lisible en anon (PREPROD READ_ONLY). Gamme absente → pas d'entrée.
+   * @returns Map clé = pg_id, valeur = pg_img (filename) | null
+   */
+  async getGammeThumbnails(
+    pgIds: number[],
+  ): Promise<Map<number, string | null>> {
+    const map = new Map<number, string | null>();
+    const ids = new Set(pgIds.filter((id) => Number.isInteger(id)));
+    if (ids.size === 0) return map;
+
+    let families: HomepageFamiliesShape;
+    try {
+      families =
+        (await this.homepageRpcService.getHomepageFamilies()) as HomepageFamiliesShape;
+    } catch (error) {
+      this.logger.warn(
+        `⚠️ getGammeThumbnails: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return map;
+    }
+
+    for (const family of families?.catalog?.families ?? []) {
+      for (const gamme of family.gammes ?? []) {
+        const pgId = Number(gamme.pg_id);
+        if (ids.has(pgId)) map.set(pgId, gamme.pg_img ?? null);
       }
     }
     return map;

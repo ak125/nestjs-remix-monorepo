@@ -25,7 +25,7 @@
     },
     "format": {
       "type": "string",
-      "enum": ["ne-change-pas-trop-vite", "symptome-3-causes", "piece-expliquee"],
+      "enum": ["ne-change-pas-trop-vite", "symptome-3-causes", "piece-expliquee", "sequences-courtes"],
       "description": "Format narratif V1 (extensible V2)"
     },
     "mode": {
@@ -58,7 +58,7 @@
     },
     "template": {
       "type": "string",
-      "enum": ["NeChangePasTropVite", "SymptomeTroisCauses", "PieceExpliquee"],
+      "enum": ["NeChangePasTropVite", "SymptomeTroisCauses", "PieceExpliquee", "SequencesCourtes"],
       "description": "Composition Remotion mappée au format"
     },
     "url_cible": {

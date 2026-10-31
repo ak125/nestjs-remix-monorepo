@@ -18,14 +18,14 @@ description: Use when transforming a video brief (gamme, symptom, format, URL ci
 - Brief JSON conforme `governance/video-brief.schema.json`
 - Si `inspiration_pattern_id` présent : pattern JSONL dans `inspiration/patterns/`
 - Persona Fafa figée (`personas/fafa.md`)
-- Format choisi parmi 3 specs disponibles (`formats/*.md`)
+- Format choisi parmi 4 specs disponibles (`formats/*.md`)
 
 ## Input
 
 ```json
 {
   "video_id": "fafa-vanne-egr-001",
-  "format": "ne-change-pas-trop-vite|symptome-3-causes|piece-expliquee",
+  "format": "ne-change-pas-trop-vite|symptome-3-causes|piece-expliquee|sequences-courtes",
   "gamme": "vanne-egr",
   "symptom": "perte de puissance et fumée noire",
   "url_cible": "https://www.automecanik.com/pieces/vanne-egr.html",

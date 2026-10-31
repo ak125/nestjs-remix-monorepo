@@ -58,4 +58,14 @@ describe("EquipementiersSection — aucune URL inventée", () => {
     expect(screen.getByText("120 références disponibles")).toBeTruthy();
     expect(screen.getByText("MANN-FILTER")).toBeTruthy();
   });
+
+  // Dossier filtre à huile, ligne « libellés codés hors liste » : badge et
+  // accroche servis sur chaque page gamme, sans source.
+  it("n'affirme ni confiance ni garantie", () => {
+    const { container } = renderSection();
+    const text = container.textContent ?? "";
+
+    expect(text).not.toContain("Marque de confiance");
+    expect(text).not.toMatch(/garanti/i);
+  });
 });

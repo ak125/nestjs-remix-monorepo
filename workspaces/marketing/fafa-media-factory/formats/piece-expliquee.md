@@ -22,9 +22,9 @@ Fafa éduque le client sur le rôle d'une pièce avant qu'il commande — rédui
 
 ## Composition Remotion (V2)
 
-`PieceExpliquee.tsx` (1080×1920, 30fps, 40 s fixes : `durationInFrames={1200}`, `compositions/index.tsx:106-129`)
+`PieceExpliquee.tsx` (1080×1920, 30fps, 40 s fixes : `durationInFrames={1200}`, `compositions/index.tsx:111-134`)
 
-Props lues par la composition (`services/remotion-renderer/src/compositions/PieceExpliquee.tsx:27-45`), passées dans
+Props lues par la composition (`services/remotion-renderer/src/compositions/PieceExpliquee.tsx:76-92`), passées dans
 `compositionProps` ; en cas d'écart avec cette page, la composition fait foi. `briefId`, `videoType` et `vertical` viennent de
 la requête `/render`.
 ```typescript
@@ -41,6 +41,21 @@ interface PieceExpliqueeProps {
   disclaimer?: string;
   audioUrl?: string;             // piste voix
   brandName?: string;
+  hook?: string;                 // accroche affichée sous le nom de la pièce (0-4 s)
+  titles?: {                     // titres de section ; absent → libellé historique
+    intro?: string;              // « La pièce expliquée »
+    function?: string;           // « À quoi ça sert »
+    location?: string;           // « Emplacement »
+    wearSigns?: string;          // « Signes d’usure »
+    whenToChange?: string;       // « Quand la changer » (« Quand le changer » pour un nom masculin)
+  };
+  windowWarnings?: {             // avertissement affiché sur sa seule fenêtre (disclaimer `overlay_segment`)
+    intro?: string;              // 0-4 s
+    function?: string;           // 4-14 s
+    wearSigns?: string;          // 14-24 s
+    whenToChange?: string;       // 24-32 s
+    closer?: string;             // 32-40 s
+  };
 }
 ```
 
@@ -48,12 +63,17 @@ Constaté dans le code, sans rendu lancé :
 
 - Le rôle de la pièce passe dans `pieceFunction`, pas `function`. `whenToChange` est un texte unique : une implication de
   sécurité s'y écrit, et reste un claim `safety` (G2 ci-dessous).
-- Toute prop absente affiche une valeur de démonstration (vanne EGR, 120 000 km), tirée de `defaultProps` dans `index.tsx` ou
-  des valeurs par défaut du composant (l.53-67). Le moteur ne signale pas l'oubli : renseigner chaque champ.
-- Seuls les 3 premiers signes s'affichent (l.259) ; une gravité absente s'affiche comme `low` (l.286).
-- Découpage rendu (l.71-74) : intro 0-4 s, fonction 4-14 s, usure 14-24 s, quand changer 24-32 s, CTA 32-40 s. Le tableau
-  ci-dessus reste l'intention éditoriale ; la voix se cale sur ce découpage.
-- Sans `audioUrl`, le rendu est muet, sans erreur (l.86).
+- Toute prop de contenu absente affiche une valeur de démonstration (vanne EGR, 120 000 km), tirée de `defaultProps` dans
+  `index.tsx` ou des valeurs par défaut du composant (l.100-117). Le moteur ne signale pas l'oubli : renseigner chaque champ.
+  `hook`, `titles` et `windowWarnings` n'ont pas de valeur de démonstration : absents, rien ne s'affiche ou le libellé
+  historique reste.
+- Seuls les 3 premiers signes s'affichent (l.344) ; une gravité absente s'affiche comme `low` (l.371).
+- Découpage rendu (`PIECE_EXPLIQUEE_WINDOWS`, l.44-50) : intro 0-4 s, fonction 4-14 s, usure 14-24 s, quand changer
+  24-32 s, CTA 32-40 s. Le tableau ci-dessus reste l'intention éditoriale ; la voix se cale sur ce découpage.
+- Un disclaimer `overlay_continuous` va dans `disclaimer` ; un `overlay_segment` va dans `windowWarnings`, sur la fenêtre
+  qui couvre son segment.
+- Sans `audioUrl`, le rendu est muet, sans erreur (l.138).
+- Test de rendu : `services/remotion-renderer/test/piece-expliquee.render.test.ts` (`npm test` dans le service).
 - Aucune prop b-roll : l'ancien champ `brollAssets` de cette page n'est lu par aucune composition V1. G6 s'applique aux visuels
   de la composition elle-même.
 

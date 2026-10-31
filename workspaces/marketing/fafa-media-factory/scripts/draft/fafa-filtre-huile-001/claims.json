@@ -1,0 +1,45 @@
+{
+  "video_id": "fafa-filtre-huile-001",
+  "claims": [
+    {
+      "claim_id": "claim-1",
+      "text": "Un filtre vissé se change en entier ; avec une cartouche, seul l'élément filtrant est renouvelé.",
+      "kind": "procedure",
+      "source_status": "unverified",
+      "evidence_refs": [
+        "wiki-gamme-filtre-a-huile-a4783348#formes",
+        "wiki-gamme-filtre-a-huile-a4783348#remplacement"
+      ],
+      "human_validated": false,
+      "human_validated_by": null,
+      "human_validated_at": null,
+      "sequence_index": 2
+    },
+    {
+      "claim_id": "claim-2",
+      "text": "Un symptôme seul ne désigne pas le filtre à huile ; si le voyant de pression d'huile s'allume, suivre d'abord la notice du véhicule.",
+      "kind": "safety",
+      "source_status": "unverified",
+      "evidence_refs": [
+        "wiki-gamme-filtre-a-huile-a4783348#symptomes"
+      ],
+      "human_validated": false,
+      "human_validated_by": null,
+      "human_validated_at": null,
+      "sequence_index": 3
+    },
+    {
+      "claim_id": "claim-3",
+      "text": "Le filtre à huile se remplace aux échéances d'entretien fixées par le constructeur ; gardé trop longtemps, il peut se colmater et le by-pass laisse alors passer une huile non filtrée.",
+      "kind": "procedure",
+      "source_status": "unverified",
+      "evidence_refs": [
+        "wiki-gamme-filtre-a-huile-a4783348#echeances"
+      ],
+      "human_validated": false,
+      "human_validated_by": null,
+      "human_validated_at": null,
+      "sequence_index": 4
+    }
+  ]
+}
