@@ -1,4 +1,11 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import type {
@@ -11,7 +18,10 @@ import type {
   VideoType,
   VideoStatus,
 } from '../../../config/video-quality.constants';
-import { listRegisteredTemplates } from '../render/templates/template-registry';
+import {
+  listRegisteredTemplates,
+  resolveTemplate,
+} from '../render/templates/template-registry';
 
 // ─────────────────────────────────────────────────────────────
 // DTOs
@@ -28,6 +38,8 @@ export interface CreateProductionDto {
 }
 
 export interface UpdateProductionDto {
+  templateId?: string;
+  expectedUpdatedAt?: string;
   status?: VideoStatus;
   scriptText?: string;
   knowledgeContract?: Record<string, unknown>;
@@ -158,6 +170,9 @@ export class VideoDataService extends SupabaseBaseService {
     briefId: string,
     updates: UpdateProductionDto,
   ): Promise<VideoProduction> {
+    if (Object.hasOwn(updates, 'templateId')) {
+      return this.selectTemplate(briefId, updates);
+    }
     const dbUpdates: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
@@ -199,6 +214,75 @@ export class VideoDataService extends SupabaseBaseService {
     return this.mapProduction(data);
   }
 
+  /** Initial montage selection only; existing review and execution evidence stays immutable. */
+  private async selectTemplate(
+    briefId: string,
+    updates: UpdateProductionDto,
+  ): Promise<VideoProduction> {
+    if (
+      typeof updates.templateId !== 'string' ||
+      typeof updates.expectedUpdatedAt !== 'string' ||
+      !updates.expectedUpdatedAt ||
+      Object.keys(updates).some(
+        (key) => !['templateId', 'expectedUpdatedAt'].includes(key),
+      )
+    ) {
+      throw new BadRequestException(
+        'Template et version du brouillon requis, sans autre modification',
+      );
+    }
+    const entry = resolveTemplate(updates.templateId);
+    const production = await this.getProduction(briefId);
+    if (!entry.supportedVideoTypes.includes(production.videoType)) {
+      throw new BadRequestException(
+        'Template incompatible avec le format vidéo',
+      );
+    }
+    if (
+      production.status !== 'draft' ||
+      production.approvalRecord !== null ||
+      production.updatedAt !== updates.expectedUpdatedAt
+    ) {
+      throw new ConflictException(
+        'Brouillon modifié ou déjà en revue : recharger la production',
+      );
+    }
+    const history = await this.client
+      .from('__video_execution_log')
+      .select('id')
+      .eq('brief_id', briefId)
+      .limit(1);
+    if (history.error || !history.data) {
+      throw new ServiceUnavailableException('Historique vidéo indisponible');
+    }
+    if (history.data.length > 0) {
+      throw new ConflictException(
+        'Le template est verrouillé après la première exécution',
+      );
+    }
+    const { data, error } = await this.client
+      .from('__video_productions')
+      .update({
+        template_id: updates.templateId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('brief_id', briefId)
+      .eq('updated_at', updates.expectedUpdatedAt)
+      .eq('status', 'draft')
+      .is('approval_record', null)
+      .select()
+      .maybeSingle();
+    if (error)
+      throw new ServiceUnavailableException(
+        'Enregistrement du template indisponible',
+      );
+    if (!data)
+      throw new ConflictException(
+        'Brouillon modifié : recharger la production',
+      );
+    return this.mapProduction(data);
+  }
+
   // ── Templates ──
 
   async listTemplates(): Promise<VideoTemplate[]> {
@@ -213,32 +297,55 @@ export class VideoDataService extends SupabaseBaseService {
 
     const dbTemplates = (data ?? []).map(this.mapTemplate);
 
-    // P9: If DB table is empty, fall back to code registry
-    if (dbTemplates.length === 0) {
-      return listRegisteredTemplates().map((entry, index) => ({
-        id: index + 1,
+    // The renderer registry is authoritative; DB rows only enrich its metadata.
+    const registered = listRegisteredTemplates().map((entry, index) => {
+      const metadata = dbTemplates.find(
+        (template) => template.templateId === entry.templateId,
+      );
+      return {
+        id: metadata?.id ?? index + 1,
         templateId: entry.templateId,
-        version: 1,
-        videoType: entry.supportedVideoTypes[0] ?? ('short' as VideoType),
-        platform: 'youtube_short' as const,
-        allowedUseCases: ['product_highlight'],
-        forbiddenUseCases: [],
-        durationRange: {
+        version: metadata?.version ?? 1,
+        videoType: entry.supportedVideoTypes[0],
+        platform: metadata?.platform ?? ('youtube_short' as const),
+        allowedUseCases: metadata?.allowedUseCases ?? [],
+        forbiddenUseCases: metadata?.forbiddenUseCases ?? [],
+        durationRange: metadata?.durationRange ?? {
           min: Math.round(entry.defaultDurationFrames / 30),
           max: Math.round(entry.defaultDurationFrames / 30),
         },
         structure: {
+          ...metadata?.structure,
           compositionId: entry.compositionId,
+          supportedVideoTypes: entry.supportedVideoTypes,
           resolution: entry.defaultResolution,
           status: entry.status,
           displayName: entry.displayName,
           source: 'code_registry',
         },
-        createdAt: new Date().toISOString(),
-      }));
-    }
-
-    return dbTemplates;
+        createdAt: metadata?.createdAt ?? new Date().toISOString(),
+      };
+    });
+    // Preserve metadata-only catalog entries, but never offer them as executable choices.
+    return [
+      ...registered,
+      ...dbTemplates
+        .filter(
+          (template) =>
+            !registered.some(
+              (entry) => entry.templateId === template.templateId,
+            ),
+        )
+        .map((template) => ({
+          ...template,
+          structure: {
+            ...template.structure,
+            supportedVideoTypes: [],
+            status: 'unavailable',
+            source: 'database_metadata',
+          },
+        })),
+    ];
   }
 
   // ── Assets ──

@@ -223,7 +223,10 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       const effectiveTemplateId =
         production.templateId ??
         defaultTemplateForVideoType(production.videoType as VideoType);
-      const templateEntry = resolveTemplate(effectiveTemplateId);
+      const templateEntry = resolveTemplate(
+        effectiveTemplateId,
+        production.videoType,
+      );
 
       const compositionProps: Record<string, unknown> = {
         briefId,

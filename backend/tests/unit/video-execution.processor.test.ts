@@ -205,6 +205,67 @@ describe('VideoExecutionProcessor', () => {
     });
   }
 
+  describe('persisted template consumption', () => {
+    it.each([
+      ['short-braking-fact', 'short', 'ShortBrakingFact'],
+      ['short-product-highlight', 'short', 'ShortProductHighlight'],
+      ['test-card', 'film_socle', 'TestCard'],
+    ])(
+      'uses %s for %s without substitution',
+      async (templateId, videoType, compositionId) => {
+        const cleanup = withEnv({ VIDEO_PIPELINE_ENABLED: 'true' });
+        try {
+          const chain = chainMock({ data: { status: 'pending' }, error: null });
+          chain.update.mockReturnValue({
+            eq: jest.fn().mockResolvedValue({ error: null }),
+          });
+          setClient(chain);
+          mocks.dataService.getProduction.mockResolvedValue(
+            fakeProduction({ templateId, videoType }),
+          );
+          await processor.handleVideoExecution(fakeJob());
+          expect(mocks.renderAdapter.render).toHaveBeenCalledWith(
+            expect.objectContaining({
+              templateId,
+              resolvedCompositionId: compositionId,
+              compositionProps: expect.objectContaining({
+                templateId,
+                compositionId,
+              }),
+            }),
+          );
+        } finally {
+          cleanup();
+        }
+      },
+    );
+    it('rejects an incompatible persisted template before rendering', async () => {
+      const cleanup = withEnv({ VIDEO_PIPELINE_ENABLED: 'true' });
+      try {
+        const chain = chainMock({ data: { status: 'pending' }, error: null });
+        chain.update.mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        });
+        setClient(chain);
+        mocks.dataService.getProduction.mockResolvedValue(
+          fakeProduction({
+            templateId: 'short-braking-fact',
+            videoType: 'film_socle',
+          }),
+        );
+        await expect(
+          processor.handleVideoExecution(fakeJob()),
+        ).resolves.toMatchObject({
+          status: 'failed',
+          errorMessage: 'Template incompatible with video format',
+        });
+        expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+      } finally {
+        cleanup();
+      }
+    });
+  });
+
   describe('honest results', () => {
     it.each([
       [{ engineName: 'stub' }, 'simulated'],

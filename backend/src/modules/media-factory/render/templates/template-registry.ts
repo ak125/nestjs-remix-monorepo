@@ -48,6 +48,7 @@ const REGISTRY: Record<string, TemplateRegistryEntry> = {
 /** Resolve an explicit registered template without substituting demo content. */
 export function resolveTemplate(
   templateId: string | null | undefined,
+  videoType?: VideoType,
 ): TemplateRegistryEntry {
   if (!templateId || !Object.hasOwn(REGISTRY, templateId)) {
     throw new DomainValidationException({
@@ -55,7 +56,14 @@ export function resolveTemplate(
       field: 'templateId',
     });
   }
-  return REGISTRY[templateId];
+  const entry = REGISTRY[templateId];
+  if (videoType && !entry.supportedVideoTypes.includes(videoType)) {
+    throw new DomainValidationException({
+      message: 'Template incompatible with video format',
+      field: 'templateId',
+    });
+  }
+  return entry;
 }
 
 /** Get default templateId for a given videoType (when production has no explicit templateId). */

@@ -65,7 +65,13 @@ interface DisclaimerEntry {
   position: string;
 }
 
+interface VideoTemplate {
+  templateId: string;
+  structure: { displayName: string; supportedVideoTypes: string[] };
+}
+
 interface Production {
+  templateId?: string | null;
   id: number;
   briefId: string;
   videoType: string;
@@ -128,6 +134,7 @@ function getPipelineSteps(
   prod: Production,
   executions: ExecutionRow[],
   derivatives: DerivativeRow[],
+  templates: VideoTemplate[],
 ): { steps: PipelineStep[]; currentIndex: number } {
   const steps: PipelineStep[] = [
     {
@@ -149,7 +156,11 @@ function getPipelineSteps(
       label: "Template",
       shortLabel: "TPL",
       icon: Layers,
-      done: false,
+      done: templates.some(
+        (t) =>
+          t.templateId === prod.templateId &&
+          t.structure.supportedVideoTypes.includes(prod.videoType),
+      ),
     },
     {
       key: "render",
@@ -182,7 +193,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   try {
     const headers = { Cookie: cookieHeader };
-    const [prodRes, execRes, derivRes] = await Promise.all([
+    const [prodRes, execRes, derivRes, templateRes] = await Promise.all([
       fetch(`${backendUrl}/api/admin/video/productions/${briefId}`, {
         headers,
       }),
@@ -193,6 +204,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         `${backendUrl}/api/admin/video/productions/${briefId}/derivatives`,
         { headers },
       ),
+      fetch(`${backendUrl}/api/admin/video/templates`, { headers }),
     ]);
 
     if (!prodRes.ok) {
@@ -204,6 +216,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           production: null,
           executions: [],
           derivatives: [],
+          templates: [],
           error:
             status === 404
               ? "Production introuvable"
@@ -214,12 +227,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         { status },
       );
     }
-    if (!execRes.ok || !derivRes.ok) {
+    if (!execRes.ok || !derivRes.ok || !templateRes.ok) {
       return data(
         {
           production: null,
           executions: [],
           derivatives: [],
+          templates: [],
           error: "Historique vidéo indisponible",
         },
         { status: 503 },
@@ -231,7 +245,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const executions = (execData.data ?? []) as ExecutionRow[];
     const derivatives = (derivData.data ?? []) as DerivativeRow[];
 
+    const templateData = await templateRes.json();
+    if (templateData.success === false || !Array.isArray(templateData.data)) {
+      throw new Error("Catalogue de templates indisponible");
+    }
+    const templates = templateData.data as VideoTemplate[];
     return data({
+      templates,
       production: prodData.data as Production,
       executions,
       derivatives,
@@ -243,6 +263,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         production: null,
         executions: [],
         derivatives: [],
+        templates: [],
         error: "Erreur chargement",
       },
       { status: 503 },
@@ -306,6 +327,59 @@ export async function action({ request, params }: ActionFunctionArgs) {
         ok: false,
         error: "Erreur reseau",
       });
+    }
+  }
+
+  if (intent === "save-template") {
+    const templateId = formData.get("templateId");
+    const expectedUpdatedAt = formData.get("expectedUpdatedAt");
+    if (
+      typeof templateId !== "string" ||
+      !templateId ||
+      typeof expectedUpdatedAt !== "string" ||
+      !expectedUpdatedAt
+    ) {
+      return data(
+        {
+          _intent: "save-template" as const,
+          ok: false,
+          error: "Choisir un template et recharger la version du brouillon",
+        },
+        { status: 400 },
+      );
+    }
+    try {
+      const res = await fetch(
+        `${backendUrl}/api/admin/video/productions/${briefId}`,
+        {
+          method: "PATCH",
+          headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
+          body: JSON.stringify({ templateId, expectedUpdatedAt }),
+        },
+      );
+      const payload = await res.json();
+      if (!res.ok || !payload.success)
+        return data(
+          {
+            _intent: "save-template" as const,
+            ok: false,
+            error:
+              payload.message ??
+              payload.error ??
+              "Erreur sauvegarde du template",
+          },
+          { status: res.ok ? 502 : res.status },
+        );
+      return redirect(`/admin/video-hub/productions/${briefId}`);
+    } catch {
+      return data(
+        {
+          _intent: "save-template" as const,
+          ok: false,
+          error: "Erreur réseau",
+        },
+        { status: 503 },
+      );
     }
   }
 
@@ -522,7 +596,7 @@ function formatDuration(ms: number | null): string {
 // ─── Main Component ──────────────────────────────────────────
 
 export default function VideoProductionDetail() {
-  const { production, executions, derivatives, error } =
+  const { production, executions, derivatives, templates, error } =
     useLoaderData<typeof loader>();
   const [activePanel, setActivePanel] = useState<
     "script" | "claims" | "gates" | "exec" | "deriv" | null
@@ -590,6 +664,8 @@ export default function VideoProductionDetail() {
     };
   }>();
 
+  const templateFetcher = useFetcher<{ ok: boolean; error?: string }>();
+
   const isExecuting = fetcher.state !== "idle";
   const isGeneratingScript = scriptFetcher.state !== "idle";
   const isGeneratingAudio = audioFetcher.state !== "idle";
@@ -621,6 +697,17 @@ export default function VideoProductionDetail() {
     production,
     executions,
     derivatives,
+    templates,
+  );
+  const templateLocked =
+    production.status !== "draft" ||
+    production.approvalRecord !== null ||
+    executions.length > 0;
+  const compatibleTemplates = templates.filter((t) =>
+    t.structure.supportedVideoTypes.includes(production.videoType),
+  );
+  const selectedTemplate = compatibleTemplates.find(
+    (t) => t.templateId === production.templateId,
   );
   const hasRender = executions.some((e) =>
     hasRenderedArtifact(e.executionOutcome),
@@ -876,13 +963,73 @@ export default function VideoProductionDetail() {
                 <ChevronRight className="h-3 w-3 text-neutral-700" />
 
                 {/* Step 3: Template */}
-                <Link
-                  to="/admin/video-hub/templates"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200 transition-all"
+                <templateFetcher.Form
+                  method="post"
+                  className="flex flex-col gap-2"
                 >
-                  <Layers className="h-3 w-3" />
-                  TEMPLATE
-                </Link>
+                  <input type="hidden" name="_intent" value="save-template" />
+                  <input
+                    type="hidden"
+                    name="expectedUpdatedAt"
+                    value={production.updatedAt}
+                  />
+                  <label
+                    htmlFor="production-template"
+                    className="text-xs text-neutral-400"
+                  >
+                    Template de montage
+                  </label>
+                  <select
+                    id="production-template"
+                    name="templateId"
+                    key={production.templateId ?? "none"}
+                    defaultValue={selectedTemplate?.templateId ?? ""}
+                    required
+                    disabled={
+                      templateLocked || templateFetcher.state !== "idle"
+                    }
+                    className="rounded bg-neutral-800 p-2 text-xs text-neutral-200"
+                  >
+                    <option value="" disabled>
+                      Choisir un template
+                    </option>
+                    {compatibleTemplates.map((t) => (
+                      <option key={t.templateId} value={t.templateId}>
+                        {t.structure.displayName}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="submit"
+                    disabled={
+                      templateLocked ||
+                      templateFetcher.state !== "idle" ||
+                      compatibleTemplates.length === 0
+                    }
+                    className="rounded bg-neutral-800 px-3 py-1.5 text-xs text-neutral-200 disabled:opacity-40"
+                  >
+                    {templateFetcher.state !== "idle"
+                      ? "Enregistrement…"
+                      : "Enregistrer le template"}
+                  </button>
+                  {templateLocked && (
+                    <p className="text-xs text-neutral-400">
+                      Template verrouillé : production en revue ou déjà
+                      exécutée.
+                    </p>
+                  )}
+                  {production.templateId && !selectedTemplate && (
+                    <p role="alert" className="text-xs text-amber-400">
+                      Template enregistré indisponible pour ce format :{" "}
+                      {production.templateId}
+                    </p>
+                  )}
+                  {templateFetcher.data?.error && (
+                    <p role="alert" className="text-xs text-red-400">
+                      {templateFetcher.data.error}
+                    </p>
+                  )}
+                </templateFetcher.Form>
 
                 <ChevronRight className="h-3 w-3 text-neutral-700" />
 

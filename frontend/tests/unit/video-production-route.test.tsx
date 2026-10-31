@@ -1,3 +1,4 @@
+import "@testing-library/jest-dom/vitest";
 import {
   act,
   cleanup,
@@ -105,6 +106,29 @@ function execution(executionOutcome?: string, id = 1) {
     retryable: false,
   };
 }
+const templates = [
+  {
+    templateId: "short-product-highlight",
+    structure: {
+      displayName: "Short Product Highlight",
+      supportedVideoTypes: ["short"],
+    },
+  },
+  {
+    templateId: "short-braking-fact",
+    structure: {
+      displayName: "Short Braking Fact",
+      supportedVideoTypes: ["short"],
+    },
+  },
+  {
+    templateId: "test-card",
+    structure: {
+      displayName: "Test Card",
+      supportedVideoTypes: ["short", "film_socle"],
+    },
+  },
+];
 const gates = ["PASS", "WARN", "FAIL"].map((verdict, index) => ({
   gate: ["truth", "brand", "custom_gate"][index],
   verdict: verdict as "PASS" | "WARN" | "FAIL",
@@ -123,6 +147,7 @@ async function show(
       {
         path: "/admin/video-hub/productions/:briefId",
         loader: () => ({
+          templates,
           production: production(),
           executions: [],
           derivatives: [],
@@ -147,14 +172,15 @@ async function show(
 }
 
 describe("production route loading", () => {
-  it("loads the three existing resources with the session cookie and preserves their data", async () => {
+  it("loads the production resources and registered templates with the session cookie and preserves their data", async () => {
     const prod = production();
     const exec = execution("rendered_unverified");
     const derivative = { brief_id: "synthetic-child" };
-    for (const value of [prod, [exec], [derivative]])
+    for (const value of [prod, [exec], [derivative], templates])
       fetchMock.mockResolvedValueOnce(response({ data: value }));
     const result = await loader(args());
     expect(result.data).toEqual({
+      templates,
       production: prod,
       executions: [exec],
       derivatives: [derivative],
@@ -164,6 +190,7 @@ describe("production route loading", () => {
       "http://backend/api/admin/video/productions/synthetic-brief",
       "http://backend/api/admin/video/productions/synthetic-brief/executions",
       "http://backend/api/admin/video/productions/synthetic-brief/derivatives",
+      "http://backend/api/admin/video/templates",
     ]);
     for (const [, init] of fetchMock.mock.calls)
       expect(init.headers.Cookie).toBe(cookie);
@@ -172,7 +199,8 @@ describe("production route loading", () => {
     fetchMock
       .mockResolvedValueOnce(response({ data: production() }))
       .mockResolvedValueOnce(response({}))
-      .mockResolvedValueOnce(response({}));
+      .mockResolvedValueOnce(response({}))
+      .mockResolvedValueOnce(response({ data: templates }));
     expect((await loader(args(undefined, false))).data).toMatchObject({
       executions: [],
       derivatives: [],
@@ -198,10 +226,10 @@ describe("production route loading", () => {
       );
     },
   );
-  it.each([1, 2])(
+  it.each([1, 2, 3])(
     "does not describe unavailable collection %s as an empty history",
     async (failedIndex) => {
-      [production(), [], []].forEach((value, index) =>
+      [production(), [], [], templates].forEach((value, index) =>
         fetchMock.mockResolvedValueOnce(
           response({ data: value }, index === failedIndex ? 503 : 200),
         ),
@@ -871,5 +899,271 @@ describe("production form feedback through the real router", () => {
     expect(await screen.findByText("Audio: 10.0s")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "RE-SCR" }));
     expect(await screen.findByText("Script: 1 claims, ~0min")).toBeTruthy();
+  });
+});
+
+describe("persisted template selection", () => {
+  it("saves the selected template through the existing production PATCH and redirects", async () => {
+    fetchMock.mockResolvedValue(response({ success: true }));
+    const result = await action(
+      args({
+        _intent: "save-template",
+        templateId: "short-braking-fact",
+        expectedUpdatedAt: "2026-01-01T00:00:00Z",
+      }),
+    );
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(302);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://backend/api/admin/video/productions/synthetic-brief",
+      expect.objectContaining({
+        method: "PATCH",
+        headers: { Cookie: cookie, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          templateId: "short-braking-fact",
+          expectedUpdatedAt: "2026-01-01T00:00:00Z",
+        }),
+      }),
+    );
+  });
+  it("offers a template form instead of leaving the production context", async () => {
+    await show();
+    expect(
+      screen.getByRole("combobox", { name: "Template de montage" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Enregistrer le template" }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("template form and persisted progress", () => {
+  it("submits the real form, follows the action redirect and reloads the saved selection", async () => {
+    let stored = production({
+      scriptText: "Narration",
+      masterAudioUrl: "s3://synthetic/voice.wav",
+    });
+    fetchMock.mockImplementation(async (target: string, init?: RequestInit) => {
+      if (target.endsWith("/templates"))
+        return response({ success: true, data: templates });
+      if (target.endsWith("/executions") || target.endsWith("/derivatives"))
+        return response({ success: true, data: [] });
+      if (target.endsWith("/productions/synthetic-brief")) {
+        if (init?.method === "PATCH") {
+          const body = JSON.parse(init.body as string);
+          expect(body.expectedUpdatedAt).toBe(stored.updatedAt);
+          stored = {
+            ...stored,
+            templateId: body.templateId,
+            updatedAt: "2026-01-02T00:00:00Z",
+          };
+        }
+        return response({ success: true, data: stored });
+      }
+      throw new Error("Unexpected offline request");
+    });
+    const router = createMemoryRouter(
+      [
+        {
+          path: "/admin/video-hub/productions/:briefId",
+          loader,
+          action,
+          Component: ProductionDetail,
+          HydrateFallback: () => null,
+        },
+      ],
+      { initialEntries: [url.pathname] },
+    );
+    routers.push(router);
+    render(<RouterProvider router={router} />);
+    const select = await screen.findByRole("combobox", {
+      name: "Template de montage",
+    });
+    expect(select).toHaveValue("");
+    fireEvent.change(select, { target: { value: "short-braking-fact" } });
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole("button", { name: "Enregistrer le template" }),
+      );
+    });
+    expect(stored.templateId).toBe("short-braking-fact");
+    expect(
+      screen.getByRole("combobox", { name: "Template de montage" }),
+    ).toHaveValue("short-braking-fact");
+    expect(screen.getByRole("button", { name: "RENDER" })).toHaveClass(
+      "bg-emerald-600",
+    );
+    expect(
+      fetchMock.mock.calls.filter(([, init]) => init?.method === "PATCH"),
+    ).toHaveLength(1);
+    expect(
+      fetchMock.mock.calls.some(([target]) =>
+        String(target).endsWith("/execute"),
+      ),
+    ).toBe(false);
+  });
+  it.each([
+    { production: production({ status: "ready_for_publish" }) },
+    {
+      production: production({
+        approvalRecord: { briefId: "synthetic-brief", stages: [] },
+      }),
+    },
+    { executions: [execution("simulated")] },
+  ])("locks reviewed or already executed productions", async (page) => {
+    await show(page);
+    expect(
+      screen.getByRole("combobox", { name: "Template de montage" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Enregistrer le template" }),
+    ).toBeDisabled();
+  });
+  it("does not complete the template step from an unknown saved identifier", async () => {
+    await show({
+      production: production({
+        templateId: "retired",
+        scriptText: "Narration",
+        masterAudioUrl: "s3://synthetic/voice.wav",
+      }),
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Template enregistré indisponible",
+    );
+    expect(screen.getByRole("button", { name: "RENDER" })).not.toHaveClass(
+      "bg-emerald-600",
+    );
+  });
+  it("filters choices by video format", async () => {
+    await show({
+      production: production({
+        videoType: "film_socle",
+        templateId: "short-braking-fact",
+      }),
+    });
+    expect(
+      screen.queryByRole("option", { name: "Short Braking Fact" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("option", { name: "Test Card" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("indisponible");
+  });
+  it("completes the pipeline only with a saved compatible template and real artifact outcome", async () => {
+    await show({
+      production: production({
+        templateId: "short-braking-fact",
+        scriptText: "Narration",
+        masterAudioUrl: "s3://synthetic/voice.wav",
+      }),
+      executions: [execution("rendered_unverified")],
+      derivatives: [
+        {
+          brief_id: "synthetic-child",
+          video_type: "short",
+          status: "draft",
+          derivative_index: 1,
+          script_text: null,
+          created_at: "2026-01-01T00:00:00Z",
+        },
+      ],
+    });
+    expect(screen.getByText("DONE")).toBeInTheDocument();
+  });
+  it.each([400, 401, 403, 409, 503])(
+    "preserves template save HTTP %s and displays the error",
+    async (status) => {
+      fetchMock.mockResolvedValue(
+        response({ message: "Template refusé" }, status),
+      );
+      const result = await action(
+        args({
+          _intent: "save-template",
+          templateId: "short-braking-fact",
+          expectedUpdatedAt: "2026-01-01T00:00:00Z",
+        }),
+      );
+      expect(result).toMatchObject({
+        init: { status },
+        data: { ok: false, error: "Template refusé" },
+      });
+      await show({}, () => result);
+      fireEvent.change(
+        screen.getByRole("combobox", { name: "Template de montage" }),
+        { target: { value: "short-braking-fact" } },
+      );
+      await act(async () => {
+        fireEvent.click(
+          screen.getByRole("button", { name: "Enregistrer le template" }),
+        );
+      });
+      expect(screen.getByRole("alert")).toHaveTextContent("Template refusé");
+    },
+  );
+  it.each([{ templateId: "" }, { expectedUpdatedAt: "" }])(
+    "rejects incomplete form %j before an API call",
+    async (missing) => {
+      const result = await action(
+        args({
+          _intent: "save-template",
+          templateId: "short-braking-fact",
+          expectedUpdatedAt: "2026-01-01T00:00:00Z",
+          ...missing,
+        }),
+      );
+      expect(result).toMatchObject({
+        init: { status: 400 },
+        data: { ok: false },
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
+  it("does not turn a network failure into a saved selection", async () => {
+    expect(
+      await action(
+        args({
+          _intent: "save-template",
+          templateId: "short-braking-fact",
+          expectedUpdatedAt: "2026-01-01T00:00:00Z",
+        }),
+      ),
+    ).toMatchObject({ init: { status: 503 }, data: { ok: false } });
+  });
+  it("rejects business failure on HTTP 200", async () => {
+    fetchMock.mockResolvedValue(response({ success: false }));
+    expect(
+      await action(
+        args({
+          _intent: "save-template",
+          templateId: "short-braking-fact",
+          expectedUpdatedAt: "2026-01-01T00:00:00Z",
+        }),
+      ),
+    ).toMatchObject({ init: { status: 502 }, data: { ok: false } });
+  });
+});
+
+describe("template catalog availability", () => {
+  it.each([
+    { success: false, data: [] },
+    { success: true },
+    { success: true, data: {} },
+  ])(
+    "refuses an invalid catalog instead of inventing template completion %j",
+    async (catalog) => {
+      for (const value of [production(), [], []])
+        fetchMock.mockResolvedValueOnce(response({ data: value }));
+      fetchMock.mockResolvedValueOnce(response(catalog));
+      expect(await loader(args())).toMatchObject({
+        init: { status: 503 },
+        data: { production: null, templates: [] },
+      });
+    },
+  );
+  it("keeps saving disabled when no compatible template exists", async () => {
+    await show({ templates: [] });
+    expect(
+      screen.getByRole("button", { name: "Enregistrer le template" }),
+    ).toBeDisabled();
   });
 });
