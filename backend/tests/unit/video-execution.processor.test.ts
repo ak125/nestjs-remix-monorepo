@@ -8,6 +8,7 @@
  * Strategy: mock Supabase client chain + 4 injected services.
  */
 
+import { Logger } from '@nestjs/common';
 import { VideoExecutionProcessor } from '../../src/workers/processors/video-execution.processor';
 import { RenderErrorCode } from '../../src/modules/media-factory/render/types/render.types';
 import { VideoGatesService } from '../../src/modules/media-factory/services/video-gates.service';
@@ -253,6 +254,94 @@ describe('VideoExecutionProcessor', () => {
         'Execution state unavailable',
       );
       expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('failure observability without false delivery', () => {
+    it('bounds repeated queue errors while reporting a later incident', () => {
+      const log = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => {});
+      const now = jest.spyOn(Date, 'now');
+      try {
+        now.mockReturnValue(100_000);
+        processor.handleQueueError(new Error('queue unavailable'));
+        now.mockReturnValue(160_000);
+        processor.handleQueueError(new Error('same incident'));
+        now.mockReturnValue(160_001);
+        processor.handleQueueError(new Error('later incident'));
+        expect(log.mock.calls.map(([message]) => message)).toEqual([
+          '[VEP] Queue error: queue unavailable',
+          '[VEP] Queue error: later incident',
+        ]);
+        expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
+      } finally {
+        now.mockRestore();
+        log.mockRestore();
+      }
+    });
+
+    it('reports a failed failure-sync without claiming a successful job', async () => {
+      const chain = chainMock({ data: null, error: null });
+      chain.single.mockRejectedValue(new Error('sync unavailable'));
+      setClient(chain);
+      mocks.jobHealth.recordFailure.mockRejectedValue(
+        new Error('metrics unavailable'),
+      );
+      const log = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => {});
+      try {
+        await expect(
+          processor.handleFailedJob(fakeJob(), new Error('render failed')),
+        ).resolves.toBeUndefined();
+        expect(log).toHaveBeenCalledWith(
+          expect.stringContaining('DB sync failed'),
+        );
+        expect(chain.update).not.toHaveBeenCalled();
+        expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
+      } finally {
+        log.mockRestore();
+      }
+    });
+
+    it('passes genuinely absent artefacts to the real admission gate and never renders', async () => {
+      const cleanup = withEnv({ VIDEO_PIPELINE_ENABLED: 'true' });
+      const chain = chainMock({ data: { status: 'pending' }, error: null });
+      chain.update.mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null }),
+      });
+      setClient(chain);
+      mocks.dataService.getProduction.mockResolvedValue(
+        fakeProduction({
+          knowledgeContract: null,
+          claimTable: null,
+          evidencePack: null,
+          disclaimerPlan: null,
+          approvalRecord: null,
+        }),
+      );
+      const gates = new VideoGatesService();
+      mocks.gatesService.checkArtefacts.mockImplementation((input) =>
+        gates.checkArtefacts(input),
+      );
+      try {
+        const result = await processor.handleVideoExecution(fakeJob());
+        expect(result.status).toBe('failed');
+        expect(result.canPublish).toBe(false);
+        expect(result.qualityFlags).toEqual(['MISSING_ARTEFACTS']);
+        expect(mocks.gatesService.checkArtefacts).toHaveBeenCalledWith({
+          brief: undefined,
+          claims: undefined,
+          evidencePack: undefined,
+          disclaimerPlan: undefined,
+          approvalRecord: undefined,
+        });
+        expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+        expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
+      } finally {
+        cleanup();
+      }
     });
   });
 

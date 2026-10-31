@@ -19,13 +19,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+import { Select, SelectItem } from "~/components/ui/select";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 import { executionPresentation } from "~/utils/video-execution";
@@ -150,17 +144,12 @@ export default function ExecutionsIndex() {
               >
                 Status
               </label>
-              <Select name="status" defaultValue={currentStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUSES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+              <Select id="status" name="status" defaultValue={currentStatus}>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
               </Select>
             </div>
             <Button type="submit" variant="outline" size="sm">
