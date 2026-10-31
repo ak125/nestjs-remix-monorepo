@@ -154,24 +154,39 @@ requises pour le texte, la sécurité, le rendu et la publication.
 
 ### Poursuite et réception du lot
 
-**Nouveau mandat utilisateur du 1er novembre 2026 — prochains lots éditoriaux.**
+**Mandat utilisateur consolidé du 1er novembre 2026 — séparation des rôles.**
 ChatGPT, dans le Studio documentaire/Space et via Work lorsqu'il est accessible,
-devient l'auteur principal des recherches, textes et scripts. Le Studio porte les
+est l'auteur principal des recherches, textes et scripts. Le Studio porte les
 brouillons et le suivi documentaire, sans devenir le canon technique, le WIKI ou
-le producteur du catalogue. Codex est l'intégrateur technique désigné pour le
-nouveau pilote éditorial, avec tests, revue indépendante et PR selon les droits
-réellement accessibles. Un brouillon dans Space ne prouve ni réception ni
-exécution par Codex ; un prompt d'image ne prouve pas sa production.
+le producteur du catalogue.
 
-Les livrables antérieurs de Claude Desktop et les missions de code déjà attribuées
-à Claude CLI restent conservés, avec leurs auteurs, états et révisions exacts.
-Ne pas interrompre ni réattribuer silencieusement un périmètre encore détenu
-par un autre écrivain : le transfert explicite précède toute modification
-concurrente. Hermes transmet les fonctions utiles après recette et ne sert plus
-de passage obligé pour démarrer une rédaction. Aucun changement de permissions,
-de secrets, de validation WIKI ou de mandat PROD ne découle de cette répartition.
-Préparer un visuel neutre sans promesse de prix ou de délai peut avancer dans le
-mandat de préparation ; cela ne change ni prix/stock runtime ni PROD.
+**Claude Code CLI demeure l'unique exécutant principal du codage.** Lui confier
+les changements de code applicatif, backend/frontend, tests, migrations, scripts,
+intégrations et préparation des PR techniques, dans le cadre des droits et des
+mandats en vigueur. **Codex est relecteur indépendant/QA technique**, en lecture
+ou en revue de diff : il ne prend pas en charge le codage et n'est pas un relais
+d'intégration obligatoire. Une dérogation n'existe que sur nouvelle instruction
+explicite de l'utilisateur, jamais par simple choix d'un agent.
+
+**Passage ChatGPT → Claude CLI au besoin seulement.** Pour toute tâche qui
+exige du code, ChatGPT prépare un prompt précis : objectif, problème et preuve,
+repo/checkout/branche/SHA à revérifier, chemins et contrats à lire, périmètre
+autorisé, entrée ou livrable figé avec empreintes, tests exigés, vérification
+en environnement isolé, critères d'arrêt, garde-fous, rollback et preuves de
+livraison. Transmettre ce prompt par le **canal Claude CLI réellement autorisé**
+si celui-ci est accessible ; sinon le fournir à l'utilisateur pour lancement
+manuel, et marquer `PROMPT_PRÊT — NON_ENVOYÉ`. Une issue, un prompt dans Space,
+un fichier dans Git ou un appel refusé ne prouvent **ni l'envoi, ni l'exécution**.
+Obtenir l'identifiant de mission/checkout et le résultat pour déclarer la prise
+en charge. Ne jamais prétendre disposer d'un canal automatisé non vérifié.
+
+Les livrables historiques de Claude Desktop et les missions de code en cours
+restent conservés avec leurs auteurs, états et révisions exacts. Un seul écrivain
+par fichier/périmètre ; ne pas réattribuer ou écraser une mission concurrente.
+Hermes transmet ses fonctions utiles après recette et ne bloque pas une nouvelle
+rédaction. Aucun droit supplémentaire, secret, validation WIKI ou mandat PROD
+ne découle de ces rôles ; tout contenu à servir suit les gates existantes.
+Un prompt d'image ne prouve pas la production d'un asset.
 
 Rendre les livrables accessibles à l'intégrateur par les moyens existants : checkout
 partagé ou branche/révision disponible, références d'assets et source ou recette de
