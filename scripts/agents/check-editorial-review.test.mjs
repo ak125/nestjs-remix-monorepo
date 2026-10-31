@@ -4,7 +4,8 @@
 // (empreinte sur une autre représentation, liste vide sans raison, RE-16/RE-23 qui
 // changent l'information, conditions non nommées, lecture tronquée comptée, espace ordinaire
 // restée aux positions RE-T1, original en texte brut d'un brouillon affiché en Markdown, champ
-// structuré désigné par une plage ou sans son chemin de clés, plage d'original non lue).
+// structuré désigné par une plage ou sans son chemin de clés, plage d'original non lue, contrôle
+// passé sur le seul bloc final).
 // Run: node --test scripts/agents/check-editorial-review.test.mjs
 // =============================================================================
 import { test, describe, before, after } from "node:test";
@@ -506,6 +507,22 @@ describe("cas rejetés", () => {
     const r = run(output(unchangedBlock(plain), `Brouillon :\n\n${MD}\n\nRelecture appliquée.`));
     assert.equal(r.resultat, "rejetee");
     assert.match(errors(r), /original inexact.*au balisage Markdown près/);
+  });
+
+  test("original en texte brut dont chaque ligne est courte ou affichée telle quelle", () => {
+    const md = "### Plan\n\n1. Expliquer le rôle du filtre dans le circuit.\n\n**Scène 1 — Ouverture**\n\nLe filtre retient les impuretés du circuit de lubrification.";
+    const plain = "Plan\n1. Expliquer le rôle du filtre dans le circuit.\n\nScène 1 — Ouverture\nLe filtre retient les impuretés du circuit de lubrification.";
+    const r = run(output(unchangedBlock(plain), `Brouillon :\n\n${md}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /original inexact.*l'original du bloc au balisage Markdown près seulement/);
+  });
+
+  test("contrôle passé sur le seul bloc final, original reproduit d'un brouillon de la session", () => {
+    const b = block();
+    b.relectures[0].original.provenance = { champ: "brouillon rédigé dans cette réponse" };
+    const r = run(`\`\`\`json\n${JSON.stringify(b, null, 2)}\n\`\`\`\n`);
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /entrée incomplète.*l'entrée ne contient que le bloc final/);
   });
 
   test("champ de frontmatter reproduit sans son chemin de clés, ou sous un autre chemin, même en partielle", () => {

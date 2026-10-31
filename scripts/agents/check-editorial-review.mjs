@@ -731,16 +731,21 @@ function checkRelecture(rel, ctx) {
 // ---------------------------------------------------------------------------------------------
 
 // Un original reproduit sans fichier de provenance n'existe que dans la réponse (brouillon de la
-// session). Si la réponse n'affiche ni lui ni la proposition tels quels, mais l'un des deux à la
-// typographie près, l'écart cache un changement RE-Tx non déclaré ; ligne à ligne, un écart de
-// typographie ou de balisage Markdown montre que l'original n'est pas le brouillon livré tel
-// qu'il est affiché (§10). Sans aucun écart trouvé, l'original reste à vérifier sur le contenu.
-// Un chemin de provenance qui ne désigne aucun fichier laisse l'original dans ce cas.
+// session). Une entrée réduite au bloc final ne permet pas de l'y confronter : ce n'est pas la
+// sortie livrée. Si la réponse n'affiche ni lui ni la proposition tels quels, mais l'un des deux
+// à la typographie près, l'écart cache un changement RE-Tx non déclaré ; d'un seul tenant ou ligne
+// à ligne, un écart de typographie ou de balisage Markdown montre que l'original n'est pas le
+// brouillon livré tel qu'il est affiché (§10). Sans aucun écart trouvé, l'original reste à
+// vérifier sur le contenu. Un chemin de provenance qui ne désigne aucun fichier laisse l'original
+// dans ce cas.
 function displayCheck(rel, prose, roots) {
   const o = rel.original;
   if (!o || typeof o !== "object" || typeof o.texte !== "string" || !o.texte.trim()) return {};
   if (o.provenance && resolvePath(o.provenance.chemin, roots)) return {};
   const id = rel.id || "?";
+  if (!prose.trim()) {
+    return { entree: `relecture ${id} : original reproduit sans fichier de provenance, mais l'entrée ne contient que le bloc final : passer au contrôle la réponse entière telle qu'elle est livrée, prose comprise, où le brouillon de la session est affiché (§10)` };
+  }
   const texts = [["l'original", o.texte], ["la proposition", rel.proposition]].filter(([, t]) => typeof t === "string" && t.trim());
   const shown = norm(prose);
   if (texts.some(([, t]) => shown.includes(norm(t)))) return {};
@@ -749,10 +754,19 @@ function displayCheck(rel, prose, roots) {
   if (match) {
     return { ecart: `relecture ${id} : la réponse affiche ${match[0]} du bloc à la typographie près seulement (espaces insécables, guillemets ou apostrophes) : changement RE-Tx non déclaré, ou original qui n'est pas le texte livré` };
   }
+  // D'un seul tenant : chaque ligne d'une version en texte brut peut être courte ou figurer telle
+  // quelle dans le brouillon affiché, seul le texte entier montre le balisage retiré.
+  const shownPlain = typoShape(norm(stripMarkdown(prose)));
+  const plainMatch = texts.find(([, t]) => {
+    const plain = typoShape(norm(stripMarkdown(t)));
+    return plain.length >= 20 && shownPlain.includes(plain);
+  });
+  if (plainMatch) {
+    return { ecart: `relecture ${id} : la réponse affiche ${plainMatch[0]} du bloc au balisage Markdown près seulement (titres, listes, gras, code ou liens) : une version en texte brut d'un brouillon affiché en Markdown n'est pas le brouillon livré tel qu'il est affiché (§10)` };
+  }
   // Une ligne affichée telle quelle dans l'un des deux textes explique l'écart de l'autre (changement déclaré).
   const lines = texts.flatMap(([label, t]) => t.split("\n").map((line) => ({ label, line, l: norm(line) })));
   const shownAsIs = new Set(lines.filter((x) => shown.includes(x.l)).map((x) => typoShape(x.l)));
-  const shownPlain = typoShape(norm(stripMarkdown(prose)));
   for (const { label, line, l } of lines) {
     if (l.length < 20 || words(l).length < 3 || shownAsIs.has(typoShape(l))) continue;
     if (shownTypo.includes(typoShape(l))) {
@@ -838,7 +852,8 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
   const allBlocked = results.length > 0 && results.every((r) => r.blocked);
   const displays = relectures.map((rel) => displayCheck(rel || {}, prose, roots));
   const displayEcarts = displays.map((d) => d.ecart).filter(Boolean);
-  computed.C2.push(...displayEcarts);
+  const entreesIncompletes = displays.map((d) => d.entree).filter(Boolean);
+  computed.C2.push(...displayEcarts, ...entreesIncompletes);
   report.a_verifier.push(...displays.map((d) => d.soft).filter(Boolean));
 
   const declared = block.conditions && typeof block.conditions === "object" ? block.conditions : {};
@@ -867,6 +882,8 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
   }
   // Même règle : un original qui n'est pas le texte livré est un champ inexact, pas un manque.
   for (const msg of displayEcarts) report.erreurs.push(`original inexact — ${msg}`);
+  // Même règle : un contrôle passé sur le seul bloc ne porte pas sur la sortie livrée.
+  for (const msg of entreesIncompletes) report.erreurs.push(`entrée incomplète — ${msg}`);
   // Même règle : une référence qui ne désigne pas le texte reproduit, ou un champ structuré désigné
   // par la seule syntaxe du document, est inexacte, même quand la relecture sort du périmètre.
   for (const msg of referencesInexactes) report.erreurs.push(`référence inexacte — ${msg}`);
