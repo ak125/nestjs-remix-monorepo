@@ -42533,6 +42533,82 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-assets.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 317,
+      "owner": "__unassigned__",
+      "path": "docs/audits/editorial-filtre-huile-20261030/tools/build-assets.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-pictos.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 76,
+      "owner": "__unassigned__",
+      "path": "docs/audits/editorial-filtre-huile-20261030/tools/build-pictos.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-preview.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 281,
+      "owner": "__unassigned__",
+      "path": "docs/audits/editorial-filtre-huile-20261030/tools/build-preview.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audits/editorial-filtre-huile-20261030/tools/lint-integration.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 108,
+      "owner": "__unassigned__",
+      "path": "docs/audits/editorial-filtre-huile-20261030/tools/lint-integration.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
