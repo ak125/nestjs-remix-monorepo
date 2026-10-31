@@ -80,6 +80,12 @@ d'erreur RE-T1, jamais rencontré dans ce parcours. Claude R12 est réutilisé :
 d'exécution ne lui donne accès à ce diagnostic ; l'exemple du LF ajouté ensuite ne concerne
 que les sessions capables d'exécuter un pipeline.
 
+Pendant la publication, `4ac82567990bbf3236dc079ac780f0cc5b5a79fd` est arrivé sur la branche :
+il répartit les prochains lots entre ChatGPT (auteur) et Codex (intégrateur technique).
+Il est fusionné sans conflit ni écrasement. Il ne change ni le contrat éditorial ni les
+scripts contrôlés ici. Les recettes natives ci-dessus sont antérieures à cette répartition ;
+elles ne qualifient pas le nouveau pilote Studio/Work → Codex.
+
 Bilan E9 de ces cinq parcours : trois relectures appliquées contrôlées et deux partielles
 honnêtes conformes aux limites réelles des outils. Les deux corrections RE-T1 R14 sont
 effectivement proposées après rejet ; les originaux restent identiques entre les contrôles.
