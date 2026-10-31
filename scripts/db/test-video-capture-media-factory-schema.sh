@@ -12,13 +12,17 @@
 #     capture, avec données, RLS et politiques) : la capture n'y change RIEN
 #     (catalogue, fichiers de table, droits, politiques, données) ;
 #   - toute dérive de forme (dont politique hors service_role, index invalide,
-#     trigger, règle) fait échouer l'application, sans aucun effet partiel ;
+#     trigger, triggers internes de la clé étrangère désactivés, règle) fait
+#     échouer l'application, sans aucun effet partiel ;
+#   - une fonction homonyme d'un builtin, placée dans public et en tête du
+#     search_path de la session, n'est jamais appelée ;
 #   - seules écritures possibles, épinglées : commentaire de colonne, RLS
 #     désactivée et index absent sont ramenés à la forme capturée ;
 #   - un état partiel (une partie seulement des 6 tables) est refusé avant toute
 #     création, même quand les tables présentes sont conformes ;
 #   - une lecture concurrente ne bloque pas la capture ; une écriture concurrente
-#     la fait échouer, borné par lock_timeout ;
+#     la fait échouer, borné par lock_timeout ; une table supprimée pendant que la
+#     capture attend un verrou la fait échouer, sans recréer la table vide ;
 #   - le .down.sql n'a aucun effet ;
 #   - les deux fichiers de types du dépôt décrivent exactement les colonnes
 #     capturées (Row, Insert, Update, Relationships).
@@ -222,10 +226,22 @@ out=$(migrate "$MIGRATION"); rc=$?
 applied "rejeu sans erreur" "$out" "$rc"
 snap v1 data
 assert_same "catalogue, droits, politiques et données inchangés" v0 v1
-# La post-condition fixe son search_path : le rendu des défauts ne dépend pas de
+# Le fichier fixe son search_path en tête : le rendu des défauts ne dépend pas de
 # celui de la session qui applique.
 out=$(docker exec -i -e PGOPTIONS='-c search_path=pg_catalog' "$CT" psql -U postgres -d "$DB" -v ON_ERROR_STOP=1 -q -1 -f - < "$MIGRATION" 2>&1); rc=$?
 applied "rejeu avec search_path de session = pg_catalog" "$out" "$rc"
+# Homonyme hostile d'un builtin appelé par la pré-condition, avec public avant
+# pg_catalog dans le search_path de la session : pg_catalog reste en tête une fois
+# le search_path du fichier posé, la fonction de public n'est jamais appelée.
+q "CREATE FUNCTION public.to_regclass(text) RETURNS regclass LANGUAGE plpgsql AS \$\$BEGIN RAISE EXCEPTION 'fonction hostile appelée'; END\$\$" >/dev/null \
+  || { echo "FATAL: fonction hostile non créée"; exit 2; }
+snap v2 data
+out=$(docker exec -i -e PGOPTIONS='-c search_path=public,pg_catalog' "$CT" psql -U postgres -d "$DB" -v ON_ERROR_STOP=1 -q -1 -f - < "$MIGRATION" 2>&1); rc=$?
+applied "rejeu avec search_path de session = public,pg_catalog et homonyme hostile" "$out" "$rc"
+assert "homonyme hostile jamais appelé" non "$([[ "$out" == *"hostile"* ]] && echo oui || echo non)"
+snap v3 data
+assert_same "aucun effet" v2 v3
+q "DROP FUNCTION public.to_regclass(text)" >/dev/null || { echo "FATAL: fonction hostile non retirée"; exit 2; }
 
 echo
 echo "3. Base à la forme réelle (objets créés hors du dépôt, avec données, RLS et politiques)"
@@ -306,10 +322,14 @@ derive "trigger qui réécrit status (execution_log)" \
 derive "règle sur DELETE (templates)" \
   "CREATE RULE drift_rule AS ON DELETE TO $TPL DO INSTEAD NOTHING" \
   "DROP RULE drift_rule ON $TPL"
+# La contrainte reste au catalogue, mais ses triggers internes ne l'appliquent plus.
+derive "triggers internes de la clé étrangère désactivés (variants)" \
+  "ALTER TABLE $VAR DISABLE TRIGGER ALL" \
+  "ALTER TABLE $VAR ENABLE TRIGGER ALL"
 out=$(migrate "$MIGRATION"); rc=$?
 applied "dérives retirées : la capture repasse" "$out" "$rc"
 q "$DATA_SQL" > "$TMP/rdata2"
-assert_same "données intactes après les 16 dérives" rdata rdata2
+assert_same "données intactes après les 17 dérives" rdata rdata2
 
 echo
 echo "5. Seules écritures possibles : ramener commentaire, RLS et index à la forme capturée"
@@ -358,28 +378,30 @@ assert_same "données des 5 tables inchangées" p2data p3data
 assert "productions non recréée" "" "$(q "SELECT to_regclass('$PROD')")"
 
 echo
-echo "7. Accès concurrents à __video_execution_log"
+echo "7. Accès concurrents"
 DB=reelle
-# hold <SQL> : une session tient le verrou du SQL sur __video_execution_log
-# pendant 12 s ; rend la main quand le verrou est accordé et la session endormie.
+# hold <SQL> [table] [secondes] : une session de la base courante tient le verrou
+# du SQL sur la table (__video_execution_log par défaut) pendant 12 s par défaut ;
+# rend la main quand le verrou est accordé et la session endormie.
 hold() {
-  docker exec -i "$CT" psql -U postgres -d reelle -v ON_ERROR_STOP=1 -qtA >"$TMP/hold" 2>&1 <<SQL &
+  local rel=${2:-$EL}
+  docker exec -i "$CT" psql -U postgres -d "$DB" -v ON_ERROR_STOP=1 -qtA >"$TMP/hold" 2>&1 <<SQL &
 BEGIN;
 $1;
-SELECT pg_sleep(12);
+SELECT pg_sleep(${3:-12});
 ROLLBACK;
 SQL
   HOLDER=$!
   local held=0
   for _ in $(seq 1 50); do
-    held=$(q "SELECT count(*) FROM pg_stat_activity a WHERE a.wait_event = 'PgSleep' AND EXISTS (SELECT 1 FROM pg_locks l WHERE l.pid = a.pid AND l.relation = '$EL'::regclass AND l.granted)")
+    held=$(q "SELECT count(*) FROM pg_stat_activity a WHERE a.wait_event = 'PgSleep' AND EXISTS (SELECT 1 FROM pg_locks l WHERE l.pid = a.pid AND l.relation = '$rel'::regclass AND l.granted)")
     [[ "$held" == 1 ]] && return 0
     sleep 0.1
   done
   echo "FATAL: la session concurrente n'a pas pris son verrou"; wait "$HOLDER"; exit 2
 }
-# Lecture (ACCESS SHARE) : compatible avec le SHARE de CREATE INDEX IF NOT EXISTS
-# et le SHARE UPDATE EXCLUSIVE de COMMENT ON ; ENABLE ROW LEVEL SECURITY n'est
+# Lecture (ACCESS SHARE) : compatible avec le SHARE ROW EXCLUSIVE que la
+# pré-condition prend sur __video_execution_log ; ENABLE ROW LEVEL SECURITY n'est
 # pas exécuté, la RLS étant active.
 hold "SELECT count(*) FROM $EL"
 snap l0 data
@@ -393,7 +415,7 @@ assert "sans attendre lock_timeout (au plus 3 s)" oui "$( (( elapsed <= 3 )) && 
 snap l1 data
 assert_same "aucun effet" l0 l1
 wait "$HOLDER"
-# Écriture (ROW EXCLUSIVE) : en conflit avec le SHARE de CREATE INDEX IF NOT EXISTS.
+# Écriture (ROW EXCLUSIVE) : en conflit avec le SHARE ROW EXCLUSIVE de la pré-condition.
 hold "UPDATE $EL SET status = status WHERE false"
 snap l2 data
 t0=$(date +%s)
@@ -406,6 +428,33 @@ assert "attente bornée (4 à 8 s pour lock_timeout = 5s)" oui "$( (( elapsed >=
 wait "$HOLDER"
 snap l3 data
 assert_same "aucun effet" l2 l3
+# Suppression concurrente : la pré-condition a vu les 6 tables, puis attend son
+# verrou sur productions (écriture tenue 4 s) pendant qu'une autre session
+# supprime templates. Le LOCK de templates échoue : la table n'est pas recréée vide.
+new_db course
+psql_db -v forme_reelle=1 -f - < "$FIXTURE" >/dev/null || { echo "FATAL: forme réelle (course)"; exit 2; }
+FIVE_NO_TPL="__video_execution_log __video_productions __video_variants __video_assets __video_audio_cache"
+# shellcheck disable=SC2086 # noms sans espace
+q "$(data_sql $FIVE_NO_TPL)" > "$TMP/c0data"
+hold "UPDATE $PROD SET status = status WHERE false" "$PROD" 4
+migrate "$MIGRATION" > "$TMP/course" &
+MIG=$!
+waiting=0
+for _ in $(seq 1 30); do
+  waiting=$(q "SELECT count(*) FROM pg_stat_activity WHERE datname = 'course' AND wait_event_type = 'Lock'")
+  [[ "$waiting" == 1 ]] && break
+  sleep 0.1
+done
+[[ "$waiting" == 1 ]] || { echo "FATAL: la capture n'attend pas le verrou de productions"; wait "$MIG"; wait "$HOLDER"; exit 2; }
+q "DROP TABLE $TPL" >/dev/null || { echo "FATAL: templates non supprimée"; exit 2; }
+wait "$MIG"; rc=$?
+wait "$HOLDER"
+assert_err "table supprimée pendant l'attente : capture refusée" "does not exist" "$(cat "$TMP/course")" "$rc"
+assert "templates non recréée" "" "$(q "SELECT to_regclass('$TPL')")"
+# shellcheck disable=SC2086 # noms sans espace
+q "$(data_sql $FIVE_NO_TPL)" > "$TMP/c1data"
+assert_same "données des 5 autres tables inchangées" c0data c1data
+DB=reelle
 
 echo
 echo "8. Rollback : le .down.sql n'a aucun effet"

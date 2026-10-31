@@ -27,8 +27,25 @@ SCRIPTS = [
     "test-vehicle-cache-trigger-observable.sh",
     "test-video-capture-media-factory-schema.sh",
 ]
+# Scripts whose EXIT trap also reads the --cidfile of their docker run.
+CIDFILE_SCRIPTS = [
+    "test-video-capture-media-factory-schema.sh",
+]
 HOOK = r'''
 set -T
+if [[ -n "$PROBE_BAD_START" ]]; then
+    # Created, then failed to start, with nothing on stdout: only the cidfile
+    # tells the EXIT trap which container to remove.
+    docker() {
+        if [[ "$1" != run ]]; then command docker "$@"; return; fi
+        shift
+        command docker run --entrypoint /nonexistent "$@" > /dev/null
+        local rc=$?
+        command docker inspect --format '{{.Id}}' "$CT" > "$PROBE_DIR/id"
+        command docker inspect --format '{{json .Mounts}}' "$CT" > "$PROBE_DIR/mounts"
+        return "$rc"
+    }
+fi
 probe_boundary() {
     case "$1" in
         *docker\ run*)
@@ -59,7 +76,7 @@ class ContainerCleanup(unittest.TestCase):
         # Resolve once; tests must not pull or follow a moving image tag.
         cls.image = json.loads(docker("image", "inspect", "postgres:17-alpine").stdout)[0]["Id"]
 
-    def run_case(self, filename, status, collision=False):
+    def run_case(self, filename, status, collision=False, bad_start=False):
         sentinel = None
         volumes = []
         owned_id = None
@@ -74,7 +91,8 @@ class ContainerCleanup(unittest.TestCase):
                     volumes = [m["Name"] for m in mounts if m["Type"] == "volume"]
                 env = dict(os.environ, PGIMAGE=self.image, PROBE_DIR=tmp,
                            PROBE_SCRIPT=str(Path(__file__).with_name(filename)),
-                           PROBE_EXIT=str(status), PROBE_COLLISION=sentinel or "")
+                           PROBE_EXIT=str(status), PROBE_COLLISION=sentinel or "",
+                           PROBE_BAD_START="1" if bad_start else "")
                 result = subprocess.run(["bash", "-c", HOOK], env=env,
                                         capture_output=True, text=True, timeout=35)
                 if collision:
@@ -110,6 +128,11 @@ class ContainerCleanup(unittest.TestCase):
         for filename in SCRIPTS:
             with self.subTest(script=filename):
                 self.run_case(filename, 2, collision=True)
+
+    def test_failed_start_removes_container_known_only_by_cidfile(self):
+        for filename in CIDFILE_SCRIPTS:
+            with self.subTest(script=filename):
+                self.run_case(filename, 2, bad_start=True)
 
 
 if __name__ == "__main__":

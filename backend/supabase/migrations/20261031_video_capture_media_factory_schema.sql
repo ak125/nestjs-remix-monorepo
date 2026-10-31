@@ -31,7 +31,8 @@
 -- video-gates, script-generator, tts, audio-cache, postprocess,
 -- derivative-engine, template-registry) ou par le processeur
 -- video-execution. Lignes : execution_log 9, productions 2, audio_cache 1,
--- variants 0, assets 0, templates 0. Aucun trigger, aucune vue dépendante, aucune
+-- variants 0, assets 0, templates 0. Aucun trigger hormis les 4 triggers internes
+-- de la clé étrangère (tous actifs), aucune vue dépendante, aucune
 -- colonne identity ni générée, aucun héritage. Les deux fichiers de types du dépôt
 -- (backend/src/database/types/database.types.ts,
 -- packages/database-types/src/supabase-generated.types.ts) décrivent déjà ces
@@ -75,11 +76,13 @@
 -- EFFET ATTENDU SUR LA BASE PARTAGÉE : aucun changement de schéma. La
 -- pré-condition (§ 0) n'accepte que 0 table (base vierge) ou les 6 : une table
 -- absente sur une base où les autres existent signale une perte, que recréer vide
--- masquerait. Chaque instruction est IF NOT EXISTS, COMMENT ON réécrit le texte
--- identique, ENABLE ROW LEVEL SECURITY n'est pas exécuté ; puis la post-condition
--- compare la forme réelle (colonnes, défauts, commentaires, contraintes, index et
--- leur validité, séquences, RLS, triggers et règles non internes, politiques hors
--- service_role) à la forme capturée et lève une exception à la moindre
+-- masquerait ; elle verrouille ensuite les 6 tables, qu'aucune session ne peut plus
+-- supprimer avant le COMMIT. Chaque instruction est IF NOT EXISTS, COMMENT ON
+-- réécrit le texte identique, ENABLE ROW LEVEL SECURITY n'est pas exécuté ; puis la
+-- post-condition compare la forme réelle (colonnes, défauts, commentaires,
+-- contraintes, index et leur validité, séquences, RLS, triggers internes et leur
+-- état, triggers non internes, règles, politiques hors service_role) à la forme
+-- capturée et lève une exception à la moindre
 -- différence : une base qui a dérivé depuis la capture fait échouer l'application
 -- (transaction annulée) au lieu d'enregistrer comme appliquée une capture fausse.
 -- Trois écarts ne sont PAS refusés, parce que la post-condition passe après les
@@ -92,16 +95,20 @@
 -- =============================================================================
 
 -- Le moteur enveloppe le fichier dans une transaction (.squawk.toml
--- `assume_in_transaction = true`) : SET LOCAL borne les verrous de cette
--- transaction seulement. Même quand l'index existe, CREATE INDEX IF NOT EXISTS
--- prend un verrou SHARE sur sa table (écritures bloquées, lectures permises),
--- gardé jusqu'au COMMIT (quelques millisecondes : le reste n'est que lecture du
--- catalogue). lock_timeout borne chaque attente, pas leur somme : 4 tables portent
--- des index, donc au pire 3 attentes successives pendant que les premières restent
--- en SHARE. ENABLE ROW LEVEL SECURITY (ACCESS EXCLUSIVE) n'est exécuté que sur une
--- table où la RLS est inactive (§ 7).
+-- `assume_in_transaction = true`) : SET LOCAL ne vaut que pour cette transaction.
+-- Quand les 6 tables existent, la pré-condition (§ 0) les verrouille toutes, chacune
+-- une seule fois, au mode le plus fort dont la suite a besoin, gardé jusqu'au COMMIT :
+-- SHARE ROW EXCLUSIVE sur __video_execution_log (index et commentaires), SHARE sur
+-- les 3 autres tables à index, ACCESS SHARE sur les 2 dernières. Les écritures sur
+-- les 4 premières attendent le COMMIT (quelques millisecondes : la suite ne fait
+-- que lire le catalogue) ; les lectures passent. Toute attente a donc lieu dans la
+-- pré-condition : 6 au plus, chacune bornée par lock_timeout, et 30 s en tout pour
+-- cette instruction (statement_timeout). Ensuite, seule une RLS à réactiver (§ 7,
+-- ACCESS EXCLUSIVE) peut encore attendre. search_path : pg_catalog reste
+-- implicitement en tête, une fonction homonyme de public ne peut pas s'y substituer.
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '30s';
+SET LOCAL search_path = public, pg_temp;
 
 -- -----------------------------------------------------------------------------
 -- 0) Pré-condition : 0 table (base vierge) ou les 6, jamais un état partiel.
@@ -121,6 +128,16 @@ BEGIN
     RAISE EXCEPTION 'ABORT: état partiel des tables __video_* : présentes %, absentes %',
                     v_present, v_absent
       USING HINT = 'Une table absente là où les autres existent signale une perte : la restaurer, ne pas la recréer vide.';
+  END IF;
+
+  -- Une table supprimée depuis le relevé ci-dessus fait échouer LOCK (relation
+  -- inexistante) ; une fois les verrous pris, aucune ne peut plus être supprimée
+  -- avant le COMMIT, donc aucune n'est recréée vide par les CREATE ... IF NOT EXISTS.
+  IF v_absent IS NULL THEN
+    LOCK TABLE public.__video_execution_log IN SHARE ROW EXCLUSIVE MODE;
+    LOCK TABLE public.__video_productions, public.__video_variants, public.__video_assets
+      IN SHARE MODE;
+    LOCK TABLE public.__video_audio_cache, public.__video_templates IN ACCESS SHARE MODE;
   END IF;
 
   RAISE NOTICE 'capture __video_* : % table(s) présente(s) sur 6', coalesce(cardinality(v_present), 0);
@@ -474,16 +491,19 @@ $rls$;
 -- -----------------------------------------------------------------------------
 -- 8) Post-condition : forme réelle == forme capturée, sinon la transaction échoue.
 --    Le rendu du catalogue (pg_get_expr, pg_get_constraintdef, regclass) dépend
---    du search_path : il est fixé pendant la mesure puis restauré. Le tri est en
---    collation "C" pour ne pas dépendre de la locale de la base.
---    Un index invalide (création interrompue) est marqué « (invalide) ». Trigger,
---    règle ou politique hors service_role n'ont aucune ligne attendue : en base
---    il n'y a que les triggers internes des clés étrangères, aucune règle, et une
---    politique par table, TO service_role.
+--    du search_path, fixé en tête du fichier. Le tri est en collation "C" pour ne
+--    pas dépendre de la locale de la base.
+--    Un index invalide (création interrompue) est marqué « (invalide) ». Les 4
+--    triggers internes de la clé étrangère sont attendus avec leur état (O = actif) :
+--    DISABLE TRIGGER ALL laisserait la contrainte au catalogue sans l'appliquer.
+--    Trigger non interne, règle ou politique hors service_role n'ont aucune ligne
+--    attendue : en base il n'y a aucune règle et une politique par table, TO
+--    service_role. Une politique est rendue sans son nom ni ses rôles : le DETAIL de
+--    l'erreur finit dans les journaux du moteur et ne doit nommer aucun rôle propre
+--    à la base.
 -- -----------------------------------------------------------------------------
 DO $postcheck$
 DECLARE
-  v_search_path text := current_setting('search_path');
   v_tables      regclass[];
   v_actual      text;
   -- Forme de la base relevée le 2026-10-31 par cette même requête (lecture seule),
@@ -659,10 +679,13 @@ table __video_execution_log comment - rls t force f
 table __video_productions comment - rls t force f
 table __video_templates comment - rls t force f
 table __video_variants comment - rls t force f
+trigger interne __video_execution_log "RI_FKey_noaction_del" O
+trigger interne __video_execution_log "RI_FKey_noaction_upd" O
+trigger interne __video_variants "RI_FKey_check_ins" O
+trigger interne __video_variants "RI_FKey_check_upd" O
 $expected$, E'\n');
 BEGIN
-  PERFORM set_config('search_path', 'pg_catalog, public', true);
-  v_tables := ARRAY['public.__video_execution_log'::regclass,
+  v_tables :=ARRAY['public.__video_execution_log'::regclass,
                     'public.__video_productions'::regclass,
                     'public.__video_variants'::regclass,
                     'public.__video_assets'::regclass,
@@ -700,15 +723,18 @@ BEGIN
        WHERE g.tgrelid = ANY (v_tables::oid[])
          AND NOT g.tgisinternal
       UNION ALL
+      SELECT format('trigger interne %s %s %s', c.relname, g.tgfoid::regproc, g.tgenabled)
+        FROM pg_trigger g
+        JOIN pg_class c ON c.oid = g.tgrelid
+       WHERE g.tgrelid = ANY (v_tables::oid[])
+         AND g.tgisinternal
+      UNION ALL
       SELECT format('rule %s.%s', c.relname, r.rulename)
         FROM pg_rewrite r
         JOIN pg_class c ON c.oid = r.ev_class
        WHERE r.ev_class = ANY (v_tables::oid[])
       UNION ALL
-      SELECT format('policy %s.%s hors service_role : %s', c.relname, p.polname,
-                    (SELECT string_agg(CASE WHEN o = 0 THEN 'public' ELSE o::regrole::text END,
-                                       ',' ORDER BY o)
-                       FROM unnest(p.polroles) AS o))
+      SELECT format('policy sur %s hors service_role (commande %s)', c.relname, p.polcmd)
         FROM pg_policy p
         JOIN pg_class c ON c.oid = p.polrelid
        WHERE p.polrelid = ANY (v_tables::oid[])
@@ -727,8 +753,6 @@ BEGIN
         FROM pg_class c
        WHERE c.oid = ANY (v_tables::oid[])
     ) AS shape;
-
-  PERFORM set_config('search_path', v_search_path, true);
 
   IF v_actual IS DISTINCT FROM v_expected THEN
     RAISE EXCEPTION 'capture __video_* divergente de la base : application annulée'
