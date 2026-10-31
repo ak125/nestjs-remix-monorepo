@@ -10,6 +10,167 @@ Les chemins ci-dessous sont relatifs à la racine Git du checkout utilisé.
 | `workspaces/marketing/` | Marketing ; instructions locales, règles marketing, agents G1 et skills locaux |
 | `workspaces/wiki/` | Proposals WIKI ; instructions locales, règles wiki, skill `wiki-proposal-writer` |
 
+## Sélection et application des skills
+
+Ce protocole s'applique à Claude CLI, Claude Code Desktop (onglet Code), Codex et
+aux missions Hermes dans leurs accès effectifs. Utiliser les fichiers du checkout et de la révision de la mission,
+jamais une copie d'instructions d'une autre session supposée équivalente.
+
+1. Lire le contrat racine `CLAUDE.md` s'il n'est pas déjà chargé, puis les
+   `CLAUDE.md`, `AGENTS.md` et règles du workspace concerné. Faire cette lecture
+   aussi lorsque la tâche de workspace commence depuis la racine du dépôt.
+2. Sélectionner les skills d'après leur description et la tâche. Lire le corps
+   de chaque `SKILL.md` retenu et ses seules références requises avant l'étape
+   correspondante. Respecter les politiques d'invocation explicite ; le chargement
+   ne confère aucun droit supplémentaire et n'autorise pas une action hors mandat.
+3. Appliquer la procédure, ses entrées et ses validations. Ne pas charger tous les
+   corps de skills, invoquer un générateur déprécié ou enchaîner les trois agents
+   par défaut. Si aucun skill ne convient, l'indiquer brièvement sans en inventer un.
+4. Dans le compte rendu existant, distinguer les chemins réellement lus, les étapes
+   exécutées et les résultats vérifiés, avec la révision concernée. Une liste de
+   noms ou l'affirmation de l'exécutant ne constitue pas une preuve de lecture.
+5. Pour déléguer, transmettre le workspace, la révision, les chemins des skills
+   nécessaires, le résultat attendu et les bornes du mandat. L'exécutant les lit
+   avec les outils autorisés de sa propre mission ; ne pas supposer un contexte partagé.
+6. Si une source obligatoire ou un outil est inaccessible, signaler précisément
+   l'étape non exécutée et poursuivre les étapes indépendantes autorisées. Ne pas
+   déclarer le skill appliqué, copier une version non vérifiée ou élargir les accès.
+
+Points d'entrée usuels (sélection ciblée, pas un nouvel inventaire exhaustif) :
+
+| Besoin | Source à lire |
+|---|---|
+| Relecture de sa propre modification explicitement demandée | `.claude/skills/code-auto-review/SKILL.md` |
+| Qualifier une capacité et ses preuves d'exécution | `.claude/skills/capability-acceptance/SKILL.md` |
+| Orientation diagnostique et limites catalogue | `.claude/skills/diagnostic-orientation/SKILL.md` |
+| Production éditoriale et média d'une gamme/véhicule | Section **Programme éditorial et média** ci-dessous, contrats de page et skills créatifs pertinents |
+| Enrichissement, admission des faits et projection WIKI vers consommateurs | `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md` |
+| Audit SEO d'une gamme | `workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md` |
+| Connaissance à proposer au WIKI | `workspaces/wiki/.claude/skills/wiki-proposal-writer/SKILL.md` |
+| Analyse d'une référence créative | `workspaces/marketing/.claude/skills/creative-pattern-extractor/SKILL.md` |
+| Identité et script Fafa | `workspaces/marketing/.claude/skills/fafa-persona-canon/SKILL.md`, puis `workspaces/marketing/.claude/skills/fafa-script-generator/SKILL.md` |
+| Revue d'une vidéo | `workspaces/marketing/.claude/skills/fafa-brand-safety-reviewer/SKILL.md` |
+
+Pour une relecture française, lire aussi
+`.claude/prompts/_shared/editorial-review.md` ; préserver les affirmations admises,
+les chiffres, les conditions et le périmètre du contenu. Les autres skills se
+sélectionnent par leur description dans le workspace utile, sans recopier leur contenu.
+
+## Programme éditorial et média
+
+Mandat utilisateur du 30 octobre 2026 : **le premier dossier est le filtre à huile**.
+Vérifier son identifiant catalogue. Les dossiers plaquettes déjà préparés restent
+conservés pour un lot ultérieur ; leur existence ou celle d'une fiche WIKI ne change
+pas la priorité. Poursuivre ensuite l'ordre attribué, sauf nouvelle instruction utilisateur.
+
+Partir du besoin client et du rôle de chaque page : compréhension, choix et
+compatibilité, entretien, questions diagnostiques pertinentes et prochaine action.
+Livrer les textes R1/R3 et les scripts vidéo effectivement demandés, avec les
+adaptations véhicule utiles selon les contrats existants. Un audit ou un seul
+micro-sujet déjà visible dans Search Console ne remplace pas ce dossier complet.
+
+Rechercher et analyser des références éditoriales et vidéo pertinentes sur les
+supports utiles ; tracer les URL, les éléments réellement consultés, les procédés
+retenus et la valeur originale apportée. Séparer l'inspiration créative de la preuve
+technique. Réutiliser les skills créatifs et la relecture française existants.
+
+### Livraison sur les pages existantes
+
+Pour chaque page, relever l'URL, le rôle, les sections/composants et les champs
+réellement utilisés, puis montrer ce qui est conservé, amélioré et ajouté. Garder
+les URL et les contrats existants ; aucune page parallèle ni nouveau producteur
+par défaut. Préférer un aperçu dans le rendu existant en DEV. Si seul un HTML
+autonome est possible, le nommer **simulation non intégrée**, avec correspondance
+explicite vers les sections cibles ; il ne prouve pas une modification du site.
+Cette simulation, l'audit et la relecture sont des étapes intermédiaires. L'objectif
+du lot attribué à l'équipe reste l'amélioration des pages existantes avec un rendu
+DEV vérifié, dans les limites d'admission et d'approbation applicables. Une étape
+inaccessible laisse le lot ouvert ; elle ne transforme pas le dossier en résultat final.
+
+Les images font partie du livrable : examiner celles déjà servies, réutiliser les
+assets admissibles et les slots/composants d'images existants, puis intégrer les
+fichiers réellement disponibles dans l'aperçu. Vérifier le sens mécanique, la
+portée véhicule, les droits, le texte alternatif, la légende utile, le chargement
+et le rendu mobile/desktop. Ne pas illustrer un prix non vérifié ni présenter un
+emplacement comme universel. Une image non obtenue reste un manque explicite ;
+une liste d'assets, un prompt ou un emplacement vide ne valent pas intégration.
+
+Séparer le texte destiné au visiteur du dossier de revue : noms et liens des
+sources de recherche ou d'inspiration, statuts par phrase et tables de preuves
+restent internes. Appliquer **Sources et sortie publique** dans la relecture
+partagée ; conserver les noms nécessaires à la compatibilité et les mentions
+obligatoires. L'aperçu client montre la proposition lisible ; les annotations et
+son statut de brouillon restent dans la présentation de revue distincte.
+
+Avant toute restitution de ce programme, appliquer la relecture française adaptée
+de Humanizer dans `.claude/prompts/_shared/editorial-review.md` aux textes et scripts.
+Elle est requise ici, même si une procédure générique la présente comme facultative ;
+elle ne valide aucun fait et ne remplace aucune gate. Tracer son chemin, sa version,
+les corrections et la fidélité dans le dossier existant. Un skill `humanizer`
+annoncé sur le VPS doit être retrouvé et lu dans ce runtime avant d'en revendiquer
+l'application ; ne pas déduire sa présence ou ses règles d'une autre session.
+
+Vérifier les instructions dans le checkout de la mission avant de rédiger, sans
+attendre un rappel utilisateur. Une correction disponible dans une PR non intégrée
+n'est pas réputée chargée dans Desktop ou sur le VPS. Signaler le chemin ou la
+révision inaccessible et poursuivre les étapes indépendantes avec les sources
+vérifiées ; ne pas copier des réglages distants ni élargir les permissions.
+
+### Admission et raccordement
+
+La recherche, la conception, la rédaction et les scripts **candidats non servis**
+peuvent avancer pendant l'enrichissement. La fiche WIKI existante ne limite pas les
+questions à traiter ni la recherche de nouvelles preuves. Identifier dans le dossier
+les faits nouveaux et leurs sources, portée et statut d'admission. Leur mise à
+disposition dans les consommateurs reste soumise à la chaîne WIKI/projection et
+aux validations existantes ; aucune écriture RAW directe dans les pages publiques.
+Un fait non admis bloque l'affirmation ou la partie qui en dépend, pas les travaux
+indépendants. Des médias ou droits manquants bloquent le rendu qui les nécessite,
+pas la préparation du script et des scènes originales.
+
+Un blocage de raccordement précise l'étage concerné, la révision et la preuve :
+producteur, export, admission, projection, lecteur, flag ou version déployée.
+Inspecter l'existant avant de déclarer toute la chaîne absente ; une lecture
+legacy ne démontre pas à elle seule une provenance RAG du contenu servi. Les
+besoins confiés à Claude CLI visent le défaut localisé et réutilisent les contrats.
+
+Rattacher chaque contenu à une action utile et disponible : identifier une référence
+compatible, préparer l'entretien ou utiliser l'orientation diagnostique selon le besoin.
+Une impression, un score interne ou un script livré ne prouve ni classement ni vente.
+De même, zéro source affichée, zéro terme interdit, un minimum de caractères ou
+des URL en HTTP 200 ne démontrent pas l'utilité éditoriale ni la pertinence des images.
+Humanizer n'impose pas zéro tiret : appliquer les règles de style, sans inventer
+d'interdiction ni ajouter du texte pour atteindre un compte.
+Consigner les livrables, dépendances et prochaines actions dans les dossiers et la
+mémoire existants ; ne pas créer un second registre ou un skill par gamme.
+Recommander une accroche principale motivée et les variantes utiles sans suspendre
+la préparation sur ce choix ; conserver les approbations humaines effectivement
+requises pour le texte, la sécurité, le rendu et la publication.
+
+### Poursuite et réception du lot
+
+Desktop poursuit les textes, scripts et fichiers visuels du lot avec les capacités
+réellement disponibles ; un préparateur de prompts ne prouve pas la production
+d'une image. Claude CLI porte les corrections techniques et l'intégration dans
+le rendu existant. Préparer un visuel neutre sans promesse de prix ou de délai peut
+avancer dans le mandat de préparation ; cela ne change ni prix/stock runtime ni PROD.
+
+Rendre les livrables accessibles à l'intégrateur par les moyens existants : checkout
+partagé ou branche/révision disponible, références d'assets et source ou recette de
+l'aperçu. Respecter le stockage prévu pour chaque type d'asset.
+Dans le dossier de suivi existant, distinguer **handoff rédigé**, **accessible**,
+**transmis**, **pris en charge** et **intégré/vérifié en DEV**. Ne revendiquer chaque
+étape qu'avec une preuve observable ; un commit uniquement local sur un autre hôte
+ou un appel de transmission sans réception ne prouve pas la reprise.
+
+Poursuivre les opérations autorisées jusqu'à cette réception et à la vérification
+du périmètre attribué. Si un outil, un accès ou une approbation manque, nommer la
+capacité ou la décision exacte, fournir un paquet de reprise exploitable et terminer
+les travaux indépendants. Ne pas demander à l'utilisateur de redistribuer chaque
+ticket. Avant de lui soumettre un choix technique, l'exécutant inspecte les contrats,
+producteurs et consommateurs, puis propose une correction motivée ; ne faire
+arbitrer au métier qu'une ambiguïté persistante qui relève réellement de lui.
+
 ## Mémoire et reprise
 
 Ne pas supposer une mémoire distincte par workspace : vérifier le chemin indiqué
@@ -29,6 +190,9 @@ sans import circulaire ni duplication dans `AGENTS.md`.
 Les skills du cwd et de ses parents jusqu'à la racine Git sont découverts ensemble ;
 leur corps est chargé à l'invocation. Une surface spécialisée n'exclut donc pas les
 skills racine. Une liste de fichiers ne prouve pas leur invocation ni leurs droits.
+Depuis la racine, les skills des workspaces descendants ne sont pas tous chargés
+au démarrage : travailler dans le workspace approprié ou lire leur chemin explicite
+selon le protocole ci-dessus. Vérifier la disponibilité avant une invocation native.
 Les agents `.claude/agents/` et les miroirs restent à distinguer de leur chargement.
 
 Chaque workspace porte son propre `.claude/settings.json` (hooks, permissions) ;
@@ -37,34 +201,63 @@ la découverte des settings ne doit pas être déduite de celle des `CLAUDE.md`.
 Les hooks SessionStart/UserPromptSubmit ajoutent leurs propres extraits bornés ;
 ils ne rendent pas toute la documentation canonique automatiquement chargée.
 
+Dans Claude Code Desktop, vérifier l'onglet Code, la version intégrée et le
+checkout réellement ouvert, local ou distant. Ne pas déduire de la configuration
+du CLI, d'un worktree ou d'une autre conversation que les mêmes fichiers, skills
+et outils sont chargés. Qualifier cette surface dans sa propre session ; une
+mémoire locale de Claude ne prouve pas un partage avec Codex ou Hermes.
+
 ## Codex et Hermes
 
 Codex CLI 0.144.4 : chaîne `AGENTS.override.md` ou `AGENTS.md` de la racine au cwd ;
 le fichier racine demande de lire `CLAUDE.md`. Les liens Markdown ne sont pas des
-imports. `.agents/skills` est un symlink interne vers les skills racine ; les
-skills imbriqués sous `.claude/` ne sont pas une découverte Codex garantie.
+imports. À la racine et dans chaque workspace, `.agents/skills` est un lien
+relatif `../.claude/skills` vers les sources locales. La découverte dépend du cwd
+de la session ; un lien de workspace n'expose pas ses skills à toutes les sessions
+racine. Sur un checkout qui matérialise les symlinks en fichiers texte, la découverte
+native reste indisponible : effectuer la lecture explicite et signaler cette limite.
 
 Missions Hermes de DEV, constaté le 2026-10-26 sur des missions réelles : avec
 l'exécutant Codex (runtime 0.153.2), la session liste les skills du dépôt ; avec
 l'exécutant Claude, le contrôleur lance Claude sans sources de réglages, sans
 commandes slash ni outils natifs (seul l'outil MCP de la mission) : ni `CLAUDE.md`
 ni aucun skill n'entrent dans le contexte ; seule la consigne du contrôleur
-demande de lire les `AGENTS.md` applicables. Une mission Claude qui doit suivre un skill le cite par son
-chemin dans l'objectif.
+demande de lire les `AGENTS.md` applicables. L'objectif d'une mission doit donc
+nommer le workspace et les chemins des skills nécessaires, puis imposer leur
+lecture par l'outil autorisé de la mission avant application. Le présent protocole
+explicite ce contrat ; il ne modifie pas le lanceur installé ni ne prouve sa recette.
 
 Hermes s'exécute sur un autre VPS, sans accès local au checkout
 `/opt/automecanik/app`. Ses outils et sections de continuité existants ne prouvent
 pas le chargement des instructions de ce dépôt. Le chargement natif de ces règles
 reste non raccordé ; aucune copie ni synchronisation n'est ajoutée. Les profils,
 configurations globales et droits restent hors du périmètre de cette simplification.
+Le profil marketing possède son propre export approuvé et son lecteur de skills
+avec contrôle de provenance (`scripts/marketing/hermes/marketing_profile.py`).
+Utiliser ce lecteur dans son périmètre ; ne pas exposer tous les workspaces au profil,
+changer sa release ou réactiver settings, hooks et outils natifs pour contourner
+une lecture refusée. Si le contrôleur doit évoluer, inspecter sa source installée
+et conserver son isolation ; elle n'est pas versionnée dans ce dépôt.
 
 ## Contrôle du chargement
+
+Contrôle statique du dépôt :
+`bash scripts/agents/validate-agents-md.sh --skill-wiring`.
+Il vérifie les liens de découverte et les chemins de skills cités ci-dessus ;
+il ne certifie ni invocation native ni application de la procédure.
 
 Après changement, vérifier les sources dans une nouvelle session à la racine puis
 dans un workspace représentatif (`/memory` et `/context` côté Claude, si disponibles).
 Ne pas extrapoler à une session déjà ouverte. Aucun chargement réel nouveau ni gain
 de tokens/RAM n'est déduit d'un simple contrôle statique.
+Pour chaque exécutant effectivement utilisé, observer une tâche bornée sans effet
+externe : chemin et révision lus, procédure suivie, résultat attendu et observé.
+Tester séparément Claude CLI direct, Claude Code Desktop et Codex dans leur
+checkout réel et le workspace concerné.
+Pour Hermes, tester séparément le lecteur natif du profil et une mission déléguée ;
+une réussite Claude CLI directe ne valide pas le lanceur Hermes vers Claude.
 
 Sources officielles : [Claude memory](https://code.claude.com/docs/en/memory),
 [Claude skills](https://code.claude.com/docs/en/skills),
+[Claude Code Desktop](https://code.claude.com/docs/en/desktop),
 [Codex AGENTS.md](https://developers.openai.com/codex/guides/agents-md).

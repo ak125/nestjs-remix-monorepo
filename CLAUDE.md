@@ -67,6 +67,11 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
   Command Center ne sont pas 24 processus : consulter au besoin
   `audit/automecanik-departments-map.md` et
   `scripts/governance/build-command-center-snapshot.js`.
+- Choix utilisateur : **Claude Code CLI est l'exécutant principal pour le code**.
+  Codex peut recevoir un audit, une revue indépendante ou un correctif ciblé dans
+  le mandat ; aucun passage par Codex n'est obligatoire. Hermes coordonne et
+  exécute les opérations disponibles dans son profil. Ce choix ne modifie ni les
+  permissions ni les règles de fusion et de déploiement.
 - Hermes peut réaliser les opérations couvertes par ses outils, accès et mandat
   actuels. Aucun transfert systématique à Codex pour ces opérations ; une limite
   effective de profil ou de permissions reste opposable. Ce fichier ne lui accorde
@@ -86,7 +91,10 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
   `security-hooks.md` pour les avertissements du plugin advisory ;
   `context7.md` pour une API externe incertaine ; `agent-doc-search.md` pour la recherche.
   Les hooks de protection du dépôt restent distincts du plugin advisory.
-- Skills : lire le `SKILL.md` pertinent et ses références requises, pas un pack entier.
+- Skills : appliquer la section **Sélection et application des skills** de
+  `.claude/knowledge/workspaces.md`, même pour une tâche de workspace lancée
+  depuis la racine. Lire le `SKILL.md` pertinent et ses références requises,
+  puis suivre sa procédure ; une découverte ou une simple mention ne suffit pas.
   Les revues ne sont pas systématiques ; les validations imposées restent applicables.
   `code-auto-review` sert une demande explicite de relecture/correction.
 - Reprise : lire `tail -n 80 log.md` si la tâche dépend de l'historique. Une timeline
