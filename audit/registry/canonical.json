@@ -8136,6 +8136,33 @@
         "args": [
           {
             "mode": "IN",
+            "name": "input_text",
+            "type": "text"
+          }
+        ],
+        "definedInMigrations": [
+          "20261031_accents_protected_segments.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.restore_french_accents",
+        "language": "plpgsql",
+        "name": "restore_french_accents",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "text",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
             "name": "p_id",
             "type": "BIGINT"
           },
@@ -106467,15 +106494,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "4f11fa4ddbeaa8cdeabe4afe3759a7f2ecdc9746e0abe467d7ca81f7eba3800b",
+      ".spec/00-canon/repository-registry/ownership.yaml": "e489aad6cca7e23a82ebd66917c1c6ad3b76e42bcd22362529cc8c26a7f1613c",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
       "audit/registry/files.json": "16269ca611b7b5a0d012574c1b46ffa2e7d9737376949dd149925670dfc1de2f",
-      "audit/registry/rpc.json": "7897ffc88fa007be0b96ee19cc110f99f71d0639c30747fa5c4df34d48f0af4a",
+      "audit/registry/rpc.json": "294f506d203e5fa10be7f8aa1c8413414776431d9d0a9509dd5f8ea140daf6a4",
       "audit/registry/runtime.json": "a6b7bb34f935b3f73f8d20c118fcaa5040e50b33fabbb344943df0a202fa5d19"
     },
-    "sotFingerprint": "d32d95a0b09a"
+    "sotFingerprint": "08b6078ca6f2"
   },
   "runtime": [
     {
