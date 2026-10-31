@@ -104,7 +104,7 @@
         "backend/src/modules/blog/utils"
       ],
       "files_count": 41,
-      "loc_total": 14710,
+      "loc_total": 14750,
       "has_barrel": false
     },
     "bot-guard": {
@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 19,
-      "loc_total": 6440,
+      "loc_total": 6449,
       "has_barrel": true
     },
     "health": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 333,
-      "loc_total": 64096,
+      "files_count": 334,
+      "loc_total": 64321,
       "has_barrel": true
     },
     "upload": {
