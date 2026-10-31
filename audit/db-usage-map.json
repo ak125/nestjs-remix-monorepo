@@ -21,7 +21,7 @@
     "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 434,
+    "migrations_scanned": 436,
     "backend_files_scanned": 1499
   },
   "tables": {
@@ -2311,8 +2311,10 @@
         "backend/src/modules/media-factory/services/video-data.service.ts"
       ],
       "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": false,
+      "in_migrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -2321,8 +2323,10 @@
         "backend/src/modules/media-factory/services/audio-cache.service.ts"
       ],
       "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": false,
+      "in_migrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -2333,7 +2337,9 @@
         "backend/src/workers/processors/video-execution.processor.ts"
       ],
       "used_by_count": 3,
-      "in_migrations": [],
+      "in_migrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
       "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
@@ -2346,8 +2352,10 @@
         "backend/src/modules/media-factory/services/video-data.service.ts"
       ],
       "used_by_count": 4,
-      "in_migrations": [],
-      "rls_present": false,
+      "in_migrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -2356,8 +2364,10 @@
         "backend/src/modules/media-factory/services/video-data.service.ts"
       ],
       "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": false,
+      "in_migrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -2366,8 +2376,10 @@
         "backend/src/modules/media-factory/services/postprocess.service.ts"
       ],
       "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": false,
+      "in_migrations": [
+        "20261031_video_capture_media_factory_schema.sql"
+      ],
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
