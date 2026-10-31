@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.4.0 — 2026-10-31.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.5.0 — 2026-10-31.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -21,6 +21,12 @@
 > l'empreinte portait sur une autre représentation du texte, où une liste de changements vide
 > n'avait pas de raison et où RE-16 et RE-23 ajoutaient ou retiraient de l'information sous une
 > fidélité déclarée inchangée. Les résultats d'un essai 1.3.0 ne qualifient pas cette version.
+> Pilote 1.5.0 : bloc final dans tous les états, lecture de chaque fichier exigé jusqu'à sa
+> dernière ligne, contrôle mécanique permis sous une consigne sans écriture, original reproduit à
+> l'identique et conditions confrontées au bloc écrit, après des essais sans bloc final, des
+> lectures arrêtées à une plage fixée d'avance, un contrôle cru interdit par une recette sans
+> écriture, un original retouché sans changement déclaré et des conditions déclarées remplies
+> contre le bloc. Les résultats d'un essai 1.4.0 ne qualifient pas cette version.
 
 ## 1. Ce que fait la relecture
 
@@ -50,15 +56,19 @@ produit leur trace dans la sortie.
    attendue » et « Règles de Humanizer écartées ou adaptées ».
    S'y ajoute « Fafa, vidéo et social : aucune invention » pour un script ou une copie sociale.
    Les « Exemples AutoMecanik » et l'« Attribution et licence » sont lus en cas de doute.
-2. **Lire les références que le périmètre exige** : les sources du brouillon ; le miroir
-   `.claude/canon-mirrors/marketing-voice.md` pour les interdits et les mentions obligatoires ;
-   `fafa-persona-canon` pour un script Fafa.
+2. **Lire les références que le périmètre exige** : les sources du brouillon, sur les plages
+   citées dans `sources` ; le miroir `.claude/canon-mirrors/marketing-voice.md` en entier, pas
+   seulement ses interdits et ses mentions obligatoires ; `fafa-persona-canon` en entier pour un
+   script Fafa.
 3. **Consigner les lectures** : pour chaque fichier, les sections lues, désignées par leur titre.
    Si un fichier est lu par morceaux, noter aussi les plages réellement lues. Un fichier cité
    dans une liste de lectures ne prouve ni sa lecture complète ni son application. Une sortie
    d'outil marquée tronquée (« truncated », « tokens truncated ») ne prouve pas la lecture du
    passage coupé : relire ce passage par une lecture bornée (un fichier par commande, par plages
-   de lignes) avant de le compter comme lu.
+   de lignes) avant de le compter comme lu. Une plage fixée d'avance (`sed -n '1,280p'`, `head`)
+   laisse non lu ce qui la suit : poursuivre par plages jusqu'à la dernière ligne du fichier
+   avant de relire. Ce fichier se lit seul dans sa commande, jusqu'à « Sortie attendue » et
+   au-delà. Une lecture encore possible ne se remplace pas par « relecture partielle ».
 4. **Exécuter les étapes**, chacune avec sa trace dans la sortie :
    - identifier l'original et ses sources, sinon `BLOQUÉ_SOURCE` ;
    - délimiter les champs modifiables ;
@@ -79,7 +89,11 @@ cause ; il n'est ni omis en silence ni remplacé par un résumé.
 ### Contrôle avant déclaration
 
 Il se fait sur la sortie écrite, champ par champ, après sa rédaction. Le nom d'un champ ne
-remplit aucune condition : seul son contenu compte.
+remplit aucune condition : seul son contenu compte. Chaque condition se confronte au bloc final
+écrit, avec ou sans outil d'exécution : C1 aux `lectures`, où chaque fichier exigé est couvert de
+sa ligne 1 à sa dernière ligne (une recherche par motif n'est pas une lecture) ; C3 à C5 à
+l'`original` reproduit ou désigné. Sans original établi, C3 à C5 sont non remplies : il n'y a
+rien à confronter.
 
 - **C1 Lectures** : chaque section et chaque référence exigées (points 1 et 2) ont été rendues
   en entier ; aucune plage tronquée n'est restée sans relecture bornée.
@@ -110,8 +124,11 @@ avec un `--root` de plus par copie de sources lue. Il recalcule l'empreinte, rej
 changements jusqu'à la proposition, compare les faits protégés retirés ou ajoutés à la fidélité
 déclarée, confronte les plages de lecture aux fichiers et recalcule C1 à C7. Il rend `appliquee`,
 `partielle` ou `rejetee`. Une sortie rejetée se corrige sur le fond, jamais en ajustant un champ
-pour le satisfaire. Sans outil d'exécution, la relecture reste partielle et cette cause est
-nommée. Le validateur du circuit relance ce contrôle sur la sortie reçue : une déclaration qu'il
+pour le satisfaire. Il ne lit que l'entrée standard et les fichiers que le bloc désigne ; il
+n'écrit rien et n'accède ni au réseau ni à une base. Une consigne qui interdit d'écrire ou de
+lancer une commande qui écrit ne l'interdit donc pas ; seuls l'absence d'outil d'exécution ou
+l'interdiction de toute commande l'empêchent. Sans outil d'exécution, la relecture reste
+partielle et cette cause est nommée. Le validateur du circuit relance ce contrôle sur la sortie reçue : une déclaration qu'il
 ne confirme pas est traitée comme « relecture partielle » ou rejetée. Il ne juge ni la
 pertinence d'une règle RE ni la fidélité de sens, et ne voit pas la trace des lectures : ces
 points restent au contrôle du contenu.
@@ -392,7 +409,10 @@ Pour chaque brouillon :
 
 - **`original`** : chemin ou table + identifiant, et sha256 du texte relu. Il n'est jamais
   modifié. Un brouillon rédigé dans la session, sans fichier, est reproduit ici en entier,
-  séparé de la proposition. Le sha256 est calculé par un outil sur ce texte exact, jamais
+  séparé de la proposition, octet pour octet tel que la réponse l'affiche : aucune espace
+  insécable, apostrophe ou guillemet n'y est ajouté ni retiré. Une correction typographique est
+  un changement RE-Tx de l'original vers la proposition. Reproduire n'exige aucun outil ; sans
+  outil, seul `sha256` reste `null`. Le sha256 est calculé par un outil sur ce texte exact, jamais
   recopié ni estimé ; s'il ne peut pas l'être, le manque est nommé et la relecture est partielle.
 - **`proposition`** : le texte complet proposé, sans références de recherche ni annotations
   internes (§4.1). Son statut de brouillon et ses limites figurent dans la revue séparée.
@@ -421,12 +441,14 @@ Pour chaque brouillon :
   exécutées ; le résultat de C1 à C7 ; puis « relecture appliquée » ou « relecture partielle »
   avec ce qui manque (« Contrôle avant déclaration »).
 
-**Bloc final.** La sortie se termine par un seul bloc ```` ```json ```` qui reprend ces champs
-sous une forme contrôlable ; la prose peut les présenter, sans les contredire :
+**Bloc final.** Dès qu'une relecture est faite ou mentionnée, la sortie se termine par un seul
+bloc ```` ```json ```` qui reprend ces champs sous une forme contrôlable, dans tous les états,
+« relecture partielle » comprise, et même quand le livrable demandé a un autre format : le bloc
+suit ce livrable. La prose peut présenter ces champs, sans les contredire :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.4.0", "etat_declare": "partielle",
+  "contrat": "editorial-review", "version": "1.5.0", "etat_declare": "partielle",
   "lectures": [{"chemin": "…", "plages": ["1-120"], "masquees": [], "sections": ["…"], "tronque": false}],
   "relectures": [{
     "id": "plan-r3", "format": "prose", "sources": ["chemin/de/la/source.md:10-40"],
@@ -447,7 +469,8 @@ sous une forme contrôlable ; la prose peut les présenter, sans les contredire 
 }
 ```
 
-- `lectures` : une entrée par fichier lu ; `plages` en numéros de ligne du fichier, `masquees`
+- `lectures` : une entrée par fichier lu ; `chemin` absolu ou relatif au dossier de travail, sans
+  alias ni abréviation ; `plages` en numéros de ligne du fichier, `masquees`
   pour ce qu'un outil a coupé et qui n'a pas été relu. `tronque: true` sans `masquees` ne compte
   rien comme lu.
 - `original` : reproduit (`texte`, `fins_de_ligne` `LF` ou `CRLF`, `saut_final`, `provenance`

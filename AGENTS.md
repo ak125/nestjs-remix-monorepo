@@ -29,7 +29,8 @@ imports ou le chargement des `.claude/rules/` de Claude Code.
   imbriqué ne prouve pas sa découverte dans cette session.
 - Les politiques `agents/openai.yaml` des skills sensibles restent applicables.
   Un skill ne lève ni une zone STOP ni une permission système.
-- Relecture française : `.claude/prompts/_shared/editorial-review.md`.
+- Relecture française : `.claude/prompts/_shared/editorial-review.md`, lu seul dans sa
+  commande jusqu'à sa dernière ligne, « Sortie attendue » et son bloc final compris.
 - Chargement et limites par agent : `.claude/knowledge/workspaces.md`.
 
 ## Format de sortie
@@ -41,3 +42,7 @@ Une relecture française n'est dite « relecture appliquée », dans `lecture` o
 ailleurs dans la sortie, qu'après le « Contrôle avant déclaration »
 d'`editorial-review.md`, rempli condition par condition sur la sortie écrite.
 Sinon, écrire « relecture partielle » et nommer les conditions non remplies.
+Dans les deux cas, la réponse se termine par le bloc final JSON de « Sortie attendue », C1 à
+C7 déclarées une à une. Le contrôle `node scripts/agents/check-editorial-review.mjs` reçoit la
+sortie sur l'entrée standard et lit sans écrire : une consigne « n'écris rien, ne lance aucune
+commande qui écrit » ne l'interdit pas.

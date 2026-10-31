@@ -158,6 +158,13 @@ describe("cas acceptés", () => {
     const r = run(output(b, `Proposition :\n\n${p}\n\nRelecture appliquée.`));
     assert.equal(r.resultat, "appliquee", errors(r));
   });
+
+  test("trace et raison courtes mais écrites (« aucun », « doublon ») : appliquee", () => {
+    const b = block({ changements: [{ avant: "est une pièce essentielle qui retient", apres: "retient", regle: "RE-10", raison: "doublon" }] });
+    b.relectures[0].etapes.relever_signalements.trace = "aucun";
+    const r = run(output(b));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
 });
 
 describe("cas rejetés", () => {
@@ -304,6 +311,19 @@ describe("cas rejetés", () => {
     assert.match(errors(r), /avant non retrouvé/);
     assert.match(errors(r), /RE-99.*absente du contrat/);
     assert.match(errors(r), /raison absente ou réduite au code/);
+  });
+
+  test("trace vide, ponctuation du modèle ou nom de l'étape ; raison de liste vide réduite au verdict", () => {
+    const b = block({ proposition: O, changements: [] });
+    b.relectures[0].verdict = "AUCUN_CHANGEMENT_UTILE";
+    b.relectures[0].raison_aucun_changement = "AUCUN_CHANGEMENT_UTILE";
+    b.relectures[0].etapes.relever_signalements.trace = " ";
+    b.relectures[0].etapes.controle_fidelite.trace = "…";
+    b.relectures[0].etapes.rendre_verdict.trace = "rendre_verdict";
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    for (const k of ["relever_signalements", "controle_fidelite", "rendre_verdict"]) assert.match(errors(r), new RegExp(`étape ${k} sans trace`));
+    assert.match(errors(r), /sans raison_aucun_changement/);
   });
 
   test("lecture tronquée comptée comme lue", () => {

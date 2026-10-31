@@ -69,7 +69,14 @@ const REMOVABLE_FLAGS = new Set(["F-2", "F-5"]);
 // Règles de retrait d'un segment de style : un fait protégé retiré avec le segment n'est pas
 // rejeté d'office, il part en vérification de contenu.
 const SEGMENT_REMOVAL_RULES = new Set(["RE-02", "RE-03", "RE-04", "RE-19", "RE-20", "RE-22"]);
-const MIN_REASON = 12;
+
+// Raison, trace ou raison d'une liste vide : remplie par un contenu écrit, quelle que soit sa
+// longueur. Une valeur vide, faite de ponctuation (« … » du modèle) ou réduite au nom du champ ou
+// au code ne remplit rien (« Le nom d'un champ ne remplit aucune condition »).
+function written(value, ...names) {
+  const v = typeof value === "string" ? value.trim() : "";
+  return /[\p{L}\p{N}]/u.test(v) && !names.some((n) => typeof n === "string" && v.toLowerCase() === n.toLowerCase());
+}
 
 // ---------------------------------------------------------------------------------------------
 // Contrat
@@ -428,8 +435,7 @@ function checkChange(ch, i, ctx) {
   if (apres === null) errors.C3.push(`${where} : après absent (chaîne vide pour une suppression)`);
   else if (apres.trim() !== "" && !norm(P).includes(norm(apres))) errors.C3.push(`${where} : après non retrouvé dans la proposition : ${JSON.stringify(apres)}`);
   if (!contract.rules.has(regle)) errors.C3.push(`${where} : règle ${JSON.stringify(regle)} absente du contrat`);
-  const raison = typeof ch.raison === "string" ? ch.raison.trim() : "";
-  if (raison.length < MIN_REASON || raison === regle) errors.C3.push(`${where} : raison absente ou réduite au code`);
+  if (!written(ch.raison, regle, "raison")) errors.C3.push(`${where} : raison absente ou réduite au code`);
   if (avant === null || apres === null || !contract.rules.has(regle)) return;
 
   if (/^RE-T\d$/.test(regle)) {
@@ -507,7 +513,7 @@ function checkRelecture(rel, ctx) {
     const s = steps[k];
     if (!s || typeof s !== "object") errors.C7.push(`relecture ${id} : étape ${k} absente`);
     else if (s.executee === true) {
-      if (!(typeof s.trace === "string" && s.trace.trim().length >= MIN_REASON)) errors.C7.push(`relecture ${id} : étape ${k} sans trace`);
+      if (!written(s.trace, k, "trace")) errors.C7.push(`relecture ${id} : étape ${k} sans trace`);
     } else if (!(typeof s.cause === "string" && s.cause.trim())) errors.C7.push(`relecture ${id} : étape ${k} non exécutée sans cause`);
     else if (!(blocked && k !== "identifier_original" && k !== "rendre_verdict")) errors.C7.push(`relecture ${id} : étape ${k} non exécutée (${s.cause.trim()})`);
   }
@@ -523,7 +529,7 @@ function checkRelecture(rel, ctx) {
   if (changes === null) errors.C3.push(`relecture ${id} : changements absent (liste, éventuellement vide)`);
   else if (changes.length === 0) {
     if (rel.verdict !== "AUCUN_CHANGEMENT_UTILE") errors.C3.push(`relecture ${id} : liste vide avec le verdict ${rel.verdict}`);
-    if (!(typeof rel.raison_aucun_changement === "string" && rel.raison_aucun_changement.trim().length >= MIN_REASON)) {
+    if (!written(rel.raison_aucun_changement, "AUCUN_CHANGEMENT_UTILE", "raison_aucun_changement")) {
       errors.C3.push(`relecture ${id} : liste vide sans raison_aucun_changement`);
     }
   } else if (rel.verdict === "AUCUN_CHANGEMENT_UTILE") {
