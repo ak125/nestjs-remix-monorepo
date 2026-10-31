@@ -81,8 +81,8 @@
 -- réécrit le texte identique, ENABLE ROW LEVEL SECURITY n'est pas exécuté ; puis la
 -- post-condition compare la forme réelle (colonnes, défauts, commentaires,
 -- contraintes, index et leur validité, séquences, RLS, triggers internes et leur
--- état, triggers non internes, règles, politiques hors service_role) à la forme
--- capturée et lève une exception à la moindre
+-- état, triggers non internes, règles, politiques hors service_role, héritage :
+-- ni parent ni descendant) à la forme capturée et lève une exception à la moindre
 -- différence : une base qui a dérivé depuis la capture fait échouer l'application
 -- (transaction annulée) au lieu d'enregistrer comme appliquée une capture fausse.
 -- Trois écarts ne sont PAS refusés, parce que la post-condition passe après les
@@ -97,14 +97,21 @@
 -- Le moteur enveloppe le fichier dans une transaction (.squawk.toml
 -- `assume_in_transaction = true`) : SET LOCAL ne vaut que pour cette transaction.
 -- Quand les 6 tables existent, la pré-condition (§ 0) les verrouille toutes, chacune
--- une seule fois, au mode le plus fort dont la suite a besoin, gardé jusqu'au COMMIT :
+-- une seule fois et sans ses descendants éventuels (ONLY), au mode le plus fort dont
+-- la suite a besoin, gardé jusqu'au COMMIT :
 -- SHARE ROW EXCLUSIVE sur __video_execution_log (index et commentaires), SHARE sur
 -- les 3 autres tables à index, ACCESS SHARE sur les 2 dernières. Les écritures sur
 -- les 4 premières attendent le COMMIT (quelques millisecondes : la suite ne fait
 -- que lire le catalogue) ; les lectures passent. Toute attente a donc lieu dans la
 -- pré-condition : 6 au plus, chacune bornée par lock_timeout, et 30 s en tout pour
 -- cette instruction (statement_timeout). Ensuite, seule une RLS à réactiver (§ 7,
--- ACCESS EXCLUSIVE) peut encore attendre. search_path : pg_catalog reste
+-- ACCESS EXCLUSIVE) peut encore attendre. Une session tierce qui tiendrait déjà un
+-- verrou sur l'une des 6 tables et en demanderait un autre sur une table que la
+-- capture tient déjà formerait un interblocage : PostgreSQL annule alors l'une des
+-- deux transactions (deadlock_timeout) ; si c'est la capture, rien n'est appliqué.
+-- Aucun consommateur du dépôt n'ouvre une telle transaction : chaque accès est une
+-- requête PostgREST isolée, et le contrôle de clé étrangère (ROW SHARE) n'entre pas
+-- en conflit avec SHARE ROW EXCLUSIVE. search_path : pg_catalog reste
 -- implicitement en tête, une fonction homonyme de public ne peut pas s'y substituer.
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '30s';
@@ -133,11 +140,14 @@ BEGIN
   -- Une table supprimée depuis le relevé ci-dessus fait échouer LOCK (relation
   -- inexistante) ; une fois les verrous pris, aucune ne peut plus être supprimée
   -- avant le COMMIT, donc aucune n'est recréée vide par les CREATE ... IF NOT EXISTS.
+  -- ONLY : un descendant éventuel n'est pas verrouillé ; la post-condition refuse
+  -- tout héritage.
   IF v_absent IS NULL THEN
-    LOCK TABLE public.__video_execution_log IN SHARE ROW EXCLUSIVE MODE;
-    LOCK TABLE public.__video_productions, public.__video_variants, public.__video_assets
-      IN SHARE MODE;
-    LOCK TABLE public.__video_audio_cache, public.__video_templates IN ACCESS SHARE MODE;
+    LOCK TABLE ONLY public.__video_execution_log IN SHARE ROW EXCLUSIVE MODE;
+    LOCK TABLE ONLY public.__video_productions, ONLY public.__video_variants,
+               ONLY public.__video_assets IN SHARE MODE;
+    LOCK TABLE ONLY public.__video_audio_cache, ONLY public.__video_templates
+      IN ACCESS SHARE MODE;
   END IF;
 
   RAISE NOTICE 'capture __video_* : % table(s) présente(s) sur 6', coalesce(cardinality(v_present), 0);
@@ -739,6 +749,12 @@ BEGIN
         JOIN pg_class c ON c.oid = p.polrelid
        WHERE p.polrelid = ANY (v_tables::oid[])
          AND p.polroles IS DISTINCT FROM ARRAY[to_regrole('service_role')::oid]
+      UNION ALL
+      -- Aucune ligne attendue : ni parent ni descendant (héritage ou partition).
+      SELECT format('héritage %s → %s', h.inhrelid::regclass, h.inhparent::regclass)
+        FROM pg_inherits h
+       WHERE h.inhrelid = ANY (v_tables::oid[])
+          OR h.inhparent = ANY (v_tables::oid[])
       UNION ALL
       SELECT format('sequence %s %s start %s increment %s max %s cache %s cycle %s',
                     s.seqrelid::regclass, format_type(s.seqtypid, NULL),

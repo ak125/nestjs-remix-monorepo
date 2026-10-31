@@ -11,9 +11,10 @@
 #   - base à la forme réelle (objets créés hors du dépôt, autrement que par la
 #     capture, avec données, RLS et politiques) : la capture n'y change RIEN
 #     (catalogue, fichiers de table, droits, politiques, données) ;
-#   - toute dérive de forme (dont politique hors service_role, index invalide,
-#     trigger, triggers internes de la clé étrangère désactivés, règle) fait
-#     échouer l'application, sans aucun effet partiel ;
+#   - toute dérive de forme (dont politique hors service_role, signalée sans nom
+#     ni rôle, table descendante, index invalide, trigger, triggers internes de la
+#     clé étrangère désactivés, règle) fait échouer l'application, sans aucun
+#     effet partiel ;
 #   - une fonction homonyme d'un builtin, placée dans public et en tête du
 #     search_path de la session, n'est jamais appelée ;
 #   - seules écritures possibles, épinglées : commentaire de colonne, RLS
@@ -21,8 +22,9 @@
 #   - un état partiel (une partie seulement des 6 tables) est refusé avant toute
 #     création, même quand les tables présentes sont conformes ;
 #   - une lecture concurrente ne bloque pas la capture ; une écriture concurrente
-#     la fait échouer, borné par lock_timeout ; une table supprimée pendant que la
-#     capture attend un verrou la fait échouer, sans recréer la table vide ;
+#     la fait échouer, borné par lock_timeout ; un descendant verrouillé ne la fait
+#     pas attendre (elle est refusée pour l'héritage) ; une table supprimée pendant
+#     que la capture attend un verrou la fait échouer, sans recréer la table vide ;
 #   - le .down.sql n'a aucun effet ;
 #   - les deux fichiers de types du dépôt décrivent exactement les colonnes
 #     capturées (Row, Insert, Update, Relationships).
@@ -311,6 +313,13 @@ derive "commentaire posé sur une table (templates)" \
 derive "politique permissive pour anon (productions)" \
   "CREATE POLICY drift_pol ON $PROD FOR SELECT TO anon USING (true)" \
   "DROP POLICY drift_pol ON $PROD"
+# Sortie de la capture refusée ci-dessus : la politique y est signalée, sans son
+# nom ni ses rôles.
+assert "DETAIL : politique signalée sans nom ni rôle" oui \
+  "$([[ "$out" == *"policy sur __video_productions hors service_role"* && "$out" != *drift_pol* && "$out" != *anon* ]] && echo oui || echo non)"
+derive "table descendante de templates (héritage)" \
+  "CREATE TABLE public.drift_child () INHERITS ($TPL)" \
+  "DROP TABLE public.drift_child"
 # Index homonyme laissé invalide par une création concurrente interrompue :
 # simulé par le catalogue, seul moyen d'obtenir la même définition invalide.
 derive "index homonyme invalide (execution_log.status)" \
@@ -329,7 +338,7 @@ derive "triggers internes de la clé étrangère désactivés (variants)" \
 out=$(migrate "$MIGRATION"); rc=$?
 applied "dérives retirées : la capture repasse" "$out" "$rc"
 q "$DATA_SQL" > "$TMP/rdata2"
-assert_same "données intactes après les 17 dérives" rdata rdata2
+assert_same "données intactes après les 18 dérives" rdata rdata2
 
 echo
 echo "5. Seules écritures possibles : ramener commentaire, RLS et index à la forme capturée"
@@ -428,6 +437,22 @@ assert "attente bornée (4 à 8 s pour lock_timeout = 5s)" oui "$( (( elapsed >=
 wait "$HOLDER"
 snap l3 data
 assert_same "aucun effet" l2 l3
+# Descendant verrouillé : la pré-condition (ONLY) ne verrouille que les 6 tables.
+# Un descendant de templates tenu en ACCESS EXCLUSIVE ne fait pas attendre la
+# capture ; la post-condition la refuse pour l'héritage. Instantanés pris hors de
+# l'attente : lire templates lit aussi son descendant.
+q "CREATE TABLE public.drift_child () INHERITS ($TPL)" >/dev/null || { echo "FATAL: descendant non créé"; exit 2; }
+snap h0 data
+hold "LOCK TABLE public.drift_child IN ACCESS EXCLUSIVE MODE" public.drift_child
+t0=$(date +%s)
+out=$(migrate "$MIGRATION"); rc=$?
+elapsed=$(( $(date +%s) - t0 ))
+assert_err "descendant verrouillé : capture refusée pour l'héritage" "divergente de la base" "$out" "$rc"
+assert "sans attendre le verrou du descendant (au plus 3 s)" oui "$( (( elapsed <= 3 )) && echo oui || echo "non (${elapsed} s)")"
+wait "$HOLDER"
+snap h1 data
+assert_same "aucun effet" h0 h1
+q "DROP TABLE public.drift_child" >/dev/null || { echo "FATAL: descendant non retiré"; exit 2; }
 # Suppression concurrente : la pré-condition a vu les 6 tables, puis attend son
 # verrou sur productions (écriture tenue 4 s) pendant qu'une autre session
 # supprime templates. Le LOCK de templates échoue : la table n'est pas recréée vide.
