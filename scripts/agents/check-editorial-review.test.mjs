@@ -84,6 +84,18 @@ function block({ original = O, proposition = P, changements, etat = "appliquée"
   };
 }
 
+// Champ structuré déclaré hors périmètre : aucune règle appliquée, C3 à C5 sans objet.
+function blockedBlock() {
+  const b = block({ proposition: O, changements: [], etat: "partielle" });
+  const rel = b.relectures[0];
+  rel.verdict = "HORS_PÉRIMÈTRE";
+  rel.raison_aucun_changement = "champ structuré protégé (§4), aucune règle RE appliquée";
+  rel.etapes.appliquer_regles = { executee: false, cause: "champ hors périmètre de la relecture" };
+  rel.etapes.controle_fidelite = { executee: false, cause: "aucun changement à confronter" };
+  for (const c of ["C3", "C4", "C5"]) b.conditions[c] = { etat: "sans_objet", cause: "verdict HORS_PÉRIMÈTRE : champ structuré protégé" };
+  return b;
+}
+
 const output = (b, prose = "Relecture : voir le bloc final.") => `${prose}\n\n\`\`\`json\n${JSON.stringify(b, null, 2)}\n\`\`\`\n`;
 const run = (text) => checkOutput(text, { roots: [REPO, dir] });
 const errors = (r) => r.erreurs.join("\n");
@@ -165,6 +177,25 @@ describe("cas acceptés", () => {
     const r = run(output(b));
     assert.equal(r.resultat, "appliquee", errors(r));
   });
+
+  test("etat_declare « appliquee », graphie du résultat du contrôle (point 5) : appliquee", () => {
+    const r = run(output(block({ etat: "appliquee" }), "Relecture appliquée : voir le bloc final."));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("brouillon de la session reproduit, provenance sans chemin : appliquee", () => {
+    const b = block();
+    b.relectures[0].original.provenance = { champ: "brouillon rédigé dans cette réponse" };
+    const r = run(output(b));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("HORS_PÉRIMÈTRE avec sa cause dans raison_aucun_changement : C6 remplie", () => {
+    const b = blockedBlock();
+    const r = run(output(b));
+    assert.equal(r.conditions.C6.calculee, "remplie", errors(r));
+    assert.equal(r.resultat, "partielle", errors(r));
+  });
 });
 
 describe("cas rejetés", () => {
@@ -204,6 +235,37 @@ describe("cas rejetés", () => {
     const r = run(output(b));
     assert.equal(r.resultat, "rejetee");
     assert.match(errors(r), /C2 déclarée remplie, contredite.*texte non retrouvé/);
+  });
+
+  test("provenance dont le chemin ne désigne aucun fichier : le brouillon reste confronté au texte affiché", () => {
+    const o = O.replace(" : ", " : ");
+    const b = block({ original: o, proposition: o, changements: [], etat: "partielle" });
+    b.relectures[0].verdict = "AUCUN_CHANGEMENT_UTILE";
+    b.relectures[0].raison_aucun_changement = "insécable déjà posée, rien à changer";
+    b.relectures[0].original.sha256 = null;
+    b.relectures[0].original.provenance = { chemin: "réponse finale de cette session, section b", lignes: "1-2", champ: "texte" };
+    b.conditions.C2 = { etat: "non_remplie", manque: "aucun outil d'exécution pour calculer le sha256" };
+    const r = run(output(b, `Brouillon :\n\n${O}\n\nRelecture partielle : C2 non remplie.`));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /original inexact.*typographie près/);
+  });
+
+  test("etat_declare hors des deux valeurs", () => {
+    for (const etat of ["terminée", "constructor"]) {
+      const r = run(output(block({ etat })));
+      assert.equal(r.resultat, "rejetee", etat);
+      assert.match(errors(r), /etat_declare .* : « appliquée » ou « partielle »/);
+    }
+  });
+
+  test("HORS_PÉRIMÈTRE sans raison écrite, C3 à C5 « sans objet » sans cause", () => {
+    const b = blockedBlock();
+    b.relectures[0].raison_aucun_changement = "HORS_PÉRIMÈTRE";
+    for (const c of ["C3", "C4", "C5"]) b.conditions[c] = { etat: "sans_objet" };
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /HORS_PÉRIMÈTRE sans cause dans raison_aucun_changement/);
+    assert.match(errors(r), /C3 « sans objet » hors BLOQUÉ_SOURCE \/ HORS_PÉRIMÈTRE ou sans cause/);
   });
 
   test("liste de changements vide sans raison", () => {

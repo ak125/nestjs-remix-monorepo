@@ -372,7 +372,8 @@ function originalText(orig, roots, errors) {
       errors.C2.push(`original.saut_final=${orig.saut_final} contredit le texte reproduit`);
     }
     bytes = Buffer.from(orig.fins_de_ligne === "CRLF" ? text.replace(/\n/g, "\r\n") : text, "utf8");
-    if (orig.provenance) {
+    // Provenance facultative (§10) : sans chemin, l'original est un brouillon de la session.
+    if (orig.provenance && orig.provenance.chemin !== undefined) {
       const p = orig.provenance;
       const abs = resolvePath(p.chemin, roots);
       if (!abs) errors.C2.push(`original.provenance ${p.chemin} : fichier introuvable`);
@@ -505,7 +506,11 @@ function checkRelecture(rel, ctx) {
   const blocked = BLOCKED.has(rel && rel.verdict);
 
   if (!contract.verdicts.has(rel.verdict)) errors.C6.push(`relecture ${id} : verdict ${JSON.stringify(rel.verdict)} hors des valeurs du contrat`);
-  if (blocked && !(typeof rel.cause === "string" && rel.cause.trim())) errors.C6.push(`relecture ${id} : ${rel.verdict} sans cause`);
+  // Un verdict bloqué n'a aucun changement : sa cause est la raison de la liste vide (§10,
+  // `changements`), le seul champ que le contrat lui donne dans la relecture.
+  if (blocked && !written(rel.raison_aucun_changement, rel.verdict, "raison_aucun_changement")) {
+    errors.C6.push(`relecture ${id} : ${rel.verdict} sans cause dans raison_aucun_changement`);
+  }
 
   const O = originalText(rel.original, roots, errors);
   const steps = rel.etapes && typeof rel.etapes === "object" ? rel.etapes : {};
@@ -592,11 +597,12 @@ function checkRelecture(rel, ctx) {
 
 // Un original reproduit sans fichier de provenance n'existe que dans la réponse (brouillon de la
 // session). Si la réponse n'affiche ni lui ni la proposition tels quels, mais l'un des deux à la
-// typographie près, l'écart cache un changement RE-Tx non déclaré.
-function typoOnlyDisplay(rel, prose) {
+// typographie près, l'écart cache un changement RE-Tx non déclaré. Un chemin de provenance qui ne
+// désigne aucun fichier laisse l'original dans ce cas.
+function typoOnlyDisplay(rel, prose, roots) {
   const o = rel.original;
   if (!o || typeof o !== "object" || typeof o.texte !== "string" || !o.texte.trim()) return null;
-  if (o.provenance && typeof o.provenance.chemin === "string") return null;
+  if (o.provenance && resolvePath(o.provenance.chemin, roots)) return null;
   const texts = [["l'original", o.texte], ["la proposition", rel.proposition]].filter(([, t]) => typeof t === "string" && t.trim());
   const shown = norm(prose);
   if (texts.some(([, t]) => shown.includes(norm(t)))) return null;
@@ -608,6 +614,7 @@ function typoOnlyDisplay(rel, prose) {
 
 const STATE_RE = /relecture(?:\s+[ée]ditoriale)?(?:\s+fran[çc]aise)?\s*[:\-–]?\s*(appliqu[ée]e?s?|partielle)/giu;
 const stateOf = (s) => (/^appliqu/i.test(s) ? "appliquée" : "partielle");
+const ETATS = new Map([["appliquée", "appliquée"], ["appliquee", "appliquée"], ["partielle", "partielle"]]);
 
 function findBlocks(text) {
   const blocks = [];
@@ -652,10 +659,12 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
     return report;
   }
   report.etat_declare = block.etat_declare ?? null;
-  if (!["appliquée", "partielle"].includes(block.etat_declare)) report.erreurs.push(`etat_declare ${JSON.stringify(block.etat_declare)} : « appliquée » ou « partielle »`);
+  // « appliquee » est la graphie que le contrat donne au résultat du contrôle (point 5) : même état.
+  const etat = ETATS.get(block.etat_declare) ?? null;
+  if (!etat) report.erreurs.push(`etat_declare ${JSON.stringify(block.etat_declare)} : « appliquée » ou « partielle »`);
   if (block.version !== contract.version) report.erreurs.push(`version du bloc ${JSON.stringify(block.version)} ≠ contrat ${contract.version}`);
   for (const s of proseStates) {
-    if (s !== block.etat_declare) report.erreurs.push(`la prose dit « relecture ${s} », le bloc déclare ${JSON.stringify(block.etat_declare)}`);
+    if (s !== etat) report.erreurs.push(`la prose dit « relecture ${s} », le bloc déclare ${JSON.stringify(block.etat_declare)}`);
   }
 
   const relectures = Array.isArray(block.relectures) ? block.relectures : [];
@@ -670,7 +679,7 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
     report.a_verifier.push(...r.soft);
   }
   const allBlocked = results.length > 0 && results.every((r) => r.blocked);
-  const typoEcarts = relectures.map((rel) => typoOnlyDisplay(rel || {}, prose)).filter(Boolean);
+  const typoEcarts = relectures.map((rel) => typoOnlyDisplay(rel || {}, prose, roots)).filter(Boolean);
   computed.C2.push(...typoEcarts);
 
   const declared = block.conditions && typeof block.conditions === "object" ? block.conditions : {};
@@ -697,7 +706,7 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
   for (const msg of typoEcarts) report.erreurs.push(`original inexact — ${msg}`);
 
   const allMet = CONDITIONS.every((c) => report.conditions[c].calculee !== "non_remplie" && declared[c] && declared[c].etat !== "non_remplie");
-  if (block.etat_declare === "appliquée" && !allMet) {
+  if (etat === "appliquée" && !allMet) {
     const missing = CONDITIONS.filter((c) => report.conditions[c].calculee === "non_remplie" || (declared[c] && declared[c].etat === "non_remplie"));
     report.erreurs.push(`« relecture appliquée » avec ${missing.join(", ")} non remplie(s)`);
   }
@@ -705,7 +714,7 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
     "pertinence de chaque règle RE et fidélité de sens : à vérifier sur le contenu par le validateur du circuit (§1)",
     "lectures : plages confrontées aux fichiers, pas à la trace de la session ; une empreinte juste ne prouve pas qu'un outil l'a calculée",
   );
-  report.resultat = report.erreurs.length ? "rejetee" : block.etat_declare === "appliquée" ? "appliquee" : "partielle";
+  report.resultat = report.erreurs.length ? "rejetee" : etat === "appliquée" ? "appliquee" : "partielle";
   return report;
 }
 
