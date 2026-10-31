@@ -7,7 +7,7 @@
 -- l'état relevé le 2026-10-31 : chemin, alt, légende, statut, sélection et, en
 -- R1, rip_updated_at. Une ligne modifiée depuis arrête tout (DERIVE). Exige que
 -- les anciens objets R1 soient encore dans le bucket avec leurs métadonnées
--- relevées. En R3, l'état relevé est pending sans image : le retour repasse ces
+-- relevées, au rejeu compris. En R3, l'état relevé est pending sans image : le retour repasse ces
 -- lignes de approved à pending (déclassement B5 déclaré). Les nouveaux objets
 -- restent dans le bucket ; leur suppression est une étape manuelle distincte.
 -- L'engine est forward-only : ce fichier se lance à la main, sur GO owner.
@@ -126,11 +126,9 @@ BEGIN
   IF v_txt IS NOT NULL THEN
     RAISE EXCEPTION 'ABORT: ligne(s) image modifiée(s) depuis l''écriture du lot : %', v_txt;
   END IF;
-  IF v_n = 0 THEN
-    RAISE NOTICE 'retour 20261031_editorial_filtre_huile_pg7_images : aucune ligne écrite par le lot, sans effet';
-    RETURN;
-  END IF;
 
+  -- Objets contrôlés avant la sortie du rejeu : « sans effet » n'est annoncé
+  -- que si les objets que l'état présent sert sont là.
   SELECT string_agg(etat, ', ' ORDER BY etat COLLATE "C") INTO v_txt FROM (
     SELECT o.path || ' ' || CASE WHEN count(s.id) = 0 THEN 'absent'
                                   WHEN count(s.id) > 1 THEN 'multiple'
@@ -148,6 +146,11 @@ BEGIN
                         AND s.metadata->>'cacheControl' = o.cache_control)
   ) b;
   IF v_txt IS NOT NULL THEN RAISE EXCEPTION 'ABORT: ancien(s) objet(s) R1 absent(s) ou modifié(s) : %', v_txt; END IF;
+
+  IF v_n = 0 THEN
+    RAISE NOTICE 'retour 20261031_editorial_filtre_huile_pg7_images : aucune ligne écrite par le lot, sans effet';
+    RETURN;
+  END IF;
 
   v_prev := current_setting('request.headers', true);
   SELECT agent_id INTO STRICT v_agent FROM agent_write_scopes WHERE agent_name = 'SEO-Content';

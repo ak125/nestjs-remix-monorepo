@@ -830,7 +830,7 @@ ${generated(id)}
 -- l'état relevé le 2026-10-31 : chemin, alt, légende, statut, sélection et, en
 -- R1, rip_updated_at. Une ligne modifiée depuis arrête tout (DERIVE). Exige que
 -- les anciens objets R1 soient encore dans le bucket avec leurs métadonnées
--- relevées. En R3, l'état relevé est pending sans image : le retour repasse ces
+-- relevées, au rejeu compris. En R3, l'état relevé est pending sans image : le retour repasse ces
 -- lignes de approved à pending (déclassement B5 déclaré). Les nouveaux objets
 -- restent dans le bucket ; leur suppression est une étape manuelle distincte.
 -- L'engine est forward-only : ce fichier se lance à la main, sur GO owner.
@@ -860,7 +860,8 @@ ${generated(id)}
 -- §1 ÉCRITURE : verrou des lignes, classement APRES / AVANT / DERIVE (une
 -- DERIVE arrête tout) ; objets nouveaux présents une fois, en image/webp, à la
 -- taille et au md5 du dossier, avec cache-control max-age=31536000 ; anciens
--- objets R1 intacts (condition du retour arrière). Écriture sous l'identité
+-- objets R1 intacts (condition du retour arrière), contrôlés aussi au rejeu,
+-- avant « déjà écrit ». Écriture sous l'identité
 -- SEO-Content, relecture de chaque ligne, cache __gamme_page_cache de pg ${PG_ID}
 -- invalidé (trigger des images R1, puis invalidate_r1_caches) dans la
 -- transaction. Caches Redis et CDN : publication-batch.json, « invalidation ».
@@ -935,12 +936,15 @@ ${lockFor('r1', '__seo_r1_image_prompts')}${lockFor('r3', '__seo_r3_image_prompt
   IF v_txt IS NOT NULL THEN
     RAISE EXCEPTION 'ABORT: ligne(s) image modifiée(s) depuis ${down ? "l''écriture du lot" : 'le relevé'} : %', v_txt;
   END IF;
+
+  -- Objets contrôlés avant la sortie du rejeu : « sans effet » n'est annoncé
+  -- que si les objets que l'état présent sert sont là.
+${objects}
+
   IF v_n = ${down ? 0 : imgs.length} THEN
     RAISE NOTICE '${down ? 'retour' : 'lot'} ${id} : ${down ? 'aucune ligne écrite par le lot' : 'déjà écrit'}, sans effet';
     RETURN;
   END IF;
-
-${objects}
 
 ${identity}
 

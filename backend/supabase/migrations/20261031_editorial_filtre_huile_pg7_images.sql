@@ -24,7 +24,8 @@
 -- §1 ÉCRITURE : verrou des lignes, classement APRES / AVANT / DERIVE (une
 -- DERIVE arrête tout) ; objets nouveaux présents une fois, en image/webp, à la
 -- taille et au md5 du dossier, avec cache-control max-age=31536000 ; anciens
--- objets R1 intacts (condition du retour arrière). Écriture sous l'identité
+-- objets R1 intacts (condition du retour arrière), contrôlés aussi au rejeu,
+-- avant « déjà écrit ». Écriture sous l'identité
 -- SEO-Content, relecture de chaque ligne, cache __gamme_page_cache de pg 7
 -- invalidé (trigger des images R1, puis invalidate_r1_caches) dans la
 -- transaction. Caches Redis et CDN : publication-batch.json, « invalidation ».
@@ -156,11 +157,9 @@ BEGIN
   IF v_txt IS NOT NULL THEN
     RAISE EXCEPTION 'ABORT: ligne(s) image modifiée(s) depuis le relevé : %', v_txt;
   END IF;
-  IF v_n = 6 THEN
-    RAISE NOTICE 'lot 20261031_editorial_filtre_huile_pg7_images : déjà écrit, sans effet';
-    RETURN;
-  END IF;
 
+  -- Objets contrôlés avant la sortie du rejeu : « sans effet » n'est annoncé
+  -- que si les objets que l'état présent sert sont là.
   SELECT string_agg(etat, ', ' ORDER BY etat COLLATE "C") INTO v_txt FROM (
     SELECT o.path || ' ' || CASE WHEN count(s.id) = 0 THEN 'absent'
                                   WHEN count(s.id) > 1 THEN 'multiple'
@@ -195,6 +194,11 @@ BEGIN
                         AND s.metadata->>'cacheControl' = o.cache_control)
   ) b;
   IF v_txt IS NOT NULL THEN RAISE EXCEPTION 'ABORT: ancien(s) objet(s) R1 absent(s) ou modifié(s), retour arrière impossible : %', v_txt; END IF;
+
+  IF v_n = 6 THEN
+    RAISE NOTICE 'lot 20261031_editorial_filtre_huile_pg7_images : déjà écrit, sans effet';
+    RETURN;
+  END IF;
 
   v_prev := current_setting('request.headers', true);
   SELECT agent_id INTO STRICT v_agent FROM agent_write_scopes WHERE agent_name = 'SEO-Content';

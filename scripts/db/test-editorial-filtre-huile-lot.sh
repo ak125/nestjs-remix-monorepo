@@ -19,7 +19,8 @@
 #     identité SEO-Content absente, règle de scope retirée (contrôle préalable,
 #     puis garde en 42501), scope de l'agent changé, cellule ou image modifiée,
 #     champ protégé modifié, ligne supprimée, trigger désactivé, fonction
-#     modifiée, objet absent, multiple ou non conforme ;
+#     modifiée, objet absent, multiple ou non conforme, y compris au rejeu de la
+#     montée et de la descente ;
 #   - contrôle préalable (--precheck) sans écart sur l'état relevé.
 #
 # Environnement : conteneur PostgreSQL jetable, sans réseau (même majeure que la
@@ -510,6 +511,10 @@ img_refus i7 "UPDATE __seo_r3_image_prompts SET rip_caption = 'modifiée après 
   "ligne(s) image modifiée(s) depuis l'écriture du lot : r3:13 DERIVE" "descente sur une ligne modifiée après le lot" c_img
 img_refus i8 "DELETE FROM storage.objects WHERE name = 'articles/gammes-produits/r1/filtre-a-huile-2.webp'" "${LOT}_images.down.sql" \
   "ancien(s) objet(s) R1 absent(s) ou modifié(s) : articles/gammes-produits/r1/filtre-a-huile-2.webp absent" "descente sans l'ancien objet" c_img
+img_refus i9 "DELETE FROM storage.objects WHERE name = 'articles/gammes-produits/r1/filtre-a-huile-v20261031.webp'" "${LOT}_images.sql" \
+  "objet(s) à déposer avant l'application : articles/gammes-produits/r1/filtre-a-huile-v20261031.webp absent" "rejeu de la montée sans un objet servi" c_img
+img_refus i10 "DELETE FROM storage.objects WHERE name = 'articles/gammes-produits/r1/filtre-a-huile-2.webp'" "${LOT}_images.down.sql" \
+  "ancien(s) objet(s) R1 absent(s) ou modifié(s) : articles/gammes-produits/r1/filtre-a-huile-2.webp absent" "rejeu de la descente sans un objet servi"
 
 echo
 echo "Résultat : $pass PASS, $fail FAIL"
