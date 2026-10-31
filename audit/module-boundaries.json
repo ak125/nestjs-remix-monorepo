@@ -959,7 +959,7 @@
         "tests/registry"
       ],
       "files_count": 329,
-      "loc_total": 63281,
+      "loc_total": 63314,
       "has_barrel": true
     },
     "upload": {
@@ -1027,7 +1027,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5075,
+      "loc_total": 5080,
       "has_barrel": false
     }
   },
