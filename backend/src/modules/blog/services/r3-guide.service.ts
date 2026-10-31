@@ -105,9 +105,9 @@ interface R3GuideBody {
  *  tombait en cache-miss (+~450 ms compute, 9-fanout Supabase) → TTFB p75 ~2,1 s.
  *  Contenu éditorial (change rarement).
  *  ⚠️ L'invalidation @OnEvent('article.published'|'article.updated') existe mais
- *  AUCUN émetteur n'est câblé (dormant) → le TTL est aujourd'hui le SEUL mécanisme
- *  de fraîcheur : 24 h est le plafond de staleness sur une édition de guide.
- *  Follow-up recommandé : câbler l'émetteur dans les endpoints admin publish/update. */
+ *  AUCUN émetteur n'est câblé (dormant). Une écriture en base est rendue visible
+ *  avant le TTL par `POST /api/r3-guide/:pg_alias/cache/invalidate` (admin) ;
+ *  sans cet appel, 24 h reste le plafond de staleness sur une édition de guide. */
 const R3_CACHE_TTL_SECONDS = 24 * 60 * 60;
 
 @Injectable()
@@ -286,13 +286,28 @@ export class R3GuideService {
       );
       return;
     }
-    for (const segment of R6_GUIDE_LINK_CACHE_SEGMENTS) {
-      const cacheKey = `${R3_CACHE_PREFIX}${segment}:${pg_alias}`;
-      await this.cacheService.del(cacheKey);
-      this.logger.log(
-        `[r3-cache] invalidated key=${cacheKey} on article event`,
-      );
-    }
+    await this.invalidateCache(pg_alias, 'article event');
+  }
+
+  /**
+   * Efface le payload caché d'une page conseil pour les deux segments du
+   * drapeau R6 (`r6c0`/`r6c1`). Appelé par les événements article et par
+   * `POST /api/r3-guide/:pg_alias/cache/invalidate` (admin). Retourne les
+   * clés effacées ; lève si Redis est indisponible (sur événement, l'erreur
+   * est journalisée par l'émetteur, le TTL reste le plafond).
+   */
+  async invalidateCache(
+    pg_alias: string,
+    origin = 'admin request',
+  ): Promise<string[]> {
+    const keys = R6_GUIDE_LINK_CACHE_SEGMENTS.map(
+      (segment) => `${R3_CACHE_PREFIX}${segment}:${pg_alias}`,
+    );
+    await this.cacheService.delStrict(keys);
+    this.logger.log(
+      `[r3-cache] invalidated keys=${keys.join(',')} on ${origin}`,
+    );
+    return keys;
   }
 
   /**

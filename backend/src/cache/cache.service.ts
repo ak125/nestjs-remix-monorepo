@@ -159,6 +159,12 @@ export class CacheService implements OnModuleInit {
     }
   }
 
+  // Strict invalidation: a purge that did not reach Redis is not a success.
+  async delStrict(keys: string[]): Promise<void> {
+    if (keys.length === 0) return;
+    await this.requireReadyRedis('cache invalidation').del(...keys);
+  }
+
   /**
    * SET key value EX ttl NX — atomic "set if not exists" with TTL.
    * Used for dedupe windows (e.g. audit log dedupe 15min for dashboard_view).
@@ -268,14 +274,15 @@ export class CacheService implements OnModuleInit {
     return newCount;
   }
 
-  // Strict telemetry operations: an unavailable/corrupt cache is not zero data.
-  private requireReadyRedis(): Redis {
+  // Strict operations (telemetry, invalidation): an unavailable/corrupt cache
+  // is neither zero data nor a completed purge.
+  private requireReadyRedis(purpose = 'telemetry'): Redis {
     if (
       !this.redisClient ||
       !this.redisReady ||
       this.redisClient.status !== 'ready'
     ) {
-      throw new Error('Redis unavailable for telemetry');
+      throw new Error(`Redis unavailable for ${purpose}`);
     }
     return this.redisClient;
   }
