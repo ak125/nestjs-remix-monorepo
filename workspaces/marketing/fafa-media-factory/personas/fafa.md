@@ -51,7 +51,7 @@ Tout claim mécanique (symptôme, cause, procédure) DOIT avoir une evidence :
 Un claim `mileage`, `dimension`, `percentage` ou `norm` non `verified`, ou sans preuve rattachée (`sourceRef`, ou
 `evidenceId` trouvé parmi les `docId` de l'`evidencePack`), compte pour G1 `truth` : un seul suffit au FAIL. Les claims
 `procedure` et `safety` relèvent de G2 `safety`, qui ne vérifie que `validatedBy`
-(`backend/src/modules/media-factory/services/video-gates.service.ts:115-184`). Pour un dossier, le validateur passe `sourceRef` nul : seul un `evidenceId` accepté soutient un claim (`scripts/marketing/fafa-pilot-governance.cjs:186,193-205`).
+(`backend/src/modules/media-factory/services/video-gates.service.ts:159-228`). Pour un dossier, le validateur passe `sourceRef` nul : seul un `evidenceId` accepté soutient un claim (`scripts/marketing/fafa-pilot-governance.cjs:186,193-205`).
 
 ## Stabilité V1
 

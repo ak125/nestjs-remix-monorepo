@@ -1,6 +1,6 @@
 ---
 name: fafa-remotion-template-planner
-description: Use when choosing the right Remotion composition (NeChangePasTropVite / SymptomeTroisCauses / PieceExpliquee) for a given Fafa script + format + duration target, and building the /render HTTP payload. Triggers — "render vidéo pilote", "préparer Remotion payload", "smoke render Fafa".
+description: Use when choosing the right Remotion composition (NeChangePasTropVite / SymptomeTroisCauses / PieceExpliquee / SequencesCourtes) for a given Fafa script + format + duration target, and building the /render HTTP payload. Triggers — "render vidéo pilote", "préparer Remotion payload", "smoke render Fafa".
 ---
 
 # Fafa Remotion Template Planner — Skill

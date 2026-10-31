@@ -263,6 +263,9 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   historiques (`approval.json:117-122`). Contrat : un seul modèle, celui des trois approbations retenu ci-dessus ; G7 le lit, ou
   `stages` en est dérivé, sans second modèle. Test : dossier du pilote passé à `checkArtefacts` puis à `runAllGates` → aucun
   manque, et verdict G7 identique à celui consigné.
+  Le 31/10, #1936 (brouillon, non fusionnée) dérive les étapes des trois approbations (`approvalStagesOf`) : le pilote passe
+  l'étape 1 (`scripts/marketing/fafa-pilot-governance.test.cjs`). Rejoué en lecture seule, G7 y rend FAIL
+  (`script_text_approval`, `content_approved` faux), et non le PASS consigné : la seconde moitié du test reste ouverte.
 - **L12** · Migration additive préparée (compte, empreinte de révision, preuve, réservation par `intent_id` avec bail, liaison au brief selon D16, journal d'approbations) ; `marketing-hub-data.service.ts:31-44` ; export du contrôleur des posts (validation de `week` et `channel`, variantes secondaires) ; `utm_content` = id de variante. Tests : Instagram publié ne publie pas Facebook ; second compte → 422 ; export des variantes secondaires. Limites : lecture autorisée du CHECK réel et réconciliation du ledger d'abord ; application = acte owner ; baseline du ratchet rafraîchie dans la même PR si elle change.
 - **L13** · `publish-queue.service.ts:135-144` ; marquage publié du contrôleur des posts ; `scripts/marketing/export-publish-queue.ts` ; `fafa-media-factory/manifests/publishing/` (`.gitkeep` seul). Contrat : `publication-proof` v1 sur ces deux surfaces ; revalidation juste avant l'effet. Tests : sans preuve → 422 ; même preuve → sans effet ; preuve différente → 409 ; approbation révoquée → refus ; délai dépassé → incertain, 0 nouvelle tentative. Limites : publication = acte owner.
 - **L14** · Contrôleur d'attribution d'atterrissage (capture `medium`, `campaign`, `content` en session) ; `marketing-measurement.ts:13-25` ; contrôleur des commandes : préparation seulement (STOP). Contrat : verdict v1 lu tel quel, usage restreint à `r2_order_placed`, UNKNOWN affiché hors DEV ; les colonnes de mesure des posts (`actual_*`, `ga4_*`, `performance_*`) n'ont aucun producteur : UNKNOWN jusqu'à un producteur unique ; `qualified-demand` reste à définir par sales et data (D6), jamais déduit ici. Tests : visite → variante → commande sur fixtures synthétiques ; non certifié → UNKNOWN ; jamais 0 faute de données. Limites : D6, D7 ; aucun chiffre de vente.
@@ -641,6 +644,9 @@ sous Node ; ajout des compositions Remotion daté par `git log` (`15bdc403b`, #7
 C18-18, C18-19 et C18-24 recalées à `1a16da60c`, après #1830 (logique de G1 et G2 inchangée, `runClaimGates` inséré
 l.108-113) ; vault relu par l'API GitHub, `main` à `684e734`, toujours aucun chemin contenant « fafa » ou « persona »
 (905 chemins).
+Le 31/10, #1936 (brouillon) insère `approvalStagesOf` dans le service des gates (+45 lignes de la l.22 à la l.85, +44 au-delà),
+deux types dans `video.types.ts` (+19 après la l.117) et des tests (+2 après la l.17) : les lignes de ces fichiers citées dans
+ce dossier restent celles de `1a16da60c` ; les skills et README d'état courant qui les citent sont recalés sur la tête de #1936.
 
 | Id | Fichier, fonction | Preuve | Limite | Lot |
 |---|---|---|---|---|

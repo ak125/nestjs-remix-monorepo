@@ -59,7 +59,7 @@ Ces interdits sont tenus par la relecture humaine ; G5 ne les détecte pas en V1
 ## G5 Reuse Risk en V1
 
 - Le code ne lit que `similarityScore` et le compte 0 s'il manque
-  (`backend/src/modules/media-factory/services/video-gates.service.ts:273-287`, l.277). Aucun module ne produit ce score : le champ
+  (`backend/src/modules/media-factory/services/video-gates.service.ts:326-340`, l.330). Aucun module ne produit ce score : le champ
   n'est que déclaré (l.398). G5 rend donc PASS à chaque exécution ; les seuils (WARN 0,5, FAIL 0,7,
   `backend/src/config/video-quality.constants.ts:78`) ne s'appliquent à aucune mesure.
 - Il n'existe pas non plus de texte à comparer : un pattern ne garde que de la structure, et la source n'est vue qu'en analyse

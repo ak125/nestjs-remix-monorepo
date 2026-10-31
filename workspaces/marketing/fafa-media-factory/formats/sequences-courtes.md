@@ -47,15 +47,17 @@ type SequencesCourtesProps = {
 };
 ```
 
-Constaté dans le code et au rendu d'essai :
+Constaté dans le code de la composition ; « (test) » marque ce que vérifie le test de rendu
+`services/remotion-renderer/test/sequences-courtes.render.test.ts` (`npm test` dans le service) :
 
-- Aucune valeur de démonstration : sans séquence valide, le rendu échoue avec un message explicite (l.94-96).
-- Les séquences sont triées par `startSec` ; entre deux séquences, seuls la marque et le bandeau restent à l'écran.
+- Aucune valeur de démonstration : sans séquence valide, le rendu échoue avec un message explicite (l.94-96) (test).
+- Les séquences sont triées par `startSec` ; entre deux séquences, seuls la marque et le bandeau restent à l'écran (test
+  pour l'ordre et la séquence affichée).
 - Les textes d'une séquence apparaissent à intervalles égaux sur sa durée (l.155-156) : le premier au début, le dernier
   à `(n-1)/n` de la séquence.
-- La voix se cale sur les `startSec`/`endSec` du script ; `durationSecs` de la requête ne fixe pas la durée.
-- Sans `audioUrl`, le rendu est muet, sans erreur.
-- Test de rendu : `services/remotion-renderer/test/sequences-courtes.render.test.ts` (`npm test` dans le service).
+- La durée est la fin de la dernière séquence (test) ; `durationSecs` de la requête ne la fixe pas. La piste voix part de
+  0 s sans recalage (l.109) : les `startSec`/`endSec` du script doivent suivre le minutage de la voix.
+- Sans `audioUrl`, le rendu est muet, sans erreur (l.109).
 
 ## Exemples Fafa V2+
 

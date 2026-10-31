@@ -600,7 +600,7 @@ export default function R3GuidePage() {
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900 text-lg">
-                            Besoin de cette piece ?
+                            Besoin de cette pièce ?
                           </p>
                           <p className="text-sm text-gray-600 mt-1">
                             Trouvez la pièce compatible avec votre véhicule.

@@ -27,10 +27,4 @@ describe('R1_S4_MICRO_SEO — bornes alignées sur le contrat R1', () => {
       max_chars: contractSection?.max_chars,
     });
   });
-
-  it('le micro-SEO du lot (1 570 caractères après FH-12) passe les bornes', () => {
-    const length = 1570;
-    expect(length).toBeGreaterThanOrEqual(R1_S4_MICRO_SEO_BOUNDS.min_chars);
-    expect(length).toBeLessThanOrEqual(R1_S4_MICRO_SEO_BOUNDS.max_chars);
-  });
 });

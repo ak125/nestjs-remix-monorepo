@@ -143,8 +143,9 @@ export function buildGammeJsonLd(params: {
     fallbackFaq,
   } = params;
 
-  // Mêmes questions que la FAQ affichée (resolveR1Faq) : le FAQPage ne déclare
-  // aucune question absente de la page.
+  // Même résolution que la FAQ affichée (resolveR1Faq). La page y ajoute ses
+  // questions éditoriales et masque une question qui commence comme l'une
+  // d'elles (mergeFaqBlocks) : seul ce cas déclare une question non affichée.
   const faqItems = resolveR1Faq(faq, fallbackFaq).items.filter(
     (f) => f.question?.trim() && f.answer?.trim(),
   );
