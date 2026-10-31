@@ -112,6 +112,8 @@ décision du décideur (ADR-119). Ce dossier n'écrit ni dans RAW ni dans le WIK
 - Rien n'est publié sans rendu vérifié et sans l'approbation de l'owner
   (`workspaces/marketing/fafa-media-factory/governance/approval-record.schema.json`) ; une vidéo
   n'entre dans une page que si son gabarit prévoit l'emplacement (`MEDIA.md` § 8).
+- Carrousels Instagram, couvertures et textes sociaux : révision 5, proposée dans #1940 (brouillon `9460d0531`, non
+  fusionnée), avec `SOCIAL.md`, `integration/social.json` et `assets/social/` ; absente de `main` au relevé du § 0.6.
 - E-mail et newsletter : rien n'est préparé dans ce lot. Les skills `amk-marketing-preparation` et `amk-reactivation`
   (`workspaces/marketing/.claude/skills/`) travaillent sur le corpus synthétique hors ligne, sans envoi.
 
@@ -126,16 +128,18 @@ décision du décideur (ADR-119). Ce dossier n'écrit ni dans RAW ni dans le WIK
 | Décideur WIKI | admission des faits F-C* (ADR-119) | § 6 |
 | Owner | fusion des PR, accord nominatif en zone STOP (écriture PROD sur pages indexées, déploiement) | — |
 
-État relevé le 2026-10-31T13:05Z. « Présent » : dans le dépôt ; « servi » : constaté sur la page publique.
+État relevé le 2026-10-31T13:05Z, complété à 14:10Z (correctifs de code, déclinaisons sociales). « Présent » : dans
+le dépôt ; « servi » : constaté sur la page publique.
 
 | Élément | Présent | Branché ou activé | Servi | Preuve |
 |---|---|---|---|---|
 | Dossier, révision 4 | oui, `main` `9d1d82207` (#1935) | sans objet | non | historique Git |
-| Correctifs de code FH-2 à FH-16 | oui, `main` `7d3f30237` (#1936) | déploiement PREPROD en cours au relevé, non prouvé | non : dernier tag PROD `v2026.10.30-bundle-octobre-980b2f8` | Actions « Deploy » sur `main` |
+| Correctifs de code FH-2 à FH-16 | oui, `main` `7d3f30237` (#1936) | Deploy PREPROD `success` pour `9d1d82207` (13:30Z) ; E2E smoke en échec : `url-validation.spec.ts` attend l'accroche équipementiers retirée par #1936 ; correctif #1939 ouvert, non fusionné | non : dernier tag PROD `v2026.10.30-bundle-octobre-980b2f8` | run « Deploy » 41202754136, job E2E 124550777451 |
 | Textes R1 et R3 en base | non | lot préparé, non exécuté (zone STOP) | non | `HANDOFF.md` § 6, « Lot de publication » |
 | Images R1 et R3 | fichiers dans `assets/` | non téléversées | non | `integration/assets.json` |
 | Faits F-C1 à F-C11 | candidats | non admis | non | § 6 |
 | Vidéos V1, C1 à C4 | scripts | aucune voix, aucun rendu | non | `MEDIA.md` § 1 |
+| Déclinaisons sociales, révision 5 | non : #1940, brouillon `9460d0531` | ni publiées ni programmées | non | `SOCIAL.md` sur la branche de #1940 |
 | Checkpoint Hermes | charge rédigée | non enregistré | sans objet | `CHECKPOINT.md` |
 
 Détail des dépendances restantes, étape par étape : `HANDOFF.md` § 6, « Restant, par étape ».
