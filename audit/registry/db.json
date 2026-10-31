@@ -10785,6 +10785,7 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/media-factory/services/postprocess.service.ts",
+        "backend/src/modules/media-factory/services/video-data.service.ts",
         "backend/src/modules/media-factory/services/video-job.service.ts",
         "backend/src/workers/processors/video-execution.processor.ts"
       ]

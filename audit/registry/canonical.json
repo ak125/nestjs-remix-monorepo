@@ -20086,6 +20086,7 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/media-factory/services/postprocess.service.ts",
+          "backend/src/modules/media-factory/services/video-data.service.ts",
           "backend/src/modules/media-factory/services/video-job.service.ts",
           "backend/src/workers/processors/video-execution.processor.ts"
         ]
@@ -49007,7 +49008,7 @@
         "backend/src/config/video-quality.constants.ts"
       ],
       "kind": "service",
-      "loc": 79,
+      "loc": 87,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/render/templates/template-registry.ts",
       "risk": "medium",
@@ -49246,7 +49247,7 @@
         "backend/src/modules/media-factory/types/video.types.ts"
       ],
       "kind": "service",
-      "loc": 394,
+      "loc": 501,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/services/video-data.service.ts",
       "risk": "medium",
@@ -69739,7 +69740,7 @@
         "backend/src/workers/types/video-execution.types.ts"
       ],
       "kind": "service",
-      "loc": 491,
+      "loc": 494,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/workers/processors/video-execution.processor.ts",
       "risk": "medium",
@@ -72406,7 +72407,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 917,
+      "loc": 978,
       "owner": "@ak125",
       "path": "backend/tests/unit/video-execution.processor.test.ts",
       "risk": "medium",
@@ -72529,6 +72530,26 @@
       "loc": 114,
       "owner": "@ak125",
       "path": "backend/tests/unit/video-production.controller.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/video-template-selection.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 279,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/video-template-selection.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -87797,7 +87818,7 @@
         "~/utils/video-execution"
       ],
       "kind": "route",
-      "loc": 1747,
+      "loc": 1894,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.video-hub.productions.$briefId.tsx",
       "risk": "medium",
@@ -97182,7 +97203,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 876,
+      "loc": 1170,
       "owner": "@ak125",
       "path": "frontend/tests/unit/video-production-route.test.tsx",
       "risk": "medium",
@@ -106517,13 +106538,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "e489aad6cca7e23a82ebd66917c1c6ad3b76e42bcd22362529cc8c26a7f1613c",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
+      "audit/registry/db.json": "7bf1553ad6917661d5a9bdcf9a5965814ba75b6623b4bd8ae2bce2028830e85d",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "147e4896c79f7ca8477f9786db0e4a75238975155b6b3173fd41fddf6e948bbe",
+      "audit/registry/files.json": "791c675fa63ef4efaed5e2e0ec3a060ac1a816ae4e9abb79da1d9169f92993e8",
       "audit/registry/rpc.json": "294f506d203e5fa10be7f8aa1c8413414776431d9d0a9509dd5f8ea140daf6a4",
       "audit/registry/runtime.json": "a6b7bb34f935b3f73f8d20c118fcaa5040e50b33fabbb344943df0a202fa5d19"
     },
-    "sotFingerprint": "916f7b8c6aa2"
+    "sotFingerprint": "f738ef750a5c"
   },
   "runtime": [
     {
