@@ -7,7 +7,9 @@
 // retrouvés, changements rejoués jusqu'à la proposition, faits protégés comparés règle par
 // règle, plages de lecture confrontées aux fichiers, conditions C1–C7 recalculées, mentions de
 // la relecture dans la prose comparées à l'état déclaré, original sans fichier confronté au
-// texte que la réponse affiche.
+// texte que la réponse affiche (typographie et balisage Markdown), positions RE-T1 restées en
+// espace ordinaire dans la proposition, champ structuré (YAML, JSON, frontmatter) reproduit avec
+// son chemin de clés, plage de l'original rendue par une lecture déclarée.
 //
 // Il ne juge ni la pertinence d'une règle RE ni la fidélité de sens, et ne voit pas la trace
 // de la session : ces points sortent en « à vérifier sur le contenu ».
@@ -179,7 +181,8 @@ const CONDITION_WORDS = new Set([
   "si", "s", "selon", "sauf", "seulement", "uniquement", "lorsque", "quand", "hors", "excepte",
   "condition", "cas", "avant", "apres", "abord", "puis", "ensuite", "enfin",
 ]);
-const NUMBER_RE = /\d+(?:[   ]\d{3})*(?:[.,]\d+)?\s*(?:%|°C|°|µm|mm|cm³|cm3|cm|km|kg|kPa|bar|N·m|Nm|ch|kW|tr\/min|trs\/min|l|L|g|h|min)?(?![\p{L}\d])/gu;
+const UNITS = "%|°C|°|µm|mm|cm³|cm3|cm|km|kg|kPa|bar|N·m|Nm|ch|kW|tr/min|trs/min|l|L|g|h|min";
+const NUMBER_RE = new RegExp(String.raw`\d+(?:[ \u00a0\u202f]\d{3})*(?:[.,]\d+)?\s*(?:${UNITS})?(?![\p{L}\d])`, "gu");
 const IDENT_RE = /(?<![\p{L}\d])(?:(?=[\p{L}\d\-/]*\d)(?=[\p{L}\d\-/]*\p{L})[\p{L}\d][\p{L}\d\-/]*|\p{Lu}{2,}[\p{Lu}\d]*)(?![\p{L}\d])/gu;
 
 export function protectedTokens(s) {
@@ -221,6 +224,51 @@ const rawWords = (s) => s.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean)
 const DETOUR_STEMS = new Set(["positi", "impose", "consti", "dispos", "repres", "avere", "possed", "compor", "presen", "figure", "office", "demeur", "revele", "agisse", "retrou"]);
 
 // ---------------------------------------------------------------------------------------------
+// Typographie et balisage
+// ---------------------------------------------------------------------------------------------
+
+// Positions RE-T1 (§6) restées en espace ordinaire : devant « ; : ! ? », à l'intérieur des
+// guillemets français, entre un nombre et son unité, entre les tranches de milliers.
+const RE_T1_POSITIONS = [
+  /(?<=\S) (?=[;:?]|!(?!\[))/gu,
+  /(?<=«) | (?=»)/gu,
+  new RegExp(String.raw`(?<=(?<![\p{L}\d])\d+(?:[.,]\d+)?) (?=(?:${UNITS})(?![\p{L}\d'’]))`, "gu"),
+  /(?<=(?<![\p{L}\d.,])\d{1,3}(?: \d{3})*) (?=\d{3}(?!\d))/gu,
+];
+
+// Intertitres, tableaux, code et URL gardent leur typographie (§6) : ils ne sont pas relevés.
+function reT1Leftovers(text) {
+  const found = [];
+  let fenced = false;
+  for (const line of text.split("\n")) {
+    if (/^\s{0,3}(?:```|~~~)/.test(line)) {
+      fenced = !fenced;
+      continue;
+    }
+    if (fenced || /^\s{0,3}#{1,6}(?:\s|$)/.test(line) || /^\s*\|/.test(line)) continue;
+    const masked = line.replace(/`[^`]*`|https?:\/\/[^\s<>()\]]+|\]\([^)]*\)/g, (m) => "_".repeat(m.length));
+    for (const re of RE_T1_POSITIONS) {
+      for (const m of masked.matchAll(re)) found.push(JSON.stringify(line.slice(Math.max(0, m.index - 12), m.index + 12)));
+    }
+  }
+  return found;
+}
+
+// Balisage Markdown d'une ligne retiré : titre, citation, puce, gras, italique, code, lien.
+const stripMarkdown = (s) =>
+  s
+    .split("\n")
+    .map((l) =>
+      l
+        .replace(/^\s{0,3}#{1,6}\s+/, "")
+        .replace(/^\s*>\s?/, "")
+        .replace(/^\s*(?:[-*+]|\d+[.)])\s+/, "")
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+        .replace(/\*|__|`/g, ""),
+    )
+    .join("\n");
+
+// ---------------------------------------------------------------------------------------------
 // Fichiers et lectures
 // ---------------------------------------------------------------------------------------------
 
@@ -241,6 +289,55 @@ function parseRange(r, text) {
   const last = text.endsWith("\n") ? nLines + 1 : nLines;
   if (a < 1 || b < a || b > last) return { error: `plage ${r} hors du fichier (${nLines} lignes)` };
   return { a, b: Math.min(b, nLines) };
+}
+
+// Zone structurée d'un fichier : un YAML ou un JSON entier, ou le frontmatter d'un Markdown. Un
+// champ s'y reproduit avec son chemin de clés (§10, `original`) ; une plage n'y désigne que la
+// syntaxe du document.
+function structuredZone(abs, file) {
+  if (/\.(?:ya?ml|json)$/i.test(abs)) return { a: 1, b: countLines(file), json: /\.json$/i.test(abs), frontmatter: false };
+  const lines = file.split("\n");
+  if (!/\.mdx?$/i.test(abs) || lines[0].trimEnd() !== "---") return null;
+  const end = lines.findIndex((l, i) => i > 0 && /^(?:---|\.\.\.)\s*$/.test(l));
+  return end > 0 ? { a: 1, b: end + 1, json: false, frontmatter: true } : null;
+}
+
+const YAML_KEY = /^(?<ind>\s*)(?<dash>-\s+)?(?<q>["']?)(?<key>[^"'\s#][^"'#]*?)\k<q>\s*:(?:\s+(?<value>.*))?$/;
+const JSON_KEY = /^(?<ind>\s*)"(?<key>(?:[^"\\]|\\.)*)"\s*:\s*(?<value>.*)$/;
+
+// Chemins de clés (indices de liste omis) des lignes a à b d'une zone structurée, lus par
+// l'indentation : un scalaire écrit après sa clé se poursuit sur les lignes plus indentées.
+function fieldPaths(file, zone, a, b) {
+  const lines = file.split("\n");
+  const stack = [];
+  const paths = new Set();
+  const pathOf = () => stack.map((s) => s.key).join(".");
+  let scalar = null;
+  const last = Math.min(b, zone.frontmatter ? zone.b - 1 : zone.b);
+  for (let n = zone.frontmatter ? zone.a + 1 : zone.a; n <= last; n += 1) {
+    const line = lines[n - 1];
+    const indent = line.length - line.trimStart().length;
+    let path = null;
+    if (scalar && (line.trim() === "" || indent > scalar.indent)) path = scalar.path;
+    else {
+      scalar = null;
+      const m = line.match(zone.json ? JSON_KEY : YAML_KEY);
+      if (m) {
+        const keyIndent = m.groups.ind.length + (m.groups.dash || "").length;
+        while (stack.length && stack[stack.length - 1].indent >= keyIndent) stack.pop();
+        stack.push({ indent: keyIndent, key: m.groups.key.trim() });
+        path = pathOf();
+        const value = (m.groups.value || "").replace(/^(?:[&!]\S*\s*)+/, "").trim();
+        if (!zone.json && value && !value.startsWith("#")) scalar = { indent: keyIndent, path };
+      } else if (line.trim() && !/^\s*#/.test(line)) {
+        const itemIndent = indent + (/^\s*-(?:\s|$)/.test(line) ? 1 : 0);
+        while (stack.length && stack[stack.length - 1].indent >= itemIndent) stack.pop();
+        path = pathOf();
+      }
+    }
+    if (n >= a && path) paths.add(path);
+  }
+  return paths;
 }
 
 function coveredLines(entry, text, errors, where) {
@@ -293,18 +390,24 @@ function checkReadings(block, relectures, roots, contract) {
     }
     const text = readFileSync(abs, "utf8");
     const nLines = countLines(text);
-    reads.push({ abs, text, nLines, covered: coveredLines(entry, text, errors, where) });
+    reads.push({ abs, real: realpathSync(abs), text, nLines, covered: coveredLines(entry, text, errors, where) });
   });
-  const readsOf = (abs) => reads.filter((r) => r.abs === abs);
+  // Un même fichier atteint par deux racines ou par un lien symbolique reste un seul fichier.
+  const readsOf = (abs) => {
+    const real = realpathSync(abs);
+    return reads.filter((r) => r.real === real);
+  };
   const unionCovered = (abs) => new Set(readsOf(abs).flatMap((r) => [...r.covered]));
+  // Ce qui manque aux lectures déclarées pour couvrir les lignes a à b d'un fichier, ou null.
+  const uncovered = (abs, a, b) => {
+    const rs = readsOf(abs);
+    if (rs.length === 0) return "aucune lecture déclarée";
+    const miss = missingRanges(unionCovered(abs), a || 1, b || rs[0].nLines);
+    return miss.length ? `lignes non rendues ${miss.join(", ")}` : null;
+  };
   const requireFile = (label, abs, a, b) => {
-    if (readsOf(abs).length === 0) {
-      errors.push(`${label} : aucune lecture déclarée`);
-      return;
-    }
-    const nLines = readsOf(abs)[0].nLines;
-    const miss = missingRanges(unionCovered(abs), a || 1, b || nLines);
-    if (miss.length) errors.push(`${label} : lignes non rendues ${miss.join(", ")}`);
+    const gap = uncovered(abs, a, b);
+    if (gap) errors.push(`${label} : ${gap}`);
   };
 
   const contractRead = reads.find((r) => r.abs.endsWith("/.claude/prompts/_shared/editorial-review.md"));
@@ -349,18 +452,27 @@ function checkReadings(block, relectures, roots, contract) {
       else requireFile(`relecture ${rel.id}, source ${src}`, abs, range.a, range.b);
     }
   });
-  return errors;
+  return { errors, uncovered };
 }
 
 // ---------------------------------------------------------------------------------------------
 // Une relecture
 // ---------------------------------------------------------------------------------------------
 
-function originalText(orig, roots, errors) {
+function originalText(orig, roots, errors, uncovered) {
   if (!orig || typeof orig !== "object") {
     errors.C2.push("original absent");
     return null;
   }
+  // Une référence fausse rejette même en « partielle » : c'est un champ inexact, pas un manque.
+  const inexact = (msg) => {
+    errors.C2.push(msg);
+    errors.referenceInexacte = [...(errors.referenceInexacte || []), msg];
+  };
+  const unread = (label, abs, range) => {
+    const gap = uncovered(abs, range.a, range.b);
+    if (gap) errors.C2.push(`${label} : plage non rendue par une lecture déclarée (${gap})`);
+  };
   let text;
   let bytes;
   if (typeof orig.texte === "string") {
@@ -382,10 +494,22 @@ function originalText(orig, roots, errors) {
         const range = parseRange(p.lignes, file);
         if (range.error) errors.C2.push(`original.provenance : ${range.error}`);
         else {
+          const where = `${p.chemin}:${p.lignes}`;
+          unread(`original.provenance ${where}`, abs, range);
           const extract = file.split("\n").slice(range.a - 1, range.b).join("\n");
           // Champ YAML entre apostrophes : « '' » s'y écrit pour « ' ».
           if (![extract, extract.replace(/''/g, "'")].some((e) => norm(e).includes(norm(text)))) {
-            errors.C2.push(`original.provenance : texte non retrouvé dans ${p.chemin}:${p.lignes}`);
+            inexact(`original.provenance : texte non retrouvé dans ${where}`);
+          }
+          const zone = structuredZone(abs, file);
+          if (zone && range.a <= zone.b && range.b >= zone.a) {
+            const fields = fieldPaths(file, zone, range.a, range.b);
+            const champ = written(p.champ, "champ") ? p.champ.trim().replace(/\[\d+\]|\.\d+(?=\.|$)/g, "") : null;
+            if (champ === null) {
+              errors.C2.push(`original.provenance ${where} : champ structuré sans provenance.champ, son chemin de clés depuis la racine du document (§10)`);
+            } else if (!fields.has(champ)) {
+              inexact(`original.provenance.champ ${JSON.stringify(p.champ)} : aucun champ de ce chemin aux lignes ${where} (champs : ${[...fields].join(", ") || "aucun"})`);
+            }
           }
         }
       }
@@ -403,6 +527,12 @@ function originalText(orig, roots, errors) {
     if (range.error) {
       errors.C2.push(`original : ${range.error}`);
       return null;
+    }
+    const where = `${orig.chemin}:${orig.lignes}`;
+    unread(`original ${where}`, abs, range);
+    const zone = structuredZone(abs, file);
+    if (zone && range.a <= zone.b && range.b >= zone.a) {
+      inexact(`original ${where} : champ structuré seulement désigné ; les lignes désignées portent la syntaxe du document, pas le texte du champ : le reproduire avec sa provenance (chemin, lignes, champ) (§10)`);
     }
     text = all.slice(range.a - 1, range.b).join("");
     bytes = Buffer.from(text, "utf8");
@@ -499,7 +629,7 @@ function replay(O, changes, id, errors) {
 }
 
 function checkRelecture(rel, ctx) {
-  const { contract, roots } = ctx;
+  const { contract, roots, uncovered } = ctx;
   const id = rel && rel.id ? rel.id : "?";
   const errors = { C2: [], C3: [], C4: [], C5: [], C6: [], C7: [] };
   const soft = [];
@@ -512,7 +642,7 @@ function checkRelecture(rel, ctx) {
     errors.C6.push(`relecture ${id} : ${rel.verdict} sans cause dans raison_aucun_changement`);
   }
 
-  const O = originalText(rel.original, roots, errors);
+  const O = originalText(rel.original, roots, errors, uncovered);
   const steps = rel.etapes && typeof rel.etapes === "object" ? rel.etapes : {};
   for (const k of STEP_KEYS) {
     const s = steps[k];
@@ -553,6 +683,11 @@ function checkRelecture(rel, ctx) {
   if (P === null) {
     errors.C3.push(`relecture ${id} : proposition absente`);
     return { id, errors, soft, blocked };
+  }
+  // Une correction RE-T1 nécessaire et non faite laisse C3 non remplie, liste vide comprise (§1, C3).
+  const leftovers = reT1Leftovers(P);
+  if (leftovers.length) {
+    errors.C3.push(`relecture ${id} : ${leftovers.length} position(s) RE-T1 avec une espace ordinaire dans la proposition (§6), par exemple ${leftovers.slice(0, 3).join(", ")}`);
   }
 
   if (changes) {
@@ -597,19 +732,38 @@ function checkRelecture(rel, ctx) {
 
 // Un original reproduit sans fichier de provenance n'existe que dans la réponse (brouillon de la
 // session). Si la réponse n'affiche ni lui ni la proposition tels quels, mais l'un des deux à la
-// typographie près, l'écart cache un changement RE-Tx non déclaré. Un chemin de provenance qui ne
-// désigne aucun fichier laisse l'original dans ce cas.
-function typoOnlyDisplay(rel, prose, roots) {
+// typographie près, l'écart cache un changement RE-Tx non déclaré ; ligne à ligne, un écart de
+// typographie ou de balisage Markdown montre que l'original n'est pas le brouillon livré tel
+// qu'il est affiché (§10). Sans aucun écart trouvé, l'original reste à vérifier sur le contenu.
+// Un chemin de provenance qui ne désigne aucun fichier laisse l'original dans ce cas.
+function displayCheck(rel, prose, roots) {
   const o = rel.original;
-  if (!o || typeof o !== "object" || typeof o.texte !== "string" || !o.texte.trim()) return null;
-  if (o.provenance && resolvePath(o.provenance.chemin, roots)) return null;
+  if (!o || typeof o !== "object" || typeof o.texte !== "string" || !o.texte.trim()) return {};
+  if (o.provenance && resolvePath(o.provenance.chemin, roots)) return {};
+  const id = rel.id || "?";
   const texts = [["l'original", o.texte], ["la proposition", rel.proposition]].filter(([, t]) => typeof t === "string" && t.trim());
   const shown = norm(prose);
-  if (texts.some(([, t]) => shown.includes(norm(t)))) return null;
+  if (texts.some(([, t]) => shown.includes(norm(t)))) return {};
   const shownTypo = typoShape(shown);
   const match = texts.find(([, t]) => shownTypo.includes(typoShape(norm(t))));
-  if (!match) return null;
-  return `relecture ${rel.id || "?"} : la réponse affiche ${match[0]} du bloc à la typographie près seulement (espaces insécables, guillemets ou apostrophes) : changement RE-Tx non déclaré, ou original qui n'est pas le texte livré`;
+  if (match) {
+    return { ecart: `relecture ${id} : la réponse affiche ${match[0]} du bloc à la typographie près seulement (espaces insécables, guillemets ou apostrophes) : changement RE-Tx non déclaré, ou original qui n'est pas le texte livré` };
+  }
+  // Une ligne affichée telle quelle dans l'un des deux textes explique l'écart de l'autre (changement déclaré).
+  const lines = texts.flatMap(([label, t]) => t.split("\n").map((line) => ({ label, line, l: norm(line) })));
+  const shownAsIs = new Set(lines.filter((x) => shown.includes(x.l)).map((x) => typoShape(x.l)));
+  const shownPlain = typoShape(norm(stripMarkdown(prose)));
+  for (const { label, line, l } of lines) {
+    if (l.length < 20 || words(l).length < 3 || shownAsIs.has(typoShape(l))) continue;
+    if (shownTypo.includes(typoShape(l))) {
+      return { ecart: `relecture ${id} : la réponse affiche la ligne ${JSON.stringify(l)} de ${label} à la typographie près seulement (espaces insécables, guillemets ou apostrophes) : changement RE-Tx non déclaré, ou original qui n'est pas le texte livré` };
+    }
+    const plain = typoShape(norm(stripMarkdown(line)));
+    if (plain.length >= 20 && shownPlain.includes(plain)) {
+      return { ecart: `relecture ${id} : la réponse affiche la ligne ${JSON.stringify(l)} de ${label} au balisage Markdown près (titre, puce, gras, code ou lien) : l'original n'est pas le brouillon livré tel qu'il est affiché (§10)` };
+    }
+  }
+  return { soft: `relecture ${id} : original reproduit sans fichier de provenance, que la réponse n'affiche pas d'un seul tenant : vérifier qu'il reproduit en entier le brouillon livré (§10)` };
 }
 
 const STATE_RE = /relecture(?:\s+[ée]ditoriale)?(?:\s+fran[çc]aise)?\s*[:\-–]?\s*(appliqu[ée]e?s?|partielle)/giu;
@@ -670,17 +824,22 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
   const relectures = Array.isArray(block.relectures) ? block.relectures : [];
   if (relectures.length === 0) report.erreurs.push("relectures : liste absente ou vide");
   const computed = Object.fromEntries(CONDITIONS.map((c) => [c, []]));
-  computed.C1 = checkReadings(block, relectures, roots, contract);
-  const results = relectures.map((rel) => checkRelecture(rel || {}, { contract, roots }));
+  const readings = checkReadings(block, relectures, roots, contract);
+  computed.C1 = readings.errors;
+  const results = relectures.map((rel) => checkRelecture(rel || {}, { contract, roots, uncovered: readings.uncovered }));
   const empreintesFausses = [];
+  const referencesInexactes = [];
   for (const r of results) {
-    for (const c of Object.keys(r.errors)) if (c !== "empreinteFausse") computed[c].push(...r.errors[c]);
+    for (const c of Object.keys(r.errors)) if (c !== "empreinteFausse" && c !== "referenceInexacte") computed[c].push(...r.errors[c]);
     empreintesFausses.push(...(r.errors.empreinteFausse || []));
+    referencesInexactes.push(...(r.errors.referenceInexacte || []));
     report.a_verifier.push(...r.soft);
   }
   const allBlocked = results.length > 0 && results.every((r) => r.blocked);
-  const typoEcarts = relectures.map((rel) => typoOnlyDisplay(rel || {}, prose, roots)).filter(Boolean);
-  computed.C2.push(...typoEcarts);
+  const displays = relectures.map((rel) => displayCheck(rel || {}, prose, roots));
+  const displayEcarts = displays.map((d) => d.ecart).filter(Boolean);
+  computed.C2.push(...displayEcarts);
+  report.a_verifier.push(...displays.map((d) => d.soft).filter(Boolean));
 
   const declared = block.conditions && typeof block.conditions === "object" ? block.conditions : {};
   for (const c of CONDITIONS) {
@@ -697,13 +856,20 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
     else if (d.etat === "non_remplie" && !(typeof d.manque === "string" && d.manque.trim())) report.erreurs.push(`${c} non remplie sans manque nommé`);
     else if (d.etat === "sans_objet" && !(sansObjet && typeof d.cause === "string" && d.cause.trim())) report.erreurs.push(`${c} « sans objet » hors BLOQUÉ_SOURCE / HORS_PÉRIMÈTRE ou sans cause`);
     else if (!["remplie", "non_remplie", "sans_objet"].includes(d.etat)) report.erreurs.push(`${c} : état ${JSON.stringify(d.etat)} inconnu`);
+    // Un manque reprend le dernier rapport du contrôle ou une limite réelle (§1) ; le contrôle ne le voit pas.
+    if (d.etat === "non_remplie" && ok && !sansObjet && typeof d.manque === "string" && d.manque.trim()) {
+      report.a_verifier.push(`${c} déclarée non remplie (manque ${JSON.stringify(d.manque.trim())}) alors que le contrôle la calcule remplie : vérifier que le manque vient du dernier rapport du contrôle ou d'une limite réelle (outil absent, commande interdite, échec de l'outil)`);
+    }
   }
   // Rejet même en « partielle » : une empreinte fausse est un champ fabriqué, pas un manque.
   for (const msg of empreintesFausses) {
     report.erreurs.push(`empreinte fausse — ${msg} ; une empreinte ne se recopie ni ne s'estime : laisser sha256 à null et nommer le manque`);
   }
   // Même règle : un original qui n'est pas le texte livré est un champ inexact, pas un manque.
-  for (const msg of typoEcarts) report.erreurs.push(`original inexact — ${msg}`);
+  for (const msg of displayEcarts) report.erreurs.push(`original inexact — ${msg}`);
+  // Même règle : une référence qui ne désigne pas le texte reproduit, ou un champ structuré désigné
+  // par la seule syntaxe du document, est inexacte, même quand la relecture sort du périmètre.
+  for (const msg of referencesInexactes) report.erreurs.push(`référence inexacte — ${msg}`);
 
   const allMet = CONDITIONS.every((c) => report.conditions[c].calculee !== "non_remplie" && declared[c] && declared[c].etat !== "non_remplie");
   if (etat === "appliquée" && !allMet) {

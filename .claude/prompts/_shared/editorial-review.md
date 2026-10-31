@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.5.0 — 2026-10-31.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.6.0 — 2026-10-31.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -27,6 +27,15 @@
 > lectures arrêtées à une plage fixée d'avance, un contrôle cru interdit par une recette sans
 > écriture, un original retouché sans changement déclaré et des conditions déclarées remplies
 > contre le bloc. Les résultats d'un essai 1.4.0 ne qualifient pas cette version.
+> Pilote 1.6.0 : contrôle mécanique dans tous les états et pour tout verdict, repassé après chaque
+> correction, conditions tirées du dernier rapport, original complet tel qu'affiché, champ
+> structuré reproduit avec son chemin de clés, sources lues sur leur plage et procédure RE-T1
+> position par position, après des essais où le contrôle n'était pas lancé en partielle ni sur un
+> verdict bloqué, où le bloc final n'était pas repassé après deux rejets, où un manque gardait la
+> cause d'un rapport périmé, où l'original était un résumé ou du texte brut à la place du
+> Markdown affiché, où un champ YAML était désigné par une plage fausse, et où la typographie
+> était dite conforme malgré des espaces ordinaires aux positions RE-T1. Les résultats d'un
+> essai 1.5.0 ne qualifient pas cette version.
 
 ## 1. Ce que fait la relecture
 
@@ -57,7 +66,8 @@ produit leur trace dans la sortie.
    S'y ajoute « Fafa, vidéo et social : aucune invention » pour un script ou une copie sociale.
    Les « Exemples AutoMecanik » et l'« Attribution et licence » sont lus en cas de doute.
 2. **Lire les références que le périmètre exige** : les sources du brouillon, sur les plages
-   citées dans `sources` ; le miroir `.claude/canon-mirrors/marketing-voice.md` en entier, pas
+   citées dans `sources`, chacune couverte par une lecture déclarée dans `lectures` (export,
+   fichier de données ou proposition compris : une source non lue ne se cite pas) ; le miroir `.claude/canon-mirrors/marketing-voice.md` en entier, pas
    seulement ses interdits et ses mentions obligatoires ; `fafa-persona-canon` en entier pour un
    script Fafa.
 3. **Consigner les lectures** : pour chaque fichier, les sections lues, désignées par leur titre.
@@ -77,8 +87,8 @@ produit leur trace dans la sortie.
    - faire le contrôle de fidélité, catégorie par catégorie ;
    - rendre le verdict.
 5. **Déclarer l'état** : écrire « relecture appliquée » seulement si le « Contrôle avant
-   déclaration » ci-dessous est rempli et si son contrôle mécanique rend `appliquee` sur le
-   bloc final. Sinon, écrire « relecture partielle » et nommer les
+   déclaration » ci-dessous est rempli et si son contrôle mécanique rend `appliquee` sur la
+   sortie livrée, bloc final compris. Sinon, écrire « relecture partielle » et nommer les
    sections non lues, les références manquantes, les étapes non exécutées et les conditions non
    remplies. La règle vaut pour toute mention de la relecture dans la sortie, liste d'étapes et
    résumé compris, et pas seulement pour le bloc final.
@@ -104,6 +114,8 @@ rien à confronter.
   proposition, un code RE-xx ou RE-Tx et sa raison ; rejoués dans l'ordre, ils mènent de
   l'original à la proposition. Sinon, la liste est vide, le verdict est
   `AUCUN_CHANGEMENT_UTILE` avec sa raison écrite et la proposition est identique à l'original.
+  Dans les deux cas, aucune position RE-T1 de la proposition ne garde une espace ordinaire
+  (§6) : une correction typographique nécessaire et non faite laisse C3 non remplie.
 - **C4 Signalements** : chaque entrée a son extrait exact, son type F-x, sa source citée (ou
   « aucune ») et sa formulation sourcée ou `null`. Sinon, la liste est `[]`.
 - **C5 Fidélité** : une ligne par catégorie du §3, soit cinq, avec `inchangé` ou l'écart exact,
@@ -111,7 +123,9 @@ rien à confronter.
 - **C6 Verdict** : l'une des quatre valeurs de « Sortie attendue ».
 - **C7 Étapes** : chaque étape du point 4 a sa trace ; une étape non exécutée est nommée.
 
-Avec `BLOQUÉ_SOURCE` ou `HORS_PÉRIMÈTRE`, C3 à C5 sont « sans objet », avec leur cause. Le
+Avec `BLOQUÉ_SOURCE` ou `HORS_PÉRIMÈTRE`, C3 à C5 sont « sans objet », avec leur cause. Un
+verdict bloqué ne dispense ni de C1, ni de C2, ni du contrôle mécanique : l'original désigné ou
+reproduit doit être exact, même quand sa relecture sort du périmètre. Le
 résultat de chaque condition (remplie, ou ce qui manque) est écrit dans `conditions` du bloc
 final. « Relecture appliquée » exige C1 à C7 remplies ; sinon, « relecture partielle » avec les
 conditions non remplies. Aucune condition ne se remplit par un contenu qui n'a pas eu lieu :
@@ -128,7 +142,18 @@ pour le satisfaire. Il ne lit que l'entrée standard et les fichiers que le bloc
 n'écrit rien et n'accède ni au réseau ni à une base. Une consigne qui interdit d'écrire ou de
 lancer une commande qui écrit ne l'interdit donc pas ; seuls l'absence d'outil d'exécution ou
 l'interdiction de toute commande l'empêchent. Sans outil d'exécution, la relecture reste
-partielle et cette cause est nommée. Le validateur du circuit relance ce contrôle sur la sortie reçue : une déclaration qu'il
+partielle et cette cause est nommée.
+
+Le contrôle se fait dans tous les états, « relecture partielle » comprise, et pour tout verdict,
+`BLOQUÉ_SOURCE` et `HORS_PÉRIMÈTRE` compris. Il est repassé après chaque correction de la sortie,
+jusqu'au dernier passage : la sortie livrée est exactement la dernière entrée contrôlée, bloc
+final compris, sans retouche ensuite. Les `conditions` et leurs `manque` reprennent ce dernier
+rapport. Un `manque` nomme sa cause réelle : l'écart que ce rapport relève, ou une limite
+effective (pas d'outil d'exécution, toute commande interdite par la demande, échec de l'outil
+avec son message). La cause d'un rapport antérieur, que la correction a levée, n'est jamais
+reprise. Ne pas lancer le contrôle n'est admis que sur une telle limite, nommée dans `lecture`.
+
+Le validateur du circuit relance ce contrôle sur la sortie reçue : une déclaration qu'il
 ne confirme pas est traitée comme « relecture partielle » ou rejetée. Il ne juge ni la
 pertinence d'une règle RE ni la fidélité de sens, et ne voit pas la trace des lectures : ces
 points restent au contrôle du contenu.
@@ -305,6 +330,13 @@ jamais sur les termes techniques.
 
 - **RE-T1** Espace insécable avant « ; : ! ? », à l'intérieur des guillemets, entre un nombre et
   son unité (« 3 mm ») et dans les milliers (« 1 090 kg »).
+  Procédure : relever dans la proposition chaque position, une par une (chaque « ; : ! ? »
+  précédé d'une espace, chaque guillemet « et », chaque nombre suivi d'une unité, chaque nombre
+  de plus de trois chiffres groupés), et vérifier que l'espace y est insécable (U+00A0 ou
+  U+202F). Une espace ordinaire à l'une de ces positions est un changement RE-T1 de l'original
+  vers la proposition. La typographie n'est jamais dite conforme sans ce relevé. Les intertitres,
+  les tableaux, le code et les URL gardent leur typographie : un défaut s'y signale, il ne s'y
+  corrige pas.
 - **RE-T2** Guillemets français « » ; guillemets anglais seulement à l'intérieur d'une citation.
 - **RE-T3** Accents, y compris sur les capitales (« État », « À »). Dans un libellé venu de la
   base, le défaut se signale à la source (§3).
@@ -410,7 +442,10 @@ Pour chaque brouillon :
 - **`original`** : chemin ou table + identifiant, et sha256 du texte relu. Il n'est jamais
   modifié. Un brouillon rédigé dans la session, sans fichier, est reproduit ici en entier,
   séparé de la proposition, octet pour octet tel que la réponse l'affiche : aucune espace
-  insécable, apostrophe ou guillemet n'y est ajouté ni retiré. Une correction typographique est
+  insécable, apostrophe ou guillemet n'y est ajouté ni retiré. L'original est le brouillon livré
+  entier, intertitres, listes, gras et autres balises Markdown compris, dans l'ordre affiché ; un
+  résumé, un extrait ou une version en texte brut d'un brouillon affiché en Markdown n'est pas
+  l'original. Une correction typographique est
   un changement RE-Tx de l'original vers la proposition. Reproduire n'exige aucun outil ; sans
   outil, seul `sha256` reste `null`. Le sha256 est calculé par un outil sur ce texte exact, jamais
   recopié ni estimé ; s'il ne peut pas l'être, le manque est nommé et la relecture est partielle.
@@ -418,8 +453,11 @@ Pour chaque brouillon :
   internes (§4.1). Son statut de brouillon et ses limites figurent dans la revue séparée.
 - **`changements`** : la liste `{avant, après, règle, raison}`, avec un code de règle RE-xx ou
   RE-Tx. Une entrée par changement : `avant` cite l'original mot pour mot et `après` la
-  proposition. Une phrase de synthèse ou une liste de codes n'est pas une entrée. Liste vide
-  seulement avec `AUCUN_CHANGEMENT_UTILE`.
+  proposition. Une phrase de synthèse ou une liste de codes n'est pas une entrée. Les
+  corrections RE-Tx d'un même segment peuvent former une seule entrée, `avant` et `après` étant
+  ce segment entier, s'il ne porte aucun autre changement ; les entrées ne se chevauchent pas.
+  Liste vide seulement avec `AUCUN_CHANGEMENT_UTILE`, `BLOQUÉ_SOURCE` ou `HORS_PÉRIMÈTRE`, et sa
+  raison ; `AUCUN_CHANGEMENT_UTILE` suppose qu'aucune position RE-T1 ne reste à corriger (§6).
 - **`signalements_de_fond`** : la liste `{extrait, type, source citée, formulation sourcée
   proposée ou null}`, ou `[]` s'il n'y en a aucun. Ces signalements ne sont jamais appliqués
   dans la proposition. Types :
@@ -448,7 +486,7 @@ suit ce livrable. La prose peut présenter ces champs, sans les contredire :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.5.0", "etat_declare": "partielle",
+  "contrat": "editorial-review", "version": "1.6.0", "etat_declare": "partielle",
   "lectures": [{"chemin": "…", "plages": ["1-120"], "masquees": [], "sections": ["…"], "tronque": false}],
   "relectures": [{
     "id": "plan-r3", "format": "prose", "sources": ["chemin/de/la/source.md:10-40"],
@@ -476,8 +514,11 @@ suit ce livrable. La prose peut présenter ces champs, sans les contredire :
 - `original` : reproduit (`texte`, `fins_de_ligne` `LF` ou `CRLF`, `saut_final`, `provenance`
   facultative) ou désigné (`chemin`, `lignes`, sans `texte`) ; `sha256` porte sur les octets UTF-8
   du texte reproduit selon cette convention, ou sur les lignes désignées avec leurs fins de
-  ligne. Un champ d'un fichier YAML, JSON ou d'un frontmatter est reproduit, avec sa provenance.
-  Sans outil, `sha256` vaut `null` et C2 est non remplie.
+  ligne. Une plage désignée est celle qu'une lecture déclarée a rendue. Un champ d'un fichier
+  YAML, JSON ou d'un frontmatter n'est jamais seulement désigné : il est reproduit, avec
+  `provenance.chemin`, `provenance.lignes` (les lignes du champ) et `provenance.champ`, son chemin
+  de clés depuis la racine du document (par exemple
+  `entity_data.editorial.selection_criteria.content_md`). Sans outil, `sha256` vaut `null` et C2 est non remplie.
 - `changements` : appliqués dans l'ordre, chaque `avant` apparaît une seule fois dans le texte
   courant ; espaces et retours à la ligne mis à part, le résultat est la proposition. Une
   suppression a `"apres": ""`. Une liste vide a sa `raison_aucun_changement`.

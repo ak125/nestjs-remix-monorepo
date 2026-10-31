@@ -32,6 +32,8 @@ imports ou le chargement des `.claude/rules/` de Claude Code.
 - Relecture française : `.claude/prompts/_shared/editorial-review.md`, lu seul dans sa
   commande jusqu'à sa dernière ligne, « Sortie attendue » et son bloc final compris.
 - Chargement et limites par agent : `.claude/knowledge/workspaces.md`.
+- Un fichier d'instructions se lit seul dans sa commande. Une sortie coupée se
+  relit par plages jusqu'à la dernière ligne du fichier avant de compter comme lue.
 
 ## Format de sortie
 
@@ -45,4 +47,7 @@ Sinon, écrire « relecture partielle » et nommer les conditions non remplies.
 Dans les deux cas, la réponse se termine par le bloc final JSON de « Sortie attendue », C1 à
 C7 déclarées une à une. Le contrôle `node scripts/agents/check-editorial-review.mjs` reçoit la
 sortie sur l'entrée standard et lit sans écrire : une consigne « n'écris rien, ne lance aucune
-commande qui écrit » ne l'interdit pas.
+commande qui écrit » ne l'interdit pas. Il se lance dans les deux états et pour tout verdict,
+`HORS_PÉRIMÈTRE` et `BLOQUÉ_SOURCE` compris, puis se repasse après chaque correction : la sortie
+livrée est la dernière entrée contrôlée, et ses conditions reprennent ce dernier rapport, ou une
+limite réelle nommée.

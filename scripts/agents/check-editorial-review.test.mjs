@@ -2,7 +2,9 @@
 // Tests de check-editorial-review.mjs — fixtures synthétiques minimales.
 // Chaque cas rejeté reproduit, sur un texte inventé, un défaut observé en recette
 // (empreinte sur une autre représentation, liste vide sans raison, RE-16/RE-23 qui
-// changent l'information, conditions non nommées, lecture tronquée comptée).
+// changent l'information, conditions non nommées, lecture tronquée comptée, espace ordinaire
+// restée aux positions RE-T1, original en texte brut d'un brouillon affiché en Markdown, champ
+// structuré désigné par une plage ou sans son chemin de clés, plage d'original non lue).
 // Run: node --test scripts/agents/check-editorial-review.test.mjs
 // =============================================================================
 import { test, describe, before, after } from "node:test";
@@ -31,8 +33,11 @@ const VOICE = ".claude/canon-mirrors/marketing-voice.md";
 const lineCount = (p) => readFileSync(p, "utf8").replace(/\n$/, "").split("\n").length;
 const sha = (s) => createHash("sha256").update(s, "utf8").digest("hex");
 
-const O = "Le filtre à huile est une pièce essentielle qui retient les impuretés du circuit. Ne le remplacez pas moteur chaud : selon le moteur, l'huile peut dépasser 100 °C.";
-const P = "Le filtre à huile retient les impuretés du circuit. Ne le remplacez pas moteur chaud : selon le moteur, l'huile peut dépasser 100 °C.";
+// Insécables aux positions RE-T1 (§6) ; O_PLAIN est le même texte en espaces ordinaires.
+const NB = "\u00a0";
+const O = `Le filtre à huile est une pièce essentielle qui retient les impuretés du circuit. Ne le remplacez pas moteur chaud${NB}: selon le moteur, l'huile peut dépasser 100${NB}°C.`;
+const P = `Le filtre à huile retient les impuretés du circuit. Ne le remplacez pas moteur chaud${NB}: selon le moteur, l'huile peut dépasser 100${NB}°C.`;
+const O_PLAIN = O.replace(/\u00a0/g, " ");
 
 let dir;
 let source;
@@ -96,6 +101,24 @@ function blockedBlock() {
   return b;
 }
 
+// Aucun changement : la proposition reprend l'original.
+function unchangedBlock(text, etat = "appliquée") {
+  const b = block({ original: text, proposition: text, changements: [], etat });
+  b.relectures[0].verdict = "AUCUN_CHANGEMENT_UTILE";
+  b.relectures[0].raison_aucun_changement = "texte déjà direct, positions RE-T1 relevées une par une";
+  return b;
+}
+
+// Fiche à frontmatter imbriqué, lue en entier : le champ est en ligne 5, sous trois clés.
+function nestedFiche(b, name) {
+  const fiche = join(dir, name);
+  writeFileSync(fiche, `---\nentity_data:\n  editorial:\n    selection_criteria:\n      content_md: '${O.replace(/'/g, "''")}'\n    status: draft\n---\n\n# Corps\n`);
+  b.lectures.push({ chemin: fiche, plages: [`1-${lineCount(fiche)}`], masquees: [], sections: ["toutes"], tronque: false });
+  return fiche;
+}
+const FIELD = "entity_data.editorial.selection_criteria.content_md";
+const MD = `## Filtre à huile\n\n- **Rôle**${NB}: retient les impuretés du circuit.\n- **Précaution**${NB}: ne le remplacez pas moteur chaud.`;
+
 const output = (b, prose = "Relecture : voir le bloc final.") => `${prose}\n\n\`\`\`json\n${JSON.stringify(b, null, 2)}\n\`\`\`\n`;
 const run = (text) => checkOutput(text, { roots: [REPO, dir] });
 const errors = (r) => r.erreurs.join("\n");
@@ -125,8 +148,8 @@ describe("cas acceptés", () => {
 
   test("RE-T2 ne change que les guillemets : appliquee", () => {
     const o = 'Le guide dit "vissé" pour ce montage.';
-    const p = "Le guide dit « vissé » pour ce montage.";
-    const b = block({ original: o, proposition: p, changements: [{ avant: '"vissé"', apres: "« vissé »", regle: "RE-T2", raison: "guillemets français dans la prose" }] });
+    const p = `Le guide dit «${NB}vissé${NB}» pour ce montage.`;
+    const b = block({ original: o, proposition: p, changements: [{ avant: '"vissé"', apres: `«${NB}vissé${NB}»`, regle: "RE-T2", raison: "guillemets français dans la prose" }] });
     const r = run(output(b));
     assert.equal(r.resultat, "appliquee", errors(r));
   });
@@ -150,8 +173,9 @@ describe("cas acceptés", () => {
 
   test("original reproduit d'un champ YAML entre apostrophes, avec sa provenance : appliquee", () => {
     const fiche = join(dir, "fiche.md");
-    writeFileSync(fiche, `---\nchamp:\n  content_md: '${O.replace(/'/g, "''").replace(" : ", "\n    : ")}'\n---\n`);
+    writeFileSync(fiche, `---\nchamp:\n  content_md: '${O.replace(/'/g, "''").replace(" selon le moteur", "\n    selon le moteur")}'\n---\n`);
     const b = block();
+    b.lectures.push({ chemin: fiche, plages: ["1-5"], masquees: [], sections: ["toutes"], tronque: false });
     b.relectures[0].original.provenance = { chemin: fiche, lignes: "2-4", champ: "champ.content_md" };
     const r = run(output(b));
     assert.equal(r.resultat, "appliquee", errors(r));
@@ -165,9 +189,9 @@ describe("cas acceptés", () => {
   });
 
   test("insécable posée par un RE-T1 déclaré, proposition affichée : appliquee", () => {
-    const p = O.replace(" : ", " : ");
-    const b = block({ proposition: p, changements: [{ avant: "chaud : selon", apres: "chaud : selon", regle: "RE-T1", raison: "espace insécable avant les deux-points" }] });
-    const r = run(output(b, `Proposition :\n\n${p}\n\nRelecture appliquée.`));
+    const o = O.replace(`${NB}:`, " :");
+    const b = block({ original: o, proposition: O, changements: [{ avant: "chaud : selon", apres: `chaud${NB}: selon`, regle: "RE-T1", raison: "espace insécable avant les deux-points" }] });
+    const r = run(output(b, `Proposition :\n\n${O}\n\nRelecture appliquée.`));
     assert.equal(r.resultat, "appliquee", errors(r));
   });
 
@@ -196,17 +220,50 @@ describe("cas acceptés", () => {
     assert.equal(r.conditions.C6.calculee, "remplie", errors(r));
     assert.equal(r.resultat, "partielle", errors(r));
   });
+
+  test("brouillon Markdown reproduit tel qu'affiché, intertitre et puces compris : appliquee", () => {
+    const r = run(output(unchangedBlock(MD), `Brouillon :\n\n${MD}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("intertitre, tableau, code et URL gardent leur typographie : positions non relevées", () => {
+    const t = ["## Vidange : étapes", "", "| Couple | 25 Nm |", "|---|---|", "", `Serrez \`vis : M6\` sans forcer, voir https://exemple.fr/guide${NB}: détail.`, "", "```", "couple : 25 Nm", "```"].join("\n");
+    const r = run(output(unchangedBlock(t)));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("reliquat RE-T1 déclaré par C3 non remplie, avec son manque : partielle", () => {
+    const b = unchangedBlock(O_PLAIN, "partielle");
+    b.conditions.C3 = { etat: "non_remplie", manque: "deux positions RE-T1 en espace ordinaire relevées par le contrôle, non corrigées" };
+    const r = run(output(b));
+    assert.equal(r.resultat, "partielle", errors(r));
+  });
+
+  test("champ de frontmatter reproduit avec son chemin de clés depuis la racine : appliquee", () => {
+    const b = block();
+    b.relectures[0].original.provenance = { chemin: nestedFiche(b, "fiche-cles.md"), lignes: "5", champ: FIELD };
+    const r = run(output(b));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("condition déclarée non remplie que le contrôle calcule remplie : point à vérifier", () => {
+    const b = block({ etat: "partielle" });
+    b.conditions.C4 = { etat: "non_remplie", manque: "signalements non relus" };
+    const r = run(output(b, "Relecture partielle : C4 non remplie."));
+    assert.equal(r.resultat, "partielle", errors(r));
+    assert.ok(r.a_verifier.some((s) => /C4 déclarée non remplie .* calcule remplie/.test(s)), r.a_verifier.join("\n"));
+  });
 });
 
 describe("cas rejetés", () => {
   test("original du bloc qui ne diffère du brouillon affiché que par des insécables, même en partielle", () => {
-    const o = O.replace(" : ", " : ").replace("100 °C", "100 °C");
+    const o = O;
     const b = block({ original: o, proposition: o, changements: [], etat: "partielle" });
     b.relectures[0].verdict = "AUCUN_CHANGEMENT_UTILE";
     b.relectures[0].raison_aucun_changement = "insécables déjà posées, rien à changer";
     b.relectures[0].original.sha256 = null;
     b.conditions.C2 = { etat: "non_remplie", manque: "aucun outil d'exécution pour calculer le sha256" };
-    const r = run(output(b, `Brouillon :\n\n${O}\n\nRelecture partielle : C2 non remplie.`));
+    const r = run(output(b, `Brouillon :\n\n${O_PLAIN}\n\nRelecture partielle : C2 non remplie.`));
     assert.equal(r.resultat, "rejetee");
     assert.match(errors(r), /original inexact.*typographie près/);
   });
@@ -238,14 +295,14 @@ describe("cas rejetés", () => {
   });
 
   test("provenance dont le chemin ne désigne aucun fichier : le brouillon reste confronté au texte affiché", () => {
-    const o = O.replace(" : ", " : ");
+    const o = O;
     const b = block({ original: o, proposition: o, changements: [], etat: "partielle" });
     b.relectures[0].verdict = "AUCUN_CHANGEMENT_UTILE";
     b.relectures[0].raison_aucun_changement = "insécable déjà posée, rien à changer";
     b.relectures[0].original.sha256 = null;
     b.relectures[0].original.provenance = { chemin: "réponse finale de cette session, section b", lignes: "1-2", champ: "texte" };
     b.conditions.C2 = { etat: "non_remplie", manque: "aucun outil d'exécution pour calculer le sha256" };
-    const r = run(output(b, `Brouillon :\n\n${O}\n\nRelecture partielle : C2 non remplie.`));
+    const r = run(output(b, `Brouillon :\n\n${O_PLAIN}\n\nRelecture partielle : C2 non remplie.`));
     assert.equal(r.resultat, "rejetee");
     assert.match(errors(r), /original inexact.*typographie près/);
   });
@@ -360,7 +417,7 @@ describe("cas rejetés", () => {
   });
 
   test("différence entre la proposition et les changements déclarés", () => {
-    const b = block({ proposition: P.replace("100 °C", "120 °C") });
+    const b = block({ proposition: P.replace(`100${NB}°C`, `120${NB}°C`) });
     const r = run(output(b));
     assert.equal(r.resultat, "rejetee");
     assert.match(errors(r), /différences non déclarées/);
@@ -433,6 +490,66 @@ describe("cas rejetés", () => {
   test("deux blocs editorial-review", () => {
     const text = output(block()) + output(block());
     assert.equal(run(text).resultat, "rejetee");
+  });
+
+  test("espace ordinaire restée aux positions RE-T1, liste vide comprise", () => {
+    const P_PLAIN = P.replace(/ /g, " ");
+    for (const b of [unchangedBlock(O_PLAIN), block({ original: O_PLAIN, proposition: P_PLAIN }), unchangedBlock(`${MD}\n- Couple : 25 Nm.`)]) {
+      const r = run(output(b));
+      assert.equal(r.resultat, "rejetee");
+      assert.match(errors(r), /C3 déclarée remplie, contredite.*\d position\(s\) RE-T1 avec une espace ordinaire/);
+    }
+  });
+
+  test("original en texte brut d'un brouillon affiché en Markdown", () => {
+    const plain = MD.replace(/^## /, "").replace(/^- /gm, "").replace(/\*\*/g, "");
+    const r = run(output(unchangedBlock(plain), `Brouillon :\n\n${MD}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /original inexact.*au balisage Markdown près/);
+  });
+
+  test("champ de frontmatter reproduit sans son chemin de clés, ou sous un autre chemin, même en partielle", () => {
+    const b = block();
+    b.relectures[0].original.provenance = { chemin: nestedFiche(b, "fiche-sans-champ.md"), lignes: "5" };
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /C2 déclarée remplie, contredite.*champ structuré sans provenance\.champ/);
+
+    const p = block({ etat: "partielle" });
+    p.relectures[0].original.provenance = { chemin: nestedFiche(p, "fiche-champ-faux.md"), lignes: "5", champ: "entity_data.editorial.content_md" };
+    p.conditions.C2 = { etat: "non_remplie", manque: "empreinte non vérifiée" };
+    const rp = run(output(p));
+    assert.equal(rp.resultat, "rejetee");
+    assert.match(errors(rp), /référence inexacte.*aucun champ de ce chemin aux lignes/);
+  });
+
+  test("champ de frontmatter seulement désigné, même hors périmètre", () => {
+    const b = blockedBlock();
+    const fiche = nestedFiche(b, "fiche-designee.md");
+    const line = readFileSync(fiche, "utf8").split("\n")[4];
+    b.relectures[0].original = { chemin: fiche, lignes: "5", sha256: sha(`${line}\n`) };
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /référence inexacte.*champ structuré seulement désigné/);
+  });
+
+  test("original désigné sur des lignes qu'aucune lecture déclarée n'a rendues", () => {
+    const brouillon = join(dir, "brouillon.md");
+    writeFileSync(brouillon, `${O}\n`);
+    const b = block();
+    b.relectures[0].original = { chemin: brouillon, lignes: "1", sha256: sha(`${O}\n`) };
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /C2 déclarée remplie, contredite.*plage non rendue par une lecture déclarée \(aucune lecture déclarée\)/);
+  });
+
+  test("provenance qui ne contient pas le texte reproduit, en partielle", () => {
+    const b = block({ etat: "partielle" });
+    b.relectures[0].original.provenance = { chemin: source, lignes: "1-4", champ: "corps" };
+    b.conditions.C2 = { etat: "non_remplie", manque: "empreinte non vérifiée" };
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /référence inexacte.*texte non retrouvé/);
   });
 });
 
