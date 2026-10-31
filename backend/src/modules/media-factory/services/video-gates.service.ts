@@ -71,7 +71,12 @@ export function approvalStagesOf(
  * Pattern identique a HardGatesService :
  *  - Chaque gate retourne VideoGateResult (verdict + measured + thresholds)
  *  - runAllGates() execute les 7 gates et retourne VideoGateOutput
- *  - canPublish = true ssi aucun gate FAIL
+ *  - une mesure absente (durée, similarité, script, rôles visuels) donne WARN
+ *    avec `measured: null` : le brouillon avance, la publication reste fermée ;
+ *    une mesure invalide (non finie, hors bornes) donne FAIL
+ *  - canPublish = aucun FAIL, aucune mesure absente, et chaque WARN mesuré
+ *    couvert par l'approbation `final_publish` signée ; cette approbation ne
+ *    remplace jamais une mesure absente
  *
  * @see backend/src/modules/admin/services/hard-gates.service.ts
  */
@@ -97,6 +102,13 @@ export class VideoGatesService {
 
     const flags: string[] = [];
     let canPublish = true;
+    const publishApproved =
+      approvalStagesOf(input.approvalRecord)?.some(
+        (s) =>
+          s.stage === 'final_publish' &&
+          s.status === 'approved' &&
+          !!s.by?.trim(),
+      ) ?? false;
 
     for (const g of gates) {
       if (g.verdict === 'FAIL') {
@@ -104,6 +116,13 @@ export class VideoGatesService {
         flags.push(`GATE_FAIL:${g.gate}`);
       } else if (g.verdict === 'WARN') {
         flags.push(`GATE_WARN:${g.gate}`);
+        if (g.measured === null) {
+          canPublish = false;
+          flags.push(`NOT_MEASURED:${g.gate}`);
+        } else if (!publishApproved) {
+          canPublish = false;
+          flags.push(`REVIEW_REQUIRED:${g.gate}`);
+        }
       }
     }
 
@@ -124,8 +143,8 @@ export class VideoGatesService {
     const hasBrief = !!input.brief;
     const hasClaimTable =
       Array.isArray(input.claims) && input.claims.length > 0;
-    const hasEvidencePack =
-      Array.isArray(input.evidencePack) && input.evidencePack.length >= 0;
+    // Un pack vide reste conforme au schéma ; G1 juge le soutien de chaque fait.
+    const hasEvidencePack = Array.isArray(input.evidencePack);
     const hasDisclaimerPlan =
       !!input.disclaimerPlan && Array.isArray(input.disclaimerPlan.disclaimers);
     const hasApprovalRecord = approvalStagesOf(input.approvalRecord) !== null;
@@ -234,9 +253,7 @@ export class VideoGatesService {
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.brand_violations;
 
     if (!scriptText) {
-      return this.makeResult('brand', 'PASS', 0, warn, fail, [
-        'No script text to check',
-      ]);
+      return this.notMeasured('brand', warn, fail, 'No script text to check');
     }
 
     const mode: VideoMode = brief?.mode ?? 'socle';
@@ -288,12 +305,24 @@ export class VideoGatesService {
     const tolerance = VIDEO_GATE_THRESHOLDS.platform_duration_tolerance;
 
     if (!brief || actualDurationSec == null) {
-      return this.makeResult('platform', 'PASS', 0, 0, 1, [
-        'No duration data — skipping platform gate',
-      ]);
+      return this.notMeasured('platform', 0, tolerance, 'No duration data');
     }
 
     const range = VIDEO_DURATION_RANGES[brief.type];
+    if (!range || !this.isFiniteNumber(actualDurationSec, 0, Infinity)) {
+      return this.invalidMeasure(
+        'platform',
+        0,
+        tolerance,
+        range
+          ? `Invalid duration: ${String(actualDurationSec)}`
+          : `Unknown video type: ${String(brief.type)}`,
+      );
+    }
+    if (actualDurationSec === 0) {
+      return this.invalidMeasure('platform', 0, tolerance, 'Duration is 0s');
+    }
+
     const minWithTolerance = range.min * (1 - tolerance);
     const maxWithTolerance = range.max * (1 + tolerance);
 
@@ -327,7 +356,23 @@ export class VideoGatesService {
     const { similarityScore } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.reuse_similarity;
 
-    const score = similarityScore ?? 0;
+    if (similarityScore == null) {
+      return this.notMeasured(
+        'reuse_risk',
+        warn,
+        fail,
+        'No similarity score: originality not measured',
+      );
+    }
+    if (!this.isFiniteNumber(similarityScore, 0, 1)) {
+      return this.invalidMeasure(
+        'reuse_risk',
+        warn,
+        fail,
+        `Invalid similarity score (expected 0-1): ${String(similarityScore)}`,
+      );
+    }
+    const score = similarityScore;
 
     return this.makeResult(
       'reuse_risk',
@@ -345,7 +390,23 @@ export class VideoGatesService {
     const { visualRoleViolations } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.visual_role_violations;
 
-    const count = visualRoleViolations?.length ?? 0;
+    if (visualRoleViolations == null) {
+      return this.notMeasured(
+        'visual_role',
+        warn,
+        fail,
+        'No visual role check recorded',
+      );
+    }
+    if (!Array.isArray(visualRoleViolations)) {
+      return this.invalidMeasure(
+        'visual_role',
+        warn,
+        fail,
+        'Invalid visual role violations (expected a list)',
+      );
+    }
+    const count = visualRoleViolations.length;
 
     return this.makeResult(
       'visual_role',
@@ -358,7 +419,7 @@ export class VideoGatesService {
           ? 'All visuals used as illustration (correct)'
           : `${count} visual(s) used as proof without validation`,
       ],
-      visualRoleViolations?.map((v) => ({
+      visualRoleViolations.map((v) => ({
         location: v.assetKey,
         issue: `${v.visualType} used as ${v.usedAs} (expected: illustration)`,
       })),
@@ -404,14 +465,47 @@ export class VideoGatesService {
     fail: number,
   ): GateVerdict {
     if (measured >= fail) return 'FAIL';
-    if (measured >= warn) return 'WARN';
+    // Zéro violation ou similarité nulle n'est jamais un avertissement : pour
+    // les gates STRICT (warn=0, fail=1), seule une violation compte.
+    if (measured > 0 && measured >= warn) return 'WARN';
     return 'PASS';
+  }
+
+  private isFiniteNumber(value: unknown, min: number, max: number): boolean {
+    return (
+      typeof value === 'number' &&
+      Number.isFinite(value) &&
+      value >= min &&
+      value <= max
+    );
+  }
+
+  private notMeasured(
+    gate: VideoGateName,
+    warnThreshold: number,
+    failThreshold: number,
+    detail: string,
+  ): VideoGateResult {
+    return this.makeResult(gate, 'WARN', null, warnThreshold, failThreshold, [
+      `${detail} — required before final publication`,
+    ]);
+  }
+
+  private invalidMeasure(
+    gate: VideoGateName,
+    warnThreshold: number,
+    failThreshold: number,
+    detail: string,
+  ): VideoGateResult {
+    return this.makeResult(gate, 'FAIL', null, warnThreshold, failThreshold, [
+      detail,
+    ]);
   }
 
   private makeResult(
     gate: VideoGateName,
     verdict: GateVerdict,
-    measured: number,
+    measured: number | null,
     warnThreshold: number,
     failThreshold: number,
     details: string[],

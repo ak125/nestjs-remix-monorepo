@@ -204,6 +204,9 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         evidencePack: production.evidencePack ?? [],
         disclaimerPlan: production.disclaimerPlan!,
         approvalRecord: production.approvalRecord!,
+        // Durée, similarité et rôles visuels n'ont pas de producteur ici :
+        // ces gates restent NOT_MEASURED et ferment canPublish.
+        scriptText: production.scriptText ?? undefined,
       };
 
       // ── Step 5: Run all gates ──

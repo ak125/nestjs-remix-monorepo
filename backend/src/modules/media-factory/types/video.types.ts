@@ -142,7 +142,8 @@ export interface VideoGateResult {
   gate: VideoGateName;
   verdict: GateVerdict;
   details: string[];
-  measured: number;
+  /** `null` : mesure absente (WARN) ou invalide (FAIL), jamais 0 par défaut. */
+  measured: number | null;
   warnThreshold: number;
   failThreshold: number;
   triggerItems?: Array<{
