@@ -662,7 +662,17 @@ function connectedWikiFixture(t, mode = 'ok') {
   const fixture = wikiAdmissionFixture(t);
   const processes=require('node:child_process');
   const nativeSpawn=processes.spawnSync;
-  t.mock.method(processes,'spawnSync',(exe,args,options)=>nativeSpawn(exe,exe===process.execPath ? args.slice(1) : args,options));
+  // One mock per method/context: stacking a second mock restores the first
+  // wrapper at teardown and contaminates later CLI tests.
+  t.mock.method(processes, 'spawnSync', (exe, args, options) => {
+    if (mode === 'timeout') {
+      assert.equal(options.shell, false);
+      assert.equal(options.timeout, 60000);
+      assert.equal(options.maxBuffer, 4 * 1024 * 1024);
+      return { error: Object.assign(new Error('timeout'), { code: 'ETIMEDOUT' }), status: null };
+    }
+    return nativeSpawn(exe, exe === process.execPath ? args.slice(1) : args, options);
+  });
   const authority = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'fafa-authority-'));
   t.after(() => { assert.equal(path.dirname(fs.realpathSync(authority)), fs.realpathSync(os.tmpdir())); fs.rmSync(authority, {recursive:true}); });
   fs.mkdirSync(path.join(authority, '_scripts'));
@@ -722,11 +732,7 @@ test('authority cannot execute from submitted dossier', (t) => {
   assert.equal(result.wikiAdmission.reason,'WIKI_AUTHORITY_UNAVAILABLE');assert.equal(result.claimsReady,false);
 });
 test('authority timeout is observable and bounded', (t) => {
-  const fixture=connectedWikiFixture(t);
-  t.mock.method(require('node:child_process'),'spawnSync',(_exe,_args,options)=>{
-    assert.equal(options.shell,false);assert.equal(options.timeout,60000);assert.equal(options.maxBuffer,4*1024*1024);
-    return {error:Object.assign(new Error('timeout'),{code:'ETIMEDOUT'}),status:null};
-  });
+  const fixture=connectedWikiFixture(t, 'timeout');
   const result=require('./fafa-pilot-governance.cjs').evaluateDossier(fixture.dir,fixture.config);
   assert.equal(result.wikiAdmission.reason,'WIKI_AUTHORITY_UNAVAILABLE');
   assert.equal(result.claimsReady,false);
@@ -935,4 +941,15 @@ test('approval record rejects null measurements for passing or counted gates', (
       assert.equal(validate(candidate), false, `${gate}/${verdict} must not accept an absent measurement`);
     }
   }
+});
+
+// The CLI must reject malformed invocation without printing a usable dossier.
+test('CLI rejects extra positional arguments with a nonzero exit and no result', () => {
+  const { spawnSync } = require('node:child_process');
+  const result = spawnSync(process.execPath,
+    [path.join(__dirname, 'fafa-pilot-governance.cjs'), 'synthetic-one', 'synthetic-two'],
+    { encoding: 'utf8' });
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.equal(result.stderr.trim(), 'INVALID_ARGUMENTS');
 });
