@@ -79,12 +79,17 @@
 -- masquerait ; elle verrouille ensuite les 6 tables, qu'aucune session ne peut plus
 -- supprimer avant le COMMIT. Chaque instruction est IF NOT EXISTS, COMMENT ON
 -- réécrit le texte identique, ENABLE ROW LEVEL SECURITY n'est pas exécuté ; puis la
--- post-condition compare la forme réelle (colonnes, défauts, commentaires,
--- contraintes, index et leur validité, séquences, RLS, triggers internes et leur
--- état, triggers non internes, règles, politiques hors service_role, héritage :
--- ni parent ni descendant) à la forme capturée et lève une exception à la moindre
+-- post-condition compare la forme réelle (tables : nature, journalisation, type
+-- OF, identité de réplication, RLS ; colonnes : type, collation, NOT NULL,
+-- identité, expression générée, défaut, commentaire ; contraintes, index et leur
+-- validité, séquences et leur journalisation, triggers internes et leur état,
+-- triggers non internes, règles, politiques hors service_role, héritage : ni
+-- parent ni descendant) à la forme capturée et lève une exception à la moindre
 -- différence : une base qui a dérivé depuis la capture fait échouer l'application
 -- (transaction annulée) au lieu d'enregistrer comme appliquée une capture fausse.
+-- Ne sont pas comparés : les propriétés physiques (options de stockage et méthode
+-- d'accès des tables, tablespace, stockage, compression et statistiques des
+-- colonnes, ordre des colonnes) et les droits (voir « RLS ET DROITS »).
 -- Trois écarts ne sont PAS refusés, parce que la post-condition passe après les
 -- instructions qui les corrigent : un des 3 commentaires capturés modifié (COMMENT
 -- ON le réécrit), une RLS désactivée (ENABLE la réactive), un des 16 index absent
@@ -97,12 +102,19 @@
 -- Le moteur enveloppe le fichier dans une transaction (.squawk.toml
 -- `assume_in_transaction = true`) : SET LOCAL ne vaut que pour cette transaction.
 -- Quand les 6 tables existent, la pré-condition (§ 0) les verrouille toutes, chacune
--- une seule fois et sans ses descendants éventuels (ONLY), au mode le plus fort dont
--- la suite a besoin, gardé jusqu'au COMMIT :
--- SHARE ROW EXCLUSIVE sur __video_execution_log (index et commentaires), SHARE sur
--- les 3 autres tables à index, ACCESS SHARE sur les 2 dernières. Les écritures sur
--- les 4 premières attendent le COMMIT (quelques millisecondes : la suite ne fait
--- que lire le catalogue) ; les lectures passent. Toute attente a donc lieu dans la
+-- une seule fois et sans ses descendants éventuels (ONLY), jusqu'au COMMIT :
+-- SHARE ROW EXCLUSIVE sur les 4 tables à index (execution_log, productions,
+-- variants, assets), SHARE UPDATE EXCLUSIVE sur les 2 autres (audio_cache,
+-- templates). Les deux modes suspendent, entre la pré-condition et la
+-- post-condition, toute commande qui changerait la forme d'une des 6 tables
+-- (CREATE INDEX, CREATE TRIGGER, ajout d'une clé étrangère, ALTER TABLE, COMMENT,
+-- ajout d'un descendant), ainsi que VACUUM et ANALYZE ; un autovacuum qui bloque la
+-- capture est annulé, sauf anti-wraparound (la capture échoue alors au bout de
+-- lock_timeout). Les écritures sur les 4 premières attendent le COMMIT (quelques
+-- millisecondes : la suite ne fait que lire le catalogue) ; celles sur les 2
+-- autres et les lectures passent. Limite : LOCK TABLE ne s'applique ni aux
+-- séquences ni aux index ; un ALTER SEQUENCE ou un ALTER INDEX concurrent n'attend
+-- pas la capture (épinglé par le banc, § 7). Toute attente a donc lieu dans la
 -- pré-condition : 6 au plus, chacune bornée par lock_timeout, et 30 s en tout pour
 -- cette instruction (statement_timeout). Ensuite, seule une RLS à réactiver (§ 7,
 -- ACCESS EXCLUSIVE) peut encore attendre. Une session tierce qui tiendrait déjà un
@@ -143,11 +155,11 @@ BEGIN
   -- ONLY : un descendant éventuel n'est pas verrouillé ; la post-condition refuse
   -- tout héritage.
   IF v_absent IS NULL THEN
-    LOCK TABLE ONLY public.__video_execution_log IN SHARE ROW EXCLUSIVE MODE;
-    LOCK TABLE ONLY public.__video_productions, ONLY public.__video_variants,
-               ONLY public.__video_assets IN SHARE MODE;
+    LOCK TABLE ONLY public.__video_execution_log, ONLY public.__video_productions,
+               ONLY public.__video_variants, ONLY public.__video_assets
+      IN SHARE ROW EXCLUSIVE MODE;
     LOCK TABLE ONLY public.__video_audio_cache, ONLY public.__video_templates
-      IN ACCESS SHARE MODE;
+      IN SHARE UPDATE EXCLUSIVE MODE;
   END IF;
 
   RAISE NOTICE 'capture __video_* : % table(s) présente(s) sur 6', coalesce(cardinality(v_present), 0);
@@ -503,6 +515,10 @@ $rls$;
 --    Le rendu du catalogue (pg_get_expr, pg_get_constraintdef, regclass) dépend
 --    du search_path, fixé en tête du fichier. Le tri est en collation "C" pour ne
 --    pas dépendre de la locale de la base.
+--    Une table rend sa nature (relkind), sa journalisation, son type OF et son
+--    identité de réplication ; une colonne, sa collation, son identité et son
+--    expression générée seulement si elles existent ou s'écartent du type ; une
+--    séquence, son minimum et sa journalisation.
 --    Un index invalide (création interrompue) est marqué « (invalide) ». Les 4
 --    triggers internes de la clé étrangère sont attendus avec leur état (O = actif) :
 --    DISABLE TRIGGER ALL laisserait la contrainte au catalogue sans l'appliquer.
@@ -677,18 +693,18 @@ index CREATE UNIQUE INDEX __video_templates_pkey ON public.__video_templates USI
 index CREATE UNIQUE INDEX __video_templates_template_id_key ON public.__video_templates USING btree (template_id)
 index CREATE UNIQUE INDEX __video_variants_execution_log_id_variant_name_key ON public.__video_variants USING btree (execution_log_id, variant_name)
 index CREATE UNIQUE INDEX __video_variants_pkey ON public.__video_variants USING btree (id)
-sequence __video_assets_id_seq integer start 1 increment 1 max 2147483647 cache 1 cycle f
-sequence __video_audio_cache_id_seq integer start 1 increment 1 max 2147483647 cache 1 cycle f
-sequence __video_execution_log_id_seq integer start 1 increment 1 max 2147483647 cache 1 cycle f
-sequence __video_productions_id_seq integer start 1 increment 1 max 2147483647 cache 1 cycle f
-sequence __video_templates_id_seq integer start 1 increment 1 max 2147483647 cache 1 cycle f
-sequence __video_variants_id_seq integer start 1 increment 1 max 2147483647 cache 1 cycle f
-table __video_assets comment - rls t force f
-table __video_audio_cache comment - rls t force f
-table __video_execution_log comment - rls t force f
-table __video_productions comment - rls t force f
-table __video_templates comment - rls t force f
-table __video_variants comment - rls t force f
+sequence __video_assets_id_seq integer start 1 increment 1 min 1 max 2147483647 cache 1 cycle f persistence p
+sequence __video_audio_cache_id_seq integer start 1 increment 1 min 1 max 2147483647 cache 1 cycle f persistence p
+sequence __video_execution_log_id_seq integer start 1 increment 1 min 1 max 2147483647 cache 1 cycle f persistence p
+sequence __video_productions_id_seq integer start 1 increment 1 min 1 max 2147483647 cache 1 cycle f persistence p
+sequence __video_templates_id_seq integer start 1 increment 1 min 1 max 2147483647 cache 1 cycle f persistence p
+sequence __video_variants_id_seq integer start 1 increment 1 min 1 max 2147483647 cache 1 cycle f persistence p
+table __video_assets kind r persistence p of - replica d comment - rls t force f
+table __video_audio_cache kind r persistence p of - replica d comment - rls t force f
+table __video_execution_log kind r persistence p of - replica d comment - rls t force f
+table __video_productions kind r persistence p of - replica d comment - rls t force f
+table __video_templates kind r persistence p of - replica d comment - rls t force f
+table __video_variants kind r persistence p of - replica d comment - rls t force f
 trigger interne __video_execution_log "RI_FKey_noaction_del" O
 trigger interne __video_execution_log "RI_FKey_noaction_upd" O
 trigger interne __video_variants "RI_FKey_check_ins" O
@@ -705,13 +721,20 @@ BEGIN
   SELECT string_agg(shape.line, E'\n' ORDER BY shape.line COLLATE "C")
     INTO v_actual
     FROM (
-      SELECT format('column %s.%s %s%s%s%s',
+      -- Collation, identité et colonne générée ne sont rendues que si elles
+      -- s'écartent du type ou existent : aucune colonne capturée n'en porte.
+      SELECT format('column %s.%s %s%s%s%s%s%s%s',
                     c.relname, a.attname, format_type(a.atttypid, a.atttypmod),
+                    CASE WHEN a.attcollation <> ty.typcollation
+                         THEN ' collate ' || a.attcollation::regcollation::text ELSE '' END,
                     CASE WHEN a.attnotnull THEN ' not null' ELSE '' END,
+                    CASE WHEN a.attidentity <> '' THEN ' identity ' || a.attidentity::text ELSE '' END,
+                    CASE WHEN a.attgenerated <> '' THEN ' generated ' || a.attgenerated::text ELSE '' END,
                     coalesce(' default ' || pg_get_expr(d.adbin, d.adrelid), ''),
                     coalesce(' comment ' || col_description(a.attrelid, a.attnum), '')) AS line
         FROM pg_attribute a
         JOIN pg_class c ON c.oid = a.attrelid
+        JOIN pg_type ty ON ty.oid = a.atttypid
         LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum
        WHERE a.attnum > 0
          AND NOT a.attisdropped
@@ -756,14 +779,19 @@ BEGIN
        WHERE h.inhrelid = ANY (v_tables::oid[])
           OR h.inhparent = ANY (v_tables::oid[])
       UNION ALL
-      SELECT format('sequence %s %s start %s increment %s max %s cache %s cycle %s',
+      SELECT format('sequence %s %s start %s increment %s min %s max %s cache %s cycle %s persistence %s',
                     s.seqrelid::regclass, format_type(s.seqtypid, NULL),
-                    s.seqstart, s.seqincrement, s.seqmax, s.seqcache, s.seqcycle)
+                    s.seqstart, s.seqincrement, s.seqmin, s.seqmax, s.seqcache, s.seqcycle,
+                    c.relpersistence)
         FROM pg_sequence s
+        JOIN pg_class c ON c.oid = s.seqrelid
        WHERE s.seqrelid IN (SELECT pg_get_serial_sequence(t::text, 'id')::regclass
                               FROM unnest(v_tables) AS t)
       UNION ALL
-      SELECT format('table %s comment %s rls %s force %s', c.relname,
+      -- kind r = table ordinaire, persistence p = journalisée, of - = non typée,
+      -- replica d = identité de réplication par la clé primaire.
+      SELECT format('table %s kind %s persistence %s of %s replica %s comment %s rls %s force %s',
+                    c.relname, c.relkind, c.relpersistence, c.reloftype::regtype, c.relreplident,
                     coalesce(obj_description(c.oid, 'pg_class'), '-'),
                     c.relrowsecurity, c.relforcerowsecurity)
         FROM pg_class c
