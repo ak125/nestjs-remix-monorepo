@@ -14,11 +14,15 @@ import {
  * quand la changer.
  *
  * Sections:
- *   Intro      (0-120)     : nom de la pièce, accroche
+ *   Intro      (0-120)     : nom de la pièce, accroche (`hook`)
  *   Function   (120-420)   : rôle mécanique + emplacement
  *   WearSigns  (420-720)   : 2-3 signes d'usure observables
  *   WhenChange (720-960)   : critère objectif (km / signe critique)
  *   Closer     (960-1200)  : brand + CTA
+ *
+ * Titres de section : `titles` (défauts = libellés historiques). Avertissement
+ * propre à une fenêtre (disclaimer `overlay_segment`) : `windowWarnings`, en
+ * plus du bandeau continu `disclaimer`.
  *
  * Palette: #0F1E38 bg, #F97316 accent, #0F4C81 panel, Liberation Sans.
  * Claim safety (ex. freinage compromis) → validation humaine obligatoire (G2 STRICT).
@@ -29,7 +33,47 @@ interface WearSign {
   severity?: 'low' | 'medium' | 'high';
 }
 
-interface PieceExpliqueeProps {
+export type PieceExpliqueeWindow =
+  | 'intro'
+  | 'function'
+  | 'wearSigns'
+  | 'whenToChange'
+  | 'closer';
+
+/** Fenêtres fixes en frames (30 fps) : [début, fin[. */
+export const PIECE_EXPLIQUEE_WINDOWS: Record<PieceExpliqueeWindow, [number, number]> = {
+  intro: [0, 120],
+  function: [120, 420],
+  wearSigns: [420, 720],
+  whenToChange: [720, 960],
+  closer: [960, 1200],
+};
+
+export interface PieceExpliqueeTitles {
+  intro: string;
+  function: string;
+  location: string;
+  wearSigns: string;
+  whenToChange: string;
+}
+
+export const DEFAULT_PIECE_EXPLIQUEE_TITLES: PieceExpliqueeTitles = {
+  intro: 'La pièce expliquée',
+  function: 'À quoi ça sert',
+  location: 'Emplacement',
+  wearSigns: 'Signes d’usure',
+  whenToChange: 'Quand la changer',
+};
+
+/** Fenêtre affichée à une frame donnée (la dernière court jusqu'à la fin). */
+export function pieceExpliqueeWindowAt(frame: number): PieceExpliqueeWindow {
+  const found = (Object.keys(PIECE_EXPLIQUEE_WINDOWS) as PieceExpliqueeWindow[]).find(
+    (w) => frame >= PIECE_EXPLIQUEE_WINDOWS[w][0] && frame < PIECE_EXPLIQUEE_WINDOWS[w][1],
+  );
+  return found ?? 'closer';
+}
+
+export interface PieceExpliqueeProps {
   briefId?: string;
   videoType?: string;
   vertical?: string;
@@ -42,6 +86,9 @@ interface PieceExpliqueeProps {
   disclaimer?: string;
   audioUrl?: string;
   brandName?: string;
+  hook?: string;
+  titles?: Partial<PieceExpliqueeTitles>;
+  windowWarnings?: Partial<Record<PieceExpliqueeWindow, string>>;
 }
 
 const SEVERITY_COLOR: Record<string, string> = {
@@ -64,14 +111,19 @@ export const PieceExpliquee: React.FC<PieceExpliqueeProps> = ({
   disclaimer = 'Conseil informatif. Diagnostic à confirmer selon véhicule.',
   audioUrl,
   brandName = 'AutoMecanik',
+  hook,
+  titles,
+  windowWarnings,
 }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
-  const INTRO_END = 120;
-  const FUNCTION_END = 420;
-  const WEAR_END = 720;
-  const WHEN_END = 960;
+  const INTRO_END = PIECE_EXPLIQUEE_WINDOWS.intro[1];
+  const FUNCTION_END = PIECE_EXPLIQUEE_WINDOWS.function[1];
+  const WEAR_END = PIECE_EXPLIQUEE_WINDOWS.wearSigns[1];
+  const WHEN_END = PIECE_EXPLIQUEE_WINDOWS.whenToChange[1];
+  const t = { ...DEFAULT_PIECE_EXPLIQUEE_TITLES, ...titles };
+  const windowWarning = windowWarnings?.[pieceExpliqueeWindowAt(frame)];
 
   const progress = frame / durationInFrames;
 
@@ -85,22 +137,30 @@ export const PieceExpliquee: React.FC<PieceExpliqueeProps> = ({
     >
       {audioUrl && <Audio src={audioUrl} />}
 
-      <IntroSection frame={frame} fps={fps} endFrame={INTRO_END} piece={piece} />
+      <IntroSection
+        frame={frame}
+        fps={fps}
+        endFrame={INTRO_END}
+        piece={piece}
+        label={t.intro}
+        hook={hook}
+      />
 
       <LabelSection
         frame={frame}
         startFrame={INTRO_END}
         endFrame={FUNCTION_END}
-        label="À quoi ça sert"
+        label={t.function}
         body={pieceFunction}
         footnote={location}
-        footLabel="Emplacement"
+        footLabel={t.location}
       />
 
       <WearSignsSection
         frame={frame}
         startFrame={FUNCTION_END}
         endFrame={WEAR_END}
+        title={t.wearSigns}
         wearSigns={wearSigns}
       />
 
@@ -108,11 +168,13 @@ export const PieceExpliquee: React.FC<PieceExpliqueeProps> = ({
         frame={frame}
         startFrame={WEAR_END}
         endFrame={WHEN_END}
-        label="Quand la changer"
+        label={t.whenToChange}
         body={whenToChange}
       />
 
       <CloserSection frame={frame} fps={fps} startFrame={WHEN_END} brandName={brandName} cta={cta} />
+
+      {windowWarning && <WindowWarning text={windowWarning} />}
 
       {disclaimer && <DisclaimerOverlay text={disclaimer} />}
 
@@ -136,10 +198,16 @@ const IntroSection: React.FC<{
   fps: number;
   endFrame: number;
   piece: string;
-}> = ({ frame, fps, endFrame, piece }) => {
+  label: string;
+  hook?: string;
+}> = ({ frame, fps, endFrame, piece, label, hook }) => {
   if (frame >= endFrame) return null;
   const scale = spring({ frame, fps, config: { damping: 12, stiffness: 70 } });
   const subOpacity = interpolate(frame, [45, 75], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
+  const hookOpacity = interpolate(frame, [20, 40], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
@@ -156,7 +224,7 @@ const IntroSection: React.FC<{
           opacity: subOpacity,
         }}
       >
-        La pièce expliquée
+        {label}
       </div>
       <div
         style={{
@@ -170,6 +238,22 @@ const IntroSection: React.FC<{
       >
         {piece}
       </div>
+      {hook && (
+        <div
+          style={{
+            marginTop: 40,
+            color: '#F97316',
+            fontSize: 46,
+            fontWeight: 'bold',
+            lineHeight: 1.3,
+            textAlign: 'center',
+            maxWidth: 900,
+            opacity: hookOpacity,
+          }}
+        >
+          {hook}
+        </div>
+      )}
     </AbsoluteFill>
   );
 };
@@ -252,8 +336,9 @@ const WearSignsSection: React.FC<{
   frame: number;
   startFrame: number;
   endFrame: number;
+  title: string;
   wearSigns: WearSign[];
-}> = ({ frame, startFrame, endFrame, wearSigns }) => {
+}> = ({ frame, startFrame, endFrame, title, wearSigns }) => {
   if (frame < startFrame || frame >= endFrame) return null;
   const local = frame - startFrame;
   const signs = wearSigns.slice(0, 3);
@@ -270,7 +355,7 @@ const WearSignsSection: React.FC<{
           marginBottom: 48,
         }}
       >
-        Signes d’usure
+        {title}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24, width: '100%', maxWidth: 860 }}>
         {signs.map((s, i) => {
@@ -353,6 +438,28 @@ const CloserSection: React.FC<{
     </AbsoluteFill>
   );
 };
+
+const WindowWarning: React.FC<{ text: string }> = ({ text }) => (
+  <div
+    style={{
+      position: 'absolute',
+      bottom: 150,
+      left: 50,
+      right: 50,
+      textAlign: 'center',
+      color: '#ffffff',
+      fontSize: 28,
+      fontWeight: 'bold',
+      lineHeight: 1.35,
+      backgroundColor: 'rgba(15,30,56,0.92)',
+      border: '2px solid #F97316',
+      borderRadius: 12,
+      padding: '16px 24px',
+    }}
+  >
+    {text}
+  </div>
+);
 
 const DisclaimerOverlay: React.FC<{ text: string }> = ({ text }) => (
   <div

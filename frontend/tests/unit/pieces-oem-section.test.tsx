@@ -98,6 +98,8 @@ describe("PiecesOemSection — source-backed mounting position", () => {
     expect(container.textContent).not.toMatch(/à l'avant|à l'arrière/);
     expect(container.textContent).toContain("Filtre à huile");
     expect(container.textContent).toContain("CLIO III");
+    // FH-7 : pas d'équipementiers de freinage cités en exemple sur un filtre à huile.
+    expect(container.textContent).not.toMatch(/Bosch|TRW|Brembo/);
     expect(container.querySelectorAll("span[title]")).toHaveLength(
       pilot.groupedPieces[0].oemRefs.length,
     );

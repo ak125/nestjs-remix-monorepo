@@ -57,7 +57,12 @@ export class VideoGateCheckController {
       flags: result.flags,
       message: result.canPublish
         ? 'All gates passed — ready to publish'
-        : `${result.flags.filter((f) => f.startsWith('GATE_FAIL')).length} gate(s) failed`,
+        : ['GATE_FAIL', 'NOT_MEASURED', 'REVIEW_REQUIRED']
+            .map(
+              (kind) =>
+                `${result.flags.filter((f) => f.startsWith(`${kind}:`)).length} ${kind}`,
+            )
+            .join(', '),
       timestamp: new Date().toISOString(),
     };
   }

@@ -386,8 +386,15 @@ export class GammeResponseBuilderService {
     // Traitement données
     const conseils = this.transformer.processConseils(conseilsRaw);
     const informations = this.transformer.processInformations(informationsRaw);
-    const catalogueFiltres =
-      this.transformer.processCatalogueFamille(catalogueFamilleRaw);
+    const thumbnails = await this.rpcService.getGammeThumbnails(
+      catalogueFamilleRaw.map((p) => p.pg_id),
+    );
+    const catalogueFiltres = this.transformer.processCatalogueFamille(
+      catalogueFamilleRaw.map((p) => ({
+        ...p,
+        pg_img: thumbnails.get(p.pg_id) ?? null,
+      })),
+    );
     // Equipementiers: prefer top_brands (real data) over __seo_equip_gamme (manual/stale)
     let equipementiers =
       this.transformer.processEquipementiers(equipementiersRaw);

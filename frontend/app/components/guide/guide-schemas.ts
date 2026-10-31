@@ -42,15 +42,13 @@ function parseHowTo(
 
   if (steps.length < 2) return null;
 
-  const totalMinutes = steps.length * 5;
-
+  // FH-16 : pas de totalTime, aucune durée sourcée (le nombre d'étapes n'en est pas une).
   return {
     "@context": "https://schema.org",
     "@type": "HowTo",
     name: deposeSection.title || `Comment démonter : ${articleTitle}`,
     description: `Procédure de démontage étape par étape — ${articleTitle}`,
     url: canonicalUrl,
-    totalTime: `PT${totalMinutes}M`,
     step: steps.map((text, i) => ({
       "@type": "HowToStep",
       position: i + 1,
