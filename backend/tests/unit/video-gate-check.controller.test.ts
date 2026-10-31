@@ -88,7 +88,35 @@ describe('VideoGateCheckController', () => {
       const result = await controller.validateGates(fakeBody as any);
       expect(result.success).toBe(true);
       expect(result.canPublish).toBe(false);
-      expect(result.message).toContain('1 gate(s) failed');
+      expect(result.message).toBe(
+        '1 GATE_FAIL, 0 NOT_MEASURED, 0 REVIEW_REQUIRED',
+      );
+    });
+
+    it('should count unmeasured gates in the message', async () => {
+      mocks.mockGatesService.checkArtefacts.mockReturnValue({
+        canProceed: true,
+        missingArtefacts: [],
+      });
+      mocks.mockGatesService.runAllGates.mockReturnValue({
+        canPublish: false,
+        gates: [
+          { name: 'platform', verdict: 'WARN' },
+          { name: 'reuse_risk', verdict: 'WARN' },
+        ],
+        flags: [
+          'GATE_WARN:platform',
+          'NOT_MEASURED:platform',
+          'GATE_WARN:reuse_risk',
+          'NOT_MEASURED:reuse_risk',
+        ],
+      });
+
+      const result = await controller.validateGates(fakeBody as any);
+      expect(result.canPublish).toBe(false);
+      expect(result.message).toBe(
+        '0 GATE_FAIL, 2 NOT_MEASURED, 0 REVIEW_REQUIRED',
+      );
     });
   });
 

@@ -50,11 +50,35 @@ describe('restoreAccents — extension lexique freinage', () => {
     });
 
     it('les nouvelles entrées freinage ne cassent pas un slug dans un href', () => {
-      // NB scope : le chemin "/pieces/" est volontairement ABSENT ici. Son altération par
-      // l'entrée HISTORIQUE `pieces` (/\bpieces\b/) est un bug PRÉ-EXISTANT (cf. description PR),
-      // hors périmètre de ce correctif additif freinage — non corrigé ici volontairement.
       const html = '<a href="etrier-de-frein-78.html">étrier de frein</a>';
       expect(restoreAccents(html)).toBe(html);
+    });
+
+    it('ne réécrit jamais un href "/pieces/…" (entrée historique `pieces`)', () => {
+      const html =
+        '<li><a href="/pieces/filtre-a-air-8.html">Filtre a air</a> et pieces liees</li>';
+      expect(restoreAccents(html)).toBe(
+        '<li><a href="/pieces/filtre-a-air-8.html">Filtre a air</a> et pièces liees</li>',
+      );
+    });
+
+    it("n'altère aucun attribut (src, alt, class, data-*)", () => {
+      const html =
+        '<img src="/img/pieces/vehicule.webp" alt="pieces du vehicule" class="piece" data-ref="controle">';
+      expect(restoreAccents(html)).toBe(html);
+    });
+
+    it('ne réécrit pas une URL ou un chemin cité dans le texte', () => {
+      expect(
+        restoreAccents(
+          'voir https://www.automecanik.com/pieces/x.html ou /pieces/y.html',
+        ),
+      ).toBe(
+        'voir https://www.automecanik.com/pieces/x.html ou /pieces/y.html',
+      );
+      expect(restoreAccents('les pieces du vehicule')).toBe(
+        'les pièces du véhicule',
+      );
     });
 
     it('ne touche pas un wikilink', () => {
