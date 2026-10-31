@@ -1,5 +1,8 @@
 # Mission Claude CLI — intégration du lot filtre à huile (pg_id 7)
 
+Brief commun du programme (règles, skills, responsables, état d'intégration) :
+[AUDIT.md § 0](AUDIT.md#0-brief-commun-du-programme-éditorial).
+
 Révision 3, 30/10/2026. Remplace la liste de raccordements de la révision 2. Révision 4 du dossier (31/10) : § 1
 (note) et § 2 mis à jour par Claude Code Desktop ; § 3 à § 6 inchangés. Seuls les raccordements du dossier
 filtre à huile : les 13 besoins du dossier plaquettes ne sont pas des prérequis (FH-5 compteur et FH-11 `stages` les
@@ -12,8 +15,8 @@ publication, préparé et non exécuté. Aucune ligne du dossier ne demande plus
 
 ## Consigne de démarrage
 
-> Lis `docs/audits/editorial-filtre-huile-20261030/HANDOFF.md` sur la branche
-> `docs/editorial-filtre-huile-dossier-20261030` et exécute la mission : vérifie le code et les contrats cités,
+> Lis `docs/audits/editorial-filtre-huile-20261030/HANDOFF.md` sur `main` (dossier fusionné par #1935, branche
+> d'origine supprimée) et exécute la mission : vérifie le code et les contrats cités,
 > traite FH-1 à FH-16 dans l'ordre du § 3, raccorde les textes (`integration/r1.json`, `integration/r3.json`) et les
 > images (`integration/assets.json`) aux mécanismes existants, puis vérifie le rendu DEV en mobile et en bureau.
 > Aucune écriture en base partagée avec la PROD, aucun déploiement, aucune modification d'URL, de title, de meta ni de
