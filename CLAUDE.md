@@ -67,11 +67,17 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
   Command Center ne sont pas 24 processus : consulter au besoin
   `audit/automecanik-departments-map.md` et
   `scripts/governance/build-command-center-snapshot.js`.
-- Choix utilisateur : **Claude Code CLI est l'exécutant principal pour le code**.
-  Codex peut recevoir un audit, une revue indépendante ou un correctif ciblé dans
-  le mandat ; aucun passage par Codex n'est obligatoire. Hermes coordonne et
-  exécute les opérations disponibles dans son profil. Ce choix ne modifie ni les
-  permissions ni les règles de fusion et de déploiement.
+- **Mandat utilisateur du 1er novembre 2026 : tout codage est confié à
+  Claude Code CLI** (backend, frontend, scripts, tests, migrations et intégration).
+  ChatGPT/Space dirige la préparation éditoriale, rédige les contenus et remet,
+  lorsqu'une modification technique est nécessaire, un **prompt borné à Claude CLI**.
+  Si aucun canal CLI autorisé n'est accessible, préparer le prompt pour un
+  lancement manuel et déclarer **NON ENVOYÉ**, jamais « exécuté ».
+  **Codex réalise les audits et revues techniques indépendantes, sans écrire
+  le code** ; une dérogation exige une nouvelle instruction explicite de l'owner.
+  Les fonctions Hermes ne sont retirées qu'après une passation prouvée.
+  Voir `.claude/knowledge/workspaces.md` pour le contrat de transmission.
+  Ce choix ne modifie ni les permissions ni les règles de fusion/déploiement.
 - Hermes peut réaliser les opérations couvertes par ses outils, accès et mandat
   actuels. Aucun transfert systématique à Codex pour ces opérations ; une limite
   effective de profil ou de permissions reste opposable. Ce fichier ne lui accorde
