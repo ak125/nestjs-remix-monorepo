@@ -1,7 +1,7 @@
 {
   "page": "/pieces/filtre-a-huile-7.html",
   "pg_id": 7,
-  "revision": "révision 3, 30/10/2026",
+  "revision": "révision 4, 31/10/2026",
   "statut": "REVIEW_REQUIRED : textes servables après relecture humaine ; aucune écriture faite",
   "sources_servies_constatees": {
     "__seo_r1_gamme_slots": "r1s_* : hero, sélecteur, badges, intro motorisations, ligne équipementiers, intro famille, tableau de vérification ; r1s_micro_seo_block et r1s_faq présents dans les données de la page mais non affichés (FAQ au format {q, a} rejetée, repli sur la FAQ générique du sélecteur)",
@@ -19,7 +19,16 @@
       "action": "amélioré",
       "remplace": "Trouvez votre Filtre à huile au meilleur prix",
       "statut": "catalogue",
-      "texte": "Sélectionnez votre véhicule : seuls les filtres à huile rattachés à sa motorisation s'affichent, vissés ou cartouches."
+      "texte": "Sélectionnez votre véhicule : seuls les filtres à huile rattachés à sa motorisation s'affichent, vissés ou cartouches.",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_hero_subtitle",
+        "question_resolue": "Comment trouver le filtre de mon véhicule ?",
+        "preuve_interne": "catalogue : références rattachées aux motorisations ; fiche WIKI gamme:filtre-a-huile (commit a4783348) : Définition (vissé ou cartouche)",
+        "portee_vehicule": "toutes motorisations du catalogue",
+        "statut_admission": "catalogue ; donnée du catalogue, à relire au moment de l'écriture",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "image du hero : rip 31 (assets/r1-hero-filtre-visse-usage.webp)"
+      }
     },
     "r1s_selector_microcopy": {
       "action": "amélioré",
@@ -31,70 +40,178 @@
       "texte": [
         "Marque, modèle, année, puis motorisation exacte",
         "Deux versions d'un même modèle ne reçoivent pas toujours le même filtre."
-      ]
+      ],
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_selector_microcopy",
+        "question_resolue": "Que renseigner dans le sélecteur ?",
+        "preuve_interne": "catalogue : sélection par marque, modèle, année et motorisation ; références rattachées par motorisation",
+        "portee_vehicule": "toutes motorisations ; une version de modèle ne vaut pas pour une autre",
+        "statut_admission": "catalogue ; donnée du catalogue, à relire au moment de l'écriture",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_arg1_title": {
       "action": "amélioré",
       "remplace": "Compatibilite verifiee",
       "statut": "catalogue",
-      "texte": "Choix par motorisation"
+      "texte": "Choix par motorisation",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_arg1_title",
+        "question_resolue": "Pourquoi partir de la motorisation ?",
+        "preuve_interne": "catalogue",
+        "portee_vehicule": "toutes motorisations",
+        "statut_admission": "catalogue ; donnée du catalogue, à relire au moment de l'écriture",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_arg1_content": {
       "action": "amélioré",
       "remplace": "Selection guidee par vehicule et references techniques.",
       "statut": "catalogue",
-      "texte": "Chaque filtre est rattaché à des motorisations précises du catalogue."
+      "texte": "Chaque filtre est rattaché à des motorisations précises du catalogue.",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_arg1_content",
+        "question_resolue": "Pourquoi partir de la motorisation ?",
+        "preuve_interne": "catalogue",
+        "portee_vehicule": "toutes motorisations",
+        "statut_admission": "catalogue ; donnée du catalogue, à relire au moment de l'écriture",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_arg2_title": {
       "action": "amélioré",
       "remplace": "Priorite securite",
       "statut": "admis",
-      "texte": "Vissé ou cartouche"
+      "texte": "Vissé ou cartouche",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_arg2_title",
+        "question_resolue": "Vissé ou cartouche : ai-je le choix ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Définition",
+        "portee_vehicule": "forme fixée par le moteur",
+        "statut_admission": "admis ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "TYPES rip 32 (assets/r1-types-visse-cartouche.webp)"
+      }
     },
     "r1s_arg2_content": {
       "action": "amélioré",
       "statut": "admis",
-      "texte": "La forme dépend du moteur : elle ne se choisit pas."
+      "texte": "La forme dépend du moteur : elle ne se choisit pas.",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_arg2_content",
+        "question_resolue": "Vissé ou cartouche : ai-je le choix ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Définition",
+        "portee_vehicule": "forme fixée par le moteur",
+        "statut_admission": "admis ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "TYPES rip 32"
+      }
     },
     "r1s_arg3_title": {
       "action": "amélioré",
       "remplace": "Decision rapide",
       "statut": "catalogue",
-      "texte": "Référence d'origine"
+      "texte": "Référence d'origine",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_arg3_title",
+        "question_resolue": "Puis-je comparer avec la référence d'origine ?",
+        "preuve_interne": "catalogue : référence d'origine affichée sur la page du véhicule quand elle est connue",
+        "portee_vehicule": "véhicules dont la référence d'origine est connue",
+        "statut_admission": "catalogue ; donnée du catalogue, à relire au moment de l'écriture",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_arg3_content": {
       "action": "amélioré",
       "statut": "catalogue",
-      "texte": "Indiquée sur la page du véhicule quand elle est connue, pour comparer."
+      "texte": "Indiquée sur la page du véhicule quand elle est connue, pour comparer.",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_arg3_content",
+        "question_resolue": "Puis-je comparer avec la référence d'origine ?",
+        "preuve_interne": "catalogue",
+        "portee_vehicule": "véhicules dont la référence d'origine est connue",
+        "statut_admission": "catalogue ; donnée du catalogue, à relire au moment de l'écriture",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_arg4_title": {
       "action": "amélioré",
       "remplace": "Montage maitrise",
       "statut": "editorial",
-      "texte": "Guide de remplacement"
+      "texte": "Guide de remplacement",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_arg4_title",
+        "question_resolue": "Où trouver les échéances et les étapes du remplacement ?",
+        "preuve_interne": "lien vers le guide R3 (200 le 31/10)",
+        "portee_vehicule": "tous véhicules",
+        "statut_admission": "éditorial : orientation sans fait nouveau",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_arg4_content": {
       "action": "amélioré",
       "statut": "editorial",
-      "texte": "Échéances et étapes du remplacement dans le guide du filtre à huile."
+      "texte": "Échéances et étapes du remplacement dans le guide du filtre à huile.",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_arg4_content",
+        "question_resolue": "Où trouver les échéances et les étapes du remplacement ?",
+        "preuve_interne": "lien vers le guide R3 (200 le 31/10)",
+        "portee_vehicule": "tous véhicules",
+        "statut_admission": "éditorial : orientation sans fait nouveau",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_compatibilities_intro": {
       "action": "amélioré",
       "remplace": "Sélectionnez votre marque pour afficher les filtres à huile compatibles avec votre véhicule — Citroën, Renault, Peugeot, Volkswagen et plus de 50 marques référencées.",
       "statut": "catalogue",
-      "texte": "Chaque page de motorisation liste les filtres à huile rattachés à cette version précise. Vérifiez la motorisation exacte, puissance comprise, avant de choisir."
+      "texte": "Chaque page de motorisation liste les filtres à huile rattachés à cette version précise. Vérifiez la motorisation exacte, puissance comprise, avant de choisir.",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_compatibilities_intro",
+        "question_resolue": "Comment vérifier la compatibilité ?",
+        "preuve_interne": "catalogue : pages de motorisation",
+        "portee_vehicule": "par version, puissance comprise",
+        "statut_admission": "catalogue ; donnée du catalogue, à relire au moment de l'écriture",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_equipementiers_line": {
       "action": "amélioré",
       "remplace": "Bosch, Mann Filter, Mahle, Purflux, WIX — équipementiers de premier montage avec homologations constructeur vérifiables.",
       "statut": "catalogue",
-      "texte": "Les marques présentées viennent du catalogue, où chaque référence est rattachée à des motorisations précises. La marque ne remplace pas la vérification de compatibilité."
+      "texte": "Les marques présentées viennent du catalogue, où chaque référence est rattachée à des motorisations précises. La marque ne remplace pas la vérification de compatibilité.",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_equipementiers_line",
+        "question_resolue": "Que signifient les marques présentées ?",
+        "preuve_interne": "catalogue : marques rattachées aux références",
+        "portee_vehicule": "chaque référence vaut pour ses motorisations",
+        "statut_admission": "catalogue ; donnée du catalogue, à relire au moment de l'écriture",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_family_cross_sell_intro": {
       "action": "amélioré",
       "remplace": "Complétez votre entretien moteur : retrouvez également nos huiles moteur, joints de vidange carter et filtres à air compatibles avec votre véhicule.",
       "statut": "admis",
-      "texte": "Les autres filtres du véhicule, à air, à carburant et d'habitacle, filtrent d'autres fluides et ont chacun leur propre référence."
+      "texte": "Les autres filtres du véhicule, à air, à carburant et d'habitacle, filtrent d'autres fluides et ont chacun leur propre référence.",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_family_cross_sell_intro",
+        "question_resolue": "Quels autres filtres pour mon véhicule ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : related_parts",
+        "portee_vehicule": "chaque filtre a sa propre référence",
+        "statut_admission": "admis ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_safe_table_rows": {
       "action": "amélioré",
@@ -124,7 +241,16 @@
           "element": "Ne pas confondre avec",
           "howToCheck": "Filtre à air, filtre à carburant, filtre d'habitacle : ils filtrent d'autres fluides et ont leur propre référence."
         }
-      ]
+      ],
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_safe_table_rows",
+        "question_resolue": "Que vérifier avant de choisir une référence ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Critères de choix ; catalogue",
+        "portee_vehicule": "par motorisation ; la ligne Dimensions n'est pas servie tant que la fiche produit ne les affiche pas (FH-12)",
+        "statut_admission": "admis + catalogue ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_faq": {
       "action": "amélioré",
@@ -151,7 +277,16 @@
           "question": "Quand faut-il remplacer le filtre à huile ?",
           "answer": "Aux échéances d'entretien fixées par le constructeur de votre véhicule ; aucun kilométrage ne vaut pour tous les véhicules. Le guide du filtre à huile détaille le remplacement."
         }
-      ]
+      ],
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_faq",
+        "question_resolue": "Questions avant de choisir un filtre",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : FAQ ; catalogue",
+        "portee_vehicule": "tous véhicules ; aucune valeur universelle",
+        "statut_admission": "admis + catalogue ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     },
     "r1s_micro_seo_block": {
       "action": "amélioré",
@@ -160,7 +295,16 @@
       "statut": "admis + catalogue",
       "condition": "FH-12 (30/10) : la fiche produit n'affiche ni dimensions, ni filetage, ni by-pass, ni joint ; les deux phrases qui le supposaient sont retirées.",
       "bornes": "contrat R1 S4_MICRO_SEO 1 500 à 3 000 caractères (packages/seo-role-contracts/src/contracts/r1.ts:25-26) ; constante 700 (FH-4)",
-      "texte": "<p>Le bon filtre à huile se choisit à partir du véhicule, jamais d'après l'apparence de l'ancien. Des filtres qui se ressemblent peuvent être très différents à l'intérieur selon le moteur : clapet anti-retour présent ou non, filetage de raccordement, pression d'ouverture du clapet de dérivation (by-pass), média filtrant, finesse de filtration, surpression admissible. Deux versions d'un même modèle ne reçoivent donc pas toujours la même référence.</p>\n<p>Filtre vissé ou cartouche : la forme découle du moteur. Le filtre vissé réunit le boîtier et l'élément filtrant en un seul bloc ; la cartouche est l'élément filtrant d'un boîtier démontable, qui reste en place. Le sélecteur ne retient que les références rattachées à la motorisation choisie : renseignez la marque, le modèle, l'année et la motorisation exacte.</p>\n<p>Chaque page de motorisation liste les références qui lui sont rattachées, avec la référence d'origine quand elle est connue : comparez-la avec celles qui vous sont proposées. Plus l'intervalle de remplacement prévu par le constructeur est long, plus la qualité du filtre compte : le papier filtrant, le clapet de dérivation et le clapet anti-retour en font partie. Même un bon filtre ne fonctionne correctement que s'il a été bien monté.</p>\n<p>Ne confondez pas le filtre à huile avec le filtre à air, le filtre à carburant ou le filtre d'habitacle : ils filtrent d'autres fluides et ont chacun leur propre référence. Le guide du filtre à huile traite de son remplacement aux échéances du constructeur. Pour chercher l'origine d'un défaut, commencez par le diagnostic.</p>"
+      "texte": "<p>Le bon filtre à huile se choisit à partir du véhicule, jamais d'après l'apparence de l'ancien. Des filtres qui se ressemblent peuvent être très différents à l'intérieur selon le moteur : clapet anti-retour présent ou non, filetage de raccordement, pression d'ouverture du clapet de dérivation (by-pass), média filtrant, finesse de filtration, surpression admissible. Deux versions d'un même modèle ne reçoivent donc pas toujours la même référence.</p>\n<p>Filtre vissé ou cartouche : la forme découle du moteur. Le filtre vissé réunit le boîtier et l'élément filtrant en un seul bloc ; la cartouche est l'élément filtrant d'un boîtier démontable, qui reste en place. Le sélecteur ne retient que les références rattachées à la motorisation choisie : renseignez la marque, le modèle, l'année et la motorisation exacte.</p>\n<p>Chaque page de motorisation liste les références qui lui sont rattachées, avec la référence d'origine quand elle est connue : comparez-la avec celles qui vous sont proposées. Plus l'intervalle de remplacement prévu par le constructeur est long, plus la qualité du filtre compte : le papier filtrant, le clapet de dérivation et le clapet anti-retour en font partie. Même un bon filtre ne fonctionne correctement que s'il a été bien monté.</p>\n<p>Ne confondez pas le filtre à huile avec le filtre à air, le filtre à carburant ou le filtre d'habitacle : ils filtrent d'autres fluides et ont chacun leur propre référence. Le guide du filtre à huile traite de son remplacement aux échéances du constructeur. Pour chercher l'origine d'un défaut, commencez par le diagnostic.</p>",
+      "fiche": {
+        "cible": "R1 /pieces/filtre-a-huile-7.html · __seo_r1_gamme_slots.r1s_micro_seo_block",
+        "question_resolue": "Comment ne pas se tromper de filtre ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Critères de choix, Fonctionnement ; catalogue",
+        "portee_vehicule": "par motorisation ; critères techniques non affichés sur la fiche produit (FH-12)",
+        "statut_admission": "admis + catalogue ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
     }
   },
   "sg_content": {
@@ -208,7 +352,87 @@
       "Rôle du filtre à huile et moment du remplacement": "admis (Rôle technique, Fonctionnement, Entretien) + editorial",
       "Trouver la référence de votre véhicule": "catalogue + admis"
     },
-    "html": "<h2>Filtre vissé ou cartouche : la différence</h2>\n<p>Le filtre à huile existe sous deux formes, et c'est le moteur qui impose la sienne. Le filtre vissé réunit le boîtier et l'élément filtrant en un seul bloc : il se change en entier. La cartouche se loge dans un boîtier démontable : seul l'élément filtrant est remplacé, le boîtier est conservé.</p>\n<h2>Critères qui distinguent deux filtres semblables</h2>\n<p>Deux filtres de même taille et de même aspect peuvent être très différents à l'intérieur. Selon le moteur, un filtre vissé comporte ou non un clapet anti-retour, qui garde l'huile dans le filtre quand le moteur est arrêté. Son clapet de dérivation (by-pass) s'ouvre à une pression qui varie d'un moteur à l'autre. Le filetage de raccordement, le média filtrant, la finesse de filtration et la surpression admissible changent aussi.</p>\n<p>Ces écarts ne se voient pas de l'extérieur. Le catalogue part donc de la motorisation, jamais de l'apparence de l'ancien filtre.</p>\n<h2>Qualité d'un filtre à huile : ce qui compte</h2>\n<p>Le papier filtrant, le clapet de dérivation et le clapet anti-retour font partie des caractéristiques de qualité d'un filtre à huile. Plus l'intervalle de remplacement prévu par le constructeur est long, plus cette qualité compte.</p>\n<p>Le montage compte aussi : même un bon filtre ne fonctionne correctement que s'il a été bien monté, en suivant les instructions du constructeur du véhicule et du fabricant du filtre.</p>\n<p>Les marques présentées ci-dessous viennent du catalogue. Quelle que soit la marque, la référence doit d'abord être celle prévue pour votre motorisation.</p>\n<h2>Rôle du filtre à huile et moment du remplacement</h2>\n<p>Le filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification du moteur. Il aide ainsi à préserver la qualité de l'huile, les performances et le rendement du moteur.</p>\n<p>Son emplacement dépend du moteur : cette page n'en indique pas un valable pour tous. Sur certains moteurs, le filtre est monté à l'horizontale ou tête en bas ; un clapet anti-retour y empêche l'huile de quitter le filtre à l'arrêt.</p>\n<p>Il se remplace aux échéances d'entretien fixées par le constructeur du véhicule. Aucune durée ni aucun kilométrage ne vaut pour tous les véhicules. Un filtre gardé trop longtemps peut se colmater : son clapet de dérivation s'ouvre alors pour continuer d'alimenter le moteur, avec une huile qui n'est plus filtrée.</p>\n<p>Les étapes du remplacement sont détaillées dans le <a href=\"/blog-pieces-auto/conseils/filtre-a-huile\">guide du filtre à huile</a>.</p>\n<h2>Trouver la référence de votre véhicule</h2>\n<p>Un même modèle peut recevoir des filtres différents selon sa motorisation. Pour afficher ceux qui conviennent :</p>\n<ol>\n<li>Renseignez la marque, le modèle, l'année et la motorisation exacte, puissance comprise.</li>\n<li>Sur la page de votre motorisation, comparez les références proposées avec la référence d'origine quand elle est indiquée.</li>\n<li>Vérifiez la forme : un filtre vissé remplace un filtre vissé, une cartouche remplace l'élément filtrant d'un boîtier.</li>\n</ol>\n<p>Pour chercher l'origine d'un défaut, commencez par le <a href=\"/diagnostic-auto\">diagnostic</a>.</p>"
+    "html": "<h2>Filtre vissé ou cartouche : la différence</h2>\n<p>Le filtre à huile existe sous deux formes, et c'est le moteur qui impose la sienne. Le filtre vissé réunit le boîtier et l'élément filtrant en un seul bloc : il se change en entier. La cartouche se loge dans un boîtier démontable : seul l'élément filtrant est remplacé, le boîtier est conservé.</p>\n<h2>Critères qui distinguent deux filtres semblables</h2>\n<p>Deux filtres de même taille et de même aspect peuvent être très différents à l'intérieur. Selon le moteur, un filtre vissé comporte ou non un clapet anti-retour, qui garde l'huile dans le filtre quand le moteur est arrêté. Son clapet de dérivation (by-pass) s'ouvre à une pression qui varie d'un moteur à l'autre. Le filetage de raccordement, le média filtrant, la finesse de filtration et la surpression admissible changent aussi.</p>\n<p>Ces écarts ne se voient pas de l'extérieur. Le catalogue part donc de la motorisation, jamais de l'apparence de l'ancien filtre.</p>\n<h2>Qualité d'un filtre à huile : ce qui compte</h2>\n<p>Le papier filtrant, le clapet de dérivation et le clapet anti-retour font partie des caractéristiques de qualité d'un filtre à huile. Plus l'intervalle de remplacement prévu par le constructeur est long, plus cette qualité compte.</p>\n<p>Le montage compte aussi : même un bon filtre ne fonctionne correctement que s'il a été bien monté, en suivant les instructions du constructeur du véhicule et du fabricant du filtre.</p>\n<p>Les marques présentées ci-dessous viennent du catalogue. Quelle que soit la marque, la référence doit d'abord être celle prévue pour votre motorisation.</p>\n<h2>Rôle du filtre à huile et moment du remplacement</h2>\n<p>Le filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification du moteur. Il aide ainsi à préserver la qualité de l'huile, les performances et le rendement du moteur.</p>\n<p>Son emplacement dépend du moteur : cette page n'en indique pas un valable pour tous. Sur certains moteurs, le filtre est monté à l'horizontale ou tête en bas ; un clapet anti-retour y empêche l'huile de quitter le filtre à l'arrêt.</p>\n<p>Il se remplace aux échéances d'entretien fixées par le constructeur du véhicule. Aucune durée ni aucun kilométrage ne vaut pour tous les véhicules. Un filtre gardé trop longtemps peut se colmater : son clapet de dérivation s'ouvre alors pour continuer d'alimenter le moteur, avec une huile qui n'est plus filtrée.</p>\n<p>Les étapes du remplacement sont détaillées dans le <a href=\"/blog-pieces-auto/conseils/filtre-a-huile\">guide du filtre à huile</a>.</p>\n<h2>Trouver la référence de votre véhicule</h2>\n<p>Un même modèle peut recevoir des filtres différents selon sa motorisation. Pour afficher ceux qui conviennent :</p>\n<ol>\n<li>Renseignez la marque, le modèle, l'année et la motorisation exacte, puissance comprise.</li>\n<li>Sur la page de votre motorisation, comparez les références proposées avec la référence d'origine quand elle est indiquée.</li>\n<li>Vérifiez la forme : un filtre vissé remplace un filtre vissé, une cartouche remplace l'élément filtrant d'un boîtier.</li>\n</ol>\n<p>Pour chercher l'origine d'un défaut, commencez par le <a href=\"/diagnostic-auto\">diagnostic</a>.</p>",
+    "fiche_par_bloc": {
+      "Filtre vissé ou cartouche : la différence": {
+        "cible": "R1 · sg_content, H2 « Filtre vissé ou cartouche : la différence » → chooseSection",
+        "question_resolue": "Quelle différence entre vissé et cartouche ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Définition",
+        "portee_vehicule": "forme fixée par le moteur",
+        "statut_admission": "admis ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "TYPES rip 32"
+      },
+      "Critères qui distinguent deux filtres semblables": {
+        "cible": "R1 · sg_content, H2 « Critères qui distinguent deux filtres semblables » → chooseSection",
+        "question_resolue": "Deux filtres semblables sont-ils interchangeables ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Critères de choix, Fonctionnement ; catalogue",
+        "portee_vehicule": "par motorisation ; clapets et réglages selon le filtre et le moteur",
+        "statut_admission": "admis + catalogue ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      },
+      "Qualité d'un filtre à huile : ce qui compte": {
+        "cible": "R1 · sg_content, H2 « Qualité d'un filtre à huile : ce qui compte » → priceSection",
+        "question_resolue": "Qu'est-ce qui fait la qualité d'un filtre ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Marques & qualité, Entretien & bonnes pratiques ; catalogue",
+        "portee_vehicule": "tous filtres ; aucun niveau de gamme ni prix",
+        "statut_admission": "admis + catalogue ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "PRICE rip 33 (assets/r1-price-caracteristiques-qualite.webp)"
+      },
+      "Rôle du filtre à huile et moment du remplacement": {
+        "cible": "R1 · sg_content, H2 « Rôle du filtre à huile et moment du remplacement » → locationSection",
+        "question_resolue": "À quoi sert le filtre et quand le remplacer ?",
+        "preuve_interne": "fiche WIKI gamme:filtre-a-huile (commit a4783348) : Rôle technique, Fonctionnement, Entretien & bonnes pratiques",
+        "portee_vehicule": "échéance par véhicule ; aucun emplacement universel",
+        "statut_admission": "admis + éditorial ; admission ADR-119 de la fiche non prouvée (HANDOFF § 4) : non servable avant admission",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "LOCATION rip 34 sans image (désélection) : P-06 par véhicule seulement"
+      },
+      "Trouver la référence de votre véhicule": {
+        "cible": "R1 · sg_content, H2 « Trouver la référence de votre véhicule » → referenceSection",
+        "question_resolue": "Comment trouver la référence de mon véhicule ?",
+        "preuve_interne": "catalogue : sélecteur et pages de motorisation",
+        "portee_vehicule": "par motorisation",
+        "statut_admission": "catalogue + admis ; donnée du catalogue, à relire au moment de l'écriture",
+        "dependance": "voie d'écriture gouvernée et accord nominatif (zone STOP : base partagée avec la PROD, page indexée ; HANDOFF § 6)",
+        "image_associee": "aucune"
+      }
+    }
   },
-  "images": "voir assets.json (slots HERO, TYPES, PRICE, LOCATION, OG)"
+  "images": "voir assets.json (slots HERO, TYPES, PRICE, LOCATION, OG)",
+  "lecture_fiche": {
+    "cible": "page servie et champ écrit",
+    "action": "champ existant du bloc : conservé, amélioré ou ajouté",
+    "question_resolue": "besoin du visiteur auquel le bloc répond",
+    "preuve_interne": "source interne du fait ; jamais citée dans le texte servi",
+    "portee_vehicule": "véhicules auxquels le contenu s'applique",
+    "statut_admission": "admis, catalogue, éditorial ou candidat, avec la condition de service",
+    "dependance": "ce qui doit exister avant de servir le bloc",
+    "image_associee": "visuel du bloc (integration/assets.json) ou manque (PROMPTS.md)"
+  },
+  "propositions_libelles_codes": [
+    {
+      "emplacement": "H2 codé « Qualité, prix et marques » (frontend/app/routes/pieces.$slug.tsx:900)",
+      "servi": "Qualité, prix et marques",
+      "proposition": "Qualité et marques",
+      "motif": "la section n'affiche aucun prix vérifié ; le libellé promet une comparaison absente",
+      "portee": "intertitre de toutes les pages R1 indexées : décision owner, correction de code par Claude CLI"
+    },
+    {
+      "emplacement": "phrase codée de EquipementiersSection (frontend/app/components/pieces/EquipementiersSection.tsx:53-56)",
+      "servi": "Nous sélectionnons des équipementiers reconnus pour garantir performance, sécurité et longévité, selon les standards d'origine.",
+      "proposition": "Les marques présentées viennent du catalogue. Chaque référence est rattachée à des motorisations précises.",
+      "motif": "promesse de performance, de sécurité et de longévité sans preuve ; « garantir » engage la marque",
+      "portee": "toutes les pages R1 : décision owner, correction de code par Claude CLI ; redondante avec r1s_equipementiers_line quand celle-ci est servie"
+    },
+    {
+      "emplacement": "badge codé « Marque de confiance » (EquipementiersSection.tsx:110)",
+      "servi": "Marque de confiance",
+      "proposition": "retirer le badge",
+      "motif": "qualification non démontrée, posée sur chaque marque",
+      "portee": "toutes les pages R1 : décision owner, correction de code par Claude CLI"
+    }
+  ]
 }

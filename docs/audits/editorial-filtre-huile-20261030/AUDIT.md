@@ -13,6 +13,10 @@ champs réellement servis ; les faits et blocs encore candidats dans `integratio
 dans `assets/` (`integration/assets.json`) ; les images et scènes manquantes dans [PROMPTS.md](PROMPTS.md). Les § 1.1
 et 1.2 restent la version relue phrase par phrase ; en cas d'écart, les fichiers `integration/` font foi.
 
+Révision 4 (31/10) : chaque champ R1 et chaque section R3 porte une fiche (page et champ cible, question résolue,
+preuve interne, portée véhicule, statut d'admission, dépendance, image associée) ; S2_DIAG répond aux cinq intentions R5
+consolidées ; parcours par besoin au § 3.1 ; références vidéo complétées au § 4 ; trois pictogrammes vidéo ajoutés.
+
 Statut de chaque phrase proposée :
 
 | Marque | Sens | Servable |
@@ -288,7 +292,8 @@ Détail, scènes, sous-titres, vignettes et légendes : [MEDIA.md](MEDIA.md).
 | C3 | À quoi servent les clapets d'un filtre vissé ? | court 35 s, schéma animé | script écrit ; dépendance : schéma (WIKI `function_diagram` DEFERRED) |
 | C4 | Comment serrer un filtre vissé ? | court 30 s, démonstration | script écrit, **bloqué** : faits candidats F-C2 à F-C4 |
 
-Aucun format long : la fabrique n'a pas de composition au-delà de 40 s. Non rédigé dans ce lot.
+Aucun format long : la fabrique n'a pas de composition au-delà de 40 s. Non rédigé dans ce lot. État de chaque vidéo au
+31/10 (script, visuels, voix, composition, rendu) : MEDIA § 1.
 
 ## 3. Choix éditoriaux et justification
 
@@ -349,6 +354,26 @@ modifié ; seule altération de portée, documentée : R3 S3 point 4 (réduite).
 Verdict : PROPOSITION. Signalement de fond : aucun texte n'est servi avant d'avoir suivi le chemin d'écriture existant
 et gouverné, à identifier (FH-3, HANDOFF § 4). Espaces insécables et guillemets (RE-T) : à poser à la projection.
 
+### 3.1 Parcours par besoin, R1 à R8 (état servi le 31/10)
+
+Statuts relevés le 2026-10-31T05:33Z (`curl`, sans suivre les redirections). Une affirmation non admise ne bloque que
+le bloc qui la porte.
+
+| Rôle | Question du client | Page existante | Apport du lot | Connaissance disponible | Manque | Action proposée |
+|---|---|---|---|---|---|---|
+| R1 | Quel filtre pour mon véhicule ? Vissé ou cartouche ? | `/pieces/filtre-a-huile-7.html` (200) | `integration/r1.json`, fiche par champ et par bloc | WIKI admis : rôle, formes, choix par véhicule ; catalogue : type de filtre par `type_id` | affichage des critères techniques (FH-12) ; champ de la carte grise (F-C7) | sélectionner le véhicule, puis la page de la gamme pour ce type (R2) |
+| R2 | Quelle référence est compatible avec mon type ? | `/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html` et `…-19053.html` (200) | aucun texte : le catalogue fait foi | références rattachées par `type_id` | filtre qui réduit 74 pièces à 24 sur la page (F-C8) | choisir une référence ; panier et prix (zone STOP) non touchés |
+| R3 | Quand et comment le remplacer ? Le voyant s'allume : est-ce le filtre ? | `/blog-pieces-auto/conseils/filtre-a-huile` (200, canonique ; ancre `diagnostic-rapide` présente) | `integration/r3.json` ; blocs en attente dans `integration/candidats.json` | WIKI admis : clapets, by-pass, colmatage possible ; notice Clio 5 phase 1 pour le témoin | F-C1 à F-C6, F-C9 à F-C11 : S4 à S6 restent courts | vérifier l'échéance au carnet, puis sélectionner le véhicule ; diagnostic si un signe persiste |
+| R4 | Qu'est-ce qu'un filtre à huile ? | `/reference-auto/filtre-a-huile` (200 ; liens servis vers R3 et R1) | hors du premier livrable ; écarts au § 8.4 | WIKI admis | cinq liens de symptômes en 404 (relevés le 30/10, § 5) | lire le guide R3 ou sélectionner le véhicule |
+| R5 | Voyant, fuite, bruit, odeur ou vibration : est-ce le filtre ? | `/diagnostic-auto/{voyant,fuite,bruit,odeur,vibration}-filtre-a-huile` : 301 vers R3 `#diagnostic-rapide` | S2_DIAG réécrit en 4 lignes : consigne du témoin propre à la Clio 5 phase 1, notice pour un autre véhicule, une ligne pour les quatre autres signes, qui ne désigne pas le filtre | notice Clio 5 phase 1 ; fiche WIKI : relations diagnostic non établies (`diagnostic_safe: false`) | tableau servi le 31/10 : 5 lignes qui attribuent chaque signe au filtre, causes sans source, colonne « Action » qui répète le symptôme, vibration absente ; fuite juste après remplacement : candidat (F-C3, F-C4) ; OBD en attente faute de données | `/diagnostic-auto` (200) |
+| R6 | Comment choisir sans erreur ? | `/blog-pieces-auto/guide-achat/filtre-a-huile` : 301 vers R3 (consolidation active, ADR-103) | aucune surface recréée ; le choix est traité en R1 et en R3 S3 | WIKI admis : choix par véhicule, pas par aspect | — | sélectionner le véhicule |
+| R7 | Explorer une marque | `/constructeurs/renault-140.html` (200) | aucun : page non propre à la gamme | — | — | — |
+| R8 | Situer un véhicule précis | `/constructeurs/renault-140/clio-iii-140004/1-5-dci-19052.html` et `…-19053.html` (200) | aucun ; 19052 et 19053 restent distincts | lien servi vers la page filtre à huile du même type (constaté pour 19052, non vérifié pour 19053) | — | ouvrir la page de la gamme pour ce type (R2) |
+
+Les questions viennent de l'export Search Console (§ 8.2 : marque ou moteur, correspondance, vissé ou cartouche,
+échéance) et des intentions R5 consolidées. Aucune requête « voyant » n'y figure : la ligne R5 répond à une
+redirection servie, pas à une demande mesurée.
+
 ## 4. Références réellement analysées
 
 Consultées le 30/10/2026. « Preuve » : peut fonder un fait candidat. « Inspiration » : forme seulement, jamais un fait.
@@ -363,12 +388,35 @@ Consultées le 30/10/2026. « Preuve » : peut fonder un fait candidat. « Inspi
 | 6 | [How a Car Works, changing an oil filter](https://www.howacarworks.com/engine/changing-an-oil-filter) | inspiration | texte ; illustrations vues par leur nom de fichier seulement | monter cartouche ou élément | une action par étape, avec la raison (joint huilé, pas de serrage excessif) | britannique, sans date ni source ; « trois quarts de tour » donné comme règle | la forme « geste + pourquoi » | aucune valeur universelle ; renvoi au véhicule |
 | 7 | [idGarages, changer son filtre à huile](https://www.idgarages.com/fr-fr/prestations/revision-vidange/changer-filtre-a-huile) | inspiration | texte intégral | signes, rôle, fréquence, intervention | by-pass expliqué simplement ; filtre changé avec la vidange | commercial ; chiffres sans source (15 000-30 000 km, microns, 20-30 %) ; contradictions internes ; ouvre sur les symptômes | l'inventaire des questions des lecteurs | ni chiffres non sourcés ni ouverture sur un symptôme |
 | 8 | [MANN-FILTER, HU 9006 z](https://www.youtube.com/watch?v=K20yphlTLg4) (74 s, 03/08/2025) | inspiration vidéo | description lue ; 9 images prélevées entre 3 et 70 s ; piste « [Music] » seulement ; vidéo non regardée en continu | changer un élément à baïonnette | démonstration sans voix sur un boîtier isolé, fond blanc, flèches, pictogramme pour « huiler le joint » | promotion d'un produit précis ; aucun « pourquoi » ; pas de contexte véhicule | la grammaire de démonstration (un geste par plan, pièce isolée, pictogrammes) pour C2 et C4 | la raison de chaque geste et le choix par véhicule |
-| 9 | [MOTOR, série MAHLE en 6 vidéos (23/06/2021)](https://www.motor.com/2021/06/mahle-video-warehouse-now-includes-six-part-oil-filter-instructional-video-series/) | contexte | communiqué lu ; vidéos non trouvées | — | format en série par question, avec un formateur | promotionnel, 2021, aucun contenu vidéo accessible | l'idée d'une série (V1 + C1 à C4) | — |
+| 9 | [MOTOR, série MAHLE en 6 vidéos (23/06/2021)](https://www.motor.com/2021/06/mahle-video-warehouse-now-includes-six-part-oil-filter-instructional-video-series/) | contexte | communiqué lu ; une vidéo de la série retrouvée ensuite (n° 10) | — | format en série par question, avec un formateur | promotionnel, 2021 | l'idée d'une série (V1 + C1 à C4) | — |
+| 10 | [MAHLE Aftermarket NA, « Spin-On Oil Filter Series: Filters & Anti-Drain Valves »](https://www.youtube.com/watch?v=C1tlkJ_P6ko) (136 s, 26/05/2021) | inspiration vidéo (épisode de la série n° 9) | 70 images de l'aperçu de lecture, une toutes les 2 s (160 × 90 px) ; son non écouté ; vidéo non regardée en continu | faut-il un clapet anti-retour ? | un épisode par question ; la question en bandeau pendant l'explication, la réponse en bandeau à la fin ; présentateur face caméra, pièce en main brièvement | fabricant ; marché nord-américain ; bandeaux à peine lisibles à cette taille | la question à l'écran, puis la réponse à l'écran | réponse rattachée au véhicule ; pas de visage humain : Fafa est une IA |
+| 11 | [LSX Filter, « Why Do Some Oil Filters Have Bypass Valves »](https://www.youtube.com/watch?v=lUN7f9mwvxY) (87 s, 04/06/2026, vertical) | inspiration vidéo, format court | 88 images de l'aperçu, une par seconde (101 × 180 px) ; sous-titres incrustés lus en partie ; son non écouté | à quoi sert le by-pass ? | plan fixe en plongée sur une table ; deux mains et des filtres réels ; le doigt appuie sur le clapet pour montrer qu'il s'ouvre ; sous-titres permanents ; aucun habillage graphique | fabricant, promotionnel ; aucun contexte véhicule ; sous-titres bilingues peu lisibles à cette taille | un geste physique visible par idée ; un texte lisible sans le son | le geste exige un filtre réel filmé (P-05), absent : C3 reste sur un schéma de principe |
+| 12 | [Oscaro, vidange et filtre à huile sur Citroën C3 II 1.4 HDi](https://www.youtube.com/watch?v=TKkmoN1pzxE) (244 s, 22/01/2025) | inspiration vidéo (distributeur concurrent, jamais cité en public) | 123 images de l'aperçu, une toutes les 2 s (320 × 180 px) ; son non écouté | remplacer le filtre sur un véhicule précis | véhicule et moteur annoncés dès le titre ; carte « outillage » avant les étapes ; sept étapes numérotées en plein écran ; une consigne en bandeau sur chaque plan ; dernière étape : remise à zéro de l'indicateur d'entretien | valable pour ce seul véhicule ; aucune valeur lisible à cette taille | annoncer la portée (véhicule, moteur) avant toute procédure ; outillage, puis étapes numérotées | aucune procédure servie avant admission (F-C2 à F-C6) |
+
+Révision 4 : les n° 10 à 12 sont des pages enregistrées le 30/10, dont les images d'aperçu ont été vues le 31/10.
+Ces images sont de vraies images de la vidéo, prélevées à intervalle fixe ; elles ne valent pas un visionnage continu
+avec le son, qui n'a été fait pour aucune des vidéos 8 à 12. Sept autres pages enregistrées le 30/10 (clapet by-pass,
+260 s ; clapet anti-retour, 205 s et 528 s ; technologies d'un fabricant, 98 s et 165 s ; filtres en général, 711 s ;
+tutoriel de 2011, 101 s) : titre et durée lus seulement, non analysées.
 
 Non consultées : Carter-Cash (deux articles : page de vérification anti-robot, non contournée) ; Tomorrow's
 Technician (trois vidéos : 403 puis défi Cloudflare) ; recherche YouTube de formats courts en français (résultats non
-affichés dans le navigateur). **Aucune référence au format court vertical n'a été réellement analysée** : la seule
-vidéo étudiée (n° 8) est horizontale et dure 74 s.
+affichés dans le navigateur). Une seule référence au format court vertical (n° 11), vue par ses images ; aucune en
+français.
+
+Techniques retenues et où elles s'appliquent :
+
+| Technique | D'où | Dans le lot |
+|---|---|---|
+| Regrouper par intention | cinq intentions R5 servies sur une seule ancre (§ 3.1) | S2_DIAG : une ligne par situation ; les quatre signes non spécifiques regroupés |
+| Réponse directe d'abord | n° 6, 7, 10 | « En bref » en tête de R3 ; R1 ouvre sur la sélection du véhicule |
+| Lien vers le besoin suivant | `role-matrix.md`, `handoff_targets` | une action suivante par rôle (§ 3.1) et par fiche de bloc (`integration/r1.json`, `r3.json`) |
+| Validation par lot | pratique du dossier | `integration/candidats.json` : l'admission d'un fait F-C libère tous ses blocs |
+| Comparaison avant/après réelle | pratique du dossier | texte servi relevé puis texte proposé dans `integration/*.json` ; `preview/` (simulation) face à `verification-dev/` (DEV, lecture superposée) |
+| Question à l'écran, puis réponse | n° 10 | chaque court a une question pour titre (MEDIA § 7) ; texte à l'écran prévu de 0 à 3 s : la question pour C2, la réponse courte pour C1, C3 et C4 |
+| Un geste visible par idée | n° 8, 11 | C2 à C4 ; dépend de prises de vue absentes (PROMPTS.md P-04, P-05, P-07, P-08) |
+| Texte lisible sans le son | n° 11 | non appliqué : aucune composition n'incruste les sous-titres ; fichier SRT séparé (MEDIA § 2) |
+| Portée annoncée avant la procédure | n° 12 | R3 S4 et C4, qui restent candidats |
 
 ## 5. Liens et appels à l'action
 
@@ -429,8 +477,8 @@ filtre ». Blocs prêts après admission : `integration/candidats.json`.
 | Schéma du circuit et des clapets | R3 S1, C3 | WIKI `function_diagram` en DEFERRED |
 | Prises de vue : filtre vissé et cartouche neufs, deux filtres semblables, filtre en coupe (membrane anti-retour), boîtier de cartouche, main qui serre | C2, C3, C4, R3 | aucune ; photo hero `filtre-a-huile.webp` disponible (licence `owned`) |
 | Pictogrammes : huiler le joint, main | C4 | à créer (PROMPTS.md P-07, S-03) |
-| Pictogramme du témoin de pression d'huile | V1 14-24 s, C1 | livré : `assets/picto-temoin-pression-huile.{svg,webp}` (`tools/build-pictos.cjs`) |
-| Composition pour C1, C2, C3, C4 | shorts | absente (§ 3) |
+| Pictogrammes du témoin de pression d'huile, de l'arrêt impératif, du contact coupé et de la jauge | V1 14-24 s, C1 | livrés : `assets/picto-temoin-pression-huile`, `picto-arret-imperatif`, `picto-contact-coupe`, `picto-niveau-huile` (`.svg`, `.webp`), par `tools/build-pictos.cjs` ; le témoin le 30/10, les trois autres le 31/10 |
+| Composition pour C1, C2, C3, C4 | shorts | `SequencesCourtes` proposée dans #1936 (`e3d644a04`, brouillon non fusionné) ; absente de `main` |
 
 Images servies le 30/10 (bucket `uploads/articles/gammes-produits/`, contrat `frontend/app/types/r1-images.types.ts`).
 Révision 3 : remplacements produits dans `assets/` et décrits slot par slot dans `integration/assets.json` (fichier,

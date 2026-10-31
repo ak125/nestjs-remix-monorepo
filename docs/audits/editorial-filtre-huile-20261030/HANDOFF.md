@@ -1,6 +1,7 @@
 # Mission Claude CLI — intégration du lot filtre à huile (pg_id 7)
 
-Révision 3, 30/10/2026. Remplace la liste de raccordements de la révision 2. Seuls les raccordements du dossier
+Révision 3, 30/10/2026. Remplace la liste de raccordements de la révision 2. Révision 4 du dossier (31/10) : § 1
+(note) et § 2 mis à jour par Claude Code Desktop ; § 3 à § 6 inchangés. Seuls les raccordements du dossier
 filtre à huile : les 13 besoins du dossier plaquettes ne sont pas des prérequis (FH-5 compteur et FH-11 `stages` les
 recoupent parce que le filtre à huile en a besoin pour son compte).
 
@@ -24,18 +25,24 @@ recoupent parce que le filtre à huile en a besoin pour son compte).
 | pris en charge | oui | session Claude Code des 30 et 31/10 ; code sur la PR brouillon [ak125/nestjs-remix-monorepo#1936](https://github.com/ak125/nestjs-remix-monorepo/pull/1936), dossier sur #1935 |
 | intégré et vérifié en DEV | vérifié en DEV, non intégré | code : #1936 en brouillon, non fusionnée, absente de PREPROD et de PROD ; lot : rendu DEV vérifié par une surcouche de lecture, rien d'écrit en base (§ 6) |
 
+Révision 4 (31/10) : rédigée ; accessible sur #1935 une fois poussée (SHA dans la description de la PR). Transmise à
+Claude CLI : non, aucun envoi observable depuis Claude Code Desktop. Prise en charge : non. Ce qui change pour
+l'intégration : S2_DIAG (4 lignes au lieu de 3), une fiche par champ et par bloc dans `integration/r1.json` et
+`r3.json`, trois propositions de libellés codés (décisions de l'owner), un bloc candidat S2_DIAG, trois pictogrammes
+vidéo pour `SequencesCourtes`.
+
 ## 2. Ce qui est livré
 
 | Fichier | Contenu | Statut |
 |---|---|---|
-| `integration/r1.json` | champs `r1s_*` (hero, sélecteur, 4 badges, intros, tableau de vérification, FAQ au format `{question, answer}`, bloc micro-SEO 1 570 caractères après FH-12) ; `sg_content` en 5 blocs H2 routés vers choose, price, location, reference ; ancien → nouveau par bloc | REVIEW_REQUIRED |
-| `integration/r3.json` | 12 sections `__seo_gamme_conseil` par `sgc_id`, titres, HTML conforme aux composants de rendu, provenance proposée, image par section ; META conservée | REVIEW_REQUIRED |
-| `integration/candidats.json` | F-C1 à F-C11 et blocs prêts après admission (S4, S5, S6, huile et filtre usagés) | non servables avant admission |
-| `integration/assets.json` | 8 visuels : slot, `rip_id`, fichier, alt, légende, mécanisme, état de vérification ; LOCATION à désélectionner | fichiers produits |
+| `integration/r1.json` | champs `r1s_*` (hero, sélecteur, 4 badges, intros, tableau de vérification, FAQ au format `{question, answer}`, bloc micro-SEO 1 570 caractères après FH-12) ; `sg_content` en 5 blocs H2 routés vers choose, price, location, reference ; ancien → nouveau par bloc. Révision 4 : `fiche` par champ et `fiche_par_bloc` (cible, question résolue, preuve interne, portée véhicule, statut d'admission, dépendance, image) ; `propositions_libelles_codes` : H2 « Qualité, prix et marques », texte et badge de `EquipementiersSection.tsx` | REVIEW_REQUIRED ; libellés codés : décision de l'owner |
+| `integration/r3.json` | 12 sections `__seo_gamme_conseil` par `sgc_id`, titres, HTML conforme aux composants de rendu, provenance proposée, image par section ; META conservée. Révision 4 : `fiche` par section ; S2_DIAG en 4 lignes (la dernière répond aux intentions R5 fuite, bruit, odeur et vibration, consolidées sur `#diagnostic-rapide`, sans désigner le filtre) ; proposition de slogan R3 (`visual-intent.ts:186`) | REVIEW_REQUIRED |
+| `integration/candidats.json` | F-C1 à F-C11 et blocs prêts après admission (S4, S5, S6, huile et filtre usagés ; révision 4 : ligne S2_DIAG « fuite juste après remplacement », F-C3 et F-C4) | non servables avant admission |
+| `integration/assets.json` | 8 visuels de page et 4 pictogrammes vidéo : slot, `rip_id`, fichier, alt, légende, mécanisme, état de vérification ; révision 4 : droits, portée et affichage attendu par visuel, consommateur `SequencesCourtes` (#1936) pour les pictogrammes ; LOCATION à désélectionner | fichiers produits |
 | `PROMPTS.md` | images et scènes manquantes, moyen réel pour chacune | manques |
-| `tools/build-assets.cjs`, `tools/build-pictos.cjs` | reproduction des visuels (sharp) depuis `assets/sources/` ; sortie identique octet pour octet, vérifiée le 30/10 | — |
-| `tools/lint-integration.cjs` | contrôle du texte public : gardes R1 du dépôt (`R1_FORBIDDEN_TERMS`, `isR3R5Content`), bornes du contrat R1, JSON-LD FAQPage, motifs `anti_source`, noms de sources, promesses commerciales, statut candidat servi | PASS le 30/10 après FH-12 (68 unités, 0 constat) |
-| `tools/build-preview.cjs`, `preview/` | simulation non intégrée : `extractEditorialBlocks`, `extractSummaryPoints`, `normalizeStepHtml` et `deriveDifficulty` (backend, avec les libellés de `buildHeroBadges`) exécutés sur les textes du lot, lus dans le checkout désigné par `FH_REPO` ; captures 375 et 1 280 px ; `preview/rapport.json` | pas un rendu DEV |
+| `tools/build-assets.cjs`, `tools/build-pictos.cjs` | reproduction des visuels (sharp) depuis `assets/sources/` ; sortie identique octet pour octet, vérifiée le 30/10 ; `build-pictos.cjs` produit les 4 pictogrammes depuis le 31/10, témoin inchangé à l'octet près | — |
+| `tools/lint-integration.cjs` | contrôle du texte public : gardes R1 du dépôt (`R1_FORBIDDEN_TERMS`, `isR3R5Content`), bornes du contrat R1, JSON-LD FAQPage, motifs `anti_source`, noms de sources, promesses commerciales, statut candidat servi | PASS le 30/10 après FH-12 et le 31/10 après la révision 4 (68 unités, 0 constat) |
+| `tools/build-preview.cjs`, `preview/` | simulation non intégrée : `extractEditorialBlocks`, `extractSummaryPoints`, `normalizeStepHtml` et `deriveDifficulty` (backend, avec les libellés de `buildHeroBadges`) exécutés sur les textes du lot, lus dans le checkout désigné par `FH_REPO` ; captures 375 et 1 280 px ; `preview/rapport.json` ; régénérés le 31/10 avec les fonctions de la branche de correction (`e3d644a04`) : badge « Sécurité » seul | pas un rendu DEV |
 | `integration/gsc-baseline.json` | baseline Search Console de FH-13 : une ligne par rôle, aux colonnes de `__seo_gamme_gsc_baseline` | mesurée le 30/10, non insérée |
 | `verification-dev/` | captures du rendu DEV (branche de correction, surcouche de lecture) : R1 et R3 en 375 et 1 280 px | rendu DEV, rien d'écrit |
 

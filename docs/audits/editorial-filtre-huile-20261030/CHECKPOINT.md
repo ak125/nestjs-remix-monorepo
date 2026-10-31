@@ -1,13 +1,47 @@
-# Checkpoint — lot 1 éditorial filtre à huile, 30 octobre 2026
+# Checkpoint — lot 1 éditorial filtre à huile, 31 octobre 2026
 
 Objectif : premier dossier du programme recadré le 30/10. Filtre à huile (`pg_id` 7) : pages R1 et R3 existantes
 améliorées (textes, images, scripts), script vidéo principal et courts, faits à admettre, raccordements. Statut
 REVIEW_REQUIRED ; rien n'est validé ni servi.
 
 Cible : Claude Code Desktop, worktree `C:\Users\Marwane\nestjs-remix-monorepo-editorial`, branche
-`docs/editorial-filtre-huile-dossier-20261030`, base `980b2f8a7` (`origin/main` au 30/10). Checkout principal et
-worktrees Codex non modifiés (lecture seule : `node_modules` du worktree Codex pour le validateur, sharp, esbuild et
-playwright).
+`docs/editorial-filtre-huile-dossier-20261030`, base `980b2f8a7` (`origin/main` au 30/10), `main` refusionné depuis
+(tête avant la révision 4 : `3d4998f42`). Checkout principal et worktrees Codex non modifiés (lecture seule :
+`node_modules` du worktree Codex pour le validateur, sharp, esbuild et playwright).
+
+## Révision 4 (31/10)
+
+| Livrable | Où | Changement |
+|---|---|---|
+| Fiche par champ R1 et par bloc `sg_content` ; libellés codés proposés (H2 « Qualité, prix et marques », texte et badge de `EquipementiersSection.tsx`) | `integration/r1.json` | ajoutés ; libellés : décision de l'owner, code par Claude CLI |
+| Fiche par section R3 ; S2_DIAG en 4 lignes, dont une pour fuite, bruit, odeur et vibration (intentions R5 consolidées) sans désigner le filtre ; slogan R3 proposé | `integration/r3.json` | amélioré |
+| Ligne S2_DIAG « fuite juste après remplacement » | `integration/candidats.json` | candidat (F-C3, F-C4) |
+| Droits, portée et affichage attendu par visuel ; 4 pictogrammes vidéo pour `SequencesCourtes` (#1936) ; recadrage 9:16 non produit faute de consommateur | `integration/assets.json` | complété |
+| Pictogrammes arrêt impératif, contact coupé, jauge d'huile (1080 × 1080, fond transparent) | `assets/picto-*.{svg,webp}`, `tools/build-pictos.cjs` | produits et vus sur le fond #0F1E38 |
+| Recherche en banque d'images (4 requêtes, 52 photos distinctes) : aucune photo admissible pour P-01, P-02, P-06 | `PROMPTS.md` | manques confirmés |
+| État de chaque vidéo : script, visuels, voix, composition, rendu, publication | `MEDIA.md` § 1 | ajouté |
+| Parcours R1 à R8 (état servi du 31/10) ; références vidéo 10 à 12 ; techniques retenues | `AUDIT.md` § 3.1, § 4 | ajoutés |
+| Aperçu régénéré avec les fonctions de la branche de correction (`e3d644a04`) | `preview/` | badge « Sécurité » seul, comme `rapport.json` |
+| § 1 (note révision 4) et § 2 ; § 3 à § 6 inchangés | `HANDOFF.md` | mis à jour |
+
+Preuves :
+
+- `tools/lint-integration.cjs` : PASS, 68 unités, 0 constat ; micro-SEO 1 570 caractères (bornes 1 500 à 3 000) ;
+  FAQPage R3 : 5 paires.
+- `tools/build-preview.cjs` (`FH_REPO` sur `e3d644a04`, Chrome installé) : routage `sg_content` 2/1/1/1, aucun bloc
+  non classé ; S2_DIAG rendu en 4 lignes ; captures 375 et 1 280 px : 0 image cassée, 0 erreur, 0 débordement.
+- `tools/build-pictos.cjs` : pictogramme du témoin identique à l'octet près à celui du 30/10.
+- État servi relevé à 2026-10-31T05:33Z : R1, R3, R4, R7, R8 et les pages de la gamme pour 19052 et 19053 en 200 ;
+  cinq slugs R5 en 301 vers R3 `#diagnostic-rapide` ; guide d'achat en 301 vers R3.
+- Texte public ajouté relu (humanizer, relecture française) : sens, conditions et portée inchangés ; aucune source
+  nommée.
+
+Limites propres à la révision 4 : vidéos de référence vues par leurs images d'aperçu, sans le son ; lien R8 → gamme
+non vérifié pour 19053 ; aucune vidéo rendue ni voix ; aucune photo neuve.
+
+Relais : révision 4 poussée sur la branche de #1935 (SHA dans la description de la PR). Transmise à Claude CLI : non,
+aucun envoi observable. Prise en charge : non. Intégration DEV : non vérifiée pour la révision 4. Publication : non
+autorisée.
 
 ## Révision 3 (30/10, après-midi)
 
@@ -72,14 +106,14 @@ Hermes : checkpoint **non enregistré**, `automecanik_continuity` indisponible d
 ```json
 {
   "action": "checkpoint",
-  "request_id": "editorial-filtre-huile-20261030-lot1-r3",
+  "request_id": "editorial-filtre-huile-20261030-lot1-r4",
   "objective": "Lot 1 filtre à huile (pg_id 7) : pages R1/R3 existantes améliorées (textes, images, scripts) et intégration en DEV par Claude CLI.",
-  "authorization": "Mandat utilisateur du 2026-10-30 : travail réversible ; push de la branche filtre à huile et PR brouillon de revue autorisés, sans fusion ni déploiement ; plaquettes en attente, sans push ni PR.",
+  "authorization": "Mandats utilisateur des 2026-10-30 et 2026-10-31 : travail réversible ; push de la branche filtre à huile et PR brouillon de revue autorisés, sans fusion ni déploiement ; aucune écriture en base partagée ; plaquettes en attente, sans push ni PR.",
   "environment": "Claude Code Desktop, worktree nestjs-remix-monorepo-editorial, branche docs/editorial-filtre-huile-dossier-20261030, base 980b2f8a7 ; fiche WIKI a4783348 (blob c0f7a257).",
-  "state": "REVIEW_REQUIRED. Textes R1/R3 intégrables (integration/), 8 visuels produits (assets/), aperçu simulé (preview/), mission Claude CLI rédigée (HANDOFF). Accessible : PR brouillon ak125/nestjs-remix-monorepo#1935. Transmis à Claude CLI : non. Pris en charge : non. Vérifié en DEV : non.",
+  "state": "REVIEW_REQUIRED. Révision 4 : fiches par champ R1 et par section R3, S2_DIAG en 4 lignes (intentions R5), 8 visuels de page et 4 pictogrammes vidéo, parcours R1-R8, état des vidéos. Accessible : PR brouillon ak125/nestjs-remix-monorepo#1935. Révision 3 prise en charge par Claude CLI (#1936 brouillon, vérifiée en DEV en lecture). Révision 4 transmise : non ; prise en charge : non ; intégrée : non.",
   "changes": "docs/audits/editorial-filtre-huile-20261030/ : AUDIT, MEDIA, HANDOFF, CHECKPOINT, PROMPTS, integration/, assets/, tools/, preview/ ; .spec/00-canon/repository-registry/ownership.yaml : glob docs/audits/editorial-*/** (D5).",
-  "checks": "lint-integration PASS (70 unités) ; build-preview : routage sg_content 2/1/1/1, 0 image cassée en 375 et 1280 px ; build-assets reproductible ; reproductions FH-1 à FH-16 à 14:09:55Z.",
+  "checks": "lint-integration PASS (68 unités, 0 constat) ; build-preview sur e3d644a04 : routage sg_content 2/1/1/1, badge Sécurité seul, 0 image cassée en 375 et 1280 px ; build-pictos : témoin identique à l'octet ; état servi relevé le 2026-10-31T05:33Z.",
   "decisions": "Aucun symptôme attribué au filtre ; aucune valeur universelle ; F-C2 non universel ; LOCATION désélectionnée ; PRICE et OG remplacés sans prix ni délai ; title, meta et H1 non modifiés ; 19052 et 19053 séparés.",
-  "next_action": "Claude CLI : HANDOFF.md (FH-1 à FH-16, intégration et rendu DEV). Owner : spot-check WIKI, admission F-C1 à F-C11, claims V1, décisions FH-15 et FH-16, prises de vue PROMPTS.md."
+  "next_action": "Claude CLI : reprendre la révision 4 (HANDOFF § 1 note, § 2) dans #1936 et vérifier le rendu DEV. Owner : spot-check WIKI, admission F-C1 à F-C11, claims V1, décisions FH-15 et FH-16, libellés codés, prises de vue PROMPTS.md."
 }
 ```

@@ -5,22 +5,30 @@ conversion mesurée ni citée. Voix Fafa en « tu » ; légendes des plateformes
 
 ## 1. État des vidéos
 
-Quatre états distincts : script écrit, média produit, rendu vérifié, publication.
+État au 31/10. Six états distincts : script prêt, visuels, voix, composition faisable, vidéo rendue, publication. Les
+compositions citées sont celles de [ak125/nestjs-remix-monorepo#1936](https://github.com/ak125/nestjs-remix-monorepo/pull/1936)
+(`e3d644a04`, brouillon non fusionné) : absentes de `main`, de PREPROD et de PROD.
 
-| Vidéo | Question | Format | Script écrit | Média produit | Rendu vérifié | Publication |
-|---|---|---|---|---|---|---|
-| V1 `fafa-filtre-huile-001` (principal) | Vissé ou cartouche, quand le changer, comment ne pas se tromper ? | `piece-expliquee` (`PieceExpliquee`, 40 s fixes) | oui : dossier `scripts/draft/fafa-filtre-huile-001/` | non : ni voix ni visuel | non | non |
-| C1 | Voyant d'huile allumé : faut-il changer le filtre ? | court 35 s | oui (§ 7.1), sans dossier | non | non | non |
-| C2 | Deux filtres identiques sont-ils interchangeables ? | court 30 s | oui (§ 7.2), sans dossier | non | non | non |
-| C3 | À quoi servent les clapets d'un filtre vissé ? | court 35 s | oui (§ 7.3), sans dossier | non | non | non |
-| C4 | Comment serrer un filtre vissé ? | court 30 s | oui (§ 7.4), **bloqué** par F-C2 à F-C4 | non | non | non |
+| Vidéo | Question | Script prêt | Visuels | Voix | Composition faisable | Rendu | Publication |
+|---|---|---|---|---|---|---|---|
+| V1 `fafa-filtre-huile-001` (principal) | Vissé ou cartouche, quand le changer, comment ne pas se tromper ? | écrit (dossier `scripts/draft/fafa-filtre-huile-001/`) ; 3 claims sans validation humaine (validateur : sortie 1 le 30/10, non relancé) | aucun emplacement : `PieceExpliquee` n'affiche que du texte | non : aucun outil de synthèse vocale dans la session | oui, `PieceExpliquee` avec `hook`, `titles` et `windowWarnings` (FH-9) | non | non |
+| C1 | Voyant d'huile allumé : faut-il changer le filtre ? | écrit (§ 7.1), sans dossier ; 1 claim `safety` à valider | 4 pictogrammes sur 4 (31/10) | non | oui, `SequencesCourtes` (FH-10) | non | non |
+| C2 | Deux filtres identiques sont-ils interchangeables ? | écrit (§ 7.2), sans dossier | coupe de principe ; P-04 manque | non | oui, `SequencesCourtes` | non | non |
+| C3 | À quoi servent les clapets d'un filtre vissé ? | écrit (§ 7.3), sans dossier | coupe de principe, une image fixe par séquence ; animation par clapet absente | non | oui, `SequencesCourtes` | non | non |
+| C4 | Comment serrer un filtre vissé ? | **bloqué** par F-C2 à F-C4 (§ 7.4) | P-07, P-08 manquent | non | — | non | non |
+
+Aucun rendu n'est lancé : il faudrait une voix, la validation humaine des claims (G1, G2) et la fusion de #1936. Les
+services de rendu externes connectés à la session ne sont pas utilisés : ils enverraient des claims non validés hors du
+dépôt.
 
 Plateformes du brief V1 : TikTok, Instagram Reels, YouTube Shorts, Facebook Reels, un même rendu 9:16 (1080 × 1920).
-Pas de format long : aucune composition de la fabrique ne dépasse 40 s.
+Pas de format long : `PieceExpliquee` dure 40 s et les courts prévus 30 à 35 s (`SequencesCourtes` s'arrête à la fin de
+sa dernière séquence).
 
 ## 2. Ce que `PieceExpliquee` affiche réellement
 
-Lu dans `services/remotion-renderer/src/compositions/PieceExpliquee.tsx` (base `980b2f8a7`) :
+Lu dans `services/remotion-renderer/src/compositions/PieceExpliquee.tsx` (base `980b2f8a7`). #1936 ajoute les props
+`hook`, `titles` et `windowWarnings` (FH-9), sans emplacement d'image :
 
 | Fenêtre | Images | Affiché | Source |
 |---|---|---|---|
@@ -56,7 +64,7 @@ C « Ton filtre à huile ne se choisit pas à l'œil. »
 
 | Fenêtre | Voix | Affiché par la composition | Consigne de montage (`screen_text`) | Démonstration |
 |---|---|---|---|---|
-| 0-4 s | accroche retenue (A : 7 mots) | « Filtre à huile » | — | photo d'usage `assets/r1-hero-filtre-visse-usage.webp` (disponible, à recadrer en 9:16) ; P-01 préférable (PROMPTS.md) |
+| 0-4 s | accroche retenue (A : 7 mots) | « Filtre à huile » | — | photo d'usage `assets/r1-hero-filtre-visse-usage.webp` ; aucun emplacement d'image dans la composition (§ 1) ; P-01 préférable (PROMPTS.md) |
 | 4-14 s | « Moi c'est Fafa, le mécano IA d'AutoMecanik. Ton filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification. Le vissé se change en entier ; la cartouche, juste son élément. » (31 mots) | `pieceFunction`, `location` ; claim-1 | « Vissé : on change tout » · « Cartouche : juste l'élément » | filtre vissé puis boîtier de cartouche (prises de vue à produire) |
 | 14-24 s | « Des signes d'usure ? Aucun symptôme ne désigne à lui seul le filtre. Même un voyant d'huile : suis d'abord ta notice. » (20 mots) | titre fixe « Signes d'usure » ; 2 cartes : « Aucun symptôme ne le désigne à lui seul » (`low`), « Voyant d'huile : suis d'abord ta notice » (`high`) ; claim-2 | « Un voyant ne désigne pas le filtre » | `assets/picto-temoin-pression-huile.webp` (livré) |
 | 24-32 s | « Change-le aux échéances de ton constructeur. Trop vieux, il peut se colmater, et l'huile passe alors sans être filtrée. » (19 mots) | `whenToChange` ; claim-3 | « Échéances du constructeur » | schéma `assets/r3-s2-filtre-colmate-by-pass.webp` (livré) |
@@ -221,8 +229,8 @@ d'abord la notice de votre véhicule. Exemple de la Clio 5 phase 1 : s'il s'allu
 impératif et un signal sonore, arrêt impératif, contact coupé, contrôle du niveau. Pour orienter la recherche avant
 d'acheter une pièce : diagnostic AutoMecanik. Conseil informatif ; Fafa est un mécano IA. » Mesure : sessions `utm_campaign` C1 sur `/diagnostic-auto` (GA4).
 
-Dépendances : composition à une question et une séquence d'étapes ; pictogrammes ; validation humaine du claim
-`safety`.
+Dépendances : composition `SequencesCourtes` (#1936, non fusionnée) ; pictogrammes livrés le 31/10
+(`assets/picto-*.webp`, `integration/assets.json`) ; voix ; validation humaine du claim `safety`.
 
 ### 7.2 C2 — « Deux filtres identiques sont-ils interchangeables ? »
 

@@ -1,6 +1,6 @@
 {
   "objet": "Blocs prêts à servir APRÈS admission WIKI des faits candidats. Non servis tant que la fiche gamme:filtre-a-huile ne les porte pas, validés humainement.",
-  "revision": "révision 3, 30/10/2026",
+  "revision": "révision 4, 31/10/2026",
   "regle": "Un bloc n'est intégré que si TOUS les faits qu'il cite sont admis. Sinon la version servie de r3.json reste en place. Aucune valeur chiffrée (couple, tours, délai, kilométrage) n'est introduite.",
   "faits": [
     { "id": "F-C1", "fait": "Le filtre se remplace à chaque vidange", "sources_internes": "aucune lue", "portee": "par véhicule", "etat": "à rechercher ; ne pas servir (contredit par l'absence d'intervalle universel)" },
@@ -43,6 +43,12 @@
       "section": "S6",
       "requiert": ["F-C5", "F-C10", "F-C11"],
       "html": "<p>Après le remplacement, faites l'appoint d'huile, démarrez le moteur, puis contrôlez le niveau sans dépasser le maximum.</p>\n<ul>\n<li>Vérifiez l'absence de fuite autour du filtre.</li>\n<li>Si le témoin de pression d'huile s'allume, suivez la notice de votre véhicule.</li>\n</ul>\n<p><strong>Huile et filtre usagés.</strong> Recueillez l'huile dans un récipient fermé et étanche, sans la mélanger à d'autres liquides. Déposez-la, avec le filtre usagé, en déchèterie ou en point de collecte : ni l'une ni l'autre ne va dans les ordures ménagères.</p>"
+    },
+    {
+      "section": "S2_DIAG",
+      "requiert": ["F-C3", "F-C4"],
+      "position": "ligne insérée avant « Fuite, bruit, odeur ou vibration, quel que soit le véhicule. »",
+      "ajout_html": "<tr><td>Fuite autour d'un filtre vissé juste après son remplacement.</td><td>Vérifier que l'ancien joint n'est pas resté sur la portée et que le filtre neuf a été serré selon l'instruction de son fabricant.</td></tr>"
     }
   ]
 }
