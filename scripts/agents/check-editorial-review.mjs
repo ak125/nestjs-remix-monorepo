@@ -692,7 +692,7 @@ function checkRelecture(rel, ctx) {
   // Une correction RE-T1 nécessaire et non faite laisse C3 non remplie, liste vide comprise (§1, C3).
   const leftovers = reT1Leftovers(P);
   if (leftovers.length) {
-    errors.C3.push(`relecture ${id} : ${leftovers.length} position(s) RE-T1 avec une espace ordinaire dans la proposition (§6), par exemple ${leftovers.slice(0, 3).join(", ")}`);
+    errors.C3.push(`relecture ${id} : ${leftovers.length} position(s) RE-T1 avec une espace ordinaire dans la proposition (§6), par exemple ${leftovers.slice(0, 3).join(", ")}. Pour corriger : conserver original.texte et son sha256 à l'identique, guillemets compris ; corriger proposition avec les échappements JSON \\u00a0 ou \\u202f et déclarer chaque changement RE-T1 dans changements. Ne pas régénérer l'original ni supprimer sa ponctuation pour faire disparaître ces positions`);
   }
 
   if (changes) {
