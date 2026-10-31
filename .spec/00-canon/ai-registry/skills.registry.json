@@ -1,6 +1,6 @@
 {
   "compliantCount": 17,
-  "generatedAt": "2026-10-26T08:22:07.927Z",
+  "generatedAt": "2026-10-31T20:55:32.167Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -92,13 +92,13 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:8487b6fae121c39d87edc690bbd38260023819b099ac8ad0d78673629960b749",
+      "checksum": "sha256:6e285d5be03e65d701f87d56c8d29cc29a04a2bd6825d9550d138996ae604da5",
       "domain": "D15",
       "last_verified": "2026-09-30",
       "llm_safe": false,
       "metadata": {
         "spec": "agentskills.io/specification v1",
-        "version": "1.3"
+        "version": "1.4"
       },
       "name": "db-migration",
       "owners": [
