@@ -48,13 +48,9 @@ const EquipementiersSection = memo(function EquipementiersSection({
       )}
 
       <div className="p-6">
-        <p className="text-gray-700 mb-6 text-sm leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-100">
-          <span className="font-medium text-gray-900">
-            Nous sélectionnons des équipementiers reconnus
-          </span>{" "}
-          pour garantir performance, sécurité et longévité, selon les standards
-          d'origine.
-        </p>
+        {/* Pas d'accroche ni de badge de confiance : la liste vient du nombre de
+            références par marque (top_brands) ou de __seo_equip_gamme, et rien
+            n'étaye une garantie de performance, de sécurité ou de longévité. */}
         {/* Pas de lien : aucune page ne correspond à une marque
             d'équipementier, et le payload ne porte aucune URL (cf. PR #133). */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -91,25 +87,6 @@ const EquipementiersSection = memo(function EquipementiersSection({
                   <p className="text-sm text-gray-600 leading-relaxed">
                     {equipementier.description}
                   </p>
-
-                  <div className="mt-3 flex items-center">
-                    <span className="text-xs text-orange-600 font-medium flex items-center">
-                      <svg
-                        className="w-4 h-4 mr-1"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      Marque de confiance
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>

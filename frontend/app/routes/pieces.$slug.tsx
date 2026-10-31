@@ -904,11 +904,10 @@ export default function PiecesDetailPage() {
           <div
             className={`${editorialBlocks.priceSection.length > 0 ? "grid grid-cols-1 lg:grid-cols-2 gap-8" : ""} mb-8`}
           >
+            {/* Pas de h3 codé : « Niveaux de qualité » annonçait des gammes de
+                prix que R1 n'expose pas (paliers = R6) ; la légende décrit l'image. */}
             {data.r1Images?.PRICE && (
               <div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-3">
-                  Niveaux de qualité
-                </h3>
                 <R1SlotImage
                   path={data.r1Images.PRICE.path}
                   alt={data.r1Images.PRICE.alt}

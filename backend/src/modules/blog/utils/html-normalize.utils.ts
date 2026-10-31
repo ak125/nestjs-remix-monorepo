@@ -106,6 +106,12 @@ export function calcReadingTime(sections: Array<{ html: string }>): number {
 
 // --- Difficulty derivation ---
 
+/**
+ * Difficulté et durée restent nulles : aucune métadonnée sourcée ne les porte,
+ * et le nombre d'étapes S4_DEPOSE n'en est pas une mesure (l'ancienne règle
+ * « 5 min par étape, minimum 30 » affichait une durée inventée). Seul le niveau
+ * de sécurité reste déduit de la présence des sections S4_DEPOSE / S5.
+ */
 export function deriveDifficulty(
   sections: Array<{ sectionType: string | null; html: string }>,
 ): {
@@ -113,32 +119,11 @@ export function deriveDifficulty(
   durationMin: number | null;
   safetyLevel: 'faible' | 'moyen' | 'élevé' | null;
 } {
-  const depose = sections.find((s) => s.sectionType === 'S4_DEPOSE');
+  const hasDepose = sections.some((s) => s.sectionType === 'S4_DEPOSE');
   const hasS5 = sections.some((s) => s.sectionType === 'S5');
 
-  if (!depose) {
-    return {
-      difficulty: null,
-      durationMin: null,
-      safetyLevel: hasS5 ? 'moyen' : 'faible',
-    };
-  }
+  let safetyLevel: 'faible' | 'moyen' | 'élevé' = hasS5 ? 'moyen' : 'faible';
+  if (hasDepose) safetyLevel = hasS5 ? 'élevé' : 'moyen';
 
-  // html is already normalized at this point (normalizeStepHtml applied)
-  const stepCount = (depose.html.match(/<li>/gi) || []).length;
-  const difficulty =
-    stepCount <= 4 ? 'facile' : stepCount <= 8 ? 'moyen' : 'difficile';
-  const durationMin = Math.max(stepCount * 5, 30); // minimum 30 min pour toute dépose
-  const safetyLevel = hasS5 ? 'élevé' : 'moyen';
-
-  // Si S5 (risques/erreurs) existe et difficulté calculée = facile → relever à moyen
-  if (hasS5 && difficulty === 'facile') {
-    return {
-      difficulty: 'moyen',
-      durationMin: Math.max(durationMin, 45),
-      safetyLevel,
-    };
-  }
-
-  return { difficulty, durationMin, safetyLevel };
+  return { difficulty: null, durationMin: null, safetyLevel };
 }

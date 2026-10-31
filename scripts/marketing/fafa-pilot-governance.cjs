@@ -135,11 +135,12 @@ function evaluateDossier(dir, options) {
   const evidence = read(path.join(dir, 'evidence.json'));
   const approval = read(path.join(dir, 'approval.json'));
   for (const [schema, doc] of [['claim-table', claims], ['evidence-pack', evidence], ['approval-record', approval]]) check(schema, doc);
-  for (const [file, schema] of [['brief.json', 'video-brief'], ['disclaimer.json', 'disclaimer-plan']]) {
+  const [brief, disclaimer] = [['brief.json', 'video-brief'], ['disclaimer.json', 'disclaimer-plan']].map(([file, schema]) => {
     const doc = read(path.join(dir, file));
     check(schema, doc);
     if (doc.video_id !== claims.video_id) throw new Error('DOSSIER_ID_MISMATCH');
-  }
+    return doc;
+  });
   if (evidence.video_id !== claims.video_id || approval.video_id !== claims.video_id) throw new Error('DOSSIER_ID_MISMATCH');
   const allEvidence = [...evidence.evidence, ...(evidence.historical_traces ?? [])];
   if (new Set(allEvidence.map((e) => e.doc_id)).size !== allEvidence.length) throw new Error('DUPLICATE_EVIDENCE_ID');
@@ -190,7 +191,11 @@ function evaluateDossier(dir, options) {
   const acceptedIds = new Set(accepted.map((e) => e.doc_id));
   require('ts-node').register({ project: path.join(root, 'backend/tsconfig.json'), transpileOnly: true });
   const { VideoGatesService } = require(path.join(root, 'backend/src/modules/media-factory/services/video-gates.service.ts'));
-  const gates = new VideoGatesService().runClaimGates({
+  const gateService = new VideoGatesService();
+  // Step 1 of the code (checkArtefacts): approval.json is read as the schema's three approvals.
+  const artefactCheck = gateService.checkArtefacts({ brief, claims: claims.claims, evidencePack: evidence.evidence,
+    disclaimerPlan: disclaimer, approvalRecord: approval });
+  const gates = gateService.runClaimGates({
     claims: claims.claims.map((claim) => ({
       id: claim.claim_id, kind: claim.kind, rawText: claim.text,
       value: '', unit: '', sectionKey: String(claim.sequence_index ?? ''),
@@ -212,6 +217,7 @@ function evaluateDossier(dir, options) {
       ? (options ? 'Referenced WIKI evidence was not admitted by the current authority check.' : 'Referenced WIKI evidence has unresolved admission; canonical admission verification is not connected.')
       : claimsReady ? 'Claim gates only; render, remaining gates and approvals are not validated here.' : 'Unsupported claims or missing human validation; D17 source review required.',
     wikiAdmission,
+    artefactCheck,
     claimGates: gates,
     acceptedEvidenceIds: [...acceptedIds],
     approvalsComplete: ['content_approved', 'render_approved', 'publish_approved'].every((key) => approval.approval[key] === true),
