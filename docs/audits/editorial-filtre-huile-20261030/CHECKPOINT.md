@@ -2,12 +2,48 @@
 
 Objectif : premier dossier du programme recadré le 30/10. Filtre à huile (`pg_id` 7) : pages R1 et R3 existantes
 améliorées (textes, images, scripts), script vidéo principal et courts, faits à admettre, raccordements. Statut :
-auto-revu (lint, rendu DEV par surcouche de lecture, HANDOFF § 6) ; rien n'est écrit en base ni servi.
+auto-revu (lint, rendu DEV par surcouche de lecture, HANDOFF § 6) ; rien n'est écrit en base ni servi. Révision 5 :
+déclinaisons sociales, couvertures, sous-titres et blocs candidats finalisés.
 
-Cible : Claude Code Desktop, worktree `C:\Users\Marwane\nestjs-remix-monorepo-editorial`, branche
-`docs/editorial-filtre-huile-dossier-20261030`, base `980b2f8a7` (`origin/main` au 30/10), `main` refusionné depuis
-(tête avant la révision 4 : `3d4998f42`). Checkout principal et worktrees Codex non modifiés (lecture seule :
-`node_modules` du worktree Codex pour le validateur, sharp, esbuild et playwright).
+Cible : Claude Code Desktop, worktree `C:\Users\Marwane\nestjs-remix-monorepo-editorial`. Révisions 1 à 4 : branche
+`docs/editorial-filtre-huile-dossier-20261030`, fusionnée dans `main` par #1935 le 31/10 (`9d1d82207`), branche
+distante supprimée. Révision 5 : branche `docs/editorial-filtre-huile-social-20261031`, issue de `9d1d82207`.
+Checkout principal et worktrees Codex non modifiés (lecture seule : `node_modules` du worktree Codex pour le
+validateur, sharp, esbuild et playwright).
+
+## Révision 5 (31/10, après-midi)
+
+Mandat recentré : un dossier complet par gamme, méthode commune ; Claude Code Desktop termine les productions
+éditoriales et médias, Claude CLI organise le point d'entrée commun et l'intégration.
+
+| Livrable | Où | Changement |
+|---|---|---|
+| F-C4 (serrage), F-C9 (joints de cartouche), F-C10 (filière des filtres usagés), F-C11 (dépôt) vérifiés sur des sources de fabricants et institutionnelles, consignées dans le fichier | `integration/candidats.json` | vérifiés, **non admis** |
+| Bloc S4_REPOSE : joints neufs du couvercle de cartouche, huilés ; resserrage selon l'instruction du constructeur | `integration/candidats.json` | candidat (F-C9) |
+| Phrase S6 « huile et filtre usagés » : toutes les déchèteries ne reprennent pas le filtre | `integration/candidats.json` | candidat ; aucune source nommée dans le texte |
+| Carrousels Instagram A (6 diapositives, faits admis) et B (7, faits vérifiés non admis), posts Facebook, légende de C4, titres et tags YouTube, couvertures | `integration/social.json`, `SOCIAL.md`, `assets/social/` (18 WebP), `tools/build-social.cjs` | produits, proposition |
+| Sous-titres de C1 à C4 tirés de MEDIA.md § 7 | `tools/build-srt.cjs`, sortie `subtitles/c1.srt` à `c4.srt` non versionnée (`.gitignore` réserve les sous-titres au stockage des rendus) | produits ; calage sur la voix à refaire |
+| C4 finalisé (faits vérifiés, non admis) : démonstrations de repli, vignette, légende, mesure | `MEDIA.md` § 1, § 5, § 7.4 | rédigé |
+| Lint étendu aux blocs candidats, textes sociaux, voix et écrans des courts (`FORBIDDEN_PATTERNS_SOCLE` et `_SHORT` du code), règles de canal du seed de marque | `tools/lint-integration.cjs` | exécuté |
+| § 1 (relais à Claude CLI) et § 2 ; § 6 inchangé | `HANDOFF.md` | mis à jour |
+| Mention de #1936 | `AUDIT.md` § 4 | fusionnée le 31/10 |
+
+Preuves :
+
+- `tools/lint-integration.cjs` : PASS, 158 unités (R1 41, R3 27, blocs candidats 5, social 43, courts 42), 0 constat ;
+  règles de canal : 34 contrôles, 0 échec ; micro-SEO 1 570 caractères ; FAQPage R3 : 5 paires.
+- Planches contact des 18 visuels relues ; corrigés : légende coupée par un recadrage, pictogramme blanc sur fond clair,
+  mot isolé dans un titre.
+- Facebook 496 et 499 caractères lien compris ; Instagram 667 et 821 ; titres YouTube 37 à 59.
+- `r1.json` et `r3.json` inchangés : aucune phrase sur les déchets n'est servie.
+
+Limites propres à la révision 5 : aucune photo neuve (P-02, P-04, P-05, P-07, P-08, S-03) ; aucune voix ni aucun
+rendu ; polices de la charte non installées (Arial) ; logo servi porteur d'un slogan de prix, remplacé par un
+logotype texte ; tutoiement du seed et vouvoiement du canon non arbitrés ; rien publié ni programmé.
+
+Relais : révision 4 prise en charge par Claude CLI le 31/10 (HANDOFF § 6) ; la mention « transmise : non » ci-dessous
+est caduque. Révision 5 : relayée par HANDOFF § 1, sans changement de `r1.json`, `r3.json`, `assets.json` ni
+`publication-batch.json`. Publication : non autorisée.
 
 ## Révision 4 (31/10)
 
@@ -106,14 +142,14 @@ Hermes : checkpoint **non enregistré**, `automecanik_continuity` indisponible d
 ```json
 {
   "action": "checkpoint",
-  "request_id": "editorial-filtre-huile-20261030-lot1-r4",
-  "objective": "Lot 1 filtre à huile (pg_id 7) : pages R1/R3 existantes améliorées (textes, images, scripts) et intégration en DEV par Claude CLI.",
-  "authorization": "Mandats utilisateur des 2026-10-30 et 2026-10-31 : travail réversible ; push de la branche filtre à huile et PR brouillon de revue autorisés, sans fusion ni déploiement ; aucune écriture en base partagée ; plaquettes en attente, sans push ni PR.",
-  "environment": "Claude Code Desktop, worktree nestjs-remix-monorepo-editorial, branche docs/editorial-filtre-huile-dossier-20261030, base 980b2f8a7 ; fiche WIKI a4783348 (blob c0f7a257).",
-  "state": "Auto-revu (HANDOFF § 6). Révision 4 : fiches par champ R1 et par section R3, S2_DIAG en 4 lignes (intentions R5), 8 visuels de page et 4 pictogrammes vidéo, parcours R1-R8, état des vidéos. Accessible : PR brouillon ak125/nestjs-remix-monorepo#1935. Révision 3 prise en charge par Claude CLI (#1936 brouillon, vérifiée en DEV en lecture). Révision 4 prise en charge par Claude CLI le 31/10 : rendu vérifié en DEV par surcouche (banc sur 67f7ce304) ; écrite : non ; intégrée : non.",
-  "changes": "docs/audits/editorial-filtre-huile-20261030/ : AUDIT, MEDIA, HANDOFF, CHECKPOINT, PROMPTS, integration/, assets/, tools/, preview/ ; .spec/00-canon/repository-registry/ownership.yaml : glob docs/audits/editorial-*/** (D5).",
-  "checks": "lint-integration PASS (68 unités, 0 constat) ; build-preview sur e3d644a04 : routage sg_content 2/1/1/1, badge Sécurité seul, 0 image cassée en 375 et 1280 px ; build-pictos : témoin identique à l'octet ; état servi relevé le 2026-10-31T05:33Z.",
-  "decisions": "Aucun symptôme attribué au filtre ; aucune valeur universelle ; F-C2 non universel ; LOCATION désélectionnée ; PRICE et OG remplacés sans prix ni délai ; title, meta et H1 non modifiés ; 19052 et 19053 séparés.",
-  "next_action": "Écriture du lot (integration/publication-batch.json) et H2 « Qualité, prix et marques » : accord nominatif (zone STOP). F-C1 à F-C11 : route ADR-119 (capture RAW, revision_of, auto-review de sens, décision du décideur). Claims V1 : human_validated du contrat vidéo G2. Prises de vue PROMPTS.md. Détail : HANDOFF § 6, « Cinq périmètres » et « Restant »."
+  "request_id": "editorial-filtre-huile-20261030-lot1-r5",
+  "objective": "Dossier complet filtre à huile (pg_id 7) : pages R1/R3 améliorées, visuels, scripts vidéo et déclinaisons sociales ; intégration par Claude CLI.",
+  "authorization": "Mandats utilisateur des 2026-10-30 et 2026-10-31 : travail réversible ; push d'une branche de dossier et PR brouillon de revue autorisés, sans fusion ni déploiement ; aucune écriture en base partagée ni publication ; plaquettes en attente, sans push ni PR.",
+  "environment": "Claude Code Desktop, worktree nestjs-remix-monorepo-editorial, branche docs/editorial-filtre-huile-social-20261031 issue de 9d1d82207 (main après #1935) ; fiche WIKI a4783348 (blob c0f7a257).",
+  "state": "Révisions 1 à 4 fusionnées dans main (#1935, 9d1d82207) ; code de correction fusionné (#1936, 7d3f30237), PREPROD et PROD non vérifiés. Révision 4 prise en charge par Claude CLI le 31/10 (banc DEV sur 67f7ce304) ; écrite : non. Révision 5 : F-C4, F-C9, F-C10, F-C11 vérifiés non admis ; blocs S4_REPOSE et S6 finalisés ; carrousels IG A et B, posts FB, couvertures V1 et C1-C4, légende C4, titres YouTube, sous-titres C1-C4 produits ; rien publié.",
+  "changes": "docs/audits/editorial-filtre-huile-20261030/ : CHECKPOINT, HANDOFF (§ 1, § 2), AUDIT, MEDIA, SOCIAL, integration/candidats.json, integration/social.json, assets/social/, tools/build-social.cjs, tools/build-srt.cjs, tools/lint-integration.cjs.",
+  "checks": "lint-integration PASS (158 unités, 0 constat ; 34 contrôles de canal, 0 échec) ; planches contact des 18 visuels relues ; r1.json et r3.json inchangés.",
+  "decisions": "Aucun symptôme attribué au filtre ; aucune valeur universelle (nombre de tours, couple, intervalle) ; aucune source nommée dans un texte public ; carrousel B, FB-B et C4 publiables seulement après admission ou décision de l'owner ; logotype texte faute de logo sans slogan de prix ; 19052 et 19053 séparés.",
+  "next_action": "Owner : arbitrer tutoiement/vouvoiement, logo, publication des déclinaisons. F-C1 à F-C11 : route ADR-119. Prises de vue P-02, P-04, P-05, P-07, P-08, S-03. Voix, rendu et human_validated des courts. Claude CLI : point d'entrée commun et intégration (HANDOFF § 1 et § 6)."
 }
 ```
