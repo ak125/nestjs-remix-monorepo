@@ -1,5 +1,8 @@
 # Checkpoint — lot 1 éditorial filtre à huile, 31 octobre 2026
 
+Brief commun du programme (règles, skills, responsables, état d'intégration) :
+[AUDIT.md § 0](AUDIT.md#0-brief-commun-du-programme-éditorial).
+
 Objectif : premier dossier du programme recadré le 30/10. Filtre à huile (`pg_id` 7) : pages R1 et R3 existantes
 améliorées (textes, images, scripts), script vidéo principal et courts, faits à admettre, raccordements. Statut :
 auto-revu (lint, rendu DEV par surcouche de lecture, HANDOFF § 6) ; rien n'est écrit en base ni servi.

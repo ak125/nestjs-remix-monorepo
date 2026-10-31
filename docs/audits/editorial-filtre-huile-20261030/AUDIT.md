@@ -1,12 +1,15 @@
 # Dossier éditorial — filtre à huile (pg_id 7)
 
+**Brief commun du programme, à lire d'abord par tout agent : § 0.** Il dit l'objectif, les règles et skills communs,
+où trouver chaque livrable, qui fait quoi et l'état réel d'intégration.
+
 Lot 1 du programme recadré le 30 octobre 2026 : premier dossier prioritaire. Base `980b2f8a7`, branche
 `docs/editorial-filtre-huile-dossier-20261030`, worktree isolé. Lectures seules : site public, base (SQL en lecture
 seule), WIKI par l'API GitHub, sources externes. Aucune écriture dans RAW, WIKI ou la base ; aucune publication.
 
 Statut : auto-revu (lint, rendu DEV par surcouche de lecture, HANDOFF § 6) ; aucune vidéo rendue, rien n'est écrit
 en base ni publié. Médias :
-[MEDIA.md](MEDIA.md). Raccordements pour Claude CLI : [HANDOFF.md](HANDOFF.md). Reprise : [CHECKPOINT.md](CHECKPOINT.md).
+[MEDIA.md](MEDIA.md). Raccordements historiques d'intégration CLI : [HANDOFF.md](HANDOFF.md). Reprise : [CHECKPOINT.md](CHECKPOINT.md).
 Le dossier plaquettes reste en attente (commit `2a63da58a`, branche non poussée, aucune PR).
 
 Révision 3 (30/10) : les textes à intégrer sont dans `integration/r1.json` et `integration/r3.json`, sous les noms des
@@ -26,6 +29,177 @@ Statut de chaque phrase proposée :
 | **[catalogue]** | mesure en base du 30/10/2026, lecture seule | oui, si la donnée est relue au moment de la mise en ligne |
 | **[éditorial]** | orientation ou prudence, sans fait technique nouveau | oui |
 | **[candidat]** | sourcé hors WIKI, non admis (§ 6) | **non** : reste dans ce dossier |
+
+## 0. Brief commun du programme éditorial
+
+Brief partagé du programme, rédigé le 31/10/2026 : tout agent qui reprend ce dossier lit cette section avant les
+autres fichiers. Le filtre à huile est le pilote ; le § 0.7 dit ce qui se réutilise pour une autre gamme ou un véhicule.
+Ce brief organise le travail. Les faits viennent du WIKI (`[admis]`), du catalogue relu (`[catalogue]`), ou restent
+candidats (§ 6). Les règles et skills sont cités à leur emplacement commun, jamais recopiés ici.
+
+### 0.1 Objectif et pages existantes à améliorer
+
+Améliorer les pages existantes du filtre à huile (`pg_id` 7) : textes, images, scripts vidéo, diagnostic et entretien,
+sans créer de page ni modifier d'URL, de title, de meta description ou de H1 (`CLAUDE.md`, invariants 5 et 6).
+
+| Page | Rôle | Textes à intégrer | Relu phrase par phrase | Écarts servis |
+|---|---|---|---|---|
+| `/pieces/filtre-a-huile-7.html` | R1, routeur : sélectionner le véhicule | `integration/r1.json` | § 1.1 | § 8.4 |
+| `/blog-pieces-auto/conseils/filtre-a-huile` | R3, conseils : quand et comment remplacer | `integration/r3.json` | § 1.2 | § 8.4 |
+
+En cas d'écart entre le § 1 et `integration/`, les fichiers `integration/` font foi. Parcours des besoins R1 à R8 et
+pages voisines (R2, R4, R5, R6, R8) : § 3.1. Choix éditoriaux : § 3. Liens et appels à l'action : § 5.
+
+### 0.2 Règles et skills communs
+
+À lire à leur emplacement, dans la révision du dépôt sur laquelle l'agent travaille. Une règle plus proche ne précise que
+son périmètre ; un skill ne lève ni une zone STOP ni une permission.
+
+| Besoin | Emplacement commun | Appliqué par |
+|---|---|---|
+| Contrat commun, zones STOP, vérification | `CLAUDE.md` (9 invariants) ; Codex : `AGENTS.md` | tous |
+| Chargement des instructions par agent | `.claude/knowledge/workspaces.md` | tous |
+| Format de sortie et compte rendu | `.claude/canon-mirrors/agent-exit-contract.md` | tous |
+| Rôle de chaque page et pureté R1 à R8 | `.spec/00-canon/role-matrix.md` ; contrats exécutables `packages/seo-role-contracts/` | rédaction, intégration |
+| Écriture éditoriale R1 | `.claude/prompts/R1_ROUTER/editorial.md` | rédaction R1 |
+| Relecture française | `.claude/prompts/_shared/editorial-review.md` (relever sa version dans la sortie) | rédaction, contre-vérification |
+| Écrire n'est pas publier | `.claude/prompts/_shared/write-publish-boundary.md` | tous |
+| Audit de gamme ou de véhicule, en lecture seule | `workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md` | rédaction, intégration |
+| Boucle de contenu (sources → RAW → WIKI → consommateur), sans RAG | `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md` | rédaction, intégration |
+| Admission d'un fait | `workspaces/wiki/.claude/skills/wiki-proposal-writer/SKILL.md` ; ADR-096, ADR-119, ADR-031 et ADR-046 au vault `ak125/governance-vault` | rédaction WIKI, décideur |
+| Voix de marque | `.claude/canon-mirrors/marketing-voice.md` | rédaction, médias |
+| Persona et script Fafa | `workspaces/marketing/.claude/skills/fafa-persona-canon/SKILL.md`, `fafa-script-generator/SKILL.md` ; `workspaces/marketing/fafa-media-factory/personas/fafa.md` | médias |
+| Composition, prompts de production, contrôles vidéo | `workspaces/marketing/.claude/skills/fafa-remotion-template-planner/SKILL.md`, `fafa-video-prompt-builder/SKILL.md`, `fafa-brand-safety-reviewer/SKILL.md` ; schémas `workspaces/marketing/fafa-media-factory/governance/` | médias, contre-vérification |
+| Analyse de vidéos tierces (structure seulement) | `workspaces/marketing/.claude/skills/creative-pattern-extractor/SKILL.md` ; `workspaces/marketing/fafa-media-factory/inspiration/` | médias |
+| Mesure après publication | `workspaces/marketing/.claude/skills/fafa-performance-analyzer/SKILL.md` ; UTM : `workspaces/marketing/fafa-media-factory/manifests/metrics/README.md` | suivi |
+| Données véhicule (V-Level, compatibilité) | `.claude/skills/vehicle-ops/SKILL.md` | dossiers véhicules |
+
+Version de la relecture : `editorial-review.md` est en 1.0.0 sur `main` au 31/10 ; la 1.5.0 proposée par
+[#1924](https://github.com/ak125/nestjs-remix-monorepo/pull/1924) n'est pas fusionnée. Un agent applique la version de
+la révision qu'il lit et la nomme. Une mission Hermes à exécutant Claude ne charge ni `CLAUDE.md` ni skill
+(`.claude/knowledge/workspaces.md`, « Codex et Hermes ») : son objectif cite par leur chemin les lignes utiles de ce
+tableau.
+
+### 0.3 Recherches et références d'inspiration
+
+| Quoi | Où | Usage |
+|---|---|---|
+| Références consultées (preuve ou inspiration) | § 4 | une inspiration donne une forme, jamais un fait |
+| Demande mesurée (Search Console) | § 8.2 ; `integration/gsc-baseline.json` | questions des clients, base de mesure après mise en ligne |
+| Catalogue en lecture seule | § 8.3 | relu au moment de la mise en ligne |
+| Images et scènes manquantes, banque d'images consultée | `PROMPTS.md` | un prompt n'est pas une image livrée |
+| Vidéos tierces analysées | § 4 ; `workspaces/marketing/fafa-media-factory/inspiration/` | structure seulement, sans copie d'asset ni de script |
+
+Une source qui doit fonder un fait suit la route du § 6 : capture RAW (ADR-096), proposition WIKI, auto-review de sens,
+décision du décideur (ADR-119). Ce dossier n'écrit ni dans RAW ni dans le WIKI.
+
+### 0.4 Contenus, images, vidéos, diagnostic et entretien
+
+| Volet | Livrable | Source de vérité dans ce dossier | Ce qui manque |
+|---|---|---|---|
+| Textes R1 et R3 | une fiche par champ R1 et par section R3 | `integration/r1.json`, `integration/r3.json` ; contrôle `tools/lint-integration.cjs` | écriture en base (§ 0.6) |
+| Faits non admis et blocs prêts | F-C1 à F-C11 | § 6 ; `integration/candidats.json` | admission (§ 6) |
+| Images de page | visuels R1 et R3, slot par slot (schémas SVG, photo recadrée) | `assets/`, `integration/assets.json`, § 7 ; recette `tools/build-assets.cjs` | prises de vue réelles (`PROMPTS.md`) |
+| Vidéos | V1 et courts C1 à C4 : scripts, sous-titres, légendes | `MEDIA.md` § 1 à 7 ; dossier V1 `workspaces/marketing/fafa-media-factory/scripts/draft/fafa-filtre-huile-001/` ; pictogrammes `tools/build-pictos.cjs` | voix, `human_validated` des claims, composition fusionnée, rendu (`MEDIA.md` § 1) |
+| Diagnostic | S2_DIAG du guide R3 ; les intentions R5 redirigent vers R3 `#diagnostic-rapide` | § 1.2, § 3.1 (ligne R5) | aucune relation diagnostic admise : aucun symptôme n'est attribué au filtre ; orientation vers `/diagnostic-auto` |
+| Entretien | R3 S4 à S6 (repose, serrage, contrôle, déchets) | § 1.2 ; `integration/candidats.json` | F-C1 à F-C6 et F-C9 à F-C11 : sections courtes tant qu'ils ne sont pas admis |
+| Aperçu et rendu DEV | captures 375 et 1 280 px | `preview/` (simulation, pas un rendu DEV) ; `verification-dev/` (rendu DEV par surcouche de lecture) | rendu des données réellement écrites |
+
+### 0.5 Déclinaisons marketing et sociales
+
+- Vidéos courtes 9:16 pour TikTok, Instagram Reels, YouTube Shorts et Facebook Reels : légendes, liens UTM et
+  correspondance pages et vidéos dans `MEDIA.md` § 6 à 8. Voix Fafa en « tu », légendes en « vous ».
+- Rien n'est publié sans rendu vérifié et sans l'approbation de l'owner
+  (`workspaces/marketing/fafa-media-factory/governance/approval-record.schema.json`) ; une vidéo
+  n'entre dans une page que si son gabarit prévoit l'emplacement (`MEDIA.md` § 8).
+- Carrousels Instagram, couvertures et textes sociaux : révision 5, proposée dans #1940 (brouillon `9460d0531`, non
+  fusionnée), avec `SOCIAL.md`, `integration/social.json` et `assets/social/` ; absente de `main` au relevé du § 0.6.
+- E-mail et newsletter : rien n'est préparé dans ce lot. Les skills `amk-marketing-preparation` et `amk-reactivation`
+  (`workspaces/marketing/.claude/skills/`) travaillent sur le corpus synthétique hors ligne, sans envoi.
+
+### 0.6 Responsables, livrables et état réel d'intégration
+
+**Mandat utilisateur consolidé du 1er novembre 2026 pour les nouveaux lots.**
+ChatGPT/Work est l'auteur éditorial principal ; le Studio documentaire/Space
+porte les brouillons et décisions de rédaction. **Claude Code CLI reste seul
+responsable du codage et de l'intégration technique** ; ChatGPT lui prépare
+un prompt complet lorsqu'un changement technique est nécessaire, puis
+le transmet uniquement par un canal autorisé et vérifié. À défaut de canal
+disponible : prompt prêt pour lancement manuel, statut **NON ENVOYÉ**.
+**Codex vérifie indépendamment** les faits et le travail technique, sans écrire.
+Ce mandat conserve les auteurs, engagements, contrats et validations précédents.
+Les fichiers de bibliothèque ne sont ni synchronisés automatiquement au dépôt
+ni reçus automatiquement par Claude CLI.
+
+| Responsable | Livre | Dans ce dossier |
+|---|---|---|
+| ChatGPT (Studio/Space ; Work si accessible) | recherche sourcée, rédaction principale, scripts candidats et suivi éditorial | Studio `AutoMecanik — Studio éditorial` ; livrables à transmettre par version et empreinte |
+| Claude Code CLI (code, nouveaux lots et missions déjà engagées) | toutes modifications backend/frontend, tests, scripts, intégration, PR techniques, sur prompt borné et autorisé | `HANDOFF.md` § 6 ; paquet figé avec SHA/empreintes ; réception et exécution à prouver |
+| Codex (relecteur indépendant) | revue du code et des sources, audit SEO/QA ; remonte ses constats à Claude CLI sans coder | compte rendu de revue sur une révision identifiée, non une PR de correction Codex |
+| Claude Desktop (historique) | livrables déjà préparés, médias, scripts et sources historiques ; pas auteur principal futur | `integration/`, `assets/`, `MEDIA.md`, `PROMPTS.md`, `CHECKPOINT.md` ; provenance conservée |
+| Hermes (passation) | fonctions de suivi et relais existantes jusqu'à leur remplacement vérifié | `CHECKPOINT.md` ; ne bloque plus les nouvelles rédactions |
+| Décideur WIKI | admission des faits F-C* (ADR-119), inchangée | § 6 |
+| Owner | fusion des PR, accord nominatif en zone STOP (écriture PROD sur pages indexées, déploiement) | — |
+
+État relevé le 2026-10-31T13:05Z, complété à 14:10Z (correctifs de code, déclinaisons sociales). « Présent » : dans
+le dépôt ; « servi » : constaté sur la page publique.
+
+| Élément | Présent | Branché ou activé | Servi | Preuve |
+|---|---|---|---|---|
+| Dossier, révision 4 | oui, `main` `9d1d82207` (#1935) | sans objet | non | historique Git |
+| Correctifs de code FH-2 à FH-16 | oui, `main` `7d3f30237` (#1936) | Deploy PREPROD `success` pour `9d1d82207` (13:30Z) ; E2E smoke en échec : `url-validation.spec.ts` attend l'accroche équipementiers retirée par #1936 ; correctif #1939 ouvert, non fusionné | non : dernier tag PROD `v2026.10.30-bundle-octobre-980b2f8` | run « Deploy » 41202754136, job E2E 124550777451 |
+| Textes R1 et R3 en base | non | lot préparé, non exécuté (zone STOP) | non | `HANDOFF.md` § 6, « Lot de publication » |
+| Images R1 et R3 | fichiers dans `assets/` | non téléversées | non | `integration/assets.json` |
+| Faits F-C1 à F-C11 | candidats | non admis | non | § 6 |
+| Vidéos V1, C1 à C4 | scripts | aucune voix, aucun rendu | non | `MEDIA.md` § 1 |
+| Déclinaisons sociales, révision 5 | non : #1940, brouillon `9460d0531` | ni publiées ni programmées | non | `SOCIAL.md` sur la branche de #1940 |
+| Checkpoint Hermes | charge rédigée | non enregistré | sans objet | `CHECKPOINT.md` |
+
+Détail des dépendances restantes, étape par étape : `HANDOFF.md` § 6, « Restant, par étape ».
+
+Transmission de ce brief : au relevé historique du 31/10, aucune preuve de réception
+par Claude Code Desktop, Codex ou Hermes. Au 1er novembre, la mise à disposition
+d'un lot dans le Studio ne prouve pas davantage sa réception par Claude CLI.
+Consigner le prompt préparé, le canal réellement utilisé, le destinataire,
+la révision, les empreintes, la date et la preuve de prise en charge.
+En absence de canal autorisé, marquer **PROMPT PRÊT — NON ENVOYÉ**.
+L'existence d'un fichier ou d'une issue ne prouve pas une exécution.
+
+> **Actualisation de suivi — 1er novembre 2026 (lecture GitHub, pas recette runtime).**
+> La PR [#1939](https://github.com/ak125/nestjs-remix-monorepo/pull/1939),
+> indiquée ouverte dans le relevé historique du 31/10 à 14:10Z ci-dessus, a été
+> fusionnée le **31/10/2026 à 15:12:29Z** (merge `8145263e63dc7c5e40effc204929273f10966367`).
+> Cela corrige le statut Git **sans prouver** un nouveau résultat E2E, un déploiement
+> PREPROD/PROD ni la publication des textes de la gamme.
+> Les PR [#1924](https://github.com/ak125/nestjs-remix-monorepo/pull/1924)
+> et [#1938](https://github.com/ak125/nestjs-remix-monorepo/pull/1938)
+> contiennent le mandat actualisé : **ChatGPT est l'auteur éditorial principal ;
+> Claude Code CLI écrit et intègre tout code ; Codex vérifie sans coder.**
+> Pour une opération technique, préparer un prompt vers Claude CLI et vérifier
+> sa réception effective ; en l'absence de canal autorisé, état
+> `PROMPT PRÊT — NON ENVOYÉ`. Voir la recette et le prompt
+> dans [#1947](https://github.com/ak125/nestjs-remix-monorepo/issues/1947).
+> Aucun état publié n'est déduit de cette mise à jour documentaire.
+
+### 0.7 Réutiliser ce dossier pour une autre gamme ou un véhicule
+
+- Un dossier par gamme ou par véhicule : `docs/audits/editorial-<gamme ou véhicule>-<AAAAMMJJ>/`, couvert par le glob
+  `docs/audits/editorial-*/**` du registre L2 (D5).
+- Se réutilisent : la structure des fichiers (`AUDIT.md` avec ce § 0, `MEDIA.md`, `PROMPTS.md`, `HANDOFF.md`,
+  `CHECKPOINT.md`, `integration/`, `assets/`), les marques de statut, les fiches par champ, les rôles et l'ordre de
+  travail ci-dessous. Le § 0 d'un nouveau dossier ne recopie pas le tableau du § 0.2 : il y renvoie et ne décrit que
+  ses propres pages, livrables, responsables et état.
+- Ne se recopient pas : les faits, textes, images, mesures, identifiants F-C* et décisions. Chaque dossier relève ses
+  pages servies, son catalogue et ses sources.
+- `tools/` est propre au `pg_id` 7 ; un outil n'est généralisé que lorsqu'un besoin est établi dans trois dossiers
+  (`CLAUDE.md`, invariant 2).
+- Dossier véhicule : les pages R8 et R2 se traitent par `type_id`, sans fusionner deux motorisations (ici 19052 et
+  19053) ; composition vehicle-aware, `catalog_signature` préservée (ADR-066) ; audit par `seo-gamme-audit` en mode
+  véhicule et données par `vehicle-ops`.
+
+Ordre de travail : audit en lecture seule des pages servies → faits admis ou candidats → textes par champ, avec fiche →
+images et vidéos → auto-review (relecture française, `tools/lint-integration.cjs` ou son équivalent) → `HANDOFF.md` →
+vérification en DEV → écriture sur accord nominatif en zone STOP → observation après mise en ligne.
 
 ## 1. Textes R1 et R3
 
