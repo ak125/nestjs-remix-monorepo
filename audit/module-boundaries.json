@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 104,
-      "loc_total": 25163,
+      "loc_total": 25157,
       "has_barrel": true
     },
     "customers": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110607,
+      "loc_total": 110587,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -440,7 +440,7 @@
         "backend/src/modules/media-factory/types"
       ],
       "files_count": 23,
-      "loc_total": 4889,
+      "loc_total": 4989,
       "has_barrel": false
     },
     "merchant-center": {
@@ -958,8 +958,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 328,
-      "loc_total": 63062,
+      "files_count": 329,
+      "loc_total": 63281,
       "has_barrel": true
     },
     "upload": {
@@ -1027,7 +1027,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5072,
+      "loc_total": 5075,
       "has_barrel": false
     }
   },
