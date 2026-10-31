@@ -1698,3 +1698,13 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+  # Capture du schéma des 6 tables __video_* de media-factory, créées hors du dépôt
+  # (PR #1945) : aucune ligne, politique ni droit modifiés ; post-condition forme
+  # réelle == forme capturée. Risk medium : ENABLE ROW LEVEL SECURITY verrouille les
+  # 6 tables (ACCESS EXCLUSIVE, lock_timeout 5s). Couvre .sql + .down.sql. Glob exact ;
+  # domaine / owner = ceux du consommateur (backend/src/modules/media-factory/**).
+  - glob: backend/supabase/migrations/20261031_video_capture_media_factory_schema*.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: high
+    risk: medium
