@@ -573,6 +573,57 @@ describe("cas rejetés", () => {
 describe("ligne de commande", () => {
   const cli = (args, input) => spawnSync(process.execPath, [SCRIPT, ...args], { input, encoding: "utf8" });
 
+  test("--emit livre les octets contrôlés, Unicode JSON échappé compris", () => {
+    const input = output(block()).replace(/\u00a0/g, "\\u00a0");
+    const res = cli(["--emit", "--root", REPO, "--root", dir], input);
+    assert.equal(res.status, 0, res.stderr);
+    assert.equal(res.stdout, input);
+    assert.match(res.stderr, /APPLIQUEE/);
+    assert.equal(run(res.stdout).resultat, "appliquee");
+  });
+
+  test("--emit conserve une partielle honnête et son code 3", () => {
+    const b = block({ etat: "partielle" });
+    b.relectures[0].original.sha256 = null;
+    b.conditions.C2 = { etat: "non_remplie", manque: "outil d'empreinte indisponible" };
+    const input = output(b);
+    const res = cli(["--emit", "--root", REPO, "--root", dir], input);
+    assert.equal(res.status, 3);
+    assert.equal(res.stdout, input);
+    assert.match(res.stderr, /PARTIELLE/);
+  });
+
+  test("--emit ne tronque pas une réponse dépassant la capacité du pipe", () => {
+    const input = output(block(), "Dossier de test sans affirmation technique.\n".repeat(7000));
+    const res = cli(["--emit", "--root", REPO, "--root", dir], input);
+    assert.equal(res.status, 0, res.stderr);
+    assert.equal(res.stdout.length, input.length);
+    assert.equal(res.stdout, input);
+  });
+
+  test("un RE-T1 doublement échappé est rejeté, pas assimilé à une insécable", () => {
+    const b = block({ original: O_PLAIN, proposition: O_PLAIN.replace(/ /g, "\\u00a0"),
+      changements: [{ avant: O_PLAIN, apres: O_PLAIN.replace(/ /g, "\\u00a0"), regle: "RE-T1", raison: "espaces insécables" }] });
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /RE-T1 change autre chose que la typographie/);
+  });
+
+  test("--emit ne livre rien après un rejet, y compris un contrôle sur le bloc seul", () => {
+    for (const input of ["Relecture appliquée.", `\`\`\`json\n${JSON.stringify(block())}\n\`\`\`\n`]) {
+      const res = cli(["--emit", "--root", REPO, "--root", dir], input);
+      assert.equal(res.status, 1, res.stderr);
+      assert.equal(res.stdout, "");
+      assert.match(res.stderr, /REJETEE/);
+    }
+  });
+
+  test("--emit et --json ne se combinent pas silencieusement", () => {
+    const res = cli(["--emit", "--json"], output(block()));
+    assert.equal(res.status, 2);
+    assert.equal(res.stdout, "");
+  });
+
   test("codes de sortie 0, 3, 1 et 2", () => {
     const roots = ["--root", REPO, "--root", dir];
     assert.equal(cli(roots, output(block())).status, 0);

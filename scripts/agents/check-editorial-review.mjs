@@ -15,9 +15,11 @@
 // de la session : ces points sortent en « à vérifier sur le contenu ».
 //
 // Usage :
-//   node scripts/agents/check-editorial-review.mjs [--root <dossier>]... [--json] [fichier]
+//   node scripts/agents/check-editorial-review.mjs [--root <dossier>]... [--json | --emit] [fichier]
 //   Sans fichier : entrée standard. --root est répétable (défaut : dossier courant) ; les
 //   chemins relatifs du bloc sont cherchés sous chaque racine, dans l'ordre.
+//   --emit : réponse acceptée inchangée sur stdout, rapport sur stderr ; rien sur stdout
+//   en cas de rejet. Aucun caractère ni champ n'est corrigé par ce mode.
 //
 // Codes de sortie :
 //   0 — appliquee : bloc conforme, « relecture appliquée » justifiée
@@ -27,7 +29,7 @@
 
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { isAbsolute, resolve } from "node:path";
+import { isAbsolute, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const CONTRACT_PATH = fileURLToPath(
@@ -410,7 +412,10 @@ function checkReadings(block, relectures, roots, contract) {
     if (gap) errors.push(`${label} : ${gap}`);
   };
 
-  const contractRead = reads.find((r) => r.abs.endsWith("/.claude/prompts/_shared/editorial-review.md"));
+  // Les chemins résolus utilisent « \\ » sous Windows : comparer la même représentation
+  // sur les trois entrées natives, sans changer les chemins utilisés pour lire les fichiers.
+  const hasSuffix = (r, suffix) => r.abs.split(sep).join("/").endsWith(suffix);
+  const contractRead = reads.find((r) => hasSuffix(r, "/.claude/prompts/_shared/editorial-review.md"));
   if (!contractRead) {
     errors.push("contrat editorial-review.md : aucune lecture déclarée");
   } else {
@@ -425,11 +430,11 @@ function checkReadings(block, relectures, roots, contract) {
       else requireFile(`contrat, section « ${title} » (${s.start}-${s.end})`, contractRead.abs, s.start, s.end);
     }
   }
-  const voice = reads.find((r) => r.abs.endsWith("/canon-mirrors/marketing-voice.md"));
+  const voice = reads.find((r) => hasSuffix(r, "/canon-mirrors/marketing-voice.md"));
   if (!voice) errors.push("référence marketing-voice.md : aucune lecture déclarée");
   else requireFile("référence marketing-voice.md", voice.abs);
   if (relectures.some((r) => r && r.format === "script")) {
-    const persona = reads.find((r) => r.abs.endsWith("/fafa-persona-canon/SKILL.md"));
+    const persona = reads.find((r) => hasSuffix(r, "/fafa-persona-canon/SKILL.md"));
     if (!persona) errors.push("référence fafa-persona-canon/SKILL.md : aucune lecture déclarée (script Fafa)");
     else requireFile("référence fafa-persona-canon/SKILL.md", persona.abs);
   }
@@ -916,25 +921,36 @@ function render(report) {
 function main(argv) {
   const roots = [];
   let json = false;
+  let emit = false;
   let file = null;
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--root" && argv[i + 1]) roots.push(resolve(argv[(i += 1)]));
     else if (a === "--json") json = true;
+    else if (a === "--emit") emit = true;
     else if (!a.startsWith("--") && file === null) file = a;
     else {
-      process.stderr.write("usage : check-editorial-review.mjs [--root <dossier>]... [--json] [fichier]\n");
+      process.stderr.write("usage : check-editorial-review.mjs [--root <dossier>]... [--json | --emit] [fichier]\n");
       return 2;
     }
   }
+  if (json && emit) {
+    process.stderr.write("--emit et --json sont exclusifs : la réponse et le rapport ont des sorties distinctes\n");
+    return 2;
+  }
   const text = readFileSync(file ?? 0, "utf8");
   const report = checkOutput(text, { roots: roots.length ? roots : [process.cwd()] });
-  process.stdout.write(json ? `${JSON.stringify(report, null, 2)}\n` : render(report));
+  if (emit) {
+    process.stderr.write(render(report));
+    if (report.resultat === "appliquee" || report.resultat === "partielle") process.stdout.write(text);
+  } else process.stdout.write(json ? `${JSON.stringify(report, null, 2)}\n` : render(report));
   return report.resultat === "appliquee" ? 0 : report.resultat === "partielle" ? 3 : 1;
 }
 
 // Comparaison sur chemins réels : un lien symbolique ou un caractère encodé ne doit
 // pas faire sortir le script en 0 sans contrôle.
 if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
-  process.exit(main(process.argv.slice(2)));
+  // Laisser stdout/stderr se vider : process.exit() peut tronquer une réponse longue
+  // écrite dans un pipe, ce qui invaliderait la garantie de livraison de --emit.
+  process.exitCode = main(process.argv.slice(2));
 }

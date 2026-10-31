@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.6.0 — 2026-10-31.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.7.0 — 2026-10-31.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -36,6 +36,9 @@
 > Markdown affiché, où un champ YAML était désigné par une plage fausse, et où la typographie
 > était dite conforme malgré des espaces ordinaires aux positions RE-T1. Les résultats d'un
 > essai 1.5.0 ne qualifient pas cette version.
+> Pilote 1.7.0 : transport JSON explicite des insécables et livraison par le contrôle mécanique,
+> après les faux succès typographiques et les contrôles d'une autre sortie observés en round 11.
+> Les résultats d'un essai 1.6.0 ne qualifient pas cette version.
 
 ## 1. Ce que fait la relecture
 
@@ -45,7 +48,9 @@ dans RAW ni dans WIKI, et ne remplace aucun contrôle existant.
 
 - **Position** : côté consommateur, après la rédaction sourcée, avant la validation finale
   (gate de projection, gates R8, 7 gates `fafa-brand-safety-reviewer`, `v5-guardian`,
-  validation humaine). Le texte relu repasse par ces contrôles comme s'il était neuf.
+  auto-review du circuit). Pour les fiches WIKI, l'auto-review de sens remplace la revue humaine
+  selon ADR-119 ; cette relecture éditoriale et son contrôle mécanique ne la remplacent pas.
+  Le texte relu repasse par ces contrôles comme s'il était neuf.
 - **Une reformulation n'est jamais une source.** Elle ne peut rien apprendre au lecteur que le
   brouillon et ses sources ne disaient pas déjà.
 - **L'original reste intact.** La sortie est toujours : original référencé + proposition +
@@ -133,7 +138,7 @@ changement, avant, empreinte ou lecture. Un manque nommé vaut mieux qu'un champ
 
 **Contrôle mécanique.** Avec un outil d'exécution, passer la sortie, bloc final compris, sur
 l'entrée standard (`printf` ou heredoc, sans écrire de fichier) à
-`node <racine du dépôt>/scripts/agents/check-editorial-review.mjs --root <dossier de travail>`,
+`node <racine du dépôt>/scripts/agents/check-editorial-review.mjs --emit --root <dossier de travail>`,
 avec un `--root` de plus par copie de sources lue. Il recalcule l'empreinte, rejoue les
 changements jusqu'à la proposition, compare les faits protégés retirés ou ajoutés à la fidélité
 déclarée, confronte les plages de lecture aux fichiers et recalcule C1 à C7. Il rend `appliquee`,
@@ -152,6 +157,27 @@ rapport. Un `manque` nomme sa cause réelle : l'écart que ce rapport relève, o
 effective (pas d'outil d'exécution, toute commande interdite par la demande, échec de l'outil
 avec son message). La cause d'un rapport antérieur, que la correction a levée, n'est jamais
 reprise. Ne pas lancer le contrôle n'est admis que sur une telle limite, nommée dans `lecture`.
+
+Avec `--emit`, le rapport reste sur stderr et stdout est la réponse complète acceptée, exactement
+comme reçue, sans correction ni réécriture. Un rejet ne livre rien sur stdout. Livrer cette sortie
+stdout sans la recomposer ; conserver le code 3 d'une partielle. Ne jamais passer uniquement le
+bloc final si un brouillon ou d'autres champs ont été écrits avant lui. Une sortie d'outil
+tronquée ne permet pas de livrer les octets manquants : réduire le livrable puis contrôler de nouveau.
+
+**Saut final du chat.** Un heredoc ajoute un saut de ligne après sa dernière ligne, alors que
+la réponse finale peut se terminer juste après les trois accents graves. Pour cette réponse
+sans saut final, retirer ce seul saut **avant** l'entrée du contrôleur, pas après son résultat :
+
+```bash
+python3 -c 'import sys; sys.stdout.write(sys.stdin.read().removesuffix("\n"))' <<'RESPONSE' | node <racine>/scripts/agents/check-editorial-review.mjs --emit --root <dossier>
+<réponse entière, prose et bloc JSON final compris>
+RESPONSE
+```
+
+Cette préparation ne change aucun texte interne, aucune insécable, ni le `saut_final` de
+l'original : ce champ décrit le brouillon, pas l'enveloppe de la réponse. Un `printf '%s'`
+correctement cité, sans saut ajouté, convient aussi. Le contrôle porte ainsi sur les mêmes
+octets que la réponse finale, y compris sa terminaison.
 
 Le validateur du circuit relance ce contrôle sur la sortie reçue : une déclaration qu'il
 ne confirme pas est traitée comme « relecture partielle » ou rejetée. Il ne juge ni la
@@ -451,6 +477,12 @@ Pour chaque brouillon :
   recopié ni estimé ; s'il ne peut pas l'être, le manque est nommé et la relecture est partielle.
 - **`proposition`** : le texte complet proposé, sans références de recherche ni annotations
   internes (§4.1). Son statut de brouillon et ses limites figurent dans la revue séparée.
+  Dans le JSON, écrire les insécables sous forme d'échappements `\u00a0` ou `\u202f` :
+  `"Attention\u00a0: huile chaude."`. JSON.parse les décode en caractères insécables réels.
+  Une seule barre oblique inverse, jamais `"Attention\\u00a0: huile chaude."`, qui insère six
+  caractères visibles. Même transport dans `changements[].apres` et les autres chaînes qui
+  contiennent une insécable. Ne jamais remplacer les espaces ordinaires de l'original : son
+  texte et son empreinte restent ceux du brouillon, et chaque correction est déclarée.
 - **`changements`** : la liste `{avant, après, règle, raison}`, avec un code de règle RE-xx ou
   RE-Tx. Une entrée par changement : `avant` cite l'original mot pour mot et `après` la
   proposition. Une phrase de synthèse ou une liste de codes n'est pas une entrée. Les
@@ -486,7 +518,7 @@ suit ce livrable. La prose peut présenter ces champs, sans les contredire :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.6.0", "etat_declare": "partielle",
+  "contrat": "editorial-review", "version": "1.7.0", "etat_declare": "partielle",
   "lectures": [{"chemin": "…", "plages": ["1-120"], "masquees": [], "sections": ["…"], "tronque": false}],
   "relectures": [{
     "id": "plan-r3", "format": "prose", "sources": ["chemin/de/la/source.md:10-40"],
