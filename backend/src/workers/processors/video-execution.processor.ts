@@ -318,13 +318,18 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       }
 
       // ── Step 6: Compute quality score ──
+      // Un drapeau sans pénalité définie (GATE_*, NOT_MEASURED:*,
+      // REVIEW_REQUIRED:*) rend le score inconnu au lieu d'être ignoré.
       const qualityFlags = gateOutput.flags;
-      let qualityScore = 100;
+      let qualityScore: number | null = 100;
       for (const flag of qualityFlags) {
-        const penalty = VIDEO_FLAG_PENALTIES[flag as VideoQualityFlag];
-        if (penalty) qualityScore -= penalty;
+        if (!Object.hasOwn(VIDEO_FLAG_PENALTIES, flag)) {
+          qualityScore = null;
+          break;
+        }
+        qualityScore -= VIDEO_FLAG_PENALTIES[flag as VideoQualityFlag];
       }
-      qualityScore = Math.max(0, qualityScore);
+      if (qualityScore !== null) qualityScore = Math.max(0, qualityScore);
 
       // ── Step 7: Observe-only mode ──
       const gatesBlocking = process.env.VIDEO_GATES_BLOCKING === 'true';
