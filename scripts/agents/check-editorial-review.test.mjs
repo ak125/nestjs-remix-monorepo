@@ -151,9 +151,28 @@ describe("cas acceptés", () => {
     const r = run(output(b));
     assert.equal(r.resultat, "appliquee", errors(r));
   });
+
+  test("insécable posée par un RE-T1 déclaré, proposition affichée : appliquee", () => {
+    const p = O.replace(" : ", " : ");
+    const b = block({ proposition: p, changements: [{ avant: "chaud : selon", apres: "chaud : selon", regle: "RE-T1", raison: "espace insécable avant les deux-points" }] });
+    const r = run(output(b, `Proposition :\n\n${p}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
 });
 
 describe("cas rejetés", () => {
+  test("original du bloc qui ne diffère du brouillon affiché que par des insécables, même en partielle", () => {
+    const o = O.replace(" : ", " : ").replace("100 °C", "100 °C");
+    const b = block({ original: o, proposition: o, changements: [], etat: "partielle" });
+    b.relectures[0].verdict = "AUCUN_CHANGEMENT_UTILE";
+    b.relectures[0].raison_aucun_changement = "insécables déjà posées, rien à changer";
+    b.relectures[0].original.sha256 = null;
+    b.conditions.C2 = { etat: "non_remplie", manque: "aucun outil d'exécution pour calculer le sha256" };
+    const r = run(output(b, `Brouillon :\n\n${O}\n\nRelecture partielle : C2 non remplie.`));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /original inexact.*typographie près/);
+  });
+
   test("empreinte calculée sur une autre représentation du texte", () => {
     const b = block();
     b.relectures[0].original.sha256 = sha(`**${O}**`);

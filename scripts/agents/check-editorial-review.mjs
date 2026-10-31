@@ -6,7 +6,8 @@
 // sans se fier à l'auto-évaluation du modèle : empreinte de l'original recalculée, avant/après
 // retrouvés, changements rejoués jusqu'à la proposition, faits protégés comparés règle par
 // règle, plages de lecture confrontées aux fichiers, conditions C1–C7 recalculées, mentions de
-// la relecture dans la prose comparées à l'état déclaré.
+// la relecture dans la prose comparées à l'état déclaré, original sans fichier confronté au
+// texte que la réponse affiche.
 //
 // Il ne juge ni la pertinence d'une règle RE ni la fidélité de sens, et ne voit pas la trace
 // de la session : ces points sortent en « à vérifier sur le contenu ».
@@ -139,7 +140,12 @@ function firstDiff(a, b) {
 
 // Normalisation typographique : ce que RE-T1 à RE-T5 ont le droit de changer.
 export function typoNorm(s) {
-  return fold(s)
+  return typoShape(fold(s));
+}
+
+// Même normalisation, casse et accents conservés.
+function typoShape(s) {
+  return s
     .replace(/[   ]/g, " ")
     .replace(/[«»“”„"]/g, '"')
     .replace(/[’‘`]/g, "'")
@@ -578,6 +584,22 @@ function checkRelecture(rel, ctx) {
 // Sortie complète
 // ---------------------------------------------------------------------------------------------
 
+// Un original reproduit sans fichier de provenance n'existe que dans la réponse (brouillon de la
+// session). Si la réponse n'affiche ni lui ni la proposition tels quels, mais l'un des deux à la
+// typographie près, l'écart cache un changement RE-Tx non déclaré.
+function typoOnlyDisplay(rel, prose) {
+  const o = rel.original;
+  if (!o || typeof o !== "object" || typeof o.texte !== "string" || !o.texte.trim()) return null;
+  if (o.provenance && typeof o.provenance.chemin === "string") return null;
+  const texts = [["l'original", o.texte], ["la proposition", rel.proposition]].filter(([, t]) => typeof t === "string" && t.trim());
+  const shown = norm(prose);
+  if (texts.some(([, t]) => shown.includes(norm(t)))) return null;
+  const shownTypo = typoShape(shown);
+  const match = texts.find(([, t]) => shownTypo.includes(typoShape(norm(t))));
+  if (!match) return null;
+  return `relecture ${rel.id || "?"} : la réponse affiche ${match[0]} du bloc à la typographie près seulement (espaces insécables, guillemets ou apostrophes) : changement RE-Tx non déclaré, ou original qui n'est pas le texte livré`;
+}
+
 const STATE_RE = /relecture(?:\s+[ée]ditoriale)?(?:\s+fran[çc]aise)?\s*[:\-–]?\s*(appliqu[ée]e?s?|partielle)/giu;
 const stateOf = (s) => (/^appliqu/i.test(s) ? "appliquée" : "partielle");
 
@@ -642,6 +664,8 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
     report.a_verifier.push(...r.soft);
   }
   const allBlocked = results.length > 0 && results.every((r) => r.blocked);
+  const typoEcarts = relectures.map((rel) => typoOnlyDisplay(rel || {}, prose)).filter(Boolean);
+  computed.C2.push(...typoEcarts);
 
   const declared = block.conditions && typeof block.conditions === "object" ? block.conditions : {};
   for (const c of CONDITIONS) {
@@ -663,6 +687,8 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
   for (const msg of empreintesFausses) {
     report.erreurs.push(`empreinte fausse — ${msg} ; une empreinte ne se recopie ni ne s'estime : laisser sha256 à null et nommer le manque`);
   }
+  // Même règle : un original qui n'est pas le texte livré est un champ inexact, pas un manque.
+  for (const msg of typoEcarts) report.erreurs.push(`original inexact — ${msg}`);
 
   const allMet = CONDITIONS.every((c) => report.conditions[c].calculee !== "non_remplie" && declared[c] && declared[c].etat !== "non_remplie");
   if (block.etat_declare === "appliquée" && !allMet) {
