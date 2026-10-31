@@ -42449,7 +42449,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 32,
+      "loc": 76,
       "owner": "__unassigned__",
       "path": "docs/audits/editorial-filtre-huile-20261030/tools/build-pictos.cjs",
       "risk": "low",
