@@ -2021,7 +2021,7 @@
         "events"
       ],
       "kind": "service",
-      "loc": 564,
+      "loc": 571,
       "owner": "__unassigned__",
       "path": "backend/src/cache/cache.service.ts",
       "risk": "low",
@@ -11749,7 +11749,7 @@
         "backend/src/modules/blog/services/r3-guide.service.ts"
       ],
       "kind": "controller",
-      "loc": 81,
+      "loc": 94,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/controllers/r3-guide.controller.ts",
       "risk": "low",
@@ -12444,7 +12444,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "test",
-      "loc": 941,
+      "loc": 945,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r3-guide.service.test.ts",
       "risk": "low",
@@ -12480,7 +12480,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 701,
+      "loc": 702,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r3-guide.service.ts",
       "risk": "low",
@@ -17258,7 +17258,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 181,
+      "loc": 194,
       "owner": "__unassigned__",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "low",
@@ -40796,7 +40796,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 225,
+      "loc": 322,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/gamme-r3-cache-invalidation.http-guards.test.ts",
       "risk": "low",
