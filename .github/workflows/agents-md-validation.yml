@@ -12,6 +12,7 @@ on:
       - '.claude/skills/**/SKILL.md'
       - 'workspaces/*/.claude/skills/**/SKILL.md'
       - '.claude/rules/**'
+      - '.claude/prompts/_shared/editorial-review.md'
       - 'scripts/agents/**'
       - '.github/workflows/agents-md-validation.yml'
   push:
@@ -26,6 +27,7 @@ on:
       - '.claude/knowledge/workspaces.md'
       - '.claude/skills/**/SKILL.md'
       - 'workspaces/*/.claude/skills/**/SKILL.md'
+      - '.claude/prompts/_shared/editorial-review.md'
       - 'scripts/agents/**'
 
 # Minimum scope: read-only checkout + git diff (ADR-043 Sprint 1 ticket #7).
@@ -50,6 +52,9 @@ jobs:
 
       - name: Self-test validator
         run: bash scripts/agents/validate-agents-md.sh --self-test
+
+      - name: Test editorial-review checker
+        run: node --test scripts/agents/check-editorial-review.test.mjs
 
       - name: Validate diff vs base (anti-patterns sur lignes ajoutées)
         if: github.event_name == 'pull_request'
