@@ -35,6 +35,8 @@ export interface CatalogueFamilleRow {
   pg_id: number;
   pg_alias: string;
   pg_pic?: string;
+  /** Vignette catalogue/ (hors RPC, ajoutée par GammeRpcService.getGammeThumbnails) */
+  pg_img?: string | null;
   pg_name: string;
   description?: string;
   meta_description?: string;
@@ -159,15 +161,16 @@ export class GammeDataTransformerService {
     return catalogueFamilleRaw.map((piece) => {
       const pgId = piece.pg_id;
       const pgAlias = piece.pg_alias;
-      const pgPic = piece.pg_pic;
+      // Vignette pg_img d'abord : pg_pic (hero) ne nomme pas toujours un objet catalogue/
+      const thumbnail = piece.pg_img || piece.pg_pic;
 
       // 🔗 Générer le lien vers la page gamme
       const link = `/pieces/${pgAlias}-${pgId}.html`;
 
       // 📷 Générer l'URL de l'image via la fonction centralisée
       // Note: pg_alias.webp n'existe pas en Supabase Storage → utiliser DEFAULT_IMAGE
-      const imageUrl = pgPic
-        ? buildGammeImageUrl(pgPic)
+      const imageUrl = thumbnail
+        ? buildGammeImageUrl(thumbnail)
         : IMAGE_CONFIG.DEFAULT_IMAGE;
 
       return {
