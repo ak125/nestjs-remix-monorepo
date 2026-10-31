@@ -1,0 +1,17 @@
+-- ============================================================================
+-- DOWN — 20261031_video_capture_media_factory_schema
+-- ----------------------------------------------------------------------------
+-- VOLONTAIREMENT NON DESTRUCTIF.
+--
+-- Cette migration ne fait que VERSIONNER des objets qui PRÉ-EXISTENT dans la
+-- base partagée (__video_execution_log, __video_productions, __video_variants,
+-- __video_assets, __video_audio_cache, __video_templates). Elle n'y change aucun
+-- schéma : chaque instruction est IF NOT EXISTS, COMMENT ON réécrit le texte
+-- identique et ENABLE ROW LEVEL SECURITY la valeur identique. Un down qui DROP
+-- supprimerait des tables lues et écrites par media-factory et le processeur
+-- video-execution, avec leurs 9 + 2 + 1 lignes → interdit. Un down qui désactive
+-- la RLS ouvrirait ces tables à anon et authenticated → interdit.
+--
+-- Il n'y a donc rien à défaire. Aucune action ici.
+-- ============================================================================
+SELECT 1; -- no-op intentionnel (voir en-tête)
