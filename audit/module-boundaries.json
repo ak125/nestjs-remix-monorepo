@@ -938,6 +938,7 @@
         "backend/tests/unit/seo-control",
         "backend/tests/unit/seo-monitoring",
         "backend/tests/unit/trend-signals",
+        "docs/audits/editorial-filtre-huile-20261030/tools",
         "frontend",
         "frontend/frontend/tests/e2e",
         "frontend/tests/e2e",
@@ -958,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 329,
-      "loc_total": 63314,
+      "files_count": 333,
+      "loc_total": 64096,
       "has_barrel": true
     },
     "upload": {
