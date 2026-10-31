@@ -35,7 +35,10 @@ const EquipementiersSection = memo(function EquipementiersSection({
     : equipementiers.items;
 
   return (
-    <section className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
+    <section
+      data-section="equipementiers"
+      className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden"
+    >
       {!hideTitle && (
         <div className="bg-gradient-to-r from-orange-600 to-orange-700 p-6">
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
