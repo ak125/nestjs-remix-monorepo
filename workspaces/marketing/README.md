@@ -217,6 +217,13 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   chance » : le motif `depêchez` n'a pas le « é » de « dépêchez », `dernier(e|s)?` pas le « è » de « dernière »
   (`backend/src/config/video-quality.constants.ts:243,245`, C18-16). Test : ces deux phrases en mode `short` → une violation chacune
   ; « depêchez-vous », « dernier jour » et « Derniers jours » restent reconnues.
+  Ajout du 31/10 : la branche d'intégration du dossier filtre à huile (locale, non fusionnée) applique cette règle à G3, G4, G5
+  et G6. Mesure absente → WARN à `measured` nul et drapeau `NOT_MEASURED`, qui ferme `canPublish` même avec une publication
+  finale approuvée ; mesure invalide (durée nulle ou non numérique, `type` sans plage, score hors de 0 à 1, relevé qui n'est pas
+  une liste) → FAIL ; WARN mesuré sans étape `final_publish` signée → `REVIEW_REQUIRED` ; une mesure nulle n'est plus un WARN
+  (G2 et G6 à 0 → PASS). Le processeur passe désormais `scriptText`. Durée, similarité et relevé des visuels n'ont toujours aucun
+  producteur, et l'écran de simulation n'envoie toujours ni texte ni `type` : C18-1, C18-12 et C18-15 restent ouverts côté
+  producteurs. Les tests cités plus haut changent d'attente avec ce correctif ; C18-16 n'est pas touché.
 - **L10a** · Base `75ea70a48`. Fichiers : `backend/src/modules/media-factory/services/video-gates.service.ts:108-175` (G1, G2) ;
   `backend/src/config/video-quality.constants.ts:68-73` ; `backend/tests/unit/video-gates.service.test.ts` (blocs runAllGates
   l.146-187, G1 l.189-244, G2 l.246-286). Politique active : G1 mesure un ratio de claims `unverified` (warn 0,15, fail 0,3), sans règle vault trouvée (checkout du
@@ -647,6 +654,9 @@ l.108-113) ; vault relu par l'API GitHub, `main` à `684e734`, toujours aucun ch
 Le 31/10, #1936 (brouillon) insère `approvalStagesOf` dans le service des gates (+45 lignes de la l.22 à la l.85, +44 au-delà),
 deux types dans `video.types.ts` (+19 après la l.117) et des tests (+2 après la l.17) : les lignes de ces fichiers citées dans
 ce dossier restent celles de `1a16da60c` ; les skills et README d'état courant qui les citent sont recalés sur la tête de #1936.
+Le même jour, la branche d'intégration du dossier filtre à huile (locale, non fusionnée) modifie G3 à G6 et `runAllGates` dans ce
+service et type `measured` en `number | null` : ces skills et README sont recalés sur cette branche ; ce dossier garde les
+lignes de `1a16da60c`.
 
 | Id | Fichier, fonction | Preuve | Limite | Lot |
 |---|---|---|---|---|
