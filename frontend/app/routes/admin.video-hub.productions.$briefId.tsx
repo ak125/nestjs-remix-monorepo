@@ -31,6 +31,10 @@ import {
   useFetcher,
 } from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import {
+  executionPresentation,
+  hasRenderedArtifact,
+} from "~/utils/video-execution";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -100,6 +104,7 @@ interface DerivativeRow {
 interface ExecutionRow {
   id: number;
   status: string;
+  executionOutcome?: string;
   engineName: string | null;
   renderErrorCode: string | null;
   renderOutputPath: string | null;
@@ -151,7 +156,7 @@ function getPipelineSteps(
       label: "Rendu",
       shortLabel: "RND",
       icon: Clapperboard,
-      done: executions.some((e) => e.status === "completed"),
+      done: executions.some((e) => hasRenderedArtifact(e.executionOutcome)),
     },
     {
       key: "derivatives",
@@ -168,7 +173,7 @@ function getPipelineSteps(
   };
 }
 
-// ─── Loader (unchanged) ─────────────────────────────────────
+// ─── Loader ─────────────────────────────────────
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
@@ -190,25 +195,41 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       ),
     ]);
 
-    if (!prodRes.ok)
-      return data({
-        production: null,
-        executions: [],
-        derivatives: [],
-        error: "Not found",
-      });
-
+    if (!prodRes.ok) {
+      const status = [401, 403, 404].includes(prodRes.status)
+        ? prodRes.status
+        : 503;
+      return data(
+        {
+          production: null,
+          executions: [],
+          derivatives: [],
+          error:
+            status === 404
+              ? "Production introuvable"
+              : status === 401 || status === 403
+                ? "Accès refusé"
+                : "Erreur chargement",
+        },
+        { status },
+      );
+    }
+    if (!execRes.ok || !derivRes.ok) {
+      return data(
+        {
+          production: null,
+          executions: [],
+          derivatives: [],
+          error: "Historique vidéo indisponible",
+        },
+        { status: 503 },
+      );
+    }
     const prodData = await prodRes.json();
-    let executions: ExecutionRow[] = [];
-    if (execRes.ok) {
-      const execData = await execRes.json();
-      executions = (execData.data ?? []) as ExecutionRow[];
-    }
-    let derivatives: DerivativeRow[] = [];
-    if (derivRes.ok) {
-      const derivData = await derivRes.json();
-      derivatives = (derivData.data ?? []) as DerivativeRow[];
-    }
+    const execData = await execRes.json();
+    const derivData = await derivRes.json();
+    const executions = (execData.data ?? []) as ExecutionRow[];
+    const derivatives = (derivData.data ?? []) as DerivativeRow[];
 
     return data({
       production: prodData.data as Production,
@@ -217,16 +238,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       error: null,
     });
   } catch {
-    return data({
-      production: null,
-      executions: [],
-      derivatives: [],
-      error: "Erreur chargement",
-    });
+    return data(
+      {
+        production: null,
+        executions: [],
+        derivatives: [],
+        error: "Erreur chargement",
+      },
+      { status: 503 },
+    );
   }
 }
 
-// ─── Action (unchanged) ─────────────────────────────────────
+// ─── Action ─────────────────────────────────────
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
@@ -268,6 +292,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
         body: JSON.stringify(gateInput),
       });
       const payload = await res.json();
+      if (!res.ok || payload.success === false) {
+        return data({
+          _intent: "dry-run" as const,
+          ok: false,
+          error: payload.error ?? payload.message ?? "Erreur validation",
+        });
+      }
       return data({ _intent: "dry-run" as const, ok: true, result: payload });
     } catch {
       return data({
@@ -425,6 +456,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
         error: "Erreur reseau",
       });
     }
+  }
+
+  if (intent !== "execute") {
+    return data({ ok: false, error: "Action inconnue" }, { status: 400 });
   }
 
   try {
@@ -587,8 +622,12 @@ export default function VideoProductionDetail() {
     executions,
     derivatives,
   );
-  const hasRender = executions.some((e) => e.status === "completed");
-  const completedExec = executions.find((e) => e.status === "completed");
+  const hasRender = executions.some((e) =>
+    hasRenderedArtifact(e.executionOutcome),
+  );
+  const completedExec = executions.find((e) =>
+    hasRenderedArtifact(e.executionOutcome),
+  );
   const streamUrl = completedExec
     ? `/api/admin/video/executions/${completedExec.id}/stream`
     : null;
@@ -670,6 +709,7 @@ export default function VideoProductionDetail() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       <Film className="h-16 w-16 text-neutral-600 mb-6" />
                       <button
+                        aria-label="Lire le rendu"
                         onClick={() => setShowVideo(true)}
                         className="relative z-10 w-16 h-16 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center hover:bg-white/20 hover:scale-105 transition-all"
                       >
@@ -1500,17 +1540,9 @@ function InspectorExec({ executions }: { executions: ExecutionRow[] }) {
                   #{exec.id}
                 </span>
                 <span
-                  className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase font-bold ${
-                    exec.status === "completed"
-                      ? "bg-emerald-900/30 text-emerald-400"
-                      : exec.status === "failed"
-                        ? "bg-red-900/30 text-red-400"
-                        : exec.status === "processing"
-                          ? "bg-blue-900/30 text-blue-400"
-                          : "bg-neutral-800 text-neutral-500"
-                  }`}
+                  className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${executionPresentation(exec.executionOutcome).className}`}
                 >
-                  {exec.status}
+                  {executionPresentation(exec.executionOutcome).label}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-[9px] font-mono text-neutral-600">
