@@ -119,18 +119,24 @@ décision du décideur (ADR-119). Ce dossier n'écrit ni dans RAW ni dans le WIK
 
 ### 0.6 Responsables, livrables et état réel d'intégration
 
-**Mandat utilisateur du 1er novembre 2026 pour les nouveaux lots.**
+**Mandat utilisateur consolidé du 1er novembre 2026 pour les nouveaux lots.**
 ChatGPT/Work est l'auteur éditorial principal ; le Studio documentaire/Space
-porte les brouillons et décisions de rédaction, et Codex reçoit l'intégration
-du nouveau pilote. Ce mandat n'annule pas les auteurs, engagements techniques
-et validations des révisions déjà produites. Les fichiers de bibliothèque ne
-sont ni automatiquement lus par Codex ni synchronisés au dépôt.
+porte les brouillons et décisions de rédaction. **Claude Code CLI reste seul
+responsable du codage et de l'intégration technique** ; ChatGPT lui prépare
+un prompt complet lorsqu'un changement technique est nécessaire, puis
+le transmet uniquement par un canal autorisé et vérifié. À défaut de canal
+disponible : prompt prêt pour lancement manuel, statut **NON ENVOYÉ**.
+**Codex vérifie indépendamment** les faits et le travail technique, sans écrire.
+Ce mandat conserve les auteurs, engagements, contrats et validations précédents.
+Les fichiers de bibliothèque ne sont ni synchronisés automatiquement au dépôt
+ni reçus automatiquement par Claude CLI.
 
 | Responsable | Livre | Dans ce dossier |
 |---|---|---|
 | ChatGPT (Studio/Space ; Work si accessible) | recherche sourcée, rédaction principale, scripts candidats et suivi éditorial | Studio `AutoMecanik — Studio éditorial` ; livrables à transmettre par version et empreinte |
-| Codex (nouveaux lots éditoriaux) | intégration au code existant, tests et remise de PR ; revue indépendante séparée de l'auteur | `HANDOFF.md` § 6 et lot figé, après preuve de réception ; aucune mission Codex présumée exécutée |
-| Claude Desktop / Claude CLI (historique du lot) | livrables déjà préparés, raccordements et corrections de code déjà confiées | `integration/`, `assets/`, `MEDIA.md`, `PROMPTS.md`, `CHECKPOINT.md`, `HANDOFF.md` § 6 ; provenance conservée |
+| Claude Code CLI (code, nouveaux lots et missions déjà engagées) | toutes modifications backend/frontend, tests, scripts, intégration, PR techniques, sur prompt borné et autorisé | `HANDOFF.md` § 6 ; paquet figé avec SHA/empreintes ; réception et exécution à prouver |
+| Codex (relecteur indépendant) | revue du code et des sources, audit SEO/QA ; remonte ses constats à Claude CLI sans coder | compte rendu de revue sur une révision identifiée, non une PR de correction Codex |
+| Claude Desktop (historique) | livrables déjà préparés, médias, scripts et sources historiques ; pas auteur principal futur | `integration/`, `assets/`, `MEDIA.md`, `PROMPTS.md`, `CHECKPOINT.md` ; provenance conservée |
 | Hermes (passation) | fonctions de suivi et relais existantes jusqu'à leur remplacement vérifié | `CHECKPOINT.md` ; ne bloque plus les nouvelles rédactions |
 | Décideur WIKI | admission des faits F-C* (ADR-119), inchangée | § 6 |
 | Owner | fusion des PR, accord nominatif en zone STOP (écriture PROD sur pages indexées, déploiement) | — |
@@ -153,9 +159,11 @@ Détail des dépendances restantes, étape par étape : `HANDOFF.md` § 6, « Re
 
 Transmission de ce brief : au relevé historique du 31/10, aucune preuve de réception
 par Claude Code Desktop, Codex ou Hermes. Au 1er novembre, la mise à disposition
-d'un lot dans le Studio ne prouve pas davantage la réception par Codex.
-Consigner pour chaque transfert le destinataire, la révision, l'empreinte,
-la date et une preuve de prise en charge ; la présence d'un fichier ne suffit pas.
+d'un lot dans le Studio ne prouve pas davantage sa réception par Claude CLI.
+Consigner le prompt préparé, le canal réellement utilisé, le destinataire,
+la révision, les empreintes, la date et la preuve de prise en charge.
+En absence de canal autorisé, marquer **PROMPT PRÊT — NON ENVOYÉ**.
+L'existence d'un fichier ou d'une issue ne prouve pas une exécution.
 
 ### 0.7 Réutiliser ce dossier pour une autre gamme ou un véhicule
 
