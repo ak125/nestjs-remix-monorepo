@@ -1,9 +1,19 @@
 /**
  * R3GuideController — Single endpoint for R3 conseil guide pages.
  * GET /api/r3-guide/:pg_alias → R3GuidePayload
+ * POST /api/r3-guide/:pg_alias/cache/invalidate → purge du cache Redis (admin)
  */
 
-import { Controller, Get, Param, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Logger,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { R3GuideService } from '../services/r3-guide.service';
 import {
   DomainNotFoundException,
@@ -50,5 +60,21 @@ export class R3GuideController {
         message: `Erreur lors du chargement du guide "${pg_alias}"`,
       });
     }
+  }
+
+  /**
+   * POST /api/r3-guide/:pg_alias/cache/invalidate
+   * Efface le payload caché (TTL 24 h) pour les deux segments du drapeau R6,
+   * sur le modèle de `POST /api/gamme-rest/:pgId/cache/invalidate`.
+   */
+  @Post(':pg_alias/cache/invalidate')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  async invalidateCache(@Param('pg_alias') pg_alias: string) {
+    const keys = await this.r3GuideService.invalidateCache(pg_alias);
+    return {
+      status: 200,
+      message: `Cache invalidé pour le guide ${pg_alias}`,
+      keys,
+    };
   }
 }

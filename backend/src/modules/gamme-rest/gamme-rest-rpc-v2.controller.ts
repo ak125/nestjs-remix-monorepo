@@ -8,7 +8,10 @@ import {
   Logger,
   HttpException,
   ServiceUnavailableException,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
 import { CacheService } from '@cache/cache.service';
@@ -154,8 +157,14 @@ export class GammeRestRpcV2Controller {
   /**
    * 🗑️ Invalide le cache d'une gamme
    * Endpoint: POST /api/gamme-rest/:pgId/cache/invalidate
+   *
+   * Admin uniquement : la route était ouverte à toute requête anonyme
+   * (aucun appelant légitime non authentifié, le préchauffage passe par
+   * `cache/warm`). Clés effacées : `gamme:rpc:v2:<pgId>`,
+   * `gamme:rpc:v2:stale:<pgId>` et `gamme:resp:v2:<r6c0|r6c1>:<pgId>`.
    */
   @Post(':pgId/cache/invalidate')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async invalidateCache(@Param('pgId') pgId: string) {
     await this.rpcService.invalidateCache(pgId);
     // Purger aussi le cache response-level (2e couche)
