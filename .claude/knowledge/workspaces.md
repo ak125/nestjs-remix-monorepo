@@ -16,6 +16,11 @@ Ce protocole s'applique à Claude CLI, Claude Code Desktop (onglet Code), Codex 
 aux missions Hermes dans leurs accès effectifs. Utiliser les fichiers du checkout et de la révision de la mission,
 jamais une copie d'instructions d'une autre session supposée équivalente.
 
+Pour ChatGPT Work utilisant le Studio documentaire (bibliothèque/Space), la lecture des
+skills et du canon du dépôt n'est pas automatique : donner les chemins, la révision,
+les sources et les extraits accessibles, puis tracer leur lecture réelle. La présence
+d'un document dans le Studio ne vaut ni raccordement au runtime ni droit d'écriture.
+
 1. Lire le contrat racine `CLAUDE.md` s'il n'est pas déjà chargé, puis les
    `CLAUDE.md`, `AGENTS.md` et règles du workspace concerné. Faire cette lecture
    aussi lorsque la tâche de workspace commence depuis la racine du dépôt.
@@ -149,11 +154,24 @@ requises pour le texte, la sécurité, le rendu et la publication.
 
 ### Poursuite et réception du lot
 
-Desktop poursuit les textes, scripts et fichiers visuels du lot avec les capacités
-réellement disponibles ; un préparateur de prompts ne prouve pas la production
-d'une image. Claude CLI porte les corrections techniques et l'intégration dans
-le rendu existant. Préparer un visuel neutre sans promesse de prix ou de délai peut
-avancer dans le mandat de préparation ; cela ne change ni prix/stock runtime ni PROD.
+**Nouveau mandat utilisateur du 1er novembre 2026 — prochains lots éditoriaux.**
+ChatGPT, dans le Studio documentaire/Space et via Work lorsqu'il est accessible,
+devient l'auteur principal des recherches, textes et scripts. Le Studio porte les
+brouillons et le suivi documentaire, sans devenir le canon technique, le WIKI ou
+le producteur du catalogue. Codex est l'intégrateur technique désigné pour le
+nouveau pilote éditorial, avec tests, revue indépendante et PR selon les droits
+réellement accessibles. Un brouillon dans Space ne prouve ni réception ni
+exécution par Codex ; un prompt d'image ne prouve pas sa production.
+
+Les livrables antérieurs de Claude Desktop et les missions de code déjà attribuées
+à Claude CLI restent conservés, avec leurs auteurs, états et révisions exacts.
+Ne pas interrompre ni réattribuer silencieusement un périmètre encore détenu
+par un autre écrivain : le transfert explicite précède toute modification
+concurrente. Hermes transmet les fonctions utiles après recette et ne sert plus
+de passage obligé pour démarrer une rédaction. Aucun changement de permissions,
+de secrets, de validation WIKI ou de mandat PROD ne découle de cette répartition.
+Préparer un visuel neutre sans promesse de prix ou de délai peut avancer dans le
+mandat de préparation ; cela ne change ni prix/stock runtime ni PROD.
 
 Rendre les livrables accessibles à l'intégrateur par les moyens existants : checkout
 partagé ou branche/révision disponible, références d'assets et source ou recette de
