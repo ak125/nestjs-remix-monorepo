@@ -165,6 +165,22 @@ la révision, les empreintes, la date et la preuve de prise en charge.
 En absence de canal autorisé, marquer **PROMPT PRÊT — NON ENVOYÉ**.
 L'existence d'un fichier ou d'une issue ne prouve pas une exécution.
 
+> **Actualisation de suivi — 1er novembre 2026 (lecture GitHub, pas recette runtime).**
+> La PR [#1939](https://github.com/ak125/nestjs-remix-monorepo/pull/1939),
+> indiquée ouverte dans le relevé historique du 31/10 à 14:10Z ci-dessus, a été
+> fusionnée le **31/10/2026 à 15:12:29Z** (merge `8145263e63dc7c5e40effc204929273f10966367`).
+> Cela corrige le statut Git **sans prouver** un nouveau résultat E2E, un déploiement
+> PREPROD/PROD ni la publication des textes de la gamme.
+> Les PR [#1924](https://github.com/ak125/nestjs-remix-monorepo/pull/1924)
+> et [#1938](https://github.com/ak125/nestjs-remix-monorepo/pull/1938)
+> contiennent le mandat actualisé : **ChatGPT est l'auteur éditorial principal ;
+> Claude Code CLI écrit et intègre tout code ; Codex vérifie sans coder.**
+> Pour une opération technique, préparer un prompt vers Claude CLI et vérifier
+> sa réception effective ; en l'absence de canal autorisé, état
+> `PROMPT PRÊT — NON ENVOYÉ`. Voir la recette et le prompt
+> dans [#1947](https://github.com/ak125/nestjs-remix-monorepo/issues/1947).
+> Aucun état publié n'est déduit de cette mise à jour documentaire.
+
 ### 0.7 Réutiliser ce dossier pour une autre gamme ou un véhicule
 
 - Un dossier par gamme ou par véhicule : `docs/audits/editorial-<gamme ou véhicule>-<AAAAMMJJ>/`, couvert par le glob
