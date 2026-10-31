@@ -10,6 +10,7 @@ import {
   Param,
   Logger,
   Post,
+  ServiceUnavailableException,
   UseGuards,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
@@ -66,11 +67,23 @@ export class R3GuideController {
    * POST /api/r3-guide/:pg_alias/cache/invalidate
    * Efface le payload caché (TTL 24 h) pour les deux segments du drapeau R6,
    * sur le modèle de `POST /api/gamme-rest/:pgId/cache/invalidate`.
+   * Redis indisponible → 503 : aucune réponse de succès sans purge effective.
    */
   @Post(':pg_alias/cache/invalidate')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async invalidateCache(@Param('pg_alias') pg_alias: string) {
-    const keys = await this.r3GuideService.invalidateCache(pg_alias);
+    let keys: string[];
+    try {
+      keys = await this.r3GuideService.invalidateCache(pg_alias);
+    } catch (error) {
+      this.logger.error(
+        `Invalidation du cache du guide "${pg_alias}" échouée: ${getErrorMessage(error)}`,
+      );
+      throw new ServiceUnavailableException({
+        message: 'Cache indisponible : invalidation non effectuée',
+        retryable: true,
+      });
+    }
     return {
       status: 200,
       message: `Cache invalidé pour le guide ${pg_alias}`,

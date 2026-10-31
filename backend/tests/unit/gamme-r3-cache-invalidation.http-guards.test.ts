@@ -6,14 +6,21 @@
  * Ici : application Nest réelle (supertest), guards réels (AuthenticatedGuard puis
  * IsAdminGuard) ; seule la session Passport est simulée par un middleware
  * (`req.user` + `req.isAuthenticated`), comme la pose express-session + passport.
+ * `x-test-session: none` garde `req.user` mais rend `isAuthenticated()` faux :
+ * chaque guard est ainsi éprouvé seul.
  *
  * - anonyme et client authentifié non admin → 403, AUCUNE clé effacée ;
+ * - administrateur sans session authentifiée → 403 (AuthenticatedGuard seul) ;
  * - administrateur (level >= 7 ou isAdmin) → les clés attendues sont effacées ;
- * - contre-exemple : guards neutralisés → la requête anonyme efface (le 403 n'est
- *   donc pas vacant) ;
+ * - contre-exemples : guards neutralisés → la requête anonyme efface ;
+ *   AuthenticatedGuard seul neutralisé → l'administrateur sans session efface
+ *   (aucun des deux 403 n'est vacant) ;
+ * - Redis indisponible (CacheService réel : client absent, ou DEL rejeté) → 503,
+ *   aucun message de succès ;
  * - les routes de lecture restent publiques.
  *
- * Aucun appel réseau : CacheService est un double en mémoire, services mockés.
+ * Aucun appel réseau : CacheService est un double en mémoire, ou le service réel
+ * sans connexion (`onModuleInit` neutralisé sur l'instance) ; services mockés.
  */
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -78,15 +85,37 @@ function makeCache() {
     del: jest.fn(async (key: string) => {
       store.delete(key);
     }),
+    delStrict: jest.fn(async (keys: string[]) => {
+      for (const key of keys) store.delete(key);
+    }),
   };
-  return { store, seed, cache };
+  /** Clés passées à `delStrict`, dans l'ordre des appels. */
+  const deleted = () => cache.delStrict.mock.calls.flatMap(([keys]) => keys);
+  return { store, seed, cache, deleted };
+}
+
+/**
+ * CacheService réel sans connexion : `onModuleInit` (connexion Redis) est
+ * neutralisé sur l'instance ; `redis` remplace le client ioredis.
+ */
+function realCacheService(redis: { status: string; del: jest.Mock } | null) {
+  const service = new CacheService();
+  Object.assign(service, {
+    onModuleInit: async () => undefined,
+    redisClient: redis,
+    redisReady: redis !== null,
+  });
+  return service;
 }
 
 async function makeApp(
   cacheDouble: ReturnType<typeof makeCache>,
-  opts: { neutralizeGuards?: boolean } = {},
+  opts: {
+    neutralize?: Array<typeof AuthenticatedGuard | typeof IsAdminGuard>;
+    cacheService?: CacheService;
+  } = {},
 ): Promise<INestApplication> {
-  const { cache } = cacheDouble;
+  const cache = opts.cacheService ?? cacheDouble.cache;
   // GammeRpcService réel pour ses clés `gamme:rpc:v2:*` ; dépendances non utilisées.
   const rpcService = Object.create(
     GammeRpcService.prototype,
@@ -119,11 +148,9 @@ async function makeApp(
       { provide: InternalLinkingService, useValue: {} },
     ],
   });
-  if (opts.neutralizeGuards) {
+  for (const guard of opts.neutralize ?? []) {
     builder = builder
-      .overrideGuard(AuthenticatedGuard)
-      .useValue({ canActivate: () => true })
-      .overrideGuard(IsAdminGuard)
+      .overrideGuard(guard)
       .useValue({ canActivate: () => true });
   }
   const moduleRef = await builder.compile();
@@ -131,9 +158,10 @@ async function makeApp(
   // Session Passport simulée (en PROD : express-session + passport.session()).
   app.use((req: Request, _res: Response, next: NextFunction) => {
     const persona = PERSONAS[req.header('x-test-persona') ?? ''];
+    const session = req.header('x-test-session') !== 'none';
     Object.assign(req, {
       user: persona,
-      isAuthenticated: () => persona !== undefined,
+      isAuthenticated: () => session && persona !== undefined,
     });
     next();
   });
@@ -141,9 +169,15 @@ async function makeApp(
   return app;
 }
 
-function post(app: INestApplication, path: string, persona?: string) {
-  const req = request(app.getHttpServer()).post(path);
-  return persona ? req.set('x-test-persona', persona) : req;
+function post(
+  app: INestApplication,
+  path: string,
+  persona?: string,
+  opts: { noSession?: boolean } = {},
+) {
+  let req = request(app.getHttpServer()).post(path);
+  if (persona) req = req.set('x-test-persona', persona);
+  return opts.noSession ? req.set('x-test-session', 'none') : req;
 }
 
 describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
@@ -172,10 +206,23 @@ describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
       expect(res.status).toBe(403);
     }
     expect(cacheDouble.cache.del).not.toHaveBeenCalled();
+    expect(cacheDouble.cache.delStrict).not.toHaveBeenCalled();
     expect([...cacheDouble.store.keys()].sort()).toEqual(
       [...R1_KEYS, ...R3_KEYS].sort(),
     );
   });
+
+  it.each([['level7'], ['adminFlag']])(
+    'administrateur (%s) sans session authentifiée → 403 sur R1 et R3, aucune clé effacée',
+    async (persona) => {
+      for (const path of [R1_PATH, R3_PATH]) {
+        const res = await post(app, path, persona, { noSession: true });
+        expect(res.status).toBe(403);
+      }
+      expect(cacheDouble.cache.delStrict).not.toHaveBeenCalled();
+      expect(cacheDouble.store.size).toBe(R1_KEYS.length + R3_KEYS.length);
+    },
+  );
 
   it.each([['level7'], ['adminFlag']])(
     'administrateur (%s) → R1 efface ses 4 clés, rien de R3',
@@ -183,9 +230,8 @@ describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
       const res = await post(app, R1_PATH, persona);
       expect(res.status).toBe(201);
       expect(res.body.message).toBe(`Cache invalidé pour gamme ${PG_ID}`);
-      expect(
-        cacheDouble.cache.del.mock.calls.map(([key]) => key).sort(),
-      ).toEqual([...R1_KEYS].sort());
+      expect(cacheDouble.deleted().sort()).toEqual([...R1_KEYS].sort());
+      expect(cacheDouble.cache.del).not.toHaveBeenCalled();
       expect([...cacheDouble.store.keys()].sort()).toEqual([...R3_KEYS].sort());
     },
   );
@@ -196,15 +242,16 @@ describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
       const res = await post(app, R3_PATH, persona);
       expect(res.status).toBe(201);
       expect(res.body.keys).toEqual(R3_KEYS);
-      expect(cacheDouble.cache.del.mock.calls.map(([key]) => key)).toEqual(
-        R3_KEYS,
-      );
+      expect(cacheDouble.deleted()).toEqual(R3_KEYS);
+      expect(cacheDouble.cache.del).not.toHaveBeenCalled();
       expect([...cacheDouble.store.keys()].sort()).toEqual([...R1_KEYS].sort());
     },
   );
 
   it('contre-exemple : guards neutralisés → la requête anonyme efface', async () => {
-    const open = await makeApp(cacheDouble, { neutralizeGuards: true });
+    const open = await makeApp(cacheDouble, {
+      neutralize: [AuthenticatedGuard, IsAdminGuard],
+    });
     try {
       expect((await post(open, R1_PATH)).status).toBe(201);
       expect((await post(open, R3_PATH)).status).toBe(201);
@@ -213,6 +260,56 @@ describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
       await open.close();
     }
   });
+
+  it('contre-exemple : AuthenticatedGuard seul neutralisé → l’administrateur sans session efface', async () => {
+    const open = await makeApp(cacheDouble, {
+      neutralize: [AuthenticatedGuard],
+    });
+    try {
+      for (const path of [R1_PATH, R3_PATH]) {
+        const res = await post(open, path, 'level7', { noSession: true });
+        expect(res.status).toBe(201);
+      }
+      expect(cacheDouble.store.size).toBe(0);
+      // IsAdminGuard reste actif : le client sans session est toujours refusé.
+      cacheDouble.seed();
+      expect(
+        (await post(open, R3_PATH, 'customer', { noSession: true })).status,
+      ).toBe(403);
+    } finally {
+      await open.close();
+    }
+  });
+
+  it.each([
+    ['client Redis absent', null],
+    [
+      'DEL rejeté par Redis',
+      {
+        status: 'ready',
+        del: jest.fn().mockRejectedValue(new Error('ECONNRESET')),
+      },
+    ],
+  ])(
+    'Redis indisponible (%s) → 503 sur R1 et R3, aucun message de succès',
+    async (_label, redis) => {
+      const down = await makeApp(cacheDouble, {
+        cacheService: realCacheService(redis),
+      });
+      try {
+        for (const path of [R1_PATH, R3_PATH]) {
+          const res = await post(down, path, 'adminFlag');
+          expect(res.status).toBe(503);
+          expect(JSON.stringify(res.body)).not.toContain('Cache invalidé');
+          expect(res.body.keys).toBeUndefined();
+        }
+        // Le DEL a bien atteint le client : le 503 vient de son rejet.
+        if (redis) expect(redis.del).toHaveBeenCalledTimes(2);
+      } finally {
+        await down.close();
+      }
+    },
+  );
 
   it('la lecture R3 reste publique (le cache posé est servi sans session)', async () => {
     const res = await request(app.getHttpServer()).get(

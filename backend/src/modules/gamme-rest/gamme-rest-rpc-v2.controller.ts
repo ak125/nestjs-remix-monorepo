@@ -162,14 +162,27 @@ export class GammeRestRpcV2Controller {
    * (aucun appelant légitime non authentifié, le préchauffage passe par
    * `cache/warm`). Clés effacées : `gamme:rpc:v2:<pgId>`,
    * `gamme:rpc:v2:stale:<pgId>` et `gamme:resp:v2:<r6c0|r6c1>:<pgId>`.
+   * Redis indisponible → 503 : aucune réponse de succès sans purge effective.
    */
   @Post(':pgId/cache/invalidate')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async invalidateCache(@Param('pgId') pgId: string) {
-    await this.rpcService.invalidateCache(pgId);
-    // Purger aussi le cache response-level (2e couche)
-    for (const segment of R6_GUIDE_LINK_CACHE_SEGMENTS) {
-      await this.cacheService.del(this.responseCacheKey(pgId, segment));
+    try {
+      await this.rpcService.invalidateCache(pgId);
+      // Purger aussi le cache response-level (2e couche)
+      await this.cacheService.delStrict(
+        R6_GUIDE_LINK_CACHE_SEGMENTS.map((segment) =>
+          this.responseCacheKey(pgId, segment),
+        ),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Invalidation du cache gamme ${pgId} échouée: ${error}`,
+      );
+      throw new ServiceUnavailableException({
+        message: 'Cache indisponible : invalidation non effectuée',
+        retryable: true,
+      });
     }
 
     return {

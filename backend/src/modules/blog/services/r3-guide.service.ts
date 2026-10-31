@@ -293,7 +293,8 @@ export class R3GuideService {
    * Efface le payload caché d'une page conseil pour les deux segments du
    * drapeau R6 (`r6c0`/`r6c1`). Appelé par les événements article et par
    * `POST /api/r3-guide/:pg_alias/cache/invalidate` (admin). Retourne les
-   * clés effacées.
+   * clés effacées ; lève si Redis est indisponible (sur événement, l'erreur
+   * est journalisée par l'émetteur, le TTL reste le plafond).
    */
   async invalidateCache(
     pg_alias: string,
@@ -302,10 +303,10 @@ export class R3GuideService {
     const keys = R6_GUIDE_LINK_CACHE_SEGMENTS.map(
       (segment) => `${R3_CACHE_PREFIX}${segment}:${pg_alias}`,
     );
-    for (const cacheKey of keys) {
-      await this.cacheService.del(cacheKey);
-      this.logger.log(`[r3-cache] invalidated key=${cacheKey} on ${origin}`);
-    }
+    await this.cacheService.delStrict(keys);
+    this.logger.log(
+      `[r3-cache] invalidated keys=${keys.join(',')} on ${origin}`,
+    );
     return keys;
   }
 

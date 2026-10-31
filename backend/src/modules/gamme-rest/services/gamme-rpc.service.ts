@@ -316,13 +316,13 @@ export class GammeRpcService extends SupabaseBaseService {
 
   /**
    * 🗑️ Invalide le cache d'une gamme
+   * Lève si Redis est indisponible : l'appelant n'annonce pas une purge non faite.
    */
   async invalidateCache(pgId: string): Promise<void> {
-    const cacheKey = this.getCacheKey(pgId);
-    const staleCacheKey = this.getStaleCacheKey(pgId);
-
-    await this.cacheService.del(cacheKey);
-    await this.cacheService.del(staleCacheKey);
+    await this.cacheService.delStrict([
+      this.getCacheKey(pgId),
+      this.getStaleCacheKey(pgId),
+    ]);
 
     this.logger.log(`🗑️ Cache invalidé pour gamme ${pgId}`);
   }
