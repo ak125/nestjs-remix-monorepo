@@ -40584,14 +40584,12 @@
         "backend/src/modules/blog/blog.module.ts"
       ],
       "imports": [
-        "@auth/authenticated.guard",
-        "@auth/is-admin.guard",
         "@common/exceptions",
         "@common/utils/error.utils",
         "backend/src/modules/blog/services/r3-guide.service.ts"
       ],
       "kind": "controller",
-      "loc": 81,
+      "loc": 55,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/controllers/r3-guide.controller.ts",
       "risk": "medium",
@@ -41347,7 +41345,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 701,
+      "loc": 687,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-guide.service.ts",
       "risk": "medium",
@@ -46290,15 +46288,13 @@
         "backend/src/modules/gamme-rest/gamme-rest.module.ts"
       ],
       "imports": [
-        "@auth/authenticated.guard",
-        "@auth/is-admin.guard",
         "@cache/cache.service",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/index.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 181,
+      "loc": 172,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "medium",
@@ -70650,26 +70646,6 @@
         "manual"
       ],
       "domain": "D15",
-      "id": "backend/tests/unit/gamme-r3-cache-invalidation.http-guards.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 225,
-      "owner": "@ak125",
-      "path": "backend/tests/unit/gamme-r3-cache-invalidation.http-guards.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D15",
       "id": "backend/tests/unit/gamme-response-builder.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -79347,7 +79323,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 101,
+      "loc": 104,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/EquipementiersSection.tsx",
       "risk": "low",
@@ -95666,7 +95642,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 72,
+      "loc": 90,
       "owner": "@ak125",
       "path": "frontend/tests/unit/equipementiers-section-no-invented-url.test.tsx",
       "risk": "medium",
@@ -106163,11 +106139,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "a3f966a94eb7aa1480f34d11aa0bf189d64b17559feab3ff5e698ee957af5742",
+      "audit/registry/files.json": "7f3df8af9fca8feca02932571c42c8917501ae9c166602a2229ddb04132d9345",
       "audit/registry/rpc.json": "7897ffc88fa007be0b96ee19cc110f99f71d0639c30747fa5c4df34d48f0af4a",
       "audit/registry/runtime.json": "a6b7bb34f935b3f73f8d20c118fcaa5040e50b33fabbb344943df0a202fa5d19"
     },
-    "sotFingerprint": "cfab7158c9d1"
+    "sotFingerprint": "c26d27810cd3"
   },
   "runtime": [
     {
