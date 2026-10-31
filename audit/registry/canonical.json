@@ -79323,7 +79323,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 101,
+      "loc": 104,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/EquipementiersSection.tsx",
       "risk": "low",
@@ -95642,7 +95642,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 72,
+      "loc": 90,
       "owner": "@ak125",
       "path": "frontend/tests/unit/equipementiers-section-no-invented-url.test.tsx",
       "risk": "medium",
@@ -103478,7 +103478,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 939,
+      "loc": 956,
       "owner": "@ak125",
       "path": "scripts/marketing/fafa-pilot-governance.test.cjs",
       "risk": "low",
@@ -106139,11 +106139,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "33d61d723eea86067dcd52ec21fb2f2a88dc15e58b2071c039e2f2403912b1d8",
+      "audit/registry/files.json": "201678707aae60cd4b01683b271bafcf81c35d6325a36fb19edeea0270fb43f4",
       "audit/registry/rpc.json": "7897ffc88fa007be0b96ee19cc110f99f71d0639c30747fa5c4df34d48f0af4a",
       "audit/registry/runtime.json": "a6b7bb34f935b3f73f8d20c118fcaa5040e50b33fabbb344943df0a202fa5d19"
     },
-    "sotFingerprint": "c9bbe7d3aec6"
+    "sotFingerprint": "f8d883cc8b38"
   },
   "runtime": [
     {
