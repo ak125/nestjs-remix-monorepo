@@ -751,6 +751,12 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: low
+  # Editorial dossiers (texts, visuals, scripts under review) follow D5 "editorial workflows".
+  - glob: docs/audits/editorial-*/**
+    domain: D5
+    owner: '@ak125/content-team'
+    sourceConfidence: medium
+    risk: low
   - glob: backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts
     domain: D4
     owner: '@ak125/vehicle-team'

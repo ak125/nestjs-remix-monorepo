@@ -116,7 +116,7 @@
         "if": { "properties": { "measured": { "type": "null" } }, "required": ["measured"] },
         "then": { "properties": {
           "gate": { "enum": ["G3", "G4", "G5", "G6"] },
-          "verdict": { "const": "FAIL" }
+          "verdict": { "enum": ["WARN", "FAIL"] }
         } }
       }],
       "properties": {
@@ -130,7 +130,7 @@
         },
         "measured": {
           "type": ["number", "null"],
-          "description": "Valeur observée ; null uniquement pour G3-G6 en FAIL quand l'observation est absente. Jamais un zéro inventé ni un verdict de succès."
+          "description": "Valeur observée ; null uniquement pour G3-G6 : WARN si l'observation est absente, FAIL si elle est invalide. Jamais un zéro inventé ni un verdict de succès."
         },
         "warn_threshold": {
           "type": ["number", "null"]

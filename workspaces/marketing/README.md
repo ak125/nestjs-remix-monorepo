@@ -183,7 +183,7 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
 - **L07** · `brand-compliance-gate.service.ts:34-51,99,137-148,179,208,218-222,233,285,349,376-390` ; `marketing-hub-data.service.ts:177-194` ; canon : brancher `MarketingMatrixModule` (importé nulle part) ou s'appuyer sur la lecture locale de #1690 (D11, D15). Contrat : `brand-variant-verdict` v1, fermé par défaut, chaque canal évalué ; canon absent → erreur observable, sans seconde copie. Tests : sévérité block → refus ; règles indisponibles → refus ; autre révision → 409 ; clés inconnues rejetées. Limites : D11, D15 ; sans D6, schéma local.
 - **L08** · Branche de #1690 (dont `Dockerfile`, `Dockerfile.worker`, `.dockerignore`, contrôleur, service et dto des briefs) ; nouvelle migration limitée au sous-ensemble brief (20260430 est enregistrée appliquée, objets absents : elle ne se rejoue pas) ; `audit/baselines/ledger-catalog-baseline.json` (`--refresh` dans la même PR, après application par acte owner : retire l.70 et l.387, garde l.401). Contrat : `marketing-brief` v1 (version périmée → 409, producteur explicite, LOCAL/HYBRID refusés) ; `coverage_manifest` et `aec_manifest` définis une fois, zod strict. Tests : points de la revue mode B ; clés inconnues rejetées ; ratchet vert après refresh seulement. Limites : charger `.claude/rules/deployment.md` (ou retirer ces fichiers de #1690) ; migration appliquée par acte owner ; DROP de retour = STOP.
 - **L09** · `frontend/app/routes.ts:18,37-44`. Contrat : aucune exposition hors DEV avant L02 et L03. Tests : build de production sans `admin.marketing*`. Limites : PROD = tag owner ; exposition PREPROD selon D3.
-- **L10** · `stub-render.engine.ts:21-28` ; `render-adapter.service.ts:35` ; `template-registry.ts:49-57` ; `video-execution.processor.ts:218-239,317-324` ; `services/remotion-renderer/src/compositions/index.tsx:55-63` ; `ShortBrakingFact.tsx:40-43` ; `admin.video-hub.productions._index.tsx:72-92` ; `admin.video-hub._index.tsx:79-89`. Contrat : `render-manifest` 1.0.0 : stub ≠ rendu ; compositions enregistrées et gabarit inconnu refusé (deux règles) ; audio et script transmis ; valeurs par défaut interdites en rendu réel ; score sans mesure = UNKNOWN ; erreur ≠ liste vide. Tests : `backend/tests/unit/render-adapter.service.test.ts` étendu ; reprise d'un job testée. Limites : drapeau inchangé ; aucun rendu payant.
+- **L10** · `stub-render.engine.ts:21-28` ; `render-adapter.service.ts:35` ; `template-registry.ts:49-57` ; `video-execution.processor.ts:218-239,320-332` ; `services/remotion-renderer/src/compositions/index.tsx:55-63` ; `ShortBrakingFact.tsx:40-43` ; `admin.video-hub.productions._index.tsx:72-92` ; `admin.video-hub._index.tsx:79-89`. Contrat : `render-manifest` 1.0.0 : stub ≠ rendu ; compositions enregistrées et gabarit inconnu refusé (deux règles) ; audio et script transmis ; valeurs par défaut interdites en rendu réel ; score sans mesure = UNKNOWN ; erreur ≠ liste vide. Tests : `backend/tests/unit/render-adapter.service.test.ts` étendu ; reprise d'un job testée. Limites : drapeau inchangé ; aucun rendu payant.
   Ajout du 14/10 (post-traitement, `services/remotion-renderer/src/lib/ffmpeg-postprocess.ts`) :
   horodatage SRT avec retenue (l.210-216, C14-1) ; fusion audio en mode explicite remplacer/mixer, sans troncature implicite
   `-shortest` (l.162-185, C14-2) ; normalisation qui renvoie son état (normalisée, sans audio, échec) au lieu d'un repli silencieux et
@@ -217,6 +217,13 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   chance » : le motif `depêchez` n'a pas le « é » de « dépêchez », `dernier(e|s)?` pas le « è » de « dernière »
   (`backend/src/config/video-quality.constants.ts:243,245`, C18-16). Test : ces deux phrases en mode `short` → une violation chacune
   ; « depêchez-vous », « dernier jour » et « Derniers jours » restent reconnues.
+  Ajout du 31/10 : la branche d'intégration du dossier filtre à huile (locale, non fusionnée) applique cette règle à G3, G4, G5
+  et G6. Mesure absente → WARN à `measured` nul et drapeau `NOT_MEASURED`, qui ferme `canPublish` même avec une publication
+  finale approuvée ; mesure invalide (durée nulle ou non numérique, `type` sans plage, score hors de 0 à 1, relevé qui n'est pas
+  une liste) → FAIL ; WARN mesuré sans étape `final_publish` signée → `REVIEW_REQUIRED` ; une mesure nulle n'est plus un WARN
+  (G2 et G6 à 0 → PASS). Le processeur passe désormais `scriptText`. Durée, similarité et relevé des visuels n'ont toujours aucun
+  producteur, et l'écran de simulation n'envoie toujours ni texte ni `type` : C18-1, C18-12 et C18-15 restent ouverts côté
+  producteurs. Les tests cités plus haut changent d'attente avec ce correctif ; C18-16 n'est pas touché.
 - **L10a** · Base `75ea70a48`. Fichiers : `backend/src/modules/media-factory/services/video-gates.service.ts:108-175` (G1, G2) ;
   `backend/src/config/video-quality.constants.ts:68-73` ; `backend/tests/unit/video-gates.service.test.ts` (blocs runAllGates
   l.146-187, G1 l.189-244, G2 l.246-286). Politique active : G1 mesure un ratio de claims `unverified` (warn 0,15, fail 0,3), sans règle vault trouvée (checkout du
@@ -263,6 +270,9 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   historiques (`approval.json:117-122`). Contrat : un seul modèle, celui des trois approbations retenu ci-dessus ; G7 le lit, ou
   `stages` en est dérivé, sans second modèle. Test : dossier du pilote passé à `checkArtefacts` puis à `runAllGates` → aucun
   manque, et verdict G7 identique à celui consigné.
+  Le 31/10, #1936 (brouillon, non fusionnée) dérive les étapes des trois approbations (`approvalStagesOf`) : le pilote passe
+  l'étape 1 (`scripts/marketing/fafa-pilot-governance.test.cjs`). Rejoué en lecture seule, G7 y rend FAIL
+  (`script_text_approval`, `content_approved` faux), et non le PASS consigné : la seconde moitié du test reste ouverte.
 - **L12** · Migration additive préparée (compte, empreinte de révision, preuve, réservation par `intent_id` avec bail, liaison au brief selon D16, journal d'approbations) ; `marketing-hub-data.service.ts:31-44` ; export du contrôleur des posts (validation de `week` et `channel`, variantes secondaires) ; `utm_content` = id de variante. Tests : Instagram publié ne publie pas Facebook ; second compte → 422 ; export des variantes secondaires. Limites : lecture autorisée du CHECK réel et réconciliation du ledger d'abord ; application = acte owner ; baseline du ratchet rafraîchie dans la même PR si elle change.
 - **L13** · `publish-queue.service.ts:135-144` ; marquage publié du contrôleur des posts ; `scripts/marketing/export-publish-queue.ts` ; `fafa-media-factory/manifests/publishing/` (`.gitkeep` seul). Contrat : `publication-proof` v1 sur ces deux surfaces ; revalidation juste avant l'effet. Tests : sans preuve → 422 ; même preuve → sans effet ; preuve différente → 409 ; approbation révoquée → refus ; délai dépassé → incertain, 0 nouvelle tentative. Limites : publication = acte owner.
 - **L14** · Contrôleur d'attribution d'atterrissage (capture `medium`, `campaign`, `content` en session) ; `marketing-measurement.ts:13-25` ; contrôleur des commandes : préparation seulement (STOP). Contrat : verdict v1 lu tel quel, usage restreint à `r2_order_placed`, UNKNOWN affiché hors DEV ; les colonnes de mesure des posts (`actual_*`, `ga4_*`, `performance_*`) n'ont aucun producteur : UNKNOWN jusqu'à un producteur unique ; `qualified-demand` reste à définir par sales et data (D6), jamais déduit ici. Tests : visite → variante → commande sur fixtures synthétiques ; non certifié → UNKNOWN ; jamais 0 faute de données. Limites : D6, D7 ; aucun chiffre de vente.
@@ -641,6 +651,12 @@ sous Node ; ajout des compositions Remotion daté par `git log` (`15bdc403b`, #7
 C18-18, C18-19 et C18-24 recalées à `1a16da60c`, après #1830 (logique de G1 et G2 inchangée, `runClaimGates` inséré
 l.108-113) ; vault relu par l'API GitHub, `main` à `684e734`, toujours aucun chemin contenant « fafa » ou « persona »
 (905 chemins).
+Le 31/10, #1936 (brouillon) insère `approvalStagesOf` dans le service des gates (+45 lignes de la l.22 à la l.85, +44 au-delà),
+deux types dans `video.types.ts` (+19 après la l.117) et des tests (+2 après la l.17) : les lignes de ces fichiers citées dans
+ce dossier restent celles de `1a16da60c` ; les skills et README d'état courant qui les citent sont recalés sur la tête de #1936.
+Le même jour, la branche d'intégration du dossier filtre à huile (locale, non fusionnée) modifie G3 à G6 et `runAllGates` dans ce
+service et type `measured` en `number | null` : ces skills et README sont recalés sur cette branche ; ce dossier garde les
+lignes de `1a16da60c`.
 
 | Id | Fichier, fonction | Preuve | Limite | Lot |
 |---|---|---|---|---|

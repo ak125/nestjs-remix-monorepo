@@ -1,6 +1,6 @@
 /**
- * R1 Keyword Plan constants — pipeline phases, section config, gate definitions, quality thresholds.
- * Used by R1KeywordPlanGatesService and keyword-planner agent (mode R1).
+ * R1 Keyword Plan constants — pipeline phases, section config, gates, quality thresholds.
+ * Consumed by R1KeywordPlanGatesService and keyword-planner agent (mode R1).
  * Mirrors keyword-plan.constants.ts (R3) with transactional adaptations.
  *
  * Taxonomie C.2 : 10 sections (R1_S0_SERP..R1_S9_FAQ), 6 keyword-targeted, 4 UI-only.
@@ -11,6 +11,7 @@ import type {
   PriorityFix,
   AuditResult,
 } from './keyword-plan.constants';
+import { R1_ROUTER_CONTRACT } from '@repo/seo-role-contracts';
 
 // Re-export shared interfaces from R3 (no duplication)
 export type { GateDefinition, GateResult, PriorityFix, AuditResult };
@@ -57,6 +58,19 @@ export interface R1SectionDef {
   seo_priority: R1SeoPriority;
   generic_penalty: number;
 }
+
+// Bornes du micro-SEO : une seule source, le contrat R1 (packages/seo-role-contracts).
+// La valeur locale 700 était antérieure au relèvement 1 500/3 000 du contrat (PR #346).
+const R1_S4_MICRO_SEO_CONTRACT = R1_ROUTER_CONTRACT.allowed_sections.find(
+  (s) => s.id === 'R1_S4_MICRO_SEO',
+);
+if (!R1_S4_MICRO_SEO_CONTRACT) {
+  throw new Error('R1_ROUTER_CONTRACT: section R1_S4_MICRO_SEO absente');
+}
+export const R1_S4_MICRO_SEO_BOUNDS = {
+  min_chars: R1_S4_MICRO_SEO_CONTRACT.min_chars,
+  max_chars: R1_S4_MICRO_SEO_CONTRACT.max_chars,
+} as const;
 
 export const R1_SECTION_CONFIG: Record<R1PlannableSection, R1SectionDef> = {
   R1_S0_SERP: {
@@ -109,7 +123,7 @@ export const R1_SECTION_CONFIG: Record<R1PlannableSection, R1SectionDef> = {
     label: 'Micro-SEO Block',
     sgpg_columns: ['sgpg_micro_seo_block'],
     min_words: 140,
-    min_chars: 700,
+    min_chars: R1_S4_MICRO_SEO_BOUNDS.min_chars,
     required: true,
     keyword_targeted: true,
     seo_priority: 'critique',
@@ -177,7 +191,7 @@ export const R1_REQUIRED_SECTIONS = R1_PLANNABLE_SECTIONS.filter(
   (s) => R1_SECTION_CONFIG[s].required,
 );
 
-// ── Gate definitions R1 (G1-G7, adapted from R3) ────────
+// ── Gates R1 (G1-G7, adapted from R3) ──────────────────
 
 export const R1_GATE_DEFINITIONS: Record<string, GateDefinition> = {
   RG1_INTENT_ALIGNMENT: {

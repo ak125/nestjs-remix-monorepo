@@ -135,8 +135,8 @@ export const PiecesOemSection = memo(function PiecesOemSection({
             <p>
               <strong>Pourquoi c'est utile ?</strong> Cette référence vous
               permet de trouver des pièces équivalentes chez d'autres fabricants
-              (Bosch, TRW, Brembo...) qui respectent les mêmes spécifications
-              techniques que la pièce d'origine.
+              qui respectent les mêmes spécifications techniques que la pièce
+              d'origine.
             </p>
           </div>
         </details>

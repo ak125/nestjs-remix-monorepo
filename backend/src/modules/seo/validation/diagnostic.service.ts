@@ -260,6 +260,36 @@ export class DiagnosticService extends SupabaseBaseService {
   }
 
   /**
+   * Garde, dans l'ordre recu et sans doublon, les valeurs qui sont le slug
+   * d'un diagnostic publie. Une valeur vide ou en texte libre ne designe
+   * aucune page : liee telle quelle, elle produit un 404 (FH-6).
+   * Leve une erreur si la lecture echoue, pour que l'appelant la journalise.
+   */
+  async filterPublishedSlugs(
+    values: readonly (string | null | undefined)[],
+  ): Promise<string[]> {
+    const candidates = [
+      ...new Set(values.map((v) => v?.trim() ?? '').filter(Boolean)),
+    ];
+    if (candidates.length === 0) return [];
+
+    const { data, error } = await this.supabase
+      .from('__seo_observable')
+      .select('slug')
+      .in('slug', candidates)
+      .eq('is_published', true);
+
+    if (error) {
+      throw new Error(`__seo_observable illisible : ${error.message}`);
+    }
+
+    const published = new Set(
+      (data ?? []).map((row: { slug: string }) => row.slug),
+    );
+    return candidates.filter((slug) => published.has(slug));
+  }
+
+  /**
    * Genere le Schema.org enrichi pour un diagnostic (R5)
    * Inclut: HowTo + FAQPage + BreadcrumbList
    * Impact SEO: +10-15% CTR avec Rich Snippets Google

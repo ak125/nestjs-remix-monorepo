@@ -236,6 +236,16 @@ for (const declaredApproved of [false, true]) {
   });
 }
 
+test('a schema-valid approval.json passes step 1 (checkArtefacts) without a stages array', () => {
+  const { evaluateDossier } = require('./fafa-pilot-governance.cjs');
+  const approval = read(path.join(pilot, 'approval.json'));
+  assert.equal('stages' in approval, false);
+  const result = evaluateDossier(pilot);
+  assert.equal(result.artefactCheck.hasApprovalRecord, true);
+  assert.equal(result.artefactCheck.canProceed, true);
+  assert.deepEqual(result.artefactCheck.missingArtefacts, []);
+});
+
 test('D17 supporting evidence excludes proposals, SEO text and other unapproved types', () => {
   const supports = ajv.getSchema(`${evidenceSchema.$id}#/$defs/SupportingEvidence`);
   for (const source_type of ['wiki_proposal', 'wiki_diagnostic', 'oem_spec', 'tecdoc', 'catalogue_interne']) {
@@ -897,6 +907,20 @@ test('approval record preserves null measurements for unevaluated failing gates'
   assert.equal(validate(record), true, 'Existing numeric records remain valid');
 });
 
+test('approval record preserves missing WARN measurements emitted by the gates', () => {
+  const ajv = new Ajv({ strict: false });
+  addFormats(ajv);
+  const validate = ajv.compile(read(path.join(workspace, 'governance/approval-record.schema.json')));
+  const record = read(path.join(pilot, 'approval.json'));
+  for (const gate of ['G3', 'G4', 'G5', 'G6']) {
+    const candidate = structuredClone(record);
+    Object.assign(candidate.gate_results.find((g) => g.gate === gate), {
+      verdict: 'WARN', measured: null, details: 'Observation is unavailable; publication remains blocked.',
+    });
+    assert.equal(validate(candidate), true, `${gate}: ${JSON.stringify(validate.errors)}`);
+  }
+});
+
 test('approval record rejects null measurements for passing or counted gates', () => {
   const schema = read(path.join(workspace, 'governance/approval-record.schema.json'));
   const validateApproval = new Ajv({ strict: false });
@@ -905,7 +929,7 @@ test('approval record rejects null measurements for passing or counted gates', (
   const record = read(path.join(pilot, 'approval.json'));
   for (const gate of ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7']) {
     for (const verdict of ['PASS', 'WARN', 'FAIL']) {
-      if (verdict === 'FAIL' && ['G3', 'G4', 'G5', 'G6'].includes(gate)) continue;
+      if (['WARN', 'FAIL'].includes(verdict) && ['G3', 'G4', 'G5', 'G6'].includes(gate)) continue;
       const candidate = structuredClone(record);
       Object.assign(candidate.gate_results.find((g) => g.gate === gate), { verdict, measured: null });
       assert.equal(validate(candidate), false, `${gate}/${verdict} must not accept an absent measurement`);

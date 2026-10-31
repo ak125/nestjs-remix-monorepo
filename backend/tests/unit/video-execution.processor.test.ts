@@ -10,6 +10,7 @@
 
 import { VideoExecutionProcessor } from '../../src/workers/processors/video-execution.processor';
 import { RenderErrorCode } from '../../src/modules/media-factory/render/types/render.types';
+import { VideoGatesService } from '../../src/modules/media-factory/services/video-gates.service';
 
 // ─── Mock helpers ────────────────────────────────────────────
 
@@ -502,6 +503,38 @@ describe('VideoExecutionProcessor', () => {
       ]);
       const result = await (processor as any).handleVideoExecution(fakeJob());
       expect(result.qualityScore).toBe(0);
+      cleanup();
+    });
+
+    it('should leave the score unknown when a gate flag has no penalty', async () => {
+      const cleanup = setupForQualityScore(['GATE_FAIL:brand']);
+      const result = await (processor as any).handleVideoExecution(fakeJob());
+      expect(result.qualityScore).toBeNull();
+      cleanup();
+    });
+
+    it('should persist an unknown score when real gates are not measured', async () => {
+      const cleanup = setupForQualityScore([]);
+      const gates = new VideoGatesService();
+      mocks.gatesService.runAllGates.mockImplementation((input) =>
+        gates.runAllGates(input),
+      );
+
+      const result = await (processor as any).handleVideoExecution(fakeJob());
+
+      expect(result.canPublish).toBe(false);
+      expect(result.qualityFlags).toEqual(
+        expect.arrayContaining([
+          'NOT_MEASURED:platform',
+          'NOT_MEASURED:reuse_risk',
+          'NOT_MEASURED:visual_role',
+        ]),
+      );
+      expect(result.qualityScore).toBeNull();
+      expect(mocks.dataService.updateProduction).toHaveBeenCalledWith(
+        'brief-001',
+        expect.objectContaining({ qualityScore: null }),
+      );
       cleanup();
     });
   });

@@ -1,4 +1,4 @@
-import { CheckCircle, Clock, SearchCheck, User } from "lucide-react";
+import { CheckCircle, Clock, SearchCheck } from "lucide-react";
 import { Link } from "react-router";
 import { Section } from "~/components/layout";
 import { Badge } from "~/components/ui/badge";
@@ -52,22 +52,6 @@ export default function GammeDiagnosticCTA() {
               <SearchCheck size={18} /> Lancer le diagnostic
             </button>
           </Link>
-
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <div className="flex -space-x-1.5">
-              {["bg-blue-400", "bg-emerald-400", "bg-amber-400"].map((c) => (
-                <div
-                  key={c}
-                  className={`w-5 h-5 rounded-full ${c} border-2 border-white flex items-center justify-center`}
-                >
-                  <User size={9} className="text-white" />
-                </div>
-              ))}
-            </div>
-            <span className="text-[10px] text-slate-400 font-normal">
-              2 847 diagnostics ce mois
-            </span>
-          </div>
         </div>
       </div>
     </Section>
