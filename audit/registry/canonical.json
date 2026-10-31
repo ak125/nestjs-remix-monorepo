@@ -40618,7 +40618,7 @@
         "backend/src/modules/blog/services/r3-guide.service.ts"
       ],
       "kind": "controller",
-      "loc": 94,
+      "loc": 93,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/controllers/r3-guide.controller.ts",
       "risk": "medium",
@@ -46325,7 +46325,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 194,
+      "loc": 178,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "medium",
@@ -46578,10 +46578,11 @@
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
-        "backend/src/modules/gamme-rest/services/gamme-rpc.schema.ts"
+        "backend/src/modules/gamme-rest/services/gamme-rpc.schema.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 540,
+      "loc": 586,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
       "risk": "medium",
@@ -62244,6 +62245,7 @@
         "backend/src/modules/blog/services/r3-guide.service.ts",
         "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.test.ts"
@@ -70681,7 +70683,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 322,
+      "loc": 525,
       "owner": "@ak125",
       "path": "backend/tests/unit/gamme-r3-cache-invalidation.http-guards.test.ts",
       "risk": "medium",
@@ -106190,11 +106192,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "2b674fa56821d133af61d6de3bb5636eaf3cfa6635be24b27a45f186af3240df",
+      "audit/registry/files.json": "6d192e1204442cb6bce4b9a62994eaf25c9917b8a5ba806ff74dccb68ee9f638",
       "audit/registry/rpc.json": "294f506d203e5fa10be7f8aa1c8413414776431d9d0a9509dd5f8ea140daf6a4",
-      "audit/registry/runtime.json": "a6b7bb34f935b3f73f8d20c118fcaa5040e50b33fabbb344943df0a202fa5d19"
+      "audit/registry/runtime.json": "7a774aa80f53b1c05683d736bef99decef0b464f7484f81bead6c3d391b567e6"
     },
-    "sotFingerprint": "89149b9c11b8"
+    "sotFingerprint": "2f0dfd5ca35b"
   },
   "runtime": [
     {
@@ -109690,7 +109692,8 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/catalog/services/homepage-rpc.service.ts",
-        "runtime:backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts"
+        "runtime:backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "id": "runtime:backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
       "kind": "nestjs-service",
