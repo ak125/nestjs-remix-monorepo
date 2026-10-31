@@ -55,13 +55,15 @@
 -- -------------
 -- Les 6 tables ont la RLS active en base, chacune avec une politique service_role
 -- (ALL, true). Seule __video_execution_log est déjà touchée par une migration
--- (20260930). La capture répète `ENABLE ROW LEVEL SECURITY` (§ 7) : sur la base
--- partagée la valeur est déjà vraie, rien ne change ; sur une base vierge, une
--- table créée sans elle serait ouverte à anon et authenticated par les privilèges
--- par défaut. Elle ne crée ni ne modifie AUCUNE politique (service_role a
--- BYPASSRLS : sa politique ne change pas son accès ; versionner les 6 politiques
--- est un acte RLS distinct) et aucun droit (GRANT/REVOKE : les droits de table
--- restent ceux de la base).
+-- (20260930). La capture n'exécute `ENABLE ROW LEVEL SECURITY` (§ 7) que sur une
+-- table où la RLS est inactive : sur la base partagée elle est active partout, la
+-- capture ne l'exécute pas et ne prend aucun verrou ACCESS EXCLUSIVE ; sur une
+-- base vierge, une table créée sans elle serait ouverte à anon et authenticated
+-- par les privilèges par défaut. Elle ne crée ni ne modifie AUCUNE politique
+-- (service_role a BYPASSRLS : sa politique ne change pas son accès ; versionner les
+-- 6 politiques est un acte RLS distinct) et aucun droit (GRANT/REVOKE : les droits
+-- de table et de séquence restent ceux de la base). La post-condition refuse en
+-- revanche toute politique qui viserait un autre rôle que service_role.
 --
 -- DATE
 -- ----
@@ -70,13 +72,16 @@
 -- impossible par construction (20260930 refuse de s'appliquer sans
 -- __video_execution_log, et d'autres tables legacy n'ont pas de CREATE au dépôt).
 --
--- EFFET ATTENDU SUR LA BASE PARTAGÉE : aucun changement de schéma. Chaque
--- instruction est IF NOT EXISTS, COMMENT ON réécrit le texte identique, ENABLE ROW
--- LEVEL SECURITY la valeur identique ; puis la post-condition compare la forme
--- réelle (colonnes, défauts, commentaires, contraintes, index, séquences, RLS) à la
--- forme capturée et lève une exception à la moindre différence : une base qui a
--- dérivé depuis la capture fait échouer l'application (transaction annulée) au
--- lieu d'enregistrer comme appliquée une capture fausse.
+-- EFFET ATTENDU SUR LA BASE PARTAGÉE : aucun changement de schéma. La
+-- pré-condition (§ 0) n'accepte que 0 table (base vierge) ou les 6 : une table
+-- absente sur une base où les autres existent signale une perte, que recréer vide
+-- masquerait. Chaque instruction est IF NOT EXISTS, COMMENT ON réécrit le texte
+-- identique, ENABLE ROW LEVEL SECURITY n'est pas exécuté ; puis la post-condition
+-- compare la forme réelle (colonnes, défauts, commentaires, contraintes, index et
+-- leur validité, séquences, RLS, triggers et règles non internes, politiques hors
+-- service_role) à la forme capturée et lève une exception à la moindre
+-- différence : une base qui a dérivé depuis la capture fait échouer l'application
+-- (transaction annulée) au lieu d'enregistrer comme appliquée une capture fausse.
 -- Trois écarts ne sont PAS refusés, parce que la post-condition passe après les
 -- instructions qui les corrigent : un des 3 commentaires capturés modifié (COMMENT
 -- ON le réécrit), une RLS désactivée (ENABLE la réactive), un des 16 index absent
@@ -88,12 +93,39 @@
 
 -- Le moteur enveloppe le fichier dans une transaction (.squawk.toml
 -- `assume_in_transaction = true`) : SET LOCAL borne les verrous de cette
--- transaction seulement. Même quand les objets existent, CREATE INDEX IF NOT
--- EXISTS prend un verrou SHARE sur sa table et ENABLE ROW LEVEL SECURITY un verrou
--- ACCESS EXCLUSIVE, gardés jusqu'au COMMIT (quelques millisecondes : le reste
--- n'est que lecture du catalogue). lock_timeout borne l'attente de ces verrous.
+-- transaction seulement. Même quand l'index existe, CREATE INDEX IF NOT EXISTS
+-- prend un verrou SHARE sur sa table (écritures bloquées, lectures permises),
+-- gardé jusqu'au COMMIT (quelques millisecondes : le reste n'est que lecture du
+-- catalogue). lock_timeout borne chaque attente, pas leur somme : 4 tables portent
+-- des index, donc au pire 3 attentes successives pendant que les premières restent
+-- en SHARE. ENABLE ROW LEVEL SECURITY (ACCESS EXCLUSIVE) n'est exécuté que sur une
+-- table où la RLS est inactive (§ 7).
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '30s';
+
+-- -----------------------------------------------------------------------------
+-- 0) Pré-condition : 0 table (base vierge) ou les 6, jamais un état partiel.
+-- -----------------------------------------------------------------------------
+DO $precheck$
+DECLARE
+  v_present text[];
+  v_absent  text[];
+BEGIN
+  SELECT array_agg(t ORDER BY t COLLATE "C") FILTER (WHERE to_regclass('public.' || t) IS NOT NULL),
+         array_agg(t ORDER BY t COLLATE "C") FILTER (WHERE to_regclass('public.' || t) IS NULL)
+    INTO v_present, v_absent
+    FROM unnest(ARRAY['__video_execution_log', '__video_productions', '__video_variants',
+                      '__video_assets', '__video_audio_cache', '__video_templates']) AS t;
+
+  IF v_present IS NOT NULL AND v_absent IS NOT NULL THEN
+    RAISE EXCEPTION 'ABORT: état partiel des tables __video_* : présentes %, absentes %',
+                    v_present, v_absent
+      USING HINT = 'Une table absente là où les autres existent signale une perte : la restaurer, ne pas la recréer vide.';
+  END IF;
+
+  RAISE NOTICE 'capture __video_* : % table(s) présente(s) sur 6', coalesce(cardinality(v_present), 0);
+END
+$precheck$;
 
 -- -----------------------------------------------------------------------------
 -- 1) __video_execution_log (9 lignes au 2026-10-31)
@@ -406,20 +438,48 @@ CREATE TABLE IF NOT EXISTS public.__video_templates (
 );
 
 -- -----------------------------------------------------------------------------
--- 7) RLS : déjà active en base sur les 6 tables (voir l'en-tête, « RLS ET DROITS »)
+-- 7) RLS : déjà active en base sur les 6 tables (voir l'en-tête, « RLS ET DROITS »).
+--    Activée seulement là où elle est inactive : aucun verrou ACCESS EXCLUSIVE
+--    sur une table déjà conforme.
 -- -----------------------------------------------------------------------------
-ALTER TABLE public.__video_execution_log ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.__video_productions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.__video_variants ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.__video_assets ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.__video_audio_cache ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.__video_templates ENABLE ROW LEVEL SECURITY;
+DO $rls$
+BEGIN
+  IF NOT (SELECT relrowsecurity FROM pg_catalog.pg_class
+           WHERE oid = 'public.__video_execution_log'::regclass) THEN
+    ALTER TABLE public.__video_execution_log ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF NOT (SELECT relrowsecurity FROM pg_catalog.pg_class
+           WHERE oid = 'public.__video_productions'::regclass) THEN
+    ALTER TABLE public.__video_productions ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF NOT (SELECT relrowsecurity FROM pg_catalog.pg_class
+           WHERE oid = 'public.__video_variants'::regclass) THEN
+    ALTER TABLE public.__video_variants ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF NOT (SELECT relrowsecurity FROM pg_catalog.pg_class
+           WHERE oid = 'public.__video_assets'::regclass) THEN
+    ALTER TABLE public.__video_assets ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF NOT (SELECT relrowsecurity FROM pg_catalog.pg_class
+           WHERE oid = 'public.__video_audio_cache'::regclass) THEN
+    ALTER TABLE public.__video_audio_cache ENABLE ROW LEVEL SECURITY;
+  END IF;
+  IF NOT (SELECT relrowsecurity FROM pg_catalog.pg_class
+           WHERE oid = 'public.__video_templates'::regclass) THEN
+    ALTER TABLE public.__video_templates ENABLE ROW LEVEL SECURITY;
+  END IF;
+END
+$rls$;
 
 -- -----------------------------------------------------------------------------
 -- 8) Post-condition : forme réelle == forme capturée, sinon la transaction échoue.
 --    Le rendu du catalogue (pg_get_expr, pg_get_constraintdef, regclass) dépend
 --    du search_path : il est fixé pendant la mesure puis restauré. Le tri est en
 --    collation "C" pour ne pas dépendre de la locale de la base.
+--    Un index invalide (création interrompue) est marqué « (invalide) ». Trigger,
+--    règle ou politique hors service_role n'ont aucune ligne attendue : en base
+--    il n'y a que les triggers internes des clés étrangères, aucune règle, et une
+--    politique par table, TO service_role.
 -- -----------------------------------------------------------------------------
 DO $postcheck$
 DECLARE
@@ -629,9 +689,30 @@ BEGIN
         JOIN pg_class c ON c.oid = k.conrelid
        WHERE k.conrelid = ANY (v_tables::oid[])
       UNION ALL
-      SELECT format('index %s', pg_get_indexdef(i.indexrelid))
+      SELECT format('index %s%s', pg_get_indexdef(i.indexrelid),
+                    CASE WHEN i.indisvalid AND i.indisready AND i.indislive THEN ''
+                         ELSE ' (invalide)' END)
         FROM pg_index i
        WHERE i.indrelid = ANY (v_tables::oid[])
+      UNION ALL
+      SELECT format('trigger %s', pg_get_triggerdef(g.oid))
+        FROM pg_trigger g
+       WHERE g.tgrelid = ANY (v_tables::oid[])
+         AND NOT g.tgisinternal
+      UNION ALL
+      SELECT format('rule %s.%s', c.relname, r.rulename)
+        FROM pg_rewrite r
+        JOIN pg_class c ON c.oid = r.ev_class
+       WHERE r.ev_class = ANY (v_tables::oid[])
+      UNION ALL
+      SELECT format('policy %s.%s hors service_role : %s', c.relname, p.polname,
+                    (SELECT string_agg(CASE WHEN o = 0 THEN 'public' ELSE o::regrole::text END,
+                                       ',' ORDER BY o)
+                       FROM unnest(p.polroles) AS o))
+        FROM pg_policy p
+        JOIN pg_class c ON c.oid = p.polrelid
+       WHERE p.polrelid = ANY (v_tables::oid[])
+         AND p.polroles IS DISTINCT FROM ARRAY[to_regrole('service_role')::oid]
       UNION ALL
       SELECT format('sequence %s %s start %s increment %s max %s cache %s cycle %s',
                     s.seqrelid::regclass, format_type(s.seqtypid, NULL),

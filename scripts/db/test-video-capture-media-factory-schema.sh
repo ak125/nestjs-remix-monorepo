@@ -11,10 +11,14 @@
 #   - base à la forme réelle (objets créés hors du dépôt, autrement que par la
 #     capture, avec données, RLS et politiques) : la capture n'y change RIEN
 #     (catalogue, fichiers de table, droits, politiques, données) ;
-#   - toute dérive de forme fait échouer l'application, sans aucun effet partiel ;
+#   - toute dérive de forme (dont politique hors service_role, index invalide,
+#     trigger, règle) fait échouer l'application, sans aucun effet partiel ;
 #   - seules écritures possibles, épinglées : commentaire de colonne, RLS
 #     désactivée et index absent sont ramenés à la forme capturée ;
-#   - un verrou concurrent sur __video_execution_log : échec borné par lock_timeout ;
+#   - un état partiel (une partie seulement des 6 tables) est refusé avant toute
+#     création, même quand les tables présentes sont conformes ;
+#   - une lecture concurrente ne bloque pas la capture ; une écriture concurrente
+#     la fait échouer, borné par lock_timeout ;
 #   - le .down.sql n'a aucun effet ;
 #   - les deux fichiers de types du dépôt décrivent exactement les colonnes
 #     capturées (Row, Insert, Update, Relationships).
@@ -48,13 +52,20 @@ done
 
 TMP="$(mktemp -d)"
 # Only remove the container created by this invocation and its anonymous data.
+# --cidfile : la CLI y écrit l'ID dès la création, avant le démarrage. Un
+# démarrage raté laisse ainsi un ID à nettoyer même si stdout n'en a rendu aucun ;
+# une création ratée (nom déjà pris) n'en écrit aucun.
 CT_ID=""
-cleanup() { if [[ -n "$CT_ID" ]]; then docker rm -fv "$CT_ID" >/dev/null 2>&1 || true; fi; rm -rf "$TMP"; }
+cleanup() {
+  [[ -n "$CT_ID" ]] || CT_ID="$(cat "$TMP/cid" 2>/dev/null)"
+  if [[ -n "$CT_ID" ]]; then docker rm -fv "$CT_ID" >/dev/null 2>&1 || true; fi
+  rm -rf "$TMP"
+}
 trap cleanup EXIT
 
 echo "Image     : $IMAGE"
 echo "Migration : ${MIGRATION#"$ROOT"/}"
-CT_ID="$(docker run -d --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --name "$CT" -e POSTGRES_PASSWORD=test "$IMAGE")" || exit 2
+CT_ID="$(docker run -d --cidfile "$TMP/cid" --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --name "$CT" -e POSTGRES_PASSWORD=test "$IMAGE")" || exit 2
 # Prêt = le serveur DÉFINITIF répond sur TCP. Le serveur temporaire que l'image
 # lance pour son initialisation n'écoute que la socket Unix : sonder la socket
 # rend la main pendant l'init, puis le serveur s'arrête sous la fixture.
@@ -138,14 +149,18 @@ SQL
 )
 TABLES="__video_execution_log __video_productions __video_variants __video_assets __video_audio_cache __video_templates"
 TABLES_ARR="ARRAY['public.__video_execution_log', 'public.__video_productions', 'public.__video_variants', 'public.__video_assets', 'public.__video_audio_cache', 'public.__video_templates']::regclass[]"
-# Contenu des 6 tables et position de leurs séquences.
-DATA_SQL="SELECT x FROM ("
-for t in $TABLES; do
-  [[ "$DATA_SQL" == *SELECT\ \'data* ]] && DATA_SQL+=" UNION ALL "
-  DATA_SQL+="SELECT 'data $t ' || count(*) || ' ' || md5(coalesce(string_agg(r::text, '|' ORDER BY r.id), '')) FROM public.$t r"
-  DATA_SQL+=" UNION ALL SELECT 'seq $t ' || last_value || ' ' || is_called FROM public.${t}_id_seq"
-done
-DATA_SQL+=") AS s(x) ORDER BY x COLLATE \"C\""
+# data_sql <tables…> : contenu des tables et position de leurs séquences.
+data_sql() {
+  local sql="SELECT x FROM (" t
+  for t in "$@"; do
+    [[ "$sql" == *SELECT\ \'data* ]] && sql+=" UNION ALL "
+    sql+="SELECT 'data $t ' || count(*) || ' ' || md5(coalesce(string_agg(r::text, '|' ORDER BY r.id), '')) FROM public.$t r"
+    sql+=" UNION ALL SELECT 'seq $t ' || last_value || ' ' || is_called FROM public.${t}_id_seq"
+  done
+  printf '%s' "$sql) AS s(x) ORDER BY x COLLATE \"C\""
+}
+# shellcheck disable=SC2086 # noms sans espace
+DATA_SQL=$(data_sql $TABLES)
 # snap <nom> [data] : instantané du catalogue (et des données) de la base courante.
 snap() { { q "$SNAP_SQL"; if [[ ${2:-} == data ]]; then q "$DATA_SQL"; fi; } > "$TMP/$1"; }
 
@@ -174,6 +189,8 @@ echo "1. Base vierge : la capture crée les 6 tables"
 new_db vierge
 out=$(migrate "$MIGRATION"); rc=$?
 applied "capture appliquée" "$out" "$rc"
+assert "pré-condition : base vierge reconnue" oui \
+  "$([[ "$out" == *"0 table(s) présente(s) sur 6"* ]] && echo oui || echo non)"
 assert "6 tables créées" 6 "$(q "SELECT count(*) FROM pg_class WHERE oid = ANY ($TABLES_ARR)")"
 for t in $TABLES; do
   assert "ordre des colonnes de $t = ordre en base" "${ORDER[$t]}" \
@@ -221,6 +238,8 @@ assert "6 politiques service_role en place" 6 \
 snap r0 data
 out=$(migrate "$MIGRATION"); rc=$?
 applied "capture appliquée" "$out" "$rc"
+assert "pré-condition : les 6 tables reconnues" oui \
+  "$([[ "$out" == *"6 table(s) présente(s) sur 6"* ]] && echo oui || echo non)"
 snap r1 data
 assert_same "rien n'a changé : catalogue, fichiers de table, droits, politiques, données" r0 r1
 q "$DATA_SQL" > "$TMP/rdata"
@@ -273,10 +292,24 @@ derive "commentaire posé sur une colonne non commentée (execution_log.brief_id
 derive "commentaire posé sur une table (templates)" \
   "COMMENT ON TABLE $TPL IS 'derive'" \
   "COMMENT ON TABLE $TPL IS NULL"
+derive "politique permissive pour anon (productions)" \
+  "CREATE POLICY drift_pol ON $PROD FOR SELECT TO anon USING (true)" \
+  "DROP POLICY drift_pol ON $PROD"
+# Index homonyme laissé invalide par une création concurrente interrompue :
+# simulé par le catalogue, seul moyen d'obtenir la même définition invalide.
+derive "index homonyme invalide (execution_log.status)" \
+  "UPDATE pg_index SET indisvalid = false WHERE indexrelid = 'public.idx_vel_status'::regclass" \
+  "UPDATE pg_index SET indisvalid = true WHERE indexrelid = 'public.idx_vel_status'::regclass"
+derive "trigger qui réécrit status (execution_log)" \
+  "CREATE FUNCTION public.drift_fn() RETURNS trigger LANGUAGE plpgsql AS 'BEGIN NEW.status := ''pending''; RETURN NEW; END'; CREATE TRIGGER drift_trg BEFORE UPDATE ON $EL FOR EACH ROW EXECUTE FUNCTION public.drift_fn()" \
+  "DROP TRIGGER drift_trg ON $EL; DROP FUNCTION public.drift_fn()"
+derive "règle sur DELETE (templates)" \
+  "CREATE RULE drift_rule AS ON DELETE TO $TPL DO INSTEAD NOTHING" \
+  "DROP RULE drift_rule ON $TPL"
 out=$(migrate "$MIGRATION"); rc=$?
 applied "dérives retirées : la capture repasse" "$out" "$rc"
 q "$DATA_SQL" > "$TMP/rdata2"
-assert_same "données intactes après les 12 dérives" rdata rdata2
+assert_same "données intactes après les 16 dérives" rdata rdata2
 
 echo
 echo "5. Seules écritures possibles : ramener commentaire, RLS et index à la forme capturée"
@@ -297,47 +330,82 @@ q "$DATA_SQL" > "$TMP/rdata3"
 assert_same "données intactes" rdata rdata3
 
 echo
-echo "6. Pas d'effet partiel : une seule table préexiste, de forme étrangère"
+echo "6. État partiel : refusé avant toute création"
 new_db partielle
 q "CREATE TABLE $AUDIO (id serial PRIMARY KEY, cache_key text NOT NULL, url text NOT NULL, duration_secs numeric(6,2), voice text NOT NULL, speed numeric(4,2) NOT NULL, char_count integer NOT NULL, created_at timestamptz DEFAULT now())" >/dev/null
 snap p0
 out=$(migrate "$MIGRATION"); rc=$?
-assert_err "dérive détectée (speed élargi, UNIQUE absente)" "divergente de la base" "$out" "$rc"
+assert_err "une seule table, de forme étrangère" "état partiel" "$out" "$rc"
 snap p1
 assert_same "catalogue inchangé" p0 p1
 assert "les 5 autres tables non créées" 0 \
   "$(q "SELECT count(*) FROM unnest(ARRAY['$EL', '$PROD', '$VAR', '$ASSETS', '$TPL']) AS t WHERE to_regclass(t) IS NOT NULL")"
+# Une table perdue parmi des tables conformes : la recréer vide masquerait la perte.
+FIVE="__video_execution_log __video_variants __video_assets __video_audio_cache __video_templates"
+new_db perte
+psql_db -v forme_reelle=1 -f - < "$FIXTURE" >/dev/null || { echo "FATAL: forme réelle (perte)"; exit 2; }
+q "DROP TABLE $PROD" >/dev/null || { echo "FATAL: productions non retirée"; exit 2; }
+snap p2
+# shellcheck disable=SC2086 # noms sans espace
+q "$(data_sql $FIVE)" > "$TMP/p2data"
+out=$(migrate "$MIGRATION"); rc=$?
+assert_err "5 tables conformes, avec données, productions absente" "état partiel" "$out" "$rc"
+snap p3
+assert_same "catalogue inchangé" p2 p3
+# shellcheck disable=SC2086 # noms sans espace
+q "$(data_sql $FIVE)" > "$TMP/p3data"
+assert_same "données des 5 tables inchangées" p2data p3data
+assert "productions non recréée" "" "$(q "SELECT to_regclass('$PROD')")"
 
 echo
-echo "7. Verrou concurrent sur __video_execution_log : échec borné par lock_timeout"
+echo "7. Accès concurrents à __video_execution_log"
 DB=reelle
-# Une lecture longue tient ACCESS SHARE sur __video_execution_log ; ENABLE ROW
-# LEVEL SECURITY demande ACCESS EXCLUSIVE même quand la RLS est déjà active.
-docker exec -i "$CT" psql -U postgres -d reelle -v ON_ERROR_STOP=1 -qtA >"$TMP/hold" 2>&1 <<'SQL' &
+# hold <SQL> : une session tient le verrou du SQL sur __video_execution_log
+# pendant 12 s ; rend la main quand le verrou est accordé et la session endormie.
+hold() {
+  docker exec -i "$CT" psql -U postgres -d reelle -v ON_ERROR_STOP=1 -qtA >"$TMP/hold" 2>&1 <<SQL &
 BEGIN;
-SELECT count(*) FROM public.__video_execution_log;
+$1;
 SELECT pg_sleep(12);
 ROLLBACK;
 SQL
-HOLDER=$!
-# Attente déterministe : la lecture tient son verrou et dort.
-held=0
-for _ in $(seq 1 50); do
-  held=$(q "SELECT count(*) FROM pg_stat_activity a WHERE a.wait_event = 'PgSleep' AND EXISTS (SELECT 1 FROM pg_locks l WHERE l.pid = a.pid AND l.relation = '$EL'::regclass AND l.granted)")
-  [[ "$held" == 1 ]] && break; sleep 0.1
-done
-[[ "$held" == 1 ]] || { echo "FATAL: la lecture concurrente n'a pas pris son verrou"; wait "$HOLDER"; exit 2; }
+  HOLDER=$!
+  local held=0
+  for _ in $(seq 1 50); do
+    held=$(q "SELECT count(*) FROM pg_stat_activity a WHERE a.wait_event = 'PgSleep' AND EXISTS (SELECT 1 FROM pg_locks l WHERE l.pid = a.pid AND l.relation = '$EL'::regclass AND l.granted)")
+    [[ "$held" == 1 ]] && return 0
+    sleep 0.1
+  done
+  echo "FATAL: la session concurrente n'a pas pris son verrou"; wait "$HOLDER"; exit 2
+}
+# Lecture (ACCESS SHARE) : compatible avec le SHARE de CREATE INDEX IF NOT EXISTS
+# et le SHARE UPDATE EXCLUSIVE de COMMENT ON ; ENABLE ROW LEVEL SECURITY n'est
+# pas exécuté, la RLS étant active.
+hold "SELECT count(*) FROM $EL"
 snap l0 data
 t0=$(date +%s)
 out=$(migrate "$MIGRATION"); rc=$?
 elapsed=$(( $(date +%s) - t0 ))
-assert_err "capture refusée" "lock timeout" "$out" "$rc"
+applied "lecture concurrente : capture appliquée" "$out" "$rc"
 alive=$(kill -0 "$HOLDER" 2>/dev/null && echo oui || echo non)
-assert "rendue pendant la lecture concurrente (pas après)" oui "$alive"
-assert "attente bornée (4 à 8 s pour lock_timeout = 5s)" oui "$( (( elapsed >= 4 && elapsed <= 8 )) && echo oui || echo "non (${elapsed} s)")"
-wait "$HOLDER"
+assert "rendue pendant la lecture concurrente" oui "$alive"
+assert "sans attendre lock_timeout (au plus 3 s)" oui "$( (( elapsed <= 3 )) && echo oui || echo "non (${elapsed} s)")"
 snap l1 data
 assert_same "aucun effet" l0 l1
+wait "$HOLDER"
+# Écriture (ROW EXCLUSIVE) : en conflit avec le SHARE de CREATE INDEX IF NOT EXISTS.
+hold "UPDATE $EL SET status = status WHERE false"
+snap l2 data
+t0=$(date +%s)
+out=$(migrate "$MIGRATION"); rc=$?
+elapsed=$(( $(date +%s) - t0 ))
+assert_err "écriture concurrente : capture refusée" "lock timeout" "$out" "$rc"
+alive=$(kill -0 "$HOLDER" 2>/dev/null && echo oui || echo non)
+assert "rendue pendant l'écriture concurrente (pas après)" oui "$alive"
+assert "attente bornée (4 à 8 s pour lock_timeout = 5s)" oui "$( (( elapsed >= 4 && elapsed <= 8 )) && echo oui || echo "non (${elapsed} s)")"
+wait "$HOLDER"
+snap l3 data
+assert_same "aucun effet" l2 l3
 
 echo
 echo "8. Rollback : le .down.sql n'a aucun effet"
