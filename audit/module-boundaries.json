@@ -104,7 +104,7 @@
         "backend/src/modules/blog/utils"
       ],
       "files_count": 41,
-      "loc_total": 14750,
+      "loc_total": 14768,
       "has_barrel": false
     },
     "bot-guard": {
@@ -120,7 +120,7 @@
         "backend/src/cache"
       ],
       "files_count": 3,
-      "loc_total": 669,
+      "loc_total": 676,
       "has_barrel": false
     },
     "cart": {
@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 19,
-      "loc_total": 6449,
+      "loc_total": 6462,
       "has_barrel": true
     },
     "health": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 334,
-      "loc_total": 64339,
+      "loc_total": 64436,
       "has_barrel": true
     },
     "upload": {
