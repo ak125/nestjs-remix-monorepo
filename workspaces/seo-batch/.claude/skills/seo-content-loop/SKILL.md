@@ -41,10 +41,12 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
      non verbatim), **chaque fait cité + confidence-rated**. **Sortie structurée mappée aux champs WIKI**
      (`target_wiki_field`) : `selection-criteria.md` · `common-mistakes.md` · `compatibility-technical.md` ·
      `price-quality-brands.md` · `faq-symptoms.md` + `source-index.json` (provenance) + `extraction-report.json`
-     (run, contradictions **à valider humainement**, governance). `verification_status: draft` → **validation
-     humaine REQUISE** avant promotion WIKI ; **0 publication**, **0 invention**. **Template livré (preuve)** :
+     (run, contradictions, governance). `verification_status: draft` → **aucune promotion WIKI** sans la
+     décision du décideur unique sur preuve, auto-review de sens comprise (ADR-119) ; une contradiction bloque
+     la fiche jusqu'à une capture qui la tranche ; **0 publication**, **0 invention**. **Template livré (preuve)** :
      `automecanik-raw/sources/web-research/colonne-de-direction/` (pg 1211, 31 sources).
-   - Le handoff `raw-to-wiki` (état **PARTIAL**, gate **`human_review_required`**) est tracé dans la projection
+   - Le handoff `raw-to-wiki` (état **PARTIAL**, gate **`human_review_required`**, antérieur à ADR-119 et sans
+     effet : aucune relecture humaine de fiche n'est une condition de promotion) est tracé dans la projection
      **de référence** (non-canon) `.spec/00-canon/ai-registry/agent-operating-map.yaml` ; le **canon** est au
      vault (**ADR-031** raw→wiki, **ADR-059** projection, **ADR-083** promotion tiered).
    - **Point de départ = besoin client** : les questions réelles de la gamme/motorisation (choix, compatibilité,
@@ -87,16 +89,20 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
        `git -C <chemin-wiki> show origin/main:_scripts/<fichier>` (présence + statut de câblage + seuil). **En cas de conflit
        entre ce skill (dérivé) et l'état réel du repo : l'état du repo l'emporte.**
      - **Doctrine stable (indépendante du checkout)** : le score scalaire seul ne suffit jamais à déclarer « TIER A / fait ».
-       La promotion reste gouvernée par la **porte tiered déterministe** (ADR-083 : TIER A auto fail-closed / TIER B humain),
+       La promotion reste gouvernée par la **porte tiered déterministe** (ADR-083 : TIER A auto fail-closed / TIER B bloqué par ses motifs, réévalué
+       automatiquement, sans approbation humaine — ADR-119),
        durcie par le scorer de substance (ADR-088, planchers par claim) et recalibrée sur `source-catalog` (ADR-091) ;
-       **les familles sécurité (freinage/direction/airbag/suspension) restent human spot-check** (ADR-091), jamais auto.
+       **les familles sécurité (freinage/direction/airbag/suspension) suivent ADR-114 avec la condition
+       d'auto-review de sens d'ADR-119 D3, sans relecture humaine** ; tant que la levée d'ADR-119 D4 n'est pas
+       inscrite dans le décideur, elles restent bloquées.
        Tant que le scorer autoritaire cible n'est pas confirmé câblé **sur `origin/main`**, traiter le verdict comme **indicatif**.
        (Détail + plan : `app/audit/content-loop-method-confusion-and-hardening-2026-06-22.md`.)
 2. **RAW** (`automecanik-raw/`) — normaliser/recycler le scrape en fiches sourcées (frontmatter contrat
    `_schemas/recycled-frontmatter.schema.json`), `verification_status` `to_verify`→`verified` (humain).
    `recycled/` n'est **jamais** canon (canon RAW `CLAUDE.md`).
 3. **WIKI** (`automecanik-wiki/`) — proposer (`proposals/`), structurer aux sections ADR-086 (TIER A), export
-   ajv. **Promotion = gouvernée ADR-083 tiered** (TIER A auto fail-closed · TIER B humain · vagues mesurées).
+   ajv. **Promotion = gouvernée ADR-083 tiered** (TIER A auto fail-closed · TIER B bloqué par ses motifs, sans approbation humaine (ADR-119) ·
+   vagues mesurées).
    Jamais un GO big-bang. Seul `WIKI_ACCEPTED` promu alimente PROD/indexable.
 4. **CONSUMER** (R1/R2/R8…) — lisent la **projection WIKI→DB** (ADR-059). Flags OFF par défaut, additif,
    fallback explicite logué. Jamais RAG, jamais candidat non promu en PROD. **Projeté ≠ servi** : une version
@@ -138,7 +144,7 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
 - ❌ Toucher aux URLs/canonical ; muter `pg_relfollow`/`pg_display`/`pg_sitemap` ; keyword brut `__seo_keywords`
   comme terme produit ; casser les gates commerce R2 (sellable, `catalog_signature`, noindex 0-vendable).
 - ❌ **Inventer un nouvel outil de scraping** ou contourner la gouvernance de `RUN_TARGETED_RAW_TO_WIKI`
-  (sortie `draft` + validation humaine avant WIKI). Le scraping écrit en `sources/web-research/<gamme>/`,
+  (sortie `draft` ; la promotion WIKI relève du seul décideur, ADR-119). Le scraping écrit en `sources/web-research/<gamme>/`,
   **jamais** directement en WIKI/PROD ni dans une page R sans promotion.
 
 ## Quand l'utiliser
