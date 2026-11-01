@@ -140,18 +140,24 @@ const BY = /(?<![\p{L}\p{N}])par(?![\p{L}\p{N}])(.*)$/iu;
 // and names the head. Quoted lines, negated, conditional, questioning or reserved
 // ones and those that withdraw an accord do not count; the account needs write
 // access and is not the author. A withdrawal by the same account cancels it, the
-// order of comments not being tracked (the accord stays unverified): a line naming
-// the head (in full or abbreviated) that withdraws or negates an accord, or, with or
-// without a SHA, a line that opens with « Pas d'accord » or « Désaccord », or a
-// withdrawal word within three words of « accord », « approbation », « GO » or « feu
-// vert »: before it (« je retire mon accord », « retrait de l'accord ») or after it
-// as a participle (« accord retiré », « mon accord est annulé »). The words in
-// between hold no sentence break, subject pronoun or negation (« j'annule, je garde
-// mon accord », « je ne retire pas mon accord »), so a business word elsewhere on
-// the line (« paniers abandonnés ») withdraws nothing. A SHA right after « accord » or
-// after the withdrawal scopes it: a withdrawal whose SHAs all name another head
-// does not count. A SHA has a letter and a digit, which keeps comment ids and dates out.
-// « D'accord » (agreed), « accord-cadre » and « go-live » are not an accord.
+// order of comments not being tracked (the accord stays unverified). A term is
+// « accord », « approbation », « GO » or « feu vert », singular or plural. On a line
+// naming the head (in full or abbreviated), a term and a withdrawal word in the same
+// sentence withdraw it, even in a business sense (« Accord <sha> : paiements refusés
+// corrigés »): a doubt on the head is not an accord. So do, on such a line, a
+// negation right before « accord » or « désaccord » and, on any line, an opening
+// « Pas d'accord » or « Désaccord ». Elsewhere, a withdrawal word within three words
+// of a term withdraws: before it (« je retire mon accord »), or after it as a
+// participle, a noun, or « je » and the word (« accord retiré », « accord en
+// suspens », « accord, j'annule »). The words in between hold no sentence break
+// (« . », « ! », « ? », not an ellipsis), subject pronoun or negation, and an elided
+// word (« l' », « d' ») is not one of the three. A withdrawal word right after « ne »,
+// « n' », « pas », « plus », « jamais » or « sans » does not count. A SHA right after
+// the term or the withdrawal scopes each such withdrawal: one whose SHAs all name
+// another head does not count. A SHA has a letter and a digit, which keeps comment
+// ids and dates out. « D'accord » (agreed) and compounds (« accord-cadre »,
+// « pré-accord », « go-live », « go.sum ») are not a term. The line is cut into words
+// once, and each term looks at most eight words each way: linear in the line length.
 const LINE_START = String.raw`^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+)?(?:\*\*|__)?`;
 const WORD_END = String.raw`(?![\p{L}\p{N}]|-[\p{L}\p{N}])`;
 const ACCORD_LINE = new RegExp(`${LINE_START}accord${WORD_END}`, "iu");
@@ -159,25 +165,83 @@ const ACCORD_NEGATION = new RegExp(
   String.raw`(?<![\p{L}\p{N}])(?:pas|non|aucune?|provisoire\p{L}*)${WORD_END}|\?(?!\S)|(?<![\p{L}\p{N}])(?:sous[ \t]+(?:r[ée]serves?|conditions?)|[àa][ \t]+(?:confirmer|valider))(?![\p{L}\p{N}])`,
   "iu",
 );
-const WITHDRAW = String.raw`(?:refus\p{L}*|retir\p{L}*|retrait|annul\p{L}*|r[ée]voqu\p{L}*|r[ée]vocation|suspen\p{L}*|r[ée]tract\p{L}*|caduc\p{L}*|invalid\p{L}*|abandon\p{L}*)`;
-const PARTICIPLE = String.raw`(?:(?:refus|retir|annul|r[ée]voqu|r[ée]tract|invalid|abandonn)[ée](?:e|s|es)?|suspendu(?:e|s|es)?|caduc(?:s|ques?)?)`;
-const TERM = String.raw`(?<![\p{L}\p{N}])(?:(?<!(?<![\p{L}\p{N}])d['’])accord|approbation|go|feu[ \t]+vert)${WORD_END}`;
-const TERM_WORD = new RegExp(TERM, "iu");
-// Up to three words (a date or a version is one), none a subject pronoun or a
-// negation, and no sentence break.
-const GAP_SEP = String.raw`[\s,:'’()*_\x60«»"—–-]+`;
-const GAP_WORD = String.raw`(?!(?:je|j|tu|il|elle|on|nous|vous|ils|elles|ne|n|pas|plus|jamais)(?![\p{L}\p{N}]))[\p{L}\p{N}]+(?:['’/.-][\p{L}\p{N}]+)*`;
-const GAP = `(?:${GAP_SEP}${GAP_WORD}){0,3}${GAP_SEP}`;
-const WITHDRAWAL = new RegExp(
-  `(?<![\\p{L}\\p{N}])(?<!(?<![\\p{L}\\p{N}])n(?:e[ \\t]+|['’]))${WITHDRAW}(?![\\p{L}\\p{N}])${GAP}${TERM}|${TERM}${GAP}${PARTICIPLE}(?![\\p{L}\\p{N}])`,
-  "iu",
-);
+// A word: letters and digits, joined by « / », « . » or « - » (a date, a version, a compound).
+const WORD = /[\p{L}\p{N}]+(?:[/.-][\p{L}\p{N}]+)*/gu;
+const SENTENCE_BREAK = /[!?]|(?<!\.)\.(?!\.)/;
+const WITHDRAW_WORD =
+  /^(?:refus\p{L}*|retir\p{L}*|retraits?|annul\p{L}*|r[ée]voqu\p{L}*|r[ée]vocations?|suspen\p{L}*|r[ée]tract\p{L}*|caduc\p{L}*|invalid\p{L}*|abandon\p{L}*)$/iu;
+const AFTER_TERM_WORD =
+  /^(?:(?:refus|retir|annul|r[ée]voqu|r[ée]tract|invalid|abandonn)[ée](?:e|s|es)?|suspendu(?:e|s|es)?|caduc(?:s|ques?)?|refus|retraits?|r[ée]vocations?|annulations?|abandons?|suspens(?:ions?)?|r[ée]tractations?|invalidations?|caducit[ée]s?)$/iu;
+const TERMS = new Set(["accord", "accords", "approbation", "approbations", "go"]);
+const GAP_STOP = new Set(["je", "j", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles", "ne", "n", "pas", "plus", "jamais"]);
+const NEGATORS = new Set(["ne", "pas", "plus", "jamais", "sans"]);
+const MAX_GAP = 3;
+// Words looked at each way, elided ones included: bounds the work per term.
+const REACH = 8;
+/** Words of a line, each with what separates it from the previous word. */
+function wordsOf(line) {
+  let end = 0;
+  return [...line.matchAll(WORD)].map((m) => {
+    const sep = line.slice(end, m.index);
+    end = m.index + m[0].length;
+    return { word: m[0].toLowerCase(), end, brk: SENTENCE_BREAK.test(sep), apos: /^['’]$/.test(sep), blank: /^[ \t]+$/.test(sep) };
+  });
+}
+// Index of the last word of a term starting at word i, or -1.
+const termEnd = (words, i) => {
+  const { word, apos } = words[i];
+  if (TERMS.has(word)) return word.startsWith("accord") && apos && words[i - 1]?.word === "d" ? -1 : i;
+  return (word === "feu" || word === "feux") && /^verts?$/.test(words[i + 1]?.word ?? "") && words[i + 1].blank ? i + 1 : -1;
+};
+const negatedAt = (words, i) => (words[i].apos && words[i - 1]?.word === "n") || (words[i].blank && NEGATORS.has(words[i - 1]?.word));
+const withdrawsAt = (words, i) => WITHDRAW_WORD.test(words[i].word) && !negatedAt(words, i);
+/** Withdrawals within three words of a term, each as the offsets a SHA right after scopes it from. */
+function nearWithdrawals(words) {
+  const found = [];
+  // An elided word (« l' », « d' ») is not one of the three.
+  const counts = (j) => !words[j + 1]?.apos;
+  for (let i = 0; i < words.length; i++) {
+    const last = termEnd(words, i);
+    if (last < 0) continue;
+    const after = words[last].end;
+    for (let j = i - 1, gap = 0; j >= Math.max(0, i - REACH) && gap <= MAX_GAP && !words[j + 1].brk; j--) {
+      if (withdrawsAt(words, j)) {
+        found.push([after]);
+        break;
+      }
+      if (GAP_STOP.has(words[j].word)) break;
+      if (counts(j)) gap++;
+    }
+    for (let j = last + 1, gap = 0; j < Math.min(words.length, last + 1 + REACH) && gap <= MAX_GAP && !words[j].brk; j++) {
+      const { word } = words[j];
+      if (AFTER_TERM_WORD.test(word) && !negatedAt(words, j)) found.push([after, words[j].end]);
+      if ((word === "je" || word === "j") && j + 1 < words.length && !words[j + 1].brk && withdrawsAt(words, j + 1)) {
+        found.push([after, words[j + 1].end]);
+        break;
+      }
+      if (GAP_STOP.has(word)) break;
+      if (counts(j)) gap++;
+    }
+  }
+  return found;
+}
+/** Whether one sentence of the line holds both a term and a withdrawal word. */
+function termAndWithdrawal(words) {
+  let term = false;
+  let withdrawal = false;
+  for (let i = 0; i < words.length; i++) {
+    if (words[i].brk) term = withdrawal = false;
+    term ||= termEnd(words, i) >= 0;
+    withdrawal ||= withdrawsAt(words, i);
+    if (term && withdrawal) return true;
+  }
+  return false;
+}
 const NEGATED_ACCORD =
   /(?<![\p{L}\p{N}])(?:pas|plus|aucun|sans|non)[ \t]+(?:d['’]un[ \t]+|[dl]['’][ \t]*|(?:de|du|mon|son|notre|votre|un|cet)[ \t]+)?accord(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])d[ée]saccord(?![\p{L}\p{N}])/iu;
 const WITHDRAWAL_OPENING = new RegExp(`${LINE_START}(?:(?:pas|plus|aucun)[ \\t]+d['’][ \\t]*accord|d[ée]saccord)(?![\\p{L}\\p{N}])`, "iu");
 const ATTACHED_SHA = /^(?:[ \t  *_`(:,—–-]|(?:sur|pour|de|du|à|la|le|t[êe]te|commit)(?![\p{L}\p{N}]))*([0-9a-f]{7,40})(?![\p{L}\p{N}])/iu;
 const SHA_TOKEN = /(?<![0-9a-f])(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}(?![0-9a-f])/gi;
-const everyMatch = (pattern, line) => [...line.matchAll(new RegExp(pattern.source, `${pattern.flags}g`))];
 const QUOTED = /^[ \t]*>/;
 const WRITE_ACCESS = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const DECISIVE = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
@@ -190,7 +254,7 @@ export const DOD2_ON_PROOF = [
   "projections at level A were regenerated by their script, not edited by hand: several are guard inputs and their freshness checks are warn-only",
   "domain owner of each changed path in ownership.yaml (not __unassigned__)",
   "carry-over (D4): a record from an earlier head counts only through a new record naming the new SHA, with an identical attributable diff; the gate does not compare diffs",
-  "level C accord: the counted account is the domain owner of the changed paths, and its wording is an accord on this head (not conditional) that nothing withdraws: comment edits and withdrawals outside the word list or more than three words from « accord » (« mon accord ne tient plus », « je le retire », « accord levé ») are not tracked",
+  "level C accord: the counted account is the domain owner of the changed paths, and its wording is an accord on this head (not conditional) that nothing withdraws: comment edits and withdrawals outside the word list or, on a line that does not name the head, more than three words from the term or in another sentence (« mon accord ne tient plus », « Accord <sha>. Je le retire. », « accord levé ») are not tracked",
   "identity: a login proves the account, not the person (Desktop sessions act under the owner's account)",
 ];
 
@@ -278,23 +342,23 @@ function checkAccord(pr, at, out) {
     nfc(body)
       .split(/\r?\n/)
       .filter((line) => !QUOTED.test(line) && head.test(line.toLowerCase()));
-  const namesHead = (body) =>
-    headLines(body).some((line) => ACCORD_LINE.test(line) && !ACCORD_NEGATION.test(line) && !WITHDRAWAL.test(line));
   const isSha = (sha) => /\d/.test(sha) && /[a-f]/i.test(sha);
   const isHead = (sha) => isSha(sha) && pr.headSha.startsWith(sha.toLowerCase());
   const withdrawsLine = (line) => {
     if (QUOTED.test(line)) return false;
-    const matches = [WITHDRAWAL, WITHDRAWAL_OPENING].flatMap((pattern) => everyMatch(pattern, line));
-    if ((line.match(SHA_TOKEN) ?? []).some(isHead) && (matches.length > 0 || NEGATED_ACCORD.test(line))) return true;
+    const words = wordsOf(line);
+    const opening = line.match(WITHDRAWAL_OPENING);
+    if ((line.match(SHA_TOKEN) ?? []).some(isHead)) return Boolean(opening) || NEGATED_ACCORD.test(line) || termAndWithdrawal(words);
     // Each withdrawal on its own: unscoped, or one of its SHAs names the head.
-    return matches.some((m) => {
-      const ends = everyMatch(TERM_WORD, m[0]).map((t) => m.index + t.index + t[0].length);
-      const scopes = [...ends, m.index + m[0].length]
-        .map((end) => line.slice(end).match(ATTACHED_SHA)?.[1])
-        .filter((sha) => sha && isSha(sha));
+    const withdrawals = [...nearWithdrawals(words), ...(opening ? [[opening.index + opening[0].length]] : [])];
+    return withdrawals.some((ends) => {
+      // Read on a bounded slice: the SHA sits right after.
+      const scopes = ends.map((end) => line.slice(end, end + 200).match(ATTACHED_SHA)?.[1]).filter((sha) => sha && isSha(sha));
       return scopes.length === 0 || scopes.some(isHead);
     });
   };
+  const namesHead = (body) =>
+    headLines(body).some((line) => ACCORD_LINE.test(line) && !ACCORD_NEGATION.test(line) && !withdrawsLine(line));
   const withdraws = (body) => nfc(body).split(/\r?\n/).some(withdrawsLine);
   // Latest decisive review per account, as GitHub counts them.
   const latest = new Map();
@@ -332,13 +396,13 @@ function checkAccord(pr, at, out) {
     out.unverified.push(`level C accord by ${shortList(unknown.map(([login]) => login))}: repository access unknown`);
   } else if (cancelled.length > 0) {
     out.unverified.push(
-      `level C accord by ${shortList(cancelled.map(([login]) => login))} also withdrawn or refused by the same account: the order of comments is not tracked (a withdrawal whose SHA, right after « accord » or after the withdrawal, names another head does not count)`,
+      `level C accord by ${shortList(cancelled.map(([login]) => login))} also withdrawn or refused by the same account: the order of comments is not tracked (on a line naming the head, a withdrawal word in the same sentence as the term withdraws it, even in a business sense; elsewhere, a withdrawal whose SHA, right after the term or the withdrawal, names another head does not count)`,
     );
   } else if (accounts.some(([login]) => login === pr.author)) {
     out.unverified.push(`level C accord recorded by the author's account only (${code(pr.author)}): it does not show that another person agreed`);
   } else {
     out.problems.push(
-      `record${at}: level C requires the domain owner's accord on the head, recorded on the PR by another account with write access (approval of the head, or a comment line « Accord <sha40> »)`,
+      `record${at}: level C requires the domain owner's accord on the head, recorded on the PR by another account with write access (approval of the head, or a comment line « Accord <sha40> » with no negation, reservation or withdrawal word)`,
     );
   }
 }
