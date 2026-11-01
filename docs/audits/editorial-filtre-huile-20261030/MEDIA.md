@@ -6,8 +6,9 @@ conversion mesurée ni citée. Voix Fafa en « tu » ; légendes des plateformes
 ## 1. État des vidéos
 
 État au 31/10. Six états distincts : script prêt, visuels, voix, composition faisable, vidéo rendue, publication. Les
-compositions citées sont celles de [ak125/nestjs-remix-monorepo#1936](https://github.com/ak125/nestjs-remix-monorepo/pull/1936)
-(`e3d644a04`, brouillon non fusionné) : absentes de `main`, de PREPROD et de PROD.
+compositions citées sont celles de [ak125/nestjs-remix-monorepo#1936](https://github.com/ak125/nestjs-remix-monorepo/pull/1936),
+fusionnée dans `main` le 31/10 (`7d3f30237`) : présentes dans `main` ; leur déploiement en PREPROD et en PROD n'est pas
+vérifié. Couvertures 1080 × 1920 produites le 31/10 pour les cinq vidéos (`assets/social/cover-*.webp`, SOCIAL.md).
 
 | Vidéo | Question | Script prêt | Visuels | Voix | Composition faisable | Rendu | Publication |
 |---|---|---|---|---|---|---|---|
@@ -15,10 +16,10 @@ compositions citées sont celles de [ak125/nestjs-remix-monorepo#1936](https://g
 | C1 | Voyant d'huile allumé : faut-il changer le filtre ? | écrit (§ 7.1), sans dossier ; 1 claim `safety` à valider | 4 pictogrammes sur 4 (31/10) | non | oui, `SequencesCourtes` (FH-10) | non | non |
 | C2 | Deux filtres identiques sont-ils interchangeables ? | écrit (§ 7.2), sans dossier | coupe de principe ; P-04 manque | non | oui, `SequencesCourtes` | non | non |
 | C3 | À quoi servent les clapets d'un filtre vissé ? | écrit (§ 7.3), sans dossier | coupe de principe, une image fixe par séquence ; animation par clapet absente | non | oui, `SequencesCourtes` | non | non |
-| C4 | Comment serrer un filtre vissé ? | **bloqué** par F-C2 à F-C4 (§ 7.4) | P-07, P-08 manquent | non | — | non | non |
+| C4 | Comment serrer un filtre vissé ? | écrit (§ 7.4) ; faits vérifiés le 31/10 sur des sources de fabricants, **non admis** (F-C2 reformulé, F-C3, F-C4) : hors `scripts/draft/` avant admission | couverture schématique ; P-07, P-08 manquent | non | oui, `SequencesCourtes` | non | non |
 
 Aucun rendu n'est lancé : il faudrait une voix, le `human_validated` des claims exigé par le contrat vidéo (G1, G2, distinct des fiches
-WIKI) et la fusion de #1936. Les
+WIKI). Les
 services de rendu externes connectés à la session ne sont pas utilisés : ils enverraient des claims non validés hors du
 dépôt.
 
@@ -28,7 +29,7 @@ sa dernière séquence).
 
 ## 2. Ce que `PieceExpliquee` affiche réellement
 
-Lu dans `services/remotion-renderer/src/compositions/PieceExpliquee.tsx` (base `980b2f8a7`). #1936 ajoute les props
+Lu dans `services/remotion-renderer/src/compositions/PieceExpliquee.tsx` (base `980b2f8a7`). #1936, fusionnée le 31/10, ajoute les props
 `hook`, `titles` et `windowWarnings` (FH-9), sans emplacement d'image :
 
 | Fenêtre | Images | Affiché | Source |
@@ -180,6 +181,8 @@ Transcription (description YouTube, accessibilité) :
   filtre : la cartouche est à photographier.
 - Texte : « Vissé ou cartouche ? » (2 lignes, 3 mots). Badge « Fafa · mécano IA ».
 - Exclus : prix, marque de pièce, flèche ou cercle rouge suggérant une panne.
+- Produite le 31/10 : `assets/social/cover-v1.webp` (1080 × 1920), avec le schéma des deux formes à la place de la photo
+  de cartouche, qui manque toujours (P-02).
 
 ## 6. V1 — légendes et liens
 
@@ -230,7 +233,7 @@ d'abord la notice de votre véhicule. Exemple de la Clio 5 phase 1 : s'il s'allu
 impératif et un signal sonore, arrêt impératif, contact coupé, contrôle du niveau. Pour orienter la recherche avant
 d'acheter une pièce : diagnostic AutoMecanik. Conseil informatif ; Fafa est un mécano IA. » Mesure : sessions `utm_campaign` C1 sur `/diagnostic-auto` (GA4).
 
-Dépendances : composition `SequencesCourtes` (#1936, non fusionnée) ; pictogrammes livrés le 31/10
+Dépendances : composition `SequencesCourtes` (#1936, fusionnée le 31/10) ; pictogrammes livrés le 31/10
 (`assets/picto-*.webp`, `integration/assets.json`) ; voix ; `human_validated` du claim `safety` (contrat vidéo G2).
 
 ### 7.2 C2 — « Deux filtres identiques sont-ils interchangeables ? »
@@ -271,10 +274,11 @@ AutoMecanik. Conseil informatif ; Fafa est un mécano IA. » Mesure : sessions C
 
 Dépendances : schéma du circuit et des clapets (WIKI `function_diagram` en DEFERRED) ; composition.
 
-### 7.4 C4 — « Comment serrer un filtre vissé ? » (bloqué)
+### 7.4 C4 — « Comment serrer un filtre vissé ? » (faits vérifiés, non admis)
 
-Destination : R3, après admission. Sources : MAHLE 09/2022 et WIX 02/2025, **non admises** (F-C2, F-C3, F-C4). Claims :
-3 `procedure`. Le validateur ne retient que des preuves admissibles : ce script ne peut pas entrer dans un dossier
+Destination : R3, après admission. Sources : MAHLE 09/2022 et WIX 02/2025, recoupées le 31/10 par trois autres documents
+pour F-C4 (`integration/candidats.json`) ; vérifiées, **non admises** (F-C2 reformulé, F-C3, F-C4). Claims : 3
+`procedure`. Le validateur ne retient que des preuves admissibles : ce script ne peut pas entrer dans un dossier
 `scripts/draft/` avant admission.
 
 Révision 3 : l'interdiction générale de serrer à l'outil est retirée. La notice imprimée sur le filtre de la photo
@@ -286,13 +290,19 @@ désormais sur l'instruction du fabricant du filtre.
 |---|---|---|---|
 | 0-3 s | « Ton filtre à huile vissé ne se serre pas au hasard. » | « Serrage : selon le filtre » | filtre neuf, joint visible (P-01) |
 | 3-8 s | « Moi c'est Fafa, le mécano IA d'AutoMecanik. » | — | — |
-| 8-15 s | « Avant de monter le neuf, vérifie que l'ancien joint n'est pas resté en place, et huile le joint neuf avec de l'huile moteur propre. » | « Ancien joint retiré » · « Joint neuf huilé » | P-08, puis P-07 |
-| 15-23 s | « Visse jusqu'au contact du joint, puis serre comme l'indique le fabricant du filtre : le nombre de tours et la façon de serrer dépendent du filtre. » | « Serrage : instruction du filtre » | main qui visse (S-03) |
+| 8-15 s | « Avant de monter le neuf, vérifie que l'ancien joint n'est pas resté en place, et huile le joint neuf avec de l'huile moteur propre. » | « Ancien joint retiré » · « Joint neuf huilé » | P-08, puis P-07 ; en attendant, schémas de `assets/social/ig-b-3.webp` et `ig-b-4.webp` |
+| 15-23 s | « Visse jusqu'au contact du joint, puis serre comme l'indique le fabricant du filtre : le nombre de tours et la façon de serrer dépendent du filtre. » | « Serrage : instruction du filtre » | main qui visse (S-03) ; en attendant, schéma de `ig-b-5.webp` |
 | 23-27 s | « Trop serré ou avec un outil inadapté, son revêtement peut s'abîmer, rouiller, puis fuir. » | « Revêtement abîmé → fuite » | — |
 | 27-30 s | « Suis toujours les instructions de ton constructeur. Le détail est dans le guide AutoMecanik. » | « Le guide filtre à huile » | — |
 
-Vignette, légende et mesure : à rédiger après admission. Dépendances : admission de F-C2 à F-C4 (ADR-119) ; `human_validated`
-des 3 claims (contrat vidéo G2) ; prises de vue de mains ; pictogrammes.
+Vignette : `assets/social/cover-c4.webp`, texte « Serrage : selon le filtre », schéma sans valeur de serrage. Légende
+(`integration/social.json`, `courts_legendes`) : « Comment serrer un filtre à huile vissé ? Vérifiez d'abord que l'ancien
+joint n'est pas resté en place, huilez le joint neuf, vissez jusqu'au contact, puis serrez comme l'indique le fabricant
+du filtre : la consigne change d'un filtre à l'autre. Le guide complet est sur AutoMecanik, lien en bio. Conseil
+informatif ; Fafa est un mécano IA. » Mesure : sessions `utm_campaign=fafa-filtre-huile-c4` sur R3 (GA4).
+
+Dépendances : admission de F-C2 à F-C4 (ADR-119) ; `human_validated` des 3 claims (contrat vidéo G2) ; prises de vue de
+mains (P-07, P-08, S-03) ; voix.
 
 ## 8. Correspondance pages et vidéos
 
