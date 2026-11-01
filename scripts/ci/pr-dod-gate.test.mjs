@@ -331,7 +331,7 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
     const records = parseReviewRecords(body);
     assert.equal(records.length, 1);
     assert.equal(records[0].fields.procedure, procedure);
-    assert.deepEqual(checks(evaluateReviewRecord(body, { ...PR, files: ["scripts/ci/x.mjs"] })), CLEAN);
+    assert.deepEqual(checks(evaluateReviewRecord(body, PR)), CLEAN);
   });
 
   test("labels in bold and fields as list items are read", () => {
@@ -409,15 +409,44 @@ describe("evaluateReviewRecord — level (D3)", () => {
   });
 
   test("level B requires an independent review", () => {
-    const files = { ...PR, files: ["scripts/ci/x.mjs"] };
-    const self = evaluateReviewRecord(record({ level: "B" }), files);
+    const self = evaluateReviewRecord(record({ level: "B" }), PR);
     assert.ok(self.problems.some((x) => x.includes("level B requires an independent or human review")));
-    const independent = evaluateReviewRecord(record({ level: "B", procedure: "revue indépendante, par un sous-agent sans contexte" }), files);
+    const independent = evaluateReviewRecord(record({ level: "B", procedure: "revue indépendante, par un sous-agent sans contexte" }), PR);
     assert.deepEqual(checks(independent), CLEAN);
   });
 
+  test("level B with code or unclassified files stays unverified: STOP zones are not detected from paths", () => {
+    const review = record({ level: "B", procedure: "revue indépendante, par un sous-agent" });
+    for (const file of ["scripts/ci/x.mjs", "backend/src/modules/payments/services/paybox.service.ts", "config/x.yaml", ".claude/agents/x.md"]) {
+      const r = evaluateReviewRecord(review, { ...PR, files: ["docs/x.md", "audit/registry/canonical.json", file] });
+      assert.deepEqual(r.problems, [], file);
+      assert.deepEqual(r.unverified, [
+        `level B with 1 file(s) other than prose, audit evidence or projections (\`${file}\`): STOP zones (level C) are not detected from paths; that none is in one is left to the evidence`,
+      ], file);
+      assert.deepEqual(r.notes, [], file);
+    }
+    // A payment path declared at level B never passes DoD2.
+    const payment = { ...PR, files: ["backend/src/modules/payments/services/paybox.service.ts"] };
+    const dod = evaluateDoD(fullBody({ review }), [], 1, { assignees: ["owner"], pr: payment });
+    assert.equal(dod.pass, false);
+    assert.ok(dod.reasons.some((x) => x.startsWith("DoD2: unverified: level B with 1 file(s) other than prose")), dod.reasons.join("\n"));
+    for (const files of [undefined, Array.from({ length: 3000 }, (_, i) => `docs/${i}.md`)]) {
+      const { unverified } = evaluateReviewRecord(review, { ...PR, files });
+      assert.ok(unverified.some((x) => x.endsWith("level B not checked")), String(files?.length));
+    }
+  });
+
+  test("a long blank run after « revue indépendante » is read in linear time", () => {
+    const started = process.hrtime.bigint();
+    for (const blank of [" ", "\t"]) {
+      const { problems } = evaluateReviewRecord(record({ level: "B", procedure: `revue indépendante${blank.repeat(60000)}x` }), PR);
+      assert.ok(problems.some((x) => x.includes("level B requires an independent or human review")));
+    }
+    assert.ok(Number(process.hrtime.bigint() - started) / 1e6 < 500);
+  });
+
   test("a human review counts at level B, a negated review does not", () => {
-    const files = { ...PR, files: ["scripts/ci/x.mjs"] };
+    const files = PR;
     const human = evaluateReviewRecord(record({ level: "B", procedure: "revue humaine, par un relecteur" }), files);
     assert.deepEqual(checks(human), CLEAN);
     for (const procedure of [
@@ -445,9 +474,8 @@ describe("evaluateReviewRecord — level (D3)", () => {
   });
 
   test("the highest level declared on the head decides; one valid record at that level is enough", () => {
-    const files = { ...PR, files: ["scripts/ci/x.mjs"] };
     const pair = `${record()}\n\n${record({ level: "B", procedure: "revue indépendante, par un sous-agent" })}`;
-    assert.deepEqual(checks(evaluateReviewRecord(pair, files)), CLEAN);
+    assert.deepEqual(checks(evaluateReviewRecord(pair, PR)), CLEAN);
     const upgraded = `${record()}\n\n${record({ level: "C", procedure: "revue indépendante, par un sous-agent" })}`;
     const { problems } = evaluateReviewRecord(upgraded, { ...PR, author: "author" });
     assert.ok(problems.some((x) => x.includes("level C requires an accord piece on the head")));
@@ -457,11 +485,15 @@ describe("evaluateReviewRecord — level (D3)", () => {
     assert.deepEqual(evaluateReviewRecord(record(), PR).notes, [
       "level A record (PR body): form conforms on the head; review quality is not verified by the gate",
     ]);
-    const files = { ...PR, files: ["scripts/ci/x.mjs"] };
-    assert.deepEqual(evaluateReviewRecord(record({ level: "B", procedure: "revue indépendante, par un sous-agent" }), files).notes, [
+    assert.deepEqual(evaluateReviewRecord(record({ level: "B", procedure: "revue indépendante, par un sous-agent" }), PR).notes, [
       "level B record (PR body): form conforms on the head; review quality and effective independence are not verified by the gate",
     ]);
-    assert.deepEqual(evaluateReviewRecord(record({ level: "B" }), files).notes, []);
+    assert.deepEqual(evaluateReviewRecord(record({ level: "B" }), PR).notes, []);
+    // Nothing is said to conform while another DoD2 check fails.
+    assert.deepEqual(evaluateReviewRecord(`${record()}\n- [x] DoD2 — tête ${OLD_HEAD}`, PR).notes, []);
+    const unfound = evaluateReviewRecord(`${record()}\nVoir https://github.com/o/r/pull/7#issuecomment-99`, PR);
+    assert.deepEqual(unfound.problems, ["linked issuecomment-99 not found on this PR"]);
+    assert.ok(!unfound.notes.some((x) => x.startsWith("level A record")), unfound.notes.join("\n"));
     const r = evaluateDoD(fullBody(), [], 1, OWNED);
     assert.equal(r.pass, true);
     assert.ok(r.notes[0].startsWith("level A record (PR body): form conforms on the head"));
@@ -471,7 +503,7 @@ describe("evaluateReviewRecord — level (D3)", () => {
   describe("level C accord piece", () => {
     const body = record({ level: "C", procedure: "revue indépendante, par un sous-agent" });
     const ctx = { ...PR, author: "app-bot[bot]", files: ["backend/src/modules/payments/x.ts"] };
-    const NO_PIECE = `record: level C requires an accord piece on the head: the line « Accord ${HEAD} » alone in a comment or review of this PR, or an approval of the head`;
+    const NO_PIECE = `record: level C requires an accord piece on the head: the line « Accord ${HEAD} » alone from the first column in a comment or review of this PR, or an approval of the head`;
     const OWNER_DECIDES =
       "; whether a piece is the domain owner's authorization, its scope, a condition and any withdrawal are not verified by the gate (owner's decision on evidence)";
     const piece = (...parts) => `level C accord piece(s) on the head: ${parts.join(" / ")}${OWNER_DECIDES}`;
@@ -486,7 +518,7 @@ describe("evaluateReviewRecord — level (D3)", () => {
         piece("`owner` (owner), comment `issuecomment-2`, 1 other line(s) in it, edit not known, no other message of this account"),
       ]);
       assert.deepEqual(r.notes, ["comments and reviews read by this run's collection (start time not recorded): one posted or edited after that start may be missing until a new run"]);
-      for (const text of [`Accord ${HEAD.toUpperCase()}`, `  accord ${HEAD}  `, `Accord\t${HEAD}`]) {
+      for (const text of [`Accord ${HEAD.toUpperCase()}`, `accord ${HEAD}  `, `Accord\t${HEAD}`]) {
         assert.ok(evaluateReviewRecord(body, { ...ctx, comments: [comment(2, text)] }).unverified[0].startsWith("level C accord piece(s)"), text);
       }
       // A level C record never passes DoD2, whatever the pieces.
@@ -499,7 +531,7 @@ describe("evaluateReviewRecord — level (D3)", () => {
       const approval = evaluateReviewRecord(body, { ...ctx, reviews: [{ ...approve, commitId: HEAD.toUpperCase() }] });
       assert.deepEqual(approval.problems, []);
       assert.deepEqual(approval.unverified, [
-        piece("`owner` (owner), approval of the head `pullrequestreview-1`, no other text in it, no other message of this account"),
+        piece("`owner` (owner), approval of the head `pullrequestreview-1`, no other text in it, edit not known, no other message of this account"),
       ]);
       // The PR author's account gives a piece like any other: the gate reports the account, the owner decides.
       const own = evaluateReviewRecord(body, { ...ctx, author: "owner", comments: [comment(2, `accord ${HEAD}`)] });
@@ -569,11 +601,11 @@ describe("evaluateReviewRecord — level (D3)", () => {
         const beside = evaluateReviewRecord(body, { ...ctx, comments: [accord, later] });
         assert.deepEqual(beside.problems, [], text);
         assert.deepEqual(beside.unverified, [
-          piece("`owner` (owner), comment `issuecomment-2`, no other text in it, not edited, 1 later message(s) of this account: `issuecomment-3`"),
+          piece("`owner` (owner), comment `issuecomment-2`, no other text in it, not edited, 1 message(s) of this account posted or edited after it: `issuecomment-3`"),
         ], text);
         const approved = evaluateReviewRecord(body, { ...ctx, reviews: [{ ...approve, submittedAt: at(0) }], comments: [later] });
         assert.deepEqual(approved.unverified, [
-          piece("`owner` (owner), approval of the head `pullrequestreview-1`, no other text in it, 1 later message(s) of this account: `issuecomment-3`"),
+          piece("`owner` (owner), approval of the head `pullrequestreview-1`, no other text in it, edit not known, 1 message(s) of this account posted or edited after it: `issuecomment-3`"),
         ], text);
       }
     });
@@ -587,6 +619,7 @@ describe("evaluateReviewRecord — level (D3)", () => {
         `Accord ${HEAD.slice(0, 9)}`,
         `Accord ${OLD_HEAD}`,
         `Accord ${HEAD}0`,
+        `  Accord ${HEAD}`,
         `- Accord ${HEAD}`,
         `**Accord** ${HEAD}`,
         `Accord : ${HEAD}`,
@@ -595,18 +628,60 @@ describe("evaluateReviewRecord — level (D3)", () => {
       ].join("\n");
       const { problems, unverified } = evaluateReviewRecord(body, { ...ctx, comments: [comment(2, text)] });
       assert.deepEqual(unverified, []);
-      assert.deepEqual(problems, [`${NO_PIECE}; 5 line(s) starting with « Accord » and naming the head hold other text and are not pieces`]);
+      assert.deepEqual(problems, [`${NO_PIECE}; 6 line(s) starting with « Accord » and naming the head are indented or hold other text and are not pieces`]);
     });
 
-    test("the account's later messages are listed in time order, or as order unknown", () => {
+    test("a line the reader does not see as the message's own text is not a piece", () => {
+      for (const text of [
+        `<!--\nAccord ${HEAD}\n-->`,
+        `Relu. <!-- note\nAccord ${HEAD}\n-->`,
+        `    Accord ${HEAD}`,
+        `\tAccord ${HEAD}`,
+        `\`\`\`\`\n\`\`\`\nAccord ${HEAD}\n\`\`\`\n\`\`\`\``,
+        `~~~\n\`\`\`\nAccord ${HEAD}\n~~~`,
+        `~~~\nAccord ${HEAD}`,
+        `> Relu.\nAccord ${HEAD}`,
+      ]) {
+        const r = evaluateReviewRecord(body, { ...ctx, comments: [comment(2, text)] });
+        assert.ok(r.problems[0]?.startsWith(NO_PIECE), text);
+        assert.deepEqual(r.unverified, [], text);
+      }
+      // Once the comment, the fence or the quote has ended, the line is read again.
+      for (const text of [
+        `<!-- note -->\nAccord ${HEAD}`,
+        `<!--\nnote\n-->\nAccord ${HEAD}`,
+        `\`\`\`\`\n\`\`\`\n\`\`\`\`\nAccord ${HEAD}`,
+        `> Relu.\n\nAccord ${HEAD}`,
+        // A backtick info string holds no backtick: this line opens no fence.
+        `\`\`\` \`x\`\nAccord ${HEAD}`,
+      ]) {
+        const r = evaluateReviewRecord(body, { ...ctx, comments: [comment(2, text)] });
+        assert.deepEqual(r.problems, [], text);
+        assert.ok(r.unverified[0]?.startsWith("level C accord piece(s) on the head: "), text);
+      }
+    });
+
+    test("the account's messages posted or edited after the piece are listed in time order, or as unknown", () => {
       const accord = comment(2, `Accord ${HEAD}`, { createdAt: at(10), updatedAt: at(10) });
       const before = comment(3, "Relu.", { createdAt: at(5), updatedAt: at(5) });
       const same = comment(4, "Merci.", { createdAt: at(10), updatedAt: at(10) });
-      const review = { id: 9, login: "owner", association: "OWNER", state: "COMMENTED", commitId: HEAD, body: "Une réserve.", submittedAt: at(20) };
+      const late = comment(6, "Une réserve.", { createdAt: at(40), updatedAt: at(40) });
+      const review = { id: 9, login: "owner", association: "OWNER", state: "COMMENTED", commitId: HEAD, body: "Relu.", submittedAt: at(20) };
       const other = { ...comment(5, "Je retire mon accord."), login: "maintainer", createdAt: at(30), updatedAt: at(30) };
-      const r = evaluateReviewRecord(body, { ...ctx, comments: [before, accord, same, other], reviews: [review] });
+      const r = evaluateReviewRecord(body, { ...ctx, comments: [late, before, accord, same, other], reviews: [review] });
       assert.deepEqual(r.unverified, [
-        piece("`owner` (owner), comment `issuecomment-2`, no other text in it, not edited, 2 later message(s) of this account: `issuecomment-4`, `pullrequestreview-9`"),
+        piece("`owner` (owner), comment `issuecomment-2`, no other text in it, not edited, 3 message(s) of this account posted or edited after it: `issuecomment-4`, `pullrequestreview-9`, `issuecomment-6`"),
+      ]);
+      // An earlier message edited after the piece is listed at its edit time.
+      const reworded = comment(3, "Relu, avec une réserve.", { createdAt: at(5), updatedAt: at(30) });
+      const edited = evaluateReviewRecord(body, { ...ctx, comments: [reworded, accord], reviews: [review] });
+      assert.deepEqual(edited.unverified, [
+        piece("`owner` (owner), comment `issuecomment-2`, no other text in it, not edited, 2 message(s) of this account posted or edited after it: `pullrequestreview-9`, `issuecomment-3`"),
+      ]);
+      // GitHub gives no edit time for a review: an earlier one may have been edited since.
+      const unknown = evaluateReviewRecord(body, { ...ctx, comments: [accord], reviews: [{ ...review, submittedAt: at(5) }] });
+      assert.deepEqual(unknown.unverified, [
+        piece("`owner` (owner), comment `issuecomment-2`, no other text in it, not edited, none known posted or edited after it, posting or edit time unknown for 1 other message(s) of this account: `pullrequestreview-9`"),
       ]);
       const untimed = evaluateReviewRecord(body, { ...ctx, comments: [comment(2, `Accord ${HEAD}`), comment(3, "Retiré.")] });
       assert.deepEqual(untimed.unverified, [
@@ -617,7 +692,7 @@ describe("evaluateReviewRecord — level (D3)", () => {
     test("an edited piece is flagged, and the report says when comments were collected", () => {
       const edited = comment(2, `Accord ${HEAD}`, { createdAt: at(0), updatedAt: at(7) });
       const r = evaluateReviewRecord(body, { ...ctx, comments: [edited], collectedAt: "2026-11-01T11:00:00.000Z" });
-      assert.deepEqual(r.unverified, [piece("`owner` (owner), comment `issuecomment-2`, no other text in it, edited after posting, no later message of this account")]);
+      assert.deepEqual(r.unverified, [piece("`owner` (owner), comment `issuecomment-2`, no other text in it, edited after posting, no message of this account posted or edited after it")]);
       assert.deepEqual(r.notes, ["comments and reviews read by the collection started at 2026-11-01T11:00:00.000Z: one posted or edited after that start may be missing until a new run"]);
     });
 
@@ -660,6 +735,9 @@ describe("evaluateReviewRecord — level (D3)", () => {
         `${"- ".repeat(60000)}accord ${HEAD}`,
         "> ".repeat(60000),
         "~~~\n".repeat(30000),
+        `\`\`\`\`\n${"\`\`\`\n".repeat(30000)}`,
+        "<!--".repeat(30000),
+        "<!--\n".repeat(30000),
         `Accord ${HEAD}\n`.repeat(5000),
       ]) {
         evaluateReviewRecord(body, { ...ctx, comments: [comment(2, text)] });
