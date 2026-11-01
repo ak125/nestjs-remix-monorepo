@@ -336,6 +336,22 @@ describe("cas acceptés", () => {
     assert.ok(r.a_verifier.some((s) => /pas d'un seul tenant/.test(s)), r.a_verifier.join("\n"));
   });
 
+  // La règle des lignes affichées sans l'original entier (§10) ne vise pas une citation : le
+  // brouillon affiché entier, ou la proposition affichée entière, laisse citer ses lignes.
+  test("lignes de l'original citées, répétées comprises, après le brouillon affiché entier : appliquee", () => {
+    const quotes = [SCRIPT_LINES[1], SCRIPT_LINES[0], SCRIPT_LINES[1]].join("\n");
+    const r = run(output(unchangedBlock(SCRIPT_MD), `Brouillon :\n\n${SCRIPT_MD}\n\nLignes discutées :\n\n${quotes}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("lignes de l'original citées, proposition affichée entière : appliquee", () => {
+    const o = SCRIPT_MD.replace("les impuretés du circuit", "les impuretés essentielles du circuit");
+    const b = block({ original: o, proposition: SCRIPT_MD, changements: [{ avant: "les impuretés essentielles du circuit", apres: "les impuretés du circuit", regle: "RE-10", raison: "mot d'apparat sans information, supprimé" }] });
+    const quotes = o.split("\n").slice(2).join("\n");
+    const r = run(output(b, `Proposition :\n\n${SCRIPT_MD}\n\nLignes de l'original discutées :\n\n${quotes}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
   test("script Fafa avec le skill persona et la persona lus en entier : appliquee", () => {
     const r = run(output(scriptBlock()));
     assert.equal(r.resultat, "appliquee", errors(r));

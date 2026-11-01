@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.10.0 — 2026-11-01.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.10.1 — 2026-11-01.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -57,6 +57,10 @@
 > 1-60 était déclarée sur un fichier de 51 lignes lu sans numéros, et où une réserve sur
 > l'admission d'une source était écrite en écart de fidélité. Les résultats d'un essai 1.9.0 ne
 > qualifient pas ces points ; ils restent acquis pour les règles inchangées.
+> Pilote 1.10.1 : la règle des plages nomme la ligne vide numérotée après le saut final, que le
+> contrôle mécanique admettait déjà, après une revue Codex qui relevait l'écart entre ce texte
+> et le contrôle. Le contrôle ne change pas de comportement ; les résultats d'un essai 1.10.0
+> restent acquis.
 
 ## 1. Ce que fait la relecture
 
@@ -100,7 +104,9 @@ produit leur trace dans la sortie.
    aucune plage et ne fait lire aucune section. Une sortie sans numéros de ligne (`cat`,
    `sed -n`) n'en rend aucun : les établir par un outil qui les affiche (Read, `nl -ba`,
    `cat -n`) ou par `wc -l`, un fichier par commande. Une plage estimée, ou qui dépasse la
-   dernière ligne du fichier, n'est pas une plage rendue. Un fichier cité dans une liste de lectures ne
+   dernière ligne du fichier, n'est pas une plage rendue. Seule exception : la ligne vide qu'un
+   outil numérote après le saut de ligne final, qui ne contient aucun texte (Read rend 1-87 pour
+   un fichier de 86 lignes). Un fichier cité dans une liste de lectures ne
    prouve ni sa lecture complète ni son application. Une sortie d'outil marquée tronquée
    (« truncated », « tokens truncated ») ne prouve pas la lecture du passage coupé : relire ce
    passage par une lecture bornée (un fichier par commande, par plages de lignes) avant de le
@@ -565,7 +571,7 @@ et les valeurs d'exemple se remplacent, par le contenu réel :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.10.0", "etat_declare": "partielle",
+  "contrat": "editorial-review", "version": "1.10.1", "etat_declare": "partielle",
   "lectures": [
     {"chemin": "…/.claude/prompts/_shared/editorial-review.md", "plages": ["1-…"], "masquees": [],
      "sections": ["toutes"], "tronque": false},
