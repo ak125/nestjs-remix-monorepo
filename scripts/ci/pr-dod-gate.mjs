@@ -25,15 +25,19 @@
 //
 // DoD2 follows ADR-120 (rule v1.1.0): an assignee plus a review record bound to
 // the head SHA, read from the body or from a comment of this PR that the body
-// links. Approvals do not count. The gate checks what it can read: the record's
-// fields, its head and base SHAs, the declared level against the changed files,
-// an independent or human review for B and C, and for C an accord on the head
-// by an account with write access other than the author. Review quality,
+// links. Approvals do not count. Three layers are kept apart. The gate checks the
+// form of the record: its fields, its head and base SHAs, the declared level
+// against the changed files, an independent or human review declared for B and
+// C. For C it checks that an accord piece names the head and reports its
+// provenance. Whether that piece is the domain owner's authorization, its scope
+// and any condition or withdrawal are never read from the wording: they stay
+// unverified, for the owner on evidence, so a level C record never passes the
+// gate. No second account and no GitHub approval are required. Review quality,
 // effective independence, the handling of findings, STOP zones, domain
 // ownership and the carry-over of a record are read on evidence: the report
-// lists them on every run, with the accounts it counted. Data the gate cannot
-// read is reported as unverified, never as a pass. A login proves the account,
-// not the person. PR text is matched as data, never executed.
+// lists them on every run. Data the gate cannot read is reported as unverified,
+// never as a pass. A login proves the account, not the person. PR text is
+// matched as data, never executed.
 //
 // Dependabot cannot write a self-evaluation, and the escape hatch needs two
 // approvals: a blocking gate would hold every dependency bump. Its PRs pass on
@@ -49,13 +53,14 @@
 //   PR_APPROVALS       — integer count of APPROVED reviews
 //   GITHUB_EVENT_PATH  — event payload; `pull_request.assignees` and
 //                        `head.sha` feed DoD2, `pull_request.user.login` the
-//                        Dependabot exemption and the level C accord
+//                        Dependabot exemption and the provenance of an accord
 //   PR_REVIEW_CONTEXT  — optional, path of a JSON file collected by the
-//                        workflow: { mergeBase, files, comments, reviews };
-//                        files lists the new and the previous path of a
-//                        renamed file; comments and reviews carry login,
-//                        association (author_association) and body, reviews
-//                        also state and commitId. Missing or malformed data
+//                        workflow: { collectedAt, mergeBase, files, comments,
+//                        reviews }; files lists the new and the previous path
+//                        of a renamed file; comments and reviews carry id,
+//                        login, association (author_association) and body,
+//                        comments also createdAt and updatedAt, reviews state,
+//                        commitId and submittedAt. Missing or malformed data
 //                        leaves the DoD2 checks it feeds unverified.
 //   DOD_ADVISORY_ITEMS — optional, comma-separated DoD ids reported but not
 //                        blocking (phased rollout). Unset = all 9 block.
@@ -136,136 +141,18 @@ const isProse = (file) => PROSE_FILE.test(file) && !MARKDOWN_CONFIG.test(file);
 const OUTSIDE_REVIEW =
   /^(?:\*\*|__|\*|_|`)?revue\s+(?:ind[ée]pendante|humaine)(?:\*\*|__|\*|_|`)?\s*[,;]?\s*par(?![\p{L}\p{N}])/iu;
 const BY = /(?<![\p{L}\p{N}])par(?![\p{L}\p{N}])(.*)$/iu;
-// Level C accord: an approval of the head, or a line that starts with « Accord »
-// and names the head. Quoted lines, negated, conditional, questioning or reserved
-// ones and those that withdraw an accord do not count; the account needs write
-// access and is not the author. A withdrawal by the same account cancels it, the
-// order of comments not being tracked (the accord stays unverified). A term is
-// « accord », « approbation », « GO » or « feu vert », singular or plural. On a line
-// naming the head (in full or abbreviated), a term and a withdrawal word in the same
-// sentence withdraw it, even in a business sense (« Accord <sha> : paiements refusés
-// corrigés »): a doubt on the head is not an accord. So do, on such a line, a
-// negation right before « accord » or « désaccord » and, on any line, an opening
-// « Pas d'accord » or « Désaccord ». Elsewhere, a withdrawal word within three words
-// of a term withdraws: before it (« je retire mon accord »), or after it as a
-// participle, a noun, or « je » and the word, two object pronouns and « ai » allowed
-// in between (« accord retiré », « accord en suspens », « accord, j'annule », « mon
-// accord, je l'ai retiré »). The words in between hold no sentence break
-// (« . », « ! », « ? », not an ellipsis), subject pronoun or negation, and an elided
-// word (« l' », « d' ») is not one of the three. A withdrawal word right after « ne »,
-// « n' », « pas », « plus », « jamais » or « sans » does not count. A SHA right after
-// the term or the withdrawal scopes each such withdrawal: one whose SHAs all name
-// another head does not count. A SHA has a letter and a digit, which keeps comment
-// ids and dates out. « D'accord » (agreed) and compounds (« accord-cadre »,
-// « pré-accord », « go-live », « go.sum ») are not a term; a compound is read part by
-// part for withdrawal words (« retiré/annulé », « retiré-annulé »), and one holding a
-// term and a withdrawal word (« accord/retiré ») withdraws by itself. A « . » before a
-// capital ends a sentence (« accord.Merci »). The line is cut into words once, and
-// each term looks at most eight words each way: linear in the line length.
-const LINE_START = String.raw`^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+)?(?:\*\*|__)?`;
-const WORD_END = String.raw`(?![\p{L}\p{N}]|-[\p{L}\p{N}])`;
-const ACCORD_LINE = new RegExp(`${LINE_START}accord${WORD_END}`, "iu");
-const ACCORD_NEGATION = new RegExp(
-  String.raw`(?<![\p{L}\p{N}])(?:pas|non|aucune?|provisoire\p{L}*)${WORD_END}|\?(?!\S)|(?<![\p{L}\p{N}])(?:sous[ \t]+(?:r[ée]serves?|conditions?)|[àa][ \t]+(?:confirmer|valider))(?![\p{L}\p{N}])`,
-  "iu",
-);
-// A word: letters and digits, joined by « / », « - » or a « . » not before a capital
-// (a date, a version, a compound).
-const WORD = /[\p{L}\p{N}]+(?:(?:[/-]|\.(?!\p{Lu}))[\p{L}\p{N}]+)*/gu;
-const SENTENCE_BREAK = /[!?]|(?<!\.)\.(?!\.)/;
-const WITHDRAW_WORD =
-  /^(?:refus\p{L}*|retir\p{L}*|retraits?|annul\p{L}*|r[ée]voqu\p{L}*|r[ée]vocations?|suspen\p{L}*|r[ée]tract\p{L}*|caduc\p{L}*|invalid\p{L}*|abandon\p{L}*)$/iu;
-const AFTER_TERM_WORD =
-  /^(?:(?:refus|retir|annul|r[ée]voqu|r[ée]tract|invalid|abandonn)[ée](?:e|s|es)?|suspendu(?:e|s|es)?|caduc(?:s|ques?)?|refus|retraits?|r[ée]vocations?|annulations?|abandons?|suspens(?:ions?)?|r[ée]tractations?|invalidations?|caducit[ée]s?)$/iu;
-const TERMS = new Set(["accord", "accords", "approbation", "approbations", "go"]);
-const GAP_STOP = new Set(["je", "j", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles", "ne", "n", "pas", "plus", "jamais"]);
-const NEGATORS = new Set(["ne", "pas", "plus", "jamais", "sans"]);
-const OBJECT_PRONOUNS = new Set(["le", "la", "l", "les", "lui", "leur", "me", "m", "te", "t", "nous", "vous", "en", "y"]);
-const MAX_GAP = 3;
-// Words looked at each way, elided ones included: bounds the work per term.
-const REACH = 8;
-/** Words of a line, each with what separates it from the previous word. */
-function wordsOf(line) {
-  let end = 0;
-  return [...line.matchAll(WORD)].map((m) => {
-    const sep = line.slice(end, m.index);
-    end = m.index + m[0].length;
-    return { word: m[0].toLowerCase(), end, brk: SENTENCE_BREAK.test(sep), apos: /^['’]$/.test(sep), blank: /^[ \t]+$/.test(sep) };
-  });
-}
-// Index of the last word of a term starting at word i, or -1.
-const termEnd = (words, i) => {
-  const { word, apos } = words[i];
-  if (TERMS.has(word)) return word.startsWith("accord") && apos && words[i - 1]?.word === "d" ? -1 : i;
-  return (word === "feu" || word === "feux") && /^verts?$/.test(words[i + 1]?.word ?? "") && words[i + 1].blank ? i + 1 : -1;
-};
-const negatedAt = (words, i) => (words[i].apos && words[i - 1]?.word === "n") || (words[i].blank && NEGATORS.has(words[i - 1]?.word));
-// A compound is read part by part for withdrawal words.
-const partsOf = (word) => word.split(/[/.-]/);
-const withdrawsAt = (words, i) => partsOf(words[i].word).some((p) => WITHDRAW_WORD.test(p)) && !negatedAt(words, i);
-const afterTermAt = (words, i) => partsOf(words[i].word).some((p) => AFTER_TERM_WORD.test(p)) && !negatedAt(words, i);
-// A compound holding a term and a withdrawal word (« accord/retiré »).
-const termWithdrawalAt = (words, i) => partsOf(words[i].word).some((p) => TERMS.has(p)) && withdrawsAt(words, i);
-// Index of the withdrawal word « je » at j introduces (« j'annule », « je vous le retire », « je l'ai retiré »), or -1.
-const jeWithdrawalAt = (words, j) => {
-  if (words[j].word !== "je" && words[j].word !== "j") return -1;
-  let k = j + 1;
-  while (k < j + 3 && OBJECT_PRONOUNS.has(words[k]?.word) && !words[k].brk) k++;
-  if (words[k]?.word === "ai" && !words[k].brk) k++;
-  return k < words.length && !words[k].brk && withdrawsAt(words, k) ? k : -1;
-};
-/** Withdrawals within three words of a term, each as the offsets a SHA right after scopes it from. */
-function nearWithdrawals(words) {
-  const found = [];
-  // An elided word (« l' », « d' ») is not one of the three.
-  const counts = (j) => !words[j + 1]?.apos;
-  for (let i = 0; i < words.length; i++) {
-    if (termWithdrawalAt(words, i)) found.push([words[i].end]);
-    const last = termEnd(words, i);
-    if (last < 0) continue;
-    const after = words[last].end;
-    for (let j = i - 1, gap = 0; j >= Math.max(0, i - REACH) && gap <= MAX_GAP && !words[j + 1].brk; j--) {
-      if (withdrawsAt(words, j)) {
-        found.push([after]);
-        break;
-      }
-      if (GAP_STOP.has(words[j].word)) break;
-      if (counts(j)) gap++;
-    }
-    for (let j = last + 1, gap = 0; j < Math.min(words.length, last + 1 + REACH) && gap <= MAX_GAP && !words[j].brk; j++) {
-      const { word } = words[j];
-      if (afterTermAt(words, j)) found.push([after, words[j].end]);
-      const k = jeWithdrawalAt(words, j);
-      if (k >= 0) {
-        found.push([after, words[k].end]);
-        break;
-      }
-      if (GAP_STOP.has(word)) break;
-      if (counts(j)) gap++;
-    }
-  }
-  return found;
-}
-/** Whether one sentence of the line holds both a term and a withdrawal word. */
-function termAndWithdrawal(words) {
-  let term = false;
-  let withdrawal = false;
-  for (let i = 0; i < words.length; i++) {
-    if (words[i].brk) term = withdrawal = false;
-    if (termWithdrawalAt(words, i)) return true;
-    term ||= termEnd(words, i) >= 0;
-    withdrawal ||= withdrawsAt(words, i);
-    if (term && withdrawal) return true;
-  }
-  return false;
-}
-const NEGATED_ACCORD =
-  /(?<![\p{L}\p{N}])(?:pas|plus|aucun|sans|non)[ \t]+(?:d['’]un[ \t]+|[dl]['’][ \t]*|(?:de|du|mon|son|notre|votre|un|cet)[ \t]+)?accord(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])d[ée]saccord(?![\p{L}\p{N}])/iu;
-const WITHDRAWAL_OPENING = new RegExp(`${LINE_START}(?:(?:pas|plus|aucun)[ \\t]+d['’][ \\t]*accord|d[ée]saccord)(?![\\p{L}\\p{N}])`, "iu");
-const ATTACHED_SHA = /^(?:[ \t  *_`(:,—–-]|(?:sur|pour|de|du|à|la|le|t[êe]te|commit)(?![\p{L}\p{N}]))*([0-9a-f]{7,40})(?![\p{L}\p{N}])/iu;
-const SHA_TOKEN = /(?<![0-9a-f])(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}(?![0-9a-f])/gi;
+// Level C accord piece (ADR-120 D3): the line « Accord <sha40> » alone, naming the
+// head, in a comment or review body of this PR, outside a quote or a code fence;
+// or an approval of the head (the account's latest decisive review, as GitHub
+// counts them). Any other text on the line makes it something else than a piece:
+// the gate does not read conditions, reservations or withdrawals in prose. A piece
+// is reported with its provenance, never as an authorization.
+const ACCORD_PIECE = /^[ \t]*accord[ \t]+([0-9a-f]{40})[ \t]*$/i;
+// A line opening with « Accord » and naming the head but holding other text is
+// counted in the report, not read.
+const ACCORD_START = /^[ \t]*(?:(?:[-*+>]|\d+[.)])[ \t]*)*(?:\*\*|__)?accord(?![\p{L}\p{N}])/iu;
+const FENCE = /^[ \t]{0,3}(?:```|~~~)/;
 const QUOTED = /^[ \t]*>/;
-const WRITE_ACCESS = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const DECISIVE = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
 
 /** What the gate cannot establish for DoD2: listed on every checklist run. */
@@ -276,7 +163,8 @@ export const DOD2_ON_PROOF = [
   "projections at level A were regenerated by their script, not edited by hand: several are guard inputs and their freshness checks are warn-only",
   "domain owner of each changed path in ownership.yaml (not __unassigned__)",
   "carry-over (D4): a record from an earlier head counts only through a new record naming the new SHA, with an identical attributable diff; the gate does not compare diffs",
-  "level C accord: the counted account is the domain owner of the changed paths, and its wording is an accord on this head (not conditional) that nothing withdraws: comment edits and withdrawals outside the word list, in another sentence than the term or, on a line that does not name the head, more than three words from the term (« mon accord ne tient plus », « Accord <sha>. Je le retire. », « accord levé ») are not tracked",
+  "level C accord: the gate reports the pieces naming the head and their provenance; whether one is the domain owner's authorization, its scope, a condition and any later withdrawal or edit are decided on evidence, never by the gate",
+  "freshness: comments and reviews are read as collected by this run; one posted or edited later (a record, an accord piece, a withdrawal) is read only by a new run (body edit, push, review, or job re-run)",
   "identity: a login proves the account, not the person (Desktop sessions act under the owner's account)",
 ];
 
@@ -354,84 +242,104 @@ function checkLevelFloor(record, pr, at, out) {
   }
 }
 
-function checkAccord(pr, at, out) {
-  if (!pr.headSha || !Array.isArray(pr.reviews) || !Array.isArray(pr.comments)) {
-    out.unverified.push("level C accord not checked (head or review context unknown)");
-    return;
-  }
-  const head = new RegExp(`(?<![0-9a-f])${pr.headSha}(?![0-9a-f])`);
-  const headLines = (body) =>
-    nfc(body)
-      .split(/\r?\n/)
-      .filter((line) => !QUOTED.test(line) && head.test(line.toLowerCase()));
-  const isSha = (sha) => /\d/.test(sha) && /[a-f]/i.test(sha);
-  const isHead = (sha) => isSha(sha) && pr.headSha.startsWith(sha.toLowerCase());
-  const withdrawsLine = (line) => {
-    if (QUOTED.test(line)) return false;
-    const words = wordsOf(line);
-    const opening = line.match(WITHDRAWAL_OPENING);
-    if ((line.match(SHA_TOKEN) ?? []).some(isHead)) return Boolean(opening) || NEGATED_ACCORD.test(line) || termAndWithdrawal(words);
-    // Each withdrawal on its own: unscoped, or one of its SHAs names the head.
-    const withdrawals = [...nearWithdrawals(words), ...(opening ? [[opening.index + opening[0].length]] : [])];
-    return withdrawals.some((ends) => {
-      // Read on a bounded slice: the SHA sits right after.
-      const scopes = ends.map((end) => line.slice(end, end + 200).match(ATTACHED_SHA)?.[1]).filter((sha) => sha && isSha(sha));
-      return scopes.length === 0 || scopes.some(isHead);
+/** Lines of a body outside quotes and code fences. */
+function plainLines(body) {
+  let fenced = false;
+  return nfc(body)
+    .split(/\r?\n/)
+    .filter((line) => {
+      if (FENCE.test(line)) {
+        fenced = !fenced;
+        return false;
+      }
+      return !fenced && !QUOTED.test(line);
     });
-  };
-  const namesHead = (body) =>
-    headLines(body).some((line) => ACCORD_LINE.test(line) && !ACCORD_NEGATION.test(line) && !withdrawsLine(line));
-  const withdraws = (body) => nfc(body).split(/\r?\n/).some(withdrawsLine);
-  // Latest decisive review per account, as GitHub counts them.
-  const latest = new Map();
-  for (const review of pr.reviews) {
-    if (DECISIVE.includes(review.state)) latest.set(review.login, review);
-  }
-  const found = new Map();
-  for (const review of latest.values()) {
-    if (review.state === "APPROVED" && String(review.commitId).toLowerCase() === pr.headSha) {
-      found.set(review.login, { association: review.association, how: "approval of the head" });
-    }
-  }
-  const open = pr.reviews.filter((r) => !["CHANGES_REQUESTED", "DISMISSED"].includes(r.state));
-  for (const c of [...pr.comments, ...open]) {
-    if (!found.has(c.login) && namesHead(c.body)) found.set(c.login, { association: c.association, how: "« Accord » line naming the head" });
-  }
-  const accounts = [...found].filter(
-    ([login]) => typeof login === "string" && !login.endsWith("[bot]") && latest.get(login)?.state !== "CHANGES_REQUESTED",
-  );
-  if (accounts.length > 0 && pr.author === undefined) {
-    out.unverified.push("level C accord: PR author unknown, the accord's account cannot be told apart from it");
-    return;
-  }
-  const withdrawn = new Set([...pr.comments, ...pr.reviews].filter((c) => withdraws(c.body)).map((c) => c.login));
-  const others = accounts.filter(([login]) => login !== pr.author);
-  const eligible = others.filter(([, a]) => a.association == null || WRITE_ACCESS.has(a.association));
-  const cancelled = eligible.filter(([login]) => withdrawn.has(login));
-  const counted = eligible.filter(([login, a]) => a.association != null && !withdrawn.has(login));
-  const unknown = eligible.filter(([login, a]) => a.association == null && !withdrawn.has(login));
-  if (counted.length > 0) {
-    for (const [login, a] of counted) {
-      out.notes.push(`level C accord counted from ${code(login)} (${a.association.toLowerCase()}, ${a.how})`);
-    }
-  } else if (unknown.length > 0) {
-    out.unverified.push(`level C accord by ${shortList(unknown.map(([login]) => login))}: repository access unknown`);
-  } else if (cancelled.length > 0) {
-    out.unverified.push(
-      `level C accord by ${shortList(cancelled.map(([login]) => login))} also withdrawn or refused by the same account: the order of comments is not tracked (on a line naming the head, a withdrawal word in the same sentence as the term withdraws it, even in a business sense; elsewhere, a withdrawal whose SHA, right after the term or the withdrawal, names another head does not count)`,
-    );
-  } else if (accounts.some(([login]) => login === pr.author)) {
-    out.unverified.push(`level C accord recorded by the author's account only (${code(pr.author)}): it does not show that another person agreed`);
-  } else {
-    out.problems.push(
-      `record${at}: level C requires the domain owner's accord on the head, recorded on the PR by another account with write access (approval of the head, or a comment line « Accord <sha40> » with no negation, reservation or withdrawal word)`,
-    );
-  }
 }
 
-/** Checks of one record. Returns { problems[], unverified[], notes[] }. */
+const time = (value) => (typeof value === "string" && Number.isFinite(Date.parse(value)) ? Date.parse(value) : undefined);
+
+/** Comments and reviews of the PR, each with its link, its time and, for a comment, whether it was edited. */
+function messagesOf(pr) {
+  const comments = pr.comments.map((c) => {
+    const at = time(c.createdAt);
+    const updated = time(c.updatedAt);
+    return { ...c, link: `issuecomment-${c.id}`, at, edited: at === undefined || updated === undefined ? undefined : updated > at };
+  });
+  const reviews = pr.reviews.map((r) => ({ ...r, link: `pullrequestreview-${r.id}`, at: time(r.submittedAt), review: true }));
+  return [...comments, ...reviews];
+}
+
+/** Provenance of an accord piece: account, link, other text, edit, the account's later messages. Facts, not a reading. */
+function provenance(piece, messages, pr) {
+  const access = piece.association ? String(piece.association).toLowerCase() : "access unknown";
+  const rest = nfc(piece.body)
+    .split(/\r?\n/)
+    .filter((line) => line.trim() !== "" && line.match(ACCORD_PIECE)?.[1].toLowerCase() !== pr.headSha).length;
+  const parts = [
+    `${code(piece.login)} (${access}${piece.login === pr.author ? ", the PR author's account" : ""})`,
+    `${piece.kind} ${code(piece.link)}`,
+    rest > 0 ? `${rest} other line(s) in it` : "no other text in it",
+  ];
+  if (piece.kind !== "approval of the head") {
+    parts.push(piece.edited === true ? "edited after posting" : piece.edited === false ? "not edited" : "edit not known");
+  }
+  const others = messages.filter((m) => m.login === piece.login && m.link !== piece.link);
+  if (piece.at === undefined || others.some((m) => m.at === undefined)) {
+    parts.push(others.length > 0 ? `order unknown, ${others.length} other message(s) of this account: ${shortList(others.map((m) => m.link))}` : "no other message of this account");
+  } else {
+    // Same second included: the order within it is unknown.
+    const later = others.filter((m) => m.at >= piece.at);
+    parts.push(later.length > 0 ? `${later.length} later message(s) of this account: ${shortList(later.map((m) => m.link))}` : "no later message of this account");
+  }
+  return parts.join(", ");
+}
+
+// Layer 2 of the level C accord: a piece naming the head, and where it comes from.
+// Layer 3 (authorization, scope, conditions, withdrawal) is left to the owner.
+function checkAccord(pr, at, out) {
+  if (!pr.headSha || !Array.isArray(pr.reviews) || !Array.isArray(pr.comments)) {
+    out.unverified.push("level C accord piece not checked (head or review context unknown)");
+    return;
+  }
+  const messages = messagesOf(pr);
+  const human = (m) => typeof m.login === "string" && !m.login.endsWith("[bot]");
+  const pieces = [];
+  const bots = new Set();
+  let otherText = 0;
+  for (const m of messages) {
+    const lines = plainLines(m.body);
+    otherText += lines.filter((line) => !ACCORD_PIECE.test(line) && ACCORD_START.test(line) && line.toLowerCase().includes(pr.headSha)).length;
+    if (!lines.some((line) => line.match(ACCORD_PIECE)?.[1].toLowerCase() === pr.headSha)) continue;
+    if (human(m)) pieces.push({ ...m, kind: m.review ? `review (${String(m.state).toLowerCase()})` : "comment" });
+    else bots.add(String(m.login));
+  }
+  // Latest decisive review per account, as GitHub counts them.
+  const latest = new Map();
+  for (const review of messages) {
+    if (review.review && DECISIVE.includes(review.state)) latest.set(review.login, review);
+  }
+  for (const review of latest.values()) {
+    if (review.state !== "APPROVED" || String(review.commitId).toLowerCase() !== pr.headSha) continue;
+    if (!human(review)) bots.add(String(review.login));
+    else if (!pieces.some((p) => p.link === review.link)) pieces.push({ ...review, kind: "approval of the head" });
+  }
+  if (pieces.length === 0) {
+    out.problems.push(
+      `record${at}: level C requires an accord piece on the head: the line « Accord ${pr.headSha} » alone in a comment or review of this PR, or an approval of the head` +
+        (otherText > 0 ? `; ${otherText} line(s) starting with « Accord » and naming the head hold other text and are not pieces` : "") +
+        (bots.size > 0 ? `; a bot account gives no piece (${shortList([...bots])})` : ""),
+    );
+    return;
+  }
+  const listed = pieces.slice(0, 5).map((p) => provenance(p, messages, pr));
+  out.unverified.push(
+    `level C accord piece(s) on the head: ${listed.join(" / ")}${pieces.length > 5 ? ` / … (${pieces.length})` : ""}; whether a piece is the domain owner's authorization, its scope, a condition and any withdrawal are not verified by the gate (owner's decision on evidence)`,
+  );
+}
+
+/** Checks of one record. Returns { problems[], unverified[] }. */
 function checkRecord(record, pr) {
-  const out = { problems: [], unverified: [], notes: [] };
+  const out = { problems: [], unverified: [] };
   const at = record.source ? ` (${record.source})` : "";
   if (record.head?.length !== 40) out.problems.push(`record${at}: head SHA must be 40 hex characters`);
   if (record.base?.length !== 40) {
@@ -461,7 +369,7 @@ function checkRecord(record, pr) {
  * ADR-120 D2–D4 checks of the review record. Returns { problems[], unverified[], notes[] }.
  *   pr: { headSha, number, repo, author, mergeBase, files, comments, reviews };
  *   an undefined field is unknown and leaves its checks unverified.
- *   notes: what the gate counted and the evidence must confirm (accord accounts).
+ *   notes: what the gate read (form, freshness of comments), to confirm on evidence.
  * The level is the highest one declared on the head; one valid record at that
  * level satisfies DoD2, lower ones (an auto-review beside the review) are not checked.
  */
@@ -524,12 +432,19 @@ export function evaluateReviewRecord(body, pr = {}) {
   }
   if (current.length > 0) {
     const top = current.map((r) => r.level).sort().at(-1);
-    const results = current.filter((r) => r.level === top).map((r) => checkRecord(r, pr));
+    const results = current.filter((r) => r.level === top).map((r) => ({ record: r, ...checkRecord(r, pr) }));
     const valid = results.find((r) => r.problems.length === 0 && r.unverified.length === 0);
     for (const r of valid ? [valid] : results) {
       problems.push(...r.problems);
       unverified.push(...r.unverified);
-      notes.push(...r.notes);
+    }
+    if (valid) {
+      const unread = top === "A" ? "review quality is" : "review quality and effective independence are";
+      notes.push(`level ${top} record (${valid.record.source ?? "PR body"}): form conforms on the head; ${unread} not verified by the gate`);
+    }
+    if ((cited.length > 0 || top === "C") && Array.isArray(pr.comments)) {
+      const when = pr.collectedAt ? `at ${pr.collectedAt}` : "by this run (time not recorded)";
+      notes.push(`comments and reviews read as collected ${when}: one posted or edited later is read only by a new run`);
     }
   }
   return { problems: unique(problems), unverified: unique(unverified), notes: unique(notes) };
@@ -553,7 +468,7 @@ export function parseAdvisoryItems(raw) {
  *   mode: "dependabot" | "checklist" | "skip-justified" | "skip-needs-approvals"
  *   reasons: blocking failures; advisory: failures on DOD_ADVISORY_ITEMS ids;
  *   onProof: DoD2 checks left to the evidence (checklist mode only);
- *   notes: what DoD2 counted, to confirm on that evidence.
+ *   notes: what DoD2 read (form, freshness), to confirm on that evidence.
  *   approvals: APPROVED reviews, counted for the escape hatch only.
  *   assignees: logins from the event payload; undefined = unknown (DoD2 fails).
  *   author: PR author login from the event payload.
@@ -694,6 +609,7 @@ export function readReviewContext(path) {
   const list = (value, ok) => (Array.isArray(value) && value.every(ok) ? value : undefined);
   const isObject = (item) => item !== null && typeof item === "object" && !Array.isArray(item);
   return {
+    collectedAt: time(raw?.collectedAt) === undefined ? undefined : new Date(time(raw.collectedAt)).toISOString(),
     mergeBase: typeof raw?.mergeBase === "string" && /^[0-9a-f]{40}$/i.test(raw.mergeBase) ? raw.mergeBase.toLowerCase() : undefined,
     files: list(raw?.files, (f) => typeof f === "string"),
     comments: list(raw?.comments, isObject),
@@ -742,7 +658,7 @@ function renderFullReport(result) {
     ? `\n\n**DoD2, to examine on evidence (not checked by the gate):**\n${result.onProof.map((r) => `- ${r}`).join("\n")}`
     : "";
   const notes = result.notes?.length
-    ? `\n\n**DoD2, counted by the gate (to confirm on evidence):**\n${result.notes.map((r) => `- ${r}`).join("\n")}`
+    ? `\n\n**DoD2, read by the gate (form and provenance, to confirm on evidence):**\n${result.notes.map((r) => `- ${r}`).join("\n")}`
     : "";
   const body = result.reasons.map((r) => `- ${r}`).join("\n") + advisory + notes + onProof;
   const footer = result.pass
