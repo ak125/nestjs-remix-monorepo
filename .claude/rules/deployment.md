@@ -28,13 +28,15 @@ paths:
 
 | Terme canon | Rôle réel | Machine physique | Ports | Image Docker | Trafic |
 |-------------|-----------|------------------|-------|--------------|--------|
-| **DEV** | Machine de dev opérateur | `46.224.118.55` (hostname `dev-automecanik`) | `3000` (via `npm run dev`) | **aucune image deploy ici** | Opérateur SSH, code-side |
-| **PREPROD** | Container CI éphémère | `49.12.233.2` (hostname `ubuntu-16gb-nbg1-1`) | `3200` (localhost only) | `massdoc/nestjs-remix-monorepo:preprod` | **CI uniquement** : E2E Smoke + Lighthouse, `READ_ONLY=true` |
-| **PROD** | Container live trafic | `49.12.233.2` (même machine, derrière Caddy) | `80`/`443` (public) | `massdoc/nestjs-remix-monorepo:production` | Utilisateurs finaux via `www.automecanik.com` |
+| **DEV** | Machine de dev opérateur | hôte DEV | `3000` (via `npm run dev`) | **aucune image deploy ici** | Opérateur SSH, code-side |
+| **PREPROD** | Container CI éphémère | hôte PROD | `3200` (localhost only) | `massdoc/nestjs-remix-monorepo:preprod` | **CI uniquement** : E2E Smoke + Lighthouse, `READ_ONLY=true` |
+| **PROD** | Container live trafic | hôte PROD (même machine, derrière Caddy) | `80`/`443` (public) | `massdoc/nestjs-remix-monorepo:production` | Utilisateurs finaux via `www.automecanik.com` |
+
+Les machines sont nommées par leur rôle, jamais par adresse IP ni nom d'hôte : le dépôt est public.
 
 **Sources de vérité de cette table** : [`.sops.yaml:24-40`](../../.sops.yaml), [`.github/workflows/ci.yml:588-712`](../../.github/workflows/ci.yml), [`docker-compose.preprod.yml`](../../docker-compose.preprod.yml), [`.github/workflows/deploy-prod.yml`](../../.github/workflows/deploy-prod.yml).
 
-**Conséquence importante** : DEV (`46.224.118.55`) **n'héberge PAS** de container `:preprod` ni `:production` — c'est un poste de travail SSH. PREPROD et PROD vivent tous les deux sur `49.12.233.2`, qui est aussi le GitHub Actions self-hosted runner.
+**Conséquence importante** : l'hôte DEV **n'héberge PAS** de container `:preprod` ni `:production` — c'est un poste de travail SSH. PREPROD et PROD vivent tous les deux sur l'hôte PROD, qui porte aussi le runner GitHub Actions self-hosted.
 
 ## Sync du runtime DEV:3000 (où on teste/mesure)
 
@@ -101,7 +103,7 @@ suivant ; échec → alerte à chaque tick, nouvel essai au plus une fois par he
 
 Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors errata explicites ou ce fichier canon) fait échouer le job `no-confusing-preprod-formulations` (workflow [`preprod-vocabulary-guard.yml`](../../.github/workflows/preprod-vocabulary-guard.yml)) :
 
-- ❌ `DEV pré-prod` ou `DEV preprod` → confond 2 machines distinctes (46.224.118.55 vs 49.12.233.2)
+- ❌ `DEV pré-prod` ou `DEV preprod` → confond 2 machines distinctes (hôte DEV vs hôte PROD)
 - ❌ `preprod.automecanik.com` → hostname inexistant. Aucune URL publique n'expose PREPROD.
 - ❌ `preprod miroir` ou `miroir de PROD` → faux. PREPROD est `READ_ONLY=true` (ADR-028 Option D), pas une réplique de PROD.
 - ❌ `déployé en pré-prod, à valider avant prod` → personne n'interagit avec PREPROD ; c'est CI-only, validé par E2E Smoke + Lighthouse, pas par un humain.
@@ -109,22 +111,22 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 
 **À utiliser à la place** :
 
-- ✅ "Machine DEV (46.224.118.55)" pour parler du poste opérateur
-- ✅ "Container PREPROD (49.12.233.2:3200)" pour parler du container CI éphémère
-- ✅ "Container PROD (49.12.233.2:80/443)" pour parler du runtime utilisateur
+- ✅ "Machine DEV" pour parler du poste opérateur
+- ✅ "Container PREPROD (hôte PROD, port 3200)" pour parler du container CI éphémère
+- ✅ "Container PROD (hôte PROD, 80/443)" pour parler du runtime utilisateur
 - ✅ "Tag `:preprod`" pour parler de l'artefact Docker spécifiquement (pas d'environnement)
 
 ## Triggers Git → environnement
 
 | Trigger git | Workflow | Image produite | Cible runtime | Latence | Validation humaine ? |
 |-------------|----------|----------------|---------------|---------|----------------------|
-| `push origin main` | `.github/workflows/ci.yml` job `deploy` | push `:preprod` sur DockerHub | container PREPROD (49.12.233.2:3200) redémarré | ~10 min | NON (E2E Smoke + Lighthouse CI automatiques) |
-| `push origin v*` (tag) | `.github/workflows/deploy-prod.yml` | promote l'image du commit → `:production` | container PROD (49.12.233.2:80/443) redémarré | ~5 min | OUI (tag manuel = décision opérateur) |
-| `workflow_dispatch` manuel sur `deploy-prod.yml` | idem `deploy-prod.yml` | idem | idem PROD | idem | OUI |
+| Fusion d'une PR sur `main` (push `main`) | `.github/workflows/ci.yml` job `deploy` | `:sha-<commit>` et alias `:preprod` sur DockerHub (`build.yml`) | container PREPROD (hôte PROD, port 3200) redémarré | ~10 min | NON (E2E Smoke + Lighthouse CI automatiques) |
+| `push origin v*` (tag) | `.github/workflows/deploy-prod.yml` | promote l'image du commit → `:production` | container PROD (hôte PROD, 80/443) redémarré | ~5 min | OUI (tag manuel = décision de l'owner) |
+| `workflow_dispatch` manuel sur `deploy-prod.yml`, lancé sur un tag `v*` | idem `deploy-prod.yml` | idem | idem PROD | idem | OUI |
 
 **Règles mnémoniques** :
 
-- `git push main` = **build + push tag `:preprod` + redéploiement container PREPROD CI**. **Pas de redéploiement PROD.**
+- Fusion sur `main` = **build + push tag `:preprod` + redéploiement container PREPROD CI**. **Pas de redéploiement PROD.** `main` est protégée : jamais de push direct.
 - `git tag v… && git push --tags` = **promotion de l'image du commit → `:production` + redéploiement container PROD**.
 - Jamais annoncer "déployé en PROD" après un simple merge sur `main`.
 
@@ -141,44 +143,63 @@ crash boot NestJS opaque. Vars couvertes (boot-crash si absentes/mal-formées) :
 
 ## Workflow nominal — Promote DEV (code) → PROD
 
-```bash
-# 1. Merger PR sur main → ci.yml déploie le container PREPROD
-gh pr merge {PR} --repo ak125/nestjs-remix-monorepo --squash
-# 2. Vérifier E2E Smoke + Lighthouse verts
-gh run list --repo ak125/nestjs-remix-monorepo --branch main --limit 1
-# 3. (Optionnel) spot-check : curl http://localhost:3200/health sur 49.12.233.2
-# 4. Tag semver → deploy PROD
-git checkout main && git pull && git tag v2.1.0 && git push origin v2.1.0
-```
+1. **L'owner fusionne la PR** sur `main`, sous sa protection, après validation manuelle explicite.
+   Un agent ne fusionne jamais : il remet le numéro de PR, le SHA de tête (40 caractères) et la
+   commande épinglée sur ce SHA (T6 de `rules-technical`, ADR-102 D2 du vault). `ci.yml` déploie
+   alors le container PREPROD.
+2. Vérifier sur le run `ci.yml` du commit que `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et
+   `🔦 Lighthouse Performance Audit` sont en `success` :
+   `gh run list --repo ak125/nestjs-remix-monorepo --workflow ci.yml --branch main --limit 5`.
+   Le job `🧪 Deploy PREPROD` contrôle lui-même la version servie (`/health`, champ `revision`) ;
+   PREPROD n'écoute que sur la boucle locale de l'hôte PROD.
+3. **L'owner pose le tag semver** sur ce commit et le pousse ; le hook `pretool-bash-guard.sh`
+   bloque ce geste pour un agent :
+   `git tag v2.1.0 <sha40> && git push origin v2.1.0`.
 
-Ou via UI GitHub : `Actions → "Deploy PROD (via tag)" → Run workflow`.
+Ou via UI GitHub : `Actions → "Deploy PROD (via tag)" → Run workflow`, en choisissant le **tag** `v*`
+dans « Use workflow from ». Le formulaire propose `main` par défaut : lancé sur `main`, le workflow
+déploierait le commit de tête de `main` sans tag `v*`. La preuve PREPROD de ce commit lui suffit ;
+rien ne vérifie qu'un tag `v*` porte la décision de l'owner.
 
 ## Rollback
 
-```bash
-# PREPROD cassé par un merge : revert PR + push main (relance le cycle)
-git revert <sha-bad-commit> && git push origin main
-# PROD : pull une image production antérieure + redeploy (ops humain, SSH 49.12.233.2)
-docker pull massdoc/nestjs-remix-monorepo:v2.0.9
-docker compose -f docker-compose.prod.yml up -d
-```
+| Environnement | Procédure |
+|---|---|
+| **PREPROD** | PR de revert du commit fautif (`git revert <sha>` sur une branche, puis `gh pr create`), fusionnée par l'owner comme toute PR. Le push `main` qui en résulte relance le cycle. Jamais de push direct ni de force-push sur `main`. |
+| **PROD, pendant un déploiement** | Automatique : après le point de non-retour, tout échec de `deploy-prod.yml` déclenche `⏪ Rollback PROD`, qui redémarre l'image capturée avant la mutation. |
+| **PROD, après un déploiement réussi** | L'owner relance `Deploy PROD (via tag)` (`workflow_dispatch`) sur le tag `v*` de la version à restaurer, dans les limites ci-dessous. |
+| **PROD, workflow indisponible ou tag refusé** | Intervention manuelle de l'owner sur l'hôte PROD, par la console de l'hébergeur. Aucun agent ne modifie PROD ni ne s'y connecte. |
+
+Le run relancé exécute le `deploy-prod.yml` **du tag choisi**, pas celui de `main` :
+
+- tag qui contient #1881 et #1884 (2026-10-24) : contrôles complets, dont `/health` `revision` ;
+- tag antérieur qui contient #1696 (2026-10-02) : preuve PREPROD et provenance de `:sha-<commit>`
+  vérifiées, mais ni contrôle de la version servie, ni champ `revision` dans `/health` ;
+- tag antérieur à #1696 : son workflow promeut l'alias `:preprod` et s'arrête si son label
+  `revision` diffère du commit du tag, avant de toucher `:production` et le conteneur PROD.
+
+Ce chemin suppose aussi que `:sha-<commit>` est encore dans le registre et que le run `ci.yml` de
+ce commit est lisible ; sinon le workflow refuse avant toute mutation. Un revert sur `main` ne change
+pas PROD : il redéploie PREPROD.
 
 Voir `feedback_rollback_via_revert_pr_branch_protected.md` : main est branch-protected, jamais de force-push.
 
 ## Monitoring & inspection
 
 - **GitHub Actions** : `https://github.com/ak125/nestjs-remix-monorepo/actions`
-- **PREPROD + PROD (49.12.233.2)** : `ssh deploy@49.12.233.2` → `docker ps`,
-  `docker logs nestjs-remix-monorepo-preprod` (3200, READ_ONLY) / `nestjs-remix-monorepo-prod` (80/443)
-- **Machine DEV (46.224.118.55)** : poste SSH — aucun container deploy attendu.
+- **PREPROD + PROD (hôte PROD)** : aucun accès agent. Les logs des jobs `ci.yml` et
+  `deploy-prod.yml` montrent les contrôles de déploiement ; les conteneurs
+  `nestjs-remix-monorepo-preprod` (3200, READ_ONLY) et `nestjs-remix-monorepo-prod` (80/443) ne
+  s'inspectent que par l'owner, depuis la console de l'hébergeur.
+- **Machine DEV** : poste SSH — aucun container deploy attendu.
   Logs : la sortie du backend (`npm run dev` → nodemon → `node dist/main.js`, cwd `backend/`) va dans
   le journal de l'unit (`journalctl --user -u automecanik-dev`) une fois la bascule faite ; avant,
   dans le terminal qui l'a lancé, **non persistée** (aucun transport fichier) ; resync cron
   `/tmp/sync-dev-runtime-cron.log` ; `npm ci`/build du resync `${TMPDIR:-/tmp}/sync-dev-runtime-npm-{install,build}-<pid>.log` ;
   dumps `/var/crash` (axe 6).
-- **Health** : local `curl http://localhost:3000/health` (46.224.118.55, si `npm run dev` tourne) ·
-  PREPROD `curl http://localhost:3200/health` (sur 49.12.233.2 uniquement, non exposé) ·
-  PROD `curl https://www.automecanik.com/health`
+- **Health** : local `curl http://localhost:3000/health` (machine DEV, si `npm run dev` tourne) ·
+  PREPROD : lu par le job `🧪 Deploy PREPROD` sur l'hôte PROD (port 3200, non exposé) ·
+  PROD `curl https://www.automecanik.com/health` (lecture seule ; `revision` = version servie)
 
 ## Secrets GitHub Actions
 
@@ -190,10 +211,10 @@ Secrets SOPS : `secrets/sentry.dev.sops.env`, `secrets/sentry.prod.sops.env` (cl
 
 - `main` → déploiement **PREPROD container CI uniquement** (jamais PROD direct).
 - Tag `v*` → déploiement **PROD container live**.
-- Branche `dev` → équivalente à `main` pour les déploiements (alias historique, mêmes triggers CI).
+- Branche `dev` → `ci.yml` se déclenche aussi sur un push `dev`, mais `build.yml` et `🧪 Deploy PREPROD` ne publient et ne déploient que depuis `main`. Au 2026-11-01, la branche `dev` n'existe pas sur le dépôt distant.
 - **No Paid Render** — Docker + Caddy self-hosted exclusivement.
 - **Port 3000** = port canonique du backend NestJS (local `npm run dev` ou interne container). Pas de repro sur port alternatif (cf. `feedback_no_bricolage_no_alt_port_repro.md`).
-- **Port 3200** = port host du container PREPROD sur 49.12.233.2 (mapping `3200:3000`).
+- **Port 3200** = port host du container PREPROD sur l'hôte PROD (mapping `3200:3000`, boucle locale).
 - **DEV n'héberge aucun container `:preprod` ni `:production`** — c'est un poste de travail SSH, pas un host runtime.
 
 ## Mémoires Claude liées
