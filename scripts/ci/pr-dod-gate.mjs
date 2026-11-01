@@ -25,19 +25,19 @@
 //
 // DoD2 follows ADR-120 (rule v1.1.0): an assignee plus a review record bound to
 // the head SHA, read from the body or from a comment of this PR that the body
-// links. Approvals do not count. Three layers are kept apart. The gate checks the
-// form of the record: its fields, its head and base SHAs, the declared level
-// against the changed files, an independent or human review declared for B and
-// C. For C it checks that an accord piece names the head and reports its
-// provenance. Whether that piece is the domain owner's authorization, its scope
-// and any condition or withdrawal are never read from the wording: they stay
-// unverified, for the owner on evidence, so a level C record never passes the
-// gate. No second account and no GitHub approval are required. Review quality,
-// effective independence, the handling of findings, STOP zones, domain
-// ownership and the carry-over of a record are read on evidence: the report
-// lists them on every run. Data the gate cannot read is reported as unverified,
-// never as a pass. A login proves the account, not the person. PR text is
-// matched as data, never executed.
+// links. An approval is not a review record. Three layers are kept apart. The
+// gate checks the form of the record: its fields, its head and base SHAs, the
+// declared level against the changed files, an independent or human review
+// declared for B and C. For C it checks that an accord piece names the head
+// and reports its provenance. Whether that piece is the domain owner's
+// authorization, its scope and any condition or withdrawal are never read from
+// the wording: they stay unverified, for the owner on evidence, so a level C
+// record never passes the gate. No second account and no GitHub approval are
+// required. Review quality, effective independence, the handling of findings,
+// STOP zones, domain ownership and the carry-over of a record are read on
+// evidence: the report lists them on every run. Data the gate cannot read is
+// reported as unverified, never as a pass. A login proves the account, not the
+// person. PR text is matched as data, never executed.
 //
 // Dependabot cannot write a self-evaluation, and the escape hatch needs two
 // approvals: a blocking gate would hold every dependency bump. Its PRs pass on
@@ -55,13 +55,14 @@
 //                        `head.sha` feed DoD2, `pull_request.user.login` the
 //                        Dependabot exemption and the provenance of an accord
 //   PR_REVIEW_CONTEXT  — optional, path of a JSON file collected by the
-//                        workflow: { collectedAt, mergeBase, files, comments,
-//                        reviews }; files lists the new and the previous path
-//                        of a renamed file; comments and reviews carry id,
-//                        login, association (author_association) and body,
-//                        comments also createdAt and updatedAt, reviews state,
-//                        commitId and submittedAt. Missing or malformed data
-//                        leaves the DoD2 checks it feeds unverified.
+//                        workflow: { collectedAt (start of the collection),
+//                        mergeBase, files, comments, reviews }; files lists
+//                        the new and the previous path of a renamed file;
+//                        comments and reviews carry id, login, association
+//                        (author_association) and body, comments also
+//                        createdAt and updatedAt, reviews state, commitId and
+//                        submittedAt. Missing or malformed data leaves the
+//                        DoD2 checks it feeds unverified.
 //   DOD_ADVISORY_ITEMS — optional, comma-separated DoD ids reported but not
 //                        blocking (phased rollout). Unset = all 9 block.
 // =============================================================================
@@ -144,7 +145,8 @@ const BY = /(?<![\p{L}\p{N}])par(?![\p{L}\p{N}])(.*)$/iu;
 // Level C accord piece (ADR-120 D3): the line « Accord <sha40> » alone, naming the
 // head, in a comment or review body of this PR, outside a quote or a code fence;
 // or an approval of the head (the account's latest decisive review, as GitHub
-// counts them). Any other text on the line makes it something else than a piece:
+// counts them). A bot or an unknown account gives none. Any other text on the
+// line makes it something else than a piece:
 // the gate does not read conditions, reservations or withdrawals in prose. A piece
 // is reported with its provenance, never as an authorization.
 const ACCORD_PIECE = /^[ \t]*accord[ \t]+([0-9a-f]{40})[ \t]*$/i;
@@ -164,7 +166,7 @@ export const DOD2_ON_PROOF = [
   "domain owner of each changed path in ownership.yaml (not __unassigned__)",
   "carry-over (D4): a record from an earlier head counts only through a new record naming the new SHA, with an identical attributable diff; the gate does not compare diffs",
   "level C accord: the gate reports the pieces naming the head and their provenance; whether one is the domain owner's authorization, its scope, a condition and any later withdrawal or edit are decided on evidence, never by the gate",
-  "freshness: comments and reviews are read as collected by this run; one posted or edited later (a record, an accord piece, a withdrawal) is read only by a new run (body edit, push, review, or job re-run)",
+  "freshness: comments and reviews are read once, by this run's collection; one posted or edited after its start (a record, an accord piece, a withdrawal) may be missing until a new run (body edit, push, review, or job re-run)",
   "identity: a login proves the account, not the person (Desktop sessions act under the owner's account)",
 ];
 
@@ -303,6 +305,7 @@ function checkAccord(pr, at, out) {
   }
   const messages = messagesOf(pr);
   const human = (m) => typeof m.login === "string" && !m.login.endsWith("[bot]");
+  const account = (m) => (typeof m.login === "string" ? m.login : "account unknown");
   const pieces = [];
   const bots = new Set();
   let otherText = 0;
@@ -311,7 +314,7 @@ function checkAccord(pr, at, out) {
     otherText += lines.filter((line) => !ACCORD_PIECE.test(line) && ACCORD_START.test(line) && line.toLowerCase().includes(pr.headSha)).length;
     if (!lines.some((line) => line.match(ACCORD_PIECE)?.[1].toLowerCase() === pr.headSha)) continue;
     if (human(m)) pieces.push({ ...m, kind: m.review ? `review (${String(m.state).toLowerCase()})` : "comment" });
-    else bots.add(String(m.login));
+    else bots.add(account(m));
   }
   // Latest decisive review per account, as GitHub counts them.
   const latest = new Map();
@@ -320,14 +323,14 @@ function checkAccord(pr, at, out) {
   }
   for (const review of latest.values()) {
     if (review.state !== "APPROVED" || String(review.commitId).toLowerCase() !== pr.headSha) continue;
-    if (!human(review)) bots.add(String(review.login));
+    if (!human(review)) bots.add(account(review));
     else if (!pieces.some((p) => p.link === review.link)) pieces.push({ ...review, kind: "approval of the head" });
   }
   if (pieces.length === 0) {
     out.problems.push(
       `record${at}: level C requires an accord piece on the head: the line « Accord ${pr.headSha} » alone in a comment or review of this PR, or an approval of the head` +
         (otherText > 0 ? `; ${otherText} line(s) starting with « Accord » and naming the head hold other text and are not pieces` : "") +
-        (bots.size > 0 ? `; a bot account gives no piece (${shortList([...bots])})` : ""),
+        (bots.size > 0 ? `; a bot or unknown account gives no piece (${shortList([...bots])})` : ""),
     );
     return;
   }
@@ -443,8 +446,8 @@ export function evaluateReviewRecord(body, pr = {}) {
       notes.push(`level ${top} record (${valid.record.source ?? "PR body"}): form conforms on the head; ${unread} not verified by the gate`);
     }
     if ((cited.length > 0 || top === "C") && Array.isArray(pr.comments)) {
-      const when = pr.collectedAt ? `at ${pr.collectedAt}` : "by this run (time not recorded)";
-      notes.push(`comments and reviews read as collected ${when}: one posted or edited later is read only by a new run`);
+      const start = pr.collectedAt ? `the collection started at ${pr.collectedAt}` : "this run's collection (start time not recorded)";
+      notes.push(`comments and reviews read by ${start}: one posted or edited after that start may be missing until a new run`);
     }
   }
   return { problems: unique(problems), unverified: unique(unverified), notes: unique(notes) };
