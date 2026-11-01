@@ -8,9 +8,10 @@
 // règle, plages de lecture confrontées aux fichiers, sections déclarées confrontées aux titres
 // des lignes rendues, conditions C1–C7 recalculées, mentions de
 // la relecture dans la prose comparées à l'état déclaré, original sans fichier confronté au
-// texte que la réponse affiche (typographie et balisage Markdown), positions RE-T1 restées en
-// espace ordinaire dans la proposition, champ structuré (YAML, JSON, frontmatter) reproduit avec
-// son chemin de clés, plage de l'original rendue par une lecture déclarée.
+// texte que la réponse affiche (typographie, balisage Markdown, lignes affichées sans l'original
+// entier), positions RE-T1 restées en espace ordinaire dans la proposition, champ structuré
+// (YAML, JSON, frontmatter) reproduit avec son chemin de clés, plage de l'original rendue par une
+// lecture déclarée, `format` pris dans les valeurs du contrat, persona Fafa lue pour un script.
 //
 // Il ne juge ni la pertinence d'une règle RE ni la fidélité de sens, et ne voit pas la trace
 // de la session : ces points sortent en « à vérifier sur le contenu ».
@@ -94,6 +95,8 @@ export function parseContract(text) {
   const flags = new Set([...text.matchAll(/^\s+- (F-\d) /gm)].map((m) => m[1]));
   const verdictLine = (text.match(/\*\*`verdict`\*\*\s*:([^\n]*)/) || [])[1] || "";
   const verdicts = new Set([...verdictLine.matchAll(/`([A-ZÉÈ_]{4,})`/g)].map((m) => m[1]));
+  const formatLine = (text.match(/\*\*`format`\*\*\s*:([^\n]*)/) || [])[1] || "";
+  const formats = new Set([...formatLine.matchAll(/`([a-z]{4,})`/g)].map((m) => m[1]));
 
   const headings = [];
   let fenced = false;
@@ -107,7 +110,7 @@ export function parseContract(text) {
     const next = headings.slice(idx + 1).find((o) => o.level <= h.level);
     return { title: h.title, start: h.start, end: next ? next.start - 1 : nLines };
   });
-  return { version, rules, flags, verdicts, sections, nLines };
+  return { version, rules, flags, verdicts, formats, sections, nLines };
 }
 
 export function sectionRange(contract, title) {
@@ -533,6 +536,10 @@ function checkReadings(block, relectures, roots, contract) {
     const persona = reads.find((r) => hasSuffix(r, "/fafa-persona-canon/SKILL.md"));
     if (!persona) errors.push("référence fafa-persona-canon/SKILL.md : aucune lecture déclarée (script Fafa)");
     else requireFile("référence fafa-persona-canon/SKILL.md", persona.abs);
+    // Le skill résume la persona sans dispenser de la lire (§1, point 2).
+    const fafa = reads.find((r) => hasSuffix(r, "/fafa-media-factory/personas/fafa.md"));
+    if (!fafa) errors.push("persona fafa-media-factory/personas/fafa.md : aucune lecture déclarée (script Fafa ; fafa-persona-canon n'en dispense pas)");
+    else requireFile("persona fafa-media-factory/personas/fafa.md", fafa.abs);
   }
   relectures.forEach((rel) => {
     if (!rel) return;
@@ -886,6 +893,19 @@ function displayCheck(rel, prose, roots) {
       return { ecart: `relecture ${id} : la réponse affiche la ligne ${JSON.stringify(l)} de ${label} au balisage Markdown près (titre, puce, gras, code ou lien) : l'original n'est pas le brouillon livré tel qu'il est affiché (§10)` };
     }
   }
+  // Des lignes de l'original affichées telles quelles, sans l'original entier : le brouillon affiché
+  // en est une autre version (intertitre renommé, ligne ajoutée ou retirée) ou un extrait assemblé.
+  // Une seule ligne peut être une citation dans la prose : elle reste à vérifier sur le contenu.
+  const oLines = o.texte.split("\n").map(norm).filter(Boolean);
+  const shownLines = oLines.filter((l) => l.length >= 20 && words(l).length >= 3 && shown.includes(l));
+  if (shownLines.length >= 2) {
+    const absent = oLines.find((l) => !shown.includes(l));
+    return {
+      ecart: absent
+        ? `relecture ${id} : la réponse affiche ${shownLines.length} lignes de l'original telles quelles sans l'afficher d'un seul tenant, mais pas sa ligne ${JSON.stringify(absent)} : l'original n'est pas le brouillon livré tel qu'il est affiché, intertitres compris (§10)`
+        : `relecture ${id} : la réponse affiche chaque ligne de l'original, mais pas d'un seul tenant (ligne ajoutée à l'affichage, extrait assemblé ou ordre différent) : l'original n'est pas le brouillon livré tel qu'il est affiché (§10)`,
+    };
+  }
   return { soft: `relecture ${id} : original reproduit sans fichier de provenance, que la réponse n'affiche pas d'un seul tenant : vérifier qu'il reproduit en entier le brouillon livré (§10)` };
 }
 
@@ -946,6 +966,12 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
 
   const relectures = Array.isArray(block.relectures) ? block.relectures : [];
   if (relectures.length === 0) report.erreurs.push("relectures : liste absente ou vide");
+  // Le format décide des lectures exigées (§1, point 2) : une valeur hors du contrat les contourne.
+  relectures.forEach((rel, i) => {
+    if (rel && !contract.formats.has(rel.format)) {
+      report.erreurs.push(`relecture ${rel.id || i} : format ${JSON.stringify(rel.format)} hors des valeurs du contrat (${[...contract.formats].join(", ")}) ; un brouillon qui mêle deux formats se relit en deux relectures (§10)`);
+    }
+  });
   const computed = Object.fromEntries(CONDITIONS.map((c) => [c, []]));
   const readings = checkReadings(block, relectures, roots, contract);
   computed.C1 = readings.errors;

@@ -100,6 +100,13 @@ L'utilisateur fournit au minimum :
 12. Output AEC coverage manifest (cf. ci-dessous)
 ```
 
+**Sous une consigne sans écriture.** Les étapes 10 et 11 portent sur le fichier écrit : elles
+sont déclarées non exécutées, avec cette cause, dans le manifeste. Cette limite ne s'étend pas à
+la relecture française du brouillon : son empreinte et son contrôle mécanique lisent l'entrée
+standard et n'écrivent rien, ils restent dus (`.claude/prompts/_shared/editorial-review.md` à la
+racine du dépôt, « Contrôle mécanique »). Une étape ne s'écarte qu'après lecture de la règle qui
+la régit.
+
 ## Defaults conservateurs (ADR-033 §D4)
 
 Toutes les entrées `diagnostic_relations[].evidence` produites par le skill ont :

@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.9.0 — 2026-11-01.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.10.0 — 2026-11-01.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -49,6 +49,14 @@
 > des listes en deçà de la lecture (titres rendus non déclarés, section atteinte par son seul
 > titre) et une lecture du contrat par plages bornées, sans « Sortie attendue » ni bloc final.
 > Les résultats d'un essai 1.8.0 ne qualifient pas cette version.
+> Pilote 1.10.0 : persona Fafa lue en entier pour un script, valeurs de `format`, original
+> confronté ligne à ligne au brouillon affiché, sortie de `--emit` capturée, plages établies par un
+> outil qui numérote et `controle_fidelite` borné à l'original et à la proposition, après des
+> essais où la persona citée par le skill de script n'était pas ouverte, où l'original n'avait pas
+> les intertitres affichés, où le contrôle rendait un code 0 sans sortie capturée, où une plage
+> 1-60 était déclarée sur un fichier de 51 lignes lu sans numéros, et où une réserve sur
+> l'admission d'une source était écrite en écart de fidélité. Les résultats d'un essai 1.9.0 ne
+> qualifient pas ces points ; ils restent acquis pour les règles inchangées.
 
 ## 1. Ce que fait la relecture
 
@@ -83,12 +91,16 @@ produit leur trace dans la sortie.
 2. **Lire les références que le périmètre exige** : les sources du brouillon, sur les plages
    citées dans `sources`, chacune couverte par une lecture déclarée dans `lectures` (export,
    fichier de données ou proposition compris : une source non lue ne se cite pas) ; le miroir `.claude/canon-mirrors/marketing-voice.md` en entier, pas
-   seulement ses interdits et ses mentions obligatoires ; `fafa-persona-canon` en entier pour un
-   script Fafa.
+   seulement ses interdits et ses mentions obligatoires ; pour un script Fafa,
+   `fafa-persona-canon` et la persona `workspaces/marketing/fafa-media-factory/personas/fafa.md`,
+   chacun en entier : le skill résume la persona sans dispenser de la lire.
 3. **Consigner les lectures** : pour chaque fichier, les plages réellement rendues par un outil
    de lecture et les sections lues, désignées par leur titre relevé dans ces lignes rendues
    (`lectures`, « Sortie attendue »). Une recherche (Grep, `rg`, liste de titres) ne rend
-   aucune plage et ne fait lire aucune section. Un fichier cité dans une liste de lectures ne
+   aucune plage et ne fait lire aucune section. Une sortie sans numéros de ligne (`cat`,
+   `sed -n`) n'en rend aucun : les établir par un outil qui les affiche (Read, `nl -ba`,
+   `cat -n`) ou par `wc -l`, un fichier par commande. Une plage estimée, ou qui dépasse la
+   dernière ligne du fichier, n'est pas une plage rendue. Un fichier cité dans une liste de lectures ne
    prouve ni sa lecture complète ni son application. Une sortie d'outil marquée tronquée
    (« truncated », « tokens truncated ») ne prouve pas la lecture du passage coupé : relire ce
    passage par une lecture bornée (un fichier par commande, par plages de lignes) avant de le
@@ -173,7 +185,11 @@ reprise. Ne pas lancer le contrôle n'est admis que sur une telle limite, nommé
 
 Avec `--emit`, le rapport reste sur stderr et stdout est la réponse complète acceptée, exactement
 comme reçue, sans correction ni réécriture. Un rejet ne livre rien sur stdout. Livrer cette sortie
-stdout sans la recomposer ; conserver le code 3 d'une partielle. Ne jamais passer uniquement le
+stdout sans la recomposer ; conserver le code 3 d'une partielle. Un code 0 ou 3 ne prouve pas la
+livraison contrôlée : seuls le stdout et le rapport effectivement capturés de ce dernier passage
+la prouvent. Sans eux, repasser le contrôle ; si la capture manque encore, la sortie est en
+« relecture partielle », avec la cause « sortie du contrôle non capturée » (échec de l'outil)
+nommée dans `lecture`. Ne jamais passer uniquement le
 bloc final si un brouillon ou d'autres champs ont été écrits avant lui. Une sortie d'outil
 tronquée ne permet pas de livrer les octets manquants : réduire le livrable puis contrôler de nouveau.
 
@@ -478,13 +494,22 @@ construites pour montrer le défaut.
 
 Pour chaque brouillon :
 
+- **`format`** : `prose`, `script` ou `social`.
+  `prose` pour une fiche, un guide, une page R1/R3/R4/R8 ou une copie e-commerce, `script` pour
+  un script parlé Fafa, `social` pour une copie sociale (§7). Une seule valeur par relecture : un
+  brouillon qui mêle deux formats se relit en deux relectures. `script` exige les lectures de
+  `fafa-persona-canon` et de la persona (§1, point 2) ; `script` et `social`, la section « Fafa,
+  vidéo et social : aucune invention ».
 - **`original`** : chemin ou table + identifiant, et sha256 du texte relu. Il n'est jamais
   modifié. Un brouillon rédigé dans la session, sans fichier, est reproduit ici en entier,
   séparé de la proposition, octet pour octet tel que la réponse l'affiche : aucune espace
   insécable, apostrophe ou guillemet n'y est ajouté ni retiré. L'original est le brouillon livré
   entier, intertitres, listes, gras et autres balises Markdown compris, dans l'ordre affiché ; un
   résumé, un extrait ou une version en texte brut d'un brouillon affiché en Markdown n'est pas
-  l'original. Une correction typographique est
+  l'original. Il se compare ligne à ligne, intertitres compris, au brouillon tel que la réponse
+  l'affiche après sa dernière retouche : un intertitre renommé, ajouté ou retiré à l'affichage
+  rend l'original inexact, et le contrôle mécanique rejette un original dont la réponse affiche
+  des lignes sans l'afficher d'un seul tenant. Une correction typographique est
   un changement RE-Tx de l'original vers la proposition. Reproduire n'exige aucun outil ; sans
   outil, seul `sha256` reste `null`. Le sha256 est calculé par un outil sur ce texte exact, jamais
   recopié ni estimé ; s'il ne peut pas l'être, le manque est nommé et la relecture est partielle.
@@ -516,7 +541,10 @@ Pour chaque brouillon :
   - F-6 conflit de ton non tranché.
 - **`controle_fidelite`** : une ligne par catégorie du §3, `inchangé` ou l'écart exact. Consigner
   tout déplacement d'attribution prévu au §4.1 et son emplacement interne ; il ne permet
-  aucun changement de fait, de portée ou de mention obligatoire. Tout autre écart non
+  aucun changement de fait, de portée ou de mention obligatoire. Ce contrôle compare seulement
+  l'original et la proposition : sans changement, chaque catégorie vaut `inchangé`. Une réserve
+  sur une source, son admission ou son classement va dans `signalements_de_fond` ou dans la revue
+  séparée, jamais dans `controle_fidelite`. Tout autre écart non
   expliqué par une règle RE-Tx est une **altération critique**, et la proposition est alors
   **rejetée**. Une nouvelle génération ne l'efface pas du relevé.
 - **`verdict`** : `PROPOSITION`, `AUCUN_CHANGEMENT_UTILE`, `BLOQUÉ_SOURCE` ou `HORS_PÉRIMÈTRE`.
@@ -537,7 +565,7 @@ et les valeurs d'exemple se remplacent, par le contenu réel :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.9.0", "etat_declare": "partielle",
+  "contrat": "editorial-review", "version": "1.10.0", "etat_declare": "partielle",
   "lectures": [
     {"chemin": "…/.claude/prompts/_shared/editorial-review.md", "plages": ["1-…"], "masquees": [],
      "sections": ["toutes"], "tronque": false},
@@ -588,7 +616,8 @@ fait et constaté, jamais par une valeur par défaut. `executee` prend le boolé
   dont l'union couvre chaque fichier exigé de 1 à sa dernière ligne (« Contrôle avant
   déclaration », C1), `masquees`
   pour ce qu'un outil a coupé et qui n'a pas été relu. `tronque: true` sans `masquees` ne compte
-  rien comme lu. Un script Fafa ajoute l'entrée de `fafa-persona-canon`. `sections` vaut
+  rien comme lu. Un script Fafa ajoute les entrées de `fafa-persona-canon` et de
+  `personas/fafa.md`. `sections` vaut
   `["toutes"]` seulement si l'union des plages, `masquees` retirées, va de 1 à la dernière
   ligne. Sinon, pour un fichier Markdown, elle liste dans l'ordre du fichier chaque titre `#` à
   `######`, H1 compris, dont la ligne est rendue, hors bloc de code et hors frontmatter. Le titre
@@ -638,15 +667,15 @@ gabarit, clé par clé, et corriger chaque écart sur le fond :
 2. au premier niveau : `contrat`, `version` égale à celle de ce fichier, `etat_declare`,
    `lectures`, `relectures`, `conditions` ;
 3. chaque entrée de `lectures` est un objet aux cinq clés ; pour ce fichier, le miroir
-   `marketing-voice.md` et, pour un script, `fafa-persona-canon`, l'union des plages va de 1 à
-   la dernière ligne ; pour chaque source, elle couvre la plage citée ; `sections` vaut
+   `marketing-voice.md` et, pour un script, `fafa-persona-canon` et `personas/fafa.md`, l'union
+   des plages va de 1 à la dernière ligne ; pour chaque source, elle couvre la plage citée ; `sections` vaut
    `["toutes"]` pour une union de 1 à la dernière ligne, sinon les titres rendus et leurs
    suffixes selon `lectures` ci-dessus ;
 4. chaque entrée de `sources` suit `chemin:a-b`, ou `chemin` seul pour le fichier entier, avec
    un `chemin` présent dans `lectures` dont les plages couvrent a-b ou, pour un chemin seul, le
    fichier de 1 à sa dernière ligne ;
-5. chaque relecture a les onze clés du gabarit, de `id` à `etapes`, et `proposition` est le
-   texte entier ;
+5. chaque relecture a les onze clés du gabarit, de `id` à `etapes`, `format` vaut `prose`,
+   `script` ou `social`, et `proposition` est le texte entier ;
 6. `controle_fidelite` a ses cinq clés, `etapes` ses six clés en objet avec `executee` booléen,
    `conditions` ses sept clés avec `etat` ; aucun « … » ne reste, et chaque `true`, `remplie` ou
    `inchangé` répond à une étape exécutée, une condition vérifiée ou une comparaison faite ;

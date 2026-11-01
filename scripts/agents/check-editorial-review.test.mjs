@@ -6,7 +6,8 @@
 // restée aux positions RE-T1, original en texte brut d'un brouillon affiché en Markdown, champ
 // structuré désigné par une plage ou sans son chemin de clés, plage d'original non lue, contrôle
 // passé sur le seul bloc final, sections déclarées sans les titres rendus ou avec un titre
-// seulement atteint).
+// seulement atteint, original dont la réponse affiche les lignes sous d'autres intertitres,
+// `format` hors du contrat, script Fafa sans la persona).
 // Run: node --test scripts/agents/check-editorial-review.test.mjs
 // =============================================================================
 import { test, describe, before, after } from "node:test";
@@ -123,6 +124,19 @@ const FIELD = "entity_data.editorial.selection_criteria.content_md";
 const MD = `## Filtre à huile\n\n- **Rôle**${NB}: retient les impuretés du circuit.\n- **Précaution**${NB}: ne le remplacez pas moteur chaud.`;
 // Deux espaces en fin de ligne : saut forcé en Markdown, à reproduire dans l'original.
 const MD_BR = `**Scène 1 — Ouverture**  \nLe filtre retient les impuretés du circuit de lubrification.  \nNe le remplacez pas moteur chaud${NB}: l'huile peut être brûlante.`;
+// Script dont la réponse affiche les lignes sous un autre intertitre (recette R18, Codex seo-batch).
+const SCRIPT_LINES = ["**Accroche** — Un filtre à huile colmaté ne prévient pas toujours.", "**Corps** — Il retient les impuretés du circuit de lubrification."];
+const SCRIPT_MD = ["## Script vidéo candidat", "", ...SCRIPT_LINES].join("\n");
+const SCRIPT_SHOWN = ["### Script vidéo, format pièce expliquée", "", ...SCRIPT_LINES].join("\n");
+// Script Fafa : le skill persona et la persona elle-même, lus en entier (§1, point 2).
+const PERSONA_SKILL = "workspaces/marketing/.claude/skills/fafa-persona-canon/SKILL.md";
+const PERSONA = "workspaces/marketing/fafa-media-factory/personas/fafa.md";
+function scriptBlock(paths = [PERSONA_SKILL, PERSONA]) {
+  const b = block();
+  b.relectures[0].format = "script";
+  for (const p of paths) b.lectures.push({ chemin: p, plages: [`1-${lineCount(join(REPO, p))}`], masquees: [], sections: ["toutes"], tronque: false });
+  return b;
+}
 
 // Fiche Markdown à trois niveaux de titres, frontmatter et bloc de code compris (§10, `sections`).
 const SECTIONS_MD = [
@@ -153,6 +167,7 @@ describe("contrat", () => {
     assert.ok(CONTRACT.rules.has("RE-23") && CONTRACT.rules.has("RE-T5"));
     assert.deepEqual([...CONTRACT.flags].sort(), ["F-1", "F-2", "F-3", "F-4", "F-5", "F-6"]);
     assert.ok(CONTRACT.verdicts.has("AUCUN_CHANGEMENT_UTILE") && CONTRACT.verdicts.has("BLOQUÉ_SOURCE"));
+    assert.deepEqual([...CONTRACT.formats].sort(), ["prose", "script", "social"]);
   });
 });
 
@@ -314,9 +329,55 @@ describe("cas acceptés", () => {
     const r = run(output(sectionsFiche(block(), all, ["1-16"])));
     assert.equal(r.resultat, "appliquee", errors(r));
   });
+
+  test("une seule ligne de l'original citée dans la prose : point à vérifier, pas un rejet", () => {
+    const r = run(output(unchangedBlock(SCRIPT_MD), `Accroche retenue :\n\n${SCRIPT_LINES[0]}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "appliquee", errors(r));
+    assert.ok(r.a_verifier.some((s) => /pas d'un seul tenant/.test(s)), r.a_verifier.join("\n"));
+  });
+
+  test("script Fafa avec le skill persona et la persona lus en entier : appliquee", () => {
+    const r = run(output(scriptBlock()));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
 });
 
 describe("cas rejetés", () => {
+  test("original dont la réponse affiche les lignes sous un autre intertitre", () => {
+    const r = run(output(unchangedBlock(SCRIPT_MD), `Brouillon :\n\n${SCRIPT_SHOWN}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /original inexact.*2 lignes de l'original.*pas sa ligne "## Script vidéo candidat"/);
+  });
+
+  test("original dont chaque ligne est affichée, mais pas d'un seul tenant (ligne ajoutée)", () => {
+    const shown = [SCRIPT_MD.split("\n")[0], "", SCRIPT_LINES[0], "**Plan** — Gros plan sur la cartouche usagée.", SCRIPT_LINES[1]].join("\n");
+    const r = run(output(unchangedBlock(SCRIPT_MD), `Brouillon :\n\n${shown}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /original inexact.*chaque ligne de l'original, mais pas d'un seul tenant/);
+  });
+
+  test("script Fafa sans la persona : fafa-persona-canon n'en dispense pas", () => {
+    const r = run(output(scriptBlock([PERSONA_SKILL])));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /C1 déclarée remplie, contredite.*personas\/fafa\.md : aucune lecture déclarée/);
+  });
+
+  test("persona d'un script lue en partie", () => {
+    const b = scriptBlock();
+    b.lectures.at(-1).plages = ["1-20"];
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /persona fafa-media-factory\/personas\/fafa\.md : lignes non rendues 21-/);
+  });
+
+  test("format hors des valeurs du contrat, qui contournerait les lectures du script", () => {
+    const b = block();
+    b.relectures[0].format = "prose-et-script-fafa";
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /format "prose-et-script-fafa" hors des valeurs du contrat \(prose, script, social\)/);
+  });
+
   test("original du bloc qui ne diffère du brouillon affiché que par des insécables, même en partielle", () => {
     const o = O;
     const b = block({ original: o, proposition: o, changements: [], etat: "partielle" });
