@@ -158,11 +158,13 @@ crash boot NestJS opaque. Vars couvertes (boot-crash si absentes/mal-formées) :
    `git tag v2.1.0 <sha40> && git push origin v2.1.0`.
 
 Ou via UI GitHub : `Actions → "Deploy PROD (via tag)" → Run workflow`, en choisissant le **tag** `v*`
-dans « Use workflow from ». Le formulaire propose `main` par défaut : lancé sur `main`, ou sur une
-branche dont la tête est un commit de `main` validé par PREPROD, le workflow déploierait ce commit
-sans tag `v*` et publierait l'image sous le tag Docker `:main`. La preuve PREPROD de ce commit lui
-suffit ; rien ne vérifie qu'un tag `v*` porte la décision de l'owner. Sur une autre branche, la
-preuve PREPROD manque et il refuse.
+dans « Use workflow from ». Le run exécute le `deploy-prod.yml` de la ref choisie, et le formulaire
+propose `main` par défaut : lancé sur `main`, ou sur une branche dont la tête est un commit de `main`
+qui contient #1696 et que PREPROD a validé, le workflow déploierait ce commit sans tag `v*` et
+publierait l'image sous le tag Docker `:main`. La preuve PREPROD de ce commit lui suffit ; rien ne
+vérifie qu'un tag `v*` porte la décision de l'owner. Sur une autre ref, le résultat suit le workflow
+de cette ref, comme pour un tag (voir Rollback) : au 2026-11-01, 25 branches distantes en portent un
+sans garde de label ni preuve PREPROD, qui promeut l'alias `:preprod` courant vers PROD.
 
 ## Rollback
 
@@ -184,17 +186,20 @@ dépendent des commits que contient le tag (302 tags `v*` au 2026-11-01) :
   label `revision` de l'alias `:preprod` diffère du commit du tag, avant de toucher `:production` et
   le conteneur PROD. L'alias suit `main` : le refus est la règle dès qu'un commit plus récent a été
   construit ;
-- tag qui ne contient pas `ed10ec6e5` (194 tags) : **aucune garde**. Son workflow promeut l'alias
-  `:preprod` courant vers `:production` et redémarre PROD, quel que soit le commit de l'alias. **Ne
-  jamais le relancer.**
+- tag qui ne contient pas `ed10ec6e5` (194 tags) : **aucune garde de provenance** ; seul un
+  contrôle `/health` suit le déploiement. Son workflow promeut l'alias `:preprod` courant vers
+  `:production`, le pousse sous le nom du tag (ce qui écrase le tag Docker de la version d'origine)
+  et redémarre PROD, quel que soit le commit de l'alias. **Ne jamais le relancer.**
 
-Pour un tag qui contient #1696, ce chemin suppose aussi que le run `ci.yml` du commit est lisible et
-que `:sha-<commit>` est encore dans le registre. Sans le run, le workflow refuse avant toute
-mutation. Sans l'image, il refuse avant de toucher `:production` et le conteneur PROD, mais après
-avoir réétiqueté `:production-previous` sur l'image en service et l'avoir poussé : un run refusé
-remplace le point de retour précédent. Après un tel refus, l'intervention manuelle ne s'appuie pas
-sur `:production-previous` ; elle désigne l'image à restaurer par `:sha-<commit>` ou par le tag
-Docker poussé à son déploiement (nom du tag `v*`).
+Un tag qui contient #1288 (2026-07-18 ; 40 tags : les 14 qui contiennent #1696 et 26 de la classe
+`ed10ec6e5`) réétiquette `:production-previous` sur l'image en service et le pousse avant ses
+contrôles de provenance : un run refusé remplace le point de retour précédent. Les 26 refusent
+ensuite sur le label de `:preprod`, selon leur classe. Les 14 supposent aussi que le run `ci.yml`
+du commit est lisible et que `:sha-<commit>` est encore dans le registre : sans le run, le workflow
+refuse avant toute mutation ; sans l'image, il refuse avant de toucher `:production` et le conteneur
+PROD, mais après la capture. Après un tel refus, l'intervention manuelle ne s'appuie pas sur
+`:production-previous` ; elle désigne l'image à restaurer par le tag Docker poussé à son déploiement
+(nom du tag `v*`), ou par `:sha-<commit>` si cette image est encore dans le registre.
 
 Un revert sur `main` ne change pas PROD : il redéploie PREPROD.
 
