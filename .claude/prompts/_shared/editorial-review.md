@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.8.0 — 2026-11-01.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.9.0 — 2026-11-01.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -45,6 +45,10 @@
 > fragments `#L`, `statut` et `motif` au lieu de `etat` et `manque`, une proposition « identique à
 > l'original », des clés et catégories renommées, des étapes en liste. Les résultats d'un essai
 > 1.7.0 ne qualifient pas cette version.
+> Pilote 1.9.0 : `sections` relevées dans les lignes rendues et contrôlées titre par titre, après
+> des listes en deçà de la lecture (titres rendus non déclarés, section atteinte par son seul
+> titre) et une lecture du contrat par plages bornées, sans « Sortie attendue » ni bloc final.
+> Les résultats d'un essai 1.8.0 ne qualifient pas cette version.
 
 ## 1. Ce que fait la relecture
 
@@ -81,15 +85,17 @@ produit leur trace dans la sortie.
    fichier de données ou proposition compris : une source non lue ne se cite pas) ; le miroir `.claude/canon-mirrors/marketing-voice.md` en entier, pas
    seulement ses interdits et ses mentions obligatoires ; `fafa-persona-canon` en entier pour un
    script Fafa.
-3. **Consigner les lectures** : pour chaque fichier, les sections lues, désignées par leur titre.
-   Si un fichier est lu par morceaux, noter aussi les plages réellement lues. Un fichier cité
-   dans une liste de lectures ne prouve ni sa lecture complète ni son application. Une sortie
-   d'outil marquée tronquée (« truncated », « tokens truncated ») ne prouve pas la lecture du
-   passage coupé : relire ce passage par une lecture bornée (un fichier par commande, par plages
-   de lignes) avant de le compter comme lu. Une plage fixée d'avance (`sed -n '1,280p'`, `head`)
-   laisse non lu ce qui la suit : poursuivre par plages jusqu'à la dernière ligne du fichier
-   avant de relire. Ce fichier se lit seul dans sa commande, jusqu'à « Sortie attendue » et
-   au-delà. Une lecture encore possible ne se remplace pas par « relecture partielle ».
+3. **Consigner les lectures** : pour chaque fichier, les plages réellement rendues par un outil
+   de lecture et les sections lues, désignées par leur titre relevé dans ces lignes rendues
+   (`lectures`, « Sortie attendue »). Une recherche (Grep, `rg`, liste de titres) ne rend
+   aucune plage et ne fait lire aucune section. Un fichier cité dans une liste de lectures ne
+   prouve ni sa lecture complète ni son application. Une sortie d'outil marquée tronquée
+   (« truncated », « tokens truncated ») ne prouve pas la lecture du passage coupé : relire ce
+   passage par une lecture bornée (un fichier par commande, par plages de lignes) avant de le
+   compter comme lu. Une plage fixée d'avance (`sed -n '1,280p'`, `head`, Read avec `offset` ou
+   `limit`) laisse non lu ce qui la suit : poursuivre par plages jusqu'à la dernière ligne du
+   fichier avant de relire. Ce fichier se lit seul dans sa commande, jusqu'à « Sortie attendue »
+   et au-delà. Une lecture encore possible ne se remplace pas par « relecture partielle ».
 4. **Exécuter les étapes**, chacune avec sa trace dans la sortie :
    - identifier l'original et ses sources, sinon `BLOQUÉ_SOURCE` ;
    - délimiter les champs modifiables ;
@@ -147,14 +153,14 @@ l'entrée standard (`printf` ou heredoc, sans écrire de fichier) à
 `node <racine du dépôt>/scripts/agents/check-editorial-review.mjs --emit --root <dossier de travail>`,
 avec un `--root` de plus par copie de sources lue. Il recalcule l'empreinte, rejoue les
 changements jusqu'à la proposition, compare les faits protégés retirés ou ajoutés à la fidélité
-déclarée, confronte les plages de lecture aux fichiers et recalcule C1 à C7. Il rend `appliquee`,
-`partielle` ou `rejetee`. Une sortie rejetée se corrige sur le fond, jamais en ajustant un champ
-pour le satisfaire. Il ne lit que l'entrée standard et les fichiers que le bloc désigne ; il
-n'écrit rien et n'accède ni au réseau ni à une base. Une consigne qui interdit d'écrire ou de
-lancer une commande qui écrit ne l'interdit donc pas ; seuls l'absence d'outil d'exécution ou
-l'interdiction de toute commande l'empêchent. Sans outil d'exécution, la relecture reste
-partielle et cette cause est nommée ; le bloc écrit passe alors la « Vérification sans outil
-d'exécution » (§10), qui ne remplace pas ce contrôle.
+déclarée, confronte les plages et les `sections` de lecture aux fichiers et recalcule C1 à C7.
+Il rend `appliquee`, `partielle` ou `rejetee`. Une sortie rejetée se corrige sur le fond, jamais
+en ajustant un champ pour le satisfaire. Il ne lit que l'entrée standard et les fichiers que le
+bloc désigne ; il n'écrit rien et n'accède ni au réseau ni à une base. Une consigne qui interdit
+d'écrire ou de lancer une commande qui écrit ne l'interdit donc pas ; seuls l'absence d'outil
+d'exécution ou l'interdiction de toute commande l'empêchent. Sans outil d'exécution, la
+relecture reste partielle et cette cause est nommée ; le bloc écrit passe alors la
+« Vérification sans outil d'exécution » (§10), qui ne remplace pas ce contrôle.
 
 Le contrôle se fait dans tous les états, « relecture partielle » comprise, et pour tout verdict,
 `BLOQUÉ_SOURCE` et `HORS_PÉRIMÈTRE` compris. Il est repassé après chaque correction de la sortie,
@@ -531,7 +537,7 @@ et les valeurs d'exemple se remplacent, par le contenu réel :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.8.0", "etat_declare": "partielle",
+  "contrat": "editorial-review", "version": "1.9.0", "etat_declare": "partielle",
   "lectures": [
     {"chemin": "…/.claude/prompts/_shared/editorial-review.md", "plages": ["1-…"], "masquees": [],
      "sections": ["toutes"], "tronque": false},
@@ -582,7 +588,18 @@ fait et constaté, jamais par une valeur par défaut. `executee` prend le boolé
   dont l'union couvre chaque fichier exigé de 1 à sa dernière ligne (« Contrôle avant
   déclaration », C1), `masquees`
   pour ce qu'un outil a coupé et qui n'a pas été relu. `tronque: true` sans `masquees` ne compte
-  rien comme lu. Un script Fafa ajoute l'entrée de `fafa-persona-canon`.
+  rien comme lu. Un script Fafa ajoute l'entrée de `fafa-persona-canon`. `sections` vaut
+  `["toutes"]` seulement si l'union des plages, `masquees` retirées, va de 1 à la dernière
+  ligne. Sinon, pour un fichier Markdown, elle liste dans l'ordre du fichier chaque titre `#` à
+  `######`, H1 compris, dont la ligne est rendue, hors bloc de code et hors frontmatter. Le titre
+  s'écrit tel qu'il est, sans ses `#` ; son numéro de section peut être omis. Une section rendue
+  jusqu'à sa fin (ligne du titre suivant de même niveau ou de niveau supérieur comprise, ou
+  dernière ligne du fichier) s'écrit sans suffixe ; sinon, son titre prend ` (titre seul)` si
+  aucune autre de ses lignes n'est rendue, ` (partielle)` dans les autres cas. `"frontmatter"`
+  désigne le frontmatter quand sa première ligne est rendue. Un titre non rendu ne s'écrit pas,
+  même trouvé par une recherche ; aucun titre rendu donne `[]`. Les titres d'un fichier qui
+  n'est pas en Markdown (JSON, YAML) ne sont pas relevés. Une liste qui ne répond pas aux
+  lignes rendues est une lecture inexacte, rejetée même en « relecture partielle ».
 - `sources` : `chemin:a-b`, ou `chemin` seul pour le fichier entier, avec le `chemin` d'une
   entrée de `lectures` dont les plages couvrent a-b ; jamais `#L`, `l.` ni alias.
 - `proposition` : le texte entier, recopié même sans changement ; une mention comme « identique
@@ -622,7 +639,9 @@ gabarit, clé par clé, et corriger chaque écart sur le fond :
    `lectures`, `relectures`, `conditions` ;
 3. chaque entrée de `lectures` est un objet aux cinq clés ; pour ce fichier, le miroir
    `marketing-voice.md` et, pour un script, `fafa-persona-canon`, l'union des plages va de 1 à
-   la dernière ligne ; pour chaque source, elle couvre la plage citée ;
+   la dernière ligne ; pour chaque source, elle couvre la plage citée ; `sections` vaut
+   `["toutes"]` pour une union de 1 à la dernière ligne, sinon les titres rendus et leurs
+   suffixes selon `lectures` ci-dessus ;
 4. chaque entrée de `sources` suit `chemin:a-b`, ou `chemin` seul pour le fichier entier, avec
    un `chemin` présent dans `lectures` dont les plages couvrent a-b ou, pour un chemin seul, le
    fichier de 1 à sa dernière ligne ;

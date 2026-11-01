@@ -5,7 +5,8 @@
 // Confronte le bloc ```json « "contrat": "editorial-review" » d'une sortie à ce qu'il déclare,
 // sans se fier à l'auto-évaluation du modèle : empreinte de l'original recalculée, avant/après
 // retrouvés, changements rejoués jusqu'à la proposition, faits protégés comparés règle par
-// règle, plages de lecture confrontées aux fichiers, conditions C1–C7 recalculées, mentions de
+// règle, plages de lecture confrontées aux fichiers, sections déclarées confrontées aux titres
+// des lignes rendues, conditions C1–C7 recalculées, mentions de
 // la relecture dans la prose comparées à l'état déclaré, original sans fichier confronté au
 // texte que la réponse affiche (typographie et balisage Markdown), positions RE-T1 restées en
 // espace ordinaire dans la proposition, champ structuré (YAML, JSON, frontmatter) reproduit avec
@@ -380,8 +381,99 @@ function missingRanges(covered, a, b) {
   return out;
 }
 
+// Titres `#` à `######` d'un Markdown, hors frontmatter et blocs de code, avec la dernière ligne
+// de leur section : celle qui précède le titre suivant de même niveau ou de niveau supérieur.
+function markdownHeadings(text) {
+  const lines = text.split("\n");
+  const nLines = countLines(text);
+  const fm = lines[0].trimEnd() === "---" ? lines.findIndex((l, i) => i > 0 && /^(?:---|\.\.\.)\s*$/.test(l)) : -1;
+  const heads = [];
+  let fence = null;
+  for (let i = fm + 1; i < nLines; i += 1) {
+    const f = lines[i].match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+    if (fence) {
+      if (f && f[1][0] === fence[0] && f[1].length >= fence.length && !f[2].trim()) fence = null;
+      continue;
+    }
+    if (f && !(f[1][0] === "`" && f[2].includes("`"))) {
+      fence = f[1];
+      continue;
+    }
+    const m = lines[i].match(/^ {0,3}(#{1,6})(?:[ \t]+(.*?))?(?:[ \t]+#+)?[ \t]*$/);
+    if (m) heads.push({ level: m[1].length, title: (m[2] || "").trim(), line: i + 1 });
+  }
+  return heads.map((h, idx) => {
+    const next = heads.slice(idx + 1).find((o) => o.level <= h.level);
+    return { ...h, end: next ? next.line - 1 : nLines };
+  });
+}
+
+// `sections` attendues pour les lignes rendues d'un Markdown (§10, `lectures`) : chaque titre
+// rendu, sans suffixe si sa section est rendue jusqu'à sa fin observée (titre suivant ou dernière
+// ligne), « (titre seul) » si aucune autre de ses lignes n'est rendue, « (partielle) » sinon.
+export function renderedSections(text, covered) {
+  const nLines = countLines(text);
+  const lines = (a, b) => Array.from({ length: Math.max(0, b - a + 1) }, (_, k) => a + k);
+  const all = (a, b) => lines(a, b).every((n) => covered.has(n));
+  const some = (a, b) => lines(a, b).some((n) => covered.has(n));
+  return markdownHeadings(text)
+    .filter((h) => h.title && covered.has(h.line))
+    .map((h) => {
+      const whole = all(h.line, h.end) && (h.end === nLines || covered.has(h.end + 1));
+      const suffix = whole ? "" : some(h.line + 1, h.end) ? " (partielle)" : " (titre seul)";
+      return { title: h.title, suffix, line: h.line, end: h.end };
+    });
+}
+
+const ALL_SECTIONS = "toutes";
+const titleKey = (s) => s.replace(/\s+/g, " ").trim();
+
+// Une liste `sections` qui ne répond pas aux lignes rendues est une lecture inexacte (§10).
+function checkSections(entry, abs, text, covered, where) {
+  const errs = [];
+  const sections = entry.sections;
+  if (!Array.isArray(sections) || sections.some((s) => typeof s !== "string")) {
+    return [`${where} : sections absentes ou mal formées (liste de titres, ou ["toutes"])`];
+  }
+  if (sections.some((s) => titleKey(s) === ALL_SECTIONS)) {
+    const gaps = missingRanges(covered, 1, countLines(text));
+    if (sections.length > 1) errs.push(`${where} : « toutes » mêlée à des titres`);
+    else if (gaps.length) errs.push(`${where} : sections « toutes » sur une lecture incomplète, lignes non rendues ${gaps.join(", ")}`);
+    return errs;
+  }
+  if (!/\.md$/i.test(abs)) return errs;
+  const zone = structuredZone(abs, text);
+  const expected = renderedSections(text, covered);
+  const used = expected.map(() => false);
+  let last = -1;
+  let disordered = false;
+  for (const raw of sections) {
+    const [, title, suffix = ""] = titleKey(raw).match(/^(.*?)( \((?:partielle|titre seul)\))?$/);
+    if (title === "frontmatter" && zone && zone.frontmatter && covered.has(1)) continue;
+    const j = expected.findIndex(
+      (e, k) => !used[k] && (titleKey(e.title) === title || titleKey(e.title).replace(/^\d+(?:\.\d+)*\.?\s+/, "") === title),
+    );
+    if (j < 0) {
+      errs.push(`${where} : section « ${raw} » sans titre rendu dans les plages déclarées`);
+      continue;
+    }
+    used[j] = true;
+    if (j < last) disordered = true;
+    last = Math.max(last, j);
+    const e = expected[j];
+    const said = (s) => (s ? `« ${s.trim().slice(1, -1)} »` : "entière");
+    if (e.suffix !== suffix) errs.push(`${where} : « ${e.title} » (l. ${e.line}-${e.end}) déclarée ${said(suffix)}, rendue ${said(e.suffix)}`);
+  }
+  expected.forEach((e, k) => {
+    if (!used[k]) errs.push(`${where} : titre rendu non déclaré « ${e.title}${e.suffix} » (l. ${e.line})`);
+  });
+  if (disordered) errs.push(`${where} : sections hors de l'ordre du fichier`);
+  return errs;
+}
+
 function checkReadings(block, relectures, roots, contract) {
   const errors = [];
+  const inexact = [];
   const reads = [];
   const lectures = Array.isArray(block.lectures) ? block.lectures : [];
   if (lectures.length === 0) errors.push("lectures : liste absente ou vide");
@@ -394,7 +486,9 @@ function checkReadings(block, relectures, roots, contract) {
     }
     const text = readFileSync(abs, "utf8");
     const nLines = countLines(text);
-    reads.push({ abs, real: realpathSync(abs), text, nLines, covered: coveredLines(entry, text, errors, where) });
+    const covered = coveredLines(entry, text, errors, where);
+    inexact.push(...checkSections(entry, abs, text, covered, where));
+    reads.push({ abs, real: realpathSync(abs), text, nLines, covered });
   });
   // Un même fichier atteint par deux racines ou par un lien symbolique reste un seul fichier.
   const readsOf = (abs) => {
@@ -459,7 +553,7 @@ function checkReadings(block, relectures, roots, contract) {
       else requireFile(`relecture ${rel.id}, source ${src}`, abs, range.a, range.b);
     }
   });
-  return { errors, uncovered };
+  return { errors, inexact, uncovered };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -907,6 +1001,9 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
   // Même règle : une référence qui ne désigne pas le texte reproduit, ou un champ structuré désigné
   // par la seule syntaxe du document, est inexacte, même quand la relecture sort du périmètre.
   for (const msg of referencesInexactes) report.erreurs.push(`référence inexacte — ${msg}`);
+  // Même règle : des sections qui ne répondent pas aux lignes rendues déclarent une autre lecture
+  // que celle des plages, en plus ou en moins.
+  for (const msg of readings.inexact) report.erreurs.push(`lecture inexacte — ${msg}`);
 
   const allMet = CONDITIONS.every((c) => report.conditions[c].calculee !== "non_remplie" && declared[c] && declared[c].etat !== "non_remplie");
   if (etat === "appliquée" && !allMet) {

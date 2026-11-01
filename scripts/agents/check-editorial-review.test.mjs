@@ -5,7 +5,8 @@
 // changent l'information, conditions non nommées, lecture tronquée comptée, espace ordinaire
 // restée aux positions RE-T1, original en texte brut d'un brouillon affiché en Markdown, champ
 // structuré désigné par une plage ou sans son chemin de clés, plage d'original non lue, contrôle
-// passé sur le seul bloc final).
+// passé sur le seul bloc final, sections déclarées sans les titres rendus ou avec un titre
+// seulement atteint).
 // Run: node --test scripts/agents/check-editorial-review.test.mjs
 // =============================================================================
 import { test, describe, before, after } from "node:test";
@@ -24,6 +25,7 @@ import {
   STEP_KEYS,
   checkOutput,
   parseContract,
+  renderedSections,
   sectionRange,
 } from "./check-editorial-review.mjs";
 
@@ -122,6 +124,25 @@ const MD = `## Filtre à huile\n\n- **Rôle**${NB}: retient les impuretés du ci
 // Deux espaces en fin de ligne : saut forcé en Markdown, à reproduire dans l'original.
 const MD_BR = `**Scène 1 — Ouverture**  \nLe filtre retient les impuretés du circuit de lubrification.  \nNe le remplacez pas moteur chaud${NB}: l'huile peut être brûlante.`;
 
+// Fiche Markdown à trois niveaux de titres, frontmatter et bloc de code compris (§10, `sections`).
+const SECTIONS_MD = [
+  "---", "title: Filtre à huile", "---",
+  "# Filtre à huile", "",
+  "## Rôle", "Retient les impuretés du circuit.",
+  "### Formes", "Vissé ou cartouche.",
+  "```md", "# pas un titre", "```",
+  "## Symptômes & diagnostic", "Pression d'huile basse.",
+  "## 3. Marques & qualité", "Équivalence constructeur.",
+].join("\n") + "\n";
+// Lignes 1-13 rendues : « Symptômes & diagnostic » n'est atteinte que par son titre (l. 13).
+const SECTIONS_1_13 = ["frontmatter", "Filtre à huile (partielle)", "Rôle", "Formes", "Symptômes & diagnostic (titre seul)"];
+function sectionsFiche(b, sections, plages = ["1-13"]) {
+  const fiche = join(dir, "sections.md");
+  writeFileSync(fiche, SECTIONS_MD);
+  b.lectures.push({ chemin: fiche, plages, masquees: [], sections, tronque: false });
+  return b;
+}
+
 const output = (b, prose = "Relecture : voir le bloc final.") => `${prose}\n\n\`\`\`json\n${JSON.stringify(b, null, 2)}\n\`\`\`\n`;
 const run = (text) => checkOutput(text, { roots: [REPO, dir] });
 const errors = (r) => r.erreurs.join("\n");
@@ -169,6 +190,8 @@ describe("cas acceptés", () => {
     const b = block({ etat: "partielle" });
     b.lectures[0].tronque = true;
     b.lectures[0].masquees = ["200-260"];
+    const covered = new Set(Array.from({ length: CONTRACT.nLines }, (_, k) => k + 1).filter((n) => n < 200 || n > 260));
+    b.lectures[0].sections = renderedSections(readFileSync(CONTRACT_PATH, "utf8"), covered).map((s) => s.title + s.suffix);
     b.conditions.C1 = { etat: "non_remplie", manque: "lignes 200-260 du contrat coupées par l'outil, non relues" };
     const r = run(output(b));
     assert.equal(r.resultat, "partielle", errors(r));
@@ -273,6 +296,23 @@ describe("cas acceptés", () => {
     const r = run(output(b, "Relecture partielle : C4 non remplie."));
     assert.equal(r.resultat, "partielle", errors(r));
     assert.ok(r.a_verifier.some((s) => /C4 déclarée non remplie .* calcule remplie/.test(s)), r.a_verifier.join("\n"));
+  });
+
+  test("sections relevées dans les lignes rendues, suffixes compris : appliquee", () => {
+    const r = run(output(sectionsFiche(block(), SECTIONS_1_13)));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("lecture arrêtée avant le titre suivant : sections partielles, fin non observée", () => {
+    const b = sectionsFiche(block(), ["frontmatter", "Filtre à huile (partielle)", "Rôle (partielle)", "Formes (partielle)"], ["1-12"]);
+    const r = run(output(b));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("fichier entier déclaré titre par titre, numéro de section omis : appliquee", () => {
+    const all = ["frontmatter", "Filtre à huile", "Rôle", "Formes", "Symptômes & diagnostic", "Marques & qualité"];
+    const r = run(output(sectionsFiche(block(), all, ["1-16"])));
+    assert.equal(r.resultat, "appliquee", errors(r));
   });
 });
 
@@ -619,6 +659,39 @@ describe("cas rejetés", () => {
     const r = run(output(b));
     assert.equal(r.resultat, "rejetee");
     assert.match(errors(r), /référence inexacte.*texte non retrouvé/);
+  });
+
+  test("titre rendu absent de sections, même en partielle", () => {
+    const b = sectionsFiche(block({ etat: "partielle" }), ["Filtre à huile (partielle)", "Rôle", "Symptômes & diagnostic (titre seul)"]);
+    b.conditions.C4 = { etat: "non_remplie", manque: "signalements non relus" };
+    const r = run(output(b, "Relecture partielle : C4 non remplie."));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /lecture inexacte.*titre rendu non déclaré « Formes » \(l\. 8\)/);
+  });
+
+  test("sections « toutes » sur une lecture incomplète", () => {
+    const r = run(output(sectionsFiche(block(), ["toutes"])));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /lecture inexacte.*« toutes » sur une lecture incomplète, lignes non rendues 14-16/);
+  });
+
+  test("titre trouvé par une recherche ou dans un bloc de code, sans ligne rendue", () => {
+    const r = run(output(sectionsFiche(block(), [...SECTIONS_1_13, "Marques & qualité", "pas un titre"])));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /section « Marques & qualité » sans titre rendu/);
+    assert.match(errors(r), /section « pas un titre » sans titre rendu/);
+  });
+
+  test("section atteinte par son seul titre déclarée entière", () => {
+    const r = run(output(sectionsFiche(block(), SECTIONS_1_13.map((s) => s.replace(" (titre seul)", "")))));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /« Symptômes & diagnostic » \(l\. 13-14\) déclarée entière, rendue « titre seul »/);
+  });
+
+  test("sections hors de l'ordre du fichier", () => {
+    const r = run(output(sectionsFiche(block(), ["Rôle", ...SECTIONS_1_13.filter((s) => s !== "Rôle")])));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /sections hors de l'ordre du fichier/);
   });
 });
 

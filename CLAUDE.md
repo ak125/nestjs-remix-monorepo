@@ -109,7 +109,12 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
   `.claude/knowledge/workspaces.md`. Rôles Paperclip : `agents/*/AGENTS.md`,
   à consulter seulement pour le rôle concerné ; UUID dans leur registre.
 - Relecture d'un brouillon français : `.claude/prompts/_shared/editorial-review.md`
-  avant intervention ; proposition motivée, sans publication ni écriture RAW/WIKI.
+  avant intervention, lu jusqu'à sa dernière ligne, « Sortie attendue » et son bloc
+  final compris : Read sans `offset` ni `limit`, ou plages contiguës jusqu'à la fin.
+  Une plage fixée d'avance ou une recherche de titres laisse le reste non lu.
+  Proposition motivée, sans publication ni écriture RAW/WIKI. La réponse se termine
+  par le bloc final de « Sortie attendue », même en relecture partielle ; sans outil
+  d'exécution, `sha256` vaut `null` et C2 reste non remplie avec cette cause.
 
 ## Gouvernance
 
