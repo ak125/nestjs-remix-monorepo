@@ -4,9 +4,11 @@
 // =============================================================================
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   evaluateDoD,
@@ -340,6 +342,106 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
   });
 });
 
+describe("evaluateReviewRecord — only the text a reader sees is a record", () => {
+  const indent = (text, by) => text.replace(/^/gm, by);
+  const UNREAD = "; 1 « Revue niveau » line(s) in a code block, a quote, an HTML comment or a raw HTML block are not read";
+
+  test("a record in an HTML comment, a code block or a quote is not read, and the message says so", () => {
+    for (const body of [
+      `<!--\n${record()}\n-->`,
+      `Exemple <!-- ${record()} -->`,
+      `\`\`\`\n${record()}\n\`\`\``,
+      `~~~md\n${record()}\n~~~`,
+      indent(record(), "    "),
+      `Exemple :\n\n${indent(record(), "\t")}`,
+      `- exemple :\n    \`\`\`\n${indent(record(), "    ")}\n    \`\`\``,
+      indent(record(), "> "),
+      // A comment closed and reopened on one line; a lone CR ends a line; an info string may hold U+2028.
+      `<!--\nnote\n--> <!--\n${record()}\n-->`,
+      `Relu.\r\`\`\`\n${record()}\n\`\`\``,
+      `\`\`\`\u2028\n${record()}\n\`\`\``,
+      // Raw HTML blocks: shown preformatted, passed through or dropped, until their end condition.
+      `<pre>\n${record()}\n</pre>`,
+      `<textarea>\n\n${record()}\n</textarea>`,
+      `<SCRIPT>\n${record()}\n</script>`,
+      `<?php\n${record()}\n?>`,
+      `<!DOCTYPE x\n${record()}\n>`,
+      `<![CDATA[\n${record()}\n]]>`,
+    ]) {
+      const { problems, unverified } = evaluateReviewRecord(body, PR);
+      assert.deepEqual(unverified, [], body);
+      assert.equal(problems.length, 1, body);
+      assert.ok(problems[0].startsWith("no review record") && problems[0].endsWith(UNREAD), body);
+    }
+  });
+
+  test("hidden parts of a visible record are not read", () => {
+    const lines = record().split("\n");
+    // The SHAs in a comment: the anchor names no head.
+    const shas = [lines[0].replace(`tête ${HEAD}, base ${BASE}`, `<!-- tête ${HEAD}, base ${BASE} -->`), ...lines.slice(1)].join("\n");
+    assert.ok(evaluateReviewRecord(shas, PR).problems[0].startsWith(`no record names the head ${HEAD} (records name: \`no SHA\`)`));
+    // Fields after a code block are not the record's.
+    const fenced = [lines[0], "```", ...lines.slice(1), "```"].join("\n");
+    assert.deepEqual(evaluateReviewRecord(fenced, PR).problems, ["record: field(s) missing or placeholder: procédure, périmètre, constats, preuves, limites"]);
+    // A field's value in a comment is no value.
+    const value = record().replace("aucune revue indépendante", "<!-- aucune revue indépendante -->");
+    assert.deepEqual(evaluateReviewRecord(value, PR).problems, ["record: field(s) missing or placeholder: limites"]);
+  });
+
+  test("a commented line inside a record, a commented-out record and a hidden DoD2 line or link are skipped", () => {
+    const items = record().replace(/^ {8}/gm, "  - ").split("\n");
+    const inside = [items[0], items[1], "<!-- périmètre : version précédente -->", ...items.slice(2)].join("\n");
+    assert.deepEqual(checks(evaluateReviewRecord(inside, PR)), CLEAN);
+    // A comment line ends the paragraph: the indented fields after it render as code.
+    const lines = record().split("\n");
+    const code = [lines[0], lines[1], "<!-- périmètre : version précédente -->", ...lines.slice(2)].join("\n");
+    assert.deepEqual(evaluateReviewRecord(code, PR).problems, ["record: field(s) missing or placeholder: périmètre, constats, preuves, limites"]);
+    assert.deepEqual(checks(evaluateReviewRecord(`<!--\n${record({ head: OLD_HEAD })}\n-->\n${record()}`, PR)), CLEAN);
+    assert.deepEqual(checks(evaluateReviewRecord(`<!-- - [x] DoD2 — tête ${OLD_HEAD} -->\n${record()}`, PR)), CLEAN);
+    const comments = [{ id: 42, login: "x", body: record() }];
+    const link = "https://github.com/o/r/pull/7#issuecomment-42";
+    assert.ok(evaluateReviewRecord(`<!-- ${link} -->`, { ...PR, comments }).problems[0].startsWith("no review record"));
+    assert.ok(evaluateReviewRecord(`\`\`\`\n${link}\n\`\`\``, { ...PR, comments }).problems[0].startsWith("no review record"));
+  });
+
+  test("an example naming the head in a code block does not refresh a stale record", () => {
+    const body = `${record({ head: OLD_HEAD })}\n\nExemple :\n\`\`\`\n${record()}\n\`\`\``;
+    assert.deepEqual(evaluateReviewRecord(body, PR).problems, [
+      `no record names the head ${HEAD} (records name: \`${OLD_HEAD}\`); a push makes a record stale (ADR-120 D4)${UNREAD}`,
+    ]);
+    const comments = [{ id: 42, login: "x", body: `<!--\n${record()}\n-->` }];
+    const linked = evaluateReviewRecord("https://github.com/o/r/pull/7#issuecomment-42", { ...PR, comments });
+    assert.ok(linked.problems[0].startsWith("no review record") && linked.problems[0].endsWith(UNREAD));
+  });
+
+  test("the template's form, a record after a comment, a heading or a closed code block, is read", () => {
+    for (const body of [
+      `<!-- consigne\n     sur deux lignes -->\n\n${record()}`,
+      `### Enregistrement de revue (DoD2)\n${record()}`,
+      `\`\`\`\nnpm test\n\`\`\`\n${record()}`,
+      `- [x] **DoD2** Ownership\n${indent(record(), "    ")}`,
+      `Relu. <!-- note --> Fin.\n${record()}`,
+      `<pre>x</pre>\n${record()}`,
+      `<!DOCTYPE html>\n${record()}`,
+      `<style>\np { margin: 0 }\n</style>\n${record()}`,
+      `Relu.\r\n${record().replace(/\n/g, "\r\n")}`,
+      `Relu.\r${record().replace(/\n/g, "\r")}`,
+    ]) {
+      assert.deepEqual(checks(evaluateReviewRecord(body, PR)), CLEAN, body);
+    }
+    // Indented by 4 columns after a blank line, a list item paragraph is taken for code: missed, and said.
+    const { problems } = evaluateReviewRecord(`- [x] **DoD2** Ownership\n\n${indent(record(), "    ")}`, PR);
+    assert.ok(problems[0].startsWith("no review record") && problems[0].endsWith(UNREAD));
+  });
+
+  test("many comments on a line are read in linear time", () => {
+    const started = process.hrtime.bigint();
+    const { problems } = evaluateReviewRecord(`${"<!-- x -->".repeat(30000)}\n${"<!--".repeat(30000)}`, PR);
+    assert.ok(Number(process.hrtime.bigint() - started) / 1e6 < 500);
+    assert.ok(problems[0].startsWith("no review record"));
+  });
+});
+
 describe("evaluateReviewRecord — level (D3)", () => {
   test("level A with code in the diff needs level B", () => {
     const { problems } = evaluateReviewRecord(record(), { ...PR, files: ["docs/x.md", "scripts/ci/x.mjs"] });
@@ -494,6 +596,13 @@ describe("evaluateReviewRecord — level (D3)", () => {
     const unfound = evaluateReviewRecord(`${record()}\nVoir https://github.com/o/r/pull/7#issuecomment-99`, PR);
     assert.deepEqual(unfound.problems, ["linked issuecomment-99 not found on this PR"]);
     assert.ok(!unfound.notes.some((x) => x.startsWith("level A record")), unfound.notes.join("\n"));
+    // Nor while something stays unverified: an unknown head, a linked comment not read.
+    const headless = evaluateReviewRecord(record(), { ...PR, headSha: undefined });
+    assert.deepEqual(headless.unverified, ["head SHA unknown (no event payload)"]);
+    assert.deepEqual(headless.notes, []);
+    const unread = evaluateReviewRecord(`${record()}\nVoir https://github.com/o/r/pull/7#issuecomment-42`, { ...PR, comments: undefined });
+    assert.deepEqual(unread.unverified, ["linked issuecomment-42 not read (no review context)"]);
+    assert.deepEqual(unread.notes, []);
     const r = evaluateDoD(fullBody(), [], 1, OWNED);
     assert.equal(r.pass, true);
     assert.ok(r.notes[0].startsWith("level A record (PR body): form conforms on the head"));
@@ -641,6 +750,20 @@ describe("evaluateReviewRecord — level (D3)", () => {
         `~~~\n\`\`\`\nAccord ${HEAD}\n~~~`,
         `~~~\nAccord ${HEAD}`,
         `> Relu.\nAccord ${HEAD}`,
+        `<!--\nnote\n--> <!--\nAccord ${HEAD}\n-->`,
+        `<!-- x --> y <!--\nAccord ${HEAD}`,
+        `Relu.\r~~~\nAccord ${HEAD}\n~~~`,
+        `Relu.\r> cité\nAccord ${HEAD}`,
+        `\`\`\`\r>\nAccord ${HEAD}`,
+        `\`\`\`\u2028\nAccord ${HEAD}\n\`\`\``,
+        `~~~\u2029\nAccord ${HEAD}\n~~~`,
+        `<script>\nAccord ${HEAD}\n</script>`,
+        `<style type="text/css">\nAccord ${HEAD}\n</style>`,
+        `<pre>\n\nAccord ${HEAD}\n</pre>`,
+        `<TEXTAREA>\nAccord ${HEAD}`,
+        `<?x\nAccord ${HEAD}\n?>`,
+        `<![CDATA[\nAccord ${HEAD}\n]]>`,
+        `<!X\nAccord ${HEAD}\n>`,
       ]) {
         const r = evaluateReviewRecord(body, { ...ctx, comments: [comment(2, text)] });
         assert.ok(r.problems[0]?.startsWith(NO_PIECE), text);
@@ -654,6 +777,12 @@ describe("evaluateReviewRecord — level (D3)", () => {
         `> Relu.\n\nAccord ${HEAD}`,
         // A backtick info string holds no backtick: this line opens no fence.
         `\`\`\` \`x\`\nAccord ${HEAD}`,
+        `<pre>x</pre>\nAccord ${HEAD}`,
+        `<!DOCTYPE html>\nAccord ${HEAD}`,
+        `<script>\nx\n</script>\nAccord ${HEAD}`,
+        `<!-- a --> <!-- b -->\nAccord ${HEAD}`,
+        `Relu.\r\nAccord ${HEAD}`,
+        `Relu.\rAccord ${HEAD}`,
       ]) {
         const r = evaluateReviewRecord(body, { ...ctx, comments: [comment(2, text)] });
         assert.deepEqual(r.problems, [], text);
@@ -682,6 +811,15 @@ describe("evaluateReviewRecord — level (D3)", () => {
       const unknown = evaluateReviewRecord(body, { ...ctx, comments: [accord], reviews: [{ ...review, submittedAt: at(5) }] });
       assert.deepEqual(unknown.unverified, [
         piece("`owner` (owner), comment `issuecomment-2`, no other text in it, not edited, none known posted or edited after it, posting or edit time unknown for 1 other message(s) of this account: `pullrequestreview-9`"),
+      ]);
+      // A posting time GitHub did not give, an edit time it did: placed at its edit.
+      const editedBefore = comment(3, "Relu.", { createdAt: "", updatedAt: at(5) });
+      const editedAfter = comment(4, "Retiré.", { createdAt: "", updatedAt: at(30) });
+      assert.deepEqual(evaluateReviewRecord(body, { ...ctx, comments: [editedBefore, accord] }).unverified, [
+        piece("`owner` (owner), comment `issuecomment-2`, no other text in it, not edited, no message of this account posted or edited after it"),
+      ]);
+      assert.deepEqual(evaluateReviewRecord(body, { ...ctx, comments: [editedBefore, editedAfter, accord] }).unverified, [
+        piece("`owner` (owner), comment `issuecomment-2`, no other text in it, not edited, 1 message(s) of this account posted or edited after it: `issuecomment-4`"),
       ]);
       const untimed = evaluateReviewRecord(body, { ...ctx, comments: [comment(2, `Accord ${HEAD}`), comment(3, "Retiré.")] });
       assert.deepEqual(untimed.unverified, [
@@ -748,6 +886,16 @@ describe("evaluateReviewRecord — level (D3)", () => {
       assert.ok(many.unverified[0].endsWith(`/ … (4000)${OWNER_DECIDES}`));
       assert.ok(Number(process.hrtime.bigint() - started) / 1e6 < 500);
     });
+
+    test("the pieces are read once per run, not once per level C record", () => {
+      const records = Array.from({ length: 1000 }, () => body).join("\n\n");
+      const large = Array.from({ length: 30 }, (_, i) => comment(i, `${"Relu, sans réserve.\n".repeat(3000)}Accord ${HEAD}`));
+      const started = process.hrtime.bigint();
+      const r = evaluateReviewRecord(records, { ...ctx, comments: large });
+      assert.ok(Number(process.hrtime.bigint() - started) / 1e6 < 2000);
+      assert.equal(r.unverified.length, 1);
+      assert.ok(r.unverified[0].startsWith("level C accord piece(s) on the head: "));
+    });
   });
 });
 
@@ -806,6 +954,46 @@ describe("renderReport", () => {
     const open = `\`${"c".repeat(5000)}\``;
     const [code] = renderReport({ ...result, reasons: [open, ...result.reasons] }).split("\n").filter((l) => l.startsWith("- `"));
     assert.equal((code.match(/`/g) ?? []).length % 2, 0);
+  });
+
+  test("the report names the head it evaluated, or says it is unknown", () => {
+    const result = { pass: true, mode: "checklist", reasons: ["ok"] };
+    assert.ok(renderReport(result, HEAD).startsWith(`### 🧾 Definition of Done gate — ✅ PASS\n\n_mode: \`checklist\`, head \`${HEAD}\`_\n`));
+    assert.ok(renderReport(result).includes("_mode: `checklist`, head unknown_"));
+  });
+});
+
+describe("main — exit code and report file, as the workflow runs it", () => {
+  const script = fileURLToPath(new URL("./pr-dod-gate.mjs", import.meta.url));
+  const dir = mkdtempSync(join(tmpdir(), "dod-gate-"));
+  const event = join(dir, "event.json");
+  const context = join(dir, "context.json");
+  writeFileSync(
+    event,
+    JSON.stringify({ pull_request: { head: { sha: HEAD }, number: 7, base: { repo: { full_name: "o/r" } }, assignees: [{ login: "owner" }], user: { login: "author" } } }),
+  );
+  writeFileSync(context, JSON.stringify({ mergeBase: BASE, files: ["docs/x.md"], comments: [], reviews: [] }));
+  const run = (env) => {
+    const cwd = mkdtempSync(join(tmpdir(), "dod-gate-run-"));
+    const { status } = spawnSync(process.execPath, [script], { cwd, env: { PATH: process.env.PATH, GITHUB_EVENT_PATH: event, ...env }, encoding: "utf8" });
+    return { status, report: readFileSync(join(cwd, "dod-gate-report.md"), "utf8") };
+  };
+
+  test("0 on a pass, 1 on a failure or a misconfiguration, with the report written", () => {
+    const pass = run({ PR_BODY: fullBody(), PR_REVIEW_CONTEXT: context });
+    assert.equal(pass.status, 0, pass.report);
+    assert.ok(pass.report.startsWith(`### 🧾 Definition of Done gate — ✅ PASS\n\n_mode: \`checklist\`, head \`${HEAD}\`_`), pass.report);
+    // Without the review context DoD2 stays unverified: a failure, or an advisory item.
+    const unverified = run({ PR_BODY: fullBody() });
+    assert.equal(unverified.status, 1, unverified.report);
+    assert.ok(unverified.report.includes("merge-base unknown"), unverified.report);
+    assert.equal(run({ PR_BODY: fullBody(), DOD_ADVISORY_ITEMS: "DoD2" }).status, 0);
+    const missing = run({ PR_BODY: "" });
+    assert.equal(missing.status, 1);
+    assert.ok(missing.report.includes("❌ FAIL"));
+    const misconfigured = run({ PR_BODY: fullBody(), PR_REVIEW_CONTEXT: context, DOD_ADVISORY_ITEMS: "DoD10" });
+    assert.equal(misconfigured.status, 1);
+    assert.ok(misconfigured.report.startsWith("### 🧾 Definition of Done gate — ❌ FAIL\n\n- DOD_ADVISORY_ITEMS: unknown id(s) DoD10"));
   });
 });
 

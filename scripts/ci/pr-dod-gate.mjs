@@ -25,11 +25,16 @@
 //
 // DoD2 follows ADR-120 (rule v1.1.0): an assignee plus a review record bound to
 // the head SHA, read from the body or from a comment of this PR that the body
-// links. An approval is not a review record. Three layers are kept apart. The
-// gate checks the form of the record: its fields, its head and base SHAs, the
-// declared level against the changed files, an independent or human review
-// declared for B and C. For C it checks that an accord piece names the head
-// and reports its provenance. Whether that piece is the domain owner's
+// links. An approval is not a review record. The record, the link, the DoD2
+// line and an accord piece are read on the text a reader sees as the author's
+// own: a line in a code block, a quote, an HTML comment or a raw HTML block is
+// not read, and the report counts the record anchors it skipped. When unsure,
+// the gate hides: a record or a piece is missed, never read where a reader does
+// not see it. The report names the head it evaluated. Three layers are kept
+// apart. The gate checks the form of the record: its fields, its head and base
+// SHAs, the declared level against the changed files, an independent or human
+// review declared for B and C. For C it checks that an accord piece names the
+// head and reports its provenance. Whether that piece is the domain owner's
 // authorization, its scope and any condition or withdrawal are never read from
 // the wording: they stay unverified, for the owner on evidence, so a level C
 // record never passes the gate. No second account and no GitHub approval are
@@ -159,10 +164,26 @@ const ACCORD_PIECE = /^accord[ \t]+([0-9a-f]{40})[ \t]*$/i;
 // counted in the report, not read.
 const ACCORD_START = /^[ \t]*(?:(?:[-*+>]|\d+[.)])[ \t]*)*(?:\*\*|__)?accord(?![\p{L}\p{N}])/iu;
 // CommonMark fences: a closing run uses the opening character, at least as long,
-// with nothing after it; a backtick fence's info string holds no backtick.
-const FENCE_OPEN = /^ {0,3}(`{3,}|~{3,})(.*)$/;
-const FENCE_CLOSE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
+// with nothing after it; a backtick fence's info string holds no backtick. Read
+// at any indentation: a fence in a list item is indented. The info string may hold
+// U+2028 or U+2029, which `.` does not match without the s flag.
+const FENCE_OPEN = /^[ \t]*(`{3,}|~{3,})(.*)$/s;
+const FENCE_CLOSE = /^[ \t]*(`{3,}|~{3,})[ \t]*$/;
 const QUOTED = /^[ \t]*>/;
+const COMMENT_BLOCK = /^ {0,3}<!--/;
+// CommonMark line endings: a lone CR ends a line too.
+const LINE_BREAK = /\r\n|\r|\n/;
+// CommonMark HTML blocks of types 1, 3, 4 and 5, with the condition that ends each:
+// passed through as raw HTML, shown preformatted or dropped, never as the author's text.
+const RAW_HTML_BLOCKS = [
+  [/^[ \t]*<(?:pre|script|style|textarea)(?:[ \t>]|$)/i, /<\/(?:pre|script|style|textarea)>/i],
+  [/^[ \t]*<\?/, /\?>/],
+  [/^[ \t]*<![A-Za-z]/, />/],
+  [/^[ \t]*<!\[CDATA\[/, /\]\]>/],
+];
+// Lines after which an indented line opens a code block: no paragraph to continue.
+const HEADING_OR_BREAK = /^ {0,3}(?:#{1,6}(?:[ \t]|$)|([-*_])(?:[ \t]*\1){2,}[ \t]*$)/;
+const HIDDEN_ANCHOR = /revue\s+niveau\s+(?:\*\*|__|`)?[ABC]\b/i;
 const DECISIVE = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
 
 /** What the gate cannot establish for DoD2: listed on every checklist run. */
@@ -209,12 +230,17 @@ const shortList = (items) => items.slice(0, 5).map(code).join(", ") + (items.len
 const unique = (items) => [...new Set(items)];
 const nfc = (text) => String(text ?? "").normalize("NFC");
 
-/** Review records of a markdown text: [{ level, head, base, fields }]. */
+/**
+ * Review records of a markdown text: [{ level, head, base, fields }]. Read on the
+ * text a reader sees as the author's own: a line in a code block, a quote or a raw
+ * HTML block ends a block, a line wholly in an HTML comment is skipped.
+ */
 export function parseReviewRecords(text) {
   const records = [];
   // One pass: a block ends at its end line or at the next anchor.
   let current;
-  for (const line of nfc(text).split(/\r?\n/)) {
+  for (const line of plainLines(text)) {
+    if (line === null) continue;
     const anchor = DOD_LINE.test(line) ? null : line.match(RECORD_ANCHOR);
     if (anchor) {
       current = { level: anchor[1].toUpperCase(), head: shaAfter("t[êe]te", anchor[2]), base: shaAfter("base", anchor[2]), fields: {} };
@@ -254,42 +280,121 @@ function checkLevelFloor(record, pr, at, out) {
   );
 }
 
+/** Columns of a line's indentation, tabs to the next multiple of 4. */
+function indentWidth(line) {
+  let width = 0;
+  for (const char of line) {
+    if (char === " ") width += 1;
+    else if (char === "\t") width += 4 - (width % 4);
+    else break;
+  }
+  return width;
+}
+
+/** A line without its HTML comments; open: a comment runs from before the line. Linear. */
+function stripComments(line, open) {
+  let text = "";
+  let at = 0;
+  for (;;) {
+    if (open) {
+      const end = line.indexOf("-->", at);
+      if (end < 0) return { text, open: true };
+      at = end + 3;
+    }
+    const start = line.indexOf("<!--", at);
+    if (start < 0) return { text: text + line.slice(at), open: false };
+    text += line.slice(at, start);
+    at = start + 4;
+    open = true;
+  }
+}
+
 /**
- * Lines of a body a reader sees as its own text: outside code fences, HTML comments,
- * quotes and the plain lines that continue a quote (until a blank line). Indented
- * code needs no rule: a piece starts at the first column. Where CommonMark would
- * end a quote or a fence earlier (a list after a quote, a fence in a list item),
- * lines are dropped: a piece is missed, never one a reader does not see counted.
+ * The text a reader sees as the author's own, one entry per line of the body: ""
+ * for a blank line, a line in a code block (fenced or indented), in a raw HTML block
+ * (pre, script, style, textarea, <?, <!X, CDATA) or in a quote with the plain lines
+ * that continue it (until a blank line); null for a line wholly in an HTML comment;
+ * otherwise the line without its comments. Where CommonMark shows more (a fence, an
+ * HTML block or a quote that a list ends earlier, a list item paragraph indented by
+ * 4 columns after a blank line), the line is hidden: a record or a piece is missed,
+ * never one a reader does not see counted.
  */
 function plainLines(body) {
   const lines = [];
   let fence; // opening run of the fence in progress
+  let raw; // end condition of the raw HTML block in progress
   let comment = false;
   let quote = false;
-  for (const line of nfc(body).split(/\r?\n/)) {
+  let indented = false; // in an indented code block
+  let paragraph = false; // the previous line can be continued: an indented line is not code
+  for (const line of nfc(body).split(LINE_BREAK)) {
     if (fence) {
       const close = line.match(FENCE_CLOSE)?.[1];
       if (close && close[0] === fence[0] && close.length >= fence.length) fence = undefined;
+      lines.push("");
+      continue;
+    }
+    if (raw) {
+      if (raw.test(line)) raw = undefined;
+      lines.push("");
       continue;
     }
     if (comment) {
-      comment = !line.includes("-->");
+      const after = stripComments(line, true);
+      comment = after.open;
+      paragraph = false;
+      lines.push(after.text.trim() === "" ? null : after.text);
+      continue;
+    }
+    if (line.trim() === "") {
+      quote = false;
+      paragraph = false;
+      lines.push("");
+      continue;
+    }
+    const width = indentWidth(line);
+    indented = (indented || (!paragraph && !quote)) && width >= 4;
+    if (indented) {
+      lines.push("");
       continue;
     }
     const open = line.match(FENCE_OPEN);
     if (open && !(open[1][0] === "`" && open[2].includes("`"))) {
       fence = open[1];
       quote = false;
+      paragraph = false;
+      lines.push("");
       continue;
     }
-    if (line.trim() === "") quote = false;
-    else if (QUOTED.test(line)) quote = true;
-    if (quote) continue;
-    // A comment opened on this line and not closed on it runs to a later line.
-    comment = line.lastIndexOf("<!--") > line.lastIndexOf("-->");
-    lines.push(line);
+    const block = RAW_HTML_BLOCKS.find(([start]) => start.test(line));
+    if (block) {
+      raw = block[1].test(line) ? undefined : block[1];
+      quote = false;
+      paragraph = false;
+      lines.push("");
+      continue;
+    }
+    if (QUOTED.test(line)) quote = true;
+    paragraph = true;
+    if (quote) {
+      lines.push("");
+      continue;
+    }
+    const visible = stripComments(line, false);
+    comment = visible.open;
+    // A line opening with a comment is an HTML block: it continues no paragraph.
+    if (COMMENT_BLOCK.test(line) || HEADING_OR_BREAK.test(line)) paragraph = false;
+    lines.push(visible.text.trim() === "" ? null : visible.text);
   }
   return lines;
+}
+
+/** Record anchors on lines a reader does not see as the author's text: not read. */
+function hiddenAnchors(text) {
+  const plain = plainLines(text);
+  return nfc(text)
+    .split(LINE_BREAK)
+    .filter((line, i) => !plain[i]?.match(HIDDEN_ANCHOR) && HIDDEN_ANCHOR.test(line)).length;
 }
 
 const time = (value) => (typeof value === "string" && Number.isFinite(Date.parse(value)) ? Date.parse(value) : undefined);
@@ -311,9 +416,11 @@ function messagesOf(pr) {
 /** Provenance of an accord piece: account, link, other text, edit, the account's messages posted or edited after it. Facts, not a reading. */
 function provenance(piece, messages, pr) {
   const access = piece.association ? String(piece.association).toLowerCase() : "access unknown";
+  // Every other non-blank line counts, the ones a reader does not see as text included.
+  const plain = plainLines(piece.body);
   const rest = nfc(piece.body)
-    .split(/\r?\n/)
-    .filter((line) => line.trim() !== "" && line.match(ACCORD_PIECE)?.[1].toLowerCase() !== pr.headSha).length;
+    .split(LINE_BREAK)
+    .filter((line, i) => line.trim() !== "" && plain[i]?.match(ACCORD_PIECE)?.[1].toLowerCase() !== pr.headSha).length;
   const parts = [
     `${code(piece.login)} (${access}${piece.login === pr.author ? ", the PR author's account" : ""})`,
     `${piece.kind} ${code(piece.link)}`,
@@ -328,7 +435,8 @@ function provenance(piece, messages, pr) {
   // Same second included: the order within it is unknown.
   const last = (m) => Math.max(m.at ?? -Infinity, m.updated ?? -Infinity);
   const later = others.filter((m) => last(m) >= piece.at).sort((a, b) => last(a) - last(b));
-  const unknown = others.filter((m) => m.at === undefined || (m.at < piece.at && m.updated === undefined));
+  // Not after it and its last edit unknown (a review, an unreadable update time).
+  const unknown = others.filter((m) => last(m) < piece.at && m.updated === undefined);
   if (later.length > 0) {
     parts.push(`${later.length} message(s) of this account posted or edited after it: ${shortList(later.map((m) => m.link))}`);
   } else {
@@ -342,11 +450,9 @@ function provenance(piece, messages, pr) {
 
 // Layer 2 of the level C accord: a piece naming the head, and where it comes from.
 // Layer 3 (authorization, scope, conditions, withdrawal) is left to the owner.
-function checkAccord(pr, at, out) {
-  if (!pr.headSha || !Array.isArray(pr.reviews) || !Array.isArray(pr.comments)) {
-    out.unverified.push("level C accord piece not checked (head or review context unknown)");
-    return;
-  }
+// The pieces do not depend on the record: read once per run, not once per record.
+function scanAccord(pr) {
+  if (!pr.headSha || !Array.isArray(pr.reviews) || !Array.isArray(pr.comments)) return undefined;
   const messages = messagesOf(pr);
   const human = (m) => typeof m.login === "string" && !m.login.endsWith("[bot]");
   const account = (m) => (typeof m.login === "string" ? m.login : "account unknown");
@@ -354,7 +460,7 @@ function checkAccord(pr, at, out) {
   const bots = new Set();
   let otherText = 0;
   for (const m of messages) {
-    const lines = plainLines(m.body);
+    const lines = plainLines(m.body).filter(Boolean);
     otherText += lines.filter((line) => !ACCORD_PIECE.test(line) && ACCORD_START.test(line) && line.toLowerCase().includes(pr.headSha)).length;
     if (!lines.some((line) => line.match(ACCORD_PIECE)?.[1].toLowerCase() === pr.headSha)) continue;
     if (human(m)) pieces.push({ ...m, kind: m.review ? `review (${String(m.state).toLowerCase()})` : "comment" });
@@ -370,22 +476,33 @@ function checkAccord(pr, at, out) {
     if (!human(review)) bots.add(account(review));
     else if (!pieces.some((p) => p.link === review.link)) pieces.push({ ...review, kind: "approval of the head" });
   }
-  if (pieces.length === 0) {
-    out.problems.push(
-      `record${at}: level C requires an accord piece on the head: the line « Accord ${pr.headSha} » alone from the first column in a comment or review of this PR, or an approval of the head` +
-        (otherText > 0 ? `; ${otherText} line(s) starting with « Accord » and naming the head are indented or hold other text and are not pieces` : "") +
-        (bots.size > 0 ? `; a bot or unknown account gives no piece (${shortList([...bots])})` : ""),
-    );
-    return;
+  if (pieces.length > 0) {
+    const listed = pieces.slice(0, 5).map((p) => provenance(p, messages, pr));
+    return { listed: `${listed.join(" / ")}${pieces.length > 5 ? ` / … (${pieces.length})` : ""}` };
   }
-  const listed = pieces.slice(0, 5).map((p) => provenance(p, messages, pr));
-  out.unverified.push(
-    `level C accord piece(s) on the head: ${listed.join(" / ")}${pieces.length > 5 ? ` / … (${pieces.length})` : ""}; whether a piece is the domain owner's authorization, its scope, a condition and any withdrawal are not verified by the gate (owner's decision on evidence)`,
-  );
+  return {
+    missing:
+      (otherText > 0 ? `; ${otherText} line(s) starting with « Accord » and naming the head are indented or hold other text and are not pieces` : "") +
+      (bots.size > 0 ? `; a bot or unknown account gives no piece (${shortList([...bots])})` : ""),
+  };
 }
 
-/** Checks of one record. Returns { problems[], unverified[] }. */
-function checkRecord(record, pr) {
+function checkAccord(scan, pr, at, out) {
+  if (!scan) {
+    out.unverified.push("level C accord piece not checked (head or review context unknown)");
+  } else if (scan.listed === undefined) {
+    out.problems.push(
+      `record${at}: level C requires an accord piece on the head: the line « Accord ${pr.headSha} » alone from the first column in a comment or review of this PR, or an approval of the head${scan.missing}`,
+    );
+  } else {
+    out.unverified.push(
+      `level C accord piece(s) on the head: ${scan.listed}; whether a piece is the domain owner's authorization, its scope, a condition and any withdrawal are not verified by the gate (owner's decision on evidence)`,
+    );
+  }
+}
+
+/** Checks of one record; accord: the pieces read for level C. Returns { problems[], unverified[] }. */
+function checkRecord(record, pr, accord) {
   const out = { problems: [], unverified: [] };
   const at = record.source ? ` (${record.source})` : "";
   if (record.head?.length !== 40) out.problems.push(`record${at}: head SHA must be 40 hex characters`);
@@ -408,7 +525,7 @@ function checkRecord(record, pr) {
     );
   }
   checkLevelFloor(record, pr, at, out);
-  if (record.level === "C") checkAccord(pr, at, out);
+  if (record.level === "C") checkAccord(accord, pr, at, out);
   return out;
 }
 
@@ -426,8 +543,11 @@ export function evaluateReviewRecord(body, pr = {}) {
   const unverified = [];
   const notes = [];
   const records = parseReviewRecords(text);
+  // Links and the DoD2 line are read where records are: in the text a reader sees.
+  const visible = plainLines(text).map((line) => line ?? "").join("\n");
+  let hidden = hiddenAnchors(text);
 
-  const links = [...text.matchAll(COMMENT_LINK)];
+  const links = [...visible.matchAll(COMMENT_LINK)];
   if (links.length > 0 && (pr.repo === undefined || pr.number === undefined)) {
     unverified.push("linked comments not read: PR number or repository unknown");
   }
@@ -442,11 +562,15 @@ export function evaluateReviewRecord(body, pr = {}) {
     const found = Array.isArray(pool) ? pool.find((c) => String(c.id) === id) : undefined;
     if (!Array.isArray(pool)) unverified.push(`linked ${ref} not read (no review context)`);
     else if (!found) problems.push(`linked ${ref} not found on this PR`);
-    else records.push(...parseReviewRecords(found.body).map((r) => ({ ...r, source: ref })));
+    else {
+      records.push(...parseReviewRecords(found.body).map((r) => ({ ...r, source: ref })));
+      hidden += hiddenAnchors(found.body);
+    }
   }
+  const unread = hidden > 0 ? `; ${hidden} « Revue niveau » line(s) in a code block, a quote, an HTML comment or a raw HTML block are not read` : "";
 
   if (pr.headSha) {
-    for (const m of text.matchAll(checklistLine(OWNERSHIP_ID))) {
+    for (const m of visible.matchAll(checklistLine(OWNERSHIP_ID))) {
       const named = shaAfter("t[êe]te", m[0]);
       if (!named || named === pr.headSha) continue;
       problems.push(
@@ -459,7 +583,7 @@ export function evaluateReviewRecord(body, pr = {}) {
 
   if (records.length === 0) {
     if (unverified.length === 0) {
-      problems.push("no review record (« Revue niveau <A|B|C> — tête <sha40>, base <sha40> » and its fields) in the body or in a comment it links");
+      problems.push(`no review record (« Revue niveau <A|B|C> — tête <sha40>, base <sha40> » and its fields) in the body or in a comment it links${unread}`);
     }
     return { problems: unique(problems), unverified: unique(unverified), notes };
   }
@@ -473,20 +597,22 @@ export function evaluateReviewRecord(body, pr = {}) {
       problems.push(`record names ${short.join(", ")}, an abbreviation of the head: the record names the 40-character SHA ${pr.headSha}`);
     } else if (current.length === 0) {
       problems.push(
-        `no record names the head ${pr.headSha} (records name: ${shortList(unique(records.map((r) => r.head ?? "no SHA")))}); a push makes a record stale (ADR-120 D4)`,
+        `no record names the head ${pr.headSha} (records name: ${shortList(unique(records.map((r) => r.head ?? "no SHA")))}); a push makes a record stale (ADR-120 D4)${unread}`,
       );
     }
   }
   if (current.length > 0) {
     const top = current.map((r) => r.level).sort().at(-1);
-    const results = current.filter((r) => r.level === top).map((r) => ({ record: r, ...checkRecord(r, pr) }));
+    const accord = top === "C" ? scanAccord(pr) : undefined;
+    const results = current.filter((r) => r.level === top).map((r) => ({ record: r, ...checkRecord(r, pr, accord) }));
     const valid = results.find((r) => r.problems.length === 0 && r.unverified.length === 0);
     for (const r of valid ? [valid] : results) {
       problems.push(...r.problems);
       unverified.push(...r.unverified);
     }
-    // Only when nothing else fails: a DoD2 line naming another SHA or a linked comment not found.
-    if (valid && problems.length === 0) {
+    // Only when nothing else fails or stays unverified: a DoD2 line naming another SHA,
+    // a linked comment not found or not read, an unknown head.
+    if (valid && problems.length === 0 && unverified.length === 0) {
       const unread = top === "A" ? "review quality is" : "review quality and effective independence are";
       notes.push(`level ${top} record (${valid.record.source ?? "PR body"}): form conforms on the head; ${unread} not verified by the gate`);
     }
@@ -679,9 +805,10 @@ const LINE_CAP = 4000;
  * Markdown report of a result below REPORT_CAP characters: past the cap, each line
  * is cut to LINE_CAP (at a « ; » in its last quarter when it can, never inside a
  * surrogate pair, closing an open code span), then the report at a line end.
+ * headSha: the head the result was evaluated on, named in the report.
  */
-export function renderReport(result) {
-  const full = renderFullReport(result);
+export function renderReport(result, headSha) {
+  const full = renderFullReport(result, headSha);
   if (full.length <= REPORT_CAP) return full;
   let report = "";
   for (const line of full.split("\n")) {
@@ -696,9 +823,11 @@ export function renderReport(result) {
   return `${report}\n_Report truncated at ${REPORT_CAP} characters: the full report is in the job log._\n`;
 }
 
-function renderFullReport(result) {
+function renderFullReport(result, headSha) {
   const icon = result.pass ? "✅ PASS" : "❌ FAIL";
-  const head = `### 🧾 Definition of Done gate — ${icon}\n\n_mode: \`${result.mode}\`_\n`;
+  // A verdict holds for the head it was evaluated on: a later push needs a new run.
+  const evaluated = headSha ? `head \`${headSha}\`` : "head unknown";
+  const head = `### 🧾 Definition of Done gate — ${icon}\n\n_mode: \`${result.mode}\`, ${evaluated}_\n`;
   const advisory = result.advisory?.length
     ? `\n\n**Advisory (not blocking, \`DOD_ADVISORY_ITEMS\`):**\n${result.advisory.map((r) => `- ${r}`).join("\n")}`
     : "";
@@ -739,8 +868,8 @@ function main() {
     ...readReviewContext(process.env.PR_REVIEW_CONTEXT),
   };
   const result = evaluateDoD(body, labels, approvals, { assignees, author, advisoryItems, pr });
-  writeFileSync("dod-gate-report.md", renderReport(result), "utf8");
-  process.stdout.write(renderFullReport(result));
+  writeFileSync("dod-gate-report.md", renderReport(result, pr.headSha), "utf8");
+  process.stdout.write(renderFullReport(result, pr.headSha));
   process.stderr.write(
     `[pr-dod-gate] mode=${result.mode} pass=${result.pass} reasons=${result.reasons.length} advisory=${result.advisory.length}\n`,
   );
