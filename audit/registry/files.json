@@ -69881,7 +69881,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 840,
+      "loc": 856,
       "owner": "__unassigned__",
       "path": "scripts/agents/check-editorial-review.test.mjs",
       "risk": "low",
