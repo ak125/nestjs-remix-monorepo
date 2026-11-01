@@ -234,12 +234,13 @@ const nfc = (text) => String(text ?? "").normalize("NFC");
  * Review records of a markdown text: [{ level, head, base, fields }]. Read on the
  * text a reader sees as the author's own: a line in a code block, a quote or a raw
  * HTML block ends a block, a line wholly in an HTML comment is skipped.
+ * raw: every line of the text instead, for what can only fail or raise the level.
  */
-export function parseReviewRecords(text) {
+export function parseReviewRecords(text, { raw = false } = {}) {
   const records = [];
   // One pass: a block ends at its end line or at the next anchor.
   let current;
-  for (const line of plainLines(text)) {
+  for (const line of raw ? nfc(text).split(LINE_BREAK) : plainLines(text)) {
     if (line === null) continue;
     const anchor = DOD_LINE.test(line) ? null : line.match(RECORD_ANCHOR);
     if (anchor) {
@@ -530,12 +531,17 @@ function checkRecord(record, pr, accord) {
 }
 
 /**
- * ADR-120 D2–D4 checks of the review record. Returns { problems[], unverified[], notes[] }.
+ * ADR-120 D2–D4 checks of the review record. Returns { problems[], unverified[], notes[], conforms }.
  *   pr: { headSha, number, repo, author, mergeBase, files, comments, reviews };
  *   an undefined field is unknown and leaves its checks unverified.
  *   notes: what the gate read (form, freshness of comments), to confirm on evidence.
+ *   conforms: the "form conforms" note when there is one, also in notes.
  * The level is the highest one declared on the head; one valid record at that
  * level satisfies DoD2, lower ones (an auto-review beside the review) are not checked.
+ * What can pass (a record) is read in the text a reader sees as the author's own;
+ * what can only fail or raise the level (links, the DoD2 line, the levels declared
+ * on the head) is read in the whole text: a line the markdown model hides by
+ * mistake never turns into a pass.
  */
 export function evaluateReviewRecord(body, pr = {}) {
   const text = nfc(body);
@@ -543,19 +549,18 @@ export function evaluateReviewRecord(body, pr = {}) {
   const unverified = [];
   const notes = [];
   const records = parseReviewRecords(text);
-  // Links and the DoD2 line are read where records are: in the text a reader sees.
+  const declared = parseReviewRecords(text, { raw: true });
   const visible = plainLines(text).map((line) => line ?? "").join("\n");
   let hidden = hiddenAnchors(text);
 
-  const links = [...visible.matchAll(COMMENT_LINK)];
+  const links = [...text.matchAll(COMMENT_LINK)];
   if (links.length > 0 && (pr.repo === undefined || pr.number === undefined)) {
     unverified.push("linked comments not read: PR number or repository unknown");
   }
-  const cited = unique(
-    links
-      .filter((m) => m[1].toLowerCase() === String(pr.repo).toLowerCase() && Number(m[2]) === pr.number)
-      .map((m) => `${m[3].toLowerCase()}-${m[4]}`),
-  );
+  const ours = (m) => m[1].toLowerCase() === String(pr.repo).toLowerCase() && Number(m[2]) === pr.number;
+  const refOf = (m) => `${m[3].toLowerCase()}-${m[4]}`;
+  const cited = unique(links.filter(ours).map(refOf));
+  const shown = new Set([...visible.matchAll(COMMENT_LINK)].filter(ours).map(refOf));
   for (const ref of cited) {
     const [kind, id] = ref.split("-");
     const pool = kind === "issuecomment" ? pr.comments : pr.reviews;
@@ -563,6 +568,9 @@ export function evaluateReviewRecord(body, pr = {}) {
     if (!Array.isArray(pool)) unverified.push(`linked ${ref} not read (no review context)`);
     else if (!found) problems.push(`linked ${ref} not found on this PR`);
     else {
+      declared.push(...parseReviewRecords(found.body, { raw: true }));
+      // A comment linked from text a reader does not see can raise the level, never satisfy it.
+      if (!shown.has(ref)) continue;
       records.push(...parseReviewRecords(found.body).map((r) => ({ ...r, source: ref })));
       hidden += hiddenAnchors(found.body);
     }
@@ -570,7 +578,7 @@ export function evaluateReviewRecord(body, pr = {}) {
   const unread = hidden > 0 ? `; ${hidden} « Revue niveau » line(s) in a code block, a quote, an HTML comment or a raw HTML block are not read` : "";
 
   if (pr.headSha) {
-    for (const m of visible.matchAll(checklistLine(OWNERSHIP_ID))) {
+    for (const m of text.matchAll(checklistLine(OWNERSHIP_ID))) {
       const named = shaAfter("t[êe]te", m[0]);
       if (!named || named === pr.headSha) continue;
       problems.push(
@@ -601,27 +609,41 @@ export function evaluateReviewRecord(body, pr = {}) {
       );
     }
   }
+  let conforms;
   if (current.length > 0) {
     const top = current.map((r) => r.level).sort().at(-1);
-    const accord = top === "C" ? scanAccord(pr) : undefined;
-    const results = current.filter((r) => r.level === top).map((r) => ({ record: r, ...checkRecord(r, pr, accord) }));
-    const valid = results.find((r) => r.problems.length === 0 && r.unverified.length === 0);
-    for (const r of valid ? [valid] : results) {
-      problems.push(...r.problems);
-      unverified.push(...r.unverified);
+    const required = declared
+      .filter((r) => !pr.headSha || r.head === pr.headSha)
+      .map((r) => r.level)
+      .concat(top)
+      .sort()
+      .at(-1);
+    if (required > top) {
+      unverified.push(
+        `level ${required} declared on the head in text the gate does not read as the author's (a code block, a quote, an HTML comment, a raw HTML block, or a comment linked from there): the record read is level ${top}; level ${required} not checked`,
+      );
+    } else {
+      const accord = top === "C" ? scanAccord(pr) : undefined;
+      const results = current.filter((r) => r.level === top).map((r) => ({ record: r, ...checkRecord(r, pr, accord) }));
+      const valid = results.find((r) => r.problems.length === 0 && r.unverified.length === 0);
+      for (const r of valid ? [valid] : results) {
+        problems.push(...r.problems);
+        unverified.push(...r.unverified);
+      }
+      // Only when nothing else fails or stays unverified: a DoD2 line naming another SHA,
+      // a linked comment not found or not read, an unknown head.
+      if (valid && problems.length === 0 && unverified.length === 0) {
+        const unread = top === "A" ? "review quality is" : "review quality and effective independence are";
+        conforms = `level ${top} record (${valid.record.source ?? "PR body"}): form conforms on the head; ${unread} not verified by the gate`;
+        notes.push(conforms);
+      }
     }
-    // Only when nothing else fails or stays unverified: a DoD2 line naming another SHA,
-    // a linked comment not found or not read, an unknown head.
-    if (valid && problems.length === 0 && unverified.length === 0) {
-      const unread = top === "A" ? "review quality is" : "review quality and effective independence are";
-      notes.push(`level ${top} record (${valid.record.source ?? "PR body"}): form conforms on the head; ${unread} not verified by the gate`);
-    }
-    if ((cited.length > 0 || top === "C") && Array.isArray(pr.comments)) {
+    if ((cited.length > 0 || required === "C") && Array.isArray(pr.comments)) {
       const start = pr.collectedAt ? `the collection started at ${pr.collectedAt}` : "this run's collection (start time not recorded)";
       notes.push(`comments and reviews read by ${start}: one posted or edited after that start may be missing until a new run`);
     }
   }
-  return { problems: unique(problems), unverified: unique(unverified), notes: unique(notes) };
+  return { problems: unique(problems), unverified: unique(unverified), notes: unique(notes), conforms };
 }
 
 /** Validates DOD_ADVISORY_ITEMS; an unknown id is an error, never ignored. */
@@ -710,11 +732,12 @@ export function evaluateDoD(
     if (id === OWNERSHIP_ID) {
       const checked = decisive.some(isChecked);
       // Assignee and review record decide; the box (or an N/A) cannot replace them.
-      const { problems, unverified, notes: counted } = evaluateReviewRecord(text, { ...pr, author });
-      notes.push(...counted);
+      const { problems, unverified, notes: counted, conforms } = evaluateReviewRecord(text, { ...pr, author });
       if (assignees === undefined) unverified.unshift("assignees unknown (no event payload)");
       else if (assignees.length === 0) problems.unshift("no assignee");
       const missing = [...problems, ...unverified.map((u) => `unverified: ${u}`)];
+      // A "form conforms" note never stands beside a DoD2 failure.
+      notes.push(...(missing.length > 0 ? counted.filter((n) => n !== conforms) : counted));
       if (missing.length > 0) {
         fail(id, `${missing.join("; ")}${checked ? " — box ticked without that evidence" : ""}.`);
       }

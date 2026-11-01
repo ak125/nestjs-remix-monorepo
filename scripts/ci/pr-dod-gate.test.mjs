@@ -207,6 +207,14 @@ describe("evaluateDoD — DoD2 is an ADR-120 review record", () => {
     assert.ok(r.reasons.some((x) => x.includes("unverified: assignees unknown")));
   });
 
+  test("a DoD2 that fails is never said to conform", () => {
+    for (const ctx of [{ assignees: [], pr: PR }, { pr: PR }]) {
+      const r = evaluateDoD(fullBody(), [], 1, ctx);
+      assert.equal(r.pass, false);
+      assert.ok(!renderReport(r).includes("form conforms"), r.notes.join("\n"));
+    }
+  });
+
   test("N/A does not exempt DoD2", () => {
     const body = fullBody({ review: "" }).replace("- [x] **DoD2** Ownership", "- [ ] **DoD2** Ownership : N/A");
     assert.equal(evaluateDoD(body, [], 0, OWNED).pass, false);
@@ -432,6 +440,41 @@ describe("evaluateReviewRecord — only the text a reader sees is a record", () 
     // Indented by 4 columns after a blank line, a list item paragraph is taken for code: missed, and said.
     const { problems } = evaluateReviewRecord(`- [x] **DoD2** Ownership\n\n${indent(record(), "    ")}`, PR);
     assert.ok(problems[0].startsWith("no review record") && problems[0].endsWith(UNREAD));
+  });
+
+  test("a level declared on the head where no record is read raises the level, never satisfies it", () => {
+    const high = record({ level: "C", procedure: "revue humaine, par owner" });
+    const raised = {
+      problems: [],
+      unverified: [
+        "level C declared on the head in text the gate does not read as the author's (a code block, a quote, an HTML comment, a raw HTML block, or a comment linked from there): the record read is level A; level C not checked",
+      ],
+    };
+    for (const hidden of [
+      `> Zone STOP : paiement\n${high}`,
+      `Le marqueur <!-- est cité ici.\n\n${high}\n\nFin du marqueur : -->`,
+      `\`\`\`\n${high}\n\`\`\``,
+      `<pre>\n${high}\n</pre>`,
+    ]) {
+      const body = `${record()}\n\n${hidden}`;
+      assert.deepEqual(checks(evaluateReviewRecord(body, PR)), raised, body);
+      assert.equal(evaluateDoD(fullBody({ review: body }), [], 0, OWNED).pass, false, body);
+    }
+    // A comment linked from there: its record raises the level and is not read as one.
+    const comments = [{ id: 42, login: "reviewer", association: "MEMBER", body: high }];
+    const linked = `${record()}\n\n> Zone STOP\n- Revue C : https://github.com/o/r/pull/7#issuecomment-42`;
+    assert.deepEqual(checks(evaluateReviewRecord(linked, { ...PR, comments })), raised);
+    // Declared on another head, or at a lower level, it changes nothing.
+    assert.deepEqual(checks(evaluateReviewRecord(`${record()}\n\n\`\`\`\n${record({ level: "C", head: OLD_HEAD })}\n\`\`\``, PR)), CLEAN);
+    const b = record({ level: "B", procedure: "revue indépendante, par un sous-agent" });
+    assert.deepEqual(checks(evaluateReviewRecord(`${b}\n\n\`\`\`\n${record()}\n\`\`\``, PR)), CLEAN);
+  });
+
+  test("a DoD2 line or a link in text the gate does not read can fail, never pass", () => {
+    const stale = `> note\n- [x] **DoD2** Ownership — tête ${OLD_HEAD}\n\n${record()}`;
+    assert.deepEqual(evaluateReviewRecord(stale, PR).problems, [`the DoD2 line names ${OLD_HEAD}, the head is ${HEAD}`]);
+    const missing = `${record()}\n\n> note\n- Voir https://github.com/o/r/pull/7#issuecomment-99`;
+    assert.deepEqual(evaluateReviewRecord(missing, PR).problems, ["linked issuecomment-99 not found on this PR"]);
   });
 
   test("many comments on a line are read in linear time", () => {
