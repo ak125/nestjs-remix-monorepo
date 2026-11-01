@@ -143,10 +143,10 @@ crash boot NestJS opaque. Vars couvertes (boot-crash si absentes/mal-formées) :
 
 ## Workflow nominal — Promote DEV (code) → PROD
 
-1. **L'owner fusionne la PR** sur `main`, sous sa protection, après validation manuelle explicite.
-   Un agent ne fusionne jamais : il remet le numéro de PR, le SHA de tête (40 caractères) et la
-   commande épinglée sur ce SHA (T6 de `rules-technical`, ADR-102 D2 du vault). `ci.yml` déploie
-   alors le container PREPROD.
+1. **L'owner fusionne la PR** sur `main`, sous sa protection, après validation manuelle explicite
+   (T6 de `rules-technical` du vault). Un agent ne fusionne jamais (ADR-102 D2 du vault) : il remet
+   le numéro de PR, le SHA de tête (40 caractères) et la commande de fusion épinglée sur ce SHA.
+   `ci.yml` déploie alors le container PREPROD.
 2. Vérifier sur le run `ci.yml` du commit que `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et
    `🔦 Lighthouse Performance Audit` sont en `success` :
    `gh run list --repo ak125/nestjs-remix-monorepo --workflow ci.yml --branch main --limit 5`.
