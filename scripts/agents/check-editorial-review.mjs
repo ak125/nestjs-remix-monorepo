@@ -758,10 +758,12 @@ function displayCheck(rel, prose, roots) {
   // Repli YAML d'un champ ou retours à la ligne restent admis ; les espaces d'un saut forcé Markdown
   // sont du texte livré, que norm() effacerait.
   if (texts.some(([, t]) => keepBreaks(prose).includes(keepBreaks(t)))) return {};
-  if (shown.includes(norm(o.texte))) {
-    return { ecart: `relecture ${id} : la réponse affiche l'original du bloc aux espaces de fin de ligne près seulement (saut forcé Markdown) : l'original n'est pas le brouillon livré tel qu'il est affiché (§10)` };
+  // Le bloc suit le livrable (§10) : la proposition non plus ne perd ni ne gagne ces espaces.
+  const forced = texts.find(([, t]) => shown.includes(norm(t)));
+  if (forced) {
+    const which = forced[0] === "l'original" ? "l'original n'est pas le brouillon livré" : "la proposition n'est pas le texte livré";
+    return { ecart: `relecture ${id} : la réponse affiche ${forced[0]} du bloc aux espaces de fin de ligne près seulement (saut forcé Markdown) : ${which} tel qu'il est affiché (§10)` };
   }
-  if (texts.some(([, t]) => shown.includes(norm(t)))) return {};
   const shownTypo = typoShape(shown);
   const match = texts.find(([, t]) => shownTypo.includes(typoShape(norm(t))));
   if (match) {

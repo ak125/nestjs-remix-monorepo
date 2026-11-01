@@ -234,6 +234,12 @@ describe("cas acceptés", () => {
     assert.equal(r.resultat, "appliquee", errors(r));
   });
 
+  test("proposition à sauts forcés affichée telle quelle, insécable déclarée en RE-T1 : appliquee", () => {
+    const b = block({ original: MD_BR.replace(NB, " "), proposition: MD_BR, changements: [{ avant: "chaud : l'huile", apres: `chaud${NB}: l'huile`, regle: "RE-T1", raison: "espace insécable avant les deux-points" }] });
+    const r = run(output(b, `Proposition :\n\n${MD_BR}\n\nRelecture appliquée.`));
+    assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
   test("champ affiché dans sa source YAML repliée (>-), original = valeur du champ : appliquee", () => {
     const value = "Choisissez la forme prévue pour le moteur, filtre vissé complet ou cartouche pour boîtier démontable. Ne vous fiez pas à l'apparence.";
     const yaml = ["```yaml", "selection_criteria:", "  content_md: >-", "    Choisissez la forme prévue pour le moteur, filtre vissé complet ou", "    cartouche pour boîtier démontable. Ne vous fiez pas à l'apparence.", "```"].join("\n");
@@ -529,6 +535,20 @@ describe("cas rejetés", () => {
       const r = run(output(unchangedBlock(amputated, etat), `Brouillon :\n\n${MD_BR}\n\nRelecture ${etat}.`));
       assert.equal(r.resultat, "rejetee", errors(r));
       assert.match(errors(r), /original inexact.*l'original du bloc aux espaces de fin de ligne près seulement/);
+    }
+  });
+
+  test("proposition affichée à sauts forcés que le bloc n'a pas, ou l'inverse, même en partielle", () => {
+    // Script affiché avec ses sauts forcés, original et proposition du bloc sans leurs espaces de fin de ligne.
+    const flat = MD_BR.replace(/ {2}\n/g, "\n");
+    const ch = [{ avant: "chaud : l'huile", apres: `chaud${NB}: l'huile`, regle: "RE-T1", raison: "espace insécable avant les deux-points" }];
+    for (const etat of ["appliquée", "partielle"]) {
+      for (const [proposition, shown] of [[flat, MD_BR], [MD_BR, flat]]) {
+        const b = block({ original: proposition.replace(NB, " "), proposition, changements: ch, etat });
+        const r = run(output(b, `Proposition :\n\n${shown}\n\nRelecture ${etat}.`));
+        assert.equal(r.resultat, "rejetee", errors(r));
+        assert.match(errors(r), /original inexact.*la proposition du bloc aux espaces de fin de ligne près seulement/);
+      }
     }
   });
 
