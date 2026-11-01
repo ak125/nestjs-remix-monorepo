@@ -47,8 +47,9 @@ Si l'utilisateur demande explicitement l'un de ces 3, le skill répond avec verd
 | 9. Rédaction body markdown (sections obligatoires `entity_type`) | **Anthropic** | rédactionnel uniquement (Définition / Fonctionnement / Symptômes / FAQ / etc.) |
 | 10. Validation post-génération via 9 quality gates | 0-LLM | invoque `python3 _scripts/quality-gates.py <fichier>` |
 | 11. Output AEC coverage manifest | 0-LLM | YAML structuré |
+| 12. Relecture française de la réponse entière (étape 13 du flux) | **Anthropic** | relecture selon `.claude/prompts/_shared/editorial-review.md`, puis contrôle 0-LLM `check-editorial-review.mjs --emit` |
 
-**Aucune chaîne LLM custom**, aucun wrapper maison. Anthropic Claude est invoqué **uniquement** pour le rédactionnel (étape 9), pas pour la structure ni pour la validation.
+**Aucune chaîne LLM custom**, aucun wrapper maison. Anthropic Claude est invoqué **uniquement** pour le rédactionnel (étape 9) et la relecture française de la réponse (étape 12), pas pour la structure ni pour la validation ; le contrôle de la relecture reste mécanique.
 
 ## Flow d'invocation
 
