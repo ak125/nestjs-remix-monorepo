@@ -214,7 +214,7 @@ Le skill **ne fait jamais** ce mv. C'est une décision humaine.
 - 9 quality gates Python : `automecanik-wiki/_scripts/quality-gates.py`
 - formule `confidence_score` : `_meta/quality-gates.md` §4
 - workflow `wiki-protected-paths.yml` (4 markers commit message)
-- mémoire `skills-first-architecture.md` (0-LLM structure, Anthropic seul rédactionnel)
+- mémoire `skills-first-architecture.md` (0-LLM structure, Anthropic seul fournisseur LLM : rédactionnel de l'étape 9 et relecture de l'étape 12)
 - mémoire `feedback_wiki_scope_discipline.md` (sas markdown ≠ sas DB)
 - mémoire `diag-symptom-db-convention.md` (slugs anglais snake_case `brake_*`)
 - mémoire `mvp-g6-adr033-handoff.md` (Phase 1 closed 2026-04-30)
