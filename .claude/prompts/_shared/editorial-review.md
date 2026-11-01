@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.7.0 — 2026-10-31.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.8.0 — 2026-11-01.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -39,6 +39,12 @@
 > Pilote 1.7.0 : transport JSON explicite des insécables et livraison par le contrôle mécanique,
 > après les faux succès typographiques et les contrôles d'une autre sortie observés en round 11.
 > Les résultats d'un essai 1.6.0 ne qualifient pas cette version.
+> Pilote 1.8.0 : gabarit du bloc final à clés littérales et vérification du bloc sans outil
+> d'exécution, après un essai du round 15 sans outil d'exécution, aux lectures exigées
+> complètes, dont le bloc ne suivait pas le gabarit : lectures en chaînes avec préfixe inventé et
+> fragments `#L`, `statut` et `motif` au lieu de `etat` et `manque`, une proposition « identique à
+> l'original », des clés et catégories renommées, des étapes en liste. Les résultats d'un essai
+> 1.7.0 ne qualifient pas cette version.
 
 ## 1. Ce que fait la relecture
 
@@ -147,7 +153,8 @@ pour le satisfaire. Il ne lit que l'entrée standard et les fichiers que le bloc
 n'écrit rien et n'accède ni au réseau ni à une base. Une consigne qui interdit d'écrire ou de
 lancer une commande qui écrit ne l'interdit donc pas ; seuls l'absence d'outil d'exécution ou
 l'interdiction de toute commande l'empêchent. Sans outil d'exécution, la relecture reste
-partielle et cette cause est nommée.
+partielle et cette cause est nommée ; le bloc écrit passe alors la « Vérification sans outil
+d'exécution » (§10), qui ne remplace pas ce contrôle.
 
 Le contrôle se fait dans tous les états, « relecture partielle » comprise, et pour tout verdict,
 `BLOQUÉ_SOURCE` et `HORS_PÉRIMÈTRE` compris. Il est repassé après chaque correction de la sortie,
@@ -476,7 +483,9 @@ Pour chaque brouillon :
   outil, seul `sha256` reste `null`. Le sha256 est calculé par un outil sur ce texte exact, jamais
   recopié ni estimé ; s'il ne peut pas l'être, le manque est nommé et la relecture est partielle.
 - **`proposition`** : le texte complet proposé, sans références de recherche ni annotations
-  internes (§4.1). Son statut de brouillon et ses limites figurent dans la revue séparée.
+  internes (§4.1), recopié en entier même quand il est identique à l'original. Une mention
+  (« identique à l'original », « inchangé ») ou toute autre valeur qui tient lieu du texte n'est
+  pas une proposition. Son statut de brouillon et ses limites figurent dans la revue séparée.
   Dans le JSON, écrire les insécables sous forme d'échappements `\u00a0` ou `\u202f` :
   `"Attention\u00a0: huile chaude."`. JSON.parse les décode en caractères insécables réels.
   Une seule barre oblique inverse, jamais `"Attention\\u00a0: huile chaude."`, qui insère six
@@ -514,12 +523,23 @@ Pour chaque brouillon :
 **Bloc final.** Dès qu'une relecture est faite ou mentionnée, la sortie se termine par un seul
 bloc ```` ```json ```` qui reprend ces champs sous une forme contrôlable, dans tous les états,
 « relecture partielle » comprise, et même quand le livrable demandé a un autre format : le bloc
-suit ce livrable. La prose peut présenter ces champs, sans les contredire :
+suit ce livrable. La prose peut présenter ces champs, sans les contredire. Les clés du gabarit
+s'écrivent telles quelles : aucune n'est renommée, traduite ou abrégée (`statut`, `motif`,
+`raison` ou `signalements` ne valent pas `etat`, `manque`, `raison_aucun_changement` ou
+`signalements_de_fond`), et une clé ajoutée ne remplace aucune clé du gabarit. Seuls les « … »
+et les valeurs d'exemple se remplacent, par le contenu réel :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.7.0", "etat_declare": "partielle",
-  "lectures": [{"chemin": "…", "plages": ["1-120"], "masquees": [], "sections": ["…"], "tronque": false}],
+  "contrat": "editorial-review", "version": "1.8.0", "etat_declare": "partielle",
+  "lectures": [
+    {"chemin": "…/.claude/prompts/_shared/editorial-review.md", "plages": ["1-…"], "masquees": [],
+     "sections": ["toutes"], "tronque": false},
+    {"chemin": "…/.claude/canon-mirrors/marketing-voice.md", "plages": ["1-…"], "masquees": [],
+     "sections": ["toutes"], "tronque": false},
+    {"chemin": "chemin/de/la/source.md", "plages": ["1-…"], "masquees": [], "sections": ["…"],
+     "tronque": false}
+  ],
   "relectures": [{
     "id": "plan-r3", "format": "prose", "sources": ["chemin/de/la/source.md:10-40"],
     "original": {"texte": "…", "fins_de_ligne": "LF", "saut_final": false, "sha256": null,
@@ -528,21 +548,45 @@ suit ce livrable. La prose peut présenter ces champs, sans les contredire :
     "changements": [{"avant": "…", "apres": "…", "regle": "RE-10", "raison": "…"}],
     "raison_aucun_changement": null,
     "signalements_de_fond": [{"extrait": "…", "type": "F-2", "source": "aucune", "formulation": null}],
-    "controle_fidelite": {"references_identifiants": "inchangé", "nombres_unites": "inchangé",
-      "normes_intervalles_commerce": "inchangé", "provenance_certitude": "inchangé",
-      "conditions_negations": "inchangé"},
+    "controle_fidelite": {"references_identifiants": "…", "nombres_unites": "…",
+      "normes_intervalles_commerce": "…", "provenance_certitude": "…",
+      "conditions_negations": "…"},
     "verdict": "PROPOSITION",
-    "etapes": {"identifier_original": {"executee": true, "trace": "…"}, "delimiter_champs": {},
-      "appliquer_regles": {}, "relever_signalements": {}, "controle_fidelite": {}, "rendre_verdict": {}}
+    "etapes": {
+      "identifier_original": {"executee": "…", "trace": "…"},
+      "delimiter_champs": {"executee": "…", "trace": "…"},
+      "appliquer_regles": {"executee": "…", "trace": "…"},
+      "relever_signalements": {"executee": "…", "trace": "…"},
+      "controle_fidelite": {"executee": "…", "trace": "…"},
+      "rendre_verdict": {"executee": "…", "trace": "…"}
+    }
   }],
-  "conditions": {"C1": {"etat": "remplie"}, "C2": {"etat": "non_remplie", "manque": "…"}}
+  "conditions": {
+    "C1": {"etat": "…"}, "C2": {"etat": "non_remplie", "manque": "…"},
+    "C3": {"etat": "…"}, "C4": {"etat": "…"}, "C5": {"etat": "…"},
+    "C6": {"etat": "…"}, "C7": {"etat": "…"}
+  }
 }
 ```
 
-- `lectures` : une entrée par fichier lu ; `chemin` absolu ou relatif au dossier de travail, sans
-  alias ni abréviation ; `plages` en numéros de ligne du fichier, `masquees`
+Le gabarit ne préremplit ni l'exécution des étapes, ni l'état des conditions, ni le contrôle de
+fidélité : chaque « … » de `executee`, `etat` et `controle_fidelite` se remplace par ce qui a été
+fait et constaté, jamais par une valeur par défaut. `executee` prend le booléen `true` (avec
+`trace`) ou `false` (avec `cause` au lieu de `trace`), sans guillemets ; `etat` une valeur de
+`conditions` ci-dessous ; chaque catégorie de `controle_fidelite`, `inchangé` ou l'écart exact.
+
+- `lectures` : une entrée par fichier lu, toujours un objet aux cinq clés du gabarit, jamais une
+  chaîne ; `chemin` est celui que l'outil de lecture a ouvert, absolu ou relatif au dossier de
+  travail, sans alias, préfixe inventé, abréviation ni fragment (`#L10-L40`) ; dans le gabarit,
+  « … » tient lieu du début de ce chemin. `plages` en numéros de ligne rendus par l'outil, `"a-b"`,
+  dont l'union couvre chaque fichier exigé de 1 à sa dernière ligne (« Contrôle avant
+  déclaration », C1), `masquees`
   pour ce qu'un outil a coupé et qui n'a pas été relu. `tronque: true` sans `masquees` ne compte
-  rien comme lu.
+  rien comme lu. Un script Fafa ajoute l'entrée de `fafa-persona-canon`.
+- `sources` : `chemin:a-b`, ou `chemin` seul pour le fichier entier, avec le `chemin` d'une
+  entrée de `lectures` dont les plages couvrent a-b ; jamais `#L`, `l.` ni alias.
+- `proposition` : le texte entier, recopié même sans changement ; une mention comme « identique
+  à l'original » n'en tient pas lieu.
 - `original` : reproduit (`texte`, `fins_de_ligne` `LF` ou `CRLF`, `saut_final`, `provenance`
   facultative) ou désigné (`chemin`, `lignes`, sans `texte`) ; `sha256` porte sur les octets UTF-8
   du texte reproduit selon cette convention, ou sur les lignes désignées avec leurs fins de
@@ -556,10 +600,42 @@ suit ce livrable. La prose peut présenter ces champs, sans les contredire :
   suppression a `"apres": ""`. Une liste vide a sa `raison_aucun_changement`.
 - `signalements_de_fond` : `extrait` vient de l'original (`null` seulement pour une mention
   obligatoire manquante, F-4) et reste dans la proposition, sauf suppression permise au §3.
-- `etapes` : les six étapes du point 4, chacune `{"executee": true, "trace": …}` ou
-  `{"executee": false, "cause": …}`.
-- `conditions` : C1 à C7, chacune `remplie`, `non_remplie` avec `manque`, ou `sans_objet` avec
-  `cause` (C3 à C5, `BLOQUÉ_SOURCE` ou `HORS_PÉRIMÈTRE`).
+- `controle_fidelite` : les cinq clés du gabarit, une par catégorie du §3, sans autre clé :
+  `references_identifiants` (références, identifiants, motorisations, désignations, années,
+  compatibilités), `nombres_unites` (nombres, unités, tolérances, plages, conditions de mesure),
+  `normes_intervalles_commerce` (normes, intervalles, quantités, prix datés, conditions
+  commerciales, mentions obligatoires), `provenance_certitude` (citations, provenance, dates,
+  degré de certitude), `conditions_negations` (conditions, négations, exclusions, ordre des
+  vérifications).
+- `etapes` : un objet, jamais une liste, aux six clés du gabarit, une par étape du point 4,
+  chacune `{"executee": true, "trace": …}` ou `{"executee": false, "cause": …}`.
+- `conditions` : un objet aux sept clés `C1` à `C7`, chacune avec sa clé `etat` : `remplie`,
+  `non_remplie` avec `manque`, ou `sans_objet` avec `cause` (C3 à C5, `BLOQUÉ_SOURCE` ou
+  `HORS_PÉRIMÈTRE`).
+
+**Vérification sans outil d'exécution.** Avant de livrer, relire le bloc écrit à côté du
+gabarit, clé par clé, et corriger chaque écart sur le fond :
+
+1. un seul bloc ```` ```json ```` en fin de sortie, au JSON valide (guillemets droits de syntaxe,
+   virgules, accolades et crochets fermés) ;
+2. au premier niveau : `contrat`, `version` égale à celle de ce fichier, `etat_declare`,
+   `lectures`, `relectures`, `conditions` ;
+3. chaque entrée de `lectures` est un objet aux cinq clés ; pour ce fichier, le miroir
+   `marketing-voice.md` et, pour un script, `fafa-persona-canon`, l'union des plages va de 1 à
+   la dernière ligne ; pour chaque source, elle couvre la plage citée ;
+4. chaque entrée de `sources` suit `chemin:a-b`, ou `chemin` seul pour le fichier entier, avec
+   un `chemin` présent dans `lectures` dont les plages couvrent a-b ou, pour un chemin seul, le
+   fichier de 1 à sa dernière ligne ;
+5. chaque relecture a les onze clés du gabarit, de `id` à `etapes`, et `proposition` est le
+   texte entier ;
+6. `controle_fidelite` a ses cinq clés, `etapes` ses six clés en objet avec `executee` booléen,
+   `conditions` ses sept clés avec `etat` ; aucun « … » ne reste, et chaque `true`, `remplie` ou
+   `inchangé` répond à une étape exécutée, une condition vérifiée ou une comparaison faite ;
+7. `sha256` vaut `null`, `C2` est `non_remplie` avec un `manque` qui nomme l'absence d'outil
+   d'exécution, et `etat_declare` vaut `partielle`.
+
+Ni « conforme au schéma » ni « conformité non prouvée » ne dispensent de ce relevé. Il ne vaut
+pas contrôle mécanique : la relecture reste « relecture partielle ».
 
 Une proposition sans altération critique n'est pas acceptée pour autant : elle va au validateur
 du circuit concerné (§1).
