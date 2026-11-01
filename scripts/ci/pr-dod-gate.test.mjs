@@ -19,6 +19,7 @@ import {
   readAuthor,
   readPullRequestRef,
   readReviewContext,
+  renderReport,
 } from "./pr-dod-gate.mjs";
 
 const HEAD = "4d473f6a2a80c4eaa3843974a179a9dece4b94f0";
@@ -222,6 +223,13 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
     assert.ok(problems.some((x) => x.startsWith(`no record names the head ${HEAD}`) && x.includes(OLD_HEAD)));
   });
 
+  test("the stale heads are listed up to five", () => {
+    const heads = Array.from({ length: 8 }, (_, i) => `${i}`.repeat(40));
+    const { problems } = evaluateReviewRecord(heads.map((head) => record({ head })).join("\n\n"), PR);
+    const stale = problems.find((x) => x.startsWith(`no record names the head ${HEAD}`));
+    assert.ok(stale.includes(`\`${heads[4]}\`, … (8)`) && !stale.includes(heads[5]), stale);
+  });
+
   test("a short SHA does not name the head, and the message says so", () => {
     const { problems } = evaluateReviewRecord(record({ head: HEAD.slice(0, 9) }), PR);
     assert.deepEqual(problems, [
@@ -254,6 +262,10 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
     assert.deepEqual(parseReviewRecords(line), []);
     const { problems } = evaluateReviewRecord(`${line}\n${record()}`, PR);
     assert.deepEqual(problems, [`the DoD2 line names ${OLD_HEAD}, the head is ${HEAD}`]);
+    const short = evaluateReviewRecord(`${line.replace(OLD_HEAD, HEAD.slice(0, 9))}\n${record()}`, PR);
+    assert.deepEqual(short.problems, [
+      `the DoD2 line names ${HEAD.slice(0, 9)}, an abbreviation of the head: name the 40-character SHA ${HEAD}`,
+    ]);
   });
 
   test("a template placeholder is not a value, in any field", () => {
@@ -264,6 +276,10 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
     assert.ok(partial.problems.some((x) => x.endsWith("field(s) missing or placeholder: procédure")));
     const inCode = evaluateReviewRecord(record({ limites: "le type `Map<string, number>` n'est pas testé" }), PR);
     assert.deepEqual(checks(inCode), CLEAN);
+    for (const limites of ["`<non couvert>`", "`<lien>` ;", "** `<sha40>` **"]) {
+      const { problems } = evaluateReviewRecord(record({ limites }), PR);
+      assert.ok(problems.some((x) => x.endsWith("field(s) missing or placeholder: limites")), limites);
+    }
   });
 
   test("« par » is a word, not a syllable", () => {
@@ -285,6 +301,16 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
     assert.ok(Number(process.hrtime.bigint() - started) / 1e6 < 500);
   });
 
+  test("many anchors are read in one pass, each field in its own record", () => {
+    const anchors = Array.from({ length: 20000 }, () => `- [x] Revue niveau A — tête ${OLD_HEAD}, base ${BASE}`).join("\n");
+    const started = process.hrtime.bigint();
+    const records = parseReviewRecords(`${anchors}\n${record()}`);
+    assert.ok(Number(process.hrtime.bigint() - started) / 1e6 < 500);
+    assert.equal(records.length, 20001);
+    assert.deepEqual(records[19999].fields, {});
+    assert.equal(records[20000].fields.procedure, "auto-review, par la session auteure");
+  });
+
   test("labels in bold and fields as list items are read", () => {
     const body = record().replace("procédure :", "- **Procédure** :").replace("limites :", "- limites :");
     assert.deepEqual(checks(evaluateReviewRecord(body, PR)), CLEAN);
@@ -297,16 +323,57 @@ describe("evaluateReviewRecord — level (D3)", () => {
     assert.ok(problems.some((x) => x.includes("level A declared but the diff changes code (`scripts/ci/x.mjs`)")));
   });
 
-  test("level A with files neither prose, audit data nor code is left to the evidence", () => {
-    for (const file of ["config/x.yaml", "requirements.txt", "docs/x.mdx"]) {
+  test("a renamed file counts under its previous path too", () => {
+    // The workflow lists `previous_filename`: moving a workflow out of `.github/workflows/` is a change to code.
+    const { problems } = evaluateReviewRecord(record(), { ...PR, files: ["docs/guard.md", ".github/workflows/guard.yml"] });
+    assert.ok(problems.some((x) => x.includes("level A declared but the diff changes code (`.github/workflows/guard.yml`)")));
+  });
+
+  test("level A with files neither prose, audit evidence or projection nor code is left to the evidence", () => {
+    for (const file of [
+      "config/x.yaml",
+      "requirements.txt",
+      "docs/x.mdx",
+      // Guard inputs under audit/: ratchet baselines, overlays, manifests of a fail-closed guard.
+      "audit/baselines/revoked-secrets-baseline.json",
+      "audit/impeccable/baseline.json",
+      "audit/dependencies/family-overlay.yaml",
+      "audit/massdoc-tecdoc-preservation-manifest-2026-03.json",
+      // Dated snapshots beside them are classified on evidence too.
+      "audit/2026-07-19-x.json",
+      // Markdown parsed by code: agent frontmatter, canon mirrors.
+      ".claude/agents/x.md",
+      "agents/.claude/agents/x.md",
+      ".claude/canon-mirrors/rules-x.md",
+    ]) {
       const { problems, unverified } = evaluateReviewRecord(record(), { ...PR, files: [file] });
       assert.deepEqual(problems, [], file);
-      assert.ok(unverified.some((x) => x.includes("neither prose, audit data nor code") && x.includes(`\`${file}\``)), file);
+      assert.ok(
+        unverified.some((x) => x.includes("neither prose, audit evidence or projection nor code") && x.includes(`\`${file}\``)),
+        file,
+      );
     }
   });
 
-  test("audit data and projections regenerated by their script stay at level A", () => {
-    const files = ["docs/x.md", "audit/registry/canonical.json", "audit/module-boundaries.json", ".claude/knowledge/REPO_MAP.md"];
+  test("a file name is one line in the report", () => {
+    const { unverified } = evaluateReviewRecord(record(), { ...PR, files: ["config/a\nb `c`.yaml"] });
+    assert.ok(unverified.some((x) => x.includes("(`config/a b 'c'.yaml`)")), unverified.join("\n"));
+  });
+
+  test("audit evidence and projections regenerated by their script stay at level A", () => {
+    const files = [
+      "docs/x.md",
+      "audit/module-boundaries.json",
+      "audit/db-usage-map.json",
+      "audit/registry/canonical.json",
+      "audit/cleanup/candidates.json",
+      "audit/content/r1/x.yaml",
+      ".claude/knowledge/REPO_MAP.md",
+      // Agent instructions stay prose (a ratification choice of the owner).
+      "CLAUDE.md",
+      ".claude/rules/x.md",
+      ".claude/skills/x/SKILL.md",
+    ];
     assert.deepEqual(checks(evaluateReviewRecord(record(), { ...PR, files })), CLEAN);
     const script = evaluateReviewRecord(record(), { ...PR, files: ["audit/registry/build.mjs"] });
     assert.ok(script.problems.some((x) => x.includes("level A declared but the diff changes code")));
@@ -330,10 +397,19 @@ describe("evaluateReviewRecord — level (D3)", () => {
     const files = { ...PR, files: ["scripts/ci/x.mjs"] };
     const human = evaluateReviewRecord(record({ level: "B", procedure: "revue humaine, par un relecteur" }), files);
     assert.deepEqual(checks(human), CLEAN);
+    for (const procedure of ["**revue indépendante**, par un sous-agent", "Revue Indépendante par un sous-agent"]) {
+      assert.deepEqual(checks(evaluateReviewRecord(record({ level: "B", procedure }), files)), CLEAN, procedure);
+    }
     for (const procedure of [
       "revue non indépendante, par la session auteure",
       "auto-review, sans revue indépendante, par la session auteure",
       "pas de revue humaine ; auto-review par la session auteure",
+      "jamais de revue humaine, auto-review par la session auteure",
+      "revue indépendante non réalisée, par la session auteure",
+      "revue indépendante, non réalisée, par la session auteure",
+      "revue indépendante : non, par la session auteure",
+      "auto-review ; revue indépendante à prévoir, par la session auteure",
+      "auto-review indépendante de rien, par la session auteure",
     ]) {
       const { problems } = evaluateReviewRecord(record({ level: "B", procedure }), files);
       assert.ok(problems.some((x) => x.includes("level B requires an independent or human review")), procedure);
@@ -380,6 +456,27 @@ describe("evaluateReviewRecord — level (D3)", () => {
         const comments = [{ id: 2, login: "owner", association: "OWNER", body: text }];
         assert.ok(refused({ ...ctx, comments }), text);
       }
+    });
+
+    test("an accord withdrawn by the same account is unverified, the order not being tracked", () => {
+      const approve = { id: 1, login: "owner", association: "OWNER", state: "APPROVED", commitId: HEAD, body: "" };
+      const accord = { id: 2, login: "owner", association: "OWNER", body: `Accord ${HEAD}` };
+      for (const text of [`Je retire mon accord sur ${HEAD}.`, `Accord retiré : ${HEAD}`, `- pas d'accord pour ${HEAD}`]) {
+        const withdrawal = { id: 3, login: "owner", association: "OWNER", body: text };
+        for (const pr of [{ ...ctx, reviews: [approve], comments: [withdrawal] }, { ...ctx, comments: [accord, withdrawal] }]) {
+          const r = evaluateReviewRecord(body, pr);
+          assert.deepEqual(r.problems, [], text);
+          assert.ok(r.unverified.includes("level C accord by `owner` also withdrawn or refused on the head by the same account: the order of comments is not tracked"), text);
+        }
+      }
+      // A quoted withdrawal, or one naming another head, leaves the accord counted.
+      for (const text of [`> Accord retiré : ${HEAD}`, `Accord retiré : ${OLD_HEAD}`]) {
+        const r = evaluateReviewRecord(body, { ...ctx, comments: [accord, { id: 3, login: "owner", association: "OWNER", body: text }] });
+        assert.deepEqual(checks(r), CLEAN, text);
+      }
+      // The withdrawal of another account does not cancel this one.
+      const other = { id: 3, login: "maintainer", association: "MEMBER", body: `Accord retiré : ${HEAD}` };
+      assert.deepEqual(checks(evaluateReviewRecord(body, { ...ctx, comments: [accord, other] })), CLEAN);
     });
 
     test("an approval of an older head, a dismissed one, or a later change request is not", () => {
@@ -439,6 +536,18 @@ describe("evaluateReviewRecord — record in a linked comment", () => {
     const other = "https://github.com/o/r/pull/8#issuecomment-42";
     const comments = [{ id: 42, login: "x", body: record() }];
     assert.ok(evaluateReviewRecord(other, { ...PR, comments }).problems[0].startsWith("no review record"));
+  });
+});
+
+describe("renderReport", () => {
+  test("a report over the comment limit is cut at a line end, with a note", () => {
+    const result = { pass: false, mode: "checklist", reasons: Array.from({ length: 5000 }, (_, i) => `reason ${i} ${"x".repeat(20)}`) };
+    const report = renderReport(result);
+    assert.ok(report.length < 61000);
+    assert.ok(report.endsWith("_Report truncated at 60000 characters: the full report is in the job log._\n"));
+    assert.match(report.split("\n\n_Report truncated")[0], /\n- reason \d+ x{20}$/);
+    const short = renderReport({ ...result, reasons: ["one"] });
+    assert.ok(short.includes("- one") && !short.includes("truncated"));
   });
 });
 
