@@ -1,0 +1,310 @@
+{
+  "objet": "État avant du lot de publication filtre à huile (pg_id 7) : valeurs servies relevées en lecture seule, source des retours arrière générés par tools/build-publication-migration.cjs.",
+  "lu_a": "2026-10-31T06:42:51.423272+00:00",
+  "lecture": "SELECT en lecture seule sur la base partagée avec la PROD ; URL d'images réduites au chemin après /uploads/ (le préfixe d'hôte est relu en base par la migration).",
+  "r1s": {
+    "r1s_hero_subtitle": "Trouvez votre Filtre à huile au meilleur prix",
+    "r1s_selector_microcopy": [
+      "Sélectionnez votre véhicule",
+      "Trouvez votre filtre à huile compatible"
+    ],
+    "r1s_arg1_title": "Compatibilite verifiee",
+    "r1s_arg1_content": "Selection guidee par vehicule et references techniques.",
+    "r1s_arg2_title": "Priorite securite",
+    "r1s_arg2_content": "Un remplacement a temps limite les risques de panne secondaire.",
+    "r1s_arg3_title": "Decision rapide",
+    "r1s_arg3_content": "Le guide structure les controles avant commande.",
+    "r1s_arg4_title": "Montage maitrise",
+    "r1s_arg4_content": "La verification des pieces associees reduit les retours atelier.",
+    "r1s_compatibilities_intro": "Sélectionnez votre marque pour afficher les filtres à huile compatibles avec votre véhicule — Citroën, Renault, Peugeot, Volkswagen et plus de 50 marques référencées.",
+    "r1s_equipementiers_line": "Bosch, Mann Filter, Mahle, Purflux, WIX — équipementiers de premier montage avec homologations constructeur vérifiables.",
+    "r1s_family_cross_sell_intro": "Complétez votre entretien moteur : retrouvez également nos huiles moteur, joints de vidange carter et filtres à air compatibles avec votre véhicule.",
+    "r1s_safe_table_rows": [
+      {
+        "element": "Type de filtre",
+        "howToCheck": "Vissant (spin-on) ou cartouche — vérifiez la référence OEM de votre véhicule"
+      },
+      {
+        "element": "Marque et motorisation",
+        "howToCheck": "Saisissez marque, modèle et motorisation dans le sélecteur pour filtrer les références compatibles"
+      },
+      {
+        "element": "Compatibilité huile longlife",
+        "howToCheck": "Moteurs VW/BMW longlife : vérifiez l'approbation VW 502.00 ou BMW LL-01 sur la fiche produit"
+      },
+      {
+        "element": "Présence clapet anti-retour",
+        "howToCheck": "Certains moteurs modernes l'exigent — consultez la fiche technique du véhicule"
+      },
+      {
+        "element": "Ne pas confondre avec",
+        "howToCheck": "Filtre à air, filtre à carburant, filtre à huile de boîte automatique — ce sont des pièces distinctes"
+      }
+    ],
+    "r1s_faq": [
+      {
+        "a": "Les filtres OES (Bosch) ou adaptables (Mann, Mahle) offrent une qualité équivalente à l'OE pour moins cher. Vérifiez",
+        "q": "Filtre à huile OE ou adaptable : que choisir ?"
+      },
+      {
+        "a": "Voyant huile allumé, bruit de cliquetis moteur, huile noire et épaisse à la jauge, consommation d'huile excessive.",
+        "q": "Comment savoir si mon filtre à huile est bouché ?"
+      },
+      {
+        "a": "À chaque vidange, soit entre 15 000 et 30 000 km ou 1 an. Ne jamais réutiliser un ancien filtre même récent.",
+        "q": "Tous les combien changer le filtre à huile ?"
+      },
+      {
+        "a": "Oui, opération simple lors de la vidange. Clé à filtre nécessaire. Graisser le joint neuf avec de l'huile. Serrage",
+        "q": "Peut-on changer le filtre à huile soi-même ?"
+      },
+      {
+        "a": "Ne pas trop serrer (écrase le joint). Ne pas oublier de retirer l'ancien joint collé sur le bloc. Toujours pré-remplir",
+        "q": "Quelle erreur éviter avec le filtre à huile ?"
+      },
+      {
+        "a": "Techniquement possible mais déconseillé. Retirer le filtre entraîne une perte d'huile. Le filtre neuf dans de",
+        "q": "Peut-on changer le filtre à huile sans faire la vidange ?"
+      }
+    ],
+    "r1s_micro_seo_block": "<p>Notre sélection de filtres à huile couvre les principales marques de véhicules : Citroën, Renault, Peugeot, Volkswagen, BMW et plus de 50 autres marques. Compatibilité vérifiée par immatriculation ou saisie manuelle marque/modèle/motorisation.</p>\n<p>Les filtres à huile disponibles couvrent les motorisations essence et diesel, du moteur urbain compact aux motorisations longlife (VW 502.00, BMW LL-01). Filtres OEM ou équipementiers — Mann Filter, Mahle, Bosch, Purflux, WIX — qualité équivalente à l'origine, homologations constructeur vérifiables.</p>\n<p>Filtrez par marque de véhicule, modèle et motorisation pour identifier le filtre à huile moteur correspondant à votre véhicule. La sélection inclut les deux types principaux : filtre vissant spin-on et filtre cartouche à élément filtrant.</p>"
+  },
+  "r1s_updated_at": "2026-04-21T14:33:11.26286+00:00",
+  "sg": {
+    "sg_id": "4",
+    "sg_pg_id": "7",
+    "sg_content": "<h2>Filtre à huile voiture : rôle, types de montage et références</h2>\n<p>Le <strong>filtre à huile</strong> est une pièce d'usure essentielle du circuit de lubrification de votre moteur. Sa fonction principale est de <strong>retenir les impuretés métalliques</strong>, les résidus de combustion et les microparticules qui circulent dans l'huile moteur. Sans filtration efficace, ces contaminants attaquent les surfaces internes — pistons, bielles, arbre à cames, coussinets — et provoquent une usure prématurée pouvant réduire la durée de vie du moteur de 30 à 50 %. Le <strong>filtre à huile moteur</strong> se remplace systématiquement à chaque vidange, soit entre 15 000 et 30 000 km selon les préconisations constructeur, ou au minimum une fois par an. <a href=\"/reference-auto/filtre-a-huile\">En savoir plus sur le filtre à huile</a>.</p>\n<p>Deux grandes familles de montage existent : le filtre <strong>vissable</strong> (spin-on), qui se visse directement sur le bloc moteur, et le filtre <strong>cartouche</strong> (élément filtrant), inséré dans un boîtier fixe. Le type de montage dépend du constructeur et de la motorisation. Les moteurs diesel modernes (1.5 dCi, 1.6 HDI, 2.0 TDI) utilisent majoritairement des filtres cartouche, tandis que les moteurs essence plus anciens conservent souvent le montage vissable. La <strong>pression différentielle</strong> supportée, le diamètre du filetage et la présence d'un clapet anti-retour varient d'une référence à l'autre — d'où l'importance de sélectionner la pièce exacte pour votre véhicule.</p>\n\n<h2>Filtre à huile : trouvez la référence compatible avec votre véhicule</h2>\n<p>Un même modèle de voiture peut nécessiter des filtres à huile différents selon la motorisation et l'année de fabrication. Par exemple, une Renault Clio équipée d'un 1.5 dCi n'utilise pas le même filtre qu'une version 1.2 essence. C'est pourquoi notre sélecteur de compatibilité est indispensable : saisissez votre <strong>marque</strong>, votre <strong>modèle</strong> et votre <strong>motorisation</strong> pour afficher uniquement les références 100 % compatibles. En cas de doute, le <strong>code moteur</strong> figure sur votre carte grise (case D.2).</p>\n<ul>\n<li>Un même modèle peut avoir jusqu'à 8 montages différents selon la motorisation (1.5 dCi, 1.6 HDI, 2.0 TDI, 1.2 PureTech…)</li>\n<li>Le sélecteur affiche uniquement les <strong>filtres à huile</strong> vérifiés compatibles avec votre moteur</li>\n<li>Plus de <strong>22 450 références</strong> disponibles couvrant plus de 5 200 motorisations</li>\n<li>Compatibilité constructeur vérifiée : Renault, Peugeot, Citroën, Volkswagen, BMW, Audi, Fiat, Dacia et 50+ marques</li>\n</ul>\n\n<h2>Marques de filtre à huile : BOSCH, MANN FILTER, PURFLUX</h2>\n<p>Les <strong>équipementiers de première monte</strong> (OE) fabriquent les filtres installés en usine par les constructeurs automobiles. Sur notre catalogue, vous retrouvez les marques de confiance qui fournissent directement les chaînes de production :</p>\n<ul>\n<li><strong>BOSCH</strong> (1 237 références) — équipementier OE pour Renault, Volkswagen, Mercedes. Technologie de filtration multi-couches, clapet anti-retour intégré, certifié ISO 4548-12</li>\n<li><strong>MANN FILTER</strong> (1 913 références) — leader mondial de la filtration, fournisseur OE BMW, Audi, Porsche. Média filtrant haute efficacité, résistance pression jusqu'à 2 bars</li>\n<li><strong>PURFLUX</strong> — spécialiste français, fournisseur OE Renault et PSA. Cartouches à élément filtrant avec joint torique pré-positionné</li>\n<li><strong>KNECHT/MAHLE</strong> (505 références) — équipementier OE Mercedes, BMW. Double filtration brevetée</li>\n<li><strong>WIX FILTERS</strong> (808 références) — alternative OES reconnue, bon rapport qualité-prix</li>\n</ul>\n<p>Tous les filtres proposés respectent les normes <strong>ISO 4548-12</strong> (efficacité de filtration multi-pass) et <strong>ISO 4548-1</strong> (résistance pression différentielle). Pour les moteurs avec spécification huile longlife (VW 502.00, BMW LL-01), vérifiez que le filtre est certifié compatible sur la fiche produit.</p>\n\n<h2>Filtre à huile prix : fourchettes selon le type et la marque</h2>\n<p>Le <strong>prix d'un filtre à huile</strong> varie de 5 € à 30 € selon la marque, le type de montage et le véhicule. Voici les fourchettes constatées :</p>\n<ul>\n<li><strong>Éco (4-9 €)</strong> — marques alternatives, filtration standard, convient pour un usage quotidien sans exigence longlife</li>\n<li><strong>Standard OES (9-15 €)</strong> — BOSCH, MANN FILTER, PURFLUX : qualité équivalente première monte, rapport qualité-prix optimal</li>\n<li><strong>Premium (15-30 €)</strong> — filtres haute performance, double filtration, compatibilité huile longlife, clapet anti-drain back renforcé</li>\n<li><strong>OE/Spécial (30 €+)</strong> — référence constructeur exacte, concessions et ateliers agréés</li>\n</ul>\n<p>Le coût d'une <strong>vidange complète en atelier</strong> (huile + filtre + main d'œuvre) se situe entre 80 et 150 € selon le véhicule et la viscosité d'huile requise. <a href=\"/blog-pieces-auto/guide-achat/filtre-a-huile\">Guide d'achat filtre à huile : critères, budget et marques recommandées</a>.</p>\n\n<h2>Types de filtre à huile : vissable, cartouche et centrifuge</h2>\n<p>Le choix du type de filtre dépend de votre moteur. Ne confondez pas les trois familles principales :</p>\n<ul>\n<li><strong>Filtre vissable (spin-on)</strong> — boîtier métallique intégral qui se visse sur le bloc moteur. Remplacement simple : dévisser l'ancien, graisser le joint du neuf, visser à la main + ¾ de tour. Courant sur les moteurs essence et diesel anciens</li>\n<li><strong>Filtre cartouche (élément filtrant)</strong> — média filtrant remplaçable dans un boîtier plastique ou alu fixe. Nécessite l'ouverture du couvercle et le remplacement du joint torique. Moteurs diesel modernes (HDI, dCi, TDI, JTDM) et essence récents (PureTech, TSI)</li>\n<li><strong>Filtre centrifuge</strong> — utilisé en complément sur certains moteurs industriels ou poids lourds, rare en automobile légère</li>\n</ul>\n<p>Attention à ne pas confondre le <strong>filtre à huile moteur</strong> avec le <a href=\"/pieces/filtre-a-air\">filtre à air</a> (circuit admission), le <a href=\"/pieces/filtre-a-carburant\">filtre à carburant</a> (circuit essence/diesel) ou le <a href=\"/pieces/filtre-de-boite-auto\">filtre à huile de boîte automatique</a> (transmission). Ce sont des pièces distinctes avec des références différentes.</p>\n\n<h2>Commander votre filtre à huile en stock — livraison rapide</h2>\n<p>Sélectionnez votre <strong>marque → modèle → motorisation</strong> dans le sélecteur ci-dessus. Le sélecteur affiche instantanément les filtres à huile compatibles avec votre véhicule, avec le prix, la disponibilité et la marque. Votre <strong>filtre à huile neuf</strong> est expédié le jour même pour toute commande passée avant 15h, avec livraison sous 24 à 48h partout en France.</p>\n<p>Pensez à commander en même temps les pièces associées pour votre vidange complète : <a href=\"/pieces/bouchon-de-vidange\">bouchon de vidange</a>, <a href=\"/pieces/filtre-a-air\">filtre à air</a> et huile moteur adaptée à votre spécification constructeur. <a href=\"/blog-pieces-auto/conseils/comment-changer-un-filtre-a-huile\">Conseils : changer un filtre à huile étape par étape</a>.</p>\n\n<h2>Questions fréquentes sur le filtre à huile</h2>\n<details><summary>Combien coûte un filtre à huile ?</summary>\n<p>Entre 5 € et 30 € selon la marque et le type (vissable ou cartouche). Un filtre OES (BOSCH, MANN FILTER) coûte en moyenne 9 à 15 €. La vidange complète en atelier (huile + filtre + main d'œuvre) revient entre 80 et 150 €.</p>\n</details>\n<details><summary>Quel est le prix d'un filtre à huile ?</summary>\n<p>Le prix dépend de la marque et du véhicule. Comptez 4-9 € en éco, 9-15 € en standard OES, 15-30 € en premium. Les filtres cartouche sont généralement plus chers que les vissables.</p>\n</details>\n<details><summary>Quel filtre à huile pour ma voiture ?</summary>\n<p>Utilisez le sélecteur en haut de page : saisissez marque, modèle et motorisation. Le sélecteur affiche uniquement les références 100 % compatibles avec votre moteur. En cas de doute, le code moteur est indiqué case D.2 de votre carte grise.</p>\n</details>\n<details><summary>Où acheter un filtre à huile ?</summary>\n<p>Directement sur AutoMecanik.com : plus de 22 450 références en stock, prix dégressifs, livraison 24-48h. Sélectionnez votre véhicule pour voir les filtres compatibles.</p>\n</details>\n<details><summary>Combien de temps pour la livraison d'un filtre à huile ?</summary>\n<p>Expédition le jour même avant 15h, livraison sous 24 à 48h en France métropolitaine. Suivi de colis inclus.</p>\n</details>\n<details><summary>Quel est le prix d'un filtre à huile diesel ?</summary>\n<p>Les filtres diesel (cartouche) coûtent en moyenne 10 à 20 €. Les motorisations 1.5 dCi, 1.6 HDI ou 2.0 TDI nécessitent souvent un filtre cartouche plus large que les versions essence.</p>\n</details>\n<p class=\"mt-3 text-sm\"><a href=\"/diagnostic-auto/filtre-a-huile\">Diagnostic filtre à huile : symptômes et causes de défaillance</a></p>",
+    "sg_updated_at": "2026-03-22T04:56:13.338574+00:00"
+  },
+  "sgc": [
+    {
+      "sgc_id": "conseil-7-META-20260321",
+      "sgc_section_type": "META",
+      "sgc_title": "Meta SEO",
+      "sgc_content": "{\"meta_title\":\"Filtre à huile moteur : guide de remplacement\",\"meta_description\":\"Voyant huile allumé, cliquetis au ralenti : quand changer le filtre à huile ? Spin-on ou cartouche, compatibilité VW 502.00 / BMW LL-01 et étapes de vidange.\"}",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"domain.role + diagnostic.symptoms + selection.criteria\"}]"
+    },
+    {
+      "sgc_id": "conseil-7-S_GARAGE-1772504383540",
+      "sgc_section_type": "S_GARAGE",
+      "sgc_title": "Quand confier le remplacement du filtre à huile à un professionnel :",
+      "sgc_content": "<div class=\"garage-callout\"><p><strong>Nous vous recommandons de confier cette intervention à un professionnel :</strong></p><br>- Plusieurs causes possibles de défaillance (4 identifiées) nécessitent un diagnostic professionnel<br><br><p>Un garagiste qualifié dispose de l'outillage et de l'expérience nécessaires pour effectuer cette opération en toute sécurité.</p></div>",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"installation.difficulty\"}]"
+    },
+    {
+      "sgc_id": "18",
+      "sgc_section_type": "S1",
+      "sgc_title": "Fonction du filtre à huile :",
+      "sgc_content": "Filtre l'huile moteur pour retenir les impuretés métalliques et résidus de combustion, protégeant pistons, bielles et arbre à cames. ## Trouvez le type de filtre à huile adéquat Les véhicules, les conditions de conduite et les applications spécifiques nécessitent des solutions sur...<br>Pièces liées : <b>huile moteur</b>, <b>joint de vidange carter</b>, <b>filtre à air</b>, <b>filtre à carburant</b>, <b>filtre d habitacle</b>, <b>bouchon de vidange #LinkGamme_593#</b>.\n<p>Le filtre retient les particules metalliques issues de l usure des pistons et des bielles</p>\n<p>Sans filtration efficace, les impuretes abrasives circulent dans le circuit et accelerent l usure du moteur</p>\n<p>Fonctionne en série avec la pompe à huile pour maintenir une pression constante dans les galeries</p>",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"domain.role\"},{\"type\":\"web\",\"ref\":\"web/7377bedb9c7e-s001.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s001.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s002.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s003.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s004.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s005.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s006.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s007.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s008.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s009.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s010.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web/777af1b0088d-s011.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/f693354c7bf0-s001.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/f693354c7bf0-s002.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/f693354c7bf0-s003.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/f693354c7bf0-s004.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/f693354c7bf0-s005.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/d2e427d74f38-s001.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/d2e427d74f38-s002.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/d2e427d74f38-s003.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/d2e427d74f38-s004.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/d2e427d74f38-s005.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/d2e427d74f38-s006.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/d2e427d74f38-s007.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/d2e427d74f38-s008.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/d2e427d74f38-s009.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/8c1a4aa61267-s001.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/8c1a4aa61267-s002.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/8c1a4aa61267-s003.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/8c1a4aa61267-s004.md\",\"field\":\"supplementary\"},{\"type\":\"web\",\"ref\":\"web-catalog/8c1a4aa61267-s005.md\",\"field\":\"supplementary\"}]"
+    },
+    {
+      "sgc_id": "20",
+      "sgc_section_type": "S2",
+      "sgc_title": "Quand changer les filtre à huile :",
+      "sgc_content": "Les <b>filtre à huile</b> sont à remplacer tous les 10 000 à 30 000 km environ.<br>Essence classique 10 000-15 000 km (ou 1 an). Diesel moderne 15 000-20 000 km. Longlife (VW/BMW) jusqu'à 30 000 km. Se change à chaque vidange.<br><b>Symptômes d'usure :</b><br>- Voyant huile qui s allume ou clignote<br>- Bruit de claquement ou de cliquetis au ralenti<br>- Huile tres noire avant echeance vidange<br>- Baisse du niveau d huile plus rapide<br>- Odeur d huile brulee dans l habitacle",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"maintenance.interval\"}]"
+    },
+    {
+      "sgc_id": "conseil-7-S2_DIAG-1774724299375",
+      "sgc_section_type": "S2_DIAG",
+      "sgc_title": "Diagnostic rapide du filtre à huile :",
+      "sgc_content": "<table><thead><tr><th>Symptôme</th><th>Cause probable</th><th>Action</th></tr></thead><tbody><tr><td>Voyant huile qui s allume ou clignote</td><td>Filtre colmate par accumulation d impuretes metalliques et residus de combustion</td><td>Voyant huile qui s allume ou clignote ?</td></tr><tr><td>Bruit de claquement ou de cliquetis au ralenti</td><td>Intervalle de vidange depasse ou huile de mauvaise viscosite</td><td>Bruit de claquement ou de cliquetis au ralenti ?</td></tr><tr><td>Huile tres noire avant echeance vidange</td><td>Joint torique defaillant ou ancien joint reste colle causant une fuite</td><td>Observer : huile tres noire avant echeance vidange ?</td></tr><tr><td>Baisse du niveau d huile plus rapide</td><td>Clapet by-pass bloque en position ouverte laissant passer l huile non filtree</td><td>Observer : baisse du niveau d huile plus rapide ?</td></tr><tr><td>Odeur d huile brulee dans l habitacle</td><td>Filtre colmate par accumulation d impuretes metalliques et residus de combustion</td><td>Voyant huile qui s allume ou clignote ?</td></tr></tbody></table>",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"diagnostic.symptoms\"}]"
+    },
+    {
+      "sgc_id": "conseil-7-S3-1771371936696",
+      "sgc_section_type": "S3",
+      "sgc_title": "Comment choisir vos filtre à huile :",
+      "sgc_content": "Pour choisir les bons filtre à huile pour votre véhicule :<br>- Marque de votre vehicule<br>- Modele de votre vehicule<br>- Motorisation de votre vehicule<br>- Type de filtre monté (vissant spin-on ou cartouche élément filtrant)<br>- Reference constructeur OEM (si disponible)<br>- Diametre du filetage et joint torique<br>- Pression differentielle supportee (bar)<br>- Presence clapet anti-retour (obligatoire moteurs modernes)<br>- Presence clapet by-pass (protection moteur si colmatage)<br>- Compatibilite huile longlife (VW 502.00, BMW LL-01)",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"selection.criteria\"}]"
+    },
+    {
+      "sgc_id": "21",
+      "sgc_section_type": "S4_DEPOSE",
+      "sgc_title": "Procédure de remplacement du filtre à huile :",
+      "sgc_content": "<b>1.</b> # Filtres à huile pour voitures et cartouches de filtre à huile – Automobile – WIX Filters - FILTRES À HUILE The engine’s combustion chamber must remain clean, and therefore it also must be protected by a filter which prevents pollutants reaching the oil. The oil filter reduces the wear of close...<br><b>2.</b> ### Gaskets and Seals The primary function of a gasket is to create a tight seal between the filter and the engine block. This prevents engine oil from leaking out, which could starve the engine of lubrication and cause damage. While gaskets are designed to last for the life of the oil filter, they...<br><b>3.</b> ## Différentes opérations Ces deux structures différentes entraînent également des méthodes d’installation différentes. Pour installer le filtre à immersion, il faut d’abord appliquer de l’huile neuve sur le joint d’étanchéité. Ensuite, le filtre est vissé dans la base, en veillant à le serrer de...<br><b>4.</b> ## Intervalles corrigés Pour garantir son efficacité, le filtre à huile du moteur doit être remplacé régulièrement, aux intervalles spécifiés par les constructeurs automobiles. La plupart d’entre eux recommandent cette intervention tous les 15 000 kilomètres pour les moteurs à essence et tous les...",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"diagnostic.causes\"}]"
+    },
+    {
+      "sgc_id": "22",
+      "sgc_section_type": "S4_REPOSE",
+      "sgc_title": "Remontage d'un filtre à huile :",
+      "sgc_content": "- Vérifiez que le <b>filtre à huile</b> neuf est identique à celui démonté.<br>- Remplacez les joints d'étanchéité du <b>filtre à huile</b>.<br>- Lubrifiez les joints neufs avec de l'huile avant de les remontés.<br>- Lubrifiez le <b>filtre à huile</b>.<br>- Mettre en place le <b>filtre à huile</b>.<br>- Dans le cas d'un <b>filtre à huile</b> vissé, serrez ce dernier au coupleprescrit.<br>- Dans le cas d'un élément filtrant, mettre le <b>filtre à huile </b>dans sonboîtier et serrez le couvercle au couple prescrit.<br>- Ouvrir le bouchon du remplissage d'huile moteur.<br>- Remplissez l'huile avec la quantité préconisée par le constructeur.<br>- Contrôlez le niveau d'huile avec la jauge d'huile.<br>- Rajoutez de l'huile si nécessaire.<br>- Recontrôler le niveau d'huile.<br>- Démarrez le moteur et le laissez tourner un peu au ralentie.<br>- Arrêtez le moteur et le laissez refroidir.<br>- Contrôlez de nouveau le niveau d'huile.\n<p class=\"text-sm mt-3\">✅ Après remontage, vérifiez les spécifications dans la <a href=\"/reference-auto/filtre-a-huile\">fiche technique Filtre à huile</a>.</p>",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"installation.steps\"}]"
+    },
+    {
+      "sgc_id": "conseil-7-S5-1771371936739",
+      "sgc_section_type": "S5",
+      "sgc_title": "Erreurs à éviter avec les filtre à huile :",
+      "sgc_content": "<p>Le filtre à huile est remplacé à chaque vidange. Des erreurs simples peuvent pourtant compromettre la lubrification du moteur et générer des dommages coûteux.</p>\n<ol>\n  <li><strong>Oubli de lubrifier le joint torique avant le montage</strong> — un joint sec se déforme inégalement au serrage et peut fuir dès le démarrage → enduire légèrement le joint torique du filtre neuf avec de l'huile moteur propre avant le montage</li>\n  <li><strong>Serrage excessif du filtre à la clé</strong> — le joint écrasé provoque une fuite difficile à stopper et peut rendre le filtre impossible à dévisser à la vidange suivante → serrer à la main puis d'un demi-tour à trois quarts de tour seulement</li>\n  <li><strong>Filtre non adapté à la spécification huile du moteur</strong> — sur les moteurs dont la vidange est longue durée (VW 502.00, BMW LL-01), un filtre standard n'a pas la tenue thermique requise → choisir un filtre certifié pour la spécification huile du constructeur</li>\n  <li><strong>Démarrage immédiat sans vérification du niveau après la vidange</strong> — un circuit d'huile vide au démarrage peut causer une usure précoce sur arbres à cames et paliers → vérifier le niveau sur la jauge avant de démarrer et après une minute de fonctionnement</li>\n  <li><strong>Mauvais type de filtre (vissable vs cartouche) commandé</strong> — les deux types ne sont pas interchangeables selon le moteur → identifier le type exact avant commande (filtre à visser ou cartouche dans boîtier)</li>\n</ol>",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"selection.anti_mistakes\"}]"
+    },
+    {
+      "sgc_id": "conseil-7-S6-1771938637895",
+      "sgc_section_type": "S6",
+      "sgc_title": "Vérifications après remplacement du filtre à huile :",
+      "sgc_content": "- <strong>Niveau d huile à la jauge</strong> : vérifier le niveau 5 minutes après le premier démarrage — l huile a rempli le filtre neuf et le niveau a baissé. Compléter si nécessaire entre les repères MIN et MAX.<br>- <strong>Étanchéité du filtre</strong> : inspecter sous le filtre et sous la vis de vidange après 2 minutes de ralenti — aucune goutte ne doit apparaître. Si suintement, resserrer d un quart de tour maximum.<br>- <strong>Étanchéité du joint torique</strong> : vérifier qu aucune trace d huile ne coule le long du bloc moteur au niveau du plan de joint. Cause fréquente : ancien joint resté collé sous le filtre neuf.<br>- <strong>Voyant huile éteint</strong> : après démarrage moteur, le voyant huile doit s éteindre en moins de 5 secondes. S il reste allumé, couper le moteur immédiatement et vérifier le serrage du filtre et le niveau.<br>- <strong>Essai moteur au ralenti</strong> : laisser tourner 2-3 minutes au ralenti et écouter — aucun cliquetis ni bruit anormal ne doit apparaître. Un cliquetis indiquerait un problème de pression d huile.<br>- <strong>Remise à zéro indicateur maintenance</strong> : sur véhicules équipés, réinitialiser le compteur de vidange selon la procédure constructeur — sinon le voyant reste allumé jusqu à la prochaine intervention.<br>- <strong>Essai route progressif</strong> : effectuer un trajet de 5-10 km en montant progressivement en régime. Revérifier le niveau d huile à froid et inspecter le filtre une dernière fois.",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"diagnostic.symptoms\"},{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"rendering.faq[4]\"},{\"type\":\"kp\",\"ref\":\"skp_id:12\",\"field\":\"S6.micro_phrases\"}]"
+    },
+    {
+      "sgc_id": "conseil-7-S7-1771371936783",
+      "sgc_section_type": "S7",
+      "sgc_title": "Pièces à contrôler et à remplacer avec les filtre à huile :",
+      "sgc_content": "- <b><a href=\"/pieces/huile-moteur\">huile moteur</a></b><br>- <b><a href=\"/pieces/joint-de-vidange-carter\">joint de vidange carter</a></b><br>- <b><a href=\"/pieces/filtre-a-air\">filtre à air</a></b><br>- <b><a href=\"/pieces/filtre-a-carburant\">filtre à carburant</a></b><br>- <b><a href=\"/pieces/filtre-d-habitacle\">filtre d habitacle</a></b><br>- <b><a href=\"/pieces/bouchon-de-vidange\">bouchon de vidange</a></b>",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"domain.related_parts\"}]"
+    },
+    {
+      "sgc_id": "conseil-7-S8-1771509122681",
+      "sgc_section_type": "S8",
+      "sgc_title": "Questions fréquentes sur les filtre à huile :",
+      "sgc_content": "<details><summary><b>Filtre à huile OE ou adaptable : que choisir ?</b></summary><p>Les filtres OES (Bosch) ou adaptables (Mann, Mahle) offrent une qualité équivalente à l'OE pour moins cher. Vérifiez le filetage et le diamètre du joint.</p></details>\n<details><summary><b>Comment savoir si mon filtre à huile est bouché ?</b></summary><p>Voyant huile allumé, bruit de cliquetis moteur, huile noire et épaisse à la jauge, consommation d'huile excessive.</p></details>\n<details><summary><b>Tous les combien changer le filtre à huile ?</b></summary><p>À chaque vidange, soit entre 15 000 et 30 000 km ou 1 an. Ne jamais réutiliser un ancien filtre même récent.</p></details>\n<details><summary><b>Peut-on changer le filtre à huile soi-même ?</b></summary><p>Oui, opération simple lors de la vidange. Clé à filtre nécessaire. Graisser le joint neuf avec de l'huile. Serrage à la main + 3/4 de tour.</p></details>\n<details><summary><b>Quelle erreur éviter avec le filtre à huile ?</b></summary><p>Ne pas trop serrer (écrase le joint). Ne pas oublier de retirer l'ancien joint collé sur le bloc. Toujours pré-remplir le filtre si possible.</p></details>\n<details><summary><b>Peut-on changer le filtre à huile sans faire la vidange ?</b></summary><p>Techniquement possible mais déconseillé. Retirer le filtre entraîne une perte d'huile. Le filtre neuf dans de l'huile usagée ne remplit pas pleinement son rôle.</p></details>\n<details><summary><b>Le joint torique se change-t-il en même temps que le filtre ?</b></summary><p>Oui, systématiquement. Sur filtre cartouche, le joint torique est souvent fourni. Erreur fréquente — toujours vérifier que l'ancien joint n'est pas resté collé sur le bloc.</p></details>",
+      "sgc_sources": "[{\"type\":\"rag\",\"ref\":\"gammes/filtre-a-huile.md\",\"field\":\"rendering.faq\"}]"
+    }
+  ],
+  "champs_proteges": {
+    "r1s_h1_override": {
+      "table": "__seo_r1_gamme_slots",
+      "longueur": 45,
+      "sha256": "1d4e252a8874eef4e11dc11ff6069366e864476bb8935f3d7f67ff214ef2b4dc",
+      "valeur": "Filtre à huile compatible avec votre véhicule"
+    },
+    "sg_title": {
+      "table": "__seo_gamme",
+      "longueur": 58,
+      "sha256": "e6de4da9221481a0ced79c6af9c733f208b50cc80590b68772caca88627847bc",
+      "valeur": "Filtre à huile | BOSCH, MANN FILTER, PURFLUX | AutoMecanik"
+    },
+    "sg_descrip": {
+      "table": "__seo_gamme",
+      "longueur": 133,
+      "sha256": "30f5becf870fd786fec55a9dd2da95746e06daa8953be0f911dfbb51f6d74d2f",
+      "valeur": "Filtre à huile voiture pas cher dès 5€. Sélectionnez votre véhicule pour voir les références compatibles. En stock, livraison 24-48h."
+    },
+    "sgc_content:conseil-7-META-20260321": {
+      "table": "__seo_gamme_conseil",
+      "sgc_id": "conseil-7-META-20260321",
+      "longueur": 241,
+      "sha256": "71872ad253d983dfeb45a0fd8a31beaacf801b433f03afcfa7e0ad7ba5a1f07b"
+    }
+  },
+  "images": {
+    "r1": [
+      {
+        "rip_id": 31,
+        "rip_slot_id": "HERO",
+        "rip_status": "approved",
+        "rip_selected": true,
+        "chemin": "articles/gammes-produits/r1/filtre-a-huile.webp",
+        "rip_alt_text": "Filtre à huile — pièce automobile neuve",
+        "rip_caption": "Filtre à huile — vue détaillée",
+        "rip_updated_at": "2026-03-25T01:51:24.179+00:00",
+        "objet_avant": {
+          "taille": 2369854,
+          "mimetype": "image/png",
+          "etag": "c41bb7189cbad0d5f5c035ad344b8513",
+          "cache_control": "max-age=3600"
+        }
+      },
+      {
+        "rip_id": 32,
+        "rip_slot_id": "TYPES",
+        "rip_status": "approved",
+        "rip_selected": true,
+        "chemin": "articles/gammes-produits/r1/filtre-a-huile-2.webp",
+        "rip_alt_text": "Types de filtre à huile — comparatif visuel",
+        "rip_caption": "Comment distinguer les types de filtre à huile",
+        "rip_updated_at": "2026-03-25T01:51:24.179+00:00",
+        "objet_avant": {
+          "taille": 1880806,
+          "mimetype": "image/png",
+          "etag": "8b22b05554133f412ce3691c05bcafdb",
+          "cache_control": "max-age=3600"
+        }
+      },
+      {
+        "rip_id": 33,
+        "rip_slot_id": "PRICE",
+        "rip_status": "approved",
+        "rip_selected": true,
+        "chemin": "articles/gammes-produits/r1/filtre-a-huile-3.webp",
+        "rip_alt_text": "Filtre à huile — comparatif qualité par gamme",
+        "rip_caption": "Différences de qualité filtre à huile",
+        "rip_updated_at": "2026-03-25T01:51:24.179+00:00",
+        "objet_avant": {
+          "taille": 2255662,
+          "mimetype": "image/png",
+          "etag": "c9ed766385e7b871359414c9aaedbd1f",
+          "cache_control": "max-age=3600"
+        }
+      },
+      {
+        "rip_id": 34,
+        "rip_slot_id": "LOCATION",
+        "rip_status": "approved",
+        "rip_selected": true,
+        "chemin": "articles/gammes-produits/r1/filtre-a-huile-4.webp",
+        "rip_alt_text": "Emplacement du filtre à huile sur le véhicule",
+        "rip_caption": "Où se trouve le filtre à huile sur le véhicule",
+        "rip_updated_at": "2026-03-25T01:51:24.18+00:00",
+        "objet_avant": {
+          "taille": 2044795,
+          "mimetype": "image/png",
+          "etag": "268671cd769bf78eff6488a3ef5e4d0e",
+          "cache_control": "max-age=3600"
+        }
+      },
+      {
+        "rip_id": 35,
+        "rip_slot_id": "OG",
+        "rip_status": "approved",
+        "rip_selected": true,
+        "chemin": "articles/gammes-produits/r1/filtre-a-huile-og.webp",
+        "rip_alt_text": "Filtre à huile — AutoMecanik",
+        "rip_caption": null,
+        "rip_updated_at": "2026-03-25T01:51:34.497+00:00",
+        "objet_avant": {
+          "taille": 1968574,
+          "mimetype": "image/png",
+          "etag": "eb3919e020fd6a64621b3e7b313d9f5d",
+          "cache_control": "max-age=3600"
+        }
+      }
+    ],
+    "r3": [
+      {
+        "rip_id": 12,
+        "rip_slot_id": "HERO_IMAGE",
+        "rip_section_id": "HERO",
+        "rip_status": "pending",
+        "rip_selected": true,
+        "chemin": null,
+        "rip_alt_text": "Filtre à huile : guide complet",
+        "rip_caption": "Filtre à huile neuf — vue studio",
+        "rip_aspect_ratio": "16:9"
+      },
+      {
+        "rip_id": 13,
+        "rip_slot_id": "S2_SYMPTOM_IMAGE",
+        "rip_section_id": "S2",
+        "rip_status": "pending",
+        "rip_selected": true,
+        "chemin": null,
+        "rip_alt_text": "Symptomes usure Filtre à huile : usure visible",
+        "rip_caption": "Filtre à huile use — usure visible",
+        "rip_aspect_ratio": "16:9"
+      },
+      {
+        "rip_id": 14,
+        "rip_slot_id": "S3_SCHEMA_IMAGE",
+        "rip_section_id": "S3",
+        "rip_status": "pending",
+        "rip_selected": true,
+        "chemin": null,
+        "rip_alt_text": "Schema comparatif Filtre à huile",
+        "rip_caption": "Filtre à huile vs filtre-a-air — schema comparatif",
+        "rip_aspect_ratio": "4:3"
+      }
+    ]
+  }
+}
