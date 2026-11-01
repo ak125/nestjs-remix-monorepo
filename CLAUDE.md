@@ -111,7 +111,9 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
 - Relecture d'un brouillon français : `.claude/prompts/_shared/editorial-review.md`
   avant intervention, lu jusqu'à sa dernière ligne, « Sortie attendue » et son bloc
   final compris : Read sans `offset` ni `limit`, ou plages contiguës jusqu'à la fin.
-  Une plage fixée d'avance ou une recherche de titres laisse le reste non lu.
+  Une plage fixée d'avance ou une recherche de titres laisse le reste non lu. Après
+  une reprise de contexte (résumé ou compaction), la lecture antérieure ne compte
+  plus : relire le contrat de même avant d'écrire le bloc.
   Proposition motivée, sans publication ni écriture RAW/WIKI. La réponse se termine
   par le bloc final de « Sortie attendue », même en relecture partielle ; sans outil
   d'exécution, `sha256` vaut `null` et C2 reste non remplie avec cette cause.
