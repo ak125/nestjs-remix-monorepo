@@ -498,7 +498,7 @@ describe("evaluateReviewRecord — level (D3)", () => {
     });
 
     const WITHDRAWN =
-      "level C accord by `owner` also withdrawn or refused by the same account: the order of comments is not tracked (a withdrawal whose SHA, right after it, names another head does not count)";
+      "level C accord by `owner` also withdrawn or refused by the same account: the order of comments is not tracked (a withdrawal whose SHA, right after « accord » or after the withdrawal, names another head does not count)";
 
     test("an accord withdrawn by the same account is unverified, the order not being tracked", () => {
       const approve = { id: 1, login: "owner", association: "OWNER", state: "APPROVED", commitId: HEAD, body: "" };
@@ -560,6 +560,80 @@ describe("evaluateReviewRecord — level (D3)", () => {
       // The withdrawal of another account does not cancel this one.
       const other = { id: 3, login: "maintainer", association: "MEMBER", body: `Accord retiré : ${HEAD}` };
       assert.deepEqual(checks(evaluateReviewRecord(body, { ...ctx, comments: [accord, other] })), CLEAN);
+    });
+
+    test("a withdrawal word within three words of « accord » withdraws it, wherever it sits on the line", () => {
+      const approve = { id: 1, login: "owner", association: "OWNER", state: "APPROVED", commitId: HEAD, body: "" };
+      const accord = { id: 2, login: "owner", association: "OWNER", body: `Accord ${HEAD}` };
+      for (const text of [
+        "Mon accord est retiré.",
+        "L'accord est annulé.",
+        "Finalement, accord retiré.",
+        "**Edit :** accord retiré",
+        "1. Accord retiré",
+        "1. Pas d'accord",
+        "Je retire donc mon accord.",
+        "Je retire, pour l'instant, mon accord.",
+        "Approbation retirée (cf. revue).",
+        `GO retiré pour ${HEAD.slice(0, 9)}`,
+        `Accord ${HEAD} : retiré`,
+        "Accord du 2026-10-30 retiré",
+        // A SHA in between does not scope it, only one right after « accord » or the withdrawal.
+        `Je retire pour ${OLD_HEAD.slice(0, 9)} mon accord`,
+        // One withdrawal naming another head, a second one unscoped.
+        `Accord ${OLD_HEAD.slice(0, 9)} retiré, et je retire aussi mon accord sur cette tête.`,
+      ]) {
+        const withdrawal = { id: 3, login: "owner", association: "OWNER", body: text };
+        for (const pr of [{ ...ctx, reviews: [approve], comments: [withdrawal] }, { ...ctx, comments: [accord, withdrawal] }]) {
+          const r = evaluateReviewRecord(body, pr);
+          assert.deepEqual(r.problems, [], text);
+          assert.ok(r.unverified.includes(WITHDRAWN), text);
+        }
+      }
+      // A negation or a subject in between, a sentence break, a hyphenated
+      // compound or a scope on another head withdraws nothing.
+      for (const text of [
+        "Je ne retire pas mon accord.",
+        "Mon accord n'est pas retiré.",
+        "J'annule, je garde mon accord.",
+        `Accord ${HEAD}. Test flaky retiré du lot.`,
+        "J'annule ce go-live de vendredi.",
+        "On abandonne l'accord-cadre fournisseur.",
+        `Accord retiré : ${OLD_HEAD.slice(0, 9)}`,
+        `Accord du ${OLD_HEAD.slice(0, 9)} retiré`,
+      ]) {
+        const r = evaluateReviewRecord(body, { ...ctx, reviews: [approve], comments: [{ id: 3, login: "owner", association: "OWNER", body: text }] });
+        assert.deepEqual(checks(r), CLEAN, text);
+      }
+    });
+
+    test("an accord line with a business word further away is an accord, alone or beside an approval", () => {
+      const approve = { id: 1, login: "owner", association: "OWNER", state: "APPROVED", commitId: HEAD, body: "" };
+      for (const text of [
+        `Accord ${HEAD} pour le correctif d'annulation de commande`,
+        `Accord ${HEAD} : corrige les paiements refusés PayPal`,
+        `Accord ${HEAD} : relance des paniers abandonnés`,
+        `Accord ${HEAD} — invalidation du cache vérifiée`,
+        `Accord ${HEAD}, j'annule ma demande de changements.`,
+        `Accord ${HEAD} (suspension du cron incluse)`,
+        `Accord ${HEAD} — non-régression vérifiée`,
+        `1. Accord ${HEAD}`,
+      ]) {
+        const comments = [{ id: 2, login: "owner", association: "OWNER", body: text }];
+        assert.deepEqual(checks(evaluateReviewRecord(body, { ...ctx, comments })), CLEAN, text);
+        assert.deepEqual(checks(evaluateReviewRecord(body, { ...ctx, reviews: [approve], comments })), CLEAN, text);
+      }
+      for (const text of [`Accord ${HEAD} sous condition que la CI passe`, `Accord ${HEAD} provisoire, à valider`]) {
+        assert.ok(refused({ ...ctx, comments: [{ id: 2, login: "owner", association: "OWNER", body: text }] }), text);
+      }
+    });
+
+    test("a long accord line is read in linear time", () => {
+      const started = process.hrtime.bigint();
+      for (const text of [`Accord${" ".repeat(60000)}x`, `Accord ${HEAD}${" accord retiré".repeat(20000)}`, `retire${" a".repeat(60000)}`]) {
+        evaluateReviewRecord(body, { ...ctx, comments: [{ id: 2, login: "owner", association: "OWNER", body: text }] });
+      }
+      assert.ok(Number(process.hrtime.bigint() - started) / 1e6 < 500);
     });
 
     test("an approval of an older head, a dismissed one, or a later change request is not", () => {
