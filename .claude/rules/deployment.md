@@ -127,6 +127,7 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 **Règles mnémoniques** :
 
 - Fusion sur `main` = **build + push tag `:preprod` + redéploiement container PREPROD CI**. **Pas de redéploiement PROD.** `main` est protégée : jamais de push direct.
+- Fusion sur `main` qui modifie `scripts/monitoring/*.sh` = `deploy-monitoring-scripts.yml` installe aussi ces scripts dans `/usr/local/bin` de l'hôte PROD, hors des conteneurs : la fusion modifie alors l'hôte PROD.
 - `git tag v… && git push --tags` = **promotion de l'image du commit → `:production` + redéploiement container PROD**.
 - Jamais annoncer "déployé en PROD" après un simple merge sur `main`.
 
@@ -157,9 +158,11 @@ crash boot NestJS opaque. Vars couvertes (boot-crash si absentes/mal-formées) :
    `git tag v2.1.0 <sha40> && git push origin v2.1.0`.
 
 Ou via UI GitHub : `Actions → "Deploy PROD (via tag)" → Run workflow`, en choisissant le **tag** `v*`
-dans « Use workflow from ». Le formulaire propose `main` par défaut : lancé sur `main`, le workflow
-déploierait le commit de tête de `main` sans tag `v*`. La preuve PREPROD de ce commit lui suffit ;
-rien ne vérifie qu'un tag `v*` porte la décision de l'owner.
+dans « Use workflow from ». Le formulaire propose `main` par défaut : lancé sur `main`, ou sur une
+branche dont la tête est un commit de `main` validé par PREPROD, le workflow déploierait ce commit
+sans tag `v*` et publierait l'image sous le tag Docker `:main`. La preuve PREPROD de ce commit lui
+suffit ; rien ne vérifie qu'un tag `v*` porte la décision de l'owner. Sur une autre branche, la
+preuve PREPROD manque et il refuse.
 
 ## Rollback
 
@@ -168,19 +171,32 @@ rien ne vérifie qu'un tag `v*` porte la décision de l'owner.
 | **PREPROD** | PR de revert du commit fautif (`git revert <sha>` sur une branche, puis `gh pr create`), fusionnée par l'owner comme toute PR. Le push `main` qui en résulte relance le cycle. Jamais de push direct ni de force-push sur `main`. |
 | **PROD, pendant un déploiement** | Automatique : après le point de non-retour, tout échec de `deploy-prod.yml` déclenche `⏪ Rollback PROD`, qui redémarre l'image capturée avant la mutation. |
 | **PROD, après un déploiement réussi** | L'owner relance `Deploy PROD (via tag)` (`workflow_dispatch`) sur le tag `v*` de la version à restaurer, dans les limites ci-dessous. |
-| **PROD, workflow indisponible ou tag refusé** | Intervention manuelle de l'owner sur l'hôte PROD, par la console de l'hébergeur. Aucun agent ne modifie PROD ni ne s'y connecte. |
+| **PROD, workflow indisponible, tag refusé ou tag sans garde** | Intervention manuelle de l'owner sur l'hôte PROD, par la console de l'hébergeur. Aucun agent ne modifie PROD ni ne s'y connecte. |
 
-Le run relancé exécute le `deploy-prod.yml` **du tag choisi**, pas celui de `main` :
+Le run relancé exécute le `deploy-prod.yml` **du tag choisi**, pas celui de `main`. Ses contrôles
+dépendent des commits que contient le tag (302 tags `v*` au 2026-11-01) :
 
-- tag qui contient #1881 et #1884 (2026-10-24) : contrôles complets, dont `/health` `revision` ;
-- tag antérieur qui contient #1696 (2026-10-02) : preuve PREPROD et provenance de `:sha-<commit>`
-  vérifiées, mais ni contrôle de la version servie, ni champ `revision` dans `/health` ;
-- tag antérieur à #1696 : son workflow promeut l'alias `:preprod` et s'arrête si son label
-  `revision` diffère du commit du tag, avant de toucher `:production` et le conteneur PROD.
+- tag qui contient #1881, #1884 et #1887 (2026-10-24 et 2026-10-25 ; au 2026-11-01, seul le tag du
+  2026-10-30) : contrôles complets, dont `/health` `revision` ;
+- tag qui contient #1696 (2026-10-02) mais pas #1881 (13 tags) : preuve PREPROD et provenance de
+  `:sha-<commit>` vérifiées, mais ni contrôle de la version servie, ni champ `revision` dans `/health` ;
+- tag qui contient `ed10ec6e5` (2026-04-21) mais pas #1696 (94 tags) : son workflow s'arrête si le
+  label `revision` de l'alias `:preprod` diffère du commit du tag, avant de toucher `:production` et
+  le conteneur PROD. L'alias suit `main` : le refus est la règle dès qu'un commit plus récent a été
+  construit ;
+- tag qui ne contient pas `ed10ec6e5` (194 tags) : **aucune garde**. Son workflow promeut l'alias
+  `:preprod` courant vers `:production` et redémarre PROD, quel que soit le commit de l'alias. **Ne
+  jamais le relancer.**
 
-Ce chemin suppose aussi que `:sha-<commit>` est encore dans le registre et que le run `ci.yml` de
-ce commit est lisible ; sinon le workflow refuse avant toute mutation. Un revert sur `main` ne change
-pas PROD : il redéploie PREPROD.
+Pour un tag qui contient #1696, ce chemin suppose aussi que le run `ci.yml` du commit est lisible et
+que `:sha-<commit>` est encore dans le registre. Sans le run, le workflow refuse avant toute
+mutation. Sans l'image, il refuse avant de toucher `:production` et le conteneur PROD, mais après
+avoir réétiqueté `:production-previous` sur l'image en service et l'avoir poussé : un run refusé
+remplace le point de retour précédent. Après un tel refus, l'intervention manuelle ne s'appuie pas
+sur `:production-previous` ; elle désigne l'image à restaurer par `:sha-<commit>` ou par le tag
+Docker poussé à son déploiement (nom du tag `v*`).
+
+Un revert sur `main` ne change pas PROD : il redéploie PREPROD.
 
 Voir `feedback_rollback_via_revert_pr_branch_protected.md` : main est branch-protected, jamais de force-push.
 
