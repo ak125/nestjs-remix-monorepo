@@ -42,7 +42,7 @@
         "render_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$", "description": "Empreinte exacte du rendu approuvé; aucune approbation transférable à un autre rendu." },
         "content_approved": {
           "type": "boolean",
-          "description": "Posé par l'owner après relecture du verdict du skill fafa-brand-safety-reviewer (règle AI2 du vault) : script + claims + evidence + disclaimer valides. Le schéma ne vérifie que la présence d'un nom dans content_approved_by."
+          "description": "Approbation humaine explicite du script, des claims, des preuves et du disclaimer sur leur version exacte. Le verdict du skill est une entrée de revue, jamais une approbation (règle AI2 du vault). Le schéma ne vérifie que la présence d'un nom, pas l'identité ni l'acte humain."
         },
         "content_approved_by": {
           "type": ["string", "null"]
@@ -53,7 +53,7 @@
         },
         "render_approved": {
           "type": "boolean",
-          "description": "Owner a inspecté le .mp4 rendu (qualité visuelle/audio conforme)."
+          "description": "Déclaration d'approbation humaine du MP4 exact après inspection visuelle/audio. Le schéma ne vérifie ni l'identité ni l'acte de revue."
         },
         "render_approved_by": {
           "type": ["string", "null"]
@@ -112,6 +112,13 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["gate", "verdict", "measured"],
+      "allOf": [{
+        "if": { "properties": { "measured": { "type": "null" } }, "required": ["measured"] },
+        "then": { "properties": {
+          "gate": { "enum": ["G3", "G4", "G5", "G6"] },
+          "verdict": { "enum": ["WARN", "FAIL"] }
+        } }
+      }],
       "properties": {
         "gate": {
           "type": "string",
@@ -122,8 +129,8 @@
           "enum": ["PASS", "WARN", "FAIL"]
         },
         "measured": {
-          "type": "number",
-          "description": "Valeur mesurée (ratio, count, score). Sémantique dépend du gate."
+          "type": ["number", "null"],
+          "description": "Valeur observée ; null uniquement pour G3-G6 : WARN si l'observation est absente, FAIL si elle est invalide. Jamais un zéro inventé ni un verdict de succès."
         },
         "warn_threshold": {
           "type": ["number", "null"]
@@ -159,7 +166,7 @@
         },
         "actor": {
           "type": "string",
-          "description": "Identifiant humain ou skill (ex: 'owner:fafa', 'skill:fafa-brand-safety-reviewer')"
+          "description": "Identifiant déclaré de l'acteur historique (humain ou skill selon l'action). Une entrée d'historique, même nommée content_approved ou render_approved, n'authentifie pas une approbation humaine."
         },
         "action": {
           "type": "string",
