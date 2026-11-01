@@ -282,6 +282,10 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
     assert.ok(template.problems.some((x) => x.endsWith("field(s) missing or placeholder: constats")));
     const command = evaluateReviewRecord(record({ limites: "`git show <sha>` non relancé" }), PR);
     assert.deepEqual(checks(command), CLEAN);
+    // An HTML or JSX tag in inline code is content, not the template's placeholder.
+    for (const limites of ["`<h1>` dupliqué sur R8", "le composant `<Link>` sans prefetch", "`<head>`"]) {
+      assert.deepEqual(checks(evaluateReviewRecord(record({ limites }), PR)), CLEAN, limites);
+    }
     for (const limites of ["`<non couvert>`", "`<lien>` ;", "** `<sha40>` **"]) {
       const { problems } = evaluateReviewRecord(record({ limites }), PR);
       assert.ok(problems.some((x) => x.endsWith("field(s) missing or placeholder: limites")), limites);
@@ -479,11 +483,22 @@ describe("evaluateReviewRecord — level (D3)", () => {
         `Accord, non conditionnel : ${HEAD}`,
         `La gate demande un accord sur ${HEAD}.`,
         `Accord ${HEAD}0`,
+        `Accord rétracté ${HEAD}`,
+        `Accord caduc ${HEAD}`,
+        `Accord invalidé ${HEAD}`,
+        `Accord abandonné ${HEAD}`,
+        `Accord ? ${HEAD}`,
+        `Accord ${HEAD} ?`,
+        `Accord à confirmer ${HEAD}`,
+        `Accord ${HEAD} sous réserve de la CI`,
       ]) {
         const comments = [{ id: 2, login: "owner", association: "OWNER", body: text }];
         assert.ok(refused({ ...ctx, comments }), text);
       }
     });
+
+    const WITHDRAWN =
+      "level C accord by `owner` also withdrawn or refused by the same account: the order of comments is not tracked (a withdrawal whose SHA, right after it, names another head does not count)";
 
     test("an accord withdrawn by the same account is unverified, the order not being tracked", () => {
       const approve = { id: 1, login: "owner", association: "OWNER", state: "APPROVED", commitId: HEAD, body: "" };
@@ -498,21 +513,47 @@ describe("evaluateReviewRecord — level (D3)", () => {
         `Accord révoqué sur ${HEAD.slice(0, 9)}`,
         `Désaccord sur ${HEAD}`,
         "Plus d'accord, voir https://github.com/o/r/pull/7#issuecomment-6556640100",
+        `Je retire mon accord : la base ${BASE} n'est pas à jour`,
+        "Je retire mon accord tant que d02c9354a n'est pas revu.",
+        "Accord retiré (ticket 123e4567-e89b-…)",
+        `Je retire mon approbation (sur ${HEAD})`,
+        `Je retire mon GO sur ${HEAD}`,
+        `Accord rétracté : ${HEAD}`,
+        `Je ne suis pas d'accord pour fusionner ${HEAD}.`,
       ]) {
         const withdrawal = { id: 3, login: "owner", association: "OWNER", body: text };
         for (const pr of [{ ...ctx, reviews: [approve], comments: [withdrawal] }, { ...ctx, comments: [accord, withdrawal] }]) {
           const r = evaluateReviewRecord(body, pr);
           assert.deepEqual(r.problems, [], text);
-          assert.ok(r.unverified.includes("level C accord by `owner` also withdrawn or refused by the same account, on the head or without a SHA: the order of comments is not tracked (a line about another head names its SHA)"), text);
+          assert.ok(r.unverified.includes(WITHDRAWN), text);
         }
       }
       // A quoted withdrawal, or one naming another head, leaves the accord counted.
-      for (const text of [`> Accord retiré : ${HEAD}`, `Accord retiré : ${OLD_HEAD}`, `Accord retiré : ${OLD_HEAD.slice(0, 9)}`]) {
+      for (const text of [
+        `> Accord retiré : ${HEAD}`,
+        `Accord retiré : ${OLD_HEAD}`,
+        `Accord retiré : ${OLD_HEAD.slice(0, 9)}`,
+        `Accord ${OLD_HEAD.slice(0, 9)} retiré`,
+        `Je retire mon accord sur la tête ${OLD_HEAD}.`,
+      ]) {
         const r = evaluateReviewRecord(body, { ...ctx, comments: [accord, { id: 3, login: "owner", association: "OWNER", body: text }] });
         assert.deepEqual(checks(r), CLEAN, text);
       }
       // A negation that does not bear on the accord withdraws nothing.
-      for (const text of [`Accord ${HEAD} (aucune réserve)`, `Accord ${HEAD}, pas de réserve`, "Pas besoin d'un autre accord."]) {
+      for (const text of [
+        `Accord ${HEAD} (aucune réserve)`,
+        `Accord ${HEAD}, pas de réserve`,
+        "Pas besoin d'un autre accord.",
+        // Conversation: « d'accord » (agreed), or a negation, a withdrawal or a
+        // disagreement that does not bear on one's accord, without the head.
+        "D'accord, je retire ma remarque.",
+        "D’accord, j’annule le renommage.",
+        "Je ne suis pas d'accord avec ce nom de variable.",
+        "Rien ne part en PROD sans accord nominatif.",
+        "En cas de désaccord, on en reparle.",
+        "Le test est suspendu, d'accord ?",
+        "Je suis plus d'accord avec la v2…",
+      ]) {
         const r = evaluateReviewRecord(body, { ...ctx, reviews: [approve], comments: [{ id: 3, login: "owner", association: "OWNER", body: text }] });
         assert.deepEqual(checks(r), CLEAN, text);
       }
@@ -595,6 +636,19 @@ describe("renderReport", () => {
     for (const kept of ["\n- next\n", "- a note", "- an item"]) assert.ok(cut.includes(kept), kept);
     const short = renderReport({ ...result, reasons: ["one"] });
     assert.ok(short.includes("- one") && !short.includes("truncated"));
+  });
+
+  test("a cut line keeps most of its text, a whole surrogate pair and closed code", () => {
+    const result = { pass: false, mode: "checklist", reasons: Array.from({ length: 5000 }, (_, i) => `reason ${i} ${"x".repeat(20)}`) };
+    const early = `a; ${"y".repeat(5000)}`;
+    const [line] = renderReport({ ...result, reasons: [early, ...result.reasons] }).split("\n").filter((l) => l.startsWith("- a; "));
+    assert.ok(line.length > 3000, String(line.length));
+    const emoji = `${"z".repeat(3997)}🧾${"z".repeat(100)}`;
+    const [cut] = renderReport({ ...result, reasons: [emoji, ...result.reasons] }).split("\n").filter((l) => l.startsWith("- z"));
+    assert.ok(!/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/.test(cut), "lone high surrogate");
+    const open = `\`${"c".repeat(5000)}\``;
+    const [code] = renderReport({ ...result, reasons: [open, ...result.reasons] }).split("\n").filter((l) => l.startsWith("- `"));
+    assert.equal((code.match(/`/g) ?? []).length % 2, 0);
   });
 });
 

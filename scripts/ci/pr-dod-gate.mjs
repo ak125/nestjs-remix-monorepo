@@ -115,9 +115,12 @@ const COMMENT_LINK = /github\.com\/([\w.-]+\/[\w.-]+)\/pull\/(\d+)#(issuecomment
 const PROSE_FILE = /\.(?:md|markdown)$/i;
 // Markdown that code parses (agent frontmatter, canon mirrors read at runtime) is configuration.
 const MARKDOWN_CONFIG = /(?:^|\/)\.claude\/(?:agents|canon-mirrors)\//;
-// Evidence (`audit/content/**`) and the projections that resync-pr.sh regenerates
-// (`audit/registry/*`, `audit/cleanup/*`, the seven inventories at the top of
-// `audit/`). Several are guard inputs and their freshness check (registry-fresh) is
+// Evidence (`audit/content/**`) and generated projections: `audit/registry/*`
+// (resync-pr.sh, but build-command-center-snapshot.js for the command-center
+// snapshot), `audit/cleanup/*` and the seven inventories at the top of `audit/`
+// (resync-pr.sh). The folders are matched, not each generator's output: a file
+// written by hand there reads as a projection. Several are guard inputs and their
+// freshness checks (registry-fresh, skills-canon-gate for the snapshot) are
 // warn-only: that they were not edited by hand is left to the evidence. Other audit
 // files are not listed: ratchet baselines, overlays and the TecDoc manifests of a
 // fail-closed guard are guard inputs no script regenerates, beside dated snapshots.
@@ -134,20 +137,32 @@ const OUTSIDE_REVIEW =
   /^(?:\*\*|__|\*|_|`)?revue\s+(?:ind[ée]pendante|humaine)(?:\*\*|__|\*|_|`)?\s*[,;]?\s*par(?![\p{L}\p{N}])/iu;
 const BY = /(?<![\p{L}\p{N}])par(?![\p{L}\p{N}])(.*)$/iu;
 // Level C accord: an approval of the head, or a line that starts with « Accord »
-// and names the head. Quoted lines, negated ones and those that withdraw do not
-// count; the account needs write access and is not the author. A line of the same
-// account that withdraws or refuses an accord, naming the head (in full or
-// abbreviated) or no SHA, cancels it: the order of comments is not tracked, so an
-// accord beside it stays unverified. A SHA has a letter and a digit, which keeps
-// comment ids and dates out.
-const ACCORD_LINE = /^[ \t]*(?:[-*+][ \t]+)?(?:\*\*|__)?accord(?![\p{L}\p{N}])/iu;
-const ACCORD_WORD = /(?<![\p{L}\p{N}])accord(?![\p{L}\p{N}])/iu;
-const ACCORD_NEGATION = /(?<![\p{L}\p{N}])(?:pas|non|aucune?)(?![\p{L}\p{N}])/iu;
-const WITHDRAW_WORD =
-  /(?<![\p{L}\p{N}])(?:refus\p{L}*|retir\p{L}*|retrait|annul\p{L}*|r[ée]voqu\p{L}*|r[ée]vocation|suspen\p{L}*)(?![\p{L}\p{N}])/iu;
+// and names the head. Quoted lines, negated, questioning or reserved ones and those
+// that withdraw do not count; the account needs write access and is not the author.
+// A withdrawal by the same account cancels it, the order of comments not being
+// tracked (the accord stays unverified): a line naming the head (in full or
+// abbreviated) that withdraws, refuses or negates an accord, or, with or without a
+// SHA, a line that starts with « Accord » and withdraws it, one that opens with « Pas
+// d'accord » or « Désaccord », or a withdrawal of one's own accord (« je retire mon
+// accord »). A SHA right after such a withdrawal scopes it: naming another head, it
+// does not count. A SHA has a letter and a digit, which keeps comment ids and dates
+// out. « D'accord » (agreed) is not an accord.
+const LINE_START = String.raw`^[ \t]*(?:[-*+][ \t]+)?(?:\*\*|__)?`;
+const ACCORD_LINE = new RegExp(`${LINE_START}accord(?![\\p{L}\\p{N}])`, "iu");
+const ACCORD_WORD = /(?<![\p{L}\p{N}])(?<!(?<![\p{L}\p{N}])d['’])accord(?![\p{L}\p{N}])/iu;
+const ACCORD_NEGATION = /(?<![\p{L}\p{N}])(?:pas|non|aucune?)(?![\p{L}\p{N}])|\?(?!\S)|(?<![\p{L}\p{N}])(?:sous[ \t]+r[ée]serve|[àa][ \t]+confirmer)(?![\p{L}\p{N}])/iu;
+const WITHDRAW = String.raw`(?:refus\p{L}*|retir\p{L}*|retrait|annul\p{L}*|r[ée]voqu\p{L}*|r[ée]vocation|suspen\p{L}*|r[ée]tract\p{L}*|caduc\p{L}*|invalid\p{L}*|abandon\p{L}*)`;
+const WITHDRAW_WORD = new RegExp(`(?<![\\p{L}\\p{N}])${WITHDRAW}(?![\\p{L}\\p{N}])`, "iu");
 const NEGATED_ACCORD =
   /(?<![\p{L}\p{N}])(?:pas|plus|aucun|sans|non)[ \t]+(?:d['’]un[ \t]+|[dl]['’][ \t]*|(?:de|du|mon|son|notre|votre|un|cet)[ \t]+)?accord(?![\p{L}\p{N}])|(?<![\p{L}\p{N}])d[ée]saccord(?![\p{L}\p{N}])/iu;
+const WITHDRAWAL_OPENING = new RegExp(`${LINE_START}(?:(?:pas|plus|aucun)[ \\t]+d['’][ \\t]*accord|d[ée]saccord)(?![\\p{L}\\p{N}])`, "iu");
+const OWN_WITHDRAWAL = new RegExp(
+  `(?<![\\p{L}\\p{N}])${WITHDRAW}[ \\t]+(?:(?:de|d['’])[ \\t]*)?(?:mon|ma|notre|cet|ce|l['’])[ \\t]*(?:accord|approbation|go|feu[ \\t]+vert)(?![\\p{L}\\p{N}])`,
+  "iu",
+);
+const ATTACHED_SHA = /^(?:[ \t*_`(:,—–-]|(?:sur|pour|de|du|à|la|le|t[êe]te|commit)(?![\p{L}\p{N}]))*([0-9a-f]{7,40})(?![\p{L}\p{N}])/iu;
 const SHA_TOKEN = /(?<![0-9a-f])(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}(?![0-9a-f])/gi;
+const everyMatch = (pattern, line) => [...line.matchAll(new RegExp(pattern.source, `${pattern.flags}g`))];
 const QUOTED = /^[ \t]*>/;
 const WRITE_ACCESS = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const DECISIVE = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
@@ -157,26 +172,35 @@ export const DOD2_ON_PROOF = [
   "review quality and, for levels B and C, effective independence (distinct session without the author's context, frozen SHA, no write during the review)",
   "handling of findings: a confirmed correctness, security or contract finding neither fixed nor refuted blocks DoD2",
   "level justification: STOP zones (level C) are not detected from paths, files neither prose, audit evidence or projection nor code are not classified, and agent instructions (CLAUDE.md, AGENTS.md, rules, skills) count as prose",
-  "projections at level A were regenerated by their script, not edited by hand: several are guard inputs and registry-fresh, which checks their freshness, is warn-only",
+  "projections at level A were regenerated by their script, not edited by hand: several are guard inputs and their freshness checks are warn-only",
   "domain owner of each changed path in ownership.yaml (not __unassigned__)",
   "carry-over (D4): a record from an earlier head counts only through a new record naming the new SHA, with an identical attributable diff; the gate does not compare diffs",
-  "level C accord: the counted account is the domain owner of the changed paths, and its wording is an accord on this head (not conditional; comment edits are not tracked)",
+  "level C accord: the counted account is the domain owner of the changed paths, and its wording is an accord on this head (not conditional) that nothing withdraws: comment edits and other withdrawal wordings (a disagreement within a sentence that does not name the head, « accord levé ») are not tracked",
   "identity: a login proves the account, not the person (Desktop sessions act under the owner's account)",
 ];
 
 const PLACEHOLDER = /<[^<>\n]*>/;
 const fieldKey = (name) => name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 const CODE_SPAN = /`[^`\n]*`/g;
-// A `<…>` placeholder outside inline code, or as a whole code span (a template
-// wrapped in backticks), leaves the value unfilled. Inline code that holds one
-// among other text (`git show <sha>`) is not content on its own: something else
-// must fill the value.
+// A `<…>` outside inline code leaves the value unfilled. In inline code, only the
+// template's own placeholders (DoD2 line and record, in the vault rule and the PR
+// template) do: as a whole span (a template wrapped in backticks) the value is
+// unfilled, among other text (`git show <sha>`) the span is not content on its own.
+// Any other `<…>` in code (an HTML or JSX tag, a generic type) is content.
+const TEMPLATE_PLACEHOLDERS = new Set([
+  "a|b|c", "sha40", "sha", "n", "lien", "qui", "owner", "domain", "github-user", "…", "...",
+  "auto-review | revue indépendante | revue humaine", "session, agent ou compte",
+  "diff base..tête, fichiers lus, exclusions", "commandes et résultats",
+  "preuve, entrées inchangées", "non couvert",
+]);
+const isTemplatePlaceholder = (tag) => TEMPLATE_PLACEHOLDERS.has(tag.slice(1, -1).trim().replace(/\s+/g, " ").toLowerCase());
+const holdsPlaceholder = (span) => (span.match(/<[^<>\n]*>/g) ?? []).some(isTemplatePlaceholder);
 const PLACEHOLDER_SPAN = /^`\s*<[^<>\n]*>\s*`$/;
 const isFilled = (value) =>
   typeof value === "string" &&
   !PLACEHOLDER.test(value.replace(CODE_SPAN, "")) &&
-  !(value.match(CODE_SPAN) ?? []).some((span) => PLACEHOLDER_SPAN.test(span)) &&
-  /[\p{L}\p{N}]/u.test(value.replace(CODE_SPAN, (span) => (PLACEHOLDER.test(span) ? "" : span)));
+  !(value.match(CODE_SPAN) ?? []).some((span) => PLACEHOLDER_SPAN.test(span) && holdsPlaceholder(span)) &&
+  /[\p{L}\p{N}]/u.test(value.replace(CODE_SPAN, (span) => (holdsPlaceholder(span) ? "" : span)));
 // Read on a bounded slice: a record line is short, and PR text is untrusted.
 const shaAfter = (label, line) =>
   line.slice(0, 400).match(new RegExp(`${label}\\s*(?::\\s*)?[\`*]*([0-9a-f]{7,})`, "i"))?.[1].toLowerCase();
@@ -241,19 +265,21 @@ function checkAccord(pr, at, out) {
       .filter((line) => !QUOTED.test(line) && head.test(line.toLowerCase()));
   const namesHead = (body) =>
     headLines(body).some((line) => ACCORD_LINE.test(line) && !ACCORD_NEGATION.test(line) && !WITHDRAW_WORD.test(line));
-  const aboutHead = (line) => {
-    const shas = line.match(SHA_TOKEN) ?? [];
-    return shas.length === 0 || shas.some((sha) => pr.headSha.startsWith(sha.toLowerCase()));
+  const isHead = (sha) => /\d/.test(sha) && /[a-f]/i.test(sha) && pr.headSha.startsWith(sha.toLowerCase());
+  const withdrawsLine = (line) => {
+    if (QUOTED.test(line)) return false;
+    const namesHeadSha = (line.match(SHA_TOKEN) ?? []).some(isHead);
+    if (namesHeadSha && ((ACCORD_WORD.test(line) && WITHDRAW_WORD.test(line)) || NEGATED_ACCORD.test(line))) return true;
+    const anchors = [OWN_WITHDRAWAL, WITHDRAWAL_OPENING];
+    if (ACCORD_LINE.test(line) && WITHDRAW_WORD.test(line)) anchors.push(ACCORD_LINE, WITHDRAW_WORD);
+    const matches = anchors.flatMap((pattern) => everyMatch(pattern, line));
+    if (matches.length === 0) return false;
+    const scopes = matches
+      .map((m) => line.slice(m.index + m[0].length).match(ATTACHED_SHA)?.[1])
+      .filter((sha) => sha && /\d/.test(sha) && /[a-f]/i.test(sha));
+    return scopes.length === 0 || scopes.some(isHead);
   };
-  const withdraws = (body) =>
-    nfc(body)
-      .split(/\r?\n/)
-      .some(
-        (line) =>
-          !QUOTED.test(line) &&
-          ((ACCORD_WORD.test(line) && WITHDRAW_WORD.test(line)) || NEGATED_ACCORD.test(line)) &&
-          aboutHead(line),
-      );
+  const withdraws = (body) => nfc(body).split(/\r?\n/).some(withdrawsLine);
   // Latest decisive review per account, as GitHub counts them.
   const latest = new Map();
   for (const review of pr.reviews) {
@@ -290,7 +316,7 @@ function checkAccord(pr, at, out) {
     out.unverified.push(`level C accord by ${shortList(unknown.map(([login]) => login))}: repository access unknown`);
   } else if (cancelled.length > 0) {
     out.unverified.push(
-      `level C accord by ${shortList(cancelled.map(([login]) => login))} also withdrawn or refused by the same account, on the head or without a SHA: the order of comments is not tracked (a line about another head names its SHA)`,
+      `level C accord by ${shortList(cancelled.map(([login]) => login))} also withdrawn or refused by the same account: the order of comments is not tracked (a withdrawal whose SHA, right after it, names another head does not count)`,
     );
   } else if (accounts.some(([login]) => login === pr.author)) {
     out.unverified.push(`level C accord recorded by the author's account only (${code(pr.author)}): it does not show that another person agreed`);
@@ -585,7 +611,8 @@ const LINE_CAP = 4000;
 
 /**
  * Markdown report of a result below REPORT_CAP characters: past the cap, each line
- * is cut to LINE_CAP (at a « ; » when it can), then the report at a line end.
+ * is cut to LINE_CAP (at a « ; » in its last quarter when it can, never inside a
+ * surrogate pair, closing an open code span), then the report at a line end.
  */
 export function renderReport(result) {
   const full = renderFullReport(result);
@@ -593,7 +620,10 @@ export function renderReport(result) {
   let report = "";
   for (const line of full.split("\n")) {
     const at = line.lastIndexOf("; ", LINE_CAP);
-    const kept = line.length <= LINE_CAP ? line : `${line.slice(0, at > 0 ? at : LINE_CAP)} … _(line cut)_`;
+    let end = at > (LINE_CAP * 3) / 4 ? at : LINE_CAP;
+    if (/[\uD800-\uDBFF]/.test(line[end - 1] ?? "")) end -= 1;
+    const cut = line.slice(0, end);
+    const kept = line.length <= LINE_CAP ? line : `${cut}${(cut.match(/`/g) ?? []).length % 2 ? "`" : ""} … _(line cut)_`;
     if (report.length + kept.length + 1 > REPORT_CAP) break;
     report += `${kept}\n`;
   }
