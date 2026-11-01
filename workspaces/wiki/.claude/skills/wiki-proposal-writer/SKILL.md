@@ -47,8 +47,9 @@ Si l'utilisateur demande explicitement l'un de ces 3, le skill répond avec verd
 | 9. Rédaction body markdown (sections obligatoires `entity_type`) | **Anthropic** | rédactionnel uniquement (Définition / Fonctionnement / Symptômes / FAQ / etc.) |
 | 10. Validation post-génération via 9 quality gates | 0-LLM | invoque `python3 _scripts/quality-gates.py <fichier>` |
 | 11. Output AEC coverage manifest | 0-LLM | YAML structuré |
+| 12. Relecture française de la réponse entière (étape 13 du flux) | **Anthropic** | relecture selon `.claude/prompts/_shared/editorial-review.md`, puis contrôle 0-LLM `check-editorial-review.mjs --emit` |
 
-**Aucune chaîne LLM custom**, aucun wrapper maison. Anthropic Claude est invoqué **uniquement** pour le rédactionnel (étape 9), pas pour la structure ni pour la validation.
+**Aucune chaîne LLM custom**, aucun wrapper maison. Anthropic Claude est invoqué **uniquement** pour le rédactionnel (étape 9) et la relecture française de la réponse (étape 12), pas pour la structure ni pour la validation ; le contrôle de la relecture reste mécanique.
 
 ## Flow d'invocation
 
@@ -98,7 +99,22 @@ L'utilisateur fournit au minimum :
 11. Invoquer python3 _scripts/quality-gates.py proposals/<slug>.md
     → reporter verdict (PASS / FAIL + blocked_reasons[])
 12. Output AEC coverage manifest (cf. ci-dessous)
+13. Relecture française, empreinte et contrôle mécanique de la réponse entière, manifeste et
+    bloc final compris (.claude/prompts/_shared/editorial-review.md à la racine du dépôt) :
+    - empreinte de l'original calculée par une commande sur ses octets, jamais recopiée
+    - passer la réponse sur l'entrée standard de
+      node <racine du dépôt>/scripts/agents/check-editorial-review.mjs --emit --root <dossier>
+    - l'état de la relecture, écrit dans la prose comme dans le bloc, est celui de la première
+      ligne du rapport capturé (APPLIQUEE, PARTIELLE ou REJETEE)
+    - REJETEE → corriger le fond, repasser ; livrer la dernière entrée contrôlée, sans retouche
+    - aucun rapport dans la sortie capturée → repasser une fois ; toujours aucun → relecture
+      partielle, cause « sortie du contrôle non capturée » nommée dans le champ lecture
 ```
+
+**Sous une consigne sans écriture.** Les étapes 10 et 11 portent sur le fichier écrit : elles
+sont déclarées non exécutées, avec cette cause, dans le manifeste. L'étape 13 lit l'entrée
+standard et n'écrit rien : elle reste due. Une étape ne s'écarte qu'après lecture de la règle qui
+la régit.
 
 ## Defaults conservateurs (ADR-033 §D4)
 
@@ -198,7 +214,7 @@ Le skill **ne fait jamais** ce mv. C'est une décision humaine.
 - 9 quality gates Python : `automecanik-wiki/_scripts/quality-gates.py`
 - formule `confidence_score` : `_meta/quality-gates.md` §4
 - workflow `wiki-protected-paths.yml` (4 markers commit message)
-- mémoire `skills-first-architecture.md` (0-LLM structure, Anthropic seul rédactionnel)
+- mémoire `skills-first-architecture.md` (0-LLM structure, Anthropic seul fournisseur LLM : rédactionnel de l'étape 9 et relecture de l'étape 12)
 - mémoire `feedback_wiki_scope_discipline.md` (sas markdown ≠ sas DB)
 - mémoire `diag-symptom-db-convention.md` (slugs anglais snake_case `brake_*`)
 - mémoire `mvp-g6-adr033-handoff.md` (Phase 1 closed 2026-04-30)

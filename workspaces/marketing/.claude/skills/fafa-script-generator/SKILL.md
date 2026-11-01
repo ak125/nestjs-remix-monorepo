@@ -5,7 +5,7 @@ description: Use when transforming a video brief (gamme, symptom, format, URL ci
 
 # Fafa Script Generator — Skill
 
-> Transforme un Video Brief en script Fafa **original** (signature `INSPIRED_PATTERN_ONLY` si dérivé d'un pattern). Toujours invoquer `fafa-persona-canon` en pré-requis pour aligner ton + interdits.
+> Transforme un Video Brief en script Fafa **original** (signature `INSPIRED_PATTERN_ONLY` si dérivé d'un pattern). Toujours invoquer `fafa-persona-canon` en pré-requis pour aligner ton + interdits, et lire en entier la persona `personas/fafa.md` : le skill la résume sans la remplacer.
 
 ## Quand invoquer
 
@@ -15,9 +15,11 @@ description: Use when transforming a video brief (gamme, symptom, format, URL ci
 
 ## Pré-requis
 
+Chemins relatifs à `workspaces/marketing/fafa-media-factory/` (depuis ce workspace : `fafa-media-factory/`).
+
 - Brief JSON conforme `governance/video-brief.schema.json`
 - Si `inspiration_pattern_id` présent : pattern JSONL dans `inspiration/patterns/`
-- Persona Fafa figée (`personas/fafa.md`)
+- Persona Fafa figée (`personas/fafa.md`), lue en entier avant d'écrire, même après `fafa-persona-canon`
 - Format choisi parmi 4 specs disponibles (`formats/*.md`)
 
 ## Input
@@ -73,7 +75,7 @@ description: Use when transforming a video brief (gamme, symptom, format, URL ci
 
 ## Workflow
 
-1. Charger brief + format spec + persona canon
+1. Charger brief + format spec ; invoquer `fafa-persona-canon` puis lire `personas/fafa.md` en entier
 2. Si `inspiration_pattern_id` : charger pattern + marquer statut `INSPIRED_PATTERN_ONLY`
 3. Générer script aligné format narratif + persona
 4. Sortir JSON dans `scripts/draft/<video_id>/script.json`

@@ -69858,6 +69858,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/agents/check-editorial-review.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 1095,
+      "owner": "__unassigned__",
+      "path": "scripts/agents/check-editorial-review.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/agents/check-editorial-review.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 856,
+      "owner": "__unassigned__",
+      "path": "scripts/agents/check-editorial-review.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/audit/__fixtures__/repo-broken/.dependency-cruiser.generated.cjs",
       "importedBy": [],
       "imports": [],

@@ -10,6 +10,7 @@
 #   scripts/agents/validate-agents-md.sh --file <path>     # un fichier (anti-pattern)
 #   scripts/agents/validate-agents-md.sh --file <path> --type agents-md  # + structure
 #   scripts/agents/validate-agents-md.sh --self-test       # tests négatifs embarqués
+#   scripts/agents/validate-agents-md.sh --skill-wiring    # liens et sources des skills
 #
 # Exit codes :
 #   0 — PASS (ou WARN, affichage seulement)
@@ -174,7 +175,42 @@ check_antipattern_lines() {
 
 # ─── Modes d'invocation ───────────────────────────────────────────────────────
 
+check_skill_wiring() {
+  local root="$1"
+  local workspace link resolved mapping relative
+
+  # Les sources restent dans leur workspace ; aucun corps de skill n'est exécuté.
+  for workspace in "$root" "$root"/workspaces/*; do
+    link="$workspace/.agents/skills"
+    if [ ! -d "$workspace/.claude/skills" ] && [ ! -e "$link" ] && [ ! -L "$link" ]; then
+      continue
+    fi
+    resolved=$(realpath -e -- "$link" 2>/dev/null || true)
+    if [ ! -L "$link" ] || [ "$(readlink -- "$link" 2>/dev/null)" != '../.claude/skills' ] \
+      || [ "$resolved" != "$workspace/.claude/skills" ]; then
+      emit_block "SKILL_WIRING" "$link" 1 \
+        'lien relatif ../.claude/skills requis, résolu vers les sources du même workspace'
+    fi
+  done
+
+  mapping="$root/.claude/knowledge/workspaces.md"
+  if [ ! -f "$mapping" ]; then
+    emit_block "SKILL_WIRING" "$mapping" 1 'consignes communes de sélection introuvables'
+    return
+  fi
+  FILES_SCANNED=$((FILES_SCANNED + 1))
+  # Lire les chemins réellement documentés, sans maintenir un second registre.
+  while IFS= read -r relative; do
+    [ -n "$relative" ] || continue
+    if [ ! -f "$root/$relative" ]; then
+      emit_block "SKILL_WIRING" "$relative" 1 'source de skill référencée introuvable'
+    fi
+  done < <(grep -oE '`(\.claude|workspaces)/[^`[:space:]]+/SKILL\.md`' "$mapping" \
+    | tr -d '`' | sort -u)
+}
+
 run_all() {
+  check_skill_wiring "$(git rev-parse --show-toplevel)"
   while IFS= read -r f; do
     is_excluded "$f" && continue
     FILES_SCANNED=$((FILES_SCANNED + 1))
@@ -342,8 +378,64 @@ EOF
     printf '  ✓ %s\n' "PASS prose-corrective-non-flaggée"
   fi
 
+  # 13–20. La découverte est vérifiée séparément de l'invocation native.
+  local fixture="$tmp/skill-wiring"
+  mkdir -p "$fixture/.agents" "$fixture/.claude/skills/example" \
+    "$fixture/.claude/knowledge" "$fixture/workspaces/seo/.agents" \
+    "$fixture/workspaces/seo/.claude/skills/local"
+  printf '# Example\n' > "$fixture/.claude/skills/example/SKILL.md"
+  printf '# Local\n' > "$fixture/workspaces/seo/.claude/skills/local/SKILL.md"
+  printf '| Test | `.claude/skills/example/SKILL.md` |\n' \
+    > "$fixture/.claude/knowledge/workspaces.md"
+  ln -s ../.claude/skills "$fixture/.agents/skills"
+  ln -s ../.claude/skills "$fixture/workspaces/seo/.agents/skills"
+
+  wiring_exit() (
+    BLOCKS=0
+    check_skill_wiring "$fixture" >/dev/null
+    [ "$BLOCKS" -eq 0 ]
+  )
+  wiring_exit
+  test_case "PASS — liens racine et workspace, source référencée" 0 $?
+
+  rm "$fixture/workspaces/seo/.agents/skills"
+  wiring_exit
+  test_case "BLOCK — lien de workspace absent" 1 $?
+  ln -s ../.claude/skills "$fixture/workspaces/seo/.agents/skills"
+
+  mv "$fixture/workspaces/seo/.claude/skills" "$fixture/workspaces/seo/.claude/skills.saved"
+  wiring_exit
+  test_case "BLOCK — source de workspace supprimée, lien devenu pendant" 1 $?
+  mv "$fixture/workspaces/seo/.claude/skills.saved" "$fixture/workspaces/seo/.claude/skills"
+
+  rm "$fixture/.agents/skills"
+  ln -s ../missing "$fixture/.agents/skills"
+  wiring_exit
+  test_case "BLOCK — lien cassé" 1 $?
+
+  rm "$fixture/.agents/skills"
+  ln -s "$tmp" "$fixture/.agents/skills"
+  wiring_exit
+  test_case "BLOCK — lien hors du workspace" 1 $?
+
+  rm "$fixture/.agents/skills"
+  mkdir "$fixture/.agents/skills"
+  wiring_exit
+  test_case "BLOCK — répertoire copié au lieu du lien" 1 $?
+  rmdir "$fixture/.agents/skills"
+  ln -s ../.claude/skills "$fixture/.agents/skills"
+
+  rm "$fixture/.claude/skills/example/SKILL.md"
+  wiring_exit
+  test_case "BLOCK — source de skill référencée absente" 1 $?
+  printf '# Example\n' > "$fixture/.claude/skills/example/SKILL.md"
+
+  rm "$fixture/.claude/knowledge/workspaces.md"
+  wiring_exit
+  test_case "BLOCK — consignes communes absentes" 1 $?
+
   if [ $failed -eq 0 ]; then
-    echo "✅ all 12 self-tests passed"
+    echo "✅ all 20 self-tests passed"
     exit 0
   else
     echo "❌ $failed self-test(s) failed"
@@ -358,12 +450,13 @@ usage() {
 Usage: $SCRIPT_NAME <mode>
 
 Modes :
-  --all                  Scan structure de tous les agents/*/AGENTS.md
+  --all                  Structure des agents + raccordement statique des skills
   --staged               Scan diff staged (pre-commit hook)
   --diff <ref>           Scan diff vs ref (ex: origin/main)
   --file <path>          Scan anti-pattern d'un fichier
   --file <path> --type agents-md   + check structure
   --self-test            Tests négatifs embarqués
+  --skill-wiring         Liens de découverte et sources référencées (pas de runtime)
 
 Voir mémoire $MEMORY_HINT pour les règles.
 EOF
@@ -391,6 +484,7 @@ main() {
       run_file "$2" "$force_type"
       ;;
     --self-test) run_self_test ;;
+    --skill-wiring) check_skill_wiring "$(git rev-parse --show-toplevel)" ;;
     -h|--help) usage; exit 0 ;;
     *) echo "❌ mode inconnu : $1" >&2; usage; exit 2 ;;
   esac
