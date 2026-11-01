@@ -704,6 +704,44 @@ describe("evaluateReviewRecord — level (D3)", () => {
       }
     });
 
+    test("a compound is read part by part for withdrawal words, and « je » may take two object pronouns and « ai »", () => {
+      const approve = { id: 1, login: "owner", association: "OWNER", state: "APPROVED", commitId: HEAD, body: "" };
+      const accord = { id: 2, login: "owner", association: "OWNER", body: `Accord ${HEAD}` };
+      for (const text of [
+        "Je retire mon accord.Merci",
+        "Mon accord est retiré.Merci",
+        "Accord retiré/annulé.",
+        "Je retire/annule mon accord.",
+        "Mon accord : retiré/refusé",
+        "Accord retiré-annulé",
+        "accord/retiré",
+        "Accord.retiré",
+        "Mon accord, je le retire.",
+        "Mon accord, je l'annule.",
+        "Accord : je le suspends",
+        "Mon accord, je l'ai retiré.",
+        "Accord, je vous le retire.",
+        "Mon accord, je m'en rétracte.",
+      ]) {
+        const withdrawal = { id: 3, login: "owner", association: "OWNER", body: text };
+        for (const pr of [{ ...ctx, reviews: [approve], comments: [withdrawal] }, { ...ctx, comments: [accord, withdrawal] }]) {
+          const r = evaluateReviewRecord(body, pr);
+          assert.deepEqual(r.problems, [], text);
+          assert.ok(r.unverified.includes(WITHDRAWN), text);
+        }
+      }
+      for (const text of [`Accord ${HEAD} retiré.Merci`, `Accord ${HEAD} (retiré/annulé)`, `Accord ${HEAD} — refusé/annulé`]) {
+        const comments = [{ id: 2, login: "owner", association: "OWNER", body: text }];
+        assert.ok(refused({ ...ctx, comments }), text);
+        assert.ok(evaluateReviewRecord(body, { ...ctx, reviews: [approve], comments }).unverified.includes(WITHDRAWN), text);
+      }
+      // A compound without a withdrawal word, a pronoun without a term, or a scope on another head.
+      for (const text of ["Accord-cadre signé, go-live lundi.", "Je le retire.", `Accord/retiré : ${OLD_HEAD.slice(0, 9)}`]) {
+        const r = evaluateReviewRecord(body, { ...ctx, reviews: [approve], comments: [{ id: 3, login: "owner", association: "OWNER", body: text }] });
+        assert.deepEqual(checks(r), CLEAN, text);
+      }
+    });
+
     test("an approval of an older head, a dismissed one, or a later change request is not", () => {
       const approve = { id: 1, login: "owner", association: "OWNER", state: "APPROVED", commitId: HEAD, body: "" };
       const older = [{ ...approve, commitId: OLD_HEAD }];
