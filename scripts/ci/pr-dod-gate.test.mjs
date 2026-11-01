@@ -27,6 +27,8 @@ const BASE = "6ab7854c2adf15e3e588f8a73e4f9085ecaeee5d";
 const PR = { headSha: HEAD, number: 7, repo: "o/r", mergeBase: BASE, files: ["docs/x.md"], comments: [], reviews: [] };
 // State that satisfies DoD2 (ADR-120): an assignee and a record on the head.
 const OWNED = { assignees: ["owner"], pr: PR };
+const CLEAN = { problems: [], unverified: [] };
+const checks = ({ problems, unverified }) => ({ problems, unverified });
 
 function record({ level = "A", head = HEAD, base = BASE, procedure = "auto-review, par la session auteure", limites = "aucune revue indépendante" } = {}) {
   return [
@@ -89,6 +91,11 @@ describe("evaluateDoD — checklist mode", () => {
     assert.equal(r.pass, false);
     assert.equal(r.reasons.length, DOD_IDS.length);
     assert.deepEqual(r.onProof, DOD2_ON_PROOF);
+  });
+
+  test("the evidence list names carry-over and the accord's account", () => {
+    assert.ok(DOD2_ON_PROOF.some((x) => x.startsWith("carry-over (D4)")));
+    assert.ok(DOD2_ON_PROOF.some((x) => x.startsWith("level C accord: the counted account is the domain owner")));
   });
 
   test("DoD1 word boundary does not match DoD10-style noise", () => {
@@ -215,9 +222,11 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
     assert.ok(problems.some((x) => x.startsWith(`no record names the head ${HEAD}`) && x.includes(OLD_HEAD)));
   });
 
-  test("a short SHA does not name the head", () => {
+  test("a short SHA does not name the head, and the message says so", () => {
     const { problems } = evaluateReviewRecord(record({ head: HEAD.slice(0, 9) }), PR);
-    assert.ok(problems.some((x) => x.startsWith("no record names the head")));
+    assert.deepEqual(problems, [
+      `record names ${HEAD.slice(0, 9)}, an abbreviation of the head: the record names the 40-character SHA ${HEAD}`,
+    ]);
   });
 
   test("the base must be the merge-base", () => {
@@ -247,63 +256,155 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
     assert.deepEqual(problems, [`the DoD2 line names ${OLD_HEAD}, the head is ${HEAD}`]);
   });
 
+  test("a template placeholder is not a value, in any field", () => {
+    const procedure = "<auto-review | revue indépendante | revue humaine>, par <session, agent ou compte>";
+    const { problems } = evaluateReviewRecord(record({ procedure, limites: "aucune ; suivi : <lien>" }), PR);
+    assert.ok(problems.some((x) => x.endsWith("field(s) missing or placeholder: procédure, limites")));
+    const partial = evaluateReviewRecord(record({ procedure: "auto-review, par <session, agent ou compte>" }), PR);
+    assert.ok(partial.problems.some((x) => x.endsWith("field(s) missing or placeholder: procédure")));
+    const inCode = evaluateReviewRecord(record({ limites: "le type `Map<string, number>` n'est pas testé" }), PR);
+    assert.deepEqual(checks(inCode), CLEAN);
+  });
+
+  test("« par » is a word, not a syllable", () => {
+    const { problems } = evaluateReviewRecord(record({ procedure: "auto-review préparée hier" }), PR);
+    assert.ok(problems.some((x) => x.includes("procédure does not name who ran it")));
+  });
+
+  test("a decomposed (NFD) record reads like a composed one", () => {
+    const body = record().normalize("NFD");
+    assert.notEqual(body, record());
+    assert.deepEqual(checks(evaluateReviewRecord(body, PR)), CLEAN);
+  });
+
+  test("a long run of spaces after a label is read in linear time", () => {
+    const line = `- [x] Revue niveau A — tête${" ".repeat(60000)}x`;
+    const started = process.hrtime.bigint();
+    parseReviewRecords(line);
+    evaluateReviewRecord(`- [x] DoD2 — tête${" ".repeat(60000)}x`, PR);
+    assert.ok(Number(process.hrtime.bigint() - started) / 1e6 < 500);
+  });
+
   test("labels in bold and fields as list items are read", () => {
     const body = record().replace("procédure :", "- **Procédure** :").replace("limites :", "- limites :");
-    assert.deepEqual(evaluateReviewRecord(body, PR), { problems: [], unverified: [] });
+    assert.deepEqual(checks(evaluateReviewRecord(body, PR)), CLEAN);
   });
 });
 
 describe("evaluateReviewRecord — level (D3)", () => {
   test("level A with code in the diff needs level B", () => {
     const { problems } = evaluateReviewRecord(record(), { ...PR, files: ["docs/x.md", "scripts/ci/x.mjs"] });
-    assert.ok(problems.some((x) => x.includes("level A declared but the diff changes code (scripts/ci/x.mjs)")));
+    assert.ok(problems.some((x) => x.includes("level A declared but the diff changes code (`scripts/ci/x.mjs`)")));
   });
 
-  test("level A with files neither prose nor code is left to the evidence", () => {
-    const { problems, unverified } = evaluateReviewRecord(record(), { ...PR, files: ["audit/x.json"] });
-    assert.deepEqual(problems, []);
-    assert.ok(unverified.some((x) => x.includes("neither prose nor code") && x.includes("audit/x.json")));
+  test("level A with files neither prose, audit data nor code is left to the evidence", () => {
+    for (const file of ["config/x.yaml", "requirements.txt", "docs/x.mdx"]) {
+      const { problems, unverified } = evaluateReviewRecord(record(), { ...PR, files: [file] });
+      assert.deepEqual(problems, [], file);
+      assert.ok(unverified.some((x) => x.includes("neither prose, audit data nor code") && x.includes(`\`${file}\``)), file);
+    }
+  });
+
+  test("audit data and projections regenerated by their script stay at level A", () => {
+    const files = ["docs/x.md", "audit/registry/canonical.json", "audit/module-boundaries.json", ".claude/knowledge/REPO_MAP.md"];
+    assert.deepEqual(checks(evaluateReviewRecord(record(), { ...PR, files })), CLEAN);
+    const script = evaluateReviewRecord(record(), { ...PR, files: ["audit/registry/build.mjs"] });
+    assert.ok(script.problems.some((x) => x.includes("level A declared but the diff changes code")));
+  });
+
+  test("a file list at the API cap leaves the level unverified", () => {
+    const files = Array.from({ length: 3000 }, (_, i) => `docs/${i}.md`);
+    const { unverified } = evaluateReviewRecord(record(), { ...PR, files });
+    assert.ok(unverified.some((x) => x.startsWith("changed files listed up to the API cap (3000)")));
   });
 
   test("level B requires an independent review", () => {
     const files = { ...PR, files: ["scripts/ci/x.mjs"] };
     const self = evaluateReviewRecord(record({ level: "B" }), files);
-    assert.ok(self.problems.some((x) => x.includes("level B requires an independent review")));
+    assert.ok(self.problems.some((x) => x.includes("level B requires an independent or human review")));
     const independent = evaluateReviewRecord(record({ level: "B", procedure: "revue indépendante, par un sous-agent sans contexte" }), files);
-    assert.deepEqual(independent, { problems: [], unverified: [] });
+    assert.deepEqual(checks(independent), CLEAN);
+  });
+
+  test("a human review counts at level B, a negated review does not", () => {
+    const files = { ...PR, files: ["scripts/ci/x.mjs"] };
+    const human = evaluateReviewRecord(record({ level: "B", procedure: "revue humaine, par un relecteur" }), files);
+    assert.deepEqual(checks(human), CLEAN);
+    for (const procedure of [
+      "revue non indépendante, par la session auteure",
+      "auto-review, sans revue indépendante, par la session auteure",
+      "pas de revue humaine ; auto-review par la session auteure",
+    ]) {
+      const { problems } = evaluateReviewRecord(record({ level: "B", procedure }), files);
+      assert.ok(problems.some((x) => x.includes("level B requires an independent or human review")), procedure);
+    }
+  });
+
+  test("the highest level declared on the head decides; one valid record at that level is enough", () => {
+    const files = { ...PR, files: ["scripts/ci/x.mjs"] };
+    const pair = `${record()}\n\n${record({ level: "B", procedure: "revue indépendante, par un sous-agent" })}`;
+    assert.deepEqual(checks(evaluateReviewRecord(pair, files)), CLEAN);
+    const upgraded = `${record()}\n\n${record({ level: "C", procedure: "revue indépendante, par un sous-agent" })}`;
+    const { problems } = evaluateReviewRecord(upgraded, { ...PR, author: "author" });
+    assert.ok(problems.some((x) => x.includes("level C requires the domain owner's accord")));
   });
 
   describe("level C accord", () => {
     const body = record({ level: "C", procedure: "revue indépendante, par un sous-agent" });
     const ctx = { ...PR, author: "app-bot[bot]", files: ["backend/src/modules/payments/x.ts"] };
+    const refused = (pr) => evaluateReviewRecord(body, pr).problems.some((x) => x.includes("level C requires the domain owner's accord"));
 
-    test("an approval of the head by another account is an accord", () => {
-      const reviews = [{ id: 1, login: "owner", state: "APPROVED", commitId: HEAD, body: "" }];
-      assert.deepEqual(evaluateReviewRecord(body, { ...ctx, reviews }), { problems: [], unverified: [] });
+    test("an approval of the head by another account with write access is an accord, named in the notes", () => {
+      const reviews = [{ id: 1, login: "owner", association: "OWNER", state: "APPROVED", commitId: HEAD.toUpperCase(), body: "" }];
+      const r = evaluateReviewRecord(body, { ...ctx, reviews });
+      assert.deepEqual(checks(r), CLEAN);
+      assert.deepEqual(r.notes, ["level C accord counted from `owner` (owner, approval of the head)"]);
     });
 
-    test("a comment naming the head with « accord » by another account is an accord", () => {
-      const comments = [{ id: 2, login: "owner", body: `Accord pour la fusion de ${HEAD}.` }];
-      assert.deepEqual(evaluateReviewRecord(body, { ...ctx, comments }), { problems: [], unverified: [] });
-    });
-
-    test("an approval of an older head, or a dismissed one, is not", () => {
-      const older = [{ id: 1, login: "owner", state: "APPROVED", commitId: OLD_HEAD, body: "" }];
-      const dismissed = [
-        { id: 1, login: "owner", state: "APPROVED", commitId: HEAD, body: "" },
-        { id: 3, login: "owner", state: "DISMISSED", commitId: HEAD, body: "" },
-      ];
-      for (const reviews of [older, dismissed]) {
-        const { problems } = evaluateReviewRecord(body, { ...ctx, reviews });
-        assert.ok(problems.some((x) => x.includes("level C requires the domain owner's accord")));
+    test("a comment line starting with « Accord » and naming the head is an accord", () => {
+      for (const text of [`Accord pour la fusion de ${HEAD}.`, `- **Accord** : ${HEAD.toUpperCase()}`]) {
+        const comments = [{ id: 2, login: "owner", association: "COLLABORATOR", body: `Relu.\n${text}` }];
+        assert.deepEqual(checks(evaluateReviewRecord(body, { ...ctx, comments })), CLEAN, text);
       }
     });
 
+    test("quoted, negated, withdrawn or cited text is not an accord", () => {
+      for (const text of [
+        `> Accord ${HEAD}`,
+        `Pas d'accord sur ${HEAD}.`,
+        `Accord refusé pour ${HEAD}.`,
+        `Accord retiré : ${HEAD}`,
+        `La gate demande un accord sur ${HEAD}.`,
+        `Accord ${HEAD}0`,
+      ]) {
+        const comments = [{ id: 2, login: "owner", association: "OWNER", body: text }];
+        assert.ok(refused({ ...ctx, comments }), text);
+      }
+    });
+
+    test("an approval of an older head, a dismissed one, or a later change request is not", () => {
+      const approve = { id: 1, login: "owner", association: "OWNER", state: "APPROVED", commitId: HEAD, body: "" };
+      const older = [{ ...approve, commitId: OLD_HEAD }];
+      const dismissed = [approve, { ...approve, id: 3, state: "DISMISSED" }];
+      const changes = [{ ...approve, id: 3, state: "CHANGES_REQUESTED", body: `Accord ${HEAD} sous réserve` }];
+      const withComment = { comments: [{ id: 2, login: "owner", association: "OWNER", body: `Accord ${HEAD}` }] };
+      for (const reviews of [older, dismissed, changes]) assert.ok(refused({ ...ctx, reviews }), JSON.stringify(reviews));
+      assert.ok(refused({ ...ctx, ...withComment, reviews: [approve, { ...approve, id: 4, state: "CHANGES_REQUESTED" }] }));
+    });
+
+    test("an account without write access is not counted, an unknown access is unverified", () => {
+      const outsider = { ...ctx, comments: [{ id: 2, login: "someone", association: "NONE", body: `Accord ${HEAD}` }] };
+      assert.ok(refused(outsider));
+      const unknown = { ...ctx, comments: [{ id: 2, login: "someone", body: `Accord ${HEAD}` }] };
+      assert.ok(evaluateReviewRecord(body, unknown).unverified.includes("level C accord by `someone`: repository access unknown"));
+    });
+
     test("an accord typed by the author's account or a bot is not proof", () => {
-      const own = { ...ctx, author: "owner", comments: [{ id: 2, login: "owner", body: `accord ${HEAD}` }] };
-      assert.ok(evaluateReviewRecord(body, own).unverified.some((x) => x.includes("author's account only")));
-      const bot = { ...ctx, comments: [{ id: 2, login: "app-bot[bot]", body: `accord ${HEAD}` }] };
-      assert.ok(evaluateReviewRecord(body, bot).problems.some((x) => x.includes("level C requires")));
+      const own = { ...ctx, author: "owner", comments: [{ id: 2, login: "owner", association: "OWNER", body: `accord ${HEAD}` }] };
+      const ownResult = evaluateReviewRecord(body, own).unverified.find((x) => x.includes("author's account only"));
+      assert.ok(ownResult?.includes("(`owner`)") && !ownResult.includes("@"));
+      const bot = { ...ctx, comments: [{ id: 2, login: "app-bot[bot]", association: "NONE", body: `accord ${HEAD}` }] };
+      assert.ok(refused(bot));
     });
 
     test("without reviews or comments the accord is unverified", () => {
@@ -318,7 +419,7 @@ describe("evaluateReviewRecord — record in a linked comment", () => {
 
   test("a record in a comment the body links is read", () => {
     const comments = [{ id: 42, login: "app-bot[bot]", body: record() }];
-    assert.deepEqual(evaluateReviewRecord(link, { ...PR, comments }), { problems: [], unverified: [] });
+    assert.deepEqual(checks(evaluateReviewRecord(link, { ...PR, comments })), CLEAN);
   });
 
   test("a record in a comment the body does not link is ignored", () => {
@@ -408,6 +509,8 @@ describe("readReviewContext", () => {
     const path = join(dir, "ctx.json");
     writeFileSync(path, JSON.stringify({ mergeBase: BASE, files: ["a.md"], comments: [], reviews: "x" }));
     assert.deepEqual(readReviewContext(path), { mergeBase: BASE, files: ["a.md"], comments: [], reviews: undefined });
+    writeFileSync(path, JSON.stringify({ mergeBase: "abc", files: ["a.md", 1], comments: [null], reviews: [{ id: 1 }] }));
+    assert.deepEqual(readReviewContext(path), { mergeBase: undefined, files: undefined, comments: undefined, reviews: [{ id: 1 }] });
     writeFileSync(path, "{not json");
     assert.deepEqual(readReviewContext(path), {});
     assert.deepEqual(readReviewContext(undefined), {});
