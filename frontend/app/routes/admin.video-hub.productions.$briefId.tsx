@@ -1,13 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  data,
-  redirect,
-  useLoaderData,
-  Link,
-  useFetcher,
-} from "react-router";
-import {
   ArrowLeft,
   CheckCircle,
   XCircle,
@@ -30,7 +21,20 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  data,
+  redirect,
+  useLoaderData,
+  Link,
+  useFetcher,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import {
+  executionPresentation,
+  hasRenderedArtifact,
+} from "~/utils/video-execution";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -61,7 +65,13 @@ interface DisclaimerEntry {
   position: string;
 }
 
+interface VideoTemplate {
+  templateId: string;
+  structure: { displayName: string; supportedVideoTypes: string[] };
+}
+
 interface Production {
+  templateId?: string | null;
   id: number;
   briefId: string;
   videoType: string;
@@ -100,6 +110,7 @@ interface DerivativeRow {
 interface ExecutionRow {
   id: number;
   status: string;
+  executionOutcome?: string;
   engineName: string | null;
   renderErrorCode: string | null;
   renderOutputPath: string | null;
@@ -123,6 +134,7 @@ function getPipelineSteps(
   prod: Production,
   executions: ExecutionRow[],
   derivatives: DerivativeRow[],
+  templates: VideoTemplate[],
 ): { steps: PipelineStep[]; currentIndex: number } {
   const steps: PipelineStep[] = [
     {
@@ -144,14 +156,18 @@ function getPipelineSteps(
       label: "Template",
       shortLabel: "TPL",
       icon: Layers,
-      done: false,
+      done: templates.some(
+        (t) =>
+          t.templateId === prod.templateId &&
+          t.structure.supportedVideoTypes.includes(prod.videoType),
+      ),
     },
     {
       key: "render",
       label: "Rendu",
       shortLabel: "RND",
       icon: Clapperboard,
-      done: executions.some((e) => e.status === "completed"),
+      done: executions.some((e) => hasRenderedArtifact(e.executionOutcome)),
     },
     {
       key: "derivatives",
@@ -168,7 +184,7 @@ function getPipelineSteps(
   };
 }
 
-// ─── Loader (unchanged) ─────────────────────────────────────
+// ─── Loader ─────────────────────────────────────
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
@@ -177,7 +193,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   try {
     const headers = { Cookie: cookieHeader };
-    const [prodRes, execRes, derivRes] = await Promise.all([
+    const [prodRes, execRes, derivRes, templateRes] = await Promise.all([
       fetch(`${backendUrl}/api/admin/video/productions/${briefId}`, {
         headers,
       }),
@@ -188,45 +204,74 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         `${backendUrl}/api/admin/video/productions/${briefId}/derivatives`,
         { headers },
       ),
+      fetch(`${backendUrl}/api/admin/video/templates`, { headers }),
     ]);
 
-    if (!prodRes.ok)
-      return data({
-        production: null,
-        executions: [],
-        derivatives: [],
-        error: "Not found",
-      });
-
+    if (!prodRes.ok) {
+      const status = [401, 403, 404].includes(prodRes.status)
+        ? prodRes.status
+        : 503;
+      return data(
+        {
+          production: null,
+          executions: [],
+          derivatives: [],
+          templates: [],
+          error:
+            status === 404
+              ? "Production introuvable"
+              : status === 401 || status === 403
+                ? "Accès refusé"
+                : "Erreur chargement",
+        },
+        { status },
+      );
+    }
+    if (!execRes.ok || !derivRes.ok || !templateRes.ok) {
+      return data(
+        {
+          production: null,
+          executions: [],
+          derivatives: [],
+          templates: [],
+          error: "Historique vidéo indisponible",
+        },
+        { status: 503 },
+      );
+    }
     const prodData = await prodRes.json();
-    let executions: ExecutionRow[] = [];
-    if (execRes.ok) {
-      const execData = await execRes.json();
-      executions = (execData.data ?? []) as ExecutionRow[];
-    }
-    let derivatives: DerivativeRow[] = [];
-    if (derivRes.ok) {
-      const derivData = await derivRes.json();
-      derivatives = (derivData.data ?? []) as DerivativeRow[];
-    }
+    const execData = await execRes.json();
+    const derivData = await derivRes.json();
+    const executions = (execData.data ?? []) as ExecutionRow[];
+    const derivatives = (derivData.data ?? []) as DerivativeRow[];
 
+    const templateData = await templateRes.json();
+    if (templateData.success === false || !Array.isArray(templateData.data)) {
+      throw new Error("Catalogue de templates indisponible");
+    }
+    const templates = templateData.data as VideoTemplate[];
     return data({
+      templates,
       production: prodData.data as Production,
       executions,
       derivatives,
       error: null,
     });
   } catch {
-    return data({
-      production: null,
-      executions: [],
-      derivatives: [],
-      error: "Erreur chargement",
-    });
+    return data(
+      {
+        production: null,
+        executions: [],
+        derivatives: [],
+        templates: [],
+        error: "Erreur chargement",
+      },
+      { status: 503 },
+    );
   }
 }
 
-// ─── Action (unchanged) ─────────────────────────────────────
+// ─── Action ─────────────────────────────────────
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
@@ -252,13 +297,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const gateInput = {
         brief: {
           briefId: prod.briefId,
-          videoType: prod.videoType,
+          type: prod.videoType,
+          mode: prod.videoType === "short" ? "short" : "socle",
           vertical: prod.vertical,
         },
         claims: prod.claimTable ?? [],
         evidencePack: prod.evidencePack ?? [],
         disclaimerPlan: prod.disclaimerPlan ?? { disclaimers: [] },
         approvalRecord: prod.approvalRecord ?? { briefId, stages: [] },
+        scriptText: prod.scriptText ?? undefined,
       };
       const res = await fetch(`${backendUrl}/api/admin/video/validate-gates`, {
         method: "POST",
@@ -266,6 +313,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
         body: JSON.stringify(gateInput),
       });
       const payload = await res.json();
+      if (!res.ok || payload.success === false) {
+        return data({
+          _intent: "dry-run" as const,
+          ok: false,
+          error: payload.error ?? payload.message ?? "Erreur validation",
+        });
+      }
       return data({ _intent: "dry-run" as const, ok: true, result: payload });
     } catch {
       return data({
@@ -273,6 +327,59 @@ export async function action({ request, params }: ActionFunctionArgs) {
         ok: false,
         error: "Erreur reseau",
       });
+    }
+  }
+
+  if (intent === "save-template") {
+    const templateId = formData.get("templateId");
+    const expectedUpdatedAt = formData.get("expectedUpdatedAt");
+    if (
+      typeof templateId !== "string" ||
+      !templateId ||
+      typeof expectedUpdatedAt !== "string" ||
+      !expectedUpdatedAt
+    ) {
+      return data(
+        {
+          _intent: "save-template" as const,
+          ok: false,
+          error: "Choisir un template et recharger la version du brouillon",
+        },
+        { status: 400 },
+      );
+    }
+    try {
+      const res = await fetch(
+        `${backendUrl}/api/admin/video/productions/${briefId}`,
+        {
+          method: "PATCH",
+          headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
+          body: JSON.stringify({ templateId, expectedUpdatedAt }),
+        },
+      );
+      const payload = await res.json();
+      if (!res.ok || !payload.success)
+        return data(
+          {
+            _intent: "save-template" as const,
+            ok: false,
+            error:
+              payload.message ??
+              payload.error ??
+              "Erreur sauvegarde du template",
+          },
+          { status: res.ok ? 502 : res.status },
+        );
+      return redirect(`/admin/video-hub/productions/${briefId}`);
+    } catch {
+      return data(
+        {
+          _intent: "save-template" as const,
+          ok: false,
+          error: "Erreur réseau",
+        },
+        { status: 503 },
+      );
     }
   }
 
@@ -425,6 +532,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
   }
 
+  if (intent !== "execute") {
+    return data({ ok: false, error: "Action inconnue" }, { status: 400 });
+  }
+
   try {
     const res = await fetch(
       `${backendUrl}/api/admin/video/productions/${briefId}/execute`,
@@ -485,7 +596,7 @@ function formatDuration(ms: number | null): string {
 // ─── Main Component ──────────────────────────────────────────
 
 export default function VideoProductionDetail() {
-  const { production, executions, derivatives, error } =
+  const { production, executions, derivatives, templates, error } =
     useLoaderData<typeof loader>();
   const [activePanel, setActivePanel] = useState<
     "script" | "claims" | "gates" | "exec" | "deriv" | null
@@ -553,6 +664,8 @@ export default function VideoProductionDetail() {
     };
   }>();
 
+  const templateFetcher = useFetcher<{ ok: boolean; error?: string }>();
+
   const isExecuting = fetcher.state !== "idle";
   const isGeneratingScript = scriptFetcher.state !== "idle";
   const isGeneratingAudio = audioFetcher.state !== "idle";
@@ -584,9 +697,24 @@ export default function VideoProductionDetail() {
     production,
     executions,
     derivatives,
+    templates,
   );
-  const hasRender = executions.some((e) => e.status === "completed");
-  const completedExec = executions.find((e) => e.status === "completed");
+  const templateLocked =
+    production.status !== "draft" ||
+    production.approvalRecord !== null ||
+    executions.length > 0;
+  const compatibleTemplates = templates.filter((t) =>
+    t.structure.supportedVideoTypes.includes(production.videoType),
+  );
+  const selectedTemplate = compatibleTemplates.find(
+    (t) => t.templateId === production.templateId,
+  );
+  const hasRender = executions.some((e) =>
+    hasRenderedArtifact(e.executionOutcome),
+  );
+  const completedExec = executions.find((e) =>
+    hasRenderedArtifact(e.executionOutcome),
+  );
   const streamUrl = completedExec
     ? `/api/admin/video/executions/${completedExec.id}/stream`
     : null;
@@ -668,6 +796,7 @@ export default function VideoProductionDetail() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       <Film className="h-16 w-16 text-neutral-600 mb-6" />
                       <button
+                        aria-label="Lire le rendu"
                         onClick={() => setShowVideo(true)}
                         className="relative z-10 w-16 h-16 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center hover:bg-white/20 hover:scale-105 transition-all"
                       >
@@ -834,13 +963,73 @@ export default function VideoProductionDetail() {
                 <ChevronRight className="h-3 w-3 text-neutral-700" />
 
                 {/* Step 3: Template */}
-                <Link
-                  to="/admin/video-hub/templates"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200 transition-all"
+                <templateFetcher.Form
+                  method="post"
+                  className="flex flex-col gap-2"
                 >
-                  <Layers className="h-3 w-3" />
-                  TEMPLATE
-                </Link>
+                  <input type="hidden" name="_intent" value="save-template" />
+                  <input
+                    type="hidden"
+                    name="expectedUpdatedAt"
+                    value={production.updatedAt}
+                  />
+                  <label
+                    htmlFor="production-template"
+                    className="text-xs text-neutral-400"
+                  >
+                    Template de montage
+                  </label>
+                  <select
+                    id="production-template"
+                    name="templateId"
+                    key={production.templateId ?? "none"}
+                    defaultValue={selectedTemplate?.templateId ?? ""}
+                    required
+                    disabled={
+                      templateLocked || templateFetcher.state !== "idle"
+                    }
+                    className="rounded bg-neutral-800 p-2 text-xs text-neutral-200"
+                  >
+                    <option value="" disabled>
+                      Choisir un template
+                    </option>
+                    {compatibleTemplates.map((t) => (
+                      <option key={t.templateId} value={t.templateId}>
+                        {t.structure.displayName}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="submit"
+                    disabled={
+                      templateLocked ||
+                      templateFetcher.state !== "idle" ||
+                      compatibleTemplates.length === 0
+                    }
+                    className="rounded bg-neutral-800 px-3 py-1.5 text-xs text-neutral-200 disabled:opacity-40"
+                  >
+                    {templateFetcher.state !== "idle"
+                      ? "Enregistrement…"
+                      : "Enregistrer le template"}
+                  </button>
+                  {templateLocked && (
+                    <p className="text-xs text-neutral-400">
+                      Template verrouillé : production en revue ou déjà
+                      exécutée.
+                    </p>
+                  )}
+                  {production.templateId && !selectedTemplate && (
+                    <p role="alert" className="text-xs text-amber-400">
+                      Template enregistré indisponible pour ce format :{" "}
+                      {production.templateId}
+                    </p>
+                  )}
+                  {templateFetcher.data?.error && (
+                    <p role="alert" className="text-xs text-red-400">
+                      {templateFetcher.data.error}
+                    </p>
+                  )}
+                </templateFetcher.Form>
 
                 <ChevronRight className="h-3 w-3 text-neutral-700" />
 
@@ -1498,17 +1687,9 @@ function InspectorExec({ executions }: { executions: ExecutionRow[] }) {
                   #{exec.id}
                 </span>
                 <span
-                  className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase font-bold ${
-                    exec.status === "completed"
-                      ? "bg-emerald-900/30 text-emerald-400"
-                      : exec.status === "failed"
-                        ? "bg-red-900/30 text-red-400"
-                        : exec.status === "processing"
-                          ? "bg-blue-900/30 text-blue-400"
-                          : "bg-neutral-800 text-neutral-500"
-                  }`}
+                  className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-bold ${executionPresentation(exec.executionOutcome).className}`}
                 >
-                  {exec.status}
+                  {executionPresentation(exec.executionOutcome).label}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-[9px] font-mono text-neutral-600">

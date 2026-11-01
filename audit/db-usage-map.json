@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 436,
-    "backend_files_scanned": 1499
+    "backend_files_scanned": 1500
   },
   "tables": {
     "___config": {
@@ -2329,10 +2329,11 @@
     "__video_execution_log": {
       "used_by": [
         "backend/src/modules/media-factory/services/postprocess.service.ts",
+        "backend/src/modules/media-factory/services/video-data.service.ts",
         "backend/src/modules/media-factory/services/video-job.service.ts",
         "backend/src/workers/processors/video-execution.processor.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 4,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,

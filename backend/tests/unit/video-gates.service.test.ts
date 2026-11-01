@@ -82,6 +82,10 @@ describe('VideoGatesService', () => {
       evidencePack: [],
       disclaimerPlan: { disclaimers: [] },
       approvalRecord: makeApproval(),
+      scriptText: 'Les plaquettes de frein assurent un freinage optimal',
+      actualDurationSec: 30,
+      similarityScore: 0,
+      visualRoleViolations: [],
       ...overrides,
     };
   }
@@ -99,9 +103,7 @@ describe('VideoGatesService', () => {
     });
   }
 
-  function withFinalPublish(
-    by: string | null = 'owner',
-  ): ApprovalRecord {
+  function withFinalPublish(by: string | null = 'owner'): ApprovalRecord {
     return makeApproval({
       stages: [
         ...makeApproval().stages,
@@ -183,7 +185,14 @@ describe('VideoGatesService', () => {
     });
 
     it('keeps an unmeasured draft unpublishable without failing it', () => {
-      const result = service.runAllGates(makeInput());
+      const result = service.runAllGates(
+        makeInput({
+          scriptText: undefined,
+          actualDurationSec: undefined,
+          similarityScore: undefined,
+          visualRoleViolations: undefined,
+        }),
+      );
       expect(result.canPublish).toBe(false);
       expect(result.gates.some((g) => g.verdict === 'FAIL')).toBe(false);
       expect(result.flags).toEqual(
@@ -205,6 +214,54 @@ describe('VideoGatesService', () => {
       );
       expect(result.canPublish).toBe(false);
       expect(result.flags).toContain('NOT_MEASURED:platform');
+    });
+
+    it.each(['stages', 'dossier'] as const)(
+      'a %s publication declaration cannot replace any absent measurement',
+      (shape) => {
+        const approvalRecord =
+          shape === 'stages'
+            ? withFinalPublish()
+            : {
+                video_id: 'test-brief',
+                approval: {
+                  content_approved: true,
+                  content_approved_by: 'synthetic-reviewer',
+                  render_approved: true,
+                  render_approved_by: 'synthetic-reviewer',
+                  publish_approved: true,
+                  publish_approved_by: 'synthetic-reviewer',
+                },
+              };
+        for (const field of [
+          'scriptText',
+          'actualDurationSec',
+          'similarityScore',
+          'visualRoleViolations',
+        ] as const) {
+          const result = service.runAllGates(
+            makeMeasuredInput({ approvalRecord, [field]: undefined }),
+          );
+          expect(result.canPublish).toBe(false);
+          expect(result.gates.filter((g) => g.measured === null)).toHaveLength(
+            1,
+          );
+          expect(result.flags.some((f) => f.startsWith('NOT_MEASURED:'))).toBe(
+            true,
+          );
+        }
+      },
+    );
+
+    it('does not treat whitespace as an inspected script', () => {
+      const result = service.runAllGates(
+        makeMeasuredInput({ scriptText: '   ' }),
+      );
+      expect(result.canPublish).toBe(false);
+      expect(result.gates.find((g) => g.gate === 'brand')).toMatchObject({
+        verdict: 'WARN',
+        measured: null,
+      });
     });
 
     it('should return canPublish=false when one gate FAILs', () => {
@@ -286,13 +343,23 @@ describe('VideoGatesService', () => {
     it.each(['supported', 'unsupported', 'empty', 'safety'])(
       'preserves the full pipeline truth and safety verdicts for %s claims',
       (scenario) => {
-        const claims = scenario === 'empty' ? [] : [makeClaim({
-          ...(scenario === 'unsupported' ? { status: 'unverified' as const } : {}),
-          ...(scenario === 'safety' ? { kind: 'safety' as const, validatedBy: undefined } : {}),
-        })];
+        const claims =
+          scenario === 'empty'
+            ? []
+            : [
+                makeClaim({
+                  ...(scenario === 'unsupported'
+                    ? { status: 'unverified' as const }
+                    : {}),
+                  ...(scenario === 'safety'
+                    ? { kind: 'safety' as const, validatedBy: undefined }
+                    : {}),
+                }),
+              ];
         const input = makeInput({ claims });
-        expect(service.runClaimGates({ claims, evidencePack: input.evidencePack }))
-          .toEqual(service.runAllGates(input).gates.slice(0, 2));
+        expect(
+          service.runClaimGates({ claims, evidencePack: input.evidencePack }),
+        ).toEqual(service.runAllGates(input).gates.slice(0, 2));
       },
     );
   });
@@ -523,10 +590,15 @@ describe('VideoGatesService', () => {
   // ── G3: Brand Gate ──
 
   describe('G3 Brand', () => {
-    it('reports a missing script as not measured', () => {
-      const result = service.runAllGates(makeInput());
+    it('blocks publication when script text is missing', () => {
+      const result = service.runAllGates(makeInput({ scriptText: undefined }));
       const g3 = result.gates.find((g) => g.gate === 'brand')!;
-      expect(g3).toMatchObject({ verdict: 'WARN', measured: null });
+      expect(g3.verdict).toBe('WARN');
+      expect(g3.measured).toBeNull();
+      expect(g3.details).toContain(
+        'No script text to check — required before final publication',
+      );
+      expect(result.canPublish).toBe(false);
     });
 
     it('should detect forbidden patterns in socle mode', () => {
@@ -557,16 +629,49 @@ describe('VideoGatesService', () => {
       const g3 = result.gates.find((g) => g.gate === 'brand')!;
       expect(g3.measured).toBeGreaterThan(0);
     });
+    it.each([
+      ['Comment éviter une erreur de commande', 0],
+      ['Avant de commander', 0],
+      ['Commande ta pièce', 1],
+    ])(
+      'classifies command wording without false positives: %s',
+      (scriptText, expectedViolations) => {
+        const result = service.runAllGates(makeInput({ scriptText }));
+        const g3 = result.gates.find((g) => g.gate === 'brand')!;
+        expect(g3.measured).toBe(expectedViolations);
+      },
+    );
+    it.each(['Dépêchez-vous', 'Dernière chance'])(
+      'detects accented short-mode urgency: %s',
+      (scriptText) => {
+        const result = service.runAllGates(makeInput({ scriptText }));
+        const g3 = result.gates.find((g) => g.gate === 'brand')!;
+        expect(g3.measured).toBe(1);
+      },
+    );
   });
 
   // ── G4: Platform Gate ──
 
   describe('G4 Platform', () => {
-    it('reports missing duration as not measured, not PASS', () => {
-      const result = service.runAllGates(makeInput());
+    it('blocks publication when rendered duration is missing', () => {
+      const result = service.runAllGates(
+        makeInput({ actualDurationSec: undefined }),
+      );
       const g4 = result.gates.find((g) => g.gate === 'platform')!;
-      expect(g4).toMatchObject({ verdict: 'WARN', measured: null });
+      expect(g4.verdict).toBe('WARN');
+      expect(g4.measured).toBeNull();
+      expect(result.canPublish).toBe(false);
     });
+    it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+      'fails closed for invalid rendered duration %s',
+      (actualDurationSec) => {
+        const result = service.runAllGates(makeInput({ actualDurationSec }));
+        const g4 = result.gates.find((g) => g.gate === 'platform')!;
+        expect(g4.verdict).toBe('FAIL');
+        expect(g4.measured).toBeNull();
+      },
+    );
 
     it.each([0, -5, Number.NaN, Number.POSITIVE_INFINITY, '30'])(
       'fails an invalid duration (%s)',
@@ -598,7 +703,25 @@ describe('VideoGatesService', () => {
   // ── G5: Reuse Risk ──
 
   describe('G5 Reuse Risk', () => {
-    it('should PASS with a real similarity of 0', () => {
+    it('blocks publication when the similarity score is missing', () => {
+      const result = service.runAllGates(
+        makeInput({ similarityScore: undefined }),
+      );
+      const g5 = result.gates.find((g) => g.gate === 'reuse_risk')!;
+      expect(g5.verdict).toBe('WARN');
+      expect(g5.measured).toBeNull();
+      expect(result.canPublish).toBe(false);
+    });
+    it.each([-0.1, 1.1, Number.NaN, Number.POSITIVE_INFINITY])(
+      'fails closed for invalid similarity score %s',
+      (similarityScore) => {
+        const result = service.runAllGates(makeInput({ similarityScore }));
+        const g5 = result.gates.find((g) => g.gate === 'reuse_risk')!;
+        expect(g5.verdict).toBe('FAIL');
+        expect(g5.measured).toBeNull();
+      },
+    );
+    it('should PASS with similarity 0', () => {
       const input = makeInput({ similarityScore: 0 });
       const result = service.runAllGates(input);
       const g5 = result.gates.find((g) => g.gate === 'reuse_risk')!;
@@ -606,7 +729,9 @@ describe('VideoGatesService', () => {
     });
 
     it('does not read an absent score as originality', () => {
-      const result = service.runAllGates(makeInput());
+      const result = service.runAllGates(
+        makeInput({ similarityScore: undefined }),
+      );
       const g5 = result.gates.find((g) => g.gate === 'reuse_risk')!;
       expect(g5).toMatchObject({ verdict: 'WARN', measured: null });
     });
@@ -653,7 +778,9 @@ describe('VideoGatesService', () => {
     });
 
     it('reports a missing visual check as not measured', () => {
-      const result = service.runAllGates(makeInput());
+      const result = service.runAllGates(
+        makeInput({ visualRoleViolations: undefined }),
+      );
       const g6 = result.gates.find((g) => g.gate === 'visual_role')!;
       expect(g6).toMatchObject({ verdict: 'WARN', measured: null });
     });
@@ -661,11 +788,21 @@ describe('VideoGatesService', () => {
     it('fails a visual check that is not a list', () => {
       const result = service.runAllGates(
         makeInput({
-          visualRoleViolations: 'none' as unknown as VideoGateInput['visualRoleViolations'],
+          visualRoleViolations:
+            'none' as unknown as VideoGateInput['visualRoleViolations'],
         }),
       );
       const g6 = result.gates.find((g) => g.gate === 'visual_role')!;
       expect(g6).toMatchObject({ verdict: 'FAIL', measured: null });
+    });
+    it('blocks publication when visual-role inspection is missing', () => {
+      const result = service.runAllGates(
+        makeInput({ visualRoleViolations: undefined }),
+      );
+      const g6 = result.gates.find((g) => g.gate === 'visual_role')!;
+      expect(g6.verdict).toBe('WARN');
+      expect(g6.measured).toBeNull();
+      expect(result.canPublish).toBe(false);
     });
 
     it('should FAIL with 1 violation (strict)', () => {
@@ -759,9 +896,9 @@ describe('VideoGatesService', () => {
 
     it('laisse en attente une approbation sans auteur', () => {
       expect(
-        approvalStagesOf(
-          makeDossierApproval({ content_approved: true }),
-        )?.find((s) => s.stage === 'script_text')?.status,
+        approvalStagesOf(makeDossierApproval({ content_approved: true }))?.find(
+          (s) => s.stage === 'script_text',
+        )?.status,
       ).toBe('pending');
     });
 

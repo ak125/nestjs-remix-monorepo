@@ -8,6 +8,7 @@
  * Strategy: mock Supabase client chain + 4 injected services.
  */
 
+import { Logger } from '@nestjs/common';
 import { VideoExecutionProcessor } from '../../src/workers/processors/video-execution.processor';
 import { RenderErrorCode } from '../../src/modules/media-factory/render/types/render.types';
 import { VideoGatesService } from '../../src/modules/media-factory/services/video-gates.service';
@@ -86,6 +87,7 @@ function fakeProduction(overrides: Record<string, unknown> = {}) {
     qualityFlags: [],
     gateResults: null,
     createdBy: 'user-001',
+    scriptText: 'Les plaquettes de frein assurent un freinage optimal',
     createdAt: '2026-02-24T00:00:00Z',
     updatedAt: '2026-02-24T00:00:00Z',
     ...overrides,
@@ -203,6 +205,207 @@ describe('VideoExecutionProcessor', () => {
     });
   }
 
+  describe('persisted template consumption', () => {
+    it.each([
+      ['short-braking-fact', 'short', 'ShortBrakingFact'],
+      ['short-product-highlight', 'short', 'ShortProductHighlight'],
+      ['test-card', 'film_socle', 'TestCard'],
+    ])(
+      'uses %s for %s without substitution',
+      async (templateId, videoType, compositionId) => {
+        const cleanup = withEnv({ VIDEO_PIPELINE_ENABLED: 'true' });
+        try {
+          const chain = chainMock({ data: { status: 'pending' }, error: null });
+          chain.update.mockReturnValue({
+            eq: jest.fn().mockResolvedValue({ error: null }),
+          });
+          setClient(chain);
+          mocks.dataService.getProduction.mockResolvedValue(
+            fakeProduction({ templateId, videoType }),
+          );
+          await processor.handleVideoExecution(fakeJob());
+          expect(mocks.renderAdapter.render).toHaveBeenCalledWith(
+            expect.objectContaining({
+              templateId,
+              resolvedCompositionId: compositionId,
+              compositionProps: expect.objectContaining({
+                templateId,
+                compositionId,
+              }),
+            }),
+          );
+        } finally {
+          cleanup();
+        }
+      },
+    );
+    it('rejects an incompatible persisted template before rendering', async () => {
+      const cleanup = withEnv({ VIDEO_PIPELINE_ENABLED: 'true' });
+      try {
+        const chain = chainMock({ data: { status: 'pending' }, error: null });
+        chain.update.mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        });
+        setClient(chain);
+        mocks.dataService.getProduction.mockResolvedValue(
+          fakeProduction({
+            templateId: 'short-braking-fact',
+            videoType: 'film_socle',
+          }),
+        );
+        await expect(
+          processor.handleVideoExecution(fakeJob()),
+        ).resolves.toMatchObject({
+          status: 'failed',
+          errorMessage: 'Template incompatible with video format',
+        });
+        expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+      } finally {
+        cleanup();
+      }
+    });
+  });
+
+  describe('honest results', () => {
+    it.each([
+      [{ engineName: 'stub' }, 'simulated'],
+      [{ engineName: 'remotion', metadata: { fallback: true } }, 'simulated'],
+      [
+        { engineName: 'remotion', status: 'skipped', outputPath: null },
+        'skipped',
+      ],
+      [{ engineName: 'remotion' }, 'rendered_unverified'],
+    ])('does not approve unchecked result %j', async (render, expected) => {
+      const cleanup = withEnv({
+        VIDEO_PIPELINE_ENABLED: 'true',
+        VIDEO_GATES_BLOCKING: 'true',
+      });
+      try {
+        const chain = chainMock({ data: { status: 'pending' }, error: null });
+        chain.update.mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        });
+        setClient(chain);
+        const metadata = {
+          ...('metadata' in render ? render.metadata : {}),
+          inspection: {
+            checksumSha256: 'a'.repeat(64),
+            video: { codec: 'h264' },
+            audio: [],
+          },
+          checked: true,
+        };
+        mocks.renderAdapter.render.mockResolvedValue(
+          fakeRenderResult({ ...render, metadata }),
+        );
+        const result = await processor.handleVideoExecution(fakeJob());
+        expect(result.status).toBe(expected);
+        expect(result.canPublish).toBe(false);
+        expect(chain.update).toHaveBeenCalledWith(
+          expect.objectContaining({ render_metadata: metadata }),
+        );
+        expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
+      } finally {
+        cleanup();
+      }
+    });
+    it('does not rerender when the idempotency read is unavailable', async () => {
+      setClient(chainMock({ data: null, error: { message: 'unavailable' } }));
+      await expect(processor.handleVideoExecution(fakeJob())).rejects.toThrow(
+        'Execution state unavailable',
+      );
+      expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('failure observability without false delivery', () => {
+    it('bounds repeated queue errors while reporting a later incident', () => {
+      const log = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => {});
+      const now = jest.spyOn(Date, 'now');
+      try {
+        now.mockReturnValue(100_000);
+        processor.handleQueueError(new Error('queue unavailable'));
+        now.mockReturnValue(160_000);
+        processor.handleQueueError(new Error('same incident'));
+        now.mockReturnValue(160_001);
+        processor.handleQueueError(new Error('later incident'));
+        expect(log.mock.calls.map(([message]) => message)).toEqual([
+          '[VEP] Queue error: queue unavailable',
+          '[VEP] Queue error: later incident',
+        ]);
+        expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
+      } finally {
+        now.mockRestore();
+        log.mockRestore();
+      }
+    });
+
+    it('reports a failed failure-sync without claiming a successful job', async () => {
+      const chain = chainMock({ data: null, error: null });
+      chain.single.mockRejectedValue(new Error('sync unavailable'));
+      setClient(chain);
+      mocks.jobHealth.recordFailure.mockRejectedValue(
+        new Error('metrics unavailable'),
+      );
+      const log = jest
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => {});
+      try {
+        await expect(
+          processor.handleFailedJob(fakeJob(), new Error('render failed')),
+        ).resolves.toBeUndefined();
+        expect(log).toHaveBeenCalledWith(
+          expect.stringContaining('DB sync failed'),
+        );
+        expect(chain.update).not.toHaveBeenCalled();
+        expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
+      } finally {
+        log.mockRestore();
+      }
+    });
+
+    it('passes genuinely absent artefacts to the real admission gate and never renders', async () => {
+      const cleanup = withEnv({ VIDEO_PIPELINE_ENABLED: 'true' });
+      const chain = chainMock({ data: { status: 'pending' }, error: null });
+      chain.update.mockReturnValue({
+        eq: jest.fn().mockResolvedValue({ error: null }),
+      });
+      setClient(chain);
+      mocks.dataService.getProduction.mockResolvedValue(
+        fakeProduction({
+          knowledgeContract: null,
+          claimTable: null,
+          evidencePack: null,
+          disclaimerPlan: null,
+          approvalRecord: null,
+        }),
+      );
+      const gates = new VideoGatesService();
+      mocks.gatesService.checkArtefacts.mockImplementation((input) =>
+        gates.checkArtefacts(input),
+      );
+      try {
+        const result = await processor.handleVideoExecution(fakeJob());
+        expect(result.status).toBe('failed');
+        expect(result.canPublish).toBe(false);
+        expect(result.qualityFlags).toEqual(['MISSING_ARTEFACTS']);
+        expect(mocks.gatesService.checkArtefacts).toHaveBeenCalledWith({
+          brief: undefined,
+          claims: undefined,
+          evidencePack: undefined,
+          disclaimerPlan: undefined,
+          approvalRecord: undefined,
+        });
+        expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+        expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
+      } finally {
+        cleanup();
+      }
+    });
+  });
+
   // ── Idempotency guard ──
 
   describe('idempotency guard', () => {
@@ -212,11 +415,34 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('unknown');
       expect(result.durationMs).toBe(0);
       expect(mocks.gatesService.runAllGates).not.toHaveBeenCalled();
       expect(mocks.dataService.getProduction).not.toHaveBeenCalled();
       expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+    });
+
+    it('replays an inspected completion as unverified without rendering or writing again', async () => {
+      const row = {
+        status: 'completed',
+        engine_name: 'remotion',
+        render_status: 'success',
+        render_output_path: 's3://media/master.mp4',
+        can_publish: true,
+        render_metadata: {
+          inspection: { checksumSha256: 'a'.repeat(64) },
+          checked: true,
+        },
+      };
+      const chain = chainMock({ data: row, error: null });
+      setClient(chain);
+      expect(await processor.handleVideoExecution(fakeJob())).toMatchObject({
+        status: 'rendered_unverified',
+        canPublish: false,
+      });
+      expect(chain.update).not.toHaveBeenCalled();
+      expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+      expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
     });
 
     it('should proceed when status is pending', async () => {
@@ -243,7 +469,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
       expect(mocks.dataService.getProduction).toHaveBeenCalledWith('brief-001');
       cleanup();
     });
@@ -262,9 +488,9 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('disabled');
       expect(result.errorMessage).toBe('Pipeline disabled');
-      expect(result.canPublish).toBeNull();
+      expect(result.canPublish).toBe(false);
       expect(mocks.gatesService.runAllGates).not.toHaveBeenCalled();
       cleanup();
     });
@@ -282,7 +508,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
       expect(mocks.dataService.getProduction).toHaveBeenCalled();
       expect(mocks.gatesService.checkArtefacts).toHaveBeenCalled();
       cleanup();
@@ -335,7 +561,12 @@ describe('VideoExecutionProcessor', () => {
 
       expect(mocks.gatesService.checkArtefacts).toHaveBeenCalled();
       expect(mocks.gatesService.runAllGates).toHaveBeenCalled();
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
+      expect(mocks.gatesService.runAllGates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scriptText: 'Les plaquettes de frein assurent un freinage optimal',
+        }),
+      );
       cleanup();
     });
   });
@@ -453,7 +684,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
       expect(result.qualityScore).toBeDefined();
       expect(typeof result.qualityScore).toBe('number');
       cleanup();
@@ -558,7 +789,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.canPublish).toBe(true);
+      expect(result.canPublish).toBe(false);
       cleanup();
     });
 
@@ -578,7 +809,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.canPublish).toBeNull();
+      expect(result.canPublish).toBe(false);
       cleanup();
     });
   });
@@ -598,7 +829,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
       // Should have called update multiple times: processing, phase1, phase2
       expect(chain.update).toHaveBeenCalledTimes(3);
       // Production write-back

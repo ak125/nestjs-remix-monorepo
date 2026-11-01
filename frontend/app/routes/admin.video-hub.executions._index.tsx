@@ -1,12 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  data,
-  useLoaderData,
-  Link,
-  useSearchParams,
-  Form,
-} from "react-router";
-import {
   Activity,
   Search,
   ChevronLeft,
@@ -15,18 +7,22 @@ import {
   ExternalLink,
   Layers,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  data,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  Form,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+import { Select, SelectItem } from "~/components/ui/select";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+
+import { executionPresentation } from "~/utils/video-execution";
 
 interface Execution {
   id: number;
@@ -34,6 +30,7 @@ interface Execution {
   videoType: string;
   vertical: string;
   status: string;
+  executionOutcome?: string;
   engineName: string | null;
   durationMs: number | null;
   attemptNumber: number;
@@ -44,18 +41,11 @@ interface Execution {
   createdAt: string;
 }
 
-const STATUS_BADGE: Record<string, string> = {
-  pending: "bg-gray-100 text-gray-700",
-  processing: "bg-blue-100 text-blue-700",
-  completed: "bg-green-100 text-green-700",
-  failed: "bg-red-100 text-red-700",
-};
-
 const STATUSES = [
   { value: "all", label: "Tous" },
   { value: "pending", label: "Pending" },
   { value: "processing", label: "Processing" },
-  { value: "completed", label: "Completed" },
+  { value: "completed", label: "Traitement terminé (tous résultats)" },
   { value: "failed", label: "Failed" },
 ];
 
@@ -154,17 +144,12 @@ export default function ExecutionsIndex() {
               >
                 Status
               </label>
-              <Select name="status" defaultValue={currentStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUSES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+              <Select id="status" name="status" defaultValue={currentStatus}>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
               </Select>
             </div>
             <Button type="submit" variant="outline" size="sm">
@@ -192,7 +177,7 @@ export default function ExecutionsIndex() {
                     <th className="p-3">#</th>
                     <th className="p-3">Brief ID</th>
                     <th className="p-3">Type</th>
-                    <th className="p-3">Status</th>
+                    <th className="p-3">Résultat</th>
                     <th className="p-3">Engine</th>
                     <th className="p-3">Duree</th>
                     <th className="p-3">Attempt</th>
@@ -237,9 +222,9 @@ export default function ExecutionsIndex() {
                       </td>
                       <td className="p-3">
                         <Badge
-                          className={`text-xs ${STATUS_BADGE[exec.status] ?? STATUS_BADGE.pending}`}
+                          className={`text-xs ${executionPresentation(exec.executionOutcome).className}`}
                         >
-                          {exec.status}
+                          {executionPresentation(exec.executionOutcome).label}
                         </Badge>
                       </td>
                       <td className="p-3 text-gray-600">

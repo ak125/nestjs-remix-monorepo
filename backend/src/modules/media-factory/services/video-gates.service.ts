@@ -252,7 +252,7 @@ export class VideoGatesService {
     const { scriptText, brief } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.brand_violations;
 
-    if (!scriptText) {
+    if (!scriptText?.trim()) {
       return this.notMeasured('brand', warn, fail, 'No script text to check');
     }
 

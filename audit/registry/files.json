@@ -19800,6 +19800,30 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/media-factory/render/execution-outcome.ts",
+      "importedBy": [
+        "backend/src/modules/media-factory/services/video-job.service.ts",
+        "backend/src/workers/processors/video-execution.processor.ts",
+        "backend/src/workers/types/video-execution.types.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 57,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/media-factory/render/execution-outcome.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -19846,7 +19870,7 @@
         "backend/src/config/video-quality.constants.ts"
       ],
       "kind": "service",
-      "loc": 79,
+      "loc": 87,
       "owner": "__unassigned__",
       "path": "backend/src/modules/media-factory/render/templates/template-registry.ts",
       "risk": "low",
@@ -19969,7 +19993,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 232,
+      "loc": 247,
       "owner": "__unassigned__",
       "path": "backend/src/modules/media-factory/services/postprocess.service.ts",
       "risk": "low",
@@ -20076,7 +20100,7 @@
         "backend/src/modules/media-factory/types/video.types.ts"
       ],
       "kind": "service",
-      "loc": 394,
+      "loc": 501,
       "owner": "__unassigned__",
       "path": "backend/src/modules/media-factory/services/video-data.service.ts",
       "risk": "low",
@@ -20125,12 +20149,13 @@
       ],
       "imports": [
         "backend/src/database/services/supabase-base.service.ts",
+        "backend/src/modules/media-factory/render/execution-outcome.ts",
         "backend/src/modules/media-factory/render/render-adapter.service.ts",
         "backend/src/modules/media-factory/services/video-data.service.ts",
         "backend/src/workers/types/video-execution.types.ts"
       ],
       "kind": "service",
-      "loc": 689,
+      "loc": 696,
       "owner": "__unassigned__",
       "path": "backend/src/modules/media-factory/services/video-job.service.ts",
       "risk": "low",
@@ -39861,6 +39886,7 @@
         "backend/src/config/video-quality.constants.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/admin/services/admin-job-health.service.ts",
+        "backend/src/modules/media-factory/render/execution-outcome.ts",
         "backend/src/modules/media-factory/render/render-adapter.service.ts",
         "backend/src/modules/media-factory/render/templates/template-registry.ts",
         "backend/src/modules/media-factory/render/types/render.types.ts",
@@ -39869,7 +39895,7 @@
         "backend/src/workers/types/video-execution.types.ts"
       ],
       "kind": "service",
-      "loc": 468,
+      "loc": 494,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/video-execution.processor.ts",
       "risk": "low",
@@ -40070,9 +40096,11 @@
         "backend/src/modules/media-factory/services/video-job.service.ts",
         "backend/src/workers/processors/video-execution.processor.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/media-factory/render/execution-outcome.ts"
+      ],
       "kind": "config",
-      "loc": 45,
+      "loc": 47,
       "owner": "__unassigned__",
       "path": "backend/src/workers/types/video-execution.types.ts",
       "risk": "low",
@@ -41156,6 +41184,25 @@
       "loc": 216,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/paybox-service-log-sanitization.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/postprocess.service.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 188,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/postprocess.service.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -42346,6 +42393,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/video-execution-outcome.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 55,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/video-execution-outcome.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/video-execution.controller.test.ts",
       "importedBy": [],
       "imports": [],
@@ -42369,7 +42435,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 747,
+      "loc": 978,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/video-execution.processor.test.ts",
       "risk": "low",
@@ -42407,7 +42473,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 781,
+      "loc": 918,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/video-gates.service.test.ts",
       "risk": "low",
@@ -42464,7 +42530,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 421,
+      "loc": 640,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/video-job-stats.test.ts",
       "risk": "low",
@@ -42486,6 +42552,25 @@
       "loc": 114,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/video-production.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/video-template-selection.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 279,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/video-template-selection.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -57077,7 +57162,8 @@
         "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
-        "~/utils/internal-api.server"
+        "~/utils/internal-api.server",
+        "~/utils/video-execution"
       ],
       "kind": "route",
       "loc": 789,
@@ -57125,10 +57211,11 @@
         "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
-        "~/utils/internal-api.server"
+        "~/utils/internal-api.server",
+        "~/utils/video-execution"
       ],
       "kind": "route",
-      "loc": 882,
+      "loc": 907,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.video-hub.executions.$executionLogId.tsx",
       "risk": "low",
@@ -57151,10 +57238,11 @@
         "~/components/ui/card",
         "~/components/ui/input",
         "~/components/ui/select",
-        "~/utils/internal-api.server"
+        "~/utils/internal-api.server",
+        "~/utils/video-execution"
       ],
       "kind": "route",
-      "loc": 333,
+      "loc": 318,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.video-hub.executions._index.tsx",
       "risk": "low",
@@ -57172,10 +57260,11 @@
       "id": "frontend/app/routes/admin.video-hub.productions.$briefId.tsx",
       "importedBy": [],
       "imports": [
-        "~/utils/internal-api.server"
+        "~/utils/internal-api.server",
+        "~/utils/video-execution"
       ],
       "kind": "route",
-      "loc": 1713,
+      "loc": 1894,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.video-hub.productions.$briefId.tsx",
       "risk": "low",
@@ -63193,6 +63282,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/app/utils/video-execution.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 34,
+      "owner": "__unassigned__",
+      "path": "frontend/app/utils/video-execution.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/app/utils/web-vitals.client.ts",
       "importedBy": [],
       "imports": [
@@ -66122,6 +66230,82 @@
       "loc": 118,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/vehicle-context.server.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/video-execution-detail.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 165,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/video-execution-detail.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/video-execution-loader.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 120,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/video-execution-loader.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/video-execution-outcome.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 43,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/video-execution-outcome.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/video-production-route.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 1170,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/video-production-route.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -74190,6 +74374,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "services/remotion-renderer/src/cli/verify-manifest.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 23,
+      "owner": "__unassigned__",
+      "path": "services/remotion-renderer/src/cli/verify-manifest.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "services/remotion-renderer/src/compositions/NeChangePasTropVite.tsx",
       "importedBy": [],
       "imports": [],
@@ -74384,9 +74587,47 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 260,
+      "loc": 448,
       "owner": "__unassigned__",
       "path": "services/remotion-renderer/src/lib/ffmpeg-postprocess.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "services/remotion-renderer/src/lib/media-inspection.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 237,
+      "owner": "__unassigned__",
+      "path": "services/remotion-renderer/src/lib/media-inspection.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "services/remotion-renderer/src/lib/render-manifest.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 66,
+      "owner": "__unassigned__",
+      "path": "services/remotion-renderer/src/lib/render-manifest.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -74403,7 +74644,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 216,
+      "loc": 231,
       "owner": "__unassigned__",
       "path": "services/remotion-renderer/src/lib/render-video.ts",
       "risk": "low",
@@ -74479,7 +74720,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 251,
+      "loc": 320,
       "owner": "__unassigned__",
       "path": "services/remotion-renderer/src/routes/postprocess.ts",
       "risk": "low",
@@ -74517,7 +74758,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 163,
+      "loc": 176,
       "owner": "__unassigned__",
       "path": "services/remotion-renderer/src/routes/render.ts",
       "risk": "low",
@@ -74555,9 +74796,47 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 77,
+      "loc": 159,
       "owner": "__unassigned__",
       "path": "services/remotion-renderer/src/types/contract.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "services/remotion-renderer/test/media-inspection.test.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 186,
+      "owner": "__unassigned__",
+      "path": "services/remotion-renderer/test/media-inspection.test.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "services/remotion-renderer/test/media.integration.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 371,
+      "owner": "__unassigned__",
+      "path": "services/remotion-renderer/test/media.integration.cjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -74589,6 +74868,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "services/remotion-renderer/test/probe-fixture.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 88,
+      "owner": "__unassigned__",
+      "path": "services/remotion-renderer/test/probe-fixture.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "services/remotion-renderer/test/render-output.test.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 426,
+      "owner": "__unassigned__",
+      "path": "services/remotion-renderer/test/render-output.test.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "services/remotion-renderer/test/sequences-courtes.render.test.ts",
       "importedBy": [],
       "imports": [],
@@ -74596,6 +74913,44 @@
       "loc": 77,
       "owner": "__unassigned__",
       "path": "services/remotion-renderer/test/sequences-courtes.render.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "services/remotion-renderer/test/subtitle-validation.test.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 329,
+      "owner": "__unassigned__",
+      "path": "services/remotion-renderer/test/subtitle-validation.test.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "services/remotion-renderer/test/subtitles.test.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 42,
+      "owner": "__unassigned__",
+      "path": "services/remotion-renderer/test/subtitles.test.cjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
