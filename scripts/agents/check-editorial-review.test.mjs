@@ -170,12 +170,13 @@ describe("contrat", () => {
     assert.deepEqual([...CONTRACT.formats].sort(), ["prose", "script", "social"]);
   });
 
-  test("la livraison contrôlée nomme la ligne d'entrée du rapport et le passage sans --emit", () => {
+  test("la livraison contrôlée nomme la ligne d'entrée du rapport et les deux passages sans --emit", () => {
     const text = readFileSync(CONTRACT_PATH, "utf8");
     const steps = text.slice(text.indexOf("### Lecture, application et déclaration"), text.indexOf("### Contrôle avant déclaration"));
     assert.match(steps, /^6\. \*\*Livrer\*\*/m);
     assert.match(steps, /`entrée : <n> o, sha256 <empreinte>`/);
     assert.match(steps, /sans\s+`--emit`/);
+    assert.match(steps, /deux\s+commandes\s+séparées/);
   });
 });
 

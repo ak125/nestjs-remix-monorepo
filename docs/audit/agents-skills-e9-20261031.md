@@ -220,3 +220,65 @@ Nouveau cycle, écrit avant toute observation ; deuxième cycle de correction su
   - Claude racine seulement si E9 global l'exige.
 - **Aucune réussite n'est anticipée**. DoD7 demeure `PARTIAL_COVERAGE`, case décochée, et DoD2
   reste à prouver.
+
+## Cycle R25 : résultats conservés (2026-11-02)
+
+Les critères ci-dessus restent tels qu'écrits ; ce constat les juge sans les modifier. Seuls
+Codex racine et Claude wiki ont été lancés.
+
+- **Codex racine : échec de la livraison contrôlée.**
+  - Contrôle indépendant : code 0, `appliquee`, aucune erreur. La réponse finale est le dernier
+    message natif et le stdin du passage, à l'octet près (13 356 o, sha256 `1f0b35c5…`).
+  - L'unique passage natif, sans `--emit`, rend un code 0 et une sortie capturée vide. Aucun
+    second passage n'est fait, alors que la règle 1.11.1, lue de 1 à 790, l'exigeait ; la
+    réponse est livrée appliquée.
+  - Rejouée à l'identique hors de Codex, la même commande affiche le rapport attendu : en-tête
+    1.11.1 `APPLIQUEE`, puis la ligne `entrée` égale à la réponse livrée. Un `wc -l` du même
+    essai a aussi une sortie vide avec un code 0 : la capture est perdue côté Codex CLI 0.144.4,
+    par un mécanisme que la trace ne montre pas.
+- **Claude wiki : échec de l'attendu 9.**
+  - Contrôle indépendant : code 3, `partielle`, aucune erreur ; C2 non remplie faute d'outil
+    d'exécution. Réponse finale exacte.
+  - Relevés de la QA : attendu 1 rempli (aucune plage au-delà de son fichier), attendu 5 rempli
+    (proposition affichée décodée dans la prose), aucune section fausse. Lectures complètes de
+    `SKILL.md` (1-240), `workspaces.md` (1-296), du gabarit (1-165), de `source-catalog.yaml`
+    (1-920) et de la fiche (1-337).
+  - Attendu 9 : compaction automatique à l'événement 175, puis aucune lecture du contrat (1-790)
+    avant la réponse finale. Après la compaction sont relus `SKILL.md` en entier (événement
+    196), `marketing-voice.md` (198), une source RAW (200) et la fiche (208, 210).
+- **Dérive de HEAD pendant R25.** Le hook automatique de fin de session a ajouté le commit
+  `581931ee` (`log.md` seul, six lignes) à 08:18:14Z, trois secondes avant la fin de l'essai
+  Claude wiki : sa révision passe de `d66a3465` à `581931ee`. Codex racine, terminé avant, garde
+  `d66a3465`. Vérifié après coup : les empreintes des entrées techniques sont inchangées (30/30
+  côté wiki, 26/26 côté racine), les instantanés WIKI/RAW sont identiques, et `log.md` n'est pas
+  une entrée. Le commit est conservé ; il n'appartient pas au lot technique.
+- **E9 n'est pas passé.** Codex wiki, Claude seo et Codex seo n'ont pas été rejoués.
+
+## Cycle R26, contrat 1.11.2 : critères avant essai (2026-11-02)
+
+Nouveau cycle, écrit avant toute observation ; troisième et dernier cycle de correction.
+
+- **Entrées modifiées** :
+  - contrat 1.11.1 → 1.11.2, étape 6 : deux passages de livraison sans `--emit`, en commandes
+    séparées, toujours faits. La livraison exige au moins un passage reçu, lié à la réponse
+    livrée par sa ligne `entrée`, et aucun `REJETEE` ; sans passage reçu, la sortie est
+    partielle, cause « sortie du contrôle non capturée ». « Contrôle mécanique » est aligné ;
+  - test du contrat : l'étape 6 nomme les deux commandes séparées ;
+  - `wiki-proposal-writer`, étape 13 : avant la livraison, et après toute compaction ou tout
+    résumé, contrat lu en entier dans le contexte courant par une lecture observable (Read pour
+    Claude, commande équivalente pour Codex), plages exactes ; même livraison en deux passages.
+- **Contrôleur inchangé**, tolérance N+1 comprise.
+- **Critères inchangés**, jugés à la version 1.11.2 : E9 1 à 10 (attendu 9 compris), W2, W2b,
+  W5, E2b, 7w1 à 7w4, lignes 3 et 9 de DoD7, et le critère de livraison contrôlée de R24.
+- **Cas que le texte de R24 ne tranche pas** : un premier passage reçu, puis un second à la
+  sortie vide. Le contrat 1.11.2 livre alors l'entrée ; le critère de R24 n'est pas réécrit et
+  la QA le juge tel qu'écrit.
+- **Révision** : consignée avant et après l'essai ; toute dérive, même par le seul journal, est
+  signalée avec la vérification des empreintes d'entrée.
+- **Cas** :
+  - ciblés : Codex racine et Claude wiki ;
+  - à rejouer : Codex wiki, Claude seo et Codex seo. Leurs blocs 1.11.1 ne sont plus
+    re-contrôlables à la nouvelle version ;
+  - Claude racine seulement si E9 global l'exige.
+- **Aucune réussite n'est anticipée**. DoD7 demeure `PARTIAL_COVERAGE`, case décochée, et DoD2
+  reste à prouver.

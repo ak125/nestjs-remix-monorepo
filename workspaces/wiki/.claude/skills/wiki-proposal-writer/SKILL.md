@@ -121,11 +121,17 @@ L'utilisateur fournit au minimum :
     - l'état de la relecture, écrit dans la prose comme dans le bloc, est celui de la première
       ligne du rapport capturé (APPLIQUEE, PARTIELLE ou REJETEE)
     - REJETEE → corriger le fond, repasser ; livrer la dernière entrée contrôlée, sans retouche
-    - avant de livrer, la sortie capturée du dernier passage montre la première ligne du
-      rapport puis la ligne « entrée : <n> o, sha256 <empreinte> » ; vide, coupée ou sans
-      elles → repasser une fois la même entrée sans --emit (rapport seul, lié par
-      l'empreinte), puis livrer exactement cette entrée ; toujours aucun → relecture
-      partielle, cause « sortie du contrôle non capturée » nommée dans le champ lecture
+    - avant la livraison, le contrat est lu en entier, de la ligne 1 à la dernière, par une
+      lecture observable dans le contexte courant (Read pour Claude, commande de lecture
+      équivalente pour Codex, par plages jusqu'à la dernière ligne) : après toute compaction
+      ou tout résumé, le relire même s'il a déjà été lu ; ni un chargement antérieur, ni un
+      résumé, ni une injection n'en font la preuve ; déclarer les plages exactes de cette lecture
+    - livraison : une fois l'entrée acceptée, deux passages sans --emit, en deux commandes
+      séparées, toujours faits ; un passage est reçu si sa sortie capturée montre la première
+      ligne du rapport (APPLIQUEE ou PARTIELLE) puis « entrée : <n> o, sha256 <empreinte> »
+      égale à la réponse livrée ; au moins un reçu et aucun REJETEE → livrer exactement cette
+      entrée ; aucun reçu → relecture partielle, cause « sortie du contrôle non capturée »
+      nommée dans le champ lecture ; un REJETEE, même après un reçu, se corrige et se repasse
 ```
 
 **Sous une consigne sans écriture.** Les étapes 10 et 11 portent sur le fichier écrit : elles

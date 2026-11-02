@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.11.1 — 2026-11-02.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.11.2 — 2026-11-02.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -74,6 +74,12 @@
 > sans passage ; côté wiki, la proposition ne figurait qu'en YAML échappé et les plages comptaient
 > la ligne vide que Read numérote après le saut final, que le texte 1.10.1 admettait. Les
 > résultats d'un essai 1.11.0 restent acquis pour les règles inchangées.
+> Pilote 1.11.2 : deux passages de livraison sans `--emit`, en commandes séparées, toujours
+> faits. Essai R25 : le seul passage d'une réponse acceptée rendait un code 0 et une sortie
+> capturée vide, comme un `wc -l` du même essai, et la réponse était livrée sans second passage ;
+> côté wiki, le contrat n'était pas relu après une compaction automatique (le skill wiki impose
+> désormais cette relecture avant la livraison). Les résultats d'un essai 1.11.1 restent acquis
+> pour les règles inchangées.
 
 ## 1. Ce que fait la relecture
 
@@ -142,18 +148,22 @@ produit leur trace dans la sortie.
    sections non lues, les références manquantes, les étapes non exécutées et les conditions non
    remplies. La règle vaut pour toute mention de la relecture dans la sortie, liste d'étapes et
    résumé compris, et pas seulement pour le bloc final.
-6. **Livrer** : la réponse livrée est la dernière entrée contrôlée, à l'octet près. Avant de la
-   livrer, relire la sortie capturée de ce dernier passage : elle doit montrer la ligne
+6. **Livrer** : la réponse livrée est la dernière entrée contrôlée, à l'octet près. Une fois
+   cette entrée acceptée, la passer encore deux fois au contrôle, sans `--emit`, par deux
+   commandes séparées lancées l'une après l'autre, quelle que soit la sortie de la première :
+   une sortie perdue rend un code 0 sans rien afficher, et seul un second passage le compense.
+   Un passage est reçu si sa sortie capturée montre la ligne
    `editorial-review <version> — APPLIQUEE` ou `— PARTIELLE`, suivie de la ligne
-   `entrée : <n> o, sha256 <empreinte>`. Une sortie vide, coupée ou sans ces deux lignes n'est
-   pas une capture, quel que soit le code rendu : repasser une fois la même entrée, sans
-   `--emit`, pour que le rapport seul, court, la lie par sa taille et son empreinte sans la
-   réémettre ; livrer alors exactement cette entrée. Si cette capture manque encore, livrer en
+   `entrée : <n> o, sha256 <empreinte>` égale à la taille et au sha256 de la réponse livrée. Une
+   sortie vide, coupée ou sans ces deux lignes n'est pas reçue, quel que soit le code rendu.
+   Livrer exactement cette entrée si au moins un des deux passages est reçu et si aucun ne rend
+   `REJETEE` ; l'état déclaré est celui du dernier rapport reçu. Si aucun n'est reçu, livrer en
    « relecture partielle » avec la cause « sortie du contrôle non capturée » (échec de l'outil)
-   nommée dans `lecture`. Un `REJETEE` se corrige et se repasse en entier (« Contrôle
-   mécanique ») : aucune réponse n'est livrée après lui sans nouveau passage capturé, et une
-   « relecture partielle » n'en dispense pas tant que l'outil reste utilisable. La livraison
-   recopie l'entrée de ce passage sans reformuler la prose, réindenter le bloc ni changer une
+   nommée dans `lecture`. Un `REJETEE`, à quelque passage que ce soit, même après un passage
+   reçu, se corrige et se repasse en entier (« Contrôle mécanique »), puis les deux passages de
+   livraison reprennent : aucune réponse n'est livrée après lui sans nouveau passage reçu, et
+   une « relecture partielle » n'en dispense pas tant que l'outil reste utilisable. La livraison
+   recopie l'entrée de ces passages sans reformuler la prose, réindenter le bloc ni changer une
    apostrophe, un guillemet ou une espace.
 
 La sortie suit « Sortie attendue ». Un champ qui ne peut pas être produit est nommé, avec sa
@@ -221,12 +231,11 @@ Avec `--emit`, le rapport reste sur stderr et stdout est la réponse complète a
 comme reçue, sans correction ni réécriture. Un rejet ne livre rien sur stdout. Livrer cette sortie
 stdout sans la recomposer ; conserver le code 3 d'une partielle. Chaque rapport, avec ou sans
 `--emit`, porte en deuxième ligne `entrée : <n> o, sha256 <empreinte>`, calculée sur les octets
-reçus. Un code 0 ou 3 ne prouve pas la livraison contrôlée : seul le rapport effectivement capturé
-de ce dernier passage la prouve, avec des octets livrés égaux à son entrée, que montre le stdout
-de `--emit` ou que lie sa ligne `entrée`. Sans ce rapport, repasser une fois la même entrée sans
-`--emit` (point 6) ; si la capture manque encore, la sortie est en « relecture partielle », avec
-la cause « sortie du contrôle non capturée » (échec de l'outil) nommée dans `lecture`. Ne jamais
-passer uniquement le
+reçus. Un code 0 ou 3 ne prouve pas la livraison contrôlée : seul un rapport reçu la prouve, avec
+des octets livrés égaux à son entrée, que lie sa ligne `entrée`. Les deux passages de livraison
+sans `--emit` (point 6) se font donc toujours, même après un stdout `--emit` complet ; si aucun
+n'est reçu, la sortie est en « relecture partielle », avec la cause « sortie du contrôle non
+capturée » (échec de l'outil) nommée dans `lecture`. Ne jamais passer uniquement le
 bloc final si un brouillon ou d'autres champs ont été écrits avant lui. Une sortie d'outil
 tronquée ne permet pas de livrer les octets manquants : réduire le livrable puis contrôler de nouveau.
 
@@ -618,7 +627,7 @@ et les valeurs d'exemple se remplacent, par le contenu réel :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.11.1", "etat_declare": "partielle",
+  "contrat": "editorial-review", "version": "1.11.2", "etat_declare": "partielle",
   "lectures": [
     {"chemin": "…/.claude/prompts/_shared/editorial-review.md", "plages": ["1-…"], "masquees": [],
      "sections": ["toutes"], "tronque": false},
