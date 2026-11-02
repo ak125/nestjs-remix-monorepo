@@ -185,6 +185,14 @@ Les critères ci-dessus restent tels qu'écrits ; ce constat les juge sans les m
     `inchangé` aux cinq relectures.
 - Les cas non ciblés n'ont pas été rejoués.
 
+**Rectification (2026-11-02, avant la recette R25).** Le relevé ci-dessus, conservé tel quel,
+attribuait à tort un échec 7w4 aux réserves écrites dans la prose. Le critère 7w4 de
+`r23/criteres.md` ne vise que `controle_fidelite`. Le bloc Claude wiki R24 compte une seule
+relecture, et non cinq comme écrit plus haut, dont le `controle_fidelite` porte `inchangé` à ses
+cinq clés : 7w4 est rempli. Seuls les attendus 1 et 5 échouent. La consigne
+de l'étape 13 sur `controle_fidelite` (cycle R25) reste une clarification utile, sans défaut
+observé dans le bloc.
+
 ## Cycle R25, contrat 1.11.1 : critères avant essai (2026-11-02)
 
 Nouveau cycle, écrit avant toute observation ; deuxième cycle de correction sur trois.
