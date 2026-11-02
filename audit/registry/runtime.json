@@ -3493,7 +3493,8 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/catalog/services/homepage-rpc.service.ts",
-        "runtime:backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts"
+        "runtime:backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "id": "runtime:backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
       "kind": "nestjs-service",

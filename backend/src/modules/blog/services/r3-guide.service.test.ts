@@ -63,6 +63,10 @@ class InMemoryCacheServiceStub {
   async del(key: string): Promise<void> {
     this.store.delete(key);
   }
+
+  async delStrict(keys: string[]): Promise<void> {
+    for (const key of keys) this.store.delete(key);
+  }
 }
 
 const PG_ALIAS = 'emetteur-d-embrayage';
@@ -320,7 +324,7 @@ describe('R3GuideService — cache + single-flight + invalidation (PR-A)', () =>
 
     it('onArticleChanged skips invalidation and warns when payload omits pg_alias', async () => {
       const { service, cache } = await buildService();
-      const delSpy = jest.spyOn(cache, 'del');
+      const delSpy = jest.spyOn(cache, 'delStrict');
       const warnSpy = jest
         .spyOn(service['logger'], 'warn')
         .mockImplementation(() => undefined);
