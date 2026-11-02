@@ -538,10 +538,11 @@ function checkRecord(record, pr, accord) {
  *   conforms: the "form conforms" note when there is one, also in notes.
  * The level is the highest one declared on the head; one valid record at that
  * level satisfies DoD2, lower ones (an auto-review beside the review) are not checked.
- * What can pass (a record) is read in the text a reader sees as the author's own;
- * what can only fail or raise the level (links, the DoD2 line, the levels declared
- * on the head) is read in the whole text: a line the markdown model hides by
- * mistake never turns into a pass.
+ * What can pass (a record) is read in the text a reader sees as the author's own.
+ * Links and the DoD2 line are read in that text and in the whole text, since a
+ * comment can hide one or split one a reader sees: either reading can fail DoD2
+ * or raise the level, and a linked comment's record counts only from a line both
+ * readings hold whole. A level declared on the head is read in both readings too.
  */
 export function evaluateReviewRecord(body, pr = {}) {
   const text = nfc(body);
@@ -550,17 +551,20 @@ export function evaluateReviewRecord(body, pr = {}) {
   const notes = [];
   const records = parseReviewRecords(text);
   const declared = parseReviewRecords(text, { raw: true });
-  const visible = plainLines(text).map((line) => line ?? "").join("\n");
+  const plain = plainLines(text);
+  const visible = plain.map((line) => line ?? "").join("\n");
   let hidden = hiddenAnchors(text);
 
-  const links = [...text.matchAll(COMMENT_LINK)];
+  const links = [...text.matchAll(COMMENT_LINK), ...visible.matchAll(COMMENT_LINK)];
   if (links.length > 0 && (pr.repo === undefined || pr.number === undefined)) {
     unverified.push("linked comments not read: PR number or repository unknown");
   }
   const ours = (m) => m[1].toLowerCase() === String(pr.repo).toLowerCase() && Number(m[2]) === pr.number;
   const refOf = (m) => `${m[3].toLowerCase()}-${m[4]}`;
   const cited = unique(links.filter(ours).map(refOf));
-  const shown = new Set([...visible.matchAll(COMMENT_LINK)].filter(ours).map(refOf));
+  // A link counts as shown only on a line the reader sees whole: no fragment of it hidden or joined.
+  const whole = text.split(LINE_BREAK).filter((line, i) => line === plain[i]).join("\n");
+  const shown = new Set([...whole.matchAll(COMMENT_LINK)].filter(ours).map(refOf));
   for (const ref of cited) {
     const [kind, id] = ref.split("-");
     const pool = kind === "issuecomment" ? pr.comments : pr.reviews;
@@ -568,8 +572,8 @@ export function evaluateReviewRecord(body, pr = {}) {
     if (!Array.isArray(pool)) unverified.push(`linked ${ref} not read (no review context)`);
     else if (!found) problems.push(`linked ${ref} not found on this PR`);
     else {
-      declared.push(...parseReviewRecords(found.body, { raw: true }));
-      // A comment linked from text a reader does not see can raise the level, never satisfy it.
+      declared.push(...parseReviewRecords(found.body, { raw: true }), ...parseReviewRecords(found.body));
+      // A comment linked from text a reader does not see whole can raise the level, never satisfy it.
       if (!shown.has(ref)) continue;
       records.push(...parseReviewRecords(found.body).map((r) => ({ ...r, source: ref })));
       hidden += hiddenAnchors(found.body);
@@ -578,7 +582,7 @@ export function evaluateReviewRecord(body, pr = {}) {
   const unread = hidden > 0 ? `; ${hidden} « Revue niveau » line(s) in a code block, a quote, an HTML comment or a raw HTML block are not read` : "";
 
   if (pr.headSha) {
-    for (const m of text.matchAll(checklistLine(OWNERSHIP_ID))) {
+    for (const m of [...text.matchAll(checklistLine(OWNERSHIP_ID)), ...visible.matchAll(checklistLine(OWNERSHIP_ID))]) {
       const named = shaAfter("t[êe]te", m[0]);
       if (!named || named === pr.headSha) continue;
       problems.push(
@@ -620,7 +624,7 @@ export function evaluateReviewRecord(body, pr = {}) {
       .at(-1);
     if (required > top) {
       unverified.push(
-        `level ${required} declared on the head in text the gate does not read as the author's (a code block, a quote, an HTML comment, a raw HTML block, or a comment linked from there): the record read is level ${top}; level ${required} not checked`,
+        `level ${required} declared on the head in text the gate does not read as the author's (a code block, a quote, an HTML comment, a raw HTML block, or a comment linked from there or from a line an HTML comment splits): the record read is level ${top}; level ${required} not checked`,
       );
     } else {
       const accord = top === "C" ? scanAccord(pr) : undefined;

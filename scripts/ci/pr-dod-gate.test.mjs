@@ -353,6 +353,12 @@ describe("evaluateReviewRecord — record bound to the head (D2, D4)", () => {
 describe("evaluateReviewRecord — only the text a reader sees is a record", () => {
   const indent = (text, by) => text.replace(/^/gm, by);
   const UNREAD = "; 1 « Revue niveau » line(s) in a code block, a quote, an HTML comment or a raw HTML block are not read";
+  const RAISED = {
+    problems: [],
+    unverified: [
+      "level C declared on the head in text the gate does not read as the author's (a code block, a quote, an HTML comment, a raw HTML block, or a comment linked from there or from a line an HTML comment splits): the record read is level A; level C not checked",
+    ],
+  };
 
   test("a record in an HTML comment, a code block or a quote is not read, and the message says so", () => {
     for (const body of [
@@ -444,12 +450,6 @@ describe("evaluateReviewRecord — only the text a reader sees is a record", () 
 
   test("a level declared on the head where no record is read raises the level, never satisfies it", () => {
     const high = record({ level: "C", procedure: "revue humaine, par owner" });
-    const raised = {
-      problems: [],
-      unverified: [
-        "level C declared on the head in text the gate does not read as the author's (a code block, a quote, an HTML comment, a raw HTML block, or a comment linked from there): the record read is level A; level C not checked",
-      ],
-    };
     for (const hidden of [
       `> Zone STOP : paiement\n${high}`,
       `Le marqueur <!-- est cité ici.\n\n${high}\n\nFin du marqueur : -->`,
@@ -457,13 +457,13 @@ describe("evaluateReviewRecord — only the text a reader sees is a record", () 
       `<pre>\n${high}\n</pre>`,
     ]) {
       const body = `${record()}\n\n${hidden}`;
-      assert.deepEqual(checks(evaluateReviewRecord(body, PR)), raised, body);
+      assert.deepEqual(checks(evaluateReviewRecord(body, PR)), RAISED, body);
       assert.equal(evaluateDoD(fullBody({ review: body }), [], 0, OWNED).pass, false, body);
     }
     // A comment linked from there: its record raises the level and is not read as one.
     const comments = [{ id: 42, login: "reviewer", association: "MEMBER", body: high }];
     const linked = `${record()}\n\n> Zone STOP\n- Revue C : https://github.com/o/r/pull/7#issuecomment-42`;
-    assert.deepEqual(checks(evaluateReviewRecord(linked, { ...PR, comments })), raised);
+    assert.deepEqual(checks(evaluateReviewRecord(linked, { ...PR, comments })), RAISED);
     // Declared on another head, or at a lower level, it changes nothing.
     assert.deepEqual(checks(evaluateReviewRecord(`${record()}\n\n\`\`\`\n${record({ level: "C", head: OLD_HEAD })}\n\`\`\``, PR)), CLEAN);
     const b = record({ level: "B", procedure: "revue indépendante, par un sous-agent" });
@@ -475,6 +475,42 @@ describe("evaluateReviewRecord — only the text a reader sees is a record", () 
     assert.deepEqual(evaluateReviewRecord(stale, PR).problems, [`the DoD2 line names ${OLD_HEAD}, the head is ${HEAD}`]);
     const missing = `${record()}\n\n> note\n- Voir https://github.com/o/r/pull/7#issuecomment-99`;
     assert.deepEqual(evaluateReviewRecord(missing, PR).problems, ["linked issuecomment-99 not found on this PR"]);
+  });
+
+  test("a comment that splits a DoD2 line or a link a reader sees hides neither", () => {
+    const stale = [`the DoD2 line names ${OLD_HEAD}, the head is ${HEAD}`];
+    for (const line of [
+      // R1: a comment between « tête » and the SHA; R2: a second DoD2 line opening with a comment;
+      // R3: a comment past the bounded slice before « tête ».
+      `- [x] **DoD2** Ownership — tête <!-- màj --> ${OLD_HEAD}`,
+      `- [x] **DoD2** Ownership\n<!-- rappel --> - [x] **DoD2** Ownership — tête ${OLD_HEAD}`,
+      `- [x] **DoD2** Ownership <!-- ${"x".repeat(400)} --> — tête ${OLD_HEAD}`,
+    ]) {
+      const body = `${line}\n${record()}`;
+      assert.deepEqual(evaluateReviewRecord(body, PR).problems, stale, body);
+      assert.equal(evaluateDoD(fullBody({ review: body }), [], 0, OWNED).pass, false, body);
+    }
+    // The head a reader sees beside a comment naming another SHA passes.
+    assert.deepEqual(checks(evaluateReviewRecord(`- [x] **DoD2** Ownership — tête <!-- ${OLD_HEAD} --> ${HEAD}\n${record()}`, PR)), CLEAN);
+    const split = (id) => `${record()}\n\n- Revue : https://github.com/o/r/pull/7#issuecomm<!-- -->ent-${id}`;
+    const high = record({ level: "C", procedure: "revue humaine, par owner" });
+    const comments = [{ id: 42, login: "reviewer", association: "MEMBER", body: high }];
+    // R4: the comment it links holds a level C record, also with its anchor split: the level is raised.
+    for (const body of [high, high.replace("niveau C", "niveau <!-- --> C")]) {
+      const pr = { ...PR, comments: [{ ...comments[0], body }] };
+      assert.deepEqual(checks(evaluateReviewRecord(split(42), pr)), RAISED, body);
+      assert.equal(evaluateDoD(fullBody({ review: split(42) }), [], 0, { ...OWNED, pr }).pass, false, body);
+    }
+    // R5: the comment it links is not on the PR.
+    assert.deepEqual(evaluateReviewRecord(split(99), { ...PR, comments }).problems, ["linked issuecomment-99 not found on this PR"]);
+    // A link joined across a comment, or beside a hidden copy, is no source of a record that counts.
+    const valid = [{ id: 42, login: "x", body: record() }];
+    for (const body of [
+      "Revue : https://github.com/o/r/pull/7#issuecomm<!-- -->ent-42",
+      "Revue : https://github.com/o/r/pull/7#issuecomm<!-- https://github.com/o/r/pull/7#issuecomment-42 -->ent-42",
+    ]) {
+      assert.ok(evaluateReviewRecord(body, { ...PR, comments: valid }).problems[0].startsWith("no review record"), body);
+    }
   });
 
   test("many comments on a line are read in linear time", () => {
