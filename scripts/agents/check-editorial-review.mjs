@@ -22,6 +22,8 @@
 //   chemins relatifs du bloc sont cherchés sous chaque racine, dans l'ordre.
 //   --emit : réponse acceptée inchangée sur stdout, rapport sur stderr ; rien sur stdout
 //   en cas de rejet. Aucun caractère ni champ n'est corrigé par ce mode.
+//   Chaque rapport porte en deuxième ligne « entrée : <n> o, sha256 <empreinte> », calculée sur
+//   les octets reçus : sans --emit, le rapport seul, court, lie la même entrée sans la réémettre.
 //
 // Codes de sortie :
 //   0 — appliquee : bloc conforme, « relecture appliquée » justifiée
@@ -1046,6 +1048,7 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
 
 function render(report) {
   const lines = [`editorial-review ${report.version} — ${report.resultat.toUpperCase()}`];
+  if (report.entree) lines.push(`entrée : ${report.entree.octets} o, sha256 ${report.entree.sha256}`);
   if (report.etat_declare) lines.push(`état déclaré : ${report.etat_declare}`);
   for (const [c, e] of Object.entries(report.conditions)) {
     lines.push(`${c} calculée ${e.calculee}, déclarée ${e.declaree ?? "—"}`);
@@ -1076,8 +1079,11 @@ function main(argv) {
     process.stderr.write("--emit et --json sont exclusifs : la réponse et le rapport ont des sorties distinctes\n");
     return 2;
   }
-  const text = readFileSync(file ?? 0, "utf8");
+  const raw = readFileSync(file ?? 0);
+  const text = raw.toString("utf8");
   const report = checkOutput(text, { roots: roots.length ? roots : [process.cwd()] });
+  // Empreinte des octets reçus, avant décodage : la réponse livrée se confronte à cette ligne.
+  report.entree = { octets: raw.length, sha256: createHash("sha256").update(raw).digest("hex") };
   if (emit) {
     process.stderr.write(render(report));
     if (report.resultat === "appliquee" || report.resultat === "partielle") process.stdout.write(text);

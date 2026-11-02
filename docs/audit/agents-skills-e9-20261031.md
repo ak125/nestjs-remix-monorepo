@@ -128,3 +128,37 @@ Les transcriptions complètes restent hors du dépôt pour ne pas publier le con
 
 Retour arrière proportionné : revert des commits de ce correctif sur la branche PR puis
 régénération des projections ; aucun rollback de runtime ou de données n'est nécessaire.
+
+## Cycle R24, contrat 1.11.0 : critères avant essai (2026-11-02)
+
+Nouveau cycle, écrit avant toute observation. Les sections ci-dessus et les verdicts R12 à
+R23 restent tels quels, échecs compris : R20 Codex racine (capture vide, puis livraison sans
+nouveau passage) et R23 Claude wiki (W2 partiel, E2b non rempli).
+
+- **Entrées modifiées** :
+  - contrat 1.10.1 → 1.11.0, avec l'étape 6 « Livrer » ;
+  - contrôleur : chaque rapport porte en deuxième ligne `entrée : <n> o, sha256 <empreinte>` ;
+  - tests ;
+  - `wiki-proposal-writer`, étapes 1 à 4 et 13.
+- **Livraison contrôlée (Codex)**. Le dernier passage capturé, avec ou sans `--emit`, montre
+  l'en-tête 1.11.0 et la ligne `entrée`. Sa taille et son sha256 sont ceux de la réponse
+  livrée, et le stdin de ce passage lui est égal octet pour octet. Cette égalité remplace la
+  seule exigence de l'écho `--emit`.
+  - Capture vide, puis livraison sans nouveau passage capturé : échec.
+  - Double capture vide, déclarée « sortie du contrôle non capturée » : partielle, non comptée
+    comme appliquée.
+- **Lectures wiki**. Sont rendus en entier, par outil, de la ligne 1 à la dernière :
+  - `SKILL.md`, frontmatter compris ; l'injection par l'outil Skill ne compte pas ;
+  - `.claude/knowledge/workspaces.md`, le gabarit, `source-catalog.yaml` et la fiche
+    existante.
+
+  Une recherche par motif n'est pas une lecture.
+- **Inchangés** : prompts R2 (`2bc1c68e…`) et copies WIKI/RAW ; Codex CLI 0.144.4. Claude Code
+  passe de 2.1.311 à 2.1.316 : changement hors dépôt, consigné.
+- **Cas** :
+  - ciblés : Codex racine et Claude wiki ;
+  - à rejouer : Codex wiki, Claude seo et Codex seo. Leurs blocs 1.10.1 ne sont plus
+    re-contrôlables à la nouvelle version ;
+  - Claude racine seulement si E9 global l'exige, avec sa limite de compaction conservée.
+- **Aucune réussite n'est anticipée**. DoD7 demeure `PARTIAL_COVERAGE`, case décochée, et DoD2
+  reste à prouver.

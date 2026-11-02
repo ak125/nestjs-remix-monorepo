@@ -63,12 +63,20 @@ L'utilisateur fournit au minimum :
 ### Flow étape par étape
 
 ```
-1. Vérifier scope (refuser anti-patterns §D3 immédiatement)
+1. Lire en entier, par un outil qui numérote, de la ligne 1 à la dernière : ce SKILL.md
+   (l'injection par l'outil Skill omet le frontmatter : elle n'est pas une lecture du fichier)
+   et .claude/knowledge/workspaces.md (racine du dépôt) ; puis vérifier scope
+   (refuser anti-patterns §D3 immédiatement)
 2. Vérifier slug uniqueness (Glob automecanik-wiki/wiki/<entity_type>/<slug>.md)
-   → si existant, abort avec REVIEW_REQUIRED
-3. Lire automecanik-wiki/_meta/templates/<entity_type>.md
+   → si existant : aucune génération ni écriture de fichier, final_status REVIEW_REQUIRED.
+     Sous une demande explicite sans écriture (proposition ou revue rendue dans la seule
+     réponse, mise à jour d'une dimension comprise), poursuivre en lecture seule : les
+     étapes 3 à 6 et 13 restent dues en entier, la fiche existante comprise ; le bloc
+     proposé figure dans la réponse, jamais dans proposals/ ni dans wiki/
+3. Lire automecanik-wiki/_meta/templates/<entity_type>.md en entier, ligne 1 à la dernière
    → squelette frontmatter v2.0.0
-4. Lire automecanik-wiki/_meta/source-catalog.yaml
+4. Lire automecanik-wiki/_meta/source-catalog.yaml en entier, ligne 1 à la dernière
+   (une recherche par motif n'est pas une lecture)
    → registre slugs sources stables
 5. Pour entity_type=gamme :
    - Lire automecanik-wiki/exports/diag-canon-slugs.json (si présent)
@@ -107,14 +115,18 @@ L'utilisateur fournit au minimum :
     - l'état de la relecture, écrit dans la prose comme dans le bloc, est celui de la première
       ligne du rapport capturé (APPLIQUEE, PARTIELLE ou REJETEE)
     - REJETEE → corriger le fond, repasser ; livrer la dernière entrée contrôlée, sans retouche
-    - aucun rapport dans la sortie capturée → repasser une fois ; toujours aucun → relecture
+    - avant de livrer, la sortie capturée du dernier passage montre la première ligne du
+      rapport puis la ligne « entrée : <n> o, sha256 <empreinte> » ; vide, coupée ou sans
+      elles → repasser une fois la même entrée sans --emit (rapport seul, lié par
+      l'empreinte), puis livrer exactement cette entrée ; toujours aucun → relecture
       partielle, cause « sortie du contrôle non capturée » nommée dans le champ lecture
 ```
 
 **Sous une consigne sans écriture.** Les étapes 10 et 11 portent sur le fichier écrit : elles
 sont déclarées non exécutées, avec cette cause, dans le manifeste. L'étape 13 lit l'entrée
-standard et n'écrit rien : elle reste due. Une étape ne s'écarte qu'après lecture de la règle qui
-la régit.
+standard et n'écrit rien : elle reste due. Les lectures des étapes 1 et 3 à 6 restent dues aussi,
+fiche existante comprise (étape 2). Une étape ne s'écarte qu'après lecture de la règle qui la
+régit.
 
 ## Defaults conservateurs (ADR-033 §D4)
 

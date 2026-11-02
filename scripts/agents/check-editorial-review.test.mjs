@@ -169,6 +169,14 @@ describe("contrat", () => {
     assert.ok(CONTRACT.verdicts.has("AUCUN_CHANGEMENT_UTILE") && CONTRACT.verdicts.has("BLOQUÉ_SOURCE"));
     assert.deepEqual([...CONTRACT.formats].sort(), ["prose", "script", "social"]);
   });
+
+  test("la livraison contrôlée nomme la ligne d'entrée du rapport et le passage sans --emit", () => {
+    const text = readFileSync(CONTRACT_PATH, "utf8");
+    const steps = text.slice(text.indexOf("### Lecture, application et déclaration"), text.indexOf("### Contrôle avant déclaration"));
+    assert.match(steps, /^6\. \*\*Livrer\*\*/m);
+    assert.match(steps, /`entrée : <n> o, sha256 <empreinte>`/);
+    assert.match(steps, /sans\s+`--emit`/);
+  });
 });
 
 describe("cas acceptés", () => {
@@ -818,6 +826,27 @@ describe("ligne de commande", () => {
       assert.equal(res.stdout, "");
       assert.match(res.stderr, /REJETEE/);
     }
+  });
+
+  test("chaque rapport lie l'entrée par sa taille et son empreinte, avec ou sans --emit, rejet compris", () => {
+    const roots = ["--root", REPO, "--root", dir];
+    const line = (s) => `entrée : ${Buffer.byteLength(s, "utf8")} o, sha256 ${sha(s)}`;
+    const input = output(block());
+    assert.equal(cli(roots, input).stdout.split("\n")[1], line(input));
+    assert.equal(cli(["--emit", ...roots], input).stderr.split("\n")[1], line(input));
+    const rejected = cli(["--emit", ...roots], "Relecture appliquée.");
+    assert.equal(rejected.status, 1);
+    assert.equal(rejected.stderr.split("\n")[1], line("Relecture appliquée."));
+    assert.deepEqual(JSON.parse(cli(["--json", ...roots], input).stdout).entree, { octets: Buffer.byteLength(input, "utf8"), sha256: sha(input) });
+  });
+
+  test("sans --emit, le rapport seul ne réémet pas une réponse longue et en garde l'empreinte", () => {
+    const input = output(block(), "Dossier de test sans affirmation technique.\n".repeat(7000));
+    const res = cli(["--root", REPO, "--root", dir], input);
+    assert.equal(res.status, 0, res.stderr);
+    assert.ok(res.stdout.length < 2000, `${res.stdout.length} caractères`);
+    assert.ok(!res.stdout.includes("Dossier de test"));
+    assert.match(res.stdout, new RegExp(`^editorial-review \\S+ — APPLIQUEE\\nentrée : ${Buffer.byteLength(input, "utf8")} o, sha256 ${sha(input)}\\n`));
   });
 
   test("--emit et --json ne se combinent pas silencieusement", () => {

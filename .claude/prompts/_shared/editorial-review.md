@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.10.1 — 2026-11-01.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.11.0 — 2026-11-02.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -61,6 +61,11 @@
 > contrôle mécanique admettait déjà, après une revue Codex qui relevait l'écart entre ce texte
 > et le contrôle. Le contrôle ne change pas de comportement ; les résultats d'un essai 1.10.0
 > restent acquis.
+> Pilote 1.11.0 : étape numérotée « Livrer » et ligne `entrée` du rapport, qui lie par sa taille
+> et son sha256 l'entrée contrôlée, avec ou sans `--emit`, après un essai du round 20 où un
+> passage `--emit` rendait un code 0 sans sortie capturée et où la réponse était livrée sans
+> second passage. Les résultats d'un essai 1.10.1 ne qualifient pas la livraison contrôlée ;
+> ils restent acquis pour les règles inchangées.
 
 ## 1. Ce que fait la relecture
 
@@ -127,6 +132,15 @@ produit leur trace dans la sortie.
    sections non lues, les références manquantes, les étapes non exécutées et les conditions non
    remplies. La règle vaut pour toute mention de la relecture dans la sortie, liste d'étapes et
    résumé compris, et pas seulement pour le bloc final.
+6. **Livrer** : la réponse livrée est la dernière entrée contrôlée, à l'octet près. Avant de la
+   livrer, relire la sortie capturée de ce dernier passage : elle doit montrer la ligne
+   `editorial-review <version> — APPLIQUEE` ou `— PARTIELLE`, suivie de la ligne
+   `entrée : <n> o, sha256 <empreinte>`. Une sortie vide, coupée ou sans ces deux lignes n'est
+   pas une capture, quel que soit le code rendu : repasser une fois la même entrée, sans
+   `--emit`, pour que le rapport seul, court, la lie par sa taille et son empreinte sans la
+   réémettre ; livrer alors exactement cette entrée. Si cette capture manque encore, livrer en
+   « relecture partielle » avec la cause « sortie du contrôle non capturée » (échec de l'outil)
+   nommée dans `lecture`. Un `REJETEE` se corrige et se repasse (« Contrôle mécanique »).
 
 La sortie suit « Sortie attendue ». Un champ qui ne peut pas être produit est nommé, avec sa
 cause ; il n'est ni omis en silence ni remplacé par un résumé.
@@ -191,11 +205,14 @@ reprise. Ne pas lancer le contrôle n'est admis que sur une telle limite, nommé
 
 Avec `--emit`, le rapport reste sur stderr et stdout est la réponse complète acceptée, exactement
 comme reçue, sans correction ni réécriture. Un rejet ne livre rien sur stdout. Livrer cette sortie
-stdout sans la recomposer ; conserver le code 3 d'une partielle. Un code 0 ou 3 ne prouve pas la
-livraison contrôlée : seuls le stdout et le rapport effectivement capturés de ce dernier passage
-la prouvent. Sans eux, repasser le contrôle ; si la capture manque encore, la sortie est en
-« relecture partielle », avec la cause « sortie du contrôle non capturée » (échec de l'outil)
-nommée dans `lecture`. Ne jamais passer uniquement le
+stdout sans la recomposer ; conserver le code 3 d'une partielle. Chaque rapport, avec ou sans
+`--emit`, porte en deuxième ligne `entrée : <n> o, sha256 <empreinte>`, calculée sur les octets
+reçus. Un code 0 ou 3 ne prouve pas la livraison contrôlée : seul le rapport effectivement capturé
+de ce dernier passage la prouve, avec des octets livrés égaux à son entrée, que montre le stdout
+de `--emit` ou que lie sa ligne `entrée`. Sans ce rapport, repasser une fois la même entrée sans
+`--emit` (point 6) ; si la capture manque encore, la sortie est en « relecture partielle », avec
+la cause « sortie du contrôle non capturée » (échec de l'outil) nommée dans `lecture`. Ne jamais
+passer uniquement le
 bloc final si un brouillon ou d'autres champs ont été écrits avant lui. Une sortie d'outil
 tronquée ne permet pas de livrer les octets manquants : réduire le livrable puis contrôler de nouveau.
 
@@ -571,7 +588,7 @@ et les valeurs d'exemple se remplacent, par le contenu réel :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.10.1", "etat_declare": "partielle",
+  "contrat": "editorial-review", "version": "1.11.0", "etat_declare": "partielle",
   "lectures": [
     {"chemin": "…/.claude/prompts/_shared/editorial-review.md", "plages": ["1-…"], "masquees": [],
      "sections": ["toutes"], "tronque": false},
