@@ -656,8 +656,12 @@ function originalText(orig, roots, errors, uncovered) {
     const actual = sha256(bytes);
     if (orig.sha256 !== actual) {
       const toggled = text.endsWith("\n") ? bytes.subarray(0, bytes.length - (orig.fins_de_ligne === "CRLF" ? 2 : 1)) : Buffer.concat([bytes, Buffer.from(orig.fins_de_ligne === "CRLF" ? "\r\n" : "\n")]);
-      const hint = sha256(toggled) === orig.sha256 ? " (calculée avec l'autre convention de saut final)" : " (calculée sur une autre représentation du texte)";
-      const msg = `original.sha256 faux : déclaré ${orig.sha256.slice(0, 12)}…, octets désignés ${actual.slice(0, 12)}…${hint}`;
+      const ordinary = Buffer.from(text.replace(/[\u00a0\u202f]/g, " "), "utf8");
+      const hint = sha256(toggled) === orig.sha256 ? " (calculée avec l'autre convention de saut final)"
+        : !ordinary.equals(bytes) && sha256(ordinary) === orig.sha256 ? " (calculée avec des espaces ordinaires à la place des insécables)"
+        : " (calculée sur une autre représentation du texte, ou non calculée)";
+      // L'empreinte attendue n'est pas affichée : un préfixe affiché a été recopié puis complété (R24).
+      const msg = `original.sha256 faux : déclaré ${orig.sha256.slice(0, 12)}…, octets désignés : ${bytes.length} o${hint}`;
       errors.C2.push(msg);
       errors.empreinteFausse = [...(errors.empreinteFausse || []), msg];
     }

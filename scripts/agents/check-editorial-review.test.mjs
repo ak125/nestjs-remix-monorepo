@@ -422,6 +422,24 @@ describe("cas rejetés", () => {
     assert.match(errors(r), /sha256 faux.*autre représentation/);
   });
 
+  test("empreinte calculée avec des espaces ordinaires à la place des insécables", () => {
+    const b = block();
+    b.relectures[0].original.sha256 = sha(O_PLAIN);
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /sha256 faux.*espaces ordinaires à la place des insécables/);
+  });
+
+  test("le rapport d'une empreinte fausse n'affiche pas l'empreinte attendue", () => {
+    const b = block();
+    const attendue = sha(O);
+    b.relectures[0].original.sha256 = `${attendue.slice(0, 12)}${"0".repeat(52)}`;
+    const r = run(output(b));
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), new RegExp(`octets désignés : ${Buffer.byteLength(O, "utf8")} o`));
+    assert.doesNotMatch(errors(r).replace(/déclaré [0-9a-f]{12}…/g, ""), new RegExp(attendue.slice(0, 12)));
+  });
+
   test("empreinte calculée avec un saut final non déclaré, même en partielle", () => {
     const b = block({ etat: "partielle" });
     b.relectures[0].original.sha256 = sha(`${O}\n`);

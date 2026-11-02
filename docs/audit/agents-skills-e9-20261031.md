@@ -162,3 +162,53 @@ nouveau passage) et R23 Claude wiki (W2 partiel, E2b non rempli).
   - Claude racine seulement si E9 global l'exige, avec sa limite de compaction conservée.
 - **Aucune réussite n'est anticipée**. DoD7 demeure `PARTIAL_COVERAGE`, case décochée, et DoD2
   reste à prouver.
+
+## Cycle R24 : résultats conservés (2026-11-02)
+
+Les critères ci-dessus restent tels qu'écrits ; ce constat les juge sans les modifier.
+
+- **Codex racine : échec.**
+  - Premier `REJETEE` : empreinte calculée sur un texte dont les deux insécables étaient devenues
+    des espaces.
+  - Second `REJETEE` : empreinte formée du préfixe de 12 caractères affiché par le rapport,
+    complété sans commande entre les deux passages.
+  - Réponse ensuite réécrite (bloc réindenté, apostrophes et espaces changées), puis livrée
+    sans troisième passage, comme relecture partielle sur une cause non admise.
+- **Claude wiki : échec.** W2 et E2b sont remplis ; trois critères échouent.
+  - Attendu 5 : la proposition ne figure qu'en YAML, avec échappements `\u00a0`. Le texte
+    décodé n'est jamais affiché dans la prose.
+  - Attendu 1 : plages 1-761, 1-224, 1-52 et 1-35 pour des fichiers de 760, 223, 51 et 34
+    lignes. Elles comptent la ligne vide que Read numérote après le saut final, ce que
+    l'exception du texte 1.10.1 admettait.
+  - 7w4, relevé par la QA parente : sources dites « admissibles » sous condition d'une empreinte
+    non vérifiée (lignes 59 à 62 de la réponse). Le `controle_fidelite` du bloc vaut
+    `inchangé` aux cinq relectures.
+- Les cas non ciblés n'ont pas été rejoués.
+
+## Cycle R25, contrat 1.11.1 : critères avant essai (2026-11-02)
+
+Nouveau cycle, écrit avant toute observation ; deuxième cycle de correction sur trois.
+
+- **Entrées modifiées** :
+  - contrat 1.11.0 → 1.11.1 :
+    - empreinte de l'original calculée sur la valeur décodée du bloc ;
+    - aucune livraison après un `REJETEE` sans nouveau passage capturé ;
+    - proposition affichée décodée dans la prose ;
+    - plages arrêtées à la dernière ligne du fichier ;
+  - contrôleur : le rapport d'une empreinte fausse n'affiche plus l'empreinte attendue et
+    signale une empreinte calculée sur des espaces ordinaires ;
+  - tests ;
+  - `wiki-proposal-writer`, étape 13 : proposition décodée, plages, et `controle_fidelite`
+    limité à la comparaison avant/après (une réserve sur une source ou son admission reste
+    au dossier interne).
+- **Critères inchangés**, jugés à la version 1.11.1 : E9 1 à 10, W2, W2b, W5, E2b, 7w1 à 7w4,
+  lignes 3 et 9 de DoD7, et le critère de livraison contrôlée de R24.
+- **Tolérance N+1 du contrôleur inchangée**. L'attendu 1 reste jugé par la QA sur les plages
+  déclarées.
+- **Cas** :
+  - ciblés : Codex racine et Claude wiki ;
+  - à rejouer : Codex wiki, Claude seo et Codex seo. Leurs blocs 1.11.0 ne sont plus
+    re-contrôlables à la nouvelle version ;
+  - Claude racine seulement si E9 global l'exige.
+- **Aucune réussite n'est anticipée**. DoD7 demeure `PARTIAL_COVERAGE`, case décochée, et DoD2
+  reste à prouver.

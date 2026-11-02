@@ -110,6 +110,12 @@ L'utilisateur fournit au minimum :
 13. Relecture française, empreinte et contrôle mécanique de la réponse entière, manifeste et
     bloc final compris (.claude/prompts/_shared/editorial-review.md à la racine du dépôt) :
     - empreinte de l'original calculée par une commande sur ses octets, jamais recopiée
+    - la proposition s'affiche aussi décodée dans la prose, hors du YAML et du bloc (insécables
+      en caractères, sans échappement \u00a0) ; le bloc YAML proposé ne la remplace pas
+    - plages des lectures arrêtées à la dernière ligne du fichier, sans la ligne vide que Read
+      numérote après le saut final
+    - controle_fidelite compare seulement l'original et la proposition ; une réserve sur une
+      source ou son admission reste au dossier interne (manifeste), hors du bloc
     - passer la réponse sur l'entrée standard de
       node <racine du dépôt>/scripts/agents/check-editorial-review.mjs --emit --root <dossier>
     - l'état de la relecture, écrit dans la prose comme dans le bloc, est celui de la première

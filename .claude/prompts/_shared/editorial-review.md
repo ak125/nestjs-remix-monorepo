@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.11.0 — 2026-11-02.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.11.1 — 2026-11-02.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -66,6 +66,14 @@
 > passage `--emit` rendait un code 0 sans sortie capturée et où la réponse était livrée sans
 > second passage. Les résultats d'un essai 1.10.1 ne qualifient pas la livraison contrôlée ;
 > ils restent acquis pour les règles inchangées.
+> Pilote 1.11.1 : empreinte de l'original calculée sur la valeur décodée du bloc, rapport sans
+> l'empreinte attendue, aucune livraison après un `REJETEE` sans nouveau passage, proposition
+> affichée décodée dans la prose, plages arrêtées à la dernière ligne du fichier. Essai R24 : une
+> empreinte hachait des espaces ordinaires au lieu de deux insécables, la suivante recopiait le
+> préfixe affiché par le rapport et inventait le reste, puis la réponse était réécrite et livrée
+> sans passage ; côté wiki, la proposition ne figurait qu'en YAML échappé et les plages comptaient
+> la ligne vide que Read numérote après le saut final, que le texte 1.10.1 admettait. Les
+> résultats d'un essai 1.11.0 restent acquis pour les règles inchangées.
 
 ## 1. Ce que fait la relecture
 
@@ -109,9 +117,11 @@ produit leur trace dans la sortie.
    aucune plage et ne fait lire aucune section. Une sortie sans numéros de ligne (`cat`,
    `sed -n`) n'en rend aucun : les établir par un outil qui les affiche (Read, `nl -ba`,
    `cat -n`) ou par `wc -l`, un fichier par commande. Une plage estimée, ou qui dépasse la
-   dernière ligne du fichier, n'est pas une plage rendue. Seule exception : la ligne vide qu'un
-   outil numérote après le saut de ligne final, qui ne contient aucun texte (Read rend 1-87 pour
-   un fichier de 86 lignes). Un fichier cité dans une liste de lectures ne
+   dernière ligne du fichier, n'est pas une plage rendue. La ligne vide qu'un outil numérote
+   après le saut de ligne final n'est pas une ligne du fichier : Read rend 1-87 pour un fichier
+   de 86 lignes, et la plage déclarée s'arrête à 86. Le contrôle mécanique tolère ce numéro sans
+   le compter ; cette tolérance n'en fait pas une ligne à déclarer. Un fichier cité dans une
+   liste de lectures ne
    prouve ni sa lecture complète ni son application. Une sortie d'outil marquée tronquée
    (« truncated », « tokens truncated ») ne prouve pas la lecture du passage coupé : relire ce
    passage par une lecture bornée (un fichier par commande, par plages de lignes) avant de le
@@ -140,7 +150,11 @@ produit leur trace dans la sortie.
    `--emit`, pour que le rapport seul, court, la lie par sa taille et son empreinte sans la
    réémettre ; livrer alors exactement cette entrée. Si cette capture manque encore, livrer en
    « relecture partielle » avec la cause « sortie du contrôle non capturée » (échec de l'outil)
-   nommée dans `lecture`. Un `REJETEE` se corrige et se repasse (« Contrôle mécanique »).
+   nommée dans `lecture`. Un `REJETEE` se corrige et se repasse en entier (« Contrôle
+   mécanique ») : aucune réponse n'est livrée après lui sans nouveau passage capturé, et une
+   « relecture partielle » n'en dispense pas tant que l'outil reste utilisable. La livraison
+   recopie l'entrée de ce passage sans reformuler la prose, réindenter le bloc ni changer une
+   apostrophe, un guillemet ou une espace.
 
 La sortie suit « Sortie attendue ». Un champ qui ne peut pas être produit est nommé, avec sa
 cause ; il n'est ni omis en silence ni remplacé par un résumé.
@@ -230,6 +244,17 @@ Cette préparation ne change aucun texte interne, aucune insécable, ni le `saut
 l'original : ce champ décrit le brouillon, pas l'enveloppe de la réponse. Un `printf '%s'`
 correctement cité, sans saut ajouté, convient aussi. Le contrôle porte ainsi sur les mêmes
 octets que la réponse finale, y compris sa terminaison.
+
+**Empreinte de l'original.** L'outil hache la valeur de `original.texte` telle que le bloc
+l'écrit, guillemets et échappements `\u00a0` / `\u202f` compris, décodée par JSON ; une recopie
+du texte en clair perd les insécables. Le rapport d'une empreinte fausse n'affiche que la taille
+des octets désignés ; une empreinte lue dans un rapport ne se recopie pas.
+
+```bash
+node -e 'const t=JSON.parse(require("fs").readFileSync(0,"utf8"));console.log(require("crypto").createHash("sha256").update(t,"utf8").digest("hex"))' <<'TEXTE'
+"<valeur de original.texte copiée du bloc, guillemets et échappements compris>"
+TEXTE
+```
 
 Le validateur du circuit relance ce contrôle sur la sortie reçue : une déclaration qu'il
 ne confirme pas est traitée comme « relecture partielle » ou rejetée. Il ne juge ni la
@@ -535,11 +560,16 @@ Pour chaque brouillon :
   des lignes sans l'afficher d'un seul tenant. Une correction typographique est
   un changement RE-Tx de l'original vers la proposition. Reproduire n'exige aucun outil ; sans
   outil, seul `sha256` reste `null`. Le sha256 est calculé par un outil sur ce texte exact, jamais
-  recopié ni estimé ; s'il ne peut pas l'être, le manque est nommé et la relecture est partielle.
+  recopié ni estimé (« Empreinte de l'original ») ; s'il ne peut pas l'être, le manque est nommé
+  et la relecture est partielle.
 - **`proposition`** : le texte complet proposé, sans références de recherche ni annotations
   internes (§4.1), recopié en entier même quand il est identique à l'original. Une mention
   (« identique à l'original », « inchangé ») ou toute autre valeur qui tient lieu du texte n'est
   pas une proposition. Son statut de brouillon et ses limites figurent dans la revue séparée.
+  La prose de la réponse l'affiche aussi en entier, hors du bloc, telle que JSON.parse la
+  décode : insécables en caractères, sans échappement `\u00a0`, sans guillemets ni indentation
+  de YAML ou de JSON. Un champ structuré proposé (YAML d'une fiche) peut figurer en plus dans sa
+  syntaxe, jamais à la place de ce texte décodé.
   Dans le JSON, écrire les insécables sous forme d'échappements `\u00a0` ou `\u202f` :
   `"Attention\u00a0: huile chaude."`. JSON.parse les décode en caractères insécables réels.
   Une seule barre oblique inverse, jamais `"Attention\\u00a0: huile chaude."`, qui insère six
@@ -588,7 +618,7 @@ et les valeurs d'exemple se remplacent, par le contenu réel :
 
 ```json
 {
-  "contrat": "editorial-review", "version": "1.11.0", "etat_declare": "partielle",
+  "contrat": "editorial-review", "version": "1.11.1", "etat_declare": "partielle",
   "lectures": [
     {"chemin": "…/.claude/prompts/_shared/editorial-review.md", "plages": ["1-…"], "masquees": [],
      "sections": ["toutes"], "tronque": false},
