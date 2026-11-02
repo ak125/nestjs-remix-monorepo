@@ -7612,6 +7612,33 @@
       "args": [
         {
           "mode": "IN",
+          "name": "input_text",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20261031_accents_protected_segments.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.restore_french_accents",
+      "language": "plpgsql",
+      "name": "restore_french_accents",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "text",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
           "name": "p_id",
           "type": "BIGINT"
         },
