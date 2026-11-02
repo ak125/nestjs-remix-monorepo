@@ -1,5 +1,8 @@
 # Médias — filtre à huile
 
+Brief commun du programme (règles, skills, responsables, état d'intégration) :
+[AUDIT.md § 0](AUDIT.md#0-brief-commun-du-programme-éditorial).
+
 Complète [AUDIT.md](AUDIT.md). Aucun montage, aucun rendu, aucune publication dans ce lot. Aucune vue, rétention ou
 conversion mesurée ni citée. Voix Fafa en « tu » ; légendes des plateformes en « vous ».
 
