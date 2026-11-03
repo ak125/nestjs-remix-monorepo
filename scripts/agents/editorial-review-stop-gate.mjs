@@ -45,6 +45,15 @@
 // Le journal est une preuve des passages, pas la réponse : la réponse contrôlée reste
 // `last_assistant_message`. Une commande forgée pour imiter un rapport n'est pas exclue : le
 // contrôle strict de la réponse par la garde reste indépendant de ces passages.
+// Motif de reprise avec journal (Codex), réponse acceptée mais passages manquants : il donne le
+// chemin absolu de la trace de cette version, déjà écrite par la garde (l'agent ne l'écrit ni ne
+// la modifie), et trois commandes du contrôle à lancer telles quelles, chacune dans un appel
+// d'exécution distinct : --emit, puis deux fois sans --emit, avec les --root de la garde et
+// l'entrée standard lue dans la trace (`< trace`, redirection en lecture, admise par la QA parent
+// le 2026-11-03 pour cette variante ; elle ne requalifie aucune recette antérieure). Les chemins
+// sont protégés pour le shell. La trace n'est que l'entrée de ces passages : la livraison reste le
+// dernier message natif, recontrôlé au Stop suivant et lié aux passages par ses octets et son sha.
+// Une réponse refusée par le contrôle, ou sans journal (Claude Code), garde le motif antérieur.
 //
 // `--extraire <claude|codex> <flux>` écrit sur stdout, à l'octet, la réponse finale native du flux
 // (champ result du dernier événement result ; texte du dernier agent_message terminé), ou sort en 1.
@@ -74,11 +83,15 @@ export const MAX_REPRISES = 2;
 const LIVRABLE = new Set(["appliquee", "partielle"]);
 const ALLOW = `${JSON.stringify({ continue: true })}\n`;
 const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
+const CHECKER = fileURLToPath(new URL("./check-editorial-review.mjs", import.meta.url));
+// Mot shell : tel quel s'il ne contient que des caractères sûrs, sinon entre apostrophes (une
+// apostrophe interne devient '\'').
+const shq = (s) => (/^[\w@%+=:,./-]+$/.test(s) ? s : `'${s.replace(/'/g, "'\\''")}'`);
 const REPORT_RE = /^editorial-review (\S+) — ([A-Z]+)\r?\nentrée : (\d+) o, sha256 ([0-9a-f]{64})$/gm;
 
 // Arguments de chaque invocation du contrôle dans une commande. Le corps d'un here-document (la
 // réponse passée au contrôle) n'est pas une commande : une réponse qui cite « --emit » ne change pas
-// la nature du passage.
+// la nature du passage. Le chemin du contrôle peut être entre apostrophes ou guillemets.
 function invocations(command) {
   let cmd = command;
   const doc = cmd.match(/<<-?\s*[\\'"]*([A-Za-z_]\w*)/);
@@ -89,7 +102,7 @@ function invocations(command) {
       cmd = cmd.slice(0, start) + (end === -1 ? "" : cmd.slice(start + end + 1 + doc[1].length));
     }
   }
-  return [...cmd.matchAll(/check-editorial-review\.mjs((?:[ \t]+[^\s|;&<>()]+)*)/g)].map((m) => m[1]);
+  return [...cmd.matchAll(/check-editorial-review\.mjs['"]?((?:[ \t]+[^\s|;&<>()]+)*)/g)].map((m) => m[1]);
 }
 
 const flag = (args, re) => args.some((a) => new RegExp(`(^|[\\s'"])(${re})(?=[\\s'"=]|$)`).test(a));
@@ -281,9 +294,16 @@ export function gate(raw, { traces, roots, journal = null }) {
     return { code: 0, stdout: ALLOW, stderr: `${head} ; borne de ${MAX_REPRISES} reprises atteinte : arrêt laissé, réponse non livrée\n` };
   }
   const etape6 = "étape 6 du contrat : entrée acceptée par --emit, puis deux passages sans --emit, par deux commandes séparées lancées l'une après l'autre";
+  // controleOk ici implique un journal : sans journal, une réponse acceptée est livrée plus haut.
+  const tracePath = resolve(traces, `livraison-${k}.txt`);
+  const commande = (emit) => ["node", shq(CHECKER), ...(emit ? ["--emit"] : []), ...roots.flatMap((r) => ["--root", shq(resolve(r))]), "<", shq(tracePath)].join(" ");
   const suite = controleOk
-    ? `Cette réponse n'est pas livrée ; elle reste conservée en trace. Suivre pour cette même réponse l'${etape6}, puis la redonner comme dernier message, à l'octet près.`
-    : `Cette réponse n'est pas livrée ; elle reste conservée en trace. Redonner comme dernier message la réponse entière corrigée, prose et bloc final compris, sans renvoyer à la version refusée.${releves === null ? "" : ` Avant de la redonner, suivre l'${etape6}.`}`;
+    ? [
+        `Cette réponse n'est pas livrée ; elle reste conservée en trace, octet pour octet, dans ${tracePath} (fichier écrit par la garde : ne pas l'écrire ni le modifier). Suivre pour cette même réponse l'${etape6}. Lancer les trois commandes suivantes telles quelles, chacune dans un appel d'exécution distinct, l'une après la fin de la précédente, sans tube ni session interactive : une commande envoyée à une session interactive n'est pas relevée dans le journal, et les variables shell ne sont pas partagées entre ces appels.`,
+        ...[true, false, false].map((emit, i) => `  ${i + 1}. ${commande(emit)}`),
+        "Puis redonner cette même réponse comme dernier message, à l'octet près.",
+      ].join("\n")
+    :`Cette réponse n'est pas livrée ; elle reste conservée en trace. Redonner comme dernier message la réponse entière corrigée, prose et bloc final compris, sans renvoyer à la version refusée.${releves === null ? "" : ` Avant de la redonner, suivre l'${etape6}.`}`;
   const reason = [
     `${head} ; reprise ${k} sur ${MAX_REPRISES}.`,
     ...(report.erreurs.length ? ["Erreurs du contrôle :", ...report.erreurs.map((e) => `  - ${e}`)] : []),

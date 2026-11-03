@@ -1254,6 +1254,75 @@ describe("garde de sortie : hook Stop, Claude Code et Codex", () => {
     assert.match(erreurs, /étape 6 : 0 commande\(s\)/);
   });
 
+  // Motif R29 (Codex) : chemin de la trace et trois commandes, lancées ici réellement par bash.
+  const q = (s) => `'${s.replace(/'/g, "'\\''")}'`;
+  const shell = (c) => spawnSync("bash", ["-c", c], { encoding: "utf8", env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH ?? ""}` } });
+  const commandsOf = (reason) => reason.split("\n").filter((l) => /^ {2}[123]\. /.test(l)).map((l) => l.slice(5));
+
+  test("Codex, réponse acceptée sans passages : motif avec le chemin de la trace et trois commandes ; lancées sur la trace (espaces, apostrophes), elles mènent à livree", () => {
+    const traces = join(mkdtempSync(join(dir, "garde d'essai ")), "traces d'essai");
+    const odd = mkdtempSync(join(dir, "racine d'essai "));
+    const oddRoots = [...roots, "--root", odd];
+    const hookO = (journal, payload) => spawnNode(GATE, ["--traces", traces, ...oddRoots, "--journal", journal], JSON.stringify(payload));
+    const first = json(hookO(journalOf(traces, []), STOP.codex(ACCEPTED)));
+    assert.equal(first.decision, "block");
+    const tracePath = join(traces, "livraison-1.txt");
+    assert.ok(first.reason.includes(`elle reste conservée en trace, octet pour octet, dans ${tracePath} (fichier écrit par la garde : ne pas l'écrire ni le modifier)`));
+    assert.match(first.reason, /Suivre pour cette même réponse l'étape 6 du contrat : entrée acceptée par --emit, puis deux passages sans --emit, par deux commandes séparées lancées l'une après l'autre/);
+    assert.match(first.reason, /chacune dans un appel d'exécution distinct, l'une après la fin de la précédente, sans tube ni session interactive/);
+    assert.match(first.reason, /les variables shell ne sont pas partagées entre ces appels/);
+    assert.equal(first.reason.split("\n").at(-1), "Puis redonner cette même réponse comme dernier message, à l'octet près.");
+    const lines = commandsOf(first.reason);
+    const sans = `node ${SCRIPT} --root ${REPO} --root ${dir} --root ${q(odd)} < ${q(tracePath)}`;
+    assert.deepEqual(lines, [sans.replace(`${SCRIPT} `, `${SCRIPT} --emit `), sans, sans]);
+    const before = readFileSync(tracePath);
+    assert.ok(before.equals(Buffer.from(ACCEPTED, "utf8")));
+    const rapport = `entrée : ${before.length} o, sha256 ${sha(ACCEPTED)}`;
+    const runs = lines.map(shell);
+    for (const r of runs) assert.equal(r.status, 0, r.stderr);
+    assert.equal(runs[0].stdout, ACCEPTED);
+    assert.ok(runs[0].stderr.includes(rapport), runs[0].stderr);
+    for (const r of runs.slice(1)) assert.ok(r.stdout.includes(rapport), r.stdout);
+    assert.ok(readFileSync(tracePath).equals(before));
+    // La seule commande --emit : acceptation relevée, passages manquants, refus.
+    const second = json(hookO(journalOf(traces, [cmd("item_1", lines[0], runs[0])]), STOP.codex(ACCEPTED, { stop_hook_active: true })));
+    assert.equal(second.decision, "block");
+    assert.match(second.reason, /étape 6 : 0 commande\(s\) du contrôle sans --emit terminée\(s\) en code 0 ou 3 après l'acceptation .* par item_1/);
+    assert.equal(commandsOf(second.reason)[0], lines[0].replace("livraison-1.txt", "livraison-2.txt"));
+    const all = journalOf(traces, lines.map((c, i) => cmd(`item_${i + 1}`, c, runs[i])));
+    assert.deepEqual(json(hookO(all, STOP.codex(ACCEPTED, { stop_hook_active: true }))), { continue: true });
+    const t = trace(traces, 3);
+    assert.equal(t.decision, "livree");
+    assert.deepEqual(t.erreurs_passages, []);
+    assert.deepEqual(t.commandes.map((c) => [c.commande, c.emit, c.accepte, c.recu]), [["item_1", true, true, false], ["item_2", false, false, true], ["item_3", false, false, true]]);
+    const ok = verifier(traces, ACCEPTED, ["--root", odd, "--journal", all]);
+    assert.equal(ok.status, 0, ok.stdout);
+    assert.equal(JSON.parse(ok.stdout).verdict, "appliquee");
+  });
+
+  test("chemin du contrôle entre apostrophes : --emit relevé comme acceptation", () => {
+    const f = join(mkdtempSync(join(dir, "entrée d'essai ")), "réponse d'essai.txt");
+    writeFileSync(f, ACCEPTED);
+    const c = `node ${q(SCRIPT)} --emit --root ${REPO} --root ${dir} < ${q(f)}`;
+    const r = shell(c);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout, ACCEPTED);
+    assert.match(firstRefusal([cmd("item_1", c, r)]), /étape 6 : 0 commande\(s\) du contrôle sans --emit terminée\(s\) en code 0 ou 3 après l'acceptation .* par item_1/);
+  });
+
+  test("sans journal (Claude Code) ou réponse refusée par le contrôle : motif antérieur, ni chemin de trace ni commande", () => {
+    const AVANT = "Cette réponse n'est pas livrée ; elle reste conservée en trace. Redonner comme dernier message la réponse entière corrigée, prose et bloc final compris, sans renvoyer à la version refusée.";
+    const ABSENT = /livraison-\d+\.txt|check-editorial-review\.mjs|appel d'exécution/;
+    const traces = newTraces();
+    const r = json(hook(traces, STOP.claude(DELIVERED)));
+    assert.equal(r.reason.split("\n").at(-1), AVANT);
+    assert.doesNotMatch(r.reason, ABSENT);
+    assert.deepEqual(json(hook(traces, STOP.claude(ACCEPTED, { stop_hook_active: true }))), { continue: true });
+    const rejet = firstRefusal([emitted("item_1", ACCEPTED)], DELIVERED);
+    assert.equal(rejet.split("\n").at(-1), `${AVANT} Avant de la redonner, suivre l'étape 6 du contrat : entrée acceptée par --emit, puis deux passages sans --emit, par deux commandes séparées lancées l'une après l'autre.`);
+    assert.doesNotMatch(rejet, ABSENT);
+  });
+
   test("acceptation, puis deux passages l'un après l'autre : livree et vérification 0 ; un seul passage après l'acceptation : refus", () => {
     const traces = newTraces();
     const one = journalOf(traces, [emitted("item_1", ACCEPTED), passage("item_2", ACCEPTED)]);

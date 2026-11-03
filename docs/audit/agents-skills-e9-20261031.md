@@ -407,3 +407,61 @@ Cycle 2 sur 3 du lot R27. La QA parent a arrêté ces critères avant tout essai
   seule ne prouve pas E9.
 - **Préconditions** : le candidat est commité et l'arbre est propre.
 - **Aucun résultat R28 n'est anticipé**. DoD7 reste partiel.
+
+## Lot R27, cycle R28 : résultats conservés (relevé QA du 2026-11-03)
+
+Relevé de la QA parent sur les réponses finales natives de R28, sans les modifier.
+
+- **Codex racine** (session `01a1a0a7-b793-7a22-9955-d980175c90ad`) : échec. Le lanceur et la
+  vérification sortent en 1. La réponse finale est exacte (11107 o, sha256 `8034ac7e…`) et le
+  contrôle l'accepte, sans option et avec `--strict` (code 0). Après l'acceptation par `--emit`
+  (`item_43`), aucun des deux passages sans `--emit` n'a été lancé. L'agent a tenté des commandes
+  dans une session interactive, puis a perdu le here-document `RESPONSE` d'un appel d'exécution à
+  l'autre. Au troisième Stop, la garde conclut `borne_atteinte`
+  (`native-r28/codex-root/gate/verification.json`, `qa-r27.json`). E9 n'est pas passé.
+- **Cause relevée** : le motif de reprise ne donnait pas le chemin de la trace. L'agent devait
+  reconstituer la réponse de mémoire.
+- **Claude wiki** (session `85f682b3-0be2-4474-b997-61dc28a6e8e1`) : PARTIELLE conforme. Le
+  lanceur, la vérification et le contrôle (sans option et `--strict`) sortent en 3. La réponse et
+  la proposition natives sont exactes, sans plage au-delà de la fin du fichier. Après la
+  compaction, le contrat est relu par Read, lignes 1 à 800 : attendu 9 vrai. Cinq sources wiki,
+  couverture complète, 29 tours, 3,9485806 USD (`native-r28/claude-wiki/qa-r27.json`).
+
+## Cycle R29 (lot R27, cycle 3 sur 3) : critères avant essai (2026-11-03)
+
+Dernier cycle du lot. Les critères du lot R27 et du cycle R28 restent applicables, sans changement.
+
+- **Entrée modifiée** : `editorial-review-stop-gate.mjs` et ses tests, rien d'autre. Avec un
+  journal (Codex), quand le contrôle accepte la réponse mais que les passages manquent, le motif
+  de reprise donne :
+  - le chemin absolu de la trace de cette version. La garde l'a déjà écrite ; l'agent ne l'écrit
+    pas et ne la modifie pas ;
+  - trois commandes du contrôle à lancer telles quelles : `--emit`, puis deux fois sans `--emit`.
+    Chacune porte les `--root` de la garde et lit la trace sur l'entrée standard (`< trace`). Les
+    chemins sont protégés pour le shell ;
+  - un appel d'exécution distinct par commande, chacun après la fin du précédent, sans tube ni
+    session interactive.
+
+  Le relevé reconnaît aussi un chemin du contrôle entre apostrophes ou guillemets. Avant, le
+  `--emit` qui suivait ce chemin n'était pas vu.
+- **Variante** : la QA parent admet `< trace` pour cette variante (décision du 2026-11-03). Le
+  contrat demande l'entrée standard sans fichier écrit par l'agent ; `printf` et le here-document
+  en sont des exemples. Cette admission ne requalifie aucun cas antérieur.
+- **Frontière** : la trace n'est que l'entrée des passages. La livraison reste le dernier message
+  natif, recontrôlé au Stop suivant et lié aux passages par ses octets et son sha256. Aucune
+  couche ne substitue la trace à la réponse.
+- **Claude wiki R28 réutilisé, non rejoué** : le motif modifié et le relevé ne sont atteints
+  qu'avec un journal, et le lanceur n'en donne pas à Claude (`unset EDITORIAL_REVIEW_JOURNAL`).
+  Le contrôleur, le lanceur, le contrat et le prompt sont inchangés. Un test fixe le motif
+  antérieur pour Claude et pour une réponse refusée par le contrôle.
+- **Tests** : 134 verts, dont les 131 antérieurs. Les trois commandes du motif sont lancées par
+  bash sur la trace ; le dossier de traces et une racine ont une espace et une apostrophe dans
+  leur nom. Résultats : codes 0, rapports liés à la trace, sortie `--emit` égale à la trace,
+  trace inchangée. Le flux de ces trois commandes mène à `livree` et à une vérification en 0 ;
+  la seule commande `--emit` laisse un refus. Avec l'ancien relevé, le test du chemin entre
+  apostrophes échoue. Ces tests ne prouvent pas le comportement du vrai Codex.
+- **Critère Codex R29** : celui de R28, inchangé. Lanceur et vérification en 0 ou 3, `-o` égal
+  au dernier `agent_message`, étape 6 prouvée dans le journal natif.
+- **Préconditions** : candidat commité, arbre propre, dossier de traces absent. La commande du
+  hook `--env` n'a pas changé depuis la revue R28 ; sa confiance est à constater avant l'essai.
+- **Aucun résultat R29 n'est anticipé**. DoD7 reste partiel. Le lot R27 atteint 3 cycles sur 3.
