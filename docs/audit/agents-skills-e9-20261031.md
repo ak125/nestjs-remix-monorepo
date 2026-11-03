@@ -347,3 +347,63 @@ cycle 1 sur 3 de ce lot ; le compteur R24 à R26 reste à 3 sur 3.
   R26, ne font pas partie du lot.
 - **Aucune réussite n'est anticipée**. DoD7 demeure `PARTIAL_COVERAGE`, case décochée, et DoD2
   reste à prouver.
+
+## Lot R27, cycle 1 : résultats conservés (relevé QA du 2026-11-03)
+
+Relevé de la QA parent sur les réponses finales natives de R27, sans les modifier.
+
+- **Claude wiki** : PARTIELLE conforme. La garde et le vérificateur sortent en 3. Après deux
+  reprises, la troisième livraison est exacte. Les lectures et la reprise après compaction sont
+  conformes.
+- **Codex racine** : la réponse finale APPLIQUEE est exacte (14108 o, sha256 `3d21faf1…`), et
+  `-o` est identique au dernier `agent_message`. La garde sort en 0. Le critère de l'étape 6
+  n'est pas satisfait : le flux montre une commande `--help` (code 2), puis une seule
+  acceptation par `--emit`. Les deux passages sans `--emit` qui doivent la suivre manquent
+  (`qa-r27.json`).
+- E9 n'est pas passé. Le cycle suivant ne requalifie pas ces réponses. Rejouée sur le même flux,
+  sa garde refuse la réponse Codex : aucune commande sans `--emit` après l'acceptation.
+
+## Cycle R28 : critères avant essai (2026-11-03)
+
+Cycle 2 sur 3 du lot R27. La QA parent a arrêté ces critères avant tout essai, dans
+`criteres-r28.md` du dossier de preuves. Ils sont repris ici sans modification de fond.
+
+- **Entrées modifiées** :
+  - `editorial-review-native.sh` (nouveau), point d'entrée versionné, sur option. Il charge la
+    garde par les options de session natives (`--settings` pour Claude Code, `-c hooks.Stop`
+    pour Codex). Il laisse le flux natif sur la sortie standard et le copie sans le modifier.
+    Après la session, il extrait la réponse finale native, la compare à `-o` pour Codex, puis
+    lance la vérification. Codes : 0 appliquée, 3 partielle vérifiée, 1 échec, 2 usage refusé
+    (CLI non lancée) ;
+  - `editorial-review-stop-gate.mjs` : l'étape 6 est relevée dans le flux Codex, sur les couples
+    `item.started` puis `item.completed`. S'y ajoutent `--extraire` (réponse finale du flux) et
+    `--env` (paramètres du lanceur) ;
+  - `check-editorial-review.mjs` : en mode strict, une entrée réduite au bloc final ne peut plus
+    esquiver l'affichage de la proposition ;
+  - les tests du contrôleur, de la garde et du lanceur. Le lanceur y est testé avec une CLI
+    factice.
+- **Critères ajoutés** :
+  1. Les deux recettes passent par le lanceur. Une CLI qui finit en 0 sans garde acceptée ne
+     vaut pas livraison. Codes du lanceur : 0 appliquée, 3 partielle vérifiée, 1 échec. La
+     comparaison indépendante de `-o` et du dernier `agent_message` est maintenue pour Codex.
+  2. Codex : l'ordre est prouvé dans le journal natif, par `item.started` puis
+     `item.completed`. Une première acceptation par `--emit` de la réponse exacte est suivie de
+     deux commandes sans `--emit`, lancées l'une après l'autre. Au moins une sortie capturée est
+     liée à cette réponse. Une aide ou une preuve d'ordre incomplète ne satisfait pas ce
+     critère. La garde ne remplace pas ces commandes.
+  3. Les limites du relevé sont celles que déclare le produit :
+     - sans passage reçu, la garde refuse, alors que le contrat livrerait en relecture
+       partielle ;
+     - une commande qui sort dans un autre code que 0 ou 3 n'est pas comptée ;
+     - un rapport dont le code ne correspond pas à l'état n'est pas reçu ;
+     - un REJETEE se corrige : une nouvelle acceptation suivie de deux passages rend la réponse
+       livrable ;
+     - un passage forgé n'est pas exclu, et les traces ne sont pas confinées ;
+     - l'étape 6 n'est pas vérifiée pour Claude.
+  4. Le prompt, les outils, le budget et le contrat restent inchangés. Les critères du lot R27
+     ci-dessus restent applicables.
+- **Hook Codex** : la définition `--env` a été revue dans l'interface native de Codex, avec pour
+  résultat Trusted et Stop Active 1 (`qa-r28-hook-review.md`). Aucun contournement. La confiance
+  seule ne prouve pas E9.
+- **Préconditions** : le candidat est commité et l'arbre est propre.
+- **Aucun résultat R28 n'est anticipé**. DoD7 reste partiel.

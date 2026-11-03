@@ -10,12 +10,14 @@
 // `format` hors du contrat, script Fafa sans la persona). Recette R26 : en mode strict, plage
 // au-delà de la dernière ligne (N+1) et proposition absente de la prose ou affichée à une forme
 // voisine ; garde de sortie (hook Stop) qui bloque une réponse recomposée après le contrôle.
+// Lot R27 : étape 6 relevée dans le flux natif de Codex (acceptation par --emit, puis deux
+// passages sans --emit l'un après l'autre) ; lanceur opt-in qui extrait et vérifie la réponse.
 // Run: node --test scripts/agents/check-editorial-review.test.mjs
 // =============================================================================
 import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -1031,7 +1033,42 @@ describe("proposition affichée telle que JSON.parse la décode", () => {
     assert.equal(r.resultat, "rejetee");
     assert.match(errors(r), /qu'aux blancs près/);
   });
+
+  // QA R27 : prose vide et original désigné par un fichier de provenance. originalDisplayCheck ne
+  // relève rien (provenance trouvée) ; en mode strict, l'absence de la proposition est relevée aussi.
+  test("bloc seul, original désigné par un fichier de provenance : proposition absente relevée en mode strict, pas par défaut", () => {
+    const b = block();
+    b.relectures[0].original.provenance = { chemin: nestedFiche(b, "fiche-bloc-seul-strict.md"), lignes: "5", champ: FIELD };
+    const shown = runStrict(output(b, SHOWN));
+    assert.equal(shown.resultat, "appliquee", errors(shown));
+    const only = `\`\`\`json\n${JSON.stringify(b, null, 2)}\n\`\`\`\n`;
+    const r = runStrict(only);
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /entrée incomplète — l'entrée ne contient que le bloc final/);
+    assert.match(errors(r), /proposition non affichée telle quelle — relecture r1 : la réponse n'affiche pas la proposition du bloc : en mode strict/);
+    const d = run(only);
+    assert.equal(d.resultat, "rejetee");
+    assert.doesNotMatch(errors(d), /proposition non affichée/);
+  });
 });
+
+// Flux natif `codex exec --json` des tests : chaque commande a un item.started puis un
+// item.completed, avec la sortie réelle du contrôle (stderr puis stdout, comme aggregated_output).
+const checks = new Map();
+const checker = (args, text) => {
+  const k = JSON.stringify([args, text]);
+  if (!checks.has(k)) checks.set(k, spawnNode(SCRIPT, [...args, "--root", REPO, "--root", dir], text));
+  return checks.get(k);
+};
+// Forme du saut final observée en R27 : réponse passée au contrôle par un here-document.
+const heredoc = (text, args) => `/bin/bash -lc "python3 -c 'import sys; sys.stdout.write(sys.stdin.read().removesuffix(\\"\\\\n\\"))' <<'RESPONSE' | node scripts/agents/check-editorial-review.mjs ${args} --root ${REPO}\n${text}\nRESPONSE"`;
+const cmdEvent = (type, id, command, res = null) =>
+  JSON.stringify({ type, item: { id, type: "command_execution", command, aggregated_output: res ? `${res.stderr}${res.stdout}` : "", exit_code: res ? res.status : null, status: res ? (res.status === 0 ? "completed" : "failed") : "in_progress" } });
+const cmd = (id, command, res) => [cmdEvent("item.started", id, command), cmdEvent("item.completed", id, command, res)];
+const emitted = (id, text) => cmd(id, heredoc(text, "--emit"), checker(["--emit"], text));
+const passage = (id, text) => cmd(id, heredoc(text, ""), checker([], text));
+const helpCmd = (id) => cmd(id, "/bin/bash -lc 'node scripts/agents/check-editorial-review.mjs --help'", checker(["--help"], ""));
+const agentMessage = (id, text) => JSON.stringify({ type: "item.completed", item: { id, type: "agent_message", text } });
 
 describe("garde de sortie : hook Stop, Claude Code et Codex", () => {
   const GATE = fileURLToPath(new URL("./editorial-review-stop-gate.mjs", import.meta.url));
@@ -1059,10 +1096,10 @@ describe("garde de sortie : hook Stop, Claude Code et Codex", () => {
   const newTraces = () => join(mkdtempSync(join(dir, "garde-")), "gate");
   const roots = ["--root", REPO, "--root", dir];
   const hook = (traces, payload) => spawnNode(GATE, ["--traces", traces, ...roots], typeof payload === "string" ? payload : JSON.stringify(payload));
-  const verifier = (traces, text) => {
+  const verifier = (traces, text, extra = []) => {
     const f = join(dirname(traces), `finale-${(finals += 1)}.txt`);
     writeFileSync(f, text);
-    return spawnNode(GATE, ["--traces", traces, ...roots, "--verifier", f]);
+    return spawnNode(GATE, ["--traces", traces, ...roots, ...extra, "--verifier", f]);
   };
   const json = (res) => {
     assert.equal(res.status, 0, res.stderr);
@@ -1150,5 +1187,461 @@ describe("garde de sortie : hook Stop, Claude Code et Codex", () => {
     assert.match(JSON.parse(res.stdout).erreurs.join("\n"), /traces de 2 sessions/);
     assert.equal(spawnNode(GATE, [], "").status, 1);
     assert.equal(spawnNode(GATE, ["--traces", traces], "").status, 1);
+  });
+
+  // QA R27 : une partielle livrée par la garde sort en 3 à la vérification, pas en 0 ni en 1.
+  const partial = () => {
+    const b = block({ etat: "partielle" });
+    b.relectures[0].original.sha256 = null;
+    b.conditions.C2 = { etat: "non_remplie", manque: "aucun outil d'exécution pour calculer le sha256" };
+    return output(b, `${SHOWN}\n\nRelecture partielle, C2 non remplie.`);
+  };
+
+  test("partielle : garde livree (JSON continue), puis vérification en code 3, verdict partielle", () => {
+    const text = partial();
+    assert.equal(runStrict(text).resultat, "partielle", errors(runStrict(text)));
+    const traces = newTraces();
+    assert.deepEqual(json(hook(traces, STOP.claude(text))), { continue: true });
+    assert.equal(trace(traces, 1).decision, "livree");
+    assert.equal(trace(traces, 1).resultat, "partielle");
+    const res = verifier(traces, text);
+    assert.equal(res.status, 3, res.stdout);
+    assert.equal(JSON.parse(res.stdout).verdict, "partielle");
+    assert.deepEqual(JSON.parse(res.stdout).erreurs, []);
+  });
+
+  // Étape 6 dans le flux natif de Codex, copié par le lanceur : un ordre, relevé sur les événements.
+  let journals = 0;
+  const journalOf = (traces, parts, text = ACCEPTED) => {
+    const f = join(dirname(traces), `codex-exec-${(journals += 1)}.jsonl`);
+    writeFileSync(f, `${[JSON.stringify({ type: "thread.started", thread_id: "essai" }), ...parts.flat(), agentMessage("item_fin", text)].join("\n")}\n`);
+    return f;
+  };
+  const hookJ = (traces, journal, payload) => spawnNode(GATE, ["--traces", traces, ...roots, "--journal", journal], JSON.stringify(payload));
+  const V = CONTRACT.version.replace(/\./g, "\\.");
+  const SHA = "\\(\\d+ o, sha256 [0-9a-f]{64}\\)";
+  const firstRefusal = (parts, text = ACCEPTED) => {
+    const traces = newTraces();
+    const r = json(hookJ(traces, journalOf(traces, parts, text), STOP.codex(text)));
+    assert.equal(r.decision, "block");
+    assert.equal(trace(traces, 1).decision, "reprise");
+    return r.reason;
+  };
+
+  test("journal de Codex R27 (--help, puis un --emit accepté, aucun passage après) : reprises bornées, borne_atteinte, vérification en échec", () => {
+    const traces = newTraces();
+    const j = journalOf(traces, [helpCmd("item_43"), emitted("item_45", ACCEPTED)]);
+    const first = json(hookJ(traces, j, STOP.codex(ACCEPTED)));
+    assert.equal(first.decision, "block");
+    assert.match(first.reason, /contrôle APPLIQUEE en mode strict, passages de livraison manquants ; reprise 1 sur 2/);
+    assert.match(first.reason, new RegExp(`étape 6 : 0 commande\\(s\\) du contrôle sans --emit terminée\\(s\\) en code 0 ou 3 après l'acceptation de cette réponse ${SHA} par item_45`));
+    assert.match(first.reason, /item_43 \(aide ou usage, code 2, lignes 2–3, aucun rapport lié à cette réponse\)/);
+    assert.match(first.reason, new RegExp(`item_45 \\(--emit, code 0, lignes 4–5, rapport lié ${V} APPLIQUEE\\)`));
+    assert.match(first.reason, /Suivre pour cette même réponse l'étape 6 du contrat : entrée acceptée par --emit, puis deux passages sans --emit, par deux commandes séparées lancées l'une après l'autre/);
+    assert.doesNotMatch(first.reason, /Erreurs du contrôle/);
+    const t = trace(traces, 1);
+    assert.equal(t.decision, "reprise");
+    assert.equal(t.resultat, "appliquee");
+    assert.deepEqual(t.commandes.map((c) => [c.commande, c.emit, c.aide, c.accepte, c.recu]), [["item_43", false, true, false, false], ["item_45", true, false, true, false]]);
+    assert.equal(json(hookJ(traces, j, STOP.codex(ACCEPTED, { stop_hook_active: true }))).decision, "block");
+    const third = hookJ(traces, j, STOP.codex(ACCEPTED, { stop_hook_active: true }));
+    assert.deepEqual(json(third), { continue: true });
+    assert.match(third.stderr, /passages de livraison manquants ; borne de 2 reprises atteinte/);
+    const res = verifier(traces, ACCEPTED, ["--journal", j]);
+    assert.equal(res.status, 1);
+    const erreurs = JSON.parse(res.stdout).erreurs.join("\n");
+    assert.match(erreurs, /dernière décision de la garde « borne_atteinte »/);
+    assert.match(erreurs, /étape 6 : 0 commande\(s\)/);
+  });
+
+  test("acceptation, puis deux passages l'un après l'autre : livree et vérification 0 ; un seul passage après l'acceptation : refus", () => {
+    const traces = newTraces();
+    const one = journalOf(traces, [emitted("item_1", ACCEPTED), passage("item_2", ACCEPTED)]);
+    const first = json(hookJ(traces, one, STOP.codex(ACCEPTED)));
+    assert.equal(first.decision, "block");
+    assert.match(first.reason, /étape 6 : 1 commande\(s\) du contrôle sans --emit terminée\(s\) en code 0 ou 3 après l'acceptation .* par item_1/);
+    const two = journalOf(traces, [emitted("item_1", ACCEPTED), passage("item_2", ACCEPTED), passage("item_3", ACCEPTED)]);
+    assert.deepEqual(json(hookJ(traces, two, STOP.codex(ACCEPTED, { stop_hook_active: true }))), { continue: true });
+    const t = trace(traces, 2);
+    assert.equal(t.decision, "livree");
+    assert.deepEqual(t.erreurs_passages, []);
+    assert.deepEqual(t.commandes.map((c) => [c.commande, c.debut, c.fin, c.accepte, c.recu]), [["item_1", 2, 3, true, false], ["item_2", 4, 5, false, true], ["item_3", 6, 7, false, true]]);
+    const ok = verifier(traces, ACCEPTED, ["--journal", two]);
+    assert.equal(ok.status, 0, ok.stdout);
+    assert.equal(JSON.parse(ok.stdout).verdict, "appliquee");
+    // Même dossier de traces, flux sans le second passage : la vérification hors de l'agent recompte.
+    const ko = verifier(traces, ACCEPTED, ["--journal", one]);
+    assert.equal(ko.status, 1);
+    assert.match(JSON.parse(ko.stdout).erreurs.join("\n"), /étape 6 : 1 commande\(s\)/);
+  });
+
+  test("l'étape 6 est un ordre : deux passages avant l'acceptation, ou un avant et un après, ne suffisent pas", () => {
+    const before = firstRefusal([passage("item_1", ACCEPTED), passage("item_2", ACCEPTED), emitted("item_3", ACCEPTED)]);
+    assert.match(before, /étape 6 : 0 commande\(s\) du contrôle sans --emit terminée\(s\) en code 0 ou 3 après l'acceptation .* par item_3/);
+    const around = firstRefusal([passage("item_1", ACCEPTED), emitted("item_2", ACCEPTED), passage("item_3", ACCEPTED)]);
+    assert.match(around, /étape 6 : 1 commande\(s\) du contrôle sans --emit terminée\(s\) en code 0 ou 3 après l'acceptation .* par item_2/);
+  });
+
+  test("deux passages lancés en parallèle après l'acceptation : refus, « l'une après l'autre » non prouvé", () => {
+    const c = heredoc(ACCEPTED, "");
+    const res = checker([], ACCEPTED);
+    const reason = firstRefusal([emitted("item_1", ACCEPTED), cmdEvent("item.started", "item_2", c), cmdEvent("item.started", "item_3", c), cmdEvent("item.completed", "item_2", c, res), cmdEvent("item.completed", "item_3", c, res)]);
+    assert.match(reason, /étape 6 : item_3 démarre avant la fin d'une commande précédente du contrôle : lancées en parallèle, « l'une après l'autre » non prouvé/);
+  });
+
+  test("preuve d'ordre incomplète (item.started absent, ligne illisible, identifiant absent) : refus, sans déduire l'ordre", () => {
+    const c = heredoc(ACCEPTED, "");
+    const res = checker([], ACCEPTED);
+    const noStart = firstRefusal([emitted("item_1", ACCEPTED), cmdEvent("item.completed", "item_2", c, res), passage("item_3", ACCEPTED)]);
+    assert.match(noStart, /étape 6 : commande\(s\) du contrôle sans couple item.started puis item.completed identifié : item_2 ; ordre des passages non prouvé/);
+    const cut = firstRefusal([emitted("item_1", ACCEPTED), passage("item_2", ACCEPTED), passage("item_3", ACCEPTED), '{"type":"item.completed","item":{"id":"item_4"']);
+    assert.match(cut, /étape 6 : flux natif incomplet, 1 ligne\(s\) illisible\(s\) : ordre des passages non prouvé/);
+    const noId = firstRefusal([emitted("item_1", ACCEPTED), passage("item_2", ACCEPTED), [cmdEvent("item.started", "", c), cmdEvent("item.completed", "", c, res)]]);
+    assert.match(noId, /sans couple item.started puis item.completed identifié : ligne-\d+, ligne-\d+ ; ordre/);
+  });
+
+  test("après l'acceptation, deux commandes dont une seule reçue (sortie de l'autre perdue) : livree, comme le contrat", () => {
+    const traces = newTraces();
+    const j = journalOf(traces, [emitted("item_1", ACCEPTED), cmd("item_2", heredoc(ACCEPTED, ""), { stdout: "", stderr: "", status: 0 }), passage("item_3", ACCEPTED)]);
+    assert.deepEqual(json(hookJ(traces, j, STOP.codex(ACCEPTED))), { continue: true });
+    assert.deepEqual(trace(traces, 1).commandes.map((c) => [c.commande, c.recu]), [["item_1", false], ["item_2", false], ["item_3", true]]);
+    assert.equal(verifier(traces, ACCEPTED, ["--journal", j]).status, 0);
+  });
+
+  test("après l'acceptation, aucune commande reçue (vide, coupée, autre réponse, autre version, --json) : refus, plus conservateur que le contrat", () => {
+    const other = ACCEPTED.replace("Un filtre colmaté", "Un filtre encrassé");
+    const report = checker([], ACCEPTED);
+    const [l1] = report.stdout.split("\n");
+    const c = heredoc(ACCEPTED, "");
+    const reason = firstRefusal([
+      emitted("item_1", ACCEPTED),
+      cmd("vide", c, { stdout: "", stderr: "", status: 0 }),
+      cmd("coupee", c, { stdout: `${l1}\n`, stderr: "", status: 0 }),
+      passage("autre", other),
+      cmd("version", c, { stdout: report.stdout.replace(`editorial-review ${CONTRACT.version}`, "editorial-review 0.0.1"), stderr: "", status: 0 }),
+      cmd("json", heredoc(ACCEPTED, "--json"), checker(["--json"], ACCEPTED)),
+    ]);
+    // « autre » (réponse rejetée, code 1) n'est pas comptée : terminée en échec.
+    assert.match(reason, new RegExp(`étape 6 : aucun passage reçu pour cette réponse ${SHA} parmi vide, coupee, version, json \\(refus plus conservateur que le contrat, qui livrerait en relecture partielle\\)`));
+    assert.match(reason, /autre \(sans --emit, code 1, lignes 8–9, aucun rapport lié à cette réponse\)/);
+  });
+
+  test("REJETEE pour ces octets, même après deux passages reçus : refus ; corrigé puis repassé en entier (acceptation, deux passages) : livree", () => {
+    const n = Buffer.byteLength(ACCEPTED, "utf8");
+    // Mêmes octets rejetés par un contrôle mal lancé (racine absente, par exemple), puis corrigé.
+    const rejet = (id) => cmd(id, heredoc(ACCEPTED, "--strict"), { stdout: `editorial-review ${CONTRACT.version} — REJETEE\nentrée : ${n} o, sha256 ${sha(ACCEPTED)}\n`, stderr: "", status: 1 });
+    const ok = [emitted("item_1", ACCEPTED), passage("item_2", ACCEPTED), passage("item_3", ACCEPTED)];
+    const reason = firstRefusal([...ok, rejet("item_4")]);
+    assert.match(reason, /étape 6 : la commande item_4 rend REJETEE pour cette réponse .* et aucune acceptation par --emit n'a démarré après elle : correction et nouveau passage complet exigés, puis les deux passages de livraison/);
+    const partly = firstRefusal([...ok, rejet("item_4"), emitted("item_5", ACCEPTED), passage("item_6", ACCEPTED)]);
+    assert.match(partly, /étape 6 : 1 commande\(s\) .* par item_5/);
+    for (const parts of [
+      [...ok, rejet("item_4"), emitted("item_5", ACCEPTED), passage("item_6", ACCEPTED), passage("item_7", ACCEPTED)],
+      [rejet("item_0"), ...ok],
+    ]) {
+      const traces = newTraces();
+      const j = journalOf(traces, parts);
+      assert.deepEqual(json(hookJ(traces, j, STOP.codex(ACCEPTED))), { continue: true });
+      assert.equal(verifier(traces, ACCEPTED, ["--journal", j]).status, 0);
+    }
+  });
+
+  test("commande terminée en échec, même avec un rapport capturé : ni acceptation, ni passage compté, ni reçu", () => {
+    const c = heredoc(ACCEPTED, "");
+    const enEchec = (id, res, status) => cmd(id, c, { ...res, status });
+    const report = checker([], ACCEPTED);
+    // --emit puis « ; false » : rapport APPLIQUEE capturé, code 1.
+    const noAcc = firstRefusal([cmd("item_1", heredoc(ACCEPTED, "--emit"), { ...checker(["--emit"], ACCEPTED), status: 1 }), passage("item_2", ACCEPTED), passage("item_3", ACCEPTED)]);
+    assert.match(noAcc, /étape 6 : aucune acceptation par --emit de cette réponse .* item_1 \(--emit, code 1,/);
+    const noPass = firstRefusal([emitted("item_1", ACCEPTED), enEchec("item_2", report, 1), enEchec("item_3", report, null)]);
+    assert.match(noPass, /étape 6 : 0 commande\(s\) du contrôle sans --emit terminée\(s\) en code 0 ou 3 .* item_3 \(sans --emit, code null,/);
+    // PARTIELLE capturée mais code 0 (contrôle passé dans un tube) : commande comptée, non reçue.
+    const text = partial();
+    const tube = firstRefusal([emitted("item_1", text), enEchec("item_2", checker([], text), 0), enEchec("item_3", checker([], text), 0)], text);
+    assert.match(tube, /étape 6 : aucun passage reçu pour cette réponse .* parmi item_2, item_3/);
+    // Une commande en échec entre deux passages n'empêche pas la livraison.
+    const traces = newTraces();
+    const j = journalOf(traces, [emitted("item_1", ACCEPTED), enEchec("item_2", report, 1), passage("item_3", ACCEPTED), passage("item_4", ACCEPTED)]);
+    assert.deepEqual(json(hookJ(traces, j, STOP.codex(ACCEPTED))), { continue: true });
+    assert.deepEqual(trace(traces, 1).commandes.map((x) => [x.commande, x.echec, x.recu]), [["item_1", false, false], ["item_2", true, false], ["item_3", false, true], ["item_4", false, true]]);
+  });
+
+  test("réponse qui cite la commande du contrôle avec --emit, dans le here-document : passages comptés sans --emit", () => {
+    const text = output(unchangedBlock(SCENES), `Brouillon relu, inchangé :\n\n${SCENES}\n\nContrôle : node scripts/agents/check-editorial-review.mjs --emit --root <dossier>.`);
+    assert.equal(runStrict(text).resultat, "appliquee", errors(runStrict(text)));
+    const traces = newTraces();
+    const j = journalOf(traces, [emitted("item_1", text), passage("item_2", text), passage("item_3", text)], text);
+    assert.deepEqual(json(hookJ(traces, j, STOP.codex(text))), { continue: true });
+    assert.deepEqual(trace(traces, 1).commandes.map((c) => [c.commande, c.emit, c.recu]), [["item_1", true, false], ["item_2", false, true], ["item_3", false, true]]);
+  });
+
+  test("partielle : acceptation puis deux passages PARTIELLE : livree, vérification --journal en code 3", () => {
+    const text = partial();
+    const traces = newTraces();
+    const j = journalOf(traces, [emitted("item_1", text), passage("item_2", text), passage("item_3", text)], text);
+    assert.deepEqual(json(hookJ(traces, j, STOP.codex(text))), { continue: true });
+    const lie = [`${CONTRACT.version} PARTIELLE`];
+    assert.deepEqual(trace(traces, 1).commandes.map((c) => c.rapports_lies), [lie, lie, lie]);
+    const res = verifier(traces, text, ["--journal", j]);
+    assert.equal(res.status, 3, res.stdout);
+    assert.equal(JSON.parse(res.stdout).verdict, "partielle");
+  });
+
+  test("journal absent : non contrôlée (code 1, stdout vide) ; vérification --journal d'une livraison décidée sans journal : échec", () => {
+    const traces = newTraces();
+    const res = hookJ(traces, join(dirname(traces), "absent.jsonl"), STOP.codex(ACCEPTED));
+    assert.equal(res.status, 1);
+    assert.equal(res.stdout, "");
+    assert.match(res.stderr, /journal natif illisible .* ENOENT/);
+    assert.equal(trace(traces, 1).decision, "non_controlee");
+    const sans = newTraces();
+    json(hook(sans, STOP.codex(ACCEPTED)));
+    const j = journalOf(sans, [emitted("item_1", ACCEPTED), passage("item_2", ACCEPTED), passage("item_3", ACCEPTED)]);
+    const v = verifier(sans, ACCEPTED, ["--journal", j]);
+    assert.equal(v.status, 1);
+    assert.match(JSON.parse(v.stdout).erreurs.join("\n"), /livraison 1 décidée sans journal natif/);
+  });
+
+  test("--env : mêmes décisions qu'avec les options ; variables absentes ou options mêlées : code 1, stdout vide, aucune trace", () => {
+    const traces = newTraces();
+    const j = journalOf(traces, [emitted("item_1", ACCEPTED), passage("item_2", ACCEPTED), passage("item_3", ACCEPTED)]);
+    const env = { ...process.env, EDITORIAL_REVIEW_TRACES: traces, EDITORIAL_REVIEW_ROOTS: `${REPO}:${dir}`, EDITORIAL_REVIEW_JOURNAL: j };
+    const run1 = (e, args = ["--env"]) => spawnSync(process.execPath, [GATE, ...args], { input: JSON.stringify(STOP.codex(ACCEPTED)), encoding: "utf8", env: e });
+    assert.deepEqual(json(run1(env)), { continue: true });
+    assert.equal(trace(traces, 1).journal, j);
+    assert.equal(verifier(traces, ACCEPTED, ["--journal", j]).status, 0);
+    const bare = { ...process.env };
+    for (const k of ["EDITORIAL_REVIEW_TRACES", "EDITORIAL_REVIEW_ROOTS", "EDITORIAL_REVIEW_JOURNAL"]) delete bare[k];
+    const missing = run1(bare);
+    assert.equal(missing.status, 1);
+    assert.equal(missing.stdout, "");
+    assert.match(missing.stderr, /--env sans EDITORIAL_REVIEW_TRACES ou EDITORIAL_REVIEW_ROOTS/);
+    const mixed = run1(env, ["--env", "--traces", traces]);
+    assert.equal(mixed.status, 1);
+    assert.equal(mixed.stdout, "");
+    assert.deepEqual(readdirSync(traces).sort(), ["livraison-1.json", "livraison-1.txt"]);
+  });
+
+  test("--extraire : réponse finale native à l'octet (dernier result, dernier agent_message) ; flux sans réponse ou illisible : code 1, stdout vide", () => {
+    const base = mkdtempSync(join(dir, "extraire-"));
+    const text = `${ACCEPTED}\n`;
+    const write = (name, events) => {
+      const f = join(base, name);
+      writeFileSync(f, `${events.map((e) => JSON.stringify(e)).join("\n")}\n`);
+      return f;
+    };
+    const claude = write("claude.jsonl", [{ type: "system", subtype: "init" }, { type: "assistant", message: { content: [{ type: "text", text: "brouillon" }] } }, { type: "result", subtype: "success", result: "première" }, { type: "result", subtype: "success", result: text }]);
+    const codex = write("codex.jsonl", [{ type: "thread.started" }, { type: "item.completed", item: { id: "a", type: "agent_message", text: "premier" } }, { type: "item.completed", item: { id: "b", type: "agent_message", text } }, { type: "turn.completed" }]);
+    for (const [kind, f] of [["claude", claude], ["codex", codex]]) {
+      const r = spawnSync(process.execPath, [GATE, "--extraire", kind, f]);
+      assert.equal(r.status, 0, String(r.stderr));
+      assert.ok(r.stdout.equals(Buffer.from(text, "utf8")));
+    }
+    const sansResult = write("max-turns.jsonl", [{ type: "result", subtype: "error_max_turns" }]);
+    const coupe = join(base, "coupe.jsonl");
+    writeFileSync(coupe, `${agentMessage("b", text)}\n{"type":"item.comp`);
+    const cases = [
+      ["claude", sansResult, /dernier événement result sans champ result/],
+      ["claude", codex, /aucun événement result/],
+      ["codex", claude, /aucun agent_message terminé/],
+      ["codex", coupe, /ligne 2 du flux illisible/],
+      ["codex", join(base, "absent.jsonl"), /ENOENT/],
+      ["gemini", codex, /usage/],
+    ];
+    for (const [kind, f, re] of cases) {
+      const r = spawnSync(process.execPath, [GATE, "--extraire", kind, f], { encoding: "utf8" });
+      assert.equal(r.status, 1, kind);
+      assert.equal(r.stdout, "");
+      assert.match(r.stderr, re);
+    }
+  });
+});
+
+// =============================================================================
+// Lanceur opt-in versionné, avec une CLI factice qui exécute le hook déclaré comme le ferait la
+// CLI (nouveau tour sur block, fin sur continue). Non couverts ici : la confiance Codex,
+// l'héritage réel de l'environnement par le hook et le comportement réel des CLI (recette native).
+// =============================================================================
+const FAKE_CLI = `#!${process.execPath}
+const { readFileSync, statSync, writeFileSync, writeSync } = require("node:fs");
+const { spawnSync } = require("node:child_process");
+const argv = process.argv.slice(2);
+const cfg = JSON.parse(readFileSync(process.env.FAKE_CONFIG, "utf8"));
+const codex = argv[0] === "exec";
+let written = 0;
+const line = (s) => { const b = Buffer.from(s + "\\n"); writeSync(1, b); written += b.length; };
+const out = (o) => line(JSON.stringify(o));
+const command = codex ? /command = "([^"]*)"/.exec(argv[3])[1] : JSON.parse(argv[1]).hooks.Stop[0].hooks[0].command;
+// Le hook lit la copie du flux : attendre qu'elle ait rattrapé la sortie.
+const caughtUp = () => {
+  const j = process.env.EDITORIAL_REVIEW_JOURNAL;
+  const size = () => { try { return statSync(j).size; } catch { return 0; } };
+  for (let i = 0; j && i < 500 && size() < written; i += 1) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10);
+};
+out(codex ? { type: "thread.started", thread_id: "fake" } : { type: "system", subtype: "init" });
+for (const l of cfg.items || []) line(l);
+let last = null;
+for (let turn = 0; turn < 6; turn += 1) {
+  last = cfg.messages[Math.min(turn, cfg.messages.length - 1)];
+  out(codex ? { type: "item.completed", item: { id: "item_msg_" + turn, type: "agent_message", text: last } } : { type: "assistant", message: { content: [{ type: "text", text: last }] } });
+  if (cfg.noHook) break;
+  caughtUp();
+  const payload = { session_id: codex ? "fake-codex" : "fake-claude", transcript_path: null, cwd: process.cwd(), hook_event_name: "Stop", stop_hook_active: turn > 0, last_assistant_message: last };
+  const h = spawnSync("/bin/sh", ["-c", command], { input: JSON.stringify(payload), encoding: "utf8" });
+  const env = { traces: process.env.EDITORIAL_REVIEW_TRACES ?? null, roots: process.env.EDITORIAL_REVIEW_ROOTS ?? null, journal: process.env.EDITORIAL_REVIEW_JOURNAL ?? null };
+  out({ type: "fake.hook", argv, command, env, status: h.status, stdout: h.stdout, stderr: h.stderr });
+  let decision = null;
+  try { decision = JSON.parse(h.stdout).decision; } catch {}
+  if (decision !== "block") break;
+}
+if (codex && cfg.after) out({ type: "item.completed", item: { id: "item_apres", type: "agent_message", text: cfg.after } });
+out(codex ? { type: "turn.completed" } : { type: "result", subtype: "success", result: cfg.result ?? last });
+const o = argv.indexOf("-o");
+if (codex && o !== -1) writeFileSync(argv[o + 1], cfg.o ?? cfg.after ?? last);
+process.exitCode = cfg.exit ?? 0;
+`;
+
+describe("lanceur editorial-review-native.sh : extraction, vérification et code de sortie", () => {
+  const LAUNCHER = fileURLToPath(new URL("./editorial-review-native.sh", import.meta.url));
+  const GATE = realpathSync(fileURLToPath(new URL("./editorial-review-stop-gate.mjs", import.meta.url)));
+  const SCENES = "**Scène 1 — Ouverture**\nLe filtre retient les impuretés du circuit de lubrification.";
+  const accepted = output(unchangedBlock(SCENES), `Brouillon relu, inchangé :\n\n${SCENES}`);
+  let base;
+  let fake;
+  let node;
+  before(() => {
+    base = mkdtempSync(join(dir, "lanceur-"));
+    fake = join(base, "fake-cli.cjs");
+    writeFileSync(fake, FAKE_CLI, { mode: 0o755 });
+    node = spawnSync("bash", ["-c", "command -v node"], { encoding: "utf8" }).stdout.trim();
+  });
+  const launch = (cli, args, cfg, env = {}) => {
+    const f = join(mkdtempSync(join(base, "cfg-")), "config.json");
+    writeFileSync(f, JSON.stringify(cfg));
+    return spawnSync("bash", [LAUNCHER, cli, ...args], { encoding: "utf8", env: { ...process.env, ...env, FAKE_CONFIG: f } });
+  };
+  const newRun = () => {
+    const d = mkdtempSync(join(base, "run-"));
+    return { traces: join(d, "gate"), o: join(d, "last.txt") };
+  };
+  const hooks = (stdout) => stdout.split("\n").filter(Boolean).map((l) => JSON.parse(l)).filter((e) => e.type === "fake.hook");
+  const decisions = (stdout) => hooks(stdout).map((h) => JSON.parse(h.stdout).decision ?? "continue");
+  const steps = (text) => [...emitted("item_1", text), ...passage("item_2", text), ...passage("item_3", text)];
+  const codexArgs = (r) => ["--traces", r.traces, "--root", REPO, "--root", dir, "--bin", fake, "--", "-s", "read-only", "--ephemeral", "-o", r.o, "invite figée"];
+  const claudeArgs = (r) => ["--traces", r.traces, "--root", REPO, "--root", dir, "--bin", fake, "--", "-p", "invite figée", "--output-format", "stream-json", "--verbose"];
+  const report = (r) => JSON.parse(readFileSync(join(r.traces, "verification.json"), "utf8"));
+  const partialText = () => {
+    const b = block({ etat: "partielle" });
+    b.relectures[0].original.sha256 = null;
+    b.conditions.C2 = { etat: "non_remplie", manque: "aucun outil d'exécution pour calculer le sha256" };
+    return output(b, `${SHOWN}\n\nRelecture partielle, C2 non remplie.`);
+  };
+
+  test("codex : flux natif inchangé sur stdout et copié, hook de session (-c), étape 6 prouvée, réponse extraite égale à -o : code 0", () => {
+    const r = newRun();
+    const res = launch("codex", codexArgs(r), { items: steps(accepted), messages: [accepted] });
+    assert.equal(res.status, 0, res.stderr);
+    assert.equal(readFileSync(join(r.traces, "codex-exec.jsonl"), "utf8"), res.stdout);
+    const [h] = hooks(res.stdout);
+    const command = `'${node}' '${GATE}' --env`;
+    assert.deepEqual(h.argv, ["exec", "--json", "-c", `hooks.Stop=[{ hooks = [{ type = "command", command = "${command}" }] }]`, "-s", "read-only", "--ephemeral", "-o", r.o, "invite figée"]);
+    assert.deepEqual(h.env, { traces: r.traces, roots: `${REPO}:${dir}`, journal: join(r.traces, "codex-exec.jsonl") });
+    assert.deepEqual(decisions(res.stdout), ["continue"]);
+    assert.equal(readFileSync(join(r.traces, "reponse-finale.txt"), "utf8"), accepted);
+    assert.equal(report(r).verdict, "appliquee");
+    assert.match(res.stderr, /réponse finale vérifiée, code 0/);
+  });
+
+  test("codex, forme R27 (--emit accepté, aucun passage après) : refus, deux reprises, borne, lanceur code 1", () => {
+    const r = newRun();
+    const res = launch("codex", codexArgs(r), { items: [...helpCmd("item_43"), ...emitted("item_45", accepted)], messages: [accepted] });
+    assert.equal(res.status, 1);
+    assert.deepEqual(decisions(res.stdout), ["block", "block", "continue"]);
+    assert.match(res.stderr, /réponse non livrée \(code 1\) : vérification : code 1/);
+    const erreurs = report(r).erreurs.join("\n");
+    assert.match(erreurs, /« borne_atteinte »/);
+    assert.match(erreurs, /étape 6 : 0 commande\(s\)/);
+  });
+
+  test("hook absent (CLI qui ne l'exécute pas) : aucune trace, lanceur code 1, pour codex et claude", () => {
+    for (const cli of ["codex", "claude"]) {
+      const r = newRun();
+      const res = launch(cli, cli === "codex" ? codexArgs(r) : claudeArgs(r), { items: cli === "codex" ? steps(accepted) : [], messages: [accepted], noHook: true });
+      assert.equal(res.status, 1, res.stderr);
+      assert.deepEqual(hooks(res.stdout), []);
+      assert.match(report(r).erreurs.join("\n"), /aucune trace de la garde/);
+    }
+  });
+
+  test("codex, réponse finale altérée : -o différent du flux, ou agent_message ajouté après la garde : code 1", () => {
+    const r1 = newRun();
+    const o = launch("codex", codexArgs(r1), { items: steps(accepted), messages: [accepted], o: `${accepted}\n` });
+    assert.equal(o.status, 1);
+    assert.match(o.stderr, /réponse finale altérée : .*last\.txt ≠ dernier agent_message du flux/);
+    const r2 = newRun();
+    const after = launch("codex", codexArgs(r2), { items: steps(accepted), messages: [accepted], after: `${accepted}  ` });
+    assert.equal(after.status, 1);
+    assert.match(report(r2).erreurs.join("\n"), /réponse finale native .* ≠ dernière livraison contrôlée/);
+  });
+
+  test("claude : --settings JSON de session, flux stream-json inchangé et copié, sans journal ; partielle vérifiée : code 3", () => {
+    const text = partialText();
+    const r = newRun();
+    const res = launch("claude", claudeArgs(r), { messages: [text] }, { EDITORIAL_REVIEW_JOURNAL: "/ne/doit/pas/passer.jsonl" });
+    assert.equal(res.status, 3, res.stderr);
+    assert.equal(readFileSync(join(r.traces, "claude-stream.jsonl"), "utf8"), res.stdout);
+    const [h] = hooks(res.stdout);
+    assert.equal(h.argv[0], "--settings");
+    assert.deepEqual(JSON.parse(h.argv[1]), { hooks: { Stop: [{ hooks: [{ type: "command", command: `'${node}' '${GATE}' --env` }] }] } });
+    assert.deepEqual(h.argv.slice(2), ["-p", "invite figée", "--output-format", "stream-json", "--verbose"]);
+    assert.deepEqual(h.env, { traces: r.traces, roots: `${REPO}:${dir}`, journal: null });
+    assert.equal(readFileSync(join(r.traces, "reponse-finale.txt"), "utf8"), text);
+    assert.equal(report(r).verdict, "partielle");
+    assert.match(res.stderr, /réponse finale vérifiée, code 3/);
+  });
+
+  test("claude : result différent du message contrôlé, ou réponse refusée jusqu'à la borne : code 1", () => {
+    const r1 = newRun();
+    const alt = launch("claude", claudeArgs(r1), { messages: [accepted], result: `${accepted}\n` });
+    assert.equal(alt.status, 1);
+    assert.match(report(r1).erreurs.join("\n"), /≠ dernière livraison contrôlée/);
+    const refused = accepted.replace(/(\*\*Scène \d — [^*\n]+\*\*)\n/g, "$1  \n");
+    assert.equal(runStrict(refused).resultat, "rejetee");
+    const r2 = newRun();
+    const res = launch("claude", claudeArgs(r2), { messages: [refused] });
+    assert.equal(res.status, 1);
+    assert.deepEqual(decisions(res.stdout), ["block", "block", "continue"]);
+    assert.match(report(r2).erreurs.join("\n"), /« borne_atteinte »/);
+  });
+
+  test("CLI en échec (code 7) : lanceur code 1, même si la réponse se vérifie", () => {
+    const r = newRun();
+    const res = launch("codex", codexArgs(r), { items: steps(accepted), messages: [accepted], exit: 7 });
+    assert.equal(res.status, 1);
+    assert.match(res.stderr, /réponse non livrée \(code 1\) : codex : code 7/);
+    assert.equal(report(r).verdict, "appliquee");
+  });
+
+  test("refus avant lancement (code 2, CLI non lancée, aucun dossier créé)", () => {
+    const existing = mkdtempSync(join(base, "existe-"));
+    const quoted = join(base, 'a"b');
+    const fresh = (n) => join(base, `neuf-${n}`);
+    const cases = [
+      ["codex", ["--traces", existing, "--root", REPO, "--bin", fake, "--", "x"]],
+      ["codex", ["--traces", join(quoted, "gate"), "--root", REPO, "--bin", fake, "--", "x"]],
+      ["claude", ["--traces", fresh(1), "--root", `${REPO}:${dir}`, "--bin", fake, "--", "-p", "x", "--output-format", "stream-json"]],
+      ["claude", ["--traces", fresh(2), "--bin", fake, "--", "-p", "x", "--output-format", "stream-json"]],
+      ["claude", ["--traces", fresh(3), "--root", REPO, "--bin", fake, "--", "-p", "x"]],
+      ["claude", ["--traces", fresh(4), "--root", REPO, "--bin", fake, "--", "-p", "x", "--output-format=json"]],
+      ["gemini", ["--traces", fresh(5), "--root", REPO, "--", "x"]],
+    ];
+    for (const [cli, args] of cases) {
+      const res = launch(cli, args, { messages: ["x"] });
+      assert.equal(res.status, 2, `${cli} ${args.join(" ")}\n${res.stderr}`);
+      assert.equal(res.stdout, "");
+      assert.match(res.stderr, /usage : editorial-review-native\.sh/);
+    }
+    for (const n of [1, 2, 3, 4, 5]) assert.equal(existsSync(fresh(n)), false);
+    assert.equal(existsSync(join(quoted, "gate")), false);
   });
 });

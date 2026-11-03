@@ -931,10 +931,10 @@ function originalDisplayCheck(rel, prose, roots) {
 // Compatibilité historique (mode par défaut) : retours à la ligne et espaces répétées restent
 // admis, et une proposition introuvable dans la prose n'est pas relevée. En mode strict (contrôle
 // de la livraison), la prose contient la proposition décodée octet pour octet ; toute autre forme,
-// ou son absence, est rejetée.
+// ou son absence, est rejetée, y compris d'une entrée réduite au bloc final (prose vide, QA R27).
 function propositionDisplayCheck(rel, prose, strict = false) {
   const p = rel.proposition;
-  if (typeof p !== "string" || !p.trim() || !prose.trim()) return null;
+  if (typeof p !== "string" || !p.trim() || (!strict && !prose.trim())) return null;
   if (strict ? prose.includes(p) : keepBreaks(prose).includes(keepBreaks(p))) return null;
   const id = rel.id || "?";
   if (keepBreaks(prose).includes(keepBreaks(p))) {
