@@ -290,14 +290,23 @@ function resolvePath(p, roots) {
 
 // Un outil qui découpe le fichier sur « \n » rend après le dernier saut une ligne vide
 // numérotée N+1 (Read de Claude Code) : la citer ne sort pas du fichier et n'ajoute rien.
-function parseRange(r, text) {
+// Tolérance historique, conservée par défaut. En mode strict (`--strict`, contrôle de la
+// livraison) : la plage déclarée s'arrête à la dernière ligne réelle (§1, point 3), N+1 est rejetée.
+function parseRange(r, text, strictEof = false) {
   const nLines = countLines(text);
   const m = typeof r === "string" && r.trim().match(/^(\d+)(?:\s*[-–]\s*(\d+))?$/);
   if (!m) return { error: `plage illisible ${JSON.stringify(r)} (attendu "a-b")` };
   const a = Number(m[1]);
   const b = m[2] ? Number(m[2]) : a;
-  const last = text.endsWith("\n") ? nLines + 1 : nLines;
-  if (a < 1 || b < a || b > last) return { error: `plage ${r} hors du fichier (${nLines} lignes)` };
+  const last = text.endsWith("\n") && !strictEof ? nLines + 1 : nLines;
+  if (a < 1 || b < a || b > last) {
+    const virtual = strictEof && text.endsWith("\n") && b === nLines + 1;
+    return {
+      error: virtual
+        ? `plage ${r} au-delà de la dernière ligne (${nLines} lignes) : la ligne vide qu'un outil numérote après le saut final n'est pas une ligne du fichier (mode strict, §1, point 3)`
+        : `plage ${r} hors du fichier (${nLines} lignes)`,
+    };
+  }
   return { a, b: Math.min(b, nLines) };
 }
 
@@ -350,12 +359,12 @@ function fieldPaths(file, zone, a, b) {
   return paths;
 }
 
-function coveredLines(entry, text, errors, where) {
+function coveredLines(entry, text, errors, where, strictEof) {
   const covered = new Set();
   const plages = Array.isArray(entry.plages) ? entry.plages : [];
   if (plages.length === 0) errors.push(`${where} : aucune plage déclarée`);
   for (const r of plages) {
-    const p = parseRange(r, text);
+    const p = parseRange(r, text, strictEof);
     if (p.error) errors.push(`${where} : ${p.error}`);
     else for (let i = p.a; i <= p.b; i += 1) covered.add(i);
   }
@@ -365,7 +374,7 @@ function coveredLines(entry, text, errors, where) {
     covered.clear();
   }
   for (const r of masked) {
-    const p = parseRange(r, text);
+    const p = parseRange(r, text, strictEof);
     if (p.error) errors.push(`${where} : ${p.error}`);
     else for (let i = p.a; i <= p.b; i += 1) covered.delete(i);
   }
@@ -476,7 +485,7 @@ function checkSections(entry, abs, text, covered, where) {
   return errs;
 }
 
-function checkReadings(block, relectures, roots, contract) {
+function checkReadings(block, relectures, roots, contract, strictEof) {
   const errors = [];
   const inexact = [];
   const reads = [];
@@ -491,7 +500,7 @@ function checkReadings(block, relectures, roots, contract) {
     }
     const text = readFileSync(abs, "utf8");
     const nLines = countLines(text);
-    const covered = coveredLines(entry, text, errors, where);
+    const covered = coveredLines(entry, text, errors, where, strictEof);
     inexact.push(...checkSections(entry, abs, text, covered, where));
     reads.push({ abs, real: realpathSync(abs), text, nLines, covered });
   });
@@ -557,7 +566,7 @@ function checkReadings(block, relectures, roots, contract) {
         continue;
       }
       const file = readFileSync(abs, "utf8");
-      const range = m[2] ? parseRange(m[2], file) : { a: 1, b: countLines(file) };
+      const range = m[2] ? parseRange(m[2], file, strictEof) : { a: 1, b: countLines(file) };
       if (range.error) errors.push(`relecture ${rel.id}, source ${src} : ${range.error}`);
       else requireFile(`relecture ${rel.id}, source ${src}`, abs, range.a, range.b);
     }
@@ -569,7 +578,7 @@ function checkReadings(block, relectures, roots, contract) {
 // Une relecture
 // ---------------------------------------------------------------------------------------------
 
-function originalText(orig, roots, errors, uncovered) {
+function originalText(orig, roots, errors, uncovered, strictEof) {
   if (!orig || typeof orig !== "object") {
     errors.C2.push("original absent");
     return null;
@@ -601,7 +610,7 @@ function originalText(orig, roots, errors, uncovered) {
       if (!abs) errors.C2.push(`original.provenance ${p.chemin} : fichier introuvable`);
       else {
         const file = readFileSync(abs, "utf8");
-        const range = parseRange(p.lignes, file);
+        const range = parseRange(p.lignes, file, strictEof);
         if (range.error) errors.C2.push(`original.provenance : ${range.error}`);
         else {
           const where = `${p.chemin}:${p.lignes}`;
@@ -633,7 +642,7 @@ function originalText(orig, roots, errors, uncovered) {
     const raw = readFileSync(abs);
     const file = raw.toString("utf8");
     const all = file.split(/(?<=\n)/);
-    const range = parseRange(orig.lignes, file);
+    const range = parseRange(orig.lignes, file, strictEof);
     if (range.error) {
       errors.C2.push(`original : ${range.error}`);
       return null;
@@ -743,7 +752,7 @@ function replay(O, changes, id, errors) {
 }
 
 function checkRelecture(rel, ctx) {
-  const { contract, roots, uncovered } = ctx;
+  const { contract, roots, uncovered, strictEof } = ctx;
   const id = rel && rel.id ? rel.id : "?";
   const errors = { C2: [], C3: [], C4: [], C5: [], C6: [], C7: [] };
   const soft = [];
@@ -756,7 +765,7 @@ function checkRelecture(rel, ctx) {
     errors.C6.push(`relecture ${id} : ${rel.verdict} sans cause dans raison_aucun_changement`);
   }
 
-  const O = originalText(rel.original, roots, errors, uncovered);
+  const O = originalText(rel.original, roots, errors, uncovered, strictEof);
   const steps = rel.etapes && typeof rel.etapes === "object" ? rel.etapes : {};
   for (const k of STEP_KEYS) {
     const s = steps[k];
@@ -852,7 +861,7 @@ function checkRelecture(rel, ctx) {
 // brouillon livré tel qu'il est affiché (§10). Sans aucun écart trouvé, l'original reste à
 // vérifier sur le contenu. Un chemin de provenance qui ne désigne aucun fichier laisse l'original
 // dans ce cas.
-function displayCheck(rel, prose, roots) {
+function originalDisplayCheck(rel, prose, roots) {
   const o = rel.original;
   if (!o || typeof o !== "object" || typeof o.texte !== "string" || !o.texte.trim()) return {};
   if (o.provenance && resolvePath(o.provenance.chemin, roots)) return {};
@@ -915,6 +924,42 @@ function displayCheck(rel, prose, roots) {
   return { soft: `relecture ${id} : original reproduit sans fichier de provenance, que la réponse n'affiche pas d'un seul tenant : vérifier qu'il reproduit en entier le brouillon livré (§10)` };
 }
 
+// La prose affiche la proposition en entier, telle que JSON.parse la décode (§10, `proposition`) :
+// une forme qui n'en diffère que par les espaces d'un saut forcé Markdown ou par la typographie
+// (insécable affichée en espace ordinaire, guillemets, apostrophes) n'est pas elle. Contrôlée
+// même quand l'original est affiché tel quel, et quelle que soit sa provenance (recette R26).
+// Compatibilité historique (mode par défaut) : retours à la ligne et espaces répétées restent
+// admis, et une proposition introuvable dans la prose n'est pas relevée. En mode strict (contrôle
+// de la livraison), la prose contient la proposition décodée octet pour octet ; toute autre forme,
+// ou son absence, est rejetée.
+function propositionDisplayCheck(rel, prose, strict = false) {
+  const p = rel.proposition;
+  if (typeof p !== "string" || !p.trim() || !prose.trim()) return null;
+  if (strict ? prose.includes(p) : keepBreaks(prose).includes(keepBreaks(p))) return null;
+  const id = rel.id || "?";
+  if (keepBreaks(prose).includes(keepBreaks(p))) {
+    return `relecture ${id} : la réponse n'affiche la proposition du bloc qu'aux blancs près (retours à la ligne, espaces répétées ou fins de ligne CRLF) : en mode strict, la prose la contient octet pour octet telle que JSON.parse la décode (§10)`;
+  }
+  const shown = norm(prose);
+  if (shown.includes(norm(p))) {
+    return `relecture ${id} : la réponse n'affiche la proposition du bloc qu'aux espaces de fin de ligne près (saut forcé Markdown) : la prose l'affiche en entier telle que JSON.parse la décode (§10)`;
+  }
+  if (typoShape(shown).includes(typoShape(norm(p)))) {
+    return `relecture ${id} : la réponse n'affiche de la proposition du bloc qu'une forme à la typographie près (espaces insécables, guillemets ou apostrophes) : la prose l'affiche en entier telle que JSON.parse la décode, insécables en caractères (§10)`;
+  }
+  if (!strict) return null;
+  const o = rel.original && typeof rel.original.texte === "string" && rel.original.texte.trim() ? rel.original.texte : null;
+  const onlyOriginal = o !== null && o !== p && keepBreaks(prose).includes(keepBreaks(o));
+  return `relecture ${id} : la réponse n'affiche pas la proposition du bloc${onlyOriginal ? " (elle affiche l'original, pas la proposition)" : ""} : en mode strict, la prose l'affiche en entier, hors du bloc, octet pour octet telle que JSON.parse la décode (§10)`;
+}
+
+function displayCheck(rel, prose, roots, strict) {
+  const shown = originalDisplayCheck(rel, prose, roots);
+  if (shown.ecart || shown.entree) return shown;
+  const proposition = propositionDisplayCheck(rel, prose, strict);
+  return proposition ? { ...shown, proposition } : shown;
+}
+
 const STATE_RE = /relecture(?:\s+[ée]ditoriale)?(?:\s+fran[çc]aise)?\s*[:\-–]?\s*(appliqu[ée]e?s?|partielle)/giu;
 const stateOf = (s) => (/^appliqu/i.test(s) ? "appliquée" : "partielle");
 const ETATS = new Map([["appliquée", "appliquée"], ["appliquee", "appliquée"], ["partielle", "partielle"]]);
@@ -935,9 +980,14 @@ function findBlocks(text) {
   return blocks;
 }
 
-export function checkOutput(text, { roots = [process.cwd()], contractText } = {}) {
+// `strict` : contrôle de la livraison réelle (hook Stop, vérification après la fin). Plages arrêtées
+// à la dernière ligne réelle et proposition affichée octet pour octet ; sans lui, compatibilité
+// historique (ligne N+1 admise, proposition absente de la prose non relevée).
+export function checkOutput(text, { roots = [process.cwd()], contractText, strict = false } = {}) {
+  const strictEof = strict;
   const contract = parseContract(contractText ?? readFileSync(CONTRACT_PATH, "utf8"));
   const report = { resultat: null, etat_declare: null, version: contract.version, conditions: {}, erreurs: [], a_verifier: [] };
+  if (strict) report.mode = "strict";
   const blocks = findBlocks(text);
   const prose = blocks.reduceRight((t, b) => t.slice(0, b.start) + t.slice(b.end), text);
   // Une mention entre guillemets cite la règle, elle ne déclare rien.
@@ -979,9 +1029,9 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
     }
   });
   const computed = Object.fromEntries(CONDITIONS.map((c) => [c, []]));
-  const readings = checkReadings(block, relectures, roots, contract);
+  const readings = checkReadings(block, relectures, roots, contract, strictEof);
   computed.C1 = readings.errors;
-  const results = relectures.map((rel) => checkRelecture(rel || {}, { contract, roots, uncovered: readings.uncovered }));
+  const results = relectures.map((rel) => checkRelecture(rel || {}, { contract, roots, uncovered: readings.uncovered, strictEof }));
   const empreintesFausses = [];
   const referencesInexactes = [];
   for (const r of results) {
@@ -991,10 +1041,11 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
     report.a_verifier.push(...r.soft);
   }
   const allBlocked = results.length > 0 && results.every((r) => r.blocked);
-  const displays = relectures.map((rel) => displayCheck(rel || {}, prose, roots));
+  const displays = relectures.map((rel) => displayCheck(rel || {}, prose, roots, strict));
   const displayEcarts = displays.map((d) => d.ecart).filter(Boolean);
   const entreesIncompletes = displays.map((d) => d.entree).filter(Boolean);
-  computed.C2.push(...displayEcarts, ...entreesIncompletes);
+  const propositionsInexactes = displays.map((d) => d.proposition).filter(Boolean);
+  computed.C2.push(...displayEcarts, ...entreesIncompletes, ...propositionsInexactes);
   report.a_verifier.push(...displays.map((d) => d.soft).filter(Boolean));
 
   const declared = block.conditions && typeof block.conditions === "object" ? block.conditions : {};
@@ -1023,6 +1074,8 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
   }
   // Même règle : un original qui n'est pas le texte livré est un champ inexact, pas un manque.
   for (const msg of displayEcarts) report.erreurs.push(`original inexact — ${msg}`);
+  // Même règle : la proposition affichée est le texte livré, pas une forme voisine.
+  for (const msg of propositionsInexactes) report.erreurs.push(`proposition non affichée telle quelle — ${msg}`);
   // Même règle : un contrôle passé sur le seul bloc ne porte pas sur la sortie livrée.
   for (const msg of entreesIncompletes) report.erreurs.push(`entrée incomplète — ${msg}`);
   // Même règle quelle que soit la provenance de l'original : la prose qui précède le bloc
@@ -1053,6 +1106,7 @@ export function checkOutput(text, { roots = [process.cwd()], contractText } = {}
 function render(report) {
   const lines = [`editorial-review ${report.version} — ${report.resultat.toUpperCase()}`];
   if (report.entree) lines.push(`entrée : ${report.entree.octets} o, sha256 ${report.entree.sha256}`);
+  if (report.mode === "strict") lines.push("mode strict : plages arrêtées à la dernière ligne réelle, proposition affichée octet pour octet");
   if (report.etat_declare) lines.push(`état déclaré : ${report.etat_declare}`);
   for (const [c, e] of Object.entries(report.conditions)) {
     lines.push(`${c} calculée ${e.calculee}, déclarée ${e.declaree ?? "—"}`);
@@ -1067,15 +1121,17 @@ function main(argv) {
   const roots = [];
   let json = false;
   let emit = false;
+  let strict = false;
   let file = null;
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--root" && argv[i + 1]) roots.push(resolve(argv[(i += 1)]));
     else if (a === "--json") json = true;
     else if (a === "--emit") emit = true;
+    else if (a === "--strict") strict = true;
     else if (!a.startsWith("--") && file === null) file = a;
     else {
-      process.stderr.write("usage : check-editorial-review.mjs [--root <dossier>]... [--json | --emit] [fichier]\n");
+      process.stderr.write("usage : check-editorial-review.mjs [--root <dossier>]... [--strict] [--json | --emit] [fichier]\n");
       return 2;
     }
   }
@@ -1085,7 +1141,7 @@ function main(argv) {
   }
   const raw = readFileSync(file ?? 0);
   const text = raw.toString("utf8");
-  const report = checkOutput(text, { roots: roots.length ? roots : [process.cwd()] });
+  const report = checkOutput(text, { roots: roots.length ? roots : [process.cwd()], strict });
   // Empreinte des octets reçus, avant décodage : la réponse livrée se confronte à cette ligne.
   report.entree = { octets: raw.length, sha256: createHash("sha256").update(raw).digest("hex") };
   if (emit) {

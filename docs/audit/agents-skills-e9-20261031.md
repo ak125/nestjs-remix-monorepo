@@ -282,3 +282,68 @@ Nouveau cycle, écrit avant toute observation ; troisième et dernier cycle de c
   - Claude racine seulement si E9 global l'exige.
 - **Aucune réussite n'est anticipée**. DoD7 demeure `PARTIAL_COVERAGE`, case décochée, et DoD2
   reste à prouver.
+
+## Cycle R26 : résultats conservés (relevé du 2026-11-03)
+
+Ce relevé a été fait avant le lot R27, sur les réponses finales natives de R26, sans les
+modifier.
+
+- **Codex racine** : la réponse finale native (14053 o) diffère de l'entrée de son premier
+  passage de contrôle (14047 o, +6 o). Cette entrée passe le contrôle, mais la réponse finale est
+  `REJETEE` : la réponse a été modifiée après le contrôle.
+- **Claude wiki** : la réponse finale native (18178 o) a deux écarts.
+  - Ses plages dépassent d'une ligne la fin réelle des fichiers (1-224 pour 223 lignes, 1-87
+    pour 86).
+  - Elle affiche la proposition à la typographie près.
+
+  Le contrôleur de la tête `c068402f9` la classe `PARTIELLE` sans relever ces deux écarts.
+- Les deux cas ciblés ne sont pas livrés, et E9 n'est pas passé. La revue R26 conclut
+  `REVIEW_REQUIRED`. Aucun cycle ultérieur ne requalifie ces réponses.
+
+## Lot R27, garde de sortie : critères avant essai (2026-11-03)
+
+Nouveau lot autorisé le 2026-11-03. Ces critères sont écrits avant toute recette R27. C'est le
+cycle 1 sur 3 de ce lot ; le compteur R24 à R26 reste à 3 sur 3.
+
+- **Entrées modifiées** :
+  - `check-editorial-review.mjs`, option `--strict`. Une plage qui dépasse la dernière ligne
+    réelle est rejetée, N+1 compris. La proposition décodée par JSON.parse doit figurer octet
+    pour octet dans la prose. Sans l'option, la tolérance N+1 reste, et une proposition absente
+    n'est pas relevée (compatibilité historique). Dans les deux modes, une proposition affichée
+    à la typographie près ou aux sauts forcés près est désormais rejetée, comme l'exige
+    l'affichage de la proposition dans le contrat ;
+  - `editorial-review-stop-gate.mjs` (nouveau). Ce hook Stop contrôle le dernier message de
+    l'agent en mode strict. Il garde chaque version en trace et demande au plus deux reprises.
+    Après la fin, `--verifier` recontrôle la réponse finale extraite du flux natif ;
+  - les tests du contrôleur et de la garde.
+- **Inchangés** : le contrat 1.11.2, `wiki-proposal-writer`, les prompts, les workspaces, les
+  outils accordés et refusés, les tours et le budget.
+- **Variante** : recette native nouvelle, « avec garde de sortie ». Les lanceurs déclarés du lot
+  branchent la garde par une couche de session : `--settings` pour Claude Code, `-c hooks.Stop`
+  pour Codex. Aucun réglage versionné ni global ne la charge. Un lancement usuel sans ces
+  lanceurs ne passe donc pas par la garde. La variante ne requalifie ni R24, ni R25, ni R26.
+- **Critères de la garde**, en plus des critères existants :
+  1. La réponse finale est celle du flux natif. Pour Claude Code, c'est `result` du dernier
+     événement `result`. Pour Codex, c'est le fichier `-o`, identique à l'octet au dernier
+     `agent_message` du flux.
+  2. `--verifier` sort en 0 (appliquée) ou en 3 (partielle) ; 1 vaut échec.
+  3. La dernière trace porte les octets exacts de la réponse finale. Sa décision est `livree`,
+     et le dossier ne contient qu'une session.
+  4. Sans trace, la garde n'a pas été chargée : la variante est invalide et ne compte pas comme
+     réussite. Une décision `non_controlee` ou `borne_atteinte` vaut échec.
+  5. Les versions refusées restent en trace. La borne est de deux reprises.
+  6. Le contrôle indépendant de la réponse finale est consigné, sans option puis avec
+     `--strict`.
+- **Critères R26 inchangés**, jugés à la version 1.11.2 : E9 1 à 10 (attendu 9 compris), W2,
+  W2b, W5, E2b, 7w1 à 7w4, lignes 3 et 9 de DoD7, et la livraison contrôlée de R24. Pour Codex,
+  les deux passages de livraison de l'étape 6 restent exigés ; la garde ne les remplace pas.
+- **Claude wiki** : sans outil d'exécution, le résultat attendu est au mieux partiel (sortie 3).
+  Aucun outil n'est ajouté. Le motif de reprise transmet au modèle les erreurs du contrôle.
+  R26 ne lui donnait pas cette information ; la QA en juge.
+- **Préconditions** : le candidat est commité, l'arbre est propre et le dossier de traces
+  n'existe pas. Pour Codex, l'owner a approuvé le hook de session dans l'interface native, et la
+  commande n'a pas changé depuis.
+- **Cas** : Codex racine et Claude wiki. Codex wiki, Claude seo et Codex seo, à rejouer selon
+  R26, ne font pas partie du lot.
+- **Aucune réussite n'est anticipée**. DoD7 demeure `PARTIAL_COVERAGE`, case décochée, et DoD2
+  reste à prouver.

@@ -7,7 +7,9 @@
 // structuré désigné par une plage ou sans son chemin de clés, plage d'original non lue, contrôle
 // passé sur le seul bloc final, sections déclarées sans les titres rendus ou avec un titre
 // seulement atteint, original dont la réponse affiche les lignes sous d'autres intertitres,
-// `format` hors du contrat, script Fafa sans la persona).
+// `format` hors du contrat, script Fafa sans la persona). Recette R26 : en mode strict, plage
+// au-delà de la dernière ligne (N+1) et proposition absente de la prose ou affichée à une forme
+// voisine ; garde de sortie (hook Stop) qui bloque une réponse recomposée après le contrôle.
 // Run: node --test scripts/agents/check-editorial-review.test.mjs
 // =============================================================================
 import { test, describe, before, after } from "node:test";
@@ -899,5 +901,254 @@ describe("ligne de commande", () => {
     assert.equal(report.resultat, "appliquee");
     assert.equal(report.conditions.C2.calculee, "remplie");
     assert.ok(report.a_verifier.some((s) => s.includes("à vérifier sur le contenu")));
+  });
+});
+
+// =============================================================================
+// Mode strict (contrôle de la livraison) et garde de sortie, recette R26.
+// =============================================================================
+const runStrict = (text) => checkOutput(text, { roots: [REPO, dir], strict: true });
+const spawnNode = (script, args, input) => spawnSync(process.execPath, [script, ...args], { input, encoding: "utf8" });
+const SHOWN = `Brouillon :\n\n${O}\n\nProposition :\n\n${P}`;
+const STRICT_LINE = "mode strict : plages arrêtées à la dernière ligne réelle, proposition affichée octet pour octet";
+
+describe("mode strict : bornes de lecture", () => {
+  test("plage arrêtée à la dernière ligne (N) : appliquee dans les deux modes", () => {
+    const text = output(block(), SHOWN);
+    assert.equal(run(text).resultat, "appliquee", errors(run(text)));
+    const r = runStrict(text);
+    assert.equal(r.resultat, "appliquee", errors(r));
+    assert.equal(r.mode, "strict");
+  });
+
+  test("ligne vide numérotée N+1 (contrat 1-87 sur 86, marketing-voice 1-224 sur 223) : admise par défaut, rejetée en mode strict", () => {
+    for (const [i, n] of [[0, CONTRACT.nLines], [1, lineCount(join(REPO, VOICE))]]) {
+      const b = block();
+      b.lectures[i].plages = [`1-${n + 1}`];
+      const text = output(b, SHOWN);
+      assert.equal(run(text).resultat, "appliquee", errors(run(text)));
+      const r = runStrict(text);
+      assert.equal(r.resultat, "rejetee");
+      assert.match(errors(r), new RegExp(`plage 1-${n + 1} au-delà de la dernière ligne \\(${n} lignes\\)`));
+    }
+  });
+
+  test("N+2, et N+1 d'un fichier sans saut final : rejetées dans les deux modes", () => {
+    const b = block();
+    b.lectures[0].plages = [`1-${CONTRACT.nLines + 2}`];
+    for (const r of [run(output(b, SHOWN)), runStrict(output(b, SHOWN))]) {
+      assert.equal(r.resultat, "rejetee");
+      assert.match(errors(r), /hors du fichier/);
+    }
+    const sans = join(dir, "sans-saut-final.md");
+    writeFileSync(sans, "Première ligne.\nDeuxième ligne.");
+    const c = block();
+    c.lectures.push({ chemin: sans, plages: ["1-3"], masquees: [], sections: ["toutes"], tronque: false });
+    for (const r of [run(output(c, SHOWN)), runStrict(output(c, SHOWN))]) {
+      assert.equal(r.resultat, "rejetee");
+      assert.match(errors(r), /plage 1-3 hors du fichier \(2 lignes\)/);
+    }
+  });
+
+  test("plage de provenance à N+1 : admise par défaut, rejetée en mode strict", () => {
+    const fiche = join(dir, "fiche-provenance-n1.md");
+    writeFileSync(fiche, `---\nchamp:\n  content_md: '${O.replace(/'/g, "''").replace(" selon le moteur", "\n    selon le moteur")}'\n---\n`);
+    const b = block();
+    b.lectures.push({ chemin: fiche, plages: ["1-5"], masquees: [], sections: ["toutes"], tronque: false });
+    b.relectures[0].original.provenance = { chemin: fiche, lignes: "2-6", champ: "champ.content_md" };
+    const text = output(b, SHOWN);
+    assert.equal(run(text).resultat, "appliquee", errors(run(text)));
+    const r = runStrict(text);
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /original\.provenance : plage 2-6 au-delà de la dernière ligne \(5 lignes\)/);
+  });
+
+  test("--strict en ligne de commande : ligne de mode, N+1 en code 1 ; sans l'option, code 0", () => {
+    const b = block();
+    b.lectures[0].plages = [`1-${CONTRACT.nLines + 1}`];
+    const roots = ["--root", REPO, "--root", dir];
+    const strict = spawnNode(SCRIPT, ["--strict", ...roots], output(b, SHOWN));
+    assert.equal(strict.status, 1, strict.stdout);
+    assert.equal(strict.stdout.split("\n")[2], STRICT_LINE);
+    assert.equal(spawnNode(SCRIPT, roots, output(b, SHOWN)).status, 0);
+    assert.equal(spawnNode(SCRIPT, ["--strict", ...roots], output(block(), SHOWN)).status, 0);
+  });
+});
+
+describe("proposition affichée telle que JSON.parse la décode", () => {
+  test("proposition affichée octet pour octet : appliquee dans les deux modes", () => {
+    for (const r of [run(output(block(), SHOWN)), runStrict(output(block(), SHOWN))]) assert.equal(r.resultat, "appliquee", errors(r));
+  });
+
+  test("proposition absente de la prose, ou texte différent : non relevé par défaut (compatibilité), rejeté en mode strict", () => {
+    for (const prose of ["Relecture : voir le bloc final.", "Proposition :\n\nLe filtre à huile retient tout ce qui circule."]) {
+      const text = output(block(), prose);
+      assert.equal(run(text).resultat, "appliquee", errors(run(text)));
+      const r = runStrict(text);
+      assert.equal(r.resultat, "rejetee");
+      assert.match(errors(r), /proposition non affichée telle quelle — relecture r1 : la réponse n'affiche pas la proposition du bloc : en mode strict/);
+    }
+  });
+
+  test("original affiché, proposition absente : rejeté en mode strict, l'original nommé", () => {
+    const text = output(block(), `Brouillon :\n\n${O}`);
+    assert.equal(run(text).resultat, "appliquee", errors(run(text)));
+    const r = runStrict(text);
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /elle affiche l'original, pas la proposition/);
+  });
+
+  test("proposition affichée en espaces ordinaires où le bloc a des insécables, original exact (R26 Claude wiki) : rejetée en appliquée comme en partielle, dans les deux modes", () => {
+    const o = O.replace(`${NB}:`, " :");
+    const prose = `Brouillon :\n\n${o}\n\nProposition :\n\n${O_PLAIN}`;
+    for (const etat of ["appliquée", "partielle"]) {
+      const b = block({ original: o, proposition: O, etat, changements: [{ avant: "chaud : selon", apres: `chaud${NB}: selon`, regle: "RE-T1", raison: "espace insécable avant les deux-points" }] });
+      if (etat === "partielle") {
+        b.relectures[0].original.sha256 = null;
+        b.conditions.C2 = { etat: "non_remplie", manque: "aucun outil d'empreinte" };
+      }
+      for (const r of [run(output(b, prose)), runStrict(output(b, prose))]) {
+        assert.equal(r.resultat, "rejetee", etat);
+        assert.match(errors(r), /proposition non affichée telle quelle — .*typographie près/);
+      }
+    }
+  });
+
+  test("proposition affichée avec des sauts forcés, original exact : rejetée dans les deux modes", () => {
+    const oMd = MD.replace("retient les impuretés", "est une pièce essentielle qui retient les impuretés");
+    const b = block({ original: oMd, proposition: MD });
+    const prose = `Brouillon :\n\n${oMd}\n\nProposition :\n\n${MD.replace(/\n/g, "  \n")}`;
+    for (const r of [run(output(b, prose)), runStrict(output(b, prose))]) {
+      assert.equal(r.resultat, "rejetee");
+      assert.match(errors(r), /proposition non affichée telle quelle — .*qu'aux espaces de fin de ligne près/);
+    }
+  });
+
+  test("proposition affichée aux retours à la ligne près : admise par défaut, rejetée en mode strict", () => {
+    const text = output(block(), `Brouillon :\n\n${O}\n\nProposition :\n\n${P.replace("circuit. Ne", "circuit.\nNe")}`);
+    assert.equal(run(text).resultat, "appliquee", errors(run(text)));
+    const r = runStrict(text);
+    assert.equal(r.resultat, "rejetee");
+    assert.match(errors(r), /qu'aux blancs près/);
+  });
+});
+
+describe("garde de sortie : hook Stop, Claude Code et Codex", () => {
+  const GATE = fileURLToPath(new URL("./editorial-review-stop-gate.mjs", import.meta.url));
+  // Recette R26, Codex racine : le contrôle accepte une réponse, puis la réponse finale ajoute deux
+  // espaces en fin de trois titres de scène (+6 octets).
+  const SCENES = [
+    "**Scène 1 — Ouverture**",
+    "Le filtre retient les impuretés du circuit de lubrification.",
+    "",
+    "**Scène 2 — Précaution**",
+    `Ne le remplacez pas moteur chaud${NB}: l'huile peut être brûlante.`,
+    "",
+    "**Scène 3 — Rappel**",
+    "Un filtre colmaté ne prévient pas toujours.",
+  ].join("\n");
+  const ACCEPTED = output(unchangedBlock(SCENES), `Brouillon relu, inchangé :\n\n${SCENES}`);
+  const DELIVERED = ACCEPTED.replace(/(\*\*Scène \d — [^*\n]+\*\*)\n/g, "$1  \n");
+  // Entrées Stop des deux CLI : la garde lit hook_event_name, last_assistant_message,
+  // stop_hook_active, session_id et transcript_path ; les autres champs sont ignorés.
+  const STOP = {
+    claude: (msg, extra = {}) => ({ session_id: "0b6f2c1e-7c1d-4a43-9d55-2f1f6f0a9e01", transcript_path: "/dev/null", cwd: REPO, permission_mode: "default", hook_event_name: "Stop", stop_hook_active: false, last_assistant_message: msg, ...extra }),
+    codex: (msg, extra = {}) => ({ session_id: "codex-r27-essai", turn_id: "tour-1", transcript_path: null, cwd: REPO, hook_event_name: "Stop", model: "modèle", stop_hook_active: false, last_assistant_message: msg, ...extra }),
+  };
+  let finals = 0;
+  const newTraces = () => join(mkdtempSync(join(dir, "garde-")), "gate");
+  const roots = ["--root", REPO, "--root", dir];
+  const hook = (traces, payload) => spawnNode(GATE, ["--traces", traces, ...roots], typeof payload === "string" ? payload : JSON.stringify(payload));
+  const verifier = (traces, text) => {
+    const f = join(dirname(traces), `finale-${(finals += 1)}.txt`);
+    writeFileSync(f, text);
+    return spawnNode(GATE, ["--traces", traces, ...roots, "--verifier", f]);
+  };
+  const json = (res) => {
+    assert.equal(res.status, 0, res.stderr);
+    const v = JSON.parse(res.stdout);
+    assert.ok(v && typeof v === "object" && !Array.isArray(v));
+    return v;
+  };
+  const trace = (traces, k) => JSON.parse(readFileSync(join(traces, `livraison-${k}.json`), "utf8"));
+
+  test("fixture R26 : +6 octets, réponse acceptée appliquee, réponse recomposée rejetée", () => {
+    assert.equal(Buffer.byteLength(DELIVERED, "utf8") - Buffer.byteLength(ACCEPTED, "utf8"), 6);
+    for (const r of [run(ACCEPTED), runStrict(ACCEPTED)]) assert.equal(r.resultat, "appliquee", errors(r));
+    for (const r of [run(DELIVERED), runStrict(DELIVERED)]) assert.equal(r.resultat, "rejetee");
+  });
+
+  for (const shape of ["claude", "codex"]) {
+    test(`${shape} : réponse recomposée bloquée (JSON block) et tracée, réponse contrôlée livrée (JSON continue), vérifiée après la fin`, () => {
+      const traces = newTraces();
+      const first = json(hook(traces, STOP[shape](DELIVERED)));
+      assert.equal(first.decision, "block");
+      assert.match(first.reason, /contrôle REJETEE en mode strict ; reprise 1 sur 2/);
+      assert.ok(first.reason.includes(sha(DELIVERED)));
+      assert.match(first.reason, /aux espaces de fin de ligne près/);
+      assert.ok(readFileSync(join(traces, "livraison-1.txt")).equals(Buffer.from(DELIVERED, "utf8")));
+      assert.deepEqual(trace(traces, 1).entree, { octets: Buffer.byteLength(DELIVERED, "utf8"), sha256: sha(DELIVERED) });
+      assert.equal(trace(traces, 1).decision, "reprise");
+      assert.deepEqual(json(hook(traces, STOP[shape](ACCEPTED, { stop_hook_active: true }))), { continue: true });
+      assert.equal(trace(traces, 2).decision, "livree");
+      const ok = verifier(traces, ACCEPTED);
+      assert.equal(ok.status, 0, ok.stdout);
+      assert.equal(JSON.parse(ok.stdout).verdict, "appliquee");
+      const ko = verifier(traces, DELIVERED);
+      assert.equal(ko.status, 1);
+      assert.match(JSON.parse(ko.stdout).erreurs.join("\n"), /octets différents, comparés sans normalisation/);
+    });
+  }
+
+  test("contrôle final sans normalisation : saut final ajouté, CRLF ou insécables en espaces rejetés ; réponse exacte acceptée", () => {
+    const traces = newTraces();
+    assert.deepEqual(json(hook(traces, STOP.claude(ACCEPTED))), { continue: true });
+    for (const altered of [`${ACCEPTED}\n`, ACCEPTED.replace(/\n/g, "\r\n"), ACCEPTED.replace(/ /g, " ")]) {
+      const res = verifier(traces, altered);
+      assert.equal(res.status, 1, res.stdout);
+      assert.match(JSON.parse(res.stdout).erreurs.join("\n"), /octets différents/);
+    }
+    assert.equal(verifier(traces, ACCEPTED).status, 0);
+  });
+
+  test("aucune trace : hook non exécuté, vérification en échec même sur une réponse conforme", () => {
+    const res = verifier(newTraces(), ACCEPTED);
+    assert.equal(res.status, 1);
+    assert.match(JSON.parse(res.stdout).erreurs.join("\n"), /aucune trace de la garde/);
+  });
+
+  test("borne : le troisième refus laisse finir (JSON continue), réponse non livrée", () => {
+    const traces = newTraces();
+    for (const k of [1, 2]) assert.equal(json(hook(traces, STOP.codex(DELIVERED, { stop_hook_active: k > 1 }))).decision, "block");
+    const third = hook(traces, STOP.codex(DELIVERED, { stop_hook_active: true }));
+    assert.deepEqual(json(third), { continue: true });
+    assert.match(third.stderr, /borne de 2 reprises atteinte/);
+    assert.equal(trace(traces, 3).decision, "borne_atteinte");
+    const res = verifier(traces, DELIVERED);
+    assert.equal(res.status, 1);
+    assert.match(JSON.parse(res.stdout).erreurs.join("\n"), /dernière décision de la garde « borne_atteinte »/);
+  });
+
+  test("entrée non contrôlable : code 1 (jamais 2), stdout vide, trace non_controlee, vérification en échec", () => {
+    for (const payload of ["pas du JSON", STOP.claude(ACCEPTED, { last_assistant_message: null }), STOP.codex(ACCEPTED, { hook_event_name: "SubagentStop" })]) {
+      const traces = newTraces();
+      const res = hook(traces, payload);
+      assert.equal(res.status, 1);
+      assert.equal(res.stdout, "");
+      assert.match(res.stderr, /non contrôlée, arrêt laissé/);
+      assert.equal(trace(traces, 1).decision, "non_controlee");
+      assert.equal(verifier(traces, ACCEPTED).status, 1);
+    }
+  });
+
+  test("traces de deux sessions dans un dossier, ou usage incomplet : rejet, jamais le code 2", () => {
+    const traces = newTraces();
+    json(hook(traces, STOP.claude(ACCEPTED)));
+    json(hook(traces, STOP.codex(ACCEPTED)));
+    const res = verifier(traces, ACCEPTED);
+    assert.equal(res.status, 1);
+    assert.match(JSON.parse(res.stdout).erreurs.join("\n"), /traces de 2 sessions/);
+    assert.equal(spawnNode(GATE, [], "").status, 1);
+    assert.equal(spawnNode(GATE, ["--traces", traces], "").status, 1);
   });
 });
