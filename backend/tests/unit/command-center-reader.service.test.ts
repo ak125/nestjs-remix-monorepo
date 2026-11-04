@@ -106,6 +106,9 @@ describe('CommandCenterReaderService', () => {
       (r) => r.kpi.id === 'diagnostic_to_product',
     );
     expect(report).toMatchObject({
+      department: 'product',
+      label: 'Produit & Expérience Client',
+      priority: null,
       kpi: { value: 0, unit: '/0', measure: 'MESURE' },
       score: 'NON_MESURE',
       evolution: 'INCONNUE',
@@ -118,6 +121,19 @@ describe('CommandCenterReaderService', () => {
         (r) => r.kpi.id === 'diagnostic_to_product',
       ),
     ).toEqual(report);
+    // Organisation du 2026-11-04 : le 11 n'a pas de KPI, l'absence reste lisible.
+    expect(
+      digest.department_reports.find((r) => r.department === 'diagnostic'),
+    ).toMatchObject({
+      label: 'Expertise technique automobile',
+      priority: 'P2',
+      kpi: { id: null, measure: 'SANS_PRODUCTEUR', value: null },
+      score: 'NON_MESURE',
+      gap: 'Aucun KPI primaire déclaré dans la carte opérationnelle.',
+      owner_go_required: true,
+      next_evidence:
+        'Qualifier dans la fiche de « Expertise technique automobile » le résultat attendu, sa procédure et la preuve adaptée.',
+    });
   });
 
   const ORIGINAL_ENV = process.env.REGISTRY_DIR;

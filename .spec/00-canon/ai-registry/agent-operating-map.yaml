@@ -260,10 +260,10 @@ departments:
     accountable_owner: null
     operating_mode: hybrid
     profile_ref: audit/automecanik-departments-map.md#department-diagnostic
-    label: "Diagnostic & Assistance"
+    label: "Expertise technique automobile"   # organisation du 2026-11-04 ; id, lead et D7 conservés
     lead: diagnostic-lead
     priority: P2                     # D7 = P2
-    kpi_primary: diagnostic_to_product
+    # kpi_primary absent : diagnostic_to_product relève de product (20) ; aucune mesure propre à l'expertise
     repo_domains: [D7]
     capabilities: [diagnostic-engine, knowledge-graph, vehicle-ops]   # vehicle-ops via skills.registry
     state: partial                   # V1A.0 OFF; __diag_* peuplé, kg_* vides
@@ -455,6 +455,7 @@ departments:
     profile_ref: audit/automecanik-departments-map.md#department-product
     label: "Produit & Expérience Client"
     lead: product-lead
+    kpi_primary: diagnostic_to_product   # produit outil de diagnostic (2026-11-04) ; formule inchangée
     repo_domains: []
     capabilities: []
     state: dormant
