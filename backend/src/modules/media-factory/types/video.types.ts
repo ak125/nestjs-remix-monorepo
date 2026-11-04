@@ -115,6 +115,25 @@ export interface ApprovalRecord {
   stages: ApprovalEntry[];
 }
 
+/** Trois approbations du dossier (`governance/approval-record.schema.json`, `approval`). */
+export interface ApprovalFlags {
+  content_approved: boolean;
+  content_approved_by?: string | null;
+  content_approved_at?: string | null;
+  render_approved: boolean;
+  render_approved_by?: string | null;
+  render_approved_at?: string | null;
+  publish_approved: boolean;
+  publish_approved_by?: string | null;
+  publish_approved_at?: string | null;
+}
+
+/** `approval.json` d'un dossier Fafa : les étapes lues par les gates en sont dérivées. */
+export interface ApprovalDossierRecord {
+  video_id: string;
+  approval: ApprovalFlags;
+}
+
 // ─────────────────────────────────────────────────────────────
 // Gate results (mirrors ExtendedGateResult from hard-gates)
 // ─────────────────────────────────────────────────────────────
@@ -123,7 +142,8 @@ export interface VideoGateResult {
   gate: VideoGateName;
   verdict: GateVerdict;
   details: string[];
-  measured: number;
+  /** `null` : mesure absente (WARN) ou invalide (FAIL), jamais 0 par défaut. */
+  measured: number | null;
   warnThreshold: number;
   failThreshold: number;
   triggerItems?: Array<{

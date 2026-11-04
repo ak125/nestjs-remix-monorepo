@@ -58,13 +58,13 @@ Ces interdits sont tenus par la relecture humaine ; G5 ne les détecte pas en V1
 
 ## G5 Reuse Risk en V1
 
-- Le code ne lit que `similarityScore` et le compte 0 s'il manque
-  (`backend/src/modules/media-factory/services/video-gates.service.ts:273-287`, l.277). Aucun module ne produit ce score : le champ
-  n'est que déclaré (l.398). G5 rend donc PASS à chaque exécution ; les seuils (WARN 0,5, FAIL 0,7,
+- Le code ne lit que `similarityScore` ; absent, G5 rend WARN non mesuré, qui ferme la publication
+  (`backend/src/modules/media-factory/services/video-gates.service.ts:355-385`, l.359-366). Aucun module ne produit ce score : le
+  champ n'est que déclaré (l.545). G5 ne mesure donc rien à aucune exécution ; les seuils (WARN 0,5, FAIL 0,7,
   `backend/src/config/video-quality.constants.ts:78`) ne s'appliquent à aucune mesure.
 - Il n'existe pas non plus de texte à comparer : un pattern ne garde que de la structure, et la source n'est vue qu'en analyse
   éphémère.
-- Un PASS G5 n'atteste donc pas l'originalité. La barrière V1 est la relecture de l'owner avant qu'il pose `content_approved`
+- Aucun verdict G5 n'atteste donc l'originalité. La barrière V1 est la relecture de l'owner avant qu'il pose `content_approved`
   (`workspaces/marketing/fafa-media-factory/governance/approval-record.schema.json:41-44`) ; le schéma ne contrôle que la présence
   d'un nom dans `content_approved_by` (l.77-84), pas qu'un humain a relu. Le correctif du code (score absent → ni PASS ni 0)
   relève du lot L10 du dossier `workspaces/marketing/README.md`.

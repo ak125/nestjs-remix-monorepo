@@ -761,6 +761,12 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: low
+  # Editorial dossiers (texts, visuals, scripts under review) follow D5 "editorial workflows".
+  - glob: docs/audits/editorial-*/**
+    domain: D5
+    owner: '@ak125/content-team'
+    sourceConfidence: medium
+    risk: low
   - glob: backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts
     domain: D4
     owner: '@ak125/vehicle-team'
@@ -1700,5 +1706,14 @@ entries:
   - glob: backend/supabase/migrations/20261026_vehicle_api_definer_reads*.sql
     domain: D4
     owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+  # restore_french_accents (fonction des quatre triggers d'accents des contenus
+  # R1/R3/R6) : balises et URL protégées, quatre entrées fausses retirées
+  # (PR #1941). Couvre .sql + .down.sql. Glob exact : les migrations ne sont
+  # pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261031_accents_protected_segments*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium

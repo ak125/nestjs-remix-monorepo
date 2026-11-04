@@ -58,4 +58,32 @@ describe("EquipementiersSection — aucune URL inventée", () => {
     expect(screen.getByText("120 références disponibles")).toBeTruthy();
     expect(screen.getByText("MANN-FILTER")).toBeTruthy();
   });
+
+  // Dossier filtre à huile, ligne « libellés codés hors liste » : badge et
+  // accroche servis sur chaque page gamme, sans source.
+  it("n'affirme ni confiance ni garantie", () => {
+    const { container } = renderSection();
+    const text = container.textContent ?? "";
+
+    expect(text).not.toContain("Marque de confiance");
+    expect(text).not.toMatch(/garanti/i);
+  });
+
+  // Ancre de non-vacuité du smoke E2E `url-validation.spec.ts` : présente si
+  // la section est rendue, absente sinon.
+  it("porte data-section seulement quand elle est rendue", () => {
+    const { container, unmount } = renderSection();
+
+    expect(
+      container.querySelectorAll('[data-section="equipementiers"]'),
+    ).toHaveLength(1);
+    unmount();
+
+    const empty = render(
+      <EquipementiersSection equipementiers={{ title: "Vide", items: [] }} />,
+    );
+    expect(
+      empty.container.querySelector('[data-section="equipementiers"]'),
+    ).toBeNull();
+  });
 });

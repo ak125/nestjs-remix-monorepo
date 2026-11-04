@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aperçu R1 filtre à huile</title><style>
+:root{--ink:#0f172a;--muted:#475569;--line:#e2e8f0;--soft:#f8fafc;--blue:#2563eb;--amber:#b45309;--green:#047857;--red:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.sim{position:sticky;top:0;z-index:9;background:#7c2d12;color:#fff;padding:8px 16px;font-size:13px}
+.sim b{font-weight:700}
+main{max-width:1280px;margin:0 auto;padding:0 16px 48px}
+section{padding:28px 0;border-bottom:1px solid var(--line)}
+h1{font-size:28px;line-height:1.25;margin:8px 0}h2{font-size:22px;margin:0 0 14px}h3{font-size:17px;margin:16px 0 8px}
+p{margin:0 0 10px}ul,ol{padding-left:22px;margin:0 0 10px}a{color:var(--blue)}
+img{max-width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
+figure{margin:0}figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.grid{display:grid;gap:28px}@media(min-width:1024px){.grid.two{grid-template-columns:1fr 1fr}.hero{grid-template-columns:1.2fr 360px}}
+.map{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 8px;font:12px/1.4 ui-monospace,Consolas,monospace;color:var(--muted)}
+.tag{display:inline-block;padding:1px 7px;border-radius:999px;font:600 11px/1.6 system-ui,sans-serif;border:1px solid}
+.t-conserve{color:#334155;border-color:#94a3b8;background:#f1f5f9}.t-ameliore{color:#1d4ed8;border-color:#93c5fd;background:#eff6ff}
+.t-ajoute{color:var(--green);border-color:#6ee7b7;background:#ecfdf5}.t-code{color:var(--amber);border-color:#fcd34d;background:#fffbeb}
+.t-manque{color:var(--red);border-color:#fca5a5;background:#fef2f2}
+.block{border-left:3px solid var(--line);padding-left:12px;margin:0 0 16px}
+.badges{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:14px 0}
+.badge{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--soft)}.badge b{display:block}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:0 0 10px}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--soft)}
+details{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:0 0 8px}summary{cursor:pointer;font-weight:600}
+.card{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--soft);margin:0 0 16px}
+.hole{border:2px dashed #fca5a5;border-radius:14px;padding:14px;color:var(--red);font-size:14px;background:#fff7f7}
+.note{font-size:13px;color:var(--muted)}.small{font-size:13px}
+</style></head><body>
+<div class="sim"><b>Simulation non intégrée</b> · R1 /pieces/filtre-a-huile-7.html · textes <code>integration/</code>, images <code>assets/</code> ·
+ce n'est pas le rendu DEV · chaque bloc porte son champ, son action et son statut</div>
+<main>
+<section class="grid hero">
+  <div>
+    <div class="map"><code>H1 (champ protégé)</code><span class="tag t-conserve">conservé</span><span>non modifié</span></div>
+    <h1>Filtre à huile compatible avec votre véhicule</h1>
+    <div class="block"><div class="map"><code>r1s_hero_subtitle</code><span class="tag t-ameliore">amélioré</span><span>catalogue</span></div><p>Sélectionnez votre véhicule : seuls les filtres à huile rattachés à sa motorisation s'affichent, vissés ou cartouches.</p></div>
+    <div class="block"><div class="map"><code>r1s_selector_microcopy</code><span class="tag t-ameliore">amélioré</span><span>catalogue</span></div><div class="card"><b>Marque, modèle, année, puis motorisation exacte</b><p class="small">Deux versions d'un même modèle ne reçoivent pas toujours le même filtre.</p><p class="note">Sélecteur de véhicule (composant, non simulé)</p></div></div>
+    <div class="badges"><div class="badge"><div class="map"><code>r1s_arg1_title / _content</code><span class="tag t-ameliore">amélioré</span><span>catalogue</span></div><b>Choix par motorisation</b>Chaque filtre est rattaché à des motorisations précises du catalogue.</div><div class="badge"><div class="map"><code>r1s_arg2_title / _content</code><span class="tag t-ameliore">amélioré</span><span>admis</span></div><b>Vissé ou cartouche</b>La forme dépend du moteur : elle ne se choisit pas.</div><div class="badge"><div class="map"><code>r1s_arg3_title / _content</code><span class="tag t-ameliore">amélioré</span><span>catalogue</span></div><b>Référence d'origine</b>Indiquée sur la page du véhicule quand elle est connue, pour comparer.</div><div class="badge"><div class="map"><code>r1s_arg4_title / _content</code><span class="tag t-ameliore">amélioré</span><span>editorial</span></div><b>Guide de remplacement</b>Échéances et étapes du remplacement dans le guide du filtre à huile.</div></div>
+  </div>
+  <figure><div class="map"><code>R1 HERO · rip 31</code><span>remplacer</span></div><img src="../assets/r1-hero-filtre-visse-usage.webp" alt="Filtre à huile vissé usagé, tenu d'une main gantée pendant une vidange"></figure>
+</section>
+<section><p class="note"><span class="tag t-code">codé · non modifié</span> Navigation rapide et encart diagnostic (composants ; compteur servi en FH-5).</p></section>
+<section id="bien-choisir">
+  <div class="map"><code>H2</code><span class="tag t-code">codé</span></div><h2>Bien choisir votre filtre à huile</h2>
+  <div class="grid two">
+    <div><div class="map"><code>h3</code><span class="tag t-code">codé</span></div><h3>Types de filtre à huile</h3><figure><div class="map"><code>R1 TYPES · rip 32</code><span>remplacer</span></div><img src="../assets/r1-types-visse-cartouche.webp" alt="Schéma comparant un filtre à huile vissé, changé en bloc, et une cartouche logée dans un boîtier démontable"><figcaption>Schéma de principe. La présence et la position des clapets varient selon le filtre et le moteur.</figcaption></figure></div>
+    <div><div class="block"><div class="map"><code>sg_content → chooseSection</code><span class="tag t-ameliore">amélioré</span></div><h3>Filtre vissé ou cartouche : la différence</h3> <p>Le filtre à huile existe sous deux formes, et c'est le moteur qui impose la sienne. Le filtre vissé réunit le boîtier et l'élément filtrant en un seul bloc : il se change en entier. La cartouche se loge dans un boîtier démontable : seul l'élément filtrant est remplacé, le boîtier est conservé.</p></div><div class="block"><div class="map"><code>sg_content → chooseSection</code><span class="tag t-ameliore">amélioré</span></div><h3>Critères qui distinguent deux filtres semblables</h3> <p>Deux filtres de même taille et de même aspect peuvent être très différents à l'intérieur. Selon le moteur, un filtre vissé comporte ou non un clapet anti-retour, qui garde l'huile dans le filtre quand le moteur est arrêté. Son clapet de dérivation (by-pass) s'ouvre à une pression qui varie d'un moteur à l'autre. Le filetage de raccordement, le média filtrant, la finesse de filtration et la surpression admissible changent aussi.</p> <p>Ces écarts ne se voient pas de l'extérieur. Le catalogue part donc de la motorisation, jamais de l'apparence de l'ancien filtre.</p></div></div>
+  </div>
+  <p class="note">Liste de contrôle et erreurs fréquentes du composant : non simulées.</p>
+</section>
+<section id="qualite-prix" style="background:var(--soft)">
+  <div class="map"><code>H2</code><span class="tag t-code">codé · FH-15</span></div><h2>Qualité, prix et marques</h2>
+  <div class="grid two">
+    <div><div class="map"><code>h3</code><span class="tag t-code">codé · FH-15 : la page n'a pas de niveaux de prix</span></div><h3>Niveaux de qualité</h3><figure><div class="map"><code>R1 PRICE · rip 33</code><span>remplacer (remplacement neutre)</span></div><img src="../assets/r1-price-caracteristiques-qualite.webp" alt="Schéma des caractéristiques de qualité d'un filtre à huile : clapet anti-retour, papier filtrant, clapet de dérivation"><figcaption>Un filtre ne fonctionne correctement que s'il a été bien monté.</figcaption></figure></div>
+    <div><div class="block"><div class="map"><code>sg_content → priceSection</code><span class="tag t-ameliore">amélioré</span></div><h3>Qualité d'un filtre à huile : ce qui compte</h3> <p>Le papier filtrant, le clapet de dérivation et le clapet anti-retour font partie des caractéristiques de qualité d'un filtre à huile. Plus l'intervalle de remplacement prévu par le constructeur est long, plus cette qualité compte.</p> <p>Le montage compte aussi : même un bon filtre ne fonctionne correctement que s'il a été bien monté, en suivant les instructions du constructeur du véhicule et du fabricant du filtre.</p> <p>Les marques présentées ci-dessous viennent du catalogue. Quelle que soit la marque, la référence doit d'abord être celle prévue pour votre motorisation.</p></div></div>
+  </div>
+  <div class="block"><div class="map"><code>r1s_equipementiers_line</code><span class="tag t-ameliore">amélioré</span><span>catalogue</span></div><p>Les marques présentées viennent du catalogue, où chaque référence est rattachée à des motorisations précises. La marque ne remplace pas la vérification de compatibilité.</p><p class="note">Logos et fiches équipementiers : composant et catalogue, non simulés.</p></div>
+</section>
+<section id="emplacement">
+  <div class="map"><code>H2</code><span class="tag t-code">codé</span></div><h2>Où se trouve le filtre à huile et quand le remplacer</h2>
+  <div class="grid two">
+    <div><div class="map"><code>R1 LOCATION · rip 34</code><span>désélectionnée</span></div><div class="hole">Image d'emplacement retirée : l'emplacement dépend du moteur. Une photo par motorisation seulement (PROMPTS.md, P-06).</div></div>
+    <div><div class="block"><div class="map"><code>sg_content → locationSection</code><span class="tag t-ameliore">amélioré</span></div><h3>Rôle du filtre à huile et moment du remplacement</h3> <p>Le filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification du moteur. Il aide ainsi à préserver la qualité de l'huile, les performances et le rendement du moteur.</p> <p>Son emplacement dépend du moteur : cette page n'en indique pas un valable pour tous. Sur certains moteurs, le filtre est monté à l'horizontale ou tête en bas ; un clapet anti-retour y empêche l'huile de quitter le filtre à l'arrêt.</p> <p>Il se remplace aux échéances d'entretien fixées par le constructeur du véhicule. Aucune durée ni aucun kilométrage ne vaut pour tous les véhicules. Un filtre gardé trop longtemps peut se colmater : son clapet de dérivation s'ouvre alors pour continuer d'alimenter le moteur, avec une huile qui n'est plus filtrée.</p> <p>Les étapes du remplacement sont détaillées dans le <a href="/blog-pieces-auto/conseils/filtre-a-huile">guide du filtre à huile</a>.</p></div></div>
+  </div>
+</section>
+<section id="reference" style="background:var(--soft)">
+  <div class="map"><code>H2</code><span class="tag t-code">codé</span></div><h2>Trouver la bonne référence pour votre véhicule</h2>
+  <div class="block"><div class="map"><code>sg_content → referenceSection</code><span class="tag t-ameliore">amélioré</span></div><h3>Trouver la référence de votre véhicule</h3> <p>Un même modèle peut recevoir des filtres différents selon sa motorisation. Pour afficher ceux qui conviennent :</p> <ol> <li>Renseignez la marque, le modèle, l'année et la motorisation exacte, puissance comprise.</li> <li>Sur la page de votre motorisation, comparez les références proposées avec la référence d'origine quand elle est indiquée.</li> <li>Vérifiez la forme : un filtre vissé remplace un filtre vissé, une cartouche remplace l'élément filtrant d'un boîtier.</li> </ol> <p>Pour chercher l'origine d'un défaut, commencez par le <a href="/diagnostic-auto">diagnostic</a>.</p></div>
+  <div class="block"><div class="map"><code>r1s_compatibilities_intro</code><span class="tag t-ameliore">amélioré</span><span>catalogue</span></div><p>Chaque page de motorisation liste les filtres à huile rattachés à cette version précise. Vérifiez la motorisation exacte, puissance comprise, avant de choisir.</p><p class="note">Liste des motorisations : catalogue, non simulée.</p></div>
+  <div class="block"><div class="map"><code>r1s_safe_table_rows</code><span class="tag t-ameliore">amélioré</span><span>admis + catalogue</span></div><table><thead><tr><th>Élément</th><th>Comment vérifier</th></tr></thead><tbody><tr><td>Identifiant</td><td>Marque, modèle, année et motorisation exacte du véhicule, puissance comprise.</td></tr><tr><td>Référence / équivalence</td><td>Comparez la référence d'origine indiquée sur la page de votre véhicule avec celles proposées pour sa motorisation.</td></tr><tr><td>Connectique</td><td>Filtre vissé : même filetage de raccordement. Cartouche : même boîtier, seul l'élément filtrant change.</td></tr><tr><td>Ne pas confondre avec</td><td>Filtre à air, filtre à carburant, filtre d'habitacle : ils filtrent d'autres fluides et ont leur propre référence.</td></tr></tbody></table></div>
+</section>
+<section id="faq">
+  <h2>Questions fréquentes</h2>
+  <div class="block"><div class="map"><code>r1s_faq</code><span class="tag t-ameliore">amélioré</span><span>admis + catalogue</span></div><details open><summary>Comment trouver le filtre à huile compatible avec ma voiture ?</summary><p>Renseignez la marque, le modèle, l'année et la motorisation dans le sélecteur : seules les références rattachées à cette motorisation s'affichent. Ne partez pas de l'apparence de l'ancien filtre, car des filtres semblables peuvent différer à l'intérieur selon le moteur.</p></details><details open><summary>Filtre vissé ou cartouche, lequel choisir ?</summary><p>Celui que prévoit votre moteur : la forme ne se choisit pas. Un filtre vissé se remplace en bloc. Une cartouche est l'élément filtrant d'un boîtier démontable, et le boîtier est conservé.</p></details><details open><summary>Deux versions du même modèle ont-elles le même filtre ?</summary><p>Pas toujours, car le filtre dépend du moteur. Vérifiez la motorisation exacte, puissance et année comprises, avant de choisir.</p></details><details open><summary>Une autre marque que celle d'origine convient-elle ?</summary><p>Les références affichées pour votre motorisation lui sont rattachées dans notre catalogue, quelle que soit leur marque. En cas de doute, comparez-les avec la référence d'origine indiquée sur la page de votre véhicule.</p></details><details open><summary>Quand faut-il remplacer le filtre à huile ?</summary><p>Aux échéances d'entretien fixées par le constructeur de votre véhicule ; aucun kilométrage ne vaut pour tous les véhicules. Le guide du filtre à huile détaille le remplacement.</p></details></div>
+</section>
+<section id="aller-plus-loin" style="background:var(--soft)">
+  <div class="map"><code>H2</code><span class="tag t-code">codé</span></div><h2>Aller plus loin</h2>
+  <div class="block"><div class="map"><code>r1s_family_cross_sell_intro</code><span class="tag t-ameliore">amélioré</span><span>admis</span></div><p>Les autres filtres du véhicule, à air, à carburant et d'habitacle, filtrent d'autres fluides et ont chacun leur propre référence.</p><p class="note">Vignettes de la famille : catalogue ; deux vignettes servies en 400 (FH-14).</p></div>
+</section>
+<section>
+  <div class="map"><code>r1s_micro_seo_block</code><span class="tag t-ameliore">amélioré</span><span>admis + catalogue · 1570 caractères de texte</span></div>
+  <p class="note">non affiché au 30/10 (aucun consommateur frontend) ; présent dans les données de la page.</p>
+  <div class="card"><p>Le bon filtre à huile se choisit à partir du véhicule, jamais d'après l'apparence de l'ancien. Des filtres qui se ressemblent peuvent être très différents à l'intérieur selon le moteur : clapet anti-retour présent ou non, filetage de raccordement, pression d'ouverture du clapet de dérivation (by-pass), média filtrant, finesse de filtration, surpression admissible. Deux versions d'un même modèle ne reçoivent donc pas toujours la même référence.</p>
+<p>Filtre vissé ou cartouche : la forme découle du moteur. Le filtre vissé réunit le boîtier et l'élément filtrant en un seul bloc ; la cartouche est l'élément filtrant d'un boîtier démontable, qui reste en place. Le sélecteur ne retient que les références rattachées à la motorisation choisie : renseignez la marque, le modèle, l'année et la motorisation exacte.</p>
+<p>Chaque page de motorisation liste les références qui lui sont rattachées, avec la référence d'origine quand elle est connue : comparez-la avec celles qui vous sont proposées. Plus l'intervalle de remplacement prévu par le constructeur est long, plus la qualité du filtre compte : le papier filtrant, le clapet de dérivation et le clapet anti-retour en font partie. Même un bon filtre ne fonctionne correctement que s'il a été bien monté.</p>
+<p>Ne confondez pas le filtre à huile avec le filtre à air, le filtre à carburant ou le filtre d'habitacle : ils filtrent d'autres fluides et ont chacun leur propre référence. Le guide du filtre à huile traite de son remplacement aux échéances du constructeur. Pour chercher l'origine d'un défaut, commencez par le diagnostic.</p></div>
+</section></main></body></html>

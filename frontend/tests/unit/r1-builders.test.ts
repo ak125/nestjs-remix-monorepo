@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   sanitizePurchaseGuideForR1,
   buildProofData,
+  buildGammeJsonLd,
 } from "~/utils/r1-builders";
 import { buildR1MicroBlock } from "~/utils/r1-reusable-content";
 import type { GammePagePurchaseGuideData } from "~/types/gamme-page-contract.types";
@@ -207,5 +208,37 @@ describe("buildR1MicroBlock", () => {
       "reference",
     ]);
     expect(block.cards[0].href).toContain("amortisseur");
+  });
+});
+
+// ─── buildGammeJsonLd — FAQPage ──────────────────────────────────
+
+describe("buildGammeJsonLd — FAQPage", () => {
+  const qa = (q: string) => ({
+    question: `${q} ?`,
+    answer: `Réponse assez longue pour la question ${q}.`,
+  });
+  const selector = [qa("Question du sélecteur")];
+  const faqNames = (faq: ReturnType<typeof qa>[] | null) => {
+    const graph = buildGammeJsonLd({
+      pgName: "Filtre à huile",
+      canonicalUrl: "https://www.automecanik.com/pieces/filtre-a-huile-7.html",
+      gammeId: 7,
+      faq,
+      fallbackFaq: selector,
+    })["@graph"] as Array<Record<string, unknown>>;
+    const page = graph.find((n) => n["@type"] === "FAQPage") as
+      | { mainEntity: Array<{ name: string }> }
+      | undefined;
+    return page?.mainEntity.map((q) => q.name) ?? [];
+  };
+
+  it("déclare les seules questions affichées quand la FAQ de la gamme suffit", () => {
+    const gamme = ["Un", "Deux", "Trois", "Quatre", "Cinq"].map(qa);
+    expect(faqNames(gamme)).toEqual(gamme.map((f) => f.question));
+  });
+
+  it("se replie sur la FAQ du sélecteur sous 3 questions valides", () => {
+    expect(faqNames([qa("Seule")])).toEqual(["Question du sélecteur ?"]);
   });
 });

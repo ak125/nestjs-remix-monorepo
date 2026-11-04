@@ -8,14 +8,14 @@ import {
   Logger,
   HttpException,
   ServiceUnavailableException,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
 import { CacheService } from '@cache/cache.service';
-import {
-  R6GuideLinkPolicyService,
-  R6_GUIDE_LINK_CACHE_SEGMENTS,
-} from '../seo/services/r6-guide-link-policy.service';
+import { R6GuideLinkPolicyService } from '../seo/services/r6-guide-link-policy.service';
 
 interface SupabaseRpcError {
   message?: string;
@@ -43,7 +43,6 @@ export class GammeRestRpcV2Controller {
 
   // 🚀 LCP V9: Cache TTL for fully-built response (after JS processing)
   private readonly RESPONSE_CACHE_TTL = 3600; // 1h
-  private readonly RESPONSE_CACHE_PREFIX = 'gamme:resp:v2:';
 
   constructor(
     private readonly responseBuilder: GammeResponseBuilderService,
@@ -51,11 +50,6 @@ export class GammeRestRpcV2Controller {
     private readonly cacheService: CacheService,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
   ) {}
-
-  /** La réponse dépend du drapeau de consolidation R6 (liens guide, ADR-103 D5). */
-  private responseCacheKey(pgId: string, segment: string): string {
-    return `${this.RESPONSE_CACHE_PREFIX}${segment}:${pgId}`;
-  }
 
   /**
    * ⚡ RPC V2 - PostgreSQL Function ultra-optimisée
@@ -68,7 +62,7 @@ export class GammeRestRpcV2Controller {
 
     try {
       // 🚀 LCP V9: Check response cache (skips ~300-500ms builder processing)
-      const cacheKey = this.responseCacheKey(
+      const cacheKey = this.rpcService.getResponseCacheKey(
         pgId,
         this.guideLinkPolicy.cacheKeySegment(),
       );
@@ -154,13 +148,25 @@ export class GammeRestRpcV2Controller {
   /**
    * 🗑️ Invalide le cache d'une gamme
    * Endpoint: POST /api/gamme-rest/:pgId/cache/invalidate
+   *
+   * Admin uniquement : la route était ouverte à toute requête anonyme
+   * (aucun appelant légitime non authentifié, le préchauffage passe par
+   * `cache/warm`). Clés effacées en un seul DEL : `gamme:rpc:v2:<pgId>`,
+   * `gamme:rpc:v2:stale:<pgId>` et `gamme:resp:v2:<r6c0|r6c1>:<pgId>`.
+   * Redis indisponible → 503 : aucune réponse de succès sans purge confirmée.
    */
   @Post(':pgId/cache/invalidate')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async invalidateCache(@Param('pgId') pgId: string) {
-    await this.rpcService.invalidateCache(pgId);
-    // Purger aussi le cache response-level (2e couche)
-    for (const segment of R6_GUIDE_LINK_CACHE_SEGMENTS) {
-      await this.cacheService.del(this.responseCacheKey(pgId, segment));
+    try {
+      await this.rpcService.invalidateCache(pgId);
+    } catch (error) {
+      this.logger.error(
+        `Invalidation du cache gamme ${pgId} échouée: ${error}`,
+      );
+      throw new ServiceUnavailableException(
+        'Cache indisponible : invalidation non confirmée',
+      );
     }
 
     return {

@@ -113,6 +113,16 @@ export default defineConfig({
           ) {
             return;
           }
+          // Editorial parsing is only used by content routes. Forcing these
+          // utilities into app-core also pulls DOMPurify into the homepage's
+          // initial graph. Keep them with their consumers; sanitization itself
+          // and its synchronous execution before rendering remain unchanged.
+          if (
+            id.endsWith("/app/utils/editorial-parser.ts") ||
+            id.endsWith("/app/utils/sanitize-editorial-html.ts")
+          ) {
+            return;
+          }
           // ─── Vendor chunks (node_modules) ────────────────────
           if (id.includes("node_modules")) {
             // Sentry SDK — loaded asynchronously post-hydration via dynamic

@@ -66,6 +66,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       getPageDataRpcV2: jest.fn(async () => makeBaseRpcPayload()),
       getSeoFragmentsByTypeId: jest.fn(() => ({ fragment1: '', fragment2: '' })),
       getTechnicalCodesByTypeIds: jest.fn(async () => []),
+      getGammeThumbnails: jest.fn(async () => new Map()),
     }) as any;
 
   const makeAutoGuide = () => ({
@@ -393,5 +394,63 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       expect(result.guideAchat?.link).toBe(conseilsPath);
       expect(result.hero.buyingGuideHref).toBeNull();
     });
+  });
+
+  // FH-14 : la RPC ne fournit que pg_pic ; la vignette du catalogue famille
+  // lit pg_img (filtre-habitacle.webp → 400, filtre-d-habitacle.webp → 200).
+  it('catalogue famille : chaque gamme reçoit sa vignette pg_img', async () => {
+    const rpcService = makeRpcServiceMock();
+    rpcService.getPageDataRpcV2 = jest.fn(async () => {
+      const payload = makeBaseRpcPayload();
+      return {
+        ...payload,
+        aggregatedData: {
+          ...payload.aggregatedData,
+          catalogue_famille: [
+            { pg_id: 424, pg_alias: 'filtre-d-habitacle', pg_name: "Filtre d'habitacle", pg_pic: 'filtre-habitacle.webp' },
+            { pg_id: 8, pg_alias: 'filtre-a-air', pg_name: 'Filtre à air', pg_pic: 'filtre-a-air.webp' },
+          ],
+        },
+      };
+    });
+    rpcService.getGammeThumbnails = jest.fn(
+      async () => new Map([[424, 'filtre-d-habitacle.webp']]),
+    );
+    const transformer = makeTransformerMock();
+    const service = new GammeResponseBuilderService(
+      transformer,
+      rpcService,
+      {
+        getBuyingGuideContractV1: jest.fn(async () => null),
+        toBuyingGuideV1: jest.fn(),
+        passesBuyingGuideAntiWikiGate: jest.fn(() => ({ ok: false, reasons: [] })),
+        buildAutoBuyingGuideV1: jest.fn(() => makeAutoGuide()),
+      } as any,
+      { getByPgId: jest.fn().mockResolvedValue(null) } as any,
+      {
+        resolve: jest.fn(() => ({
+          title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1', content: '',
+        })),
+      } as any,
+      { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any,
+      { run: jest.fn() } as any,
+      { mode: jest.fn(() => 'off') } as any,
+      {
+        getSnapshot: jest.fn(async () => ({
+          consolidationEnabled: false,
+          publishedGuideAliases: new Set<string>(),
+          conseilsAliases: new Set<string>(),
+        })),
+      } as any,
+    );
+
+    await service.buildRpcV2Response('7');
+
+    expect(rpcService.getGammeThumbnails).toHaveBeenCalledWith([424, 8]);
+    const rows = transformer.processCatalogueFamille.mock.calls[0][0];
+    expect(rows.map((r: any) => [r.pg_id, r.pg_pic, r.pg_img])).toEqual([
+      [424, 'filtre-habitacle.webp', 'filtre-d-habitacle.webp'],
+      [8, 'filtre-a-air.webp', null],
+    ]);
   });
 });

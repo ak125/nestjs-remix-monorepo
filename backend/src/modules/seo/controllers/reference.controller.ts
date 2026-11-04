@@ -22,6 +22,7 @@ import {
   R6GuideLinkPolicyService,
   applyGuideLinkRuleToHtml,
 } from '../services/r6-guide-link-policy.service';
+import { DiagnosticService } from '../validation/diagnostic.service';
 
 /**
  * Interface de réponse API pour une référence
@@ -35,6 +36,8 @@ interface ReferenceResponse {
   composition: string[] | null;
   confusionsCourantes: string[] | null;
   symptomesAssocies: string[] | null;
+  /** Sous-ensemble de symptomesAssocies qui désigne un diagnostic publié. */
+  diagnosticSlugs: string[];
   roleNegatif: string | null;
   reglesMetier: string[] | null;
   scopeLimites: string | null;
@@ -93,6 +96,7 @@ export class ReferenceController {
   constructor(
     private readonly referenceService: ReferenceService,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
+    private readonly diagnosticService: DiagnosticService,
   ) {}
 
   // ============================================
@@ -338,6 +342,19 @@ export class ReferenceController {
       }
     }
 
+    // Liens « Symptômes associés » : seulement vers un diagnostic publié (FH-6).
+    // Lecture en échec : aucun lien, et l'échec est journalisé.
+    try {
+      response.diagnosticSlugs =
+        await this.diagnosticService.filterPublishedSlugs(
+          reference.symptomesAssocies ?? [],
+        );
+    } catch (error) {
+      this.logger.warn(
+        `[R4-DIAG-LINKS] reference=${reference.slug} liens retirés : ${(error as Error).message}`,
+      );
+    }
+
     // Enrich with product count (non-blocking)
     if (reference.pgId) {
       try {
@@ -364,6 +381,7 @@ export class ReferenceController {
       composition: ref.composition,
       confusionsCourantes: ref.confusionsCourantes,
       symptomesAssocies: ref.symptomesAssocies,
+      diagnosticSlugs: [],
       roleNegatif: ref.roleNegatif,
       reglesMetier: ref.reglesMetier,
       scopeLimites: ref.scopeLimites,

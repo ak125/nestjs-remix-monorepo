@@ -35,7 +35,7 @@ export interface UpdateProductionDto {
   evidencePack?: unknown[];
   disclaimerPlan?: { disclaimers: unknown[] };
   approvalRecord?: { briefId: string; stages: unknown[] };
-  qualityScore?: number;
+  qualityScore?: number | null;
   qualityFlags?: string[];
   gateResults?: VideoGateResult[];
 }

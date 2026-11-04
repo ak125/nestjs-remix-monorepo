@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 436,
-    "backend_files_scanned": 1496
+    "backend_files_scanned": 1499
   },
   "tables": {
     "___config": {
@@ -4535,14 +4535,6 @@
       ],
       "is_trigger_function": false
     },
-    "get_substitution_status": {
-      "called_by": [],
-      "called_by_count": 0,
-      "defined_in_migrations": [
-        "20261030_get_substitution_status_definer_read.sql"
-      ],
-      "is_trigger_function": false
-    },
     "get_table_names": {
       "called_by": [
         "backend/src/modules/products/services/products-catalog.service.ts"
@@ -5447,6 +5439,15 @@
       "defined_in_migrations": [
         "20260327_resolve_type_id_remap.sql",
         "20260907_tecdoc_api_surface_lockdown.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "restore_french_accents": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261031_accents_protected_segments.down.sql",
+        "20261031_accents_protected_segments.sql"
       ],
       "is_trigger_function": false
     },
@@ -8950,22 +8951,6 @@
       ]
     },
     {
-      "name": "get_substitution_status",
-      "confidence": "medium",
-      "derived_from": [
-        "migrations",
-        "no-rpc-callsite"
-      ],
-      "defined_in_migrations": [
-        "20261030_get_substitution_status_definer_read.sql"
-      ],
-      "caveats": [
-        "may be called from another RPC/function body (SQL-internal)",
-        "may be invoked from the Supabase dashboard or an external job",
-        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
-      ]
-    },
-    {
       "name": "get_top_money_gammes",
       "confidence": "medium",
       "derived_from": [
@@ -10557,6 +10542,23 @@
       "defined_in_migrations": [
         "20260327_resolve_type_id_remap.sql",
         "20260907_tecdoc_api_surface_lockdown.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "restore_french_accents",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261031_accents_protected_segments.down.sql",
+        "20261031_accents_protected_segments.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",

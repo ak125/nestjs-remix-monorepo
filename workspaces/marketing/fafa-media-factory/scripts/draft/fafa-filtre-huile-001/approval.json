@@ -1,0 +1,133 @@
+{
+  "video_id": "fafa-filtre-huile-001",
+  "approval": {
+    "content_approved": false,
+    "content_approved_by": null,
+    "content_approved_at": null,
+    "render_approved": false,
+    "render_approved_by": null,
+    "render_approved_at": null,
+    "publish_approved": false,
+    "publish_approved_by": null,
+    "publish_approved_at": null,
+    "render_sha256": null
+  },
+  "gate_results": [
+    {
+      "gate": "G1",
+      "verdict": "PASS",
+      "measured": 0,
+      "warn_threshold": 1,
+      "fail_threshold": 1,
+      "strict": false,
+      "details": "Verdict du code : aucun claim hors procedure/safety, rien à compter. Le validateur fafa-pilot-governance.cjs sort en 1 (claim-table invalide : un claim procedure ou safety exige human_validated=true) ; pour le relecteur, G1 et G2 restent UNKNOWN jusqu'à la validation humaine.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G2",
+      "verdict": "FAIL",
+      "measured": 3,
+      "warn_threshold": 0,
+      "fail_threshold": 1,
+      "strict": true,
+      "details": "Verdict du code : trois claims (2 procedure, 1 safety) sans validatedBy. Le schéma claim-table refuse ces claims non validés : décision de l'owner, pas un défaut à contourner. Fiche WIKI source promue automatiquement, sans spot-check humain.",
+      "trigger_items": [
+        "claim:2",
+        "claim:3",
+        "claim:4"
+      ]
+    },
+    {
+      "gate": "G3",
+      "verdict": "PASS",
+      "measured": 0,
+      "warn_threshold": 1,
+      "fail_threshold": 3,
+      "strict": false,
+      "details": "Motifs FORBIDDEN_PATTERNS_SHORT (14) appliqués aux 17 lignes dites ou affichées de script.json : 0 violation, aucun appel à l'action (cliquez, inscrivez, abonnez, téléchargez).",
+      "trigger_items": []
+    },
+    {
+      "gate": "G4",
+      "verdict": "PASS",
+      "measured": 0,
+      "warn_threshold": 0,
+      "fail_threshold": 0.1,
+      "strict": false,
+      "details": "Verdict que rend le code sans durée (« No duration data ») : vidéo non rendue, brief sans champ type. Pour le relecteur : UNKNOWN, pas un PASS.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G5",
+      "verdict": "PASS",
+      "measured": 0,
+      "warn_threshold": 0.5,
+      "fail_threshold": 0.7,
+      "strict": false,
+      "details": "Verdict que rend le code avec similarityScore ?? 0 : aucun producteur de score. Script original, sans pattern d'inspiration. Pour le relecteur : UNKNOWN, pas un PASS.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G6",
+      "verdict": "WARN",
+      "measured": 0,
+      "warn_threshold": 0,
+      "fail_threshold": 1,
+      "strict": true,
+      "details": "Verdict que rend le code sans relevé des visuels : aucun rendu, aucun visuel choisi. Pour le relecteur : UNKNOWN.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G7",
+      "verdict": "FAIL",
+      "measured": 2,
+      "warn_threshold": 0,
+      "fail_threshold": 1,
+      "strict": false,
+      "details": "checkArtefacts : approvalRecord.stages absent (le schéma ne le prévoit pas, même écart que les pilotes plaquettes) ; aucune étape script_text approuvée, décision humaine.",
+      "trigger_items": [
+        "approval_record",
+        "script_text_approval"
+      ]
+    }
+  ],
+  "history": [
+    {
+      "timestamp": "2026-10-30T11:35:00Z",
+      "actor": "skill:fafa-script-generator",
+      "action": "brief_created",
+      "comment": "Brief filtre à huile (pg_id 7), format piece-expliquee (PieceExpliquee, 40 s fixes), CTA vers le sélecteur R1 /pieces/filtre-a-huile-7.html."
+    },
+    {
+      "timestamp": "2026-10-30T11:35:01Z",
+      "actor": "skill:fafa-script-generator",
+      "action": "script_drafted",
+      "comment": "Script original avec fafa-persona-canon, sans pattern. Trois accroches, choix de l'owner. Voix de 89 mots sur les fenêtres fixes. Les deux wearSigns disent qu'aucun symptôme ne désigne le filtre (titre fixe « Signes d'usure », l.273)."
+    },
+    {
+      "timestamp": "2026-10-30T11:35:02Z",
+      "actor": "skill:fafa-script-generator",
+      "action": "claims_evidenced",
+      "comment": "Trois claims (procedure, safety, procedure ; 1 par séquence) rattachés à la fiche WIKI gamme filtre-a-huile, commit a4783348, approuvée par skill:promoter (automatique)."
+    },
+    {
+      "timestamp": "2026-10-30T11:45:00Z",
+      "actor": "skill:fafa-brand-safety-reviewer",
+      "action": "gates_evaluated",
+      "comment": "Proposition : MISSING_ARTEFACTS (approvalRecord.stages absent). Validateur en sortie 1 (claim-table invalide, validation humaine requise) : G1 et G2 UNKNOWN. G3 PASS (0/17 lignes). G4, G5, G6 UNKNOWN (code sans mesure). G7 FAIL. Aucun drapeau posé, aucun dossier déplacé."
+    },
+    {
+      "timestamp": "2026-10-30T12:05:00Z",
+      "actor": "skill:fafa-script-generator",
+      "action": "script_drafted",
+      "comment": "Révision 1 après relecture éditoriale (editorial-review.md §3) : « il se colmate » devient « il peut se colmater » (script_voice, whenToChange), comme la source et claim-3 ; disclaimer-3 ne généralise plus l'arrêt de la notice Clio 5 à tout véhicule. Aucune approbation antérieure à remettre à false."
+    },
+    {
+      "timestamp": "2026-10-30T12:06:00Z",
+      "actor": "skill:fafa-brand-safety-reviewer",
+      "action": "gates_evaluated",
+      "comment": "Révision 1 : verdicts inchangés. MISSING_ARTEFACTS (stages absent). Validateur sortie 1 (INVALID_claim-table) : G1, G2 UNKNOWN. G3 PASS (0/17 lignes). G4, G5, G6 UNKNOWN. G7 FAIL. Aucun drapeau posé."
+    }
+  ],
+  "revision": 1
+}

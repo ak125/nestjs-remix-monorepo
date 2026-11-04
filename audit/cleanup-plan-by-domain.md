@@ -14,14 +14,14 @@ Each PR ends with `npm run audit:inventory` + `npm run audit:baseline:refresh` c
 
 ## PR-2 — Cleanup non ambigu hors runtime  *(small, do first)*
 
-knip does **not** flag `scripts/ui-audit/*` as unused (it's reachable via `knip.json`'s `scripts/**` entries), so the plan's original "scripts/ui-audit" target doesn't apply. What's left:
+**Correction 2026-10-18**: `knip.json` used to declare every root `scripts/**` file as an entry point, so no root script could ever look unused. That glob is gone. The root scripts still in use, but launched in a way knip cannot see (a workflow call it does not parse, a cron, a test, a skill, a runbook, by hand), are now listed one by one in the root `entry` of `knip.json` (30 on 2026-10-18; `scripts/ui-audit/cli.ts` makes the rest of `scripts/ui-audit/` reachable). A new root script run that way goes in that list, or it shows up as unused. Test fixtures under `scripts/**/__fixtures__/` are ignored. knip lists the other root scripts in `dead-code-candidates.json`, `confidence: medium` at best, because dependency-cruiser only scans `backend/src` and `frontend/app`. `validate-before-delete.sh` does not read shell scripts, `.spec/`, docs or skills: on 2026-10-18 it rated 14 of those 30 live scripts `SAFE TO DELETE` (e.g. `scripts/check-missing-vehicle-images.ts`, installed in cron by `scripts/deploy-phase1.sh`). The human review (condition #8) checks those places. What's left:
 
 - `__regression__/seo-role-canon-guard.regression.ts.disabled` — explicit `.disabled` file; confirm nothing references it, then `git rm`.
 - `.claude/settings.local.json.bak` — already gitignored (`.claude/*.bak`); not tracked → nothing to do unless it got committed somewhere.
 - Old Python agents `ai-agents-python/` — **correction 2026-10-17**: the tree was gitignored but still tracked (55 files, force-added). No runner, cron, script, workflow or Docker use found (the image excludes it via `.dockerignore`); removed on 2026-10-17. History keeps the code.
-- Anything else surfacing as `confidence: high` under `scripts/` in a future `dead-code-candidates.json` (currently **0**).
+- The root scripts listed under `scripts/` in `dead-code-candidates.json` (12 `medium`, 0 `high` on 2026-10-18). Reviewed on 2026-10-18: none is run by a workflow, a cron, a test, a skill or a doc; `scripts/seo/inject-agent-role.ts` is the ADR-037 phase-1 migration, already applied (a backend test checks its result). Remove them bottom-up through conditions #0–#8.
 
-→ PR-2 is essentially empty today. Skip it or fold the one `.disabled` file into PR-3.
+→ PR-2 now has a real list: the unreachable root scripts above.
 
 ## PR-3 — Backend NestJS-aware
 

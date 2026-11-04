@@ -90,13 +90,14 @@ const ACCENT_MAP: Array<[RegExp, string]> = [
   [/(?<![\w-])numeros?(?![\w-])/gi, 'numéro'],
 ];
 
-/**
- * Restore common French accents stripped by LLM output.
- * Idempotent: calling twice is safe.
- * Preserves plural 's' suffix automatically.
- */
-export function restoreAccents(text: string): string {
-  if (!text) return text;
+// Segments jamais réécrits : balises HTML (attributs href, src, alt, class…)
+// et URL ou chemins présents dans le texte (« /pieces/… », « https://… »).
+// Sans cette garde, l'entrée historique `pieces` réécrivait `href="/pieces/…"`
+// en `href="/pièces/…"` (lien cassé, FH-2 du dossier filtre à huile).
+const PROTECTED_SEGMENT =
+  /(<\/?[a-zA-Z!][^>]*>|(?:https?:\/\/|www\.)[^\s<>"']+|(?<![\w-])\/[\w\-./%#?=&]+)/;
+
+function restoreAccentsInText(text: string): string {
   let result = text;
   for (const [pattern, replacement] of ACCENT_MAP) {
     result = result.replace(pattern, (match) => {
@@ -107,4 +108,20 @@ export function restoreAccents(text: string): string {
     });
   }
   return result;
+}
+
+/**
+ * Restore common French accents stripped by LLM output.
+ * Idempotent: calling twice is safe.
+ * Preserves plural 's' suffix automatically.
+ * Only text is rewritten: HTML tags and URLs are kept byte for byte.
+ */
+export function restoreAccents(text: string): string {
+  if (!text) return text;
+  return text
+    .split(PROTECTED_SEGMENT)
+    .map((segment, i) =>
+      i % 2 === 1 ? segment : restoreAccentsInText(segment),
+    )
+    .join('');
 }
