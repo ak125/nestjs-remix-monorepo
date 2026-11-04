@@ -1118,15 +1118,14 @@ entries:
     owner: '@ak125/frontend-team'
     sourceConfidence: medium
     risk: low
-  # UX Constitution (amendée par ADR-122 D3, polices de secours) : règles de l'UI servie
-  # du frontend, voisine des tokens ci-dessus, lue par le skill frontend-design. D8 et non
-  # D13 (seule son application cite des fichiers de config) ni D15 (ni agents ni gouvernance
-  # du dépôt). Chemin exact, design-system/** non couvert. Override owner-directed, mandat
-  # du 2026-11-04 (lever les réserves du 02).
+  # UX Constitution (amendée par ADR-122 D3, polices de secours) : rattachement décidé par
+  # l'owner le 2026-11-04 (six rattachements validés à @ak125), transcrit sous mandat. La
+  # constitution normative relève de la responsabilité de règle (D15) ; les tokens ci-dessus
+  # et l'implémentation frontend restent en D8. Chemin exact, design-system/** non couvert.
   - glob: design-system/UX-CONSTITUTION.md
-    domain: D8
-    owner: '@ak125/frontend-team'
-    sourceConfidence: medium
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
     risk: low
   - glob: packages/eslint-config/**
     domain: D13
