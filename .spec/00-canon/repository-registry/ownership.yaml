@@ -1717,3 +1717,33 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  # PR #1956 (comparateur d'audit fail-closed) : rattachement décidé par l'owner le
+  # 2026-11-04, transcrit sous mandat. Globs exacts, un par chemin, sans couverture
+  # large. package.json racine (scripts et workspaces du monorepo) → D13 ; les quatre
+  # projections régénérées du Repository Control Plane et de l'inventaire d'audit
+  # → D15, même risque que .claude/knowledge/** et audit/cleanup/**.
+  - glob: package.json
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: audit/registry/canonical.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/registry/files.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/module-boundaries.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/runtime-entrypoints.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low

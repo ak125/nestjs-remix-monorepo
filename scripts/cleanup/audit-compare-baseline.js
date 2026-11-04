@@ -8,6 +8,14 @@
  *
  * Negative deltas (progress) always succeed. Positive deltas only fail when
  * above the threshold.
+ * Exit 0: valid analyses within thresholds; 1: regression; 2: unavailable or
+ * invalid evidence. Invalid evidence never produces metrics or refreshes.
+ *
+ * Madge runs through its API in a bounded child process, so the analysed graph
+ * is checked: a root without any analysed file, or a file madge's parser
+ * rejects, is invalid evidence. As in the baseline, the cycle graph only holds
+ * imports madge resolves without a tsconfig; aliases (~/, @common/...) and
+ * asset imports stay outside it and are counted on stderr.
  *
  * Usage:
  *   node scripts/cleanup/audit-compare-baseline.js            # run, print, exit
@@ -24,14 +32,13 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const BASELINE_PATH = path.join(REPO_ROOT, 'audit-reports', 'phase0-baseline.json');
 
-function die(msg, code = 2) {
-  process.stderr.write(`[audit-compare] ERROR: ${msg}\n`);
-  process.exit(code);
+function die(msg) {
+  throw new Error(msg);
 }
 
 function loadBaseline() {
@@ -63,66 +70,174 @@ function ensureDepsInstalled() {
   }
 }
 
-function runSilent(cmd, opts = {}) {
-  try {
-    return execSync(cmd, {
-      cwd: REPO_ROOT,
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      maxBuffer: 64 * 1024 * 1024,
-      ...opts,
-    });
-  } catch (e) {
-    // many audits exit non-zero on findings — we still want the output
-    return (e.stdout || '') + (e.stderr || '');
+function requireShape(condition, message) {
+  if (!condition) die(`invalid report: ${message}`);
+}
+
+const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+const isString = (value) => typeof value === 'string' && value.length > 0;
+const isCount = (value) => Number.isSafeInteger(value) && value >= 0;
+
+function parseKnip(report) {
+  // Knip 6 JSON. Preserve the compact reporter's baseline units: affected
+  // files per category, except duplicates, which counts duplicate groups.
+  requireShape(isRecord(report) && Array.isArray(report.issues), 'knip.issues must be an array');
+  const fields = {
+    unused_files: 'files', unused_dependencies: 'dependencies',
+    unused_dev_dependencies: 'devDependencies', unlisted_dependencies: 'unlisted',
+    unlisted_binaries: 'binaries', unused_exports: 'exports',
+    unused_types: 'types', duplicate_exports: 'duplicates',
+  };
+  const counts = Object.fromEntries(Object.keys(fields).map((key) => [key, 0]));
+  const files = new Set();
+  for (const issue of report.issues) {
+    requireShape(isRecord(issue) && isString(issue.file) && !files.has(issue.file), 'knip issue needs a unique file');
+    files.add(issue.file);
+    for (const [metric, field] of Object.entries(fields)) {
+      const entries = issue[field];
+      requireShape(Array.isArray(entries), `knip.${field} must be an array in ${issue.file}`);
+      const symbols = field === 'duplicates' ? entries.flat() : entries;
+      requireShape(symbols.every((item) => isRecord(item) && isString(item.name)), `knip.${field} has invalid symbols`);
+      if (field === 'duplicates') {
+        requireShape(entries.every((group) => Array.isArray(group) && group.length >= 2), 'knip duplicate group needs at least two symbols');
+        counts[metric] += entries.length;
+      } else {
+        counts[metric] += entries.length > 0 ? 1 : 0;
+      }
+    }
   }
+  return counts;
 }
 
-function parseKnip() {
-  const out = runSilent('npx knip --no-exit-code --no-progress --reporter compact 2>&1');
-  const grab = (re) => {
-    const m = out.match(re);
-    return m ? parseInt(m[1], 10) : 0;
-  };
-  return {
-    unused_files: grab(/^Unused files \((\d+)\)/m),
-    unused_dependencies: grab(/^Unused dependencies \((\d+)\)/m),
-    unused_dev_dependencies: grab(/^Unused devDependencies \((\d+)\)/m),
-    unlisted_dependencies: grab(/^Unlisted dependencies \((\d+)\)/m),
-    unlisted_binaries: grab(/^Unlisted binaries \((\d+)\)/m),
-    unused_exports: grab(/^Unused exports \((\d+)\)/m),
-    unused_types: grab(/^Unused exported types \((\d+)\)/m),
-    duplicate_exports: grab(/^Duplicate exports \((\d+)\)/m),
-  };
+const MADGE_ROOTS = ['backend/src', 'frontend/app'];
+
+// Madge's CLI prints a cycle-free graph when it analysed no file, and
+// dependency-tree silently keeps a file its parser rejects with no dependencies
+// (madge's "skipped" warnings only list unresolved imports). This worker runs
+// the same analysis as `madge --extensions ts,tsx` and reports the evidence the
+// parser below needs to refuse both cases.
+const MADGE_WORKER = `
+const path = require('path');
+const [madgeDir, ...roots] = process.argv.slice(1);
+const treeDir = path.dirname(require.resolve('dependency-tree', { paths: [madgeDir] }));
+const precinct = require(require.resolve('precinct', { paths: [treeDir] }));
+require(madgeDir)(roots, { baseDir: process.cwd(), fileExtensions: ['ts', 'tsx'] }).then((result) => {
+  const graph = result.obj();
+  const unparsable = [];
+  // A rejected file has no dependencies: parse those again as dependency-tree does.
+  for (const [file, deps] of Object.entries(graph)) {
+    if (deps.length > 0) continue;
+    try { precinct.paperwork(path.resolve(file), { includeCore: false }); }
+    catch (error) { unparsable.push(file + ': ' + String(error.message).split('\\n')[0]); }
+  }
+  process.stdout.write(JSON.stringify({ files: Object.keys(graph), cycles: result.circular(),
+    unparsable, unresolved: result.warnings().skipped }));
+});
+`;
+
+function parseMadge(report) {
+  requireShape(isRecord(report) && [report.files, report.unparsable, report.unresolved].every((list) =>
+    Array.isArray(list) && list.every(isString)), 'madge needs files, unparsable and unresolved lists');
+  const files = new Set(report.files);
+  requireShape(Array.isArray(report.cycles) && report.cycles.every((cycle) => Array.isArray(cycle) &&
+    cycle.length > 0 && cycle.every((file) => files.has(file))), 'madge cycles must list analysed files');
+  for (const root of MADGE_ROOTS) {
+    requireShape(report.files.some((file) => file.startsWith(`${root}/`)), `madge analysed no file under ${root}`);
+  }
+  requireShape(report.unparsable.length === 0,
+    `madge could not parse ${report.unparsable.length} file(s): ${report.unparsable.slice(0, 5).join('; ')}`);
+  return { cycles: report.cycles.length };
 }
 
-function parseMadge() {
-  const out = runSilent(
-    'npx madge --circular --extensions ts,tsx backend/src frontend/app 2>&1',
-  );
-  // madge prints "Found N circular dependencies!" or "No circular dependency found!"
-  const m = out.match(/Found (\d+) circular dependenc/);
-  return { cycles: m ? parseInt(m[1], 10) : 0 };
+function parseDepcruise(report) {
+  requireShape(isRecord(report) && Array.isArray(report.modules) && isRecord(report.summary), 'depcruise needs modules and summary');
+  const summary = report.summary;
+  requireShape(Array.isArray(summary.violations), 'depcruise.summary.violations must be an array');
+  for (const key of ['error', 'warn', 'info', 'ignore', 'totalCruised', 'totalDependenciesCruised']) {
+    requireShape(isCount(summary[key]), `depcruise.summary.${key} must be a non-negative integer`);
+  }
+  requireShape(summary.totalCruised > 0 && report.modules.length > 0, 'depcruise did not analyse any modules');
+  requireShape(report.modules.every((entry) => isRecord(entry) && isString(entry.source) &&
+    Array.isArray(entry.dependencies)), 'depcruise has invalid module records');
+  const counts = { error: 0, warn: 0, info: 0, ignore: 0 };
+  for (const violation of summary.violations) {
+    requireShape(isRecord(violation) && isRecord(violation.rule) &&
+      Object.hasOwn(counts, violation.rule.severity), 'depcruise violation has invalid severity');
+    counts[violation.rule.severity]++;
+  }
+  for (const key of Object.keys(counts)) {
+    requireShape(counts[key] === summary[key], `depcruise.summary.${key} disagrees with violations`);
+  }
+  // err-long excludes ignored violations from its total.
+  return { violations: summary.error + summary.warn + summary.info, errors: summary.error, warnings: summary.warn };
 }
 
-function parseDepcruise() {
-  const out = runSilent(
-    'npx depcruise --config .dependency-cruiser.cjs --output-type err-long backend/src frontend/app 2>&1',
-  );
-  // line shape: "x 148 dependency violations (0 errors, 148 warnings). 2101 modules, 8425 dependencies cruised."
-  const m = out.match(/(\d+) dependency violations \((\d+) errors?, (\d+) warnings?\)/);
-  return {
-    violations: m ? parseInt(m[1], 10) : 0,
-    errors: m ? parseInt(m[2], 10) : 0,
-    warnings: m ? parseInt(m[3], 10) : 0,
-  };
+function parseAstGrep(report) {
+  requireShape(Array.isArray(report), 'ast-grep must return an array of diagnostics');
+  const counts = { warnings: 0, errors: 0 };
+  for (const diagnostic of report) {
+    requireShape(isRecord(diagnostic) && isString(diagnostic.ruleId) && isString(diagnostic.file) &&
+      ['warning', 'error', 'info', 'hint'].includes(diagnostic.severity), 'ast-grep diagnostic has invalid identity or severity');
+    if (diagnostic.severity === 'warning') counts.warnings++;
+    if (diagnostic.severity === 'error') counts.errors++;
+  }
+  return counts;
 }
 
-function parseAstGrep() {
-  const out = runSilent('npx ast-grep scan --config sgconfig.yml 2>&1');
-  const warnings = (out.match(/^warning\[/gm) || []).length;
-  const errors = (out.match(/^error\[/gm) || []).length;
-  return { warnings, errors };
+const AUDITS = {
+  knip: {
+    entry: 'knip/bin/knip.js',
+    args: ['--no-exit-code', '--no-progress', '--reporter', 'json'],
+    parse: parseKnip,
+    exit: () => 0,
+  },
+  madge: {
+    entry: 'madge',
+    script: MADGE_WORKER,
+    args: MADGE_ROOTS,
+    parse: parseMadge,
+    exit: () => 0,
+    note: (report) => `${report.files.length} files analysed, ${report.unresolved.length} unresolved imports outside the cycle graph`,
+  },
+  // The JSON reporter exits 0 even with rule violations; the metrics gate below
+  // decides regressions. A non-zero exit from this reporter is a tool failure.
+  depcruise: {
+    entry: 'dependency-cruiser/bin/dependency-cruise.mjs',
+    args: ['--config', '.dependency-cruiser.cjs', '--output-type', 'json', 'backend/src', 'frontend/app'],
+    parse: parseDepcruise,
+    exit: () => 0,
+  },
+  ast_grep: {
+    entry: `@ast-grep/cli/ast-grep${process.platform === 'win32' ? '.exe' : ''}`,
+    native: true,
+    args: ['scan', '--config', 'sgconfig.yml', '--json=compact'],
+    parse: parseAstGrep,
+    exit: (counts) => counts.errors > 0 ? 1 : 0,
+  },
+};
+
+function runAudit(name, { root = REPO_ROOT, execute = spawnSync } = {}) {
+  const audit = AUDITS[name];
+  const entry = path.join(root, 'node_modules', audit.entry);
+  // Invoke only installed tools, without a shell or npx's download fallback.
+  const args = audit.native ? audit.args : [...(audit.script ? ['-e', audit.script] : []), entry, ...audit.args];
+  const result = execute(audit.native ? entry : process.execPath, args, {
+    cwd: root, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: 64 * 1024 * 1024, timeout: 180_000,
+  });
+  try {
+    if (result.error) die(`process failed: ${result.error.message}`);
+    if (result.signal || !Number.isInteger(result.status)) die(`process interrupted (${result.signal || 'no exit status'})`);
+    if (![0, 1].includes(result.status)) die(`unexpected exit status ${result.status}`);
+    const report = JSON.parse(result.stdout);
+    const counts = audit.parse(report);
+    if (result.status !== audit.exit(counts)) die(`exit status ${result.status} disagrees with the report`);
+    if (audit.note) process.stderr.write(`[audit-compare] ${name}: ${audit.note(report)}\n`);
+    return counts;
+  } catch (error) {
+    const detail = result.stderr?.trim().slice(0, 2000);
+    die(`${name}: ${error.message}${detail ? `\n${detail}` : ''}`);
+  }
 }
 
 function computeDelta(current, baseline, thresholds, strict) {
@@ -130,6 +245,10 @@ function computeDelta(current, baseline, thresholds, strict) {
   let hasFailure = false;
 
   const check = (label, cur, base, thresholdKey) => {
+    if (!isCount(cur) || !isCount(base)) die(`invalid count for ${label}`);
+    if (!isRecord(thresholds) || (Object.hasOwn(thresholds, thresholdKey) && !isCount(thresholds[thresholdKey]))) {
+      die(`invalid threshold for ${label}`);
+    }
     const delta = cur - base;
     const threshold = strict ? 0 : thresholds[thresholdKey] ?? 0;
     const over = delta > threshold;
@@ -174,7 +293,11 @@ function renderTable(rows) {
 
 function refreshBaseline(baseline, current) {
   const today = new Date().toISOString().slice(0, 10);
-  const commit = runSilent('git rev-parse --short HEAD').trim() || baseline.captured_on_commit;
+  const result = spawnSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 10_000 });
+  if (result.error || result.signal || result.status !== 0 || !/^[a-f0-9]{7,40}\s*$/.test(result.stdout)) {
+    die('cannot identify HEAD; baseline was not refreshed');
+  }
+  const commit = result.stdout.trim();
   return {
     ...baseline,
     captured_at: today,
@@ -195,13 +318,13 @@ function main() {
   ensureDepsInstalled();
 
   process.stderr.write('[audit-compare] running knip...\n');
-  const knip = parseKnip();
+  const knip = runAudit('knip');
   process.stderr.write('[audit-compare] running madge...\n');
-  const madge = parseMadge();
+  const madge = runAudit('madge');
   process.stderr.write('[audit-compare] running depcruise...\n');
-  const depcruise = parseDepcruise();
+  const depcruise = runAudit('depcruise');
   process.stderr.write('[audit-compare] running ast-grep...\n');
-  const ast_grep = parseAstGrep();
+  const ast_grep = runAudit('ast_grep');
 
   const current = { knip, madge, depcruise, ast_grep };
 
@@ -239,7 +362,7 @@ function main() {
         }
       }
     }
-    process.exit(0);
+    return 0;
   }
 
   const { rows, hasFailure } = computeDelta(current, baseline, baseline.thresholds, strict);
@@ -260,7 +383,19 @@ function main() {
     }
   }
 
-  process.exit(hasFailure ? 1 : 0);
+  return hasFailure ? 1 : 0;
 }
 
-main();
+if (require.main === module) {
+  try {
+    process.exitCode = main();
+  } catch (error) {
+    process.stderr.write(`[audit-compare] ERROR: ${error.message}\n`);
+    if (process.argv.includes('--json')) {
+      process.stdout.write(JSON.stringify({ failed: true, error: error.message }) + '\n');
+    }
+    process.exitCode = 2;
+  }
+}
+
+module.exports = { runAudit, parseKnip, parseMadge, parseDepcruise, parseAstGrep, computeDelta };
