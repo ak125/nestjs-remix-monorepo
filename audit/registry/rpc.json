@@ -3494,6 +3494,41 @@
       "args": [
         {
           "mode": "IN",
+          "name": "p_gamme_alias",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20261030_get_substitution_status_definer_read.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_substitution_status",
+      "language": "plpgsql",
+      "name": "get_substitution_status",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
           "name": "p_limit",
           "type": "INT"
         }
