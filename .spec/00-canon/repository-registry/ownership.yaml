@@ -170,6 +170,16 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Lecture SECURITY DEFINER du seul statut d'une gamme (résolution + nombre de
+  # pièces) pour le contrôle 404/410 des pages produit ; consommateur
+  # SubstitutionService (D14), comme 20260625_fix_get_substitution_data. Fonction
+  # STABLE ajoutée, aucune table ni donnée touchée. Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261030_get_substitution_status_definer_read*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # ADR-059 PR-6 — SEO projection write-side schema (7 tables + 2 MV). Owner GO session 2026-06-19.
   # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
   - glob: backend/supabase/migrations/20260619_adr059_pr6_seo_projection_schema.sql
@@ -750,6 +760,12 @@ entries:
     domain: D4
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
+    risk: low
+  # Editorial dossiers (texts, visuals, scripts under review) follow D5 "editorial workflows".
+  - glob: docs/audits/editorial-*/**
+    domain: D5
+    owner: '@ak125/content-team'
+    sourceConfidence: medium
     risk: low
   - glob: backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts
     domain: D4
@@ -1690,5 +1706,14 @@ entries:
   - glob: backend/supabase/migrations/20261026_vehicle_api_definer_reads*.sql
     domain: D4
     owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+  # restore_french_accents (fonction des quatre triggers d'accents des contenus
+  # R1/R3/R6) : balises et URL protégées, quatre entrées fausses retirées
+  # (PR #1941). Couvre .sql + .down.sql. Glob exact : les migrations ne sont
+  # pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261031_accents_protected_segments*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium

@@ -1,10 +1,25 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { CacheService } from '@cache/cache.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 import { GammeRpcAggregatedDataSchema } from './gamme-rpc.schema';
+import { HomepageRpcService } from '../../catalog/services/homepage-rpc.service';
+import { R6_GUIDE_LINK_CACHE_SEGMENTS } from '../../seo/services/r6-guide-link-policy.service';
+
+/** Champs de get_homepage_families lus pour les vignettes gamme. */
+interface HomepageFamiliesShape {
+  catalog?: {
+    families?: Array<{
+      gammes?: Array<{ pg_id: number | string; pg_img?: string | null }>;
+    }>;
+  };
+}
 
 interface SeoFragmentRow {
   sis_id: number;
@@ -52,6 +67,7 @@ export class GammeRpcService extends SupabaseBaseService {
   constructor(
     private readonly transformer: GammeDataTransformerService,
     private readonly cacheService: CacheService,
+    private readonly homepageRpcService: HomepageRpcService,
     rpcGate: RpcGateService,
   ) {
     super();
@@ -70,6 +86,25 @@ export class GammeRpcService extends SupabaseBaseService {
    */
   private getStaleCacheKey(pgId: string): string {
     return `gamme:rpc:v2:stale:${pgId}`;
+  }
+
+  /**
+   * 🔑 Génère la clé du cache de réponse construite (2e couche, contrôleur RPC V2).
+   * La réponse dépend du drapeau de consolidation R6 (liens guide, ADR-103 D5).
+   */
+  getResponseCacheKey(pgId: string, segment: string): string {
+    return `gamme:resp:v2:${segment}:${pgId}`;
+  }
+
+  /** Clés Redis d'une gamme : données RPC, copie de secours, réponse par segment R6. */
+  private cacheKeysOf(pgId: string): string[] {
+    return [
+      this.getCacheKey(pgId),
+      this.getStaleCacheKey(pgId),
+      ...R6_GUIDE_LINK_CACHE_SEGMENTS.map((segment) =>
+        this.getResponseCacheKey(pgId, segment),
+      ),
+    ];
   }
 
   /**
@@ -304,14 +339,11 @@ export class GammeRpcService extends SupabaseBaseService {
   }
 
   /**
-   * 🗑️ Invalide le cache d'une gamme
+   * 🗑️ Invalide le cache d'une gamme : ses 4 clés en un seul DEL.
+   * Lève si Redis est indisponible : l'appelant n'annonce pas une purge non faite.
    */
   async invalidateCache(pgId: string): Promise<void> {
-    const cacheKey = this.getCacheKey(pgId);
-    const staleCacheKey = this.getStaleCacheKey(pgId);
-
-    await this.cacheService.del(cacheKey);
-    await this.cacheService.del(staleCacheKey);
+    await this.cacheService.delStrict(this.cacheKeysOf(pgId));
 
     this.logger.log(`🗑️ Cache invalidé pour gamme ${pgId}`);
   }
@@ -361,6 +393,42 @@ export class GammeRpcService extends SupabaseBaseService {
     for (const row of data ?? []) {
       if (row.pm_name) {
         map.set(String(row.pm_name).toUpperCase(), row.pm_logo ?? null);
+      }
+    }
+    return map;
+  }
+
+  /**
+   * Récupère les vignettes (pieces_gamme.pg_img) des gammes du catalogue famille.
+   * La RPC n'expose que pg_pic (image hero), dont le nom ne correspond pas
+   * toujours à un objet du dossier catalogue/ (filtre-habitacle.webp → 400) ;
+   * pg_img est la vignette lue par les cartes gamme de la home. Lecture via
+   * get_homepage_families (DEFINER, cache Redis homepage) : pieces_gamme n'est
+   * pas lisible en anon (PREPROD READ_ONLY). Gamme absente → pas d'entrée.
+   * @returns Map clé = pg_id, valeur = pg_img (filename) | null
+   */
+  async getGammeThumbnails(
+    pgIds: number[],
+  ): Promise<Map<number, string | null>> {
+    const map = new Map<number, string | null>();
+    const ids = new Set(pgIds.filter((id) => Number.isInteger(id)));
+    if (ids.size === 0) return map;
+
+    let families: HomepageFamiliesShape;
+    try {
+      families =
+        (await this.homepageRpcService.getHomepageFamilies()) as HomepageFamiliesShape;
+    } catch (error) {
+      this.logger.warn(
+        `⚠️ getGammeThumbnails: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return map;
+    }
+
+    for (const family of families?.catalog?.families ?? []) {
+      for (const gamme of family.gammes ?? []) {
+        const pgId = Number(gamme.pg_id);
+        if (ids.has(pgId)) map.set(pgId, gamme.pg_img ?? null);
       }
     }
     return map;
@@ -438,7 +506,7 @@ export class GammeRpcService extends SupabaseBaseService {
       { source: 'api' },
     );
     if (error) throw error;
-    await this.invalidateCache(String(pgId));
+    await this.purgeAfterDbWrite([pgId], 'reconstruction');
     return Boolean(data);
   }
 
@@ -452,8 +520,33 @@ export class GammeRpcService extends SupabaseBaseService {
       .update({ stale: true, stale_reason: reason }, { count: 'exact' })
       .in('pg_id', pgIds);
     if (error) throw error;
-    for (const id of pgIds) await this.invalidateCache(String(id));
+    await this.purgeAfterDbWrite(pgIds, 'marquage stale');
     return { marked: count ?? pgIds.length };
+  }
+
+  /**
+   * Purge Redis après une écriture en base déjà validée : les 4 clés de chaque
+   * gamme en un seul DEL. Un échec ne l'annule pas : il est signalé comme état
+   * partiel (503), jamais comme succès ; les deux écritures se rejouent sans risque.
+   */
+  private async purgeAfterDbWrite(
+    pgIds: number[],
+    write: string,
+  ): Promise<void> {
+    const ids = pgIds.map(String);
+    try {
+      await this.cacheService.delStrict(
+        ids.flatMap((id) => this.cacheKeysOf(id)),
+      );
+    } catch (error) {
+      this.logger.error(
+        `Purge du cache non confirmée après ${write} des gammes ${ids.join(',')}: ${error}`,
+      );
+      throw new ServiceUnavailableException(
+        'Écriture en base appliquée, purge du cache non confirmée : opération rejouable',
+      );
+    }
+    this.logger.log(`🗑️ Cache invalidé pour gammes ${ids.join(',')}`);
   }
 
   async getDbCacheStats(): Promise<{

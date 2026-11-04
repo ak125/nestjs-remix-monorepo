@@ -183,7 +183,9 @@ const VISUAL_INTENT_MAP: Record<IntentClass, VisualIntentConfig> = {
   "blog-conseil": {
     tier: "pedagogical",
     animationLevel: "subtle",
-    sloganTemplate: "Tout savoir sur les {gamme}",
+    // Vide : le guide R3 ne reçoit que pg_alias, pas le nom de gamme. Le slogan
+    // servait « Tout savoir sur les filtre-a-huile » sur chaque guide.
+    sloganTemplate: "",
     ambiance: {
       temperature: "warm",
       contrast: "medium",

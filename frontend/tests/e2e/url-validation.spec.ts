@@ -148,8 +148,8 @@ test.describe('URL Validation - No link to a gone URL', () => {
     const html = await response.text();
 
     // Non vacuité : la section équipementiers est rendue, sinon « 0 lien » ne
-    // prouverait rien.
-    expect(html).toContain('Nous sélectionnons des équipementiers reconnus');
+    // prouverait rien. Ancre structurelle : la section n'a plus de texte fixe.
+    expect(html).toContain('data-section="equipementiers"');
     expect(html.match(/href="\/pieces-[^"/]+\.html"/g) ?? []).toEqual([]);
   });
 });

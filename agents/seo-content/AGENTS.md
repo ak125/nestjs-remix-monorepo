@@ -92,7 +92,7 @@ Pas de WIKI sourcé pour "<nom>" (<slug>). Le contenu ne peut pas être produit 
 
 **Action DEV requise (BOUCLE seo-content-loop) :**
 1. Scraper sourcé (sources primaires/OE) -> automecanik-raw/sources/web-research/<slug>/
-2. Revue humaine -> proposal WIKI -> score rank-#1 capable -> promotion TIER A
+2. Proposal WIKI -> score rank-#1 capable -> promotion par le décideur unique (ADR-119 : aucune revue humaine de fiche)
 
 Priorité : P1 — Entité : <slug> — Détecté le : <timestamp>
 ```

@@ -1,0 +1,39 @@
+{
+  "video_id": "fafa-filtre-huile-001",
+  "format": "piece-expliquee",
+  "hook": "Ton filtre à huile : vissé ou cartouche ?",
+  "hook_variants": [
+    "Deux filtres à huile identiques peuvent être différents dedans.",
+    "Ton filtre à huile ne se choisit pas à l'œil."
+  ],
+  "script_voice": "Moi c'est Fafa, le mécano IA d'AutoMecanik. Ton filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification. Le vissé se change en entier ; la cartouche, juste son élément. Des signes d'usure ? Aucun symptôme ne désigne à lui seul le filtre. Même un voyant d'huile : suis d'abord ta notice. Change-le aux échéances de ton constructeur. Trop vieux, il peut se colmater, et l'huile passe alors sans être filtrée. Deux filtres pareils dehors peuvent différer dedans. Sélectionne ton véhicule sur AutoMecanik : avant d'acheter, vérifie la compatibilité.",
+  "piece": "Filtre à huile",
+  "pieceFunction": "Il empêche les impuretés d'entrer dans le circuit de lubrification et aide à préserver l'huile et le moteur.",
+  "location": "Sur le circuit de lubrification du moteur",
+  "wearSigns": [
+    {
+      "sign": "Aucun symptôme ne le désigne à lui seul",
+      "severity": "low"
+    },
+    {
+      "sign": "Voyant d'huile : suis d'abord ta notice",
+      "severity": "high"
+    }
+  ],
+  "whenToChange": "Aux échéances du constructeur. Trop vieux, il peut se colmater : l'huile passe alors sans être filtrée.",
+  "screen_text": [
+    "Vissé : on change tout",
+    "Cartouche : juste l'élément",
+    "Un voyant ne désigne pas le filtre",
+    "Échéances du constructeur",
+    "Choisis par véhicule, pas à l'œil"
+  ],
+  "cta": "Sur AutoMecanik, sélectionne ton véhicule pour voir les filtres compatibles. Avant d'acheter, vérifie.",
+  "disclaimer": "Conseil informatif. Diagnostic à confirmer selon véhicule. Fafa est un mécano IA.",
+  "duration_estimate_sec": 40,
+  "generated_at": "2026-10-30T11:35:00Z",
+  "generated_by": "fafa-script-generator-v1",
+  "persona_signature": "fafa-v1-figée",
+  "inspired_from_pattern": null,
+  "notes": "Création 30/10/2026 (dossier docs/audits/editorial-filtre-huile-20261030/). Seule source admise : fiche WIKI wiki/gamme/filtre-a-huile.md, commit WIKI a47833486352626442939dd04b5a6fd3674cb0a7 (blob c0f7a257), promue automatiquement le 30/09 (promoter@1e8003c, sans spot-check humain). Aucun kilométrage, couple, nombre de tours ni pourcentage. La séquence 14-24 s s'affiche sous le titre fixe « Signes d'usure » (PieceExpliquee.tsx l.273) : les deux lignes de wearSigns disent qu'aucun symptôme ne désigne le filtre, pour ne pas lui attribuer un signe. Gravité high sur la ligne voyant : situation d'arrêt selon la notice, pas une usure du filtre. Voix : 87 mots, accroche non comprise, calés sur 4-14/14-24/24-32/32-40 s (accroche dite dans 0-4 s, non affichée : PieceExpliquee n'a pas de prop hook). Révision 1 (relecture éditoriale) : « il se colmate » devient « il peut se colmater », comme la source et claim-3."
+}

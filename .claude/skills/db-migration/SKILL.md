@@ -14,7 +14,7 @@ tags: [supabase, postgres, ddl, rls, migration, governance]
 argument-hint: "[migration-name]"
 disable-model-invocation: true
 metadata:
-  version: "1.3"
+  version: "1.4"
   spec: agentskills.io/specification v1
 ---
 
@@ -71,6 +71,19 @@ Supabase migration patterns, RLS audit, schema validation. Guides safe DDL opera
    **Jamais** `mcp__claude_ai_Supabase__apply_migration` : il ecrit dans un autre ledger
    (`supabase_migrations.schema_migrations`) que le moteur ne lit pas — le fichier reste `pending`
    et le moteur le rejouera (le README range ce canal parmi ceux qui imposent un `--baseline`).
+   Depuis DEV, `gh` tourne sous l'App des agents, sans droit de declencher un workflow
+   (`HTTP 403: Resource not accessible by integration`, constate le 2026-10-31) : l'agent ne lance
+   rien. Canal owner en une ligne, depuis le terminal DEV, apres son GO nominatif sur l'id :
+   `SWEEP_PSQL=<copie> bash ~/resync/owner-gh-web.sh bash ~/resync/apply-migration.sh <id>`
+   (scripts owner hors depot). Le premier connecte l'owner par code le temps de la commande ; le
+   second enchaine, chacun fail-closed et sans pause : pre-condition `$precheck$` en lecture seule,
+   dry-run puis APPLY (`only_ids=<id>`), meme fichier (meme blob) lu a chaque etape. Son chemin par
+   defaut de `sweep-psql.sh` n'existe plus (il s'arrete alors sans rien lancer) : l'agent extrait une
+   copie executable de `910b1e9f04:.claude/skills/live-evidence-sweep/scripts/sweep-psql.sh`
+   (branche `feat/skill-live-evidence-sweep`), joue lui-meme la pre-condition avec, puis donne a
+   l'owner la ligne aux chemins absolus. Sans terminal : le meme workflow depuis l'UI GitHub
+   (`confirm=DRY-RUN` + `dry_run` coche, puis `confirm=APPLY` + decoche, meme `only_ids`) ;
+   jamais `only_ids` vide, la file entiere partirait.
 3. Verifier l'etat au ledger : workflow en `status_only=true` (sort non-zero sur drift / applying / failed).
    Exit 0 ne prouve pas l'application — un fichier encore `pending` sort aussi 0 : lire la ligne de l'id
    (`applied`, checksum = sha256 du fichier sur `main`)
