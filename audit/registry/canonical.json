@@ -103127,13 +103127,53 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/cleanup/audit-compare-baseline.integration.test.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 68,
+      "owner": "@ak125",
+      "path": "scripts/cleanup/audit-compare-baseline.integration.test.js",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/cleanup/audit-compare-baseline.js",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 267,
+      "loc": 358,
       "owner": "@ak125",
       "path": "scripts/cleanup/audit-compare-baseline.js",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/cleanup/audit-compare-baseline.test.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 234,
+      "owner": "@ak125",
+      "path": "scripts/cleanup/audit-compare-baseline.test.js",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -106192,11 +106232,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "6d192e1204442cb6bce4b9a62994eaf25c9917b8a5ba806ff74dccb68ee9f638",
+      "audit/registry/files.json": "a521735225c202de831769c3b8c720d85312b5e0669490a740f5eeb517655fec",
       "audit/registry/rpc.json": "294f506d203e5fa10be7f8aa1c8413414776431d9d0a9509dd5f8ea140daf6a4",
       "audit/registry/runtime.json": "7a774aa80f53b1c05683d736bef99decef0b464f7484f81bead6c3d391b567e6"
     },
-    "sotFingerprint": "2f0dfd5ca35b"
+    "sotFingerprint": "ed3e31d9c75b"
   },
   "runtime": [
     {

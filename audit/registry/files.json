@@ -71935,13 +71935,51 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/cleanup/audit-compare-baseline.integration.test.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 68,
+      "owner": "__unassigned__",
+      "path": "scripts/cleanup/audit-compare-baseline.integration.test.js",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/cleanup/audit-compare-baseline.js",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 267,
+      "loc": 358,
       "owner": "__unassigned__",
       "path": "scripts/cleanup/audit-compare-baseline.js",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/cleanup/audit-compare-baseline.test.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 234,
+      "owner": "__unassigned__",
+      "path": "scripts/cleanup/audit-compare-baseline.test.js",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
