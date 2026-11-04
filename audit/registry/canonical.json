@@ -64099,7 +64099,7 @@
         "backend/src/modules/substitution/types/substitution.types.ts"
       ],
       "kind": "test",
-      "loc": 128,
+      "loc": 209,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/substitution/services/substitution.service.light-mode.test.ts",
       "risk": "high",
@@ -64130,7 +64130,7 @@
         "backend/src/modules/substitution/types/substitution.types.ts"
       ],
       "kind": "service",
-      "loc": 472,
+      "loc": 494,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/substitution/services/substitution.service.ts",
       "risk": "high",
@@ -106227,11 +106227,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "6d192e1204442cb6bce4b9a62994eaf25c9917b8a5ba806ff74dccb68ee9f638",
+      "audit/registry/files.json": "43c2d410db8263571dbbf3e76ce03d1de8e3ca68948e7c305cab706962adced6",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "7a774aa80f53b1c05683d736bef99decef0b464f7484f81bead6c3d391b567e6"
     },
-    "sotFingerprint": "aff2e4686246"
+    "sotFingerprint": "7cf49cead3bb"
   },
   "runtime": [
     {
