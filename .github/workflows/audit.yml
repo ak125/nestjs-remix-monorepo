@@ -275,6 +275,9 @@ jobs:
         continue-on-error: true
         run: npm run audit:knip
 
+      - name: Baseline comparator — failure and report contract tests (BLOCKING)
+        run: npm run audit:baseline:test
+
       - name: 🚨 Baseline regression gate (BLOCKING)
         if: always()
         run: npm run audit:baseline
