@@ -377,6 +377,15 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # audit/registry/canonical.json (projection régénérée du Repository Control Plane) :
+  # rattachement décidé par l'owner le 2026-11-04, transcrit sous mandat (PR #1958,
+  # réserve R-1). Entrée identique à celle de la PR #1956, lot distinct. Glob exact,
+  # sans couverture large → D15, même risque que .claude/knowledge/** et audit/cleanup/**.
+  - glob: audit/registry/canonical.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: audit/baselines/**
     domain: D15
     owner: '@ak125'
