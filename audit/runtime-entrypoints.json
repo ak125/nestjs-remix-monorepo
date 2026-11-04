@@ -2994,7 +2994,9 @@
       "scripts/ci/prod-ssr-probe.test.mjs",
       "scripts/ci/verify-size-limit-initial-load.mjs",
       "scripts/ci/verify-size-limit-initial-load.test.mjs",
+      "scripts/cleanup/audit-compare-baseline.integration.test.js",
       "scripts/cleanup/audit-compare-baseline.js",
+      "scripts/cleanup/audit-compare-baseline.test.js",
       "scripts/cleanup/validate-before-delete.test.ts",
       "scripts/generate-specs.sh",
       "scripts/governance/__tests__/build-command-center-snapshot.test.ts",
@@ -3045,7 +3047,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1635,
+  "runtime_files_count": 1637,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4632,7 +4634,9 @@
     "scripts/ci/prod-ssr-probe.test.mjs",
     "scripts/ci/verify-size-limit-initial-load.mjs",
     "scripts/ci/verify-size-limit-initial-load.test.mjs",
+    "scripts/cleanup/audit-compare-baseline.integration.test.js",
     "scripts/cleanup/audit-compare-baseline.js",
+    "scripts/cleanup/audit-compare-baseline.test.js",
     "scripts/cleanup/validate-before-delete.test.ts",
     "scripts/generate-specs.sh",
     "scripts/governance/__tests__/build-command-center-snapshot.test.ts",
