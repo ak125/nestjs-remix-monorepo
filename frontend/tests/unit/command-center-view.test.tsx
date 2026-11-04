@@ -307,6 +307,22 @@ it("sorts all 24 cards by business number and distinguishes human responsibility
   expect(within(cards[23]).getByRole("progressbar")).toBeTruthy();
   expect(screen.queryByRole("button")).toBeNull();
 });
+it("shows the diagnostic KPI on Product and no KPI on Technical Expertise", () => {
+  render(<ModuleGrid data={response()} />);
+  const cards = screen.getAllByRole("article");
+  const expertise = cards[10];
+  expect(
+    within(expertise).getByText("Expertise technique automobile"),
+  ).toBeTruthy();
+  expect(within(expertise).queryByText(/^KPI :/)).toBeNull();
+  expect(within(expertise).getByRole("progressbar")).toBeTruthy();
+  const product = cards[19];
+  expect(within(product).getByText("Produit & Expérience Client")).toBeTruthy();
+  expect(within(product).getByText("KPI : diagnostic_to_product")).toBeTruthy();
+  expect(
+    within(product).getByText(/activité humaine non évaluée/),
+  ).toBeTruthy();
+});
 it("profile links use the fixed repository, full SHA and exact anchor", () => {
   render(<ModuleGrid data={response()} />);
   const links = screen.getAllByRole("link");

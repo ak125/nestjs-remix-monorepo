@@ -458,10 +458,27 @@ describe('buildDepartmentReports — Vue 5', () => {
     expect(r.probable_cause).not.toBe(CONSTAT);
   });
 
-  it('aucun KPI primaire déclaré → IMPROVE, la carte est à compléter par l’owner', () => {
-    const r = one(dept('x', 'P2', null));
-    expect(r.kpi).toMatchObject({ id: null, measure: 'SANS_PRODUCTEUR' });
+  it('aucun KPI primaire déclaré → IMPROVE, la fiche est à qualifier par l’owner, sans KPI imposé', () => {
+    const hybrid = {
+      ...dept('x', 'P2', null),
+      operating_mode: 'hybrid' as const,
+    };
+    const r = one(hybrid);
+    expect(r.kpi).toMatchObject({
+      id: null,
+      measure: 'SANS_PRODUCTEUR',
+      value: null,
+    });
+    expect(r.score).toBe('NON_MESURE');
+    expect(r.decision).toBe('IMPROVE');
     expect(r.owner_go_required).toBe(true);
+    expect(r.gap).toBe(
+      'Aucun KPI primaire déclaré dans la carte opérationnelle.',
+    );
+    expect(r.next_evidence).toMatch(
+      /fiche de « X » le résultat attendu, sa procédure et la preuve adaptée/,
+    );
+    expect(r.next_evidence).not.toMatch(/KPI|producteur|Déclarer/);
   });
 
   it('jamais CREATE ni PAUSE', () => {
