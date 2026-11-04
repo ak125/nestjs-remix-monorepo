@@ -540,6 +540,11 @@
       "reason": "Read-only optimization (migrated from P2)"
     },
     {
+      "name": "get_substitution_status",
+      "volatility": "STABLE",
+      "reason": "Gamme status read-path (SECURITY DEFINER) — _meta + gamme of get_substitution_data only, for the R1 404/410 check (light mode); the full RPC exceeds the loader's 3 s abort"
+    },
+    {
       "name": "get_subsystem_components",
       "volatility": "STABLE",
       "reason": "SELECT only"

@@ -34398,7 +34398,7 @@
         "backend/src/modules/substitution/types/substitution.types.ts"
       ],
       "kind": "test",
-      "loc": 128,
+      "loc": 209,
       "owner": "__unassigned__",
       "path": "backend/src/modules/substitution/services/substitution.service.light-mode.test.ts",
       "risk": "low",
@@ -34428,7 +34428,7 @@
         "backend/src/modules/substitution/types/substitution.types.ts"
       ],
       "kind": "service",
-      "loc": 472,
+      "loc": 494,
       "owner": "__unassigned__",
       "path": "backend/src/modules/substitution/services/substitution.service.ts",
       "risk": "low",
