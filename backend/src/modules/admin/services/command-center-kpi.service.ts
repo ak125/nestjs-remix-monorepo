@@ -39,7 +39,7 @@ import type {
  *     motifs des annulations après paiement deviennent le constat du rapport
  *     (summarizeCancelReasons) ;
  *   - `metric_reliability` (Data), `pages_generating_atc` (Pages & SEO),
- *     `diagnostic_to_product` (Diagnostic) : règles et définitions dans
+ *     `diagnostic_to_product` (Produit) : règles et définitions dans
  *     command-center-action-rules/department-kpi.rules.ts. Lecture seule du verdict
  *     TrackingIntegrityService et de __seo_event_log (session, date, page source).
  *

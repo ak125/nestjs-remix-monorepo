@@ -245,7 +245,8 @@ export function buildDepartmentReports(input: {
         risk: 'FAIBLE',
         // la carte opérationnelle est modifiable par l'owner seul
         owner_go_required: true,
-        next_evidence: `Déclarer le KPI primaire de « ${d.label} » dans ${OPERATING_MAP}.`,
+        // l'absence de mesure mécanique est un état admis : rien n'impose d'en créer une
+        next_evidence: `Qualifier dans la fiche de « ${d.label} » le résultat attendu, sa procédure et la preuve adaptée.`,
       };
     }
     if (!measured) {
