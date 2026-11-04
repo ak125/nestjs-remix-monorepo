@@ -42,7 +42,7 @@ Aucun brief avec `business_unit IN ('ECOMMERCE','HYBRID')` et `channel IN ('emai
 
 ## Sortie en table DB, pas en `.md` flottants
 
-Tout brief = ligne dans `__marketing_brief` (JSONB structuré). **Jamais** de `.md` créé hors workspaces/marketing/.claude/agents/ par un agent. Les outputs `.md` sont réservés aux agents/skills/rules eux-mêmes (méta-données du workspace), pas aux livrables marketing.
+Les briefs opérationnels restent enregistrés dans `__marketing_brief` ; aucun fichier Markdown ne les remplace. Les textes, scripts éditoriaux, recherches et preuves préparatoires peuvent être conservés dans le dossier existant du lot, dans les limites du mandat et des destinations autorisées. Ils ne constituent pas un brief opérationnel approuvé. La remise relie la version éditoriale retenue au brief concerné, sans second suivi ni remplacement des enregistrements et validations exigés.
 
 ## Anti-patterns marketing (en plus des Q1-Q4 monorepo)
 
