@@ -1,5 +1,5 @@
 /**
- * KPI primaires Data / Pages & SEO / Diagnostic — règles pures
+ * KPI primaires Data / Pages & SEO / Produit — règles pures
  * (department-kpi.rules.ts).
  *
  * Garanties :
@@ -195,7 +195,7 @@ describe('firstVisitBySession + countDiagnosticToProduct', () => {
     ).toEqual({
       id: 'diagnostic_to_product',
       label:
-        'Diagnostic — sessions du diagnostic qui voient ensuite un produit (30 j)',
+        'Produit — sessions du diagnostic qui voient ensuite un produit (30 j)',
       value: 16,
       unit: '/72',
       status: 'UNKNOWN',
