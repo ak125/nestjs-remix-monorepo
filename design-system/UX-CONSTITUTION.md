@@ -26,6 +26,8 @@
 Inter, Roboto, Arial, Helvetica, Open Sans, system-ui, -apple-system
 ```
 
+Pour les interfaces AutoMecanik utilisant les tokens natifs, `system-ui` et `-apple-system` restent interdits comme familles principales de marque. Leur présence comme polices de secours après la famille principale approuvée est autorisée dans les piles heading/body/sans existantes. Cette précision ne change ni les familles principales, ni les valeurs des tokens, ni les autres interdictions.
+
 #### FORBIDDEN Colors
 ```
 #7C3AED, #8B5CF6, #A78BFA (generic purple gradients)
