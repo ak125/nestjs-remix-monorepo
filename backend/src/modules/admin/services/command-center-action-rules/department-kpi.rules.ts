@@ -1,5 +1,5 @@
 /**
- * KPI primaires mesurés des départements Data, Pages & SEO et Diagnostic
+ * KPI primaires mesurés des départements Data, Pages & SEO et Produit
  * (`kpi_primary` de .spec/00-canon/ai-registry/agent-operating-map.yaml) —
  * règles pures. Les lectures vivent dans CommandCenterKpiService.
  *
@@ -13,13 +13,16 @@
  *     Le ratio vue→panier du scorecard n'est pas repris : `r2_view` compte une
  *     session par vue depuis juillet (~33 000 vues pour 32 700 sessions sur 30 j,
  *     relevé du 2026-10-05), un dénominateur qui ne mesure plus des visiteurs.
- *   - `diagnostic_to_product` (Diagnostic) : sessions passées par le diagnostic
+ *   - `diagnostic_to_product` (Produit, porteur de l'outil de diagnostic depuis
+ *     l'organisation du 2026-11-04 ; l'Expertise technique automobile n'a pas de
+ *     KPI propre) : sessions passées par le diagnostic
  *     (`diag_hub_view`) qui voient ensuite une page produit (`r2_view`, même
  *     `session_id`, après la première visite du diagnostic).
  *
- * Statut : Pages & SEO et Diagnostic n'ont aucune cible déclarée. Une mesure
- * positive reste UNKNOWN avec sa valeur ; zéro conserve l'alerte CRITICAL,
- * sauf Diagnostic sans session exploitable : UNKNOWN, échantillon vide.
+ * Statut : `pages_generating_atc` et `diagnostic_to_product` n'ont aucune cible
+ * déclarée. Une mesure positive reste UNKNOWN avec sa valeur ; zéro conserve
+ * l'alerte CRITICAL, sauf `diagnostic_to_product` sans session exploitable :
+ * UNKNOWN, échantillon vide.
  * Qualifier leur performance exige un critère validé par l'owner. Data reste
  * évalué par ses contrôles de fiabilité. `certified` qualifie la lecture, pas
  * la performance. La tendance passe par la fenêtre précédente (« Évolution »).
@@ -168,7 +171,7 @@ export function toDiagnosticToProductKpi(
   windowDays: number,
 ): LiveExecutiveKpi {
   const id = 'diagnostic_to_product';
-  const label = `Diagnostic — sessions du diagnostic qui voient ensuite un produit (${windowDays} j)`;
+  const label = `Produit — sessions du diagnostic qui voient ensuite un produit (${windowDays} j)`;
   if (!counts) return unknownKpi(id, label);
   return {
     id,
