@@ -11,6 +11,12 @@
  * Exit 0: valid analyses within thresholds; 1: regression; 2: unavailable or
  * invalid evidence. Invalid evidence never produces metrics or refreshes.
  *
+ * Madge runs through its API in a bounded child process, so the analysed graph
+ * is checked: a root without any analysed file, or a file madge's parser
+ * rejects, is invalid evidence. As in the baseline, the cycle graph only holds
+ * imports madge resolves without a tsconfig; aliases (~/, @common/...) and
+ * asset imports stay outside it and are counted on stderr.
+ *
  * Usage:
  *   node scripts/cleanup/audit-compare-baseline.js            # run, print, exit
  *   node scripts/cleanup/audit-compare-baseline.js --json     # machine-readable
@@ -103,10 +109,44 @@ function parseKnip(report) {
   return counts;
 }
 
+const MADGE_ROOTS = ['backend/src', 'frontend/app'];
+
+// Madge's CLI prints a cycle-free graph when it analysed no file, and
+// dependency-tree silently keeps a file its parser rejects with no dependencies
+// (madge's "skipped" warnings only list unresolved imports). This worker runs
+// the same analysis as `madge --extensions ts,tsx` and reports the evidence the
+// parser below needs to refuse both cases.
+const MADGE_WORKER = `
+const path = require('path');
+const [madgeDir, ...roots] = process.argv.slice(1);
+const treeDir = path.dirname(require.resolve('dependency-tree', { paths: [madgeDir] }));
+const precinct = require(require.resolve('precinct', { paths: [treeDir] }));
+require(madgeDir)(roots, { baseDir: process.cwd(), fileExtensions: ['ts', 'tsx'] }).then((result) => {
+  const graph = result.obj();
+  const unparsable = [];
+  // A rejected file has no dependencies: parse those again as dependency-tree does.
+  for (const [file, deps] of Object.entries(graph)) {
+    if (deps.length > 0) continue;
+    try { precinct.paperwork(path.resolve(file), { includeCore: false }); }
+    catch (error) { unparsable.push(file + ': ' + String(error.message).split('\\n')[0]); }
+  }
+  process.stdout.write(JSON.stringify({ files: Object.keys(graph), cycles: result.circular(),
+    unparsable, unresolved: result.warnings().skipped }));
+});
+`;
+
 function parseMadge(report) {
-  requireShape(Array.isArray(report) && report.every((cycle) =>
-    Array.isArray(cycle) && cycle.length > 0 && cycle.every(isString)), 'madge must return an array of cycles');
-  return { cycles: report.length };
+  requireShape(isRecord(report) && [report.files, report.unparsable, report.unresolved].every((list) =>
+    Array.isArray(list) && list.every(isString)), 'madge needs files, unparsable and unresolved lists');
+  const files = new Set(report.files);
+  requireShape(Array.isArray(report.cycles) && report.cycles.every((cycle) => Array.isArray(cycle) &&
+    cycle.length > 0 && cycle.every((file) => files.has(file))), 'madge cycles must list analysed files');
+  for (const root of MADGE_ROOTS) {
+    requireShape(report.files.some((file) => file.startsWith(`${root}/`)), `madge analysed no file under ${root}`);
+  }
+  requireShape(report.unparsable.length === 0,
+    `madge could not parse ${report.unparsable.length} file(s): ${report.unparsable.slice(0, 5).join('; ')}`);
+  return { cycles: report.cycles.length };
 }
 
 function parseDepcruise(report) {
@@ -152,10 +192,12 @@ const AUDITS = {
     exit: () => 0,
   },
   madge: {
-    entry: 'madge/bin/cli.js',
-    args: ['--circular', '--json', '--extensions', 'ts,tsx', 'backend/src', 'frontend/app'],
+    entry: 'madge',
+    script: MADGE_WORKER,
+    args: MADGE_ROOTS,
     parse: parseMadge,
-    exit: (counts) => counts.cycles > 0 ? 1 : 0,
+    exit: () => 0,
+    note: (report) => `${report.files.length} files analysed, ${report.unresolved.length} unresolved imports outside the cycle graph`,
   },
   // The JSON reporter exits 0 even with rule violations; the metrics gate below
   // decides regressions. A non-zero exit from this reporter is a tool failure.
@@ -178,17 +220,19 @@ function runAudit(name, { root = REPO_ROOT, execute = spawnSync } = {}) {
   const audit = AUDITS[name];
   const entry = path.join(root, 'node_modules', audit.entry);
   // Invoke only installed tools, without a shell or npx's download fallback.
-  const result = execute(audit.native ? entry : process.execPath,
-    audit.native ? audit.args : [entry, ...audit.args], {
-      cwd: root, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'],
-      maxBuffer: 64 * 1024 * 1024, timeout: 180_000,
-    });
+  const args = audit.native ? audit.args : [...(audit.script ? ['-e', audit.script] : []), entry, ...audit.args];
+  const result = execute(audit.native ? entry : process.execPath, args, {
+    cwd: root, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'],
+    maxBuffer: 64 * 1024 * 1024, timeout: 180_000,
+  });
   try {
     if (result.error) die(`process failed: ${result.error.message}`);
     if (result.signal || !Number.isInteger(result.status)) die(`process interrupted (${result.signal || 'no exit status'})`);
     if (![0, 1].includes(result.status)) die(`unexpected exit status ${result.status}`);
-    const counts = audit.parse(JSON.parse(result.stdout));
+    const report = JSON.parse(result.stdout);
+    const counts = audit.parse(report);
     if (result.status !== audit.exit(counts)) die(`exit status ${result.status} disagrees with the report`);
+    if (audit.note) process.stderr.write(`[audit-compare] ${name}: ${audit.note(report)}\n`);
     return counts;
   } catch (error) {
     const detail = result.stderr?.trim().slice(0, 2000);

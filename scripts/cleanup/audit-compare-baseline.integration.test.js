@@ -58,9 +58,71 @@ test('installed analysers: findings, clean reports, legacy count parity and brok
     assert.throws(() => runAudit('depcruise', { root }), /depcruise:/);
     write('sgconfig.yml', 'ruleDirs: [');
     assert.throws(() => runAudit('ast_grep', { root }), /ast_grep:/);
+    // Neither a file madge's parser rejects nor a root without analysed files
+    // may be read as a cycle-free graph.
+    write('backend/src/a.ts', "import './b';\n");
+    write('backend/src/b.ts', "import './a';\nexport const b = = ;\n");
+    assert.throws(() => runAudit('madge', { root }), /madge: invalid report: madge could not parse 1 file\(s\): backend\/src\/b\.ts/);
+    fs.unlinkSync(path.join(root, 'backend/src/b.ts'));
+    write('frontend/app/README.md', 'no TypeScript here\n');
+    fs.unlinkSync(path.join(root, 'frontend/app/entry.ts'));
+    assert.throws(() => runAudit('madge', { root }), /madge: invalid report: madge analysed no file under frontend\/app/);
+    fs.unlinkSync(path.join(root, 'backend/src/a.ts'));
+    assert.throws(() => runAudit('madge', { root }), /madge: invalid report: madge analysed no file under backend\/src/);
     // A missing input directory must not be interpreted as a cycle-free graph.
     fs.renameSync(path.join(root, 'backend/src'), path.join(root, 'backend/moved'));
     assert.throws(() => runAudit('madge', { root }), /madge:/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('comparator CLI with installed analysers: madge cycles count, invalid madge evidence exits 2 without metrics or refresh', { timeout: 120_000 }, () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'audit-comparator-cli-'));
+  const write = (file, content) => {
+    fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    fs.writeFileSync(path.join(root, file), content);
+  };
+  const baselinePath = path.join(root, 'audit-reports/phase0-baseline.json');
+  const comparator = path.join(root, 'scripts/cleanup/audit-compare-baseline.js');
+  const run = (...args) => spawnSync(process.execPath, [comparator, ...args], { cwd: root, encoding: 'utf8', timeout: 60_000 });
+  try {
+    fs.symlinkSync(path.join(toolsRoot, 'node_modules'), path.join(root, 'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
+    write('scripts/cleanup/audit-compare-baseline.js', fs.readFileSync(path.join(__dirname, 'audit-compare-baseline.js')));
+    write('audit-reports/phase0-baseline.json', fs.readFileSync(path.join(__dirname, '../../audit-reports/phase0-baseline.json')));
+    write('package.json', JSON.stringify({ name: 'audit-comparator-cli-fixture', version: '1.0.0', private: true }));
+    write('knip.json', JSON.stringify({ entry: ['backend/src/a.ts', 'frontend/app/entry.ts'], project: ['**/*.ts'] }));
+    write('.dependency-cruiser.cjs', 'module.exports = { forbidden: [] };\n');
+    write('sgconfig.yml', 'ruleDirs:\n  - rules\n');
+    write('rules/debug.yml', 'id: debug\nlanguage: TypeScript\nseverity: error\nrule:\n  pattern: debugger\n');
+    write('backend/src/a.ts', "import { b } from './b';\nexport const a = (): number => b();\n");
+    write('backend/src/b.ts', "import { a } from './a';\nexport const b = (): number => a();\n");
+    write('frontend/app/entry.ts', "console.info('entry');\n");
+    const baselineBytes = fs.readFileSync(baselinePath);
+
+    const valid = run('--json');
+    assert.equal(valid.status, 0, valid.stderr);
+    assert.equal(JSON.parse(valid.stdout).current.madge.cycles, 1);
+    assert.match(valid.stderr, /madge: 3 files analysed, 0 unresolved imports outside the cycle graph/);
+
+    const invalid = {
+      'unparsable file': [() => write('backend/src/b.ts', "import { a } from './a';\nexport const b = = ;\n"), /madge: invalid report: madge could not parse 1 file\(s\): backend\/src\/b\.ts/],
+      'empty root': [() => { write('backend/src/b.ts', 'export const b = (): number => 1;\n'); fs.unlinkSync(path.join(root, 'frontend/app/entry.ts')); }, /madge: invalid report: madge analysed no file under frontend\/app/],
+    };
+    for (const [scenario, [mutate, message]] of Object.entries(invalid)) {
+      mutate();
+      const json = run('--json');
+      assert.equal(json.status, 2, `${scenario}: ${json.stderr}`);
+      const data = JSON.parse(json.stdout);
+      assert.equal(data.failed, true, scenario);
+      assert.match(data.error, message, scenario);
+      assert.equal(data.current, undefined, scenario);
+      const refresh = run('--refresh');
+      assert.equal(refresh.status, 2, `${scenario}: ${refresh.stderr}`);
+      assert.match(refresh.stderr, message, scenario);
+      assert.doesNotMatch(refresh.stdout, /baseline refreshed/, scenario);
+      assert.ok(fs.readFileSync(baselinePath).equals(baselineBytes), `${scenario}: baseline must stay byte-identical`);
+    }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

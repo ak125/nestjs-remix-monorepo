@@ -20,7 +20,8 @@ const depReport = (severities = []) => ({
   },
 });
 const diagnostic = (severity) => ({ ruleId: 'fixture', file: 'a.ts', severity });
-const reports = { knip: { issues: [] }, madge: [], depcruise: depReport(), ast_grep: [] };
+const madgeReport = (values = {}) => ({ files: ['backend/src/a.ts', 'backend/src/b.ts', 'frontend/app/c.ts'], cycles: [], unparsable: [], unresolved: [], ...values });
+const reports = { knip: { issues: [] }, madge: madgeReport(), depcruise: depReport(), ast_grep: [] };
 const success = (report, status = 0) => ({ status, stdout: JSON.stringify(report), stderr: '', signal: null });
 
 // Exercise the actual CLI, including exit codes, --json and --refresh. Only the
@@ -44,7 +45,7 @@ function cli({ args = [], results = {}, baselineValue = baseline, missingDeps = 
     if (name === 'child_process') return { spawnSync: (command, argv, options) => {
       output.calls.push({ command, argv, options });
       if (command === 'git') return gitFailure ? { status: 128, stdout: '', stderr: 'not a repository' } : { status: 0, stdout: 'cf7992d04\n' };
-      const entry = command === process.execPath ? argv[0] : command;
+      const entry = command === process.execPath ? argv[argv[0] === '-e' ? 2 : 0] : command;
       const name = entry.includes('dependency-cruiser') ? 'depcruise' : entry.includes('ast-grep') ? 'ast_grep' : entry.includes('madge') ? 'madge' : 'knip';
       return results[name] || success(reports[name]);
     } };
@@ -123,11 +124,42 @@ test('Knip missing category, malformed symbols, duplicate files and unknown shap
   ]) assert.throws(() => parseKnip(report), /invalid report/);
 });
 
-test('Madge accepts genuine cycles with exit 1 but rejects mismatched exit 0', () => {
-  const report = [['a.ts', 'b.ts'], ['self.ts']];
-  assert.deepEqual(runAudit('madge', { execute: () => success(report, 1) }), { cycles: 2 });
-  assert.throws(() => runAudit('madge', { execute: () => success(report) }), /disagrees/);
-  for (const bad of [[[]], [{}], [[null]]]) assert.throws(() => parseMadge(bad), /invalid report/);
+test('Madge counts cycles of analysed files; unresolved imports stay outside the graph', () => {
+  const report = madgeReport({ cycles: [['backend/src/a.ts', 'backend/src/b.ts'], ['frontend/app/c.ts']], unresolved: ['~/alias'] });
+  assert.deepEqual(runAudit('madge', { execute: () => success(report) }), { cycles: 2 });
+  assert.throws(() => runAudit('madge', { execute: () => success(report, 1) }), /disagrees/);
+  for (const bad of [
+    [['backend/src/a.ts', 'backend/src/b.ts']],
+    madgeReport({ cycles: [[]] }),
+    madgeReport({ cycles: [[null]] }),
+    madgeReport({ cycles: [['backend/src/elsewhere.ts']] }),
+    madgeReport({ files: undefined }),
+    madgeReport({ unparsable: undefined }),
+    madgeReport({ unresolved: [null] }),
+  ]) assert.throws(() => parseMadge(bad), /invalid report/);
+});
+
+test('Madge without analysed files or with a file its parser rejects is invalid, never zero cycles', () => {
+  const invalid = {
+    'empty graph': [madgeReport({ files: [] }), /analysed no file under backend\/src/],
+    'empty root': [madgeReport({ files: ['backend/src/a.ts'] }), /analysed no file under frontend\/app/],
+    'unparsable file': [madgeReport({ unparsable: ['backend/src/b.ts: Expression expected.'] }), /could not parse 1 file\(s\): backend\/src\/b\.ts/],
+  };
+  for (const [scenario, [report, message]] of Object.entries(invalid)) {
+    for (const args of [[], ['--strict'], ['--json'], ['--refresh']]) {
+      const observed = cli({ args, results: { madge: success(report) } });
+      assert.equal(observed.status, 2, scenario);
+      assert.equal(observed.writes.length, 0, scenario);
+      assert.match(observed.stderr, message, scenario);
+      assert.doesNotMatch(observed.stdout, /OK to merge|improved|baseline refreshed/, scenario);
+      if (args.includes('--json')) {
+        const json = JSON.parse(observed.stdout);
+        assert.equal(json.failed, true, scenario);
+        assert.match(json.error, message, scenario);
+        assert.equal(json.current, undefined, scenario);
+      }
+    }
+  }
 });
 
 test('dependency-cruiser JSON uses exit 0 for findings; validates summaries and excludes ignored debt', () => {
@@ -176,7 +208,9 @@ test('valid findings remain subject to baseline thresholds; regressions exit 1',
 });
 
 test('valid findings exit codes do not turn ordinary baseline debt into tool failures', () => {
-  assert.equal(cli({ results: { madge: success([['a.ts', 'b.ts']], 1) } }).status, 0);
+  const observed = cli({ results: { madge: success(madgeReport({ cycles: [['backend/src/a.ts', 'backend/src/b.ts']], unresolved: ['~/alias'] })) } });
+  assert.equal(observed.status, 0);
+  assert.match(observed.stderr, /madge: 3 files analysed, 1 unresolved imports outside the cycle graph/);
   // A genuine new blocking rule finding is a regression (1), not unavailable evidence (2).
   assert.equal(cli({ results: { ast_grep: success([diagnostic('error')], 1) } }).status, 1);
 });
