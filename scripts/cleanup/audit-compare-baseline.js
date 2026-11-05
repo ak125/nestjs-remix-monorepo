@@ -17,6 +17,10 @@
  * imports madge resolves without a tsconfig; aliases (~/, @common/...) and
  * asset imports stay outside it and are counted on stderr.
  *
+ * Knip resolves those aliases through the tsconfig paths, so an import knip
+ * cannot resolve is a broken import: knip.unresolved_imports is compared like
+ * the other knip counts, with a zero threshold in the baseline.
+ *
  * Usage:
  *   node scripts/cleanup/audit-compare-baseline.js            # run, print, exit
  *   node scripts/cleanup/audit-compare-baseline.js --json     # machine-readable
@@ -87,6 +91,7 @@ function parseKnip(report) {
     unused_dev_dependencies: 'devDependencies', unlisted_dependencies: 'unlisted',
     unlisted_binaries: 'binaries', unused_exports: 'exports',
     unused_types: 'types', duplicate_exports: 'duplicates',
+    unresolved_imports: 'unresolved',
   };
   const counts = Object.fromEntries(Object.keys(fields).map((key) => [key, 0]));
   const files = new Set();
@@ -268,6 +273,7 @@ function computeDelta(current, baseline, thresholds, strict) {
   check('knip.unused_types', current.knip.unused_types, baseline.knip.unused_types, 'unused_types_delta');
   check('knip.unused_dependencies', current.knip.unused_dependencies, baseline.knip.unused_dependencies, 'unused_dependencies_delta');
   check('knip.duplicate_exports', current.knip.duplicate_exports, baseline.knip.duplicate_exports, 'duplicate_exports_delta');
+  check('knip.unresolved_imports', current.knip.unresolved_imports, baseline.knip.unresolved_imports, 'unresolved_imports_delta');
   check('madge.cycles', current.madge.cycles, baseline.madge.cycles, 'cycles_delta');
   check('depcruise.violations', current.depcruise.violations, baseline.depcruise.violations, 'depcruise_violations_delta');
   check('depcruise.errors', current.depcruise.errors, baseline.depcruise.errors, 'depcruise_errors_delta');
