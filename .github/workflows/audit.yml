@@ -84,6 +84,15 @@ jobs:
         # container temp-file write from ever coming back.
         run: npm run test:prod-ssr-probe
 
+      - name: 🌐 PROD Caddy stays up during a deploy — behavioural proof vs stubbed docker (BLOCKING)
+        # prod-caddy-config.sh runs ONLY in deploy-prod.yml, at tag time. The PROD
+        # deploy of 2026-11-05 stopped Caddy with the app: ~20 s of errors. This
+        # executes the script against a stubbed docker (Caddyfile unchanged, changed,
+        # invalid, not yet loaded, Caddy absent or restarting) and asserts that
+        # deploy-prod.yml calls it past the point of no return, before the app stops,
+        # and that no stop or rm names the Caddy container any more.
+        run: node --test scripts/ci/prod-caddy-config.test.mjs
+
       - name: 🔭 PROD observation report — behavioural proof vs stubbed docker (BLOCKING)
         # prod-observation-report.mjs runs ONLY in prod-smoke-tests.yml, on the PROD
         # host, where its verdict is all anyone sees. This drives it against a stubbed
