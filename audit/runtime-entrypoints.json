@@ -2858,6 +2858,8 @@
       "backend/supabase/migrations/20261030_get_substitution_status_definer_read.sql",
       "backend/supabase/migrations/20261031_accents_protected_segments.down.sql",
       "backend/supabase/migrations/20261031_accents_protected_segments.sql",
+      "backend/supabase/migrations/20261105_gamme_page_cached_volatile.down.sql",
+      "backend/supabase/migrations/20261105_gamme_page_cached_volatile.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3049,7 +3051,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1639,
+  "runtime_files_count": 1641,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4347,6 +4349,8 @@
     "backend/supabase/migrations/20261030_get_substitution_status_definer_read.sql",
     "backend/supabase/migrations/20261031_accents_protected_segments.down.sql",
     "backend/supabase/migrations/20261031_accents_protected_segments.sql",
+    "backend/supabase/migrations/20261105_gamme_page_cached_volatile.down.sql",
+    "backend/supabase/migrations/20261105_gamme_page_cached_volatile.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
