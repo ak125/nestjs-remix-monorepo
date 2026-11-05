@@ -1747,3 +1747,14 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # get_gamme_page_data_cached passe de STABLE à VOLATILE : en cas de cache
+  # absent ou périmé, elle reconstruit __gamme_page_cache (écriture), ce que
+  # PostgREST refuse sous STABLE (25006) ; la page gamme répondait alors 404 au
+  # lieu de 410 (PR #1960). Consommateur GammeRpcService (gamme-rest, D1).
+  # Aucune table ni donnée touchée. Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261105_gamme_page_cached_volatile*.sql
+    domain: D1
+    owner: '@ak125/catalog-team'
+    sourceConfidence: high
+    risk: medium
