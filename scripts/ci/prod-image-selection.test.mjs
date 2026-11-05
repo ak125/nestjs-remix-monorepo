@@ -35,19 +35,22 @@ function stepRun(name) {
 const gate = stepRun("🔒 Safety gate");
 const PONR = 'echo "DEPLOY_STARTED=1" >> "$GITHUB_ENV"';
 
-// The Deploy step from its last check before the point of no return up to the
-// stop of the running container: the only place :production may move.
+// The Deploy step from its last check before the point of no return up to its
+// first runtime change (the Caddy config sync, then the app stop): the only
+// place :production may move.
 function promotionBlock() {
   const deploy = stepRun("🚀 Deploy to PROD");
   const start = deploy.indexOf('if [[ ! "${PROMOTED_IMAGE_ID:-}"');
-  const end = deploy.indexOf("docker stop nestjs-remix-caddy");
+  const end = deploy.indexOf(
+    'bash "$GITHUB_WORKSPACE/scripts/ci/prod-caddy-config.sh"',
+  );
   assert.ok(
     start >= 0 && start < deploy.indexOf(PONR),
     "the promoted ID must be checked before the point of no return",
   );
   assert.ok(
     end > deploy.indexOf(PONR),
-    "stop must follow the point of no return",
+    "the first runtime change (Caddy config sync) must follow the point of no return",
   );
   return deploy.slice(start, end);
 }
