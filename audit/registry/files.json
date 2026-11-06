@@ -71627,7 +71627,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 76,
+      "loc": 77,
       "owner": "__unassigned__",
       "path": "scripts/ci/preprod-image-proxy.test.mjs",
       "risk": "low",
