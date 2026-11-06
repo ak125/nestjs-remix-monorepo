@@ -54,6 +54,8 @@ test('PREPROD application cannot bypass the read-only database gateway', () => {
   assert.equal(gateway.ports, undefined);
   assert.equal(gateway.env_file, undefined);
   assert.equal(gateway.read_only, true);
+  // The gateway binds IPv4; Alpine wget resolves localhost to IPv6 first.
+  assert.deepEqual(gateway.healthcheck.test, ['CMD', 'wget', '-qO-', 'http://127.0.0.1:3000/__audit']);
   assert.deepEqual(gateway.networks, ['preprod-readonly', 'automecanik-preprod']);
   assert.ok(gateway.volumes.includes('./readonly-upstream.json:/run/preprod-readonly/upstream.json:ro'));
   for (const [name, service] of Object.entries(compose.services)) {

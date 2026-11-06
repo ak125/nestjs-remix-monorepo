@@ -124,7 +124,7 @@ services:
       - ./preprod-readonly-gateway.cjs:/run/preprod-readonly/gateway.cjs:ro
       - ./readonly-upstream.json:/run/preprod-readonly/upstream.json:ro
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/__audit"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/__audit"]
       interval: 10s
       timeout: 5s
       retries: 3

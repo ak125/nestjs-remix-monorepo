@@ -1300,7 +1300,7 @@ jobs:
         if: always()
         env:
           APP_CONTAINER: nestjs-remix-monorepo-preprod
-          CRON_STATE_DIR: /home/deploy/preprod/data/cron
+          CRON_STATE_DIR: /home/deploy/preprod/cron
           DEPLOY_URL: "http://localhost:3200"
           STARTUP_WAIT: "5"
         run: |
