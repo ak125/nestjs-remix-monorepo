@@ -71627,9 +71627,47 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 40,
+      "loc": 63,
       "owner": "__unassigned__",
       "path": "scripts/ci/preprod-image-proxy.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/preprod-readonly-gateway.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 254,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/preprod-readonly-gateway.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/preprod-readonly-gateway.test.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 226,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/preprod-readonly-gateway.test.cjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
