@@ -36,6 +36,20 @@ export function excludeR6GuideAchatUrls(urls: SitemapUrl[]): {
   return { kept, excludedCount: urls.length - kept.length };
 }
 
+/**
+ * Retire d'une liste les URLs déjà portées par un autre fichier du même index
+ * (une URL = un seul fichier). Comparaison sur la `<loc>` finale via `toLoc`
+ * (relative ou absolue). Fonction pure, ordre conservé.
+ */
+export function excludeUrlsOwnedElsewhere(
+  urls: SitemapUrl[],
+  ownedLocs: ReadonlySet<string>,
+  toLoc: (url: string) => string = (url) => url,
+): { kept: SitemapUrl[]; excludedCount: number } {
+  const kept = urls.filter((u) => !ownedLocs.has(toLoc(u.url)));
+  return { kept, excludedCount: urls.length - kept.length };
+}
+
 @Injectable()
 export class SitemapV10StaticService extends SupabaseBaseService {
   protected override readonly logger = new Logger(SitemapV10StaticService.name);
@@ -85,11 +99,15 @@ export class SitemapV10StaticService extends SupabaseBaseService {
    */
   async generateCategoriesSitemap(): Promise<string | null> {
     try {
+      // pg_level = '1' : même règle que le rendu R1, qui sert
+      // `noindex, nofollow` à toute gamme dont pg_level ≠ '1'
+      // (gamme-response-builder.service.ts, RÈGLE SEO G1/G2).
       const { data: gammes, error } = await this.supabase
         .from('pieces_gamme')
         .select('pg_alias, pg_id')
         .eq('pg_display', '1')
         .eq('pg_relfollow', '1')
+        .eq('pg_level', '1')
         .neq('pg_alias', '')
         .order('pg_alias');
 
@@ -126,8 +144,18 @@ export class SitemapV10StaticService extends SupabaseBaseService {
 
   /**
    * 🚗 Génère sitemap-vehicules.xml (marques + modèles + motorisations)
+   *
+   * Les URLs marque appartiennent à sitemap-brands.xml : elles sont retirées
+   * d'ici quand la même lecture les y place. `brandUrls` = résultat de
+   * `collectBrandUrls()` partagé par l'orchestrateur (une lecture par run) ;
+   * omis ⇒ lu ici. `unpublishedBrandUrls` = URLs marque lues mais non
+   * publiées (écriture de sitemap-brands.xml en échec) : ajoutées ici si
+   * absentes de la vue véhicules.
    */
-  async generateVehiculesSitemap(): Promise<string | null> {
+  async generateVehiculesSitemap(
+    brandUrls?: SitemapUrl[] | null,
+    unpublishedBrandUrls: SitemapUrl[] = [],
+  ): Promise<string | null> {
     try {
       interface VehiculeType {
         niveau: number;
@@ -145,30 +173,75 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
+      // count 0 (lecture saine) = vue vide : les URLs marque non publiées
+      // restent à écrire. count > 0 puis liste vide/absente = lecture en
+      // échec (fetchWithPagination journalise et rend [] sur erreur).
       const totalCount = count || 0;
       if (totalCount === 0) {
         this.logger.warn('⚠️ No vehicules found');
-        return null;
       }
 
       const vehicules =
-        await this.dataService.fetchWithPagination<VehiculeType>(
-          '__sitemap_vehicules',
-          'niveau, url, priority, changefreq',
-          totalCount,
-        );
+        totalCount === 0
+          ? []
+          : await this.dataService.fetchWithPagination<VehiculeType>(
+              '__sitemap_vehicules',
+              'niveau, url, priority, changefreq',
+              totalCount,
+            );
 
-      if (!vehicules || vehicules.length === 0) {
+      if (!Array.isArray(vehicules) || (totalCount > 0 && !vehicules.length)) {
         return null;
       }
 
-      const urls: SitemapUrl[] = vehicules.map((v) => ({
+      const allUrls: SitemapUrl[] = vehicules.map((v) => ({
         url: v.url,
         page_type: 'vehicule',
         changefreq: v.changefreq || 'monthly',
         priority: v.priority.toString(),
         last_modified_at: null,
       }));
+
+      // Source marque indisponible (≠ vide) : sitemap-brands.xml n'est pas
+      // écrit pour ce run, les URLs marque restent donc déclarées ici
+      // (comportement antérieur), sans répétition dans l'index.
+      const owned =
+        brandUrls === undefined ? await this.collectBrandUrls() : brandUrls;
+      if (owned === null) {
+        this.logger.error(
+          '❌ URLs marque indisponibles : sitemap-vehicules.xml garde les URLs marque (sitemap-brands.xml non écrit)',
+        );
+      }
+      const toLoc = (url: string) =>
+        url.startsWith('http') ? url : `${this.xmlService.BASE_URL}${url}`;
+      const { kept, excludedCount } = excludeUrlsOwnedElsewhere(
+        allUrls,
+        new Set((owned ?? []).map((b) => toLoc(b.url))),
+        toLoc,
+      );
+      // <loc> finale : une R7 absolue et un repli relatif peuvent coïncider ;
+      // la première occurrence (ordre de collecte) est gardée.
+      const present = new Set(kept.map((u) => toLoc(u.url)));
+      const urls = [
+        ...kept,
+        ...unpublishedBrandUrls.filter((b) => {
+          const loc = toLoc(b.url);
+          if (present.has(loc)) return false;
+          present.add(loc);
+          return true;
+        }),
+      ];
+      if (excludedCount > 0) {
+        this.logger.log(
+          `   🔀 sitemap-vehicules.xml: ${excludedCount} URL(s) marque laissée(s) à sitemap-brands.xml`,
+        );
+      }
+      if (urls.length === 0) {
+        this.logger.warn(
+          '⚠️ sitemap-vehicules.xml non écrit : aucune URL propre après dédoublonnage',
+        );
+        return null;
+      }
 
       const filePath = path.join(
         this.xmlService.OUTPUT_DIR,
@@ -464,8 +537,40 @@ export class SitemapV10StaticService extends SupabaseBaseService {
   /**
    * Génère sitemap-brands.xml (R7 Brand pages)
    * Source primaire: __seo_r7_pages (PUBLISH), fallback: auto_marque
+   * `brandUrls` : même contrat que generateVehiculesSitemap.
    */
-  async generateBrandsSitemap(): Promise<string | null> {
+  async generateBrandsSitemap(
+    brandUrls?: SitemapUrl[] | null,
+  ): Promise<string | null> {
+    try {
+      const urls =
+        brandUrls === undefined ? await this.collectBrandUrls() : brandUrls;
+      if (urls === null) return null;
+
+      if (urls.length === 0) {
+        this.logger.warn('⚠️ No brand pages found for sitemap');
+        return null;
+      }
+
+      const filePath = path.join(
+        this.xmlService.OUTPUT_DIR,
+        'sitemap-brands.xml',
+      );
+      await this.xmlService.writeStaticSitemapFile(filePath, urls);
+      this.logger.log(`   ✅ sitemap-brands.xml: ${urls.length} URLs (R7)`);
+      return filePath;
+    } catch (error) {
+      this.logger.error(`❌ Failed to generate brands sitemap: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * URLs de pages marque portées par sitemap-brands.xml.
+   * Source primaire: __seo_r7_pages (PUBLISH), fallback: auto_marque.
+   * `null` = source indisponible (erreur), distinct d'une liste vide.
+   */
+  async collectBrandUrls(): Promise<SitemapUrl[] | null> {
     try {
       // 1. Fetch enriched brands from R7 pages
       const { data: r7Pages, error: r7Error } = await this.supabase
@@ -490,6 +595,11 @@ export class SitemapV10StaticService extends SupabaseBaseService {
       const urls: SitemapUrl[] = [];
 
       // Add R7 enriched pages with priority based on seo_decision
+      // Clé = <loc> finale (même règle que sitemap-v10-xml.service) : une
+      // canonical_url R7 absolue et le repli relatif de la même marque ne
+      // donnent qu'une entrée. Les `url` émises restent inchangées.
+      const toLoc = (url: string) =>
+        url.startsWith('http') ? url : `${this.xmlService.BASE_URL}${url}`;
       const r7Urls = new Set<string>();
       if (!r7Error && r7Pages) {
         for (const page of r7Pages) {
@@ -501,7 +611,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
             priority,
             last_modified_at: page.updated_at,
           });
-          r7Urls.add(page.canonical_url);
+          r7Urls.add(toLoc(page.canonical_url));
         }
       }
 
@@ -509,7 +619,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
       if (allBrands) {
         for (const brand of allBrands) {
           const brandUrl = `/constructeurs/${brand.marque_alias}-${brand.marque_id}.html`;
-          if (!r7Urls.has(brandUrl)) {
+          if (!r7Urls.has(toLoc(brandUrl))) {
             urls.push({
               url: brandUrl,
               page_type: 'brand',
@@ -521,20 +631,9 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         }
       }
 
-      if (urls.length === 0) {
-        this.logger.warn('⚠️ No brand pages found for sitemap');
-        return null;
-      }
-
-      const filePath = path.join(
-        this.xmlService.OUTPUT_DIR,
-        'sitemap-brands.xml',
-      );
-      await this.xmlService.writeStaticSitemapFile(filePath, urls);
-      this.logger.log(`   ✅ sitemap-brands.xml: ${urls.length} URLs (R7)`);
-      return filePath;
+      return urls;
     } catch (error) {
-      this.logger.error(`❌ Failed to generate brands sitemap: ${error}`);
+      this.logger.error(`❌ Failed to read brand URLs: ${error}`);
       return null;
     }
   }
