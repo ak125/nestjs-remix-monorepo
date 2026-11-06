@@ -67,11 +67,12 @@ describe('HubsPriorityService.generateEditorialHub — consolidation R6', () => 
   const ROWS: Record<string, Record<string, string>[]> = {
     __blog_advice: [{ ba_alias: 'embrayage' }],
     __blog_guide: [{ bg_alias: 'filtre-a-air' }],
-    __seo_gamme_conseil: [{ sgc_pg_alias: 'disque-de-frein' }],
+    __seo_gamme_conseil: [{ sgc_pg_id: '82' }],
+    pieces_gamme: [{ pg_id: '82', pg_alias: 'disque-de-frein' }],
     __sitemap_blog: [
-      { url: '/blog-pieces-auto/conseils/filtre-a-air' },
-      { url: '/blog-pieces-auto/guide-achat' },
-      { url: '/blog-pieces-auto/guide-achat/bougie' },
+      { map_alias: 'conseils/filtre-a-air' },
+      { map_alias: 'guide-achat' },
+      { map_alias: 'guide-achat/bougie' },
     ],
   };
 
@@ -93,7 +94,22 @@ describe('HubsPriorityService.generateEditorialHub — consolidation R6', () => 
       from(table: string) {
         tablesQueried.push(table);
         const builder = {
-          select: () => builder,
+          select: (columns: string) => {
+            for (const column of columns
+              .split(',')
+              .map((value) => value.trim())) {
+              if (!Object.hasOwn(ROWS[table][0], column)) {
+                throw new Error(`Unknown column ${table}.${column}`);
+              }
+            }
+            return builder;
+          },
+          in: async (column: string, values: string[]) => ({
+            data: (ROWS[table] ?? []).filter((row) =>
+              values.includes(row[column]),
+            ),
+            error: null,
+          }),
           limit: async () => ({ data: ROWS[table] ?? [], error: null }),
         };
         return builder;
@@ -121,6 +137,9 @@ describe('HubsPriorityService.generateEditorialHub — consolidation R6', () => 
   it('flag ON → aucun lien guide-achat, __blog_guide non lue', async () => {
     const { html, tablesQueried } = await runHub(true);
     expect(html).not.toContain('/guide-achat');
+    expect(html).toContain(
+      'https://example.test/blog-pieces-auto/conseils/disque-de-frein',
+    );
     expect(tablesQueried).not.toContain('__blog_guide');
     expect(html).toContain(
       'https://example.test/blog-pieces-auto/conseils/filtre-a-air',
