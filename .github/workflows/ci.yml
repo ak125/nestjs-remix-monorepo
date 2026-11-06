@@ -236,6 +236,9 @@ jobs:
       - name: Test PREPROD evidence gate (deploy-prod)
         run: node --test scripts/ci/prod-preprod-evidence.test.mjs scripts/ci/prod-image-selection.test.mjs
 
+      - name: Test PREPROD image routing projection
+        run: node --test scripts/ci/preprod-image-proxy.test.mjs
+
       - name: Test E2E rate-budget admission
         run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
 
@@ -870,6 +873,7 @@ jobs:
 
           # Copier docker-compose.preprod.yml
           cp $GITHUB_WORKSPACE/docker-compose.preprod.yml $PREPROD_DIR/
+          node "$GITHUB_WORKSPACE/scripts/ci/build-preprod-image-proxy.mjs" "$PREPROD_DIR"
 
           # Génération in-place .env.preprod minimal (anon key only, READ_ONLY=true).
           # Plus de copie de ~/production/.env (ALLOW_PROD_ENV_COPY supprimé).
@@ -955,8 +959,8 @@ jobs:
           )
 
           # Arreter anciens conteneurs
-          docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
-          docker rm nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
+          docker stop caddy-preprod imgproxy-preprod nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
+          docker rm caddy-preprod imgproxy-preprod nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
 
           # 🚨 Sentry secrets injection via SOPS exec-env wrapper.
           # docker-compose.preprod.yml declares `environment: - SENTRY_DSN` etc.

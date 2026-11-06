@@ -37,15 +37,8 @@ services:
     container_name: nestjs-remix-monorepo-preprod
     image: massdoc/nestjs-remix-monorepo:preprod
     restart: always
-    ports:
-      # Bind to loopback only. PREPROD is CI-only (READ_ONLY) and reached
-      # exclusively via http://localhost:3200 by the self-hosted runner (E2E
-      # Smoke / Lighthouse / health polls in ci.yml). Caddy never proxies :3200
-      # (PROD is monorepo_prod:3000), so nothing external needs it. Enforcing the
-      # canonical "3200 localhost only" guarantee at the Docker layer — instead of
-      # relying solely on a host firewall — closes the exposure that let an
-      # external scanner POST /_next straight to the port (Sentry 2026-06-25).
-      - "127.0.0.1:3200:3000"
+    # Ingress is owned by the dedicated PREPROD proxy below. Images never
+    # enter the SSR catch-all bucket shared by pages, .data and __manifest.
     volumes:
       # Sitemap output directory — writable, isolated from PROD's /var/www/sitemaps.
       # The path follows the canonical `/dev/volumes/nestjs-remix/preprod/*` pattern
@@ -63,6 +56,47 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+
+  # Generate Caddyfile.preprod and imgproxy.preprod.env with
+  # node scripts/ci/build-preprod-image-proxy.mjs <compose-directory> first.
+  caddy_preprod:
+    image: caddy:2.11-alpine
+    container_name: caddy-preprod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3200:3000"
+    volumes:
+      - ./Caddyfile.preprod:/etc/caddy/Caddyfile:ro
+    read_only: true
+    tmpfs:
+      - /data:size=8m
+      - /config:size=8m
+    mem_limit: 256m
+    cpus: 0.5
+    depends_on:
+      - monorepo_preprod
+      - imgproxy_preprod
+    networks:
+      - automecanik-preprod
+
+  imgproxy_preprod:
+    image: ghcr.io/imgproxy/imgproxy:v4.0.14@sha256:595fb82df2364e35711e4303c6de6ad412bbd93963db47be58354a4d52dd1f17
+    container_name: imgproxy-preprod
+    env_file:
+      - imgproxy.preprod.env
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1
+    healthcheck:
+      test: ["CMD", "imgproxy", "health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      automecanik-preprod:
+        aliases:
+          - imgproxy
 
   redis_preprod:
     image: redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
