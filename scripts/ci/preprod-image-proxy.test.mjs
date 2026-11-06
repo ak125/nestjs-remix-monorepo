@@ -49,6 +49,7 @@ test('PREPROD application cannot bypass the read-only database gateway', () => {
   assert.ok(app.environment.includes('SUPABASE_URL=http://readonly_preprod:3000'));
   assert.ok(app.environment.includes('SUPABASE_ANON_KEY=preprod-isolated-gateway-only'));
   assert.ok(app.environment.includes('READ_ONLY=true'));
+  assert.ok(app.environment.includes('SENTRY_DSN='));
   assert.deepEqual(compose.services.redis_preprod.networks, ['preprod-readonly']);
   const gateway = compose.services.readonly_preprod;
   assert.equal(gateway.ports, undefined);

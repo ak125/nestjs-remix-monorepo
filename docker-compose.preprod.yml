@@ -25,7 +25,9 @@ services:
       # 🚨 Sentry — values inherited from `sops exec-env secrets/sentry.dev.sops.env`
       # wrapping the deploy command. See docs/runbooks/sentry-vps-setup.md.
       # Variable name only (no `=value`) means "inherit from host process env".
-      - SENTRY_DSN
+      # The isolated app cannot reach external telemetry; avoid DNS starvation.
+      # Keep local container logs and the read-only gateway audit available.
+      - SENTRY_DSN=
       - VITE_SENTRY_DSN
       - SENTRY_ENVIRONMENT
       - SENTRY_TRACES_SAMPLE_RATE
