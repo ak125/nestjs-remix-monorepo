@@ -5069,7 +5069,7 @@
         "backend/src/workers/types/content-refresh.types.ts"
       ],
       "imports": [
-        "@repo/seo-roles"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 24,
@@ -8933,7 +8933,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "@repo/seo-roles"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 680,
@@ -31348,8 +31348,8 @@
       "id": "backend/src/modules/seo/registries/__tests__/seo-surface.registry.test.ts",
       "importedBy": [],
       "imports": [
-        "@repo/seo-roles",
-        "backend/src/modules/seo/registries/seo-surface.registry.ts"
+        "backend/src/modules/seo/registries/seo-surface.registry.ts",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 40,
@@ -31426,7 +31426,7 @@
       ],
       "imports": [
         "@repo/seo-role-contracts",
-        "@repo/seo-roles"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 42,
@@ -32140,8 +32140,8 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@repo/seo-role-contracts",
-        "@repo/seo-roles",
-        "crypto"
+        "crypto",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 333,
@@ -33767,9 +33767,9 @@
         "backend/src/modules/seo/utils/seo-balise-collision-gate.ts"
       ],
       "imports": [
-        "@repo/seo-roles",
         "backend/src/modules/seo/types/resolved-seo-field.ts",
-        "crypto"
+        "crypto",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 169,
@@ -56669,7 +56669,7 @@
       "id": "frontend/app/routes/admin.seo-hub.page-briefs.tsx",
       "importedBy": [],
       "imports": [
-        "@repo/seo-roles",
+        "packages/seo-roles/dist/index.d.ts",
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/utils/internal-api.server",
@@ -63495,7 +63495,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 390,
+      "loc": 386,
       "owner": "__unassigned__",
       "path": "frontend/tests/e2e/critical-path.spec.ts",
       "risk": "low",
@@ -71357,6 +71357,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/build-preprod-image-proxy.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 74,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/build-preprod-image-proxy.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/catalog-mobile-performance.mjs",
       "importedBy": [],
       "imports": [],
@@ -71592,6 +71611,25 @@
       "loc": 183,
       "owner": "__unassigned__",
       "path": "scripts/ci/preprod-e2e-rate-budget.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/preprod-image-proxy.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 40,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/preprod-image-proxy.test.mjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

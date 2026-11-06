@@ -33748,7 +33748,7 @@
         "backend/src/workers/types/content-refresh.types.ts"
       ],
       "imports": [
-        "@repo/seo-roles"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 24,
@@ -37734,7 +37734,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "@repo/seo-roles"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 680,
@@ -60940,8 +60940,8 @@
       "id": "backend/src/modules/seo/registries/__tests__/seo-surface.registry.test.ts",
       "importedBy": [],
       "imports": [
-        "@repo/seo-roles",
-        "backend/src/modules/seo/registries/seo-surface.registry.ts"
+        "backend/src/modules/seo/registries/seo-surface.registry.ts",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 40,
@@ -61021,7 +61021,7 @@
       ],
       "imports": [
         "@repo/seo-role-contracts",
-        "@repo/seo-roles"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 42,
@@ -61759,8 +61759,8 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@repo/seo-role-contracts",
-        "@repo/seo-roles",
-        "crypto"
+        "crypto",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 333,
@@ -63447,9 +63447,9 @@
         "backend/src/modules/seo/utils/seo-balise-collision-gate.ts"
       ],
       "imports": [
-        "@repo/seo-roles",
         "backend/src/modules/seo/types/resolved-seo-field.ts",
-        "crypto"
+        "crypto",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 169,
@@ -87234,7 +87234,7 @@
       "id": "frontend/app/routes/admin.seo-hub.page-briefs.tsx",
       "importedBy": [],
       "imports": [
-        "@repo/seo-roles",
+        "packages/seo-roles/dist/index.d.ts",
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/utils/internal-api.server",
@@ -94282,7 +94282,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 390,
+      "loc": 386,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/critical-path.spec.ts",
       "risk": "medium",
@@ -102554,6 +102554,26 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/ci/build-preprod-image-proxy.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 74,
+      "owner": "@ak125",
+      "path": "scripts/ci/build-preprod-image-proxy.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/ci/catalog-mobile-performance.mjs",
       "importedBy": [],
       "imports": [],
@@ -102801,6 +102821,26 @@
       "loc": 183,
       "owner": "@ak125",
       "path": "scripts/ci/preprod-e2e-rate-budget.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/preprod-image-proxy.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 40,
+      "owner": "@ak125",
+      "path": "scripts/ci/preprod-image-proxy.test.mjs",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106319,11 +106359,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "2d5872d3b1b0218226bca046f584e85c1fb21fb9ba517d43e0dd407264380d1f",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "3d536d7a1e081def7ccafccac8bf605fd0888201fdfbe5c4cfad2275e2518316",
+      "audit/registry/files.json": "3154994ed49183886cd43c4fe73dc5b295a4b3bbd9bf5d0e25f89475d32c0e12",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "7a774aa80f53b1c05683d736bef99decef0b464f7484f81bead6c3d391b567e6"
     },
-    "sotFingerprint": "c10c2c08bbfa"
+    "sotFingerprint": "6b8f8e65be44"
   },
   "runtime": [
     {

@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 216,
-      "loc_total": 51008,
+      "files_count": 218,
+      "loc_total": 51122,
       "has_barrel": true
     },
     "search": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 334,
-      "loc_total": 64688,
+      "loc_total": 64684,
       "has_barrel": true
     },
     "upload": {
