@@ -413,37 +413,47 @@ ${links}
         }
       }
 
-      // 3. SEO Gamme Conseil (conseils par gamme)
-      const { data: conseilGammes } = await this.supabase
+      // 3. Resolve the gamme alias through its real catalogue relation.
+      const { data: conseilGammes, error: conseilError } = await this.supabase
         .from('__seo_gamme_conseil')
-        .select('sgc_pg_alias')
+        .select('sgc_pg_id')
         .limit(500);
+      if (conseilError) throw conseilError;
 
-      if (conseilGammes && conseilGammes.length > 0) {
-        for (const c of conseilGammes) {
-          if (c.sgc_pg_alias) {
+      const gammeIds = [
+        ...new Set((conseilGammes || []).map((c) => c.sgc_pg_id)),
+      ].filter(Boolean);
+      if (gammeIds.length) {
+        const { data: gammes, error: gammeError } = await this.supabase
+          .from('pieces_gamme')
+          .select('pg_id, pg_alias')
+          .in('pg_id', gammeIds);
+        if (gammeError) throw gammeError;
+        for (const gamme of gammes || []) {
+          if (gamme.pg_alias) {
             urls.push(
-              `${this.BASE_URL}/blog-pieces-auto/conseils/${c.sgc_pg_alias}`,
+              `${this.BASE_URL}/blog-pieces-auto/conseils/${gamme.pg_alias}`,
             );
           }
         }
-        this.logger.log(`   Found ${conseilGammes.length} conseil gamme pages`);
       }
 
-      // 4. Use __sitemap_blog as authoritative source (already has correct URLs)
-      const { data: sitemapBlog } = await this.supabase
+      // 4. Same map_alias contract as generateBlogSitemap().
+      const { data: sitemapBlog, error: sitemapError } = await this.supabase
         .from('__sitemap_blog')
-        .select('url')
+        .select('map_alias')
         .limit(500);
+      if (sitemapError) throw sitemapError;
 
       if (sitemapBlog && sitemapBlog.length > 0) {
-        for (const b of sitemapBlog) {
-          if (b.url) {
-            if (r6Retired && isR6GuideAchatSurface(b.url)) {
+        for (const blog of sitemapBlog) {
+          if (blog.map_alias) {
+            const url = `/blog-pieces-auto/${blog.map_alias}`;
+            if (r6Retired && isR6GuideAchatSurface(url)) {
               r6Excluded++;
               continue;
             }
-            urls.push(`${this.BASE_URL}${b.url}`);
+            urls.push(`${this.BASE_URL}${url}`);
           }
         }
         this.logger.log(`   Found ${sitemapBlog.length} sitemap blog pages`);

@@ -203,11 +203,21 @@ export class BlogStatisticsService {
     if (cached) return cached;
 
     try {
-      const { data } = await this.supabaseService.client
+      const { data, error } = await this.supabaseService.client
         .from(TABLES.blog_advice)
         .select('*')
-        .order('ba_date_add', { ascending: false })
+        .order('ba_update', { ascending: false })
         .limit(limit);
+
+      // Sans cette destructuration, une erreur PostgREST laissait `data`
+      // indefini, donc une liste vide mise en cache 1000 s : le defaut
+      // survivait a sa propre cause. Un echec ne doit pas etre cache.
+      if (error) {
+        this.logger.error(
+          `Erreur getRecentArticles (${error.code}): ${error.message}`,
+        );
+        return [];
+      }
 
       const articles =
         data?.map((item) =>
@@ -311,9 +321,7 @@ export class BlogStatisticsService {
       const now = Date.now();
       const scored = data.map((item) => {
         const article = this.transformService.transformAdviceToArticle(item);
-        const updatedAt = new Date(
-          item.ba_update || item.ba_date_add,
-        ).getTime();
+        const updatedAt = new Date(item.ba_update).getTime();
         const daysSinceUpdate = (now - updatedAt) / 86400000;
         const score = article.viewsCount * (1 / (1 + daysSinceUpdate / days));
         return { article, score };
