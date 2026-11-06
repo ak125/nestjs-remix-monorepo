@@ -1296,11 +1296,11 @@ jobs:
             exit 1
           fi
 
-      - name: 📡 Deploy Watcher (Supabase report)
+      - name: 📡 Deploy Watcher (local PREPROD report)
         if: always()
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          APP_CONTAINER: nestjs-remix-monorepo-preprod
+          CRON_STATE_DIR: /home/deploy/preprod/data/cron
           DEPLOY_URL: "http://localhost:3200"
           STARTUP_WAIT: "5"
         run: |

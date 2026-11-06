@@ -60,3 +60,14 @@ test('PREPROD application cannot bypass the read-only database gateway', () => {
     if (name !== 'readonly_preprod') assert.doesNotMatch(JSON.stringify(service.volumes || []), /readonly-upstream/);
   }
 });
+
+
+test('PREPROD deployment does not distribute a production database write key', () => {
+  const ci = parse(read('.github/workflows/ci.yml'));
+  for (const step of ci.jobs.deploy.steps) {
+    assert.equal(step.env?.SUPABASE_SERVICE_ROLE_KEY, undefined);
+  }
+  const watcher = ci.jobs.deploy.steps.find(step => step.name?.includes('Deploy Watcher'));
+  assert.equal(watcher.env.APP_CONTAINER, 'nestjs-remix-monorepo-preprod');
+  assert.match(watcher.env.CRON_STATE_DIR, /^\/home\/deploy\/preprod\//);
+});
