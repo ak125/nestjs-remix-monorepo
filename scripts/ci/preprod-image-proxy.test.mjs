@@ -37,3 +37,26 @@ test('only isolated PREPROD proxy publishes the loopback ingress', () => {
   assert.deepEqual(compose.services.imgproxy_preprod.networks, { 'automecanik-preprod': { aliases: ['imgproxy'] } });
   assert.doesNotMatch(read('docker-compose.preprod.yml'), /automecanik-prod|production\//);
 });
+
+
+test('PREPROD application cannot bypass the read-only database gateway', () => {
+  const compose = parse(read('docker-compose.preprod.yml'));
+  const app = compose.services.monorepo_preprod;
+  assert.deepEqual(app.networks, ['preprod-readonly']);
+  assert.equal(compose.networks['preprod-readonly'].internal, true);
+  assert.ok(app.environment.includes('DATABASE_URL='));
+  assert.ok(app.environment.includes('SUPABASE_SERVICE_ROLE_KEY='));
+  assert.ok(app.environment.includes('SUPABASE_URL=http://readonly_preprod:3000'));
+  assert.ok(app.environment.includes('SUPABASE_ANON_KEY=preprod-isolated-gateway-only'));
+  assert.ok(app.environment.includes('READ_ONLY=true'));
+  assert.deepEqual(compose.services.redis_preprod.networks, ['preprod-readonly']);
+  const gateway = compose.services.readonly_preprod;
+  assert.equal(gateway.ports, undefined);
+  assert.equal(gateway.env_file, undefined);
+  assert.equal(gateway.read_only, true);
+  assert.deepEqual(gateway.networks, ['preprod-readonly', 'automecanik-preprod']);
+  assert.ok(gateway.volumes.includes('./readonly-upstream.json:/run/preprod-readonly/upstream.json:ro'));
+  for (const [name, service] of Object.entries(compose.services)) {
+    if (name !== 'readonly_preprod') assert.doesNotMatch(JSON.stringify(service.volumes || []), /readonly-upstream/);
+  }
+});

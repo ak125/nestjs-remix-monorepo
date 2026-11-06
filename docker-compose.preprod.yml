@@ -8,9 +8,12 @@ services:
       - REDIS_PORT=6379
       - NODE_ENV=production
       - APP_ENV=preprod
-      - DATABASE_URL
-      - SUPABASE_SERVICE_ROLE_KEY
-      - SUPABASE_URL
+      # No direct DB credentials or outbound route from the application.
+      - DATABASE_URL=
+      - SUPABASE_SERVICE_ROLE_KEY=
+      - SUPABASE_URL=http://readonly_preprod:3000
+      - SUPABASE_ANON_KEY=preprod-isolated-gateway-only
+      - READ_ONLY=true
       # SESSION_SECRET : required by main.ts:102 fail-fast (PR #339, NODE_ENV=production
       # >= 32 chars non-placeholder). Injected via secrets.PREPROD_SESSION_SECRET → .env
       # heredoc in ci.yml deploy job → loaded by env_file + shell `. .env`.
@@ -37,6 +40,11 @@ services:
     container_name: nestjs-remix-monorepo-preprod
     image: massdoc/nestjs-remix-monorepo:preprod
     restart: always
+    mem_limit: 3g
+    cpus: 2
+    depends_on:
+      readonly_preprod:
+        condition: service_healthy
     # Ingress is owned by the dedicated PREPROD proxy below. Images never
     # enter the SSR catch-all bucket shared by pages, .data and __manifest.
     volumes:
@@ -49,7 +57,7 @@ services:
       - /dev/volumes/nestjs-remix/preprod/sitemaps/:/var/www/sitemaps:rw
       - /dev/volumes/nestjs-remix/preprod/crawl-hubs/:/var/www/crawl-hubs:rw
     networks:
-      - automecanik-preprod
+      - preprod-readonly
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
       interval: 30s
@@ -77,6 +85,7 @@ services:
       - monorepo_preprod
       - imgproxy_preprod
     networks:
+      - preprod-readonly
       - automecanik-preprod
 
   imgproxy_preprod:
@@ -98,6 +107,31 @@ services:
         aliases:
           - imgproxy
 
+  # Only this process holds the upstream key. Every upstream request uses a
+  # PostgREST GET/HEAD read-only transaction; it never forwards a write method.
+  readonly_preprod:
+    image: massdoc/nestjs-remix-monorepo:preprod
+    container_name: readonly-preprod
+    entrypoint: ["node", "/run/preprod-readonly/gateway.cjs"]
+    user: "1001:1001"
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 256m
+    cpus: 0.5
+    volumes:
+      - ./preprod-readonly-gateway.cjs:/run/preprod-readonly/gateway.cjs:ro
+      - ./readonly-upstream.json:/run/preprod-readonly/upstream.json:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/__audit"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - preprod-readonly
+      - automecanik-preprod
+
   redis_preprod:
     image: redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
     container_name: redis-preprod
@@ -116,8 +150,10 @@ services:
           # Fail instead of creating an empty Redis directory before migration.
           create_host_path: false
     networks:
-      - automecanik-preprod
+      - preprod-readonly
 
 networks:
+  preprod-readonly:
+    internal: true
   automecanik-preprod:
     driver: bridge
