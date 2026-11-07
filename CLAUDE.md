@@ -67,6 +67,17 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
   Command Center ne sont pas 24 processus : consulter au besoin
   `audit/automecanik-departments-map.md` et
   `scripts/governance/build-command-center-snapshot.js`.
+- **Mandat utilisateur du 1er novembre 2026 : tout codage est confié à
+  Claude Code CLI** (backend, frontend, scripts, tests, migrations et intégration).
+  ChatGPT/Space dirige la préparation éditoriale, rédige les contenus et remet,
+  lorsqu'une modification technique est nécessaire, un **prompt borné à Claude CLI**.
+  Si aucun canal CLI autorisé n'est accessible, préparer le prompt pour un
+  lancement manuel et déclarer **NON ENVOYÉ**, jamais « exécuté ».
+  **Codex réalise les audits et revues techniques indépendantes, sans écrire
+  le code** ; une dérogation exige une nouvelle instruction explicite de l'owner.
+  Les fonctions Hermes ne sont retirées qu'après une passation prouvée.
+  Voir `.claude/knowledge/workspaces.md` pour le contrat de transmission.
+  Ce choix ne modifie ni les permissions ni les règles de fusion/déploiement.
 - Hermes peut réaliser les opérations couvertes par ses outils, accès et mandat
   actuels. Aucun transfert systématique à Codex pour ces opérations ; une limite
   effective de profil ou de permissions reste opposable. Ce fichier ne lui accorde
@@ -86,7 +97,10 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
   `security-hooks.md` pour les avertissements du plugin advisory ;
   `context7.md` pour une API externe incertaine ; `agent-doc-search.md` pour la recherche.
   Les hooks de protection du dépôt restent distincts du plugin advisory.
-- Skills : lire le `SKILL.md` pertinent et ses références requises, pas un pack entier.
+- Skills : appliquer la section **Sélection et application des skills** de
+  `.claude/knowledge/workspaces.md`, même pour une tâche de workspace lancée
+  depuis la racine. Lire le `SKILL.md` pertinent et ses références requises,
+  puis suivre sa procédure ; une découverte ou une simple mention ne suffit pas.
   Les revues ne sont pas systématiques ; les validations imposées restent applicables.
   `code-auto-review` sert une demande explicite de relecture/correction.
 - Reprise : lire `tail -n 80 log.md` si la tâche dépend de l'historique. Une timeline
@@ -95,7 +109,14 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
   `.claude/knowledge/workspaces.md`. Rôles Paperclip : `agents/*/AGENTS.md`,
   à consulter seulement pour le rôle concerné ; UUID dans leur registre.
 - Relecture d'un brouillon français : `.claude/prompts/_shared/editorial-review.md`
-  avant intervention ; proposition motivée, sans publication ni écriture RAW/WIKI.
+  avant intervention, lu jusqu'à sa dernière ligne, « Sortie attendue » et son bloc
+  final compris : Read sans `offset` ni `limit`, ou plages contiguës jusqu'à la fin.
+  Une plage fixée d'avance ou une recherche de titres laisse le reste non lu. Après
+  une reprise de contexte (résumé ou compaction), la lecture antérieure ne compte
+  plus : relire le contrat de même avant d'écrire le bloc.
+  Proposition motivée, sans publication ni écriture RAW/WIKI. La réponse se termine
+  par le bloc final de « Sortie attendue », même en relecture partielle ; sans outil
+  d'exécution, `sha256` vaut `null` et C2 reste non remplie avec cette cause.
 
 ## Gouvernance
 

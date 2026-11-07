@@ -10,6 +10,8 @@ cd /opt/automecanik/app/workspaces/marketing && claude
 
 Le [contrat commun](../../CLAUDE.md) s'applique avec les rôles de [AGENTS.md](AGENTS.md).
 Héritage des instructions, skills et mémoire : [carte des workspaces](../../.claude/knowledge/workspaces.md).
+Avant d'agir, y appliquer **Sélection et application des skills**, même si la session
+a démarré à la racine ; lire explicitement le skill marketing retenu et ses références requises.
 
 ## Règles spécifiques marketing
 
