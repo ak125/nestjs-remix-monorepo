@@ -441,7 +441,34 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
     error: null,
   };
 
+  /** sitemap-vehicules.xml antérieur (format public, marques comprises). */
+  const OLD_VEH = 'sitemap-vehicules.xml';
+  async function seedOldVehicules(paths: string[]) {
+    const body = paths
+      .map((u) => `  <url>\n    <loc>${abs(u)}</loc>\n  </url>`)
+      .join('\n');
+    await fs.writeFile(
+      path.join(outDir, OLD_VEH),
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`,
+      'utf8',
+    );
+  }
+
+  /** Desserte Caddy `@sitemaps path /sitemap*.xml` : fichiers racine servis. */
+  async function servedConstructeurFiles() {
+    const served: string[] = [];
+    for (const name of await fs.readdir(outDir)) {
+      if (!/^sitemap.*\.xml$/.test(name) || name === 'sitemap.xml') continue;
+      const stat = await fs.stat(path.join(outDir, name));
+      if (!stat.isFile()) continue;
+      const found = await locs(path.join(outDir, name));
+      if (found.some((u) => u.includes('/constructeurs'))) served.push(name);
+    }
+    return served.sort();
+  }
+
   it('succès : brands porte les marques, vehicules le reste, run en succès', async () => {
+    await seedOldVehicules([...BRANDS, MODEL]);
     const { orchestrator } = buildOrchestrator(brandsAvailable);
     const result = await orchestrator.generateAll();
     const idx = await readIndex(result.indexPath as string);
@@ -587,6 +614,48 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
     expect(idx['sitemap-vehicules.xml']).toEqual([...BRANDS, MODEL].map(abs));
   });
 
+  it('marques publiées + lecture véhicules en échec : ancien fichier gardé tel quel, hors index', async () => {
+    await seedOldVehicules([...BRANDS, MODEL]);
+    const before = await fs.readFile(path.join(outDir, OLD_VEH), 'utf8');
+    const { orchestrator } = buildOrchestrator(brandsAvailable, {
+      count: 3,
+      rows: [],
+    });
+    const result = await orchestrator.generateAll();
+    const idx = await readIndex(result.indexPath as string);
+    expect(idx['sitemap-brands.xml']).toEqual(BRANDS.map(abs));
+    expect(idx[OLD_VEH]).toBeUndefined();
+    expect(await fs.readFile(path.join(outDir, OLD_VEH), 'utf8')).toBe(before);
+  });
+
+  it.each([
+    ['retrait', []],
+    ['écriture', [MODEL]],
+  ] as [string, string[]][])(
+    'marques publiées + %s de sitemap-vehicules.xml en échec : run en échec',
+    async (_label, extra) => {
+      // Répertoire non vide à la place du fichier : vrai EISDIR/ENOTEMPTY.
+      await fs.mkdir(path.join(outDir, OLD_VEH, 'x'), { recursive: true });
+      const { orchestrator, logger } = buildOrchestrator(brandsAvailable, {
+        count: BRANDS.length + extra.length,
+        rows: [...BRANDS, ...extra].map((url) => ({
+          niveau: url === MODEL ? 2 : 1,
+          url,
+          priority: 0.7,
+          changefreq: 'weekly',
+        })),
+      });
+      const result = await orchestrator.generateAll();
+      const idx = await readIndex(result.indexPath as string);
+      expect(result.success).toBe(false);
+      expect(idx['sitemap-brands.xml']).toEqual(BRANDS.map(abs));
+      expect(idx[OLD_VEH]).toBeUndefined();
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('écriture ou retrait en échec'),
+      );
+    },
+  );
+
   it('source marque vide (≠ échec) : rien retiré, run en succès', async () => {
     const { orchestrator } = buildOrchestrator({ data: [], error: null });
     const result = await orchestrator.generateAll();
@@ -668,6 +737,8 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
     ] as [string, Result, boolean, string][])(
       '%s : les 36 URL exactes, DS une seule fois',
       async (_label, r7Source, brandsWriteFails, dsPriority) => {
+        // Ancien sitemap-vehicules.xml public : les 35 marques de la vue.
+        await seedOldVehicules(view.map((v) => v.url));
         if (brandsWriteFails) {
           await fs.mkdir(path.join(outDir, 'sitemap-brands.xml'));
         }
@@ -687,6 +758,9 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
         const owner = brandsWriteFails
           ? 'sitemap-vehicules.xml'
           : 'sitemap-brands.xml';
+        // Desserte : seul le fichier propriétaire (indexé) sert des marques ;
+        // l'ancien sitemap-vehicules.xml n'est plus servable s'il est vide.
+        expect(await servedConstructeurFiles()).toEqual([owner]);
         expect(result.success).toBe(!brandsWriteFails);
         expect(Object.keys(idx).includes('sitemap-brands.xml')).toBe(
           !brandsWriteFails,

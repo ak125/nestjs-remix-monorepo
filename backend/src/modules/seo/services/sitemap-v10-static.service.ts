@@ -150,12 +150,20 @@ export class SitemapV10StaticService extends SupabaseBaseService {
    * `collectBrandUrls()` partagé par l'orchestrateur (une lecture par run) ;
    * omis ⇒ lu ici. `unpublishedBrandUrls` = URLs marque lues mais non
    * publiées (écriture de sitemap-brands.xml en échec) : ajoutées ici si
-   * absentes de la vue véhicules.
+   * absentes de la vue véhicules. `brandsPublished` = sitemap-brands.xml
+   * écrit par ce run (seul cas où un fichier sans URL restante est retiré).
+   * Écriture ou retrait en échec : erreur propagée (jamais de faux succès).
    */
   async generateVehiculesSitemap(
     brandUrls?: SitemapUrl[] | null,
     unpublishedBrandUrls: SitemapUrl[] = [],
+    brandsPublished = false,
   ): Promise<string | null> {
+    const filePath = path.join(
+      this.xmlService.OUTPUT_DIR,
+      'sitemap-vehicules.xml',
+    );
+    let urls: SitemapUrl[] = [];
     try {
       interface VehiculeType {
         niveau: number;
@@ -222,7 +230,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
       // <loc> finale : une R7 absolue et un repli relatif peuvent coïncider ;
       // la première occurrence (ordre de collecte) est gardée.
       const present = new Set(kept.map((u) => toLoc(u.url)));
-      const urls = [
+      urls = [
         ...kept,
         ...unpublishedBrandUrls.filter((b) => {
           const loc = toLoc(b.url);
@@ -236,24 +244,33 @@ export class SitemapV10StaticService extends SupabaseBaseService {
           `   🔀 sitemap-vehicules.xml: ${excludedCount} URL(s) marque laissée(s) à sitemap-brands.xml`,
         );
       }
-      if (urls.length === 0) {
+      // Vide sain (lectures sans erreur, marques publiées) : seul cas de
+      // retrait. Sinon le fichier existant est gardé (repli).
+      if (urls.length === 0 && !(brandsPublished && owned !== null)) {
         this.logger.warn(
           '⚠️ sitemap-vehicules.xml non écrit : aucune URL propre après dédoublonnage',
         );
         return null;
       }
-
-      const filePath = path.join(
-        this.xmlService.OUTPUT_DIR,
-        'sitemap-vehicules.xml',
-      );
-      await this.xmlService.writeStaticSitemapFile(filePath, urls);
-      this.logger.log(`   ✅ sitemap-vehicules.xml: ${urls.length} URLs`);
-      return filePath;
     } catch (error) {
       this.logger.error(`❌ Failed to generate vehicules sitemap: ${error}`);
       return null;
     }
+
+    if (urls.length === 0) {
+      // Un sitemap-vehicules.xml antérieur (marques comprises) resterait
+      // servi tel quel hors index : retiré, absence déjà constatée tolérée.
+      await fs.unlink(filePath).catch((error: NodeJS.ErrnoException) => {
+        if (error.code !== 'ENOENT') throw error;
+      });
+      this.logger.warn(
+        '⚠️ sitemap-vehicules.xml retiré : aucune URL restante, marques publiées dans sitemap-brands.xml',
+      );
+      return null;
+    }
+    await this.xmlService.writeStaticSitemapFile(filePath, urls);
+    this.logger.log(`   ✅ sitemap-vehicules.xml: ${urls.length} URLs`);
+    return filePath;
   }
 
   /**

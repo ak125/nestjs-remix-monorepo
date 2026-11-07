@@ -93,6 +93,7 @@ export class SitemapV10Service extends SupabaseBaseService {
     // sitemap-brands.xml non publié alors que des URLs marque existent (ou
     // source illisible) : couverture gardée par vehicules, run en échec.
     let brandsFailed = false;
+    let vehiculesFailed = false;
 
     // 🧹 Nettoyer les fichiers obsolètes
     await this.xmlService.cleanupObsoleteFiles();
@@ -123,10 +124,19 @@ export class SitemapV10Service extends SupabaseBaseService {
       // Écriture brands en échec après lecture saine : vehicules ne retire
       // rien et porte aussi les URLs marque absentes de sa propre vue.
       const brandsUnpublished = brandsFailed && brandUrls !== null;
-      const vehicules = await this.staticService.generateVehiculesSitemap(
-        brandsUnpublished ? [] : brandsFailed ? null : brandUrls,
-        brandsUnpublished ? brandUrls : [],
-      );
+      let vehicules: string | null = null;
+      try {
+        vehicules = await this.staticService.generateVehiculesSitemap(
+          brandsUnpublished ? [] : brandsFailed ? null : brandUrls,
+          brandsUnpublished ? brandUrls : [],
+          brands !== null,
+        );
+      } catch (error) {
+        vehiculesFailed = true;
+        this.logger.error(
+          `❌ sitemap-vehicules.xml : écriture ou retrait en échec, run signalé en échec (${error})`,
+        );
+      }
       if (vehicules) allFilePaths.push(vehicules);
 
       // 4. Blog
@@ -275,7 +285,8 @@ export class SitemapV10Service extends SupabaseBaseService {
     }
 
     return {
-      success: results.every((r) => r.success) && !brandsFailed,
+      success:
+        results.every((r) => r.success) && !brandsFailed && !vehiculesFailed,
       results,
       totalUrls,
       totalFiles,
