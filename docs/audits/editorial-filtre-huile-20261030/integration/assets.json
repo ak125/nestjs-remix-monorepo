@@ -31,9 +31,9 @@
       "portee": "illustre un filtre vissé ; ni véhicule, ni emplacement, ni référence vendue",
       "alt": "Filtre à huile vissé usagé, tenu d'une main gantée pendant une vidange",
       "caption": null,
-      "mecanisme": "POST /api/admin/r1-image-prompts/31/upload (multipart « file », forceSelect) puis PATCH /31/approve si nécessaire ; alt via la ligne (rip_alt_text)",
+      "mecanisme": "dépôt au chemin versionné -v20261031 par tools/deposer-objets.cjs --execute, puis migration 20261031_editorial_filtre_huile_pg7_images (C) : rip_image_url, alt, légende, statut approved et sélection, sous la condition de l'état relevé (publication-batch.json, « images »)",
       "verifie": "contenu vérifié à l'œil (recadrage de la photo vérifiée) ; DEV : lecture superposée du 31/10, rien d'écrit",
-      "affichage_attendu": "cadre carré 360×360 de GammeHero (GammeHero.tsx:78-111) ; chargée en DEV par lecture superposée (HANDOFF § 6) ; alt proposé non écrit : aucun endpoint n'écrit rip_alt_text"
+      "affichage_attendu": "cadre carré 360×360 de GammeHero (GammeHero.tsx:78-111), alt écrit par C (lu par gamme-response-builder.service.ts:289) ; vérifié en DEV par lecture superposée (HANDOFF § 6), rendu après C à contrôler"
     },
     {
       "page": "R1",
@@ -49,9 +49,9 @@
       "portee": "principe des deux architectures ; présence et position des clapets selon le filtre et le moteur (légende)",
       "alt": "Schéma comparant un filtre à huile vissé, changé en bloc, et une cartouche logée dans un boîtier démontable",
       "caption": "Schéma de principe. La présence et la position des clapets varient selon le filtre et le moteur.",
-      "mecanisme": "POST /api/admin/r1-image-prompts/32/upload",
+      "mecanisme": "dépôt au chemin versionné -v20261031 par tools/deposer-objets.cjs --execute, puis migration 20261031_editorial_filtre_huile_pg7_images (C) : rip_image_url, alt, légende, statut approved et sélection, sous la condition de l'état relevé (publication-batch.json, « images »)",
       "verifie": "contenu et lisibilité vérifiés à l'œil après correction de mise en page ; DEV : lecture superposée du 31/10, rien d'écrit",
-      "affichage_attendu": "chargée en DEV par lecture superposée (HANDOFF § 6) ; alt et légende proposés non écrits faute de mécanisme"
+      "affichage_attendu": "alt et légende écrits par C ; vérifié en DEV par lecture superposée (HANDOFF § 6), rendu après C à contrôler"
     },
     {
       "page": "R1",
@@ -68,10 +68,10 @@
       "alt": "Schéma des caractéristiques de qualité d'un filtre à huile : clapet anti-retour, papier filtrant, clapet de dérivation",
       "caption": "Un filtre ne fonctionne correctement que s'il a été bien monté.",
       "remplace": "« comparatif qualité par gamme » (niveaux de prix non vérifiés)",
-      "mecanisme": "POST /api/admin/r1-image-prompts/33/upload",
+      "mecanisme": "dépôt au chemin versionné -v20261031 par tools/deposer-objets.cjs --execute, puis migration 20261031_editorial_filtre_huile_pg7_images (C) : rip_image_url, alt, légende, statut approved et sélection, sous la condition de l'état relevé (publication-batch.json, « images »)",
       "dependance": "le h3 codé « Niveaux de qualité » au-dessus de l'image reste servi : décision de libellé (HANDOFF FH-15)",
       "verifie": "contenu vérifié à l'œil ; DEV : lecture superposée du 31/10, rien d'écrit",
-      "affichage_attendu": "chargée en DEV sous le h3 codé « Niveaux de qualité » (FH-15) ; alt et légende proposés non écrits faute de mécanisme"
+      "affichage_attendu": "sous le h3 codé « Niveaux de qualité » (FH-15), alt et légende écrits par C ; vérifié en DEV par lecture superposée, rendu après C à contrôler"
     },
     {
       "page": "R1",
@@ -80,11 +80,11 @@
       "action": "désélectionner (rip_selected=false)",
       "fichier": null,
       "motif": "aucun emplacement universel : il dépend du moteur. Une photo par véhicule exige une prise de vue identifiée (PROMPTS.md, P-06).",
-      "mecanisme": "à trouver par Claude CLI : aucun endpoint de désélection constaté (approve, set-image-url, upload seulement) ; vérifier le comportement du rendu sans image LOCATION",
+      "mecanisme": "migration C : rip_status pending et rip_selected false ; chemin, alt et légende inchangés. Le statut pending est nécessaire : la sélection R1 ne lit que les lignes approved et le normaliseur se replie sinon sur une ligne non sélectionnée",
       "verifie": "DEV : aucune requête vers l'image LOCATION (lecture superposée du 31/10) ; retrait non effectué, aucun mécanisme",
       "droits": "sans objet (aucun fichier)",
       "portee": "aucun emplacement universel",
-      "affichage_attendu": "aucune requête vers l'image en DEV ; sans image, #emplacement garde sa grille à deux colonnes en 1 280 px, moitié droite vide (pieces.$slug.tsx:976-978) : correction de mise en page côté code (Claude CLI)"
+      "affichage_attendu": "aucune image LOCATION servie ; #emplacement sur une colonne grâce au correctif de grille de pieces.$slug.tsx (même PR que le lot), servi avant C"
     },
     {
       "page": "R1",
@@ -100,9 +100,9 @@
       "portee": "partage social ; aucun prix ni délai",
       "texte_image": "Filtre à huile / Vissé ou cartouche : la référence se choisit selon la motorisation. / automecanik.com",
       "alt": "Filtre à huile : vissé ou cartouche, la référence se choisit selon la motorisation",
-      "mecanisme": "POST /api/admin/r1-image-prompts/35/upload",
+      "mecanisme": "accord distinct (og:image, balise protégée) : dépôt par tools/deposer-objets.cjs --og --execute, puis migration C-og générée hors dépôt (--og --out-dir) ; le banc la prouve (section 7)",
       "verifie": "contenu vérifié à l'œil (aucun prix, aucun délai) ; DEV : balises Open Graph relevées par lecture superposée le 31/10, rien d'écrit ; aperçu de partage non vérifié",
-      "affichage_attendu": "même URL d'og:image, image différente ; og:image:alt suit l'alt du slot OG. Balises Open Graph protégées : remplacement soumis à décision (HANDOFF § 6, « Restant »)"
+      "affichage_attendu": "og:image R1 change d'URL (chemin versionné) et og:image:alt suit l'alt du slot OG ; hors C, rien ne change"
     },
     {
       "page": "R3",
@@ -117,9 +117,9 @@
       "portee": "illustre un filtre vissé ; ni véhicule ni emplacement",
       "alt": "Filtre à huile vissé usagé retiré pendant une vidange",
       "alt_actuel": "Filtre à huile : guide complet",
-      "mecanisme": "dépôt du fichier dans le stockage, puis PATCH /api/admin/r3-image-prompts/12/set-image-url et /12/approve ; aucun endpoint d'alt constaté : Claude CLI vérifie si le test B5 admet la mise à jour de rip_alt_text (curation)",
+      "mecanisme": "accord distinct (og:image, balise protégée) : dépôt par tools/deposer-objets.cjs --og --execute, puis migration C-og générée hors dépôt (--og --out-dir) ; le banc la prouve (section 7)",
       "verifie": "contenu vérifié à l'œil ; DEV : lecture superposée du 31/10, rien d'écrit",
-      "affichage_attendu": "chargée en DEV par lecture superposée ; l'alt affiché est page.title (route conseils l.544), pas rip_alt_text ; le HERO devient og:image R3 (URL changée) : balise protégée, décision"
+      "affichage_attendu": "le HERO devient og:image R3 ; l'alt affiché du HERO reste page.title (route conseils l.544) ; hors C-og, rien ne change"
     },
     {
       "page": "R3",
@@ -136,9 +136,9 @@
       "alt": "Schéma : filtre en bon état, puis filtre colmaté dont le clapet de dérivation laisse passer une huile non filtrée",
       "alt_actuel": "Symptomes usure Filtre à huile : usure visible",
       "caption": "Schéma de principe. La pression d'ouverture du clapet de dérivation dépend du moteur.",
-      "mecanisme": "comme rip 12",
+      "mecanisme": "dépôt au chemin versionné -v20261031 par tools/deposer-objets.cjs --execute, puis migration 20261031_editorial_filtre_huile_pg7_images (C) : rip_image_url, alt, légende, statut approved et sélection, sous la condition de l'état relevé (publication-batch.json, « images »)",
       "verifie": "contenu vérifié à l'œil ; DEV : lecture superposée du 31/10, rien d'écrit",
-      "affichage_attendu": "chargée en DEV par lecture superposée ; alt et légende non écrits : la clôture B5 n'admet que rip_image_url et rip_status"
+      "affichage_attendu": "servie en S2 avec alt et légende écrits par C (blog-seo.service.ts:356-372 lit rip_alt_text et rip_caption des lignes approved sélectionnées) ; clôture B5 : écart déclaré (publication-batch.json, « images.b5 »)"
     },
     {
       "page": "R3",
@@ -155,9 +155,9 @@
       "alt": "Vue en coupe de principe d'un filtre à huile vissé : joint, plaque de base, clapet anti-retour, média filtrant, tube central, clapet anti-siphon, clapet de dérivation",
       "alt_actuel": "Schema comparatif Filtre à huile",
       "caption": "Schéma de principe. La présence, le nombre et la position des clapets varient selon le filtre et le moteur.",
-      "mecanisme": "comme rip 12",
+      "mecanisme": "dépôt au chemin versionné -v20261031 par tools/deposer-objets.cjs --execute, puis migration 20261031_editorial_filtre_huile_pg7_images (C) : rip_image_url, alt, légende, statut approved et sélection, sous la condition de l'état relevé (publication-batch.json, « images »)",
       "verifie": "contenu vérifié à l'œil ; DEV : lecture superposée du 31/10, rien d'écrit",
-      "affichage_attendu": "chargée en DEV par lecture superposée ; alt et légende non écrits (clôture B5)"
+      "affichage_attendu": "servie en S3 avec alt et légende écrits par C ; clôture B5 : écart déclaré"
     }
   ],
   "video": [
