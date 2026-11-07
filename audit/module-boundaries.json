@@ -75,7 +75,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 45,
-      "loc_total": 5966,
+      "loc_total": 5975,
       "has_barrel": true
     },
     "backend-core": {
@@ -103,8 +103,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 41,
-      "loc_total": 14767,
+      "files_count": 42,
+      "loc_total": 14981,
       "has_barrel": false
     },
     "bot-guard": {
@@ -131,8 +131,8 @@
         "backend/src/modules/cart/dto/__tests__",
         "backend/src/modules/cart/services"
       ],
-      "files_count": 21,
-      "loc_total": 4128,
+      "files_count": 22,
+      "loc_total": 4237,
       "has_barrel": false
     },
     "catalog": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110590,
+      "loc_total": 110611,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6572,
+      "loc_total": 6562,
       "has_barrel": true
     },
     "payments": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 216,
-      "loc_total": 51008,
+      "files_count": 220,
+      "loc_total": 51639,
       "has_barrel": true
     },
     "search": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 283,
-      "loc_total": 59993,
+      "loc_total": 60022,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 334,
-      "loc_total": 64688,
+      "files_count": 337,
+      "loc_total": 65465,
       "has_barrel": true
     },
     "upload": {
@@ -982,7 +982,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5421,
+      "loc_total": 5426,
       "has_barrel": true
     },
     "vehicle-context": {
@@ -1561,7 +1561,7 @@
     {
       "from": "cart",
       "to": "database",
-      "count": 13
+      "count": 14
     },
     {
       "from": "cart",
@@ -1571,7 +1571,7 @@
     {
       "from": "cart",
       "to": "promo",
-      "count": 2
+      "count": 3
     },
     {
       "from": "catalog",
@@ -1881,7 +1881,7 @@
     {
       "from": "orders",
       "to": "backend-core",
-      "count": 5
+      "count": 4
     },
     {
       "from": "orders",
@@ -2543,6 +2543,11 @@
     {
       "from": "backend/src/modules/cart/controllers/cart-items.controller.ts",
       "to": "backend/src/modules/products/services/stock.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/cart/services/cart.service.test.ts",
+      "to": "backend/src/modules/promo/promo.service.ts",
       "rule": "no-deep-module-access"
     },
     {

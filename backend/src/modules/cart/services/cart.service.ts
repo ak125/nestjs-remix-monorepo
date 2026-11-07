@@ -159,8 +159,11 @@ export class CartService {
       `📝 Mise à jour quantité article ${itemId}: ${quantity} pour ${userId || sessionId}`,
     );
 
+    // Même propriétaire que GET/POST : compte connecté, sinon session invitée.
+    const cartOwnerId = userId || sessionId;
+
     // Récupérer le panier complet
-    const cart = await this.cartDataService.getCartWithMetadata(sessionId);
+    const cart = await this.cartDataService.getCartWithMetadata(cartOwnerId);
 
     if (!cart || !cart.items) {
       throw new BadRequestException('Panier introuvable');
@@ -175,8 +178,8 @@ export class CartService {
 
     // Si quantity = 0, supprimer l'article
     if (quantity <= 0) {
-      await this.cartDataService.deleteCartItem(itemId, sessionId);
-      return this.cartDataService.getCartWithMetadata(sessionId);
+      await this.cartDataService.deleteCartItem(itemId, cartOwnerId);
+      return this.cartDataService.getCartWithMetadata(cartOwnerId);
     }
 
     // Convertir product_id en nombre si nécessaire
@@ -187,13 +190,13 @@ export class CartService {
 
     // Mettre à jour la quantité via addCartItem (qui gère l'update)
     await this.cartDataService.addCartItem(
-      sessionId,
+      cartOwnerId,
       productId,
       quantity - item.quantity, // Delta de quantité
       item.price,
     );
 
     // Retourner le panier mis à jour
-    return this.cartDataService.getCartWithMetadata(sessionId);
+    return this.cartDataService.getCartWithMetadata(cartOwnerId);
   }
 }

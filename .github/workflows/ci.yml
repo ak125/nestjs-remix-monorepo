@@ -236,6 +236,9 @@ jobs:
       - name: Test PREPROD evidence gate (deploy-prod)
         run: node --test scripts/ci/prod-preprod-evidence.test.mjs scripts/ci/prod-image-selection.test.mjs
 
+      - name: Test PREPROD image routing projection
+        run: node --test scripts/ci/preprod-image-proxy.test.mjs scripts/ci/preprod-readonly-gateway.test.cjs
+
       - name: Test E2E rate-budget admission
         run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
 
@@ -817,13 +820,10 @@ jobs:
 
       - name: 🧪 Deploy to PREPROD (read-only hardening — ADR-028 Option D)
         env:
-          # ADR-028 Option D : couches 1+2 (privilege downgrade + anon key only).
-          # Le backend supporte ce mode depuis PR #246 (SupabaseBaseService READ_ONLY
-          # mode + ANON_KEY fallback, commit dfd81673). RLS protection enforce les
-          # writes restantes (couche 3, ADR-021, 204 objets DB hardenizés).
+          # The application has no real DB key and no outbound network. Its
+          # dedicated gateway forwards only PostgREST GET/HEAD transactions.
           NODE_ENV: preprod
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           # SESSION_SECRET propagation : depuis PR #339 (commit 6c7df152), main.ts:102
           # fail-fast si SESSION_SECRET manquant ou < 32 chars en NODE_ENV=production.
           # Le container preprod tourne en NODE_ENV=production (Dockerfile:39+63 +
@@ -870,14 +870,28 @@ jobs:
 
           # Copier docker-compose.preprod.yml
           cp $GITHUB_WORKSPACE/docker-compose.preprod.yml $PREPROD_DIR/
+          node "$GITHUB_WORKSPACE/scripts/ci/build-preprod-image-proxy.mjs" "$PREPROD_DIR"
 
-          # Génération in-place .env.preprod minimal (anon key only, READ_ONLY=true).
-          # Plus de copie de ~/production/.env (ALLOW_PROD_ENV_COPY supprimé).
-          # Plus de SUPABASE_SERVICE_ROLE_KEY distribuée au conteneur preprod.
+          cp "$GITHUB_WORKSPACE/scripts/ci/preprod-readonly-gateway.cjs" "$PREPROD_DIR/"
+          # Provisioned separately in PREPROD, never copied from PROD by CI.
+          # Fail before stopping any container if the gateway key is missing.
+          node - "$PREPROD_DIR/readonly-upstream.json" <<'NODE'
+          const fs = require('node:fs');
+          const assert = require('node:assert/strict');
+          const mode = fs.statSync(process.argv[2]).mode;
+          assert.equal(mode & 0o027, 0, 'PREPROD gateway config must not be public or group-writable');
+          const cfg = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+          assert.equal(cfg.url, process.env.SUPABASE_URL);
+          assert.ok(typeof cfg.key === 'string' && cfg.key.length >= 20);
+          NODE
+
+          # The sentinel key is deliberately unusable against Supabase. The real
+          # upstream key is mounted only inside the read-only gateway container.
+          umask 077
           cat > "$PREPROD_DIR/.env" <<EOF
           NODE_ENV=preprod
-          SUPABASE_URL=${SUPABASE_URL}
-          SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+          SUPABASE_URL=http://readonly_preprod:3000
+          SUPABASE_ANON_KEY=preprod-isolated-gateway-only
           SESSION_SECRET=${SESSION_SECRET}
           # JWT_SECRET — required since PR #606 VehicleContextService.getOrThrow.
           # See env block comment above for rationale.
@@ -907,20 +921,14 @@ jobs:
           # Preprod heredoc has no OIDC config to propagate — preprod is an
           # ephemeral CI container with no automatic Bearer-token caller.
           EOF
+          chmod 600 "$PREPROD_DIR/.env"
 
           cd $PREPROD_DIR
 
-          echo "✅ .env.preprod generated (anon key only, no SERVICE_ROLE_KEY, READ_ONLY=true)"
+          echo "✅ .env.preprod generated (isolated gateway, no real DB key, READ_ONLY=true)"
 
-          # Source the just-generated .env into the shell. docker-compose.preprod.yml
-          # uses bare `environment: - SUPABASE_URL` style refs which inherit from the
-          # shell at compose-invocation time and OVERRIDE env_file when shell has no
-          # value. CI's job-level `env:` block already sets SUPABASE_*, but explicit
-          # sourcing here makes the deploy step robust to manual reruns from a shell
-          # that doesn't have those vars (e.g. `sudo -u deploy ... --force-recreate`
-          # outside of CI). Discovered post-PR-B redeploy 2026-05-06: a manual rerun
-          # had stripped SUPABASE_ANON_KEY from container, surfaced via Sentry as
-          # repeated 401 "Invalid API key" — which is exactly what observability is for.
+          # Validate the exact generated application env. Compose additionally
+          # pins gateway URL/sentinel and clears inherited direct DB credentials.
           set -a
           # shellcheck disable=SC1091
           . "$PREPROD_DIR/.env"
@@ -955,8 +963,8 @@ jobs:
           )
 
           # Arreter anciens conteneurs
-          docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
-          docker rm nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
+          docker stop caddy-preprod imgproxy-preprod nestjs-remix-monorepo-preprod readonly-preprod redis-preprod 2>/dev/null || true
+          docker rm caddy-preprod imgproxy-preprod nestjs-remix-monorepo-preprod readonly-preprod redis-preprod 2>/dev/null || true
 
           # 🚨 Sentry secrets injection via SOPS exec-env wrapper.
           # docker-compose.preprod.yml declares `environment: - SENTRY_DSN` etc.
@@ -1010,6 +1018,32 @@ jobs:
             exit 1
           fi
           echo "✅ PREPROD serves $SERVED_SHA (image $IMAGE_ID)"
+
+          # Prove network isolation and write rejection before exercising pages.
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const { execFileSync } = require('node:child_process');
+          const inspect = (kind, name) => JSON.parse(execFileSync('docker', [kind, 'inspect', name], {encoding:'utf8'}))[0];
+          const app = inspect('container', 'nestjs-remix-monorepo-preprod');
+          const networks = Object.keys(app.NetworkSettings.Networks);
+          assert.equal(networks.length, 1);
+          assert.equal(inspect('network', networks[0]).Internal, true);
+          const env = Object.fromEntries(app.Config.Env.map(value => [value.slice(0, value.indexOf('=')), value.slice(value.indexOf('=') + 1)]));
+          assert.equal(env.SUPABASE_URL, 'http://readonly_preprod:3000');
+          assert.equal(env.SUPABASE_ANON_KEY, 'preprod-isolated-gateway-only');
+          assert.ok(!env.DATABASE_URL && !env.SUPABASE_SERVICE_ROLE_KEY);
+          NODE
+          docker exec nestjs-remix-monorepo-preprod node -e '
+            (async () => {
+              const assert = require("node:assert/strict");
+              const gateway = "http://readonly_preprod:3000";
+              const denied = await fetch(gateway + "/rest/v1/__preprod_write_probe", {method:"PATCH",body:"{}"});
+              assert.equal(denied.status,405);
+              const audit = await (await fetch(gateway + "/__audit")).json();
+              assert.ok(audit.blocked >= 1);
+              console.log("PREPROD write request rejected before database access");
+            })().catch(error => { console.error(error.message); process.exit(1); });
+          '
 
           echo "✅ PREPROD deployed successfully on port 3200"
           echo "🔗 Test URL: http://$(hostname -I | awk '{print $1}'):3200"
@@ -1262,11 +1296,11 @@ jobs:
             exit 1
           fi
 
-      - name: 📡 Deploy Watcher (Supabase report)
+      - name: 📡 Deploy Watcher (local PREPROD report)
         if: always()
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          APP_CONTAINER: nestjs-remix-monorepo-preprod
+          CRON_STATE_DIR: /home/deploy/preprod/cron
           DEPLOY_URL: "http://localhost:3200"
           STARTUP_WAIT: "5"
         run: |

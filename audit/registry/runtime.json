@@ -10557,18 +10557,18 @@
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/checkout.resume.tsx",
+      "id": "runtime:frontend/app/routes/checkout.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/checkout.resume.tsx",
+      "path": "frontend/app/routes/checkout.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/checkout.tsx",
+      "id": "runtime:frontend/app/routes/checkout_.resume.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/checkout.tsx",
+      "path": "frontend/app/routes/checkout_.resume.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

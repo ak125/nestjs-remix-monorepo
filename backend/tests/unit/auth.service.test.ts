@@ -2,13 +2,17 @@
  * AuthService Unit Tests
  *
  * Tests the main authentication orchestrator.
- * 10 tests covering: authenticateUser (5 cases), login (2 cases),
- * validateToken (2 cases), isAdmin (1 case: staff vs customer tier).
+ * Covers: authenticateUser, login, validateToken, isAdmin,
+ * isEmailRegistered (fail-closed) and register (no email in logs).
  *
  * @see backend/src/auth/auth.service.ts
  */
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../../src/auth/auth.service';
@@ -116,7 +120,10 @@ describe('AuthService', () => {
         { provide: UserDataConsolidatedService, useValue: mockUserService },
         { provide: CacheService, useValue: mockCacheService },
         { provide: PasswordCryptoService, useValue: mockPasswordCrypto },
-        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('') } },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn().mockReturnValue('') },
+        },
       ],
     }).compile();
 
@@ -362,7 +369,10 @@ describe('AuthService', () => {
   // TEST 8: validateToken — valid JWT → returns AuthUser
   // ═══════════════════════════════════════════════════════════════
   it('validateToken() should return AuthUser when JWT is valid', async () => {
-    mockJwtService.verify.mockReturnValue({ sub: 'user-123', email: 'test@example.com' });
+    mockJwtService.verify.mockReturnValue({
+      sub: 'user-123',
+      email: 'test@example.com',
+    });
     // findById returns User directly (not wrapped)
     mockUserService.findById.mockResolvedValue(mockUserData);
 
@@ -406,5 +416,98 @@ describe('AuthService', () => {
     mockUserService.findById.mockResolvedValueOnce(customerTier7);
     const isNotAdminResult = await service.isAdmin('customer-user-id');
     expect(isNotAdminResult).toBe(false);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // isEmailRegistered — vérification fail-closed (checkout invité)
+  // ═══════════════════════════════════════════════════════════════
+  describe('isEmailRegistered()', () => {
+    it('retourne la réponse de la vérification cross-tables', async () => {
+      mockUserService.emailExistsAnywhere.mockResolvedValueOnce(true);
+      await expect(
+        service.isEmailRegistered('client@example.test'),
+      ).resolves.toBe(true);
+
+      mockUserService.emailExistsAnywhere.mockResolvedValueOnce(false);
+      await expect(
+        service.isEmailRegistered('libre@example.test'),
+      ).resolves.toBe(false);
+
+      expect(mockUserService.emailExistsAnywhere).toHaveBeenCalledWith(
+        'client@example.test',
+      );
+    });
+
+    it('propage une vérification en échec au lieu de répondre « email libre »', async () => {
+      const failure = new Error('rpc down');
+      mockUserService.emailExistsAnywhere.mockRejectedValueOnce(failure);
+
+      await expect(
+        service.isEmailRegistered('client@example.test'),
+      ).rejects.toBe(failure);
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // register — les logs ne contiennent jamais l'adresse email
+  // ═══════════════════════════════════════════════════════════════
+  describe('register()', () => {
+    const email = 'nouveau.client@example.test';
+    const dto = {
+      email,
+      password: 'motdepasse-de-test',
+      firstName: 'Prénom',
+      lastName: 'Nom',
+    };
+
+    function loggedText(spies: jest.SpyInstance[]): string {
+      return spies
+        .flatMap((spy) => spy.mock.calls)
+        .map((args) => args.map((a: unknown) => String(a)).join(' '))
+        .join('\n')
+        .toLowerCase();
+    }
+
+    function spyLogger(): jest.SpyInstance[] {
+      return (['debug', 'log', 'warn', 'error'] as const).map((level) =>
+        jest.spyOn(Logger.prototype, level).mockImplementation(() => {}),
+      );
+    }
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('crée le compte sans écrire l’email dans les logs', async () => {
+      const spies = spyLogger();
+      mockUserService.create.mockResolvedValueOnce({
+        ...mockUserData,
+        id: 'usr_new',
+        email,
+      });
+
+      const user = await service.register(dto);
+
+      expect(user.id).toBe('usr_new');
+      expect(mockUserService.create).toHaveBeenCalledWith(dto);
+      expect(loggedText(spies)).not.toContain(email);
+      expect(loggedText(spies)).toContain('usr_new');
+    });
+
+    it('refuse un email déjà inscrit sans écrire l’email dans les logs', async () => {
+      const spies = spyLogger();
+      mockUserService.emailExistsAnywhere.mockResolvedValueOnce(true);
+      mockUserService.resolveUserByEmail.mockResolvedValueOnce({
+        ...mockResolved,
+        email,
+      });
+
+      await expect(service.register(dto)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+
+      expect(mockUserService.create).not.toHaveBeenCalled();
+      expect(loggedText(spies)).not.toContain(email);
+    });
   });
 });
