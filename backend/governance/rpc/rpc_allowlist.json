@@ -581,8 +581,8 @@
     },
     {
       "name": "get_gamme_page_data_cached",
-      "volatility": "STABLE",
-      "reason": "ADR-024 Phase 1 cache-first RPC, reads from __gamme_page_cache (parity ADR-016)"
+      "volatility": "VOLATILE",
+      "reason": "ADR-024 cache-first RPC: reads __gamme_page_cache, rebuilds it on miss/stale via rebuild_gamme_page_cache (writes), hence VOLATILE (20261105_gamme_page_cached_volatile)"
     },
     {
       "name": "rebuild_gamme_page_cache",

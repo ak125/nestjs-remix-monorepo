@@ -193,8 +193,8 @@
       "frontend/app/routes/cart.tsx",
       "frontend/app/routes/checkout-payment-return.tsx",
       "frontend/app/routes/checkout-payment.tsx",
-      "frontend/app/routes/checkout.resume.tsx",
       "frontend/app/routes/checkout.tsx",
+      "frontend/app/routes/checkout_.resume.tsx",
       "frontend/app/routes/client.orders.$id.tsx",
       "frontend/app/routes/client.orders._index.tsx",
       "frontend/app/routes/client.set-password.tsx",
@@ -422,8 +422,8 @@
       "frontend/app/routes/cart.tsx",
       "frontend/app/routes/checkout-payment-return.tsx",
       "frontend/app/routes/checkout-payment.tsx",
-      "frontend/app/routes/checkout.resume.tsx",
       "frontend/app/routes/checkout.tsx",
+      "frontend/app/routes/checkout_.resume.tsx",
       "frontend/app/routes/client.orders.$id.tsx",
       "frontend/app/routes/client.orders._index.tsx",
       "frontend/app/routes/client.set-password.tsx",
@@ -2858,6 +2858,8 @@
       "backend/supabase/migrations/20261030_get_substitution_status_definer_read.sql",
       "backend/supabase/migrations/20261031_accents_protected_segments.down.sql",
       "backend/supabase/migrations/20261031_accents_protected_segments.sql",
+      "backend/supabase/migrations/20261105_gamme_page_cached_volatile.down.sql",
+      "backend/supabase/migrations/20261105_gamme_page_cached_volatile.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3049,7 +3051,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1639,
+  "runtime_files_count": 1641,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4347,6 +4349,8 @@
     "backend/supabase/migrations/20261030_get_substitution_status_definer_read.sql",
     "backend/supabase/migrations/20261031_accents_protected_segments.down.sql",
     "backend/supabase/migrations/20261031_accents_protected_segments.sql",
+    "backend/supabase/migrations/20261105_gamme_page_cached_volatile.down.sql",
+    "backend/supabase/migrations/20261105_gamme_page_cached_volatile.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
@@ -4520,8 +4524,8 @@
     "frontend/app/routes/cart.tsx",
     "frontend/app/routes/checkout-payment-return.tsx",
     "frontend/app/routes/checkout-payment.tsx",
-    "frontend/app/routes/checkout.resume.tsx",
     "frontend/app/routes/checkout.tsx",
+    "frontend/app/routes/checkout_.resume.tsx",
     "frontend/app/routes/client.orders.$id.tsx",
     "frontend/app/routes/client.orders._index.tsx",
     "frontend/app/routes/client.set-password.tsx",
