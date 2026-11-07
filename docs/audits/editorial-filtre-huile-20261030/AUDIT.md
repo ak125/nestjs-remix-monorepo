@@ -480,7 +480,7 @@ filtre ». Blocs prêts après admission : `integration/candidats.json`.
 | Prises de vue : filtre vissé et cartouche neufs, deux filtres semblables, filtre en coupe (membrane anti-retour), boîtier de cartouche, main qui serre | C2, C3, C4, R3 | aucune ; photo hero `filtre-a-huile.webp` disponible (licence `owned`) |
 | Pictogrammes : huiler le joint, main | C4 | à créer (PROMPTS.md P-07, S-03) |
 | Pictogrammes du témoin de pression d'huile, de l'arrêt impératif, du contact coupé et de la jauge | V1 14-24 s, C1 | livrés : `assets/picto-temoin-pression-huile`, `picto-arret-imperatif`, `picto-contact-coupe`, `picto-niveau-huile` (`.svg`, `.webp`), par `tools/build-pictos.cjs` ; le témoin le 30/10, les trois autres le 31/10 |
-| Composition pour C1, C2, C3, C4 | shorts | `SequencesCourtes` proposée dans #1936 (`e3d644a04`, brouillon non fusionné) ; absente de `main` |
+| Composition pour C1, C2, C3, C4 | shorts | `SequencesCourtes` de #1936, fusionnée dans `main` le 31/10 (`7d3f30237`) ; déploiement PREPROD et PROD non vérifié |
 
 Images servies le 30/10 (bucket `uploads/articles/gammes-produits/`, contrat `frontend/app/types/r1-images.types.ts`).
 Révision 3 : remplacements produits dans `assets/` et décrits slot par slot dans `integration/assets.json` (fichier,
