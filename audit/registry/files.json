@@ -33316,7 +33316,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 778,
+      "loc": 820,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
       "risk": "low",
@@ -33482,7 +33482,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 658,
+      "loc": 681,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "low",
@@ -33548,7 +33548,7 @@
         "backend/src/modules/seo/services/sitemap-v10.types.ts"
       ],
       "kind": "service",
-      "loc": 657,
+      "loc": 668,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10.service.ts",
       "risk": "low",
