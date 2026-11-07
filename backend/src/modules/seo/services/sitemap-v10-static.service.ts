@@ -50,6 +50,20 @@ export function excludeUrlsOwnedElsewhere(
   return { kept, excludedCount: urls.length - kept.length };
 }
 
+/**
+ * Lecture véhicules en échec : rien n'est écrit ni retiré. `keptFilePath` =
+ * dernier sitemap-vehicules.xml présent (à garder dans l'index), sinon null.
+ */
+export class VehiculesCollectionError extends Error {
+  constructor(
+    message: string,
+    readonly keptFilePath: string | null,
+  ) {
+    super(message);
+    this.name = 'VehiculesCollectionError';
+  }
+}
+
 @Injectable()
 export class SitemapV10StaticService extends SupabaseBaseService {
   protected override readonly logger = new Logger(SitemapV10StaticService.name);
@@ -153,6 +167,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
    * absentes de la vue véhicules. `brandsPublished` = sitemap-brands.xml
    * écrit par ce run (seul cas où un fichier sans URL restante est retiré).
    * Écriture ou retrait en échec : erreur propagée (jamais de faux succès).
+   * Lecture en échec : VehiculesCollectionError, fichier existant intact.
    */
   async generateVehiculesSitemap(
     brandUrls?: SitemapUrl[] | null,
@@ -177,8 +192,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         .select('*', { count: 'exact', head: true });
 
       if (countError) {
-        this.logger.error(`❌ Error counting vehicules: ${countError.message}`);
-        return null;
+        throw new Error(`count en erreur : ${countError.message}`);
       }
 
       // count 0 (lecture saine) = vue vide : les URLs marque non publiées
@@ -199,7 +213,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
             );
 
       if (!Array.isArray(vehicules) || (totalCount > 0 && !vehicules.length)) {
-        return null;
+        throw new Error(`liste absente ou vide pour count ${totalCount}`);
       }
 
       const allUrls: SitemapUrl[] = vehicules.map((v) => ({
@@ -253,8 +267,17 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
     } catch (error) {
+      // Aucun fichier touché dans ce bloc : le dernier fichier reste servi
+      // et déclaré ; l'appelant signale le run en échec.
+      const kept = await fs.stat(filePath).then(
+        (s) => (s.isFile() ? filePath : null),
+        () => null,
+      );
       this.logger.error(`❌ Failed to generate vehicules sitemap: ${error}`);
-      return null;
+      throw new VehiculesCollectionError(
+        `lecture véhicules en échec (${error})`,
+        kept,
+      );
     }
 
     if (urls.length === 0) {

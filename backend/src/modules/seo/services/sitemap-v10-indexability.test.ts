@@ -362,7 +362,13 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
 
   function buildOrchestrator(
     brandSource: Result,
-    vue: { count?: number; rows?: unknown[]; r7?: Result } = {},
+    vue: {
+      count?: number;
+      countError?: string;
+      rows?: unknown[];
+      fetch?: () => Promise<unknown>;
+      r7?: Result;
+    } = {},
   ) {
     const svc = buildService({}, outDir, {});
     const ok: Result = { data: [], error: null };
@@ -380,7 +386,11 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
         from: (t: string) =>
           fakeQuery(
             t === '__sitemap_vehicules'
-              ? ({ data: null, error: null, count: vue.count ?? 3 } as never)
+              ? ({
+                  data: null,
+                  error: vue.countError ? { message: vue.countError } : null,
+                  count: vue.countError ? null : (vue.count ?? 3),
+                } as never)
               : t === 'auto_marque'
                 ? brandSource
                 : t === '__seo_r7_pages'
@@ -390,7 +400,7 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
           ),
       },
       dataService: {
-        fetchWithPagination: async () => vue.rows ?? viewRows,
+        fetchWithPagination: vue.fetch ?? (async () => vue.rows ?? viewRows),
       },
     });
     const xml = (svc as unknown as { xmlService: SitemapV10XmlService })
@@ -614,18 +624,50 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
     expect(idx['sitemap-vehicules.xml']).toEqual([...BRANDS, MODEL].map(abs));
   });
 
-  it('marques publiées + lecture véhicules en échec : ancien fichier gardé tel quel, hors index', async () => {
-    await seedOldVehicules([...BRANDS, MODEL]);
-    const before = await fs.readFile(path.join(outDir, OLD_VEH), 'utf8');
+  it.each([
+    ['count en erreur', { countError: 'timeout' }],
+    ['liste en erreur (non tableau)', { fetch: async () => null }],
+    ['count > 0 puis liste vide', { count: 3, rows: [] }],
+    [
+      'exception de lecture',
+      {
+        fetch: async () => {
+          throw new Error('socket hang up');
+        },
+      },
+    ],
+  ] as [string, Parameters<typeof buildOrchestrator>[1]][])(
+    'marques publiées + %s : run en échec, ancien fichier intact et gardé dans l’index',
+    async (_label, vue) => {
+      // Dernier état valide gardé pendant la panne (marques répétées dans
+      // sitemap-brands.xml jusqu'au prochain run sain).
+      await seedOldVehicules([...BRANDS, MODEL]);
+      const before = await fs.readFile(path.join(outDir, OLD_VEH), 'utf8');
+      const { orchestrator, logger } = buildOrchestrator(brandsAvailable, vue);
+      const result = await orchestrator.generateAll();
+      const idx = await readIndex(result.indexPath as string);
+      expect(result.success).toBe(false);
+      expect(idx['sitemap-brands.xml']).toEqual(BRANDS.map(abs));
+      expect(idx[OLD_VEH]).toEqual([...BRANDS, MODEL].map(abs));
+      expect(await fs.readFile(path.join(outDir, OLD_VEH), 'utf8')).toBe(
+        before,
+      );
+      expect(logger.error).toHaveBeenCalledWith(
+        expect.stringContaining('lecture en échec'),
+      );
+    },
+  );
+
+  it('marques publiées + lecture véhicules en échec sans fichier antérieur : rien inventé, run en échec', async () => {
     const { orchestrator } = buildOrchestrator(brandsAvailable, {
-      count: 3,
-      rows: [],
+      countError: 'timeout',
     });
     const result = await orchestrator.generateAll();
     const idx = await readIndex(result.indexPath as string);
+    expect(result.success).toBe(false);
     expect(idx['sitemap-brands.xml']).toEqual(BRANDS.map(abs));
     expect(idx[OLD_VEH]).toBeUndefined();
-    expect(await fs.readFile(path.join(outDir, OLD_VEH), 'utf8')).toBe(before);
+    await expect(fs.stat(path.join(outDir, OLD_VEH))).rejects.toThrow();
   });
 
   it.each([

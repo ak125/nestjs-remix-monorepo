@@ -27,7 +27,10 @@ import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
-import { SitemapV10StaticService } from './sitemap-v10-static.service';
+import {
+  SitemapV10StaticService,
+  VehiculesCollectionError,
+} from './sitemap-v10-static.service';
 import {
   SitemapV10PiecesService,
   PRODUCT_FAMILY_KEYS,
@@ -133,9 +136,17 @@ export class SitemapV10Service extends SupabaseBaseService {
         );
       } catch (error) {
         vehiculesFailed = true;
-        this.logger.error(
-          `❌ sitemap-vehicules.xml : écriture ou retrait en échec, run signalé en échec (${error})`,
-        );
+        if (error instanceof VehiculesCollectionError) {
+          // Lecture en échec : dernier fichier intact, gardé dans l'index.
+          vehicules = error.keptFilePath;
+          this.logger.error(
+            `❌ sitemap-vehicules.xml : lecture en échec, dernier fichier ${vehicules ? 'gardé dans l’index' : 'absent'}, run signalé en échec (${error.message})`,
+          );
+        } else {
+          this.logger.error(
+            `❌ sitemap-vehicules.xml : écriture ou retrait en échec, run signalé en échec (${error})`,
+          );
+        }
       }
       if (vehicules) allFilePaths.push(vehicules);
 
