@@ -41,6 +41,21 @@
     }
 }
 
+# ===== ATTENTE D'UN CONTENEUR EN COURS DE REMPLACEMENT =====
+# À chaque déploiement, le conteneur applicatif et imgproxy sont remplacés :
+# pendant une dizaine de secondes, leur nom ne répond pas. Sans ces deux
+# lignes, Caddy répond aussitôt 500 « Une erreur est survenue » (déploiement
+# PROD du 2026-11-05). Avec elles, il réessaie toutes les 250 ms, 30 s au plus,
+# puis transmet la requête au nouveau conteneur.
+# Seul un échec de connexion est réessayé pour toute méthode : la requête n'a
+# pas encore été envoyée, donc un POST n'est jamais traité deux fois. Un échec
+# survenu après l'envoi n'est réessayé que pour un GET (défaut de Caddy).
+# Importé dans chaque reverse_proxy vers monorepo_prod et imgproxy.
+(attente_remplacement) {
+    lb_try_duration 30s
+    lb_try_interval 250ms
+}
+
 # ===== REDIRECTION .FR VERS .COM =====
 automecanik.fr, www.automecanik.fr {
     # TLS via Cloudflare Origin CA — plus d'ACME/expiration (incident 2026-06-08)
@@ -78,6 +93,7 @@ automecanik.com, www.automecanik.com {
             rewrite @imgproxy_legacy_options /insecure{uri}
 
             reverse_proxy imgproxy:8080 {
+                import attente_remplacement
                 header_up Host imgproxy
                 header_down -Server
                 header_down -Cache-Control
@@ -154,6 +170,7 @@ automecanik.com, www.automecanik.com {
         # (IMGPROXY_AUTO_AVIF + IMGPROXY_AUTO_WEBP).
         rewrite * /insecure/rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/r1/{re.gamme_img.1}
         reverse_proxy imgproxy:8080 {
+            import attente_remplacement
             header_up Host imgproxy
             header_down -Server
         }
@@ -211,6 +228,7 @@ automecanik.com, www.automecanik.com {
     handle @hashed {
         header Cache-Control "public, max-age=31536000, immutable"
         reverse_proxy monorepo_prod:3000 {
+            import attente_remplacement
             header_up Host {host}
             header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
@@ -224,6 +242,7 @@ automecanik.com, www.automecanik.com {
     handle @static {
         header Cache-Control "public, max-age=86400"
         reverse_proxy monorepo_prod:3000 {
+            import attente_remplacement
             header_up Host {host}
             header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
@@ -280,6 +299,7 @@ automecanik.com, www.automecanik.com {
         header ?Vary "Accept-Encoding"
 
         reverse_proxy monorepo_prod:3000 {
+            import attente_remplacement
             header_up Host {host}
             header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
@@ -315,6 +335,7 @@ automecanik.com, www.automecanik.com {
     handle @api_cacheable {
         # Laisser le backend définir Cache-Control (public, max-age=900)
         reverse_proxy monorepo_prod:3000 {
+            import attente_remplacement
             header_up Host {host}
             header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
@@ -339,6 +360,7 @@ automecanik.com, www.automecanik.com {
         header Cloudflare-CDN-Cache-Control "no-store"
 
         reverse_proxy monorepo_prod:3000 {
+            import attente_remplacement
             header_up Host {host}
             header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
@@ -350,6 +372,7 @@ automecanik.com, www.automecanik.com {
     
     # ===== FALLBACK =====
     reverse_proxy monorepo_prod:3000 {
+        import attente_remplacement
         header_up Host {host}
         header_up Cf-Connecting-Ip {client_ip}
         header_up X-Real-IP {client_ip}
@@ -360,6 +383,11 @@ automecanik.com, www.automecanik.com {
         health_interval 30s
         health_timeout 5s
         health_status 2xx
+        # 2 contrôles ratés de suite (donc au moins 30 s) avant de déclarer le
+        # conteneur hors service. Avec 1 seul, un contrôle tombé pendant un
+        # remplacement le déclarait hors service jusqu'au contrôle suivant :
+        # jusqu'à 30 s d'erreurs 500 après son retour (mesuré en local).
+        health_fails 2
 
         transport http {
             dial_timeout 30s

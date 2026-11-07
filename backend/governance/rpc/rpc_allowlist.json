@@ -540,6 +540,11 @@
       "reason": "Read-only optimization (migrated from P2)"
     },
     {
+      "name": "get_substitution_status",
+      "volatility": "STABLE",
+      "reason": "Gamme status read-path (SECURITY DEFINER) — _meta + gamme of get_substitution_data only, for the R1 404/410 check (light mode); the full RPC exceeds the loader's 3 s abort"
+    },
+    {
       "name": "get_subsystem_components",
       "volatility": "STABLE",
       "reason": "SELECT only"
@@ -576,8 +581,8 @@
     },
     {
       "name": "get_gamme_page_data_cached",
-      "volatility": "STABLE",
-      "reason": "ADR-024 Phase 1 cache-first RPC, reads from __gamme_page_cache (parity ADR-016)"
+      "volatility": "VOLATILE",
+      "reason": "ADR-024 cache-first RPC: reads __gamme_page_cache, rebuilds it on miss/stale via rebuild_gamme_page_cache (writes), hence VOLATILE (20261105_gamme_page_cached_volatile)"
     },
     {
       "name": "rebuild_gamme_page_cache",
