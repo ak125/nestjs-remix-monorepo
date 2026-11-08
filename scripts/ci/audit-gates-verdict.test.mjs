@@ -85,6 +85,15 @@ test("scope: incomplete/truncated listing (seen < changed) → forced in scope",
   assert.match(d.reason, /incomplete/);
 });
 
+test("scope: incomplete listing BELOW the cap (seen 1 < changed 2) + in_scope=false → forced in scope", () => {
+  // Below 3000 only the seen < changed rule can force the audit: the cap rule must not be needed.
+  const d = scope({ filterInScope: "false", filterAllCount: "1", prChangedFiles: "2" });
+  assert.equal(d.ok, true);
+  assert.equal(d.inScope, true);
+  assert.match(d.reason, /incomplete \(seen 1 < changed 2\)/);
+  assert.doesNotMatch(d.reason, /listing cap/);
+});
+
 test("scope: rename in-scope → out-of-scope path (old path deleted + new added) → in scope", () => {
   // dorny v4 reports the old in-scope path as `deleted`, so in_scope=true.
   const d = scope({ filterInScope: "true", filterAllCount: "2", prChangedFiles: "1" });
@@ -306,6 +315,41 @@ test("main scope: detection error → rc 1, no output written", () =>
     });
     assert.equal(rc, 1);
     assert.equal(readFileSync(out, "utf8"), "");
+    assert.ok(logs.some((l) => l.startsWith("::error::")));
+  }));
+
+test("main scope: incomplete listing below cap + in_scope=false → rc 0, writes in_scope=true", () =>
+  withTmp((dir, logs) => {
+    const out = join(dir, "out");
+    writeFileSync(out, "");
+    const rc = main("scope", {
+      GITHUB_OUTPUT: out,
+      FILTER_OUTCOME: "success",
+      FILTER_IN_SCOPE: "false",
+      FILTER_ALL_COUNT: "1",
+      PR_CHANGED_FILES: "2",
+    });
+    assert.equal(rc, 0);
+    assert.equal(readFileSync(out, "utf8"), "in_scope=true\n");
+    assert.ok(logs.some((l) => l.startsWith("::notice::") && /incomplete/.test(l)));
+  }));
+
+test("main verdict: detection error chain (changes failure, in_scope unset, audit skipped) → rc 1", () =>
+  withTmp((dir, logs) => {
+    // What GitHub passes once the scope step exits 1: the job fails and never sets in_scope.
+    const sum = join(dir, "summary");
+    writeFileSync(sum, "");
+    const rc = main("verdict", {
+      GITHUB_STEP_SUMMARY: sum,
+      CHANGES_RESULT: "failure",
+      IN_SCOPE: "",
+      AUDIT_RESULT: "skipped",
+    });
+    assert.equal(rc, 1);
+    const s = readFileSync(sum, "utf8");
+    assert.match(s, /❌ Deterministic gates — échec/);
+    assert.match(s, /scope job did not succeed/);
+    assert.doesNotMatch(s, /HORS PÉRIMÈTRE/);
     assert.ok(logs.some((l) => l.startsWith("::error::")));
   }));
 
