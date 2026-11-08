@@ -272,6 +272,9 @@ describe("wizard waits for valid selections and a single step transition", () =>
       name: "Lancer le diagnostic",
     });
     expect((button as HTMLButtonElement).disabled).toBe(true);
+    // Symptoms are requested once the restored system is found in the catalog.
+    await waitFor(() => expect(resolve).toBeTypeOf("function"));
+    expect((button as HTMLButtonElement).disabled).toBe(true);
     await act(async () => resolve(response(symptomPayload)));
     await waitFor(() =>
       expect((button as HTMLButtonElement).disabled).toBe(false),

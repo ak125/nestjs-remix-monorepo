@@ -71,6 +71,9 @@ function isRpcPayload(value: unknown): value is RpcPayload {
 @Injectable()
 export class RmAlternativesService extends SupabaseBaseService {
   protected readonly logger = new Logger(RmAlternativesService.name);
+  // Same process-local singleflight pattern as HomepageRpcService. Only pending
+  // work is retained; Redis remains the cache. Generation is part of the key.
+  private readonly inflight = new Map<string, Promise<RpcPayload>>();
 
   constructor(private readonly cache: CacheService) {
     super();
@@ -97,6 +100,25 @@ export class RmAlternativesService extends SupabaseBaseService {
       }
     }
 
+    let pending = this.inflight.get(cacheKey);
+    if (!pending) {
+      pending = this.computeAndCache(type_id, pg_id, cacheKey).finally(() => {
+        this.inflight.delete(cacheKey);
+      });
+      this.inflight.set(cacheKey, pending);
+    } else {
+      this.logger.debug('In-flight join alternatives RPC');
+    }
+    const payload = await pending;
+    // Each caller keeps its requested slice and its own deterministic etag.
+    return this.buildResponse(this.sliceToLimit(payload, limit));
+  }
+
+  private async computeAndCache(
+    type_id: number,
+    pg_id: number,
+    cacheKey: string,
+  ): Promise<RpcPayload> {
     // Inline literal (instead of const) so check-rpc-allowlist-coverage.sh's
     // static parser picks it up — variable RPC names slip past the gate and
     // only fail at runtime (incident root cause for run 26101726823).
@@ -134,7 +156,7 @@ export class RmAlternativesService extends SupabaseBaseService {
     }
 
     await this.cache.set(cacheKey, JSON.stringify(data), CACHE_TTL_SECONDS);
-    return this.buildResponse(this.sliceToLimit(data, limit));
+    return data;
   }
 
   /**

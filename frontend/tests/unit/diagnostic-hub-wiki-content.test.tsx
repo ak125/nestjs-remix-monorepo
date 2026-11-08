@@ -145,6 +145,21 @@ describe("Diagnostic hub wiki content availability", () => {
     expect(document.body.textContent).not.toMatch(/\d\s*%/);
   });
 
+  // OBD reading is on standby: no code entry, the visitor is sent to symptoms.
+  it("offers no fault code entry while OBD reading is on standby", async () => {
+    stubFetch(allWiki(() => entry({ clusters: [], signs: [], faq: [] })));
+    renderHub();
+    await screen.findByText("FAQ en cours de population.");
+    expect(screen.queryByPlaceholderText(/P0300/)).toBeNull();
+    expect(screen.queryByRole("button", { name: /Scanner/ })).toBeNull();
+    expect(
+      screen
+        .getByRole("link", { name: /Décrire les symptômes/ })
+        .getAttribute("href"),
+    ).toBe("#outil-diagnostic");
+    expect(document.getElementById("outil-diagnostic")).not.toBeNull();
+  });
+
   it("renders available wiki content", async () => {
     stubFetch({
       "vocab-clusters": () =>

@@ -1151,3 +1151,83 @@ All eight projects of the sequence now use NodeNext. `node-cjs-legacy.json` stay
 is still not regenerated, for the reasons given in the pilot section; its `backend` row
 describes the configuration before this change. The TS7 decision above stands: it is
 still PARKED.
+
+## Artifact refreshed — the preflight reads the lockfile
+
+`ts7-shadow-parity.json` is regenerated, after a fix to the harness preflight. Before this
+change it still described the tree before the nodenext sequence:
+
+| `ts7-shadow-parity.json` | Before (`main` at `27a47a1d6`) | After |
+| --- | --- | --- |
+| PARITY | 4 | 12 |
+| BLOCKED_CONFIG | 8 — the eight projects of the sequence, each `TS5108` (`moduleResolution=node10`) | 0 |
+| DIVERGENT | 0 | 0 |
+| Source diagnostics, TS6 / TS7 | 0 / 0 | 0 / 0 |
+| Config diagnostics, TS7 | 8 | 0 |
+| `inputHash` | `sha256:f2c12262…` | `sha256:b68a001a…` |
+
+### The preflight defect
+
+The preflight refuses a half-installed tree (see "Two guards worth knowing"). It required a
+`<project>/node_modules` directory in every project whose `package.json` declares
+dependencies. npm hoists into the root `node_modules`: the root lockfile pins nested
+installs only under `frontend` (36 entries), `backend` (1), `packages/registry` (1),
+`packages/design-tokens` (41) and `packages/eslint-config` (2, not a type-check project).
+After a clean `npm ci`, the other 7 workspace projects have no `node_modules` directory and
+need none. The unmodified harness, run in a fresh `npm ci` worktree on `27a47a1d6`, exits 1
+before provisioning TS7:
+
+```text
+Preflight failed — refusing to publish numbers from an incomplete tree:
+  - packages/cwv-taxonomy/node_modules is missing — its own deps cannot resolve
+  - packages/database-types/node_modules is missing — its own deps cannot resolve
+  - packages/domain-commerce/node_modules is missing — its own deps cannot resolve
+  - packages/seo-role-contracts/node_modules is missing — its own deps cannot resolve
+  - packages/seo-roles/node_modules is missing — its own deps cannot resolve
+  - packages/seo-types/node_modules is missing — its own deps cannot resolve
+  - packages/seo-url-contract/node_modules is missing — its own deps cannot resolve
+```
+
+On the long-lived DEV checkout those 7 directories exist and are empty, so the check passed
+there without testing anything.
+
+### Change
+
+`missingNestedInstalls()` (`scripts/audit/ts7-shadow-parity.ts`): for a workspace of the
+root lockfile, every `<project>/node_modules/…` entry the lockfile pins must exist on disk.
+Optional entries are skipped: npm omits the builds for other platforms (`@esbuild/darwin-*`,
+`fsevents`). `services/remotion-renderer` is not a workspace (it has its own lockfile) and
+keeps the directory check. The `node_modules/typescript` check and the frontend typegen are
+unchanged; a missing root lockfile fails the preflight. Four unit tests are added; the
+harness tests go from 22 to 26, all passing.
+
+### Evidence
+
+Fresh worktree on `27a47a1d6`, `npm ci` of the root lockfile and of
+`services/remotion-renderer`, the 9 `packages/*` built first (see below):
+
+- Negative case: `packages/registry/node_modules/js-yaml` moved aside, then restored.
+
+  ```text
+  Preflight failed — refusing to publish numbers from an incomplete tree:
+    - packages/registry: 1 nested install(s) pinned by package-lock.json are missing (first: packages/registry/node_modules/js-yaml)
+  ```
+
+- `npm run audit:ts7-shadow:parity-only`: `PARITY 12 · BLOCKED_CONFIG 0 · DIVERGENT 0`, exit 0.
+- `npm run audit:ts7-shadow:check` right after: `Parity artifact up to date.`, exit 0.
+
+### Prerequisite the preflight does not check
+
+The 9 `packages/*` export their types from `dist/`, which is gitignored. `turbo typecheck`
+builds them first (`dependsOn: ["^build"]`); the harness calls `tsc` directly and does not.
+In a fresh worktree, build them first (`turbo run build --filter='./packages/*'`). Otherwise
+both compilers report the same phantom `TS2307`s and the run still reads PARITY. The sign
+is a non-zero `ts6SourceDiagnostics` in the summary. It is 0 here.
+
+### TS7 decision
+
+Unchanged: still PARKED. On 2026-10-20, `typescript-eslint` 8.72.0 still declares peer
+`typescript: >=4.8.4 <6.1.0`, and `ts-jest` 29.4.15 declares `<7`. Parity on 12 projects
+removes the configuration blocker this harness measures. It does not lift the peer-range
+blocker. The `stalenessFindings` text in the artifact cites `typescript-eslint@8.65.0` as
+of 2026-07-26. That text is fixed in the harness, and this change leaves it as it is.

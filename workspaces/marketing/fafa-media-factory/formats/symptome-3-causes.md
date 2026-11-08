@@ -65,10 +65,10 @@ Constaté dans le code, sans rendu lancé :
 
 ## Gates critiques
 
-- **G1 Truth** : chaque cause DOIT avoir une evidence wiki diagnostic ou OEM. Sans evidence → claim non-sourcé compte dans le ratio FAIL.
-- **G2 Safety** : ordre des causes basé sur probabilité, pas affirmation absolue. Garder « peut venir », « souvent », « moins fréquente ».
-- **G4 Platform** : durée 25-40s ±10% (22-44s acceptable).
-- **G6 Visual Honesty** : photos pièces réelles autorisées (truth_dependency=`reference`), JAMAIS comme preuve d'un diagnostic.
+- **G1 Truth** : chaque cause DOIT avoir une evidence wiki diagnostic ou OEM. Sans preuve rattachée ou sans `status` `verified`, chaque claim hors `procedure` et `safety` compte (pas de ratio) : un seul suffit au FAIL.
+- **Hors gates** : ordre des causes par probabilité, pas d'affirmation absolue (interdit de la persona, relu à part par `fafa-brand-safety-reviewer`). Garder « peut venir », « souvent », « moins fréquente ».
+- **G4 Platform** : le code lit la plage de `brief.type`, `short` = 15-60 s élargie de 10 % (13,5-66 s) ; la durée cible 25-40 s est éditoriale, aucune gate ne la mesure.
+- **G6 `visual_role`** : photos pièces réelles autorisées (truth_dependency=`reference`), JAMAIS comme preuve d'un diagnostic.
 
 ## Voir aussi
 

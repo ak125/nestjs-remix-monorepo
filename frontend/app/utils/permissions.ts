@@ -4,7 +4,7 @@
  * result through useLoaderData to components.
  *
  * Source canon : backend/src/auth/dto/user-permissions.dto.ts
- * Spec : docs/superpowers/specs/2026-04-30-permissions-canonical-backend-design.md
+ * Spec : docs/specs/2026-04-30-permissions-canonical-backend-design.md
  */
 
 export interface UserPermissions {

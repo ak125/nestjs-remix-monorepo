@@ -67,11 +67,12 @@ describe("conseils loader → headers — aucune erreur levée n'est mise en cac
   ])("%s → no-store", async (_cas, status, body, expected) => {
     // Une réponse neuve par appel : un guide absent déclenche aussi la
     // recherche du ba_alias (2e fetch), qui ne peut pas relire un corps consommé.
-    fetchMock.mockImplementation(async () =>
-      new Response(JSON.stringify(body), {
-        status,
-        headers: { "Content-Type": "application/json" },
-      }),
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(JSON.stringify(body), {
+          status,
+          headers: { "Content-Type": "application/json" },
+        }),
     );
     const thrown = await thrownBy(() => run());
     expect(thrown.init?.status).toBe(expected);
@@ -82,5 +83,77 @@ describe("conseils loader → headers — aucune erreur levée n'est mise en cac
     const thrown = await thrownBy(() => run({}));
     expect(thrown.init?.status).toBe(404);
     expect(headersFor(thrown)["Cache-Control"]).toBe(NO_STORE);
+  });
+});
+
+/**
+ * Canary projection R3 (P2-R3-D) : `projectionMeta` n'est présent que pour une
+ * paire allowlistée côté backend. La variante ciblée dépend d'un flag runtime ;
+ * elle ne doit jamais entrer dans un cache partagé, sinon un flip du ciblage
+ * resservirait l'ancienne variante (ou la ciblée à tout le monde).
+ */
+type Returned = {
+  data: { r4Reference: Promise<unknown> };
+  init?: { headers?: Record<string, string> };
+};
+
+const PUBLIC_POLICY = "public, max-age=300, stale-while-revalidate=3600";
+
+function serveGuide(guide: Record<string, unknown>) {
+  fetchMock.mockImplementation(async (url: string) =>
+    String(url).includes("/api/r3-guide/")
+      ? new Response(JSON.stringify({ data: guide }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        })
+      : new Response("{}", { status: 404 }),
+  );
+}
+
+async function successHeaders() {
+  const result = (await run({ pg_alias: "filtre-a-huile" })) as Returned;
+  // La référence R4 est différée : la laisser se résoudre (404 → null) avant
+  // la fin du test.
+  await expect(result.data.r4Reference).resolves.toBeNull();
+  const loaderHeaders = new Headers(result.init?.headers);
+  const merged = headers({
+    loaderHeaders,
+    parentHeaders: new Headers(),
+    actionHeaders: new Headers(),
+    errorHeaders: undefined,
+  } as unknown as Args) as Record<string, string>;
+  return { loaderHeaders, merged };
+}
+
+describe("conseils loader → headers — ciblage canary R3", () => {
+  // Le ciblage, pas le verdict, décide du cache : un FALLBACK ciblé sert le
+  // corps legacy mais reste une réponse dépendante du flag.
+  it.each([
+    ["READY_FOR_RENDER", "projection", null],
+    ["FALLBACK", "legacy", "PROJECTION_ABSENT"],
+  ])(
+    "paire ciblée (%s) → private, no-store + X-R3-Canary",
+    async (projectionStatus, servedBodySource, fallbackReason) => {
+      serveGuide({
+        page: { pg_id: 7, pg_alias: "filtre-a-huile" },
+        projectionMeta: {
+          projectionStatus,
+          servedBodySource,
+          fallbackReason,
+          mappedCount: 0,
+          invalidCount: 0,
+        },
+      });
+      const { loaderHeaders, merged } = await successHeaders();
+      expect(loaderHeaders.get("X-R3-Canary")).toBe("1");
+      expect(merged["Cache-Control"]).toBe("private, no-store");
+    },
+  );
+
+  it("paire non ciblée → politique publique, sans marqueur canary", async () => {
+    serveGuide({ page: { pg_id: 7, pg_alias: "filtre-a-huile" } });
+    const { loaderHeaders, merged } = await successHeaders();
+    expect(loaderHeaders.get("X-R3-Canary")).toBeNull();
+    expect(merged["Cache-Control"]).toBe(PUBLIC_POLICY);
   });
 });

@@ -2,16 +2,16 @@
 module: analytics
 sources:
 - backend/src/modules/analytics
-last_scan: '2026-07-14'
+last_scan: '2026-10-23'
 primary_files:
 - backend/src/modules/analytics/analytics.module.ts
 - backend/src/modules/analytics/controllers/landing-attribution.controller.test.ts
 - backend/src/modules/analytics/controllers/landing-attribution.controller.ts
 - backend/src/modules/analytics/controllers/simple-analytics.controller.ts
+- backend/src/modules/analytics/index.ts
 - backend/src/modules/analytics/landing-attribution-cutover.nest.test.ts
 - backend/src/modules/analytics/landing-source.classifier.test.ts
 - backend/src/modules/analytics/landing-source.classifier.ts
-- backend/src/modules/analytics/services/simple-analytics.service.ts
 depends_on:
 - ConfigModule
 - DatabaseModule
@@ -27,14 +27,21 @@ _Section à rédiger._
 
 ### Exports publics du module
 - `SimpleAnalyticsService`
+- `TrackingIntegrityService`
 
 ### Providers (top 15)
 - `SimpleAnalyticsService`
+- `TrackingIntegrityService`
 
 ### Fichiers primaires
 - [backend/src/modules/analytics/analytics.module.ts](../../../backend/src/modules/analytics/analytics.module.ts)
+- [backend/src/modules/analytics/controllers/landing-attribution.controller.test.ts](../../../backend/src/modules/analytics/controllers/landing-attribution.controller.test.ts)
+- [backend/src/modules/analytics/controllers/landing-attribution.controller.ts](../../../backend/src/modules/analytics/controllers/landing-attribution.controller.ts)
 - [backend/src/modules/analytics/controllers/simple-analytics.controller.ts](../../../backend/src/modules/analytics/controllers/simple-analytics.controller.ts)
-- [backend/src/modules/analytics/services/simple-analytics.service.ts](../../../backend/src/modules/analytics/services/simple-analytics.service.ts)
+- [backend/src/modules/analytics/index.ts](../../../backend/src/modules/analytics/index.ts)
+- [backend/src/modules/analytics/landing-attribution-cutover.nest.test.ts](../../../backend/src/modules/analytics/landing-attribution-cutover.nest.test.ts)
+- [backend/src/modules/analytics/landing-source.classifier.test.ts](../../../backend/src/modules/analytics/landing-source.classifier.test.ts)
+- [backend/src/modules/analytics/landing-source.classifier.ts](../../../backend/src/modules/analytics/landing-source.classifier.ts)
 
 <!-- END AUTO-GENERATED -->
 

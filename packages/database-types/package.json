@@ -21,6 +21,11 @@
       "import": "./dist/constants.js",
       "require": "./dist/constants.js"
     },
+    "./family-registry": {
+      "types": "./dist/family-registry.d.ts",
+      "import": "./dist/family-registry.js",
+      "require": "./dist/family-registry.js"
+    },
     "./schemas": {
       "types": "./dist/schemas.d.ts",
       "import": "./dist/schemas.js",

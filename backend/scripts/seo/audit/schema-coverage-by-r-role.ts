@@ -5,8 +5,8 @@
  * Static analysis of dynamic-seo-v4-ultimate.service.ts.
  * Output: docs/audit/2026-05-schema-coverage-by-r-role.md
  *
- * Cf. plan: docs/superpowers/plans/2026-05-23-ai-additive-layer-phase-0-and-1.md
- * Cf. spec: docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.2
+ * Cf. plan: docs/plans/2026-05-23-ai-additive-layer-phase-0-and-1.md
+ * Cf. spec: docs/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.2
  */
 import * as fs from 'fs';
 import * as path from 'path';

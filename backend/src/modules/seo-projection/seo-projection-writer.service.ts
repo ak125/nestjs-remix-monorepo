@@ -426,20 +426,30 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     runId: string | null,
     role?: string,
   ): Promise<EntityWriteOutcome> {
-    // 1. Upsert la ligne entity (idempotent ; ne touche pas active_version_id ici).
-    await this.supabase.from('__seo_entity_facts').upsert(
-      {
-        entity_id: exp.entity_id,
-        entity_type: exp.entity_type,
-        slug:
-          exp.wiki_path.split('/').pop()?.replace(/\.md$/, '') ?? exp.entity_id,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'entity_id' },
-    );
+    // 1. Upsert la ligne entity (idempotent ; ne touche pas active_version_id ici) et lit son
+    //    pointeur : les vues servies joignent active_version_id, pas le seul `status`.
+    const { data: entity, error: entityError } = await this.supabase
+      .from('__seo_entity_facts')
+      .upsert(
+        {
+          entity_id: exp.entity_id,
+          entity_type: exp.entity_type,
+          slug:
+            exp.wiki_path.split('/').pop()?.replace(/\.md$/, '') ??
+            exp.entity_id,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'entity_id' },
+      )
+      .select('active_version_id')
+      .single();
+    if (entityError || !entity)
+      throw new Error(
+        `upsert entity_facts: ${entityError?.message ?? 'no row'}`,
+      );
 
     // 2. FACTS partagés — INSERT-new-version + flip, ou no-op. Résultat INDÉPENDANT du rôle.
-    const facts = await this.writeFacts(exp, runId);
+    const facts = await this.writeFacts(exp, runId, entity.active_version_id);
 
     // 3. BLOCS du rôle demandé (ou tous si slurp) — TOUJOURS exécuté, même sur un facts no-op.
     const blocks = await this.writeBlocks(exp, runId, role);
@@ -462,22 +472,33 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
   }
 
   /**
-   * FACTS partagés de l'entité : no-op si `content_hash` identique à l'active, sinon INSERT-new-version
-   * (`status='active'`) + dépréciation de l'ancienne + flip du pointeur (JAMAIS d'UPDATE en place).
+   * FACTS partagés de l'entité : no-op si `content_hash` identique à l'active ET qu'elle est pointée,
+   * sinon INSERT-new-version (`status='active'`) + dépréciation de l'ancienne + flip du pointeur
+   * (JAMAIS d'UPDATE en place). Une active à jour mais non pointée (écriture précédente interrompue
+   * entre dépréciation et flip) est re-pointée, sans nouvelle version.
    */
   private async writeFacts(
     exp: SeoProjectionExport,
     runId: string | null,
+    pointer: string | null,
   ): Promise<{ written: boolean; versionId?: string }> {
-    const { data: active } = await this.supabase
+    const { data: active, error: activeError } = await this.supabase
       .from('__seo_entity_fact_versions')
-      .select('content_hash')
+      .select('version_id, content_hash')
       .eq('entity_id', exp.entity_id)
       .eq('status', 'active')
       .maybeSingle();
+    // Lecture KO (plusieurs actives comprises) : rien n'est écrit à l'aveugle.
+    if (activeError)
+      throw new Error(`select active fact_version: ${activeError.message}`);
 
     if (active?.content_hash === exp.content_hash) {
-      return { written: false };
+      if (active.version_id === pointer) return { written: false };
+      this.log.warn(
+        `${exp.entity_id} : fact_version active ${active.version_id} non pointée (pointeur ${pointer ?? 'null'}) → pointeur réparé`,
+      );
+      await this.activateFactVersion(exp.entity_id, active.version_id);
+      return { written: true, versionId: active.version_id };
     }
 
     const { data: ins, error } = await this.supabase
@@ -494,21 +515,35 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     if (error || !ins)
       throw new Error(`insert fact_version: ${error?.message ?? 'no row'}`);
 
-    await this.supabase
+    await this.activateFactVersion(exp.entity_id, ins.version_id);
+    return { written: true, versionId: ins.version_id };
+  }
+
+  /**
+   * Déprécie les autres versions actives de l'entité puis flippe son pointeur. Toute erreur remonte :
+   * `projectOne` la consigne en conflit `write_error` et le run passe `failed`.
+   */
+  private async activateFactVersion(
+    entityId: string,
+    versionId: string,
+  ): Promise<void> {
+    const { error: deprecateError } = await this.supabase
       .from('__seo_entity_fact_versions')
       .update({ status: 'deprecated', valid_to: new Date().toISOString() })
-      .eq('entity_id', exp.entity_id)
+      .eq('entity_id', entityId)
       .eq('status', 'active')
-      .neq('version_id', ins.version_id);
-    await this.supabase
+      .neq('version_id', versionId);
+    if (deprecateError)
+      throw new Error(`deprecate fact_version: ${deprecateError.message}`);
+    const { error: flipError } = await this.supabase
       .from('__seo_entity_facts')
       .update({
-        active_version_id: ins.version_id,
+        active_version_id: versionId,
         updated_at: new Date().toISOString(),
       })
-      .eq('entity_id', exp.entity_id);
-
-    return { written: true, versionId: ins.version_id };
+      .eq('entity_id', entityId);
+    if (flipError)
+      throw new Error(`flip entity_facts pointer: ${flipError.message}`);
   }
 
   /**
@@ -583,27 +618,50 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
           `bloc sans 'section' (${exp.entity_id} role=${b.role} #${index}) → block_kind positionnel '${row.blockKind}' (observable, pas de fallback silencieux)`,
         );
       }
-      await this.supabase.from('__seo_content_blocks').upsert(
-        {
-          block_id: row.blockId,
-          entity_id: exp.entity_id,
-          role: b.role,
-          block_kind: row.blockKind,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'block_id' },
-      );
+      const { data: block, error: blockError } = await this.supabase
+        .from('__seo_content_blocks')
+        .upsert(
+          {
+            block_id: row.blockId,
+            entity_id: exp.entity_id,
+            role: b.role,
+            block_kind: row.blockKind,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'block_id' },
+        )
+        .select('active_version_id')
+        .single();
+      if (blockError || !block)
+        throw new Error(
+          `upsert content_block ${row.blockId}: ${blockError?.message ?? 'no row'}`,
+        );
 
-      const { data: active } = await this.supabase
+      const { data: active, error: activeError } = await this.supabase
         .from('__seo_content_block_versions')
-        .select('content_hash, confidence_base')
+        .select('version_id, content_hash, confidence_base')
         .eq('block_id', row.blockId)
         .eq('status', 'active')
         .maybeSingle();
+      // Lecture KO (plusieurs actives comprises) : `active` nul contournerait la no-rétro-régression.
+      if (activeError)
+        throw new Error(
+          `select active block_version ${row.blockId}: ${activeError.message}`,
+        );
 
       if (active?.content_hash === row.contentHash) {
-        noop += 1;
-        continue; // no-op
+        if (active.version_id === block.active_version_id) {
+          noop += 1;
+          continue; // no-op
+        }
+        await this.repointBlock(
+          exp.entity_id,
+          row.blockId,
+          active.version_id,
+          block.active_version_id,
+        );
+        written += 1;
+        continue;
       }
 
       // no-rétro-régression : si une version active existe avec une confiance strictement supérieure, on
@@ -614,13 +672,24 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         row.confidenceBase != null &&
         row.confidenceBase < active.confidence_base;
 
-      if (wouldRegress) {
+      if (wouldRegress && active) {
+        // L'active conservée doit rester servie : re-pointée si une écriture précédente l'a laissée
+        // hors pointeur.
+        if (active.version_id !== block.active_version_id) {
+          await this.repointBlock(
+            exp.entity_id,
+            row.blockId,
+            active.version_id,
+            block.active_version_id,
+          );
+          written += 1;
+        }
         // Idempotence : la version active ne flippant jamais sur le draft, re-projeter un export
         // INCHANGÉ mais régressant (replay / cron d'un contenu figé) rejouerait cette branche à
         // chaque run. Dédup : si un draft de MÊME content_hash existe déjà pour ce bloc, c'est un
         // no-op gouverné (0 nouvelle version, 0 conflit dupliqué) — sinon les tables versionnées et
         // __seo_projection_conflicts croîtraient sans borne (rupture d'idempotence/replay).
-        const { data: existingDraft } = await this.supabase
+        const { data: existingDraft, error: draftError } = await this.supabase
           .from('__seo_content_block_versions')
           .select('version_id')
           .eq('block_id', row.blockId)
@@ -628,6 +697,10 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
           .eq('content_hash', row.contentHash)
           .limit(1)
           .maybeSingle();
+        if (draftError)
+          throw new Error(
+            `select draft block_version ${row.blockId}: ${draftError.message}`,
+          );
         if (existingDraft) {
           noop += 1;
           continue; // draft régressant déjà enregistré → no-op idempotent
@@ -663,19 +736,7 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         regressed += 1;
         continue; // ne flippe PAS l'active : le contenu meilleur est conservé
       }
-      await this.supabase
-        .from('__seo_content_block_versions')
-        .update({ status: 'deprecated', valid_to: new Date().toISOString() })
-        .eq('block_id', row.blockId)
-        .eq('status', 'active')
-        .neq('version_id', ins.version_id);
-      await this.supabase
-        .from('__seo_content_blocks')
-        .update({
-          active_version_id: ins.version_id,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('block_id', row.blockId);
+      await this.activateBlockVersion(row.blockId, ins.version_id);
       written += 1;
     }
     if (outOfScopeRoles.size > 0) {
@@ -685,6 +746,50 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       );
     }
     return { written, regressed, noop };
+  }
+
+  /**
+   * Re-pointe un bloc sur sa version active : une écriture précédente interrompue entre dépréciation
+   * et flip la laisse hors des vues servies, qui joignent `active_version_id`.
+   */
+  private async repointBlock(
+    entityId: string,
+    blockId: string,
+    versionId: string,
+    pointer: string | null,
+  ): Promise<void> {
+    this.log.warn(
+      `${entityId} : block_version active ${versionId} de ${blockId} non pointée (pointeur ${pointer ?? 'null'}) → pointeur réparé`,
+    );
+    await this.activateBlockVersion(blockId, versionId);
+  }
+
+  /** Équivalent bloc de `activateFactVersion` : toute erreur remonte en `write_error`. */
+  private async activateBlockVersion(
+    blockId: string,
+    versionId: string,
+  ): Promise<void> {
+    const { error: deprecateError } = await this.supabase
+      .from('__seo_content_block_versions')
+      .update({ status: 'deprecated', valid_to: new Date().toISOString() })
+      .eq('block_id', blockId)
+      .eq('status', 'active')
+      .neq('version_id', versionId);
+    if (deprecateError)
+      throw new Error(
+        `deprecate block_version ${blockId}: ${deprecateError.message}`,
+      );
+    const { error: flipError } = await this.supabase
+      .from('__seo_content_blocks')
+      .update({
+        active_version_id: versionId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('block_id', blockId);
+    if (flipError)
+      throw new Error(
+        `flip content_blocks pointer ${blockId}: ${flipError.message}`,
+      );
   }
 
   /**
@@ -757,7 +862,7 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     },
   ): Promise<void> {
     if (!runId) return;
-    await this.supabase
+    const { error } = await this.supabase
       .from('__seo_projection_runs')
       .update({
         status: close.failed ? 'failed' : 'succeeded',
@@ -767,6 +872,8 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         finished_at: new Date().toISOString(),
       })
       .eq('run_id', runId);
+    // Le run resterait `running` : journalisé, sans annuler les écritures déjà faites.
+    if (error) this.log.error(`closeRun ${runId} failed: ${error.message}`);
   }
 
   /**
@@ -856,13 +963,20 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     detail: Record<string, unknown>,
     runId: string | null,
   ): Promise<void> {
-    await this.supabase.from('__seo_projection_conflicts').insert({
-      entity_id: entityId,
-      block_id: blockId,
-      conflict_kind: kind,
-      resolution: 'pending',
-      detail,
-      run_id: runId,
-    });
+    const { error } = await this.supabase
+      .from('__seo_projection_conflicts')
+      .insert({
+        entity_id: entityId,
+        block_id: blockId,
+        conflict_kind: kind,
+        resolution: 'pending',
+        detail,
+        run_id: runId,
+      });
+    // Le résultat de l'export porte déjà la raison ; le conflit perdu reste visible dans les logs.
+    if (error)
+      this.log.error(
+        `recordConflict ${kind} (${entityId}) failed: ${error.message} — detail=${JSON.stringify(detail)}`,
+      );
   }
 }

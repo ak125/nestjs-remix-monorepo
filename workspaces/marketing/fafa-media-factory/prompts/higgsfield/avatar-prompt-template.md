@@ -32,7 +32,7 @@ Sync : lipsync précis avec piste voix fournie.
 ## Règles strictes Fafa persona
 
 - ✅ **Toujours assumer l'identité IA** (transparence YouTube/TikTok 2026 obligatoire)
-- ✅ **Disclaimer ai_generated_notice** dans disclaimer plan
+- ✅ **Disclaimer ai_generated_notice** dans disclaimer plan (type du schéma `disclaimer-plan.schema.json`, absent de `DisclaimerType` du code ; aucune gate ne le vérifie, C18-22)
 - ❌ **Aucune ressemblance avec une personne réelle identifiable** (politicien, influenceur, employé)
 - ❌ **Aucune voix imitant une personne réelle** (voix Fafa propriétaire ElevenLabs ou équivalent)
 - ❌ **Aucune surpromesse commerciale** dans expression faciale (vente agressive, urgence)
@@ -40,7 +40,7 @@ Sync : lipsync précis avec piste voix fournie.
 
 ## Output attendu
 
-1 fichier `.mp4` 9:16 avec avatar parlant, `visual_type` = `motion_text` ou `ambiance` (jamais `proof`), `truth_dependency` = `illustration`.
+1 fichier `.mp4` 9:16 avec avatar parlant, `visual_type` = `motion_text` ou `ambiance`, `truth_dependency` = `illustration` (jamais `proof`).
 
 ## Avant utilisation V1
 
@@ -55,4 +55,4 @@ Sync : lipsync précis avec piste voix fournie.
 
 - `personas/fafa.md`
 - `README.md` (règles Higgsfield V1)
-- Vault PR A `rules-fafa-persona-canon-v1.md`
+- Vault PR A `rules-fafa-persona-canon-v1.md` (annoncée, absente de `main` du vault au 18/10 ; C18-14)

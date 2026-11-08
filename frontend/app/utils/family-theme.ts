@@ -5,7 +5,10 @@
  * les variantes (bg, fg, accent, etc.) sont derivees via COLOR_VARIANTS.
  * Les données famille viennent de FAMILY_REGISTRY (@repo/database-types).
  */
-import { FAMILY_REGISTRY, findFamilyIdByKeyword } from "@repo/database-types";
+import {
+  FAMILY_REGISTRY,
+  findFamilyIdByKeyword,
+} from "@repo/database-types/family-registry";
 
 // ---------------------------------------------------------------------------
 // Types

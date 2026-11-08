@@ -40,7 +40,7 @@ services:
       # All other OIDC validation invariants (audience, repository, allowed
       # events/refs/job_workflow_ref/sub, Redis DB index) are HARDCODED in
       # GithubOidcService as static readonly class constants (Phase 0.6
-      # paradigm). Cf. docs/superpowers/specs/2026-05-16-sitemap-regen-auth-design.md.
+      # paradigm). Cf. docs/specs/2026-05-16-sitemap-regen-auth-design.md.
       - SITEMAP_LEGACY_INTERNAL_KEY_ENABLED=${SITEMAP_LEGACY_INTERNAL_KEY_ENABLED:-true}
       # Video Render Service (P6.1 — Canary controlee)
       # Rollback: VIDEO_CANARY_ENABLED=false → restart → canary off, stub continue

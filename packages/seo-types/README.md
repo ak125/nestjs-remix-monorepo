@@ -64,5 +64,5 @@ npm run dev         # tsc --watch
 ## Reference
 
 - Architecture decision : `governance-vault/ledger/decisions/adr/ADR-XXX-seo-department-architecture.md`
-- Plan : `docs/superpowers/plans/seo-department.md` (V2 plan, 8-week roadmap)
+- Plan : `docs/plans/seo-department.md` (V2 plan, 8-week roadmap)
 - DB design rationale : section *Migrations* of the plan above

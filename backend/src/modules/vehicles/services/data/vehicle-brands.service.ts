@@ -1,6 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import {
   VehicleBrand,
@@ -34,8 +35,12 @@ export interface BrandStats {
 export class VehicleBrandsService extends SupabaseBaseService {
   protected readonly logger = new Logger(VehicleBrandsService.name);
 
-  constructor(private readonly cacheService: VehicleCacheService) {
+  constructor(
+    private readonly cacheService: VehicleCacheService,
+    rpcGate: RpcGateService,
+  ) {
     super();
+    this.rpcGate = rpcGate;
     this.logger.log('🏷️ VehicleBrandsService initialisé');
   }
 
@@ -57,25 +62,38 @@ export class VehicleBrandsService extends SupabaseBaseService {
           const { page = 0, limit = 50, search } = options;
           const offset = page * limit;
 
-          let query = this.client.from(TABLES.auto_marque).select('*');
+          // Fonction SECURITY DEFINER (migration 20261026) et non `.from()` : le
+          // backend PREPROD tourne en `anon` (ADR-028 option D) et la base a
+          // `row_security=off`, donc une lecture directe d'une table sous RLS lève
+          // 42501. Mêmes filtres, tri et pagination qu'avant, posés par PostgREST.
+          const { data, error, count } = await this.callRpc<VehicleBrand[]>(
+            'get_vehicle_api_brands',
+            {},
+            { source: 'api', role: 'service_role' },
+            {
+              get: true,
+              refine: (rpc) => {
+                let query = rpc.select('*');
 
-          if (!options.includeAll) {
-            query = query.eq('marque_display', 1);
-          }
+                if (!options.includeAll) {
+                  query = query.eq('marque_display', 1);
+                }
 
-          query = query.limit(limit).range(offset, offset + limit - 1);
+                query = query.limit(limit).range(offset, offset + limit - 1);
 
-          if (search?.trim()) {
-            query = query.ilike('marque_name', `%${search}%`);
-          }
+                if (search?.trim()) {
+                  query = query.ilike('marque_name', `%${search}%`);
+                }
 
-          const { data, error, count } = await query.order('marque_name', {
-            ascending: true,
-          });
+                return query.order('marque_name', { ascending: true });
+              },
+            },
+          );
 
           if (error) {
-            this.logger.error('Erreur getBrands:', error);
-            throw error;
+            const cause = this.rpcFailure(error);
+            this.logger.error('Erreur getBrands:', cause);
+            throw cause;
           }
 
           return {
@@ -217,14 +235,20 @@ export class VehicleBrandsService extends SupabaseBaseService {
           // Étape 1: Récupérer les modele_id pour cette marque
           // (pas de FK auto_type → auto_modele, donc on fait 2 requêtes séparées
           //  comme getModelsByBrand dans vehicle-models.service.ts)
-          const { data: models, error: modelsError } = await this.client
-            .from(TABLES.auto_modele)
-            .select('modele_id')
-            .eq('modele_marque_id', marqueId);
+          // Fonctions SECURITY DEFINER, comme getBrands (PREPROD en `anon`).
+          const { data: models, error: modelsError } = await this.callRpc<
+            Array<{ modele_id: number }>
+          >(
+            'get_vehicle_api_brand_models',
+            { p_marque_id: marqueId },
+            { source: 'api', role: 'service_role' },
+            { get: true, refine: (rpc) => rpc.select('modele_id') },
+          );
 
           if (modelsError) {
-            this.logger.error('Erreur getYearsByBrand (modèles):', modelsError);
-            throw modelsError;
+            const cause = this.rpcFailure(modelsError);
+            this.logger.error('Erreur getYearsByBrand (modèles):', cause);
+            throw cause;
           }
 
           if (!models?.length) {
@@ -247,17 +271,28 @@ export class VehicleBrandsService extends SupabaseBaseService {
           const batchSize = 1000;
 
           while (true) {
-            const { data: batch, error: typesError } = await this.client
-              .from(TABLES.auto_type)
-              .select('type_year_from, type_year_to')
-              .in('type_modele_id', modelIdsStr)
-              .eq('type_display', '1')
-              .not('type_year_from', 'is', null)
-              .range(typesOffset, typesOffset + batchSize - 1);
+            const from = typesOffset;
+            const { data: batch, error: typesError } = await this.callRpc<
+              typeof allTypes
+            >(
+              'get_vehicle_api_types_by_models',
+              { p_modele_ids: modelIdsStr },
+              { source: 'api', role: 'service_role' },
+              {
+                get: true,
+                refine: (rpc) =>
+                  rpc
+                    .select('type_year_from, type_year_to')
+                    .eq('type_display', '1')
+                    .not('type_year_from', 'is', null)
+                    .range(from, from + batchSize - 1),
+              },
+            );
 
             if (typesError) {
-              this.logger.error('Erreur getYearsByBrand (types):', typesError);
-              throw typesError;
+              const cause = this.rpcFailure(typesError);
+              this.logger.error('Erreur getYearsByBrand (types):', cause);
+              throw cause;
             }
             if (!batch?.length) break;
             allTypes.push(...batch);

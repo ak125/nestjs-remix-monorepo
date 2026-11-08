@@ -5,6 +5,10 @@ name: RAG L3 Permissions Audit
 # Bloque toute PR qui modifie directement rag/knowledge/ sans passer par le
 # pipeline canonique L1→L2→L3 (wiki/exports/ → sync-wiki-exports-to-rag.py).
 #
+# Lance aussi les tests du sync et de son cron horaire, et refuse toute entrée
+# ajoutée à la baseline héritée du miroir (audit/baselines/rag-mirror-legacy-
+# baseline.json) : elle ne fait que décroître (--tighten-legacy-baseline).
+#
 # Memory: feedback_canon_rule_live_iff_adr_accepted.md.
 
 on:
@@ -12,6 +16,8 @@ on:
     paths:
       - 'rag/knowledge/**'
       - 'scripts/rag-sync/**'
+      - 'scripts/cron/sync-rag-from-wiki*.sh'
+      - 'audit/baselines/rag-mirror-legacy-baseline.json'
       - 'scripts/wiki/**'
       - 'scripts/wiki-generators/**'
       - 'scripts/wiki-exports/**'
@@ -26,6 +32,8 @@ on:
     paths:
       - 'rag/knowledge/**'
       - 'scripts/rag-sync/**'
+      - 'scripts/cron/sync-rag-from-wiki*.sh'
+      - 'audit/baselines/rag-mirror-legacy-baseline.json'
       - 'scripts/wiki/**'
       - 'scripts/wiki-generators/**'
       - 'scripts/wiki-exports/**'
@@ -73,6 +81,52 @@ jobs:
             exit 1
           fi
           echo "✓ Aucune modification directe rag/knowledge/ détectée."
+
+  rag-sync-tests:
+    name: rag-sync tests + legacy baseline ratchet
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0  # base baseline read from git history
+
+      - name: Unit tests (sync-wiki-exports-to-rag.py)
+        run: |
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
+            -s scripts/rag-sync -p 'test_sync_wiki_exports_to_rag.py' -v
+
+      - name: Hourly cron test (disposable repos)
+        run: bash scripts/cron/sync-rag-from-wiki.test.sh
+
+      # Base absente de l'historique = échec, jamais « rien à comparer » : la garde
+      # ne doit pas devenir vacante sur un fetch incomplet (.claude/rules/guardrails.md).
+      - name: Legacy baseline only shrinks
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          BASELINE=audit/baselines/rag-mirror-legacy-baseline.json
+          if [ "$EVENT_NAME" = "pull_request" ]; then BASE_SHA="$PR_BASE_SHA"; else BASE_SHA="$PUSH_BEFORE_SHA"; fi
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "ℹ️  No base commit (initial push or branch creation) — nothing to compare."
+            exit 0
+          fi
+          git cat-file -e "$BASE_SHA^{commit}" || { echo "❌ base $BASE_SHA absent from history"; exit 1; }
+          if ! git cat-file -e "$BASE_SHA:$BASELINE" 2>/dev/null; then
+            echo "ℹ️  Baseline introduced by this change — nothing to compare."
+            exit 0
+          fi
+          ADDED=$(LC_ALL=C comm -13 \
+            <(git show "$BASE_SHA:$BASELINE" | jq -r '.files[]' | LC_ALL=C sort) \
+            <(jq -r '.files[]' "$BASELINE" | LC_ALL=C sort))
+          if [ -n "$ADDED" ]; then
+            echo "❌ Legacy baseline grew: $(printf '%s\n' "$ADDED" | wc -l) entry(ies) added. It only shrinks (--tighten-legacy-baseline)."
+            printf '%s\n' "$ADDED" | head -20 | sed 's/^/  /'
+            exit 1
+          fi
+          echo "✓ Legacy baseline: no entry added ($(jq '.files | length' "$BASELINE") entries)."
 
   ast-grep-rag-write:
     name: ast-grep no-direct-rag-knowledge-write

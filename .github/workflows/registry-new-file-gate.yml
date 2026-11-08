@@ -29,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # needed for `git diff origin/main..HEAD`
+          fetch-depth: 0 # needed for the merge-base of HEAD and origin/main
 
       - name: Setup Node 20
         uses: actions/setup-node@v7
@@ -43,6 +43,9 @@ jobs:
       - name: Validate overlay first (precondition)
         # If overlay is malformed, abort early with a clear message.
         run: npm run registry:validate
+
+      - name: Test the gate's new-file set (merge-base scope)
+        run: npx --no-install tsx --test scripts/registry/check-new-files.test.ts
 
       - name: Check new files (the actual gate)
         id: gate

@@ -147,5 +147,11 @@ export {
 // Pure cascade composer (PR-UIDP-1)
 export { computeIndexabilityVerdict } from "./compose-indexability";
 
+// R8 TecDoc release gate — valeur caller-computed de `tecdocReleaseGateOpen`
+export {
+  R8_TECDOC_RELEASE_GATE_RANGE,
+  isR8TecdocReleaseGateOpen,
+} from "./r8-tecdoc-release-gate";
+
 // Single emission point meta + header (PR-UIDP-1)
 export { emitRobotsForVerdict, type RobotsEmission } from "./emit-robots";

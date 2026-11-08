@@ -3,17 +3,18 @@
  *
  * Régression couverte (incident 2026-09-09, introduite par #390 le 2026-05-08) :
  * un throttler NOMMÉ dans `ThrottlerModule.forRoot` s'applique à **toutes** les
- * routes — @nestjs/throttler 6.5.0, `throttler.guard.js:66` boucle sur
- * `this.throttlers` dans `canActivate()`, sans aucune notion de portée. Le tier
- * `payment_callback` (30/min), pensé pour resserrer les 2 callbacks passerelle,
- * a donc plafonné le SITE ENTIER à 30 req/min/IP pendant 4 mois.
+ * routes — @nestjs/throttler (6.5.0 lors de l'incident, même boucle en 6.7.1,
+ * `throttler.guard.js:76`) boucle sur `this.throttlers` dans `canActivate()`,
+ * sans aucune notion de portée. Le tier `payment_callback` (30/min), pensé pour
+ * resserrer les 2 callbacks passerelle, a donc plafonné le SITE ENTIER à
+ * 30 req/min/IP pendant 4 mois.
  *
  * Preuve terrain avant correctif (DEV:3000, cadence 5/s sur le handler catch-all
  * `remix.controller.ts:160 @All('{*path}')`, IP fictive) : 1er 429 à la **31e**
  * requête alors que `medium` affichait encore 69/100 et `short` 10/15.
  *
  * Le test lit les en-têtes `X-RateLimit-Limit-*` : ce sont les valeurs que le
- * guard a réellement résolues (`throttler.guard.js:135`, après `resolveValue` des
+ * guard a réellement résolues (`throttler.guard.js:144`, après `resolveValue` des
  * overrides de route), pas une relecture de la config. Précédent de boot Nest réel
  * sans dépendance externe : `modules/analytics/landing-attribution-cutover.nest.test.ts`.
  */

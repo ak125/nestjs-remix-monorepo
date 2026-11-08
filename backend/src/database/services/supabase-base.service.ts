@@ -12,6 +12,21 @@ import {
 import { ConfigurationException, ErrorCodes } from '@common/exceptions';
 import { sleep } from '../../utils/promise-helpers';
 
+type RpcQuery = ReturnType<SupabaseClient['rpc']>;
+
+/**
+ * PostgREST read options for callRpc. All optional: without them the call is
+ * exactly the one existing callers make.
+ */
+export interface CallRpcReadOptions {
+  /** GET instead of POST: read-only transaction, arguments in the URL. */
+  get?: boolean;
+  /** Row count requested from PostgREST (Prefer: count=…), returned as `count`. */
+  count?: 'exact';
+  /** Filters, ordering and range applied by PostgREST to the function's rows. */
+  refine?: (query: RpcQuery) => PromiseLike<Awaited<RpcQuery>>;
+}
+
 interface CircuitBreakerState {
   failures: number;
   lastFailure: number;
@@ -472,15 +487,19 @@ export abstract class SupabaseBaseService {
    * @param rpcName - Name of the RPC function to call
    * @param params - Parameters to pass to the RPC function
    * @param context - Optional context for gate evaluation (role, userId, source)
-   * @returns Object with data and error (error is SupabaseRpcError or RpcBlockedError)
+   * @param options - Optional PostgREST read options (GET, count, refinement)
+   * @returns Object with data, error (SupabaseRpcError or RpcBlockedError) and,
+   *   when requested, count
    */
   protected async callRpc<T>(
     rpcName: string,
     params: Record<string, unknown>,
     context: RpcGateContext = {},
+    options: CallRpcReadOptions = {},
   ): Promise<{
     data: T | null;
     error: SupabaseRpcError | RpcBlockedError | null;
+    count?: number | null;
   }> {
     const startTime = Date.now();
 
@@ -506,10 +525,16 @@ export abstract class SupabaseBaseService {
 
     // Execute the RPC call
     try {
-      const { data, error: rawError } = await this.supabase.rpc(
-        rpcName,
-        params,
-      );
+      const { refine, ...rpcOptions } = options;
+      const query =
+        rpcOptions.get || rpcOptions.count
+          ? this.supabase.rpc(rpcName, params, rpcOptions)
+          : this.supabase.rpc(rpcName, params);
+      const {
+        data,
+        error: rawError,
+        count,
+      } = await (refine ? refine(query) : query);
 
       const rpcError = rawError ? new SupabaseRpcError(rawError) : null;
       this.rpcGate?.log(
@@ -521,7 +546,7 @@ export abstract class SupabaseBaseService {
         rpcError ?? undefined,
       );
 
-      return { data: data as T, error: rpcError };
+      return { data: data as T, error: rpcError, count };
     } catch (err) {
       const error = new SupabaseRpcError(err);
       this.rpcGate?.log(
@@ -534,5 +559,13 @@ export abstract class SupabaseBaseService {
       );
       return { data: null, error };
     }
+  }
+
+  /**
+   * Value to rethrow after a failed callRpc: the original PostgREST error (the
+   * same value a `.from()` read returns), or the gate refusal as is.
+   */
+  protected rpcFailure(error: SupabaseRpcError | RpcBlockedError): unknown {
+    return error instanceof SupabaseRpcError ? error.raw : error;
   }
 }

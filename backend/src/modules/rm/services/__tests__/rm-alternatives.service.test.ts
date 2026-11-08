@@ -75,6 +75,86 @@ describe('RmAlternativesService (RPC canon)', () => {
   });
 
   describe('génération de cache (A3)', () => {
+    it('joins while a successful payload is still being published to Redis', async () => {
+      cacheMock.get.mockResolvedValue(null);
+      callRpcMock.mockResolvedValue({ data: fullPayload, error: null });
+      let publish!: () => void;
+      cacheMock.set.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            publish = resolve;
+          }),
+      );
+      const first = service.compute(11836, 3859, 12);
+      await new Promise(setImmediate);
+      const second = service.compute(11836, 3859, 3);
+      await new Promise(setImmediate);
+      expect(callRpcMock).toHaveBeenCalledTimes(1);
+      publish();
+      const results = await Promise.all([first, second]);
+      expect(results.map((r) => r.alternativeVehicles.length)).toEqual([6, 3]);
+    });
+    it('shares a cold computation across concurrent limits until cache publication', async () => {
+      cacheMock.get.mockResolvedValue(null);
+      let release!: (value: unknown) => void;
+      callRpcMock.mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            release = resolve;
+          }),
+      );
+      const requests = [2, 3, 12, 24].map((limit) =>
+        service.compute(11836, 3859, limit),
+      );
+      await new Promise(setImmediate);
+      expect(callRpcMock).toHaveBeenCalledTimes(1);
+      release({ data: fullPayload, error: null });
+      const responses = await Promise.all(requests);
+      expect(responses.map((r) => r.alternativeVehicles.length)).toEqual([
+        2, 3, 6, 6,
+      ]);
+      expect(responses[0].etag).not.toEqual(responses[1].etag);
+      expect(cacheMock.set).toHaveBeenCalledTimes(1);
+    });
+
+    it('releases failed work so a later request can recover', async () => {
+      cacheMock.get.mockResolvedValue(null);
+      callRpcMock.mockRejectedValueOnce(new Error('transport down'));
+      const requests = [2, 12].map((limit) =>
+        service.compute(11836, 3859, limit),
+      );
+      const outcomes = await Promise.allSettled(requests);
+      expect(outcomes.every((r) => r.status === 'rejected')).toBe(true);
+      expect(callRpcMock).toHaveBeenCalledTimes(1);
+      callRpcMock.mockResolvedValue({ data: fullPayload, error: null });
+      expect((await service.compute(11836, 3859, 12)).success).toBe(true);
+      expect(callRpcMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not join different generations or catalogue pairs', async () => {
+      cacheMock.get.mockResolvedValue(null);
+      const releases: Array<(value: unknown) => void> = [];
+      callRpcMock.mockImplementation(
+        () => new Promise((resolve) => releases.push(resolve)),
+      );
+      const first = service.compute(11836, 3859, 12);
+      await new Promise(setImmediate);
+      cacheMock.getGeneration.mockResolvedValue(GENERATION + 1);
+      const next = service.compute(11836, 3859, 12);
+      const other = service.compute(11836, 402, 12);
+      await new Promise(setImmediate);
+      expect(callRpcMock).toHaveBeenCalledTimes(3);
+      releases.forEach((resolve) =>
+        resolve({ data: fullPayload, error: null }),
+      );
+      await Promise.all([first, next, other]);
+      expect(cacheMock.set.mock.calls.map(([key]) => key).sort()).toEqual([
+        'alt:v5:g7:11836:3859',
+        'alt:v5:g8:11836:3859',
+        'alt:v5:g8:11836:402',
+      ]);
+    });
+
     it('lit la génération du périmètre catalog avant de composer la clé', async () => {
       cacheMock.get.mockResolvedValue(null);
       callRpcMock.mockResolvedValue({ data: fullPayload, error: null });

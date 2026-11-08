@@ -7,10 +7,12 @@
 # re-dérivé EN DIRECT à chaque exécution (GitHub PR state + git status) — jamais
 # de liste figée. Ne détruit JAMAIS de travail non-mergé, non-commité, OPEN ou
 # sans PR. Écrit un manifeste de récupération (SHAs) avant toute suppression.
+# Retire enfin, dans les worktrees gérés restants, les caches d'outils marqués
+# CACHEDIR.TAG et inactifs (passe 3) : jamais le worktree, jamais un fichier suivi.
 #
-# Périmètre : seuls les worktrees du gestionnaire Claude ($MANAGED_PREFIX) sont
-# candidats. Les autres gestionnaires (pont Hermes, worktrees Codex directs) gardent
-# leur propre cycle de vie — ce script ne les retire jamais.
+# Périmètre : seuls les worktrees des sessions Claude ($PRUNE_ROOTS, mêmes préfixes que
+# dedup-worktree-node-modules.sh) sont candidats. Les autres gestionnaires (pont Hermes,
+# worktrees Codex directs) gardent leur propre cycle de vie — ce script ne les retire jamais.
 #
 # Usage:
 #   prune-merged-worktrees.sh            # dry-run (par défaut) : n'écrit RIEN dans le dépôt
@@ -20,7 +22,9 @@
 #   REPO            slug GitHub (défaut: ak125/nestjs-remix-monorepo)
 #   LOG_DIR         dossier des manifestes (défaut: /tmp)
 #   RECENT_MIN      minutes sous lesquelles un worktree récent est épargné (défaut: 180)
-#   MANAGED_PREFIX  emplacement des worktrees gérés, relatif au dépôt (défaut: .claude/worktrees/)
+#   PRUNE_ROOTS     préfixes de chemin des worktrees gérés, séparés par « : »
+#                   (défaut: <dépôt>/.claude/worktrees/:$HOME/worktrees/claude-)
+#   CACHE_IDLE_MIN  minutes sans écriture exigées avant de retirer un cache (défaut: 1440)
 #
 # Dépendances: git, gh (authentifié), jq.
 set -euo pipefail
@@ -33,7 +37,7 @@ APPLY=0
 REPO="${REPO:-ak125/nestjs-remix-monorepo}"
 LOG_DIR="${LOG_DIR:-/tmp}"
 RECENT_MIN="${RECENT_MIN:-180}"
-MANAGED_PREFIX="${MANAGED_PREFIX:-.claude/worktrees/}"
+CACHE_IDLE_MIN="${CACHE_IDLE_MIN:-1440}"
 # untracked jetables : ne bloquent pas la suppression d'un worktree par ailleurs propre
 ALLOW='^(\.playwright-mcp|node_modules|\.turbo|dist|build|coverage)(/|$)'
 # ignorés régénérables : `git worktree remove` supprime les fichiers ignorés sans --force et
@@ -54,7 +58,9 @@ done
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
-MANAGED_DIR="$REPO_ROOT/${MANAGED_PREFIX%/}/"
+IFS=: read -r -a ROOTS <<<"${PRUNE_ROOTS:-$REPO_ROOT/.claude/worktrees/:$HOME/worktrees/claude-}"
+# Une entrée vide couvrirait tous les chemins : elle est ignorée.
+managed() { local r; for r in "${ROOTS[@]}"; do [[ -n "$r" && "$1" == "$r"* ]] && return 0; done; return 1; }
 
 TS="$(date +%Y%m%d-%H%M%S)"
 LOG="$LOG_DIR/worktree-cleanup-$TS.log"
@@ -64,6 +70,7 @@ trap 'rm -f "$PRSTATE"' EXIT
 mode_label="DRY-RUN (aucune suppression — utiliser --apply pour agir)"
 [[ $APPLY -eq 1 ]] && mode_label="APPLY"
 echo "=== prune-merged-worktrees — $mode_label — $TS ===" | tee "$LOG"
+echo "INFO    périmètre : ${ROOTS[*]}" | tee -a "$LOG"
 
 # --- Manifeste de récupération (SHAs) AVANT toute action ---
 {
@@ -95,12 +102,16 @@ pr_info() { # $1=branch -> "STATE<TAB>headRefOid" (la PR la plus récente gagne 
 }
 
 # Le travail au bout de la branche est-il conservé ailleurs ?
-#   MERGED : la pointe est exactement la tête de la PR (squash compris) ou déjà dans origin/main.
+#   MERGED : la pointe est la tête de la PR (squash compris), un ancêtre de cette tête, ou déjà
+#            dans origin/main. Ancêtre : la PR a reçu ensuite des commits poussés d'ailleurs (fusion
+#            de main et projections par resync-pr.sh) ; GitHub garde la tête fusionnée (refs/pull/N/head).
 #   CLOSED : seulement si déjà dans origin/main (une PR fermée non fusionnée n'a rien conservé).
 # Un commit ajouté APRÈS la tête de la PR (ex. entrée log auto) n'est conservé nulle part.
 tip_published() { # $1=state $2=sha $3=headRefOid
   git merge-base --is-ancestor "$2" "$MAIN_REF" 2>/dev/null && return 0
-  [[ "$1" == "MERGED" && -n "$3" && "$2" == "$3" ]]
+  [[ "$1" == "MERGED" && -n "$3" ]] || return 1
+  # Tête absente localement : ascendance invérifiable, donc non publiée.
+  [[ "$2" == "$3" ]] || git merge-base --is-ancestor "$2" "$3" 2>/dev/null
 }
 
 extra_commits() { # $1=sha $2=headRefOid -> nombre de commits au-delà de la tête de PR, ou '?'
@@ -159,7 +170,7 @@ NOW="$(date +%s)"
 echo "--- Passe 1 : worktrees ---" | tee -a "$LOG"
 while IFS= read -r -d '' path && IFS= read -r -d '' ref && IFS= read -r -d '' det && IFS= read -r -d '' locked; do
   [[ "$path" == "$REPO_ROOT" ]] && continue
-  [[ "$path/" == "$MANAGED_DIR"* ]] || { echo "KEEP    other-manager    $path" | tee -a "$LOG"; continue; }
+  managed "$path/" || { echo "KEEP    other-manager    $path" | tee -a "$LOG"; continue; }
   [[ "$det" == "1" || -z "$ref" ]] && { echo "KEEP    detached         $path" | tee -a "$LOG"; continue; }
   br="${ref#refs/heads/}"
   IFS=$'\t' read -r st oid < <(pr_info "$br")
@@ -256,8 +267,74 @@ while read -r br; do
   fi
 done < <(git for-each-ref --format='%(refname:short)' refs/heads/)
 
+# ============================================================
+# PASSE 3 — caches marqués CACHEDIR.TAG dans les worktrees restants
+# ============================================================
+# Un cache d'outil marqué selon la Cache Directory Tagging Specification (Cargo `target/`,
+# `.pytest_cache`, `.ruff_cache`) se régénère à la prochaine exécution de l'outil. Un worktree
+# gardé par la passe 1 (PR ouverte, sans PR, récent) peut en porter plusieurs Go. Seul le
+# dossier du cache part, si toutes ces conditions tiennent : signature en tête de CACHEDIR.TAG ;
+# worktree géré, non verrouillé, sans attribution de mission, sans sous-module peuplé, sans
+# processus dont le répertoire courant y est ; aucun fichier du dossier suivi ni non suivi hors
+# ignorés ; aucune écriture depuis CACHE_IDLE_MIN minutes ; tout appartient à cet utilisateur.
+# node_modules et .git ne sont pas parcourus. Une compilation lancée entre le contrôle et le
+# retrait échoue et se relance : c'est la seule perte possible, et elle est régénérable.
+echo "--- Passe 3 : caches marqués CACHEDIR.TAG ---" | tee -a "$LOG"
+CACHE_SIG='Signature: 8a477f597d28d172789f06886806bc55'
+cache_n=0; cache_mb=0
+while IFS= read -r -d '' path && IFS= read -r -d '' ref && IFS= read -r -d '' det && IFS= read -r -d '' locked; do
+  [[ "$path" == "$REPO_ROOT" || ! -d "$path" ]] && continue
+  managed "$path/" || continue
+  label="${ref#refs/heads/}"; [[ -n "$label" ]] || label="(HEAD détachée)"
+  # Dossiers triés : un parent précède ses descendants, qui partent avec lui.
+  caches=()
+  while IFS= read -r -d '' d; do
+    [[ "$d" != "$path" && -d "$d" && ! -L "$d" ]] || continue
+    [[ "$(head -c 43 -- "$d/CACHEDIR.TAG" 2>/dev/null)" == "$CACHE_SIG" ]] || continue
+    nested=0; for c in "${caches[@]}"; do [[ "$d" == "$c"/* ]] && nested=1; done
+    [[ $nested -eq 0 ]] && caches+=("$d")
+  done < <(find "$path" \( -name node_modules -o -name .git \) -prune -o -name CACHEDIR.TAG -type f -print0 2>/dev/null \
+             | sed -z 's|/CACHEDIR\.TAG$||' | LC_ALL=C sort -z)
+  [[ ${#caches[@]} -gt 0 ]] || continue
+  if [[ "$locked" == "1" ]]; then echo "CACHE-KEEP locked(${#caches[@]}) $label  $path" | tee -a "$LOG"; continue; fi
+  gd="$(git -C "$path" rev-parse --absolute-git-dir 2>/dev/null || true)"
+  if [[ -z "$gd" || -e "$gd/agent-claim.json" ]]; then echo "CACHE-KEEP claimed-or-unreadable(${#caches[@]}) $label  $path" | tee -a "$LOG"; continue; fi
+  if [[ -d "$gd/modules" ]]; then echo "CACHE-KEEP submodules(${#caches[@]}) $label  $path" | tee -a "$LOG"; continue; fi
+  if pid="$(in_use_pid "$path")"; then echo "CACHE-KEEP in-use(pid=$pid) $label  $path" | tee -a "$LOG"; continue; fi
+  for d in "${caches[@]}"; do
+    rel="${d#"$path"/}"
+    # Un `.git` entre le worktree et le cache : dépôt ou worktree imbriqué, avec ses propres
+    # verrou et sessions ; son ignore ne se lit pas depuis ce worktree.
+    p="$d"; inner=0
+    while [[ "$p" != "$path" ]]; do [[ -e "$p/.git" ]] && inner=1; p="${p%/*}"; done
+    if [[ $inner -eq 1 ]]; then echo "CACHE-KEEP nested-repo $d" | tee -a "$LOG"; continue; fi
+    # Statut illisible = conservé. stderr n'est pas journalisé : il peut nommer des fichiers.
+    if ! cache_st="$(git --no-optional-locks -C "$path" status --porcelain=v1 --untracked-files=all --ignore-submodules=none -- ":(literal)$rel" 2>/dev/null)" \
+       || ! cache_ls="$(git --no-optional-locks -C "$path" ls-files -- ":(literal)$rel" 2>/dev/null)"; then
+      echo "CACHE-KEEP status-error $d" | tee -a "$LOG"; continue
+    fi
+    if [[ -n "$cache_st$cache_ls" ]]; then echo "CACHE-KEEP not-ignored $d" | tee -a "$LOG"; continue; fi
+    # Un parcours en erreur (droits) n'est jamais lu comme « inactif ».
+    if ! recent="$(find "$d" -mmin "-$CACHE_IDLE_MIN" -print -quit 2>/dev/null)" || [[ -n "$recent" ]]; then
+      echo "CACHE-KEEP recent-or-unreadable $d" | tee -a "$LOG"; continue
+    fi
+    if ! foreign="$(find "$d" ! -user "$(id -u)" -print -quit 2>/dev/null)" || [[ -n "$foreign" ]]; then
+      echo "CACHE-KEEP foreign-owner $d" | tee -a "$LOG"; continue
+    fi
+    mb="$(du -sm -- "$d" 2>/dev/null | cut -f1)"; mb="${mb:-0}"
+    if [[ $APPLY -eq 1 ]]; then
+      rm -rf --one-file-system -- "$d" 2>/dev/null || true
+      if [[ -e "$d" ]]; then echo "CACHE-FAIL $d (retrait incomplet, cache régénérable)" | tee -a "$LOG"; continue; fi
+      echo "CACHE-REMOVED ${mb} Mo $d ($label)" | tee -a "$LOG"
+    else
+      echo "WOULD-REMOVE-CACHE ${mb} Mo $d ($label)" | tee -a "$LOG"
+    fi
+    cache_n=$((cache_n+1)); cache_mb=$((cache_mb+mb))
+  done
+done < <(list_worktrees)
+
 # --- Bilan ---
 wt_removed="$(grep -cE '^(REMOVED|WOULD-REMOVE) ' "$LOG" || true)"
-echo "=== Bilan : worktrees ciblés=$wt_removed  branches ciblées=$del  manifeste=$LOG ==="| tee -a "$LOG"
+echo "=== Bilan : worktrees ciblés=$wt_removed  branches ciblées=$del  caches ciblés=$cache_n (${cache_mb} Mo)  manifeste=$LOG ==="| tee -a "$LOG"
 [[ $APPLY -eq 0 ]] && echo "(dry-run — relancer avec --apply pour exécuter)"
 exit 0

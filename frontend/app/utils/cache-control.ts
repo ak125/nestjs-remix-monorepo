@@ -39,6 +39,8 @@ export function buildCacheHeaders(
 ): HeadersFunction {
   return ({ loaderHeaders, errorHeaders }) => {
     const out: Record<string, string> = {};
+    const timing = (errorHeaders ?? loaderHeaders)?.get("Server-Timing");
+    if (timing) out["Server-Timing"] = timing;
 
     if (errorHeaders) {
       out["Cache-Control"] = errorHeaders.get("Cache-Control") ?? NO_STORE;

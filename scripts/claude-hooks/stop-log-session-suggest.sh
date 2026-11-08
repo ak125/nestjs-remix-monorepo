@@ -26,6 +26,9 @@
 #     archive it did not prepare (the commit names its paths: `--only`),
 #     never commits after the branch's PR is merged or closed, and never
 #     commits when that state is unknown (gh missing or failing: stderr).
+#   - Never commits when HEAD is already in origin/<branch>: nothing is left
+#     to push, so the entry would sit alone after the pushed head and stay
+#     behind once the PR is merged. The entry rides with unpushed work only.
 
 set -u
 
@@ -61,6 +64,16 @@ esac
 # Look for commits ahead of origin/main on the current branch.
 commits_ahead="$(git log "$MAIN_REF"..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')"
 [ "${commits_ahead:-0}" -lt 1 ] && exit 0
+
+# Nothing left to push: a commit now would reach main only if another push
+# followed. When none does, the PR is merged without it and the branch keeps
+# an unpublished commit that the nightly prune must preserve.
+REMOTE_BRANCH_REF="refs/remotes/origin/${current_branch}"
+if git rev-parse -q --verify "${REMOTE_BRANCH_REF}^{commit}" >/dev/null \
+   && git merge-base --is-ancestor HEAD "$REMOTE_BRANCH_REF" 2>/dev/null; then
+  echo "stop-log: HEAD déjà dans origin/${current_branch} — aucun commit après la tête poussée" >&2
+  exit 0
+fi
 
 # Defence-in-depth against runaway auto-commit chains:
 # if the most recent commit is itself an auto-log entry, bail. The marker

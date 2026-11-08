@@ -283,11 +283,23 @@ export class CommandCenterReaderService {
 
   private computeValidationStatus(): ValidationStatus {
     const report = this.readJson<{
-      counts?: { errors?: number; warns?: number };
+      counts?: { errors?: unknown; warns?: unknown };
     }>(this.reportPath);
-    if (!report || !report.counts) return 'UNKNOWN';
-    if ((report.counts.errors ?? 0) > 0) return 'STRICT_FAIL';
-    if ((report.counts.warns ?? 0) > 0) return 'WARN_ONLY';
+    if (!report) return 'UNKNOWN';
+    // Forme écrite par scripts/governance/validate-agent-operating-map.js : deux
+    // compteurs entiers ≥ 0. Toute autre forme ne prouve rien → UNKNOWN, jamais
+    // VALIDATED par défaut.
+    const isCount = (n: unknown): n is number =>
+      Number.isInteger(n) && (n as number) >= 0;
+    const { errors, warns } = report.counts ?? {};
+    if (!isCount(errors) || !isCount(warns)) {
+      this.logger.warn(
+        `[command-center] malformed validation report ${this.reportPath}: counts.errors/warns must be integers >= 0`,
+      );
+      return 'UNKNOWN';
+    }
+    if (errors > 0) return 'STRICT_FAIL';
+    if (warns > 0) return 'WARN_ONLY';
     return 'VALIDATED';
   }
 
@@ -365,11 +377,13 @@ type StaleStatus = CommandCenterResponseV2['stale_status'];
 type ValidationStatus = CommandCenterResponseV2['validation_status'];
 
 /**
- * Exposure mode for the Command Center cockpit (owner decision 2026-06-04):
- * full in DEV/PREPROD, restricted in PROD. Explicit `COMMAND_CENTER_MODE` wins;
- * otherwise SAFE DEFAULT = `disabled` when NODE_ENV=production (PROD), else `full`
- * (DEV runs `development`, PREPROD runs `preprod`). The Docker REGISTRY_DIR fix is
- * independent of this flag and stays active in every environment.
+ * Exposure mode for the Command Center cockpit (owner decision 2026-06-04,
+ * narrowed 2026-06-06: a DEV operator tool, never exposed in PROD). Explicit
+ * `COMMAND_CENTER_MODE` wins; otherwise SAFE DEFAULT = `disabled` when
+ * NODE_ENV=production, else `full`. PREPROD also runs NODE_ENV=production
+ * (docker-compose.preprod.yml; APP_ENV=preprod tells it apart), so it resolves
+ * `disabled` unless its env sets COMMAND_CENTER_MODE. The Docker REGISTRY_DIR fix
+ * is independent of this flag and stays active in every environment.
  */
 export function resolveCommandCenterMode(): CommandCenterMode {
   const raw = (process.env.COMMAND_CENTER_MODE || '').trim().toLowerCase();

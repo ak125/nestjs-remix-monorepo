@@ -3,22 +3,20 @@
   "ts6Version": "6.0.3",
   "ts7Version": "7.0.2",
   "summary": {
-    "parity": 4,
-    "blockedConfig": 8,
+    "parity": 12,
+    "blockedConfig": 0,
     "divergent": 0,
     "ts6SourceDiagnostics": 0,
     "ts7SourceDiagnostics": 0,
-    "ts7ConfigDiagnostics": 8
+    "ts7ConfigDiagnostics": 0
   },
   "projects": [
     {
       "project": "backend",
-      "classification": "BLOCKED_CONFIG",
+      "classification": "PARITY",
       "ts6DiagnosticCount": 0,
       "ts7DiagnosticCount": 0,
-      "configDiagnostics": [
-        "TS5108: Option 'moduleResolution=node10' has been removed. Please remove it from your configuration."
-      ],
+      "configDiagnostics": [],
       "onlyInTs6": [],
       "onlyInTs7": [],
       "rootCauseCandidates": [],
@@ -39,12 +37,10 @@
     },
     {
       "project": "packages/cwv-taxonomy",
-      "classification": "BLOCKED_CONFIG",
+      "classification": "PARITY",
       "ts6DiagnosticCount": 0,
       "ts7DiagnosticCount": 0,
-      "configDiagnostics": [
-        "TS5108: Option 'moduleResolution=node10' has been removed. Please remove it from your configuration."
-      ],
+      "configDiagnostics": [],
       "onlyInTs6": [],
       "onlyInTs7": [],
       "rootCauseCandidates": [],
@@ -65,12 +61,10 @@
     },
     {
       "project": "packages/design-tokens",
-      "classification": "BLOCKED_CONFIG",
+      "classification": "PARITY",
       "ts6DiagnosticCount": 0,
       "ts7DiagnosticCount": 0,
-      "configDiagnostics": [
-        "TS5108: Option 'moduleResolution=node10' has been removed. Please remove it from your configuration."
-      ],
+      "configDiagnostics": [],
       "onlyInTs6": [],
       "onlyInTs7": [],
       "rootCauseCandidates": [],
@@ -79,12 +73,10 @@
     },
     {
       "project": "packages/domain-commerce",
-      "classification": "BLOCKED_CONFIG",
+      "classification": "PARITY",
       "ts6DiagnosticCount": 0,
       "ts7DiagnosticCount": 0,
-      "configDiagnostics": [
-        "TS5108: Option 'moduleResolution=node10' has been removed. Please remove it from your configuration."
-      ],
+      "configDiagnostics": [],
       "onlyInTs6": [],
       "onlyInTs7": [],
       "rootCauseCandidates": [],
@@ -93,12 +85,10 @@
     },
     {
       "project": "packages/registry",
-      "classification": "BLOCKED_CONFIG",
+      "classification": "PARITY",
       "ts6DiagnosticCount": 0,
       "ts7DiagnosticCount": 0,
-      "configDiagnostics": [
-        "TS5108: Option 'moduleResolution=node10' has been removed. Please remove it from your configuration."
-      ],
+      "configDiagnostics": [],
       "onlyInTs6": [],
       "onlyInTs7": [],
       "rootCauseCandidates": [],
@@ -107,12 +97,10 @@
     },
     {
       "project": "packages/seo-role-contracts",
-      "classification": "BLOCKED_CONFIG",
+      "classification": "PARITY",
       "ts6DiagnosticCount": 0,
       "ts7DiagnosticCount": 0,
-      "configDiagnostics": [
-        "TS5108: Option 'moduleResolution=node10' has been removed. Please remove it from your configuration."
-      ],
+      "configDiagnostics": [],
       "onlyInTs6": [],
       "onlyInTs7": [],
       "rootCauseCandidates": [],
@@ -121,12 +109,10 @@
     },
     {
       "project": "packages/seo-roles",
-      "classification": "BLOCKED_CONFIG",
+      "classification": "PARITY",
       "ts6DiagnosticCount": 0,
       "ts7DiagnosticCount": 0,
-      "configDiagnostics": [
-        "TS5108: Option 'moduleResolution=node10' has been removed. Please remove it from your configuration."
-      ],
+      "configDiagnostics": [],
       "onlyInTs6": [],
       "onlyInTs7": [],
       "rootCauseCandidates": [],
@@ -147,12 +133,10 @@
     },
     {
       "project": "packages/seo-url-contract",
-      "classification": "BLOCKED_CONFIG",
+      "classification": "PARITY",
       "ts6DiagnosticCount": 0,
       "ts7DiagnosticCount": 0,
-      "configDiagnostics": [
-        "TS5108: Option 'moduleResolution=node10' has been removed. Please remove it from your configuration."
-      ],
+      "configDiagnostics": [],
       "onlyInTs6": [],
       "onlyInTs7": [],
       "rootCauseCandidates": [],
@@ -172,7 +156,7 @@
       "messageDeltas": []
     }
   ],
-  "inputHash": "sha256:f2c12262ac676118bcb6a0a378a7cf8999b06d8f5abaeadcd0ecccb106a5e5ac",
+  "inputHash": "sha256:b68a001a19052875641b0812a279a2f90b04cfb7a318b240604da7ab2451aaa2",
   "stalenessFindings": [
     "audit/dependencies/family-overlay.yaml family `tooling-typescript-go` declares members: ['@typescript/native-preview'] with target_major 'tsc-go-preview' and migration_blockers: [NotProductionReady]. As of 2026-07-26 TypeScript 7 has shipped stable as `typescript@7.0.2`, while @typescript/native-preview is frozen at 7.0.0-dev.20260707.2. The overlay's factual premise is stale. production_approved=false is NOT contested here — the binding blocker is that typescript-eslint@8.65.0 still declares peer `typescript: >=4.8.4 <6.1.0`, and `typescript` sits in the `tooling-typescript-eslint` peer_dependency_cluster, where partial upgrades are forbidden by central rule #6. Updating the overlay is a humans-only L2 edit."
   ]

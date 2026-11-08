@@ -16,7 +16,9 @@ import { type RmGroupedPiece } from "~/services/api/rm-api.service";
 import {
   type PieceData,
   type PiecesFilters,
+  type SortBy,
 } from "../../types/pieces-route.types";
+import { sortPiecesInPlace } from "../../utils/pieces-filters.utils";
 import { mapApiPieceToData } from "../../utils/pieces-route.utils";
 
 import { PiecesGridView } from "./PiecesGridView";
@@ -39,6 +41,7 @@ interface GroupedPiece {
 interface PiecesGroupedDisplayProps {
   groupedPieces: GroupedPiece[];
   activeFilters: PiecesFilters;
+  sortBy?: SortBy;
   viewMode: "grid" | "list" | "comparison";
   vehicleModele: string;
   vehicleMarque: string;
@@ -51,70 +54,63 @@ interface PiecesGroupedDisplayProps {
  * Applique les filtres actifs sur une liste de pièces
  */
 function applyFilters(
-  pieces: any[],
+  pieces: PieceData[],
   activeFilters: PiecesFilters,
 ): PieceData[] {
-  return pieces
-    .filter((p) => {
-      const pieceData = mapApiPieceToData(p);
+  return pieces.filter((pieceData) => {
+    // Filtre par marque
+    if (
+      activeFilters.brands.length > 0 &&
+      !activeFilters.brands.includes(pieceData.brand)
+    ) {
+      return false;
+    }
 
-      // Filtre par marque
-      if (
-        activeFilters.brands.length > 0 &&
-        !activeFilters.brands.includes(pieceData.brand)
-      ) {
+    // Filtre par texte de recherche
+    if (
+      activeFilters.searchText &&
+      !pieceData.name
+        .toLowerCase()
+        .includes(activeFilters.searchText.toLowerCase())
+    ) {
+      return false;
+    }
+
+    // Filtre par qualité
+    if (
+      activeFilters.quality !== "all" &&
+      pieceData.quality !== activeFilters.quality
+    ) {
+      return false;
+    }
+
+    // Filtre par gamme de prix
+    if (activeFilters.priceRange !== "all") {
+      const price = pieceData.price;
+      if (activeFilters.priceRange === "low" && price >= 50) return false;
+      if (activeFilters.priceRange === "medium" && (price < 50 || price >= 150))
         return false;
-      }
+      if (activeFilters.priceRange === "high" && price < 150) return false;
+    }
 
-      // Filtre par texte de recherche
-      if (
-        activeFilters.searchText &&
-        !pieceData.name
-          .toLowerCase()
-          .includes(activeFilters.searchText.toLowerCase())
-      ) {
-        return false;
-      }
+    // Filtre par disponibilité - DÉSACTIVÉ (flux tendu)
+    // Stock non fiable, ne pas filtrer
 
-      // Filtre par qualité
-      if (
-        activeFilters.quality !== "all" &&
-        pieceData.quality !== activeFilters.quality
-      ) {
-        return false;
-      }
+    // Filtre par note minimale (sur 10)
+    if (activeFilters.minNote && activeFilters.minNote > 0) {
+      const stars = pieceData.stars || 3;
+      const note = Math.round((stars / 6) * 10);
+      if (note < activeFilters.minNote) return false;
+    }
 
-      // Filtre par gamme de prix
-      if (activeFilters.priceRange !== "all") {
-        const price = pieceData.price;
-        if (activeFilters.priceRange === "low" && price >= 50) return false;
-        if (
-          activeFilters.priceRange === "medium" &&
-          (price < 50 || price >= 150)
-        )
-          return false;
-        if (activeFilters.priceRange === "high" && price < 150) return false;
-      }
-
-      // Filtre par disponibilité - DÉSACTIVÉ (flux tendu)
-      // Stock non fiable, ne pas filtrer
-
-      // Filtre par note minimale (sur 10)
-      if (activeFilters.minNote && activeFilters.minNote > 0) {
-        const stars = pieceData.stars || 3;
-        const note = Math.round((stars / 6) * 10);
-        if (note < activeFilters.minNote) return false;
-      }
-
-      return true;
-    })
-    .map(mapApiPieceToData)
-    .sort((a, b) => (a.price || 0) - (b.price || 0)); // ✅ Tri par prix croissant
+    return true;
+  });
 }
 
 export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
   groupedPieces,
   activeFilters,
+  sortBy = "price-asc",
   viewMode,
   vehicleModele,
   vehicleMarque,
@@ -122,6 +118,15 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
   onSelectPiece,
   typeId,
 }: PiecesGroupedDisplayProps) {
+  // Mapping depends on catalogue data, not on a filter, sort or selection gesture.
+  const mappedGroups = useMemo(
+    () =>
+      groupedPieces.map((group) => ({
+        ...group,
+        pieces: (group.pieces ?? []).map(mapApiPieceToData),
+      })),
+    [groupedPieces],
+  );
   // 📱 Pagination mobile-first: état du nombre de produits visibles par groupe
   const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>(
     {},
@@ -145,7 +150,7 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
   // ou activeFilters changent, pas à chaque re-render déclenché par la pagination
   // (handleLoadMore), la sélection (selectedPieces) ou le changement de vue (INP fix)
   const filteredGroups = useMemo(() => {
-    return groupedPieces
+    return mappedGroups
       .filter((group) => {
         if (!activeFilters.position || activeFilters.position === "all") {
           return true;
@@ -154,10 +159,13 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
       })
       .map((group) => ({
         group,
-        groupPieces: applyFilters(group.pieces || [], activeFilters),
+        groupPieces: sortPiecesInPlace(
+          applyFilters(group.pieces, activeFilters),
+          sortBy,
+        ),
       }))
       .filter(({ groupPieces }) => groupPieces.length > 0);
-  }, [groupedPieces, activeFilters]);
+  }, [mappedGroups, activeFilters, sortBy]);
 
   return (
     <div className="space-y-8">

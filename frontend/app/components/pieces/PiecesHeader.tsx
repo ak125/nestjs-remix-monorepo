@@ -5,7 +5,7 @@
  * ⚠️ URLS PRÉSERVÉES - Breadcrumb et navigation inchangés
  */
 
-import { buildR2H1Emitted } from "@repo/seo-types";
+import { buildR2H1Emitted } from "@repo/seo-types/build-r2-h1";
 import { Car } from "lucide-react";
 import { useState, memo } from "react";
 

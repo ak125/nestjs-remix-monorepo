@@ -1,6 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import { VehicleEnrichmentService } from '../core/vehicle-enrichment.service';
 import {
@@ -46,8 +47,10 @@ export class VehicleTypesService extends SupabaseBaseService {
   constructor(
     private readonly cacheService: VehicleCacheService,
     private readonly enrichmentService: VehicleEnrichmentService,
+    rpcGate: RpcGateService,
   ) {
     super();
+    this.rpcGate = rpcGate;
     this.logger.log('🔧 VehicleTypesService initialisé');
   }
 
@@ -226,23 +229,35 @@ export class VehicleTypesService extends SupabaseBaseService {
 
           // ✅ Même approche que findTypesByModel() - sans jointure auto_modele!inner
           // type_modele_id est de type TEXT dans la DB
-          let query = this.client
-            .from(TABLES.auto_type)
-            .select('*')
-            .eq('type_modele_id', modeleId.toString())
-            .eq('type_display', 1)
-            .limit(limit)
-            .range(offset, offset + limit - 1);
+          // Fonction SECURITY DEFINER (migration 20261026) et non `.from()` : le
+          // backend PREPROD tourne en `anon` (ADR-028 option D) et la base a
+          // `row_security=off`, donc une lecture directe d'une table sous RLS lève
+          // 42501. La fonction applique type_modele_id et type_display = '1'.
+          const { data, error, count } = await this.callRpc<VehicleType[]>(
+            'get_vehicle_api_model_types',
+            { p_modele_id: modeleId.toString() },
+            { source: 'api', role: 'service_role' },
+            {
+              get: true,
+              refine: (rpc) => {
+                let query = rpc
+                  .select('*')
+                  .limit(limit)
+                  .range(offset, offset + limit - 1);
 
-          if (search?.trim()) {
-            query = query.ilike('type_name', `%${search}%`);
-          }
+                if (search?.trim()) {
+                  query = query.ilike('type_name', `%${search}%`);
+                }
 
-          const { data, error, count } = await query.order('type_name');
+                return query.order('type_name');
+              },
+            },
+          );
 
           if (error) {
-            this.logger.error('Erreur getTypesByModel:', error);
-            throw error;
+            const cause = this.rpcFailure(error);
+            this.logger.error('Erreur getTypesByModel:', cause);
+            throw cause;
           }
 
           // Enrichissement si demandé

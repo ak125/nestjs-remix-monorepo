@@ -1,6 +1,6 @@
 ---
 name: fafa-remotion-template-planner
-description: Use when choosing the right Remotion composition (NeChangePasTropVite / SymptomeTroisCauses / PieceExpliquee) for a given Fafa script + format + duration target, and building the /render HTTP payload. Triggers — "render vidéo pilote", "préparer Remotion payload", "smoke render Fafa".
+description: Use when choosing the right Remotion composition (NeChangePasTropVite / SymptomeTroisCauses / PieceExpliquee / SequencesCourtes) for a given Fafa script + format + duration target, and building the /render HTTP payload. Triggers — "render vidéo pilote", "préparer Remotion payload", "smoke render Fafa".
 ---
 
 # Fafa Remotion Template Planner — Skill
@@ -28,9 +28,11 @@ description: Use when choosing the right Remotion composition (NeChangePasTropVi
 | `ne-change-pas-trop-vite` | `NeChangePasTropVite` | 30-45 s | 38 s (1140 images) | 9:16 (1080×1920) |
 | `symptome-3-causes` | `SymptomeTroisCauses` | 25-40 s | 33 s (990 images) | 9:16 (1080×1920) |
 | `piece-expliquee` | `PieceExpliquee` | 30-50 s | 40 s (1200 images) | 9:16 (1080×1920) |
+| `sequences-courtes` | `SequencesCourtes` | 25-40 s | fin de la dernière séquence | 9:16 (1080×1920) |
 
-Durée rendue = `durationInFrames` de `compositions/index.tsx` à 30 fps. Elle ne dépend ni du script ni de la requête : la voix
-se cale sur le découpage décrit dans `formats/<format>.md`.
+Durée rendue = `durationInFrames` de `compositions/index.tsx` à 30 fps. Pour les trois formats fixes, elle ne dépend ni du
+script ni de la requête : la voix se cale sur le découpage décrit dans `formats/<format>.md`. `SequencesCourtes` la calcule
+à partir des `endSec` de `compositionProps.sequences` (`calculateMetadata`).
 
 ## Payload `/render` HTTP
 
@@ -44,10 +46,10 @@ curl -X POST http://localhost:3100/render \
 
 - `briefId`, `executionLogId` (entier ≥ 0 ; `0` pour un appel manuel hors backend), `videoType` et `vertical` (champ du brief) sont obligatoires : sans eux, 400 `INVALID_REQUEST`.
 - Un champ de premier niveau inconnu (par exemple `props`) est retiré sans erreur par la validation : la composition rend alors ses valeurs par défaut.
-- Une prop de contenu absente de `compositionProps` affiche la valeur de démonstration de la composition (vanne EGR), sans erreur : renseigner toutes les props listées dans `formats/<format>.md`.
-- `resolution` vaut 1920×1080 par défaut (`contract.ts:15-20`) et remplace la taille de la composition (`lib/render-video.ts:88-90,122`) : toujours passer `{ "width": 1080, "height": 1920 }` pour ces trois compositions.
+- Une prop de contenu absente de `compositionProps` affiche la valeur de démonstration de la composition (vanne EGR), sans erreur : renseigner toutes les props listées dans `formats/<format>.md`. `SequencesCourtes` n'en a pas : sans séquence, le rendu échoue.
+- `resolution` vaut 1920×1080 par défaut (`contract.ts:15-20`) et remplace la taille de la composition (`lib/render-video.ts:88-90,122`) : toujours passer `{ "width": 1080, "height": 1920 }` pour ces quatre compositions.
 - `fps` remplace aussi celui de la composition, dont le découpage est compté en images : garder `30`, sinon la durée et le rythme changent.
-- `durationSecs` ne fixe pas la durée : elle vient de `durationInFrames` dans `compositions/index.tsx`.
+- `durationSecs` ne fixe pas la durée : elle vient de `durationInFrames` dans `compositions/index.tsx` (ou des séquences pour `SequencesCourtes`).
 
 Exemple pour `NeChangePasTropVite` :
 

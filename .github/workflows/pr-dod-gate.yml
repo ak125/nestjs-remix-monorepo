@@ -6,7 +6,11 @@ name: 🧾 PR Definition-of-Done gate
 # checked `[x]` or marked `N/A`. Escape hatch: label `dod-skip-justified` with
 # >= 2 approvals (Patch 6 of the Repository Control Plane Operational plan).
 #
-# PHASE 1 (warn-only): the gate step is `continue-on-error: true`, so it posts a
+# PHASE 2: the gate step fails the job (visible red X) on the 8 body items;
+# DoD2 is evaluated on GitHub state and reported as advisory (DOD_ADVISORY_ITEMS)
+# until agents get an identity distinct from the owner. Not yet a required check.
+#
+# PHASE 1 (history, warn-only): the gate step was `continue-on-error: true`, so it posted a
 # verdict comment + logs but never blocks merge — exactly like registry-build.yml
 # / registry-fresh.yml during ADR-058 Phase 1. This avoids retroactively red-X'ing
 # the ~52 in-flight PRs that predate the gate.
@@ -18,8 +22,15 @@ name: 🧾 PR Definition-of-Done gate
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled, assigned, unassigned, ready_for_review]
     branches: [main]
+  # DoD2 is GitHub state: an approval or a dismissal must re-evaluate it.
+  pull_request_review:
+    types: [submitted, dismissed]
+
+concurrency:
+  group: pr-dod-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -51,13 +62,15 @@ jobs:
             --jq '[.reviews[] | select(.state == "APPROVED") | .author.login] | unique | length')
           echo "count=${count:-0}" >> "$GITHUB_OUTPUT"
 
-      - name: 🧾 Evaluate DoD gate (Phase 1 warn-only)
+      - name: 🧾 Evaluate DoD gate (Phase 2 — fails the job, DoD2 advisory)
         id: gate
-        continue-on-error: true
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
           PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
           PR_APPROVALS: ${{ steps.approvals.outputs.count }}
+          # DoD2 cannot be met while agents and owner share one GitHub identity
+          # (GitHub refuses self-approval). Reported, not blocking, until then.
+          DOD_ADVISORY_ITEMS: DoD2
         run: node scripts/ci/pr-dod-gate.mjs
 
       - name: 💬 Comment on PR (idempotent via marker)

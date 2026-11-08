@@ -1,7 +1,7 @@
 /**
  * rappels.gouv.fr fetcher — light public-source ingestion for `__trend_signals`.
  *
- * Cf. spec docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.6
+ * Cf. spec docs/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.6
  * Task 1.10 — middle-ground trend signals. NO auto content gen, signal-only.
  *
  * Graceful degradation : tout échec (network, non-OK, JSON malformé) renvoie [].

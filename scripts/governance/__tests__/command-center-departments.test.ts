@@ -34,7 +34,7 @@ const profiles = readFileSync("audit/automecanik-departments-map.md", "utf8");
 const skills = JSON.parse(
   readFileSync(".spec/00-canon/ai-registry/skills.registry.json", "utf8"),
 );
-test("24 responsibilities preserve baseline fields except the approved People delta", () => {
+test("24 responsibilities preserve baseline fields except the approved People and 2026-11-04 deltas", () => {
   assert.equal(canon.departments.length, 24);
   assert.deepEqual(
     canon.departments
@@ -56,6 +56,8 @@ test("24 responsibilities preserve baseline fields except the approved People de
     for (const key of Object.keys(old)) {
       if (old.id === "people" && ["label", "repo_domains"].includes(key))
         continue;
+      if (old.id === "diagnostic" && ["label", "kpi_primary"].includes(key))
+        continue;
       assert.deepEqual(next[key], old[key], `${old.id}.${key}`);
     }
   }
@@ -63,6 +65,24 @@ test("24 responsibilities preserve baseline fields except the approved People de
   assert.equal(people.label, "People, Formation & Doc");
   assert.deepEqual(people.repo_domains, ["D8"]);
   assert.deepEqual(people.capabilities, ["staff"]);
+  // Organisation du 2026-11-04 : 11 garde son slug et ses capacités, 20 porte le KPI.
+  const expertise = canon.departments.find((d: any) => d.id === "diagnostic");
+  assert.equal(expertise.business_number, 11);
+  assert.equal(expertise.label, "Expertise technique automobile");
+  assert.equal(expertise.kpi_primary, undefined);
+  const product = canon.departments.find((d: any) => d.id === "product");
+  assert.equal(product.business_number, 20);
+  assert.equal(product.operating_mode, "human");
+  assert.equal(product.kpi_primary, "diagnostic_to_product");
+  assert.equal(product.priority, undefined);
+  assert.deepEqual(product.repo_domains, []);
+  assert.deepEqual(product.capabilities, []);
+  assert.deepEqual(
+    canon.departments
+      .filter((d: any) => d.kpi_primary === "diagnostic_to_product")
+      .map((d: any) => d.id),
+    ["product"],
+  );
   assert.deepEqual(canon.declared_capabilities, base.declared_capabilities);
   assert.deepEqual(canon.department_handoffs, base.department_handoffs);
 });
@@ -82,8 +102,14 @@ test("generated counts and unknown human scores preserve technical evidence", ()
     assert.equal(d.health_score_base, 30);
     assert.equal(d.certification, "UNKNOWN");
     assert.equal(d.priority, null);
-    assert.equal(d.kpi_primary, null);
+    assert.equal(
+      d.kpi_primary,
+      d.id === "product" ? "diagnostic_to_product" : null,
+    );
   }
+  const expertise = s.departments.find((d) => d.id === "diagnostic")!;
+  assert.equal(expertise.kpi_primary, null);
+  assert.equal(expertise.certification, "PARTIAL");
 });
 test("profile references, unique IDs and business numbers are checked", () => {
   assert.equal(typeof checkDepartmentProfiles, "function");
@@ -112,4 +138,27 @@ test("profile references, unique IDs and business numbers are checked", () => {
     assert.ok(checkDepartmentProfiles(ds, profiles).length > 0);
   }
   assert.ok(checkDepartmentProfiles(canon.departments, "").length > 0);
+});
+test("2026-11-04 product profile matches the registry and the header points to the current organisation", () => {
+  const product = canon.departments.find((d: any) => d.id === "product");
+  const anchor = `${product.profile_ref.split("#")[1]}"></a>`;
+  const row = profiles.split("\n").find((l) => l.includes(anchor))!;
+  const [, role, link] = row.split(" | ").map((c) => c.trim());
+  assert.match(role, new RegExp(`; \`${product.lead}\`$`));
+  assert.doesNotMatch(role, /proposé/);
+  assert.ok(
+    link.startsWith(
+      `\`${product.id}\`, sans domaine ni capacité logicielle / H`,
+    ),
+  );
+  const section =
+    "organisation-du-2026-11-04--expertise-technique-11-produit-20-assistance-14";
+  assert.ok(
+    profiles.includes(
+      "\n## Organisation du 2026-11-04 — Expertise technique (11), Produit (20), Assistance (14)\n",
+    ),
+  );
+  const header = profiles.split("\n## ")[0];
+  assert.ok(header.includes(`(#${section})`));
+  assert.ok(header.includes("(#department-product)"));
 });

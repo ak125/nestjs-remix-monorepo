@@ -156,6 +156,32 @@ check "T10 un commit de journal" 1 "$(new_commits)"
 check "T10 le commit ne touche que log.md" "log.md" "$(git -C "$W" show --name-only --format= HEAD | tr '\n' ' ' | sed 's/ $//')"
 check "T10 le chemin du tiers reste indexé, hors de tout commit" "A  companion.txt" "$(git -C "$W" status --porcelain -- companion.txt)"
 
+echo "== T11 branche déjà poussée, PR ouverte : rien à pousser, aucun commit"
+setup; git -C "$W" push -q -f -u origin feat/x 2>/dev/null
+check "T11 témoin : HEAD = origin/feat/x avant le hook" "$H0" "$(git -C "$W" rev-parse refs/remotes/origin/feat/x)"
+rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
+check "T11 code de sortie" 0 "$rc"
+check "T11 aucun commit après la tête poussée" 0 "$(new_commits)"
+check "T11 log.md intact" "" "$(git -C "$W" status --porcelain -- log.md)"
+check "T11 raison sur stderr" 1 "$(command grep -c 'déjà dans origin/feat/x' "$FIX/err")"
+
+echo "== T12 commit local après le push : l'entrée part avec ce travail"
+setup; git -C "$W" push -q -f -u origin feat/x 2>/dev/null
+echo "suite" > "$W/suite.txt"; git -C "$W" add suite.txt; git -C "$W" commit -qm "feat: suite non poussée"; H0="$(git -C "$W" rev-parse HEAD)"
+rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
+check "T12 un commit de journal" 1 "$(new_commits)"
+check "T12 le commit ne touche que log.md" "log.md" "$(git -C "$W" show --name-only --format= HEAD | tr '\n' ' ' | sed 's/ $//')"
+
+echo "== T13 branche distante en avance (commit poussé d'ailleurs) : aucun commit"
+setup; git -C "$W" push -q -f -u origin feat/x 2>/dev/null
+git clone -q -b feat/x "$FIX/origin.git" "$FIX/other$n" 2>/dev/null
+echo "projection" > "$FIX/other$n/proj.txt"; git -C "$FIX/other$n" add proj.txt
+git -C "$FIX/other$n" -c core.hooksPath="$FIX/no-hooks" commit -qm "chore: projection"; git -C "$FIX/other$n" push -q origin feat/x 2>/dev/null
+git -C "$W" fetch -q origin
+check "T13 témoin : HEAD est un ancêtre strict de origin/feat/x" 1 "$(git -C "$W" rev-list --count HEAD..refs/remotes/origin/feat/x)"
+rc=$(run "$W" FAKE_GH_PRS="$OPEN7")
+check "T13 aucun commit" 0 "$(new_commits)"
+
 echo
 if [[ $FAIL -ne 0 ]]; then echo "TESTS EN ÉCHEC"; exit 1
 elif [[ $SKIP -ne 0 ]]; then echo "TESTS INCOMPLETS ($SKIP non exécuté(s) — jamais comptés comme réussis)"; exit 3

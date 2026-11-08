@@ -10,7 +10,15 @@ module.exports = {
     '^.+\\.(t|j)s$': [
       'ts-jest',
       {
-        tsconfig: { isolatedModules: true, incremental: false },
+        // Mêmes module/moduleResolution que jest.config.js : sous le NodeNext de
+        // tsconfig.json, isolatedModules émettrait de l'ESM pour les paquets
+        // "type": "module" (@repo/seo-types) et la suite ne se chargerait pas.
+        tsconfig: {
+          isolatedModules: true,
+          incremental: false,
+          module: 'commonjs',
+          moduleResolution: 'bundler',
+        },
         diagnostics: false,
       },
     ],

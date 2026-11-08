@@ -211,6 +211,16 @@ test('file-only evaluator reuses L10a and keeps approval distinct from eligibili
   assert.equal(result.actorAuthenticated, false);
 });
 
+test('a schema-valid approval.json passes step 1 (checkArtefacts) without a stages array', () => {
+  const { evaluateDossier } = require('./fafa-pilot-governance.cjs');
+  const approval = read(path.join(pilot, 'approval.json'));
+  assert.equal('stages' in approval, false);
+  const result = evaluateDossier(pilot);
+  assert.equal(result.artefactCheck.hasApprovalRecord, true);
+  assert.equal(result.artefactCheck.canProceed, true);
+  assert.deepEqual(result.artefactCheck.missingArtefacts, []);
+});
+
 test('D17 supporting evidence excludes proposals, SEO text and other unapproved types', () => {
   const supports = ajv.getSchema(`${evidenceSchema.$id}#/$defs/SupportingEvidence`);
   for (const source_type of ['wiki_proposal', 'wiki_diagnostic', 'oem_spec', 'tecdoc', 'catalogue_interne']) {

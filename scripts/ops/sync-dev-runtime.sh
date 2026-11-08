@@ -31,10 +31,20 @@ set -uo pipefail
 export PATH="/usr/local/bin:/usr/bin:/bin:${PATH:-}"
 APP_DIR="${APP_DIR:-/opt/automecanik/app}"
 HEALTH_URL="${HEALTH_URL:-http://localhost:3000/health}"
-# Dumps apport de la machine (lus par nom + mtime seulement, cf. check_dev_runtime_topology).
+# Dumps apport de la machine (nom, mtime et champ ProcCwd, cf. check_dev_runtime_topology).
 CRASH_DIR="${CRASH_DIR:-/var/crash}"
 # Un dump reste signalé à chaque tick pendant 24 h (ou jusqu'à sa suppression après analyse).
+# Même fenêtre pour les crashs relancés lus dans le journal du service.
 CRASH_ALERT_WINDOW_MIN=1440
+# Service systemd utilisateur du stack DEV (scripts/ops/install-dev-service.sh).
+# systemctl et journalctl sont substituables pour les tests : le PATH ci-dessus place
+# /usr/bin devant tout faux binaire.
+DEV_UNIT="${DEV_UNIT:-automecanik-dev.service}"
+SYSTEMCTL="${SYSTEMCTL:-systemctl}"
+JOURNALCTL="${JOURNALCTL:-journalctl}"
+# cron ne définit pas XDG_RUNTIME_DIR : sans lui, `systemctl --user` ne trouve pas le
+# bus du gestionnaire utilisateur (actif hors session grâce au linger).
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 LOG_TAG="sync-dev-runtime"
 START=$(date +%s)
 # Trois ticks manqués (cadence 10 min) = cron considéré arrêté.
@@ -197,6 +207,8 @@ check_dev_runtime_topology() {
     esac
     cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null) || continue
     case "$cwd" in
+      # Worktrees imbriqués : d'autres checkouts, avec leur propre backend/dist.
+      "$APP_DIR"/.claude/worktrees/*) ;;
       "$APP_DIR"|"$APP_DIR"/*) stack+=("$pid"); in_stack[$pid]=1 ;;
     esac
   done < <(ps -eo pid=,ppid=,args= 2>/dev/null)
@@ -235,19 +247,84 @@ check_dev_runtime_topology() {
 
   # (d) Crash dumps imputables au repo. La machine écrit déjà des dumps apport
   #     dans $CRASH_DIR ; personne ne les lit jamais (aucun script du repo ne
-  #     référence /var/crash — vérifié). On ne lit PAS le contenu des dumps
-  #     (pas de privilège requis) : uniquement nom + mtime.
+  #     référence /var/crash — vérifié). Le dump appartient à l'utilisateur qui a
+  #     crashé : aucun privilège requis. Seul le champ texte ProcCwd est lu, en
+  #     tête de fichier : le nom `_usr_bin_node` ne dit pas QUEL node a crashé. Un
+  #     jest de worktree ou le backend d'un autre checkout produisaient la même
+  #     alerte que le stack servi (2026-10-24 : SIGABRT d'un jest dans un worktree,
+  #     57 ticks en alerte). Imputé au stack : ProcCwd dans $APP_DIR (hors worktrees
+  #     imbriqués) ou illisible ; les autres dumps sont journalisés, sans alerte.
   #     Signalé à CHAQUE tick tant que le dump a moins de CRASH_ALERT_WINDOW_MIN :
   #     l'issue enregistrée ne garde que le dernier tick, donc une alerte émise
   #     une seule fois serait effacée par le tick `ok` suivant, 10 min plus tard,
   #     avant qu'une session ne la voie. Supprimer le dump après analyse l'acquitte.
   if [ -d "$CRASH_DIR" ]; then
-    local dumps
-    dumps=$(find "$CRASH_DIR" -maxdepth 1 -name '*.crash' -mmin "-$CRASH_ALERT_WINDOW_MIN" 2>/dev/null \
-            | grep -E 'automecanik|turbo|node' | sort || true)
-    if [ -n "$dumps" ]; then
-      alert "crash dump(s) de moins de $((CRASH_ALERT_WINDOW_MIN / 60)) h dans $CRASH_DIR : $(echo "$dumps" | tr '\n' ' ')— un process du stack a crashé. Inspecter avec: grep -a '^Date\|^Signal\|^ProcCmdline' <fichier> ; le supprimer après analyse acquitte l'alerte."
+    local dumps=() elsewhere=() f pcwd
+    while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      pcwd=$(head -c 262144 "$f" 2>/dev/null | grep -a -m1 '^ProcCwd: ' | cut -d' ' -f2-)
+      case "$pcwd" in
+        "$APP_DIR"/.claude/worktrees/*) elsewhere+=("$f ($pcwd)") ;;
+        ""|"$APP_DIR"|"$APP_DIR"/*) dumps+=("$f") ;;
+        *) elsewhere+=("$f ($pcwd)") ;;
+      esac
+    done < <(find "$CRASH_DIR" -maxdepth 1 -name '*.crash' -mmin "-$CRASH_ALERT_WINDOW_MIN" 2>/dev/null \
+             | grep -E 'automecanik|turbo|node' | sort)
+    if [ "${#elsewhere[@]}" -gt 0 ]; then
+      log "crash dump(s) hors de $APP_DIR, non imputés au stack : ${elsewhere[*]}"
+    fi
+    if [ "${#dumps[@]}" -gt 0 ]; then
+      alert "crash dump(s) de moins de $((CRASH_ALERT_WINDOW_MIN / 60)) h dans $CRASH_DIR : ${dumps[*]} — un processus lancé depuis $APP_DIR a crashé. Inspecter avec: grep -a '^Date\|^Signal\|^ProcCmdline\|^ProcCwd' <fichier> ; le supprimer après analyse acquitte l'alerte."
       drift=1
+    fi
+  fi
+
+  # (e) Supervision systemd du stack (unit $DEV_UNIT). Une fois l'unit installée,
+  #     DEV:3000 doit tourner DANS son cgroup : un stack lancé depuis un terminal
+  #     meurt avec ce terminal ou la session SSH, et personne ne le relance. Les
+  #     crashs récupérés sont signalés aussi : relancés automatiquement, ils ne
+  #     laissent sinon aucune trace hors du journal.
+  #     Unit non installée : le stack est supervisé par son terminal, état connu,
+  #     journalisé sans alerte (bascule : install-dev-service.sh switch).
+  local unit_state load="" active="" sub="" unit_cg="" key val
+  if ! unit_state=$("$SYSTEMCTL" --user show "$DEV_UNIT" -p LoadState -p ActiveState -p SubState -p ControlGroup 2>&1); then
+    alert "état du service $DEV_UNIT illisible ($(echo "$unit_state" | head -1)) — supervision du stack DEV non vérifiée"
+    drift=1
+  else
+    while IFS='=' read -r key val; do
+      case "$key" in
+        LoadState) load=$val ;; ActiveState) active=$val ;;
+        SubState) sub=$val ;; ControlGroup) unit_cg=$val ;;
+      esac
+    done <<< "$unit_state"
+    if [ "$load" != "loaded" ]; then
+      log "service $DEV_UNIT non installé ($load) — stack DEV supervisé par son terminal"
+    else
+      if [ "$active" = "failed" ]; then
+        alert "service $DEV_UNIT en échec — DEV:3000 n'est plus relancé. Cause : journalctl --user -u $DEV_UNIT -n 100 --no-pager"
+        drift=1
+      elif [ "$sub" = "auto-restart" ]; then
+        alert "service $DEV_UNIT en attente de redémarrage après échec du stack. Cause : journalctl --user -u $DEV_UNIT -n 100 --no-pager"
+        drift=1
+      fi
+      local outside=() root_cg
+      for pid in "${roots[@]}" "${orphans[@]}"; do
+        root_cg=$(sed -n 's/^0:://p' "/proc/$pid/cgroup" 2>/dev/null)
+        [ -n "$unit_cg" ] && [ "$root_cg" = "$unit_cg" ] && continue
+        outside+=("$pid")
+      done
+      if [ "${#outside[@]}" -gt 0 ]; then
+        alert "stack DEV hors du service $DEV_UNIT (pids: ${outside[*]}) — il s'arrêtera avec son terminal ou sa session SSH sans être relancé. Bascule : bash $APP_DIR/scripts/ops/install-dev-service.sh switch"
+        drift=1
+      fi
+      local journal app_crashes stack_restarts
+      journal=$("$JOURNALCTL" --user -u "$DEV_UNIT" --since "-${CRASH_ALERT_WINDOW_MIN}min" -o cat --no-pager 2>/dev/null || true)
+      app_crashes=$(grep -c 'DEV_APP_CRASH' <<< "$journal" || true)
+      stack_restarts=$(grep -c 'Scheduled restart job' <<< "$journal" || true)
+      if [ "$app_crashes" -gt 0 ] || [ "$stack_restarts" -gt 0 ]; then
+        alert "$app_crashes crash(s) de l'app relancé(s) par wait-and-start.js et $stack_restarts redémarrage(s) du stack par systemd en $((CRASH_ALERT_WINDOW_MIN / 60)) h — récupérés, cause à lire : journalctl --user -u $DEV_UNIT --since -$((CRASH_ALERT_WINDOW_MIN / 60))h | grep -B30 -E 'DEV_APP_CRASH|Scheduled restart job'"
+        drift=1
+      fi
     fi
   fi
 
@@ -319,6 +396,53 @@ sync_submodules() {
   return "$drift"
 }
 
+# Cache npm hors ligne des missions Hermes d'écriture. Leur préparation installe les
+# dépendances SANS réseau (`npm ci --offline`) depuis un cache que seul le script de
+# rechargement Hermes remplit. Rien ne le relançait quand le lockfile changeait : le
+# 2026-10-28, une mission d'écriture a échoué à la préparation (ENOTCACHED sur une
+# dépendance montée par #1871), et rien ne l'avait signalé avant.
+#
+# Rechargement seulement quand le lockfile de HEAD n'a pas encore été chargé (empreinte
+# dans le répertoire d'état des crons) ou que le cache a disparu. Pendant le rechargement
+# (~1 min), le contrôleur refuse une mission lancée au même moment (« à relancer », sans
+# effet de bord). Une mission en cours fait refuser le rechargement : nouvel essai au tick
+# suivant. Un échec est signalé à chaque tick, et retenté au plus une fois par heure.
+#
+# ALERT-ONLY, comme sync_submodules : appelée sur les deux chemins (no-op et resync).
+# Machine sans Hermes (ni script ni cache) : rien.
+HERMES_NPM_CACHE="${HERMES_NPM_CACHE:-$HOME/.local/share/hermes-codex/npm-cache}"
+HERMES_NPM_WARM="${HERMES_NPM_WARM:-$HOME/hermes-npm-cache-20261005/controller/warm-hermes-npm-cache.sh}"
+refresh_hermes_npm_cache() {
+  [ -f "$HERMES_NPM_WARM" ] || [ -d "$HERMES_NPM_CACHE" ] || return 0
+  git cat-file -e HEAD:package-lock.json 2>/dev/null || return 0
+  local state_dir stamp lock_sha out
+  state_dir="${CRON_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/automecanik/cron}"
+  stamp="$state_dir/hermes-npm-cache.lock-sha256"
+  lock_sha=$(git show HEAD:package-lock.json | sha256sum | cut -d' ' -f1)
+  [ "$(cat "$stamp" 2>/dev/null)" = "$lock_sha" ] && [ -d "$HERMES_NPM_CACHE/_cacache" ] && return 0
+  if [ ! -f "$HERMES_NPM_WARM" ]; then
+    alert "cache npm Hermes à recharger (lockfile ${lock_sha:0:12}) mais $HERMES_NPM_WARM introuvable — les missions d'écriture échoueront à la préparation"
+    return 1
+  fi
+  if [ "$(cat "$stamp.failed" 2>/dev/null)" = "$lock_sha" ] && [ -n "$(find "$stamp.failed" -mmin -60 2>/dev/null)" ]; then
+    alert "cache npm Hermes : rechargement échoué il y a moins d'1 h (lockfile ${lock_sha:0:12}) — les missions d'écriture échoueront à la préparation d'ici le prochain essai"
+    return 1
+  fi
+  mkdir -p "$state_dir"
+  if out=$(bash "$HERMES_NPM_WARM" "$(git rev-parse HEAD)" 2>&1); then
+    printf '%s\n' "$lock_sha" > "$stamp"
+    rm -f "$stamp.failed"
+    log "cache npm Hermes rechargé pour le lockfile ${lock_sha:0:12}"
+  elif printf '%s\n' "$out" | grep -qx 'refused: mission active'; then
+    log "cache npm Hermes : mission en cours, rechargement au prochain tick"
+  else
+    printf '%s\n' "$out" | tail -5 >&2
+    printf '%s\n' "$lock_sha" > "$stamp.failed"
+    alert "cache npm Hermes : rechargement échoué (lockfile ${lock_sha:0:12}) — les missions d'écriture échoueront à la préparation (nouvel essai dans 1 h)"
+    return 1
+  fi
+}
+
 # 0. Sonde de topologie runtime (6e axe) — AVANT les gardes git, alert-only.
 #    Voir l'en-tête de check_dev_runtime_topology pour le « pourquoi avant ».
 check_dev_runtime_topology || true
@@ -343,6 +467,8 @@ remote_sha=$(git rev-parse origin/main)
 if [ "$local_sha" = "$remote_sha" ]; then
   # Rattrape un sous-module resté en retard sur son pin (échec d'un tick précédent).
   sync_submodules || true
+  # Idem pour le cache npm Hermes (lockfile pas encore chargé, essai précédent refusé ou échoué).
+  refresh_hermes_npm_cache || true
   # Pas de sync git — mais on probe quand même l'intégrité workspaces. Un drift
   # ici (symlink supprimé, dist effacé entre 2 ticks cron, install manuel
   # interrompu) doit être visible AVANT que nodemon redémarre et crashe.
@@ -457,5 +583,7 @@ if [ "$healthy" != "1" ]; then
 fi
 
 log "✅ DEV:3000 sain sur $remote_sha"
+# 9. Cache npm Hermes sur le lockfile que le ff vient d'amener. Après la santé : DEV d'abord.
+refresh_hermes_npm_cache || true
 report_done "{\"action\":\"synced\",\"from\":\"$local_sha\",\"to\":\"$remote_sha\"}"
 exit 0

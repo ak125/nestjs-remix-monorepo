@@ -5,8 +5,8 @@ import { type ThrottlerOptions } from '@nestjs/throttler';
  *
  * ⚠️ Invariant de portée — à lire avant d'ajouter un tier.
  * Un throttler nommé ici s'applique à **toutes** les routes : @nestjs/throttler
- * 6.5.0 boucle sur `this.throttlers` dans `canActivate()` sans notion de portée
- * (`throttler.guard.js:66`). Le nom d'un tier ne le restreint à rien. Le tier le
+ * 6.7.1 boucle sur `this.throttlers` dans `canActivate()` sans notion de portée
+ * (`throttler.guard.js:76`). Le nom d'un tier ne le restreint à rien. Le tier le
  * plus strict devient donc le plafond réel du site entier.
  *
  * Corollaire : un tier destiné à une poignée de routes doit rester
@@ -14,7 +14,7 @@ import { type ThrottlerOptions } from '@nestjs/throttler';
  * via `@Throttle({ <nom du tier>: { limit, ttl } })`.
  *
  * Le bucket est par (contrôleur, handler, tier, IP) — `generateKey()` =
- * `sha256(Classe-Handler-tier-IP)` (`throttler.guard.js:148-151`). Conséquence :
+ * `sha256(Classe-Handler-tier-IP)` (`throttler.guard.js:165-168`). Conséquence :
  * chaque `/api/*` a son propre budget, mais TOUT le SSR (pages, `*.data`,
  * `/__manifest`) partage un seul bucket, servi par l'unique handler catch-all
  * `remix.controller.ts:160 @All('{*path}')`.
@@ -45,7 +45,7 @@ const LONG: ThrottlerOptions = { name: 'long', ttl: HOUR, limit: 2000 };
  *
  * Le tier doit rester déclaré : les deux `@Throttle({ payment_callback: … })` le
  * référencent par nom, et un override nommant un tier absent de cette liste est
- * silencieusement ignoré (`throttler.guard.js:77` lit la métadonnée sous le nom
+ * silencieusement ignoré (`throttler.guard.js:86` lit la métadonnée sous le nom
  * du tier configuré). Garde mécanique :
  * `.ast-grep/rules/backend-throttle-key-must-match-configured-tier.yml`.
  */

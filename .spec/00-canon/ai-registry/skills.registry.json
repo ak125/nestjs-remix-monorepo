@@ -1,10 +1,28 @@
 {
-  "compliantCount": 16,
-  "generatedAt": "2026-10-21T23:25:45.199Z",
+  "compliantCount": 17,
+  "generatedAt": "2026-11-03T07:52:10.104Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
+    {
+      "checksum": "sha256:3b17d01ff6673e0ac513a43e4874db2370affe55d15abecd94afcd5735438e44",
+      "domain": "D15",
+      "last_verified": "2026-10-26",
+      "llm_safe": true,
+      "metadata": {
+        "version": "1.1.0"
+      },
+      "name": "capability-acceptance",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/capability-acceptance/SKILL.md",
+      "runtime_class": "mutating",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique"
+    },
     {
       "checksum": "sha256:11c9e4524c4991a64729c7e9b9eebd949c16cf9618693cbaa1af076e233b3a2a",
       "domain": "D15",
@@ -74,13 +92,13 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:8487b6fae121c39d87edc690bbd38260023819b099ac8ad0d78673629960b749",
+      "checksum": "sha256:6e285d5be03e65d701f87d56c8d29cc29a04a2bd6825d9550d138996ae604da5",
       "domain": "D15",
       "last_verified": "2026-09-30",
       "llm_safe": false,
       "metadata": {
         "spec": "agentskills.io/specification v1",
-        "version": "1.3"
+        "version": "1.4"
       },
       "name": "db-migration",
       "owners": [
@@ -416,5 +434,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 16
+  "totalSkills": 17
 }

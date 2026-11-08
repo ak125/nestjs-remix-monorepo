@@ -1,7 +1,7 @@
 # Fafa — Brand Palette (mapping d'USAGE)
 
 > **⚠️ Ceci n'est PAS une source de vérité couleurs.** La SoT = **`packages/design-tokens`**
-> (`@fafa/design-tokens`, `src/tokens/design-tokens.json` + `COLOR-SYSTEM.md`).
+> (`@fafa/design-tokens`, source DTCG `src/tokens.json` depuis #1163 + `COLOR-SYSTEM.md`).
 > Ce fichier décrit **comment Fafa applique** ces tokens — il ne redéfinit aucune valeur
 > comme autorité (anti-duplication `[CRITICAL]`). Si un hex diverge des tokens, **les tokens
 > gagnent**.
@@ -30,7 +30,8 @@
 ## État compositions Remotion
 
 Les 3 compositions Fafa (`NeChangePasTropVite`, `SymptomeTroisCauses`, `PieceExpliquee`) sont
-alignées sur ce mapping depuis la **PR #801** (correction du drift `#1a1a2e/#16213e/#e94560/#f0a500`).
+alignées sur ce mapping depuis la **PR #1258** (fusionnée le 14/07/2026, reprise de #805 fermée sans fusion ; correction
+du drift `#1a1a2e/#16213e/#e94560/#f0a500`).
 
 ## Voir aussi
 

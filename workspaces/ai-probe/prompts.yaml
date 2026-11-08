@@ -4,7 +4,7 @@
 # Pas de DB, pas de UI. Sert d'index pour la probe + KW canonical alignment.
 # Validated by backend/tests/unit/ai-probe/prompt-registry-schema.test.ts (Zod schema).
 #
-# Cf. spec docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.4
+# Cf. spec docs/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.4
 
 - prompt: "Pourquoi ma Clio 3 fume noir ?"
   intent: diagnostic

@@ -1,10 +1,10 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 244,
+  "count": 256,
   "by_confidence": {
     "high": 12,
-    "medium": 152,
+    "medium": 164,
     "low": 80
   },
   "candidates": [
@@ -4075,6 +4075,210 @@
       "path": "packages/design-tokens/src/types.ts",
       "domain": "pkg-design-tokens",
       "kind": "other",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/codemod-ai-color-palette.mjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/codemod-pure-black-white.mjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/codemod-side-tab.mjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/auto-migrate-design-system.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/clean-seo-database.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/get-oem-audi.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/import-keyword-json.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/import-keyword-volume.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/mcp-server/server.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/inject-agent-role.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/testing/check-breadcrumb.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-governance/rules.ts",
+      "domain": "scripts",
+      "kind": "script",
       "confidence": "medium",
       "derived_from": [
         "knip",

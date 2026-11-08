@@ -74,6 +74,7 @@ const METRICS = {
   specificContentRatio: 0.7,
   boilerplateRatio: 0.2,
   diversityScore: 58.4,
+  blockSpecificityScore: 70,
   semanticSimilarityScore: 70,
   categoryOrderDiversityScore: 50,
   faqReuseRiskScore: 10,
@@ -509,5 +510,82 @@ describe('R8VehicleEnricherService — fetchVehicleData', () => {
     expect(res.reasons).toEqual(['CONTENT_BROKEN']);
     expect(res.warnings).toEqual(['vehicle not found']);
     expect(res.reason).toBe('CONTENT_BROKEN: vehicle not found');
+  });
+});
+
+describe('R8VehicleEnricherService — persisted score = gate input', () => {
+  const SIGNATURE = {
+    meta_title: 'srtp-title-1',
+    meta_description: 'srtp-desc-1',
+  };
+  const collidingNeighbor = (typeId: number) => ({
+    ...NEIGHBOR,
+    id: `0b6f5d1e-0000-4000-8000-0000000${typeId}`,
+    page_key: `r8_vehicle_${typeId}`,
+    variant_signature: { ...SIGNATURE },
+  });
+  const COMPLETE_BLOCKS = [
+    ['S_IDENTITY', 'vehicle_identity'],
+    ['S_VARIANT_DIFFERENCE', 'variant_difference'],
+    ['S_SELECTION_GUIDE', 'selection_help'],
+    ['S_COMPAT_SCOPE', 'compatibility_scope'],
+    ['S_CATALOG_ACCESS', 'dynamic_category_ranking'],
+  ].map(([id, type]) => ({ ...BLOCKS[0], id, type, title: id }));
+
+  it('I. two meta collisions: decision, returned score and every persisted score read the post-penalty aggregate', async () => {
+    const h = makeHarness({
+      pages: {
+        neighbors: {
+          data: [collidingNeighbor(11056), collidingNeighbor(11057)],
+          error: null,
+        },
+      },
+    });
+    const internals = h.svc as unknown as Record<string, unknown>;
+    // Real penalty and gate; metrics as computeMetrics would return them
+    // (aggregate 70.5 ≥ index_min before the penalty).
+    delete internals.applyMetaCollisionPenalty;
+    delete internals.gate;
+    Object.assign(internals, {
+      composeBlocks: jest.fn().mockReturnValue(COMPLETE_BLOCKS),
+      seoRoleTemplate: {
+        pick: jest.fn(({ slot }: { slot: 'meta_title' | 'meta_description' }) =>
+          Promise.resolve({ id: SIGNATURE[slot], rendered: `rendu ${slot}` }),
+        ),
+      },
+      computeMetrics: jest.fn().mockReturnValue({
+        specificContentRatio: 0.8,
+        boilerplateRatio: 0.2,
+        diversityScore: 70.5,
+        blockSpecificityScore: 80,
+        semanticSimilarityScore: 75,
+        categoryOrderDiversityScore: 70,
+        faqReuseRiskScore: 0,
+        catalogDeltaScore: 50,
+        commercialIntentScore: 70,
+      }),
+    });
+
+    const res = await h.svc.enrichSingle(TYPE_ID);
+
+    expect(res.status).toBe('draft');
+    expect(res.seoDecision).toBe('REVIEW_REQUIRED');
+    expect(res.diversityScore).toBeCloseTo(68.5, 10);
+    expect(res.warnings).toEqual(
+      expect.arrayContaining([
+        'META_TITLE_COLLISION_IN_FAMILY count=2',
+        'META_DESCRIPTION_COLLISION_IN_FAMILY count=2',
+      ]),
+    );
+    const row = h.writeToTarget.mock.calls[0][0].payload;
+    expect(row.diversity_score).toBeCloseTo(68.5, 10);
+    expect(row.semantic_similarity_score).toBe(65);
+    expect(row.seo_decision).toBe('REVIEW_REQUIRED');
+    expect(row.sitemap_included).toBe(false);
+    expect(row.robots_directive).toBe('noindex, nofollow');
+    expect(row.published_at).toBeNull();
+    const versionMetrics = h.inserts.insertVersion.mock.calls[0][4];
+    expect(versionMetrics.diversityScore).toBeCloseTo(68.5, 10);
+    expect(versionMetrics.semanticSimilarityScore).toBe(65);
   });
 });

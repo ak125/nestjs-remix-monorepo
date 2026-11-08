@@ -2,6 +2,33 @@
  * 🎯 Utilitaires pour les filtres de pièces
  * Fonctions de conversion et validation centralisées
  */
+import { type PieceData, type SortBy } from "../types/pieces-route.types";
+
+const pieceCollator = new Intl.Collator("fr", {
+  numeric: true,
+  sensitivity: "base",
+});
+
+/** Sort a newly filtered array, never the source catalogue. Shared by both views. */
+export function sortPiecesInPlace(
+  pieces: PieceData[],
+  sortBy: SortBy,
+): PieceData[] {
+  switch (sortBy) {
+    case "name":
+      return pieces.sort((a, b) =>
+        pieceCollator.compare(a.name || "", b.name || ""),
+      );
+    case "brand":
+      return pieces.sort((a, b) =>
+        pieceCollator.compare(a.brand || "", b.brand || ""),
+      );
+    case "price-asc":
+      return pieces.sort((a, b) => (a.price || 0) - (b.price || 0));
+    case "price-desc":
+      return pieces.sort((a, b) => (b.price || 0) - (a.price || 0));
+  }
+}
 
 /**
  * Convertit les étoiles (1-6) en note sur 10
@@ -28,7 +55,7 @@ export function convertStarsToNote(stars?: number): number {
  * @returns Note moyenne sur 10 avec 1 décimale
  */
 export function calculateAverageNote(
-  pieces: Array<{ stars?: number }>
+  pieces: Array<{ stars?: number }>,
 ): number {
   if (pieces.length === 0) return 0;
 
@@ -48,7 +75,7 @@ export function calculateAverageNote(
  */
 export function isValidPosition(
   position: string | undefined,
-  availablePositions: string[]
+  availablePositions: string[],
 ): boolean {
   if (!position || position === "all") return true;
   return availablePositions.includes(position);

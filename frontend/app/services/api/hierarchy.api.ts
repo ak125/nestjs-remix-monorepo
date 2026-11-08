@@ -2,7 +2,7 @@
 // 🏗️ Service API pour la hiérarchie Familles → Gammes
 // Source unique : /api/catalog/homepage-families (CatalogHierarchyService)
 
-import { FAMILY_REGISTRY } from "@repo/database-types";
+import { FAMILY_REGISTRY } from "@repo/database-types/family-registry";
 import { getFamilyTheme } from "~/utils/family-theme";
 import { logger } from "~/utils/logger";
 import { type CatalogGamme } from "../../types/catalog.types";

@@ -15,7 +15,6 @@
 | `.spec/00-canon/*` | CANON - Source de verite |
 | `.spec/features/*` | Supplementaire - peut etre obsolete |
 | `.spec/.archive/*` | Archive - NE JAMAIS REFERENCER |
-| `_bmad-output/*` | Artefacts versionnes - read-only |
 
 **Raison:** Prevenir la confusion documentaire et garantir une source de verite unique.
 
@@ -92,7 +91,7 @@ Exclusion du corpus RAG
 
 ## Checklist Governance
 
-Avant tout workflow BMAD:
+Avant tout workflow:
 
 - [ ] Sources = canon uniquement (R8)
 - [ ] Claims avec preuves (R9)

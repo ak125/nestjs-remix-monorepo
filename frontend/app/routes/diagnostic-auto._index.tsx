@@ -34,6 +34,7 @@ import {
   Link,
   useLoaderData,
   useRouteError,
+  useSearchParams,
   isRouteErrorResponse,
 } from "react-router";
 
@@ -301,7 +302,8 @@ export default function DiagnosticAutoIndex() {
   const { featured, clusters, perceptionIcons, signs, faq, riskLevels } =
     useLoaderData<typeof loader>();
   const [searchQuery, setSearchQuery] = useState("");
-  const [dtcCode, setDtcCode] = useState("");
+  // Category links stay on this page: the wizard restarts to read the new one.
+  const [searchParams] = useSearchParams();
 
   // Commerce-Loop V1 étape 4-A — entrée du funnel outil diagnostic.
   useEffect(() => {
@@ -317,19 +319,9 @@ export default function DiagnosticAutoIndex() {
       c.description.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // V0.B — track DTC code submit (warning_light intent) avant redirection.
-  // Pour la recherche libre, on track au blur si ≥ 3 chars (évite events
-  // spammy pendant la frappe). PII sanitize via `safeGtag`.
-  const handleDtcSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const code = dtcCode.trim().toUpperCase();
-    if (!code) return;
-    void import("~/utils/analytics").then(({ trackSymptomSearch }) => {
-      trackSymptomSearch(code, "warning_light", undefined);
-    });
-    window.location.href = `/diagnostic-auto?dtc=${encodeURIComponent(code)}`;
-  };
-
+  // Recherche libre trackée au blur si ≥ 3 chars (évite events spammy
+  // pendant la frappe). PII sanitize via `safeGtag`. La saisie de code OBD
+  // est retirée tant que la lecture des codes défaut est en pause.
   const handleSearchBlur = () => {
     const query = searchQuery.trim();
     if (query.length < 3) return;
@@ -362,14 +354,14 @@ export default function DiagnosticAutoIndex() {
         severity="warning"
       />
       {/* ═══ WIZARD DIAGNOSTIC INTELLIGENT ═══ */}
-      <section className="bg-white border-b py-8">
+      <section id="outil-diagnostic" className="bg-white border-b py-8">
         <Container>
           <div className="max-w-2xl mx-auto">
-            <DiagnosticWizard />
+            <DiagnosticWizard key={searchParams.get("cluster") ?? ""} />
           </div>
         </Container>
       </section>
-      {/* ═══ RECHERCHE + OBD ═══ */}
+      {/* ═══ RECHERCHE ═══ */}
       <section className="bg-white border-b py-4">
         <Container>
           <div className="flex flex-col sm:flex-row gap-3 max-w-2xl">
@@ -384,21 +376,6 @@ export default function DiagnosticAutoIndex() {
                 onBlur={handleSearchBlur}
               />
             </div>
-            <form onSubmit={handleDtcSubmit} className="flex gap-2">
-              <Input
-                type="text"
-                placeholder="Code OBD (P0300...)"
-                className="h-11 w-40 bg-gray-100 border-gray-200 font-mono rounded-xl text-center"
-                value={dtcCode}
-                onChange={(e) => setDtcCode(e.target.value)}
-              />
-              <button
-                type="submit"
-                className="h-11 px-5 bg-cta hover:bg-cta-hover text-black font-semibold rounded-xl transition-colors whitespace-nowrap"
-              >
-                Scanner
-              </button>
-            </form>
           </div>
         </Container>
       </section>
@@ -573,8 +550,9 @@ export default function DiagnosticAutoIndex() {
                 de bord. Un scanner OBD (à partir de 30 EUR) lit les codes
                 défaut enregistrés par le calculateur. Les codes Pxxxx
                 concernent le moteur, Cxxxx le châssis (ABS, ESP), Bxxxx la
-                carrosserie, Uxxxx le réseau de communication. Entrez votre code
-                dans l'outil en haut de page pour un diagnostic ciblé.
+                carrosserie, Uxxxx le réseau de communication. Notre outil
+                n'interprète pas encore ces codes : décrivez les symptômes
+                constatés pour être orienté.
               </p>
             </div>
           </div>
@@ -599,8 +577,8 @@ export default function DiagnosticAutoIndex() {
                 Diagnostics électroniques
               </p>
               <p className="text-xs text-amber-700">
-                Entrez votre code OBD (P0300...) dans l'outil ci-dessus pour
-                identifier la panne.
+                La lecture des codes OBD est en pause dans notre outil. Décrivez
+                les symptômes pour identifier les causes possibles.
               </p>
             </div>
           </div>
@@ -976,32 +954,25 @@ export default function DiagnosticAutoIndex() {
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="h-5 w-5 text-yellow-400" />
               <span className="text-sm font-medium text-yellow-400 uppercase tracking-wider">
-                Code erreur
+                Voyant allumé
               </span>
             </div>
             <h3 className="text-2xl font-bold mb-2">
               Votre tableau de bord affiche un voyant ?
             </h3>
             <p className="text-white/60">
-              Entrez le code OBD (P0XXX, C1XXX...) pour un diagnostic précis.
+              La lecture des codes défaut (OBD) est en pause : notre outil ne
+              les interprète pas encore de façon fiable. Décrivez les symptômes
+              constatés pour être orienté.
             </p>
           </div>
-          <form onSubmit={handleDtcSubmit} className="flex gap-2 shrink-0">
-            <Input
-              type="text"
-              placeholder="P0300"
-              className="h-12 w-36 bg-white/10 border-white/20 text-white placeholder:text-white/40 font-mono text-center rounded-xl text-lg"
-              value={dtcCode}
-              onChange={(e) => setDtcCode(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="h-12 px-6 bg-cta hover:bg-cta-hover text-black font-bold rounded-xl transition-colors flex items-center gap-2"
-            >
-              Scanner
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </form>
+          <a
+            href="#outil-diagnostic"
+            className="h-12 px-6 bg-cta hover:bg-cta-hover text-black font-bold rounded-xl transition-colors flex items-center gap-2 shrink-0"
+          >
+            Décrire les symptômes
+            <ChevronRight className="w-4 h-4" />
+          </a>
         </div>
       </Container>
       {/* Cross-link glossaire */}

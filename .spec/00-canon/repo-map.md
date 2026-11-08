@@ -185,8 +185,6 @@ packages/seo-roles/src/          # Canon RoleId R0-R8
 **Chemin**: `/opt/automecanik/rag/knowledge/`
 **Total**: 15 documents
 
-Voir `.spec/bmad/output/rag_diagnosis.md` pour details.
-
 ---
 
 _Derniere mise a jour: 2026-05-25_

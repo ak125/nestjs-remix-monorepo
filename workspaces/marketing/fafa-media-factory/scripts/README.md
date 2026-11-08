@@ -17,11 +17,11 @@ Les documents de la zone ne décrivent pas tous ce flux de la même façon (rele
 
 - **Qui pose `content_approved`** : l'owner, comme le dit cette table. La règle AI2 du vault (`ledger/rules/rules-ai-cos.md` :
   « L'IA propose, analyse, recommande. L'humain valide, decide, engage. »), à laquelle renvoie ADR-036 (`accepted`), réserve la
-  validation à un humain ; le manifeste du pilote le redit (« Éligibilité gates ≠ approbation »,
-  `manifests/renders/fafa-plaquettes-frein-001.json:71`). L'étape 4 du Workflow de `fafa-brand-safety-reviewer`, qui pose
-  `content_approved=true` quand les 7 gates passent, reste à corriger avec le réalignement de ce skill. Le schéma n'exige qu'une
-  chaîne non vide dans `content_approved_by` (`governance/approval-record.schema.json:77-84`) : il ne prouve pas qu'un humain a
-  signé.
+  validation à un humain ; le manifeste du pilote réserve de même `render_approved` à l'owner (« render_approved reste false tant
+  que l'owner n'a pas inspecté ce MP4 exact », `manifests/renders/fafa-plaquettes-frein-001.json:8`). Depuis son réalignement du
+  18/10, `fafa-brand-safety-reviewer` rend une proposition et ne pose aucun drapeau ; la description du schéma (l.45) le dit aussi.
+  Le schéma n'exige qu'une chaîne non vide dans `content_approved_by` (`governance/approval-record.schema.json:79-86`) : il ne
+  prouve pas qu'un humain a signé.
 - **Quand la vidéo est rendue** : non tranché. Le statut 6 exige déjà `render_approved=true`, et le pilote a été rendu en
   `DRAFT_ONLY` (`manifests/renders/fafa-plaquettes-frein-001.json:4,8`) ; `fafa-remotion-template-planner` (« Quand invoquer »,
   « Pré-requis ») et `../README.md` rendent la vidéo après `APPROVED`.

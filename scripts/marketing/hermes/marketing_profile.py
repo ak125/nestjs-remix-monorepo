@@ -145,8 +145,8 @@ def skill_view(args, **kwargs):
         key = str(name) + "/" + str(relative)
         if key not in records or str(name) + "/SKILL.md" not in records:
             raise ValueError("Unknown marketing skill or reference")
-        project, all_dirs, _ = native._skill_search_dirs()
-        error, _, selected = native._locate_skill(name, None, project, all_dirs)
+        roots, _ = native.skill_search_dirs()
+        error, _, selected = native.locate_skill(name, None, roots)
         expected = SKILLS / name / "SKILL.md"
         if error is not None or selected is None or selected.resolve() != expected:
             raise ValueError("Active skill source is missing or shadowed")

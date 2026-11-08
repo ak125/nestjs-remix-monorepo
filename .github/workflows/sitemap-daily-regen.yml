@@ -1,7 +1,7 @@
 name: sitemap-daily-regen
 
 # Phase 6/11 of sitemap regen auth plan
-# (docs/superpowers/specs/2026-05-16-sitemap-regen-auth-design.md).
+# (docs/specs/2026-05-16-sitemap-regen-auth-design.md).
 #
 # Daily regeneration of /pieces/* sitemaps via the PROD backend endpoint
 # `POST /api/sitemap/v10/generate-all`. Authenticated via GitHub Actions

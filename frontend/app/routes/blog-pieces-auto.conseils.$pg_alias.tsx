@@ -600,19 +600,20 @@ export default function R3GuidePage() {
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900 text-lg">
-                            Besoin de cette piece ?
+                            Besoin de cette pièce ?
                           </p>
                           <p className="text-sm text-gray-600 mt-1">
-                            Comparez les prix et trouvez la piece compatible
-                            avec votre vehicule.
+                            Trouvez la pièce compatible avec votre véhicule.
                           </p>
                         </div>
+                        {/* page.title est le titre du guide (« Comment changer… ») :
+                            il ne nomme pas la pièce, d'où un libellé fixe */}
                         <Link
                           to={page.cta_link}
                           className="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
                         >
                           <Tag className="h-4 w-4" />
-                          Voir les {page.title?.toLowerCase() || "pieces"}
+                          Voir les pièces compatibles
                         </Link>
                       </div>
                     </div>
@@ -671,15 +672,14 @@ export default function R3GuidePage() {
                       <div className="flex items-center gap-3">
                         <Tag className="w-5 h-5 text-emerald-600 shrink-0" />
                         <p className="text-sm text-gray-700">
-                          Trouvez votre{" "}
+                          Trouvez la{" "}
                           <Link
                             to={page.cta_link}
                             className="font-medium text-emerald-600 hover:text-emerald-800 underline"
                           >
-                            {page.title?.toLowerCase() || "piece"} au meilleur
-                            prix
+                            pièce compatible avec votre véhicule
                           </Link>{" "}
-                          parmi nos fournisseurs.
+                          dans le catalogue.
                         </p>
                       </div>
                     </div>

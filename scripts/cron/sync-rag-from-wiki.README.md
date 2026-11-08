@@ -37,6 +37,7 @@ arrière-plan — il s'arrête naturellement.
 |---|---|
 | Clone `/opt/automecanik/automecanik-wiki/` | `git remote -v` |
 | Clone `/opt/automecanik/rag/` | idem |
+| Clone `/opt/automecanik/automecanik-raw/` (registre des tombstones, lu à `origin/main`) | idem |
 | Deploy bot SSH key configurée pour push | `ssh -T git@github.com` |
 | `python3` + dépendances `sync-wiki-exports-to-rag.py` (stdlib only) | `python3 -c "import hashlib, shutil, pathlib"` |
 | `flock` pour le global lock | `which flock` |
@@ -58,6 +59,8 @@ Cf. discussion architecturale dans le knowledge vault. Résumé :
 | `ERROR: rag not on main` | Quelqu'un a checkout une branche dans `/opt/automecanik/rag/` | `git checkout main` dans le clone |
 | `Another RAG operation active` | `run-phase-f.sh` ou autre opération rag tourne en parallèle | Attendre la fin (lock global `/tmp/rag-global.lock`) |
 | Sync produit "No changes" alors qu'on attend des updates | Le contenu de `wiki/exports/rag/` n'a pas changé sur main | Vérifier `cd /opt/automecanik/automecanik-wiki && git log --oneline exports/rag/` |
+| Échec à l'étape `[1/4] fetch raw` | Clone RAW absent ou fetch refusé | `git -C /opt/automecanik/automecanik-raw fetch origin main` |
+| `TOMBSTONE-MISMATCH` dans le log, statut `warn` | Un fichier hérité a changé depuis son tombstone : il est préservé | Nouveau tombstone (`_scripts/tombstone-rag-mirror.py` côté RAW) ou export WIKI ; jamais de suppression à la main (D21/D22) |
 | Push échoue sur 403/permission denied | Deploy bot SSH key pas dans `~/.ssh/authorized_keys` côté GitHub | Configurer la clé via Settings → Deploy keys |
 
 ## Référence

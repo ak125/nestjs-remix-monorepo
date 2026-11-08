@@ -1,0 +1,1014 @@
+{
+  "base": "7bf9cfbadec2288fdde6d583e00b0a4febc8d8d6",
+  "branch": "codex/catalog-css-sources-20261028",
+  "sourceGitBlobHashes": {
+    "frontend/app/global.css": "e2afa502814c6282fe6240d17dc672e43d570bc5",
+    "frontend/app/routes.ts": "517c856798cb547d157869b1cc065057d05c7ae5",
+    "frontend/route-files.ts": "b537c3f302f8bdfa3d89710b928a2a2a9c3b531f",
+    "frontend/tailwind.config.cjs": "1fa552849b86a76758fb611fc93232b6ec7a9b6d",
+    "frontend/vite.config.ts": "8bbb95055f64e7126e459424f36b9d4d6d0f6f85",
+    "frontend/vite.production-css.ts": "f6174e610d1bd3e261831ba1d4e27d0601b130ce",
+    "frontend/tests/unit/production-css-sources.test.ts": "80658c84281555739688aed03f4fad4fe7a04b5c"
+  },
+  "build": {
+    "baseline": {
+      "file": "global-D8wtDtZw.css",
+      "raw": 370845,
+      "brotli": 44008,
+      "gzip": 48208,
+      "sha256": "ce9e16f7c844388382124f1d6a0471ae15cc000b80ebb17c8f19e2c6cb95ff07"
+    },
+    "candidate": {
+      "file": "global-1PlIhI59.css",
+      "raw": 352971,
+      "brotli": 42751,
+      "gzip": 46620,
+      "sha256": "c9861b87d1efa59c2dc24c6bd3bf9d78e32adaf8e3f70aae8343ea91f0b356ff"
+    },
+    "js": {
+      "baselineCount": 199,
+      "candidateCount": 199,
+      "identical": 189,
+      "removed": [
+        "admin.command-center-AN33QZ5-.js",
+        "manifest-a621c667.js",
+        "pieces._gamme._marque._modele._type_._html-3wcR-9TO.js",
+        "recherche-D32aTLIO.js",
+        "root-C0zCL_Md.js",
+        "root-asiv-zUL.js",
+        "search-D32aTLIO.js",
+        "search-D6Qh3FLX.js",
+        "use-pieces-filters-COGIKXlN.js",
+        "useHydrated-Dj0dmWHL.js"
+      ],
+      "added": [
+        "admin.command-center-C1np6pWc.js",
+        "manifest-a1bef3b3.js",
+        "pieces._gamme._marque._modele._type_._html-CH4dtKf-.js",
+        "recherche-B0pdUgoq.js",
+        "root-C6wHHymH.js",
+        "root-p24cc7-F.js",
+        "search-B0pdUgoq.js",
+        "search-Yiun1rbs.js",
+        "use-pieces-filters-_sSDl5d6.js",
+        "useHydrated-XG3nTtx4.js"
+      ]
+    }
+  },
+  "assurance": {
+    "excludedCount": 99,
+    "excludedFiles": [
+      "admin._index.tsx",
+      "admin.ai-content.tsx",
+      "admin.articles.tsx",
+      "admin.blog-analytics.tsx",
+      "admin.blog.tsx",
+      "admin.brands-seo.tsx",
+      "admin.claims._index.tsx",
+      "admin.commercial._index.tsx",
+      "admin.config._index.tsx",
+      "admin.control-plane.tsx",
+      "admin.couleurs-constructeurs.tsx",
+      "admin.couleurs-familles.tsx",
+      "admin.db-governance.tsx",
+      "admin.debug.tsx",
+      "admin.diagnostic-engine.tsx",
+      "admin.diagnostic.$id.edit.tsx",
+      "admin.diagnostic._index.tsx",
+      "admin.gammes-seo.$pgId.tsx",
+      "admin.gammes-seo._index.tsx",
+      "admin.gammes-seo.tsx",
+      "admin.invoices._index.tsx",
+      "admin.invoices.tsx",
+      "admin.keyword-planner.tsx",
+      "admin.leads.$id.tsx",
+      "admin.leads._index.tsx",
+      "admin.marketing._index.tsx",
+      "admin.marketing.backlinks.tsx",
+      "admin.marketing.briefs.tsx",
+      "admin.marketing.content-roadmap.tsx",
+      "admin.marketing.social-hub.posts.tsx",
+      "admin.marketing.tsx",
+      "admin.menu.tsx",
+      "admin.messages.tsx",
+      "admin.optimization-summary.tsx",
+      "admin.orders.$orderId.tsx",
+      "admin.orders._index.tsx",
+      "admin.orders.tsx",
+      "admin.page-role.tsx",
+      "admin.payments.$paymentId.tsx",
+      "admin.payments._index.tsx",
+      "admin.payments.dashboard.tsx",
+      "admin.payments.tsx",
+      "admin.products.$productId.tsx",
+      "admin.products._index.tsx",
+      "admin.products.gammes.$gammeId.tsx",
+      "admin.prototype.buying-guide.$pgId.tsx",
+      "admin.r1-images.tsx",
+      "admin.r1-qa.tsx",
+      "admin.rag._index.tsx",
+      "admin.rag.documents.$docId.tsx",
+      "admin.rag.documents.tsx",
+      "admin.rag.images.tsx",
+      "admin.rag.ingest.tsx",
+      "admin.rag.tsx",
+      "admin.rag.webhook-monitor.tsx",
+      "admin.reports._index.tsx",
+      "admin.reports.tsx",
+      "admin.seo-content.tsx",
+      "admin.seo-control.tsx",
+      "admin.seo-dashboard.tsx",
+      "admin.seo-hub._index.tsx",
+      "admin.seo-hub.audit.tsx",
+      "admin.seo-hub.content._index.tsx",
+      "admin.seo-hub.content.blog.tsx",
+      "admin.seo-hub.content.diagnostics.$slug.tsx",
+      "admin.seo-hub.content.diagnostics._index.tsx",
+      "admin.seo-hub.content.diagnostics.new.tsx",
+      "admin.seo-hub.content.diagnostics.tsx",
+      "admin.seo-hub.content.generator.tsx",
+      "admin.seo-hub.content.references.$slug.tsx",
+      "admin.seo-hub.content.references._index.tsx",
+      "admin.seo-hub.content.references.new.tsx",
+      "admin.seo-hub.content.references.tsx",
+      "admin.seo-hub.content.tsx",
+      "admin.seo-hub.cwv.tsx",
+      "admin.seo-hub.findings.tsx",
+      "admin.seo-hub.gammes.$pgId.tsx",
+      "admin.seo-hub.gammes._index.tsx",
+      "admin.seo-hub.keyword-clusters.tsx",
+      "admin.seo-hub.monitoring.tsx",
+      "admin.seo-hub.observability.tsx",
+      "admin.seo-hub.page-briefs.tsx",
+      "admin.seo-hub.tsx",
+      "admin.seo.tsx",
+      "admin.staff._index.tsx",
+      "admin.staff.tsx",
+      "admin.stock.tsx",
+      "admin.suppliers.$id.edit.tsx",
+      "admin.suppliers.$id.tsx",
+      "admin.suppliers._index.tsx",
+      "admin.suppliers.tsx",
+      "admin.system-config._index.tsx",
+      "admin.system-overview.tsx",
+      "admin.system.tsx",
+      "admin.tsx",
+      "admin.users.$id.edit.tsx",
+      "admin.users.$id.tsx",
+      "admin.users._index.tsx",
+      "admin.v-level-status.tsx"
+    ],
+    "excludedStillScanned": [],
+    "devCandidatesIdentical": true,
+    "devCandidates": 23170,
+    "productionCandidates": 21519,
+    "normalizedJs": [
+      {
+        "before": "admin.command-center-AN33QZ5-.js",
+        "after": "admin.command-center-C1np6pWc.js",
+        "equalAfterAssetHashNormalization": true
+      },
+      {
+        "before": "manifest-a621c667.js",
+        "after": "manifest-a1bef3b3.js",
+        "equalAfterAssetHashNormalization": true
+      },
+      {
+        "before": "pieces._gamme._marque._modele._type_._html-3wcR-9TO.js",
+        "after": "pieces._gamme._marque._modele._type_._html-CH4dtKf-.js",
+        "equalAfterAssetHashNormalization": true
+      },
+      {
+        "before": "recherche-D32aTLIO.js",
+        "after": "recherche-B0pdUgoq.js",
+        "equalAfterAssetHashNormalization": true
+      },
+      {
+        "before": "root-C0zCL_Md.js",
+        "after": "root-C6wHHymH.js",
+        "equalAfterAssetHashNormalization": true
+      },
+      {
+        "before": "root-asiv-zUL.js",
+        "after": "root-p24cc7-F.js",
+        "equalAfterAssetHashNormalization": true
+      },
+      {
+        "before": "search-D32aTLIO.js",
+        "after": "search-B0pdUgoq.js",
+        "equalAfterAssetHashNormalization": true
+      },
+      {
+        "before": "search-D6Qh3FLX.js",
+        "after": "search-Yiun1rbs.js",
+        "equalAfterAssetHashNormalization": true
+      },
+      {
+        "before": "use-pieces-filters-COGIKXlN.js",
+        "after": "use-pieces-filters-_sSDl5d6.js",
+        "equalAfterAssetHashNormalization": true
+      },
+      {
+        "before": "useHydrated-Dj0dmWHL.js",
+        "after": "useHydrated-XG3nTtx4.js",
+        "equalAfterAssetHashNormalization": false,
+        "beforeContent": "import{r as e}from\"./rolldown-runtime-BUILDHASH.js\";import{Xt as t}from\"./app-core-BUILDHASH.js\";var n=e(t());function r(){let[e,t]=(0,n.useState)(!1);return(0,n.useEffect)(()=>{t(!0)},[]),e}export{r as t};",
+        "afterContent": "import{r as e}from\"./rolldown-runtime-BUILDHASH.js\";import{Xt as t}from\"./app-core-BUILDHASH.js\";var n=e(t(),1);function r(){let[e,t]=(0,n.useState)(!1);return(0,n.useEffect)(()=>{t(!0)},[]),e}export{r as t};"
+      }
+    ]
+  },
+  "measurements": {
+    "paired": {
+      "source": "paired.json",
+      "revision": "7bf9cfbadec2288fdde6d583e00b0a4febc8d8d6",
+      "browser": "149.0.7827.55",
+      "conditions": {
+        "viewport": "390x844",
+        "dpr": 1,
+        "userAgent": "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+        "cpu": 4,
+        "latency": 150,
+        "download": 200000,
+        "upload": 93750,
+        "cache": "disabled and cleared",
+        "api": "real integrated GET; other API methods 204",
+        "stabilization": "4000ms after DOMContentLoaded",
+        "warmup": "one excluded navigation per build",
+        "order": [
+          "normal",
+          "candidate",
+          "candidate",
+          "normal",
+          "normal",
+          "candidate",
+          "candidate",
+          "normal",
+          "normal",
+          "candidate"
+        ]
+      },
+      "rows": [
+        {
+          "n": 1,
+          "mode": "normal",
+          "lcp": 1740,
+          "hydration": 5168.199999809265,
+          "ttfb": 106.89999961853027,
+          "criticalCssEnd": 1606,
+          "criticalCssBytes": 44008,
+          "totalGlobalCssBytes": 44008,
+          "maxLongTask": 56,
+          "maxLongTaskBeforeLcp": 50,
+          "cls": 0.0106915837469958,
+          "jsRequestedBeforeLcpBytes": 295614,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 188,
+          "bodyFontEnd": 1455.6999998092651,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1335.6999998092651,
+          "open-filters": 160,
+          "close-filters": 72,
+          "open-card": 128,
+          "close-card": 128
+        },
+        {
+          "n": 2,
+          "mode": "candidate",
+          "lcp": 1708,
+          "hydration": 5242,
+          "ttfb": 96.2000002861023,
+          "criticalCssEnd": 1566.0999999046326,
+          "criticalCssBytes": 42751,
+          "totalGlobalCssBytes": 42751,
+          "maxLongTask": 56,
+          "maxLongTaskBeforeLcp": 0,
+          "cls": 0,
+          "jsRequestedBeforeLcpBytes": 295612,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 181.80000019073486,
+          "bodyFontEnd": 1454,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1311.0999999046326,
+          "open-filters": 112,
+          "close-filters": 96,
+          "open-card": 88,
+          "close-card": 120
+        },
+        {
+          "n": 3,
+          "mode": "candidate",
+          "lcp": 1680,
+          "hydration": 5189.700000286102,
+          "ttfb": 89.30000019073486,
+          "criticalCssEnd": 1556,
+          "criticalCssBytes": 42751,
+          "totalGlobalCssBytes": 42751,
+          "maxLongTask": 54,
+          "maxLongTaskBeforeLcp": 0,
+          "cls": 0.015655533343815278,
+          "jsRequestedBeforeLcpBytes": 295612,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 180,
+          "bodyFontEnd": 1421.0999999046326,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1301.2000002861023,
+          "open-filters": 104,
+          "close-filters": 80,
+          "open-card": 112,
+          "close-card": 120
+        },
+        {
+          "n": 4,
+          "mode": "normal",
+          "lcp": 1724,
+          "hydration": 5252.200000286102,
+          "ttfb": 89.7000002861023,
+          "criticalCssEnd": 1580.7000002861023,
+          "criticalCssBytes": 44008,
+          "totalGlobalCssBytes": 44008,
+          "maxLongTask": 94,
+          "maxLongTaskBeforeLcp": 0,
+          "cls": 0.0106915837469958,
+          "jsRequestedBeforeLcpBytes": 295614,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 171.90000009536743,
+          "bodyFontEnd": 1408.8000001907349,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1288.5,
+          "open-filters": 112,
+          "close-filters": 88,
+          "open-card": 96,
+          "close-card": 120
+        },
+        {
+          "n": 5,
+          "mode": "normal",
+          "lcp": 1700,
+          "hydration": 5111.099999904633,
+          "ttfb": 85.5,
+          "criticalCssEnd": 1573.2000002861023,
+          "criticalCssBytes": 44008,
+          "totalGlobalCssBytes": 44008,
+          "maxLongTask": 57,
+          "maxLongTaskBeforeLcp": 0,
+          "cls": 0.009664119179712945,
+          "jsRequestedBeforeLcpBytes": 295614,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 166.7000002861023,
+          "bodyFontEnd": 1415.7000002861023,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1287.9000000953674,
+          "open-filters": 144,
+          "close-filters": 72,
+          "open-card": 96,
+          "close-card": 120
+        },
+        {
+          "n": 6,
+          "mode": "candidate",
+          "lcp": 1712,
+          "hydration": 5182,
+          "ttfb": 86.40000009536743,
+          "criticalCssEnd": 1576.5999999046326,
+          "criticalCssBytes": 42751,
+          "totalGlobalCssBytes": 42751,
+          "maxLongTask": 67,
+          "maxLongTaskBeforeLcp": 0,
+          "cls": 0.0106915837469958,
+          "jsRequestedBeforeLcpBytes": 295612,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 188.69999980926514,
+          "bodyFontEnd": 1441.0999999046326,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1321.6999998092651,
+          "open-filters": 136,
+          "close-filters": 80,
+          "open-card": 120,
+          "close-card": 120
+        },
+        {
+          "n": 7,
+          "mode": "candidate",
+          "lcp": 1724,
+          "hydration": 5190.300000190735,
+          "ttfb": 80.7000002861023,
+          "criticalCssEnd": 1595.8000001907349,
+          "criticalCssBytes": 42751,
+          "totalGlobalCssBytes": 42751,
+          "maxLongTask": 66,
+          "maxLongTaskBeforeLcp": 0,
+          "cls": 0.008550272156210927,
+          "jsRequestedBeforeLcpBytes": 295612,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 187.2000002861023,
+          "bodyFontEnd": 1461.0999999046326,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1340.7000002861023,
+          "open-filters": 104,
+          "close-filters": 72,
+          "open-card": 88,
+          "close-card": 128
+        },
+        {
+          "n": 8,
+          "mode": "normal",
+          "lcp": 1708,
+          "hydration": 5154.700000286102,
+          "ttfb": 67.10000038146973,
+          "criticalCssEnd": 1585.1000003814697,
+          "criticalCssBytes": 44008,
+          "totalGlobalCssBytes": 44008,
+          "maxLongTask": 98,
+          "maxLongTaskBeforeLcp": 0,
+          "cls": 0.018303160306372274,
+          "jsRequestedBeforeLcpBytes": 295614,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 174,
+          "bodyFontEnd": 1411.8000001907349,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1292.3000001907349,
+          "open-filters": 104,
+          "close-filters": 72,
+          "open-card": 96,
+          "close-card": 144
+        },
+        {
+          "n": 9,
+          "mode": "normal",
+          "lcp": 1760,
+          "hydration": 5270.900000095367,
+          "ttfb": 60.40000009536743,
+          "criticalCssEnd": 1604.2000002861023,
+          "criticalCssBytes": 44008,
+          "totalGlobalCssBytes": 44008,
+          "maxLongTask": 58,
+          "maxLongTaskBeforeLcp": 0,
+          "cls": 0.024205805500026205,
+          "jsRequestedBeforeLcpBytes": 295614,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 181.40000009536743,
+          "bodyFontEnd": 1431.5999999046326,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1312.3000001907349,
+          "open-filters": 104,
+          "close-filters": 64,
+          "open-card": 96,
+          "close-card": 128
+        },
+        {
+          "n": 10,
+          "mode": "candidate",
+          "lcp": 1664,
+          "hydration": 5253.099999904633,
+          "ttfb": 66.90000009536743,
+          "criticalCssEnd": 1540.5,
+          "criticalCssBytes": 42751,
+          "totalGlobalCssBytes": 42751,
+          "maxLongTask": 73,
+          "maxLongTaskBeforeLcp": 0,
+          "cls": 0.0106915837469958,
+          "jsRequestedBeforeLcpBytes": 295612,
+          "cssJsResponseOverlapCount": 6,
+          "bodyFontStart": 176.7000002861023,
+          "bodyFontEnd": 1413.5999999046326,
+          "bodyFontRequests": 1,
+          "titleFontEnd": 1293.0999999046326,
+          "open-filters": 104,
+          "close-filters": 80,
+          "open-card": 112,
+          "close-card": 136
+        }
+      ],
+      "summary": {
+        "normal": {
+          "lcp": {
+            "median": 1724,
+            "min": 1700,
+            "max": 1760
+          },
+          "hydration": {
+            "median": 5168.2,
+            "min": 5111.1,
+            "max": 5270.9
+          },
+          "ttfb": {
+            "median": 85.5,
+            "min": 60.4,
+            "max": 106.9
+          },
+          "criticalCssEnd": {
+            "median": 1585.1,
+            "min": 1573.2,
+            "max": 1606
+          },
+          "criticalCssBytes": {
+            "median": 44008,
+            "min": 44008,
+            "max": 44008
+          },
+          "totalGlobalCssBytes": {
+            "median": 44008,
+            "min": 44008,
+            "max": 44008
+          },
+          "maxLongTask": {
+            "median": 58,
+            "min": 56,
+            "max": 98
+          },
+          "maxLongTaskBeforeLcp": {
+            "median": 0,
+            "min": 0,
+            "max": 50
+          },
+          "cls": {
+            "median": 0.01069,
+            "min": 0.00966,
+            "max": 0.02421
+          },
+          "jsRequestedBeforeLcpBytes": {
+            "median": 295614,
+            "min": 295614,
+            "max": 295614
+          },
+          "cssJsResponseOverlapCount": {
+            "median": 6,
+            "min": 6,
+            "max": 6
+          },
+          "bodyFontStart": {
+            "median": 174,
+            "min": 166.7,
+            "max": 188
+          },
+          "bodyFontEnd": {
+            "median": 1415.7,
+            "min": 1408.8,
+            "max": 1455.7
+          },
+          "bodyFontRequests": {
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "titleFontEnd": {
+            "median": 1292.3,
+            "min": 1287.9,
+            "max": 1335.7
+          },
+          "open-filters": {
+            "median": 112,
+            "min": 104,
+            "max": 160
+          },
+          "close-filters": {
+            "median": 72,
+            "min": 64,
+            "max": 88
+          },
+          "open-card": {
+            "median": 96,
+            "min": 96,
+            "max": 128
+          },
+          "close-card": {
+            "median": 128,
+            "min": 120,
+            "max": 144
+          }
+        },
+        "candidate": {
+          "lcp": {
+            "median": 1708,
+            "min": 1664,
+            "max": 1724
+          },
+          "hydration": {
+            "median": 5190.3,
+            "min": 5182,
+            "max": 5253.1
+          },
+          "ttfb": {
+            "median": 86.4,
+            "min": 66.9,
+            "max": 96.2
+          },
+          "criticalCssEnd": {
+            "median": 1566.1,
+            "min": 1540.5,
+            "max": 1595.8
+          },
+          "criticalCssBytes": {
+            "median": 42751,
+            "min": 42751,
+            "max": 42751
+          },
+          "totalGlobalCssBytes": {
+            "median": 42751,
+            "min": 42751,
+            "max": 42751
+          },
+          "maxLongTask": {
+            "median": 66,
+            "min": 54,
+            "max": 73
+          },
+          "maxLongTaskBeforeLcp": {
+            "median": 0,
+            "min": 0,
+            "max": 0
+          },
+          "cls": {
+            "median": 0.01069,
+            "min": 0,
+            "max": 0.01566
+          },
+          "jsRequestedBeforeLcpBytes": {
+            "median": 295612,
+            "min": 295612,
+            "max": 295612
+          },
+          "cssJsResponseOverlapCount": {
+            "median": 6,
+            "min": 6,
+            "max": 6
+          },
+          "bodyFontStart": {
+            "median": 181.8,
+            "min": 176.7,
+            "max": 188.7
+          },
+          "bodyFontEnd": {
+            "median": 1441.1,
+            "min": 1413.6,
+            "max": 1461.1
+          },
+          "bodyFontRequests": {
+            "median": 1,
+            "min": 1,
+            "max": 1
+          },
+          "titleFontEnd": {
+            "median": 1311.1,
+            "min": 1293.1,
+            "max": 1340.7
+          },
+          "open-filters": {
+            "median": 104,
+            "min": 104,
+            "max": 136
+          },
+          "close-filters": {
+            "median": 80,
+            "min": 72,
+            "max": 96
+          },
+          "open-card": {
+            "median": 112,
+            "min": 88,
+            "max": 120
+          },
+          "close-card": {
+            "median": 120,
+            "min": 120,
+            "max": 136
+          }
+        }
+      },
+      "pairLcpDelta": [
+        -32,
+        -44,
+        12,
+        16,
+        -96
+      ],
+      "errors": [],
+      "identicalH1": true,
+      "identicalCards": true,
+      "healthBefore": {
+        "environment": "DEV isolated SSR",
+        "revision": "7bf9cfbadec2288fdde6d583e00b0a4febc8d8d6",
+        "mode": "normal",
+        "css": {
+          "file": "global-D8wtDtZw.css",
+          "raw": 370845,
+          "brotli": 44008,
+          "gzip": 48208,
+          "sha256": "ce9e16f7c844388382124f1d6a0471ae15cc000b80ebb17c8f19e2c6cb95ff07"
+        }
+      },
+      "healthAfter": {
+        "environment": "DEV isolated SSR",
+        "revision": "7bf9cfbadec2288fdde6d583e00b0a4febc8d8d6",
+        "mode": "candidate",
+        "css": {
+          "file": "global-1PlIhI59.css",
+          "raw": 352971,
+          "brotli": 42751,
+          "gzip": 46620,
+          "sha256": "c9861b87d1efa59c2dc24c6bd3bf9d78e32adaf8e3f70aae8343ea91f0b356ff"
+        }
+      }
+    }
+  },
+  "functional": {
+    "comparisons": {
+      "initial": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "scrolled": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "expanded": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "filters": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "filtered": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "sorted": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "dialog": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "dialogText": true,
+      "width639": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "width640": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "width641": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "width1440": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      },
+      "width390": {
+        "h1": true,
+        "cards": true,
+        "styles": true
+      }
+    },
+    "errors": []
+  },
+  "desktop": {
+    "parity": true,
+    "messages": [
+      {
+        "port": 3197,
+        "mobile": true,
+        "messages": [
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/30/0986494657PH01WHCO0000.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/161/0161GDB1847.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/89/LP2142.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/89/LP2171.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          }
+        ]
+      },
+      {
+        "port": 3198,
+        "mobile": true,
+        "messages": [
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/89/LP2142.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/89/LP2171.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/30/0986494657PH01WHCO0000.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/161/0161GDB1847.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          }
+        ]
+      },
+      {
+        "port": 3197,
+        "mobile": false,
+        "messages": [
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:400/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/89/LP2142.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:400/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/30/0986494657PH01WHCO0000.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:400/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/161/0161GDB1847.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:400/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/89/LP2171.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          }
+        ]
+      },
+      {
+        "port": 3198,
+        "mobile": false,
+        "messages": [
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:400/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/89/LP2142.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:400/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/30/0986494657PH01WHCO0000.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:400/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/161/0161GDB1847.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          },
+          {
+            "type": "http",
+            "status": 404,
+            "url": "https://www.automecanik.com/imgproxy/rs:fit:400/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/89/LP2171.JPG@avif"
+          },
+          {
+            "type": "error",
+            "text": "Failed to load resource: the server responded with a status of 404 ()"
+          }
+        ]
+      }
+    ]
+  },
+  "pages": [
+    {
+      "path": "/",
+      "identical": null,
+      "blocked": true,
+      "statuses": [
+        500,
+        500
+      ]
+    },
+    {
+      "path": "/search?q=plaquette",
+      "identical": true,
+      "blocked": false,
+      "statuses": [
+        200,
+        200
+      ]
+    },
+    {
+      "path": "/pieces/plaquette-de-frein-402.html",
+      "identical": true,
+      "blocked": false,
+      "statuses": [
+        200,
+        200
+      ]
+    }
+  ],
+  "routes": {
+    "identical": true,
+    "count": 148,
+    "retainedAdmin": [
+      "routes/admin.command-center",
+      "routes/admin.video-hub",
+      "routes/admin.video-hub._index",
+      "routes/admin.video-hub.assets",
+      "routes/admin.video-hub.executions.$executionLogId",
+      "routes/admin.video-hub.executions._index",
+      "routes/admin.video-hub.productions.$briefId",
+      "routes/admin.video-hub.productions._index",
+      "routes/admin.video-hub.templates"
+    ]
+  },
+  "checks": {
+    "build": "PASS",
+    "unit": "4 passed",
+    "typecheck": "PASS",
+    "targetedLint": "PASS",
+    "CI": "not qualified by this DEV evidence",
+    "PREPROD": "not qualified for this patch",
+    "PROD": "no mutation"
+  },
+  "rawEvidenceSha256": {
+    "paired.json": "7b11c7940b38b2dce6056b8e835437727729fc9d7a0d0483cec9730e030ed727",
+    "functional-stable.json": "00af10e747b5fd3af1b1347ece032dad1c51a91dbc74dc985d6080a6b41a0661",
+    "functional-first.json": "c06497e1620cda8b76fee873e3c975716c10f73d9c7983b06988793f24185a2b",
+    "functional-second.json": "9b136765f04d74cf2731ef799cbcf2b6fb80afab5fe5558369a64c1e2b3de083",
+    "console-desktop.json": "3abe685ab828d7abf8e2f1972ed711ca7f8085237c851dca608ef663678eb763",
+    "pages.json": "95a70dcd00be732f6b8756a776bf95e5681d2bab6963d8e709a18194b6d362b5"
+  }
+}

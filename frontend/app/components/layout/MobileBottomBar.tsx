@@ -60,8 +60,9 @@ export const MobileBottomBar = memo(function MobileBottomBar({
         className,
       )}
       // Positionnement dynamique : se place au-dessus du BottomNav via CSS variable
-      // --bottom-nav-height est défini par BottomNav via ResizeObserver (même pattern que --navbar-height)
-      // Fallback 0px pour les pages sans BottomNav (ex: /cart)
+      // --bottom-nav-height est défini par BottomNav via ResizeObserver (même pattern que --navbar-height),
+      // avec une valeur par défaut dans global.css avant hydratation
+      // Fallback 0px pour les pages sans BottomNav
       style={{ bottom: "var(--bottom-nav-height, 0px)" }}
       role="toolbar"
       aria-label="Actions"

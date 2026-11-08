@@ -16,6 +16,7 @@ import {
   classify,
   median,
   discoverProjects,
+  missingNestedInstalls,
   EXPECTED_PROJECTS,
   BLOCKING_CONFIG_CODES,
   IGNORED_CODES,
@@ -207,4 +208,43 @@ test("TS7 version is pinned exactly, never a range", () => {
 
 test("discovery matches EXPECTED_PROJECTS — the topology tripwire", () => {
   assert.deepEqual(discoverProjects(REPO_ROOT), [...EXPECTED_PROJECTS].sort());
+});
+
+// --- missingNestedInstalls --------------------------------------------------
+
+test("a fully hoisted workspace owes no nested install, even with no node_modules dir", () => {
+  // A fresh `npm ci` gives packages/seo-roles no node_modules at all: every dep
+  // is hoisted to the root. Requiring the directory failed 7 workspaces.
+  const lock = {
+    "packages/seo-roles": {},
+    "node_modules/zod": {},
+    "frontend/node_modules/vite": {},
+  };
+  assert.deepEqual(missingNestedInstalls(lock, "packages/seo-roles", () => false), []);
+});
+
+test("a nested install pinned by the lockfile but absent on disk is reported", () => {
+  const lock = {
+    frontend: {},
+    "frontend/node_modules/vite": {},
+    "frontend/node_modules/vite/node_modules/esbuild": {},
+  };
+  const onDisk = new Set(["frontend/node_modules/vite"]);
+  assert.deepEqual(missingNestedInstalls(lock, "frontend", (p) => onDisk.has(p)), [
+    "frontend/node_modules/vite/node_modules/esbuild",
+  ]);
+});
+
+test("optional nested installs are skipped — npm omits other platforms' binaries", () => {
+  const lock = {
+    "packages/design-tokens/node_modules/@esbuild/darwin-arm64": { optional: true },
+    "packages/design-tokens/node_modules/tsup": {},
+  };
+  const onDisk = new Set(["packages/design-tokens/node_modules/tsup"]);
+  assert.deepEqual(missingNestedInstalls(lock, "packages/design-tokens", (p) => onDisk.has(p)), []);
+});
+
+test("a sibling project sharing a name prefix is not attributed to the project", () => {
+  const lock = { "packages/seo-roles-extra/node_modules/a": {} };
+  assert.deepEqual(missingNestedInstalls(lock, "packages/seo-roles", () => false), []);
 });
