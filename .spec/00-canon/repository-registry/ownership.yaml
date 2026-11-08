@@ -1767,3 +1767,23 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: high
     risk: high
+  # Projections du Repository Control Plane modifiées par la PR #1863 : même
+  # famille que audit/registry/canonical.json, audit/registry/files.json et
+  # audit/runtime-entrypoints.json, régénérées par npm run audit:inventory et registry.
+  - glob: audit/db-usage-map.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/registry/rpc.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Réplique locale des gates de gouvernance (ADR-031, ADR-058 block-new).
+  # medium : attribution par analogie avec les autres gardes D15, à ratifier par l'owner.
+  - glob: .husky/pre-push
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: high
