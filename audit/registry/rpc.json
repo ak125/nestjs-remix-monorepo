@@ -1274,6 +1274,51 @@
       "args": [
         {
           "mode": "IN",
+          "name": "p_ord_id",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_reason",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_attested_by",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_correlation_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20261022_cancel_order_payment_voided_atomic.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.cancel_order_payment_voided_atomic",
+      "language": "plpgsql",
+      "name": "cancel_order_payment_voided_atomic",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "VOID",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
           "name": "p_batch_id",
           "type": "UUID"
         },
