@@ -7,9 +7,13 @@
  *
  *   1. a test is wired when a step of a pull_request workflow names it, either
  *      directly or through ONE root npm script that names it;
- *   2. a push-only workflow, a step or job that cannot fail, a YAML or shell
- *      comment, or a name that only shares a prefix never stands in;
+ *   2. a push-only workflow, a step or job that cannot fail or whose `if:` is
+ *      the literal false, a YAML or shell comment, or a name that only shares a
+ *      prefix never stands in;
  *   3. on the real repository, every scripts/ci/*.test.mjs is wired.
+ *
+ * "Wired" means referenced by a step that can fail — not executed on every PR:
+ * other `if:` expressions and workflow `paths:` filters are not evaluated.
  *
  * Run: node --test scripts/ci/ci-test-wiring.test.mjs
  */
@@ -66,6 +70,31 @@ describe("findUnwiredTests — what counts as wired", () => {
     }
   });
 
+  test("a job gated on another job's output (audit.yml's conditional audit job) counts as wired", () => {
+    // "Wired" = referenced by a step that can fail. Whether this job runs on a
+    // given PR is NOT decided here: audit.yml's `verdict` job turns an in-scope
+    // skipped `audit` red (scripts/ci/audit-gates-verdict.test.mjs).
+    const source = `
+on:
+  pull_request:
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      in_scope: \${{ steps.scope.outputs.in_scope }}
+    steps:
+      - id: scope
+        run: node scripts/ci/audit-gates-verdict.mjs scope
+  audit:
+    needs: changes
+    if: needs.changes.outputs.in_scope == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: node --test scripts/ci/a.test.mjs
+`;
+    assert.deepEqual(unwired(["a.test.mjs"], [workflow(source)]), []);
+  });
+
   test("continue-on-error: false still counts", () => {
     assert.deepEqual(
       unwired(["a.test.mjs"], [workflow(PR_STEP("node --test scripts/ci/a.test.mjs", "\n    continue-on-error: false"))]),
@@ -94,6 +123,30 @@ jobs:
 
   test("a job whose continue-on-error is set, even through an expression", () => {
     const source = PR_STEP("node --test scripts/ci/a.test.mjs", "\n    continue-on-error: ${{ matrix.experimental }}");
+    assert.deepEqual(unwired(["a.test.mjs"], [workflow(source)]), ["a.test.mjs"]);
+  });
+
+  test("a job or step whose if: is the literal false (it can never run)", () => {
+    for (const condition of ["false", "'false'", "${{ false }}", "\"${{ false }}\""]) {
+      const jobLevel = PR_STEP("node --test scripts/ci/a.test.mjs", `\n    needs: changes\n    if: ${condition}`);
+      assert.deepEqual(unwired(["a.test.mjs"], [workflow(jobLevel)]), ["a.test.mjs"], `job if: ${condition}`);
+      const stepLevel = `
+on: pull_request
+jobs:
+  g:
+    steps:
+      - if: ${condition}
+        run: node --test scripts/ci/a.test.mjs
+`;
+      assert.deepEqual(unwired(["a.test.mjs"], [workflow(stepLevel)]), ["a.test.mjs"], `step if: ${condition}`);
+    }
+  });
+
+  test("a conditional job that cannot fail does not count either", () => {
+    const source = PR_STEP(
+      "node --test scripts/ci/a.test.mjs",
+      "\n    if: needs.changes.outputs.in_scope == 'true'\n    continue-on-error: true",
+    );
     assert.deepEqual(unwired(["a.test.mjs"], [workflow(source)]), ["a.test.mjs"]);
   });
 

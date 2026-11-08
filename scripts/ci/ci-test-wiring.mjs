@@ -12,9 +12,17 @@
 // root npm script whose command names `scripts/ci/<file>`
 // (`npm run [-s|--silent] <script>`). Steps or jobs with `continue-on-error`
 // set to anything but `false` do not count: a run that cannot fail is not a gate.
+// Steps or jobs whose `if:` is the literal `false` (`false`, `'false'`,
+// `${{ false }}`) do not count: they can never run.
 // Full-line shell comments in a `run` do not count either: they never execute.
 // Nested npm scripts and globs are not followed — the check fails closed, and
 // the fix is to call the test by name.
+//
+// What "wired" does NOT prove: that the step executes on a given pull request.
+// Workflow `paths:` filters and every other `if:` expression (e.g. a job gated
+// on `needs.<job>.outputs.*`) are not evaluated. A workflow that runs a test
+// in a conditional job must itself make a wrongly skipped job fail — as
+// audit.yml does: its `verdict` job is red when `audit` is skipped in scope.
 //
 // Pure `findUnwiredTests()` is exported for testing; `loadRepoWiringInputs()`
 // reads the repository. Consumed by scripts/ci/ci-test-wiring.test.mjs.
@@ -35,6 +43,14 @@ function isPullRequestTriggered(doc) {
 
 function canFail(node) {
   return node?.["continue-on-error"] === undefined || node["continue-on-error"] === false;
+}
+
+function neverRuns(node) {
+  const condition = node?.if;
+  if (condition === false) return true;
+  if (typeof condition !== "string") return false;
+  const expression = condition.trim().replace(/^\$\{\{([\s\S]*)\}\}$/, "$1").trim();
+  return expression === "false";
 }
 
 function escapeRegExp(s) {
@@ -66,9 +82,9 @@ export function findUnwiredTests({ testFiles, workflows, npmScripts }) {
   for (const { doc } of workflows) {
     if (!isPullRequestTriggered(doc)) continue;
     for (const job of Object.values(doc.jobs ?? {})) {
-      if (!canFail(job)) continue;
+      if (!canFail(job) || neverRuns(job)) continue;
       for (const step of job.steps ?? []) {
-        if (canFail(step) && typeof step.run === "string") runs.push(withoutCommentLines(step.run));
+        if (canFail(step) && !neverRuns(step) && typeof step.run === "string") runs.push(withoutCommentLines(step.run));
       }
     }
   }
