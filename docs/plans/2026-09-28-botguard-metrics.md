@@ -65,3 +65,5 @@ Main `63ee54116471c8a4cf45402cad6163958ff8df9e` adds three commits since the pre
 After merge, record the exact main SHA and native CI run. Require its Deploy PREPROD, E2E Smoke and Lighthouse results before preparing the manual PROD command. A newer floating preprod image or an unrelated running container is not evidence for the merged candidate. The metrics need new history after activation; the traffic incident remains open until runtime measurements and false-positive checks support closure.
 
 The protected merge was deferred because main advanced to `ee5aaa856918690ee4a9b6b0712d53b8f8ae204b` (PR #1691) during CI. That registry-only change was integrated; the four generated conflicts were rebuilt with the canonical generators. A new complete CI run is required for the updated candidate.
+
+<!-- tmp-verif-1968 : ligne temporaire d une PR jetable fermee sans fusion -->
