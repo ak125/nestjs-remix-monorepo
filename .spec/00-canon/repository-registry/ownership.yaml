@@ -1758,3 +1758,12 @@ entries:
     owner: '@ak125/catalog-team'
     sourceConfidence: high
     risk: medium
+  # Annulation d'une commande payée dont le paiement est annulé dans Paybox avant
+  # encaissement : fonction cancel_order_payment_voided_atomic, propriétaire seul
+  # (PR #1863). Couvre .sql + .down.sql. Glob exact : les migrations ne sont pas
+  # auto-couvertes ; le glob *cancel_order_atomic* ne la couvre pas.
+  - glob: backend/supabase/migrations/20261022_cancel_order_payment_voided_atomic*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
