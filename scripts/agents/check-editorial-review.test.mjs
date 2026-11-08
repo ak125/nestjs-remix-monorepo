@@ -1218,7 +1218,6 @@ describe("garde de sortie : hook Stop, Claude Code et Codex", () => {
     return f;
   };
   const hookJ = (traces, journal, payload) => spawnNode(GATE, ["--traces", traces, ...roots, "--journal", journal], JSON.stringify(payload));
-  const V = CONTRACT.version.replace(/\./g, "\\.");
   const SHA = "\\(\\d+ o, sha256 [0-9a-f]{64}\\)";
   const firstRefusal = (parts, text = ACCEPTED) => {
     const traces = newTraces();
@@ -1236,7 +1235,7 @@ describe("garde de sortie : hook Stop, Claude Code et Codex", () => {
     assert.match(first.reason, /contrôle APPLIQUEE en mode strict, passages de livraison manquants ; reprise 1 sur 2/);
     assert.match(first.reason, new RegExp(`étape 6 : 0 commande\\(s\\) du contrôle sans --emit terminée\\(s\\) en code 0 ou 3 après l'acceptation de cette réponse ${SHA} par item_45`));
     assert.match(first.reason, /item_43 \(aide ou usage, code 2, lignes 2–3, aucun rapport lié à cette réponse\)/);
-    assert.match(first.reason, new RegExp(`item_45 \\(--emit, code 0, lignes 4–5, rapport lié ${V} APPLIQUEE\\)`));
+    assert.ok(first.reason.includes(`item_45 (--emit, code 0, lignes 4–5, rapport lié ${CONTRACT.version} APPLIQUEE)`), first.reason);
     assert.match(first.reason, /Suivre pour cette même réponse l'étape 6 du contrat : entrée acceptée par --emit, puis deux passages sans --emit, par deux commandes séparées lancées l'une après l'autre/);
     assert.doesNotMatch(first.reason, /Erreurs du contrôle/);
     const t = trace(traces, 1);
@@ -1256,7 +1255,8 @@ describe("garde de sortie : hook Stop, Claude Code et Codex", () => {
 
   // Motif R29 (Codex) : chemin de la trace et trois commandes, lancées ici réellement par bash.
   const q = (s) => `'${s.replace(/'/g, "'\\''")}'`;
-  const shell = (c) => spawnSync("bash", ["-c", c], { encoding: "utf8", env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH ?? ""}` } });
+  const shellEnv = { PATH: dirname(process.execPath) };
+  const shell = (c) => spawnSync("/bin/bash", ["-c", c], { encoding: "utf8", env: shellEnv });
   const commandsOf = (reason) => reason.split("\n").filter((l) => /^ {2}[123]\. /.test(l)).map((l) => l.slice(5));
 
   test("Codex, réponse acceptée sans passages : motif avec le chemin de la trace et trois commandes ; lancées sur la trace (espaces, apostrophes), elles mènent à livree", () => {
@@ -1303,7 +1303,7 @@ describe("garde de sortie : hook Stop, Claude Code et Codex", () => {
   test("chemin du contrôle entre apostrophes : --emit relevé comme acceptation", () => {
     const f = join(mkdtempSync(join(dir, "entrée d'essai ")), "réponse d'essai.txt");
     writeFileSync(f, ACCEPTED);
-    const c = `node ${q(SCRIPT)} --emit --root ${REPO} --root ${dir} < ${q(f)}`;
+    const c = `node ${q(SCRIPT)} --emit --root ${q(REPO)} --root ${q(dir)} < ${q(f)}`;
     const r = shell(c);
     assert.equal(r.status, 0, r.stderr);
     assert.equal(r.stdout, ACCEPTED);
