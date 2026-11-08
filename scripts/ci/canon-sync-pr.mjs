@@ -10,13 +10,17 @@
 //
 // `prepare` (before the action, read-only on GitHub):
 //   - open PR whose head already carries the synced content => skip the action:
-//     no push, no body edit, the reviewed head and its evidence stay valid;
+//     no push, no body edit. The run succeeds only if that PR is acceptable as it
+//     stands: signed head, assignee, and any DoD certification bound to this head
+//     by exactly one visible line "DoD-Head: <40-hex SHA>". Citing the SHA elsewhere
+//     binds nothing. The line records its author's declaration, not its truth.
+//     Otherwise the job fails and nothing is rewritten;
 //   - otherwise render the body the action will write. Evidence recorded for the
 //     outgoing head moves to a stale archive: kept in full, named as stale, and
 //     blockquoted so pr-dod-gate.mjs cannot read it as a checklist.
 //     No box is ever ticked here.
 // `verify` (after the action): the announced operation happened, the new head is
-// verified by GitHub and the PR carries its assignee.
+// verified by GitHub, the PR carries its assignee and the body `prepare` rendered.
 //
 // Every read failure, ambiguous PR state or malformed body stops the job before
 // anything is written.
@@ -24,7 +28,7 @@
 // Env: GITHUB_REPOSITORY, GITHUB_REF_NAME, RUNNER_TEMP, GITHUB_OUTPUT, GH_TOKEN,
 //      EVENT_NAME, EVENT_ACTION, RUN_URL (prepare);
 //      EXPECTED_OPERATIONS, PREVIOUS_HEAD, CPR_OPERATION, CPR_HEAD_SHA,
-//      CPR_VERIFIED, CPR_NUMBER, CANON_SYNC_ASSIGNEE (verify).
+//      CPR_VERIFIED, CPR_NUMBER, CANON_SYNC_ASSIGNEE, RUNNER_TEMP (verify).
 // =============================================================================
 
 import { execFileSync } from "node:child_process";
@@ -33,6 +37,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 export const BRANCH = "canon-sync/auto";
+export const BASE_BRANCH = "main";
 export const MAX_BODY_CHARS = 65536;
 export const PR_TEMPLATE_PATH = ".github/PULL_REQUEST_TEMPLATE.md";
 const DOD_COUNT = 9;
@@ -60,7 +65,10 @@ file, and writes the bytes to every declared mirror in this repo.
 
 **No manual edit needed** in the mirrors. Merging stays a human decision.`;
 
-const TRIGGER_LINE = /\n*Trigger: .*$/;
+const TRIGGER_LINE = /\n*Trigger: [a-z_]+(?: \([a-z_-]+\))?$/;
+const DOD_LINE = /^[ \t]*[-*+][ \t]+(?:\[([ xX])\][ \t]*)?(?:\*\*|__)?DoD\d\b/;
+const HEAD_BINDING = /^DoD-Head: ([0-9a-f]{40})$/;
+const BODY_FILE = "canon-sync-pr-body.md";
 
 /** The nine unticked DoD lines of the repository PR template. */
 export function extractDodLines(template) {
@@ -77,17 +85,22 @@ export function reviewPlaceholder(dodLines) {
     "",
     "None recorded yet. Evidence must name the exact head SHA (ADR-120 D2/D4).",
     "A head change moves this section to the stale archive below.",
+    "Before ticking or marking N/A a DoD item, write once, alone on a line and unquoted: `DoD-Head: <40-character head SHA>`.",
     "",
     ...dodLines,
   ].join("\n");
 }
+
+/** Drops blank edge lines only: the indent of a first line changes how it renders. */
+const trimBlankEdges = (text) => text.replace(/^(?:[ \t]*\n)+/, "").trimEnd();
 
 /**
  * Splits a PR body into its sections. A body without markers is legacy: all of
  * it counts as evidence to preserve. Partial or reordered markers are an error.
  */
 export function parseBody(body) {
-  const text = (body ?? "").replace(/\r\n/g, "\n").trim();
+  // The DoD gate also treats a lone CR, U+2028 and U+2029 as line ends.
+  const text = trimBlankEdges((body ?? "").replace(/\r\n?|[\u2028\u2029]/g, "\n"));
   const empty = { generated: "", review: "", archive: "", outside: "" };
   if (text === "") return empty;
 
@@ -98,12 +111,16 @@ export function parseBody(body) {
     throw new Error("canon-sync PR body has missing, duplicated or reordered markers; fix the body by hand");
   }
 
-  const between = (from, to) => lines.slice(from, to).join("\n").trim();
+  const between = (from, to) => trimBlankEdges(lines.slice(from, to).join("\n"));
   const [gs, ge, rs, re, as, ae] = found.map((hit) => hit.index);
-  const outside = [...lines.slice(0, gs), ...lines.slice(ge + 1, rs), ...lines.slice(re + 1, as), ...lines.slice(ae + 1)]
-    .filter((line) => line.trim() !== ARCHIVE_HEADING)
-    .join("\n")
-    .trim();
+  if (lines.slice(as + 1, ae).some((line) => line.trim() !== "" && !line.startsWith(">"))) {
+    throw new Error("canon-sync PR body has unquoted lines in the archive zone; fix the body by hand");
+  }
+  const outside = trimBlankEdges(
+    [...lines.slice(0, gs), ...lines.slice(ge + 1, rs), ...lines.slice(re + 1, as), ...lines.slice(ae + 1)]
+      .filter((line) => line.trim() !== ARCHIVE_HEADING)
+      .join("\n"),
+  );
   return { generated: between(gs + 1, ge), review: between(rs + 1, re), archive: between(as + 1, ae), outside };
 }
 
@@ -116,7 +133,7 @@ function fenceFor(content) {
 export function archiveEntry({ content, headSha, replacedAt, runUrl }) {
   const fence = fenceFor(content);
   return [
-    `Evidence recorded for head \`${headSha}\`, replaced on ${replacedAt} by ${runUrl}. It does not apply to the current head.`,
+    `Body content written while the PR head was \`${headSha}\`, replaced on ${replacedAt} by ${runUrl}. It does not apply to the current head.`,
     "",
     `${fence}text`,
     ...content.split("\n"),
@@ -211,20 +228,56 @@ function remoteBlob(ghApi, repo, ref, path) {
   return entry.sha;
 }
 
-function warningsFor(pr, verified) {
-  const warnings = [];
-  if ((pr.assignees ?? []).length === 0) warnings.push(`PR #${pr.number} has no assignee.`);
-  if (!verified) warnings.push(`PR #${pr.number} head ${pr.head.sha} is not verified by GitHub.`);
-  return warnings;
+/** Live DoD lines the gate would count: ticked, or N/A outside a template hint. */
+function certifyingLines(text) {
+  return text.split("\n").filter((line) => {
+    const match = line.match(DOD_LINE);
+    if (!match) return false;
+    return (match[1] !== undefined && match[1] !== " ") || line.split(/<[^>]*>/).some((part) => /\bN\/A\b/i.test(part));
+  });
+}
+
+/** Lines GitHub renders as text: no HTML comment, no fenced code. Unterminated ones run to the end. */
+function visibleLines(text) {
+  const visible = [];
+  let fence = null;
+  for (const line of text.replace(/<!--[\s\S]*?(?:-->|$)/g, "").split("\n")) {
+    const match = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
+    if (fence) {
+      if (match && match[1][0] === fence[0] && match[1].length >= fence.length && match[2].trim() === "") fence = null;
+    } else if (match) {
+      fence = match[1];
+    } else {
+      visible.push(line);
+    }
+  }
+  return visible;
+}
+
+/** A skipped run leaves the PR as it is, so the PR must be acceptable as it is. */
+function refusalsOnSkip(pr, verified) {
+  const refusals = [];
+  if ((pr.assignees ?? []).length === 0) refusals.push(`PR #${pr.number} has no assignee.`);
+  if (!verified) refusals.push(`PR #${pr.number} head ${pr.head.sha} is not verified by GitHub.`);
+  const { generated, review, outside } = parseBody(pr.body);
+  // Certifying lines are counted even when hidden; only a visible binding counts.
+  if (certifyingLines([generated, review, outside].join("\n")).length > 0) {
+    const bindings = visibleLines([review, outside].join("\n")).flatMap((line) => line.match(HEAD_BINDING)?.[1] ?? []);
+    if (bindings.length !== 1 || bindings[0] !== pr.head.sha) {
+      refusals.push(`PR #${pr.number} certifies DoD items without exactly one "DoD-Head: <sha>" line naming its head ${pr.head.sha}.`);
+    }
+  }
+  return refusals;
 }
 
 export function prepare({ ghApi, listChanged, localBlob, env, now, dodLines, writeBody }) {
   const ghJson = (path) => JSON.parse(ghApi(path));
   const repo = required(env, "GITHUB_REPOSITORY");
-  const baseRef = required(env, "GITHUB_REF_NAME");
-  const bodyPath = join(required(env, "RUNNER_TEMP"), "canon-sync-pr-body.md");
+  const ref = required(env, "GITHUB_REF_NAME");
+  if (ref !== BASE_BRANCH) throw new Error(`canon-sync only runs on ${BASE_BRANCH}, not ${ref}`);
+  const bodyPath = join(required(env, "RUNNER_TEMP"), BODY_FILE);
 
-  const pr = findOpenPr(ghJson, repo, baseRef);
+  const pr = findOpenPr(ghJson, repo, BASE_BRANCH);
   const syncChanged = listChanged();
   let differing = [];
   if (pr) {
@@ -236,7 +289,9 @@ export function prepare({ ghApi, listChanged, localBlob, env, now, dodLines, wri
   const outputs = { skip: String(skip), previous_head: pr?.head.sha ?? "", expected: expected.join(",") };
   if (skip) {
     const verified = ghJson(`repos/${repo}/commits/${pr.head.sha}`).commit.verification.verified === true;
-    return { outputs, warnings: warningsFor(pr, verified), pr };
+    const refusals = refusalsOnSkip(pr, verified);
+    if (refusals.length > 0) throw new Error(refusals.join(" "));
+    return { outputs, pr };
   }
 
   const action = env.EVENT_ACTION ? ` (${env.EVENT_ACTION})` : "";
@@ -252,10 +307,12 @@ export function prepare({ ghApi, listChanged, localBlob, env, now, dodLines, wri
       runUrl: required(env, "RUN_URL"),
     }),
   );
-  return { outputs: { ...outputs, body_path: bodyPath }, warnings: [], pr };
+  return { outputs: { ...outputs, body_path: bodyPath }, pr };
 }
 
-export function verify({ ghApi, env }) {
+const comparableBody = (body) => (body ?? "").replace(/\r\n/g, "\n").trim();
+
+export function verify({ ghApi, env, readBody }) {
   const operation = env.CPR_OPERATION ?? "";
   const expected = required(env, "EXPECTED_OPERATIONS").split(",");
   if (!expected.includes(operation)) {
@@ -275,6 +332,8 @@ export function verify({ ghApi, env }) {
   if (!(pr.assignees ?? []).some((user) => user.login === assignee)) {
     throw new Error(`PR #${number} is not assigned to ${assignee}`);
   }
+  const rendered = readBody(join(required(env, "RUNNER_TEMP"), BODY_FILE));
+  if (comparableBody(pr.body) !== comparableBody(rendered)) throw new Error(`PR #${number} body is not the rendered body`);
   return { checked: true };
 }
 
@@ -311,14 +370,14 @@ function main() {
   const env = process.env;
   const ghApi = createGhApi(required(env, "GH_TOKEN"));
   if (command === "verify") {
-    verify({ ghApi, env });
+    verify({ ghApi, env, readBody: (path) => readFileSync(path, "utf8") });
     console.log("canon-sync: post-conditions verified");
     return;
   }
   if (command !== "prepare") throw new Error(`unknown command '${command ?? ""}'`);
 
   const cwd = process.cwd();
-  const { outputs, warnings, pr } = prepare({
+  const { outputs, pr } = prepare({
     ghApi,
     ...createGitReader(cwd),
     env,
@@ -326,7 +385,6 @@ function main() {
     dodLines: extractDodLines(readFileSync(join(cwd, PR_TEMPLATE_PATH), "utf8")),
     writeBody: (path, body) => writeFileSync(path, body, "utf8"),
   });
-  for (const warning of warnings) console.log(`::warning::${warning}`);
   if (outputs.skip === "true") {
     console.log(`::notice::PR #${pr.number} already carries the synced mirrors: head and body left untouched.`);
   }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
@@ -59,6 +59,8 @@ function fakeGitHub({ pr = null, files = [MIRROR], blobs = { [MIRROR]: "blob-new
   return { ghApi, calls };
 }
 
+const READY = { assignees: [{ login: "ak125" }] };
+
 const openPr = (body, extra = {}) => ({
   number: 1954,
   body,
@@ -93,28 +95,146 @@ test("first pass: opens a PR whose body certifies nothing", () => {
 });
 
 test("identical repeat: skips, writes nothing, leaves head and body alone", () => {
-  const body = `Evidence for this head\n${TICKED}`;
-  const github = fakeGitHub({ pr: openPr(body, { assignees: [{ login: "ak125" }] }), verified: true });
-  const { outputs, written, warnings } = run({ github });
+  const body = `DoD-Head: ${OLD_HEAD}\n${TICKED}`;
+  const github = fakeGitHub({ pr: openPr(body, READY), verified: true });
+  const { outputs, written } = run({ github });
   assert.equal(outputs.skip, "true");
   assert.equal(outputs.previous_head, OLD_HEAD);
+  assert.equal(outputs.body_path, undefined);
   assert.deepEqual(written, []);
-  assert.deepEqual(warnings, []);
-  assert.ok(github.calls.every((path) => !path.includes("/git/refs")));
+  assert.ok(github.calls.some((path) => path.includes(`/contents/`) && path.includes(`ref=${OLD_HEAD}`)));
 });
 
 test("main moving on unrelated files alone does not touch the PR", () => {
-  const github = fakeGitHub({ pr: openPr("evidence") });
+  const github = fakeGitHub({ pr: openPr("evidence", READY), verified: true });
   const { outputs } = run({ github, local: { [MIRROR]: "blob-new", "backend/other.ts": "changed-on-main" } });
   assert.equal(outputs.skip, "true");
 });
 
-test("skip surfaces an unsigned head and a missing assignee without rewriting", () => {
-  const { outputs, warnings } = run({ github: fakeGitHub({ pr: openPr("evidence"), verified: false }) });
-  assert.equal(outputs.skip, "true");
-  assert.equal(warnings.length, 2);
-  assert.match(warnings.join(" "), /no assignee/);
-  assert.match(warnings.join(" "), new RegExp(`${OLD_HEAD} is not verified`));
+function assertSkipRefused(prBody, extra, verified, pattern) {
+  const written = [];
+  const github = fakeGitHub({ pr: openPr(prBody, extra), verified });
+  assert.throws(
+    () =>
+      prepare({
+        ghApi: github.ghApi,
+        listChanged: () => [MIRROR],
+        localBlob: () => "blob-new",
+        env: ENV,
+        now: () => "2026-11-09T03:00:00Z",
+        dodLines: DOD_LINES,
+        writeBody: (path, body) => written.push(body),
+      }),
+    pattern,
+  );
+  assert.deepEqual(written, []);
+}
+
+test("skip fails closed on an unsigned head and writes nothing", () => {
+  assertSkipRefused("evidence", READY, false, new RegExp(`${OLD_HEAD} is not verified`));
+});
+
+test("skip fails closed without an assignee and writes nothing", () => {
+  assertSkipRefused("evidence", {}, true, /no assignee/);
+});
+
+test("skip reports every refusal at once", () => {
+  assertSkipRefused("evidence", {}, false, /no assignee.*not verified/);
+});
+
+const OTHER_HEAD = "b".repeat(40);
+const bind = (sha) => `DoD-Head: ${sha}`;
+const NOT_BOUND = new RegExp(`without exactly one "DoD-Head: <sha>" line naming its head ${OLD_HEAD}`);
+const markedBody = (review, trigger = "schedule") =>
+  renderBody({ ...RENDER, previousBody: "", previousHead: undefined })
+    .replace(reviewPlaceholder(DOD_LINES), review)
+    .replace("Trigger: schedule", trigger);
+
+for (const [name, body] of [
+  ["no binding line", `Evidence for ${OTHER_HEAD}\n${TICKED}`],
+  ["the head cited in prose only", `Evidence for ${OLD_HEAD}\n${TICKED}`],
+  ["a binding to another head and the head cited in a note", `${bind(OTHER_HEAD)}\n${TICKED}\n\nNew head ${OLD_HEAD} to review`],
+  ["a binding to another head and the head in a comment", `${bind(OTHER_HEAD)}\n${TICKED}\n<!-- ${OLD_HEAD} -->`],
+  ["the binding in a one-line comment", `<!-- ${bind(OLD_HEAD)} -->\n${TICKED}`],
+  ["the binding inside a multi-line comment", `<!--\n${bind(OLD_HEAD)}\n-->\n${TICKED}`],
+  ["the binding after an unterminated comment", `${TICKED}\n<!--\n${bind(OLD_HEAD)}`],
+  ["the binding in a backtick fence", `\`\`\`\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
+  ["the binding in a tilde fence", `~~~\n${bind(OLD_HEAD)}\n~~~\n${TICKED}`],
+  ["the binding in an unterminated fence", `${TICKED}\n\`\`\`\n${bind(OLD_HEAD)}`],
+  ["a fence that another kind of fence does not close", `\`\`\`\n~~~\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
+  ["a fence that a shorter fence does not close", `\`\`\`\`\n\`\`\`\n${bind(OLD_HEAD)}\n\`\`\`\`\n${TICKED}`],
+  ["a fence that an info string does not close", `\`\`\`\n\`\`\`js\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
+  ["a quoted binding", `> ${bind(OLD_HEAD)}\n${TICKED}`],
+  ["an indented binding", `    ${bind(OLD_HEAD)}\n${TICKED}`],
+  ["an indented binding opening the review zone", markedBody(`    ${bind(OLD_HEAD)}\n${TICKED}`)],
+  [
+    "a binding quoted by hand in the archive zone",
+    markedBody(TICKED).replace("<!-- canon-sync:archive:start -->", `<!-- canon-sync:archive:start -->\n> ${bind(OLD_HEAD)}`),
+  ],
+  ["text after the binding", `${bind(OLD_HEAD)} reviewed\n${TICKED}`],
+  ["an uppercase SHA", `${bind(OLD_HEAD.toUpperCase())}\n${TICKED}`],
+  ["a shortened SHA", `${bind(OLD_HEAD.slice(0, 12))}\n${TICKED}`],
+  ["two different bindings", `${bind(OTHER_HEAD)}\n${bind(OLD_HEAD)}\n${TICKED}`],
+  ["the same binding twice", `${bind(OLD_HEAD)}\n${bind(OLD_HEAD)}\n${TICKED}`],
+  ["an N/A line without a binding", "- [ ] DoD4 — N/A : nothing observable"],
+  ["a binding only in the generated zone", markedBody(TICKED, `Trigger: schedule\n${bind(OLD_HEAD)}`)],
+  ["ticks in the generated zone without a binding", markedBody("Notes", `Trigger: schedule\n${TICKED}`)],
+  [
+    "a binding only in the archive",
+    renderBody({ ...RENDER, previousBody: bind(OLD_HEAD), previousHead: OLD_HEAD }).replace(reviewPlaceholder(DOD_LINES), TICKED),
+  ],
+]) {
+  test(`skip fails closed on certifying lines with ${name}`, () => {
+    assertSkipRefused(body, READY, true, NOT_BOUND);
+  });
+}
+
+for (const [name, body] of [
+  ["in the review zone", markedBody(`${bind(OLD_HEAD)}\n${TICKED}`)],
+  ["with CRLF line ends", `${bind(OLD_HEAD)}\r\n${TICKED.replace(/\n/g, "\r\n")}`],
+  ["after a closed comment", `<!-- note -->\n${bind(OLD_HEAD)}\n${TICKED}`],
+  ["after a closed fence", `\`\`\`\nlog\n\`\`\`\n${bind(OLD_HEAD)}\n${TICKED}`],
+]) {
+  test(`skip accepts one binding to the current head ${name}`, () => {
+    assert.equal(run({ github: fakeGitHub({ pr: openPr(body, READY), verified: true }) }).outputs.skip, "true");
+  });
+}
+
+test("a legacy unsigned head with unbound ticks is refused, a signed child with a binding is accepted", () => {
+  const legacy = `Review of ${OLD_HEAD}\n${TICKED}`;
+  const written = [];
+  const github = fakeGitHub({ pr: openPr(legacy, READY), verified: false });
+  assert.throws(
+    () => prepare({ ghApi: github.ghApi, listChanged: () => [MIRROR], localBlob: () => "blob-new", env: ENV, now: () => "t", dodLines: DOD_LINES, writeBody: (p, b) => written.push(b) }),
+    (error) => /is not verified/.test(error.message) && NOT_BOUND.test(error.message),
+  );
+  assert.deepEqual(written, []);
+
+  const signedChild = "d".repeat(40);
+  const regularised = `DoD-Head: ${signedChild}\n${TICKED}\n\nPrevious head, kept as parent: ${OLD_HEAD}`;
+  const pr = openPr(regularised, { ...READY, head: { sha: signedChild } });
+  assert.equal(run({ github: fakeGitHub({ pr, verified: true }) }).outputs.skip, "true");
+});
+
+test("the placeholder says how to bind a certification to the head", () => {
+  assert.match(reviewPlaceholder(DOD_LINES), /`DoD-Head: <40-character head SHA>`/);
+});
+
+test("skip accepts the untouched placeholder, whose N/A sits in a template hint", () => {
+  const body = renderBody({ ...RENDER, previousBody: "", previousHead: undefined });
+  assert.match(body, /<log\/metric\/event log added or N\/A>/);
+  assert.equal(run({ github: fakeGitHub({ pr: openPr(body, READY), verified: true }) }).outputs.skip, "true");
+});
+
+test("skip ignores ticks that are only in the quoted archive", () => {
+  const body = renderBody({ ...RENDER, previousBody: `Old\n${TICKED}`, previousHead: "b".repeat(40) });
+  assert.equal(run({ github: fakeGitHub({ pr: openPr(body, READY), verified: true }) }).outputs.skip, "true");
+});
+
+test("fails closed before any read on a dispatch from another branch", () => {
+  const github = fakeGitHub({ pr: openPr("evidence", READY), verified: true });
+  assert.throws(() => run({ github, env: { ...ENV, GITHUB_REF_NAME: "feature/x" } }), /only runs on main, not feature\/x/);
+  assert.deepEqual(github.calls, []);
 });
 
 test("head change: legacy evidence is archived whole and stops certifying", () => {
@@ -128,7 +248,7 @@ test("head change: legacy evidence is archived whole and stops certifying", () =
 
   const { body } = written[0];
   for (const line of legacy.split("\n").filter(Boolean)) assert.ok(body.includes(`> ${line}`), line);
-  assert.match(body, new RegExp(`head \`${OLD_HEAD}\`.*does not apply to the current head`));
+  assert.match(body, new RegExp(`written while the PR head was \`${OLD_HEAD}\`.*does not apply to the current head`));
   const result = certified(body);
   assert.equal(result.pass, false);
   assert.equal(result.reasons.length, DOD_IDS.length - 1);
@@ -192,6 +312,31 @@ test("notes written outside the zones or inside the generated block are preserve
 test("CRLF bodies from the web editor parse like LF bodies", () => {
   const rendered = renderBody({ ...RENDER, previousBody: "", previousHead: undefined });
   assert.equal(parseBody(rendered.replace(/\n/g, "\r\n")).review, reviewPlaceholder(DOD_LINES));
+});
+
+for (const [name, separator] of [["U+2028", "\u2028"], ["U+2029", "\u2029"], ["a lone CR", "\r"]]) {
+  test(`${name} in archived text stays quoted for the DoD gate`, () => {
+    const body = renderBody({ ...RENDER, previousBody: `note${separator}- [ ] DoD1 — not done on the old head`, previousHead: OLD_HEAD });
+    assert.equal(certified(body.replace(reviewPlaceholder(DOD_LINES), TICKED)).pass, true);
+  });
+}
+
+test("fails closed on an unquoted line in the archive zone", () => {
+  const rendered = renderBody({ ...RENDER, previousBody: "note", previousHead: OLD_HEAD });
+  const edited = rendered.replace("<!-- canon-sync:archive:end -->", `${TICKED}\n<!-- canon-sync:archive:end -->`);
+  assert.throws(() => parseBody(edited), /unquoted/);
+});
+
+test("a note added on the trigger line is preserved", () => {
+  const rendered = renderBody({ ...RENDER, previousBody: "", previousHead: undefined });
+  const edited = rendered.replace("Trigger: schedule", "Trigger: schedule, reviewed by hand");
+  const { archive } = parseBody(renderBody({ ...RENDER, previousBody: edited, previousHead: OLD_HEAD }));
+  assert.match(archive, /reviewed by hand/);
+});
+
+test("a dispatch trigger line is generated text, not evidence", () => {
+  const first = renderBody({ ...RENDER, trigger: "repository_dispatch (canon-updated)", previousBody: "", previousHead: undefined });
+  assert.equal(parseBody(renderBody({ ...RENDER, previousBody: first, previousHead: OLD_HEAD })).archive, "");
 });
 
 test("the fence outgrows any backtick run in the archived text", () => {
@@ -275,17 +420,40 @@ const VERIFY_ENV = {
   CPR_HEAD_SHA: NEW_HEAD,
   CPR_VERIFIED: "true",
   CPR_NUMBER: "1954",
+  RUNNER_TEMP: "/runner/tmp",
 };
-const servedPr = (over = {}) => () => JSON.stringify({ head: { sha: NEW_HEAD }, assignees: [{ login: "ak125" }], ...over });
+const RENDERED = "rendered body\n";
+const servedPr = (over = {}) => () =>
+  JSON.stringify({ head: { sha: NEW_HEAD }, assignees: [{ login: "ak125" }], body: RENDERED, ...over });
+const readRendered = (path) => {
+  assert.equal(path, "/runner/tmp/canon-sync-pr-body.md");
+  return RENDERED;
+};
 
-test("verify accepts a signed, assigned, moved head", () => {
-  assert.deepEqual(verify({ ghApi: servedPr(), env: VERIFY_ENV }), { checked: true });
+test("verify accepts a signed, assigned, moved head carrying the rendered body", () => {
+  assert.deepEqual(verify({ ghApi: servedPr(), env: VERIFY_ENV, readBody: readRendered }), { checked: true });
 });
 
-test("verify accepts a close without inspecting a head", () => {
+test("verify tolerates only line-end and edge whitespace differences in the body", () => {
+  const ghApi = servedPr({ body: "rendered\r\nbody" });
+  assert.deepEqual(verify({ ghApi, env: VERIFY_ENV, readBody: () => "rendered\nbody\n" }), { checked: true });
+});
+
+test("verify accepts a close without inspecting a head or a body", () => {
   const env = { ...VERIFY_ENV, EXPECTED_OPERATIONS: "closed", CPR_OPERATION: "closed", CPR_HEAD_SHA: "", CPR_VERIFIED: "false" };
-  assert.deepEqual(verify({ ghApi: servedPr(), env }), { checked: false });
+  const readBody = () => assert.fail("a close renders nothing to compare");
+  assert.deepEqual(verify({ ghApi: servedPr(), env, readBody }), { checked: false });
 });
+
+for (const [name, served] of [
+  ["the previous body still in place", `old evidence\n${TICKED}`],
+  ["an emptied body", null],
+  ["a body that differs inside a line", "rendered  body\n"],
+]) {
+  test(`verify fails on ${name}`, () => {
+    assert.throws(() => verify({ ghApi: servedPr({ body: served }), env: VERIFY_ENV, readBody: readRendered }), /not the rendered body/);
+  });
+}
 
 for (const [name, change, pattern, served] of [
   ["an unverified head", { CPR_VERIFIED: "false" }, /not verified/],
@@ -295,7 +463,7 @@ for (const [name, change, pattern, served] of [
   ["a missing assignee", {}, /not assigned/, servedPr({ assignees: [] })],
 ]) {
   test(`verify fails on ${name}`, () => {
-    assert.throws(() => verify({ ghApi: served ?? servedPr(), env: { ...VERIFY_ENV, ...change } }), pattern);
+    assert.throws(() => verify({ ghApi: served ?? servedPr(), env: { ...VERIFY_ENV, ...change }, readBody: readRendered }), pattern);
   });
 }
 
@@ -326,10 +494,86 @@ test("template extraction fails closed on a changed checklist", () => {
   assert.throws(() => extractDodLines("- [ ] DoD1 — only one"), /expected 9/);
 });
 
+function cli(t, ghBody, { command = "prepare", env = {}, setup = () => {} } = {}) {
+  const dir = mkdtempSync(join(tmpdir(), "canon-sync-cli-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const bin = join(dir, "bin");
+  const repo = join(dir, "repo");
+  mkdirSync(bin);
+  mkdirSync(join(repo, ".github"), { recursive: true });
+  writeFileSync(join(bin, "gh"), `#!/bin/sh\n${ghBody}\n`, { mode: 0o755 });
+  copyFileSync(join(ROOT, ".github/PULL_REQUEST_TEMPLATE.md"), join(repo, ".github/PULL_REQUEST_TEMPLATE.md"));
+  execFileSync("git", ["init", "-q"], { cwd: repo });
+  const output = join(dir, "github-output");
+  setup(dir);
+  const result = spawnSync(process.execPath, [join(ROOT, "scripts/ci/canon-sync-pr.mjs"), command], {
+    cwd: repo,
+    encoding: "utf8",
+    env: {
+      PATH: `${bin}:${process.env.PATH}`,
+      GH_TOKEN: "test-token",
+      GITHUB_REPOSITORY: REPO,
+      GITHUB_REF_NAME: "main",
+      RUNNER_TEMP: dir,
+      GITHUB_OUTPUT: output,
+      EVENT_NAME: "schedule",
+      RUN_URL: "https://run/1",
+      ...env,
+    },
+  });
+  return { result, output, dir };
+}
+
+test("command line: writes the outputs and the body the workflow reads", (t) => {
+  const { result, output, dir } = cli(t, "echo '[]'");
+  assert.equal(result.status, 0, result.stderr);
+  const bodyPath = join(dir, "canon-sync-pr-body.md");
+  assert.deepEqual(readFileSync(output, "utf8").trim().split("\n"), ["skip=false", "previous_head=", "expected=created", `body_path=${bodyPath}`]);
+  assert.doesNotMatch(readFileSync(bodyPath, "utf8"), /\[[xX]\]/);
+});
+
+test("command line: a GitHub failure is a job failure with no output", (t) => {
+  const { result, output, dir } = cli(t, "echo 'HTTP 502' >&2\nexit 1");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /::error::canon-sync: gh api .*HTTP 502/);
+  assert.equal(existsSync(output), false);
+  assert.equal(existsSync(join(dir, "canon-sync-pr-body.md")), false);
+});
+
+function cliVerify(t, served, rendered) {
+  const { RUNNER_TEMP: _unused, ...env } = VERIFY_ENV;
+  return cli(t, 'cat "$RUNNER_TEMP/served-pr.json"', {
+    command: "verify",
+    env,
+    setup: (dir) => {
+      writeFileSync(join(dir, "served-pr.json"), JSON.stringify({ head: { sha: NEW_HEAD }, assignees: [{ login: "ak125" }], body: served }));
+      if (rendered !== null) writeFileSync(join(dir, "canon-sync-pr-body.md"), rendered);
+    },
+  }).result;
+}
+
+test("command line: verify compares GitHub's body with the file prepare rendered", (t) => {
+  const result = cliVerify(t, "same body", "same body\n");
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test("command line: verify fails on another body", (t) => {
+  const result = cliVerify(t, "another body", "same body\n");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /::error::canon-sync: PR #1954 body is not the rendered body/);
+});
+
+test("command line: verify fails when the rendered body is missing", (t) => {
+  const result = cliVerify(t, "same body", null);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /::error::canon-sync: .*canon-sync-pr-body\.md/);
+});
+
 test("workflow contract: signed, guarded, assigned, schedule unchanged", () => {
   const workflow = yaml.load(readFileSync(join(ROOT, ".github/workflows/canon-sync.yml"), "utf8"));
   assert.deepEqual(workflow.on.schedule, [{ cron: "0 3 * * *" }]);
   assert.deepEqual(workflow.permissions, { contents: "write", "pull-requests": "write" });
+  assert.deepEqual(workflow.concurrency, { group: "canon-sync", "cancel-in-progress": false });
 
   const { steps } = workflow.jobs.sync;
   const names = steps.map((step) => step.id ?? step.uses ?? step.name);
@@ -341,6 +585,8 @@ test("workflow contract: signed, guarded, assigned, schedule unchanged", () => {
   assert.match(action.uses, /^peter-evans\/create-pull-request@v8$/);
   assert.equal(action.if, "steps.prepare.outputs.skip == 'false'");
   assert.equal(action.with["sign-commits"], true);
+  assert.equal(action.with.branch, "canon-sync/auto");
+  assert.equal(action.with["delete-branch"], true);
   assert.equal(action.with["body-path"], "${{ steps.prepare.outputs.body_path }}");
   assert.equal(action.with.assignees, "${{ env.CANON_SYNC_ASSIGNEE }}");
   for (const removed of ["body", "author", "committer"]) assert.equal(action.with[removed], undefined, removed);
