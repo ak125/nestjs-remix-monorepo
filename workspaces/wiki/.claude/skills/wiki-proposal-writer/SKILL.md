@@ -47,8 +47,9 @@ Si l'utilisateur demande explicitement l'un de ces 3, le skill répond avec verd
 | 9. Rédaction body markdown (sections obligatoires `entity_type`) | **Anthropic** | rédactionnel uniquement (Définition / Fonctionnement / Symptômes / FAQ / etc.) |
 | 10. Validation post-génération via 9 quality gates | 0-LLM | invoque `python3 _scripts/quality-gates.py <fichier>` |
 | 11. Output AEC coverage manifest | 0-LLM | YAML structuré |
+| 12. Relecture française de la réponse entière (étape 13 du flux) | **Anthropic** | relecture selon `.claude/prompts/_shared/editorial-review.md`, puis contrôle 0-LLM `check-editorial-review.mjs --emit` |
 
-**Aucune chaîne LLM custom**, aucun wrapper maison. Anthropic Claude est invoqué **uniquement** pour le rédactionnel (étape 9), pas pour la structure ni pour la validation.
+**Aucune chaîne LLM custom**, aucun wrapper maison. Anthropic Claude est invoqué **uniquement** pour le rédactionnel (étape 9) et la relecture française de la réponse (étape 12), pas pour la structure ni pour la validation ; le contrôle de la relecture reste mécanique.
 
 ## Flow d'invocation
 
@@ -62,12 +63,20 @@ L'utilisateur fournit au minimum :
 ### Flow étape par étape
 
 ```
-1. Vérifier scope (refuser anti-patterns §D3 immédiatement)
+1. Lire en entier, par un outil qui numérote, de la ligne 1 à la dernière : ce SKILL.md
+   (l'injection par l'outil Skill omet le frontmatter : elle n'est pas une lecture du fichier)
+   et .claude/knowledge/workspaces.md (racine du dépôt) ; puis vérifier scope
+   (refuser anti-patterns §D3 immédiatement)
 2. Vérifier slug uniqueness (Glob automecanik-wiki/wiki/<entity_type>/<slug>.md)
-   → si existant, abort avec REVIEW_REQUIRED
-3. Lire automecanik-wiki/_meta/templates/<entity_type>.md
+   → si existant : aucune génération ni écriture de fichier, final_status REVIEW_REQUIRED.
+     Sous une demande explicite sans écriture (proposition ou revue rendue dans la seule
+     réponse, mise à jour d'une dimension comprise), poursuivre en lecture seule : les
+     étapes 3 à 6 et 13 restent dues en entier, la fiche existante comprise ; le bloc
+     proposé figure dans la réponse, jamais dans proposals/ ni dans wiki/
+3. Lire automecanik-wiki/_meta/templates/<entity_type>.md en entier, ligne 1 à la dernière
    → squelette frontmatter v2.0.0
-4. Lire automecanik-wiki/_meta/source-catalog.yaml
+4. Lire automecanik-wiki/_meta/source-catalog.yaml en entier, ligne 1 à la dernière
+   (une recherche par motif n'est pas une lecture)
    → registre slugs sources stables
 5. Pour entity_type=gamme :
    - Lire automecanik-wiki/exports/diag-canon-slugs.json (si présent)
@@ -98,7 +107,38 @@ L'utilisateur fournit au minimum :
 11. Invoquer python3 _scripts/quality-gates.py proposals/<slug>.md
     → reporter verdict (PASS / FAIL + blocked_reasons[])
 12. Output AEC coverage manifest (cf. ci-dessous)
+13. Relecture française, empreinte et contrôle mécanique de la réponse entière, manifeste et
+    bloc final compris (.claude/prompts/_shared/editorial-review.md à la racine du dépôt) :
+    - empreinte de l'original calculée par une commande sur ses octets, jamais recopiée
+    - la proposition s'affiche aussi décodée dans la prose, hors du YAML et du bloc (insécables
+      en caractères, sans échappement \u00a0) ; le bloc YAML proposé ne la remplace pas
+    - plages des lectures arrêtées à la dernière ligne du fichier, sans la ligne vide que Read
+      numérote après le saut final
+    - controle_fidelite compare seulement l'original et la proposition ; une réserve sur une
+      source ou son admission reste au dossier interne (manifeste), hors du bloc
+    - passer la réponse sur l'entrée standard de
+      node <racine du dépôt>/scripts/agents/check-editorial-review.mjs --emit --root <dossier>
+    - l'état de la relecture, écrit dans la prose comme dans le bloc, est celui de la première
+      ligne du rapport capturé (APPLIQUEE, PARTIELLE ou REJETEE)
+    - REJETEE → corriger le fond, repasser ; livrer la dernière entrée contrôlée, sans retouche
+    - avant la livraison, le contrat est lu en entier, de la ligne 1 à la dernière, par une
+      lecture observable dans le contexte courant (Read pour Claude, commande de lecture
+      équivalente pour Codex, par plages jusqu'à la dernière ligne) : après toute compaction
+      ou tout résumé, le relire même s'il a déjà été lu ; ni un chargement antérieur, ni un
+      résumé, ni une injection n'en font la preuve ; déclarer les plages exactes de cette lecture
+    - livraison : une fois l'entrée acceptée, deux passages sans --emit, en deux commandes
+      séparées, toujours faits ; un passage est reçu si sa sortie capturée montre la première
+      ligne du rapport (APPLIQUEE ou PARTIELLE) puis « entrée : <n> o, sha256 <empreinte> »
+      égale à la réponse livrée ; au moins un reçu et aucun REJETEE → livrer exactement cette
+      entrée ; aucun reçu → relecture partielle, cause « sortie du contrôle non capturée »
+      nommée dans le champ lecture ; un REJETEE, même après un reçu, se corrige et se repasse
 ```
+
+**Sous une consigne sans écriture.** Les étapes 10 et 11 portent sur le fichier écrit : elles
+sont déclarées non exécutées, avec cette cause, dans le manifeste. L'étape 13 lit l'entrée
+standard et n'écrit rien : elle reste due. Les lectures des étapes 1 et 3 à 6 restent dues aussi,
+fiche existante comprise (étape 2). Une étape ne s'écarte qu'après lecture de la règle qui la
+régit.
 
 ## Defaults conservateurs (ADR-033 §D4)
 
@@ -198,7 +238,7 @@ Le skill **ne fait jamais** ce mv. C'est une décision humaine.
 - 9 quality gates Python : `automecanik-wiki/_scripts/quality-gates.py`
 - formule `confidence_score` : `_meta/quality-gates.md` §4
 - workflow `wiki-protected-paths.yml` (4 markers commit message)
-- mémoire `skills-first-architecture.md` (0-LLM structure, Anthropic seul rédactionnel)
+- mémoire `skills-first-architecture.md` (0-LLM structure, Anthropic seul fournisseur LLM : rédactionnel de l'étape 9 et relecture de l'étape 12)
 - mémoire `feedback_wiki_scope_discipline.md` (sas markdown ≠ sas DB)
 - mémoire `diag-symptom-db-convention.md` (slugs anglais snake_case `brake_*`)
 - mémoire `mvp-g6-adr033-handoff.md` (Phase 1 closed 2026-04-30)
