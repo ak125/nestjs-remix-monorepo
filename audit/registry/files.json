@@ -9513,10 +9513,11 @@
       "importedBy": [],
       "imports": [
         "backend/src/config/cache-ttl.config.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
       ],
       "kind": "test",
-      "loc": 176,
+      "loc": 399,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
       "risk": "low",
@@ -9539,6 +9540,7 @@
       ],
       "imports": [
         "@cache/cache.service",
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/config/cache-ttl.config.ts",
         "backend/src/config/r1-keyword-plan.constants.ts",
@@ -9549,7 +9551,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 556,
+      "loc": 589,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
       "risk": "low",
@@ -9567,14 +9569,16 @@
       "id": "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/config/r1-keyword-plan.constants.ts"
       ],
       "kind": "service",
-      "loc": 764,
+      "loc": 770,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
       "risk": "low",

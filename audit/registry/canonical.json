@@ -38336,10 +38336,11 @@
       "importedBy": [],
       "imports": [
         "backend/src/config/cache-ttl.config.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
       ],
       "kind": "test",
-      "loc": 176,
+      "loc": 399,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
       "risk": "medium",
@@ -38363,6 +38364,7 @@
       ],
       "imports": [
         "@cache/cache.service",
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/config/cache-ttl.config.ts",
         "backend/src/config/r1-keyword-plan.constants.ts",
@@ -38373,7 +38375,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 556,
+      "loc": 589,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
       "risk": "medium",
@@ -38392,14 +38394,16 @@
       "id": "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/config/r1-keyword-plan.constants.ts"
       ],
       "kind": "service",
-      "loc": 764,
+      "loc": 770,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
       "risk": "medium",
@@ -106526,11 +106530,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "2d5872d3b1b0218226bca046f584e85c1fb21fb9ba517d43e0dd407264380d1f",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "e20794b407cff02af137c553ee9be9af04343ce9ac81a0ae9144eede36c85092",
+      "audit/registry/files.json": "5ce08981c2ec32e0689971ad2016ada5de4de1ab6ce500b852bc3b997f233818",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "a08cf4a46cc058ebef66bbd7f5bfc5248f616a32626b23292d2de4d62a5de1f8"
     },
-    "sotFingerprint": "44e7c12dc076"
+    "sotFingerprint": "c7eb5875c160"
   },
   "runtime": [
     {
