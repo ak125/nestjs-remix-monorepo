@@ -9,7 +9,6 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key';
 
 import { R1KeywordPlanBatchService } from './r1-keyword-plan-batch.service';
-import { R1KeywordPlanGatesService } from './r1-keyword-plan-gates.service';
 import { CACHE_STRATEGIES } from '../../../config/cache-ttl.config';
 
 /**
@@ -25,33 +24,28 @@ import { CACHE_STRATEGIES } from '../../../config/cache-ttl.config';
  *
  * Après : `callRpc()` gouverné (nom littéral, `source: 'admin'`), résultat mis
  * en cache sous `CACHE_STRATEGIES.KEYWORD_PLAN.R1_TOP_VEHICLES` (clé = pgId
- * seul), erreur RPC observable (warn) et JAMAIS mise en cache.
+ * seul). Une erreur RPC est levée, jamais mise en cache : rendue comme `[]`,
+ * elle passerait pour « aucun véhicule compatible ».
  */
 
 type TopVehicle = { marque_name: string; modele_name: string; cnt: number };
 
 const STRATEGY = CACHE_STRATEGIES.KEYWORD_PLAN.R1_TOP_VEHICLES;
 
-// Constructeur typé lâchement : le test décrit le contrat cible (4e dépendance
-// CacheService) sans dépendre de la signature courante.
+// Constructeur typé lâchement : le test décrit le contrat cible sans dépendre
+// de la signature courante.
 const ServiceCtor = R1KeywordPlanBatchService as unknown as new (
   ...args: unknown[]
 ) => R1KeywordPlanBatchService;
 
 function buildService() {
   const configService = { get: (k: string) => process.env[k] };
-  const yamlParser = {};
   const gatesService = {};
   const cache = {
     get: jest.fn().mockResolvedValue(null),
     set: jest.fn().mockResolvedValue(undefined),
   };
-  const service = new ServiceCtor(
-    configService,
-    yamlParser,
-    gatesService,
-    cache,
-  );
+  const service = new ServiceCtor(configService, gatesService, cache);
   const callRpc = jest.fn();
   (service as unknown as { callRpc: jest.Mock }).callRpc = callRpc;
   const getTopVehicles = (pgId: number): Promise<TopVehicle[]> =>
@@ -138,26 +132,24 @@ describe('R1KeywordPlanBatchService.getTopVehicles — RPC gouvernée + cache (A
     expect(result).toEqual(cached);
   });
 
-  it('erreur RPC → [] observable (warn), et RIEN n’est mis en cache (anti-poisoning)', async () => {
+  it('erreur RPC → erreur levée (jamais []), et RIEN n’est mis en cache (anti-poisoning)', async () => {
     const { service, cache, callRpc, getTopVehicles } = buildService();
     callRpc.mockResolvedValue({
       data: null,
       error: { message: 'permission denied', name: 'SupabaseRpcError' },
     });
-    const warnSpy = jest
+    const errorSpy = jest
       .spyOn(
-        (service as unknown as { logger: { warn: (m: string) => void } })
+        (service as unknown as { logger: { error: (m: string) => void } })
           .logger,
-        'warn',
+        'error',
       )
       .mockImplementation(() => {});
 
-    const result = await getTopVehicles(402);
+    await expect(getTopVehicles(402)).rejects.toThrow(/véhicules/);
 
-    expect(result).toEqual([]);
     expect(cache.set).not.toHaveBeenCalled();
-    expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(warnSpy.mock.calls[0][0]).toMatch(/permission denied/);
+    expect(errorSpy.mock.calls.flat().join(' ')).toMatch(/permission denied/);
   });
 
   it('résultat vide (RPC ok, 0 ligne) → [] mis en cache : c’est un état réel, pas une erreur', async () => {
@@ -182,7 +174,8 @@ describe('R1KeywordPlanBatchService.getTopVehicles — RPC gouvernée + cache (A
  * `top_brands` comme un dictionnaire alors que la colonne contient un tableau ;
  * les erreurs de lecture étaient ignorées, si bien qu'une panne passait pour
  * « 0 gamme éligible », pour « aucun plan R1 existant » (régénération) ou pour
- * « version 1 » (écrasement).
+ * « version 1 » (écrasement). Une panne de la RPC véhicules passait pour
+ * « aucun véhicule » et le plan recevait six marques codées en dur.
  */
 type DbResult = { data: unknown; error: { message: string } | null };
 
@@ -204,9 +197,9 @@ function chain(result: DbResult) {
 
 const R3_ROW = {
   skp_pg_id: 7,
-  skp_pg_alias: 'gamme-sans-fichier-rag-test',
+  skp_pg_alias: 'filtre-a-huile',
   skp_quality_score: 90,
-  skp_section_terms: null,
+  skp_section_terms: null as Record<string, { include_terms: string[] }> | null,
 };
 
 const DB_OK: Record<string, DbResult> = {
@@ -225,8 +218,22 @@ const DB_OK: Record<string, DbResult> = {
 };
 
 const R1_VERIFY: DbResult = { data: { rkp_id: 501 }, error: null };
+const FAILURE: DbResult = {
+  data: null,
+  error: { message: 'upstream unavailable' },
+};
+const NO_VEHICLE: DbResult = { data: [], error: null };
 
-function buildBatch(overrides: Partial<Record<string, DbResult>> = {}) {
+type WrittenPlan = {
+  rkp_boundaries: { r3_forbidden_terms: string[] };
+  rkp_query_clusters: { equipementiers: string[] };
+  rkp_section_terms: Record<string, { include_terms: string[] }>;
+};
+
+function buildBatch(
+  overrides: Partial<Record<string, DbResult>> = {},
+  vehicles: DbResult = NO_VEHICLE,
+) {
   const tables = { ...DB_OK, ...overrides };
   const builders: Record<string, ReturnType<typeof chain>> = {};
   let r1Reads = 0;
@@ -256,57 +263,164 @@ function buildBatch(overrides: Partial<Record<string, DbResult>> = {}) {
     }),
     upsertR1KeywordPlan: jest.fn().mockResolvedValue(undefined),
   };
-  const yamlParser = {};
   const cache = {
-    get: jest.fn().mockResolvedValue([]),
+    get: jest.fn().mockResolvedValue(null),
     set: jest.fn().mockResolvedValue(undefined),
   };
   const service = new ServiceCtor(
     { get: (k: string) => process.env[k] },
-    yamlParser,
     gatesService,
     cache,
   );
   Object.defineProperty(service, 'client', { value: { from } });
+  (service as unknown as { callRpc: jest.Mock }).callRpc = jest
+    .fn()
+    .mockResolvedValue(vehicles);
   const logger = (service as unknown as { logger: Record<string, jest.Mock> })
     .logger;
-  const warn = jest.spyOn(logger, 'warn').mockImplementation(() => undefined);
+  jest.spyOn(logger, 'warn').mockImplementation(() => undefined);
   jest.spyOn(logger, 'log').mockImplementation(() => undefined);
   jest.spyOn(logger, 'error').mockImplementation(() => undefined);
-  return { service, gatesService, builders, warn };
+  const written = () =>
+    gatesService.upsertR1KeywordPlan.mock.calls[0][1] as WrittenPlan;
+  return { service, gatesService, builders, written };
 }
-
-const FAILURE = { data: null, error: { message: 'upstream unavailable' } };
 
 describe('R1KeywordPlanBatchService.batchGenerate — une panne reste une panne', () => {
   it('lit gamme_aggregates sur ga_pg_id et prend les noms du tableau top_brands', async () => {
-    const { service, gatesService, builders } = buildBatch();
+    const { service, builders, written } = buildBatch();
 
     const { summary } = await service.batchGenerate({});
 
     expect(builders.gamme_aggregates.eq).toHaveBeenCalledWith('ga_pg_id', 7);
     expect(summary).toEqual({ total: 1, created: 1, skipped: 0, failed: 0 });
-    const written = gatesService.upsertR1KeywordPlan.mock.calls[0][1] as {
-      rkp_query_clusters: { equipementiers: string[] };
-    };
-    expect(written.rkp_query_clusters.equipementiers).toEqual([
-      'gamme sans fichier rag test BOSCH',
-      'gamme sans fichier rag test DENSO',
+    expect(written().rkp_query_clusters.equipementiers).toEqual([
+      'filtre a huile BOSCH',
+      'filtre a huile DENSO',
     ]);
   });
 
   it('aucune ligne d’agrégat → état réel, le plan est créé sans marque', async () => {
-    const { service, gatesService } = buildBatch({
+    const { service, written } = buildBatch({
       gamme_aggregates: { data: null, error: null },
     });
 
     const { summary } = await service.batchGenerate({});
 
     expect(summary.created).toBe(1);
-    const written = gatesService.upsertR1KeywordPlan.mock.calls[0][1] as {
-      rkp_query_clusters: { equipementiers: string[] };
-    };
-    expect(written.rkp_query_clusters.equipementiers).toEqual([]);
+    expect(written().rkp_query_clusters.equipementiers).toEqual([]);
+  });
+
+  it('véhicules compatibles → S5 porte leurs marques et modèles', async () => {
+    const { service, written } = buildBatch({}, { data: rpcRows, error: null });
+
+    await service.batchGenerate({});
+
+    expect(written().rkp_section_terms.R1_S5_COMPAT.include_terms).toEqual([
+      'filtre a huile BMW',
+      'filtre a huile Série 5 (E60)',
+      'filtre a huile Volkswagen',
+      'filtre a huile Golf V',
+      'filtre a huile par immatriculation',
+      'filtre a huile compatible marque modèle année',
+    ]);
+  });
+
+  it('deux véhicules de la même marque → la marque n’apparaît qu’une fois en S5', async () => {
+    const { service, written } = buildBatch(
+      {},
+      {
+        data: [
+          { marque_name: 'BMW', modele_name: 'Série 5 (E60)' },
+          { marque_name: 'BMW', modele_name: 'Série 3 (E90)' },
+        ],
+        error: null,
+      },
+    );
+
+    await service.batchGenerate({});
+
+    expect(written().rkp_section_terms.R1_S5_COMPAT.include_terms).toEqual([
+      'filtre a huile BMW',
+      'filtre a huile Série 5 (E60)',
+      'filtre a huile Série 3 (E90)',
+      'filtre a huile par immatriculation',
+      'filtre a huile compatible marque modèle année',
+    ]);
+  });
+
+  it('aucun véhicule compatible → état réel, S5 sans marque inventée', async () => {
+    const { service, written } = buildBatch();
+
+    const { summary } = await service.batchGenerate({});
+
+    expect(summary.created).toBe(1);
+    expect(written().rkp_section_terms.R1_S5_COMPAT.include_terms).toEqual([
+      'filtre a huile par immatriculation',
+      'filtre a huile compatible marque modèle année',
+    ]);
+  });
+
+  it('RPC véhicules en panne → gamme en échec, rien n’est écrit', async () => {
+    const { service, gatesService } = buildBatch({}, FAILURE);
+
+    const { results, summary } = await service.batchGenerate({});
+
+    expect(summary).toEqual({ total: 1, created: 0, skipped: 0, failed: 1 });
+    expect(results[0].reason).toMatch(/véhicules/);
+    expect(gatesService.upsertR1KeywordPlan).not.toHaveBeenCalled();
+  });
+
+  it('aucun terme n’est répété d’une section à l’autre (règle RG4)', async () => {
+    const { service, written } = buildBatch({}, { data: rpcRows, error: null });
+
+    await service.batchGenerate({});
+
+    const terms = Object.values(written().rkp_section_terms).flatMap(
+      (section) => section.include_terms.map((term) => term.toLowerCase()),
+    );
+    expect(terms).toContain('filtre a huile bosch');
+    expect(terms.filter((t, i) => terms.indexOf(t) !== i)).toEqual([]);
+  });
+
+  it('FAQ S9 : uniquement les requêtes de sélection, aucun texte importé', async () => {
+    const { service, written } = buildBatch();
+
+    await service.batchGenerate({});
+
+    expect(written().rkp_section_terms.R1_S9_FAQ.include_terms).toEqual([
+      'quel filtre a huile pour mon véhicule',
+      'filtre a huile compatible quel véhicule',
+      'trouver référence filtre a huile',
+      'filtre a huile par plaque immatriculation',
+    ]);
+  });
+
+  it('deux plans R3 validés pour une gamme → un seul plan R1, termes interdits cumulés', async () => {
+    const { service, gatesService, written } = buildBatch({
+      __seo_r3_keyword_plan: {
+        data: [
+          {
+            ...R3_ROW,
+            skp_section_terms: { S1: { include_terms: ['Vidange'] } },
+          },
+          {
+            ...R3_ROW,
+            skp_quality_score: 88,
+            skp_section_terms: { S2: { include_terms: ['Colmatage'] } },
+          },
+        ],
+        error: null,
+      },
+    });
+
+    const { summary } = await service.batchGenerate({});
+
+    expect(summary).toEqual({ total: 1, created: 1, skipped: 0, failed: 0 });
+    expect(gatesService.upsertR1KeywordPlan).toHaveBeenCalledTimes(1);
+    expect(written().rkp_boundaries.r3_forbidden_terms).toEqual(
+      expect.arrayContaining(['vidange', 'colmatage']),
+    );
   });
 
   it('plans R3 illisibles → erreur, jamais { total: 0 }', async () => {
@@ -366,33 +480,5 @@ describe('R1KeywordPlanBatchService.batchGenerate — une panne reste une panne'
 
     expect(summary.failed).toBe(1);
     expect(results[0].reason).toMatch(/relecture/);
-  });
-
-  it('fichier RAG absent → signalé par un warn', async () => {
-    const { service, warn } = buildBatch();
-
-    await service.batchGenerate({ dryRun: true });
-
-    expect(warn.mock.calls.flat().join(' ')).toMatch(/RAG/);
-  });
-});
-
-describe('R1KeywordPlanGatesService.upsertR1KeywordPlan', () => {
-  it('propage l’échec d’écriture au lieu de le journaliser seulement', async () => {
-    const GatesCtor = R1KeywordPlanGatesService as unknown as new (
-      ...args: unknown[]
-    ) => R1KeywordPlanGatesService;
-    const gates = new GatesCtor({ get: (k: string) => process.env[k] });
-    Object.defineProperty(gates, 'client', {
-      value: { from: () => ({ upsert: () => Promise.resolve(FAILURE) }) },
-    });
-    jest
-      .spyOn(
-        (gates as unknown as { logger: { error: () => void } }).logger,
-        'error',
-      )
-      .mockImplementation(() => undefined);
-
-    await expect(gates.upsertR1KeywordPlan('7', {})).rejects.toThrow(/plan R1/);
   });
 });

@@ -1253,7 +1253,7 @@ export class AdminKeywordPlannerController {
   /**
    * POST /api/admin/keyword-planner/batch-r1
    * 0-LLM batch generation of R1 keyword plans.
-   * Generates deterministic KP from RAG + R3 anti-cannib + vehicles DB.
+   * Generates deterministic KP from R3 anti-cannib + vehicles and brands DB.
    */
   @Post('batch-r1')
   async batchR1(

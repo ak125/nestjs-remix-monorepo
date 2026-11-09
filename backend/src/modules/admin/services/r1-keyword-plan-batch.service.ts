@@ -1,12 +1,15 @@
 /**
  * R1KeywordPlanBatchService — 0-LLM batch generator for R1 keyword plans.
  *
- * Generates deterministic keyword plans from RAG YAML + DB data:
- * - RAG gamme frontmatter (domain.role, selection, brands, faq)
- * - R3 anti-cannibalization (forbidden terms from validated R3 plan)
+ * Generates deterministic keyword plans from DB data only:
+ * - R3 anti-cannibalization (forbidden terms from the validated R3 plans)
  * - Top vehicles via RPC get_alternative_vehicles_for_gamme (governed callRpc,
  *   cached per pgId — A4, plan massdoc 2026-09-02)
  * - Equipementiers from gamme_aggregates
+ *
+ * The RAG knowledge base is not a source here (ADR-031/046: RAG serves the
+ * chatbot, it has no authority over content). A term is derived from the gamme
+ * and from catalogue facts, or it is absent — no brand or vehicle is assumed.
  *
  * Writes to __seo_r1_keyword_plan via R1KeywordPlanGatesService.upsertR1KeywordPlan().
  * No LLM calls — purely deterministic term generation.
@@ -19,16 +22,12 @@ import {
   CACHE_STRATEGIES,
   getCacheKey,
 } from '../../../config/cache-ttl.config';
-import { EnricherYamlParser } from './enricher-yaml-parser.service';
 import {
   R1KeywordPlanGatesService,
   type RkpRow,
   type R1SectionTerms,
 } from './r1-keyword-plan-gates.service';
 import { R3_FORBIDDEN_IN_R1 } from '../../../config/r1-keyword-plan.constants';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 export interface BatchR1Result {
@@ -47,6 +46,15 @@ interface TopVehicle {
   cnt: number;
 }
 
+type R3SectionTerms = Record<string, { include_terms?: string[] }>;
+
+interface EligibleGamme {
+  pg_id: number;
+  pg_alias: string;
+  /** Un jeu de termes par plan R3 validé de la gamme (il peut y en avoir plusieurs). */
+  r3_terms: R3SectionTerms[];
+}
+
 /** Colonnes consommées de la RPC `get_alternative_vehicles_for_gamme`. */
 interface AlternativeVehicleRow {
   marque_name: string;
@@ -62,11 +70,8 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
     R1KeywordPlanBatchService.name,
   );
 
-  private readonly RAG_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
-
   constructor(
     configService: ConfigService,
-    private readonly yamlParser: EnricherYamlParser,
     private readonly gatesService: R1KeywordPlanGatesService,
     private readonly cacheService: CacheService,
   ) {
@@ -126,18 +131,23 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       (existingR1 ?? []).map((r: { rkp_pg_id: number }) => Number(r.rkp_pg_id)),
     );
 
-    const gammes = r3Plans
-      .filter((r) => !existingSet.has(Number(r.skp_pg_id)))
-      .slice(0, limit)
-      .map((r) => ({
-        pg_id: Number(r.skp_pg_id),
+    // Une gamme peut porter plusieurs plans R3 validés (unicité = gamme + version) :
+    // elle n'est traitée qu'une fois et les termes de tous ses plans sont interdits.
+    const byGamme = new Map<number, EligibleGamme>();
+    for (const r of r3Plans) {
+      const pgId = Number(r.skp_pg_id);
+      if (existingSet.has(pgId)) continue;
+      const gamme = byGamme.get(pgId) ?? {
+        pg_id: pgId,
         pg_alias: r.skp_pg_alias as string,
-        r3_score: r.skp_quality_score as number,
-        r3_terms: r.skp_section_terms as Record<
-          string,
-          { include_terms?: string[] }
-        > | null,
-      }));
+        r3_terms: [],
+      };
+      if (r.skp_section_terms) {
+        gamme.r3_terms.push(r.skp_section_terms as R3SectionTerms);
+      }
+      byGamme.set(pgId, gamme);
+    }
+    const gammes = [...byGamme.values()].slice(0, limit);
 
     this.logger.log(`[BATCH] Found ${gammes.length} eligible gammes`);
 
@@ -183,34 +193,10 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
   private async generateSingle(
     pgId: number,
     pgAlias: string,
-    r3SectionTerms: Record<string, { include_terms?: string[] }> | null,
+    r3SectionTerms: R3SectionTerms[],
     dryRun: boolean,
   ): Promise<BatchR1Result> {
     const ctx = `[R1_KP_BATCH pgId=${pgId}]`;
-
-    // ── P0.1: Load RAG gamme ──
-    const ragPath = join(this.RAG_DIR, `${pgAlias}.md`);
-    let ragContent = '';
-    let domainRole = '';
-    let selectionCriteria: string[] = [];
-    let brands: string[] = [];
-    let faqItems: string[] = [];
-
-    if (existsSync(ragPath)) {
-      ragContent = readFileSync(ragPath, 'utf-8');
-      const fm = this.yamlParser.extractFrontmatterBlock(ragContent);
-      if (fm) {
-        domainRole =
-          this.extractYamlValue(fm, 'role') ?? pgAlias.replace(/-/g, ' ');
-        selectionCriteria = this.yamlParser.extractYamlList(fm, 'criteria');
-        brands = this.yamlParser.extractYamlList(fm, 'equipementiers');
-        if (!brands.length)
-          brands = this.yamlParser.extractYamlList(fm, 'brands');
-        faqItems = this.yamlParser.extractYamlList(fm, 'faq');
-      }
-    } else {
-      this.logger.warn(`${ctx} fichier RAG absent : ${ragPath}`);
-    }
 
     // Gamme name
     const { data: pgRow, error: pgError } = await this.client
@@ -226,8 +212,8 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
 
     // ── P0.3: Extract R3 forbidden terms ──
     const r3ForbiddenTerms = new Set<string>();
-    if (r3SectionTerms) {
-      for (const section of Object.values(r3SectionTerms)) {
+    for (const plan of r3SectionTerms) {
+      for (const section of Object.values(plan)) {
         for (const term of section.include_terms ?? []) {
           r3ForbiddenTerms.add(term.toLowerCase());
         }
@@ -251,17 +237,13 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       throw this.readFailure('gamme_aggregates', aggError.message);
     }
 
-    const aggregateBrands = this.topBrandNames(aggRow?.top_brands);
-    const equipBrands = aggregateBrands.length > 0 ? aggregateBrands : brands;
+    const equipBrands = this.topBrandNames(aggRow?.top_brands);
 
     // ── P1+P2: Build section terms (deterministic) ──
     const sectionTerms = this.buildSectionTerms(
       gammeSlug,
       gammeName,
-      domainRole,
-      selectionCriteria,
       equipBrands,
-      faqItems,
       topVehicles,
       r3ForbiddenTerms,
     );
@@ -392,9 +374,11 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
    * ne paie la RPC qu'une fois par gamme.
    *
    * RPC via `callRpc()` (gate + allowlist, nom littéral pour le parseur de
-   * `scripts/ci/check-rpc-allowlist-coverage.sh`). Erreur RPC : warn
-   * observable, `[]` renvoyé et JAMAIS mis en cache (anti-poisoning).
-   * Résultat vide (0 ligne) : état réel, mis en cache.
+   * `scripts/ci/check-rpc-allowlist-coverage.sh`). Erreur RPC : levée et
+   * JAMAIS mise en cache — rendue comme `[]`, elle passerait pour « aucun
+   * véhicule compatible » et le plan serait écrit sans compatibilité, puis la
+   * gamme exclue des relances par l'anti-join. Résultat vide (0 ligne) : état
+   * réel, mis en cache.
    */
   private async getTopVehicles(pgId: number): Promise<TopVehicle[]> {
     const cacheKey = getCacheKey(TOP_VEHICLES_STRATEGY, String(pgId));
@@ -407,10 +391,7 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       { source: 'admin' },
     );
     if (error) {
-      this.logger.warn(
-        `[R1_KP_BATCH pgId=${pgId}] top vehicles RPC failed (not cached): ${error.message}`,
-      );
-      return [];
+      throw this.readFailure('véhicules de la gamme', error.message);
     }
 
     const topVehicles: TopVehicle[] = (Array.isArray(data) ? data : []).map(
@@ -433,10 +414,7 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
   private buildSectionTerms(
     gammeSlug: string,
     gammeName: string,
-    domainRole: string,
-    criteria: string[],
     brands: string[],
-    faqItems: string[],
     vehicles: TopVehicle[],
     r3Forbidden: Set<string>,
   ): Record<string, R1SectionTerms> {
@@ -461,39 +439,27 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       `${gammeSlug} qualité OE`,
     ]);
 
-    // S4 MICRO SEO
+    // S4 MICRO SEO — les marques sont portées par S7 seulement : les répéter ici
+    // dépasse à lui seul le seuil de recouvrement de la gate RG4.
     const s4Terms = filter([
       `${gammeSlug} qualité origine`,
       `${gammeSlug} livraison rapide`,
       `${gammeSlug} garanti`,
       `commander ${gammeSlug}`,
       `${gammeSlug} première monte`,
-      ...brands.slice(0, 3).map((b) => `${gammeSlug} ${b}`),
     ]);
 
-    // S5 COMPAT (vehicle injection)
+    // S5 COMPAT : uniquement les véhicules réellement compatibles. Sans véhicule,
+    // aucune marque n'est supposée.
     const s5Terms: string[] = [];
-    if (vehicles.length > 0) {
-      for (const v of vehicles.slice(0, 6)) {
-        s5Terms.push(`${gammeSlug} ${v.marque_name}`);
-        if (v.modele_name) s5Terms.push(`${gammeSlug} ${v.modele_name}`);
-      }
-    } else {
-      // Generic French market brands
-      for (const marque of [
-        'Renault',
-        'Peugeot',
-        'Volkswagen',
-        'Citroën',
-        'BMW',
-        'Ford',
-      ]) {
-        s5Terms.push(`${gammeSlug} ${marque}`);
-      }
+    for (const v of vehicles.slice(0, TOP_VEHICLES_LIMIT)) {
+      s5Terms.push(`${gammeSlug} ${v.marque_name}`);
+      if (v.modele_name) s5Terms.push(`${gammeSlug} ${v.modele_name}`);
     }
     s5Terms.push(`${gammeSlug} par immatriculation`);
     s5Terms.push(`${gammeSlug} compatible marque modèle année`);
-    const s5Filtered = filter(s5Terms);
+    // Plusieurs véhicules d'une même marque ne répètent pas son terme.
+    const s5Filtered = filter([...new Set(s5Terms)]);
 
     // S7 EQUIP
     const s7Terms = filter([
@@ -509,7 +475,6 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       `${gammeSlug} compatible quel véhicule`,
       `trouver référence ${gammeSlug}`,
       `${gammeSlug} par plaque immatriculation`,
-      ...faqItems.slice(0, 2).map((q) => q.substring(0, 80)),
     ]);
 
     return {
@@ -578,11 +543,5 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       return (data[0].rkp_version ?? 0) + 1;
     }
     return 1;
-  }
-
-  private extractYamlValue(fm: string, key: string): string | null {
-    const regex = new RegExp(`^\\s*${key}:\\s*['"]?(.+?)['"]?\\s*$`, 'm');
-    const match = fm.match(regex);
-    return match ? match[1].trim() : null;
   }
 }
