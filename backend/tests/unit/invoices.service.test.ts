@@ -3,6 +3,10 @@
  *
  * Tests unitaires avec client Supabase et cache simulés : aucune base, aucun réseau.
  *
+ * Les durées de cache sont vérifiées telles que le service les passe (300, 600),
+ * sans unité : `cache-manager` v6 les lit en millisecondes, alors que le service
+ * annonce 5 minutes. Le test ne tranche pas cet écart.
+ *
  * @see backend/src/modules/invoices/invoices.service.ts
  */
 import { ConfigService } from '@nestjs/config';
@@ -114,7 +118,7 @@ describe('InvoicesService', () => {
       });
     });
 
-    it('met le résultat en cache 300 s sous une clé propre à la page et à la limite', async () => {
+    it('met le résultat en cache sous une clé propre à la page et à la limite, durée 300', async () => {
       const { service, cache } = buildService([
         { data: [], error: null },
         { count: 0 },
@@ -224,7 +228,7 @@ describe('InvoicesService', () => {
   });
 
   describe('getInvoiceStats', () => {
-    it('compte les factures et cache le résultat 600 s', async () => {
+    it('compte les factures et cache le résultat, durée 600', async () => {
       const { service, supabase, cache } = buildService([{ count: 1234 }]);
 
       const result = (await service.getInvoiceStats()) as {
