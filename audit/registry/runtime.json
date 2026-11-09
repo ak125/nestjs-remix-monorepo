@@ -1570,7 +1570,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/admin/services/enricher-yaml-parser.service.ts",
         "runtime:backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",

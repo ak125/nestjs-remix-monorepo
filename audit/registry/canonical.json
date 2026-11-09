@@ -33632,7 +33632,6 @@
         "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
@@ -37507,7 +37506,6 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts"
       ],
       "imports": [],
@@ -38336,11 +38334,10 @@
       "importedBy": [],
       "imports": [
         "backend/src/config/cache-ttl.config.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
       ],
       "kind": "test",
-      "loc": 399,
+      "loc": 485,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
       "risk": "medium",
@@ -38368,14 +38365,10 @@
         "@database/services/supabase-base.service",
         "backend/src/config/cache-ttl.config.ts",
         "backend/src/config/r1-keyword-plan.constants.ts",
-        "backend/src/config/rag.config.ts",
-        "backend/src/modules/admin/services/enricher-yaml-parser.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
-        "fs",
-        "path"
+        "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
       ],
       "kind": "service",
-      "loc": 589,
+      "loc": 548,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
       "risk": "medium",
@@ -38391,11 +38384,33 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/services/r1-keyword-plan-gates.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
+      ],
+      "kind": "test",
+      "loc": 145,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/r1-keyword-plan-gates.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-gates.service.test.ts"
       ],
       "imports": [
         "@common/exceptions",
@@ -38403,7 +38418,7 @@
         "backend/src/config/r1-keyword-plan.constants.ts"
       ],
       "kind": "service",
-      "loc": 770,
+      "loc": 783,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
       "risk": "medium",
@@ -106530,11 +106545,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "2d5872d3b1b0218226bca046f584e85c1fb21fb9ba517d43e0dd407264380d1f",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "5ce08981c2ec32e0689971ad2016ada5de4de1ab6ce500b852bc3b997f233818",
+      "audit/registry/files.json": "2dcbc829dbb737366cc5ce5e1816a35bfa9a003efdb08e37655158d5cdb44238",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "a08cf4a46cc058ebef66bbd7f5bfc5248f616a32626b23292d2de4d62a5de1f8"
+      "audit/registry/runtime.json": "5a15a7d1a9cbf2dfb4b84c0efcc75e6f34122de5b374c72463561cf4fe0d9203"
     },
-    "sotFingerprint": "c7eb5875c160"
+    "sotFingerprint": "0b09f046ece2"
   },
   "runtime": [
     {
@@ -108107,7 +108122,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/admin/services/enricher-yaml-parser.service.ts",
         "runtime:backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
