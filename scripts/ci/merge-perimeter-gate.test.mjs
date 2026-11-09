@@ -213,6 +213,23 @@ test("contrôle en échec, en cours, en attente d'approbation ou absent : refus�
   assert.deepEqual(prCodes({ statusCheckRollup: [] }, []), ["CHECKS_ABSENT"]);
 });
 
+test("seule la dernière exécution d'un contrôle relancé compte", () => {
+  const run = (conclusion, completedAt) => ({ ...check("ci", conclusion), completedAt });
+  const early = "2026-11-09T07:00:00Z";
+  const late = "2026-11-09T08:00:00Z";
+  assert.deepEqual(prCodes({ statusCheckRollup: [run("FAILURE", early), run("SUCCESS", late)] }), []);
+  assert.deepEqual(prCodes({ statusCheckRollup: [run("FAILURE", late), run("SUCCESS", early)] }), ["CHECK_NOT_PASSING"]);
+  assert.deepEqual(prCodes({ statusCheckRollup: [run("SUCCESS", late), run("FAILURE", late)] }), ["CHECK_NOT_PASSING"]);
+});
+
+test("une relance en cours ou en file d'attente l'emporte sur un ancien succès", () => {
+  const done = { ...check("ci"), completedAt: "2026-11-09T07:00:00Z" };
+  const running = { name: "ci", status: "IN_PROGRESS", startedAt: "2026-11-09T08:00:00Z" };
+  const queued = { name: "ci", status: "QUEUED", startedAt: "0001-01-01T00:00:00Z" };
+  assert.deepEqual(prCodes({ statusCheckRollup: [done, running] }), ["CHECK_NOT_PASSING"]);
+  assert.deepEqual(prCodes({ statusCheckRollup: [queued, done] }), ["CHECK_NOT_PASSING"]);
+});
+
 test("un statut externe doit réussir", () => {
   assert.deepEqual(prCodes({ statusCheckRollup: [check("ci"), { context: "s", state: "PENDING" }] }), [
     "CHECK_NOT_PASSING",

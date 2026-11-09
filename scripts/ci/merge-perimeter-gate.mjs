@@ -165,6 +165,26 @@ function checkPasses(check) {
   return check.status === "COMPLETED" && PASSING_CONCLUSIONS.has(check.conclusion);
 }
 
+/**
+ * Le rollup conserve les anciennes exécutions d'un contrôle relancé : seule la dernière
+ * compte. Une exécution sans date valide (en file d'attente) est tenue pour la plus récente.
+ */
+function latestChecks(checks) {
+  const stamp = (check) => {
+    const time = Date.parse(check.completedAt ?? check.startedAt);
+    return time > 0 ? time : Infinity;
+  };
+  const latest = new Map();
+  for (const check of checks) {
+    const key = `${check.workflowName ?? ""}\0${checkName(check)}`;
+    const current = latest.get(key);
+    const newer = current && stamp(check) > stamp(current);
+    const tieNotPassing = current && stamp(check) === stamp(current) && !checkPasses(check);
+    if (!current || newer || tieNotPassing) latest.set(key, check);
+  }
+  return [...latest.values()];
+}
+
 /** Évalue l'état de la PR et de ses contrôles. */
 export function evaluatePullRequest(policy, pr, requiredContexts) {
   const refusals = [];
@@ -183,7 +203,7 @@ export function evaluatePullRequest(policy, pr, requiredContexts) {
   }
   if (pr.mergeStateStatus !== "CLEAN") refusals.push(refusal("MERGE_STATE_NOT_CLEAN", pr.mergeStateStatus));
   if (pr.behindBy !== 0) refusals.push(refusal("BEHIND_BASE", String(pr.behindBy)));
-  const checks = pr.statusCheckRollup ?? [];
+  const checks = latestChecks(pr.statusCheckRollup ?? []);
   if (checks.length === 0) refusals.push(refusal("CHECKS_ABSENT", "aucun contrôle sur la tête"));
   for (const check of checks) {
     if (!checkPasses(check)) refusals.push(refusal("CHECK_NOT_PASSING", checkName(check)));
