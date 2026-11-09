@@ -101,6 +101,22 @@ test("first pass: opens a PR whose body certifies nothing", () => {
   assert.equal(certified(written[0].body).pass, false);
 });
 
+test("an update records the body and time prepare read, for verify to compare", () => {
+  const github = fakeGitHub({ pr: openPr("text a person wrote", { updated_at: READ_AT }), blobs: { [MIRROR]: "blob-old" } });
+  const { outputs, written } = run({ github });
+  assert.equal(outputs.expected, "updated");
+  const snapshot = written.find(({ path }) => path.endsWith("canon-sync-pr-previous.json"));
+  assert.deepEqual(JSON.parse(snapshot.body), { body: "text a person wrote", updated_at: READ_AT });
+});
+
+test("only an update records a snapshot", () => {
+  const closing = fakeGitHub({ pr: openPr("text", { updated_at: READ_AT }), blobs: { [MIRROR]: "blob-old" } });
+  for (const { written } of [run({ github: closing, syncChanged: [] }), run({ github: fakeGitHub() })]) {
+    assert.equal(written.length, 1);
+    assert.ok(written[0].path.endsWith("canon-sync-pr-body.md"));
+  }
+});
+
 test("identical repeat: skips, writes nothing, leaves head and body alone", () => {
   const body = `DoD-Head: ${OLD_HEAD}\n${TICKED}`;
   const github = fakeGitHub({ pr: openPr(body, READY), verified: true });
@@ -514,12 +530,34 @@ const VERIFY_ENV = {
   RUNNER_TEMP: "/runner/tmp",
 };
 const RENDERED = "rendered body\n";
-const servedPr = (over = {}) => () =>
-  JSON.stringify({ head: { sha: NEW_HEAD }, assignees: [{ login: "ak125" }], body: RENDERED, ...over });
-const readRendered = (path) => {
-  assert.equal(path, "/runner/tmp/canon-sync-pr-body.md");
-  return RENDERED;
+const PREVIOUS_BODY = "old evidence\n";
+const READ_AT = "2026-11-09T03:00:00Z";
+const BETWEEN_AT = "2026-11-09T03:00:10Z";
+const WRITTEN_AT = "2026-11-09T03:00:20Z";
+const HUMAN_HEAD = "e".repeat(40);
+const ZERO_SHA = "0".repeat(40);
+const SNAPSHOT = JSON.stringify({ body: PREVIOUS_BODY, updated_at: READ_AT });
+const version = (editedAt, diff) => ({ editedAt, diff });
+const FORCE_PUSH = { before: OLD_HEAD, after: NEW_HEAD, activity_type: "force_push" };
+const DELETION = { before: OLD_HEAD, after: ZERO_SHA, activity_type: "branch_deletion" };
+const servedPr = (over = {}, { activity = [FORCE_PUSH], edits } = {}) => (path, options = {}) => {
+  if (path.includes("/activity?")) {
+    assert.equal(path, `repos/${REPO}/activity?ref=refs/heads/${BRANCH}&per_page=100`);
+    return JSON.stringify(activity);
+  }
+  if (path === "graphql") {
+    assert.deepEqual({ ...options.fields, query: undefined }, { owner: "ak125", name: "nestjs-remix-monorepo", number: 1954, query: undefined });
+    const nodes = edits ?? [version(WRITTEN_AT, over.body ?? RENDERED), version(READ_AT, PREVIOUS_BODY)];
+    return JSON.stringify({ data: { repository: { pullRequest: { userContentEdits: { nodes } } } } });
+  }
+  return JSON.stringify({ head: { sha: NEW_HEAD }, assignees: [{ login: "ak125" }], body: RENDERED, ...over });
 };
+const readPrepared = (rendered = RENDERED, snapshot = SNAPSHOT) => (path) => {
+  if (path === "/runner/tmp/canon-sync-pr-previous.json") return snapshot;
+  assert.equal(path, "/runner/tmp/canon-sync-pr-body.md");
+  return rendered;
+};
+const readRendered = readPrepared();
 
 test("verify accepts a signed, assigned, moved head carrying the rendered body", () => {
   assert.deepEqual(verify({ ghApi: servedPr(), env: VERIFY_ENV, readBody: readRendered }), { checked: true });
@@ -527,14 +565,103 @@ test("verify accepts a signed, assigned, moved head carrying the rendered body",
 
 test("verify tolerates only line-end and edge whitespace differences in the body", () => {
   const ghApi = servedPr({ body: "rendered\r\nbody" });
-  assert.deepEqual(verify({ ghApi, env: VERIFY_ENV, readBody: () => "rendered\nbody\n" }), { checked: true });
+  assert.deepEqual(verify({ ghApi, env: VERIFY_ENV, readBody: readPrepared("rendered\nbody\n") }), { checked: true });
 });
 
-test("verify accepts a close without inspecting a head or a body", () => {
-  const env = { ...VERIFY_ENV, EXPECTED_OPERATIONS: "closed", CPR_OPERATION: "closed", CPR_HEAD_SHA: "", CPR_VERIFIED: "false" };
+const CLOSE_ENV = { ...VERIFY_ENV, EXPECTED_OPERATIONS: "closed", CPR_OPERATION: "closed", CPR_HEAD_SHA: "", CPR_VERIFIED: "false" };
+
+test("verify accepts a close that deleted the head prepare read, without reading a body", () => {
   const readBody = () => assert.fail("a close renders nothing to compare");
-  assert.deepEqual(verify({ ghApi: servedPr(), env, readBody }), { checked: false });
+  assert.deepEqual(verify({ ghApi: servedPr({}, { activity: [DELETION] }), env: CLOSE_ENV, readBody }), { checked: false });
 });
+
+const ACTION_CLOSE_ENV = { ...CLOSE_ENV, CPR_HEAD_SHA: NEW_HEAD };
+const ACTION_DELETION = { ...DELETION, before: NEW_HEAD };
+
+test("verify accepts the action's close: its own commit on the head prepare read, then the deletion", () => {
+  const readBody = () => assert.fail("a close has no body to read");
+  const activity = [ACTION_DELETION, FORCE_PUSH];
+  assert.deepEqual(verify({ ghApi: servedPr({}, { activity }), env: ACTION_CLOSE_ENV, readBody }), { checked: false });
+});
+
+test("verify names a push the action's closing commit replaced", () => {
+  const activity = [ACTION_DELETION, { ...FORCE_PUSH, before: HUMAN_HEAD }, { before: OLD_HEAD, after: HUMAN_HEAD, activity_type: "push" }];
+  assert.throws(() => verify({ ghApi: servedPr({}, { activity }), env: ACTION_CLOSE_ENV, readBody: readRendered }), new RegExp(`replaced ${HUMAN_HEAD}, not ${OLD_HEAD}`));
+});
+
+test("verify names a push landed between the action's closing commit and the deletion", () => {
+  const activity = [{ ...DELETION, before: HUMAN_HEAD }, { before: NEW_HEAD, after: HUMAN_HEAD, activity_type: "push" }, FORCE_PUSH];
+  assert.throws(() => verify({ ghApi: servedPr({}, { activity }), env: ACTION_CLOSE_ENV, readBody: readRendered }), new RegExp(`deleted ${HUMAN_HEAD}, not ${OLD_HEAD}`));
+});
+
+test("verify refuses a close whose closing commit is not in the activity", () => {
+  assert.throws(() => verify({ ghApi: servedPr({}, { activity: [ACTION_DELETION] }), env: ACTION_CLOSE_ENV, readBody: readRendered }), /cannot prove/);
+});
+
+test("verify names a commit pushed after prepare and deleted with the branch", () => {
+  const activity = [{ ...DELETION, before: HUMAN_HEAD }, { before: OLD_HEAD, after: HUMAN_HEAD, activity_type: "push" }];
+  assert.throws(() => verify({ ghApi: servedPr({}, { activity }), env: CLOSE_ENV, readBody: readRendered }), new RegExp(`deleted ${HUMAN_HEAD}, not ${OLD_HEAD}`));
+});
+
+test("verify fails when a close left no deletion it can read", () => {
+  assert.throws(() => verify({ ghApi: servedPr({}, { activity: [FORCE_PUSH] }), env: CLOSE_ENV, readBody: readRendered }), /cannot prove/);
+  assert.throws(() => verify({ ghApi: servedPr({}, { activity: [] }), env: CLOSE_ENV, readBody: readRendered }), /cannot prove/);
+});
+
+test("verify reads nothing when no PR existed before a close or a no-op", () => {
+  for (const operation of ["closed", "none"]) {
+    const env = { ...CLOSE_ENV, EXPECTED_OPERATIONS: "none,closed", CPR_OPERATION: operation, PREVIOUS_HEAD: "" };
+    assert.deepEqual(verify({ ghApi: () => assert.fail("nothing to read"), env, readBody: readRendered }), { checked: false });
+  }
+});
+
+test("verify names a commit pushed after prepare and replaced by the action", () => {
+  const activity = [{ ...FORCE_PUSH, before: HUMAN_HEAD }, { before: OLD_HEAD, after: HUMAN_HEAD, activity_type: "push" }];
+  assert.throws(() => verify({ ghApi: servedPr({}, { activity }), env: VERIFY_ENV, readBody: readRendered }), new RegExp(`replaced ${HUMAN_HEAD}, not ${OLD_HEAD}`));
+});
+
+test("verify fails when the action's push is absent from the branch activity", () => {
+  assert.throws(() => verify({ ghApi: servedPr({}, { activity: [] }), env: VERIFY_ENV, readBody: readRendered }), /cannot prove/);
+  const unrelated = [{ before: OLD_HEAD, after: HUMAN_HEAD, activity_type: "push" }];
+  assert.throws(() => verify({ ghApi: servedPr({}, { activity: unrelated }), env: VERIFY_ENV, readBody: readRendered }), /cannot prove/);
+});
+
+test("verify names a body edit made after prepare and replaced by the action", () => {
+  const edits = [version(WRITTEN_AT, RENDERED), version(BETWEEN_AT, "a decision a person wrote")];
+  assert.throws(() => verify({ ghApi: servedPr({}, { edits }), env: VERIFY_ENV, readBody: readRendered }), new RegExp(`edited at ${BETWEEN_AT}.*edit history`));
+});
+
+test("verify fails when the action's body write is not provably the newest version", () => {
+  for (const edits of [
+    [],
+    [version(WRITTEN_AT, RENDERED)],
+    [version(READ_AT, RENDERED), version("2026-11-08T00:00:00Z", PREVIOUS_BODY)],
+    [version(WRITTEN_AT, "another text"), version(READ_AT, PREVIOUS_BODY)],
+  ]) {
+    assert.throws(() => verify({ ghApi: servedPr({}, { edits }), env: VERIFY_ENV, readBody: readRendered }), /cannot prove/, JSON.stringify(edits));
+  }
+});
+
+test("verify accepts a rendered body identical to the one read, which adds no version", () => {
+  const edits = [version(READ_AT, PREVIOUS_BODY), version("2026-11-08T00:00:00Z", "older text")];
+  const ghApi = servedPr({ body: PREVIOUS_BODY }, { edits });
+  assert.deepEqual(verify({ ghApi, env: VERIFY_ENV, readBody: readPrepared(PREVIOUS_BODY) }), { checked: true });
+});
+
+test("verify sees an edit restored by a rendered body identical to the one read", () => {
+  const edits = [version(WRITTEN_AT, PREVIOUS_BODY), version(BETWEEN_AT, "a decision a person wrote")];
+  const ghApi = servedPr({ body: PREVIOUS_BODY }, { edits });
+  assert.throws(() => verify({ ghApi, env: VERIFY_ENV, readBody: readPrepared(PREVIOUS_BODY) }), new RegExp(`after prepare.*${WRITTEN_AT}`));
+});
+
+for (const [name, snapshot, pattern] of [
+  ["absent", "", /JSON/],
+  ["without the time it was read", JSON.stringify({ body: PREVIOUS_BODY }), /updated_at/],
+]) {
+  test(`verify fails when the snapshot prepare wrote is ${name}`, () => {
+    assert.throws(() => verify({ ghApi: servedPr(), env: VERIFY_ENV, readBody: readPrepared(RENDERED, snapshot) }), pattern);
+  });
+}
 
 for (const [name, served] of [
   ["the previous body still in place", `old evidence\n${TICKED}`],
@@ -662,17 +789,45 @@ test("command line: a GitHub failure is a job failure with no output", (t) => {
   assert.equal(existsSync(join(dir, "canon-sync-pr-body.md")), false);
 });
 
-function cliVerify(t, served, rendered) {
+function cliVerifyRun(t, served, rendered, { activity = [FORCE_PUSH] } = {}) {
   const { RUNNER_TEMP: _unused, ...env } = VERIFY_ENV;
-  return cli(t, 'cat "$RUNNER_TEMP/served-pr.json"', {
+  const gh = `printf '%s\\n' "$@" >> "$RUNNER_TEMP/gh-args"
+case "$2" in
+  *"/activity?"*) cat "$RUNNER_TEMP/served-activity.json" ;;
+  graphql) cat "$RUNNER_TEMP/served-edits.json" ;;
+  *) cat "$RUNNER_TEMP/served-pr.json" ;;
+esac`;
+  return cli(t, gh, {
     command: "verify",
     env,
     setup: (dir) => {
+      const nodes = [version(WRITTEN_AT, served), version(READ_AT, PREVIOUS_BODY)];
       writeFileSync(join(dir, "served-pr.json"), JSON.stringify({ head: { sha: NEW_HEAD }, assignees: [{ login: "ak125" }], body: served }));
+      writeFileSync(join(dir, "served-activity.json"), JSON.stringify(activity));
+      writeFileSync(join(dir, "served-edits.json"), JSON.stringify({ data: { repository: { pullRequest: { userContentEdits: { nodes } } } } }));
+      writeFileSync(join(dir, "canon-sync-pr-previous.json"), SNAPSHOT);
       if (rendered !== null) writeFileSync(join(dir, "canon-sync-pr-body.md"), rendered);
     },
-  }).result;
+  });
 }
+const cliVerify = (t, served, rendered, options) => cliVerifyRun(t, served, rendered, options).result;
+
+test("command line: verify queries the edit history with typed GraphQL variables", (t) => {
+  const { result, dir } = cliVerifyRun(t, "same body", "same body\n");
+  assert.equal(result.status, 0, result.stderr);
+  const args = readFileSync(join(dir, "gh-args"), "utf8").split("\n");
+  const graphql = args.indexOf("graphql");
+  assert.ok(graphql > 0, args.join(" "));
+  assert.deepEqual(args.slice(graphql + 1, graphql + 7).filter((arg) => arg === "-F").length, 3);
+  for (const field of ["owner=ak125", "name=nestjs-remix-monorepo", "number=1954"]) assert.ok(args.includes(field), field);
+  assert.ok(args.some((arg) => arg.startsWith("query=") && arg.includes("userContentEdits(first: 2)")));
+});
+
+test("command line: verify reports a replaced push and fails the job", (t) => {
+  const result = cliVerify(t, "same body", "same body\n", { activity: [{ ...FORCE_PUSH, before: HUMAN_HEAD }] });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, new RegExp(`::error::canon-sync: .*replaced ${HUMAN_HEAD}`));
+});
 
 test("command line: verify compares GitHub's body with the file prepare rendered", (t) => {
   const result = cliVerify(t, "same body", "same body\n");

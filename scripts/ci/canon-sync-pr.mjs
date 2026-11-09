@@ -21,6 +21,13 @@
 //     No box is ever ticked here.
 // `verify` (after the action): the announced operation happened, the new head is
 // verified by GitHub, the PR carries its assignee and the body `prepare` rendered.
+// It then proves that the action replaced what `prepare` read. The action force-moves
+// the branch and rewrites the body with no precondition, and GitHub offers none for a
+// PR body, so a push or an edit landing between `prepare` and the action is overwritten
+// and nothing here can prevent it. `verify` runs after those writes: it fails the run,
+// naming the replaced commit or body version. GitHub keeps the commit by SHA and the
+// body in the PR's edit history; nothing restores them automatically. An interval this
+// check cannot see is treated as a failure (no activity entry, no edit-history entry).
 // The action pushes before it edits the body: when that edit fails, `verify` turns
 // the run red and the PR gate refuses the old certification at its next event that
 // actually runs. This workflow pushes with GITHUB_TOKEN whatever its trigger, and such
@@ -73,6 +80,11 @@ file, and writes the bytes to every declared mirror in this repo.
 
 const TRIGGER_LINE = /\n*Trigger: [a-z_]+(?: \([a-z_-]+\))?$/;
 const BODY_FILE = "canon-sync-pr-body.md";
+const PREVIOUS_FILE = "canon-sync-pr-previous.json";
+// Two versions are enough: the one the action wrote and the one it replaced.
+const EDITS_QUERY =
+  "query($owner: String!, $name: String!, $number: Int!) { repository(owner: $owner, name: $name) " +
+  "{ pullRequest(number: $number) { userContentEdits(first: 2) { nodes { editedAt diff } } } } }";
 
 /** The nine unticked DoD lines of the repository PR template. */
 export function extractDodLines(template) {
@@ -280,10 +292,59 @@ export function prepare({ ghApi, listChanged, localBlob, env, now, dodLines, wri
       runUrl: required(env, "RUN_URL"),
     }),
   );
+  if (expected.includes("updated")) {
+    writeBody(join(required(env, "RUNNER_TEMP"), PREVIOUS_FILE), JSON.stringify({ body: pr.body, updated_at: pr.updated_at }));
+  }
   return { outputs: { ...outputs, body_path: bodyPath }, pr };
 }
 
 const comparableBody = (body) => (body ?? "").replace(/\r\n/g, "\n").trim();
+
+const branchActivity = (ghApi, repo) => JSON.parse(ghApi(`repos/${repo}/activity?ref=refs/heads/${BRANCH}&per_page=${PAGE_SIZE}`));
+
+function refuseReplacedHead(activity, head, previousHead) {
+  const write = activity.find((entry) => entry.after === head);
+  if (!write) throw new Error(`no activity entry for ${head} on ${BRANCH}: cannot prove no push was replaced`);
+  if (write.before !== previousHead) {
+    throw new Error(`the action replaced ${write.before}, not ${previousHead} read by prepare: a push landed in between and is no longer on ${BRANCH}`);
+  }
+}
+
+// To close, the action force-pushes its own commit and only then deletes the branch.
+function refuseDeletedPush(ghApi, repo, previousHead, actionHead) {
+  const activity = branchActivity(ghApi, repo);
+  const [deletion] = activity;
+  if (deletion?.activity_type !== "branch_deletion") throw new Error(`no deletion of ${BRANCH} in its activity: cannot prove no push was deleted`);
+  if (deletion.before === previousHead) return;
+  if (deletion.before !== actionHead) {
+    throw new Error(`the action deleted ${deletion.before}, not ${previousHead} read by prepare: a push landed in between and went with the branch`);
+  }
+  refuseReplacedHead(activity, actionHead, previousHead);
+}
+
+function refuseReplacedBody({ ghApi, repo, number, rendered, previous }) {
+  if (!previous.updated_at) throw new Error("prepare recorded no updated_at: cannot prove no body edit was replaced");
+  const readAt = Date.parse(previous.updated_at);
+  const [owner, name] = repo.split("/");
+  const answer = JSON.parse(ghApi("graphql", { fields: { query: EDITS_QUERY, owner, name, number: Number(number) } }));
+  const edits = answer.data.repository.pullRequest.userContentEdits.nodes;
+  const afterRead = (edit) => !(Date.parse(edit.editedAt) <= readAt);
+  const [newest, replaced] = edits;
+  const history = "; the replaced text stays in the PR edit history";
+
+  // GitHub adds no version when the text does not change.
+  if (comparableBody(rendered) === comparableBody(previous.body)) {
+    if (newest && afterRead(newest)) throw new Error(`PR #${number} body changed after prepare (version of ${newest.editedAt}) though the action rendered the same text${history}`);
+    return;
+  }
+  if (!newest || !afterRead(newest) || comparableBody(newest.diff) !== comparableBody(rendered)) {
+    throw new Error(`PR #${number} history does not show the action's body as the newest version: cannot prove no edit was replaced`);
+  }
+  if (!replaced) throw new Error(`PR #${number} history has no version before the action's: cannot prove no edit was replaced`);
+  if (comparableBody(replaced.diff) !== comparableBody(previous.body)) {
+    throw new Error(`PR #${number} body edited at ${replaced.editedAt} was replaced by the action: it differs from the body prepare read${history}`);
+  }
+}
 
 export function verify({ ghApi, env, readBody }) {
   const operation = env.CPR_OPERATION ?? "";
@@ -291,10 +352,12 @@ export function verify({ ghApi, env, readBody }) {
   if (!expected.includes(operation)) {
     throw new Error(`action reported operation '${operation}', expected ${expected.join(" or ")}`);
   }
-  // closed / none: the announced operation is all there is to check, no PR state was written.
+  const repo = required(env, "GITHUB_REPOSITORY");
+  // A close deletes the branch: the head it took away must be the one prepare read.
+  if (operation === "closed" && env.PREVIOUS_HEAD) refuseDeletedPush(ghApi, repo, env.PREVIOUS_HEAD, env.CPR_HEAD_SHA);
+  // closed / none: no PR state was written.
   if (!WRITING_OPERATIONS.includes(operation)) return { checked: false };
 
-  const repo = required(env, "GITHUB_REPOSITORY");
   const assignee = required(env, "CANON_SYNC_ASSIGNEE");
   const head = required(env, "CPR_HEAD_SHA");
   const number = required(env, "CPR_NUMBER");
@@ -308,13 +371,19 @@ export function verify({ ghApi, env, readBody }) {
   }
   const rendered = readBody(join(required(env, "RUNNER_TEMP"), BODY_FILE));
   if (comparableBody(pr.body) !== comparableBody(rendered)) throw new Error(`PR #${number} body is not the rendered body`);
+  if (operation === "updated") {
+    refuseReplacedHead(branchActivity(ghApi, repo), head, required(env, "PREVIOUS_HEAD"));
+    const previous = JSON.parse(readBody(join(required(env, "RUNNER_TEMP"), PREVIOUS_FILE)));
+    refuseReplacedBody({ ghApi, repo, number, rendered, previous });
+  }
   return { checked: true };
 }
 
 export function createGhApi(token) {
-  return (path, { allowNotFound = false } = {}) => {
+  return (path, { allowNotFound = false, fields = {} } = {}) => {
+    const typedFields = Object.entries(fields).flatMap(([key, value]) => ["-F", `${key}=${value}`]);
     try {
-      return execFileSync("gh", ["api", path], {
+      return execFileSync("gh", ["api", path, ...typedFields], {
         encoding: "utf8",
         stdio: ["ignore", "pipe", "pipe"],
         env: { ...process.env, GH_TOKEN: token },
