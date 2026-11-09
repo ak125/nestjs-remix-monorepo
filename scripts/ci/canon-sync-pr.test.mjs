@@ -101,20 +101,44 @@ test("first pass: opens a PR whose body certifies nothing", () => {
   assert.equal(certified(written[0].body).pass, false);
 });
 
-test("an update records the body and time prepare read, for verify to compare", () => {
-  const github = fakeGitHub({ pr: openPr("text a person wrote", { updated_at: READ_AT }), blobs: { [MIRROR]: "blob-old" } });
-  const { outputs, written } = run({ github });
-  assert.equal(outputs.expected, "updated");
-  const snapshot = written.find(({ path }) => path.endsWith("canon-sync-pr-previous.json"));
-  assert.deepEqual(JSON.parse(snapshot.body), { body: "text a person wrote", updated_at: READ_AT });
-});
-
-test("only an update records a snapshot", () => {
-  const closing = fakeGitHub({ pr: openPr("text", { updated_at: READ_AT }), blobs: { [MIRROR]: "blob-old" } });
-  for (const { written } of [run({ github: closing, syncChanged: [] }), run({ github: fakeGitHub() })]) {
-    assert.equal(written.length, 1);
-    assert.ok(written[0].path.endsWith("canon-sync-pr-body.md"));
+// The action writes the branch and the body with no precondition, so an open PR is never handed to it.
+function refusal(args) {
+  const written = [];
+  let error;
+  try {
+    prepare({
+      ghApi: args.github.ghApi,
+      listChanged: () => args.syncChanged ?? [MIRROR],
+      localBlob: (path) => (args.local ?? { [MIRROR]: "blob-new" })[path] ?? null,
+      env: ENV,
+      now: () => "2026-11-09T03:00:00Z",
+      dodLines: DOD_LINES,
+      writeBody: (path, body) => written.push({ path, body }),
+    });
+  } catch (caught) {
+    error = caught;
   }
+  assert.ok(error, "prepare must stop before the action can write");
+  assert.deepEqual(written, [], "a stopped prepare leaves nothing for the action");
+  return error.message;
+}
+
+for (const [operation, syncChanged, local] of [
+  ["updated", [MIRROR], { [MIRROR]: "blob-new" }],
+  ["closed", [], {}],
+]) {
+  test(`an open PR that would be ${operation} stops before anything is written, and says what a person does`, () => {
+    const github = fakeGitHub({ pr: openPr("text a person wrote", { updated_at: READ_AT }), blobs: { [MIRROR]: "blob-old" } });
+    const message = refusal({ github, syncChanged, local });
+    assert.match(message, new RegExp(`PR #1954 \\(head ${OLD_HEAD}\\) would have to be ${operation}`));
+    assert.match(message, /Nothing was written/);
+    assert.match(message, /Merge or close PR #1954, then re-run/);
+  });
+}
+
+test("no open PR writes only the body the action reads", () => {
+  const { written } = run({ github: fakeGitHub() });
+  assert.deepEqual(written.map(({ path }) => path), ["/runner/tmp/canon-sync-pr-body.md"]);
 });
 
 test("identical repeat: skips, writes nothing, leaves head and body alone", () => {
@@ -289,13 +313,7 @@ test("fails closed before any read on a dispatch from another branch", () => {
 test("head change: legacy evidence is archived whole and stops certifying", () => {
   const legacy = `Review record for ${OLD_HEAD}\n\n${TICKED}\n\nDecision: keep.`;
   assert.equal(certified(legacy).pass, true);
-  const github = fakeGitHub({ pr: openPr(legacy), blobs: { [MIRROR]: "blob-old" } });
-  const { outputs, written } = run({ github });
-  assert.equal(outputs.skip, "false");
-  assert.equal(outputs.expected, "updated");
-  assert.equal(outputs.previous_head, OLD_HEAD);
-
-  const { body } = written[0];
+  const body = renderBody({ ...RENDER, previousBody: legacy, previousHead: OLD_HEAD });
   for (const line of legacy.split("\n").filter(Boolean)) assert.ok(body.includes(`> ${line}`), line);
   assert.match(body, new RegExp(`still on the PR when its head was \`${OLD_HEAD}\`.*may name an earlier head.*does not apply to the current head`));
   const result = certified(body);
@@ -310,7 +328,7 @@ test("a path removed by the sync but still on the PR head counts as a change", (
     files: [MIRROR, stale],
     blobs: { [MIRROR]: "blob-new", [stale]: "blob-stale" },
   });
-  assert.equal(run({ github }).outputs.expected, "updated");
+  assert.match(refusal({ github }), /would have to be updated/);
 });
 
 test("the old path of a rename still on the PR head counts as a change", () => {
@@ -318,7 +336,7 @@ test("the old path of a rename still on the PR head counts as a change", () => {
   const github = fakeGitHub({ pr: openPr("evidence"), blobs: { [MIRROR]: "blob-new", [renamed]: "blob-stale" } });
   const ghApi = (path, options) =>
     path.includes("/files?") ? JSON.stringify([{ filename: MIRROR, previous_filename: renamed }]) : github.ghApi(path, options);
-  assert.equal(run({ github: { ghApi } }).outputs.expected, "updated");
+  assert.match(refusal({ github: { ghApi } }), /would have to be updated/);
 });
 
 test("a change listed on the second page of files counts", () => {
@@ -332,20 +350,18 @@ test("a change listed on the second page of files counts", () => {
     const page = new URLSearchParams(path.split("?")[1]).get("page");
     return JSON.stringify((page === "1" ? many : [last]).map((filename) => ({ filename })));
   };
-  assert.equal(run({ github: { ghApi }, local }).outputs.expected, "updated");
+  assert.match(refusal({ github: { ghApi }, local }), /would have to be updated/);
 });
 
 test("a mirror the sync adds but the PR head lacks counts as a change", () => {
   const added = "workspaces/new/mirror.md";
   const github = fakeGitHub({ pr: openPr("evidence") });
-  const { outputs } = run({ github, syncChanged: [MIRROR, added], local: { [MIRROR]: "blob-new", [added]: "blob-added" } });
-  assert.equal(outputs.expected, "updated");
+  assert.match(refusal({ github, syncChanged: [MIRROR, added], local: { [MIRROR]: "blob-new", [added]: "blob-added" } }), /would have to be updated/);
 });
 
-test("no synced change with an open PR lets the action close it, even on a malformed body", () => {
+test("no synced change with an open PR stops as well, even on a malformed body", () => {
   const github = fakeGitHub({ pr: openPr(`<!-- canon-sync:review:start -->\nbroken`), blobs: { [MIRROR]: "blob-old" } });
-  const { outputs } = run({ github, syncChanged: [], local: {} });
-  assert.deepEqual([outputs.skip, outputs.expected], ["false", "closed"]);
+  assert.match(refusal({ github, syncChanged: [], local: {} }), /would have to be closed/);
 });
 
 test("nothing to do and no PR expects no operation", () => {
@@ -765,10 +781,12 @@ function ghServingOpenPr(contentsFailure) {
 esac`;
 }
 
-test("command line: a mirror GitHub reports absent (404) is a change to apply", (t) => {
-  const { result, output } = cli(t, ghServingOpenPr(failingGh(404, "Not Found").replaceAll("\n", "; ")));
-  assert.equal(result.status, 0, result.stderr);
-  assert.match(readFileSync(output, "utf8"), /^expected=updated$/m);
+test("command line: a mirror GitHub reports absent (404) is a change, and the job stops with no output for the action", (t) => {
+  const { result, output, dir } = cli(t, ghServingOpenPr(failingGh(404, "Not Found").replaceAll("\n", "; ")));
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /::error::canon-sync: PR #1954 .*would have to be updated/);
+  assert.equal(existsSync(output), false);
+  assert.equal(existsSync(join(dir, "canon-sync-pr-body.md")), false);
 });
 
 for (const [status, message] of [[403, "Forbidden"], [502, "Bad Gateway"]]) {
@@ -787,6 +805,15 @@ test("command line: a GitHub failure is a job failure with no output", (t) => {
   assert.match(result.stderr, /::error::canon-sync: gh api .*HTTP 502/);
   assert.equal(existsSync(output), false);
   assert.equal(existsSync(join(dir, "canon-sync-pr-body.md")), false);
+});
+
+test("command line: a prepare that stops has only read GitHub", (t) => {
+  const log = 'echo "$@" >> "$RUNNER_TEMP/gh-calls"\n';
+  const { result, dir } = cli(t, log + ghServingOpenPr(failingGh(404, "Not Found").replaceAll("\n", "; ")));
+  assert.equal(result.status, 1);
+  const calls = readFileSync(join(dir, "gh-calls"), "utf8").trim().split("\n");
+  assert.ok(calls.length >= 3, calls.join("|"));
+  for (const call of calls) assert.doesNotMatch(call, /(^| )(-X|--method|-f|-F|--field|--raw-field|--input)( |=|$)/, call);
 });
 
 function cliVerifyRun(t, served, rendered, { activity = [FORCE_PUSH] } = {}) {
@@ -873,6 +900,8 @@ test("workflow contract: signed, guarded, assigned, schedule unchanged", () => {
   assert.match(check.run, /canon-sync-pr\.mjs verify/);
   assert.equal(check["continue-on-error"], undefined);
   assert.equal(steps[prepareIndex].run, "node scripts/ci/canon-sync-pr.mjs prepare");
+  // A prepare that stops prevents the writes only because GitHub then skips the later steps.
+  assert.equal(steps[prepareIndex]["continue-on-error"], undefined);
   assert.deepEqual(
     Object.fromEntries(Object.entries(check.env).filter(([name]) => name !== "GH_TOKEN")),
     {

@@ -15,19 +15,21 @@
 //     by the first line of the body, "DoD-Head: <40-hex SHA>", read by the same
 //     function as the PR gate (pr-dod-gate.mjs). Citing the SHA elsewhere binds
 //     nothing. Otherwise the job fails and nothing is rewritten;
-//   - otherwise render the body the action will write. Evidence recorded for the
-//     outgoing head moves to a stale archive: kept in full, named as stale, and
-//     blockquoted so pr-dod-gate.mjs cannot read it as a checklist.
-//     No box is ever ticked here.
+//   - open PR that would have to be updated or closed => stop before any write.
+//     The action force-moves the branch and rewrites the body with no precondition,
+//     and GitHub offers none for a PR body, so a push or an edit landing after this
+//     read would be overwritten. A person merges or closes the PR, the next run opens
+//     a new one. Automatic update stays off until the head write is conditional, which
+//     means replacing the action step of the workflow;
+//   - no open PR: render the body the action will write. No box is ever ticked here.
+//     Rendering keeps an archive for a body with evidence: kept in full, named as
+//     stale, and blockquoted so pr-dod-gate.mjs cannot read it as a checklist.
 // `verify` (after the action): the announced operation happened, the new head is
 // verified by GitHub, the PR carries its assignee and the body `prepare` rendered.
-// It then proves that the action replaced what `prepare` read. The action force-moves
-// the branch and rewrites the body with no precondition, and GitHub offers none for a
-// PR body, so a push or an edit landing between `prepare` and the action is overwritten
-// and nothing here can prevent it. `verify` runs after those writes: it fails the run,
-// naming the replaced commit or body version. GitHub keeps the commit by SHA and the
-// body in the PR's edit history; nothing restores them automatically. An interval this
-// check cannot see is treated as a failure (no activity entry, no edit-history entry).
+// For an update or a close, which `prepare` no longer lets through, it also proves that
+// the action replaced what `prepare` read: the run fails naming the replaced commit or
+// body version. That check runs after the writes and restores nothing. An interval it
+// cannot see is treated as a failure (no activity entry, no edit-history entry).
 // The action pushes before it edits the body: when that edit fails, `verify` turns
 // the run red and the PR gate refuses the old certification at its next event that
 // actually runs. This workflow pushes with GITHUB_TOKEN whatever its trigger, and such
@@ -277,6 +279,13 @@ export function prepare({ ghApi, listChanged, localBlob, env, now, dodLines, wri
     const refusals = refusalsOnSkip(pr, verified);
     if (refusals.length > 0) throw new Error(refusals.join(" "));
     return { outputs, pr };
+  }
+  if (pr) {
+    throw new Error(
+      `PR #${pr.number} (head ${pr.head.sha}) would have to be ${expected[0]}, but the action writes with no precondition ` +
+        `and would replace any push or body edit landing after this read. Nothing was written. ` +
+        `Merge or close PR #${pr.number}, then re-run this workflow.`,
+    );
   }
 
   const action = env.EVENT_ACTION ? ` (${env.EVENT_ACTION})` : "";
