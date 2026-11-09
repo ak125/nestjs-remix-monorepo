@@ -108,18 +108,20 @@ test("closure done right → refreshed baseline matches new scan → ok", () => 
   assert.equal(ok, true);
 });
 
-// ── Integration: the committed baseline freezes the remaining debt (18/7) ─────
+// ── Integration: the committed baseline freezes the remaining debt (16/6) ─────
 // R8 no longer reads RAG files as an editorial source. Its last two findings
 // were removed with an explicit same-PR baseline refresh (20/8 → 18/7).
-test("committed baseline totals 18 findings across 7 files without R8", () => {
+// The R1 keyword-plan batch followed: its two RAG reads were removed with an
+// explicit same-PR baseline refresh (18/7 → 16/6).
+test("committed baseline totals 16 findings across 6 files without R8 or the R1 batch", () => {
   const p = join(
     process.cwd(),
     "audit/baselines/rag-authority-read-baseline.json",
   );
   const b = JSON.parse(readFileSync(p, "utf-8")) as Baseline;
   assert.equal(b.rule, "seo-no-rag-as-content-source");
-  assert.equal(b.total, 18);
-  assert.equal(Object.keys(b.files).length, 7);
+  assert.equal(b.total, 16);
+  assert.equal(Object.keys(b.files).length, 6);
   assert.equal(
     Object.hasOwn(
       b.files,
@@ -127,6 +129,14 @@ test("committed baseline totals 18 findings across 7 files without R8", () => {
     ),
     false,
     "R8 must not regain editorial authority from RAG",
+  );
+  assert.equal(
+    Object.hasOwn(
+      b.files,
+      "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
+    ),
+    false,
+    "the R1 keyword-plan batch must not regain editorial authority from RAG",
   );
   assert.equal(
     Object.values(b.files).reduce((a, c) => a + c, 0),
