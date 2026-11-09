@@ -1,0 +1,54 @@
+{
+  "objet": "Blocs prêts à servir APRÈS admission WIKI des faits candidats. Non servis tant que la fiche gamme:filtre-a-huile ne les porte pas, admis par la route ADR-119 (capture RAW, revision_of, auto-review de sens, décision du décideur).",
+  "revision": "révision 4, 31/10/2026",
+  "regle": "Un bloc n'est intégré que si TOUS les faits qu'il cite sont admis. Sinon la version servie de r3.json reste en place. Aucune valeur chiffrée (couple, tours, délai, kilométrage) n'est introduite.",
+  "faits": [
+    { "id": "F-C1", "fait": "Le filtre se remplace à chaque vidange", "sources_internes": "aucune lue", "portee": "par véhicule", "etat": "à rechercher ; ne pas servir (contredit par l'absence d'intervalle universel)" },
+    { "id": "F-C2", "fait": "Un filtre vissé se serre à la main selon les spécifications du constructeur ; l'outil de dépose ne sert pas au serrage (revêtement abîmé, corrosion puis fuite)", "sources_internes": "MAHLE Technical Messenger 09/2022", "portee": "filtres vissés du fabricant cité ; NON universel", "etat": "sourcé, non admis ; contre-exemple relevé le 30/10 : la notice imprimée (en japonais) sur le filtre de la photo uhuTo7u8VXk demande, après contact du joint, 3/4 de tour supplémentaire avec un outil dédié. Avant admission, reformuler en « serrer selon l'instruction du fabricant du filtre », sans interdire l'outil de façon générale." },
+    { "id": "F-C3", "fait": "Retirer l'ancien joint s'il est resté, nettoyer la portée, huiler le joint neuf avec de l'huile moteur propre", "sources_internes": "MAHLE 09/2022 ; WIX 02/2025 ; notice de montage d'un fabricant français et page produit d'un fabricant allemand relues le 30/10 (concordantes)", "portee": "filtres vissés", "etat": "sourcé (4 sources concordantes), non admis" },
+    { "id": "F-C4", "fait": "Le nombre de tours après contact du joint est propre à chaque filtre (instruction imprimée sur le filtre ou sa notice)", "sources_internes": "WIX 02/2025", "portee": "règle générale, sans valeur", "etat": "sourcé, non admis ; contredit la règle « ¾ de tour » servie en R1" },
+    { "id": "F-C5", "fait": "Après montage : faire l'appoint, démarrer, contrôler le niveau (sans dépasser le maximum) et vérifier l'absence de fuite", "sources_internes": "MAHLE 09/2022 ; WIX 02/2025 ; guides de deux distributeurs relus le 30/10", "portee": "tous filtres", "etat": "sourcé, non admis ; claim procedure (validation humaine pour la vidéo)" },
+    { "id": "F-C6", "fait": "Cartouche : couvercle desserré avec un outil (par exemple une douille), puis resserré avec le même outil après remplacement de l'élément", "sources_internes": "MAHLE 09/2022", "portee": "cartouches", "etat": "sourcé, non admis" },
+    { "id": "F-C7", "fait": "Certificat d'immatriculation : D.2 = type, variante, version ; D.2.1 = CNIT ; aucun champ code moteur", "sources_internes": "cerfa 13749*05", "portee": "France", "etat": "sourcé sur le formulaire, à confirmer sur le modèle du certificat ; sert à retirer « case D.2 » de R1 (déjà retiré de la proposition)" },
+    { "id": "F-C8", "fait": "Forme du filtre de la Clio III 1.5 dCi", "sources_internes": "catalogue incohérent (vissé / cartouche selon les pièces)", "portee": "type_id 19052 et 19053, traités séparément", "etat": "données à vérifier par le propriétaire du catalogue ; aucune mention servie" },
+    { "id": "F-C9", "fait": "Remplacement du joint torique de cartouche à chaque échange", "sources_internes": "non lu", "portee": "cartouches", "etat": "à rechercher" },
+    { "id": "F-C10", "fait": "L'huile usagée est un déchet dangereux : la recueillir dans un récipient fermé et étanche, sans la mélanger à d'autres liquides, et la déposer en déchèterie ou en point de collecte", "sources_internes": "ministère de la Transition écologique (filière huiles usagées, REP depuis le 01/01/2022) ; ADEME « Que faire de mes déchets »", "portee": "France", "etat": "sourcé (2 sources publiques), non admis" },
+    { "id": "F-C11", "fait": "Le filtre à huile usagé ne va pas dans les ordures ménagères ; il se dépose en déchèterie ou en point de collecte", "sources_internes": "ADEME ; site de l'éco-organisme agréé de la filière", "portee": "France", "etat": "sourcé, non admis ; vérifier la consigne exacte de l'éco-organisme avant admission" }
+  ],
+  "contredits_a_ne_pas_servir": [
+    "« ¾ de tour » présenté comme universel",
+    "un intervalle unique ou « à chaque vidange »",
+    "symptômes moteur attribués au filtre",
+    "déchèterie présentée comme interdite pour l'huile",
+    "« les professionnels reprennent gratuitement » sans portée",
+    "« 1 litre d'huile pollue 1 million de litres »"
+  ],
+  "blocs": [
+    {
+      "section": "S4_DEPOSE",
+      "requiert": ["F-C2", "F-C3", "F-C6"],
+      "html": "<p>La dépose dépend de la forme du filtre et du moteur : suivez les instructions du constructeur du véhicule et du fabricant du filtre.</p>\n<ol>\n<li>Vérifiez que le filtre neuf est la référence prévue pour votre motorisation.</li>\n<li>Filtre vissé : il peut se déposer avec un outil de dépose. Cartouche : le couvercle du boîtier se desserre avec un outil, par exemple une douille.</li>\n<li>Après la dépose, vérifiez que l'ancien joint n'est pas resté collé sur la portée du filtre. S'il y est, retirez-le.</li>\n<li>Nettoyez la surface d'étanchéité avant de monter le filtre neuf.</li>\n</ol>"
+    },
+    {
+      "section": "S4_REPOSE",
+      "requiert": ["F-C2 (reformulé, voir sa portée)", "F-C3", "F-C4", "F-C6"],
+      "html": "<p>Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté.</p>\n<ol>\n<li>Filtre vissé : huilez le joint neuf avec de l'huile moteur propre.</li>\n<li>Vissez jusqu'au contact du joint, puis serrez selon l'instruction du fabricant du filtre, souvent imprimée sur le filtre ou sur sa notice : le nombre de tours après contact et la façon de serrer sont propres à chaque filtre.</li>\n<li>Un serrage excessif ou un outil inadapté peut abîmer le revêtement du filtre, qui risque alors de rouiller jusqu'à fuir.</li>\n<li>Cartouche : après remplacement de l'élément, resserrez le couvercle avec le même outil.</li>\n</ol>"
+    },
+    {
+      "section": "S5",
+      "requiert": ["F-C2", "F-C3"],
+      "ajout_html": "<li>Serrer un filtre vissé sans suivre l'instruction de son fabricant.</li>\n<li>Laisser l'ancien joint en place sur la portée.</li>"
+    },
+    {
+      "section": "S6",
+      "requiert": ["F-C5", "F-C10", "F-C11"],
+      "html": "<p>Après le remplacement, faites l'appoint d'huile, démarrez le moteur, puis contrôlez le niveau sans dépasser le maximum.</p>\n<ul>\n<li>Vérifiez l'absence de fuite autour du filtre.</li>\n<li>Si le témoin de pression d'huile s'allume, suivez la notice de votre véhicule.</li>\n</ul>\n<p><strong>Huile et filtre usagés.</strong> Recueillez l'huile dans un récipient fermé et étanche, sans la mélanger à d'autres liquides. Déposez-la, avec le filtre usagé, en déchèterie ou en point de collecte : ni l'une ni l'autre ne va dans les ordures ménagères.</p>"
+    },
+    {
+      "section": "S2_DIAG",
+      "requiert": ["F-C3", "F-C4"],
+      "position": "ligne insérée avant « Fuite, bruit, odeur ou vibration, quel que soit le véhicule. »",
+      "ajout_html": "<tr><td>Fuite autour d'un filtre vissé juste après son remplacement.</td><td>Vérifier que l'ancien joint n'est pas resté sur la portée et que le filtre neuf a été serré selon l'instruction de son fabricant.</td></tr>"
+    }
+  ]
+}

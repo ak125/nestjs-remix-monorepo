@@ -44,7 +44,7 @@ V1 = prouver que la chaîne éditoriale Fafa Media Factory tient. Higgsfield est
 4. Invoquer Higgsfield MCP (manuel cette V1) avec modèle choisi
 5. Récupérer asset → upload S3 → manifest JSON
 6. Après rendu, le skill `fafa-brand-safety-reviewer` rejoue les 7 gates sur le dossier de la vidéo ; aucune ne juge l'asset seul
-7. Asset utilisable comme `truth_dependency=illustration` ou `reference` (jamais `proof`), après relecture de l'owner ; G6 ne rend jamais PASS (0 visuel relevé = WARN)
+7. Asset utilisable comme `truth_dependency=illustration` ou `reference` (jamais `proof`), après relecture de l'owner ; G6 ne rend PASS que sur un relevé des visuels sans visuel utilisé comme preuve, et reste non mesuré (WARN, publication fermée) sans relevé
 
 ## Schéma manifest
 

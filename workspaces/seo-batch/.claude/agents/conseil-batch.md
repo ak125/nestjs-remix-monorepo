@@ -41,8 +41,8 @@ polluées, **non-RAG**) restent intacts — ils ne violent pas ADR-031/046. Le s
 
 - **Successeur** : skill **`seo-content-loop`** (boucle gouvernée `RAW → WIKI → consumer`, NO-RAG).
   La vérité contenu vient du **WIKI** (sourcée, lintée, promotion décidée par
-  `_scripts/promotion_decision.py`, ADR-114), **jamais** du RAG. La relecture humaine porte
-  sur les cas renvoyés par le décideur ; une fiche déjà promue qui change de forme exige
+  `_scripts/promotion_decision.py`, ADR-114), **jamais** du RAG. Aucune fiche n'attend de relecture
+  humaine : une fiche bloquée attend une capture ou une correction (ADR-119 D1) ; une fiche déjà promue qui change de forme exige
   la validation owner (ADR-107 D5).
 
 > **Le successeur WIKI→R3 est câblé — activation owner-séquencée :**

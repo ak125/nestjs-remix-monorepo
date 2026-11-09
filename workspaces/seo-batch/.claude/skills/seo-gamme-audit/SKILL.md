@@ -1,626 +1,345 @@
 ---
 name: seo-gamme-audit
-description: "Audit SEO complet gamme/véhicule (report-only) : métriques R1-R8, RAG coverage, scores, maillage, score composite. Mesure + recommande, n'écrit aucun contenu. Use when user wants gamme audit, vehicle SEO audit. CLI: /seo-gamme-audit <pg_alias|vehicle_slug>"
-argument-hint: "<pg_alias ou vehicle_slug> [--batch top20|worst|ready] [--history]"
+description: "Audit SEO gamme ou véhicule en lecture seule : admission WIKI → export → projection → rendu, catalogue et relations par identifiants réels, liens et blocs réellement servis, anti-duplicate existant. Mesure et recommande, n'écrit rien. Use when user wants gamme audit, vehicle SEO audit. CLI: /seo-gamme-audit <pg_alias|pg_id|type:type_id>"
+argument-hint: "<pg_alias | pg_id | type:<type_id>> [--batch gaps|qps-low] [--history]"
 ---
 
-# SEO Audit — Skill v4.0 (gamme + véhicule unifié)
+# SEO Audit — Skill v5.0 (gamme + véhicule, lecture seule)
 
 ## Usage
-- `/seo-gamme-audit filtre-a-huile` — audit complet d'une gamme (R1/R3/R4/R5/R6)
-- `/seo-gamme-audit renault-clio-3` — audit complet d'un véhicule (R8)
-- `/seo-gamme-audit 7` — par pg_id (gamme)
-- `/seo-gamme-audit filtre-a-huile --history` — historique des scores
-- `/seo-gamme-audit --batch top20` — 20 entités (gammes + véhicules) avec le plus de gaps
-- `/seo-gamme-audit --batch worst` — entités avec les pires scores
-- `/seo-gamme-audit --batch ready` — entités prêtes pour publication
+- `/seo-gamme-audit filtre-a-huile` — audit d'une gamme (R1/R2/R3/R4/R5/R6 + R8 liées)
+- `/seo-gamme-audit 7` — même audit par `pg_id`
+- `/seo-gamme-audit type:19052` — audit d'une motorisation (R8 + gammes liées)
+- `/seo-gamme-audit filtre-a-huile --history` — lecture de l'historique legacy (aucune écriture)
+- `/seo-gamme-audit --batch gaps` — 20 gammes éligibles aux chaînes les plus incomplètes
+- `/seo-gamme-audit --batch qps-low` — 20 gammes aux plus faibles scores QPS existants
+
+## Invariants de la méthode
+
+1. **Lecture seule.** Aucun `INSERT`/`UPDATE`/`DELETE`/DDL, aucun appel API qui écrit, aucun
+   flag basculé, aucun trigger sitemap. Le rapport recommande ; la production passe par la
+   boucle `seo-content-loop` et ses validations.
+2. **RAG n'est pas une autorité éditoriale** (ADR-031/046/119). Il ne détecte pas le mode, ne
+   source aucun rôle, n'entre dans aucun score ni statut. La chaîne évaluée est
+   **admission WIKI → export → projection → rendu**.
+3. **Identifiants réels, jamais `page_key`/ILIKE.** Gamme = `__pg_gammes.id` (= `pg_id`) ;
+   véhicule = `auto_type.type_id_i` ; liens gamme↔véhicule = `__cross_gamme_car_new`.
+4. **Servi > stocké.** Les liens, blocs, robots, canonical et JSON-LD se lisent dans le HTML
+   rendu ; un champ DB (ex. `sg_content`) ne prouve pas ce qui est servi.
+5. **Mots, caractères, liens = mesures descriptives.** Ils ne déclenchent aucun statut
+   READY et ne justifient pas de retirer une borne de contrat nécessaire au rendu.
+6. **Absent ≠ zéro ≠ indisponible.** Une mesure impossible s'écrit `non mesuré` avec la
+   raison ; un 5xx/timeout est `INDISPONIBLE`, pas « vide ».
+7. **Champs protégés.** URL, canonical, robots, title, meta description, H1 optimisés : le
+   rapport les décrit, ne propose jamais de les réécrire (STOP SEO indexé, owner-gated).
 
 ## Exécution DB
 
-**TOUTES les requêtes SQL doivent être exécutées via `mcp__claude_ai_Supabase__execute_sql`** avec `project_id: cxpojprgwgubzjyqzmoq`. Ne JAMAIS utiliser psql, pg_dump ou connexion directe.
+- Chemin de lecture existant : MCP `execute_sql` (`project_id: cxpojprgwgubzjyqzmoq`), chaque
+  appel préfixé par `set transaction read only;` puis **un seul SELECT borné** (agrégat ou
+  `LIMIT`). Un refus « read-only transaction » arrête l'audit : la requête écrivait.
+- MCP indisponible (401…) : les étapes DB passent en `non mesuré (accès DB)`. Ne pas
+  improviser d'accès avec les identifiants de `backend/.env`.
+- `statement_timeout` : une requête qui dépasse 20 s est abandonnée et notée `non mesuré
+  (timeout)`, jamais remplacée par une valeur par défaut.
+- Pas de jointure qui multiplie les lignes : une sous-requête scalaire ou un `EXISTS` par
+  table enfant, jamais un `LEFT JOIN` de deux tables 1-n dans le même SELECT.
 
-## Fichiers RAG
-Les fichiers .md sont dans `/opt/automecanik/rag/knowledge/` (gammes/, diagnostic/, guides/).
-Utiliser l'outil `Read` pour lire les fichiers .md et parser le frontmatter YAML.
+### Validation de l'entrée (avant tout SQL)
 
----
+| Entrée | Motif accepté | Résolution |
+|---|---|---|
+| alias gamme | `^[a-z0-9-]{2,80}$` | `select id from __pg_gammes where pg_alias = '<alias>'` |
+| pg_id | `^[0-9]{1,6}$` | `select id, pg_alias from __pg_gammes where id = <n>` |
+| véhicule | `^type:[0-9]{1,6}$` | `select ... from auto_type where type_id_i = <n>` |
 
-## Étape 0 — Détection automatique gamme / véhicule
+Toute autre forme (slug modèle, URL, texte libre) est refusée avec ce tableau. Après
+résolution, **seul l'entier** (`pg_id` ou `type_id`) est réutilisé dans le SQL, comme
+littéral entier ; une valeur lue en base ou dans un fichier (nom, mot-clé, alias) n'est
+jamais réinjectée dans une requête : utiliser une jointure ou une sous-requête.
+`__pg_gammes` (232 gammes G1/G2) a 100 % d'alias conformes au motif ; `pieces_gamme`
+en a 3 451 hors motif, d'où la résolution par la vue.
 
-**Même logique que `/rag-check` et `/kp`** :
-1. Lire `/opt/automecanik/rag/knowledge/gammes/{input}.md` — si existe → **MODE GAMME**
-2. Sinon lire `/opt/automecanik/rag/knowledge/vehicles/{input}.md` — si existe → **MODE VÉHICULE**
-3. Sinon chercher en DB (`pieces_gamme` ou `auto_modele`)
+### Types de clés (cast explicite obligatoire)
 
-**Si MODE GAMME** → suivre "Mode single gamme" ci-dessous
-**Si MODE VÉHICULE** → suivre "Mode single véhicule" (section en bas du fichier)
+| Colonne | Type | Comparaison |
+|---|---|---|
+| `__seo_gamme.sg_pg_id`, `__seo_gamme_conseil.sgc_pg_id`, `__blog_advice.ba_pg_id` | text | `= <pg_id>::text` |
+| `__seo_gamme_purchase_guide.sgpg_pg_id` | varchar | `= <pg_id>::text` |
+| `pieces_gamme.pg_id`, `__seo_reference.pg_id`, `__quality_page_scores.pg_id`, `gamme_aggregates.ga_pg_id`, `__seo_r2_pages.pg_id` | int | `= <pg_id>` |
+| `__cross_gamme_car_new.cgc_pg_id` / `cgc_type_id` | text | `= <pg_id>::text` / `= <type_id>::text` |
+| `__seo_observable.related_gammes` | int4[] | `@> array[<pg_id>]` |
+| `__seo_r8_pages.type_id`, `auto_type.type_id` | text | `= <type_id>::text` |
+| `auto_type.type_id_i` | int (index unique) | `= <type_id>` |
+| `__seo_r2_pages.type_id` | bigint | `= <type_id>` |
 
-**Afficher** : `Mode détecté : GAMME` ou `Mode détecté : VÉHICULE`
+## Rendu servi
 
----
+- Base = instance DEV locale par défaut (lit la même base que PROD, en lecture). Le rapport
+  note la base interrogée et le SHA servi ; PREPROD/PROD seulement sur demande, en GET.
+- URL R1 = `/pieces/{pg_alias}-{pg_id}.html`, **confirmée** par le `<link rel="canonical">`
+  rendu. Les autres URL (R2, R3, R4, R5, R6, R8) se **lisent** dans les `href` rendus ou dans
+  les colonnes `canonical_url` ; aucune n'est construite à la main.
+- Pour chaque page lue : statut HTTP, `meta robots`, canonical, nombre de `<h1>`, types
+  JSON-LD, et décompte des `<a href>` par préfixe de rôle (`/pieces/{gamme}/…` = R2,
+  `/blog-pieces-auto/conseils/` = R3, `/reference-auto/` = R4, `/diagnostic-auto/` = R5,
+  `/blog-pieces-auto/guide-achat/` = R6, `/constructeurs/` = R7/R8).
+- Classement d'une réponse : `200` = servi ; `200` + `noindex` sur R2 = **VIDE** (la route
+  sert la page d'alternatives quand 0 produit) ; `404`/`410` = **ABSENT** ; `5xx` ou timeout
+  = **INDISPONIBLE** ; un lien rendu qui répond 404 = **lien invalide**.
+- Échantillon borné : la page R1, puis au plus 3 liens par rôle trouvés sur R1.
+- JSON-LD : vérifier que chaque `FAQPage`/`ItemList` correspond à un bloc visible (même
+  nombre de questions, même nombre d'items listés) ; un écart est un défaut technique.
 
-## Mode single gamme
+## Mode gamme
 
-### Optimisation des requêtes
-
-**IMPORTANT** : Pour minimiser les appels MCP, regrouper les étapes en 2-3 requêtes combinées :
-- **Requête A** (R1+R6+maillage+leaks+historique) : JOIN `__seo_gamme` + `__seo_gamme_purchase_guide`, colonnes R1 + R6 + ILIKE maillage + leaks en une seule requête
-- **Requête B** (R3+R4+RAG+R2+corpus+QPS) : UNION ALL de sous-requêtes R3, R4, RAG, R2, corpus moyennes, __quality_page_scores
-- **Requête C** (readiness) : `__rag_readiness`
-- **Fichiers RAG** : lire gamme .md + vérifier diagnostic .md en parallèle
-
-### Étape 0 — Résoudre la gamme
+### G0 — Résolution et contexte catalogue
 ```sql
-SELECT pg_id, pg_alias, pg_name, pg_name_url FROM pieces_gamme
-WHERE pg_alias = '{input}' OR pg_id::text = '{input}';
+set transaction read only;
+select g.id as pg_id, g.pg_alias, g.label,
+  pg.pg_level, pg.pg_display, pg.pg_name
+from __pg_gammes g join pieces_gamme pg on pg.pg_id = g.id
+where g.id = <pg_id>;
 ```
-Stocker `pg_id` (int), `pg_alias` (string), `pg_name`.
-
-### Étape 1 — R1 metrics (page gamme router)
 ```sql
-SELECT sg_pg_id, length(sg_content) as r1_chars,
-  array_length(regexp_split_to_array(sg_content, '\s+'), 1) as r1_words,
-  (SELECT count(*) FROM regexp_matches(sg_content, '<h2', 'g')) as r1_sections,
-  (SELECT count(*) FROM regexp_matches(sg_content, '<a\s', 'g')) as r1_links,
-  sg_h1, length(sg_h1) as h1_len, length(sg_title) as title_len, length(sg_descrip) as descrip_len,
-  sg_updated_at as r1_updated
-FROM __seo_gamme WHERE sg_pg_id = '{pg_id}';
+set transaction read only;
+select products_total, vehicles_total, catalog_status, vehicle_coverage, index_policy,
+  computed_at
+from gamme_aggregates where ga_pg_id = <pg_id>;
 ```
+`gamme_aggregates` est le contexte catalogue (pas un compte de produits vendables) ; toujours
+citer `computed_at`. Les prix et stocks ne se lisent pas ici : leur autorité est
+`PiecePriceDataService` (ne jamais re-requêter `pieces_price`), visible dans le rendu R2.
 
-### Étape 2 — R3 metrics (conseils)
+### G1 — Chaîne WIKI → export → projection → rendu
+1. **Admission WIKI** : `wiki/gamme/{pg_alias}.md` sur `main` du dépôt wiki (le checkout
+   local peut être en retard : noter le commit lu). Relever `review_status`, `reviewed_by`,
+   `reviewed_at`, `truth_level`, `exportable.seo`. Admis = `review_status: approved` ET
+   `exportable.seo: true` (ADR-119). Autre valeur = non admis ; fiche absente = ABSENT.
+2. **Export** : `exports/seo/gamme/{pg_alias}.json` au même commit ; relever `content_hash`,
+   `source_wiki_commit`, `roles_allowed`, `schema_version`.
+3. **Projection** (ADR-059/090) :
 ```sql
-SELECT count(*) as r3_sections, sum(length(sgc_content)) as r3_total_chars,
-  sum(array_length(regexp_split_to_array(sgc_content, '\s+'), 1)) as r3_total_words,
-  avg(sgc_quality_score)::int as r3_avg_quality, min(sgc_quality_score) as r3_min_quality,
-  count(*) FILTER (WHERE sgc_quality_score >= 85) as r3_high_sections,
-  (SELECT count(*) FROM regexp_matches(string_agg(sgc_content, ' '), '<a\s', 'g')) as r3_links
-FROM __seo_gamme_conseil WHERE sgc_pg_id = '{pg_id}';
+set transaction read only;
+select f.entity_id, f.active_version_id is not null as fact_active, f.updated_at,
+  (select count(*) from __seo_content_blocks b
+     where b.entity_id = f.entity_id and b.active_version_id is not null) as blocks_active,
+  (select string_agg(distinct b.role, ',') from __seo_content_blocks b
+     where b.entity_id = f.entity_id) as roles,
+  (select count(*) from __seo_projection_conflicts c
+     where c.entity_id = f.entity_id and c.resolved_at is null) as conflicts_open
+from __seo_entity_facts f
+where f.entity_type = 'gamme'
+  and f.slug = (select pg_alias from __pg_gammes where id = <pg_id>);
 ```
-
-### Étape 3 — R4 metrics (référence)
 ```sql
-SELECT id, title, length(definition) as def_chars, length(role_mecanique) as role_meca_chars,
-  length(role_negatif) as role_neg_chars,
-  array_length(composition, 1) as composition_items,
-  array_length(confusions_courantes, 1) as confusion_items,
-  array_length(regles_metier, 1) as regles_items,
-  length(scope_limites) as scope_chars
-FROM __seo_reference WHERE pg_id = {pg_id_int};
+set transaction read only;
+select status, trigger_kind, wiki_commit_sha, entities_written, finished_at
+from __seo_projection_runs order by started_at desc limit 3;
 ```
+4. **Lecture de la projection par le site** : `SEO_PROJECTION_READ_V1` (défaut OFF) et
+   l'allowlist `SEO_PROJECTION_READ_CANARY` (jetons `<ROLE>@gamme:<alias>`, défaut vide).
+   Lire leur présence dans la configuration de l'instance auditée (nom de variable seul,
+   jamais la valeur d'une autre variable). OFF ou jeton absent ⇒ le rendu sert le legacy :
+   la projection est **présente, pas servie**. R1 n'a pas de projection autonome (il compose
+   R3/R4/R6) ; `SEO_PROJECTION_GAMME_ROLES` borne les rôles écrits (défaut R3/R4/R6).
+5. Le rapport place chaque rôle sur un des états : non admis / admis non exporté / exporté
+   non projeté / projeté non servi / servi depuis la projection / servi legacy.
 
-### Étape 4 — R6 metrics (guide d'achat)
+### G2 — R1 (page gamme routeur)
 ```sql
-SELECT sgpg_pg_id, sgpg_gatekeeper_score as r6_score,
-  length(sgpg_intro_role) as intro_len, length(sgpg_risk_explanation) as risk_len,
-  length(sgpg_how_to_choose) as choose_len,
-  sgpg_timing_km, sgpg_timing_years, sgpg_updated_at as r6_updated
-FROM __seo_gamme_purchase_guide WHERE sgpg_pg_id = '{pg_id}';
+set transaction read only;
+select length(sg_content) as content_chars, length(sg_title) as title_len,
+  length(sg_descrip) as descrip_len, length(sg_h1) as h1_len, sg_updated_at
+from __seo_gamme where sg_pg_id = <pg_id>::text;
 ```
+Puis le rendu R1 (§Rendu servi) : statut, robots, canonical, `<h1>` unique, JSON-LD, liens
+par rôle. Les liens de `sg_content` ne sont pas le maillage servi : signaler l'écart
+contenu/rendu, sans conclure lequel corriger.
 
-### Étape 5 — RAG coverage
+### G3 — R2 (pages gamme × véhicule)
+R2 n'est pas « prêt » parce que la gamme a des produits. Mesurer séparément :
 ```sql
-SELECT count(*) as rag_docs,
-  count(*) FILTER (WHERE truth_level = 'L1') as l1,
-  count(*) FILTER (WHERE truth_level = 'L2') as l2,
-  count(*) FILTER (WHERE truth_level = 'L3') as l3,
-  count(*) FILTER (WHERE length(content) < 500) as thin_docs,
-  count(*) FILTER (WHERE business_pool_admissible = true) as admissible,
-  avg(length(content))::int as avg_doc_len,
-  max(updated_at) as newest_doc
-FROM __rag_knowledge WHERE status = 'active' AND gamme_aliases @> ARRAY['{pg_alias}'];
+set transaction read only;
+select count(*) as r2_pages,
+  count(*) filter (where status = 'published') as published,
+  count(distinct decision) as decisions,
+  count(*) filter (where exists (select 1 from __seo_r2_signatures s where s.page_id = p.id)) as with_signature
+from __seo_r2_pages p where p.pg_id = <pg_id>;
 ```
-
-### Étape 6 — R5 diagnostic (symptômes)
-La table `__seo_observable` n'existe pas. Utiliser les sources alternatives :
-
-**6a** — Vérifier si le fichier diagnostic RAG existe :
-```
-Read /opt/automecanik/rag/knowledge/diagnostic/{pg_alias}.md
-```
-Si le fichier existe → `diag_file_exists = true`. Compter les `###` headings dans la section "Symptomes" pour estimer le nombre de symptômes documentés.
-
-**6b** — Compter les symptômes dans le fichier gamme RAG :
-```
-Read /opt/automecanik/rag/knowledge/gammes/{pg_alias}.md
-```
-Parser la section `diagnostic.symptoms[]` du frontmatter. Compter les items avec `id: S*`.
-
-**6c** — Vérifier l'article R3 conseils (contenu réel) :
+- `r2_pages = 0` ⇒ pas de composition R2 v2 ni de `catalog_signature` (ADR-066) : le noter,
+  ce n'est pas un catalogue vide.
+- Servi : au plus 3 liens R2 lus sur R1 ; pour chacun statut, robots, canonical et
+  `ItemList.numberOfItems` (classement VIDE / ABSENT / INDISPONIBLE du §Rendu servi).
+- Compatibilité : nombre de motorisations liées par niveau (contexte, pas un seuil) :
 ```sql
-SELECT ba_id, ba_title, ba_alias, length(ba_content) as content_len
-FROM __blog_advice WHERE ba_pg_id = '{pg_id}' LIMIT 1;
+set transaction read only;
+select cgc_level, count(*) from __cross_gamme_car_new
+where cgc_pg_id = <pg_id>::text group by cgc_level order by cgc_level;
 ```
-Si `content_len` = 0 ou NULL → R3 existe mais vide.
+- Éligibilité R2 v2 : seuil gouverné `THRESHOLD_V1` de `R2EligibilityService`
+  (`r2-eligibility.constants.ts`), non recopié ici.
 
-**Output R5** :
-- `diag_file_exists` : oui/non
-- `rag_symptoms_count` : nombre de S* dans le fichier gamme
-- `r3_content_len` : longueur du contenu R3 (0 = vide)
-
-### Étape 7 — R2 product (produits disponibles)
+### G4 — R3, R4, R5, R6
 ```sql
-SELECT count(*) as product_count,
-  round(avg(pri_vente_ttc_n)::numeric, 2) as avg_price,
-  min(pri_vente_ttc_n) as min_price, max(pri_vente_ttc_n) as max_price
-FROM pieces p
-JOIN pieces_price pp ON pp.pri_piece_id_i = p.piece_id
-WHERE p.piece_ga_id = {pg_id_int} AND pri_vente_ttc_n > 0;
+set transaction read only;
+select count(*) as sections, count(distinct sgc_section_type) as section_types,
+  avg(sgc_quality_score)::int as avg_quality, min(sgc_quality_score) as min_quality,
+  max(sgc_enriched_at) as last_enriched
+from __seo_gamme_conseil where sgc_pg_id = <pg_id>::text;
 ```
-
-### Étape 8 — Maillage inter-rôles (dans sg_content R1)
 ```sql
-SELECT
-  (sg_content ILIKE '%/reference-auto/%')::int as has_link_r4,
-  (sg_content ILIKE '%/diagnostic-auto/%')::int as has_link_r5,
-  (sg_content ILIKE '%/blog-pieces-auto/guide-achat/%')::int as has_link_r6,
-  (sg_content ILIKE '%/blog-pieces-auto/conseils/%' OR sg_content ILIKE '%/blog-pieces-auto/{pg_alias}%')::int as has_link_r3
-FROM __seo_gamme WHERE sg_pg_id = '{pg_id}' AND sg_content IS NOT NULL;
+set transaction read only;
+select id, is_published, length(definition) as def_chars,
+  coalesce(array_length(confusions_courantes, 1), 0) as confusions, updated_at
+from __seo_reference where pg_id = <pg_id>;
 ```
-
-### Étape 9 — Vocabulaire interdit cross-rôle
 ```sql
--- R1 content leaks (exclure les liens <a>)
-SELECT
-  (regexp_replace(sg_content, '<a[^>]*>[^<]*</a>', '', 'g') ILIKE '%symptôme%'
-   OR regexp_replace(sg_content, '<a[^>]*>[^<]*</a>', '', 'g') ILIKE '%symptome%')::int as r1_leak_r5,
-  (regexp_replace(sg_content, '<a[^>]*>[^<]*</a>', '', 'g') ILIKE '%démonter%'
-   OR regexp_replace(sg_content, '<a[^>]*>[^<]*</a>', '', 'g') ILIKE '%demonter%')::int as r1_leak_r3,
-  (regexp_replace(sg_content, '<a[^>]*>[^<]*</a>', '', 'g') ILIKE '%ajouter au panier%')::int as r1_leak_r2
-FROM __seo_gamme WHERE sg_pg_id = '{pg_id}' AND sg_content IS NOT NULL;
+set transaction read only;
+select count(*) as observables, count(*) filter (where is_published) as published
+from __seo_observable where related_gammes @> array[<pg_id>];
 ```
-
-### Étape 10 — Comparaison avec moyennes corpus
 ```sql
-SELECT
-  round(avg(length(sg_content))) as avg_r1_chars,
-  round(avg(array_length(regexp_split_to_array(sg_content, '\s+'), 1))) as avg_r1_words,
-  count(*) as total_gammes_with_r1
-FROM __seo_gamme WHERE sg_content IS NOT NULL AND sg_content != '';
+set transaction read only;
+select sgpg_is_draft, sgpg_gatekeeper_score, sgpg_source_verified,
+  length(sgpg_how_to_choose) as choose_chars, sgpg_updated_at
+from __seo_gamme_purchase_guide where sgpg_pg_id = <pg_id>::text;
 ```
+Valider les noms de colonnes contre `information_schema.columns` avant le premier appel ;
+une colonne absente = `non mesuré (schéma)`, jamais une colonne voisine supposée.
+R5 est servi seulement si le rendu R1/R3 porte un lien `/diagnostic-auto/` qui répond 200.
 
-### Étape 11 — Readiness RAG (si table __rag_readiness existe)
+**R6 et `SEO_R6_CONSOLIDATION_ENABLED`** (lu, jamais basculé ; défaut false,
+`r6-guide-link-policy.service.ts`, ADR-103 D5) : flag OFF ⇒ lien
+`/blog-pieces-auto/guide-achat/{alias}` rendu seulement si le guide est publié ; flag ON ⇒
+aucun lien guide, l'intention est servie par l'article R3. Un lien guide absent sous flag ON
+n'est pas un défaut ; un lien guide présent vers un guide brouillon en est un.
+
+### G5 — R7 et R8
+- R7 est un hub marque **transversal** : hors périmètre d'un audit gamme (aucun filtre
+  gamme dans `__seo_r7_pages`). Ne pas reporter un total R7 global comme une mesure gamme.
+- R8 liées à la gamme, par semi-jointure sur les identifiants :
 ```sql
-SELECT canonical_role, readiness_status, role_score, usage_level
-FROM __rag_readiness WHERE pg_alias = '{pg_alias}'
-ORDER BY canonical_role;
+set transaction read only;
+select r.type_id, r.page_key, r.seo_decision, r.canonical_url, r.diversity_score
+from __seo_r8_pages r
+where exists (select 1 from __cross_gamme_car_new c
+              where c.cgc_pg_id = <pg_id>::text and c.cgc_type_id = r.type_id)
+order by r.type_id limit 50;
 ```
+- Deux lignes pour un même `type_id` ou une même `canonical_url` = **incohérence à
+  signaler**, jamais à trancher par déduction (choix owner).
+- R8 reste une page véhicule : le rapport ne recommande jamais d'y ajouter un listing
+  transactionnel.
 
-### Étape 7b — R7 brand coverage
+### G6 — Anti-duplicate (réutiliser l'existant)
+| Surface | Outil existant | Si indisponible |
+|---|---|---|
+| title / H1 / meta entre pages sœurs | `SeoBaliseCollisionGate` + `SeoFingerprintCore` (ADR-095 : HARD = collision exacte title/H1 sur pages indexables ; near-dup = `CALIBRATION_PENDING`) | `non mesuré` |
+| R2 | `__seo_r2_signatures.catalog_signature`, `__seo_r2_metrics` | `non mesuré` si `r2_pages = 0` |
+| R8 motorisations sœurs | skill `r8-diversity-check`, `__seo_r8_pages.diversity_score` | `non mesuré` |
+| R3 vs R6 (consolidation) | `scripts/seo/seo-r3-consolidation-evidence.ts` (lecture, GSC ; Jaccard lexical = signal faible) | `OBSERVE` sans GSC |
+
+Une comparaison « 100 premiers caractères » n'est pas une mesure de duplication.
+
+### G7 — Qualité existante et fraîcheur
 ```sql
-SELECT
-  count(*) FILTER (WHERE seo_decision = 'PUBLISH') AS r7_published,
-  count(*) AS r7_total,
-  avg(diversity_score)::numeric(5,2) AS r7_avg_score
-FROM __seo_r7_pages;
+set transaction read only;
+select page_type, quality_score, hard_gate_status, status, score_version, computed_at
+from __quality_page_scores where pg_id = <pg_id> order by page_type;
 ```
-Si `r7_published = 0` → "R7 brand pages: aucune publication active". Sinon, reporter `r7_total` + `r7_published` + `r7_avg_score`. R7 est désormais branché dans `ExecutionRouter` (rôle dispatché comme R1-R8).
+Reporter les scores QPS **tels quels avec `computed_at`** ; aucun recalcul de repli, aucune
+moyenne pondérée. Fraîcheur par rôle = date de mise à jour de la source servie (G2/G4).
 
-### Étape 7c — R8 vehicle pages
+## Mode véhicule (`type:<type_id>`)
 ```sql
-SELECT count(*) as r8_pages,
-  count(DISTINCT brand) as r8_brands,
-  count(DISTINCT model) as r8_models
-FROM __seo_r8_pages
-WHERE page_key ILIKE '%{pg_alias}%' OR page_key ILIKE '%{pg_name}%';
+set transaction read only;
+select type_id_i, type_name, type_modele_id, type_marque_id, type_display
+from auto_type where type_id_i = <type_id>;
 ```
-Si 0 → "R8 aucune page véhicule pour cette gamme".
+- Plage `60000-83456` = types remappés noindex : le signaler, ne pas les mélanger aux legacy.
+- Page R8 : `select page_key, seo_decision, canonical_url, robots_directive, diversity_score,
+  sitemap_included from __seo_r8_pages where type_id = <type_id>::text limit 5;`
+  (plusieurs lignes = incohérence à signaler).
+- Gammes liées : `select cgc_level, count(*) from __cross_gamme_car_new where cgc_type_id =
+  <type_id>::text group by cgc_level order by cgc_level;`
+- Rendu : la `canonical_url` R8 en GET (§Rendu servi) ; diversité via `r8-diversity-check`.
 
-### Étape 14 — Keyword coverage (depuis RAG gamme .md)
-1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`, extraire `seo_cluster.primary_keyword.text`
-2. Vérifier la présence du keyword dans :
-```sql
-SELECT
-  (sg_h1 ILIKE '%{keyword}%')::int as keyword_in_h1,
-  (sg_title ILIKE '%{keyword}%')::int as keyword_in_title,
-  (sg_descrip ILIKE '%{keyword}%')::int as keyword_in_descrip,
-  (sg_content ILIKE '%{keyword}%')::int as keyword_in_content
-FROM __seo_gamme WHERE sg_pg_id = '{pg_id}';
-```
-**Seuils** : keyword doit être dans h1 + title + content (minimum 3/4). Si < 3/4 → ⚠️ WARN.
+## Statuts du rapport — quatre axes séparés
 
-### Étape 15 — Duplication inter-rôles
-Détecter le texte copié entre surfaces. Comparer les 50 premiers mots de sg_content (R1) avec :
-- `sgpg_intro_role` (R6) — s'il y a >80% de similarité → duplication R1/R6
-- `ba_preview` (R3) — s'il y a >80% de similarité → duplication R1/R3
+Chaque rôle reçoit un état par axe ; aucun axe ne compense un autre, aucun score composite.
 
-Méthode simple : extraire les 100 premiers caractères de chaque surface et comparer manuellement.
-```sql
-SELECT
-  left(sg.sg_content, 200) as r1_start,
-  left(sgpg.sgpg_intro_role, 200) as r6_start,
-  left(ba.ba_preview, 200) as r3_start
-FROM __seo_gamme sg
-LEFT JOIN __seo_gamme_purchase_guide sgpg ON sgpg.sgpg_pg_id = sg.sg_pg_id
-LEFT JOIN __blog_advice ba ON ba.ba_pg_id = sg.sg_pg_id
-WHERE sg.sg_pg_id = '{pg_id}';
-```
-Si les débuts sont quasi-identiques → signaler "⚠️ Duplication détectée R1/R{X}".
+| Axe | Source | États |
+|---|---|---|
+| Factuel | admission WIKI + export + projection (G1) | admis / non admis / absent |
+| Éditorial | QPS existant, gatekeeper R6, `sgc_quality_score` (G4, G7) | conforme / à revoir / non mesuré |
+| Technique | rendu servi : statut, robots, canonical, H1, JSON-LD, liens (§Rendu servi) | conforme / défaut / VIDE / ABSENT / INDISPONIBLE |
+| Performance observée | GSC/GA4 via leurs outils isolés, période citée | mesuré / non mesuré |
 
----
-
-## Seuils de qualité
-
-| Rôle | Critère | Seuil READY | Seuil WARNING |
-|------|---------|-------------|---------------|
-| R1 | chars | >500 | 300-500 |
-| R1 | words | 80-150 | <80 |
-| R1 | sections H2 | ≥3 | 1-2 |
-| R1 | liens internes | ≥3 | 1-2 |
-| R1 | h1_len | ≤70 | >70 |
-| R1 | title_len | ≤60 | >60 |
-| R1 | descrip_len | 120-155 | <120 ou >160 |
-| R3 | sections | ≥8 | 4-7 |
-| R3 | avg_quality | ≥80 | 60-79 |
-| R3 | total_chars | >5000 | 2000-5000 |
-| R3 | total_words | >700 | 300-700 |
-| R4 | def_chars | >800 | 200-800 |
-| R4 | composition | ≥3 | 1-2 |
-| R4 | confusions | ≥3 | 1-2 |
-| R4 | role_meca | >200 | <200 |
-| R4 | regles_metier | ≥3 | 1-2 |
-| R6 | choose_len | >1000 | 200-1000 |
-| R6 | r6_score | ≥70 | 50-69 |
-| R2 | product_count | >10 | 1-10 |
-| R5 | observables | ≥3 | 1-2 |
-| RAG | docs admissibles | ≥3 | 1-2 |
-| RAG | thin_docs | =0 | >0 |
-
----
+Pas de donnée GSC inventée : sans accès, l'axe performance est `non mesuré`. Un classement
+(« rank #1 ») n'est ni garanti ni un critère de statut.
 
 ## Output — Mode single
 
-Produire un rapport structuré avec :
-
-### 1. En-tête
-```
-## Audit SEO — {pg_name} (pg_id={pg_id}, alias={pg_alias})
-Date : {date}
-```
-
-### 2. Tableau par rôle
-| Rôle | Status | Score/Détail | Dernière MAJ |
-|------|--------|-------------|--------------|
-
-Status = ✅ READY / ⚠️ NEEDS_WORK / ❌ MISSING / 🔒 BLOCKED
-
-### 3. Métriques détaillées par rôle
-Pour chaque rôle existant, afficher le détail des métriques vs seuils.
-
-### 4. Maillage inter-rôles
-| Lien | Présent | Status |
-|------|---------|--------|
-| R1 → R4 (référence) | oui/non | ✅/❌ |
-| R1 → R5 (diagnostic) | oui/non | ✅/❌ |
-| R1 → R3 (conseils) | oui/non | ✅/❌ |
-| R1 → R6 (guide achat) | oui/non | ✅/❌ |
-
-### 5. Vocabulaire interdit (fuites cross-rôle)
-| Fuite | Détectée | Sévérité |
-|-------|----------|----------|
-| R5→R1 (symptôme) | oui/non | BLOCK/OK |
-| R3→R1 (démonter) | oui/non | BLOCK/OK |
-| R2→R1 (panier) | oui/non | BLOCK/OK |
-
-### 6. Quality Page Scores (si disponibles)
-| Page type | Score | Gate | Status |
-|-----------|-------|------|--------|
-Afficher les scores de `__quality_page_scores` pour ce pg_id. Si aucun score → "Aucun score QPS — lancer compute-quality-scores".
-
-### 7. R8 vehicle pages
-| Métrique | Valeur |
-|----------|--------|
-| Pages R8 | {count} |
-| Marques | {brands} |
-| Modèles | {models} |
-Si 0 → "Aucune page véhicule R8 pour cette gamme".
-
-### 8. Keyword coverage
-| Cible | h1 | title | descrip | content |
-|-------|-----|-------|---------|---------|
-| {keyword} | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
-
-Score : {N}/4 — si < 3 → ⚠️ WARN
-
-### 9. Duplication inter-rôles
-| Paire | Détectée | Sévérité |
-|-------|----------|----------|
-| R1/R6 | oui/non | WARN/OK |
-| R1/R3 | oui/non | WARN/OK |
-
-### 10. Comparaison corpus
-| Métrique | Cette gamme | Moyenne corpus | Delta |
-|----------|------------|---------------|-------|
-| R1 chars | X | Y | +/-Z% |
-| R1 words | X | Y | +/-Z% |
-
-### 7. Actions recommandées (auto-générées)
-
-Générer automatiquement les actions selon les gaps :
-
-- Si RAG docs = 0 → "🔴 Ingérer 2-3 URLs constructeur/technique pour cette gamme"
-- Si RAG thin_docs > 0 → "🟡 {N} docs RAG trop courtes (<500c) — enrichir ou supprimer"
-- Si R1 manquant → "🔴 Lancer force-enrich pour générer le contenu R1"
-- Si R3 sections < 8 → "🟡 Enrichir les sections conseils (actuellement {N}/8)"
-- Si R4 confusions < 3 → "🟡 Ajouter {3-N} confusions courantes dans la référence"
-- Si R4 def_chars < 200 → "🔴 Définition R4 trop courte ({N}c) — enrichir"
-- Si R6 score null → "🟡 Lancer force-enrich pour scorer le guide d'achat"
-- Si R6 choose_len < 1000 → "🟡 Guide d'achat trop court — enrichir how_to_choose"
-- Si R5 observables = 0 → "🟡 Aucun symptôme documenté — ajouter via ingestion diagnostic"
-- Si R2 products = 0 → "⚠️ Aucun produit référencé pour cette gamme"
-- Si maillage R1→R4 absent → "🟡 Ajouter lien vers /reference-auto/{alias} dans sg_content"
-- Si leak R5→R1 → "🔴 Vocabulaire diagnostic détecté dans R1 — refresh requis"
-- Si R1 updated > 90j → "🟡 Contenu R1 stale (>{days}j) — planifier refresh"
-
-### 8. Export JSON (en fin de rapport)
-
-```json
-{
-  "pg_id": 7,
-  "pg_alias": "filtre-a-huile",
-  "audit_date": "2026-03-15",
-  "roles": {
-    "R1": { "status": "READY", "chars": 1061, "words": 129, "sections": 3, "links": 3, "updated": "..." },
-    "R3": { "status": "READY", "sections": 10, "total_chars": 10588, "avg_quality": 90 },
-    "R4": { "status": "NEEDS_WORK", "def_chars": 1550, "confusions": 2 },
-    "R6": { "status": "NEEDS_WORK", "score": null, "choose_len": 14014 },
-    "R5": { "status": "MISSING", "observables": 0 },
-    "R2": { "status": "READY", "products": 245, "avg_price": 12.50 }
-  },
-  "rag": { "docs": 9, "admissible": 8, "thin": 1, "l1": 0, "l2": 9 },
-  "maillage": { "r1_to_r4": true, "r1_to_r5": false, "r1_to_r3": true, "r1_to_r6": true },
-  "leaks": { "r5_to_r1": false, "r3_to_r1": false, "r2_to_r1": false },
-  "actions": ["..."],
-  "overall_readiness": "NEEDS_WORK"
-}
-```
-
----
+1. En-tête : entité, identifiant, date, base interrogée, SHA servi, commit wiki lu.
+2. Tableau rôle × axes (Factuel / Éditorial / Technique / Performance).
+3. Chaîne G1 rôle par rôle (état de la chaîne, flags de lecture lus).
+4. Catalogue et compatibilité (G0, G3) avec `computed_at`.
+5. Liens rendus par rôle (R1 → R3/R4/R5/R6/R2/R8) et liens invalides.
+6. Anti-duplicate (G6) : verdict de l'outil existant ou `non mesuré`.
+7. Incohérences à signaler (ex. doublons R8) — sans décision.
+8. Recommandations : chacune nomme l'axe, la preuve et le circuit (boucle `seo-content-loop`
+   pour le contenu ; owner pour URL/meta/H1/robots/canonical ou décision catalogue).
+9. Couverture : étapes mesurées / `non mesuré` avec la raison.
 
 ## Mode batch
 
-### Étape 0b — Charger les gammes actives du catalogue
-
-**IMPORTANT** : Les gammes actives sont celles retournées par l'API catalog families (221 gammes), PAS les 9682 entrées de `pieces_gamme`.
-
-```bash
-# Extraire les pg_id actifs
-curl -s http://localhost:3000/api/catalog/families | jq '[.families[].gammes[].pg_id] | unique | join(",")' -r
-```
-
-Stocker la liste de pg_ids pour filtrer toutes les requêtes batch.
-Si l'API n'est pas disponible, utiliser le filtre SQL : `WHERE pg.pg_id IN (SELECT DISTINCT sg_pg_id::int FROM __seo_gamme WHERE sg_content IS NOT NULL)` comme fallback.
-
-### `--batch top20` — Gammes actives avec le plus de gaps
+Population = `__pg_gammes` (232 gammes G1/G2). Une requête agrégée bornée, sans sous-requête
+sur `pieces`/`pieces_price` :
 ```sql
-SELECT pg.pg_alias, pg.pg_id,
-  CASE WHEN sg.sg_content IS NOT NULL AND sg.sg_content != '' THEN 1 ELSE 0 END as has_r1,
-  (SELECT count(*) FROM __seo_gamme_conseil sgc WHERE sgc.sgc_pg_id = pg.pg_id::text AND sgc.sgc_content IS NOT NULL) as r3_sections,
-  CASE WHEN EXISTS (SELECT 1 FROM __seo_reference r WHERE r.pg_id = pg.pg_id) THEN 1 ELSE 0 END as has_r4,
-  (SELECT count(*) FROM __rag_knowledge rk WHERE rk.gamme_aliases @> ARRAY[pg.pg_alias] AND rk.status = 'active') as rag_docs,
-  (SELECT count(*) FROM pieces p WHERE p.piece_ga_id = pg.pg_id) as products
-FROM pieces_gamme pg
-LEFT JOIN __seo_gamme sg ON sg.sg_pg_id = pg.pg_id::text
-WHERE pg.pg_id IN ({active_pg_ids})
-ORDER BY rag_docs ASC, has_r1 ASC, r3_sections ASC
-LIMIT 20;
+set transaction read only;
+select g.id as pg_id, g.pg_alias,
+  exists (select 1 from __seo_entity_facts f where f.entity_type = 'gamme' and f.slug = g.pg_alias and f.active_version_id is not null) as projected,
+  exists (select 1 from __seo_gamme sg where sg.sg_pg_id = g.id::text and sg.sg_content <> '') as has_r1,
+  (select count(*) from __seo_gamme_conseil c where c.sgc_pg_id = g.id::text) as r3_sections,
+  exists (select 1 from __seo_reference r where r.pg_id = g.id) as has_r4,
+  exists (select 1 from __seo_gamme_purchase_guide p where p.sgpg_pg_id = g.id::text) as has_r6,
+  (select ga.catalog_status from gamme_aggregates ga where ga.ga_pg_id = g.id) as catalog_status
+from __pg_gammes g
+order by projected, has_r1, r3_sections
+limit 20;
 ```
-
-### `--batch worst` — Gammes actives avec les pires scores R3
-```sql
-SELECT pg.pg_alias, pg.pg_id,
-  min(sgc.sgc_quality_score) as worst_r3_score,
-  count(sgc.*) as r3_sections,
-  (SELECT count(*) FROM __rag_knowledge rk WHERE rk.gamme_aliases @> ARRAY[pg.pg_alias] AND rk.status = 'active') as rag_docs
-FROM pieces_gamme pg
-JOIN __seo_gamme_conseil sgc ON sgc.sgc_pg_id = pg.pg_id::text
-WHERE sgc.sgc_quality_score IS NOT NULL AND pg.pg_id IN ({active_pg_ids})
-GROUP BY pg.pg_alias, pg.pg_id
-ORDER BY worst_r3_score ASC
-LIMIT 20;
-```
-
-### `--batch ready` — Gammes actives prêtes pour publication
-```sql
-SELECT pg.pg_alias, pg.pg_id,
-  length(sg.sg_content) as r1_chars,
-  (SELECT count(*) FROM __seo_gamme_conseil sgc WHERE sgc.sgc_pg_id = pg.pg_id::text AND sgc.sgc_content IS NOT NULL) as r3_sections,
-  (SELECT avg(sgc.sgc_quality_score) FROM __seo_gamme_conseil sgc WHERE sgc.sgc_pg_id = pg.pg_id::text) as r3_avg_quality,
-  CASE WHEN EXISTS (SELECT 1 FROM __seo_reference r WHERE r.pg_id = pg.pg_id AND length(r.definition) > 200) THEN 1 ELSE 0 END as r4_ready,
-  (SELECT count(*) FROM __rag_knowledge rk WHERE rk.gamme_aliases @> ARRAY[pg.pg_alias] AND rk.status = 'active') as rag_docs
-FROM pieces_gamme pg
-JOIN __seo_gamme sg ON sg.sg_pg_id = pg.pg_id::text
-WHERE sg.sg_content IS NOT NULL AND length(sg.sg_content) > 500 AND pg.pg_id IN ({active_pg_ids})
-ORDER BY r3_sections DESC, rag_docs DESC
-LIMIT 20;
-```
-
-### Output batch
-Tableau compact :
-| # | Gamme | R1 | R3 | R4 | R6 | RAG | Produits | Priorité |
-|---|-------|----|----|----|----|-----|----------|----------|
-
----
-
-## Étape 12 — Historique & tendance (fraîcheur par rôle)
-
-```sql
-SELECT
-  sg.sg_updated_at as r1_updated,
-  extract(day from now() - sg.sg_updated_at)::int as r1_age_days,
-  (SELECT max(sgc_created_at) FROM __seo_gamme_conseil WHERE sgc_pg_id = '{pg_id}') as r3_last_update,
-  extract(day from now() - (SELECT max(sgc_created_at) FROM __seo_gamme_conseil WHERE sgc_pg_id = '{pg_id}'))::int as r3_age_days,
-  sgpg.sgpg_updated_at as r6_updated,
-  extract(day from now() - sgpg.sgpg_updated_at)::int as r6_age_days
-FROM __seo_gamme sg
-LEFT JOIN __seo_gamme_purchase_guide sgpg ON sgpg.sgpg_pg_id = sg.sg_pg_id
-WHERE sg.sg_pg_id = '{pg_id}';
-```
-
-### Output historique
-| Rôle | Dernière MAJ | Âge (jours) | Tendance |
-|------|-------------|-------------|----------|
-
-Tendance :
-- 🟢 frais (<30j)
-- 🟡 vieillissant (30-90j)
-- 🔴 stale (>90j)
-- ⚫ jamais rafraîchi
-
----
-
-## Étape 2b — R3 détail par section
-
-```sql
-SELECT sgc_id, sgc_section_key, sgc_heading,
-  length(sgc_content) as chars,
-  array_length(regexp_split_to_array(sgc_content, '\s+'), 1) as words,
-  sgc_quality_score as quality,
-  (SELECT count(*) FROM regexp_matches(sgc_content, '<a\s', 'g')) as links
-FROM __seo_gamme_conseil WHERE sgc_pg_id = '{pg_id}'
-ORDER BY sgc_id;
-```
-
-### Output détail R3
-| # | Section | Chars | Mots | Score | Liens | Status |
-|---|---------|-------|------|-------|-------|--------|
-
-Status par section :
-- ✅ si score ≥ 85 ET chars > 300
-- ⚠️ si score < 85 OU chars < 300
-- ❌ si score < 60
-
----
-
-## Score composite (0-100)
-
-Calculer un score unique par gamme pour classer les gammes entre elles.
-
-### Formule de pondération
-
-```
-score_composite = R1_score * 0.20 + R3_score * 0.25 + R4_score * 0.15 + R6_score * 0.20 + RAG_score * 0.20
-```
-
-### Calcul par rôle — Préférer __quality_page_scores (QPS)
-
-Vérifier d'abord si des scores QPS existent pour cette gamme :
-```sql
-SELECT page_type, quality_score FROM __quality_page_scores WHERE pg_id = {pg_id};
-```
-
-**R1_score** (sur 100) :
-- Si QPS `R1_pieces` existe → utiliser `quality_score` directement
-- Sinon fallback manuel : (chars > 500) +30, (words >= 80) +20, (sections >= 3) +20, (links >= 3) +15, (h1_len <= 70) +15
-- Si R1 absent → 0
-
-**R3_score** (sur 100) :
-- Si QPS `R3_conseils` existe → utiliser `quality_score`
-- Sinon si `sgc_quality_score` dispo → utiliser `avg_quality`
-- Sinon → `(sections / 8) * 50 + min(total_chars / 5000, 1) * 50`
-- Si R3 absent → 0
-
-**R4_score** (sur 100) :
-- Si QPS `R4_reference` existe → utiliser `quality_score`
-- Sinon fallback : (def_chars > 200) +30, (composition >= 3) +20, (confusions >= 3) +20, (regles_metier >= 3) +20, (scope_chars > 0) +10
-- Si R4 absent → 0
-
-**R6_score** (sur 100) :
-- Si QPS `R3_guide` existe → utiliser `quality_score` (note: R6 guide achat = R3_guide dans QPS)
-- Sinon si `gatekeeper_score` dispo → utiliser directement
-- Sinon → `(choose_len > 1000) * 50 + (intro_len > 100) * 25 + (risk_len > 100) * 25`
-- Si R6 absent → 0
-
-**RAG_score** (sur 100) :
-- `min(admissible / 3, 1) * 50 + (thin_docs == 0) * 25 + (l1_docs > 0 OR l2_docs >= 3) * 25`
-- Note : L2 est considéré haute confiance (même tier que L1 dans le code)
-- Si 0 docs → 0
-
-### Output
-```
-### Score composite : {score}/100
-   R1={r1_score} R3={r3_score} R4={r4_score} R6={r6_score} RAG={rag_score}
-```
-
-Ajouter dans le JSON export : `"composite_score": 72`
-
----
-
-## overall_readiness
-
-Calculer automatiquement :
-- **READY** : composite_score ≥ 70 ET R1 + R3 + R4 + RAG tous présents
-- **NEEDS_WORK** : composite_score 40-69 OU au moins 1 rôle existant mais sous les seuils
-- **MISSING** : R1 ou R3 absent ET composite_score < 40
-- **BLOCKED** : 0 RAG docs + 0 contenu
-
----
-
-## Étape 13 — Auto-fix RETIRÉ (report-only)
-
-> 🚫 Le mode `--fix` (écriture automatique RAG→SEO indexé) a été **retiré**. Il lisait
-> `rag/knowledge/gammes/*.md` puis écrivait dans le SEO indexé — `__seo_gamme.sg_descrip`
-> (meta description), `__seo_reference.role_mecanique` / `risk_explanation`,
-> `__seo_gamme_conseil` — et concaténait du **filler** (`' Pièces vérifiées et
-> compatibilité garantie.'`). C'est la direction **RAG→source-de-contenu interdite**
-> (ADR-031/046 ; invariants #4 « RAG = chatbot only » et #6 « NEVER filler SEO / no-touch
-> meta »).
->
-> Cet audit est désormais **report-only** : il **mesure** et **recommande** des actions,
-> il n'**écrit jamais** de contenu ni de meta. Pour produire ou corriger du contenu,
-> passer par la **boucle gouvernée** `RAW → WIKI → consumer` — skill **`seo-content-loop`**
-> (NO-RAG). Toute correction de meta/H1 optimisés reste **owner-gated** (STOP SEO indexé).
-
----
-
-## Étape 16 — Stocker l'audit en DB
-
-Après chaque audit, sauvegarder le résultat (report-only : `fixes_applied` = 0, colonne conservée pour compat schéma) :
-```sql
-INSERT INTO __seo_audit_history (pg_id, pg_alias, audit_date, composite_score, r1_score, r3_score, r4_score, r6_score, rag_score, overall_readiness, fixes_applied, skill_version)
-VALUES ({pg_id}, '{pg_alias}', now(), {composite_score}, {r1_score}, {r3_score}, {r4_score}, {r6_score}, {rag_score}, '{overall_readiness}', 0, 'v3.3')
-ON CONFLICT DO NOTHING;
-```
-
-Si la table n'existe pas, la créer :
-```sql
-CREATE TABLE IF NOT EXISTS __seo_audit_history (
-  id SERIAL PRIMARY KEY,
-  pg_id INTEGER NOT NULL,
-  pg_alias TEXT NOT NULL,
-  audit_date TIMESTAMPTZ DEFAULT now(),
-  composite_score INTEGER,
-  r1_score INTEGER,
-  r3_score INTEGER,
-  r4_score INTEGER,
-  r6_score INTEGER,
-  rag_score INTEGER,
-  overall_readiness TEXT,
-  fixes_applied INTEGER DEFAULT 0,
-  skill_version TEXT DEFAULT 'v3.3'
-);
-```
-
----
+`--batch qps-low` : même population, tri sur `min(quality_score)` de `__quality_page_scores`
+avec `computed_at`, `limit 20`. Le batch liste des candidats ; il ne lit pas le rendu de
+chaque gamme (lancer le mode single sur la gamme retenue).
 
 ## Mode --history
 
-Si `--history` est passé, afficher l'historique des scores au lieu de l'audit complet :
-```sql
-SELECT audit_date, composite_score, r1_score, r3_score, r4_score, r6_score, rag_score, overall_readiness, fixes_applied, skill_version
-FROM __seo_audit_history
-WHERE pg_alias = '{pg_alias}'
-ORDER BY audit_date DESC
-LIMIT 10;
-```
+Lecture seule de `__seo_audit_history` (`where pg_id = <pg_id> order by audit_date desc
+limit 10`). Ces lignes viennent de la méthode v3 (score composite avec RAG) : elles ne sont
+pas comparables à un audit v5. Cette skill n'écrit pas d'historique ; un besoin de suivi
+passe par un owner de données, pas par un `INSERT` depuis l'audit.
 
-### Output --history
-```
-## Historique SEO — {pg_name} ({pg_alias})
+## Preuve pilote — filtre à huile (`pg_id 7`), 2026-10-31
 
-| Date | Score | R1 | R3 | R4 | R6 | RAG | Readiness | Fixes | Version |
-|------|-------|----|----|----|----|-----|-----------|-------|---------|
-| 2026-03-15 | 95 | 100 | 91 | 100 | 88 | 100 | READY | 0 | v3.3 |
-| 2026-03-14 | 79 | 85 | 91 | 60 | 70 | 75 | NEEDS_WORK | 5 | v3.0 |
+Mesures en lecture seule, base partagée, rendu DEV sur `main` `2a49166e2`.
 
-Tendance : ↗️ +16 pts sur 1 jour
-```
+| Constat | Mesure | Ce que la méthode v4 disait |
+|---|---|---|
+| Résolution | `__pg_gammes.id = 7`, `filtre-a-huile` | idem |
+| WIKI | fiche approuvée (`skill:promoter`, 2026-09-30), `exportable.seo: true`, lue sur wiki `main` `6c82c5c4d` ; checkout local en retard | RAG = source |
+| Projection | 1 fait actif depuis 2026-10-05, 12 blocs actifs R3/R4/R6, 0 conflit ouvert ; dernier run cron `succeeded` le 2026-10-31 sur `a4783348`, 0 entité écrite | non évaluée |
+| Lecture projection | `SEO_PROJECTION_READ_V1` absent en DEV ⇒ OFF, canary vide ⇒ rendu legacy | non évaluée |
+| R1 rendu | 200, `index, follow`, canonical `/pieces/filtre-a-huile-7.html`, 1 `<h1>`, JSON-LD CollectionPage/ItemList/FAQPage/Organization ; liens R3 3, R6 3, R4 1, R5 0, R2 12 | ILIKE sur `sg_content` : R5 présent |
+| R2 | 0 ligne `__seo_r2_pages` (pas de `catalog_signature`) ; échantillon `…/1-5-dci-19052.html` : 200, `index, follow`, `ItemList` 24 ; contexte `gamme_aggregates` 22 171 produits, 5 379 véhicules, `OK`, calculé 2026-10-31 | « READY » via jointure `pieces_price` > 10 |
+| R8 | 3 lignes liées par `cgc_type_id`, pour les types 11056 et 19053 (1 INDEX, 2 REVIEW_REQUIRED) ; `type_id 19053` a 2 lignes pour la même canonical → incohérence signalée, non tranchée | 0 page (ILIKE `page_key`) |
+| R3 / R4 / R5 / R6 | 12 sections, qualité moyenne 86 ; R4 publiée, définition 1 550 car., 3 confusions ; 5 observables dont 1 publié, 0 lien R5 servi ; R6 non brouillon, gatekeeper 92 | R5 « table inexistante » |
+| QPS | R1 75,0 ; R3 conseils 90,8 ; R3 guide 93,4 ; R4 75,9 — calculés 2026-06-11 | moyenne pondérée avec RAG 20 % |
+| R6 flag | `SEO_R6_CONSOLIDATION_ENABLED` absent ⇒ false ; liens guide rendus, guide publié : cohérent | non évalué |
+
+Défauts de la v4 corrigés ici : SQL interpolé depuis l'entrée et depuis un fichier RAG ;
+colonnes inexistantes (`sgc_section_key`, `sgc_heading`, `sgc_created_at`) ; table
+`__seo_observable` déclarée absente ; R7 compté sans filtre gamme ; R8 par `page_key` ;
+maillage lu dans `sg_content` ; duplication sur 100 caractères ; seuils de mots comme
+critère READY ; `INSERT`/`CREATE TABLE` dans un audit « report-only » ; mode véhicule
+référencé mais absent.

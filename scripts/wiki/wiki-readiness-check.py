@@ -53,10 +53,16 @@ Usage :
   python3 scripts/wiki/wiki-readiness-check.py --json
   python3 scripts/wiki/wiki-readiness-check.py --wiki-path /path/to/wiki
 
+Wiki evaluated : without --wiki-path, a snapshot of the local clone's freshly
+fetched origin/main (same reading as cron/sync-rag-from-wiki.sh), so the verdict
+never depends on the branch the clone happens to be on. --wiki-path evaluates
+that directory as is (CI checkout, review of a branch). The output states which
+one was evaluated.
+
 Exit :
   0 — READY (all 6 PASS)
   1 — NOT_READY (≥ 1 FAIL)
-  2 — script error (missing critical path)
+  2 — script error (missing critical path, or origin/main unavailable)
 
 Refs :
   - ADR-033 plan rev 6 §9 — 6 criterion C1-C6
@@ -72,6 +78,7 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -342,15 +349,50 @@ def c6_skill_proposal_writer_present(monorepo_path: Path) -> tuple[bool, str]:
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 
+def snapshot_origin_main(clone: Path, dest: Path) -> str:
+    """Extract the clone's freshly fetched origin/main into dest and return its SHA.
+
+    Fetch then `git archive`, as scripts/cron/sync-rag-from-wiki.sh does: the
+    clone's branch and files are never touched.
+    """
+
+    def git(*cmd: str) -> str:
+        return subprocess.run(
+            ["git", "-C", str(clone), *cmd],
+            check=True, capture_output=True, text=True, timeout=120,
+        ).stdout.strip()
+
+    git("fetch", "-q", "origin", "+refs/heads/main:refs/remotes/origin/main")
+    sha = git("rev-parse", "--verify", "refs/remotes/origin/main^{commit}")
+    archive = dest / ".wiki-origin-main.tar"
+    git("archive", "--format=tar", "-o", str(archive), sha)
+    subprocess.run(["tar", "-xf", str(archive), "-C", str(dest)], check=True, capture_output=True, timeout=120)
+    archive.unlink()
+    return sha
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--wiki-path", default=str(DEFAULT_WIKI_PATH))
+    ap.add_argument("--wiki-path", default=None, help="Evaluate this directory as is (default: origin/main snapshot)")
     ap.add_argument("--rag-path", default=str(DEFAULT_RAG_PATH))
     ap.add_argument("--monorepo-path", default=str(DEFAULT_MONOREPO_PATH))
     ap.add_argument("--json", action="store_true", help="Output JSON instead of human-readable")
     args = ap.parse_args()
 
-    wiki_path = Path(args.wiki_path).resolve()
+    if args.wiki_path is not None:
+        wiki_path = Path(args.wiki_path).resolve()
+        return evaluate(args, wiki_path, f"directory {wiki_path}")
+
+    with tempfile.TemporaryDirectory(prefix="wiki-readiness-") as tmp:
+        try:
+            sha = snapshot_origin_main(DEFAULT_WIKI_PATH, Path(tmp))
+        except (OSError, subprocess.SubprocessError) as exc:
+            sys.stderr.write(f"FATAL: cannot snapshot origin/main of wiki clone {DEFAULT_WIKI_PATH}: {exc}\n")
+            return 2
+        return evaluate(args, Path(tmp).resolve(), f"origin/main {sha} of {DEFAULT_WIKI_PATH}")
+
+
+def evaluate(args: argparse.Namespace, wiki_path: Path, wiki_source: str) -> int:
     rag_path = Path(args.rag_path).resolve()
     monorepo_path = Path(args.monorepo_path).resolve()
 
@@ -379,9 +421,10 @@ def main() -> int:
     verdict = "READY" if all_pass else "NOT_READY"
 
     if args.json:
-        print(json.dumps({"verdict": verdict, "criteria": results}, indent=2))
+        print(json.dumps({"verdict": verdict, "wiki_source": wiki_source, "criteria": results}, indent=2))
     else:
         print(f"\n=== Wiki Readiness Check (ADR-033 plan rev 6 §9) ===\n")
+        print(f"Wiki evaluated: {wiki_source}\n")
         for r in results:
             status = "✓ PASS" if r["passed"] else "✗ FAIL"
             print(f"{r['code']} ({r['name']}): {status}")

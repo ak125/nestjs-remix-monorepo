@@ -24,7 +24,8 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
    est explicitement gouverné et observable ; ne pas masquer une indisponibilité
    par un résultat vide ou un succès.
 4. **RAW → WIKI → projections/DB → consommateurs.** RAW est brut ; WIKI est sourcée,
-   lintée et validée humainement. Aucun consommateur ne lit RAW directement.
+   lintée et validée par son décideur sur preuve, auto-review de sens comprise
+   (ADR-031 amendé par ADR-119). Aucun consommateur ne lit RAW directement.
    RAG = consommateur chatbot, sans autorité de production de contenu (ADR-031/046).
    Un producteur RAG→contenu doit être retiré et re-sourcé WIKI dans le mandat autorisé.
 5. **Ne pas inventer mots-clés ou URL.** Le top-kw brut de `__seo_keywords` mesure

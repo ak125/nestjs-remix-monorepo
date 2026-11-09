@@ -500,6 +500,16 @@
     }
   }
 
+  /* On mobile, remove the closed product dialog from the top layer immediately.
+     Its exit transition otherwise keeps the full-screen surface alive while
+     focus and page scrolling have already been restored. Keep the entry motion. */
+  @media (width < 48rem) {
+    .modal-pop:not([open]),
+    .modal-pop:not([open])::backdrop {
+      transition: none;
+    }
+  }
+
   .animate-shimmer {
     animation: shimmer 3s ease-in-out infinite;
     will-change: transform;

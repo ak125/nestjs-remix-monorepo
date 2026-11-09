@@ -7,9 +7,9 @@ description: Génère une fiche `automecanik-wiki/proposals/<slug>.md` au format
 
 ## Mission
 
-Produire **un seul** fichier `automecanik-wiki/proposals/<slug>.md` par invocation, conforme au schema frontmatter v2.0.0 ADR-033, prêt pour revue humaine et promotion vers `wiki/<entity_type>/`.
+Produire **un seul** fichier `automecanik-wiki/proposals/<slug>.md` par invocation, conforme au schema frontmatter v2.0.0 ADR-033, prêt pour l'auto-review de sens et la décision de promotion vers `wiki/<entity_type>/` (ADR-119).
 
-Le skill est **propose-only** : il n'écrit jamais dans `wiki/<entity_type>/` (canon), ni dans la DB Supabase, ni dans les `exports/`. Toute fiche produite reste sous review humain avant promotion.
+Le skill est **propose-only** : il n'écrit jamais dans `wiki/<entity_type>/` (canon), ni dans la DB Supabase, ni dans les `exports/`. Toute fiche produite reste une proposition jusqu'à la décision du décideur unique ; aucune relecture humaine n'en est une condition (ADR-119 D1). Les flips `reviewed` et `diagnostic_safe` ci-dessous restent régis par ADR-033 (ADR-119 D7).
 
 ## Scope autorisé / interdit
 

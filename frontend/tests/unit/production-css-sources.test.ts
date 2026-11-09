@@ -32,6 +32,11 @@ function fixture() {
     mkdirSync(join(path, ".."), { recursive: true });
     writeFileSync(path, "export default null;");
   }
+  mkdirSync(join(dir, "components", "expert"), { recursive: true });
+  writeFileSync(
+    join(dir, "components", "expert", "Unused.tsx"),
+    "export default null;",
+  );
   const plugin = productionCssSources(dir);
   const invoke = (
     name: "buildStart" | "transform" | "generateBundle",
@@ -71,7 +76,7 @@ describe("production CSS route sources", () => {
     );
   });
 
-  it("excludes only routed-out pages, preserving the two production admin exceptions", () => {
+  it("excludes omitted sources, preserving the two production admin exceptions", () => {
     const { dir, invoke } = fixture();
     const result = invoke("transform", [
       '@import "tailwindcss";',
@@ -84,6 +89,9 @@ describe("production CSS route sources", () => {
       '@source not "./routes/design-system.colors.tsx";',
     );
     expect(result.code).toContain('@source not "./routes/admin.tsx";');
+    expect(result.code).toContain(
+      '@source not "./components/expert/Unused.tsx";',
+    );
     expect(result.code).not.toMatch(/command-center|video-hub|pieces/);
     expect(result.code).toContain('@import "tailwindcss";');
     expect(
@@ -106,6 +114,23 @@ describe("production CSS route sources", () => {
           "public.js": {
             type: "chunk",
             modules: { [join(dir, "routes", "admin.old.tsx") + "?v=1"]: {} },
+          },
+        },
+      ]),
+    ).toThrow(/still bundled/);
+  });
+
+  it("rejects a newly imported component from an excluded family", () => {
+    const { dir, invoke } = fixture();
+    expect(() =>
+      invoke("generateBundle", [
+        {},
+        {
+          "lazy.js": {
+            type: "chunk",
+            modules: {
+              [join(dir, "components", "expert", "Unused.tsx")]: {},
+            },
           },
         },
       ]),

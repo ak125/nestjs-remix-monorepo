@@ -17,7 +17,9 @@
  *   6. docker is only asked to read: exec targets the Caddy container and the
  *      limiter Redis only, never the sessions Redis;
  *   7. the streaming reader decompresses rotated files, stops early on request
- *      and fails on a non-zero exit.
+ *      and fails on a non-zero exit;
+ *   8. a hole in the log inside the window, or a log that stopped, is "non
+ *      vérifié", never "absent".
  *
  * Run: node --test scripts/ci/prod-observation-report.test.mjs
  */
@@ -34,6 +36,7 @@ import {
   judgeLimiter,
   judgePayments,
   judgeRoute,
+  continuousFrom,
   createAccessAccumulator,
   parseAccessLine,
   parseCounterTarget,
@@ -122,6 +125,22 @@ describe("payment tiers", () => {
     const acc = createAccessAccumulator(CUTOFF);
     acc.addLine("garbage");
     assert.equal(judgePayments(acc.result(), 7).verdict, "non vérifié");
+  });
+
+  test("hours with lines and the run without a hole are stated, not the span alone", () => {
+    const acc = createAccessAccumulator(CUTOFF);
+    for (const ts of ["2026-10-20T08:10:00Z", "2026-10-26T08:10:00Z", "2026-10-26T09:10:00Z", "2026-10-26T11:10:00Z", "2026-10-26T11:50:00Z"]) {
+      acc.addLine(line({ ts, method: "GET", uri: "/" }));
+    }
+    const r = acc.result();
+    assert.equal(r.hours, 4);
+    assert.equal(r.continuousFromMs, Date.parse("2026-10-26T11:00:00Z"));
+    assert.match(
+      judgePayments(r, 7).lines[0],
+      /journal lu du 2026-10-20T08:10 au 2026-10-26T11:50 \(UTC\), 4 heure\(s\) avec des lignes, sans trou depuis 2026-10-26T11:00/,
+    );
+    assert.equal(continuousFrom(new Set([10, 11, 13]), 13.5 * 3_600_000), 13 * 3_600_000);
+    assert.ok(Number.isNaN(continuousFrom(new Set(), -Infinity)));
   });
 });
 
@@ -221,6 +240,8 @@ function stubIo({ caddyFiles, failStats = false, extraNames = [] } = {}) {
       line({ ts: "2026-10-20T08:00:00.000Z", uri: "/api/payments/callback/cyberplus", ip: IP_B }),
     ],
     "automecanik.log": [
+      // One line an hour from 04:30 to 11:30: the window (05:00 → 12:00) has no hole.
+      ...Array.from({ length: 8 }, (_, i) => line({ ts: at("2026-10-26T04:30:00.000Z", i * 3_600_000), method: "GET", uri: "/" })),
       line({ ts: "2026-10-26T11:00:00.000Z", uri: "/api/paybox/callback" }),
       line({ ts: "2026-10-26T11:00:01.000Z", method: "GET", uri: "/api/vehicles/brands/441/models?year=2008" }),
     ],
@@ -266,8 +287,8 @@ describe("whole report against a stubbed docker", () => {
     const { verdict, lines } = await runReport(config, io);
     const text = lines.join("\n");
     assert.equal(verdict, "OK", text);
-    // The rotated file was read: the period starts in it.
-    assert.match(text, /période couverte 2026-10-20T08:00 → 2026-10-26T11:00/);
+    // The rotated file was read: the period starts in it, and its hour counts once.
+    assert.match(text, /journal lu du 2026-10-20T08:00 au 2026-10-26T11:30 \(UTC\), 9 heure\(s\) avec des lignes, sans trou depuis 2026-10-26T04:00/);
     assert.match(text, /Limiteur PREPROD : non déployé/);
     assert.match(text, /destination des compteurs : OK \(redis_throttler, source THROTTLER_REDIS_URL\)/);
     for (const forbidden of [IP_A, IP_B, "10.0.0.2", ":6379", "requêtes", "IP distinctes"]) {
@@ -297,6 +318,24 @@ describe("whole report against a stubbed docker", () => {
     const r = await runReport(config, broken.io);
     assert.equal(r.verdict, "non vérifié");
     assert.match(r.lines.join("\n"), /Paiement et route R2 : non vérifiés/);
+  });
+
+  test("a hole inside the window or a log that stopped is non vérifié, not absent", async () => {
+    const hourly = (from, n) => Array.from({ length: n }, (_, i) => line({ ts: at(from, i * 3_600_000), method: "GET", uri: "/" }));
+    // 04:30 → 07:30, nothing at 08:xx, 09:30 → 11:30.
+    const hole = await runReport(
+      config,
+      stubIo({ caddyFiles: { "automecanik.log": [...hourly("2026-10-26T04:30:00.000Z", 4), ...hourly("2026-10-26T09:30:00.000Z", 3)] } }).io,
+    );
+    assert.equal(hole.verdict, "non vérifié");
+    assert.match(
+      hole.lines.join("\n"),
+      /Paiement et route R2 : non vérifiés \(journal sans trou depuis 2026-10-26T09:00 seulement, dernière ligne 2026-10-26T11:30, fenêtre depuis 2026-10-26T05:00\)/,
+    );
+    // Lines every hour, but the last one three hours before the run.
+    const stopped = await runReport(config, stubIo({ caddyFiles: { "automecanik.log": hourly("2026-10-26T01:30:00.000Z", 7) } }).io);
+    assert.equal(stopped.verdict, "non vérifié");
+    assert.match(stopped.lines.join("\n"), /dernière ligne 2026-10-26T07:30/);
   });
 
   test("a recent 429 on a payment notification fails the run", async () => {

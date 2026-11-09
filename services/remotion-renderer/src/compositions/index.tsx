@@ -5,6 +5,11 @@ import { ShortBrakingFact } from './ShortBrakingFact';
 import { NeChangePasTropVite } from './NeChangePasTropVite';
 import { SymptomeTroisCauses } from './SymptomeTroisCauses';
 import { PieceExpliquee } from './PieceExpliquee';
+import {
+  SequencesCourtes,
+  SEQUENCES_COURTES_FPS,
+  calculateSequencesCourtesMetadata,
+} from './SequencesCourtes';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -126,6 +131,16 @@ export const RemotionRoot: React.FC = () => {
           disclaimer: 'Conseil informatif. Diagnostic à confirmer selon véhicule.',
           brandName: 'AutoMecanik',
         }}
+      />
+      <Composition
+        id="SequencesCourtes"
+        component={SequencesCourtes}
+        durationInFrames={1}
+        calculateMetadata={calculateSequencesCourtesMetadata}
+        fps={SEQUENCES_COURTES_FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{ sequences: [] }}
       />
     </>
   );
