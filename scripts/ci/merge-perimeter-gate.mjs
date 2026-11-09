@@ -105,7 +105,8 @@ export function evaluateFiles(policy, entries, files) {
       refusals.push(refusal("PATCH_UNAVAILABLE", file.filename));
       continue;
     }
-    const changed = file.patch.split("\n").filter((line) => /^[+-]/.test(line) && !/^(?:\+\+\+|---)/.test(line));
+    // L'API ne renvoie que les hunks, sans en-têtes de fichier : tout `+` ou `-` est un vrai changement.
+    const changed = file.patch.split("\n").filter((line) => /^[+-]/.test(line));
     if (changed.some((line) => diffPatterns.some((pattern) => pattern.test(line)))) {
       refusals.push(refusal("DIFF_PATTERN", file.filename));
     }
@@ -131,12 +132,14 @@ export function parseReviewRecords(body) {
 }
 
 /** Applique DoD2 sur la tête courante. Renvoie `{ refusals, level }`. */
-export function evaluateReview(policy, body, head, files) {
+export function evaluateReview(policy, body, head, files, base) {
   const records = parseReviewRecords(body);
   const atHead = records.filter((record) => record.head === head);
   if (atHead.length === 0) {
     return { refusals: [refusal(records.length ? "REVIEW_OTHER_HEAD" : "REVIEW_MISSING", head)], level: null };
   }
+  const otherBase = atHead.find((record) => record.base !== base);
+  if (otherBase) return { refusals: [refusal("REVIEW_OTHER_BASE", otherBase.base)], level: null };
   const refused = atHead.filter((record) => !policy.authorized_review_levels.includes(record.level));
   if (refused.length) return { refusals: [refusal("REVIEW_LEVEL_REFUSED", refused[0].level)], level: refused[0].level };
   const refusals = [];
@@ -145,10 +148,10 @@ export function evaluateReview(policy, body, head, files) {
     refusals.push(refusal("REVIEW_NOT_INDEPENDENT", "le niveau B exige une revue indépendante ou humaine"));
   }
   if (level === "A") {
-    const code = files.find(
-      (file) => !PROSE_FILE.test(file.filename) && !matches(file.filename, policy.generated_projections),
-    );
-    if (code) refusals.push(refusal("REVIEW_LEVEL_TOO_LOW", code.filename));
+    const code = files
+      .flatMap((file) => [file.filename, file.previous_filename].filter(Boolean))
+      .find((path) => !PROSE_FILE.test(path) && !matches(path, policy.generated_projections));
+    if (code) refusals.push(refusal("REVIEW_LEVEL_TOO_LOW", code));
   }
   return { refusals, level };
 }
@@ -179,6 +182,7 @@ export function evaluatePullRequest(policy, pr, requiredContexts) {
     refusals.push(refusal("NO_HUMAN_ASSIGNEE", `#${pr.number}`));
   }
   if (pr.mergeStateStatus !== "CLEAN") refusals.push(refusal("MERGE_STATE_NOT_CLEAN", pr.mergeStateStatus));
+  if (pr.behindBy !== 0) refusals.push(refusal("BEHIND_BASE", String(pr.behindBy)));
   const checks = pr.statusCheckRollup ?? [];
   if (checks.length === 0) refusals.push(refusal("CHECKS_ABSENT", "aucun contrôle sur la tête"));
   for (const check of checks) {
@@ -233,7 +237,9 @@ function evaluate(number, policyFile) {
   );
   if (!Array.isArray(required) || required.length === 0) throw new Error("contrôles requis illisibles");
   const files = readFiles(number, pr.changedFiles);
-  const review = evaluateReview(policy, pr.body, pr.headRefOid, files);
+  // L'option `strict` de la protection n'est pas lisible par ce compte : on mesure le retard.
+  pr.behindBy = JSON.parse(gh("api", `repos/${REPO}/compare/${pr.baseRefOid}...${pr.headRefOid}?per_page=1`, "--jq", ".behind_by"));
+  const review = evaluateReview(policy, pr.body, pr.headRefOid, files, pr.baseRefOid);
   refusals.push(
     ...evaluatePullRequest(policy, pr, required),
     ...review.refusals,

@@ -86,9 +86,14 @@ test("les documents sont dispensés de classification, pas des motifs de diff", 
   assert.deepEqual(checkFiles(file("docs/a.md", "+noindex")), ["DIFF_PATTERN"]);
 });
 
-test("une ligne retirée compte comme une ligne ajoutée, pas le contexte ni les en-têtes", () => {
+test("une ligne retirée compte comme une ligne ajoutée, pas le contexte", () => {
   assert.deepEqual(checkFiles(file("backend/src/modules/ok/a.ts", "-@UseGuards(X)")), ["DIFF_PATTERN"]);
-  assert.deepEqual(checkFiles(file("backend/src/modules/ok/a.ts", " noindex\n+++ noindex")), []);
+  assert.deepEqual(checkFiles(file("backend/src/modules/ok/a.ts", " noindex")), []);
+});
+
+test("une ligne de hunk qui ressemble à un en-tête reste un changement", () => {
+  assert.deepEqual(checkFiles(file("backend/src/modules/ok/a.ts", "+++ noindex")), ["DIFF_PATTERN"]);
+  assert.deepEqual(checkFiles(file("backend/src/modules/ok/a.ts", "--- noindex")), ["DIFF_PATTERN"]);
 });
 
 test("un patch absent est refusé, sauf pour une projection générée", () => {
@@ -99,7 +104,7 @@ test("un patch absent est refusé, sauf pour une projection générée", () => {
 const record = (level, head = HEAD, procedure = "revue indépendante, par session X") =>
   `- [x] Revue niveau ${level} — tête ${head}, base ${BASE}\n      procédure : ${procedure}\n`;
 const reviewCodes = (body, files = [file("backend/src/modules/ok/a.ts")]) =>
-  codes(evaluateReview(policy, body, HEAD, files).refusals);
+  codes(evaluateReview(policy, body, HEAD, files, BASE).refusals);
 
 test("lit l'enregistrement DoD2", () => {
   assert.deepEqual(parseReviewRecords(record("B")), [
@@ -121,6 +126,17 @@ test("revue absente, sur une autre tête, ou de niveau C : refusée", () => {
   assert.deepEqual(reviewCodes(record("C")), ["REVIEW_LEVEL_REFUSED"]);
 });
 
+test("revue écrite sur une autre base : refusée", () => {
+  const other = record("B").replace(BASE, "d".repeat(40));
+  assert.deepEqual(reviewCodes(other), ["REVIEW_OTHER_BASE"]);
+});
+
+test("une politique limitée au niveau A refuse le niveau B", () => {
+  const onlyA = { ...policy, authorized_review_levels: ["A"] };
+  const result = evaluateReview(onlyA, record("B"), HEAD, [file("docs/a.md")], BASE);
+  assert.deepEqual(codes(result.refusals), ["REVIEW_LEVEL_REFUSED"]);
+});
+
 test("niveau C à côté d'un niveau B sur la même tête : refusée", () => {
   assert.deepEqual(reviewCodes(record("B") + "\n" + record("C")), ["REVIEW_LEVEL_REFUSED"]);
 });
@@ -138,6 +154,11 @@ test("le niveau A ne couvre que la prose et les projections", () => {
   assert.deepEqual(reviewCodes(record("A", HEAD, "auto-review, par session X")), ["REVIEW_LEVEL_TOO_LOW"]);
 });
 
+test("un code renommé en document n'est pas de la prose au niveau A", () => {
+  const moved = [file("docs/a.md", "", { previous_filename: "backend/src/modules/ok/a.ts" })];
+  assert.deepEqual(reviewCodes(record("A", HEAD, "auto-review, par session X"), moved), ["REVIEW_LEVEL_TOO_LOW"]);
+});
+
 const check = (name, conclusion = "SUCCESS") => ({ __typename: "CheckRun", name, status: "COMPLETED", conclusion });
 const pr = (overrides = {}) => ({
   number: 1,
@@ -149,6 +170,7 @@ const pr = (overrides = {}) => ({
   isCrossRepository: false,
   assignees: [{ login: "ak125" }],
   mergeStateStatus: "CLEAN",
+  behindBy: 0,
   statusCheckRollup: [check("ci"), check("lint", "SKIPPED")],
   ...overrides,
 });
@@ -174,6 +196,11 @@ test("sans assignee humain : refusée", () => {
 test("état de fusion autre que CLEAN, y compris en retard sur main : refusée", () => {
   assert.deepEqual(prCodes({ mergeStateStatus: "BEHIND" }), ["MERGE_STATE_NOT_CLEAN"]);
   assert.deepEqual(prCodes({ mergeStateStatus: "UNSTABLE" }), ["MERGE_STATE_NOT_CLEAN"]);
+});
+
+test("une tête qui ne contient pas la base, ou un retard non mesuré : refusée", () => {
+  assert.deepEqual(prCodes({ behindBy: 2 }), ["BEHIND_BASE"]);
+  assert.deepEqual(prCodes({ behindBy: undefined }), ["BEHIND_BASE"]);
 });
 
 test("contrôle en échec, en cours, en attente d'approbation ou absent : refusée", () => {
