@@ -17,9 +17,12 @@
  * imports madge resolves without a tsconfig; aliases (~/, @common/...) and
  * asset imports stay outside it and are counted on stderr.
  *
- * Knip resolves those aliases through the tsconfig paths, so an import knip
- * cannot resolve is a broken import: knip.unresolved_imports is compared like
- * the other knip counts, with a zero threshold in the baseline.
+ * Knip reads the tsconfig paths, so a relative or ~/ import it cannot resolve
+ * is a broken import: knip.unresolved_imports is compared like the other knip
+ * counts, with a zero threshold in the baseline. It does not cover everything:
+ * knip files an unresolved specifier shaped like a package name (@common/...)
+ * under external dependencies, and it skips .json targets, foreign file
+ * extensions and git-ignored paths. Those are not counted here.
  *
  * Usage:
  *   node scripts/cleanup/audit-compare-baseline.js            # run, print, exit
