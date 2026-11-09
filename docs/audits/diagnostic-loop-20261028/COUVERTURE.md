@@ -411,3 +411,5 @@ Colonnes : liens de l'amorce (non sourcés), causes de ces liens rattachées à 
   fiche de l'ancien corpus.
 - Correspondance gamme : `pg_alias` de `__pg_gammes` = nom de la fiche WIKI = dossier de capture RAW =
   fiche de l'ancien corpus.
+
+<!-- recette ADR-124 : PR de test de la porte, fermée sans fusion -->
