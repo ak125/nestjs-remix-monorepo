@@ -152,6 +152,11 @@ jobs:
         # no workflow ran it: the citation was a YAML comment.
         run: node --test scripts/ci/pr-dod-gate.test.mjs
 
+      - name: 🚧 Merge perimeter gate — refusal cases unit proof (BLOCKING)
+        # ADR-124: the gate refuses every case it cannot prove. Inert while the
+        # vault policy is absent or not active.
+        run: node --test scripts/ci/merge-perimeter-gate.test.mjs
+
       - name: 📦 Initial-load size verifier — fails on the states it exists to catch (BLOCKING)
         # The npm script existed; no workflow called it.
         run: npm run size:verify-paths:test
