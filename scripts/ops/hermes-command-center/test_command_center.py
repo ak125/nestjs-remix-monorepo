@@ -29,6 +29,16 @@ class DigestTests(unittest.TestCase):
             d = {**self.digest, 'mode': mode, 'degraded': True, 'department_reports': []}
             self.assertEqual(cc.validate_digest(d), d)
 
+    def test_build_identity_states_keep_the_v1_envelope(self):
+        # Valeur déclarée ou null, le motif passe par global_status.reasons : aucune clé nouvelle.
+        for sha in (None, 'a' * 40):
+            for reason in ('build identity absent', 'build identity invalid', 'build identity divergent'):
+                d = {**self.digest, 'git_sha': sha,
+                     'global_status': {'level': 'WARNING', 'verdict': 'PARTIAL_READY', 'reasons': [reason]}}
+                self.assertEqual(cc.validate_digest(d), d)
+        with self.assertRaises(ValueError):
+            cc.validate_digest({**self.digest, 'git_sha_status': 'divergent'})
+
     def test_unrecognized_payloads_fail_closed(self):
         for d in ({}, [], {**self.digest, 'schema_version': 'v-next'},
                   {**self.digest, 'degraded': 'false'}, {**self.digest, 'mode': 'disabled'},

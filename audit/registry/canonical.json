@@ -37381,7 +37381,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 466,
+      "loc": 506,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "medium",
@@ -46893,12 +46893,10 @@
         "backend/src/modules/invoices/invoices.module.ts"
       ],
       "imports": [
-        "@auth/authenticated.guard",
-        "@auth/is-admin.guard",
         "backend/src/modules/invoices/invoices.service.ts"
       ],
       "kind": "controller",
-      "loc": 68,
+      "loc": 60,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/invoices/invoices.controller.ts",
       "risk": "high",
@@ -70499,7 +70497,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 751,
+      "loc": 1141,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-reader.service.test.ts",
       "risk": "medium",
@@ -70842,26 +70840,6 @@
       "loc": 191,
       "owner": "@ak125",
       "path": "backend/tests/unit/global-error-filter.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D15",
-      "id": "backend/tests/unit/invoices-routes-authz.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 186,
-      "owner": "@ak125",
-      "path": "backend/tests/unit/invoices-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106548,11 +106526,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "2d5872d3b1b0218226bca046f584e85c1fb21fb9ba517d43e0dd407264380d1f",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "2aa9be2f65a1915cc84c67e8bd062003fdef5d56729f6714e408fd8c209eaaa1",
+      "audit/registry/files.json": "505394e98a54938ec04fa825dc0de7586975e3ee79d7ec9713a6655dbf7b0d81",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "a08cf4a46cc058ebef66bbd7f5bfc5248f616a32626b23292d2de4d62a5de1f8"
     },
-    "sotFingerprint": "e11056660253"
+    "sotFingerprint": "017842052d80"
   },
   "runtime": [
     {
