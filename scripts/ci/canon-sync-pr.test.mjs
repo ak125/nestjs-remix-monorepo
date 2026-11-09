@@ -152,7 +152,7 @@ test("skip reports every refusal at once", () => {
 
 const OTHER_HEAD = "b".repeat(40);
 const bind = (sha) => `DoD-Head: ${sha}`;
-const NOT_BOUND = new RegExp(`without exactly one "DoD-Head: <sha>" line naming its head ${OLD_HEAD}`);
+const NOT_BOUND = new RegExp(`without a first line "DoD-Head: <sha>" naming its head ${OLD_HEAD}`);
 const markedBody = (review, trigger = "schedule") =>
   renderBody({ ...RENDER, previousBody: "", previousHead: undefined })
     .replace(reviewPlaceholder(DOD_LINES), review)
@@ -164,21 +164,14 @@ for (const [name, body] of [
   ["the head cited in prose only", `Evidence for ${OLD_HEAD}\n${TICKED}`],
   ["a binding to another head and the head cited in a note", `${bind(OTHER_HEAD)}\n${TICKED}\n\nNew head ${OLD_HEAD} to review`],
   ["a binding to another head and the head in a comment", `${bind(OTHER_HEAD)}\n${TICKED}\n<!-- ${OLD_HEAD} -->`],
-  ["the binding in a one-line comment", `<!-- ${bind(OLD_HEAD)} -->\n${TICKED}`],
-  ["the binding inside a multi-line comment", `<!--\n${bind(OLD_HEAD)}\n-->\n${TICKED}`],
-  ["the binding after an unterminated comment", `${TICKED}\n<!--\n${bind(OLD_HEAD)}`],
-  ["the binding in a backtick fence", `\`\`\`\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
-  ["the binding in a tilde fence", `~~~\n${bind(OLD_HEAD)}\n~~~\n${TICKED}`],
-  ["the binding in an unterminated fence", `${TICKED}\n\`\`\`\n${bind(OLD_HEAD)}`],
-  ["a fence after a line that only looks like one", `\`\`\` a\`b\n\`\`\`\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
-  ["a fence opened above the review zone", `\`\`\`\n${markedBody(`${bind(OLD_HEAD)}\n${TICKED}`)}`],
+  ["the binding in a comment", `<!-- ${bind(OLD_HEAD)} -->\n${TICKED}`],
+  ["the binding in a code block", `\`\`\`\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
   ["the binding collapsed under details", `<details>\n${bind(OLD_HEAD)}\n</details>\n${TICKED}`],
-  ["a fence that another kind of fence does not close", `\`\`\`\n~~~\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
-  ["a fence that a shorter fence does not close", `\`\`\`\`\n\`\`\`\n${bind(OLD_HEAD)}\n\`\`\`\`\n${TICKED}`],
-  ["a fence that an info string does not close", `\`\`\`\n\`\`\`js\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
   ["a quoted binding", `> ${bind(OLD_HEAD)}\n${TICKED}`],
   ["an indented binding", `    ${bind(OLD_HEAD)}\n${TICKED}`],
-  ["an indented binding opening the review zone", markedBody(`    ${bind(OLD_HEAD)}\n${TICKED}`)],
+  ["the binding after a closed comment", `<!-- note -->\n${bind(OLD_HEAD)}\n${TICKED}`],
+  ["the binding below the ticks", `${TICKED}\n${bind(OLD_HEAD)}`],
+  ["the binding in the review zone", markedBody(`${bind(OLD_HEAD)}\n${TICKED}`)],
   [
     "a binding quoted by hand in the archive zone",
     markedBody(TICKED).replace("<!-- canon-sync:archive:start -->", `<!-- canon-sync:archive:start -->\n> ${bind(OLD_HEAD)}`),
@@ -187,7 +180,6 @@ for (const [name, body] of [
   ["an uppercase SHA", `${bind(OLD_HEAD.toUpperCase())}\n${TICKED}`],
   ["a shortened SHA", `${bind(OLD_HEAD.slice(0, 12))}\n${TICKED}`],
   ["two different bindings", `${bind(OTHER_HEAD)}\n${bind(OLD_HEAD)}\n${TICKED}`],
-  ["the same binding twice", `${bind(OLD_HEAD)}\n${bind(OLD_HEAD)}\n${TICKED}`],
   ["an N/A line without a binding", "- [ ] DoD4 — N/A : nothing observable"],
   ["a binding only in the generated zone", markedBody(TICKED, `Trigger: schedule\n${bind(OLD_HEAD)}`)],
   ["ticks in the generated zone without a binding", markedBody("Notes", `Trigger: schedule\n${TICKED}`)],
@@ -204,7 +196,7 @@ for (const [name, body] of [
   });
 }
 
-test("the review keeps the indent of its first line: an indented binding must not become a live one", () => {
+test("the review keeps the indent of its first line", () => {
   assert.equal(parseBody(markedBody(`    ${bind(OLD_HEAD)}\nNotes`)).review, `    ${bind(OLD_HEAD)}\nNotes`);
 });
 
@@ -217,12 +209,11 @@ test("skip fails closed on a stale binding even with nothing certified", () => {
 });
 
 for (const [name, body] of [
-  ["in the review zone", markedBody(`${bind(OLD_HEAD)}\n${TICKED}`)],
+  ["as the first line of a plain body", `${bind(OLD_HEAD)}\n${TICKED}`],
+  ["above the markers", `${bind(OLD_HEAD)}\n${markedBody(TICKED)}`],
   ["with CRLF line ends", `${bind(OLD_HEAD)}\r\n${TICKED.replace(/\n/g, "\r\n")}`],
-  ["after a closed comment", `<!-- note -->\n${bind(OLD_HEAD)}\n${TICKED}`],
-  ["after a closed fence", `\`\`\`\nlog\n\`\`\`\n${bind(OLD_HEAD)}\n${TICKED}`],
-  ["after a line that only looks like a fence", `\`\`\` a\`b\n${bind(OLD_HEAD)}\n${TICKED}`],
-  ["after a closed details block", `<details>log</details>\n${bind(OLD_HEAD)}\n${TICKED}`],
+  ["with the same line repeated below", `${bind(OLD_HEAD)}\n${bind(OLD_HEAD)}\n${TICKED}`],
+  ["with an older line below", `${bind(OLD_HEAD)}\n${bind(OTHER_HEAD)}\n${TICKED}`],
 ]) {
   test(`skip accepts one binding to the current head ${name}`, () => {
     assert.equal(run({ github: fakeGitHub({ pr: openPr(body, READY), verified: true }) }).outputs.skip, "true");
@@ -249,7 +240,17 @@ test("a legacy unsigned head with unbound ticks is refused, a signed child with 
 });
 
 test("the placeholder says how to bind a certification to the head", () => {
-  assert.match(reviewPlaceholder(DOD_LINES), /`DoD-Head: <40-character head SHA>`/);
+  assert.match(reviewPlaceholder(DOD_LINES), /very first line of the PR body.*`DoD-Head: <40-character head SHA>`/);
+});
+
+test("a head change archives the first-line binding and leaves the new body unbound", () => {
+  const previousBody = `${bind(OLD_HEAD)}\n${markedBody(TICKED)}`;
+  const body = renderBody({ ...RENDER, previousBody, previousHead: OLD_HEAD });
+  assert.ok(body.startsWith("<!-- canon-sync:generated:start -->"));
+  assert.ok(parseBody(body).archive.includes(`> ${bind(OLD_HEAD)}`));
+  assert.equal(parseBody(body).outside, "");
+  const ticked = body.replace(reviewPlaceholder(DOD_LINES), TICKED);
+  assert.equal(evaluateDoD(ticked, [], 1, { assignees: ["ak125"], head: { sha: OTHER_HEAD, ref: BRANCH } }).mode, "head-binding");
 });
 
 test("skip accepts the untouched placeholder, whose N/A sits in a template hint", () => {

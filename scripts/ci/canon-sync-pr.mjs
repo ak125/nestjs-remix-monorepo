@@ -12,8 +12,8 @@
 //   - open PR whose head already carries the synced content => skip the action:
 //     no push, no body edit. The run succeeds only if that PR is acceptable as it
 //     stands: signed head, assignee, and any DoD certification bound to this head
-//     by exactly one visible line "DoD-Head: <40-hex SHA>", read by the same
-//     parser as the PR gate (pr-dod-gate.mjs). Citing the SHA elsewhere binds
+//     by the first line of the body, "DoD-Head: <40-hex SHA>", read by the same
+//     function as the PR gate (pr-dod-gate.mjs). Citing the SHA elsewhere binds
 //     nothing. Otherwise the job fails and nothing is rewritten;
 //   - otherwise render the body the action will write. Evidence recorded for the
 //     outgoing head moves to a stale archive: kept in full, named as stale, and
@@ -23,8 +23,8 @@
 // verified by GitHub, the PR carries its assignee and the body `prepare` rendered.
 // The action pushes before it edits the body: when that edit fails, `verify` turns
 // the run red and the PR gate refuses the old certification at its next event that
-// actually runs. A head pushed with GITHUB_TOKEN by the scheduled run starts no gate
-// run on its own: its workflows wait in action_required.
+// actually runs. This workflow pushes with GITHUB_TOKEN whatever its trigger, and such
+// a head starts no gate run on its own: its workflows wait in action_required.
 //
 // Every read failure, ambiguous PR state or malformed body stops the job before
 // anything is written.
@@ -89,7 +89,7 @@ export function reviewPlaceholder(dodLines) {
     "",
     "None recorded yet. Evidence must name the exact head SHA (ADR-120 D2/D4).",
     "A head change moves this section to the stale archive below.",
-    "Before ticking or marking N/A a DoD item, write once, alone on a line and unquoted: `DoD-Head: <40-character head SHA>`.",
+    "Before ticking or marking N/A a DoD item, make this the very first line of the PR body, above every marker: `DoD-Head: <40-character head SHA>`.",
     "",
     ...dodLines,
   ].join("\n");

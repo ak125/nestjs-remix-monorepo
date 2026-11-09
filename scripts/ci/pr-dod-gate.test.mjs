@@ -311,7 +311,9 @@ describe("evaluateDoD — head binding", () => {
     ["a stale binding", bound(HEAD_A)],
     ["a malformed binding", `DoD-Head: ${HEAD_B.slice(0, 12)}\n${fullBody()}`],
     ["a trailing word", `DoD-Head: ${HEAD_B} ok\n${fullBody()}`],
-    ["two bindings, one right", `DoD-Head: ${HEAD_A}\nDoD-Head: ${HEAD_B}\n${fullBody()}`],
+    ["a missing space", `DoD-Head:${HEAD_B}\n${fullBody()}`],
+    ["a trailing space", `DoD-Head: ${HEAD_B} \n${fullBody()}`],
+    ["a stale first line above the right one", `DoD-Head: ${HEAD_A}\nDoD-Head: ${HEAD_B}\n${fullBody()}`],
   ]) {
     test(`${name} is refused outside canon-sync too`, () => {
       const r = evaluate(body, OTHER_BRANCH);
@@ -352,70 +354,65 @@ describe("evaluateDoD — head binding", () => {
     assert.match(headBindingRefusal(`DoD-Head: ${HEAD_A}`, { ref: "x" }), /head is unknown/);
   });
 
-  test("line ends of the web editor do not break a binding", () => {
-    assert.equal(headBindingRefusal(`note\r\nDoD-Head: ${HEAD_B}\r\nmore`, OTHER_BRANCH), null);
-    assert.equal(headBindingRefusal(`note\u2028DoD-Head: ${HEAD_B}`, OTHER_BRANCH), null);
+  test("the line ends of Markdown end the first line", () => {
+    assert.equal(headBindingRefusal(`DoD-Head: ${HEAD_B}\r\nmore`, OTHER_BRANCH), null);
+    assert.equal(headBindingRefusal(`DoD-Head: ${HEAD_B}\rmore`, OTHER_BRANCH), null);
+    assert.equal(headBindingRefusal(`DoD-Head: ${HEAD_B}`, OTHER_BRANCH), null);
   });
 
-  test("visibility follows the order of the whole body", () => {
-    const open = `\`\`\`\nDoD-Head: ${HEAD_B}`;
-    assert.equal(headBindingRefusal(`${open}\n\`\`\`\n${fullBody()}`, CANON) !== null, true);
-    assert.equal(headBindingRefusal(`\`\`\`\nlog\n\`\`\`\nDoD-Head: ${HEAD_B}`, CANON), null);
+  test("a Unicode separator stays in the first line and breaks its format", () => {
+    for (const separator of [0x2028, 0x2029]) {
+      const body = `DoD-Head: ${HEAD_B}${String.fromCodePoint(separator)}more\n${fullBody()}`;
+      assert.match(headBindingRefusal(body, OTHER_BRANCH), /naming its head/);
+    }
   });
 
-  test("a backtick in the info string means the line opens no fence", () => {
-    assert.equal(headBindingRefusal(`\`\`\` a\`b\nDoD-Head: ${HEAD_B}`, OTHER_BRANCH), null);
-    assert.notEqual(headBindingRefusal(`\`\`\` a\`b\n\`\`\`\nDoD-Head: ${HEAD_B}\n\`\`\`\n${fullBody()}`, CANON), null);
-    assert.equal(headBindingRefusal(`~~~ a\`b\nDoD-Head: ${HEAD_A}\n~~~`, OTHER_BRANCH), null);
+  test("only the first line binds: a line below it changes nothing", () => {
+    assert.equal(headBindingRefusal(`DoD-Head: ${HEAD_B}\nDoD-Head: ${HEAD_A}\n${fullBody()}`, CANON), null);
+    assert.equal(headBindingRefusal(`note\nDoD-Head: ${HEAD_A}\n${fullBody()}`, OTHER_BRANCH), null);
   });
 
-  test("a binding collapsed under <details> is not a visible binding", () => {
-    assert.notEqual(headBindingRefusal(`<details>\nDoD-Head: ${HEAD_B}\n</details>\n${fullBody()}`, CANON), null);
-    assert.notEqual(headBindingRefusal(`<DETAILS open>\nDoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), null);
-    assert.equal(headBindingRefusal(`<details>x</details>\nDoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), null);
-  });
-
-  test("a fence opened in the generated zone still hides the binding after it", () => {
-    const zone = "<!-- canon-sync:generated:start -->\n```\nlog\n<!-- canon-sync:generated:end -->";
-    assert.notEqual(headBindingRefusal(`${zone}\nDoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), null);
-  });
-
-  for (const [name, shown] of [
-    ["an unclosed comment in a code block", "```\n<!-- not a comment\n```"],
-    ["an unclosed <details> in a code block", "~~~\n<details>\n~~~"],
-    ["a comment marker in a fence info string", "``` <!--\nlog\n```"],
-    ["a comment marker in inline code", "Le marqueur `<!--` reste du texte."],
-    ["a <details> in inline code", "La balise `<details>` reste du texte."],
-    ["a marker in a longer code span", "Exemple : `` a ` <!-- b ``."],
-    ["a marker after a closed code span", "`x` puis `<details>`"],
+  for (const [name, before] of [
+    ["a blank line", "\n"],
+    ["a note", "note\n"],
+    ["a leading space", " "],
+    ["a byte order mark", String.fromCodePoint(0xfeff)],
+    ["a closed comment", "<!-- c -->\n"],
+    ["a closed code block", "```\nlog\n```\n"],
   ]) {
-    test(`${name} hides nothing after it`, () => {
-      assert.match(headBindingRefusal(`${shown}\nDoD-Head: ${HEAD_A}\n${fullBody()}`, OTHER_BRANCH), /naming its head/, "stale");
-      assert.equal(headBindingRefusal(`${shown}\nDoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), null, "valid");
+    test(`a binding after ${name} binds nothing`, () => {
+      assert.match(headBindingRefusal(`${before}DoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), /naming its head/);
+      assert.equal(headBindingRefusal(`${before}DoD-Head: ${HEAD_A}`, OTHER_BRANCH), null);
     });
   }
 
-  test("a real comment or block still hides what follows, past a stray backtick", () => {
-    assert.equal(headBindingRefusal(`Un seul \` puis <!-- caché\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), null);
-    assert.equal(headBindingRefusal(`\`x\` puis <details>\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), null);
-  });
+  // GitHub hides or misplaces the line in these bodies (POST /markdown, 2026-11-09).
+  for (const [name, body] of [
+    ["an escaped backtick opening a real comment", `\\\` <!-- \\\`\nDoD-Head: ${HEAD_B}\n-->`],
+    ["a dotted capital I before the end of a comment", `<!--\n${String.fromCodePoint(0x130)}-->XDoD-Head: ${HEAD_B}`],
+    ["a fence glued to a comment", `<!-- c -->\`\`\`\nDoD-Head: ${HEAD_A}\n\`\`\`\nDoD-Head: ${HEAD_B}\n\`\`\``],
+    ["nested details", `<details>\n<details>\nx\n</details>\nDoD-Head: ${HEAD_B}\n</details>`],
+    ["open details", `<details open>\nDoD-Head: ${HEAD_B}\n</details>`],
+  ]) {
+    test(`${name} cannot carry the binding`, () => {
+      assert.match(headBindingRefusal(`${body}\n\n${fullBody()}`, CANON), /naming its head/);
+    });
+  }
 
-  test("a fence inside a comment opens nothing", () => {
-    assert.match(headBindingRefusal(`<!--\n\`\`\`\n-->\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
-  });
-
-  test("a fence right after a hidden block still opens", () => {
-    assert.notEqual(headBindingRefusal(`<!-- c -->\`\`\`\nDoD-Head: ${HEAD_B}\n\`\`\`\n${fullBody()}`, CANON), null);
-  });
-
-  test("text around a hidden block stays on its line, and a closer ends the block", () => {
-    assert.match(headBindingRefusal(`<!-- a -->DoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
-    assert.match(headBindingRefusal(`DoD-Head: ${HEAD_A}<!-- a -->`, OTHER_BRANCH), /naming its head/);
-    assert.match(headBindingRefusal(`<!-- a\nb --> DoD\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
-    assert.match(headBindingRefusal(`<details>\n</DETAILS>\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
-    assert.match(headBindingRefusal(`<!-- a --> x <!-- b -->\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
-    assert.equal(headBindingRefusal(`<!-- a --><!-- b\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), null);
-  });
+  // GitHub still shows the first line above each of these (POST /markdown, 2026-11-09).
+  for (const [name, after] of [
+    ["an unclosed comment", "<!-- x"],
+    ["an open code block", "```\ncode"],
+    ["a details block", "<details>\nabc\n</details>"],
+    ["a setext underline", "==="],
+    ["an indented line", "    code"],
+    ["the generated marker", "<!-- canon-sync:generated:start -->"],
+  ]) {
+    test(`${name} below the first line leaves the binding as it is`, () => {
+      assert.equal(headBindingRefusal(`DoD-Head: ${HEAD_B}\n${after}\n${fullBody()}`, CANON), null);
+      assert.match(headBindingRefusal(`DoD-Head: ${HEAD_A}\n${after}\n${fullBody()}`, OTHER_BRANCH), /naming its head/);
+    });
+  }
 });
 
 describe("command line — the event payload decides the head", () => {

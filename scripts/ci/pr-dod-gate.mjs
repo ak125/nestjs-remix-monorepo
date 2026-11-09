@@ -31,12 +31,14 @@
 // the author login from the event payload; GitHub logins cannot contain
 // brackets, so `dependabot[bot]` is never a human account.
 //
-// Head binding (ADR-120 D4): a line reading exactly `DoD-Head: <40-hex SHA>`,
-// alone, unquoted and outside comments, code blocks and <details>, ties the
-// certification of the body to one head. Any visible line starting with
-// `DoD-Head:` declares such a binding and must name the head of the event:
-// neither an advisory item, the skip label nor the Dependabot exemption can hide
-// a stale one. The line is required only where it is the contract, on the
+// Head binding (ADR-120 D4): the first line of the body, reading exactly
+// `DoD-Head: <40-hex SHA>`, ties the certification of the body to one head. The
+// position is the contract: nothing can open a comment, a code block or <details>
+// above the first line, so GitHub shows it as written and the gate never has to
+// interpret Markdown. The text `DoD-Head:` anywhere else binds nothing. A first
+// line starting with `DoD-Head:` declares a binding and must name the head of the
+// event: neither an advisory item, the skip label nor the Dependabot exemption can
+// hide a stale one. The line is required only where it is the contract, on the
 // canon-sync branch as soon as the body certifies a DoD item; other PRs that do
 // not declare it are not concerned. It proves that its author tied the
 // declaration to this head, not that the declaration is true.
@@ -76,15 +78,11 @@ const OWNERSHIP_MIN_APPROVALS = 1;
 const DEPENDABOT_LOGIN = "dependabot[bot]";
 
 export const CANON_SYNC_BRANCH = "canon-sync/auto";
-const LINE_ENDS = /\r\n?|[\u2028\u2029]/g;
+const BINDING_PREFIX = "DoD-Head:";
 const HEAD_BINDING = /^DoD-Head: ([0-9a-f]{40})$/;
 const HEAD_SHA = /^[0-9a-f]{40}$/;
-const GENERATED_ZONE = /<!-- canon-sync:generated:start -->[\s\S]*?<!-- canon-sync:generated:end -->/g;
-// An inline code span on the line, or the opening of a block GitHub does not show.
-const SPAN_OR_HIDDEN_BLOCK = /(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)|<!--|<details\b/gi;
-// A backtick in the info string means the line opens no backtick fence (CommonMark).
-const OPENING_FENCE = /^ {0,3}(?:(`{3,})[^`]*|(~{3,}).*)$/;
-const CLOSING_FENCE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
+// Markdown's own line ends: any other separator stays in the line and fails the exact format.
+const FIRST_LINE = /^[^\r\n]*/;
 
 // List item whose first token is the id, optionally boxed and bold:
 // `- [x] DoD1 — …` (vault template), `- [x] **DoD1** …`, `- DoD4 — N/A : …`.
@@ -111,53 +109,7 @@ export function parseAdvisoryItems(raw) {
   return ids;
 }
 
-/** One line without its hidden blocks. `closer` ends the block still open, and an unterminated block runs to the end of the body. */
-function withoutHiddenBlocks(line, closer) {
-  let shown = "";
-  let at = 0;
-  for (;;) {
-    if (closer) {
-      const end = line.toLowerCase().indexOf(closer, at);
-      if (end === -1) return { shown, closer };
-      at = end + closer.length;
-    }
-    SPAN_OR_HIDDEN_BLOCK.lastIndex = at;
-    let token;
-    do token = SPAN_OR_HIDDEN_BLOCK.exec(line);
-    while (token?.[1]);
-    if (!token) return { shown: shown + line.slice(at), closer: null };
-    shown += line.slice(at, token.index);
-    at = token.index + token[0].length;
-    closer = token[0].startsWith("<!") ? "-->" : "</details>";
-  }
-}
-
-/** Lines GitHub renders as text, in document order. One pass: a code block shows the hidden-block markers it contains as text. */
-function visibleLines(text) {
-  const visible = [];
-  let fence = null;
-  let closer = null;
-  for (const line of text.split("\n")) {
-    if (fence) {
-      const closing = line.match(CLOSING_FENCE);
-      if (closing && closing[1][0] === fence[0] && closing[1].length >= fence.length) fence = null;
-      continue;
-    }
-    const fenceOnLine = closer ? null : line.match(OPENING_FENCE);
-    if (fenceOnLine) {
-      fence = fenceOnLine[1] ?? fenceOnLine[2];
-      continue;
-    }
-    const scanned = withoutHiddenBlocks(line, closer);
-    closer = scanned.closer;
-    const opening = scanned.shown.match(OPENING_FENCE);
-    if (opening) fence = opening[1] ?? opening[2];
-    else visible.push(scanned.shown);
-  }
-  return visible;
-}
-
-/** Counted even when hidden: only the binding has to be visible. */
+/** Read from the raw body: a tick hidden from the reader still certifies. */
 const certifiesDod = (text) =>
   DOD_IDS.some((id) => [...text.matchAll(checklistLine(id))].some((m) => isChecked(m) || isNotApplicable(m)));
 
@@ -166,16 +118,14 @@ const certifiesDod = (text) =>
  * Returns why the body is not bound to `head` ({ sha, ref }), or null.
  */
 export function headBindingRefusal(body, head) {
-  const text = (body ?? "").replace(LINE_ENDS, "\n");
-  // The script owns the generated zone: a binding there binds nothing, but its fences still count.
-  const outsideGenerated = text.replace(GENERATED_ZONE, (zone) => zone.replace(/^DoD-Head:.*$/gm, ""));
-  const declared = visibleLines(outsideGenerated).filter((line) => line.startsWith("DoD-Head:"));
+  const text = body ?? "";
+  const firstLine = text.match(FIRST_LINE)[0];
+  const declared = firstLine.startsWith(BINDING_PREFIX);
   const required = head?.ref === CANON_SYNC_BRANCH && certifiesDod(text);
-  if (declared.length === 0 && !required) return null;
+  if (!declared && !required) return null;
   if (!head?.sha) return "declares a DoD head binding but its head is unknown (no event payload).";
-  const bound = declared.length === 1 ? declared[0].match(HEAD_BINDING)?.[1] : undefined;
-  if (bound === head.sha) return null;
-  return `declares DoD state without exactly one "DoD-Head: <sha>" line naming its head ${head.sha}.`;
+  if (firstLine.match(HEAD_BINDING)?.[1] === head.sha) return null;
+  return `declares DoD state without a first line "DoD-Head: <sha>" naming its head ${head.sha}.`;
 }
 
 /**
@@ -319,7 +269,7 @@ function renderReport(result) {
   const footer = result.pass
     ? ""
     : result.mode === "head-binding"
-      ? "\n\n> Evidence recorded for another head does not apply here: review this head, then write one `DoD-Head:` line naming it. No label lifts this failure."
+      ? "\n\n> Evidence recorded for another head does not apply here: review this head, then make `DoD-Head: <its SHA>` the first line of the PR body. No label lifts this failure."
       : `\n\n> Add the DoD self-evaluation section to the PR body (template in vault \`rules-engineering-definition-of-done.md\`), or apply \`${SKIP_LABEL}\` with >= ${SKIP_MIN_APPROVALS} approvals.`;
   return `${head}\n${body}${footer}\n`;
 }
