@@ -34,8 +34,8 @@
 // Head binding (ADR-120 D4): the first line of the body, reading exactly
 // `DoD-Head: <40-hex SHA>`, ties the certification of the body to one head. The
 // position is the contract: nothing can open a comment, a code block or <details>
-// above the first line, so GitHub shows it as written and the gate never has to
-// interpret Markdown. The text `DoD-Head:` anywhere else binds nothing. A first
+// above the first line, so GitHub always shows it (a known SHA as a short link) and
+// the gate never has to interpret Markdown. The text `DoD-Head:` anywhere else binds nothing. A first
 // line starting with `DoD-Head:` declares a binding and must name the head of the
 // event: neither an advisory item, the skip label nor the Dependabot exemption can
 // hide a stale one. The line is required only where it is the contract, on the
