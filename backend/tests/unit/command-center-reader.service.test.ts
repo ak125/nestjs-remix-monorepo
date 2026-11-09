@@ -789,10 +789,13 @@ describe('fraîcheur de la source et identité du build', () => {
     snapshot.alerts = [];
     snapshot.summary.handoffs_incomplete = 0;
     snapshot.summary.capabilities_without_evidence = 0;
-    snapshot.departments = snapshot.departments.map((d: any) => ({
-      ...d,
-      certification: d.certification === 'BROKEN' ? 'PARTIAL' : d.certification,
-    }));
+    snapshot.departments = snapshot.departments.map(
+      (d: { certification: string }) => ({
+        ...d,
+        certification:
+          d.certification === 'BROKEN' ? 'PARTIAL' : d.certification,
+      }),
+    );
     writeFileSync(
       join(dir, 'command-center-snapshot.json'),
       JSON.stringify(snapshot),
@@ -988,6 +991,33 @@ describe('fraîcheur de la source et identité du build', () => {
     ]);
     expect(JSON.stringify(res.global_status)).not.toContain('abc123');
   });
+
+  it.each([
+    ['périmée', '2026-06-04', 'STALE', 'snapshot source stale (>14d)'],
+    ['future', '2026-12-25', 'UNKNOWN', 'snapshot source freshness unknown'],
+  ])(
+    'source %s et département P0 cassé : BLOCKED, motif de fraîcheur conservé',
+    async (_l, lastVerified, stale, reason) => {
+      const service = await serve(lastVerified);
+      const path = join(dir, 'command-center-snapshot.json');
+      const snapshot = JSON.parse(readFileSync(path, 'utf8'));
+      snapshot.departments[0] = {
+        ...snapshot.departments[0],
+        priority: 'P0',
+        certification: 'BROKEN',
+      };
+      writeFileSync(path, JSON.stringify(snapshot));
+
+      const res = await service.getCommandCenter();
+
+      expect(res.stale_status).toBe(stale);
+      expect(res.global_status.verdict).toBe('BLOCKED');
+      expect(res.global_status.reasons).toEqual([
+        `P0 department(s) broken: ${snapshot.departments[0].id}`,
+        reason,
+      ]);
+    },
+  );
 
   it.each([
     ['GIT_SHA seul', SHA_A, undefined],

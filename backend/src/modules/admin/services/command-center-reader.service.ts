@@ -349,6 +349,12 @@ export class CommandCenterReaderService {
       (d) => d.priority === 'P0' && d.certification === 'BROKEN',
     );
     const errorAlerts = snapshot.alerts.filter((a) => a.severity === 'error');
+    // Motifs de la source et du build : listés quel que soit le verdict.
+    const sourceReasons: string[] = [];
+    if (stale === 'STALE') sourceReasons.push('snapshot source stale (>14d)');
+    if (stale === 'UNKNOWN')
+      sourceReasons.push('snapshot source freshness unknown');
+    if (identityProblem) sourceReasons.push(identityProblem);
 
     let level: GlobalStatus['level'] = 'OK';
     let verdict: GlobalStatus['verdict'] = 'OPERATIONAL';
@@ -362,7 +368,7 @@ export class CommandCenterReaderService {
         );
       if (validation === 'STRICT_FAIL')
         reasons.push('operating-map validation STRICT_FAIL');
-      if (identityProblem) reasons.push(identityProblem);
+      reasons.push(...sourceReasons);
     } else if (
       errorAlerts.length > 0 ||
       stale === 'STALE' ||
@@ -375,10 +381,7 @@ export class CommandCenterReaderService {
       verdict = 'PARTIAL_READY';
       if (errorAlerts.length)
         reasons.push(`${errorAlerts.length} error alert(s)`);
-      if (stale === 'STALE') reasons.push('snapshot source stale (>14d)');
-      if (stale === 'UNKNOWN')
-        reasons.push('snapshot source freshness unknown');
-      if (identityProblem) reasons.push(identityProblem);
+      reasons.push(...sourceReasons);
       if (snapshot.summary.handoffs_incomplete > 0)
         reasons.push(
           `${snapshot.summary.handoffs_incomplete} incomplete handoff(s)`,
