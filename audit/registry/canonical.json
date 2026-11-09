@@ -102781,6 +102781,46 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/ci/merge-perimeter-gate.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 324,
+      "owner": "@ak125",
+      "path": "scripts/ci/merge-perimeter-gate.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/merge-perimeter-gate.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 246,
+      "owner": "@ak125",
+      "path": "scripts/ci/merge-perimeter-gate.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/ci/pr-2e-readiness-gate.mjs",
       "importedBy": [],
       "imports": [],
@@ -103385,7 +103425,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 131,
+      "loc": 130,
       "owner": "@ak125",
       "path": "scripts/cleanup/audit-compare-baseline.integration.test.js",
       "risk": "low",
@@ -103405,7 +103445,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 408,
+      "loc": 402,
       "owner": "@ak125",
       "path": "scripts/cleanup/audit-compare-baseline.js",
       "risk": "low",
@@ -103425,7 +103465,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 288,
+      "loc": 268,
       "owner": "@ak125",
       "path": "scripts/cleanup/audit-compare-baseline.test.js",
       "risk": "low",
@@ -106486,11 +106526,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "2d5872d3b1b0218226bca046f584e85c1fb21fb9ba517d43e0dd407264380d1f",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "a9277b90c5103f87e5a3eb49cc55e42e0715b11ced54bdd75ecfc580ec045fbb",
+      "audit/registry/files.json": "e20794b407cff02af137c553ee9be9af04343ce9ac81a0ae9144eede36c85092",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "a08cf4a46cc058ebef66bbd7f5bfc5248f616a32626b23292d2de4d62a5de1f8"
     },
-    "sotFingerprint": "6b2ada9b67a9"
+    "sotFingerprint": "44e7c12dc076"
   },
   "runtime": [
     {
