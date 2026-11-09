@@ -12,15 +12,17 @@
 //   - open PR whose head already carries the synced content => skip the action:
 //     no push, no body edit. The run succeeds only if that PR is acceptable as it
 //     stands: signed head, assignee, and any DoD certification bound to this head
-//     by exactly one visible line "DoD-Head: <40-hex SHA>". Citing the SHA elsewhere
-//     binds nothing. The line records its author's declaration, not its truth.
-//     Otherwise the job fails and nothing is rewritten;
+//     by exactly one visible line "DoD-Head: <40-hex SHA>", read by the same
+//     parser as the PR gate (pr-dod-gate.mjs). Citing the SHA elsewhere binds
+//     nothing. Otherwise the job fails and nothing is rewritten;
 //   - otherwise render the body the action will write. Evidence recorded for the
 //     outgoing head moves to a stale archive: kept in full, named as stale, and
 //     blockquoted so pr-dod-gate.mjs cannot read it as a checklist.
 //     No box is ever ticked here.
 // `verify` (after the action): the announced operation happened, the new head is
 // verified by GitHub, the PR carries its assignee and the body `prepare` rendered.
+// The action pushes before it edits the body: when that edit fails, `verify` turns
+// the run red and the PR gate refuses the old certification at its next event.
 //
 // Every read failure, ambiguous PR state or malformed body stops the job before
 // anything is written.
@@ -36,7 +38,9 @@ import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-export const BRANCH = "canon-sync/auto";
+import { CANON_SYNC_BRANCH, headBindingRefusal } from "./pr-dod-gate.mjs";
+
+export const BRANCH = CANON_SYNC_BRANCH;
 export const BASE_BRANCH = "main";
 export const MAX_BODY_CHARS = 65536;
 export const PR_TEMPLATE_PATH = ".github/PULL_REQUEST_TEMPLATE.md";
@@ -66,8 +70,6 @@ file, and writes the bytes to every declared mirror in this repo.
 **No manual edit needed** in the mirrors. Merging stays a human decision.`;
 
 const TRIGGER_LINE = /\n*Trigger: [a-z_]+(?: \([a-z_-]+\))?$/;
-const DOD_LINE = /^[ \t]*[-*+][ \t]+(?:\[([ xX])\][ \t]*)?(?:\*\*|__)?DoD\d\b/;
-const HEAD_BINDING = /^DoD-Head: ([0-9a-f]{40})$/;
 const BODY_FILE = "canon-sync-pr-body.md";
 
 /** The nine unticked DoD lines of the repository PR template. */
@@ -133,7 +135,7 @@ function fenceFor(content) {
 export function archiveEntry({ content, headSha, replacedAt, runUrl }) {
   const fence = fenceFor(content);
   return [
-    `Body content written while the PR head was \`${headSha}\`, replaced on ${replacedAt} by ${runUrl}. It does not apply to the current head.`,
+    `Body content still on the PR when its head was \`${headSha}\`, replaced on ${replacedAt} by ${runUrl}. It may name an earlier head and does not apply to the current head.`,
     "",
     `${fence}text`,
     ...content.split("\n"),
@@ -228,45 +230,14 @@ function remoteBlob(ghApi, repo, ref, path) {
   return entry.sha;
 }
 
-/** Live DoD lines the gate would count: ticked, or N/A outside a template hint. */
-function certifyingLines(text) {
-  return text.split("\n").filter((line) => {
-    const match = line.match(DOD_LINE);
-    if (!match) return false;
-    return (match[1] !== undefined && match[1] !== " ") || line.split(/<[^>]*>/).some((part) => /\bN\/A\b/i.test(part));
-  });
-}
-
-/** Lines GitHub renders as text: no HTML comment, no fenced code. Unterminated ones run to the end. */
-function visibleLines(text) {
-  const visible = [];
-  let fence = null;
-  for (const line of text.replace(/<!--[\s\S]*?(?:-->|$)/g, "").split("\n")) {
-    const match = line.match(/^ {0,3}(`{3,}|~{3,})(.*)$/);
-    if (fence) {
-      if (match && match[1][0] === fence[0] && match[1].length >= fence.length && match[2].trim() === "") fence = null;
-    } else if (match) {
-      fence = match[1];
-    } else {
-      visible.push(line);
-    }
-  }
-  return visible;
-}
-
 /** A skipped run leaves the PR as it is, so the PR must be acceptable as it is. */
 function refusalsOnSkip(pr, verified) {
   const refusals = [];
   if ((pr.assignees ?? []).length === 0) refusals.push(`PR #${pr.number} has no assignee.`);
   if (!verified) refusals.push(`PR #${pr.number} head ${pr.head.sha} is not verified by GitHub.`);
-  const { generated, review, outside } = parseBody(pr.body);
-  // Certifying lines are counted even when hidden; only a visible binding counts.
-  if (certifyingLines([generated, review, outside].join("\n")).length > 0) {
-    const bindings = visibleLines([review, outside].join("\n")).flatMap((line) => line.match(HEAD_BINDING)?.[1] ?? []);
-    if (bindings.length !== 1 || bindings[0] !== pr.head.sha) {
-      refusals.push(`PR #${pr.number} certifies DoD items without exactly one "DoD-Head: <sha>" line naming its head ${pr.head.sha}.`);
-    }
-  }
+  parseBody(pr.body); // malformed markers stop the job, before any reading of the body
+  const binding = headBindingRefusal(pr.body, { sha: pr.head.sha, ref: BRANCH });
+  if (binding) refusals.push(`PR #${pr.number} ${binding}`);
   return refusals;
 }
 
@@ -318,6 +289,7 @@ export function verify({ ghApi, env, readBody }) {
   if (!expected.includes(operation)) {
     throw new Error(`action reported operation '${operation}', expected ${expected.join(" or ")}`);
   }
+  // closed / none: the announced operation is all there is to check, no PR state was written.
   if (!WRITING_OPERATIONS.includes(operation)) return { checked: false };
 
   const repo = required(env, "GITHUB_REPOSITORY");

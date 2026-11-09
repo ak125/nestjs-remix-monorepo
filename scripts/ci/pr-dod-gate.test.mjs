@@ -4,17 +4,26 @@
 // =============================================================================
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
+  CANON_SYNC_BRANCH,
   evaluateDoD,
   DOD_IDS,
+  headBindingRefusal,
   parseAdvisoryItems,
   readAssignees,
   readAuthor,
+  readHead,
 } from "./pr-dod-gate.mjs";
+
+const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "pr-dod-gate.mjs");
+const HEAD_A = "a".repeat(40);
+const HEAD_B = "b".repeat(40);
 
 // GitHub state that satisfies DoD2 (assignee + 1 human approval).
 const OWNED = { assignees: ["owner"] };
@@ -253,5 +262,211 @@ describe("evaluateDoD — escape hatch", () => {
   test("skip label with 0 approvals fails", () => {
     const r = evaluateDoD("", ["dod-skip-justified"], 0);
     assert.equal(r.pass, false);
+  });
+});
+
+describe("readHead", () => {
+  test("reads sha and ref from the event payload, undefined otherwise", () => {
+    const dir = mkdtempSync(join(tmpdir(), "dod-gate-"));
+    const event = join(dir, "event.json");
+    writeFileSync(event, JSON.stringify({ pull_request: { head: { sha: HEAD_A, ref: "x" } } }));
+    assert.deepEqual(readHead(event), { sha: HEAD_A, ref: "x" });
+    for (const pull_request of [{}, { head: { sha: HEAD_A } }, { head: { ref: "x" } }, { head: { sha: 1, ref: "x" } }]) {
+      writeFileSync(event, JSON.stringify({ pull_request }));
+      assert.equal(readHead(event), undefined);
+    }
+    assert.equal(readHead(join(dir, "absent.json")), undefined);
+    assert.equal(readHead(undefined), undefined);
+  });
+});
+
+describe("evaluateDoD — head binding", () => {
+  const OTHER_BRANCH = { sha: HEAD_B, ref: "feature/x" };
+  const CANON = { sha: HEAD_B, ref: CANON_SYNC_BRANCH };
+  const bound = (sha) => `DoD-Head: ${sha}\n${fullBody()}`;
+  const evaluate = (body, head, extra = {}) => evaluateDoD(body, [], 1, { ...OWNED, head, ...extra });
+
+  test("a PR that declares nothing outside canon-sync is not concerned", () => {
+    assert.equal(evaluate(fullBody(), OTHER_BRANCH).pass, true);
+    assert.equal(evaluate(fullBody(), undefined).pass, true);
+  });
+
+  test("the format cited in prose or in a code block declares nothing", () => {
+    for (const note of [
+      "Le contrat exige `DoD-Head: <sha40>` sur sa ligne.",
+      `\`\`\`\nDoD-Head: ${HEAD_A}\n\`\`\``,
+      `<!-- DoD-Head: ${HEAD_A} -->`,
+      `> DoD-Head: ${HEAD_A}`,
+    ]) {
+      assert.equal(evaluate(`${note}\n${fullBody()}`, OTHER_BRANCH).pass, true, note);
+    }
+  });
+
+  test("a declared binding to the head passes, on any branch", () => {
+    assert.equal(evaluate(bound(HEAD_B), OTHER_BRANCH).pass, true);
+    assert.equal(evaluate(bound(HEAD_B), CANON).pass, true);
+  });
+
+  for (const [name, body] of [
+    ["a stale binding", bound(HEAD_A)],
+    ["a malformed binding", `DoD-Head: ${HEAD_B.slice(0, 12)}\n${fullBody()}`],
+    ["a trailing word", `DoD-Head: ${HEAD_B} ok\n${fullBody()}`],
+    ["two bindings, one right", `DoD-Head: ${HEAD_A}\nDoD-Head: ${HEAD_B}\n${fullBody()}`],
+  ]) {
+    test(`${name} is refused outside canon-sync too`, () => {
+      const r = evaluate(body, OTHER_BRANCH);
+      assert.equal(r.pass, false);
+      assert.equal(r.mode, "head-binding");
+      assert.match(r.reasons[0], new RegExp(`naming its head ${HEAD_B}`));
+    });
+  }
+
+  test("a canon-sync PR needs the binding as soon as it certifies something", () => {
+    assert.equal(evaluate(fullBody(), CANON).mode, "head-binding");
+    const nothingTicked = fullBody().replace(/\[x\]/g, "[ ]").replace(" : N/A ce PR", "");
+    assert.equal(evaluate(nothingTicked, CANON).mode, "checklist");
+  });
+
+  test("a stale binding cannot hide behind an advisory item", () => {
+    const r = evaluateDoD(bound(HEAD_A), [], 0, { assignees: [], head: OTHER_BRANCH, advisoryItems: [...DOD_IDS] });
+    assert.deepEqual([r.pass, r.mode], [false, "head-binding"]);
+  });
+
+  test("a stale binding cannot hide behind the skip label", () => {
+    const r = evaluateDoD(bound(HEAD_A), ["dod-skip-justified"], 2, { head: OTHER_BRANCH });
+    assert.deepEqual([r.pass, r.mode], [false, "head-binding"]);
+  });
+
+  test("a stale binding cannot hide behind the Dependabot exemption", () => {
+    const r = evaluateDoD(bound(HEAD_A), [], 0, { author: "dependabot[bot]", head: OTHER_BRANCH });
+    assert.deepEqual([r.pass, r.mode], [false, "head-binding"]);
+  });
+
+  test("the skip label and Dependabot keep working without a binding", () => {
+    assert.equal(evaluateDoD("x", ["dod-skip-justified"], 2, { head: OTHER_BRANCH }).mode, "skip-justified");
+    assert.equal(evaluateDoD("x", [], 0, { author: "dependabot[bot]", head: OTHER_BRANCH }).mode, "dependabot");
+  });
+
+  test("a declared binding with an unknown head fails closed", () => {
+    assert.match(headBindingRefusal(`DoD-Head: ${HEAD_A}`, undefined), /head is unknown/);
+    assert.match(headBindingRefusal(`DoD-Head: ${HEAD_A}`, { ref: "x" }), /head is unknown/);
+  });
+
+  test("line ends of the web editor do not break a binding", () => {
+    assert.equal(headBindingRefusal(`note\r\nDoD-Head: ${HEAD_B}\r\nmore`, OTHER_BRANCH), null);
+    assert.equal(headBindingRefusal(`note\u2028DoD-Head: ${HEAD_B}`, OTHER_BRANCH), null);
+  });
+
+  test("visibility follows the order of the whole body", () => {
+    const open = `\`\`\`\nDoD-Head: ${HEAD_B}`;
+    assert.equal(headBindingRefusal(`${open}\n\`\`\`\n${fullBody()}`, CANON) !== null, true);
+    assert.equal(headBindingRefusal(`\`\`\`\nlog\n\`\`\`\nDoD-Head: ${HEAD_B}`, CANON), null);
+  });
+
+  test("a backtick in the info string means the line opens no fence", () => {
+    assert.equal(headBindingRefusal(`\`\`\` a\`b\nDoD-Head: ${HEAD_B}`, OTHER_BRANCH), null);
+    assert.notEqual(headBindingRefusal(`\`\`\` a\`b\n\`\`\`\nDoD-Head: ${HEAD_B}\n\`\`\`\n${fullBody()}`, CANON), null);
+    assert.equal(headBindingRefusal(`~~~ a\`b\nDoD-Head: ${HEAD_A}\n~~~`, OTHER_BRANCH), null);
+  });
+
+  test("a binding collapsed under <details> is not a visible binding", () => {
+    assert.notEqual(headBindingRefusal(`<details>\nDoD-Head: ${HEAD_B}\n</details>\n${fullBody()}`, CANON), null);
+    assert.notEqual(headBindingRefusal(`<DETAILS open>\nDoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), null);
+    assert.equal(headBindingRefusal(`<details>x</details>\nDoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), null);
+  });
+
+  test("a fence opened in the generated zone still hides the binding after it", () => {
+    const zone = "<!-- canon-sync:generated:start -->\n```\nlog\n<!-- canon-sync:generated:end -->";
+    assert.notEqual(headBindingRefusal(`${zone}\nDoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), null);
+  });
+});
+
+describe("command line — the event payload decides the head", () => {
+  const ticked = (sha) => `DoD-Head: ${sha}\n${fullBody()}`;
+  const event = (sha, ref, action = "synchronize") => ({
+    action,
+    pull_request: { head: { sha, ref }, assignees: [{ login: "ak125" }], user: { login: "ak125" } },
+  });
+
+  function gate(t, payload, env) {
+    const dir = mkdtempSync(join(tmpdir(), "dod-gate-cli-"));
+    t.after(() => rmSync(dir, { recursive: true, force: true }));
+    const eventPath = join(dir, "event.json");
+    if (payload !== null) writeFileSync(eventPath, typeof payload === "string" ? payload : JSON.stringify(payload));
+    const run = spawnSync(process.execPath, [SCRIPT], {
+      cwd: dir,
+      encoding: "utf8",
+      env: { PATH: process.env.PATH, GITHUB_EVENT_PATH: eventPath, PR_APPROVALS: "1", DOD_ADVISORY_ITEMS: "DoD2", ...env },
+    });
+    const reportPath = join(dir, "dod-gate-report.md");
+    return { status: run.status, stderr: run.stderr, report: existsSync(reportPath) ? readFileSync(reportPath, "utf8") : null };
+  }
+
+  test("an external push on the automatic branch leaves the old certification refused", (t) => {
+    const { status, stderr, report } = gate(t, event(HEAD_B, CANON_SYNC_BRANCH), { PR_BODY: ticked(HEAD_A) });
+    assert.equal(status, 1);
+    assert.match(stderr, /mode=head-binding pass=false/);
+    assert.match(report, new RegExp(`naming its head ${HEAD_B}`));
+    assert.match(report, /review this head/);
+    assert.doesNotMatch(report, /dod-skip-justified/);
+  });
+
+  test("a body update that failed after the push is refused on the next event", (t) => {
+    const { status } = gate(t, event(HEAD_B, CANON_SYNC_BRANCH, "edited"), { PR_BODY: fullBody() });
+    assert.equal(status, 1);
+  });
+
+  test("an approval re-evaluates against the head of its own payload", (t) => {
+    const review = { action: "submitted", ...event(HEAD_B, "feature/x") };
+    assert.equal(gate(t, review, { PR_BODY: ticked(HEAD_A) }).status, 1);
+    assert.equal(gate(t, review, { PR_BODY: ticked(HEAD_B) }).status, 0);
+  });
+
+  test("a binding renewed for the new head passes", (t) => {
+    assert.equal(gate(t, event(HEAD_B, CANON_SYNC_BRANCH), { PR_BODY: ticked(HEAD_B) }).status, 0);
+  });
+
+  test("an unrelated PR passes as before", (t) => {
+    assert.equal(gate(t, event(HEAD_B, "feature/x"), { PR_BODY: fullBody() }).status, 0);
+  });
+
+  for (const [name, payload] of [
+    ["a missing event file", null],
+    ["an unreadable event file", "{not json"],
+    ["an event without a pull request", { action: "synchronize" }],
+    ["an event without a head", { pull_request: { assignees: [] } }],
+    ["a head that is not an object", { pull_request: { head: HEAD_B } }],
+    ["a head without its sha", { pull_request: { head: { ref: CANON_SYNC_BRANCH } } }],
+    ["a head without its branch", { pull_request: { head: { sha: HEAD_B } } }],
+    ["a head with an empty branch", { pull_request: { head: { sha: HEAD_B, ref: "" } } }],
+    ["a head with an empty sha", { pull_request: { head: { sha: "", ref: CANON_SYNC_BRANCH } } }],
+    ["a head with a short sha", { pull_request: { head: { sha: HEAD_B.slice(0, 12), ref: "feature/x" } } }],
+    ["a head with an upper-case sha", { pull_request: { head: { sha: HEAD_B.toUpperCase(), ref: "feature/x" } } }],
+  ]) {
+    test(`${name} fails closed with a report for the comment step`, (t) => {
+      // An old certification with no binding, under the advisory DoD2 of the real workflow:
+      // losing the identity of the PR must not make it pass as if it were another branch.
+      const { status, stderr, report } = gate(t, payload, { PR_BODY: fullBody() });
+      assert.equal(status, 1);
+      assert.match(report, /FAIL/);
+      assert.match(report, /head cannot be read/);
+      assert.doesNotMatch(report, /PASS/);
+      assert.doesNotMatch(stderr, /pass=true/);
+    });
+  }
+
+  test("an unset event path fails closed like an unreadable one", (t) => {
+    const { status, report } = gate(t, null, { PR_BODY: fullBody(), GITHUB_EVENT_PATH: undefined });
+    assert.equal(status, 1);
+    assert.match(report, /head cannot be read/);
+  });
+
+  test("the same body passes once the payload names an ordinary branch", (t) => {
+    assert.equal(gate(t, event(HEAD_B, "feature/x"), { PR_BODY: fullBody() }).status, 0);
+    assert.equal(gate(t, event(HEAD_B, CANON_SYNC_BRANCH), { PR_BODY: fullBody() }).status, 1);
+  });
+
+  test("pure calls without a head keep their previous result", () => {
+    assert.equal(evaluateDoD(fullBody(), [], 1, { assignees: ["a"] }).pass, true);
   });
 });

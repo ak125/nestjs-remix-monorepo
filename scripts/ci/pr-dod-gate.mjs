@@ -31,6 +31,16 @@
 // the author login from the event payload; GitHub logins cannot contain
 // brackets, so `dependabot[bot]` is never a human account.
 //
+// Head binding (ADR-120 D4): a line reading exactly `DoD-Head: <40-hex SHA>`,
+// alone, unquoted and outside comments, code blocks and <details>, ties the
+// certification of the body to one head. Any visible line starting with
+// `DoD-Head:` declares such a binding and must name the head of the event:
+// neither an advisory item, the skip label nor the Dependabot exemption can hide
+// a stale one. The line is required only where it is the contract, on the
+// canon-sync branch as soon as the body certifies a DoD item; other PRs that do
+// not declare it are not concerned. It proves that its author tied the
+// declaration to this head, not that the declaration is true.
+//
 // Pure `evaluateDoD()` is exported for testing; `main()` reads env + writes the
 // PR-comment report and sets the exit code.
 //
@@ -39,7 +49,8 @@
 //   PR_LABELS          — comma-separated label names
 //   PR_APPROVALS       — integer count of APPROVED reviews
 //   GITHUB_EVENT_PATH  — event payload; `pull_request.assignees` feeds DoD2,
-//                        `pull_request.user.login` the Dependabot exemption
+//                        `pull_request.user.login` the Dependabot exemption,
+//                        `pull_request.head` the head binding (required)
 //   DOD_ADVISORY_ITEMS — optional, comma-separated DoD ids reported but not
 //                        blocking (phased rollout). Unset = all 9 block.
 // =============================================================================
@@ -63,6 +74,17 @@ const SKIP_MIN_APPROVALS = 2;
 const OWNERSHIP_ID = "DoD2";
 const OWNERSHIP_MIN_APPROVALS = 1;
 const DEPENDABOT_LOGIN = "dependabot[bot]";
+
+export const CANON_SYNC_BRANCH = "canon-sync/auto";
+const LINE_ENDS = /\r\n?|[\u2028\u2029]/g;
+const HEAD_BINDING = /^DoD-Head: ([0-9a-f]{40})$/;
+const HEAD_SHA = /^[0-9a-f]{40}$/;
+const GENERATED_ZONE = /<!-- canon-sync:generated:start -->[\s\S]*?<!-- canon-sync:generated:end -->/g;
+// Unterminated blocks run to the end of the body.
+const HIDDEN_BLOCK = /<!--[\s\S]*?(?:-->|$)|<details\b[\s\S]*?(?:<\/details>|$)/gi;
+// A backtick in the info string means the line opens no backtick fence (CommonMark).
+const OPENING_FENCE = /^ {0,3}(?:(`{3,})[^`]*|(~{3,}).*)$/;
+const CLOSING_FENCE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
 
 // List item whose first token is the id, optionally boxed and bold:
 // `- [x] DoD1 — …` (vault template), `- [x] **DoD1** …`, `- DoD4 — N/A : …`.
@@ -89,19 +111,63 @@ export function parseAdvisoryItems(raw) {
   return ids;
 }
 
+/** Lines GitHub renders as text, in document order. */
+function visibleLines(text) {
+  const visible = [];
+  let fence = null;
+  for (const line of text.replace(HIDDEN_BLOCK, "").split("\n")) {
+    if (fence) {
+      const closing = line.match(CLOSING_FENCE);
+      if (closing && closing[1][0] === fence[0] && closing[1].length >= fence.length) fence = null;
+      continue;
+    }
+    const opening = line.match(OPENING_FENCE);
+    if (opening) fence = opening[1] ?? opening[2];
+    else visible.push(line);
+  }
+  return visible;
+}
+
+/** Counted even when hidden: only the binding has to be visible. */
+const certifiesDod = (text) =>
+  DOD_IDS.some((id) => [...text.matchAll(checklistLine(id))].some((m) => isChecked(m) || isNotApplicable(m)));
+
+/**
+ * The one reading of the head-binding contract, shared with canon-sync-pr.mjs.
+ * Returns why the body is not bound to `head` ({ sha, ref }), or null.
+ */
+export function headBindingRefusal(body, head) {
+  const text = (body ?? "").replace(LINE_ENDS, "\n");
+  // The script owns the generated zone: a binding there binds nothing, but its fences still count.
+  const outsideGenerated = text.replace(GENERATED_ZONE, (zone) => zone.replace(/^DoD-Head:.*$/gm, ""));
+  const declared = visibleLines(outsideGenerated).filter((line) => line.startsWith("DoD-Head:"));
+  const required = head?.ref === CANON_SYNC_BRANCH && certifiesDod(text);
+  if (declared.length === 0 && !required) return null;
+  if (!head?.sha) return "declares a DoD head binding but its head is unknown (no event payload).";
+  const bound = declared.length === 1 ? declared[0].match(HEAD_BINDING)?.[1] : undefined;
+  if (bound === head.sha) return null;
+  return `declares DoD state without exactly one "DoD-Head: <sha>" line naming its head ${head.sha}.`;
+}
+
 /**
  * Pure evaluation. Returns { pass, mode, reasons[], advisory[] }.
- *   mode: "dependabot" | "checklist" | "skip-justified" | "skip-needs-approvals"
+ *   mode: "head-binding" | "dependabot" | "checklist" | "skip-justified" | "skip-needs-approvals"
  *   reasons: blocking failures; advisory: failures on DOD_ADVISORY_ITEMS ids.
  *   assignees: logins from the event payload; undefined = unknown (DoD2 fails).
  *   author: PR author login from the event payload.
+ *   head: { sha, ref } of the PR from the event payload.
  */
 export function evaluateDoD(
   body,
   labels,
   approvals,
-  { assignees, author, advisoryItems = [] } = {},
+  { assignees, author, advisoryItems = [], head } = {},
 ) {
+  // First on purpose: a stale binding is a false statement, no exemption covers it.
+  const stale = headBindingRefusal(body, head);
+  if (stale) {
+    return { pass: false, mode: "head-binding", reasons: [`Head binding: this PR ${stale}`], advisory: [] };
+  }
   if (author === DEPENDABOT_LOGIN) {
     return {
       pass: true,
@@ -194,17 +260,25 @@ function readPullRequest(eventPath) {
   }
 }
 
-/** Assignee logins from the Actions event payload; undefined when unreadable. */
-export function readAssignees(eventPath) {
-  const list = readPullRequest(eventPath)?.assignees;
-  return Array.isArray(list) ? list.map((a) => a.login) : undefined;
+/**
+ * The PR fields the gate uses, from one read of the event payload; a field is
+ * undefined when absent or invalid. A head without a full SHA and a branch name
+ * is no head: the branch decides which contract applies.
+ */
+export function readEvent(eventPath) {
+  const pr = readPullRequest(eventPath);
+  const { sha, ref } = pr?.head ?? {};
+  const login = pr?.user?.login;
+  return {
+    assignees: Array.isArray(pr?.assignees) ? pr.assignees.map((a) => a.login) : undefined,
+    author: typeof login === "string" ? login : undefined,
+    head: typeof sha === "string" && HEAD_SHA.test(sha) && typeof ref === "string" && ref !== "" ? { sha, ref } : undefined,
+  };
 }
 
-/** PR author login from the Actions event payload; undefined when unreadable. */
-export function readAuthor(eventPath) {
-  const login = readPullRequest(eventPath)?.user?.login;
-  return typeof login === "string" ? login : undefined;
-}
+export const readAssignees = (eventPath) => readEvent(eventPath).assignees;
+export const readAuthor = (eventPath) => readEvent(eventPath).author;
+export const readHead = (eventPath) => readEvent(eventPath).head;
 
 function renderReport(result) {
   const icon = result.pass ? "✅ PASS" : "❌ FAIL";
@@ -215,8 +289,17 @@ function renderReport(result) {
   const body = result.reasons.map((r) => `- ${r}`).join("\n") + advisory;
   const footer = result.pass
     ? ""
-    : `\n\n> Add the DoD self-evaluation section to the PR body (template in vault \`rules-engineering-definition-of-done.md\`), or apply \`${SKIP_LABEL}\` with >= ${SKIP_MIN_APPROVALS} approvals.`;
+    : result.mode === "head-binding"
+      ? "\n\n> Evidence recorded for another head does not apply here: review this head, then write one `DoD-Head:` line naming it. No label lifts this failure."
+      : `\n\n> Add the DoD self-evaluation section to the PR body (template in vault \`rules-engineering-definition-of-done.md\`), or apply \`${SKIP_LABEL}\` with >= ${SKIP_MIN_APPROVALS} approvals.`;
   return `${head}\n${body}${footer}\n`;
+}
+
+/** Misconfiguration fails closed, with the report the comment step expects. */
+function failClosed(message) {
+  writeFileSync("dod-gate-report.md", `### 🧾 Definition of Done gate — ❌ FAIL\n\n- ${message}\n`, "utf8");
+  process.stderr.write(`[pr-dod-gate] ${message}\n`);
+  process.exit(1);
 }
 
 function main() {
@@ -226,19 +309,17 @@ function main() {
     .map((s) => s.trim())
     .filter(Boolean);
   const approvals = Number.parseInt(process.env.PR_APPROVALS ?? "0", 10) || 0;
-  const assignees = readAssignees(process.env.GITHUB_EVENT_PATH);
-  const author = readAuthor(process.env.GITHUB_EVENT_PATH);
+  const { assignees, author, head } = readEvent(process.env.GITHUB_EVENT_PATH);
   let advisoryItems;
   try {
     advisoryItems = parseAdvisoryItems(process.env.DOD_ADVISORY_ITEMS);
   } catch (err) {
-    // Misconfiguration fails closed, with the report the comment step expects.
-    writeFileSync("dod-gate-report.md", `### 🧾 Definition of Done gate — ❌ FAIL\n\n- ${err.message}\n`, "utf8");
-    process.stderr.write(`[pr-dod-gate] ${err.message}\n`);
-    process.exit(1);
+    failClosed(err.message);
   }
+  // Before evaluating: without the head, the branch and its contract are unknown.
+  if (!head) failClosed("The PR head cannot be read from the event payload (GITHUB_EVENT_PATH).");
 
-  const result = evaluateDoD(body, labels, approvals, { assignees, author, advisoryItems });
+  const result = evaluateDoD(body, labels, approvals, { assignees, author, advisoryItems, head });
   writeFileSync("dod-gate-report.md", renderReport(result), "utf8");
   process.stderr.write(
     `[pr-dod-gate] mode=${result.mode} pass=${result.pass} reasons=${result.reasons.length} advisory=${result.advisory.length}\n`,

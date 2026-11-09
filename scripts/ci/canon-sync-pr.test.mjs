@@ -8,8 +8,10 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 
 import {
+  BRANCH,
   GENERATED_TEXT,
   MAX_BODY_CHARS,
+  createGhApi,
   createGitReader,
   decide,
   extractDodLines,
@@ -42,7 +44,12 @@ function fakeGitHub({ pr = null, files = [MIRROR], blobs = { [MIRROR]: "blob-new
   const calls = [];
   const ghApi = (path, { allowNotFound = false } = {}) => {
     calls.push(path);
-    if (path.includes("/pulls?state=open")) return JSON.stringify(pr ? [{ number: pr.number }] : []);
+    if (path.includes("/pulls?state=open")) {
+      const query = new URLSearchParams(path.split("?")[1]);
+      assert.equal(query.get("head"), `ak125:${BRANCH}`);
+      assert.equal(query.get("base"), "main");
+      return JSON.stringify(pr ? [{ number: pr.number }] : []);
+    }
     if (path.includes("/files?")) return JSON.stringify(files.map((filename) => ({ filename })));
     if (path.includes("/contents/")) {
       const key = decodeURIComponent(path.split("/contents/")[1].split("?")[0]);
@@ -109,6 +116,7 @@ test("main moving on unrelated files alone does not touch the PR", () => {
   const github = fakeGitHub({ pr: openPr("evidence", READY), verified: true });
   const { outputs } = run({ github, local: { [MIRROR]: "blob-new", "backend/other.ts": "changed-on-main" } });
   assert.equal(outputs.skip, "true");
+  assert.deepEqual(github.calls.filter((path) => path.includes("/contents/")).map((path) => path.split("/contents/")[1].split("?")[0]), [MIRROR].map(encodeURI));
 });
 
 function assertSkipRefused(prBody, extra, verified, pattern) {
@@ -149,6 +157,7 @@ const markedBody = (review, trigger = "schedule") =>
   renderBody({ ...RENDER, previousBody: "", previousHead: undefined })
     .replace(reviewPlaceholder(DOD_LINES), review)
     .replace("Trigger: schedule", trigger);
+const gateOnAutoBranch = (body) => evaluateDoD(body, [], 1, { assignees: ["ak125"], head: { sha: OLD_HEAD, ref: BRANCH } });
 
 for (const [name, body] of [
   ["no binding line", `Evidence for ${OTHER_HEAD}\n${TICKED}`],
@@ -161,6 +170,9 @@ for (const [name, body] of [
   ["the binding in a backtick fence", `\`\`\`\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
   ["the binding in a tilde fence", `~~~\n${bind(OLD_HEAD)}\n~~~\n${TICKED}`],
   ["the binding in an unterminated fence", `${TICKED}\n\`\`\`\n${bind(OLD_HEAD)}`],
+  ["a fence after a line that only looks like one", `\`\`\` a\`b\n\`\`\`\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
+  ["a fence opened above the review zone", `\`\`\`\n${markedBody(`${bind(OLD_HEAD)}\n${TICKED}`)}`],
+  ["the binding collapsed under details", `<details>\n${bind(OLD_HEAD)}\n</details>\n${TICKED}`],
   ["a fence that another kind of fence does not close", `\`\`\`\n~~~\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
   ["a fence that a shorter fence does not close", `\`\`\`\`\n\`\`\`\n${bind(OLD_HEAD)}\n\`\`\`\`\n${TICKED}`],
   ["a fence that an info string does not close", `\`\`\`\n\`\`\`js\n${bind(OLD_HEAD)}\n\`\`\`\n${TICKED}`],
@@ -187,16 +199,36 @@ for (const [name, body] of [
   test(`skip fails closed on certifying lines with ${name}`, () => {
     assertSkipRefused(body, READY, true, NOT_BOUND);
   });
+  test(`the PR gate reads the same refusal with ${name}`, () => {
+    assert.equal(gateOnAutoBranch(body).mode, "head-binding");
+  });
 }
+
+test("the review keeps the indent of its first line: an indented binding must not become a live one", () => {
+  assert.equal(parseBody(markedBody(`    ${bind(OLD_HEAD)}\nNotes`)).review, `    ${bind(OLD_HEAD)}\nNotes`);
+});
+
+test("skip fails closed on malformed markers instead of reading the body around them", () => {
+  assertSkipRefused(markedBody("Notes").replace("<!-- canon-sync:archive:start -->", ""), READY, true, /markers/);
+});
+
+test("skip fails closed on a stale binding even with nothing certified", () => {
+  assertSkipRefused(`${bind(OTHER_HEAD)}\nNotes`, READY, true, NOT_BOUND);
+});
 
 for (const [name, body] of [
   ["in the review zone", markedBody(`${bind(OLD_HEAD)}\n${TICKED}`)],
   ["with CRLF line ends", `${bind(OLD_HEAD)}\r\n${TICKED.replace(/\n/g, "\r\n")}`],
   ["after a closed comment", `<!-- note -->\n${bind(OLD_HEAD)}\n${TICKED}`],
   ["after a closed fence", `\`\`\`\nlog\n\`\`\`\n${bind(OLD_HEAD)}\n${TICKED}`],
+  ["after a line that only looks like a fence", `\`\`\` a\`b\n${bind(OLD_HEAD)}\n${TICKED}`],
+  ["after a closed details block", `<details>log</details>\n${bind(OLD_HEAD)}\n${TICKED}`],
 ]) {
   test(`skip accepts one binding to the current head ${name}`, () => {
     assert.equal(run({ github: fakeGitHub({ pr: openPr(body, READY), verified: true }) }).outputs.skip, "true");
+  });
+  test(`the PR gate accepts the same binding ${name}`, () => {
+    assert.equal(gateOnAutoBranch(body).mode, "checklist");
   });
 }
 
@@ -248,7 +280,7 @@ test("head change: legacy evidence is archived whole and stops certifying", () =
 
   const { body } = written[0];
   for (const line of legacy.split("\n").filter(Boolean)) assert.ok(body.includes(`> ${line}`), line);
-  assert.match(body, new RegExp(`written while the PR head was \`${OLD_HEAD}\`.*does not apply to the current head`));
+  assert.match(body, new RegExp(`still on the PR when its head was \`${OLD_HEAD}\`.*may name an earlier head.*does not apply to the current head`));
   const result = certified(body);
   assert.equal(result.pass, false);
   assert.equal(result.reasons.length, DOD_IDS.length - 1);
@@ -262,6 +294,28 @@ test("a path removed by the sync but still on the PR head counts as a change", (
     blobs: { [MIRROR]: "blob-new", [stale]: "blob-stale" },
   });
   assert.equal(run({ github }).outputs.expected, "updated");
+});
+
+test("the old path of a rename still on the PR head counts as a change", () => {
+  const renamed = "workspaces/old/renamed.md";
+  const github = fakeGitHub({ pr: openPr("evidence"), blobs: { [MIRROR]: "blob-new", [renamed]: "blob-stale" } });
+  const ghApi = (path, options) =>
+    path.includes("/files?") ? JSON.stringify([{ filename: MIRROR, previous_filename: renamed }]) : github.ghApi(path, options);
+  assert.equal(run({ github: { ghApi } }).outputs.expected, "updated");
+});
+
+test("a change listed on the second page of files counts", () => {
+  const many = Array.from({ length: 100 }, (_, i) => `workspaces/${i}.md`);
+  const last = "workspaces/last.md";
+  const blobs = { [MIRROR]: "blob-new", [last]: "blob-other", ...Object.fromEntries(many.map((path) => [path, "same"])) };
+  const local = { [MIRROR]: "blob-new", ...Object.fromEntries(many.map((path) => [path, "same"])) };
+  const github = fakeGitHub({ pr: openPr("evidence", { changed_files: 101 }), blobs });
+  const ghApi = (path, options) => {
+    if (!path.includes("/files?")) return github.ghApi(path, options);
+    const page = new URLSearchParams(path.split("?")[1]).get("page");
+    return JSON.stringify((page === "1" ? many : [last]).map((filename) => ({ filename })));
+  };
+  assert.equal(run({ github: { ghApi }, local }).outputs.expected, "updated");
 });
 
 test("a mirror the sync adds but the PR head lacks counts as a change", () => {
@@ -290,6 +344,8 @@ test("second cycle: review moves to the archive, older entries stay, zone resets
   assert.match(parsed.archive, /> first evidence/);
   assert.match(parsed.archive, /> second evidence/);
   assert.ok(parsed.archive.indexOf("b".repeat(40)) < parsed.archive.indexOf(OLD_HEAD));
+  assert.doesNotMatch(parsed.archive, /> ## Stale evidence/);
+  assert.equal(second.match(/^## Stale evidence/gm).length, 1);
   assert.equal(certified(second).pass, false);
 });
 
@@ -396,6 +452,40 @@ test("fails closed on a non-file path at the PR head", () => {
   const github = fakeGitHub({ pr: openPr("evidence") });
   const ghApi = (path, options) => (path.includes("/contents/") ? "[]" : github.ghApi(path, options));
   assert.throws(() => run({ github: { ghApi } }), /not a regular file/);
+  const symlink = (path, options) => (path.includes("/contents/") ? JSON.stringify({ type: "symlink", sha: "blob-new" }) : github.ghApi(path, options));
+  assert.throws(() => run({ github: { ghApi: symlink } }), /not a regular file/);
+});
+
+function withFakeGh(t, script) {
+  const dir = mkdtempSync(join(tmpdir(), "canon-sync-gh-"));
+  writeFileSync(join(dir, "gh"), `#!/bin/sh\n${script}\n`, { mode: 0o755 });
+  const path = process.env.PATH;
+  process.env.PATH = `${dir}:${path}`;
+  t.after(() => {
+    process.env.PATH = path;
+    rmSync(dir, { recursive: true, force: true });
+  });
+}
+
+const failingGh = (status, message) => `echo 'gh: ${message} (HTTP ${status})' >&2\nexit 1`;
+
+test("real client: a 404 is an absence only where the caller allows it", (t) => {
+  withFakeGh(t, failingGh(404, "Not Found"));
+  const ghApi = createGhApi("test-token");
+  assert.equal(ghApi("repos/x/contents/a", { allowNotFound: true }), null);
+  assert.throws(() => ghApi("repos/x/contents/a"), /gh api repos\/x\/contents\/a failed: .*HTTP 404/);
+});
+
+for (const [status, message] of [[403, "Forbidden"], [502, "Bad Gateway"]]) {
+  test(`real client: a ${status} is never an absence`, (t) => {
+    withFakeGh(t, failingGh(status, message));
+    assert.throws(() => createGhApi("test-token")("repos/x/contents/a", { allowNotFound: true }), new RegExp(`HTTP ${status}`));
+  });
+}
+
+test("real client: returns the response and passes the token", (t) => {
+  withFakeGh(t, 'echo "$1 $2 $GH_TOKEN"');
+  assert.equal(createGhApi("test-token")("repos/x").trim(), "api repos/x test-token");
 });
 
 test("fails closed on a missing environment variable", () => {
@@ -461,6 +551,7 @@ for (const [name, change, pattern, served] of [
   ["an unchanged head", { CPR_HEAD_SHA: OLD_HEAD }, /did not change/],
   ["a head GitHub does not serve", {}, /action reported/, servedPr({ head: { sha: "d".repeat(40) } })],
   ["a missing assignee", {}, /not assigned/, servedPr({ assignees: [] })],
+  ["another assignee", {}, /not assigned/, servedPr({ assignees: [{ login: "someone-else" }] })],
 ]) {
   test(`verify fails on ${name}`, () => {
     assert.throws(() => verify({ ghApi: served ?? servedPr(), env: { ...VERIFY_ENV, ...change }, readBody: readRendered }), pattern);
@@ -487,6 +578,10 @@ test("git reader lists nested untracked files and hashes like git", (t) => {
   git("add", "tracked.md");
   assert.equal(reader.localBlob("tracked.md"), git("rev-parse", ":tracked.md"));
   assert.equal(reader.localBlob("absent.md"), null);
+
+  git("commit", "-q", "-m", "second");
+  git("mv", "tracked.md", "moved.md");
+  assert.deepEqual(reader.listChanged(), ["deep/er/new file.md", "moved.md", "tracked.md"]);
 });
 
 test("template extraction fails closed on a changed checklist", () => {
@@ -531,6 +626,32 @@ test("command line: writes the outputs and the body the workflow reads", (t) => 
   assert.deepEqual(readFileSync(output, "utf8").trim().split("\n"), ["skip=false", "previous_head=", "expected=created", `body_path=${bodyPath}`]);
   assert.doesNotMatch(readFileSync(bodyPath, "utf8"), /\[[xX]\]/);
 });
+
+function ghServingOpenPr(contentsFailure) {
+  const pr = JSON.stringify({ number: 1954, body: "evidence", head: { sha: OLD_HEAD }, changed_files: 1, assignees: [{ login: "ak125" }] });
+  return `case "$2" in
+  *"/pulls?state=open"*) echo '[{"number":1954}]' ;;
+  *"/files?"*) echo '[{"filename":"${MIRROR}"}]' ;;
+  *"/contents/"*) ${contentsFailure} ;;
+  *) echo '${pr}' ;;
+esac`;
+}
+
+test("command line: a mirror GitHub reports absent (404) is a change to apply", (t) => {
+  const { result, output } = cli(t, ghServingOpenPr(failingGh(404, "Not Found").replace("\n", "; ")));
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(readFileSync(output, "utf8"), /^expected=updated$/m);
+});
+
+for (const [status, message] of [[403, "Forbidden"], [502, "Bad Gateway"]]) {
+  test(`command line: a ${status} on a mirror stops the job instead of reading as absent`, (t) => {
+    const { result, output, dir } = cli(t, ghServingOpenPr(failingGh(status, message).replace("\n", "; ")));
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, new RegExp(`::error::canon-sync: gh api .*HTTP ${status}`));
+    assert.equal(existsSync(output), false);
+    assert.equal(existsSync(join(dir, "canon-sync-pr-body.md")), false);
+  });
+}
 
 test("command line: a GitHub failure is a job failure with no output", (t) => {
   const { result, output, dir } = cli(t, "echo 'HTTP 502' >&2\nexit 1");
@@ -585,7 +706,7 @@ test("workflow contract: signed, guarded, assigned, schedule unchanged", () => {
   assert.match(action.uses, /^peter-evans\/create-pull-request@v8$/);
   assert.equal(action.if, "steps.prepare.outputs.skip == 'false'");
   assert.equal(action.with["sign-commits"], true);
-  assert.equal(action.with.branch, "canon-sync/auto");
+  assert.equal(action.with.branch, BRANCH);
   assert.equal(action.with["delete-branch"], true);
   assert.equal(action.with["body-path"], "${{ steps.prepare.outputs.body_path }}");
   assert.equal(action.with.assignees, "${{ env.CANON_SYNC_ASSIGNEE }}");
@@ -595,4 +716,27 @@ test("workflow contract: signed, guarded, assigned, schedule unchanged", () => {
   assert.equal(check.if, "steps.prepare.outputs.skip == 'false'");
   assert.match(check.run, /canon-sync-pr\.mjs verify/);
   assert.equal(check["continue-on-error"], undefined);
+  assert.equal(steps[prepareIndex].run, "node scripts/ci/canon-sync-pr.mjs prepare");
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(check.env).filter(([name]) => name !== "GH_TOKEN")),
+    {
+      EXPECTED_OPERATIONS: "${{ steps.prepare.outputs.expected }}",
+      PREVIOUS_HEAD: "${{ steps.prepare.outputs.previous_head }}",
+      CPR_OPERATION: "${{ steps.cpr.outputs.pull-request-operation }}",
+      CPR_HEAD_SHA: "${{ steps.cpr.outputs.pull-request-head-sha }}",
+      CPR_VERIFIED: "${{ steps.cpr.outputs.pull-request-commits-verified }}",
+      CPR_NUMBER: "${{ steps.cpr.outputs.pull-request-number }}",
+    },
+  );
+});
+
+test("gate contract: the DoD gate runs on head changes and on reviews", () => {
+  const workflow = yaml.load(readFileSync(join(ROOT, ".github/workflows/pr-dod-gate.yml"), "utf8"));
+  const { pull_request: pullRequest, pull_request_review: review } = workflow.on;
+  assert.ok(["synchronize", "edited", "opened", "reopened"].every((type) => pullRequest.types.includes(type)));
+  assert.deepEqual(review.types, ["submitted", "dismissed"]);
+  const gate = workflow.jobs["dod-gate"].steps.find((step) => step.id === "gate");
+  assert.equal(gate.run, "node scripts/ci/pr-dod-gate.mjs");
+  assert.equal(gate["continue-on-error"], undefined);
+  assert.equal(gate.env.DOD_ADVISORY_ITEMS, "DoD2");
 });
