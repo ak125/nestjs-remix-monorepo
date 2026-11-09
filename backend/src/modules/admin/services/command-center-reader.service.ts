@@ -72,6 +72,8 @@ export class CommandCenterReaderService {
   private static readonly UPSTREAM_UNRELIABLE_CAP = 69;
   private static readonly STALE_WARNING_DAYS = 7;
   private static readonly STALE_DAYS = 14;
+  // Même contrat que `revision` de /health (health.module.ts) : SHA complet.
+  private static readonly COMMIT_SHA_RE = /^[0-9a-f]{40}$/;
 
   constructor(
     private readonly cacheService: CacheService,
@@ -158,7 +160,7 @@ export class CommandCenterReaderService {
     'mode' | 'action_queue' | 'department_reports'
   > {
     const now = new Date();
-    const gitSha = process.env.GIT_SHA || process.env.SOURCE_COMMIT || null;
+    const identity = this.resolveBuildIdentity();
     const snapshotPath = join(this.registryDir, 'command-center-snapshot.json');
     let raw: unknown;
     let failure = 'snapshot_unavailable';
@@ -247,6 +249,7 @@ export class CommandCenterReaderService {
       departments,
       staleStatus,
       validationStatus,
+      identity.problem,
     );
 
     return {
@@ -261,7 +264,7 @@ export class CommandCenterReaderService {
       alerts: snapshot.alerts,
       owner_actions: snapshot.owner_actions,
       generated_at: now.toISOString(),
-      git_sha: gitSha,
+      git_sha: identity.sha,
       stale_status: staleStatus,
       validation_status: validationStatus,
       global_status: globalStatus,
@@ -275,10 +278,35 @@ export class CommandCenterReaderService {
     if (!lastVerified) return 'UNKNOWN';
     const lv = Date.parse(lastVerified);
     if (Number.isNaN(lv)) return 'UNKNOWN';
-    const days = Math.floor((now.getTime() - lv) / 86_400_000);
+    const ageMs = now.getTime() - lv;
+    // Une vérification postérieure à l'instant de calcul ne prouve rien.
+    if (ageMs < 0) return 'UNKNOWN';
+    const days = Math.floor(ageMs / 86_400_000);
     if (days <= CommandCenterReaderService.STALE_WARNING_DAYS) return 'FRESH';
     if (days <= CommandCenterReaderService.STALE_DAYS) return 'WARNING';
     return 'STALE';
+  }
+
+  /**
+   * Identité déclarée du build servi : GIT_SHA (posé à la construction de l'image,
+   * build.yml → Dockerfile) ou SOURCE_COMMIT (aucun émetteur dans ce dépôt). Le
+   * lecteur contrôle la forme et la concordance, il ne prouve pas la liaison à la
+   * construction : une valeur valide reste une déclaration, pas une attestation.
+   * Jamais le HEAD du checkout. Sinon git_sha reste null, avec un motif explicite,
+   * et la valeur reçue n'est pas recopiée.
+   */
+  private resolveBuildIdentity(): BuildIdentity {
+    const declared = [process.env.GIT_SHA, process.env.SOURCE_COMMIT].filter(
+      Boolean,
+    ) as string[];
+    if (declared.some((v) => !CommandCenterReaderService.COMMIT_SHA_RE.test(v)))
+      return { sha: null, problem: 'build identity invalid' };
+    const distinct = new Set(declared);
+    if (distinct.size > 1)
+      return { sha: null, problem: 'build identity divergent' };
+    if (distinct.size === 0)
+      return { sha: null, problem: 'build identity absent' };
+    return { sha: [...distinct][0], problem: null };
   }
 
   private computeValidationStatus(): ValidationStatus {
@@ -313,6 +341,7 @@ export class CommandCenterReaderService {
     >,
     stale: StaleStatus,
     validation: ValidationStatus,
+    identityProblem: string | null,
   ): GlobalStatus {
     const reasons: string[] = [];
     const p0Broken = departments.filter(
@@ -335,6 +364,8 @@ export class CommandCenterReaderService {
     } else if (
       errorAlerts.length > 0 ||
       stale === 'STALE' ||
+      stale === 'UNKNOWN' ||
+      identityProblem !== null ||
       snapshot.summary.handoffs_incomplete > 0 ||
       snapshot.summary.capabilities_without_evidence > 0
     ) {
@@ -343,6 +374,9 @@ export class CommandCenterReaderService {
       if (errorAlerts.length)
         reasons.push(`${errorAlerts.length} error alert(s)`);
       if (stale === 'STALE') reasons.push('snapshot source stale (>14d)');
+      if (stale === 'UNKNOWN')
+        reasons.push('snapshot source freshness unknown');
+      if (identityProblem) reasons.push(identityProblem);
       if (snapshot.summary.handoffs_incomplete > 0)
         reasons.push(
           `${snapshot.summary.handoffs_incomplete} incomplete handoff(s)`,
@@ -375,6 +409,7 @@ export type CommandCenterResponse = CommandCenterResponseV2;
 export type CommandCenterMode = CommandCenterResponseV2['mode'];
 type StaleStatus = CommandCenterResponseV2['stale_status'];
 type ValidationStatus = CommandCenterResponseV2['validation_status'];
+type BuildIdentity = { sha: string | null; problem: string | null };
 
 /**
  * Exposure mode for the Command Center cockpit (owner decision 2026-06-04,
