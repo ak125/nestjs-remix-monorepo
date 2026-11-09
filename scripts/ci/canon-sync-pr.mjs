@@ -103,7 +103,7 @@ const trimBlankEdges = (text) => text.replace(/^(?:[ \t]*\n)+/, "").trimEnd();
  * it counts as evidence to preserve. Partial or reordered markers are an error.
  */
 export function parseBody(body) {
-  // The DoD checklist also treats a lone CR, U+2028 and U+2029 as line ends; the first-line binding does not.
+  // The DoD checklist also treats a lone CR, U+2028 and U+2029 as line ends; the first-line binding stops at CR and LF only.
   const text = trimBlankEdges((body ?? "").replace(/\r\n?|[\u2028\u2029]/g, "\n"));
   const empty = { generated: "", review: "", archive: "", outside: "" };
   if (text === "") return empty;
