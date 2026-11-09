@@ -755,7 +755,12 @@ describe('fraîcheur de la source et identité du build', () => {
   const SHA_A = 'a'.repeat(40);
   const SHA_B = 'b'.repeat(40);
   const NOW = '2026-11-09T12:00:00Z';
-  const ENV_KEYS = ['GIT_SHA', 'SOURCE_COMMIT', 'REGISTRY_DIR'] as const;
+  const ENV_KEYS = [
+    'GIT_SHA',
+    'SOURCE_COMMIT',
+    'REGISTRY_DIR',
+    'COMMAND_CENTER_MODE',
+  ] as const;
   const saved = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]));
   // Même ensemble exact que KEYS dans scripts/ops/hermes-command-center/command_center.py.
   const DIGEST_KEYS = [
@@ -960,6 +965,29 @@ describe('fraîcheur de la source et identité du build', () => {
       expect(JSON.stringify(res.global_status)).not.toContain('abc123');
     },
   );
+
+  it('identité invalide et département P0 cassé : BLOCKED, motif d’identité conservé', async () => {
+    process.env.GIT_SHA = 'abc123';
+    const service = await serve('2026-11-08');
+    const path = join(dir, 'command-center-snapshot.json');
+    const snapshot = JSON.parse(readFileSync(path, 'utf8'));
+    snapshot.departments[0] = {
+      ...snapshot.departments[0],
+      priority: 'P0',
+      certification: 'BROKEN',
+    };
+    writeFileSync(path, JSON.stringify(snapshot));
+
+    const res = await service.getCommandCenter();
+
+    expect(res.git_sha).toBeNull();
+    expect(res.global_status.verdict).toBe('BLOCKED');
+    expect(res.global_status.reasons).toEqual([
+      `P0 department(s) broken: ${snapshot.departments[0].id}`,
+      'build identity invalid',
+    ]);
+    expect(JSON.stringify(res.global_status)).not.toContain('abc123');
+  });
 
   it.each([
     ['GIT_SHA seul', SHA_A, undefined],

@@ -293,7 +293,8 @@ export class CommandCenterReaderService {
    * lecteur contrôle la forme et la concordance, il ne prouve pas la liaison à la
    * construction : une valeur valide reste une déclaration, pas une attestation.
    * Jamais le HEAD du checkout. Sinon git_sha reste null, avec un motif explicite,
-   * et la valeur reçue n'est pas recopiée.
+   * et la valeur reçue n'est pas recopiée. Exception : un snapshot illisible ne
+   * rapporte que cet échec.
    */
   private resolveBuildIdentity(): BuildIdentity {
     const declared = [process.env.GIT_SHA, process.env.SOURCE_COMMIT].filter(
@@ -361,6 +362,7 @@ export class CommandCenterReaderService {
         );
       if (validation === 'STRICT_FAIL')
         reasons.push('operating-map validation STRICT_FAIL');
+      if (identityProblem) reasons.push(identityProblem);
     } else if (
       errorAlerts.length > 0 ||
       stale === 'STALE' ||
