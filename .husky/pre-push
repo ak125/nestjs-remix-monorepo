@@ -97,11 +97,20 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
   # (files introduced by the branch since main) — just measured correctly.
   if [ "${SKIP_REGISTRY_GATE:-0}" != "1" ] && [ -f scripts/registry/check-new-files.js ]; then
     base="origin/main"
-    if ! node scripts/registry/check-new-files.js --base "$base" --quiet >/tmp/pre-push-registry-gate.log 2>&1; then
+    # Journal privé et unique : un chemin fixe sous /tmp mêle les sessions
+    # concurrentes. S'il ne peut pas être créé, le gate n'est pas évalué : refus.
+    if ! registry_gate_log=$(mktemp "${TMPDIR:-/tmp}/pre-push-registry-gate.XXXXXX"); then
+      echo
+      echo "✗ Refused by .husky/pre-push: registry block-new gate journal unavailable (ADR-058 PR-G)."
+      echo "  Cannot create a private journal under ${TMPDIR:-/tmp}: gate not evaluated."
+      exit 1
+    fi
+    if ! node scripts/registry/check-new-files.js --base "$base" --quiet >"$registry_gate_log" 2>&1; then
       echo
       echo "✗ Refused by .husky/pre-push: registry block-new gate (ADR-058 PR-G)."
       echo
-      cat /tmp/pre-push-registry-gate.log | sed 's/^/  /'
+      cat "$registry_gate_log" | sed 's/^/  /'
+      rm -f "$registry_gate_log"
       echo
       echo "  Fix : add a glob in .spec/00-canon/repository-registry/ownership.yaml"
       echo "  covering the new paths (with both domain D1..D15 and owner)."
@@ -110,6 +119,7 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
       echo "  (CI registry-new-file-gate will still block the PR — fix the overlay)."
       exit 1
     fi
+    rm -f "$registry_gate_log"
   fi
 done
 

@@ -1798,6 +1798,51 @@
         "args": [
           {
             "mode": "IN",
+            "name": "p_ord_id",
+            "type": "TEXT"
+          },
+          {
+            "mode": "IN",
+            "name": "p_reason",
+            "type": "TEXT"
+          },
+          {
+            "mode": "IN",
+            "name": "p_attested_by",
+            "type": "TEXT"
+          },
+          {
+            "mode": "IN",
+            "name": "p_correlation_id",
+            "type": "UUID"
+          }
+        ],
+        "definedInMigrations": [
+          "20261022_cancel_order_payment_voided_atomic.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.cancel_order_payment_voided_atomic",
+        "language": "plpgsql",
+        "name": "cancel_order_payment_voided_atomic",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "VOID",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "public",
+          "pg_temp"
+        ],
+        "securityDefiner": true,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
             "name": "p_batch_id",
             "type": "UUID"
           },
@@ -106522,15 +106567,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
+      ".spec/00-canon/repository-registry/ownership.yaml": "e89bcc7533ac621be9ba32b4bc758d055a53b48b6d1227e4f909a152245125d3",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "2d5872d3b1b0218226bca046f584e85c1fb21fb9ba517d43e0dd407264380d1f",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
       "audit/registry/files.json": "e20794b407cff02af137c553ee9be9af04343ce9ac81a0ae9144eede36c85092",
-      "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
+      "audit/registry/rpc.json": "4defa49c80bc764ac044bd61bdcd6fd1d6c6aa4d29ebe3aaefeea9928994c489",
       "audit/registry/runtime.json": "a08cf4a46cc058ebef66bbd7f5bfc5248f616a32626b23292d2de4d62a5de1f8"
     },
-    "sotFingerprint": "44e7c12dc076"
+    "sotFingerprint": "45e181dfca74"
   },
   "runtime": [
     {
