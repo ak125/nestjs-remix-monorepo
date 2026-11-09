@@ -8,6 +8,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import type {
   GateResult,
   AuditResult,
@@ -354,6 +355,11 @@ export class R1KeywordPlanGatesService extends SupabaseBaseService {
       this.logger.error(
         `Failed to upsert R1 keyword plan for pgId=${pgId}: ${error.message}`,
       );
+      throw new DatabaseException({
+        code: ErrorCodes.ADMIN.SUPABASE_ERROR,
+        message: `Écriture du plan R1 impossible (pgId=${pgId})`,
+        details: error.message,
+      });
     }
   }
 

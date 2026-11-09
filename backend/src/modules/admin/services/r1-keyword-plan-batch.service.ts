@@ -29,6 +29,7 @@ import { R3_FORBIDDEN_IN_R1 } from '../../../config/r1-keyword-plan.constants';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 export interface BatchR1Result {
   pgId: number;
@@ -99,7 +100,7 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       .limit(1000);
 
     if (r3Error) {
-      this.logger.warn(`[BATCH] R3 plans query failed: ${r3Error.message}`);
+      throw this.readFailure('plans R3', r3Error.message);
     }
     if (r3Plans && r3Plans.length >= 1000) {
       this.logger.warn(
@@ -117,7 +118,9 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       .select('rkp_pg_id')
       .in('rkp_pg_id', pgIds);
     if (r1Error) {
-      this.logger.warn(`[BATCH] R1 plans query failed: ${r1Error.message}`);
+      // Sans anti-join, toutes les gammes paraîtraient sans plan R1 et seraient
+      // régénérées : on arrête le batch.
+      throw this.readFailure('plans R1', r1Error.message);
     }
     const existingSet = new Set(
       (existingR1 ?? []).map((r: { rkp_pg_id: number }) => Number(r.rkp_pg_id)),
@@ -205,14 +208,19 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
           brands = this.yamlParser.extractYamlList(fm, 'brands');
         faqItems = this.yamlParser.extractYamlList(fm, 'faq');
       }
+    } else {
+      this.logger.warn(`${ctx} fichier RAG absent : ${ragPath}`);
     }
 
     // Gamme name
-    const { data: pgRow } = await this.client
+    const { data: pgRow, error: pgError } = await this.client
       .from('pieces_gamme')
       .select('pg_name')
       .eq('pg_id', pgId)
-      .single();
+      .maybeSingle();
+    if (pgError) {
+      throw this.readFailure('pieces_gamme', pgError.message);
+    }
     const gammeName = pgRow?.pg_name ?? pgAlias.replace(/-/g, ' ');
     const gammeSlug = pgAlias.replace(/-/g, ' ');
 
@@ -234,21 +242,17 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
     const topVehicles = await this.getTopVehicles(pgId);
 
     // ── P0.5: Equipementiers from gamme_aggregates ──
-    const { data: aggRow } = await this.client
+    const { data: aggRow, error: aggError } = await this.client
       .from('gamme_aggregates')
       .select('top_brands')
-      .eq('sgc_id', pgId)
-      .single();
-
-    let equipBrands: string[] = [...brands];
-    if (aggRow?.top_brands && typeof aggRow.top_brands === 'object') {
-      const topBrands = aggRow.top_brands as Record<string, number>;
-      const sorted = Object.entries(topBrands)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([name]) => name);
-      if (sorted.length > 0) equipBrands = sorted;
+      .eq('ga_pg_id', pgId)
+      .maybeSingle();
+    if (aggError) {
+      throw this.readFailure('gamme_aggregates', aggError.message);
     }
+
+    const aggregateBrands = this.topBrandNames(aggRow?.top_brands);
+    const equipBrands = aggregateBrands.length > 0 ? aggregateBrands : brands;
 
     // ── P1+P2: Build section terms (deterministic) ──
     const sectionTerms = this.buildSectionTerms(
@@ -357,12 +361,15 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
     });
 
     // Verify
-    const { data: verify } = await this.client
+    const { data: verify, error: verifyError } = await this.client
       .from('__seo_r1_keyword_plan')
       .select('rkp_id')
       .eq('rkp_pg_id', pgId)
       .eq('rkp_version', nextVersion)
       .single();
+    if (verifyError) {
+      throw this.readFailure('relecture du plan R1', verifyError.message);
+    }
 
     this.logger.log(
       `${ctx} Created rkp_id=${verify?.rkp_id} score=${gateReport.qualityScore} jaccard=${gateReport.r3RiskScore}`,
@@ -533,13 +540,39 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
     };
   }
 
+  /**
+   * Noms de `gamme_aggregates.top_brands` : tableau `{ name, count, ... }`
+   * pré-calculé et trié par notoriété, ordre conservé.
+   */
+  private topBrandNames(raw: unknown): string[] {
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .map((brand: { name?: unknown }) => brand?.name)
+      .filter((name): name is string => typeof name === 'string' && name !== '')
+      .slice(0, 5);
+  }
+
+  private readFailure(source: string, details: string): DatabaseException {
+    this.logger.error(`[R1_KP_BATCH] lecture ${source} : ${details}`);
+    return new DatabaseException({
+      code: ErrorCodes.ADMIN.SUPABASE_ERROR,
+      message: `Batch R1 : lecture impossible (${source})`,
+      details,
+    });
+  }
+
   private async getNextVersion(pgId: number): Promise<number> {
-    const { data } = await this.client
+    const { data, error } = await this.client
       .from('__seo_r1_keyword_plan')
       .select('rkp_version')
       .eq('rkp_pg_id', pgId)
       .order('rkp_version', { ascending: false })
       .limit(1);
+
+    // Une panne lue comme « aucune version » écraserait la version 1.
+    if (error) {
+      throw this.readFailure('version du plan R1', error.message);
+    }
 
     if (data && data.length > 0) {
       return (data[0].rkp_version ?? 0) + 1;
