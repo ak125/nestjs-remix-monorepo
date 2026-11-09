@@ -703,12 +703,26 @@ jobs:
         if: steps.changed-sql.outputs.files != ''
         env:
           SQUAWK_VERSION: "2.52.1"
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/bin"
-          curl -fsSL \
-            "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x64" \
-            -o "$RUNNER_TEMP/bin/squawk"
+          # Authenticated download, retried: an anonymous `curl` without retry
+          # failed three times in a row with HTTP 504 (run 42568764127). A
+          # download that never succeeds still fails the job.
+          for attempt in 1 2 3 4 5; do
+            gh release download "v${SQUAWK_VERSION}" \
+              --repo sbdchd/squawk \
+              --pattern squawk-linux-x64 \
+              --dir "$RUNNER_TEMP/bin" \
+              --clobber && break
+            if [ "$attempt" -eq 5 ]; then
+              echo "::error::squawk v${SQUAWK_VERSION} download failed after 5 attempts"
+              exit 1
+            fi
+            sleep $((attempt * 15))
+          done
+          mv "$RUNNER_TEMP/bin/squawk-linux-x64" "$RUNNER_TEMP/bin/squawk"
           chmod +x "$RUNNER_TEMP/bin/squawk"
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/bin/squawk" --version
