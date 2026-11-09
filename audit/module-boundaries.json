@@ -372,7 +372,7 @@
         "backend/src/modules/invoices"
       ],
       "files_count": 3,
-      "loc_total": 252,
+      "loc_total": 260,
       "has_barrel": false
     },
     "knowledge-graph": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 337,
-      "loc_total": 65465,
+      "files_count": 338,
+      "loc_total": 65651,
       "has_barrel": true
     },
     "upload": {
