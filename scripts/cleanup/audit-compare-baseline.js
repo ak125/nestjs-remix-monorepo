@@ -22,7 +22,7 @@
  * counts, with a zero threshold in the baseline. It does not cover everything:
  * knip files an unresolved specifier shaped like a package name (@common/...)
  * under external dependencies, and it skips .json targets, foreign file
- * extensions and git-ignored paths. Those are not counted here.
+ * extensions and git-ignored relative paths. Those are not counted here.
  *
  * Usage:
  *   node scripts/cleanup/audit-compare-baseline.js            # run, print, exit
