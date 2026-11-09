@@ -70626,7 +70626,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 137,
+      "loc": 147,
       "owner": "__unassigned__",
       "path": "scripts/audit/check-rag-authority-read-ratchet.test.ts",
       "risk": "low",
