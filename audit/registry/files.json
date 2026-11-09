@@ -40930,7 +40930,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 245,
+      "loc": 249,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/invoices.service.test.ts",
       "risk": "low",
