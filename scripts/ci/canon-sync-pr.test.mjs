@@ -638,14 +638,14 @@ esac`;
 }
 
 test("command line: a mirror GitHub reports absent (404) is a change to apply", (t) => {
-  const { result, output } = cli(t, ghServingOpenPr(failingGh(404, "Not Found").replace("\n", "; ")));
+  const { result, output } = cli(t, ghServingOpenPr(failingGh(404, "Not Found").replaceAll("\n", "; ")));
   assert.equal(result.status, 0, result.stderr);
   assert.match(readFileSync(output, "utf8"), /^expected=updated$/m);
 });
 
 for (const [status, message] of [[403, "Forbidden"], [502, "Bad Gateway"]]) {
   test(`command line: a ${status} on a mirror stops the job instead of reading as absent`, (t) => {
-    const { result, output, dir } = cli(t, ghServingOpenPr(failingGh(status, message).replace("\n", "; ")));
+    const { result, output, dir } = cli(t, ghServingOpenPr(failingGh(status, message).replaceAll("\n", "; ")));
     assert.equal(result.status, 1);
     assert.match(result.stderr, new RegExp(`::error::canon-sync: gh api .*HTTP ${status}`));
     assert.equal(existsSync(output), false);

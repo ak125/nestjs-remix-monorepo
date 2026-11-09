@@ -22,7 +22,9 @@
 // `verify` (after the action): the announced operation happened, the new head is
 // verified by GitHub, the PR carries its assignee and the body `prepare` rendered.
 // The action pushes before it edits the body: when that edit fails, `verify` turns
-// the run red and the PR gate refuses the old certification at its next event.
+// the run red and the PR gate refuses the old certification at its next event that
+// actually runs. A head pushed with GITHUB_TOKEN by the scheduled run starts no gate
+// run on its own: its workflows wait in action_required.
 //
 // Every read failure, ambiguous PR state or malformed body stops the job before
 // anything is written.

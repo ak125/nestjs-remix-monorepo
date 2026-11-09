@@ -80,8 +80,8 @@ const LINE_ENDS = /\r\n?|[\u2028\u2029]/g;
 const HEAD_BINDING = /^DoD-Head: ([0-9a-f]{40})$/;
 const HEAD_SHA = /^[0-9a-f]{40}$/;
 const GENERATED_ZONE = /<!-- canon-sync:generated:start -->[\s\S]*?<!-- canon-sync:generated:end -->/g;
-// Unterminated blocks run to the end of the body.
-const HIDDEN_BLOCK = /<!--[\s\S]*?(?:-->|$)|<details\b[\s\S]*?(?:<\/details>|$)/gi;
+// An inline code span on the line, or the opening of a block GitHub does not show.
+const SPAN_OR_HIDDEN_BLOCK = /(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)|<!--|<details\b/gi;
 // A backtick in the info string means the line opens no backtick fence (CommonMark).
 const OPENING_FENCE = /^ {0,3}(?:(`{3,})[^`]*|(~{3,}).*)$/;
 const CLOSING_FENCE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
@@ -111,19 +111,48 @@ export function parseAdvisoryItems(raw) {
   return ids;
 }
 
-/** Lines GitHub renders as text, in document order. */
+/** One line without its hidden blocks. `closer` ends the block still open, and an unterminated block runs to the end of the body. */
+function withoutHiddenBlocks(line, closer) {
+  let shown = "";
+  let at = 0;
+  for (;;) {
+    if (closer) {
+      const end = line.toLowerCase().indexOf(closer, at);
+      if (end === -1) return { shown, closer };
+      at = end + closer.length;
+    }
+    SPAN_OR_HIDDEN_BLOCK.lastIndex = at;
+    let token;
+    do token = SPAN_OR_HIDDEN_BLOCK.exec(line);
+    while (token?.[1]);
+    if (!token) return { shown: shown + line.slice(at), closer: null };
+    shown += line.slice(at, token.index);
+    at = token.index + token[0].length;
+    closer = token[0].startsWith("<!") ? "-->" : "</details>";
+  }
+}
+
+/** Lines GitHub renders as text, in document order. One pass: a code block shows the hidden-block markers it contains as text. */
 function visibleLines(text) {
   const visible = [];
   let fence = null;
-  for (const line of text.replace(HIDDEN_BLOCK, "").split("\n")) {
+  let closer = null;
+  for (const line of text.split("\n")) {
     if (fence) {
       const closing = line.match(CLOSING_FENCE);
       if (closing && closing[1][0] === fence[0] && closing[1].length >= fence.length) fence = null;
       continue;
     }
-    const opening = line.match(OPENING_FENCE);
+    const fenceOnLine = closer ? null : line.match(OPENING_FENCE);
+    if (fenceOnLine) {
+      fence = fenceOnLine[1] ?? fenceOnLine[2];
+      continue;
+    }
+    const scanned = withoutHiddenBlocks(line, closer);
+    closer = scanned.closer;
+    const opening = scanned.shown.match(OPENING_FENCE);
     if (opening) fence = opening[1] ?? opening[2];
-    else visible.push(line);
+    else visible.push(scanned.shown);
   }
   return visible;
 }

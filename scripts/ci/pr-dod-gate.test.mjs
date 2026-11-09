@@ -379,6 +379,43 @@ describe("evaluateDoD — head binding", () => {
     const zone = "<!-- canon-sync:generated:start -->\n```\nlog\n<!-- canon-sync:generated:end -->";
     assert.notEqual(headBindingRefusal(`${zone}\nDoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), null);
   });
+
+  for (const [name, shown] of [
+    ["an unclosed comment in a code block", "```\n<!-- not a comment\n```"],
+    ["an unclosed <details> in a code block", "~~~\n<details>\n~~~"],
+    ["a comment marker in a fence info string", "``` <!--\nlog\n```"],
+    ["a comment marker in inline code", "Le marqueur `<!--` reste du texte."],
+    ["a <details> in inline code", "La balise `<details>` reste du texte."],
+    ["a marker in a longer code span", "Exemple : `` a ` <!-- b ``."],
+    ["a marker after a closed code span", "`x` puis `<details>`"],
+  ]) {
+    test(`${name} hides nothing after it`, () => {
+      assert.match(headBindingRefusal(`${shown}\nDoD-Head: ${HEAD_A}\n${fullBody()}`, OTHER_BRANCH), /naming its head/, "stale");
+      assert.equal(headBindingRefusal(`${shown}\nDoD-Head: ${HEAD_B}\n${fullBody()}`, CANON), null, "valid");
+    });
+  }
+
+  test("a real comment or block still hides what follows, past a stray backtick", () => {
+    assert.equal(headBindingRefusal(`Un seul \` puis <!-- caché\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), null);
+    assert.equal(headBindingRefusal(`\`x\` puis <details>\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), null);
+  });
+
+  test("a fence inside a comment opens nothing", () => {
+    assert.match(headBindingRefusal(`<!--\n\`\`\`\n-->\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
+  });
+
+  test("a fence right after a hidden block still opens", () => {
+    assert.notEqual(headBindingRefusal(`<!-- c -->\`\`\`\nDoD-Head: ${HEAD_B}\n\`\`\`\n${fullBody()}`, CANON), null);
+  });
+
+  test("text around a hidden block stays on its line, and a closer ends the block", () => {
+    assert.match(headBindingRefusal(`<!-- a -->DoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
+    assert.match(headBindingRefusal(`DoD-Head: ${HEAD_A}<!-- a -->`, OTHER_BRANCH), /naming its head/);
+    assert.match(headBindingRefusal(`<!-- a\nb --> DoD\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
+    assert.match(headBindingRefusal(`<details>\n</DETAILS>\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
+    assert.match(headBindingRefusal(`<!-- a --> x <!-- b -->\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), /naming its head/);
+    assert.equal(headBindingRefusal(`<!-- a --><!-- b\nDoD-Head: ${HEAD_A}`, OTHER_BRANCH), null);
+  });
 });
 
 describe("command line — the event payload decides the head", () => {
