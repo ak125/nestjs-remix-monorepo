@@ -16,8 +16,16 @@ export interface WizardState {
   vehicle: {
     brand: string;
     brandId?: number;
+    brandAlias?: string;
     model: string;
     modelId?: number;
+    modelAlias?: string;
+    // Motorisation chosen in the catalogue list. Names alone are ambiguous:
+    // one model often has several engines sharing a name and alias.
+    typeId?: number;
+    typeName?: string;
+    typeAlias?: string;
+    engine?: string;
     year?: number;
     mileage_km?: number;
     fuel?: string;
