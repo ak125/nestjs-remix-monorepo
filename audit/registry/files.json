@@ -71459,6 +71459,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/canon-sync-pr.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 455,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/canon-sync-pr.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/canon-sync-pr.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 928,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/canon-sync-pr.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/catalog-mobile-performance.mjs",
       "importedBy": [],
       "imports": [],
@@ -71634,7 +71672,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 253,
+      "loc": 313,
       "owner": "__unassigned__",
       "path": "scripts/ci/pr-dod-gate.mjs",
       "risk": "low",
@@ -71653,7 +71691,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 258,
+      "loc": 507,
       "owner": "__unassigned__",
       "path": "scripts/ci/pr-dod-gate.test.mjs",
       "risk": "low",
