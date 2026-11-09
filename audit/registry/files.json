@@ -8593,7 +8593,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 501,
+      "loc": 503,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "low",
@@ -40588,7 +40588,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1083,
+      "loc": 1111,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-reader.service.test.ts",
       "risk": "low",
