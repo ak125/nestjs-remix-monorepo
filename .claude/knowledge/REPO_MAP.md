@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 22a7d85961e987748b796509ef76de549c31df6341f55337500dbdf57dff286f
+source_sha256: c3c7830f05e8333c05a366f6af45a06641ebfbff9e91d36fc6c1e190da9d3dd1
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3133 |
+| Files (Layer 1) | 3135 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1014 |
 
-Source sotFingerprint: `e22cf33bb7b2`.
+Source sotFingerprint: `55c6802b559a`.
 
 ## Comment l'utiliser
 
@@ -37,19 +37,19 @@ Source sotFingerprint: `e22cf33bb7b2`.
 
 ### D1 — Catalog Core
 
-- **Files**: 85 (service=51, controller=21, test=9, config=4)
+- **Files**: 86 (service=51, controller=21, test=10, config=4)
 - **Runtime entrypoints**: 58
-- **Top owners**: @ak125/catalog-team (85)
+- **Top owners**: @ak125/catalog-team (86)
 - **Knowledge prose**: [`catalog`](modules/catalog.md), [`gamme-rest`](modules/gamme-rest.md), [`products`](modules/products.md)
-- **Status**: LIVE=73, UNKNOWN=12
+- **Status**: LIVE=73, UNKNOWN=13
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 166 (test=152, service=10, config=3, controller=1)
+- **Files**: 167 (test=153, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (151), __unassigned__ (15)
+- **Top owners**: @ak125 (152), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=151
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=152
 
 ### D3 — SEO & Sitemap
 
