@@ -8,8 +8,11 @@ import {
   HttpStatus,
   Logger,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { PaymentService } from '../services/payment.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
@@ -18,6 +21,12 @@ import { logPaymentError } from './payment-controller.utils';
 
 /**
  * Routes utilitaires : methodes disponibles, transactions, test
+ *
+ * Frontiere d'acces : `methods/available` est publique (la page de commande la
+ * lit sans cookie de session) ; les deux autres routes sont reservees aux
+ * administrateurs.
+ *
+ * Classification exhaustive : backend/tests/unit/payment-core-routes-authz.test.ts
  */
 @ApiTags('payments')
 @Controller('api/payments')
@@ -95,6 +104,7 @@ export class PaymentMethodsController {
    * Endpoint de test pour paiement avec consignes
    */
   @Post('test/create-with-consignes')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: '[TEST] Creer un paiement incluant des consignes' })
   @HttpCode(HttpStatus.OK)
   async testCreatePaymentWithConsignes(
@@ -156,7 +166,7 @@ export class PaymentMethodsController {
    * Historique des transactions d'un paiement
    */
   @Get(':id/transactions')
-  // @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: "Historique des transactions d'un paiement" })
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Liste des transactions' })
