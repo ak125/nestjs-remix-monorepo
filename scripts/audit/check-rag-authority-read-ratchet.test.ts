@@ -111,8 +111,8 @@ test("closure done right → refreshed baseline matches new scan → ok", () => 
 // ── Integration: the committed baseline freezes the remaining debt (16/6) ─────
 // R8 no longer reads RAG files as an editorial source. Its last two findings
 // were removed with an explicit same-PR baseline refresh (20/8 → 18/7).
-// The R1 keyword-plan batch followed: its two RAG reads were removed with an
-// explicit same-PR baseline refresh (18/7 → 16/6).
+// The R1 keyword-plan batch followed: the service was retired, its two RAG
+// reads with it, with an explicit same-PR baseline refresh (18/7 → 16/6).
 test("committed baseline totals 16 findings across 6 files without R8 or the R1 batch", () => {
   const p = join(
     process.cwd(),
