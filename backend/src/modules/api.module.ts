@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from '../auth/auth.module';
 import { DatabaseModule } from '../database/database.module';
 import { UsersModule } from './users/users.module';
 import { NavigationModule } from './navigation/navigation.module';
@@ -18,6 +19,7 @@ import { OrdersController } from '../controllers/orders.controller';
   imports: [
     ConfigModule,
     DatabaseModule,
+    AuthModule, // PermissionsService + PermissionsGuard (accès à api/legacy-orders)
     UsersModule, // Fournit UserDataConsolidatedService pour UsersController
     NavigationModule,
     CommercialModule, // Module commercial avec archives
