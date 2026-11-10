@@ -1,6 +1,20 @@
-import { Controller, Get, Post, Param, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { ShippingService } from './shipping.service';
 
+/**
+ * Les routes indexées par commande (suivi, frais, délai) sont réservées aux
+ * administrateurs. `methods/:zipCode` ne lit qu'un barème par code postal et
+ * reste publique.
+ */
 @Controller('shipping')
 export class ShippingController {
   private readonly logger = new Logger(ShippingController.name);
@@ -11,6 +25,7 @@ export class ShippingController {
    * Obtenir toutes les expéditions avec tracking
    */
   @Get('tracking/all')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getAllShipmentsTracking() {
     try {
       const trackingData =
@@ -35,6 +50,7 @@ export class ShippingController {
    * Calculer les frais de port pour une commande
    */
   @Post('calculate/:orderId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async calculateShippingFee(@Param('orderId') orderId: string) {
     try {
       const fee = await this.shippingService.calculateShippingFee(
@@ -63,6 +79,7 @@ export class ShippingController {
    * Estimer le délai de livraison
    */
   @Get('delivery-estimate/:orderId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getDeliveryEstimate(@Param('orderId') orderId: string) {
     try {
       const estimate = await this.shippingService.estimateDeliveryTime(
