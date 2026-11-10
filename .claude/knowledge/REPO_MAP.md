@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 70190be4b13c76866c85289219e551b92e5fa650126ff5d06449bbfb28e45910
+source_sha256: 662db322e76854a565a41428b0f78a201eb6b8330c7f391dd6edca72c808888c
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3126 |
+| Files (Layer 1) | 3125 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1017 |
+| Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `cd7a22317360`.
+Source sotFingerprint: `c33cd4a12acb`.
 
 ## Comment l'utiliser
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `cd7a22317360`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 944 (config=454, route=246, service=182, controller=39, test=23)
-- **Runtime entrypoints**: 349
-- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (269)
+- **Files**: 943 (config=454, route=246, service=181, controller=39, test=23)
+- **Runtime entrypoints**: 348
+- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (268)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=516, UNKNOWN=428
+- **Status**: LIVE=515, UNKNOWN=428
 
 ### D9 — Import / ETL / Normalisation
 
