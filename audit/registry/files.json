@@ -62645,9 +62645,11 @@
         "frontend/app/routes/commercial.orders._index.tsx",
         "frontend/app/types/orders.types.ts"
       ],
-      "imports": [],
+      "imports": [
+        "~/utils/logger"
+      ],
       "kind": "service",
-      "loc": 130,
+      "loc": 147,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/permissions.ts",
       "risk": "low",
@@ -65547,6 +65549,25 @@
       "loc": 121,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/page-role-normalization.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/permissions-loader-path.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 114,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/permissions-loader-path.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

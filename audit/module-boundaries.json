@@ -145,8 +145,8 @@
         "backend/src/modules/catalog/types",
         "backend/src/modules/catalog/utils"
       ],
-      "files_count": 40,
-      "loc_total": 10270,
+      "files_count": 39,
+      "loc_total": 10199,
       "has_barrel": false
     },
     "commercial": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110682,
+      "loc_total": 110634,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 347,
-      "loc_total": 68308,
+      "loc_total": 68130,
       "has_barrel": true
     },
     "upload": {

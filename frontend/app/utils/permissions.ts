@@ -6,6 +6,7 @@
  * Source canon : backend/src/auth/dto/user-permissions.dto.ts
  * Spec : docs/specs/2026-04-30-permissions-canonical-backend-design.md
  */
+import { logger } from "~/utils/logger";
 
 export interface UserPermissions {
   // Order actions
@@ -51,6 +52,13 @@ export const BASE_USER_PERMISSIONS: UserPermissions = {
  * Fetch the canonical permission set for a user from the backend.
  * Call from Remix loaders (server-side); pass the request cookie through
  * so the backend session is recognized.
+ *
+ * The route is declared without the `api/` prefix
+ * (backend/src/auth/controllers/auth-permissions.controller.ts).
+ *
+ * When the backend cannot be read, the base set (no action) is returned and
+ * the failure is logged: an unreadable matrix must not look like a refusal
+ * decided by the matrix.
  */
 export async function loadUserPermissions(
   userId: string,
@@ -60,14 +68,23 @@ export async function loadUserPermissions(
   if (cookie) headers.Cookie = cookie;
   try {
     const res = await fetch(
-      `http://127.0.0.1:3000/api/auth/user-permissions/${encodeURIComponent(
+      `http://127.0.0.1:3000/auth/user-permissions/${encodeURIComponent(
         userId,
       )}`,
       { headers },
     );
-    if (!res.ok) return BASE_USER_PERMISSIONS;
+    if (!res.ok) {
+      logger.warn(
+        `[permissions] user-permissions unreadable (HTTP ${res.status}); base permissions applied`,
+      );
+      return BASE_USER_PERMISSIONS;
+    }
     return (await res.json()) as UserPermissions;
-  } catch {
+  } catch (error) {
+    logger.warn(
+      "[permissions] user-permissions unreachable; base permissions applied",
+      error,
+    );
     return BASE_USER_PERMISSIONS;
   }
 }
