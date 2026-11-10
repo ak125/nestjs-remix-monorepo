@@ -680,7 +680,6 @@
         "runtime:backend/src/modules/admin/services/admin-health.service.ts",
         "runtime:backend/src/modules/admin/services/admin-job-health.service.ts",
         "runtime:backend/src/modules/admin/services/brand-editorial.service.ts",
-        "runtime:backend/src/modules/admin/services/brief-gates.service.ts",
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/canon-observability.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
@@ -704,12 +703,10 @@
         "runtime:backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "runtime:backend/src/modules/admin/services/hard-gates.service.ts",
         "runtime:backend/src/modules/admin/services/image-gates.service.ts",
-        "runtime:backend/src/modules/admin/services/keyword-density-gate.service.ts",
         "runtime:backend/src/modules/admin/services/keyword-plan-gates.service.ts",
         "runtime:backend/src/modules/admin/services/page-brief.service.ts",
         "runtime:backend/src/modules/admin/services/quality-scoring-engine.service.ts",
         "runtime:backend/src/modules/admin/services/r1-image-prompt.service.ts",
-        "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "runtime:backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r3-image-prompt.service.ts",
@@ -863,9 +860,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/admin/services/keyword-density-gate.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/admin/controllers/admin-keyword-clusters.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/admin/controllers/admin-keyword-clusters.controller.ts",
@@ -874,9 +869,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
@@ -1231,18 +1224,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/admin/services/keyword-density-gate.service.ts",
-        "runtime:backend/src/modules/admin/services/page-brief.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/admin/services/brief-gates.service.ts",
-      "kind": "nestjs-service",
-      "path": "backend/src/modules/admin/services/brief-gates.service.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
         "runtime:backend/src/config/content-write-gate.service.ts",
         "runtime:backend/src/modules/admin/services/page-brief.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
@@ -1519,18 +1500,6 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
-        "runtime:backend/src/modules/admin/services/page-brief.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/admin/services/keyword-density-gate.service.ts",
-      "kind": "nestjs-service",
-      "path": "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
       "dependsOn": [],
       "id": "runtime:backend/src/modules/admin/services/keyword-plan-gates.service.ts",
       "kind": "nestjs-service",
@@ -1564,18 +1533,6 @@
       "id": "runtime:backend/src/modules/admin/services/r1-image-prompt.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/modules/admin/services/enricher-yaml-parser.service.ts",
-        "runtime:backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
-      "kind": "nestjs-service",
-      "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -1996,6 +1953,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/auth.module.ts",
         "runtime:backend/src/controllers/users.controller.ts",
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/commercial/commercial.module.ts",

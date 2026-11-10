@@ -1,4 +1,14 @@
-import { Controller, Get, Param, Query, Req, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Req,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   OperationFailedException,
   DomainNotFoundException,
@@ -35,6 +45,14 @@ interface UserProfileRow {
   [key: string]: unknown;
 }
 
+/**
+ * Comptes clients, lecture seule.
+ *
+ * Liste, recherche, fiche, commandes et statistiques d'un compte sont des
+ * routes d'administration : même frontière que `api/users` et
+ * `api/admin/users` (`AuthenticatedGuard + IsAdminGuard`). `dashboard` sert
+ * l'espace client et contrôle lui-même la session du compte connecté.
+ */
 @Controller('api/legacy-users')
 export class UsersController {
   private readonly logger = new Logger(UsersController.name);
@@ -49,6 +67,7 @@ export class UsersController {
    * Récupère tous les utilisateurs avec pagination
    */
   @Get()
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getAllUsers(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -94,6 +113,7 @@ export class UsersController {
    * Recherche d'utilisateurs
    */
   @Get('search')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async searchUsers(@Query('q') searchTerm: string) {
     try {
       this.logger.log(`Recherche utilisateurs: "${searchTerm}"`);
@@ -292,6 +312,7 @@ export class UsersController {
    * Récupère un utilisateur par son ID
    */
   @Get(':id')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getUserById(@Param('id') id: string) {
     try {
       this.logger.log(`Récupération utilisateur ID: ${id}`);
@@ -323,6 +344,7 @@ export class UsersController {
    * Récupère les commandes d'un utilisateur
    */
   @Get(':id/orders')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getUserOrders(@Param('id') userId: string) {
     try {
       this.logger.log(`Récupération commandes utilisateur: ${userId}`);
@@ -348,6 +370,7 @@ export class UsersController {
    * Récupère les statistiques détaillées d'un utilisateur
    */
   @Get(':id/stats')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getUserStats(@Param('id') userId: string) {
     try {
       this.logger.log(`Récupération statistiques utilisateur: ${userId}`);

@@ -2,7 +2,7 @@
 module: shipping
 sources:
 - backend/src/modules/shipping
-last_scan: '2026-07-02'
+last_scan: '2026-11-10'
 primary_files:
 - backend/src/modules/shipping/shipping.controller.ts
 - backend/src/modules/shipping/shipping.module.ts
@@ -26,7 +26,6 @@ _Section à rédiger._
 - `ShippingService`
 
 ### Fichiers primaires
-- [backend/src/modules/shipping/shipping-new.module.ts](../../../backend/src/modules/shipping/shipping-new.module.ts)
 - [backend/src/modules/shipping/shipping.controller.ts](../../../backend/src/modules/shipping/shipping.controller.ts)
 - [backend/src/modules/shipping/shipping.module.ts](../../../backend/src/modules/shipping/shipping.module.ts)
 - [backend/src/modules/shipping/shipping.service.ts](../../../backend/src/modules/shipping/shipping.service.ts)

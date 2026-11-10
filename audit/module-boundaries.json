@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 159,
-      "loc_total": 45427,
+      "files_count": 156,
+      "loc_total": 43800,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -62,7 +62,7 @@
         "backend/src/modules"
       ],
       "files_count": 1,
-      "loc_total": 32,
+      "loc_total": 34,
       "has_barrel": false
     },
     "auth": {
@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6184,
+      "loc_total": 6231,
       "has_barrel": true
     },
     "blog": {
@@ -155,7 +155,7 @@
         "backend/src/modules/commercial/archives"
       ],
       "files_count": 3,
-      "loc_total": 642,
+      "loc_total": 648,
       "has_barrel": false
     },
     "common": {
@@ -171,8 +171,8 @@
         "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 38,
-      "loc_total": 1589,
+      "files_count": 40,
+      "loc_total": 1714,
       "has_barrel": true
     },
     "config": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 104,
-      "loc_total": 25157,
+      "loc_total": 25128,
       "has_barrel": true
     },
     "customers": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114973,
+      "loc_total": 114966,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110611,
+      "loc_total": 110617,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -364,7 +364,7 @@
         "backend/src/modules/health"
       ],
       "files_count": 2,
-      "loc_total": 158,
+      "loc_total": 156,
       "has_barrel": false
     },
     "invoices": {
@@ -372,7 +372,7 @@
         "backend/src/modules/invoices"
       ],
       "files_count": 3,
-      "loc_total": 260,
+      "loc_total": 252,
       "has_barrel": false
     },
     "knowledge-graph": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6562,
+      "loc_total": 6583,
       "has_barrel": true
     },
     "payments": {
@@ -516,7 +516,7 @@
         "backend/src/modules/payments/utils"
       ],
       "files_count": 28,
-      "loc_total": 5677,
+      "loc_total": 5683,
       "has_barrel": true
     },
     "pkg-cwv-taxonomy": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 222,
-      "loc_total": 52209,
+      "loc_total": 52219,
       "has_barrel": true
     },
     "search": {
@@ -805,8 +805,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 50,
-      "loc_total": 11242,
+      "files_count": 51,
+      "loc_total": 11297,
       "has_barrel": false
     },
     "seo-projection": {
@@ -846,7 +846,7 @@
         "backend/src/modules/shipping"
       ],
       "files_count": 3,
-      "loc_total": 500,
+      "loc_total": 517,
       "has_barrel": false
     },
     "staff": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 338,
-      "loc_total": 66041,
+      "files_count": 341,
+      "loc_total": 66904,
       "has_barrel": true
     },
     "upload": {
@@ -1028,7 +1028,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5080,
+      "loc_total": 5068,
       "has_barrel": false
     }
   },
@@ -1066,7 +1066,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 74
+      "count": 68
     },
     {
       "from": "admin",
@@ -1141,6 +1141,11 @@
     {
       "from": "analytics",
       "to": "database",
+      "count": 1
+    },
+    {
+      "from": "api",
+      "to": "auth",
       "count": 1
     },
     {
@@ -2196,7 +2201,7 @@
     {
       "from": "workers",
       "to": "admin",
-      "count": 6
+      "count": 5
     },
     {
       "from": "workers",
