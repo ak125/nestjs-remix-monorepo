@@ -1,6 +1,6 @@
 {
   "compliantCount": 17,
-  "generatedAt": "2026-10-31T20:55:32.167Z",
+  "generatedAt": "2026-11-10T07:18:06.728Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -296,13 +296,13 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:2635f7fee262729b9670f8bd2777a707f26b1bceb4131652b0a08102f37be7d5",
+      "checksum": "sha256:da80af6880c05d59e652d8e55904cf9e04a39986d59b0b75df3edf1a036848fb",
       "domain": "D15",
       "last_verified": "2026-05-18",
       "llm_safe": true,
       "metadata": {
         "spec": "agentskills.io/specification v1",
-        "version": "1.0"
+        "version": "1.1"
       },
       "name": "session-log",
       "owners": [

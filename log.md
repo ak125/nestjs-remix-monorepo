@@ -33,10 +33,10 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 
 1. **Append-only.** Jamais éditer une entrée passée. Une correction = nouvelle entrée datée.
 2. **Pas de secrets.** Pas de tokens, IPs internes, credentials. `gitleaks` actif en pre-commit.
-3. **Filtre auto.** Hook `Stop` détecte commits/PRs créés et déclenche le skill. Sessions de simple lecture ne loguent pas.
+3. **Filtre auto.** Hook `Stop` détecte les commits non poussés d'une branche et suggère le skill ; il n'écrit rien. Sessions de simple lecture ne loguent pas.
 4. **Curated.** Seul Claude Code (via skill `/log-session`) écrit. Les autres agents n'écrivent pas ici.
 5. **Lu au démarrage, borné.** `CLAUDE.md` instruit de lire **`tail -n 80 log.md`** uniquement (jamais le fichier entier — gaspillage tokens).
-6. **Borné automatiquement.** `scripts/claude-hooks/rotate-log.sh` (appelé par le hook `Stop`) archive les entrées les plus anciennes vers `log-archive-<année>.md` dès que `log.md` dépasse 600 lignes, en gardant les 60 dernières.
+6. **Borné.** `scripts/claude-hooks/rotate-log.sh` (lancé par le skill `/log-session` après l'ajout de l'entrée) archive les entrées les plus anciennes vers `log-archive-<année>.md` dès que `log.md` dépasse 600 lignes, en gardant les 60 dernières.
 
 ---
 
