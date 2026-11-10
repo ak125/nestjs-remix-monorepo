@@ -8,20 +8,18 @@ import {
 } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { isCommitSha } from '@common/utils/build-identity.util';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { SessionInfrastructureModule } from '../session/session-infrastructure.module';
 import { SessionStoreService } from '../session/session-store.service';
-
-// Full commit SHA only: the value is served publicly, so nothing else from the
-// environment is echoed back.
-const REVISION_RE = /^[0-9a-f]{40}$/;
 
 @Injectable()
 export class HealthService {
   /**
    * `revision` = commit the running image was built from (`GIT_SHA`, set by the
    * Dockerfile from build.yml). Deploys compare it with the commit they deploy.
-   * null outside an image (DEV serves its working tree) or when not a full SHA.
+   * null outside an image (DEV serves its working tree) or when not a full SHA:
+   * the value is served publicly, so nothing else from the environment is echoed.
    */
   getHealth() {
     const sha = process.env.GIT_SHA;
@@ -29,7 +27,7 @@ export class HealthService {
       status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      revision: sha && REVISION_RE.test(sha) ? sha : null,
+      revision: isCommitSha(sha) ? sha : null,
     };
   }
 }
