@@ -25,11 +25,7 @@ import {
   getAdminPayments,
   getPaymentStats,
 } from "../services/payment-admin.server";
-import {
-  type Payment,
-  type PaymentStats,
-  PaymentStatus,
-} from "../types/payment";
+import { PaymentStatus } from "../types/payment";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Tableau de Bord Paiements - Admin");
@@ -65,21 +61,6 @@ interface PayboxHealth {
   lastCheck: string;
 }
 
-interface LoaderData {
-  payments: Payment[];
-  stats: PaymentStats;
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-  payboxMonitoring: PayboxMonitoring | null;
-  payboxHealth: PayboxHealth | null;
-}
-
 export async function loader({ request, context }: LoaderFunctionArgs) {
   logger.log("🔧 DEBUG - Payments dashboard loader started");
 
@@ -100,13 +81,15 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     let payboxHealth: PayboxHealth | null = null;
 
     try {
+      // Les deux routes exigent une session admin : transmettre son cookie.
+      const sessionHeaders = { Cookie: request.headers.get("Cookie") || "" };
       const [monitoringRes, healthRes] = await Promise.all([
-        fetch("http://127.0.0.1:3000/api/admin/paybox-monitoring").catch(
-          () => null,
-        ),
-        fetch("http://127.0.0.1:3000/api/admin/paybox-health").catch(
-          () => null,
-        ),
+        fetch("http://127.0.0.1:3000/api/admin/paybox-monitoring", {
+          headers: sessionHeaders,
+        }).catch(() => null),
+        fetch("http://127.0.0.1:3000/api/admin/paybox-health", {
+          headers: sessionHeaders,
+        }).catch(() => null),
       ]);
 
       if (monitoringRes?.ok) {
