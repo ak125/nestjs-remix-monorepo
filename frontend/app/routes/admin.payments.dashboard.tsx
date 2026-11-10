@@ -25,11 +25,7 @@ import {
   getAdminPayments,
   getPaymentStats,
 } from "../services/payment-admin.server";
-import {
-  type Payment,
-  type PaymentStats,
-  PaymentStatus,
-} from "../types/payment";
+import { PaymentStatus } from "../types/payment";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Tableau de Bord Paiements - Admin");
@@ -63,21 +59,6 @@ interface PayboxHealth {
     paymentUrl: string;
   };
   lastCheck: string;
-}
-
-interface LoaderData {
-  payments: Payment[];
-  stats: PaymentStats;
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-  payboxMonitoring: PayboxMonitoring | null;
-  payboxHealth: PayboxHealth | null;
 }
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -129,8 +110,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     }
 
     const [paymentsResult, stats] = await Promise.all([
-      getAdminPayments({ page, limit, search, status }),
-      getPaymentStats(),
+      getAdminPayments(request, { page, limit, search, status }),
+      getPaymentStats(request),
     ]);
 
     logger.log("🔧 DEBUG - Payments loaded:", {

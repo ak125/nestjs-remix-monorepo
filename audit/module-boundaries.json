@@ -62,7 +62,7 @@
         "backend/src/modules"
       ],
       "files_count": 1,
-      "loc_total": 32,
+      "loc_total": 34,
       "has_barrel": false
     },
     "auth": {
@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6207,
+      "loc_total": 6231,
       "has_barrel": true
     },
     "blog": {
@@ -145,8 +145,8 @@
         "backend/src/modules/catalog/types",
         "backend/src/modules/catalog/utils"
       ],
-      "files_count": 40,
-      "loc_total": 10270,
+      "files_count": 39,
+      "loc_total": 10199,
       "has_barrel": false
     },
     "commercial": {
@@ -155,7 +155,7 @@
         "backend/src/modules/commercial/archives"
       ],
       "files_count": 3,
-      "loc_total": 642,
+      "loc_total": 648,
       "has_barrel": false
     },
     "common": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114987,
+      "loc_total": 114964,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110673,
+      "loc_total": 110617,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6562,
+      "loc_total": 6583,
       "has_barrel": true
     },
     "payments": {
@@ -846,7 +846,7 @@
         "backend/src/modules/shipping"
       ],
       "files_count": 3,
-      "loc_total": 500,
+      "loc_total": 517,
       "has_barrel": false
     },
     "staff": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 339,
-      "loc_total": 66507,
+      "files_count": 340,
+      "loc_total": 66707,
       "has_barrel": true
     },
     "upload": {
@@ -1141,6 +1141,11 @@
     {
       "from": "analytics",
       "to": "database",
+      "count": 1
+    },
+    {
+      "from": "api",
+      "to": "auth",
       "count": 1
     },
     {

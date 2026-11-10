@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 7fea17ddc4f534fa5bef7bf3dcd9ee6fc0b1b74ef9656eeb0639199683159307
+source_sha256: ff15400d69c68758f8084113b7c9a870e55b032533919787e9e8475af34d6dca
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1014 |
 
-Source sotFingerprint: `d041a9abbe34`.
+Source sotFingerprint: `7ac6a322c13b`.
 
 ## Comment l'utiliser
 
@@ -37,19 +37,19 @@ Source sotFingerprint: `d041a9abbe34`.
 
 ### D1 — Catalog Core
 
-- **Files**: 86 (service=51, controller=21, test=10, config=4)
+- **Files**: 85 (service=51, controller=21, test=9, config=4)
 - **Runtime entrypoints**: 58
-- **Top owners**: @ak125/catalog-team (86)
+- **Top owners**: @ak125/catalog-team (85)
 - **Knowledge prose**: [`catalog`](modules/catalog.md), [`gamme-rest`](modules/gamme-rest.md), [`products`](modules/products.md)
-- **Status**: LIVE=73, UNKNOWN=13
+- **Status**: LIVE=73, UNKNOWN=12
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 166 (test=152, service=10, config=3, controller=1)
+- **Files**: 165 (test=151, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (151), __unassigned__ (15)
+- **Top owners**: @ak125 (150), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=151
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=150
 
 ### D3 — SEO & Sitemap
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `d041a9abbe34`.
 
 ### D15 — Security & Governance
 
-- **Files**: 296 (test=185, script=62, service=46, config=2, controller=1)
+- **Files**: 298 (test=187, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (296)
+- **Top owners**: @ak125 (298)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=237
+- **Status**: LIVE=59, UNKNOWN=239
 
 ### D16 — Maintenance
 
