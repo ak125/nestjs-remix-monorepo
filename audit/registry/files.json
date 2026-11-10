@@ -1016,6 +1016,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/auth/authenticated.guard.ts",
       "importedBy": [
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/dashboard/dashboard.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
@@ -1176,12 +1177,15 @@
       ],
       "imports": [
         "backend/src/auth/auth.service.ts",
+        "backend/src/auth/authenticated.guard.ts",
         "backend/src/auth/dto/module-access.dto.ts",
         "backend/src/auth/dto/user-permissions.dto.ts",
-        "backend/src/auth/permissions.service.ts"
+        "backend/src/auth/is-admin.guard.ts",
+        "backend/src/auth/permissions.service.ts",
+        "backend/src/auth/session-privilege.ts"
       ],
       "kind": "controller",
-      "loc": 95,
+      "loc": 147,
       "owner": "__unassigned__",
       "path": "backend/src/auth/controllers/auth-permissions.controller.ts",
       "risk": "low",
@@ -1691,6 +1695,7 @@
       "id": "backend/src/auth/is-admin.guard.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
@@ -1941,6 +1946,7 @@
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/permissions.service.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
@@ -40361,6 +40367,25 @@
       "loc": 222,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/auth-guards.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/auth-permissions-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 266,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/auth-permissions-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

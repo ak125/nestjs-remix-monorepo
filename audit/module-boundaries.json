@@ -75,7 +75,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 45,
-      "loc_total": 5975,
+      "loc_total": 6027,
       "has_barrel": true
     },
     "backend-core": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 345,
-      "loc_total": 67750,
+      "files_count": 346,
+      "loc_total": 68016,
       "has_barrel": true
     },
     "upload": {
