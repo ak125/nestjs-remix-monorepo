@@ -29553,6 +29553,7 @@
       "domain": "D11",
       "id": "backend/src/auth/authenticated.guard.ts",
       "importedBy": [
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/dashboard/dashboard.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
@@ -29719,12 +29720,15 @@
       ],
       "imports": [
         "backend/src/auth/auth.service.ts",
+        "backend/src/auth/authenticated.guard.ts",
         "backend/src/auth/dto/module-access.dto.ts",
         "backend/src/auth/dto/user-permissions.dto.ts",
-        "backend/src/auth/permissions.service.ts"
+        "backend/src/auth/is-admin.guard.ts",
+        "backend/src/auth/permissions.service.ts",
+        "backend/src/auth/session-privilege.ts"
       ],
       "kind": "controller",
-      "loc": 95,
+      "loc": 147,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/controllers/auth-permissions.controller.ts",
       "risk": "high",
@@ -30255,6 +30259,7 @@
       "id": "backend/src/auth/is-admin.guard.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
@@ -30515,6 +30520,7 @@
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/permissions.service.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
@@ -70323,6 +70329,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/auth-permissions-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 266,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/auth-permissions-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/auth.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -106596,11 +106622,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "2d5872d3b1b0218226bca046f584e85c1fb21fb9ba517d43e0dd407264380d1f",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "71185a86a9e83cecbb657e3e41fff4d7c053e1a4ba32fb095da8b80a8d99beb7",
+      "audit/registry/files.json": "8409ef24c5b247549719b915240029bddf544c36da8117392a4537b97b9a873b",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "a08cf4a46cc058ebef66bbd7f5bfc5248f616a32626b23292d2de4d62a5de1f8"
+      "audit/registry/runtime.json": "41319aac7eca925e28c7a1cc7efb95d3d935fc85156d2f6756bdf248702707ec"
     },
-    "sotFingerprint": "cd7a22317360"
+    "sotFingerprint": "beffa1ffc2b1"
   },
   "runtime": [
     {
@@ -106781,6 +106807,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/auth/auth.service.ts",
+        "runtime:backend/src/auth/is-admin.guard.ts",
         "runtime:backend/src/auth/permissions.service.ts"
       ],
       "id": "runtime:backend/src/auth/controllers/auth-permissions.controller.ts",
