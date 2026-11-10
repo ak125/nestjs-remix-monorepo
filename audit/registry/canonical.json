@@ -34356,12 +34356,14 @@
         "backend/src/modules/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/database/services/orders.service.ts",
         "backend/src/modules/users/services/user-data-consolidated.service.ts"
       ],
       "kind": "controller",
-      "loc": 370,
+      "loc": 393,
       "owner": "__unassigned__",
       "path": "backend/src/controllers/users.controller.ts",
       "risk": "low",
@@ -70813,6 +70815,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/legacy-users-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/legacy-users-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/maintenance-calculator.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -86553,7 +86575,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 460,
+      "loc": 468,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.reports._index.tsx",
       "risk": "medium",
@@ -87384,7 +87406,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 528,
+      "loc": 530,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.staff.tsx",
       "risk": "medium",
@@ -87692,7 +87714,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 1183,
+      "loc": 1187,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.users._index.tsx",
       "risk": "medium",
@@ -106486,11 +106508,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "1d883277a3932fa5a1aa4aaef019c6ba85790c53e2bb0a67e7904fddcb9972bb",
+      "audit/registry/files.json": "eddd6bbeb85e3826c89cceb903ee6308d360710f0de43f525378bb1644314ef1",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "158368fa1e31fc7192ef74fde6b10fc729af0a96cb678a1ce7105f7b4ef3dcfd"
     },
-    "sotFingerprint": "b48d4e575ad2"
+    "sotFingerprint": "c0b204c5b7e5"
   },
   "runtime": [
     {
