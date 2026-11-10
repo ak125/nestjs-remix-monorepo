@@ -47,59 +47,82 @@ entries:
     runtime_evidence:
       trigger:
         kind: "db_row"
-        source: "cron.job"
-        observed_at: "2026-05-24"
-        query_or_url: "SELECT jobname, schedule, active FROM cron.job WHERE jobname='snapshot-partition-rotation'"
+        source: "cron.job / cron.job_run_details"
+        observed_at: "2026-11-10"
+        query_or_url: "SELECT j.jobname, j.schedule, j.active, r.status, r.return_message, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname='snapshot-partition-rotation'  -- '20 2 * * *', active, succeeded '4 rows' @2026-11-10 02:20:00Z"
       output:
         kind: "db_row"
         source: "pg_class"
-        observed_at: "2026-05-24"
-        query_or_url: "SELECT relname FROM pg_class WHERE relname ~ 'snapshot.*\\d{8}' AND relkind='r' ORDER BY relname DESC LIMIT 5"
+        observed_at: "2026-11-10"
+        query_or_url: "SELECT relname FROM pg_class WHERE relname ~ 'snapshot.*\\d{8}' AND relkind='r' ORDER BY relname DESC LIMIT 5  -- __seo_snapshot_synthetic_p20261124 … p20261121 (J+14)"
       consumer: "no-consumer-by-design"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "runtime-probe"
     risk: "high"
     related_pr: [697, 698]
-    drift_note: "user inventory flagged #698 as 'PR ouverte critique' ; verified MERGED 2026-05-22, cron live"
+    drift_note: "Re-verified 2026-11-10 : job active, daily run succeeded, partitions exist through 2026-11-24. Seed note : #698 verified MERGED 2026-05-22."
 
   # ──────────────────────────────────────────────────────────────────────────
-  # SCRIPT_ONLY — VPS crons documented but never installed in any crontab
+  # ACTIVE — VPS crons installed in the deploy user crontab on the DEV machine
+  # (host crontab not in repo). Seeded as SCRIPT_ONLY on 2026-05-24 ; found
+  # running on 2026-11-10.
   # ──────────────────────────────────────────────────────────────────────────
   - automation_id: "dev-runtime-sync"
     domain: "D13"
     intended_mode: "ACTIVE"
-    actual_mode: "SCRIPT_ONLY"
+    actual_mode: "ACTIVE"
     executor: "cron-vps"
     evidence:
       - path: "scripts/ops/sync-dev-runtime.sh"
-        note: "script committed, no installation evidence in any tracked crontab"
-      - path: "config/cron/crontab"
-        note: "container Supercronic crontab — does NOT include sync-dev-runtime (VPS host crontab not in repo)"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
-    missing_step: "owner installs script as DEV VPS crontab entry (every ~10min) and commits proof"
+        note: "script committed ; installed in the deploy user crontab on the DEV machine (*/10), host crontab not in repo"
+    runtime_evidence:
+      trigger:
+        kind: "log"
+        source: "/tmp/sync-dev-runtime-cron.log"
+        observed_at: "2026-11-10"
+        query_or_url: "crontab -l | grep sync-dev-runtime  →  */10 * * * *"
+      output:
+        kind: "log"
+        source: "/tmp/sync-dev-runtime-cron.log"
+        observed_at: "2026-11-10"
+        query_or_url: "2026-11-10T06:30:02Z synced d6f384168 → 068a91741"
+      consumer:
+        kind: "log"
+        source: "/tmp/sync-dev-runtime-cron.log"
+        observed_at: "2026-11-10"
+        query_or_url: "2026-11-10T06:30:38Z DEV:3000 sain sur 068a91741"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "runtime-probe"
     risk: "medium"
-    owner_action: "decide : install cron on machine DEV (46.224.118.55) OR mark intended_mode=MANUAL"
+    drift_note: "Resync refused 2026-11-06T23:10Z to 2026-11-10T06:20Z (dirty shared checkout, 6 hook files). Shown by SessionStart hook, unresolved 3.3 days."
 
   - automation_id: "worktree-prune-merged"
     domain: "D13"
     intended_mode: "ACTIVE"
-    actual_mode: "SCRIPT_ONLY"
+    actual_mode: "ACTIVE"
     executor: "cron-vps"
     evidence:
       - path: "scripts/cron/prune-merged-worktrees.sh"
-        note: "script committed (PR #680), --apply requires manual invocation"
-      - path: "config/cron/crontab"
-        note: "container Supercronic crontab — does NOT include prune-merged-worktrees"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
-    missing_step: "owner installs script as DEV VPS crontab entry (daily) and commits proof"
+        note: "script committed (PR #680) ; installed in the deploy user crontab on the DEV machine (daily 03:30, --apply)"
+    runtime_evidence:
+      trigger:
+        kind: "log"
+        source: "/tmp/prune-merged-worktrees.log"
+        observed_at: "2026-11-10"
+        query_or_url: "crontab -l | grep prune-merged-worktrees  →  30 3 * * *"
+      output:
+        kind: "log"
+        source: "/tmp/worktree-cleanup-20261110-033001.log"
+        observed_at: "2026-11-10"
+        query_or_url: "Bilan : worktrees ciblés=1 branches ciblées=2 caches ciblés=0"
+      consumer: "no-consumer-by-design"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "runtime-probe"
     risk: "low"
     related_pr: [680]
-    owner_action: "decide : install cron OR keep as one-shot ops tool (mark intended_mode=SCRIPT_ONLY)"
 
   # ──────────────────────────────────────────────────────────────────────────
   # INTENDED_PHASED — warn-only by design, promotion to blocking planned
@@ -111,15 +134,16 @@ entries:
     executor: "github-actions"
     evidence:
       - path: ".github/workflows/pr-dod-gate.yml"
-        line: 14
+        line: 18
         excerpt: "PROMOTION TO BLOCKING"
-        note: "Phase 1 warn-only, promotion to blocking planned at Etape 3"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
-    missing_step: "remove continue-on-error after +14d green signal + add to branch-protection required-status-checks"
+        note: "Phase 2 : the gate step fails the job (red X) ; workflow header says not yet a required check"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
+    missing_step: "add the check to branch-protection required-status-checks (Etape 3)"
     risk: "low"
-    owner_action: "ops decision after green signal window"
+    owner_action: "ops decision : promote to required check"
+    drift_note: "Seed described Phase 1 (continue-on-error). The gate step no longer carries it ; excerpt moved from line 14 to 18, which failed the validator on main."
 
   - automation_id: "dependency-graph-ratchet"
     domain: "D15"
@@ -131,9 +155,9 @@ entries:
         line: 8
         excerpt: "PHASE 1 (warn-only)"
         note: "ratchet step continue-on-error, post comment only"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
     missing_step: "promote to blocking +14d signal vert (Etape 3 ADR-058)"
     risk: "low"
     owner_action: "ops decision after green signal window"
@@ -148,9 +172,9 @@ entries:
         line: 1
         excerpt: "Registry freshness"
         note: "warn-only Phase 1 until V2 block-all"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
     missing_step: "V2 block-all promotion (ADR-058 §V2)"
     risk: "low"
     owner_action: "ops decision in V2 milestone"
@@ -165,9 +189,9 @@ entries:
         line: 1
         excerpt: "Skills Canon gate"
         note: "PR-V2 Phase 0 warn-only"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
     missing_step: "PR-V2.5/V3 promotion (per workflow comment header)"
     risk: "low"
     owner_action: "AI governance Phase 0 → 1 transition"
@@ -185,9 +209,9 @@ entries:
         line: 5
         excerpt: "Never blocks (continue-on-error + exit 0)"
         note: "observer pattern : detect & report contract drift, never enforce"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
     risk: "low"
     drift_note: "user inventory flagged as 'warn-only' implying degraded ; this is observer by-design, NOT a gap"
 
@@ -216,7 +240,8 @@ entries:
     drift_note: "user inventory flagged 'PR-9 dependencies : système de contrôle OK, exécution absente' ; verified : execution = human-owned by design, NOT a missing executor"
 
   # ──────────────────────────────────────────────────────────────────────────
-  # DRAFTED — PRs ouvertes en stagnation (3-6j sans activité au 2026-05-24)
+  # Seed du 2026-05-24 : quatre PR alors ouvertes. État relu le 2026-11-10 :
+  # #693 et #687 fusionnées, #684 et #670 fermées sans fusion.
   # ──────────────────────────────────────────────────────────────────────────
   - automation_id: "pr-693-r8-503-vehicle-page-volatile"
     domain: "D3"
@@ -237,18 +262,23 @@ entries:
   - automation_id: "pr-687-sitemap-freshness-alert"
     domain: "D3"
     intended_mode: "ACTIVE"
-    actual_mode: "DRAFTED"
+    actual_mode: "SCRIPT_ONLY"
     executor: "github-actions-schedule"
     evidence:
       - path: ".github/workflows/sitemap-daily-regen.yml"
-        note: "existing sitemap workflow ; PR #687 adds heartbeat + SITEMAP_STALE_V1 alert step (still OPEN)"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
-    missing_step: "merge PR #687 (commerce-loop step 2 alert)"
+        note: "PR #687 merged 2026-05-29 ; the daily run calls generate-all, the backend then writes the heartbeat event"
+      - path: "backend/supabase/migrations/20260521_seo_sitemap_freshness_001_alert_rpc.sql"
+        line: 82
+        excerpt: "'SITEMAP_STALE_V1'::TEXT,"
+        note: "3rd alert source of rpc_seo_alerts_v1 ; present in the live function (pg_proc.prosrc, 2026-11-10)"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "runtime-probe"
+    missing_step: "prove that someone reads SITEMAP_STALE_V1 (rpc_seo_alerts_v1 via SeoControlService), then set ACTIVE with runtime_evidence"
     risk: "medium"
     related_pr: [687]
-    owner_action: "review + merge"
+    owner_action: "confirm the reader of the alert, or accept SCRIPT_ONLY"
+    drift_note: "Run 42747325395 (2026-11-10) success ; __seo_event_log sitemap_generation_complete : 152 rows since 2026-06-12, last 2026-11-10 03:08Z. Reader not proven."
 
   - automation_id: "pr-684-rag-canon-docs-reconcile"
     domain: "D6"
@@ -257,14 +287,15 @@ entries:
     executor: "github-actions"
     evidence:
       - path: ".claude/rules/agent-doc-search.md"
-        note: "existing canon doc-search rule ; PR #684 adds anti-drift guard for RAG references (still OPEN)"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
-    missing_step: "merge PR #684 (RAG canon reconcile + anti-drift guard)"
+        note: "existing canon doc-search rule ; PR #684 (anti-drift guard for RAG references) closed unmerged 2026-06-13"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
+    missing_step: "owner decides : reopen PR #684 (branch chore/rag-docs-canon-reconcile still on origin) or remove this entry"
     risk: "low"
     related_pr: [684]
-    owner_action: "review + merge"
+    owner_action: "decide : reopen or drop"
+    drift_note: "PR #684 auto-closed 2026-06-13 after 21 days of inactivity, never merged. No rag-scope-guard workflow on main."
 
   - automation_id: "pr-670-kw-canonical-classification"
     domain: "D3"
@@ -273,14 +304,15 @@ entries:
     executor: "github-actions"
     evidence:
       - path: "packages/seo-roles/package.json"
-        note: "existing @repo/seo-roles package ; PR #670 wires KW classifier to it (R1→R2/R5 separation), still OPEN"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
-    missing_step: "merge PR #670 (88% R1 → R2/R5 separated)"
+        note: "existing @repo/seo-roles package ; PR #670 (KW classifier, R1→R2/R5 separation) closed unmerged 2026-06-13"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
+    missing_step: "owner decides : reopen PR #670 (branch feat/kw-canonical-classification still on origin) or remove this entry"
     risk: "medium"
     related_pr: [670]
-    owner_action: "review + merge"
+    owner_action: "decide : reopen or drop"
+    drift_note: "PR #670 auto-closed 2026-06-13 after 21 days of inactivity, never merged."
 
   # ──────────────────────────────────────────────────────────────────────────
   # Self-reference — this very PR's workflows
@@ -350,24 +382,24 @@ entries:
       trigger:
         kind: "db_row"
         source: "cron.job_run_details"
-        observed_at: "2026-06-26"
-        query_or_url: "SELECT j.jobname, r.status, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname IN ('cwv-hourly-aggregation','cwv-daily-rum-aggregation')  -- hourly: succeeded '48 rows' @16:05 UTC ; daily: active, first fire 00:15 UTC 2026-06-27"
+        observed_at: "2026-11-10"
+        query_or_url: "SELECT j.jobname, r.status, r.return_message, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname IN ('cwv-hourly-aggregation','cwv-daily-rum-aggregation')  -- hourly: succeeded '48 rows' @2026-11-10 07:05 UTC ; daily: succeeded '2 rows' @2026-11-10 00:15 UTC"
       output:
         kind: "db_row"
         source: "__seo_cwv_hourly / __seo_cwv_daily_rum"
-        observed_at: "2026-06-26"
-        query_or_url: "WITH raw_hours AS (SELECT DISTINCT date_trunc('hour',received_at) hour FROM __seo_cwv_raw WHERE ua_class='human' AND received_at<date_trunc('hour',now())) SELECT count(*) missing_complete_hours FROM raw_hours r WHERE NOT EXISTS (SELECT 1 FROM __seo_cwv_hourly h WHERE h.hour=r.hour AND h.ua_class='human')  -- = 0 ; max(date) __seo_cwv_daily_rum = 2026-06-25 (J-1)"
+        observed_at: "2026-11-10"
+        query_or_url: "WITH raw_hours AS (SELECT DISTINCT date_trunc('hour',received_at) AS hour FROM __seo_cwv_raw WHERE ua_class='human' AND received_at<date_trunc('hour',now())) SELECT count(*) AS missing_complete_hours FROM raw_hours r WHERE NOT EXISTS (SELECT 1 FROM __seo_cwv_hourly h WHERE h.hour=r.hour AND h.ua_class='human')  -- = 0 @07:06 UTC (1 between hh:00 and the hh:05 run) ; max(date) __seo_cwv_daily_rum = 2026-11-09 (J-1)"
       consumer:
         kind: "db_row"
         source: "get_cwv_dashboard RPC (CwvDashboardService → GET /api/seo/cwv/dashboard) over __seo_cwv_daily_rum"
-        observed_at: "2026-06-26"
-        query_or_url: "SELECT count(*) FROM get_cwv_dashboard(now()::date-30, now()::date, NULL)  -- = 49 rows"
-    last_verified_at: "2026-06-26"
+        observed_at: "2026-11-10"
+        query_or_url: "SELECT count(*) FROM get_cwv_dashboard(now()::date-30, now()::date, NULL)  -- = 83 rows"
+    last_verified_at: "2026-11-10"
     last_verified_by: "@ak125"
     last_verified_method: "runtime-probe"
     risk: "high"
     related_pr: [1165, 1166]
-    drift_note: "Hourly leg live (succeeded '48 rows' @16:05, missing_complete_hours=0, daily_rum J-1). Daily cron first fire 00:15 UTC 2026-06-27. Bull v4 retired #1166; coverage detector @35 auto-resolves."
+    drift_note: "Re-verified 2026-11-10 : both legs succeeded, missing_complete_hours=0, daily_rum J-1, dashboard 83 rows. Output query fixed (alias needed AS). Bull v4 retired #1166."
   # ──────────────────────────────────────────────────────────────────────────
   # ACTIVE — pg_cron rétention 90 j de __soft_404_events (ADR-076 accepted,
   # « Rétention 90j »). Le runbook renvoyait à un cron `seo-routines` qui n'a
