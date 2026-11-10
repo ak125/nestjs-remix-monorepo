@@ -350,18 +350,6 @@ export interface R1PipelineResult {
   gatekeeper: R1GatekeeperOutput;
 }
 
-export interface PublishDecision {
-  action: 'auto_publish' | 'draft' | 'block' | 'skip';
-  reasonCode: string;
-  qualityScore: number | null;
-  softGates: import('../../modules/admin/services/brief-gates.service').GateResult[];
-  hardGates: ExtendedGateResult[] | null;
-  hardGatesObserveOnly: boolean;
-  repairResult: RepairResult | null;
-  isCanary: boolean;
-  qaGuardPassed: boolean | null;
-}
-
 // ── Phase 2 Evidence Grading (P2.4) ──
 
 export const EVIDENCE_GRADES = [
