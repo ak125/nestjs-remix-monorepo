@@ -43185,18 +43185,43 @@
         "manual"
       ],
       "domain": "D1",
+      "id": "backend/src/modules/catalog/services/gamme-unified.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/catalog/services/gamme-unified.service.ts"
+      ],
+      "kind": "test",
+      "loc": 66,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/catalog/services/gamme-unified.service.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
       "id": "backend/src/modules/catalog/services/gamme-unified.service.ts",
       "importedBy": [
         "backend/src/modules/catalog/catalog.module.ts",
-        "backend/src/modules/catalog/controllers/gamme-unified.controller.ts"
+        "backend/src/modules/catalog/controllers/gamme-unified.controller.ts",
+        "backend/src/modules/catalog/services/gamme-unified.service.test.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/catalog/types/gamme.types.ts"
       ],
       "kind": "service",
-      "loc": 165,
+      "loc": 170,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/services/gamme-unified.service.ts",
       "risk": "high",
@@ -93308,7 +93333,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 505,
+      "loc": 548,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-route.utils.ts",
       "risk": "medium",
@@ -93345,7 +93370,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 732,
+      "loc": 754,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "medium",
@@ -96607,6 +96632,26 @@
       "loc": 102,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-translate-no.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/pieces-vehicle-loader-alias-resolution-outage.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 292,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-vehicle-loader-alias-resolution-outage.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106561,11 +106606,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "8e9f0614f3c63c34f03ad6cab73ff071dd83876a9b49653f9f35d28f41be489e",
+      "audit/registry/files.json": "d08e235638cae43be4a29b56aeeca497b345d6dff2f4990be67e7f03987ec619",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "e88ffc1f12cc2dd428b37ebe44fff12b7c935acfdeb807629f746d084cd90804"
     },
-    "sotFingerprint": "7ac6a322c13b"
+    "sotFingerprint": "8172ea72eaf1"
   },
   "runtime": [
     {
