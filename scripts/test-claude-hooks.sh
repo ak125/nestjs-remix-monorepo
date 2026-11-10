@@ -895,6 +895,20 @@ assert_exit "bash-guard: git reset --hard + 1 Mo → BLOCK"      "2" "$(run_bash
 assert_exit "bash-guard: git tag v1.2.3 + 1 Mo → BLOCK"        "2" "$(run_bash_guard_long 'git tag v1.2.3')"
 assert_exit "bash-guard: git status + 1 Mo → allow"            "0" "$(run_bash_guard_long 'git status')"
 
+# Docker target qualification: fake inspector, no Docker mutations.
+python3 -B scripts/claude-hooks/test-docker-target-guard.py
+assert_exit "bash-guard: Docker target regression suite" "0" "$?"
+
+# Branchement du hook sur le helper : verdicts rendus avant toute inspection du
+# daemon (aucune cible admissible), donc identiques sur tout hôte.
+assert_exit "bash-guard: docker stop cible protégée → BLOCK"        "2" "$(run_bash_guard 'docker stop automecanik-prod')"
+assert_exit "bash-guard: docker stop par nom → BLOCK"               "2" "$(run_bash_guard 'docker stop scratch-test')"
+assert_exit "bash-guard: docker compose down → BLOCK"               "2" "$(run_bash_guard 'docker compose down')"
+assert_exit "bash-guard: docker-compose -f <fichier> down → BLOCK"  "2" "$(run_bash_guard 'docker-compose -f docker-compose.prod.yml down')"
+assert_exit "bash-guard: docker stop cible dynamique → BLOCK"       "2" "$(run_bash_guard 'docker container stop $(docker ps -q)')"
+assert_exit "bash-guard: docker ps → allow"                         "0" "$(run_bash_guard 'docker ps')"
+assert_exit "bash-guard: echo d'un texte Docker → allow"            "0" "$(run_bash_guard 'echo docker compose down')"
+
 # ============================================================
 # Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)
 # ============================================================
