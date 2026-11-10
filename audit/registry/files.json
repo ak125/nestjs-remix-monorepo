@@ -3806,6 +3806,7 @@
         "backend/src/config/feature-flags.service.test.ts",
         "backend/src/modules/admin/controllers/admin-feature-flags.controller.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
+        "backend/src/modules/admin/services/keyword-density-gate.service.test.ts",
         "backend/src/modules/admin/services/keyword-density-gate.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
@@ -9001,18 +9002,42 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/keyword-density-gate.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/feature-flags.service.ts",
+        "backend/src/modules/admin/services/keyword-density-gate.service.ts",
+        "backend/src/modules/admin/services/page-brief.service.ts"
+      ],
+      "kind": "test",
+      "loc": 191,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/keyword-density-gate.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/keyword-density-gate.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-keyword-clusters.controller.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts"
+        "backend/src/modules/admin/services/brief-gates.service.ts",
+        "backend/src/modules/admin/services/keyword-density-gate.service.test.ts"
       ],
       "imports": [
         "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts"
       ],
       "kind": "service",
-      "loc": 209,
+      "loc": 243,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/keyword-density-gate.service.ts",
       "risk": "low",
@@ -9062,6 +9087,7 @@
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
         "backend/src/modules/admin/services/buying-guide/claim-extractor.util.ts",
+        "backend/src/modules/admin/services/keyword-density-gate.service.test.ts",
         "backend/src/modules/admin/services/keyword-density-gate.service.ts"
       ],
       "imports": [
