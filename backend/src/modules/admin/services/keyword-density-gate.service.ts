@@ -22,6 +22,17 @@ export interface KeywordDensityResult {
   warnThresholdHigh: number;
 }
 
+// ── Rules ──
+
+/** Minimum keyword density (%) — below = WARN */
+const DENSITY_LOW = 0.5;
+/** Maximum keyword density (%) — above = WARN */
+const DENSITY_HIGH = 2.5;
+/** Span (words) within which the terms of a multi-term keyword must sit */
+const WINDOW_SIZE = 10;
+/** Minimum share of the keyword's terms that must be present (found / total) */
+const MIN_TOKEN_RATIO = 0.66;
+
 // ── Helpers ──
 
 function stripHtml(html: string): string {
@@ -35,20 +46,56 @@ function normalizeAccents(text: string): string {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+/**
+ * Words of a text, lowercased and without accents. Splitting on anything that
+ * is not a letter or a digit keeps punctuation from sticking to a word
+ * ("frein." and "frein" are the same word).
+ */
+function tokenize(text: string): string[] {
+  return normalizeAccents(text.toLowerCase())
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length > 0);
+}
+
+/**
+ * Count the occurrences of a keyword in a text.
+ *
+ * An occurrence is `requiredMatches` distinct keyword terms found within
+ * `WINDOW_SIZE` consecutive words. A word belongs to one occurrence at most:
+ * once an occurrence is counted, the terms it used are forgotten, so the same
+ * mention is never counted twice and back-to-back repetitions each count.
+ */
+function countOccurrences(
+  words: string[],
+  keywordTokens: string[],
+  requiredMatches: number,
+): number {
+  const terms = new Set(keywordTokens);
+  const lastSeenAt = new Map<string, number>();
+  let occurrences = 0;
+
+  for (let i = 0; i < words.length; i++) {
+    if (!terms.has(words[i])) continue;
+    lastSeenAt.set(words[i], i);
+
+    let termsInSpan = 0;
+    for (const position of lastSeenAt.values()) {
+      if (i - position < WINDOW_SIZE) termsInSpan++;
+    }
+    if (termsInSpan >= requiredMatches) {
+      occurrences++;
+      lastSeenAt.clear();
+    }
+  }
+
+  return occurrences;
+}
+
 // ── Service ──
 
 @Injectable()
 export class KeywordDensityGateService {
   private readonly logger = new Logger(KeywordDensityGateService.name);
-
-  /** Minimum keyword density (%) — below = WARN */
-  private readonly DENSITY_LOW = 0.5;
-  /** Maximum keyword density (%) — above = WARN */
-  private readonly DENSITY_HIGH = 2.5;
-  /** Sliding window size (words) for stem-aware matching */
-  private readonly WINDOW_SIZE = 10;
-  /** Minimum token match ratio (tokens found / total keyword tokens) */
-  private readonly MIN_TOKEN_RATIO = 0.66;
 
   constructor(private readonly flags: FeatureFlagsService) {}
 
@@ -57,11 +104,11 @@ export class KeywordDensityGateService {
    */
   static getRulesMetadata() {
     return {
-      density_rules_version: '1.0',
-      density_target_min: 0.5,
-      density_target_max: 2.5,
-      window_size: 10,
-      min_token_ratio: 0.66,
+      density_rules_version: '1.1',
+      density_target_min: DENSITY_LOW,
+      density_target_max: DENSITY_HIGH,
+      window_size: WINDOW_SIZE,
+      min_token_ratio: MIN_TOKEN_RATIO,
     };
   }
 
@@ -70,12 +117,16 @@ export class KeywordDensityGateService {
    *
    * Algorithm:
    * 1. Extract primary keyword from brief
-   * 2. Strip HTML from content → plain text
-   * 3. Tokenize keyword into significant tokens
-   * 4. Sliding window (10 words) over text: count windows where >= 2/3 tokens match
-   * 5. Density = matches / total_words * 100
-   * 6. Verdict: <0.5% → WARN (low), 0.5-2.5% → PASS, >2.5% → WARN (stuffing)
-   *    If keyword absent entirely → FAIL (in strict mode) or WARN (observe-only)
+   * 2. Strip HTML from content, split it into words
+   * 3. Split the keyword into significant terms (3 letters or more)
+   * 4. Count occurrences: at least 2/3 of the terms within 10 consecutive
+   *    words, each word counted in one occurrence at most
+   * 5. Density = occurrences / total_words * 100
+   * 6. Verdict: keyword absent → FAIL, <0.5% → WARN (low), 0.5-2.5% → PASS,
+   *    >2.5% → WARN (stuffing)
+   *
+   * Terms are matched as written: no stemming, so a plural does not match
+   * its singular.
    */
   check(content: string, brief: PageBrief): KeywordDensityResult {
     const keyword = brief.keywords_primary;
@@ -87,13 +138,12 @@ export class KeywordDensityGateService {
         reason_code: 'NO_KEYWORD',
         details: ['No keywords_primary in brief — skipping density check'],
         measured: 0,
-        warnThresholdLow: this.DENSITY_LOW,
-        warnThresholdHigh: this.DENSITY_HIGH,
+        warnThresholdLow: DENSITY_LOW,
+        warnThresholdHigh: DENSITY_HIGH,
       };
     }
 
-    const plainText = normalizeAccents(stripHtml(content).toLowerCase());
-    const words = plainText.split(/\s+/).filter((w) => w.length > 0);
+    const words = tokenize(stripHtml(content));
     const totalWords = words.length;
 
     if (totalWords === 0) {
@@ -103,15 +153,15 @@ export class KeywordDensityGateService {
         reason_code: 'EMPTY_CONTENT',
         details: ['Empty content — cannot measure density'],
         measured: 0,
-        warnThresholdLow: this.DENSITY_LOW,
-        warnThresholdHigh: this.DENSITY_HIGH,
+        warnThresholdLow: DENSITY_LOW,
+        warnThresholdHigh: DENSITY_HIGH,
       };
     }
 
-    // Tokenize the keyword (skip very short tokens like "de", "a")
-    const keywordTokens = normalizeAccents(keyword.toLowerCase())
-      .split(/\s+/)
-      .filter((t) => t.length > 2);
+    // Distinct keyword terms (skip very short ones like "de", "a")
+    const keywordTokens = [
+      ...new Set(tokenize(keyword).filter((t) => t.length > 2)),
+    ];
 
     if (keywordTokens.length === 0) {
       return {
@@ -120,30 +170,14 @@ export class KeywordDensityGateService {
         reason_code: 'NO_KEYWORD',
         details: ['Keyword tokens all too short after filtering — skipping'],
         measured: 0,
-        warnThresholdLow: this.DENSITY_LOW,
-        warnThresholdHigh: this.DENSITY_HIGH,
+        warnThresholdLow: DENSITY_LOW,
+        warnThresholdHigh: DENSITY_HIGH,
       };
     }
 
-    const requiredMatches = Math.ceil(
-      keywordTokens.length * this.MIN_TOKEN_RATIO,
-    );
-
-    // Sliding window: count windows where enough keyword tokens are present
-    let matchCount = 0;
-    for (let i = 0; i <= totalWords - this.WINDOW_SIZE; i++) {
-      const window = words.slice(i, i + this.WINDOW_SIZE);
-      const windowSet = new Set(window);
-      let tokenHits = 0;
-      for (const token of keywordTokens) {
-        if (windowSet.has(token)) tokenHits++;
-      }
-      if (tokenHits >= requiredMatches) {
-        matchCount++;
-      }
-    }
-
-    const density = (matchCount / totalWords) * 100;
+    const requiredMatches = Math.ceil(keywordTokens.length * MIN_TOKEN_RATIO);
+    const matchCount = countOccurrences(words, keywordTokens, requiredMatches);
+    const density = (matchCount * 100) / totalWords;
     const details: string[] = [];
     let verdict: KeywordDensityResult['verdict'] = 'PASS';
     let reason_code: DensityReasonCode = 'KEYWORD_DENSITY_OK';
@@ -152,27 +186,27 @@ export class KeywordDensityGateService {
       verdict = 'FAIL';
       reason_code = 'KEYWORD_ABSENT';
       details.push(
-        `Keyword "${keyword}" absent du contenu (0 fenetres sur ${totalWords} mots). ` +
+        `Keyword "${keyword}" absent du contenu (0 occurrence sur ${totalWords} mots). ` +
           `Tokens cherches: [${keywordTokens.join(', ')}]`,
       );
-    } else if (density < this.DENSITY_LOW) {
+    } else if (density < DENSITY_LOW) {
       verdict = 'WARN';
       reason_code = 'KEYWORD_DENSITY_LOW';
       details.push(
-        `Densite faible: ${density.toFixed(2)}% < ${this.DENSITY_LOW}% ` +
-          `(${matchCount} fenetres / ${totalWords} mots)`,
+        `Densite faible: ${density.toFixed(2)}% < ${DENSITY_LOW}% ` +
+          `(${matchCount} occurrences / ${totalWords} mots)`,
       );
-    } else if (density > this.DENSITY_HIGH) {
+    } else if (density > DENSITY_HIGH) {
       verdict = 'WARN';
       reason_code = 'KEYWORD_DENSITY_HIGH';
       details.push(
-        `Keyword stuffing: ${density.toFixed(2)}% > ${this.DENSITY_HIGH}% ` +
-          `(${matchCount} fenetres / ${totalWords} mots)`,
+        `Keyword stuffing: ${density.toFixed(2)}% > ${DENSITY_HIGH}% ` +
+          `(${matchCount} occurrences / ${totalWords} mots)`,
       );
     } else {
       details.push(
         `Densite OK: ${density.toFixed(2)}% ` +
-          `(${matchCount} fenetres / ${totalWords} mots, cible ${this.DENSITY_LOW}-${this.DENSITY_HIGH}%)`,
+          `(${matchCount} occurrences / ${totalWords} mots, cible ${DENSITY_LOW}-${DENSITY_HIGH}%)`,
       );
     }
 
@@ -194,8 +228,8 @@ export class KeywordDensityGateService {
       reason_code,
       details,
       measured: parseFloat(density.toFixed(2)),
-      warnThresholdLow: this.DENSITY_LOW,
-      warnThresholdHigh: this.DENSITY_HIGH,
+      warnThresholdLow: DENSITY_LOW,
+      warnThresholdHigh: DENSITY_HIGH,
     };
   }
 
