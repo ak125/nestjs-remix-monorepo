@@ -15,7 +15,9 @@ name: Automation Registry — freshness (daily warn-only)
 
 on:
   schedule:
-    - cron: "0 6 * * *" # 06:00 UTC daily
+    # 04:15 UTC daily — before the morning health digest (05:00 UTC), which
+    # reads this run's verdict line (Signal 8) and reports it to the owner.
+    - cron: "15 4 * * *"
   workflow_dispatch: {}
 
 permissions:
