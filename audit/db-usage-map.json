@@ -16424,7 +16424,7 @@
       "method": "from",
       "reason": "js-builtin-static-from",
       "file": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
-      "line": 17,
+      "line": 20,
       "receiver": "Buffer"
     },
     {
