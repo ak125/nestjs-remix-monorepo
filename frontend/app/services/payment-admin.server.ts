@@ -17,6 +17,17 @@ function _getBackendUrl(): string {
  * Service côté serveur pour la gestion admin des paiements
  */
 
+/**
+ * `api/legacy-orders` exige une session du personnel : les lectures de commandes
+ * transmettent le cookie de la requête admin en cours.
+ */
+function sessionHeaders(request: Request): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    Cookie: request.headers.get("Cookie") || "",
+  };
+}
+
 export interface AdminPaymentListParams {
   page?: number;
   limit?: number;
@@ -43,7 +54,10 @@ export interface AdminPaymentListResult {
 /**
  * Récupérer un paiement spécifique par ID (basé sur les commandes)
  */
-export async function getPaymentById(id: string): Promise<Payment | null> {
+export async function getPaymentById(
+  request: Request,
+  id: string,
+): Promise<Payment | null> {
   try {
     // Extraire l'ID de commande du payment ID
     const orderId = id.replace("payment_", "");
@@ -52,9 +66,7 @@ export async function getPaymentById(id: string): Promise<Payment | null> {
       `http://localhost:3000/api/legacy-orders/${orderId}`,
       {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: sessionHeaders(request),
       },
     );
 
@@ -104,6 +116,7 @@ export async function getPaymentById(id: string): Promise<Payment | null> {
  * Récupérer la liste des paiements pour l'admin (basé sur les commandes)
  */
 export async function getAdminPayments(
+  request: Request,
   params: AdminPaymentListParams = {},
 ): Promise<AdminPaymentListResult> {
   try {
@@ -113,9 +126,7 @@ export async function getAdminPayments(
     const response = await fetch(
       `http://localhost:3000/api/legacy-orders?page=${page}&limit=${limit}${search ? `&search=${search}` : ""}`,
       {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: sessionHeaders(request),
       },
     );
 
@@ -188,7 +199,7 @@ export async function getAdminPayments(
         hasNext: page < Math.ceil((data.pagination?.total || 0) / limit),
         hasPrev: page > 1,
       },
-      stats: await getPaymentStats(), // Sera calculé séparément
+      stats: await getPaymentStats(request), // Sera calculé séparément
     };
   } catch (error) {
     logger.error("❌ Failed to fetch admin payments:", error);
@@ -199,15 +210,13 @@ export async function getAdminPayments(
 /**
  * Récupère les statistiques des paiements pour le dashboard admin (basé sur les commandes)
  */
-export async function getPaymentStats(): Promise<PaymentStats> {
+export async function getPaymentStats(request: Request): Promise<PaymentStats> {
   try {
     // Utiliser l'API legacy orders stats
     const response = await fetch(
       `http://localhost:3000/api/legacy-orders/stats`,
       {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: sessionHeaders(request),
       },
     );
 

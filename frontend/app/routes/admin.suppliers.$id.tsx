@@ -86,7 +86,10 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
     // Appel direct à l'API backend - route details
     const apiUrl = `http://127.0.0.1:3000/api/suppliers/details/${supplierId}`;
     const response = await fetch(apiUrl, {
-      headers: { "Internal-Call": "true" },
+      headers: {
+        Cookie: request.headers.get("Cookie") || "",
+        "Internal-Call": "true",
+      },
     });
 
     if (!response.ok) {

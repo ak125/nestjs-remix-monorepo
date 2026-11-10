@@ -6,10 +6,17 @@ import {
   Param,
   BadRequestException,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { TicketsService } from '../services/tickets.service';
 
+/**
+ * Tickets de préparation et avoirs d'une commande : réservé aux administrateurs.
+ */
 @Controller('api/tickets')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class TicketsController {
   private readonly logger = new Logger(TicketsController.name);
 
