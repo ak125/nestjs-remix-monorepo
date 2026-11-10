@@ -29549,6 +29549,7 @@
       "domain": "D11",
       "id": "backend/src/auth/authenticated.guard.ts",
       "importedBy": [
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/dashboard/dashboard.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
@@ -29715,12 +29716,15 @@
       ],
       "imports": [
         "backend/src/auth/auth.service.ts",
+        "backend/src/auth/authenticated.guard.ts",
         "backend/src/auth/dto/module-access.dto.ts",
         "backend/src/auth/dto/user-permissions.dto.ts",
-        "backend/src/auth/permissions.service.ts"
+        "backend/src/auth/is-admin.guard.ts",
+        "backend/src/auth/permissions.service.ts",
+        "backend/src/auth/session-privilege.ts"
       ],
       "kind": "controller",
-      "loc": 95,
+      "loc": 147,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/controllers/auth-permissions.controller.ts",
       "risk": "high",
@@ -30251,6 +30255,7 @@
       "id": "backend/src/auth/is-admin.guard.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
@@ -30511,6 +30516,7 @@
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/permissions.service.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
@@ -39778,12 +39784,14 @@
         "backend/src/modules/ai-content/ai-content.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/ai-content/ai-content.service.ts",
         "backend/src/modules/ai-content/dto/generate-content.dto.ts"
       ],
       "kind": "controller",
-      "loc": 148,
+      "loc": 155,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/ai-content/ai-content.controller.ts",
       "risk": "medium",
@@ -42066,12 +42074,14 @@
         "backend/src/modules/cart/cart.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
         "backend/src/modules/cart/services/abandoned-cart.service.ts"
       ],
       "kind": "controller",
-      "loc": 224,
+      "loc": 230,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
       "risk": "high",
@@ -43185,43 +43195,18 @@
         "manual"
       ],
       "domain": "D1",
-      "id": "backend/src/modules/catalog/services/gamme-unified.service.test.ts",
-      "importedBy": [],
-      "imports": [
-        "@common/exceptions",
-        "backend/src/modules/catalog/services/gamme-unified.service.ts"
-      ],
-      "kind": "test",
-      "loc": 66,
-      "owner": "@ak125/catalog-team",
-      "path": "backend/src/modules/catalog/services/gamme-unified.service.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D1",
       "id": "backend/src/modules/catalog/services/gamme-unified.service.ts",
       "importedBy": [
         "backend/src/modules/catalog/catalog.module.ts",
-        "backend/src/modules/catalog/controllers/gamme-unified.controller.ts",
-        "backend/src/modules/catalog/services/gamme-unified.service.test.ts"
+        "backend/src/modules/catalog/controllers/gamme-unified.controller.ts"
       ],
       "imports": [
-        "@common/exceptions",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/catalog/types/gamme.types.ts"
       ],
       "kind": "service",
-      "loc": 170,
+      "loc": 165,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/services/gamme-unified.service.ts",
       "risk": "high",
@@ -46864,10 +46849,12 @@
         "backend/src/modules/invoices/invoices.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/invoices/invoices.service.ts"
       ],
       "kind": "controller",
-      "loc": 60,
+      "loc": 68,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/invoices/invoices.controller.ts",
       "risk": "high",
@@ -50885,11 +50872,13 @@
         "backend/src/modules/payments/payments.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/payments/entities/payment.entity.ts",
         "backend/src/modules/payments/repositories/payment-data.service.ts"
       ],
       "kind": "controller",
-      "loc": 187,
+      "loc": 193,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/payments/controllers/paybox-monitoring.controller.ts",
       "risk": "critical",
@@ -52742,11 +52731,13 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/products/services/stock.service.ts"
       ],
       "kind": "controller",
-      "loc": 105,
+      "loc": 115,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/products/controllers/products-inventory.controller.ts",
       "risk": "high",
@@ -65630,11 +65621,13 @@
         "backend/src/modules/suppliers/suppliers.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/suppliers/dto/index.ts",
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 127,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers-modern.controller.ts",
       "risk": "low",
@@ -65654,10 +65647,12 @@
         "backend/src/modules/suppliers/suppliers.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 414,
+      "loc": 423,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers.controller.ts",
       "risk": "low",
@@ -66791,10 +66786,12 @@
         "backend/src/modules/system/system.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/system/services/system.service.ts"
       ],
       "kind": "controller",
-      "loc": 159,
+      "loc": 170,
       "owner": "__unassigned__",
       "path": "backend/src/modules/system/system-health.controller.ts",
       "risk": "low",
@@ -68939,10 +68936,12 @@
         "backend/src/notifications/notifications.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/notifications/notifications.service.ts"
       ],
       "kind": "controller",
-      "loc": 121,
+      "loc": 127,
       "owner": "__unassigned__",
       "path": "backend/src/notifications/notifications.controller.ts",
       "risk": "low",
@@ -70213,6 +70212,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/admin-tools-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 241,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/admin-tools-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/ai-probe/prompt-registry-schema.test.ts",
       "importedBy": [],
       "imports": [],
@@ -70240,6 +70259,26 @@
       "loc": 222,
       "owner": "@ak125",
       "path": "backend/tests/unit/auth-guards.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/auth-permissions-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 266,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/auth-permissions-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -70853,6 +70892,46 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 209,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/invoices-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 186,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/invoices-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/legacy-orders-routes-authz.test.ts",
       "importedBy": [],
       "imports": [],
@@ -71260,6 +71339,26 @@
       "loc": 216,
       "owner": "@ak125",
       "path": "backend/tests/unit/paybox-service-log-sanitization.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/paybox-supervision-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 197,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/paybox-supervision-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -72300,6 +72399,26 @@
       "loc": 87,
       "owner": "@ak125",
       "path": "backend/tests/unit/supabase-key-util.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/suppliers-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 210,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/suppliers-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -86240,7 +86359,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 836,
+      "loc": 838,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.payments.dashboard.tsx",
       "risk": "medium",
@@ -87561,7 +87680,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 554,
+      "loc": 557,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.suppliers.$id.tsx",
       "risk": "medium",
@@ -87686,7 +87805,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 365,
+      "loc": 367,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.system.tsx",
       "risk": "medium",
@@ -93333,7 +93452,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 548,
+      "loc": 505,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-route.utils.ts",
       "risk": "medium",
@@ -93370,7 +93489,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 754,
+      "loc": 732,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "medium",
@@ -96632,26 +96751,6 @@
       "loc": 102,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-translate-no.test.tsx",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
-      "id": "frontend/tests/unit/pieces-vehicle-loader-alias-resolution-outage.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 292,
-      "owner": "@ak125",
-      "path": "frontend/tests/unit/pieces-vehicle-loader-alias-resolution-outage.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106606,11 +106705,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "d08e235638cae43be4a29b56aeeca497b345d6dff2f4990be67e7f03987ec619",
+      "audit/registry/files.json": "8d6a987386198b7236c21083c67e6da76deee613feedfadb2361dbbaf0acbb39",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "e88ffc1f12cc2dd428b37ebe44fff12b7c935acfdeb807629f746d084cd90804"
+      "audit/registry/runtime.json": "b27cf8b14b4db1093189bb4149632ef6cd670e59fcbc797802b1cd09b4bdf277"
     },
-    "sotFingerprint": "8172ea72eaf1"
+    "sotFingerprint": "9adcc8fada11"
   },
   "runtime": [
     {
@@ -106791,6 +106890,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/auth/auth.service.ts",
+        "runtime:backend/src/auth/is-admin.guard.ts",
         "runtime:backend/src/auth/permissions.service.ts"
       ],
       "id": "runtime:backend/src/auth/controllers/auth-permissions.controller.ts",
