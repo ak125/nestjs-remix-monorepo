@@ -240,25 +240,13 @@ entries:
     drift_note: "user inventory flagged 'PR-9 dependencies : système de contrôle OK, exécution absente' ; verified : execution = human-owned by design, NOT a missing executor"
 
   # ──────────────────────────────────────────────────────────────────────────
-  # Seed du 2026-05-24 : quatre PR alors ouvertes. État relu le 2026-11-10 :
-  # #693 et #687 fusionnées, #684 et #670 fermées sans fusion.
+  # Seed du 2026-05-24 : quatre PR alors ouvertes. Relu le 2026-11-10 : seule
+  # #687 décrit une automatisation qui tourne. Trois entrées retirées :
+  #   - #693 : correctif ponctuel, fusionné le 2026-05-25 et effectif en base
+  #     (get_vehicle_page_data_cached est VOLATILE) — pas une automatisation ;
+  #   - #684 et #670 : PR fermées sans fusion le 2026-06-13, rien ne tourne.
+  # Ce registre observe ce qui s'exécute ; il ne tient pas un backlog de PR.
   # ──────────────────────────────────────────────────────────────────────────
-  - automation_id: "pr-693-r8-503-vehicle-page-volatile"
-    domain: "D3"
-    intended_mode: "ACTIVE"
-    actual_mode: "DRAFTED"
-    executor: "github-actions"
-    evidence:
-      - path: ".github/workflows/apply-supabase-migrations.yml"
-        note: "PR #693 still OPEN — migration not yet applied to live DB ; runtime R8 still 503-prone"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
-    missing_step: "merge PR #693 + apply migration to live DB"
-    risk: "high"
-    related_pr: [693]
-    owner_action: "review + merge — high risk (R8 SEO impact, GSC 5xx)"
-
   - automation_id: "pr-687-sitemap-freshness-alert"
     domain: "D3"
     intended_mode: "ACTIVE"
@@ -274,45 +262,11 @@ entries:
     last_verified_at: "2026-11-10"
     last_verified_by: "@ak125"
     last_verified_method: "runtime-probe"
-    missing_step: "prove that someone reads SITEMAP_STALE_V1 (rpc_seo_alerts_v1 via SeoControlService), then set ACTIVE with runtime_evidence"
+    missing_step: "one dashboard_view row in __seo_event_log (an admin opens /admin/seo-control) proves a reader of SITEMAP_STALE_V1 ; then set ACTIVE with runtime_evidence"
     risk: "medium"
     related_pr: [687]
-    owner_action: "confirm the reader of the alert, or accept SCRIPT_ONLY"
-    drift_note: "Run 42747325395 (2026-11-10) success ; __seo_event_log sitemap_generation_complete : 152 rows since 2026-06-12, last 2026-11-10 03:08Z. Reader not proven."
-
-  - automation_id: "pr-684-rag-canon-docs-reconcile"
-    domain: "D6"
-    intended_mode: "ACTIVE"
-    actual_mode: "DRAFTED"
-    executor: "github-actions"
-    evidence:
-      - path: ".claude/rules/agent-doc-search.md"
-        note: "existing canon doc-search rule ; PR #684 (anti-drift guard for RAG references) closed unmerged 2026-06-13"
-    last_verified_at: "2026-11-10"
-    last_verified_by: "@ak125"
-    last_verified_method: "manual-inspection"
-    missing_step: "owner decides : reopen PR #684 (branch chore/rag-docs-canon-reconcile still on origin) or remove this entry"
-    risk: "low"
-    related_pr: [684]
-    owner_action: "decide : reopen or drop"
-    drift_note: "PR #684 auto-closed 2026-06-13 after 21 days of inactivity, never merged. No rag-scope-guard workflow on main."
-
-  - automation_id: "pr-670-kw-canonical-classification"
-    domain: "D3"
-    intended_mode: "ACTIVE"
-    actual_mode: "DRAFTED"
-    executor: "github-actions"
-    evidence:
-      - path: "packages/seo-roles/package.json"
-        note: "existing @repo/seo-roles package ; PR #670 (KW classifier, R1→R2/R5 separation) closed unmerged 2026-06-13"
-    last_verified_at: "2026-11-10"
-    last_verified_by: "@ak125"
-    last_verified_method: "manual-inspection"
-    missing_step: "owner decides : reopen PR #670 (branch feat/kw-canonical-classification still on origin) or remove this entry"
-    risk: "medium"
-    related_pr: [670]
-    owner_action: "decide : reopen or drop"
-    drift_note: "PR #670 auto-closed 2026-06-13 after 21 days of inactivity, never merged."
+    owner_action: "open /admin/seo-control once ; meanwhile a stale sitemap reaches the owner only through the morning digest (Signal 1, PROD last-modified probe)"
+    drift_note: "2026-11-10 : heartbeat sitemap_generation_complete 152 rows, last 03:07Z ; dashboard_view 0 row ever (enum value exists, insert shape valid) — alert computed, no read recorded."
 
   # ──────────────────────────────────────────────────────────────────────────
   # Self-reference — this very PR's workflows
