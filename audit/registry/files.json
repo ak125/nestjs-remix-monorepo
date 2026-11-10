@@ -13116,12 +13116,14 @@
         "backend/src/modules/cart/cart.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
         "backend/src/modules/cart/services/abandoned-cart.service.ts"
       ],
       "kind": "controller",
-      "loc": 224,
+      "loc": 230,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
       "risk": "low",
@@ -23425,11 +23427,13 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/products/services/stock.service.ts"
       ],
       "kind": "controller",
-      "loc": 105,
+      "loc": 115,
       "owner": "__unassigned__",
       "path": "backend/src/modules/products/controllers/products-inventory.controller.ts",
       "risk": "low",
@@ -40902,6 +40906,25 @@
       "loc": 191,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/global-error-filter.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 209,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
