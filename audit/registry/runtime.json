@@ -709,7 +709,6 @@
         "runtime:backend/src/modules/admin/services/page-brief.service.ts",
         "runtime:backend/src/modules/admin/services/quality-scoring-engine.service.ts",
         "runtime:backend/src/modules/admin/services/r1-image-prompt.service.ts",
-        "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "runtime:backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r3-image-prompt.service.ts",
@@ -874,9 +873,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
@@ -1564,17 +1561,6 @@
       "id": "runtime:backend/src/modules/admin/services/r1-image-prompt.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
-      "kind": "nestjs-service",
-      "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
