@@ -105,7 +105,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 136,
+      "loc": 135,
       "owner": "__unassigned__",
       "path": "backend/.eslintrc.js",
       "risk": "low",
@@ -3347,13 +3347,11 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise",
-        "reachability"
+        "depcruise"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/config/content-section-policy.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/section-compiler.service.ts"
       ],
       "imports": [
@@ -3368,7 +3366,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -3806,7 +3804,6 @@
         "backend/src/config/feature-flags.service.test.ts",
         "backend/src/modules/admin/controllers/admin-feature-flags.controller.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
@@ -3842,7 +3839,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 559,
+      "loc": 542,
       "owner": "__unassigned__",
       "path": "backend/src/config/feature-flags.service.ts",
       "risk": "low",
@@ -6281,7 +6278,6 @@
         "backend/src/modules/admin/services/admin-health.service.ts",
         "backend/src/modules/admin/services/admin-job-health.service.ts",
         "backend/src/modules/admin/services/brand-editorial.service.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/index.ts",
         "backend/src/modules/admin/services/canon-observability.service.ts",
@@ -6307,7 +6303,6 @@
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "backend/src/modules/admin/services/hard-gates.service.ts",
         "backend/src/modules/admin/services/image-gates.service.ts",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts",
         "backend/src/modules/admin/services/keyword-plan-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
         "backend/src/modules/admin/services/quality-scoring-engine.service.ts",
@@ -6347,7 +6342,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 338,
+      "loc": 333,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "low",
@@ -6681,11 +6676,10 @@
       "imports": [
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
-        "@common/utils",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts"
+        "@common/utils"
       ],
       "kind": "controller",
-      "loc": 165,
+      "loc": 151,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/admin-keyword-clusters.controller.ts",
       "risk": "low",
@@ -7746,33 +7740,6 @@
       "loc": 137,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/brand-editorial.service.ts",
-      "risk": "low",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "backend/src/modules/admin/services/brief-gates.service.ts",
-      "importedBy": [
-        "backend/src/modules/admin/admin.module.ts",
-        "backend/src/workers/types/content-refresh.types.ts"
-      ],
-      "imports": [
-        "@database/services/supabase-base.service",
-        "backend/src/config/content-section-policy.ts",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-        "backend/src/modules/admin/services/page-brief.service.ts"
-      ],
-      "kind": "service",
-      "loc": 781,
-      "owner": "__unassigned__",
-      "path": "backend/src/modules/admin/services/brief-gates.service.ts",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -9001,32 +8968,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-      "importedBy": [
-        "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/controllers/admin-keyword-clusters.controller.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts"
-      ],
-      "imports": [
-        "backend/src/config/feature-flags.service.ts",
-        "backend/src/modules/admin/services/page-brief.service.ts"
-      ],
-      "kind": "service",
-      "loc": 209,
-      "owner": "__unassigned__",
-      "path": "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-      "risk": "low",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/keyword-plan-gates.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
@@ -9058,11 +8999,9 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-page-brief.controller.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
-        "backend/src/modules/admin/services/buying-guide/claim-extractor.util.ts",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts"
+        "backend/src/modules/admin/services/buying-guide/claim-extractor.util.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -40107,11 +40046,10 @@
         "backend/src/modules/admin/services/section-compiler.service.ts"
       ],
       "imports": [
-        "backend/src/config/role-ids.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts"
+        "backend/src/config/role-ids.ts"
       ],
       "kind": "config",
-      "loc": 472,
+      "loc": 460,
       "owner": "__unassigned__",
       "path": "backend/src/workers/types/content-refresh.types.ts",
       "risk": "low",
@@ -43661,7 +43599,7 @@
         "~/components/ui/switch"
       ],
       "kind": "config",
-      "loc": 181,
+      "loc": 178,
       "owner": "__unassigned__",
       "path": "frontend/app/components/admin/patterns/FeatureFlagsPanel.tsx",
       "risk": "low",
