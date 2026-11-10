@@ -5660,12 +5660,14 @@
         "backend/src/modules/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/database/services/orders.service.ts",
         "backend/src/modules/users/services/user-data-consolidated.service.ts"
       ],
       "kind": "controller",
-      "loc": 370,
+      "loc": 393,
       "owner": "__unassigned__",
       "path": "backend/src/controllers/users.controller.ts",
       "risk": "low",
@@ -40915,6 +40917,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/legacy-users-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/legacy-users-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/maintenance-calculator.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -56040,7 +56061,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 460,
+      "loc": 468,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.reports._index.tsx",
       "risk": "low",
@@ -56841,7 +56862,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 528,
+      "loc": 530,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.staff.tsx",
       "risk": "low",
@@ -57137,7 +57158,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 1183,
+      "loc": 1187,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.users._index.tsx",
       "risk": "low",
