@@ -11002,12 +11002,14 @@
         "backend/src/modules/ai-content/ai-content.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/ai-content/ai-content.service.ts",
         "backend/src/modules/ai-content/dto/generate-content.dto.ts"
       ],
       "kind": "controller",
-      "loc": 148,
+      "loc": 155,
       "owner": "__unassigned__",
       "path": "backend/src/modules/ai-content/ai-content.controller.ts",
       "risk": "low",
@@ -37069,10 +37071,12 @@
         "backend/src/modules/system/system.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/system/services/system.service.ts"
       ],
       "kind": "controller",
-      "loc": 159,
+      "loc": 170,
       "owner": "__unassigned__",
       "path": "backend/src/modules/system/system-health.controller.ts",
       "risk": "low",
@@ -39142,10 +39146,12 @@
         "backend/src/notifications/notifications.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/notifications/notifications.service.ts"
       ],
       "kind": "controller",
-      "loc": 121,
+      "loc": 127,
       "owner": "__unassigned__",
       "path": "backend/src/notifications/notifications.controller.ts",
       "risk": "low",
@@ -40373,6 +40379,25 @@
       "loc": 232,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/admin-job-health.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/admin-tools-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 241,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/admin-tools-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -57113,7 +57138,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 365,
+      "loc": 367,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.system.tsx",
       "risk": "low",
