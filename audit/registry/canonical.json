@@ -75,9 +75,9 @@
       ],
       "executor": "github-actions",
       "intended_mode": "OBSERVE_ONLY",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
       "risk": "low"
     },
     {
@@ -128,7 +128,7 @@
       "actual_mode": "ACTIVE",
       "automation_id": "cwv-rum-aggregation",
       "domain": "D3",
-      "drift_note": "Re-verified 2026-11-10 : both legs succeeded, missing_complete_hours=0, daily_rum J-1, dashboard 83 rows. Output query fixed (alias needed AS). Bull v4 retired #1166.",
+      "drift_note": "Hourly leg live (succeeded '48 rows' @16:05, missing_complete_hours=0, daily_rum J-1). Daily cron first fire 00:15 UTC 2026-06-27. Bull v4 retired #1166; coverage detector @35 auto-resolves.",
       "evidence": [
         {
           "excerpt": "PERFORM cron.schedule('cwv-hourly-aggregation', '5 * * * *', v_expected_command);",
@@ -139,7 +139,7 @@
       ],
       "executor": "pg_cron",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
+      "last_verified_at": "2026-06-26",
       "last_verified_by": "@ak125",
       "last_verified_method": "runtime-probe",
       "related_pr": [
@@ -150,20 +150,20 @@
       "runtime_evidence": {
         "consumer": {
           "kind": "db_row",
-          "observed_at": "2026-11-10",
-          "query_or_url": "SELECT count(*) FROM get_cwv_dashboard(now()::date-30, now()::date, NULL)  -- = 83 rows",
+          "observed_at": "2026-06-26",
+          "query_or_url": "SELECT count(*) FROM get_cwv_dashboard(now()::date-30, now()::date, NULL)  -- = 49 rows",
           "source": "get_cwv_dashboard RPC (CwvDashboardService → GET /api/seo/cwv/dashboard) over __seo_cwv_daily_rum"
         },
         "output": {
           "kind": "db_row",
-          "observed_at": "2026-11-10",
-          "query_or_url": "WITH raw_hours AS (SELECT DISTINCT date_trunc('hour',received_at) AS hour FROM __seo_cwv_raw WHERE ua_class='human' AND received_at<date_trunc('hour',now())) SELECT count(*) AS missing_complete_hours FROM raw_hours r WHERE NOT EXISTS (SELECT 1 FROM __seo_cwv_hourly h WHERE h.hour=r.hour AND h.ua_class='human')  -- = 0 @07:06 UTC (1 between hh:00 and the hh:05 run) ; max(date) __seo_cwv_daily_rum = 2026-11-09 (J-1)",
+          "observed_at": "2026-06-26",
+          "query_or_url": "WITH raw_hours AS (SELECT DISTINCT date_trunc('hour',received_at) hour FROM __seo_cwv_raw WHERE ua_class='human' AND received_at<date_trunc('hour',now())) SELECT count(*) missing_complete_hours FROM raw_hours r WHERE NOT EXISTS (SELECT 1 FROM __seo_cwv_hourly h WHERE h.hour=r.hour AND h.ua_class='human')  -- = 0 ; max(date) __seo_cwv_daily_rum = 2026-06-25 (J-1)",
           "source": "__seo_cwv_hourly / __seo_cwv_daily_rum"
         },
         "trigger": {
           "kind": "db_row",
-          "observed_at": "2026-11-10",
-          "query_or_url": "SELECT j.jobname, r.status, r.return_message, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname IN ('cwv-hourly-aggregation','cwv-daily-rum-aggregation')  -- hourly: succeeded '48 rows' @2026-11-10 07:05 UTC ; daily: succeeded '2 rows' @2026-11-10 00:15 UTC",
+          "observed_at": "2026-06-26",
+          "query_or_url": "SELECT j.jobname, r.status, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname IN ('cwv-hourly-aggregation','cwv-daily-rum-aggregation')  -- hourly: succeeded '48 rows' @16:05 UTC ; daily: active, first fire 00:15 UTC 2026-06-27",
           "source": "cron.job_run_details"
         }
       }
@@ -182,9 +182,9 @@
       ],
       "executor": "github-actions",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
       "missing_step": "promote to blocking +14d signal vert (Etape 3 ADR-058)",
       "owner_action": "ops decision after green signal window",
       "risk": "low"
@@ -216,61 +216,45 @@
       "risk": "low"
     },
     {
-      "actual_mode": "ACTIVE",
+      "actual_mode": "SCRIPT_ONLY",
       "automation_id": "dev-runtime-sync",
       "domain": "D13",
-      "drift_note": "Resync refused 2026-11-06T23:10Z to 2026-11-10T06:20Z (dirty shared checkout, 6 hook files). Shown by SessionStart hook, unresolved 3.3 days.",
       "evidence": [
         {
-          "note": "script committed ; installed in the deploy user crontab on the DEV machine (*/10), host crontab not in repo",
+          "note": "script committed, no installation evidence in any tracked crontab",
           "path": "scripts/ops/sync-dev-runtime.sh"
+        },
+        {
+          "note": "container Supercronic crontab — does NOT include sync-dev-runtime (VPS host crontab not in repo)",
+          "path": "config/cron/crontab"
         }
       ],
       "executor": "cron-vps",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "runtime-probe",
-      "risk": "medium",
-      "runtime_evidence": {
-        "consumer": {
-          "kind": "log",
-          "observed_at": "2026-11-10",
-          "query_or_url": "2026-11-10T06:30:38Z DEV:3000 sain sur 068a91741",
-          "source": "/tmp/sync-dev-runtime-cron.log"
-        },
-        "output": {
-          "kind": "log",
-          "observed_at": "2026-11-10",
-          "query_or_url": "2026-11-10T06:30:02Z synced d6f384168 → 068a91741",
-          "source": "/tmp/sync-dev-runtime-cron.log"
-        },
-        "trigger": {
-          "kind": "log",
-          "observed_at": "2026-11-10",
-          "query_or_url": "crontab -l | grep sync-dev-runtime  →  */10 * * * *",
-          "source": "/tmp/sync-dev-runtime-cron.log"
-        }
-      }
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "owner installs script as DEV VPS crontab entry (every ~10min) and commits proof",
+      "owner_action": "decide : install cron on machine DEV (46.224.118.55) OR mark intended_mode=MANUAL",
+      "risk": "medium"
     },
     {
       "actual_mode": "DRAFTED",
       "automation_id": "pr-670-kw-canonical-classification",
       "domain": "D3",
-      "drift_note": "PR #670 auto-closed 2026-06-13 after 21 days of inactivity, never merged.",
       "evidence": [
         {
-          "note": "existing @repo/seo-roles package ; PR #670 (KW classifier, R1→R2/R5 separation) closed unmerged 2026-06-13",
+          "note": "existing @repo/seo-roles package ; PR #670 wires KW classifier to it (R1→R2/R5 separation), still OPEN",
           "path": "packages/seo-roles/package.json"
         }
       ],
       "executor": "github-actions",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
-      "missing_step": "owner decides : reopen PR #670 (branch feat/kw-canonical-classification still on origin) or remove this entry",
-      "owner_action": "decide : reopen or drop",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "merge PR #670 (88% R1 → R2/R5 separated)",
+      "owner_action": "review + merge",
       "related_pr": [
         670
       ],
@@ -280,49 +264,41 @@
       "actual_mode": "DRAFTED",
       "automation_id": "pr-684-rag-canon-docs-reconcile",
       "domain": "D6",
-      "drift_note": "PR #684 auto-closed 2026-06-13 after 21 days of inactivity, never merged. No rag-scope-guard workflow on main.",
       "evidence": [
         {
-          "note": "existing canon doc-search rule ; PR #684 (anti-drift guard for RAG references) closed unmerged 2026-06-13",
+          "note": "existing canon doc-search rule ; PR #684 adds anti-drift guard for RAG references (still OPEN)",
           "path": ".claude/rules/agent-doc-search.md"
         }
       ],
       "executor": "github-actions",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
-      "missing_step": "owner decides : reopen PR #684 (branch chore/rag-docs-canon-reconcile still on origin) or remove this entry",
-      "owner_action": "decide : reopen or drop",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "merge PR #684 (RAG canon reconcile + anti-drift guard)",
+      "owner_action": "review + merge",
       "related_pr": [
         684
       ],
       "risk": "low"
     },
     {
-      "actual_mode": "SCRIPT_ONLY",
+      "actual_mode": "DRAFTED",
       "automation_id": "pr-687-sitemap-freshness-alert",
       "domain": "D3",
-      "drift_note": "Run 42747325395 (2026-11-10) success ; __seo_event_log sitemap_generation_complete : 152 rows since 2026-06-12, last 2026-11-10 03:08Z. Reader not proven.",
       "evidence": [
         {
-          "note": "PR #687 merged 2026-05-29 ; the daily run calls generate-all, the backend then writes the heartbeat event",
+          "note": "existing sitemap workflow ; PR #687 adds heartbeat + SITEMAP_STALE_V1 alert step (still OPEN)",
           "path": ".github/workflows/sitemap-daily-regen.yml"
-        },
-        {
-          "excerpt": "'SITEMAP_STALE_V1'::TEXT,",
-          "line": 82,
-          "note": "3rd alert source of rpc_seo_alerts_v1 ; present in the live function (pg_proc.prosrc, 2026-11-10)",
-          "path": "backend/supabase/migrations/20260521_seo_sitemap_freshness_001_alert_rpc.sql"
         }
       ],
       "executor": "github-actions-schedule",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "runtime-probe",
-      "missing_step": "prove that someone reads SITEMAP_STALE_V1 (rpc_seo_alerts_v1 via SeoControlService), then set ACTIVE with runtime_evidence",
-      "owner_action": "confirm the reader of the alert, or accept SCRIPT_ONLY",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "merge PR #687 (commerce-loop step 2 alert)",
+      "owner_action": "review + merge",
       "related_pr": [
         687
       ],
@@ -354,22 +330,21 @@
       "actual_mode": "INTENDED_PHASED",
       "automation_id": "pr-dod-gate",
       "domain": "D15",
-      "drift_note": "Seed described Phase 1 (continue-on-error). The gate step no longer carries it ; excerpt moved from line 14 to 18, which failed the validator on main.",
       "evidence": [
         {
           "excerpt": "PROMOTION TO BLOCKING",
-          "line": 18,
-          "note": "Phase 2 : the gate step fails the job (red X) ; workflow header says not yet a required check",
+          "line": 14,
+          "note": "Phase 1 warn-only, promotion to blocking planned at Etape 3",
           "path": ".github/workflows/pr-dod-gate.yml"
         }
       ],
       "executor": "github-actions",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
-      "missing_step": "add the check to branch-protection required-status-checks (Etape 3)",
-      "owner_action": "ops decision : promote to required check",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "remove continue-on-error after +14d green signal + add to branch-protection required-status-checks",
+      "owner_action": "ops decision after green signal window",
       "risk": "low"
     },
     {
@@ -386,9 +361,9 @@
       ],
       "executor": "github-actions",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
       "missing_step": "V2 block-all promotion (ADR-058 §V2)",
       "owner_action": "ops decision in V2 milestone",
       "risk": "low"
@@ -407,9 +382,9 @@
       ],
       "executor": "github-actions",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
       "missing_step": "PR-V2.5/V3 promotion (per workflow comment header)",
       "owner_action": "AI governance Phase 0 → 1 transition",
       "risk": "low"
@@ -418,7 +393,7 @@
       "actual_mode": "ACTIVE",
       "automation_id": "snapshot-partition-rotation",
       "domain": "D3",
-      "drift_note": "Re-verified 2026-11-10 : job active, daily run succeeded, partitions exist through 2026-11-24. Seed note : #698 verified MERGED 2026-05-22.",
+      "drift_note": "user inventory flagged #698 as 'PR ouverte critique' ; verified MERGED 2026-05-22, cron live",
       "evidence": [
         {
           "excerpt": "SELECT cron.schedule(",
@@ -429,9 +404,9 @@
       ],
       "executor": "pg_cron",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "runtime-probe",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
       "related_pr": [
         697,
         698
@@ -441,15 +416,15 @@
         "consumer": "no-consumer-by-design",
         "output": {
           "kind": "db_row",
-          "observed_at": "2026-11-10",
-          "query_or_url": "SELECT relname FROM pg_class WHERE relname ~ 'snapshot.*\\d{8}' AND relkind='r' ORDER BY relname DESC LIMIT 5  -- __seo_snapshot_synthetic_p20261124 … p20261121 (J+14)",
+          "observed_at": "2026-05-24",
+          "query_or_url": "SELECT relname FROM pg_class WHERE relname ~ 'snapshot.*\\d{8}' AND relkind='r' ORDER BY relname DESC LIMIT 5",
           "source": "pg_class"
         },
         "trigger": {
           "kind": "db_row",
-          "observed_at": "2026-11-10",
-          "query_or_url": "SELECT j.jobname, j.schedule, j.active, r.status, r.return_message, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname='snapshot-partition-rotation'  -- '20 2 * * *', active, succeeded '4 rows' @2026-11-10 02:20:00Z",
-          "source": "cron.job / cron.job_run_details"
+          "observed_at": "2026-05-24",
+          "query_or_url": "SELECT jobname, schedule, active FROM cron.job WHERE jobname='snapshot-partition-rotation'",
+          "source": "cron.job"
         }
       }
     },
@@ -521,39 +496,30 @@
       "risk": "medium"
     },
     {
-      "actual_mode": "ACTIVE",
+      "actual_mode": "SCRIPT_ONLY",
       "automation_id": "worktree-prune-merged",
       "domain": "D13",
       "evidence": [
         {
-          "note": "script committed (PR #680) ; installed in the deploy user crontab on the DEV machine (daily 03:30, --apply)",
+          "note": "script committed (PR #680), --apply requires manual invocation",
           "path": "scripts/cron/prune-merged-worktrees.sh"
+        },
+        {
+          "note": "container Supercronic crontab — does NOT include prune-merged-worktrees",
+          "path": "config/cron/crontab"
         }
       ],
       "executor": "cron-vps",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-11-10",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "runtime-probe",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "owner installs script as DEV VPS crontab entry (daily) and commits proof",
+      "owner_action": "decide : install cron OR keep as one-shot ops tool (mark intended_mode=SCRIPT_ONLY)",
       "related_pr": [
         680
       ],
-      "risk": "low",
-      "runtime_evidence": {
-        "consumer": "no-consumer-by-design",
-        "output": {
-          "kind": "log",
-          "observed_at": "2026-11-10",
-          "query_or_url": "Bilan : worktrees ciblés=1 branches ciblées=2 caches ciblés=0",
-          "source": "/tmp/worktree-cleanup-20261110-033001.log"
-        },
-        "trigger": {
-          "kind": "log",
-          "observed_at": "2026-11-10",
-          "query_or_url": "crontab -l | grep prune-merged-worktrees  →  30 3 * * *",
-          "source": "/tmp/prune-merged-worktrees.log"
-        }
-      }
+      "risk": "low"
     }
   ],
   "db": {
@@ -29497,6 +29463,7 @@
       "id": "backend/src/auth/auth.module.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/modules/api.module.ts",
         "backend/src/modules/dashboard/dashboard.module.ts",
         "backend/src/modules/orders/orders.module.ts",
         "backend/src/modules/support/support.module.ts",
@@ -29582,6 +29549,7 @@
       "domain": "D11",
       "id": "backend/src/auth/authenticated.guard.ts",
       "importedBy": [
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/dashboard/dashboard.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
@@ -29748,12 +29716,15 @@
       ],
       "imports": [
         "backend/src/auth/auth.service.ts",
+        "backend/src/auth/authenticated.guard.ts",
         "backend/src/auth/dto/module-access.dto.ts",
         "backend/src/auth/dto/user-permissions.dto.ts",
-        "backend/src/auth/permissions.service.ts"
+        "backend/src/auth/is-admin.guard.ts",
+        "backend/src/auth/permissions.service.ts",
+        "backend/src/auth/session-privilege.ts"
       ],
       "kind": "controller",
-      "loc": 95,
+      "loc": 147,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/controllers/auth-permissions.controller.ts",
       "risk": "high",
@@ -30284,6 +30255,7 @@
       "id": "backend/src/auth/is-admin.guard.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
@@ -30544,6 +30516,7 @@
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
+        "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/permissions.service.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
@@ -34366,11 +34339,14 @@
         "backend/src/modules/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
         "@common/exceptions",
         "backend/src/database/services/orders.service.ts"
       ],
       "kind": "controller",
-      "loc": 128,
+      "loc": 152,
       "owner": "__unassigned__",
       "path": "backend/src/controllers/orders.controller.ts",
       "risk": "low",
@@ -39808,12 +39784,14 @@
         "backend/src/modules/ai-content/ai-content.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/ai-content/ai-content.service.ts",
         "backend/src/modules/ai-content/dto/generate-content.dto.ts"
       ],
       "kind": "controller",
-      "loc": 148,
+      "loc": 155,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/ai-content/ai-content.controller.ts",
       "risk": "medium",
@@ -40403,6 +40381,7 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
+        "backend/src/auth/auth.module.ts",
         "backend/src/controllers/orders.controller.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/database/database.module.ts",
@@ -40414,7 +40393,7 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "kind": "service",
-      "loc": 32,
+      "loc": 34,
       "owner": "__unassigned__",
       "path": "backend/src/modules/api.module.ts",
       "risk": "low",
@@ -42095,12 +42074,14 @@
         "backend/src/modules/cart/cart.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
         "backend/src/modules/cart/services/abandoned-cart.service.ts"
       ],
       "kind": "controller",
-      "loc": 224,
+      "loc": 230,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
       "risk": "high",
@@ -43535,10 +43516,12 @@
         "backend/src/modules/commercial/commercial.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/commercial/archives/archives.service.ts"
       ],
       "kind": "controller",
-      "loc": 236,
+      "loc": 242,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/commercial/archives/archives.controller.ts",
       "risk": "medium",
@@ -46866,10 +46849,12 @@
         "backend/src/modules/invoices/invoices.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/invoices/invoices.service.ts"
       ],
       "kind": "controller",
-      "loc": 60,
+      "loc": 68,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/invoices/invoices.controller.ts",
       "risk": "high",
@@ -50323,10 +50308,12 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/orders/services/order-archive.service.ts"
       ],
       "kind": "controller",
-      "loc": 273,
+      "loc": 287,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/order-archive.controller.ts",
       "risk": "high",
@@ -50380,10 +50367,12 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/orders/services/tickets.service.ts"
       ],
       "kind": "controller",
-      "loc": 226,
+      "loc": 233,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/tickets.controller.ts",
       "risk": "high",
@@ -50883,11 +50872,13 @@
         "backend/src/modules/payments/payments.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/payments/entities/payment.entity.ts",
         "backend/src/modules/payments/repositories/payment-data.service.ts"
       ],
       "kind": "controller",
-      "loc": 187,
+      "loc": 193,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/payments/controllers/paybox-monitoring.controller.ts",
       "risk": "critical",
@@ -52740,11 +52731,13 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/products/services/stock.service.ts"
       ],
       "kind": "controller",
-      "loc": 105,
+      "loc": 115,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/products/controllers/products-inventory.controller.ts",
       "risk": "high",
@@ -63839,10 +63832,12 @@
         "backend/src/modules/shipping/shipping.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/shipping/shipping.service.ts"
       ],
       "kind": "controller",
-      "loc": 112,
+      "loc": 129,
       "owner": "__unassigned__",
       "path": "backend/src/modules/shipping/shipping.controller.ts",
       "risk": "low",
@@ -65626,11 +65621,13 @@
         "backend/src/modules/suppliers/suppliers.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/suppliers/dto/index.ts",
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 127,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers-modern.controller.ts",
       "risk": "low",
@@ -65650,10 +65647,12 @@
         "backend/src/modules/suppliers/suppliers.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 414,
+      "loc": 423,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers.controller.ts",
       "risk": "low",
@@ -66787,10 +66786,12 @@
         "backend/src/modules/system/system.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/system/services/system.service.ts"
       ],
       "kind": "controller",
-      "loc": 159,
+      "loc": 170,
       "owner": "__unassigned__",
       "path": "backend/src/modules/system/system-health.controller.ts",
       "risk": "low",
@@ -68935,10 +68936,12 @@
         "backend/src/notifications/notifications.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/notifications/notifications.service.ts"
       ],
       "kind": "controller",
-      "loc": 121,
+      "loc": 127,
       "owner": "__unassigned__",
       "path": "backend/src/notifications/notifications.controller.ts",
       "risk": "low",
@@ -70209,6 +70212,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/admin-tools-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 241,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/admin-tools-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/ai-probe/prompt-registry-schema.test.ts",
       "importedBy": [],
       "imports": [],
@@ -70236,6 +70259,26 @@
       "loc": 222,
       "owner": "@ak125",
       "path": "backend/tests/unit/auth-guards.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/auth-permissions-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 266,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/auth-permissions-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -70849,6 +70892,66 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 209,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/invoices-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 186,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/invoices-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/legacy-orders-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 241,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/legacy-orders-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/legacy-users-routes-authz.test.ts",
       "importedBy": [],
       "imports": [],
@@ -70976,6 +71079,26 @@
       "loc": 114,
       "owner": "@ak125",
       "path": "backend/tests/unit/order-actions.create-supplement.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/order-backoffice-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 251,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/order-backoffice-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -71216,6 +71339,26 @@
       "loc": 216,
       "owner": "@ak125",
       "path": "backend/tests/unit/paybox-service-log-sanitization.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/paybox-supervision-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 197,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/paybox-supervision-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -72256,6 +72399,26 @@
       "loc": 87,
       "owner": "@ak125",
       "path": "backend/tests/unit/supabase-key-util.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/suppliers-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 210,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/suppliers-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -86146,7 +86309,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 548,
+      "loc": 544,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.payments.$paymentId.tsx",
       "risk": "medium",
@@ -86196,7 +86359,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 855,
+      "loc": 838,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.payments.dashboard.tsx",
       "risk": "medium",
@@ -87517,7 +87680,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 554,
+      "loc": 557,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.suppliers.$id.tsx",
       "risk": "medium",
@@ -87642,7 +87805,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 365,
+      "loc": 367,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.system.tsx",
       "risk": "medium",
@@ -91828,7 +91991,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 480,
+      "loc": 489,
       "owner": "__unassigned__",
       "path": "frontend/app/services/payment-admin.server.ts",
       "risk": "low",
@@ -106535,18 +106698,18 @@
     "generatedAt": "1970-01-01T00:00:00.000Z",
     "generatorVersion": "1.0.0",
     "inputHashes": {
-      ".spec/00-canon/repository-registry/automation-reality.yaml": "3ddc21ca7567aaad32698773f4e3a768cc2dbdd38d3daacd863762dbc9489f5c",
+      ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "eddd6bbeb85e3826c89cceb903ee6308d360710f0de43f525378bb1644314ef1",
+      "audit/registry/files.json": "8d6a987386198b7236c21083c67e6da76deee613feedfadb2361dbbaf0acbb39",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "158368fa1e31fc7192ef74fde6b10fc729af0a96cb678a1ce7105f7b4ef3dcfd"
+      "audit/registry/runtime.json": "b27cf8b14b4db1093189bb4149632ef6cd670e59fcbc797802b1cd09b4bdf277"
     },
-    "sotFingerprint": "ba1a849895fe"
+    "sotFingerprint": "9adcc8fada11"
   },
   "runtime": [
     {
@@ -106727,6 +106890,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/auth/auth.service.ts",
+        "runtime:backend/src/auth/is-admin.guard.ts",
         "runtime:backend/src/auth/permissions.service.ts"
       ],
       "id": "runtime:backend/src/auth/controllers/auth-permissions.controller.ts",
@@ -108502,6 +108666,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/auth.module.ts",
         "runtime:backend/src/controllers/users.controller.ts",
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/commercial/commercial.module.ts",
