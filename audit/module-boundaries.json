@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110617,
+      "loc_total": 110634,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -516,7 +516,7 @@
         "backend/src/modules/payments/utils"
       ],
       "files_count": 28,
-      "loc_total": 5706,
+      "loc_total": 5683,
       "has_barrel": true
     },
     "pkg-cwv-taxonomy": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 347,
-      "loc_total": 68324,
+      "loc_total": 68130,
       "has_barrel": true
     },
     "upload": {
