@@ -2,15 +2,18 @@
 # Block confused `preprod` formulations in markdown files.
 #
 # Why: 419 occurrences across monorepo+vault+memory mixed DEV/PREPROD/PROD
-# semantics. Canon is in .claude/rules/deployment.md (glossary STRICT). Patterns
-# below are FORBIDDEN because they imply false topology:
-#   - "DEV pré-prod" / "DEV preprod" → conflates 2 distinct machines
+# semantics. The vocabulary is decided in the governance vault (ADR-075 D2, D4)
+# and relayed to agents by .claude/rules/deployment.md. Patterns below are
+# FORBIDDEN because they imply false topology:
+#   - "DEV pré-prod" / "DEV preprod" → conflates the DEV host with PREPROD
 #   - "preprod.automecanik.com"      → hostname does NOT exist
 #   - "preprod miroir"               → PREPROD is READ_ONLY, not a replica
 #   - "déployer en pré-prod ... prod" (human staging gate) → CI-only env
 #   - "staging"                       → banned term in this repo
 #
-# See: ADR-075 "Deployment topology clarification" (vault).
+# Hosts are named by their role, never by IP address or hostname: the
+# repository is public (ADR-075 D4).
+# See: ADR-075 "Topologie et vocabulaire de déploiement" (vault).
 # Used by: .husky/pre-commit (staged .md only) + CI lint job (full repo).
 
 set -euo pipefail
@@ -22,8 +25,8 @@ else
   mapfile -t FILES < <(git ls-files -- '*.md')
 fi
 
-# Files allowed to USE forbidden patterns (canon defines them, errata correct
-# them, archived/log files are immutable history).
+# Files allowed to USE forbidden patterns (deployment.md lists them, errata
+# correct them, archived/log files are immutable history).
 ALLOWLIST_REGEX='^(\.claude/rules/deployment\.md|CLAUDE\.md|.*/_archive/.*|CHANGELOG.*\.md|log\.md|.*\.errata\.md|.*-errata-.*\.md|scripts/lint/check-preprod-vocabulary\.sh)$'
 
 # Each pattern paired with a label for the error message.
@@ -34,9 +37,9 @@ declare -a PATTERNS=(
   '[Ss]taging[[:space:]]+(soak|env|environment|server|VPS|deploy|deployment|gate)'
 )
 declare -a LABELS=(
-  '"DEV pré-prod" or "DEV preprod" (conflates 2 distinct machines — use PREPROD container or DEV machine)'
-  '"preprod.automecanik.com" (hostname does not exist — PREPROD is localhost:3200 on runner 49.12.233.2)'
-  '"preprod miroir" or "miroir de PROD" (PREPROD is READ_ONLY ephemeral CI, not a replica)'
+  '"DEV pré-prod" or "DEV preprod" (conflates the DEV host with PREPROD, which runs on the PROD host — say PREPROD or DEV host)'
+  '"preprod.automecanik.com" (hostname does not exist — PREPROD has no public URL: port 3200, loopback of the PROD host)'
+  '"preprod miroir" or "miroir de PROD" (PREPROD is the read-only CI stack, not a replica of PROD)'
   '"staging <soak|env|server|VPS|deploy|deployment|gate>" (banned for deployment topology — use PREPROD or PROD)'
 )
 
@@ -78,11 +81,10 @@ if [ "$violations" -gt 0 ]; then
 ────────────────────────────────────────────────────────────────────────────
 $violations forbidden vocabulary occurrence(s) detected.
 
-Canon : .claude/rules/deployment.md
-Vocabulary STRICT :
-  - DEV     = machine 46.224.118.55 (poste opérateur, no deploy container)
-  - PREPROD = container CI éphémère 49.12.233.2:3200 (READ_ONLY, no human access)
-  - PROD    = container live 49.12.233.2:80/443 (www.automecanik.com)
+Vocabulary: decided by ADR-075 (governance vault), relayed by .claude/rules/deployment.md
+  - DEV     = the DEV host (operator workstation, no deploy container)
+  - PREPROD = the CI stack on the PROD host (port 3200, loopback only; READ_ONLY, no human access)
+  - PROD    = the live container on the PROD host, behind Caddy (www.automecanik.com)
 
 To bypass for legitimate ERRATUM, prefix the line with "ERRATUM" (e.g.
 "**[ERRATUM YYYY-MM-DD]** preprod.automecanik.com was used incorrectly here...").

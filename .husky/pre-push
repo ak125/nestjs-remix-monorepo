@@ -1,9 +1,10 @@
 # pre-push — block direct pushes to protected branches (main, dev)
 #
-# Per .claude/rules/deployment.md, pushes to main/dev trigger the DEV
-# pre-prod deploy workflow (.github/workflows/ci.yml deploy job). Direct
-# pushes bypass PR review and reduce CI gating to a single linear check;
-# they must go through reviewed PRs.
+# Per .claude/rules/deployment.md, a push to main starts the PREPROD cycle
+# (.github/workflows/ci.yml: image build, PREPROD stack redeployed on the
+# PROD host, E2E Smoke, Lighthouse). A push to dev runs ci.yml without its
+# deploy jobs. Direct pushes bypass PR review and reduce CI gating to a
+# single linear check; they must go through reviewed PRs.
 #
 # Tag pushes (refs/tags/v*) for PROD deploy are allowed.
 #
@@ -33,8 +34,8 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
       echo
       echo "✗ Refused by .husky/pre-push: $op '$branch'."
       echo
-      echo "  Per .claude/rules/deployment.md, pushes to $branch trigger the"
-      echo "  DEV pre-prod deploy and must go through a reviewed PR. Branch"
+      echo "  Per .claude/rules/deployment.md, $branch only changes through a"
+      echo "  reviewed PR: a push to main starts the PREPROD cycle. Branch"
       echo "  creation/deletion of $branch is also refused as defense-in-depth"
       echo "  against accidental destructive operations."
       echo
