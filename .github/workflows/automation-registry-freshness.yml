@@ -6,6 +6,12 @@ name: Automation Registry — freshness (daily warn-only)
 # Graceful degradation : if the registry file is missing or unreadable, the
 # job emits a warning but exits 0 (never blocks merges on infrastructure
 # issues — anti-flake posture).
+#
+# The run fails only when the check produced no verdict at all (script crashed,
+# dependency missing). From 2026-05-24 to 2026-11-10 this job never installed
+# dependencies : the script died on `require("js-yaml")`, the step printed
+# "stale entries detected" and the run ended green every day. A scheduled run
+# gates no merge, so a red run here is a visible signal, not a blocker.
 
 on:
   schedule:
@@ -21,7 +27,6 @@ jobs:
     name: Check last_verified_at freshness
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    continue-on-error: true
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v7
@@ -32,8 +37,49 @@ jobs:
           node-version: "24"
           cache: "npm"
 
+      - name: 📦 Install deps (root + workspaces, --ignore-scripts to skip husky)
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefer-offline
+
       - name: 🕰️ Freshness check (warn-only, threshold 90 days)
         id: freshness
-        continue-on-error: true
+        shell: bash
         run: |
-          node scripts/audit/check-automation-freshness.js --threshold 90 || echo "stale entries detected (warn-only)"
+          set +e
+          OUT="$(node scripts/audit/check-automation-freshness.js --threshold 90 2>&1)"
+          CODE=$?
+          set -e
+          printf '%s\n' "$OUT"
+
+          # The script states its verdict on a "[freshness] ..." line. A Node
+          # crash also exits 1, so the exit code alone cannot tell "stale
+          # entries" from "the check did not run".
+          VERDICT="$(printf '%s\n' "$OUT" | grep -m1 -E '^\[freshness\] ' || true)"
+
+          if [ "$CODE" -eq 0 ] && [[ "$VERDICT" == "[freshness] OK "* ]]; then
+            echo "### Automation registry freshness — OK" >> "$GITHUB_STEP_SUMMARY"
+            echo "$VERDICT" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          if [ "$CODE" -eq 1 ] && [[ "$VERDICT" == "[freshness] WARN "* ]]; then
+            {
+              echo "### Automation registry freshness — stale entries (warn-only)"
+              echo
+              echo '```'
+              printf '%s\n' "$OUT"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=Automation registry freshness::${VERDICT} List in the job summary."
+            exit 0
+          fi
+
+          if [ "$CODE" -eq 0 ] && [ -n "$VERDICT" ]; then
+            # Documented graceful degradation : registry missing or unreadable.
+            echo "### Automation registry freshness — not evaluated" >> "$GITHUB_STEP_SUMMARY"
+            echo "$VERDICT" >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=Automation registry freshness::Not evaluated — ${VERDICT}"
+            exit 0
+          fi
+
+          echo "::error title=Automation registry freshness::The check did not run (exit ${CODE}, no verdict line). This is not a staleness result."
+          exit 1

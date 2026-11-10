@@ -56,16 +56,6 @@ export class FeatureFlagsService {
     return this.int('PIPELINE_CONCURRENCY', 1);
   }
 
-  // ── Brief gates flags ──
-
-  get briefGatesEnabled(): boolean {
-    return this.bool('BRIEF_GATES_ENABLED', false);
-  }
-
-  get briefGatesObserveOnly(): boolean {
-    return this.bool('BRIEF_GATES_OBSERVE_ONLY', false);
-  }
-
   get briefAwareEnabled(): boolean {
     return this.bool('BRIEF_AWARE_ENABLED', false);
   }
@@ -111,10 +101,6 @@ export class FeatureFlagsService {
    */
   get r1ContentPipelineEnabled(): boolean {
     return this.bool('R1_CONTENT_PIPELINE_ENABLED', false);
-  }
-
-  get keywordDensityGateEnabled(): boolean {
-    return this.bool('KEYWORD_DENSITY_GATE_ENABLED', false);
   }
 
   // ── R8 Owned Editorial (Fix B — owned DB editorial × per-type facts) ──
@@ -456,8 +442,6 @@ export class FeatureFlagsService {
     'CANARY_GAMMES',
     'R1_CONTENT_PIPELINE_ENABLED',
     'R8_OWNED_EDITORIAL_ENABLED',
-    'BRIEF_GATES_ENABLED',
-    'BRIEF_GATES_OBSERVE_ONLY',
     'SEO_BRIEF_WIKI_ENABLED',
     'SEO_PROJECTION_READ_V1',
     'SEO_PROJECTION_READ_CANARY',
@@ -466,7 +450,6 @@ export class FeatureFlagsService {
     'RAG_MERGE_ALLOWED_ROLES',
     'RAG_MERGE_ALLOWED_GAMMES',
     'CONSEIL_PACK_ENABLED',
-    'KEYWORD_DENSITY_GATE_ENABLED',
     'CANARY_AUTO_PUBLISH',
     'DRAFT_AUTO_PUBLISH_ENABLED',
     'DRAFT_AUTO_PUBLISH_INTERVAL_MS',

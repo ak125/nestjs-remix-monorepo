@@ -20,11 +20,8 @@ const BOOL_FLAGS = [
   { key: "HARD_GATES_ENABLED", label: "Hard Gates" },
   { key: "AUTO_REPAIR_ENABLED", label: "Auto Repair" },
   { key: "SAFE_FALLBACK_ENABLED", label: "Safe Fallback" },
-  { key: "BRIEF_GATES_ENABLED", label: "Brief Gates" },
-  { key: "BRIEF_GATES_OBSERVE_ONLY", label: "Brief Observe Only" },
   { key: "RAG_CATCHUP_ENABLED", label: "RAG Catchup" },
   { key: "CONSEIL_PACK_ENABLED", label: "Conseil Pack" },
-  { key: "KEYWORD_DENSITY_GATE_ENABLED", label: "Keyword Density Gate" },
 ];
 
 export function FeatureFlagsPanel() {

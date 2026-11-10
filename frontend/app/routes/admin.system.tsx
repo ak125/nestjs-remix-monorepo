@@ -30,13 +30,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         ? "http://127.0.0.1:3000"
         : getInternalApiUrl("");
 
+    // `metrics` exige une session admin : transmettre son cookie.
+    const sessionHeaders = { Cookie: request.headers.get("Cookie") || "" };
     const [healthResponse, metricsResponse] = await Promise.all([
-      fetch(`${baseUrl}/api/system/health`).catch(() => ({
-        json: () => Promise.resolve(null),
-      })),
-      fetch(`${baseUrl}/api/system/metrics`).catch(() => ({
-        json: () => Promise.resolve(null),
-      })),
+      fetch(`${baseUrl}/api/system/health`, { headers: sessionHeaders }).catch(
+        () => ({ json: () => Promise.resolve(null) }),
+      ),
+      fetch(`${baseUrl}/api/system/metrics`, {
+        headers: sessionHeaders,
+      }).catch(() => ({ json: () => Promise.resolve(null) })),
     ]);
 
     const healthData = healthResponse.json ? await healthResponse.json() : null;

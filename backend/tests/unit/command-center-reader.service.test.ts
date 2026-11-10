@@ -776,9 +776,17 @@ describe('fraîcheur de la source et identité du build', () => {
     'stale_status',
   ];
   let dir: string;
+  let registryDir: string;
+  let snapshotPath: string;
+  /** Rapport du validateur, là où le lecteur le cherche : <racine>/audit-reports. */
+  const reportPath = () =>
+    join(dir, 'audit-reports', 'agent-operating-map-report.json');
 
   /** Snapshot sans autre motif d'alerte : seul le cas testé peut retirer OPERATIONAL. */
-  const serve = async (lastVerified: string | null) => {
+  const serve = async (
+    lastVerified: string | null,
+    mutate?: (snapshot: any) => void,
+  ) => {
     const snapshot = JSON.parse(
       readFileSync(
         join(FIXTURES, 'full', 'command-center-snapshot.json'),
@@ -796,11 +804,9 @@ describe('fraîcheur de la source et identité du build', () => {
           d.certification === 'BROKEN' ? 'PARTIAL' : d.certification,
       }),
     );
-    writeFileSync(
-      join(dir, 'command-center-snapshot.json'),
-      JSON.stringify(snapshot),
-    );
-    const { service } = makeService('full', dir);
+    mutate?.(snapshot);
+    writeFileSync(snapshotPath, JSON.stringify(snapshot));
+    const { service } = makeService('full', registryDir);
     return service;
   };
   const read = async (lastVerified: string | null = '2026-11-08') =>
@@ -822,6 +828,12 @@ describe('fraîcheur de la source et identité du build', () => {
 
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), 'cc-identity-'));
+    registryDir = join(dir, 'audit', 'registry');
+    snapshotPath = join(registryDir, 'command-center-snapshot.json');
+    mkdirSync(registryDir, { recursive: true });
+    mkdirSync(join(dir, 'audit-reports'));
+    // Validation prouvée : seul le cas testé peut retirer OPERATIONAL.
+    writeFileSync(reportPath(), '{"counts":{"errors":0,"warns":0,"total":0}}');
     jest.useFakeTimers({ now: new Date(NOW) });
     process.env.COMMAND_CENTER_MODE = 'full';
     delete process.env.SOURCE_COMMIT;
@@ -972,7 +984,7 @@ describe('fraîcheur de la source et identité du build', () => {
   it('identité invalide et département P0 cassé : BLOCKED, motif d’identité conservé', async () => {
     process.env.GIT_SHA = 'abc123';
     const service = await serve('2026-11-08');
-    const path = join(dir, 'command-center-snapshot.json');
+    const path = snapshotPath;
     const snapshot = JSON.parse(readFileSync(path, 'utf8'));
     snapshot.departments[0] = {
       ...snapshot.departments[0],
@@ -999,7 +1011,7 @@ describe('fraîcheur de la source et identité du build', () => {
     'source %s et département P0 cassé : BLOCKED, motif de fraîcheur conservé',
     async (_l, lastVerified, stale, reason) => {
       const service = await serve(lastVerified);
-      const path = join(dir, 'command-center-snapshot.json');
+      const path = snapshotPath;
       const snapshot = JSON.parse(readFileSync(path, 'utf8'));
       snapshot.departments[0] = {
         ...snapshot.departments[0],
@@ -1113,6 +1125,143 @@ describe('fraîcheur de la source et identité du build', () => {
         expect(res.global_status.reasons).toEqual(['build identity absent']);
       },
     );
+  });
+
+  it('GIT_SHA vide (build sans argument) : identité absente, pas invalide', async () => {
+    process.env.GIT_SHA = '';
+    const res = await read();
+    expect(res.git_sha).toBeNull();
+    expect(res.global_status.reasons).toEqual(['build identity absent']);
+  });
+
+  describe('validation de la carte non prouvée', () => {
+    const UNKNOWN_REASON = 'operating-map validation unknown';
+    const p0Broken = (snapshot: any) => {
+      snapshot.departments[0] = {
+        ...snapshot.departments[0],
+        priority: 'P0',
+        certification: 'BROKEN',
+      };
+    };
+
+    it.each([
+      ['absent', null],
+      ['illisible', '{'],
+      ['sans compteurs', '{"counts":{}}'],
+      ['à compteur négatif', '{"counts":{"errors":-1,"warns":0}}'],
+    ])(
+      'rapport %s : UNKNOWN, motif explicite, jamais OPERATIONAL',
+      async (_l, report) => {
+        if (report === null) rmSync(reportPath());
+        else writeFileSync(reportPath(), report);
+        const res = await read();
+        expect(res.validation_status).toBe('UNKNOWN');
+        expect(res.global_status).toEqual({
+          level: 'WARNING',
+          verdict: 'PARTIAL_READY',
+          reasons: [UNKNOWN_REASON],
+        });
+      },
+    );
+
+    // Des avertissements sont un résultat du validateur, pas une preuve absente.
+    it('rapport avec avertissements seuls : WARN_ONLY reste OPERATIONAL', async () => {
+      writeFileSync(
+        reportPath(),
+        '{"counts":{"errors":0,"warns":3,"total":3}}',
+      );
+      const res = await read();
+      expect(res.validation_status).toBe('WARN_ONLY');
+      expect(res.global_status.verdict).toBe('OPERATIONAL');
+      expect(res.global_status.reasons).toEqual([]);
+    });
+
+    it('rapport absent et département P0 cassé : BLOCKED, motif de validation conservé', async () => {
+      rmSync(reportPath());
+      const service = await serve('2026-11-08', p0Broken);
+      const res = await service.getCommandCenter();
+      expect(res.global_status.verdict).toBe('BLOCKED');
+      expect(res.global_status.reasons).toEqual([
+        `P0 department(s) broken: ${res.departments[0].id}`,
+        UNKNOWN_REASON,
+      ]);
+    });
+
+    it('STRICT_FAIL et identité invalide : BLOCKED, les deux motifs', async () => {
+      writeFileSync(
+        reportPath(),
+        '{"counts":{"errors":2,"warns":0,"total":2}}',
+      );
+      process.env.GIT_SHA = 'abc123';
+      const res = await read();
+      expect(res.validation_status).toBe('STRICT_FAIL');
+      expect(res.global_status.verdict).toBe('BLOCKED');
+      expect(res.global_status.reasons).toEqual([
+        'operating-map validation STRICT_FAIL',
+        'build identity invalid',
+      ]);
+      expect(JSON.stringify(res.global_status)).not.toContain('abc123');
+    });
+
+    it('source périmée, identité absente et rapport absent : trois motifs, dans cet ordre', async () => {
+      rmSync(reportPath());
+      delete process.env.GIT_SHA;
+      const res = await read('2026-06-04');
+      expect(res.global_status.verdict).toBe('PARTIAL_READY');
+      expect(res.global_status.reasons).toEqual([
+        'snapshot source stale (>14d)',
+        'build identity absent',
+        UNKNOWN_REASON,
+      ]);
+    });
+
+    it('tous les motifs PARTIAL_READY : alertes, source, identité, validation, handoffs, capabilities', async () => {
+      rmSync(reportPath());
+      process.env.SOURCE_COMMIT = SHA_B;
+      const service = await serve(null, (snapshot) => {
+        snapshot.alerts = [
+          {
+            code: 'BROKEN_EVIDENCE',
+            severity: 'error',
+            target_kind: 'map',
+            target_id: 'map',
+            message: 'preuve cassée',
+          },
+          {
+            code: 'OVERCLAIM_RISK',
+            severity: 'warn',
+            target_kind: 'map',
+            target_id: 'map',
+            message: 'non compté',
+          },
+        ];
+        snapshot.summary.handoffs_incomplete = 2;
+        snapshot.summary.capabilities_without_evidence = 3;
+      });
+      const res = await service.getCommandCenter();
+      expect(res.global_status).toEqual({
+        level: 'WARNING',
+        verdict: 'PARTIAL_READY',
+        reasons: [
+          '1 error alert(s)',
+          'snapshot source freshness unknown',
+          'build identity divergent',
+          UNKNOWN_REASON,
+          '2 incomplete handoff(s)',
+          '3 capability(ies) without evidence',
+        ],
+      });
+    });
+
+    it('digest v1 strict : le motif de validation passe le lecteur Hermes', async () => {
+      rmSync(reportPath());
+      const digest = CommandCenterDigestSchema.parse(
+        toCommandCenterDigest(await read()),
+      );
+      expect(digest.global_status.reasons).toEqual([UNKNOWN_REASON]);
+      expect(Object.keys(digest).sort()).toEqual(DIGEST_KEYS);
+      expect(hermesAccepts(digest)).toBe('True');
+    });
   });
 
   it.each([
