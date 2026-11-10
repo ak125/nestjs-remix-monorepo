@@ -11,8 +11,11 @@ import {
   Logger,
   BadRequestException,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { PaymentService } from '../services/payment.service';
 import { CyberplusService } from '../services/cyberplus.service';
 import { PayboxService } from '../services/paybox.service';
@@ -28,6 +31,15 @@ interface AuthenticatedRequest {
 
 /**
  * Routes client : creation, consultation, annulation, supplement
+ *
+ * Frontiere d'acces : aucune route ne repond sans session.
+ * - Session du titulaire (regle « son compte ou administrateur » appliquee par
+ *   le handler) : `user/:userId`, `:id`, `:id/cancel`, `proceed-supplement`.
+ * - Administrateurs seulement : creation directe d'un paiement et lectures par
+ *   commande ou par reference, que le site n'appelle pas et dont le handler ne
+ *   verifie pas le titulaire.
+ *
+ * Classification exhaustive : backend/tests/unit/payment-core-routes-authz.test.ts
  */
 @ApiTags('payments')
 @Controller('api/payments')
@@ -48,7 +60,7 @@ export class PaymentCoreController {
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  // @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({
     summary: 'Creer un nouveau paiement',
     description:
@@ -157,7 +169,7 @@ export class PaymentCoreController {
    * Liste des paiements d'un utilisateur
    */
   @Get('user/:userId')
-  // @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard)
   @ApiOperation({ summary: "Liste des paiements d'un utilisateur" })
   @ApiParam({ name: 'userId', description: "ID de l'utilisateur" })
   @ApiResponse({ status: 200, description: 'Liste des paiements' })
@@ -194,7 +206,7 @@ export class PaymentCoreController {
    * Paiements d'une commande
    */
   @Get('order/:orderId')
-  // @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: 'Paiements associes a une commande' })
   @ApiParam({ name: 'orderId', description: 'ID de la commande' })
   @ApiResponse({ status: 200, description: 'Liste des paiements' })
@@ -219,6 +231,7 @@ export class PaymentCoreController {
    * Recuperer un paiement par sa reference
    */
   @Get('reference/:reference')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: 'Paiement par reference' })
   @ApiParam({ name: 'reference', description: 'Reference du paiement' })
   @ApiResponse({ status: 200, description: 'Details du paiement' })
@@ -246,7 +259,7 @@ export class PaymentCoreController {
    */
   @Post('proceed-supplement')
   @HttpCode(HttpStatus.OK)
-  // @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard)
   @ApiOperation({
     summary: "Initialiser le paiement d'un supplement de commande",
     description:
@@ -349,7 +362,7 @@ export class PaymentCoreController {
    * Obtenir les details d'un paiement
    */
   @Get(':id')
-  // @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard)
   @ApiOperation({ summary: "Obtenir les details d'un paiement" })
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Details du paiement' })
@@ -388,7 +401,7 @@ export class PaymentCoreController {
    */
   @Post(':id/cancel')
   @HttpCode(HttpStatus.OK)
-  // @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard)
   @ApiOperation({ summary: 'Annuler un paiement en attente' })
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Paiement annule' })
