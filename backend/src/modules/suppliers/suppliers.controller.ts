@@ -6,10 +6,19 @@ import {
   Body,
   Query,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { SuppliersService } from './suppliers.service';
 
+/**
+ * Fournisseurs : routes réservées aux administrateurs (lecture, bon de
+ * commande, désactivation). Le seul client HTTP est la page
+ * `admin.suppliers.$id.tsx`, qui exige déjà un admin.
+ */
 @Controller('api/suppliers')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class SuppliersController {
   private readonly logger = new Logger(SuppliersController.name);
 

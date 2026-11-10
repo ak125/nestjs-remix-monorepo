@@ -5,15 +5,25 @@ import {
   Param,
   Body,
   Logger,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { OperationFailedException } from '@common/exceptions';
 import { ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { StockService } from '../services/stock.service';
 
+/**
+ * Inventaire : rapport, liste de réapprovisionnement et réapprovisionnement.
+ * Outils d'administration, réservés aux administrateurs. Les gardes passent
+ * avant l'intercepteur de cache : une réponse en cache n'est jamais servie à
+ * une requête refusée.
+ */
 @ApiTags('Products Inventory')
 @Controller('api/products')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 @UseInterceptors(CacheInterceptor)
 export class ProductsInventoryController {
   private readonly logger = new Logger(ProductsInventoryController.name);

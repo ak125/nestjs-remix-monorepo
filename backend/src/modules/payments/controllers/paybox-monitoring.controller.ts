@@ -1,12 +1,18 @@
-import { Controller, Get, Query, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Logger, UseGuards } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { PaymentStatus } from '../entities/payment.entity';
 
 /**
  * Contrôleur pour le monitoring des paiements Paybox (Admin)
  * Route: GET /api/admin/paybox-monitoring
+ *
+ * Réservé aux administrateurs : transactions récentes et configuration
+ * marchande affichée. Même frontière que `PaymentAdminController`.
  */
 @Controller('api/admin')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class PayboxMonitoringController {
   private readonly logger = new Logger(PayboxMonitoringController.name);
 

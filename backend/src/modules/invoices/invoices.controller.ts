@@ -1,5 +1,9 @@
 /**
  * 🧾 INVOICES CONTROLLER - Production
+ *
+ * Factures clients : routes réservées aux administrateurs. Le seul client est
+ * la page `admin.invoices._index.tsx`, qui exige déjà un admin et transmet le
+ * cookie de session.
  */
 
 import {
@@ -9,10 +13,14 @@ import {
   Query,
   Logger,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { InvoicesService } from './invoices.service';
 
 @Controller('api/invoices')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class InvoicesController {
   private readonly logger = new Logger(InvoicesController.name);
 
