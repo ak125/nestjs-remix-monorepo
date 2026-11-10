@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 440,
-    "backend_files_scanned": 1504
+    "backend_files_scanned": 1501
   },
   "tables": {
     "___config": {
@@ -707,11 +707,10 @@
     },
     "__rag_content_refresh_log": {
       "used_by": [
-        "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/brief-template.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -1660,10 +1659,9 @@
     "__seo_r1_keyword_plan": {
       "used_by": [
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false,
@@ -1808,11 +1806,10 @@
     "__seo_r3_keyword_plan": {
       "used_by": [
         "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/blog/services/blog-seo.service.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 3,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false,
@@ -2595,10 +2592,9 @@
       "used_by": [
         "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-        "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
+        "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 3,
       "in_migrations": [
         "20260107_create_gamme_aggregates_table.sql"
       ],
@@ -2961,7 +2957,6 @@
         "backend/src/modules/admin/services/image-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
@@ -2987,7 +2982,7 @@
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 40,
+      "used_by_count": 39,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -11333,7 +11328,7 @@
     },
     {
       "file": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-      "line": 198,
+      "line": 196,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"

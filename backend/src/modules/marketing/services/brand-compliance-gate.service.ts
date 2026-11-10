@@ -14,7 +14,7 @@ import type {
 
 /**
  * Brand & Compliance Gate Service.
- * Pattern: PASS / WARN / FAIL (mirror of BriefGatesService for SEO).
+ * Pattern: PASS / WARN / FAIL.
  *
  * Gate A (Brand Voice): language, tone, emojis, competitors, claims, brand mention
  * Gate B (Compliance): UTM, CTA, hashtags, caption length, dimensions, price/delivery sources
