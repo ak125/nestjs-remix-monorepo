@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114973,
+      "loc_total": 114956,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -516,7 +516,7 @@
         "backend/src/modules/payments/utils"
       ],
       "files_count": 28,
-      "loc_total": 5677,
+      "loc_total": 5683,
       "has_barrel": true
     },
     "pkg-cwv-taxonomy": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 337,
-      "loc_total": 66004,
+      "files_count": 338,
+      "loc_total": 66201,
       "has_barrel": true
     },
     "upload": {
