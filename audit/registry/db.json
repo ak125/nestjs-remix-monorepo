@@ -3276,7 +3276,6 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
-        "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/brief-template.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts"
       ]

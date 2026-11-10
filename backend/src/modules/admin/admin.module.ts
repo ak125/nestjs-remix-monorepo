@@ -81,9 +81,7 @@ import { CanonObservabilityService } from './services/canon-observability.servic
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
 import { SeoBriefService } from './services/seo-brief.service'; // 🧱 D1 — WIKI-driven evidence brief (ADR-059/090)
 import { SeoProjectionReadModule } from '../seo-projection/seo-projection-read.module'; // 🔎 C0 — reader léger (moindre-privilège) consommé par SeoBriefService
-import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
 import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
-import { KeywordDensityGateService } from './services/keyword-density-gate.service'; // 🚦 Gate F: keyword density check
 import { ImageGatesService } from './services/image-gates.service'; // 🚦 P3: image gates (OG, hero policy, alt text)
 import { AdminJobHealthService } from './services/admin-job-health.service'; // 🏥 Job health tracking
 import { AdminHealthService } from './services/admin-health.service'; // 🏥 Health overview aggregator
@@ -277,9 +275,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     CanonObservabilityService, // 🛡️ Canon violation Sentry emitter (R3 PR-E)
     PageBriefService, // 📋 Page Briefs CRUD + overlap detection
     SeoBriefService, // 🧱 D1 — WIKI-driven evidence brief generator (flag SEO_BRIEF_WIKI_ENABLED, OFF)
-    BriefGatesService, // 🚦 Pre-publish gates anti-cannibalisation
     HardGatesService, // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
-    KeywordDensityGateService, // 🚦 Gate F: keyword density (feature flag KEYWORD_DENSITY_GATE_ENABLED)
     ImageGatesService, // 🚦 P3: image gates (OG, hero policy, alt text)
     AdminJobHealthService, // 🏥 Job health tracking (used by processors via WorkerModule)
     AdminHealthService, // 🏥 Health overview aggregator
@@ -321,7 +317,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     StockMovementService,
     StockReportService,
     PageBriefService, // 📋 Export for WorkerModule (enricher consumption)
-    BriefGatesService, // 🚦 Export for WorkerModule (processor gates)
     HardGatesService, // 🚦 Export for WorkerModule (hard gates)
     ImageGatesService, // 🚦 Export for WorkerModule (image gates)
     AdminJobHealthService, // 🏥 Export for WorkerModule (job health tracking)
