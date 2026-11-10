@@ -50860,11 +50860,13 @@
         "backend/src/modules/payments/payments.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/payments/entities/payment.entity.ts",
         "backend/src/modules/payments/repositories/payment-data.service.ts"
       ],
       "kind": "controller",
-      "loc": 187,
+      "loc": 193,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/payments/controllers/paybox-monitoring.controller.ts",
       "risk": "critical",
@@ -71248,6 +71250,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/paybox-supervision-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 197,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/paybox-supervision-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/pr-proposition.planner.test.ts",
       "importedBy": [],
       "imports": [],
@@ -86215,7 +86237,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 836,
+      "loc": 838,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.payments.dashboard.tsx",
       "risk": "medium",
@@ -106561,11 +106583,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "8e9f0614f3c63c34f03ad6cab73ff071dd83876a9b49653f9f35d28f41be489e",
+      "audit/registry/files.json": "440c608b41b6188d702ab34f090c91bc5d78cb463a01a3a4baa149c335873289",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "e88ffc1f12cc2dd428b37ebe44fff12b7c935acfdeb807629f746d084cd90804"
     },
-    "sotFingerprint": "7ac6a322c13b"
+    "sotFingerprint": "2ac0451e8f88"
   },
   "runtime": [
     {
