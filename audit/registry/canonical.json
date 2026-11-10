@@ -93368,9 +93368,11 @@
         "frontend/app/routes/commercial.orders._index.tsx",
         "frontend/app/types/orders.types.ts"
       ],
-      "imports": [],
+      "imports": [
+        "~/utils/logger"
+      ],
       "kind": "service",
-      "loc": 130,
+      "loc": 147,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/permissions.ts",
       "risk": "medium",
@@ -96411,6 +96413,26 @@
       "loc": 121,
       "owner": "@ak125",
       "path": "frontend/tests/unit/page-role-normalization.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/permissions-loader-path.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 114,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/permissions-loader-path.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106705,11 +106727,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "8d6a987386198b7236c21083c67e6da76deee613feedfadb2361dbbaf0acbb39",
+      "audit/registry/files.json": "7f34585ff9742a89561c840fe2c2299f521ff6ccb1aa8932cfc56bde8a329c23",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "b27cf8b14b4db1093189bb4149632ef6cd670e59fcbc797802b1cd09b4bdf277"
     },
-    "sotFingerprint": "9adcc8fada11"
+    "sotFingerprint": "e22cf33bb7b2"
   },
   "runtime": [
     {
