@@ -65609,11 +65609,13 @@
         "backend/src/modules/suppliers/suppliers.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/suppliers/dto/index.ts",
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 127,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers-modern.controller.ts",
       "risk": "low",
@@ -65633,10 +65635,12 @@
         "backend/src/modules/suppliers/suppliers.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 414,
+      "loc": 423,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers.controller.ts",
       "risk": "low",
@@ -72319,6 +72323,26 @@
       "loc": 87,
       "owner": "@ak125",
       "path": "backend/tests/unit/supabase-key-util.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/suppliers-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 210,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/suppliers-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -87580,7 +87604,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 554,
+      "loc": 557,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.suppliers.$id.tsx",
       "risk": "medium",
@@ -106605,11 +106629,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "75d8c0b960b282ca6a381d38a02400a7598c2990a18e5a6092faabd0bb4d994d",
+      "audit/registry/files.json": "b0b83d709b8edd56e85a6582ca7efb6783090afcf611527d2039111e0f2cdfc7",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "e88ffc1f12cc2dd428b37ebe44fff12b7c935acfdeb807629f746d084cd90804"
     },
-    "sotFingerprint": "d39fea40a0d2"
+    "sotFingerprint": "dfb3274a5dac"
   },
   "runtime": [
     {
