@@ -1,6 +1,6 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
-  "count": 15,
+  "count": 14,
   "cycles": [
     {
       "members": [
@@ -123,20 +123,6 @@
       "domain": "support",
       "suggested_fix": "invert-dep",
       "priority": 2
-    },
-    {
-      "members": [
-        "backend/src/workers/types/content-refresh.types.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts",
-        "backend/src/config/content-section-policy.ts"
-      ],
-      "domain": [
-        "admin",
-        "config",
-        "workers"
-      ],
-      "suggested_fix": "extract-shared-types",
-      "priority": 3
     },
     {
       "members": [

@@ -2,7 +2,7 @@
 module: admin
 sources:
 - backend/src/modules/admin
-last_scan: '2026-10-04'
+last_scan: '2026-11-10'
 primary_files:
 - backend/src/modules/admin/admin.module.ts
 - backend/src/modules/admin/constants/seo-control.constants.ts
@@ -47,7 +47,6 @@ _Section à rédiger._
 - `StockMovementService`
 - `StockReportService`
 - `PageBriefService`
-- `BriefGatesService`
 - `HardGatesService`
 - `ImageGatesService`
 - `AdminJobHealthService`
@@ -60,6 +59,7 @@ _Section à rédiger._
 ### Providers (top 15)
 - `RegistryReaderService`
 - `CommandCenterReaderService`
+- `CommandCenterDigestKeyGuard`
 - `CommandCenterActionsService`
 - `CommandCenterKpiService`
 - `CommandCenterOrchestratorService`

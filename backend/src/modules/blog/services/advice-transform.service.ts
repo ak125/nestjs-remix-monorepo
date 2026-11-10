@@ -33,40 +33,49 @@ export class AdviceTransformService {
     try {
       const adviceIds = advices.map((a) => a.ba_id);
 
-      // Batch H2/H3 en 2 requetes au lieu de N*2
-      const [{ data: allH2Sections }, { data: allH3Sections }] =
-        await Promise.all([
-          this.supabaseService.client
-            .from(TABLES.blog_advice_h2)
-            .select('*')
-            .in('ba2_ba_id', adviceIds)
-            .order('ba2_id'),
-          this.supabaseService.client
+      // H3 belongs to H2, not directly to an advice.
+      const { data: allH2Sections, error: h2Error } =
+        await this.supabaseService.client
+          .from(TABLES.blog_advice_h2)
+          .select('*')
+          .in('ba2_ba_id', adviceIds)
+          .order('ba2_id');
+      if (h2Error) throw h2Error;
+
+      const h2Sections: BaH2Row[] = allH2Sections || [];
+      const h2Ids = h2Sections.map((section) => section.ba2_id);
+      const { data: allH3Sections, error: h3Error } = h2Ids.length
+        ? await this.supabaseService.client
             .from(TABLES.blog_advice_h3)
             .select('*')
-            .in('ba3_ba_id', adviceIds)
-            .order('ba3_id'),
-        ]);
+            .in('ba3_ba2_id', h2Ids)
+            .order('ba3_id')
+        : { data: [], error: null };
+      if (h3Error) throw h3Error;
 
-      // Grouper par ba_id pour acces O(1)
-      const h2ByAdviceId = new Map<number, any[]>();
-      const h3ByAdviceId = new Map<number, any[]>();
+      const h2ByAdviceId = new Map<string, BaH2Row[]>();
+      const h3ByAdviceId = new Map<string, BaH3Row[]>();
+      const adviceIdByH2Id = new Map<string, string>();
 
-      allH2Sections?.forEach((s) => {
-        if (!h2ByAdviceId.has(s.ba2_ba_id)) h2ByAdviceId.set(s.ba2_ba_id, []);
-        h2ByAdviceId.get(s.ba2_ba_id)!.push(s);
+      h2Sections.forEach((section) => {
+        const adviceId = String(section.ba2_ba_id);
+        adviceIdByH2Id.set(String(section.ba2_id), adviceId);
+        if (!h2ByAdviceId.has(adviceId)) h2ByAdviceId.set(adviceId, []);
+        h2ByAdviceId.get(adviceId)!.push(section);
       });
 
-      allH3Sections?.forEach((s) => {
-        if (!h3ByAdviceId.has(s.ba3_ba_id)) h3ByAdviceId.set(s.ba3_ba_id, []);
-        h3ByAdviceId.get(s.ba3_ba_id)!.push(s);
+      allH3Sections?.forEach((section: BaH3Row) => {
+        const adviceId = adviceIdByH2Id.get(String(section.ba3_ba2_id));
+        if (adviceId === undefined) return;
+        if (!h3ByAdviceId.has(adviceId)) h3ByAdviceId.set(adviceId, []);
+        h3ByAdviceId.get(adviceId)!.push(section);
       });
 
       // Transformation parallele avec Promise.all
       return Promise.all(
         advices.map((advice) => {
-          const h2 = h2ByAdviceId.get(advice.ba_id) || [];
-          const h3 = h3ByAdviceId.get(advice.ba_id) || [];
+          const h2 = h2ByAdviceId.get(String(advice.ba_id)) || [];
+          const h3 = h3ByAdviceId.get(String(advice.ba_id)) || [];
           return this.transformAdviceToArticleWithSections(advice, h2, h3);
         }),
       );
@@ -74,7 +83,7 @@ export class AdviceTransformService {
       this.logger.error(
         `Erreur transformAdvicesToArticles: ${(error as Error).message}`,
       );
-      return [];
+      throw error;
     }
   }
 
@@ -171,19 +180,23 @@ export class AdviceTransformService {
    */
   async transformAdviceToArticle(advice: BaRow): Promise<BlogArticle> {
     try {
-      // Recuperer les sections H2/H3 en parallele
-      const [{ data: h2Sections }, { data: h3Sections }] = await Promise.all([
-        this.supabaseService.client
+      const { data: h2Sections, error: h2Error } =
+        await this.supabaseService.client
           .from(TABLES.blog_advice_h2)
           .select('*')
           .eq('ba2_ba_id', advice.ba_id)
-          .order('ba2_id'),
-        this.supabaseService.client
-          .from(TABLES.blog_advice_h3)
-          .select('*')
-          .eq('ba3_ba_id', advice.ba_id)
-          .order('ba3_id'),
-      ]);
+          .order('ba2_id');
+      if (h2Error) throw h2Error;
+
+      const h2Ids = (h2Sections || []).map((section) => section.ba2_id);
+      const { data: h3Sections, error: h3Error } = h2Ids.length
+        ? await this.supabaseService.client
+            .from(TABLES.blog_advice_h3)
+            .select('*')
+            .in('ba3_ba2_id', h2Ids)
+            .order('ba3_id')
+        : { data: [], error: null };
+      if (h3Error) throw h3Error;
 
       // Combiner les sections
       const sections: BlogSection[] = [];

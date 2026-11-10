@@ -84,6 +84,15 @@ jobs:
         # container temp-file write from ever coming back.
         run: npm run test:prod-ssr-probe
 
+      - name: 🌐 PROD Caddy stays up during a deploy — behavioural proof vs stubbed docker (BLOCKING)
+        # prod-caddy-config.sh runs ONLY in deploy-prod.yml, at tag time. The PROD
+        # deploy of 2026-11-05 stopped Caddy with the app: ~20 s of errors. This
+        # executes the script against a stubbed docker (Caddyfile unchanged, changed,
+        # invalid, not yet loaded, Caddy absent or restarting) and asserts that
+        # deploy-prod.yml calls it past the point of no return, before the app stops,
+        # and that no stop or rm names the Caddy container any more.
+        run: node --test scripts/ci/prod-caddy-config.test.mjs
+
       - name: 🔭 PROD observation report — behavioural proof vs stubbed docker (BLOCKING)
         # prod-observation-report.mjs runs ONLY in prod-smoke-tests.yml, on the PROD
         # host, where its verdict is all anyone sees. This drives it against a stubbed
@@ -142,6 +151,11 @@ jobs:
         # pr-dod-gate.yml cites this test as the proof of the gate's exit codes, but
         # no workflow ran it: the citation was a YAML comment.
         run: node --test scripts/ci/pr-dod-gate.test.mjs
+
+      - name: 🚧 Merge perimeter gate — refusal cases unit proof (BLOCKING)
+        # ADR-124: the gate refuses every case it cannot prove. Inert while the
+        # vault policy is absent or not active.
+        run: node --test scripts/ci/merge-perimeter-gate.test.mjs
 
       - name: 📦 Initial-load size verifier — fails on the states it exists to catch (BLOCKING)
         # The npm script existed; no workflow called it.
@@ -274,6 +288,9 @@ jobs:
         if: always()
         continue-on-error: true
         run: npm run audit:knip
+
+      - name: Baseline comparator — failure and report contract tests (BLOCKING)
+        run: npm run audit:baseline:test
 
       - name: 🚨 Baseline regression gate (BLOCKING)
         if: always()

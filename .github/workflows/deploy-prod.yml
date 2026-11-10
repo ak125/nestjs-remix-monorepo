@@ -55,6 +55,9 @@ jobs:
       - name: Verify PREPROD evidence gate before any PROD mutation
         run: node --test scripts/ci/prod-preprod-evidence.test.mjs scripts/ci/prod-image-selection.test.mjs
 
+      - name: Verify Caddy config sync (Caddy stays up) before any PROD mutation
+        run: node --test scripts/ci/prod-caddy-config.test.mjs
+
       - name: 🧪 PREPROD evidence gate — Deploy PREPROD + E2E Smoke + Lighthouse green for this commit
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -249,7 +252,9 @@ jobs:
           cp $GITHUB_WORKSPACE/docker-compose.prod.yml $PROD_DIR/
           cp $GITHUB_WORKSPACE/docker-compose.caddy.yml $PROD_DIR/
           cp $GITHUB_WORKSPACE/docker-compose.imgproxy.yml $PROD_DIR/
-          cp $GITHUB_WORKSPACE/config/caddy/Caddyfile $PROD_DIR/config/caddy/
+          # The Caddyfile is NOT copied here: Caddy reads it only when it starts,
+          # so it is loaded later by scripts/ci/prod-caddy-config.sh (validated,
+          # then Caddy recreated only if the file changed).
 
           cd $PROD_DIR
 
@@ -373,8 +378,18 @@ jobs:
           docker tag "$PROMOTED_IMAGE_ID" massdoc/nestjs-remix-monorepo:production
           docker push massdoc/nestjs-remix-monorepo:production
 
-          docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
-          docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
+          # Caddy stays up while the app is replaced: its Caddyfile waits for a
+          # container being replaced (snippet `attente_remplacement`), instead of
+          # the ~20 s of errors of the deploy of 2026-11-05, when Caddy was
+          # stopped with the app. The script loads this commit's Caddyfile:
+          # validated in the running Caddy first, then Caddy alone is recreated,
+          # and only if the file changed. Here, BEFORE the app stops, so the
+          # current app serves while Caddy is recreated. Past the point of no
+          # return: a failure rolls back.
+          bash "$GITHUB_WORKSPACE/scripts/ci/prod-caddy-config.sh" "$GITHUB_WORKSPACE/config/caddy/Caddyfile"
+
+          docker stop nestjs-remix-monorepo-prod 2>/dev/null || true
+          docker rm nestjs-remix-monorepo-prod 2>/dev/null || true
 
           # 🚨 Sentry secrets injection via SOPS exec-env wrapper (parity with
           # ci.yml preprod deploy step). docker-compose.prod.yml declares

@@ -4,7 +4,6 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { getEffectiveSupabaseKey } from '@common/utils';
-import { KeywordDensityGateService } from '../services/keyword-density-gate.service';
 
 // Expected overlaps (source of truth: scripts/seo/expected-overlaps.json)
 const EXPECTED_OVERLAPS = [
@@ -145,19 +144,6 @@ export class AdminKeywordClustersController {
         overlap_medium: overlapMedium,
         overlap_low: overlapLow,
       },
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  /**
-   * GET /api/admin/keyword-clusters/density-rules
-   * Current density gate configuration/thresholds.
-   */
-  @Get('density-rules')
-  getDensityRules() {
-    return {
-      success: true,
-      data: KeywordDensityGateService.getRulesMetadata(),
       timestamp: new Date().toISOString(),
     };
   }

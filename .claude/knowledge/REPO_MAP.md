@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 9692d4e24c96d862f6b7748fbed52a6c6093c2fe94663dd4768efd27c196c5b4
+source_sha256: 22a7d85961e987748b796509ef76de549c31df6341f55337500dbdf57dff286f
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3108 |
+| Files (Layer 1) | 3133 |
 | DB tables (Layer 1) | 316 |
-| DB RPC (Layer 1) | 264 |
+| DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1017 |
+| Runtime entrypoints (Layer 1) | 1014 |
 
-Source sotFingerprint: `449eeeacc356`.
+Source sotFingerprint: `e22cf33bb7b2`.
 
 ## Comment l'utiliser
 
@@ -45,19 +45,19 @@ Source sotFingerprint: `449eeeacc356`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 164 (test=150, service=10, config=3, controller=1)
+- **Files**: 166 (test=152, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (149), __unassigned__ (15)
+- **Top owners**: @ak125 (151), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=149
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=151
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 431 (service=220, test=123, controller=34, config=28, script=26)
+- **Files**: 432 (service=220, test=124, controller=34, config=28, script=26)
 - **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (431)
+- **Top owners**: @ak125/seo-team (432)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=222, UNKNOWN=209
+- **Status**: LIVE=222, UNKNOWN=210
 
 ### D4 — Vehicle / Compatibility
 
@@ -69,11 +69,11 @@ Source sotFingerprint: `449eeeacc356`.
 
 ### D5 — Blog / Content
 
-- **Files**: 45 (service=31, test=8, controller=6)
+- **Files**: 46 (service=31, test=9, controller=6)
 - **Runtime entrypoints**: 26
-- **Top owners**: @ak125/content-team (45)
+- **Top owners**: @ak125/content-team (46)
 - **Knowledge prose**: [`blog`](modules/blog.md)
-- **Status**: LIVE=33, UNKNOWN=12
+- **Status**: LIVE=33, UNKNOWN=13
 
 ### D6 — RAG & AI Engine
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `449eeeacc356`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 944 (config=454, route=246, service=182, controller=39, test=23)
-- **Runtime entrypoints**: 349
-- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (269)
+- **Files**: 941 (config=454, route=246, service=179, controller=39, test=23)
+- **Runtime entrypoints**: 346
+- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (266)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=516, UNKNOWN=428
+- **Status**: LIVE=513, UNKNOWN=428
 
 ### D9 — Import / ETL / Normalisation
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `449eeeacc356`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 297 (service=192, test=64, controller=40, config=1)
+- **Files**: 298 (service=192, test=65, controller=40, config=1)
 - **Runtime entrypoints**: 130
-- **Top owners**: @ak125 (128), @ak125/payments-team (82), @ak125/auth-team (75)
+- **Top owners**: @ak125 (128), @ak125/payments-team (83), @ak125/auth-team (75)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=180, UNKNOWN=117
+- **Status**: LIVE=180, UNKNOWN=118
 
 ### D12 — Marketing & Video
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `449eeeacc356`.
 
 ### D13 — Config & System
 
-- **Files**: 235 (script=79, service=71, config=54, test=31)
+- **Files**: 246 (script=88, service=72, config=54, test=32)
 - **Runtime entrypoints**: 16
-- **Top owners**: @ak125 (235)
-- **Status**: LIVE=91, UNKNOWN=144
+- **Top owners**: @ak125 (246)
+- **Status**: LIVE=92, UNKNOWN=154
 
 ### D14 — Gamme Aggregates & V-Level
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `449eeeacc356`.
 
 ### D15 — Security & Governance
 
-- **Files**: 292 (test=181, script=62, service=46, config=2, controller=1)
+- **Files**: 304 (test=193, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (292)
+- **Top owners**: @ak125 (304)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=233
+- **Status**: LIVE=59, UNKNOWN=245
 
 ### D16 — Maintenance
 
@@ -165,7 +165,7 @@ Source sotFingerprint: `449eeeacc356`.
 
 - **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
 - **DB tables**: 316
-- **DB RPC**: 264
+- **DB RPC**: 265
 - **Runtime entrypoints**: 83
 - **Top owners**: __unassigned__ (243)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)

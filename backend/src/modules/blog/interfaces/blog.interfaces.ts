@@ -139,8 +139,7 @@ export interface BaH2Row {
 /** Raw row from __blog_advice_h3 */
 export interface BaH3Row {
   ba3_id: number;
-  ba3_ba_id: number;
-  ba3_ba2_id?: number;
+  ba3_ba2_id: number;
   ba3_h3?: string;
   ba3_content?: string;
   ba3_cta_anchor?: string | null;

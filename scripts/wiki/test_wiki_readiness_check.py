@@ -13,6 +13,8 @@ import datetime
 import importlib.util
 import io
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).parent / "wiki-readiness-check.py"
@@ -184,3 +186,95 @@ def test_c3_missing_files_fail(tmp_path):
     ok, evidence = wr.c3_export_diag_canon_slugs_fresh(tmp_path, liveness_fn=lambda: (True, "alive"))
     assert ok is False
     assert "missing" in evidence
+
+
+# ── wiki evaluated: origin/main snapshot by default, --wiki-path as is ───────
+
+
+def _git(cwd: Path, *args: str) -> str:
+    return subprocess.run(
+        ["git", "-C", str(cwd), "-c", "user.name=t", "-c", "user.email=t@example.invalid", *args],
+        check=True, capture_output=True, text=True,
+    ).stdout.strip()
+
+
+def _clone_on_stale_branch(tmp_path: Path) -> tuple[Path, str]:
+    """A clone checked out on a branch that origin/main has moved past."""
+    seed = tmp_path / "seed"
+    seed.mkdir()
+    _git(seed, "init", "-q", "-b", "main")
+    (seed / "marker.txt").write_text("old", encoding="utf-8")
+    _git(seed, "add", "marker.txt")
+    _git(seed, "commit", "-q", "-m", "old")
+    origin = tmp_path / "origin.git"
+    _git(tmp_path, "clone", "-q", "--bare", str(seed), str(origin))
+    clone = tmp_path / "clone"
+    _git(tmp_path, "clone", "-q", str(origin), str(clone))
+    _git(clone, "checkout", "-q", "-b", "stale-branch")
+    (seed / "marker.txt").write_text("new", encoding="utf-8")
+    _git(seed, "commit", "-q", "-am", "new")
+    _git(seed, "push", "-q", str(origin), "main")
+    return clone, _git(seed, "rev-parse", "HEAD")
+
+
+def _stub_criteria(monkeypatch) -> None:
+    """C4 passes only if it reads origin/main's content; the others always pass."""
+    for name in (
+        "c1_schema_v2_propagated", "c2_validator_ci_active", "c3_export_diag_canon_slugs_fresh",
+        "c5_quality_gates_green", "c6_skill_proposal_writer_present",
+    ):
+        monkeypatch.setattr(wr, name, lambda *a: (True, "stub"))
+    monkeypatch.setattr(
+        wr, "c4_fiches_migrated",
+        lambda p: ((p / "marker.txt").read_text(encoding="utf-8") == "new", "marker"),
+    )
+
+
+def _run_main(monkeypatch, capsys, tmp_path: Path, *extra: str) -> tuple[int, dict]:
+    monkeypatch.setattr(
+        sys, "argv",
+        ["wiki-readiness-check.py", "--json", "--rag-path", str(tmp_path), "--monorepo-path", str(tmp_path), *extra],
+    )
+    rc = wr.main()
+    out = capsys.readouterr().out
+    return rc, json.loads(out) if out else {}
+
+
+def test_snapshot_reads_origin_main_and_leaves_clone_untouched(tmp_path):
+    clone, head = _clone_on_stale_branch(tmp_path)
+    dest = tmp_path / "snapshot"
+    dest.mkdir()
+    assert wr.snapshot_origin_main(clone, dest) == head
+    assert (dest / "marker.txt").read_text(encoding="utf-8") == "new"
+    assert sorted(p.name for p in dest.iterdir()) == ["marker.txt"]
+    assert (clone / "marker.txt").read_text(encoding="utf-8") == "old"
+    assert _git(clone, "branch", "--show-current") == "stale-branch"
+
+
+def test_main_default_ignores_the_clone_branch(tmp_path, monkeypatch, capsys):
+    clone, head = _clone_on_stale_branch(tmp_path)
+    monkeypatch.setattr(wr, "DEFAULT_WIKI_PATH", clone)
+    _stub_criteria(monkeypatch)
+    rc, report = _run_main(monkeypatch, capsys, tmp_path)
+    assert rc == 0
+    assert report["verdict"] == "READY"
+    assert report["wiki_source"] == f"origin/main {head} of {clone}"
+
+
+def test_main_explicit_path_is_evaluated_as_is(tmp_path, monkeypatch, capsys):
+    clone, _ = _clone_on_stale_branch(tmp_path)
+    _stub_criteria(monkeypatch)
+    rc, report = _run_main(monkeypatch, capsys, tmp_path, "--wiki-path", str(clone))
+    assert rc == 1
+    assert report["verdict"] == "NOT_READY"
+    assert report["wiki_source"] == f"directory {clone.resolve()}"
+
+
+def test_main_without_origin_main_is_a_script_error_not_a_verdict(tmp_path, monkeypatch, capsys):
+    not_a_clone = tmp_path / "plain"
+    not_a_clone.mkdir()
+    monkeypatch.setattr(wr, "DEFAULT_WIKI_PATH", not_a_clone)
+    _stub_criteria(monkeypatch)
+    rc, report = _run_main(monkeypatch, capsys, tmp_path)
+    assert rc == 2
+    assert report == {}

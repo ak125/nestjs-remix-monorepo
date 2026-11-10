@@ -311,9 +311,9 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const { orderId } = orderResult;
 
     // 6. Details Paybox lus depuis la reponse du POST de creation — PAS de
-    // GET /api/orders/:id ici : le POST guest regenere la session backend et
-    // le cookie de cette action devient invalide (INC tunnel paiement
-    // 2026-05→07 : ce GET repondait 404 et bloquait le client avant Paybox).
+    // GET /api/orders/:id ici : un invite n'a pas de session authentifiee
+    // (INC tunnel paiement 2026-05→07 : ce GET repondait 404 et bloquait le
+    // client avant Paybox).
     if (orderResult.isPaid) {
       return redirect(`/account/orders/${orderId}`);
     }

@@ -343,21 +343,17 @@ test.describe('7. Checklist qualité', () => {
       await gotoServed(page, R1_GAMME);
       await page.waitForLoadState('load');
 
-      // Attendre que les images lazy-load
-      await page.waitForTimeout(1000);
-
-      const brokenImages = await page.evaluate(() => {
-        const images = Array.from(document.images);
-        return images.filter(img => {
-          // Ignorer images avec data: ou blob:
-          if (img.src.startsWith('data:') || img.src.startsWith('blob:')) return false;
-          // Ignorer images très petites (icônes SVG inline)
-          if (img.naturalWidth < 10 && img.naturalHeight < 10) return false;
-          return !img.complete || img.naturalWidth === 0;
-        }).length;
-      });
-
-      expect(brokenImages).toBe(0);
+      // Load the visible images, including lazy ones, and report their URLs.
+      // A failed request has naturalWidth=0: never classify it as a tiny icon.
+      const images = page.locator('img:visible');
+      expect(await images.count()).toBeGreaterThan(0);
+      for (const image of await images.all()) await image.scrollIntoViewIfNeeded();
+      await expect.poll(() => page.evaluate(() =>
+        Array.from(document.images)
+          .filter(img => img.getClientRects().length > 0)
+          .filter(img => !img.complete || img.naturalWidth === 0)
+          .map(img => img.currentSrc || img.src),
+      ), { timeout: 20_000 }).toEqual([]);
     });
   }
 });

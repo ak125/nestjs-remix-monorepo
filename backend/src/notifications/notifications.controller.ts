@@ -1,7 +1,13 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, UseGuards } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { NotificationsService } from './notifications.service';
 
+/**
+ * Envoi de notifications et statistiques : réservé aux administrateurs.
+ */
 @Controller('api/notifications')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
