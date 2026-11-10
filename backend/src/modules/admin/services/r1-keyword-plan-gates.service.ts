@@ -8,6 +8,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import type {
   GateResult,
   AuditResult,
@@ -301,37 +302,41 @@ export class R1KeywordPlanGatesService extends SupabaseBaseService {
     }
     if (r1Terms.size === 0) return 0;
 
-    // Get R3 keyword plan for same gamme
-    const { data: r3Plan } = await this.client
+    // Validated R3 plans for the same gamme. Uniqueness is (gamme, version), so
+    // several can be validated at once: the highest overlap is the risk.
+    const { data: r3Plans, error } = await this.client
       .from('__seo_r3_keyword_plan')
       .select('skp_section_terms')
       .eq('skp_pg_id', row.rkp_pg_id)
-      .eq('skp_status', 'validated')
-      .single();
+      .eq('skp_status', 'validated');
+    if (error) {
+      // Une panne lue comme « aucun plan R3 » rendrait un risque nul.
+      throw this.readFailure('plans R3 validés', row.rkp_pg_id, error.message);
+    }
 
-    if (!r3Plan?.skp_section_terms) return 0;
-
-    // Collect all R3 include_terms
-    const r3Terms = new Set<string>();
-    const r3SectionTerms = r3Plan.skp_section_terms as Record<
-      string,
-      { include_terms?: string[] }
-    >;
-    for (const section of Object.values(r3SectionTerms)) {
-      for (const term of section.include_terms || []) {
-        r3Terms.add(term.toLowerCase());
+    let risk = 0;
+    for (const r3Plan of r3Plans ?? []) {
+      const r3Terms = new Set<string>();
+      const r3SectionTerms = (r3Plan.skp_section_terms ?? {}) as Record<
+        string,
+        { include_terms?: string[] }
+      >;
+      for (const section of Object.values(r3SectionTerms)) {
+        for (const term of section.include_terms || []) {
+          r3Terms.add(term.toLowerCase());
+        }
       }
-    }
-    if (r3Terms.size === 0) return 0;
+      if (r3Terms.size === 0) continue;
 
-    // Jaccard-like overlap
-    let intersection = 0;
-    for (const term of r1Terms) {
-      if (r3Terms.has(term)) intersection++;
+      // Jaccard-like overlap
+      let intersection = 0;
+      for (const term of r1Terms) {
+        if (r3Terms.has(term)) intersection++;
+      }
+      const union = new Set([...r1Terms, ...r3Terms]).size;
+      risk = Math.max(risk, intersection / union);
     }
-    const union = new Set([...r1Terms, ...r3Terms]).size;
-
-    return union > 0 ? intersection / union : 0;
+    return risk;
   }
 
   // ── Upsert R1 keyword plan ──────────────────────────
@@ -354,10 +359,28 @@ export class R1KeywordPlanGatesService extends SupabaseBaseService {
       this.logger.error(
         `Failed to upsert R1 keyword plan for pgId=${pgId}: ${error.message}`,
       );
+      throw new DatabaseException({
+        code: ErrorCodes.ADMIN.SUPABASE_ERROR,
+        message: `Écriture du plan R1 impossible (pgId=${pgId})`,
+        details: error.message,
+      });
     }
   }
 
   // ── Private helpers ──────────────────────────────────
+
+  private readFailure(
+    source: string,
+    pgId: number,
+    details: string,
+  ): DatabaseException {
+    this.logger.error(`[R1 gates] lecture ${source} pgId=${pgId} : ${details}`);
+    return new DatabaseException({
+      code: ErrorCodes.ADMIN.SUPABASE_ERROR,
+      message: `Gates R1 : lecture impossible (${source}, pgId=${pgId})`,
+      details,
+    });
+  }
 
   private extractSectionContent(
     pgRow: Record<string, unknown> | null,
@@ -578,106 +601,102 @@ export class R1KeywordPlanGatesService extends SupabaseBaseService {
   }
 
   private async checkFaqDedup(row: RkpRow): Promise<GateResult> {
-    // Load R1 FAQ from sgpg_faq (actual page FAQ, not keyword plan terms)
-    try {
-      const { data: pgRow } = await this.client
-        .from('__seo_gamme_purchase_guide')
-        .select('sgpg_faq')
-        .eq('sgpg_pg_id', String(row.rkp_pg_id))
-        .maybeSingle();
+    // Load R1 FAQ from sgpg_faq (actual page FAQ, not keyword plan terms).
+    // Une lecture en panne lève : rendue « pass », elle validerait une FAQ non comparée.
+    const { data: pgRow, error: r1FaqError } = await this.client
+      .from('__seo_gamme_purchase_guide')
+      .select('sgpg_faq')
+      .eq('sgpg_pg_id', String(row.rkp_pg_id))
+      .maybeSingle();
+    if (r1FaqError) {
+      throw this.readFailure('FAQ R1', row.rkp_pg_id, r1FaqError.message);
+    }
 
-      const r1Faq: Array<{ question: string; answer?: string }> = Array.isArray(
-        pgRow?.sgpg_faq,
-      )
-        ? pgRow.sgpg_faq
-        : [];
-      if (r1Faq.length === 0) {
-        return {
-          gate: 'RG5',
-          status: 'pass',
-          message: 'No R1 FAQ to dedup',
-        };
-      }
-      const r1Questions = r1Faq.map((f) => f.question);
-
-      // Fetch R3 S8 FAQ content
-      const { data: r3FaqRow } = await this.client
-        .from('__seo_gamme_conseil')
-        .select('sgc_content')
-        .eq('sgc_pg_id', row.rkp_pg_id)
-        .eq('sgc_section_type', 'S8')
-        .maybeSingle();
-
-      if (!r3FaqRow?.sgc_content) {
-        return {
-          gate: 'RG5',
-          status: 'pass',
-          message: 'No R3 S8 FAQ to compare',
-        };
-      }
-
-      // Extract questions from R3 HTML (<summary> tags)
-      const summaryRegex = /<summary[^>]*>(.*?)<\/summary>/gi;
-      const r3Questions: string[] = [];
-      let match: RegExpExecArray | null;
-      while ((match = summaryRegex.exec(r3FaqRow.sgc_content)) !== null) {
-        r3Questions.push(this.normalizeForDedup(match[1]));
-      }
-      if (r3Questions.length === 0) {
-        return {
-          gate: 'RG5',
-          status: 'pass',
-          message: 'No R3 FAQ questions found in S8 HTML',
-        };
-      }
-
-      // Cross-check R1 FAQ vs R3 FAQ (Jaccard 0.4 = semantic overlap)
-      const r1Normalized = r1Questions.map((q) => this.normalizeForDedup(q));
-      const duplicates: string[] = [];
-
-      for (let i = 0; i < r1Normalized.length; i++) {
-        const r1Q = r1Normalized[i];
-        for (const r3Q of r3Questions) {
-          if (
-            r1Q.includes(r3Q) ||
-            r3Q.includes(r1Q) ||
-            this.jaccardSimilarity(r1Q, r3Q) > 0.4
-          ) {
-            duplicates.push(r1Questions[i]);
-            break;
-          }
-        }
-      }
-
-      if (duplicates.length > 2) {
-        return {
-          gate: 'RG5',
-          status: 'fail',
-          message: `${duplicates.length} R1 FAQ overlap with R3 S8: ${duplicates.slice(0, 3).join('; ')}`,
-        };
-      }
-      if (duplicates.length > 0) {
-        return {
-          gate: 'RG5',
-          status: 'warn',
-          message: `${duplicates.length} R1 FAQ overlap with R3 S8`,
-        };
-      }
+    const r1Faq: Array<{ question: string; answer?: string }> = Array.isArray(
+      pgRow?.sgpg_faq,
+    )
+      ? pgRow.sgpg_faq
+      : [];
+    if (r1Faq.length === 0) {
       return {
         gate: 'RG5',
         status: 'pass',
-        message: 'No R1/R3 FAQ overlap detected',
-      };
-    } catch (err) {
-      this.logger.warn(
-        `[RG5] FAQ dedup check failed for pgId=${row.rkp_pg_id}: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      return {
-        gate: 'RG5',
-        status: 'pass',
-        message: 'FAQ dedup check skipped (DB error)',
+        message: 'No R1 FAQ to dedup',
       };
     }
+    const r1Questions = r1Faq.map((f) => f.question);
+
+    // Fetch R3 S8 FAQ content
+    const { data: r3FaqRow, error: r3FaqError } = await this.client
+      .from('__seo_gamme_conseil')
+      .select('sgc_content')
+      .eq('sgc_pg_id', row.rkp_pg_id)
+      .eq('sgc_section_type', 'S8')
+      .maybeSingle();
+    if (r3FaqError) {
+      throw this.readFailure('FAQ R3 (S8)', row.rkp_pg_id, r3FaqError.message);
+    }
+
+    if (!r3FaqRow?.sgc_content) {
+      return {
+        gate: 'RG5',
+        status: 'pass',
+        message: 'No R3 S8 FAQ to compare',
+      };
+    }
+
+    // Extract questions from R3 HTML (<summary> tags)
+    const summaryRegex = /<summary[^>]*>(.*?)<\/summary>/gi;
+    const r3Questions: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = summaryRegex.exec(r3FaqRow.sgc_content)) !== null) {
+      r3Questions.push(this.normalizeForDedup(match[1]));
+    }
+    if (r3Questions.length === 0) {
+      return {
+        gate: 'RG5',
+        status: 'pass',
+        message: 'No R3 FAQ questions found in S8 HTML',
+      };
+    }
+
+    // Cross-check R1 FAQ vs R3 FAQ (Jaccard 0.4 = semantic overlap)
+    const r1Normalized = r1Questions.map((q) => this.normalizeForDedup(q));
+    const duplicates: string[] = [];
+
+    for (let i = 0; i < r1Normalized.length; i++) {
+      const r1Q = r1Normalized[i];
+      for (const r3Q of r3Questions) {
+        if (
+          r1Q.includes(r3Q) ||
+          r3Q.includes(r1Q) ||
+          this.jaccardSimilarity(r1Q, r3Q) > 0.4
+        ) {
+          duplicates.push(r1Questions[i]);
+          break;
+        }
+      }
+    }
+
+    if (duplicates.length > 2) {
+      return {
+        gate: 'RG5',
+        status: 'fail',
+        message: `${duplicates.length} R1 FAQ overlap with R3 S8: ${duplicates.slice(0, 3).join('; ')}`,
+      };
+    }
+    if (duplicates.length > 0) {
+      return {
+        gate: 'RG5',
+        status: 'warn',
+        message: `${duplicates.length} R1 FAQ overlap with R3 S8`,
+      };
+    }
+    return {
+      gate: 'RG5',
+      status: 'pass',
+      message: 'No R1/R3 FAQ overlap detected',
+    };
   }
 
   private normalizeForDedup(text: string): string {

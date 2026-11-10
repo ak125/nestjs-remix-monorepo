@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 159,
-      "loc_total": 45404,
+      "files_count": 156,
+      "loc_total": 43800,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -145,8 +145,8 @@
         "backend/src/modules/catalog/types",
         "backend/src/modules/catalog/utils"
       ],
-      "files_count": 40,
-      "loc_total": 10270,
+      "files_count": 39,
+      "loc_total": 10199,
       "has_barrel": false
     },
     "commercial": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 104,
-      "loc_total": 25157,
+      "loc_total": 25128,
       "has_barrel": true
     },
     "customers": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110676,
+      "loc_total": 110608,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 222,
-      "loc_total": 52209,
+      "loc_total": 52219,
       "has_barrel": true
     },
     "search": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 338,
-      "loc_total": 66296,
+      "files_count": 337,
+      "loc_total": 66003,
       "has_barrel": true
     },
     "upload": {
@@ -1028,7 +1028,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5080,
+      "loc_total": 5068,
       "has_barrel": false
     }
   },
@@ -1066,7 +1066,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 74
+      "count": 68
     },
     {
       "from": "admin",
@@ -2196,7 +2196,7 @@
     {
       "from": "workers",
       "to": "admin",
-      "count": 6
+      "count": 5
     },
     {
       "from": "workers",

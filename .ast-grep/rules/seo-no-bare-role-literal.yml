@@ -60,7 +60,6 @@ ignores:
   # ── Documented legacy fallbacks ──
   - "**/seo-pilotage.service.ts"
   - "**/admin-keyword-planner.controller.ts"
-  - "**/brief-gates.service.ts"
   # ── Canon-defining Zod schemas (the legacy literal IS the schema definition) ──
   - "**/page-contract-r3.schema.ts"
   - "**/page-contract-r4.schema.ts"
