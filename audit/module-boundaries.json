@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 157,
-      "loc_total": 44418,
+      "files_count": 159,
+      "loc_total": 45404,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -171,8 +171,8 @@
         "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 38,
-      "loc_total": 1589,
+      "files_count": 40,
+      "loc_total": 1714,
       "has_barrel": true
     },
     "config": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 104,
-      "loc_total": 25140,
+      "loc_total": 25157,
       "has_barrel": true
     },
     "customers": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110608,
+      "loc_total": 110611,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -364,7 +364,7 @@
         "backend/src/modules/health"
       ],
       "files_count": 2,
-      "loc_total": 158,
+      "loc_total": 156,
       "has_barrel": false
     },
     "invoices": {
@@ -805,8 +805,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 50,
-      "loc_total": 11242,
+      "files_count": 51,
+      "loc_total": 11297,
       "has_barrel": false
     },
     "seo-projection": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 337,
-      "loc_total": 65854,
+      "loc_total": 66004,
       "has_barrel": true
     },
     "upload": {
@@ -1028,7 +1028,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5068,
+      "loc_total": 5080,
       "has_barrel": false
     }
   },
@@ -1066,7 +1066,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 72
+      "count": 74
     },
     {
       "from": "admin",
@@ -2196,7 +2196,7 @@
     {
       "from": "workers",
       "to": "admin",
-      "count": 5
+      "count": 6
     },
     {
       "from": "workers",

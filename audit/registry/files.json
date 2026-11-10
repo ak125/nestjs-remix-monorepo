@@ -2821,6 +2821,48 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/common/utils/build-identity.util.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/utils/build-identity.util.ts"
+      ],
+      "kind": "test",
+      "loc": 85,
+      "owner": "__unassigned__",
+      "path": "backend/src/common/utils/build-identity.util.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/common/utils/build-identity.util.ts",
+      "importedBy": [
+        "backend/src/common/utils/build-identity.util.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 40,
+      "owner": "__unassigned__",
+      "path": "backend/src/common/utils/build-identity.util.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -8549,6 +8591,7 @@
         "backend/src/modules/admin/controllers/internal-command-center.controller.ts"
       ],
       "imports": [
+        "@common/utils/build-identity.util",
         "@repo/registry",
         "backend/src/cache/cache.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
@@ -8560,7 +8603,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 506,
+      "loc": 483,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "low",
@@ -17663,12 +17706,13 @@
         "backend/src/modules/health/health.service.test.ts"
       ],
       "imports": [
+        "@common/utils/build-identity.util",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/session/session-infrastructure.module.ts",
         "backend/src/modules/session/session-store.service.ts"
       ],
       "kind": "service",
-      "loc": 125,
+      "loc": 123,
       "owner": "__unassigned__",
       "path": "backend/src/modules/health/health.module.ts",
       "risk": "low",
@@ -28190,6 +28234,27 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+      ],
+      "kind": "test",
+      "loc": 52,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
       "importedBy": [
         "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
@@ -28204,14 +28269,16 @@
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-index-history-collector.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts",
-        "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts"
+        "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts",
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.test.ts"
       ],
       "imports": [
+        "@common/utils/build-identity.util",
         "crypto",
         "os"
       ],
       "kind": "service",
-      "loc": 228,
+      "loc": 231,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
       "risk": "low",
@@ -40526,7 +40593,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1141,
+      "loc": 1290,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-reader.service.test.ts",
       "risk": "low",

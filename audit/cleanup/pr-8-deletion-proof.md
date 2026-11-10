@@ -13,8 +13,8 @@
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `c916b30a2e33b599801190fab0358438e9557e814c7997235b7b379cf2ce2815`
-- `canonical`: `d472590b83d079401d5f02c285f44d6775fff75fc164edfc2801eb9fcc73b6a9`
+- `deadCodeCandidates`: `ae0ff76491b220b8eef34816872eb507f69fd4d4122593651a283d68a9efe954`
+- `canonical`: `70190be4b13c76866c85289219e551b92e5fa650126ff5d06449bbfb28e45910`
 - `ownershipYaml`: `2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be`
 - `contractHealth`: `<none>`
 - `validateScript`: `f89bd253b2e305831a01222da09bbef3b95fa51f461238886835fe4a0c2fa831`
@@ -22,9 +22,9 @@
 
 ## Counts
 
-- Total: **257**
-- By confidence: high=12 · medium=164 · low=81
-- By decision: candidate=176 · blocked=81 · excluded=0
+- Total: **256**
+- By confidence: high=12 · medium=164 · low=80
+- By decision: candidate=176 · blocked=80 · excluded=0
 
 ## candidate (176)
 
@@ -218,7 +218,7 @@
 
 _(empty)_
 
-## blocked (81)
+## blocked (80)
 
 ### blocked · high (0)
 
@@ -228,13 +228,12 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (81)
+### blocked · low (80)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
 | `backend/src/auth/dto/logout-response.dto.ts` | auth | dto | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/common/pipes/index.ts` | common | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `backend/src/config/content-section-policy.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-content-contract.defaults.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-fingerprint.utils.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-heading-policy.utils.ts` | config | other | low | UNKNOWN | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
