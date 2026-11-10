@@ -12612,7 +12612,6 @@
         "sourceConfidence": "low",
         "status": "LIVE",
         "usedBy": [
-          "backend/src/modules/admin/services/brief-gates.service.ts",
           "backend/src/modules/admin/services/brief-template.service.ts",
           "backend/src/modules/marketing/services/marketing-data.service.ts"
         ]
@@ -28620,7 +28619,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 136,
+      "loc": 135,
       "owner": "__unassigned__",
       "path": "backend/.eslintrc.js",
       "risk": "low",
@@ -32005,13 +32004,11 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
-        "manual",
-        "reachability"
+        "manual"
       ],
       "domain": "D13",
       "id": "backend/src/config/content-section-policy.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/section-compiler.service.ts"
       ],
       "imports": [
@@ -32026,7 +32023,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -32481,7 +32478,6 @@
         "backend/src/config/feature-flags.service.test.ts",
         "backend/src/modules/admin/controllers/admin-feature-flags.controller.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
@@ -32517,7 +32513,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 559,
+      "loc": 542,
       "owner": "@ak125",
       "path": "backend/src/config/feature-flags.service.ts",
       "risk": "medium",
@@ -35028,7 +35024,6 @@
         "backend/src/modules/admin/services/admin-health.service.ts",
         "backend/src/modules/admin/services/admin-job-health.service.ts",
         "backend/src/modules/admin/services/brand-editorial.service.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/index.ts",
         "backend/src/modules/admin/services/canon-observability.service.ts",
@@ -35054,7 +35049,6 @@
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "backend/src/modules/admin/services/hard-gates.service.ts",
         "backend/src/modules/admin/services/image-gates.service.ts",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts",
         "backend/src/modules/admin/services/keyword-plan-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
         "backend/src/modules/admin/services/quality-scoring-engine.service.ts",
@@ -35094,7 +35088,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 338,
+      "loc": 333,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "medium",
@@ -35441,11 +35435,10 @@
       "imports": [
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
-        "@common/utils",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts"
+        "@common/utils"
       ],
       "kind": "controller",
-      "loc": 165,
+      "loc": 151,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/controllers/admin-keyword-clusters.controller.ts",
       "risk": "medium",
@@ -36547,34 +36540,6 @@
       "loc": 137,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/brand-editorial.service.ts",
-      "risk": "medium",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D8",
-      "id": "backend/src/modules/admin/services/brief-gates.service.ts",
-      "importedBy": [
-        "backend/src/modules/admin/admin.module.ts",
-        "backend/src/workers/types/content-refresh.types.ts"
-      ],
-      "imports": [
-        "@database/services/supabase-base.service",
-        "backend/src/config/content-section-policy.ts",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-        "backend/src/modules/admin/services/page-brief.service.ts"
-      ],
-      "kind": "service",
-      "loc": 781,
-      "owner": "@ak125/admin-team",
-      "path": "backend/src/modules/admin/services/brief-gates.service.ts",
       "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -37850,33 +37815,6 @@
         "manual"
       ],
       "domain": "D8",
-      "id": "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-      "importedBy": [
-        "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/controllers/admin-keyword-clusters.controller.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts"
-      ],
-      "imports": [
-        "backend/src/config/feature-flags.service.ts",
-        "backend/src/modules/admin/services/page-brief.service.ts"
-      ],
-      "kind": "service",
-      "loc": 209,
-      "owner": "@ak125/admin-team",
-      "path": "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-      "risk": "medium",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D8",
       "id": "backend/src/modules/admin/services/keyword-plan-gates.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
@@ -37909,11 +37847,9 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-page-brief.controller.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
-        "backend/src/modules/admin/services/buying-guide/claim-extractor.util.ts",
-        "backend/src/modules/admin/services/keyword-density-gate.service.ts"
+        "backend/src/modules/admin/services/buying-guide/claim-extractor.util.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -70065,11 +70001,10 @@
         "backend/src/modules/admin/services/section-compiler.service.ts"
       ],
       "imports": [
-        "backend/src/config/role-ids.ts",
-        "backend/src/modules/admin/services/brief-gates.service.ts"
+        "backend/src/config/role-ids.ts"
       ],
       "kind": "config",
-      "loc": 472,
+      "loc": 460,
       "owner": "@ak125",
       "path": "backend/src/workers/types/content-refresh.types.ts",
       "risk": "medium",
@@ -73784,7 +73719,7 @@
         "~/components/ui/switch"
       ],
       "kind": "config",
-      "loc": 181,
+      "loc": 178,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/admin/patterns/FeatureFlagsPanel.tsx",
       "risk": "low",
@@ -106594,13 +106529,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "2d5872d3b1b0218226bca046f584e85c1fb21fb9ba517d43e0dd407264380d1f",
+      "audit/registry/db.json": "40f02bbbc1c492e0dc34fdc7fff90409288c1e9062a8c1e70ab0ba08a2fc1a63",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "71185a86a9e83cecbb657e3e41fff4d7c053e1a4ba32fb095da8b80a8d99beb7",
+      "audit/registry/files.json": "680e33d96efe6c4c09f4a20c6dded5c20e17dce81165c51d0cffb1d4517002a6",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "a08cf4a46cc058ebef66bbd7f5bfc5248f616a32626b23292d2de4d62a5de1f8"
+      "audit/registry/runtime.json": "9e7c49c50c0511f0aec457b66bc8758d3f4dd4120c426e24d69bed79ae853fb9"
     },
-    "sotFingerprint": "cd7a22317360"
+    "sotFingerprint": "98ffe866f97d"
   },
   "runtime": [
     {
@@ -107283,7 +107218,6 @@
         "runtime:backend/src/modules/admin/services/admin-health.service.ts",
         "runtime:backend/src/modules/admin/services/admin-job-health.service.ts",
         "runtime:backend/src/modules/admin/services/brand-editorial.service.ts",
-        "runtime:backend/src/modules/admin/services/brief-gates.service.ts",
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/canon-observability.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
@@ -107307,7 +107241,6 @@
         "runtime:backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "runtime:backend/src/modules/admin/services/hard-gates.service.ts",
         "runtime:backend/src/modules/admin/services/image-gates.service.ts",
-        "runtime:backend/src/modules/admin/services/keyword-density-gate.service.ts",
         "runtime:backend/src/modules/admin/services/keyword-plan-gates.service.ts",
         "runtime:backend/src/modules/admin/services/page-brief.service.ts",
         "runtime:backend/src/modules/admin/services/quality-scoring-engine.service.ts",
@@ -107466,9 +107399,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/admin/services/keyword-density-gate.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/admin/controllers/admin-keyword-clusters.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/admin/controllers/admin-keyword-clusters.controller.ts",
@@ -107834,18 +107765,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/admin/services/keyword-density-gate.service.ts",
-        "runtime:backend/src/modules/admin/services/page-brief.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/admin/services/brief-gates.service.ts",
-      "kind": "nestjs-service",
-      "path": "backend/src/modules/admin/services/brief-gates.service.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
         "runtime:backend/src/config/content-write-gate.service.ts",
         "runtime:backend/src/modules/admin/services/page-brief.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
@@ -108117,18 +108036,6 @@
       "id": "runtime:backend/src/modules/admin/services/image-gates.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/admin/services/image-gates.service.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
-        "runtime:backend/src/modules/admin/services/page-brief.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/admin/services/keyword-density-gate.service.ts",
-      "kind": "nestjs-service",
-      "path": "backend/src/modules/admin/services/keyword-density-gate.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
