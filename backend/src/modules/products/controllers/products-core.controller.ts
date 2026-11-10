@@ -9,8 +9,11 @@ import {
   Query,
   UsePipes,
   Logger,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { OperationFailedException } from '@common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
@@ -29,6 +32,13 @@ import {
 } from '../schemas/product.schemas';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe';
 
+/**
+ * Frontière d'accès : les lectures du catalogue sont publiques ; les quatre
+ * écritures (création, modification, suppression, stock) sont réservées aux
+ * administrateurs.
+ *
+ * Classification exhaustive : backend/tests/unit/products-core-routes-authz.test.ts
+ */
 @ApiTags('Products')
 @Controller('api/products')
 @UseInterceptors(CacheInterceptor)
@@ -80,6 +90,7 @@ export class ProductsCoreController {
    * Créer une nouvelle pièce
    */
   @Post()
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @UsePipes(new ZodValidationPipe(CreateProductSchema))
   async create(@Body() createProductDto: CreateProductDto) {
     try {
@@ -104,6 +115,7 @@ export class ProductsCoreController {
    * Mettre à jour une pièce
    */
   @Put(':id')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @UsePipes(new ZodValidationPipe(UpdateProductSchema))
   async update(
     @Param('id') id: string,
@@ -131,6 +143,7 @@ export class ProductsCoreController {
    * Supprimer une pièce
    */
   @Delete(':id')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async remove(@Param('id') id: string) {
     return this.productsService.remove(id);
   }
@@ -139,6 +152,7 @@ export class ProductsCoreController {
    * Mettre à jour le stock d'une pièce
    */
   @Put(':id/stock')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @UsePipes(new ZodValidationPipe(UpdateStockSchema))
   async updateStock(
     @Param('id') id: string,
