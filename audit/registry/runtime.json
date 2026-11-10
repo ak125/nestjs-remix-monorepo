@@ -178,6 +178,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/auth/auth.service.ts",
+        "runtime:backend/src/auth/is-admin.guard.ts",
         "runtime:backend/src/auth/permissions.service.ts"
       ],
       "id": "runtime:backend/src/auth/controllers/auth-permissions.controller.ts",
@@ -1953,6 +1954,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/auth.module.ts",
         "runtime:backend/src/controllers/users.controller.ts",
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/commercial/commercial.module.ts",
