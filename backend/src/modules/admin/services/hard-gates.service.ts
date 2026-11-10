@@ -9,7 +9,7 @@ import type {
   RagSafePack,
 } from '../../../workers/types/content-refresh.types';
 
-// ── Shared helpers (mirrors brief-gates.service.ts) ──
+// ── Shared helpers ──
 
 function stripHtml(html: string): string {
   return html

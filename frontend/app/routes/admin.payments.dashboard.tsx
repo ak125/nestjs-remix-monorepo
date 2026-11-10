@@ -112,8 +112,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     }
 
     const [paymentsResult, stats] = await Promise.all([
-      getAdminPayments({ page, limit, search, status }),
-      getPaymentStats(),
+      getAdminPayments(request, { page, limit, search, status }),
+      getPaymentStats(request),
     ]);
 
     logger.log("🔧 DEBUG - Payments loaded:", {
