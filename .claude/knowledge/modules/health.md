@@ -2,9 +2,10 @@
 module: health
 sources:
 - backend/src/modules/health
-last_scan: '2026-07-02'
+last_scan: '2026-11-10'
 primary_files:
 - backend/src/modules/health/health.module.ts
+- backend/src/modules/health/health.service.test.ts
 depends_on:
 - SessionInfrastructureModule
 ---
@@ -25,6 +26,7 @@ _Section à rédiger._
 
 ### Fichiers primaires
 - [backend/src/modules/health/health.module.ts](../../../backend/src/modules/health/health.module.ts)
+- [backend/src/modules/health/health.service.test.ts](../../../backend/src/modules/health/health.service.test.ts)
 
 <!-- END AUTO-GENERATED -->
 
