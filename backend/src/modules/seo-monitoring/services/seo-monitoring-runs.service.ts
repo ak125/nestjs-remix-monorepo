@@ -14,6 +14,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import * as os from 'os';
+import { resolveBuildIdentity } from '@common/utils/build-identity.util';
 
 export type IngestionSource =
   | 'gsc'
@@ -39,14 +40,16 @@ export interface RunStartContext {
 /**
  * Identité du runtime qui exécute l'ingestion. Plusieurs runtimes enregistrent
  * le job quotidien : sans cette trace, impossible de prouver lequel a (ou n'a
- * pas) collecté un jour donné (constat 2026-09-10).
+ * pas) collecté un jour donné (constat 2026-09-10). `git_sha` suit le même
+ * contrôle que le Command Center : une déclaration invalide ou divergente est
+ * journalisée null, jamais recopiée dans la preuve.
  */
 export function runtimeIdentity(): Record<string, unknown> {
   return {
     hostname: os.hostname(),
     pid: process.pid,
     node_env: process.env.NODE_ENV ?? null,
-    git_sha: process.env.GIT_SHA || process.env.SOURCE_COMMIT || null,
+    git_sha: resolveBuildIdentity().sha,
   };
 }
 

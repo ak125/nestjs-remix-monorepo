@@ -31417,6 +31417,50 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "backend/src/common/utils/build-identity.util.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/utils/build-identity.util.ts"
+      ],
+      "kind": "test",
+      "loc": 85,
+      "owner": "@ak125",
+      "path": "backend/src/common/utils/build-identity.util.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "backend/src/common/utils/build-identity.util.ts",
+      "importedBy": [
+        "backend/src/common/utils/build-identity.util.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 40,
+      "owner": "@ak125",
+      "path": "backend/src/common/utils/build-identity.util.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -37370,6 +37414,7 @@
         "backend/src/modules/admin/controllers/internal-command-center.controller.ts"
       ],
       "imports": [
+        "@common/utils/build-identity.util",
         "@repo/registry",
         "backend/src/cache/cache.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
@@ -37381,7 +37426,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 506,
+      "loc": 483,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "medium",
@@ -46845,12 +46890,13 @@
         "backend/src/modules/health/health.service.test.ts"
       ],
       "imports": [
+        "@common/utils/build-identity.util",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/session/session-infrastructure.module.ts",
         "backend/src/modules/session/session-store.service.ts"
       ],
       "kind": "service",
-      "loc": 125,
+      "loc": 123,
       "owner": "@ak125",
       "path": "backend/src/modules/health/health.module.ts",
       "risk": "low",
@@ -57718,6 +57764,28 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+      ],
+      "kind": "test",
+      "loc": 52,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
       "importedBy": [
         "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
@@ -57732,14 +57800,16 @@
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-index-history-collector.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts",
-        "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts"
+        "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts",
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.test.ts"
       ],
       "imports": [
+        "@common/utils/build-identity.util",
         "crypto",
         "os"
       ],
       "kind": "service",
-      "loc": 228,
+      "loc": 231,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
       "risk": "medium",
@@ -70497,7 +70567,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1141,
+      "loc": 1290,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-reader.service.test.ts",
       "risk": "medium",
@@ -106526,11 +106596,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "2d5872d3b1b0218226bca046f584e85c1fb21fb9ba517d43e0dd407264380d1f",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "505394e98a54938ec04fa825dc0de7586975e3ee79d7ec9713a6655dbf7b0d81",
+      "audit/registry/files.json": "71185a86a9e83cecbb657e3e41fff4d7c053e1a4ba32fb095da8b80a8d99beb7",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "a08cf4a46cc058ebef66bbd7f5bfc5248f616a32626b23292d2de4d62a5de1f8"
     },
-    "sotFingerprint": "017842052d80"
+    "sotFingerprint": "cd7a22317360"
   },
   "runtime": [
     {
