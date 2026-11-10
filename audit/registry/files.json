@@ -35856,11 +35856,13 @@
         "backend/src/modules/suppliers/suppliers.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/suppliers/dto/index.ts",
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 127,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers-modern.controller.ts",
       "risk": "low",
@@ -35880,10 +35882,12 @@
         "backend/src/modules/suppliers/suppliers.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 414,
+      "loc": 423,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers.controller.ts",
       "risk": "low",
@@ -42323,6 +42327,25 @@
       "loc": 87,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/supabase-key-util.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/suppliers-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 210,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/suppliers-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -57005,7 +57028,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 554,
+      "loc": 557,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.suppliers.$id.tsx",
       "risk": "low",
