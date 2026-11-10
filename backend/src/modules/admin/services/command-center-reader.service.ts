@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { resolveBuildIdentity } from '@common/utils/build-identity.util';
 import { CacheService } from '../../../cache/cache.service';
 import { CommandCenterActionsService } from './command-center-actions.service';
 import {
@@ -72,8 +73,6 @@ export class CommandCenterReaderService {
   private static readonly UPSTREAM_UNRELIABLE_CAP = 69;
   private static readonly STALE_WARNING_DAYS = 7;
   private static readonly STALE_DAYS = 14;
-  // Même contrat que `revision` de /health (health.module.ts) : SHA complet.
-  private static readonly COMMIT_SHA_RE = /^[0-9a-f]{40}$/;
 
   constructor(
     private readonly cacheService: CacheService,
@@ -160,7 +159,7 @@ export class CommandCenterReaderService {
     'mode' | 'action_queue' | 'department_reports'
   > {
     const now = new Date();
-    const identity = this.resolveBuildIdentity();
+    const identity = resolveBuildIdentity();
     const snapshotPath = join(this.registryDir, 'command-center-snapshot.json');
     let raw: unknown;
     let failure = 'snapshot_unavailable';
@@ -287,29 +286,6 @@ export class CommandCenterReaderService {
     return 'STALE';
   }
 
-  /**
-   * Identité déclarée du build servi : GIT_SHA (posé à la construction de l'image,
-   * build.yml → Dockerfile) ou SOURCE_COMMIT (aucun émetteur dans ce dépôt). Le
-   * lecteur contrôle la forme et la concordance, il ne prouve pas la liaison à la
-   * construction : une valeur valide reste une déclaration, pas une attestation.
-   * Jamais le HEAD du checkout. Sinon git_sha reste null, avec un motif explicite,
-   * et la valeur reçue n'est pas recopiée. Exception : un snapshot illisible ne
-   * rapporte que cet échec.
-   */
-  private resolveBuildIdentity(): BuildIdentity {
-    const declared = [process.env.GIT_SHA, process.env.SOURCE_COMMIT].filter(
-      Boolean,
-    ) as string[];
-    if (declared.some((v) => !CommandCenterReaderService.COMMIT_SHA_RE.test(v)))
-      return { sha: null, problem: 'build identity invalid' };
-    const distinct = new Set(declared);
-    if (distinct.size > 1)
-      return { sha: null, problem: 'build identity divergent' };
-    if (distinct.size === 0)
-      return { sha: null, problem: 'build identity absent' };
-    return { sha: [...distinct][0], problem: null };
-  }
-
   private computeValidationStatus(): ValidationStatus {
     const report = this.readJson<{
       counts?: { errors?: unknown; warns?: unknown };
@@ -349,12 +325,16 @@ export class CommandCenterReaderService {
       (d) => d.priority === 'P0' && d.certification === 'BROKEN',
     );
     const errorAlerts = snapshot.alerts.filter((a) => a.severity === 'error');
-    // Motifs de la source et du build : listés quel que soit le verdict.
+    // Motifs de la source, du build et de la validation : listés quel que soit le
+    // verdict. Chacun retire OPERATIONAL : une preuve absente n'est pas une preuve.
     const sourceReasons: string[] = [];
     if (stale === 'STALE') sourceReasons.push('snapshot source stale (>14d)');
     if (stale === 'UNKNOWN')
       sourceReasons.push('snapshot source freshness unknown');
     if (identityProblem) sourceReasons.push(identityProblem);
+    // Rapport de validation absent ou illisible (computeValidationStatus).
+    if (validation === 'UNKNOWN')
+      sourceReasons.push('operating-map validation unknown');
 
     let level: GlobalStatus['level'] = 'OK';
     let verdict: GlobalStatus['verdict'] = 'OPERATIONAL';
@@ -371,9 +351,7 @@ export class CommandCenterReaderService {
       reasons.push(...sourceReasons);
     } else if (
       errorAlerts.length > 0 ||
-      stale === 'STALE' ||
-      stale === 'UNKNOWN' ||
-      identityProblem !== null ||
+      sourceReasons.length > 0 ||
       snapshot.summary.handoffs_incomplete > 0 ||
       snapshot.summary.capabilities_without_evidence > 0
     ) {
@@ -414,7 +392,6 @@ export type CommandCenterResponse = CommandCenterResponseV2;
 export type CommandCenterMode = CommandCenterResponseV2['mode'];
 type StaleStatus = CommandCenterResponseV2['stale_status'];
 type ValidationStatus = CommandCenterResponseV2['validation_status'];
-type BuildIdentity = { sha: string | null; problem: string | null };
 
 /**
  * Exposure mode for the Command Center cockpit (owner decision 2026-06-04,
