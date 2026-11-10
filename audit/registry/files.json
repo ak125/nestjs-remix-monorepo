@@ -21784,6 +21784,8 @@
         "backend/src/modules/payments/payments.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/payments/controllers/payment-controller.utils.ts",
         "backend/src/modules/payments/dto/create-payment.dto.ts",
         "backend/src/modules/payments/entities/payment.entity.ts",
@@ -21794,7 +21796,7 @@
         "backend/src/modules/payments/services/payment.service.ts"
       ],
       "kind": "controller",
-      "loc": 423,
+      "loc": 436,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/controllers/payment-core.controller.ts",
       "risk": "low",
@@ -21815,6 +21817,8 @@
         "backend/src/modules/payments/payments.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/payments/controllers/payment-controller.utils.ts",
         "backend/src/modules/payments/dto/create-payment.dto.ts",
         "backend/src/modules/payments/entities/payment.entity.ts",
@@ -21822,7 +21826,7 @@
         "backend/src/modules/payments/services/payment.service.ts"
       ],
       "kind": "controller",
-      "loc": 181,
+      "loc": 191,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/controllers/payment-methods.controller.ts",
       "risk": "low",
@@ -41412,6 +41416,25 @@
       "loc": 197,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/paybox-supervision-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/payment-core-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 308,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/payment-core-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
