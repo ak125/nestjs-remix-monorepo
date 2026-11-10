@@ -18,7 +18,7 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
       "files_count": 159,
-      "loc_total": 45427,
+      "loc_total": 45404,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -145,8 +145,8 @@
         "backend/src/modules/catalog/types",
         "backend/src/modules/catalog/utils"
       ],
-      "files_count": 40,
-      "loc_total": 10270,
+      "files_count": 39,
+      "loc_total": 10199,
       "has_barrel": false
     },
     "commercial": {
@@ -171,8 +171,8 @@
         "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 38,
-      "loc_total": 1589,
+      "files_count": 40,
+      "loc_total": 1714,
       "has_barrel": true
     },
     "config": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110676,
+      "loc_total": 110611,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -364,7 +364,7 @@
         "backend/src/modules/health"
       ],
       "files_count": 2,
-      "loc_total": 158,
+      "loc_total": 156,
       "has_barrel": false
     },
     "invoices": {
@@ -805,8 +805,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 50,
-      "loc_total": 11242,
+      "files_count": 51,
+      "loc_total": 11297,
       "has_barrel": false
     },
     "seo-projection": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 338,
-      "loc_total": 66147,
+      "files_count": 337,
+      "loc_total": 66004,
       "has_barrel": true
     },
     "upload": {
