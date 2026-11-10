@@ -635,7 +635,7 @@
         "backend/src/modules/products/types"
       ],
       "files_count": 27,
-      "loc_total": 7117,
+      "loc_total": 7131,
       "has_barrel": true
     },
     "promo": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 348,
-      "loc_total": 68438,
+      "files_count": 349,
+      "loc_total": 68621,
       "has_barrel": true
     },
     "upload": {
