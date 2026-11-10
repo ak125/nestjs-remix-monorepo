@@ -225,6 +225,60 @@ export function generateRelatedArticles(
 }
 
 /**
+ * La résolution alias → ID n'a pas pu être menée : backend injoignable, réponse
+ * 5xx / 408 / 429 ou corps illisible. Ce n'est pas « alias inconnu » : l'appelant
+ * doit répondre 503, jamais un 404/410 qui affirmerait que la page n'existe pas.
+ */
+export class IdResolutionUnavailableError extends Error {
+  constructor(
+    readonly target: "vehicle" | "gamme",
+    reason: string,
+  ) {
+    super(`Résolution ${target} indisponible : ${reason}`);
+    this.name = "IdResolutionUnavailableError";
+  }
+}
+
+const describeCause = (cause: unknown) =>
+  cause instanceof Error ? cause.message : String(cause);
+
+/**
+ * Lit une réponse JSON de l'API de résolution. Retourne `null` quand l'API
+ * refuse la demande (4xx définitif) : l'alias est alors traité comme introuvable.
+ * Lève `IdResolutionUnavailableError` quand l'API n'a pas pu répondre.
+ */
+async function fetchResolutionJson(
+  url: string,
+  target: "vehicle" | "gamme",
+): Promise<any | null> {
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (cause) {
+    throw new IdResolutionUnavailableError(
+      target,
+      `API injoignable (${describeCause(cause)})`,
+    );
+  }
+  if (
+    response.status >= 500 ||
+    response.status === 408 ||
+    response.status === 429
+  ) {
+    throw new IdResolutionUnavailableError(target, `HTTP ${response.status}`);
+  }
+  if (!response.ok) return null;
+  try {
+    return await response.json();
+  } catch (cause) {
+    throw new IdResolutionUnavailableError(
+      target,
+      `réponse illisible (${describeCause(cause)})`,
+    );
+  }
+}
+
+/**
  * Résout les IDs du véhicule depuis les alias ou depuis l'URL
  */
 export async function resolveVehicleIds(
@@ -262,41 +316,35 @@ export async function resolveVehicleIds(
     `⚠️ [RESOLVE-VEHICLE] IDs manquants dans l'URL, tentative résolution API...`,
   );
 
-  try {
-    // Sinon essayer l'API de résolution
-    const brandsResponse = await fetch(
-      `http://localhost:3000/api/vehicles/brands?search=${marque.alias}&limit=1`,
+  // Sinon essayer l'API de résolution. Une API qui n'a pas pu répondre lève
+  // IdResolutionUnavailableError : seul un alias réellement introuvable atteint
+  // le fallback ci-dessous (et le 410 de l'appelant).
+  const brandsData = await fetchResolutionJson(
+    `http://localhost:3000/api/vehicles/brands?search=${marque.alias}&limit=1`,
+    "vehicle",
+  );
+  const brand = brandsData?.data?.[0];
+
+  if (brand) {
+    const modelsData = await fetchResolutionJson(
+      `http://localhost:3000/api/vehicles/brands/${brand.marque_id}/models`,
+      "vehicle",
     );
-    if (brandsResponse.ok) {
-      const brandsData = await brandsResponse.json();
-      const brand = brandsData.data?.[0];
+    const modelData = modelsData?.data?.find(
+      (m: any) =>
+        m.modele_alias === modele.alias ||
+        m.modele_name?.toLowerCase().includes(modele.alias),
+    );
 
-      if (brand) {
-        const modelsResponse = await fetch(
-          `http://localhost:3000/api/vehicles/brands/${brand.marque_id}/models`,
-        );
-        if (modelsResponse.ok) {
-          const modelsData = await modelsResponse.json();
-          const modelData = modelsData.data?.find(
-            (m: any) =>
-              m.modele_alias === modele.alias ||
-              m.modele_name.toLowerCase().includes(modele.alias),
-          );
-
-          if (modelData) {
-            // 🛡️ SEO: Retourner les IDs même si typeId=0
-            // Le RM V2 RPC validera et retournera 404 si nécessaire
-            return {
-              marqueId: brand.marque_id,
-              modeleId: modelData.modele_id,
-              typeId: type.id, // Peut être 0 → RM V2 retournera 404
-            };
-          }
-        }
-      }
+    if (modelData) {
+      // 🛡️ SEO: Retourner les IDs même si typeId=0
+      // Le RM V2 RPC validera et retournera 404 si nécessaire
+      return {
+        marqueId: brand.marque_id,
+        modeleId: modelData.modele_id,
+        typeId: type.id, // Peut être 0 → RM V2 retournera 404
+      };
     }
-  } catch (error) {
-    logger.error("❌ [RESOLVE-VEHICLE] Erreur appel API:", error);
   }
 
   // 🛡️ Fallback: Retourner les IDs parsés depuis l'URL (peuvent être 0 si invalides)
@@ -355,29 +403,24 @@ export async function resolveGammeId(gammeParam: string): Promise<number> {
     return gammeId;
   }
 
-  // 🔍 API fallback: Chercher dans la base de données si alias non trouvé localement
-  try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
-    const response = await fetch(
-      `${backendUrl}/api/catalog/gammes/by-alias/${encodeURIComponent(gamme.alias)}`,
+  // 🔍 API fallback: Chercher dans la base de données si alias non trouvé localement.
+  // Une API qui n'a pas pu répondre lève IdResolutionUnavailableError : seul un
+  // alias réellement introuvable retourne 0.
+  const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+  const result = await fetchResolutionJson(
+    `${backendUrl}/api/catalog/gammes/by-alias/${encodeURIComponent(gamme.alias)}`,
+    "gamme",
+  );
+  if (result?.success && result.data?.id) {
+    logger.log(
+      `✅ [GAMME-ID] API fallback trouvé pour ${gamme.alias}: ${result.data.id}`,
     );
-
-    if (response.ok) {
-      const result = await response.json();
-      if (result.success && result.data?.id) {
-        logger.log(
-          `✅ [GAMME-ID] API fallback trouvé pour ${gamme.alias}: ${result.data.id}`,
-        );
-        return result.data.id;
-      }
-    }
-
-    logger.warn(
-      `⚠️ [GAMME-ID] API fallback: alias "${gamme.alias}" non trouvé en base`,
-    );
-  } catch (error) {
-    logger.error(`❌ [GAMME-ID] Erreur API fallback:`, error);
+    return result.data.id;
   }
+
+  logger.warn(
+    `⚠️ [GAMME-ID] API fallback: alias "${gamme.alias}" non trouvé en base`,
+  );
 
   // 🛡️ Sécurité SEO: Ne pas retourner un ID incorrect si gamme inconnue
   // Le RM V2 RPC gérera la validation et retournera 404 si nécessaire
