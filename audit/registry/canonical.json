@@ -20538,6 +20538,7 @@
           "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
           "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
           "backend/src/modules/blog/services/guide.service.ts",
+          "backend/src/modules/catalog/services/cache-warming.service.ts",
           "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts"
         ]
       },
@@ -29342,6 +29343,30 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/auth/admin-or-internal-key.guard.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/auth/admin-session.guard.ts",
+        "backend/src/auth/any-of.guard.ts",
+        "backend/src/auth/internal-api-key.guard.ts"
+      ],
+      "kind": "service",
+      "loc": 23,
+      "owner": "@ak125/auth-team",
+      "path": "backend/src/auth/admin-or-internal-key.guard.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/auth/admin-session.guard.test.ts",
       "importedBy": [],
       "imports": [
@@ -29366,6 +29391,7 @@
       "domain": "D11",
       "id": "backend/src/auth/admin-session.guard.ts",
       "importedBy": [
+        "backend/src/auth/admin-or-internal-key.guard.ts",
         "backend/src/auth/admin-session.guard.test.ts",
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/session-privilege.test.ts"
@@ -29413,6 +29439,7 @@
       "domain": "D11",
       "id": "backend/src/auth/any-of.guard.ts",
       "importedBy": [
+        "backend/src/auth/admin-or-internal-key.guard.ts",
         "backend/src/auth/any-of.guard.test.ts",
         "backend/src/modules/admin/controllers/internal-command-center.controller.ts"
       ],
@@ -30195,6 +30222,7 @@
       "domain": "D11",
       "id": "backend/src/auth/internal-api-key.guard.ts",
       "importedBy": [
+        "backend/src/auth/admin-or-internal-key.guard.ts",
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/legacy-internal-key.guard.test.ts",
         "backend/src/auth/legacy-internal-key.guard.ts",
@@ -39320,13 +39348,15 @@
         "backend/src/modules/agentic-engine/agentic-engine.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/agentic-engine/constants/agentic.constants.ts",
         "backend/src/modules/agentic-engine/services/agentic-data.service.ts",
         "backend/src/modules/agentic-engine/services/evidence-ledger.service.ts",
         "backend/src/modules/agentic-engine/services/run-manager.service.ts"
       ],
       "kind": "controller",
-      "loc": 337,
+      "loc": 344,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/agentic-engine/agentic-engine.controller.ts",
       "risk": "high",
@@ -42434,12 +42464,14 @@
         "backend/src/modules/catalog/catalog.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/catalog/catalog.service.ts",
         "backend/src/modules/catalog/services/catalog-hierarchy.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts"
       ],
       "kind": "controller",
-      "loc": 576,
+      "loc": 580,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/catalog.controller.ts",
       "risk": "high",
@@ -42981,15 +43013,15 @@
       "domain": "D1",
       "id": "backend/src/modules/catalog/services/cache-warming.service.ts",
       "importedBy": [
-        "backend/src/modules/catalog/catalog.module.ts",
-        "backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts"
+        "backend/src/modules/catalog/catalog.module.ts"
       ],
       "imports": [
+        "@database/services/supabase-base.service",
         "backend/src/modules/catalog/services/catalog-hierarchy.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts"
       ],
       "kind": "service",
-      "loc": 67,
+      "loc": 128,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/services/cache-warming.service.ts",
       "risk": "high",
@@ -46372,7 +46404,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 187,
+      "loc": 178,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "medium",
@@ -46399,13 +46431,12 @@
         "backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts",
         "backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts",
         "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
-        "backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
         "backend/src/modules/gamme-rest/services/index.ts",
         "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
       "kind": "service",
-      "loc": 46,
+      "loc": 44,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/gamme-rest.module.ts",
       "risk": "medium",
@@ -46482,31 +46513,6 @@
       "loc": 2721,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
-      "risk": "medium",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D1",
-      "id": "backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
-      "importedBy": [
-        "backend/src/modules/gamme-rest/gamme-rest.module.ts"
-      ],
-      "imports": [
-        "backend/src/modules/catalog/services/cache-warming.service.ts",
-        "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts"
-      ],
-      "kind": "service",
-      "loc": 44,
-      "owner": "@ak125/catalog-team",
-      "path": "backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
       "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -46641,7 +46647,6 @@
       "importedBy": [
         "backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts",
         "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
-        "backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/gamme-rest/services/index.ts"
       ],
@@ -47011,12 +47016,14 @@
         "backend/src/modules/knowledge-graph/knowledge-graph.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/knowledge-graph/kg-data.service.ts",
         "backend/src/modules/knowledge-graph/kg.service.ts",
         "backend/src/modules/knowledge-graph/kg.types.ts"
       ],
       "kind": "controller",
-      "loc": 250,
+      "loc": 258,
       "owner": "@ak125",
       "path": "backend/src/modules/knowledge-graph/kg.controller.ts",
       "risk": "medium",
@@ -47119,6 +47126,8 @@
         "backend/src/modules/layout/layout.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/layout/services/footer.service.ts",
         "backend/src/modules/layout/services/header.service.ts",
@@ -47128,7 +47137,7 @@
         "backend/src/modules/layout/services/social-share.service.ts"
       ],
       "kind": "controller",
-      "loc": 262,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/modules/layout/controllers/layout.controller.ts",
       "risk": "low",
@@ -49847,13 +49856,15 @@
         "backend/src/modules/navigation/navigation.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/navigation/navigation.service.ts",
         "backend/src/modules/navigation/services/commercial-menu.service.ts",
         "backend/src/modules/navigation/services/expedition-menu.service.ts",
         "backend/src/modules/navigation/services/seo-menu.service.ts"
       ],
       "kind": "controller",
-      "loc": 205,
+      "loc": 209,
       "owner": "__unassigned__",
       "path": "backend/src/modules/navigation/navigation.controller.ts",
       "risk": "low",
@@ -58862,11 +58873,13 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@repo/database-types",
         "backend/src/modules/seo/services/keywords-dashboard.service.ts"
       ],
       "kind": "controller",
-      "loc": 191,
+      "loc": 195,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/keywords-dashboard.controller.ts",
       "risk": "high",
@@ -58965,12 +58978,13 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "@repo/database-types",
         "backend/src/modules/seo/services/googlebot-detector.service.ts",
         "backend/src/modules/seo/services/risk-flags-engine.service.ts"
       ],
       "kind": "controller",
-      "loc": 481,
+      "loc": 491,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-dashboard.controller.ts",
       "risk": "high",
@@ -59016,10 +59030,12 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/seo/services/log-ingestion.service.ts"
       ],
       "kind": "controller",
-      "loc": 167,
+      "loc": 176,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-logs.controller.ts",
       "risk": "high",
@@ -59040,10 +59056,11 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/workers/services/seo-monitor-scheduler.service.ts"
       ],
       "kind": "controller",
-      "loc": 90,
+      "loc": 93,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-monitor.controller.ts",
       "risk": "high",
@@ -59064,10 +59081,11 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/modules/seo/services/seo-monitoring.service.ts"
       ],
       "kind": "controller",
-      "loc": 64,
+      "loc": 66,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-monitoring.controller.ts",
       "risk": "high",
@@ -59088,11 +59106,13 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/seo/services/seo-pilotage.service.ts",
         "backend/src/modules/seo/types/seo-pilotage.types.ts"
       ],
       "kind": "controller",
-      "loc": 178,
+      "loc": 189,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-pilotage.controller.ts",
       "risk": "high",
@@ -59113,11 +59133,12 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/seo/services/sitemap-delta.service.ts"
       ],
       "kind": "controller",
-      "loc": 133,
+      "loc": 143,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/sitemap-delta.controller.ts",
       "risk": "high",
@@ -59138,12 +59159,13 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/seo/interfaces/sitemap-streaming.interface.ts",
         "backend/src/modules/seo/services/sitemap-streaming.service.ts"
       ],
       "kind": "controller",
-      "loc": 151,
+      "loc": 161,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/sitemap-streaming.controller.ts",
       "risk": "high",
@@ -59164,11 +59186,12 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
       "kind": "controller",
-      "loc": 102,
+      "loc": 104,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/sitemap-unified.controller.ts",
       "risk": "high",
@@ -68113,6 +68136,8 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
         "backend/src/modules/vehicles/services/brand-rpc.service.ts",
@@ -68122,7 +68147,7 @@
         "backend/src/modules/vehicles/services/seo/brand-seo.service.ts"
       ],
       "kind": "controller",
-      "loc": 502,
+      "loc": 508,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/brands.controller.ts",
       "risk": "high",
@@ -68849,6 +68874,8 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/common/pipes/params/index.ts",
         "backend/src/common/pipes/strict-zod-query-validation.pipe.ts",
@@ -68868,7 +68895,7 @@
         "backend/src/modules/vehicles/vehicles.service.ts"
       ],
       "kind": "controller",
-      "loc": 440,
+      "loc": 445,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/vehicles.controller.ts",
       "risk": "high",
@@ -70702,6 +70729,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/disabled-modules-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 217,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/disabled-modules-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/enricher-text-utils.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -70809,26 +70856,6 @@
       "loc": 94,
       "owner": "@ak125",
       "path": "backend/tests/unit/execution-ledger.service.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D15",
-      "id": "backend/tests/unit/gamme-cache-warming.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 306,
-      "owner": "@ak125",
-      "path": "backend/tests/unit/gamme-cache-warming.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -71962,6 +71989,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/seo-maintenance-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 456,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/seo-maintenance-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/seo-metadata-authz.test.ts",
       "importedBy": [],
       "imports": [],
@@ -72389,6 +72436,26 @@
       "loc": 496,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo/sitemap-v10.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/site-maintenance-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 291,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/site-maintenance-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106815,13 +106882,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "95b31b5c1b87236aeee4461521f23af96b08d7ec7ecc70a7506b24cce96f6f36",
+      "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "a97b1f2245bad249d4534283621dd180e92551412e61e48cf76ac73a2e2dc23a",
+      "audit/registry/files.json": "13f121c63c7b9e2b710b78452ba18cdb296594b907dedf60af265eadea41d803",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "e06264541dfddaa381631a60c869d403cce6ed8fc69b37077f5f5504cd5987dd"
+      "audit/registry/runtime.json": "b27cf8b14b4db1093189bb4149632ef6cd670e59fcbc797802b1cd09b4bdf277"
     },
-    "sotFingerprint": "67f944081f39"
+    "sotFingerprint": "dc89f918378a"
   },
   "runtime": [
     {
@@ -110215,7 +110282,6 @@
         "runtime:backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts",
         "runtime:backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts",
         "runtime:backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
-        "runtime:backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
         "runtime:backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
         "runtime:backend/src/modules/seo/seo.module.ts"
       ],
@@ -110231,18 +110297,6 @@
       "id": "runtime:backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/modules/catalog/services/cache-warming.service.ts",
-        "runtime:backend/src/modules/gamme-rest/services/gamme-rpc.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
-      "kind": "nestjs-service",
-      "path": "backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

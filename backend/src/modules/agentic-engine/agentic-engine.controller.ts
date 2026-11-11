@@ -2,7 +2,10 @@
  * AgenticEngineController — Admin REST API
  *
  * Endpoints for managing agentic runs.
- * Protected by admin-level access (throttled).
+ *
+ * Admin only (`AuthenticatedGuard` + `IsAdminGuard`). The module is not
+ * registered in `AppModule` (archived 2026-04-02); the boundary is declared
+ * here so that registering it again cannot open these routes.
  */
 import {
   Controller,
@@ -14,9 +17,12 @@ import {
   Logger,
   HttpException,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { RunManagerService } from './services/run-manager.service';
 import { AgenticDataService } from './services/agentic-data.service';
 import { EvidenceLedgerService } from './services/evidence-ledger.service';
@@ -26,6 +32,7 @@ import {
 } from './constants/agentic.constants';
 
 @Controller('api/admin/agentic')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AgenticEngineController {
   private readonly logger = new Logger(AgenticEngineController.name);
 
