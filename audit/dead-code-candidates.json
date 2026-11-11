@@ -1,11 +1,11 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 257,
+  "count": 252,
   "by_confidence": {
     "high": 12,
     "medium": 164,
-    "low": 81
+    "low": 76
   },
   "candidates": [
     {
@@ -496,22 +496,6 @@
       "reason": "knip unused"
     },
     {
-      "path": "backend/src/modules/agentic-engine/agentic-engine.controller.ts",
-      "domain": "agentic-engine",
-      "kind": "controller",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
       "path": "backend/src/modules/agentic-engine/services/arbiter.service.ts",
       "domain": "agentic-engine",
       "kind": "service",
@@ -777,70 +761,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/knowledge-graph/kg-data.service.ts",
-      "domain": "knowledge-graph",
-      "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/knowledge-graph/kg.controller.ts",
-      "domain": "knowledge-graph",
-      "kind": "controller",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/knowledge-graph/kg.service.ts",
-      "domain": "knowledge-graph",
-      "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/knowledge-graph/kg.types.ts",
-      "domain": "knowledge-graph",
-      "kind": "type",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },

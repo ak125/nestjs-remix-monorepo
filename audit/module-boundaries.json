@@ -30,7 +30,7 @@
         "backend/src/modules/agentic-engine/types"
       ],
       "files_count": 14,
-      "loc_total": 2389,
+      "loc_total": 2396,
       "has_barrel": false
     },
     "ai-content": {
@@ -380,7 +380,7 @@
         "backend/src/modules/knowledge-graph"
       ],
       "files_count": 6,
-      "loc_total": 1647,
+      "loc_total": 1655,
       "has_barrel": true
     },
     "layout": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 349,
-      "loc_total": 68730,
+      "files_count": 350,
+      "loc_total": 68947,
       "has_barrel": true
     },
     "upload": {
