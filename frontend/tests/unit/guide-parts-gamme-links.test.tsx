@@ -70,6 +70,18 @@ describe("GuideParts — liens de gammes des pièces complémentaires", () => {
     expect(screen.getByText("Barillet de hayon").closest("a")).toBeNull();
   });
 
+  it("balisage imbriqué ou malformé dans un libellé → texte seul, aucun élément injecté", () => {
+    const { container } = renderParts(
+      '<a href="/pieces/batterie-1.html"><b><i>Batterie</i></b> <script>alert(1)</script></a>' +
+        '<span data-gamme-link="unresolved">Relais <img src=x onerror=alert(1)> de démarreur</span>',
+    );
+
+    expect(hrefs()).toEqual(["/pieces/batterie-1.html"]);
+    expect(screen.getByText("Batterie alert(1)")).toBeTruthy();
+    expect(screen.getByText("Relais de démarreur")).toBeTruthy();
+    expect(container.querySelector("script, img, b, i")).toBeNull();
+  });
+
   it("contenu encore en cache, lien sans identifiant → nom affiché, jamais de lien en 410", () => {
     renderParts(
       '- <b><a href="/pieces/courroie-d-accessoire">courroie d accessoire</a></b><br>' +

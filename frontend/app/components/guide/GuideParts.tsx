@@ -41,14 +41,28 @@ function isServableHref(href: string): boolean {
   return target.includes("/") && target.endsWith(".html");
 }
 
+/**
+ * Remove inline markup from a label. Repeated until nothing is left to remove,
+ * so that no tag can be rebuilt from the fragments around a removed one. The
+ * label is rendered as text either way, never as HTML.
+ */
+function stripTags(html: string): string {
+  let text = html;
+  let previous: string;
+  do {
+    previous = text;
+    text = text.replace(/<[^>]+>/g, "");
+  } while (text !== previous);
+  return text;
+}
+
 /** Extract the parts of the S7 HTML content, once each. */
 function parseParts(html: string): PartItem[] {
   const parts = new Map<string, PartItem>();
   for (const match of html.matchAll(PART_RE)) {
     const href = match[1];
     // Clean name: remove inline markup and #LinkGamme_XXX# markers
-    const name = (match[2] ?? match[3])
-      .replace(/<[^>]+>/g, "")
+    const name = stripTags(match[2] ?? match[3])
       .replace(/#LinkGamme_\d+#/g, "")
       .trim();
     if (!name) continue;
