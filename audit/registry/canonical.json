@@ -9385,6 +9385,7 @@
         "sourceConfidence": "low",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/seo-control.service.ts",
           "backend/src/modules/orders/controllers/orders.controller.ts",
           "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
           "backend/src/modules/payments/controllers/payment-core.controller.ts",
@@ -9488,6 +9489,7 @@
         "sourceConfidence": "low",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/seo-control.service.ts",
           "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
           "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
           "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
@@ -39126,7 +39128,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 423,
+      "loc": 539,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/seo-control.service.ts",
       "risk": "medium",
@@ -71856,11 +71858,31 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/seo-control/seo-control.service.conversion.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 475,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/seo-control/seo-control.service.conversion.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/seo-control/seo-control.service.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 319,
+      "loc": 329,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo-control/seo-control.service.test.ts",
       "risk": "medium",
@@ -101010,7 +101032,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 466,
+      "loc": 563,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-types/src/control-dashboard.test.ts",
       "risk": "medium",
@@ -101030,7 +101052,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 257,
+      "loc": 298,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-types/src/control-dashboard.ts",
       "risk": "medium",
@@ -106769,13 +106791,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
+      "audit/registry/db.json": "b772fb4b295ebefa11363c857bb88305ada331914c7b58d86ca18ac7906e96c2",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "c457ccf2c75fb50286e4e7c025df759c5c3891f0778103bf7db67f6ce1304360",
+      "audit/registry/files.json": "ef28e03de9dbc52d6898e625a0f8879a41b659f4cd8bded72a6b0786f3135a97",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "b27cf8b14b4db1093189bb4149632ef6cd670e59fcbc797802b1cd09b4bdf277"
     },
-    "sotFingerprint": "9aaec7ec29bb"
+    "sotFingerprint": "53e3dc87c978"
   },
   "runtime": [
     {
