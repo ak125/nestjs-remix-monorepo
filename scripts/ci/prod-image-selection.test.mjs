@@ -178,6 +178,7 @@ for (const ref of [
   "refs/heads/main",
   "refs/heads/v2026.11.10",
   "refs/heads/tags/v2026.11.10",
+  "refs/heads/refs/tags/v2026.11.10",
   "refs/tags/release-2026.11.10",
   "refs/tags/v2026.11.10/extra",
   "refs/pull/1/merge",

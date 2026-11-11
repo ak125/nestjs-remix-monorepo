@@ -134,7 +134,7 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 |-------------|----------|----------------|---------------|---------|----------------------|
 | Fusion d'une PR sur `main` (push `main`) | `.github/workflows/ci.yml` job `deploy` | `:sha-<commit>` et alias `:preprod` sur DockerHub (`build.yml`) | pile PREPROD (hôte PROD, port 3200) redémarrée sur l'image du commit | ~10 min | NON (E2E Smoke + Lighthouse CI automatiques) |
 | `push origin v*` (tag) | `.github/workflows/deploy-prod.yml` | promote l'image du commit → `:production` | container PROD (hôte PROD, 80/443) redémarré | ~5 min | OUI (tag manuel = décision de l'owner) |
-| `workflow_dispatch` manuel sur `deploy-prod.yml`, lancé sur un tag `v*` (toute autre ref est refusée à la première étape) | idem `deploy-prod.yml` | idem | idem PROD | idem | OUI |
+| `workflow_dispatch` manuel sur `deploy-prod.yml`, lancé sur un tag `v*` (si le workflow de la ref contient la garde de ref, toute autre ref est refusée à la première étape ; voir « Ou via UI GitHub ») | idem `deploy-prod.yml` | idem | idem PROD | idem | OUI |
 
 **Règles mnémoniques** :
 
@@ -219,8 +219,8 @@ Ou via UI GitHub : `Actions → "Deploy PROD (via tag)" → Run workflow`, en ch
 `v*` dans « Use workflow from ». Le run exécute le `deploy-prod.yml` de la ref choisie, et le
 formulaire propose `main` par défaut. La première étape de ce workflow, `🔖 Release ref gate`,
 refuse toute ref autre qu'un tag `v*` (`refs/tags/v…`, sans `/` après le `v`, comme le déclencheur
-`push`), avant le checkout et avant toute action sur l'hôte : lancé sur `main` ou sur une branche,
-le run échoue sans rien modifier. Elle lit `GITHUB_REF`, posé par le runner ; aucune entrée du
+`push`), avant le checkout et avant toute action sur l'hôte : lancé sur `main` ou sur une branche
+dont le workflow contient cette étape, le run échoue sans rien modifier. Elle lit `GITHUB_REF`, posé par le runner ; aucune entrée du
 formulaire ne le change.
 
 Cette garde ne protège que les refs dont le workflow la contient. Une ref plus ancienne (branche,
