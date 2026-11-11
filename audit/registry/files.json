@@ -20365,11 +20365,14 @@
         "backend/src/modules/messages/messages.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "@auth/session-privilege",
         "@common/exceptions",
         "backend/src/modules/messages/messages.service.ts"
       ],
       "kind": "controller",
-      "loc": 409,
+      "loc": 575,
       "owner": "__unassigned__",
       "path": "backend/src/modules/messages/messages.controller.ts",
       "risk": "low",
@@ -41148,6 +41151,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/messages-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 487,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/messages-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/order-actions.cancel-order.test.ts",
       "importedBy": [],
       "imports": [],
@@ -55662,7 +55684,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 704,
+      "loc": 707,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.messages.tsx",
       "risk": "low",
