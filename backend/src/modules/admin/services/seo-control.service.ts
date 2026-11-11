@@ -17,6 +17,8 @@
  *   - .claude/plans/verifier-existant-avant-et-ethereal-firefly.md Task 4
  *   - packages/seo-types/src/control-dashboard.ts (Zod contract)
  *   - backend/supabase/migrations/20260518_seo_control_002_rpcs.sql (5 RPCs v1)
+ *   - backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql
+ *     (bloc Low CTR : grain page fidèle)
  */
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -26,10 +28,12 @@ import {
   addDaysIso,
   assessPeriodComparability,
   computeDayCoverage,
+  LowCtrCoverageSchema,
   SeoControlSnapshotSchema,
   type ConversionAttribution,
   type DayCoverage,
   type GscComparability,
+  type LowCtrCoverage,
   type Range,
   type SeoControlSnapshot,
 } from '@repo/seo-types';
@@ -38,6 +42,34 @@ import { CacheService } from '../../../cache/cache.service';
 import { SeoControlDecisionsService } from './seo-control-decisions.service';
 
 type BlockKey = 'traffic' | 'losers' | 'lowctr' | 'alerts' | 'conversion';
+
+/** Bloc Low CTR tel que mis en cache : lignes de la RPC + couverture publiée. */
+interface LowCtrBlock {
+  rows: unknown[];
+  coverage: LowCtrCoverage;
+}
+
+/**
+ * Lit une enveloppe `rpc_seo_low_ctr_v4`, ou un bloc déjà mis en cache.
+ * `null` si ce n'en est pas un : tableau sans enveloppe (forme v1), `rows`
+ * absent, grain autre que `page_totals`, couverture incomplète ou hors contrat.
+ */
+function toLowCtrBlock(value: unknown): LowCtrBlock | null {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return null;
+  }
+  const v = value as Record<string, unknown>;
+  if (!Array.isArray(v.rows)) return null;
+  const coverage = LowCtrCoverageSchema.safeParse(v.coverage ?? v);
+  return coverage.success ? { rows: v.rows, coverage: coverage.data } : null;
+}
+
+/**
+ * Clé de cache du bloc Low CTR. Elle porte la version du format : la v1 mettait
+ * en cache un tableau sous `seo-control:lowctr:{range}`. Ni ce code ne relit un
+ * tableau v1, ni un retour arrière du code ne relit un bloc v4.
+ */
+const lowCtrCacheKey = (range: Range) => `seo-control:lowctr:v4:${range}`;
 
 /**
  * TTL per block (seconds) — differentiated by data volatility :
@@ -111,15 +143,7 @@ export class SeoControlService extends SupabaseBaseService {
           p_limit: 20,
         }),
       ),
-      this.getBlock<unknown[]>('lowctr', range, () =>
-        this.invokeRpc('rpc_seo_low_ctr_v1', {
-          p_window_days: days,
-          p_now: nowIso,
-          p_min_impressions: 100,
-          p_max_ctr: 0.01,
-          p_limit: 50,
-        }),
-      ),
+      this.lowCtrBlock(range, days, nowIso),
       this.getBlock<unknown[]>('alerts', range, () =>
         this.invokeRpc('rpc_seo_alerts_v1', {
           p_now: nowIso,
@@ -137,7 +161,7 @@ export class SeoControlService extends SupabaseBaseService {
 
     // Inject decisions on each applicable row
     const losersArr = (losersRaw as any[] | null | undefined) ?? [];
-    const lowCtrArr = (lowCtrRaw as any[] | null | undefined) ?? [];
+    const lowCtrArr = lowCtrRaw.rows;
     const alertsArr = (alertsRaw as any[] | null | undefined) ?? [];
     const conversionArr = conversionRaw as any[] | null | undefined;
 
@@ -179,6 +203,7 @@ export class SeoControlService extends SupabaseBaseService {
         ...r,
         decisions: this.decisions.deriveLoser(r),
       })),
+      lowCtrCoverage: lowCtrRaw.coverage,
       lowCtrOpportunities: lowCtrArr.map((r: any) => ({
         ...r,
         decisions: this.decisions.deriveLowCtr(r),
@@ -204,7 +229,7 @@ export class SeoControlService extends SupabaseBaseService {
         rpc_versions: {
           traffic: 'v1' as const,
           losers: 'v1' as const,
-          low_ctr: 'v1' as const,
+          low_ctr: 'v4' as const,
           alerts: 'v1' as const,
           conversion: 'v1' as const,
         },
@@ -429,13 +454,75 @@ export class SeoControlService extends SupabaseBaseService {
   }
 
   /**
+   * Bloc Low CTR en cache, ou relu à la source. Une entrée qui n'est pas un bloc
+   * valide est traitée comme absente : elle ne peut pas être servie avec une
+   * couverture v4.
+   */
+  private async lowCtrBlock(
+    range: Range,
+    days: number,
+    nowIso: string,
+  ): Promise<LowCtrBlock> {
+    const key = lowCtrCacheKey(range);
+    const cached = toLowCtrBlock(await this.cache.get<unknown>(key));
+    if (cached) return cached;
+    const fresh = await this.fetchLowCtr(days, nowIso);
+    await this.cache.set(key, fresh, BLOCK_TTL_SECONDS.lowctr);
+    return fresh;
+  }
+
+  /**
+   * rpc_seo_low_ctr_v4 : clics, impressions et position par page lus sur
+   * `__seo_gsc_daily_page_totals` (grain page fidèle, jours commités). La v1
+   * lisait `__seo_gsc_daily` (grain requêtes), où Google retire les requêtes
+   * anonymisées : les pages y étaient sous-comptées et leur surface non résolue.
+   *
+   * `p_expected_from` n'est pas passé : comme `gscWindowComparability`, tout jour
+   * de la fenêtre est attendu.
+   *
+   * Aucun repli vers v1..v3 : une enveloppe invalide ou un grain autre que
+   * `page_totals` lève une exception (même contrat fail-loud que invokeRpc).
+   * Une couverture autre que `ok` n'est pas une erreur : elle est publiée dans
+   * `lowCtrCoverage` et journalisée.
+   */
+  private async fetchLowCtr(
+    days: number,
+    nowIso: string,
+  ): Promise<LowCtrBlock> {
+    const envelope = await this.invokeRpc<unknown>('rpc_seo_low_ctr_v4', {
+      p_window_days: days,
+      p_now: nowIso,
+      p_min_impressions: 100,
+      p_max_ctr: 0.01,
+      p_limit: 50,
+    });
+    const block = toLowCtrBlock(envelope);
+    if (!block) {
+      this.logger.error(
+        'RPC rpc_seo_low_ctr_v4 : enveloppe invalide ou grain inattendu',
+      );
+      throw new Error('rpc_seo_low_ctr_v4 returned an invalid envelope');
+    }
+    if (block.coverage.coverage_status !== 'ok') {
+      this.logger.warn(
+        `Low CTR (${days} j) : couverture ${block.coverage.coverage_status}, ` +
+          `${block.coverage.days_confirmed}/${block.coverage.days_expected} jours confirmés`,
+      );
+    }
+    return block;
+  }
+
+  /**
    * Called by SWR BullMQ scheduled job to refresh a single block in background
    * (at TTL/2 to keep the cache warm without dog-pile).
    */
   async refreshBlock(block: BlockKey, range: Range): Promise<void> {
     const days = range === '7d' ? 7 : 28;
     const nowIso = new Date().toISOString();
-    const key = `seo-control:${block}:${range}`;
+    const key =
+      block === 'lowctr'
+        ? lowCtrCacheKey(range)
+        : `seo-control:${block}:${range}`;
     let data: unknown;
     switch (block) {
       case 'traffic':
@@ -452,13 +539,7 @@ export class SeoControlService extends SupabaseBaseService {
         });
         break;
       case 'lowctr':
-        data = await this.invokeRpc('rpc_seo_low_ctr_v1', {
-          p_window_days: days,
-          p_now: nowIso,
-          p_min_impressions: 100,
-          p_max_ctr: 0.01,
-          p_limit: 50,
-        });
+        data = await this.fetchLowCtr(days, nowIso);
         break;
       case 'alerts':
         data = await this.invokeRpc('rpc_seo_alerts_v1', {
