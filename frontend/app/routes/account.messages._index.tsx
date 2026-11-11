@@ -35,7 +35,7 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { formatRelativeTime } from "../utils/date";
 
 export const meta: MetaFunction = () => [
-  { title: "Ma messagerie | AutoMecanik" },
+  { title: "Mes messages | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
   {
     tagName: "link",
@@ -259,7 +259,7 @@ function SidebarItem({
   );
 }
 
-export default function AccountMessages() {
+export default function MessagesList() {
   const { messages, pagination, stats, status, search, email } =
     useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
