@@ -455,6 +455,41 @@ describe('SitemapV10ScoringService.refreshAllScores — fail closed', () => {
     });
     expect(db.rpcCalls).toHaveLength(0);
   });
+
+  it('runs once for calls received while a refresh is in progress', async () => {
+    const db = fakeDb(healthy());
+    const service = makeScoring(db);
+
+    const [first, second, third] = await Promise.all([
+      service.refreshAllScores(),
+      service.refreshAllScores(),
+      service.refreshAllScores(),
+    ]);
+
+    expect(second).toBe(first);
+    expect(third).toBe(first);
+    expect(first.status).toBe('ok');
+    expect(db.reads.__seo_page).toBe(1);
+    expect(db.upserts).toHaveLength(1);
+    expect(db.rpcCalls).toHaveLength(1);
+  });
+
+  it('runs again once the previous refresh has ended, failed or not', async () => {
+    const db = fakeDb(healthy());
+    const service = makeScoring(db);
+
+    await service.refreshAllScores();
+    await service.refreshAllScores();
+    expect(db.upserts).toHaveLength(2);
+
+    const failing = fakeDb(
+      withTables({ __seo_internal_link: { error: 'connection reset' } }),
+    );
+    const other = makeScoring(failing);
+    expect((await other.refreshAllScores()).status).toBe('failed');
+    expect((await other.refreshAllScores()).status).toBe('failed');
+    expect(failing.reads.__seo_internal_link).toBe(2);
+  });
 });
 
 // ─── Pure scoring rule ──────────────────────────────────────────────────────

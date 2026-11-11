@@ -251,6 +251,9 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
     };
   }
 
+  /** Recalcul en cours dans ce processus, s'il y en a un. */
+  private refreshInFlight: Promise<ScoringResult> | null = null;
+
   /**
    * Lit toutes les lignes d'une source, page par page. Une erreur de lecture
    * lève : une source illisible n'est jamais traitée comme une source vide.
@@ -288,8 +291,21 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
    * illisible, vide ou non alimentée. Une entrée inconnue n'est pas une
    * pénalité — sans graphe de liens, toute page serait notée orpheline, et
    * sans titre ni description, toute page serait notée dupliquée et pauvre.
+   *
+   * Une seule exécution à la fois par processus : un appel reçu pendant un
+   * recalcul attend ce recalcul et en reçoit le résultat, sans relire ni
+   * réécrire.
    */
   async refreshAllScores(): Promise<ScoringResult> {
+    if (!this.refreshInFlight) {
+      this.refreshInFlight = this.runRefresh().finally(() => {
+        this.refreshInFlight = null;
+      });
+    }
+    return this.refreshInFlight;
+  }
+
+  private async runRefresh(): Promise<ScoringResult> {
     const startTime = Date.now();
     this.logger.log('🔄 Starting full score refresh...');
 
