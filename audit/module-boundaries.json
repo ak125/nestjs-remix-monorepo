@@ -146,7 +146,7 @@
         "backend/src/modules/catalog/utils"
       ],
       "files_count": 40,
-      "loc_total": 10270,
+      "loc_total": 10274,
       "has_barrel": false
     },
     "commercial": {
@@ -390,7 +390,7 @@
         "backend/src/modules/layout/services"
       ],
       "files_count": 10,
-      "loc_total": 2686,
+      "loc_total": 2697,
       "has_barrel": true
     },
     "maintenance": {
@@ -479,7 +479,7 @@
         "backend/src/modules/navigation/services"
       ],
       "files_count": 6,
-      "loc_total": 1428,
+      "loc_total": 1432,
       "has_barrel": false
     },
     "observability": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 349,
-      "loc_total": 68730,
+      "files_count": 350,
+      "loc_total": 69021,
       "has_barrel": true
     },
     "upload": {
@@ -1008,7 +1008,7 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 30,
-      "loc_total": 8995,
+      "loc_total": 9006,
       "has_barrel": false
     },
     "wiki": {
