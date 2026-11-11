@@ -34,10 +34,11 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
       echo
       echo "✗ Refused by .husky/pre-push: $op '$branch'."
       echo
-      echo "  Per .claude/rules/deployment.md, $branch only changes through a"
-      echo "  reviewed PR: a push to main starts the PREPROD cycle. Branch"
-      echo "  creation/deletion of $branch is also refused as defense-in-depth"
-      echo "  against accidental destructive operations."
+      echo "  This hook lets $branch change only through a reviewed PR"
+      echo "  (per .claude/rules/deployment.md, a push to main starts the"
+      echo "  PREPROD cycle). Branch creation/deletion of $branch is also"
+      echo "  refused as defense-in-depth against accidental destructive"
+      echo "  operations."
       echo
       echo "  Open a PR instead:"
       echo "    git push -u origin HEAD:refs/heads/<type>/<topic>"

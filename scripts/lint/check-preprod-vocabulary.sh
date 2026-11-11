@@ -83,7 +83,7 @@ $violations forbidden vocabulary occurrence(s) detected.
 
 Vocabulary: decided by ADR-075 (governance vault), relayed by .claude/rules/deployment.md
   - DEV     = the DEV host (operator workstation, no deploy container)
-  - PREPROD = the CI stack on the PROD host (port 3200, loopback only; READ_ONLY, no human access)
+  - PREPROD = the CI stack on the PROD host (port 3200, loopback only; READ_ONLY, no agent access, no human validation)
   - PROD    = the live container on the PROD host, behind Caddy (www.automecanik.com)
 
 To bypass for legitimate ERRATUM, prefix the line with "ERRATUM" (e.g.

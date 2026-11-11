@@ -28,8 +28,9 @@ EXCLUDE_REGEX='(^|/)(backend/content/automecanik-wiki|\.worktrees|node_modules|d
 # Toute adresse IPv4 brute : une machine se nomme par son rôle (« hôte DEV », « hôte PROD »),
 # le dépôt est public (ADR-075 D4). La règle ne liste aucune adresse : en écrire une ici la
 # publierait. Non signalés : quatre segments collés à une lettre ou à un chiffre (v1.2.3.4) ou
-# pris dans une suite de cinq segments ou plus. Signalée à tort : une version à quatre segments
-# sans préfixe.
+# pris dans une suite de cinq segments ou plus. Signalées aussi, sans être des machines : les
+# adresses de boucle locale, non routables ou de plages privées, même sans port, et une version
+# à quatre segments sans préfixe. Les écrire autrement (« boucle locale », v<numéro>).
 RE_IPV4='(^|[^[:alnum:].]|[^0-9]\.)([0-9]{1,3}\.){3}[0-9]{1,3}($|[^[:alnum:].]|\.($|[^0-9]))'
 RE_URL_INFRA='https?://[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(:[0-9]+)?|localhost:[0-9]+|127\.0\.0\.1:[0-9]+'
 RE_SECRET='(token|api[_-]?key|secret)[[:space:]]*[:=][[:space:]]*[A-Za-z0-9_.-]+'
