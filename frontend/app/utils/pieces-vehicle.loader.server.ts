@@ -24,6 +24,7 @@ import {
 } from "~/utils/pieces-loader.utils";
 import {
   detectMalformedSegment,
+  IdResolutionUnavailableError,
   parseUrlParam,
   resolveGammeId,
   resolveVehicleIds,
@@ -171,7 +172,28 @@ export async function piecesVehicleLoader({
       ]),
     );
   } catch (resolveErr) {
-    // Si la resolution echoue (API down, params invalides), retourner 404
+    // API de résolution indisponible : une panne n'est pas la preuve que la page
+    // n'existe pas. 503 non mis en cache, jamais un 404/410 (désindexation).
+    if (resolveErr instanceof IdResolutionUnavailableError) {
+      logger.error(
+        `❌ [LOADER] ID resolution unavailable for ${url.pathname}:`,
+        resolveErr.message,
+      );
+      await notify503ToErrorLog(
+        url.pathname,
+        "LOADER_503_ID_RESOLUTION_UNAVAILABLE",
+        resolveErr.message,
+        { target: resolveErr.target },
+      );
+      throw new Response("Service temporairement indisponible", {
+        status: 503,
+        headers: {
+          "Retry-After": "300",
+          "Cache-Control": "no-store, must-revalidate",
+        },
+      });
+    }
+    // Paramètres invalides : 404
     logger.error(
       `❌ [LOADER] ID resolution failed for ${url.pathname}:`,
       resolveErr instanceof Error ? resolveErr.message : resolveErr,
