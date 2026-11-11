@@ -14202,18 +14202,42 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/catalog/services/gamme-unified.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/catalog/services/gamme-unified.service.ts"
+      ],
+      "kind": "test",
+      "loc": 66,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/catalog/services/gamme-unified.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/catalog/services/gamme-unified.service.ts",
       "importedBy": [
         "backend/src/modules/catalog/catalog.module.ts",
-        "backend/src/modules/catalog/controllers/gamme-unified.controller.ts"
+        "backend/src/modules/catalog/controllers/gamme-unified.controller.ts",
+        "backend/src/modules/catalog/services/gamme-unified.service.test.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/catalog/types/gamme.types.ts"
       ],
       "kind": "service",
-      "loc": 165,
+      "loc": 170,
       "owner": "__unassigned__",
       "path": "backend/src/modules/catalog/services/gamme-unified.service.ts",
       "risk": "low",
@@ -62748,7 +62772,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 505,
+      "loc": 548,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-route.utils.ts",
       "risk": "low",
@@ -62784,7 +62808,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 732,
+      "loc": 754,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "low",
@@ -65911,6 +65935,25 @@
       "loc": 102,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-translate-no.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-vehicle-loader-alias-resolution-outage.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 292,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-vehicle-loader-alias-resolution-outage.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

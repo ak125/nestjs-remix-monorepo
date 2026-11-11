@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 440,
-    "backend_files_scanned": 1501
+    "backend_files_scanned": 1502
   },
   "tables": {
     "___config": {
@@ -12651,7 +12651,7 @@
     },
     {
       "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
-      "line": 25,
+      "line": 26,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -12665,7 +12665,7 @@
     },
     {
       "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
-      "line": 150,
+      "line": 155,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

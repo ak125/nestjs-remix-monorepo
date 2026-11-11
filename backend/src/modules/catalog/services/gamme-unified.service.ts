@@ -3,6 +3,7 @@ import { TABLES } from '@repo/database-types';
 // 🎯 Service unifié pour les gammes - remplace gamme.service + catalog-gamme.service + pieces-gamme.service
 
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { DatabaseException } from '@common/exceptions';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { Gamme } from '../types/gamme.types';
 
@@ -113,32 +114,36 @@ export class GammeUnifiedService extends SupabaseBaseService {
   async getGammeByAlias(
     alias: string,
   ): Promise<{ id: number; name: string; alias: string } | null> {
-    try {
-      this.logger.log(`🔍 Recherche gamme par alias: ${alias}`);
+    this.logger.log(`🔍 Recherche gamme par alias: ${alias}`);
 
-      const { data, error } = await this.supabase
-        .from(TABLES.pieces_gamme)
-        .select('pg_id, pg_name, pg_alias')
-        .eq('pg_alias', alias)
-        .eq('pg_display', '1')
-        .limit(1)
-        .single();
+    const { data, error } = await this.supabase
+      .from(TABLES.pieces_gamme)
+      .select('pg_id, pg_name, pg_alias')
+      .eq('pg_alias', alias)
+      .eq('pg_display', '1')
+      .limit(1)
+      .maybeSingle();
 
-      if (error || !data) {
-        this.logger.warn(`⚠️ Gamme non trouvée pour alias: ${alias}`);
-        return null;
-      }
-
-      this.logger.log(`✅ Gamme trouvée: ${data.pg_name} (ID: ${data.pg_id})`);
-      return {
-        id: data.pg_id,
-        name: data.pg_name,
-        alias: data.pg_alias,
-      };
-    } catch (error) {
+    // Une lecture en échec n'est pas « gamme introuvable » : la route R2 qui
+    // résout l'alias répondrait « absente du catalogue » sur une panne.
+    if (error) {
       this.logger.error(`❌ Erreur getGammeByAlias(${alias}):`, error);
+      throw new DatabaseException({
+        message: 'Lecture de la gamme par alias impossible',
+      });
+    }
+
+    if (!data) {
+      this.logger.warn(`⚠️ Gamme non trouvée pour alias: ${alias}`);
       return null;
     }
+
+    this.logger.log(`✅ Gamme trouvée: ${data.pg_name} (ID: ${data.pg_id})`);
+    return {
+      id: data.pg_id,
+      name: data.pg_name,
+      alias: data.pg_alias,
+    };
   }
 
   /**
