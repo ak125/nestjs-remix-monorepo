@@ -13099,42 +13099,42 @@
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 54,
+      "line": 105,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 118,
+      "line": 174,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 171,
+      "line": 227,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 213,
+      "line": 269,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 244,
+      "line": 330,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 284,
+      "line": 365,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

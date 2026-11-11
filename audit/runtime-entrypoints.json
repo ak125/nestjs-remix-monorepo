@@ -291,7 +291,6 @@
       "frontend/app/routes/account.messages.$messageId.tsx",
       "frontend/app/routes/account.messages._index.tsx",
       "frontend/app/routes/account.messages.compose.tsx",
-      "frontend/app/routes/account.messages.tsx",
       "frontend/app/routes/account.orders.tsx",
       "frontend/app/routes/account.profile.tsx",
       "frontend/app/routes/account.profile_.edit.tsx",
