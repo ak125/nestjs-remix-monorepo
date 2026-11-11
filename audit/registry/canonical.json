@@ -93538,7 +93538,7 @@
         "~/utils/seo/pieces-schema.utils"
       ],
       "kind": "service",
-      "loc": 179,
+      "loc": 177,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.meta.ts",
       "risk": "medium",
@@ -94072,10 +94072,11 @@
       "imports": [
         "frontend/app/types/pieces-route.types.ts",
         "frontend/app/utils/image-optimizer.ts",
-        "frontend/app/utils/seo/pieces-schema-commerce.constants.ts"
+        "frontend/app/utils/seo/pieces-schema-commerce.constants.ts",
+        "frontend/app/utils/stock.utils.ts"
       ],
       "kind": "service",
-      "loc": 318,
+      "loc": 359,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/seo/pieces-schema.utils.ts",
       "risk": "medium",
@@ -94137,7 +94138,8 @@
       "id": "frontend/app/utils/stock.utils.ts",
       "importedBy": [
         "frontend/app/components/pieces/PiecesGridView.tsx",
-        "frontend/app/components/pieces/PiecesListView.tsx"
+        "frontend/app/components/pieces/PiecesListView.tsx",
+        "frontend/app/utils/seo/pieces-schema.utils.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -96717,6 +96719,26 @@
       "loc": 151,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-oem-section.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/pieces-schema-offers.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 299,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-schema-offers.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106771,11 +106793,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "c457ccf2c75fb50286e4e7c025df759c5c3891f0778103bf7db67f6ce1304360",
+      "audit/registry/files.json": "dccee4a47c813e7d2295c99740d4cd70bb0e18a7479052b3f53afcf110087bea",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "b27cf8b14b4db1093189bb4149632ef6cd670e59fcbc797802b1cd09b4bdf277"
     },
-    "sotFingerprint": "9aaec7ec29bb"
+    "sotFingerprint": "e2073a2d24b5"
   },
   "runtime": [
     {
