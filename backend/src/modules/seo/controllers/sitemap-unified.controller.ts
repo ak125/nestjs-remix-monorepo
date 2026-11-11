@@ -7,7 +7,8 @@
  * → Redirige vers SitemapV10Service.generateAll()
  */
 
-import { Controller, Post, Get, Logger } from '@nestjs/common';
+import { Controller, Post, Get, Logger, UseGuards } from '@nestjs/common';
+import { AdminOrInternalKeyGuard } from '@auth/admin-or-internal-key.guard';
 import { SitemapV10Service } from '../services/sitemap-v10.service';
 import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
 
@@ -29,6 +30,7 @@ export class SitemapUnifiedController {
    * - Temperature buckets (hot/stable/cold)
    */
   @Post('generate-all')
+  @UseGuards(AdminOrInternalKeyGuard)
   async generateAll(): Promise<{
     success: boolean;
     message: string;
