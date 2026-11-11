@@ -47638,7 +47638,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 132,
+      "loc": 146,
       "owner": "__unassigned__",
       "path": "frontend/app/components/guide/GuideParts.tsx",
       "risk": "low",
@@ -65344,7 +65344,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 138,
+      "loc": 150,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/guide-parts-gamme-links.test.tsx",
       "risk": "low",
