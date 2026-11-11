@@ -233,11 +233,11 @@ entries:
         line: 3
         excerpt: "package-ecosystem"
         note: "dependabot covers minor/patch automatically ; majors per family = human-owned PR"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
     risk: "low"
-    drift_note: "user inventory flagged 'PR-9 dependencies : système de contrôle OK, exécution absente' ; verified : execution = human-owned by design, NOT a missing executor"
+    drift_note: "Re-verified 2026-11-10 : dependabot.yml still ignores semver-major for 7 named npm families ; Dependabot PRs merged up to #1948 (2026-11-01) ; majors = human PRs (e.g. #1139). Still by design."
 
   # ──────────────────────────────────────────────────────────────────────────
   # Seed du 2026-05-24 : quatre PR alors ouvertes. Relu le 2026-11-10 : seule
@@ -282,17 +282,19 @@ entries:
     runtime_evidence:
       trigger:
         kind: "github_run"
-        source: "this PR's CI run"
-        observed_at: "2026-05-24"
+        source: "pull_request run 42826814672 on PR #1997"
+        observed_at: "2026-11-10"
+        query_or_url: "https://github.com/ak125/nestjs-remix-monorepo/actions/runs/42826814672"
       output:
         kind: "log"
-        source: "validate-automation-overlay.ts stderr"
-        observed_at: "2026-05-24"
+        source: "validate-automation-overlay.ts : all 16 entries valid"
+        observed_at: "2026-11-10"
       consumer: "no-consumer-by-design"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "runtime-probe"
     risk: "medium"
+    drift_note: "Re-verified 2026-11-10 : 5 runs on PR #1997, all green ; previous run 2026-10-13. Not a required check : a red run stops the owner merge script, GitHub itself would not block."
 
   - automation_id: "automation-registry-no-auto-bump"
     domain: "D15"
@@ -305,17 +307,23 @@ entries:
     runtime_evidence:
       trigger:
         kind: "github_run"
-        source: "this PR's CI run"
-        observed_at: "2026-05-24"
+        source: "pull_request runs on PR #1997 : 42826815039 (owner push) and 42891967287 (bot push)"
+        observed_at: "2026-11-10"
+        query_or_url: "https://github.com/ak125/nestjs-remix-monorepo/actions/runs/42891967287"
       output:
         kind: "log"
-        source: "check-no-auto-bump.js exit code"
-        observed_at: "2026-05-24"
-      consumer: "no-consumer-by-design"
-    last_verified_at: "2026-05-24"
-    last_verified_by: "seed:fafa"
-    last_verified_method: "seed-from-plan-review"
+        source: "check-no-auto-bump.js : pass for the owner push, FAIL (exit 1) for the bot push"
+        observed_at: "2026-11-10"
+      consumer:
+        kind: "github_run"
+        source: "run 42891967287 red : the owner merge script stopped, PR #1997 stayed open"
+        observed_at: "2026-11-10"
+        query_or_url: "https://github.com/ak125/nestjs-remix-monorepo/actions/runs/42891967287"
+    last_verified_at: "2026-11-10"
+    last_verified_by: "@ak125"
+    last_verified_method: "runtime-probe"
     risk: "low"
+    drift_note: "Re-verified 2026-11-10 : red on 3 bot pushes, green on 2 owner pushes. Follows github.actor of the last push, not the commit author. Not a required check : only the merge script stops on red."
 
   # ──────────────────────────────────────────────────────────────────────────
   # ACTIVE — pg_cron CWV RUM aggregation (raw→hourly→daily_rum). Replaces a dead
