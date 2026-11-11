@@ -29343,6 +29343,30 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/auth/admin-or-internal-key.guard.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/auth/admin-session.guard.ts",
+        "backend/src/auth/any-of.guard.ts",
+        "backend/src/auth/internal-api-key.guard.ts"
+      ],
+      "kind": "service",
+      "loc": 23,
+      "owner": "@ak125/auth-team",
+      "path": "backend/src/auth/admin-or-internal-key.guard.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/auth/admin-session.guard.test.ts",
       "importedBy": [],
       "imports": [
@@ -29367,6 +29391,7 @@
       "domain": "D11",
       "id": "backend/src/auth/admin-session.guard.ts",
       "importedBy": [
+        "backend/src/auth/admin-or-internal-key.guard.ts",
         "backend/src/auth/admin-session.guard.test.ts",
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/session-privilege.test.ts"
@@ -29414,6 +29439,7 @@
       "domain": "D11",
       "id": "backend/src/auth/any-of.guard.ts",
       "importedBy": [
+        "backend/src/auth/admin-or-internal-key.guard.ts",
         "backend/src/auth/any-of.guard.test.ts",
         "backend/src/modules/admin/controllers/internal-command-center.controller.ts"
       ],
@@ -30196,6 +30222,7 @@
       "domain": "D11",
       "id": "backend/src/auth/internal-api-key.guard.ts",
       "importedBy": [
+        "backend/src/auth/admin-or-internal-key.guard.ts",
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/legacy-internal-key.guard.test.ts",
         "backend/src/auth/legacy-internal-key.guard.ts",
@@ -58836,11 +58863,13 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@repo/database-types",
         "backend/src/modules/seo/services/keywords-dashboard.service.ts"
       ],
       "kind": "controller",
-      "loc": 191,
+      "loc": 195,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/keywords-dashboard.controller.ts",
       "risk": "high",
@@ -58939,12 +58968,13 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "@repo/database-types",
         "backend/src/modules/seo/services/googlebot-detector.service.ts",
         "backend/src/modules/seo/services/risk-flags-engine.service.ts"
       ],
       "kind": "controller",
-      "loc": 481,
+      "loc": 491,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-dashboard.controller.ts",
       "risk": "high",
@@ -58990,10 +59020,12 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/seo/services/log-ingestion.service.ts"
       ],
       "kind": "controller",
-      "loc": 167,
+      "loc": 176,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-logs.controller.ts",
       "risk": "high",
@@ -59014,10 +59046,11 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/workers/services/seo-monitor-scheduler.service.ts"
       ],
       "kind": "controller",
-      "loc": 90,
+      "loc": 93,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-monitor.controller.ts",
       "risk": "high",
@@ -59038,10 +59071,11 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/modules/seo/services/seo-monitoring.service.ts"
       ],
       "kind": "controller",
-      "loc": 64,
+      "loc": 66,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-monitoring.controller.ts",
       "risk": "high",
@@ -59062,11 +59096,13 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/seo/services/seo-pilotage.service.ts",
         "backend/src/modules/seo/types/seo-pilotage.types.ts"
       ],
       "kind": "controller",
-      "loc": 178,
+      "loc": 189,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/seo-pilotage.controller.ts",
       "risk": "high",
@@ -59087,11 +59123,12 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/seo/services/sitemap-delta.service.ts"
       ],
       "kind": "controller",
-      "loc": 133,
+      "loc": 143,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/sitemap-delta.controller.ts",
       "risk": "high",
@@ -59112,12 +59149,13 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/seo/interfaces/sitemap-streaming.interface.ts",
         "backend/src/modules/seo/services/sitemap-streaming.service.ts"
       ],
       "kind": "controller",
-      "loc": 151,
+      "loc": 161,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/sitemap-streaming.controller.ts",
       "risk": "high",
@@ -59138,11 +59176,12 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/admin-or-internal-key.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
       "kind": "controller",
-      "loc": 102,
+      "loc": 104,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/sitemap-unified.controller.ts",
       "risk": "high",
@@ -71903,6 +71942,26 @@
       "loc": 88,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo-headers-interceptor.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/seo-maintenance-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 456,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/seo-maintenance-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106771,11 +106830,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "c457ccf2c75fb50286e4e7c025df759c5c3891f0778103bf7db67f6ce1304360",
+      "audit/registry/files.json": "b9d5a92021f7f68786a6bf91313d6e5a9353752cc3196460a906b9631718adbc",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "b27cf8b14b4db1093189bb4149632ef6cd670e59fcbc797802b1cd09b4bdf277"
     },
-    "sotFingerprint": "9aaec7ec29bb"
+    "sotFingerprint": "9f2fa27f12a3"
   },
   "runtime": [
     {
