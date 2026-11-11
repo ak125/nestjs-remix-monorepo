@@ -13495,12 +13495,14 @@
         "backend/src/modules/catalog/catalog.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/catalog/catalog.service.ts",
         "backend/src/modules/catalog/services/catalog-hierarchy.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts"
       ],
       "kind": "controller",
-      "loc": 576,
+      "loc": 580,
       "owner": "__unassigned__",
       "path": "backend/src/modules/catalog/catalog.controller.ts",
       "risk": "low",
@@ -17992,6 +17994,8 @@
         "backend/src/modules/layout/layout.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/layout/services/footer.service.ts",
         "backend/src/modules/layout/services/header.service.ts",
@@ -18001,7 +18005,7 @@
         "backend/src/modules/layout/services/social-share.service.ts"
       ],
       "kind": "controller",
-      "loc": 262,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/modules/layout/controllers/layout.controller.ts",
       "risk": "low",
@@ -20654,13 +20658,15 @@
         "backend/src/modules/navigation/navigation.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/navigation/navigation.service.ts",
         "backend/src/modules/navigation/services/commercial-menu.service.ts",
         "backend/src/modules/navigation/services/expedition-menu.service.ts",
         "backend/src/modules/navigation/services/seo-menu.service.ts"
       ],
       "kind": "controller",
-      "loc": 205,
+      "loc": 209,
       "owner": "__unassigned__",
       "path": "backend/src/modules/navigation/navigation.controller.ts",
       "risk": "low",
@@ -38282,6 +38288,8 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
         "backend/src/modules/vehicles/services/brand-rpc.service.ts",
@@ -38291,7 +38299,7 @@
         "backend/src/modules/vehicles/services/seo/brand-seo.service.ts"
       ],
       "kind": "controller",
-      "loc": 502,
+      "loc": 508,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/brands.controller.ts",
       "risk": "low",
@@ -38991,6 +38999,8 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/common/pipes/params/index.ts",
         "backend/src/common/pipes/strict-zod-query-validation.pipe.ts",
@@ -39010,7 +39020,7 @@
         "backend/src/modules/vehicles/vehicles.service.ts"
       ],
       "kind": "controller",
-      "loc": 440,
+      "loc": 445,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/vehicles.controller.ts",
       "risk": "low",
@@ -42371,6 +42381,25 @@
       "loc": 496,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/seo/sitemap-v10.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/site-maintenance-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 291,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/site-maintenance-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
