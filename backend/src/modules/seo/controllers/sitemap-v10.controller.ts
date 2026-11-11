@@ -20,9 +20,14 @@ import {
   HttpCode,
   HttpStatus,
   ServiceUnavailableException,
+  UseGuards,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { AdminSessionGuard } from '@auth/admin-session.guard';
+import { AnyOf } from '@auth/any-of.guard';
+import { GithubOidcGuard } from '@auth/github-oidc.guard';
+import { LegacyInternalKeyGuard } from '@auth/legacy-internal-key.guard';
 import {
   SitemapV10Service,
   TemperatureBucket,
@@ -34,6 +39,21 @@ import {
   SitemapRegenerateJobData,
 } from '../services/sitemap-v10-scheduler.service';
 import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
+
+/**
+ * Frontière des routes qui écrivent (génération, recalcul, ping).
+ *
+ * Trois identités, chacune portée par une garde atomique fournie par
+ * `AuthModule` : la session administrateur, le jeton OIDC du workflow
+ * planifié `sitemap-daily-regen.yml`, et la clé interne `X-Internal-Key`
+ * tant que son interrupteur `SITEMAP_LEGACY_INTERNAL_KEY_ENABLED` vaut
+ * `true`. Fermé par défaut. `GET stats` reste une lecture publique.
+ */
+const SitemapWriteGuard = AnyOf(
+  AdminSessionGuard,
+  GithubOidcGuard,
+  LegacyInternalKeyGuard,
+);
 
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('api/sitemap/v10')
@@ -71,6 +91,7 @@ export class SitemapV10Controller {
    * PR #566).
    */
   @Post('generate-all')
+  @UseGuards(SitemapWriteGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   async generateAll(): Promise<{
     success: true;
@@ -133,6 +154,7 @@ export class SitemapV10Controller {
    * Génère le sitemap d'un bucket spécifique
    */
   @Post('generate/:bucket')
+  @UseGuards(SitemapWriteGuard)
   async generateBucket(@Param('bucket') bucket: string): Promise<{
     success: boolean;
     message: string;
@@ -185,6 +207,7 @@ export class SitemapV10Controller {
    * Recalcule les scores de toutes les pages
    */
   @Post('refresh-scores')
+  @UseGuards(SitemapWriteGuard)
   async refreshScores(): Promise<{
     success: boolean;
     message: string;
@@ -227,6 +250,7 @@ export class SitemapV10Controller {
    * Génère les hubs de crawl (version legacy - non paginée)
    */
   @Post('generate-hubs')
+  @UseGuards(SitemapWriteGuard)
   async generateHubs(): Promise<{
     success: boolean;
     message: string;
@@ -285,6 +309,7 @@ export class SitemapV10Controller {
    * - risk/weak-cluster.html (pages à risque)
    */
   @Post('generate-hubs-robust')
+  @UseGuards(SitemapWriteGuard)
   async generateHubsRobust(): Promise<{
     success: boolean;
     message: string;
@@ -395,6 +420,7 @@ export class SitemapV10Controller {
    * Ping Google pour le sitemap index
    */
   @Post('ping')
+  @UseGuards(SitemapWriteGuard)
   async pingGoogle(): Promise<{
     success: boolean;
     message: string;
@@ -427,6 +453,7 @@ export class SitemapV10Controller {
    * Ping Google pour un bucket spécifique
    */
   @Post('ping/:bucket')
+  @UseGuards(SitemapWriteGuard)
   async pingGoogleBucket(@Param('bucket') bucket: string): Promise<{
     success: boolean;
     message: string;
