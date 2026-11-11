@@ -161,6 +161,62 @@ function execute(script, { state = {}, env = {} } = {}) {
 const promote = (options) => execute(gate, options);
 const startDeploy = (options) => execute(promotionBlock(), options);
 
+// The first step of the job. A run executes the workflow of the ref it was
+// started on: on a branch, the steps below would deploy an untagged commit.
+const REF_GATE = "🔖 Release ref gate";
+const checkRef = (ref) => execute(stepRun(REF_GATE), { env: { GITHUB_REF: ref } });
+
+for (const ref of ["refs/tags/v2026.11.10", "refs/tags/v-test-release"]) {
+  test(`the release ref gate accepts a v* tag: ${ref}`, () => {
+    const result = checkRef(ref);
+    assert.equal(result.code, 0, result.output);
+    assert.equal(result.state.calls.length, 0);
+  });
+}
+
+for (const ref of [
+  "refs/heads/main",
+  "refs/heads/v2026.11.10",
+  "refs/heads/tags/v2026.11.10",
+  "refs/tags/release-2026.11.10",
+  "refs/tags/v2026.11.10/extra",
+  "refs/pull/1/merge",
+  "v2026.11.10",
+  "",
+]) {
+  test(`the release ref gate refuses any other ref before Docker: ${JSON.stringify(ref)}`, () => {
+    const result = checkRef(ref);
+    assert.notEqual(result.code, 0, result.output);
+    assert.match(result.output, /PROD deploys only from a v\* tag/);
+    assert.equal(result.state.calls.length, 0);
+  });
+}
+
+test("the release ref gate is the first step of the only job and cannot be skipped", () => {
+  const jobs = workflow.slice(workflow.indexOf("\njobs:\n"));
+  assert.deepEqual(
+    jobs.match(/^ {2}[\w-]+:$/gm),
+    ["  deploy-prod:"],
+    "a gate step only protects its own job",
+  );
+  const steps = jobs.indexOf("\n    steps:\n");
+  assert.ok(steps >= 0, "the job must declare its steps");
+  const first = jobs.indexOf("\n      - ", steps);
+  assert.ok(
+    jobs.slice(first).startsWith(`\n      - name: ${REF_GATE}`),
+    "the release ref gate must run before every other step",
+  );
+  const step = jobs.slice(first + 1, jobs.indexOf("\n      - ", first + 1));
+  assert.doesNotMatch(step, /^\s+(if|continue-on-error):/m);
+});
+
+test("the release ref gate accepts the refs of the push trigger", () => {
+  assert.match(
+    workflow,
+    /\non:\n {2}push:\n {4}tags:\n {6}- 'v\*'\n {2}workflow_dispatch:\n/,
+  );
+});
+
 test("promotes the requested commit when the shared preprod alias has advanced", () => {
   const result = promote({ state: LIVE });
   assert.equal(result.code, 0, result.output);

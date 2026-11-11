@@ -134,7 +134,7 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 |-------------|----------|----------------|---------------|---------|----------------------|
 | Fusion d'une PR sur `main` (push `main`) | `.github/workflows/ci.yml` job `deploy` | `:sha-<commit>` et alias `:preprod` sur DockerHub (`build.yml`) | pile PREPROD (hôte PROD, port 3200) redémarrée sur l'image du commit | ~10 min | NON (E2E Smoke + Lighthouse CI automatiques) |
 | `push origin v*` (tag) | `.github/workflows/deploy-prod.yml` | promote l'image du commit → `:production` | container PROD (hôte PROD, 80/443) redémarré | ~5 min | OUI (tag manuel = décision de l'owner) |
-| `workflow_dispatch` manuel sur `deploy-prod.yml`, lancé sur un tag `v*` | idem `deploy-prod.yml` | idem | idem PROD | idem | OUI |
+| `workflow_dispatch` manuel sur `deploy-prod.yml`, lancé sur un tag `v*` (toute autre ref est refusée à la première étape) | idem `deploy-prod.yml` | idem | idem PROD | idem | OUI |
 
 **Règles mnémoniques** :
 
@@ -217,18 +217,18 @@ ou si la passerelle accepte une écriture.
 
 Ou via UI GitHub : `Actions → "Deploy PROD (via tag)" → Run workflow`, en choisissant le **tag**
 `v*` dans « Use workflow from ». Le run exécute le `deploy-prod.yml` de la ref choisie, et le
-formulaire propose `main` par défaut : lancé sur `main` dont PREPROD a validé la tête, le workflow
-déploierait ce commit sans tag `v*` et publierait l'image sous le nom de la ref (`:main`). La preuve
-PREPROD de ce commit lui suffit ; rien ne vérifie qu'un tag `v*` porte la décision de l'owner. Sur
-une branche dont la tête est un commit de `main` qui contient #1696 et que PREPROD a validé, il
-ferait de même sous le nom de la branche si ce nom est un tag Docker valide (au plus 128 caractères
-parmi lettres ASCII, chiffres, `_`, `.` et `-`, sans `.` ni `-` en tête : donc ni `/` ni `+`) ;
-sinon il refuse au contrôle de ce nom, mais après avoir remplacé `:production-previous` (voir
-Rollback, #1288). Sur une autre ref, le résultat suit le workflow de cette ref, comme pour un tag
-(voir Rollback) : au 2026-11-10, 25 branches distantes en portent un sans garde de label ni preuve
-PREPROD. Sur 24 d'entre elles (nom avec `/`), le run s'arrête avant tout push, mais après avoir fait
-pointer le tag local `:production` de l'hôte du runner sur l'image `:preprod` ; sur la 25e, il
-promeut l'alias `:preprod` courant vers PROD.
+formulaire propose `main` par défaut. La première étape de ce workflow, `🔖 Release ref gate`,
+refuse toute ref autre qu'un tag `v*` (`refs/tags/v…`, sans `/` après le `v`, comme le déclencheur
+`push`), avant le checkout et avant toute action sur l'hôte : lancé sur `main` ou sur une branche,
+le run échoue sans rien modifier. Elle lit `GITHUB_REF`, posé par le runner ; aucune entrée du
+formulaire ne le change.
+
+Cette garde ne protège que les refs dont le workflow la contient. Une ref plus ancienne (branche,
+tag, ou ref nouvelle posée sur un commit antérieur à la garde) suit son propre workflow, comme pour
+un tag (voir Rollback) : au 2026-11-10, 25 branches distantes en portent un sans garde de label ni
+preuve PREPROD. Sur 24 d'entre elles (nom avec `/`), le run s'arrête avant tout push, mais après
+avoir fait pointer le tag local `:production` de l'hôte du runner sur l'image `:preprod` ; sur la
+25e, il promeut l'alias `:preprod` courant vers PROD.
 
 ## Rollback
 
