@@ -30,6 +30,10 @@ import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AuthSource, STAFF_LEVEL } from '@auth/session-privilege';
 import { MessagesService } from './messages.service';
 import {
+  MESSAGE_STATUS_FILTERS,
+  MessageStatusFilter,
+} from './repositories/message-data.service';
+import {
   OperationFailedException,
   DomainNotFoundException,
   DomainValidationException,
@@ -118,6 +122,19 @@ function requireActingCustomerId(
   return customerId;
 }
 
+/** Filtre de statut de la liste ; une valeur inconnue est refusée. */
+function parseStatusFilter(status: string | undefined): MessageStatusFilter {
+  if (status === undefined || status === '') return 'all';
+  const known = MESSAGE_STATUS_FILTERS.find((value) => value === status);
+  if (known === undefined) {
+    throw new DomainValidationException({
+      message: `status doit valoir ${MESSAGE_STATUS_FILTERS.join(', ')}`,
+      field: 'status',
+    });
+  }
+  return known;
+}
+
 /** Le message d'un autre client répond comme un message absent. */
 function assertHolder(caller: Caller, message: { customerId: string }): void {
   if (caller.isAdmin) return;
@@ -136,6 +153,7 @@ export class MessagesController {
   /**
    * Récupérer la liste des messages avec filtres
    * GET /api/messages?page=1&limit=20&staff=123&customer=456&status=open
+   * `status` : all (défaut), open, closed, unread.
    */
   @Get()
   async getMessages(
@@ -154,6 +172,7 @@ export class MessagesController {
       resolveCaller(request),
       customerId,
     );
+    const statusFilter = parseStatusFilter(status);
 
     try {
       const pageNum = parseInt(page || '1', 10);
@@ -165,7 +184,7 @@ export class MessagesController {
         staffId,
         customerId: scopedCustomerId,
         search,
-        status: (status as 'open' | 'closed' | 'all') || 'all',
+        status: statusFilter,
       };
 
       const result = await this.messagesService.getMessages(filters);
@@ -185,6 +204,96 @@ export class MessagesController {
       this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
       throw new OperationFailedException({
         message: 'Erreur serveur lors de la récupération des messages',
+      });
+    }
+  }
+
+  // Les routes statiques (`stats`, `stats/overview`, `customers`) sont déclarées
+  // avant `:id` : déclarées après, `:id` les capture.
+
+  /**
+   * Récupérer les statistiques des messages
+   * GET /api/messages/stats?customer=123
+   */
+  @Get('stats')
+  async getMessageStats(
+    @Req() request: Express.Request,
+    @Query('customer') customerId?: string,
+  ) {
+    this.logger.log('API Messages: GET /api/messages/stats');
+
+    const scopedCustomerId = actingCustomerId(
+      resolveCaller(request),
+      customerId,
+    );
+
+    try {
+      const stats = await this.messagesService.getStatistics(scopedCustomerId);
+
+      this.logger.log('API Messages: Statistiques calculées');
+      return {
+        success: true,
+        data: stats,
+      };
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Stats Error: ${getErrorMessage(error)}`);
+      throw new OperationFailedException({
+        message: 'Erreur serveur lors du calcul des statistiques',
+      });
+    }
+  }
+
+  /**
+   * Récupérer les statistiques des messages visibles par l'appelant :
+   * globales pour un administrateur, les siennes pour un client.
+   * GET /api/messages/stats/overview
+   */
+  @Get('stats/overview')
+  async getMessageStatsOverview(@Req() request: Express.Request) {
+    this.logger.log('API Messages: GET /api/messages/stats/overview');
+
+    const caller = resolveCaller(request);
+
+    try {
+      const stats = await this.messagesService.getStatistics(
+        caller.isAdmin ? undefined : caller.id,
+      );
+
+      this.logger.log('API Messages: Statistiques calculées');
+      return {
+        success: true,
+        data: stats,
+      };
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Stats Error: ${getErrorMessage(error)}`);
+      throw new OperationFailedException({
+        message: 'Erreur serveur lors du calcul des statistiques',
+      });
+    }
+  }
+
+  /**
+   * Récupérer la liste des clients
+   * GET /api/messages/customers
+   */
+  @Get('customers')
+  @UseGuards(IsAdminGuard)
+  async getCustomers(@Query('limit') limit?: string) {
+    this.logger.log('API Messages: GET /api/messages/customers');
+
+    try {
+      const limitNum = parseInt(limit || '100', 10);
+      const customers = await this.messagesService.getCustomers(limitNum);
+
+      this.logger.log(`API Messages: ${customers.length} clients trouvés`);
+      return {
+        success: true,
+        data: customers,
+      };
+    } catch (error: unknown) {
+      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
+      throw new OperationFailedException({
+        message: 'Erreur serveur lors de la récupération des clients',
       });
     }
   }
@@ -340,93 +449,6 @@ export class MessagesController {
       this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
       throw new OperationFailedException({
         message: 'Erreur serveur lors du marquage du message',
-      });
-    }
-  }
-
-  /**
-   * Récupérer les statistiques des messages
-   * GET /api/messages/stats?customer=123
-   */
-  @Get('stats')
-  async getMessageStats(
-    @Req() request: Express.Request,
-    @Query('customer') customerId?: string,
-  ) {
-    this.logger.log('API Messages: GET /api/messages/stats');
-
-    const scopedCustomerId = actingCustomerId(
-      resolveCaller(request),
-      customerId,
-    );
-
-    try {
-      const stats = await this.messagesService.getStatistics(scopedCustomerId);
-
-      this.logger.log('API Messages: Statistiques calculées');
-      return {
-        success: true,
-        data: stats,
-      };
-    } catch (error: unknown) {
-      this.logger.error(`API Messages Stats Error: ${getErrorMessage(error)}`);
-      throw new OperationFailedException({
-        message: 'Erreur serveur lors du calcul des statistiques',
-      });
-    }
-  }
-
-  /**
-   * Récupérer les statistiques des messages visibles par l'appelant :
-   * globales pour un administrateur, les siennes pour un client.
-   * GET /api/messages/stats/overview
-   */
-  @Get('stats/overview')
-  async getMessageStatsOverview(@Req() request: Express.Request) {
-    this.logger.log('API Messages: GET /api/messages/stats/overview');
-
-    const caller = resolveCaller(request);
-
-    try {
-      const stats = await this.messagesService.getStatistics(
-        caller.isAdmin ? undefined : caller.id,
-      );
-
-      this.logger.log('API Messages: Statistiques calculées');
-      return {
-        success: true,
-        data: stats,
-      };
-    } catch (error: unknown) {
-      this.logger.error(`API Messages Stats Error: ${getErrorMessage(error)}`);
-      throw new OperationFailedException({
-        message: 'Erreur serveur lors du calcul des statistiques',
-      });
-    }
-  }
-
-  /**
-   * Récupérer la liste des clients
-   * GET /api/messages/customers
-   */
-  @Get('customers')
-  @UseGuards(IsAdminGuard)
-  async getCustomers(@Query('limit') limit?: string) {
-    this.logger.log('API Messages: GET /api/messages/customers');
-
-    try {
-      const limitNum = parseInt(limit || '100', 10);
-      const customers = await this.messagesService.getCustomers(limitNum);
-
-      this.logger.log(`API Messages: ${customers.length} clients trouvés`);
-      return {
-        success: true,
-        data: customers,
-      };
-    } catch (error: unknown) {
-      this.logger.error(`API Messages Error: ${getErrorMessage(error)}`);
-      throw new OperationFailedException({
-        message: 'Erreur serveur lors de la récupération des clients',
       });
     }
   }

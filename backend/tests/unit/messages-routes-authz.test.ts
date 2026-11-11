@@ -29,11 +29,11 @@ import {
   sessionPrivilegeLevel,
 } from '../../src/auth/session-privilege';
 import { MessagesController } from '../../src/modules/messages/messages.controller';
-import { MessageDataService } from '../../src/modules/messages/repositories/message-data.service';
 
 // NestJS reflection keys (`@nestjs/common/constants` — stable literals).
 const GUARDS_METADATA = '__guards__';
 const METHOD_METADATA = 'method';
+const PATH_METADATA = 'path';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -465,22 +465,89 @@ describe('api/messages — holder rule', () => {
   });
 });
 
-// ─── Statistics filter ──────────────────────────────────────────────────────
+// ─── Route declaration order ────────────────────────────────────────────────
 
-describe('MessageDataService.getStatistics', () => {
-  it('filters a customer on the column the table declares', async () => {
-    const eq = jest.fn().mockResolvedValue({ data: [], error: null });
-    const select = jest.fn().mockReturnValue({ eq });
-    const from = jest.fn().mockReturnValue({ select });
-    const dataService = Object.create(MessageDataService.prototype);
-    Object.assign(dataService, {
-      supabase: { from },
-      tableName: '___xtr_msg',
-      logger: { log: jest.fn(), error: jest.fn() },
-    });
+describe('api/messages — route declaration order', () => {
+  /** NestJS registers handlers in declaration order; the first match wins. */
+  const declared = routeHandlers(controller).map((name) => ({
+    name,
+    verb: Reflect.getMetadata(METHOD_METADATA, controller.prototype[name]),
+    path: String(
+      Reflect.getMetadata(PATH_METADATA, controller.prototype[name]),
+    ),
+  }));
 
-    await dataService.getStatistics('42');
+  /** `:id` captures any one-segment path declared after it. */
+  const captures = (pattern: string, path: string): boolean => {
+    const wanted = pattern.split('/');
+    const given = path.split('/');
+    return (
+      wanted.length === given.length &&
+      wanted.every((part, i) => part.startsWith(':') || part === given[i])
+    );
+  };
 
-    expect(eq).toHaveBeenCalledWith('msg_cst_id', '42');
+  it.each(['getMessageStats', 'getMessageStatsOverview', 'getCustomers'])(
+    '%s is not captured by a parameter route declared before it',
+    (name) => {
+      const index = declared.findIndex((route) => route.name === name);
+      const target = declared[index];
+
+      expect(index).toBeGreaterThanOrEqual(0);
+      expect(target.path).not.toContain(':');
+      const shadowing = declared
+        .slice(0, index)
+        .filter(
+          (route) =>
+            route.verb === target.verb &&
+            route.path.includes(':') &&
+            captures(route.path, target.path),
+        )
+        .map((route) => route.name);
+      expect(shadowing).toEqual([]);
+    },
+  );
+});
+
+// ─── Status filter ──────────────────────────────────────────────────────────
+
+describe('api/messages — status filter', () => {
+  const list = (ctrl: MessagesController, value?: string) =>
+    ctrl.getMessages(
+      admin as never,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      value,
+    );
+
+  it.each(['all', 'open', 'closed', 'unread'])(
+    'passes %s to the service',
+    async (value) => {
+      const { ctrl, service } = build();
+      await list(ctrl, value);
+      expect(service.getMessages).toHaveBeenLastCalledWith(
+        expect.objectContaining({ status: value }),
+      );
+    },
+  );
+
+  it.each([undefined, ''])(
+    'lists every message without a status (%p)',
+    async (value) => {
+      const { ctrl, service } = build();
+      await list(ctrl, value);
+      expect(service.getMessages).toHaveBeenLastCalledWith(
+        expect.objectContaining({ status: 'all' }),
+      );
+    },
+  );
+
+  it('refuses an unknown status instead of reading it as another one', async () => {
+    const { ctrl, service } = build();
+    expect(await status(() => list(ctrl, 'system'))).toBe(400);
+    expect(service.getMessages).not.toHaveBeenCalled();
   });
 });
