@@ -42435,12 +42435,14 @@
         "backend/src/modules/catalog/catalog.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/catalog/catalog.service.ts",
         "backend/src/modules/catalog/services/catalog-hierarchy.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts"
       ],
       "kind": "controller",
-      "loc": 576,
+      "loc": 580,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/catalog.controller.ts",
       "risk": "high",
@@ -47093,6 +47095,8 @@
         "backend/src/modules/layout/layout.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/layout/services/footer.service.ts",
         "backend/src/modules/layout/services/header.service.ts",
@@ -47102,7 +47106,7 @@
         "backend/src/modules/layout/services/social-share.service.ts"
       ],
       "kind": "controller",
-      "loc": 262,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/modules/layout/controllers/layout.controller.ts",
       "risk": "low",
@@ -49821,13 +49825,15 @@
         "backend/src/modules/navigation/navigation.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/navigation/navigation.service.ts",
         "backend/src/modules/navigation/services/commercial-menu.service.ts",
         "backend/src/modules/navigation/services/expedition-menu.service.ts",
         "backend/src/modules/navigation/services/seo-menu.service.ts"
       ],
       "kind": "controller",
-      "loc": 205,
+      "loc": 209,
       "owner": "__unassigned__",
       "path": "backend/src/modules/navigation/navigation.controller.ts",
       "risk": "low",
@@ -68087,6 +68093,8 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
         "backend/src/modules/vehicles/services/brand-rpc.service.ts",
@@ -68096,7 +68104,7 @@
         "backend/src/modules/vehicles/services/seo/brand-seo.service.ts"
       ],
       "kind": "controller",
-      "loc": 502,
+      "loc": 508,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/brands.controller.ts",
       "risk": "high",
@@ -68823,6 +68831,8 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/common/pipes/params/index.ts",
         "backend/src/common/pipes/strict-zod-query-validation.pipe.ts",
@@ -68842,7 +68852,7 @@
         "backend/src/modules/vehicles/vehicles.service.ts"
       ],
       "kind": "controller",
-      "loc": 440,
+      "loc": 445,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/vehicles.controller.ts",
       "risk": "high",
@@ -72343,6 +72353,26 @@
       "loc": 496,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo/sitemap-v10.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/site-maintenance-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 291,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/site-maintenance-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106771,11 +106801,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c505d698318ff18b19249c6605f1cd84ddbd1d6f9626885a373d7ea87db5db03",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "c457ccf2c75fb50286e4e7c025df759c5c3891f0778103bf7db67f6ce1304360",
+      "audit/registry/files.json": "762b99d413d2f69bab01b161ac42178cf21f49c47eacb9d4aa1df485d5d19bc0",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "b27cf8b14b4db1093189bb4149632ef6cd670e59fcbc797802b1cd09b4bdf277"
     },
-    "sotFingerprint": "9aaec7ec29bb"
+    "sotFingerprint": "5c02490469d5"
   },
   "runtime": [
     {
