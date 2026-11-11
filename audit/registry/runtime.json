@@ -4067,7 +4067,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/messages/messages.service.ts"
+        "runtime:backend/src/modules/messages/messages.service.ts",
+        "runtime:backend/src/modules/messages/repositories/message-data.service.ts"
       ],
       "id": "runtime:backend/src/modules/messages/messages.controller.ts",
       "kind": "nestjs-controller",
