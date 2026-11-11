@@ -3,7 +3,7 @@
  *
  * rpc_seo_conversion_v1 rattache une commande payée à une page par
  * `___xtr_order_line.orl_website_url`. Relevé du 2026-11-11 sur 28 jours :
- * 4 commandes payées, 4 lignes, aucune adresse. La RPC rend alors 0 commande
+ * aucune ligne des commandes payées ne porte d'adresse. La RPC rend alors 0 commande
  * pour chaque page, et le snapshot portait des décisions « blocage critique du
  * tunnel » fabriquées sur une donnée absente. Le snapshot doit dire « non
  * mesuré » (raison + comptages) et ne publier aucune ligne de conversion ; une
@@ -249,7 +249,7 @@ describe('SeoControlService — attribution des commandes aux pages', () => {
     jest.restoreAllMocks();
   });
 
-  it('relevé du 2026-11-11 : 4 commandes payées, aucune ligne rattachée → non mesuré, aucune ligne ni décision publiée', async () => {
+  it('commandes payées sans aucune ligne rattachée → non mesuré, aucune ligne ni décision publiée', async () => {
     const paidOrderIds = ['ORD-1', 'ORD-2', 'ORD-3', 'ORD-4'];
     const { service, orderOps, warn } = makeService({
       paidOrderIds,
