@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { AdminOrInternalKeyGuard } from '@auth/admin-or-internal-key.guard';
 import { SeoMonitoringService } from '../services/seo-monitoring.service';
 
 @Controller('seo-monitoring')
+@UseGuards(AdminOrInternalKeyGuard)
 export class SeoMonitoringController {
   constructor(private readonly monitoringService: SeoMonitoringService) {}
 
