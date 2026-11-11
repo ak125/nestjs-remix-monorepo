@@ -146,7 +146,7 @@
         "backend/src/modules/catalog/utils"
       ],
       "files_count": 40,
-      "loc_total": 10270,
+      "loc_total": 10209,
       "has_barrel": false
     },
     "commercial": {
@@ -355,8 +355,8 @@
         "backend/src/modules/gamme-rest/utils",
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
-      "files_count": 19,
-      "loc_total": 6492,
+      "files_count": 20,
+      "loc_total": 6547,
       "has_barrel": true
     },
     "health": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 349,
-      "loc_total": 68730,
+      "files_count": 350,
+      "loc_total": 69036,
       "has_barrel": true
     },
     "upload": {
@@ -1756,7 +1756,7 @@
     {
       "from": "gamme-rest",
       "to": "catalog",
-      "count": 5
+      "count": 6
     },
     {
       "from": "gamme-rest",
@@ -2593,6 +2593,11 @@
     {
       "from": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "to": "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
+      "to": "backend/src/modules/catalog/services/cache-warming.service.ts",
       "rule": "no-deep-module-access"
     },
     {
