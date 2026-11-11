@@ -103,8 +103,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 42,
-      "loc_total": 14981,
+      "files_count": 43,
+      "loc_total": 15097,
       "has_barrel": false
     },
     "bot-guard": {
@@ -186,8 +186,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 104,
-      "loc_total": 25128,
+      "files_count": 105,
+      "loc_total": 25189,
       "has_barrel": true
     },
     "customers": {
@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 19,
-      "loc_total": 6492,
+      "loc_total": 6503,
       "has_barrel": true
     },
     "health": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 351,
-      "loc_total": 69477,
+      "loc_total": 69515,
       "has_barrel": true
     },
     "upload": {
@@ -1516,7 +1516,7 @@
     {
       "from": "blog",
       "to": "config",
-      "count": 6
+      "count": 7
     },
     {
       "from": "blog",
@@ -1766,7 +1766,7 @@
     {
       "from": "gamme-rest",
       "to": "config",
-      "count": 2
+      "count": 3
     },
     {
       "from": "gamme-rest",
