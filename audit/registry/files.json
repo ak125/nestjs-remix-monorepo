@@ -10490,13 +10490,15 @@
         "backend/src/modules/agentic-engine/agentic-engine.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/agentic-engine/constants/agentic.constants.ts",
         "backend/src/modules/agentic-engine/services/agentic-data.service.ts",
         "backend/src/modules/agentic-engine/services/evidence-ledger.service.ts",
         "backend/src/modules/agentic-engine/services/run-manager.service.ts"
       ],
       "kind": "controller",
-      "loc": 337,
+      "loc": 344,
       "owner": "__unassigned__",
       "path": "backend/src/modules/agentic-engine/agentic-engine.controller.ts",
       "risk": "low",
@@ -17887,12 +17889,14 @@
         "backend/src/modules/knowledge-graph/knowledge-graph.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/knowledge-graph/kg-data.service.ts",
         "backend/src/modules/knowledge-graph/kg.service.ts",
         "backend/src/modules/knowledge-graph/kg.types.ts"
       ],
       "kind": "controller",
-      "loc": 250,
+      "loc": 258,
       "owner": "__unassigned__",
       "path": "backend/src/modules/knowledge-graph/kg.controller.ts",
       "risk": "low",
@@ -40775,6 +40779,25 @@
       "loc": 118,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/diagnostic-provenance-metrics-wiring.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/disabled-modules-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 217,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/disabled-modules-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
