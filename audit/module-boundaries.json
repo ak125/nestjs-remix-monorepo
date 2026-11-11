@@ -30,7 +30,7 @@
         "backend/src/modules/agentic-engine/types"
       ],
       "files_count": 14,
-      "loc_total": 2396,
+      "loc_total": 2389,
       "has_barrel": false
     },
     "ai-content": {
@@ -74,8 +74,8 @@
         "backend/src/auth/guards",
         "backend/src/modules/auth/dto"
       ],
-      "files_count": 45,
-      "loc_total": 6027,
+      "files_count": 46,
+      "loc_total": 6050,
       "has_barrel": true
     },
     "backend-core": {
@@ -146,7 +146,7 @@
         "backend/src/modules/catalog/utils"
       ],
       "files_count": 40,
-      "loc_total": 10270,
+      "loc_total": 10274,
       "has_barrel": false
     },
     "commercial": {
@@ -380,7 +380,7 @@
         "backend/src/modules/knowledge-graph"
       ],
       "files_count": 6,
-      "loc_total": 1655,
+      "loc_total": 1647,
       "has_barrel": true
     },
     "layout": {
@@ -390,7 +390,7 @@
         "backend/src/modules/layout/services"
       ],
       "files_count": 10,
-      "loc_total": 2686,
+      "loc_total": 2697,
       "has_barrel": true
     },
     "maintenance": {
@@ -479,7 +479,7 @@
         "backend/src/modules/navigation/services"
       ],
       "files_count": 6,
-      "loc_total": 1428,
+      "loc_total": 1432,
       "has_barrel": false
     },
     "observability": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 283,
-      "loc_total": 60022,
+      "loc_total": 60083,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 350,
-      "loc_total": 68947,
+      "files_count": 351,
+      "loc_total": 69477,
       "has_barrel": true
     },
     "upload": {
@@ -1008,7 +1008,7 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 30,
-      "loc_total": 8995,
+      "loc_total": 9006,
       "has_barrel": false
     },
     "wiki": {
