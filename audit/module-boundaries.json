@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110739,
+      "loc_total": 110753,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 351,
-      "loc_total": 69180,
+      "loc_total": 69192,
       "has_barrel": true
     },
     "upload": {
