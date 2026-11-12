@@ -17,7 +17,10 @@ import {
   isMalformedSeoUrl,
 } from '../../../common/utils/url-builder.utils';
 import { SITE_ORIGIN } from '../../../config/app.config';
-import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
+import {
+  getTypeModelIndex,
+  sitemapLinkState,
+} from '../helpers/auto-type-valid-ids.helper';
 import {
   FAMILY_CLUSTERS,
   FamilyClusterConfig,
@@ -118,7 +121,7 @@ export class HubsClusterService extends SupabaseBaseService {
           }> = [];
 
           // Anti-404 : filtrer les orphelins TecDoc V1
-          const validTypeIds = await getValidTypeIds(this.supabase);
+          const typeModels = await getTypeModelIndex(this.supabase);
           const PAGE_SIZE = 1000;
           let offset = 0;
           let hasMore = true;
@@ -142,12 +145,8 @@ export class HubsClusterService extends SupabaseBaseService {
 
             if (pieces && pieces.length > 0) {
               const rawCount = pieces.length;
-              const validPieces = pieces.filter((p) =>
-                validTypeIds.has(
-                  typeof p.map_type_id === 'string'
-                    ? parseInt(p.map_type_id, 10)
-                    : (p.map_type_id as number),
-                ),
+              const validPieces = pieces.filter(
+                (p) => sitemapLinkState(p, typeModels) === 'live',
               );
               allPieces.push(...validPieces);
               offset += PAGE_SIZE;
@@ -384,7 +383,7 @@ export class HubsClusterService extends SupabaseBaseService {
 
       // 2. Pagination complète pour récupérer TOUTES les URLs
       // Anti-404 : filtrer les orphelins TecDoc V1
-      const validTypeIds = await getValidTypeIds(this.supabase);
+      const typeModels = await getTypeModelIndex(this.supabase);
       const PAGE_SIZE = 1000;
       let offset = 0;
       let hasMore = true;
@@ -407,11 +406,7 @@ export class HubsClusterService extends SupabaseBaseService {
 
         const rawCount = pieces.length;
         for (const p of pieces) {
-          const typeIdNum =
-            typeof p.map_type_id === 'string'
-              ? parseInt(p.map_type_id, 10)
-              : (p.map_type_id as number);
-          if (!validTypeIds.has(typeIdNum)) continue;
+          if (sitemapLinkState(p, typeModels) !== 'live') continue;
           const typeSeg = normalizeAlias(
             normalizeTypeAlias(p.map_type_alias, null, p.map_type_id),
           );

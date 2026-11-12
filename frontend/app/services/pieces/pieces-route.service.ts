@@ -92,6 +92,20 @@ async function fetchFromEndpointChain<T>(
 }
 
 /**
+ * Alias de gamme d'un conseil rattaché à une gamme. Sa page est servie sur
+ * `/blog-pieces-auto/conseils/{pg_alias}` ; `/blog-pieces-auto/article/{slug}`
+ * n'en est que la redirection (même condition que `canonicalBlogArticlePath`).
+ * Absent pour tout autre article : son lien reste celui de la route article.
+ */
+function advicePgAlias(article: Record<string, unknown>): string | undefined {
+  return article.type === "advice" &&
+    typeof article.pg_alias === "string" &&
+    article.pg_alias !== ""
+    ? article.pg_alias
+    : undefined;
+}
+
+/**
  * 🎯 Parser pour extraire un article de blog depuis diverses structures API
  */
 function parseBlogArticleResponse(data: unknown): BlogArticle | null {
@@ -122,6 +136,7 @@ function parseBlogArticleResponse(data: unknown): BlogArticle | null {
             "",
         ),
         slug: String(firstArticle.slug || firstArticle.url || ""),
+        pg_alias: advicePgAlias(firstArticle),
         image:
           normalizeImageUrl(
             String(
@@ -152,6 +167,7 @@ function parseBlogArticleResponse(data: unknown): BlogArticle | null {
       title: String(a.h1 || a.title),
       excerpt: String(a.excerpt || a.description || ""),
       slug: String(a.slug || ""),
+      pg_alias: advicePgAlias(a),
       image:
         normalizeImageUrl(String(a.featuredImage || a.image || "")) ||
         undefined,
@@ -327,6 +343,7 @@ export async function fetchRelatedArticlesForGamme(
           `Découvrez notre guide complet sur les ${gamme.name.toLowerCase()}.`,
       ),
       slug: String(articleData.slug),
+      pg_alias: advicePgAlias(articleData),
       image:
         normalizeImageUrl(String(articleData.featuredImage || "")) || undefined,
       date: String(
@@ -350,6 +367,7 @@ export async function fetchRelatedArticlesForGamme(
             title: String(related.h1 || related.title),
             excerpt: String(related.excerpt || ""),
             slug: String(related.slug),
+            pg_alias: advicePgAlias(related),
             image:
               normalizeImageUrl(String(related.featuredImage || "")) ||
               undefined,
@@ -436,6 +454,7 @@ export async function fetchBlogArticleWithRelated(
                 title: String(r.h1 || r.title),
                 excerpt: String(r.excerpt || ""),
                 slug: String(r.slug),
+                pg_alias: advicePgAlias(r),
                 image:
                   normalizeImageUrl(String(r.featuredImage || "")) || undefined,
                 date: String(

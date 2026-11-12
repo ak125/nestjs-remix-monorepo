@@ -110,8 +110,6 @@ export function buildPiecesVehicleMeta(
     gamme: d.gamme,
     pieces: d.pieces,
     seo: { description: d.seo.description },
-    minPrice: d.minPrice,
-    maxPrice: d.maxPrice,
     count: d.count,
     oemRefs: d.oemRefs,
     oemRefsSeo: d.oemRefsSeo,
