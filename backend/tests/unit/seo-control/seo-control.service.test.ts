@@ -110,8 +110,18 @@ function makeService(
     rpc_seo_alerts_v1: [],
     rpc_seo_conversion_v1: null,
   };
+  // Aucune commande payée dans la fenêtre : attribution des commandes hors sujet ici.
+  const noPaidOrders: Record<string, unknown> = {};
+  for (const op of ['select', 'eq', 'gte', 'lt', 'order', 'limit']) {
+    noPaidOrders[op] = () => noPaidOrders;
+  }
+  noPaidOrders.then = (resolve: (v: unknown) => unknown) =>
+    resolve({ data: [], error: null });
   const supabase = {
     from: jest.fn((table: string) => {
+      if (table === '___xtr_order') {
+        return noPaidOrders;
+      }
       if (table !== '__seo_gsc_daily_property_total') {
         throw new Error(`unexpected table ${table}`);
       }
