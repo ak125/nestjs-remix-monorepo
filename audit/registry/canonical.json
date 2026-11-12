@@ -46533,7 +46533,7 @@
         "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts"
       ],
       "kind": "service",
-      "loc": 2721,
+      "loc": 2734,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "risk": "medium",
@@ -46652,7 +46652,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 1243,
+      "loc": 1251,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "medium",
@@ -70448,7 +70448,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 700,
+      "loc": 746,
       "owner": "@ak125",
       "path": "backend/tests/unit/buying-guide-data.service.test.ts",
       "risk": "medium",
@@ -70988,7 +70988,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 457,
+      "loc": 665,
       "owner": "@ak125",
       "path": "backend/tests/unit/gamme-response-builder.service.test.ts",
       "risk": "medium",
@@ -107061,11 +107061,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "95b31b5c1b87236aeee4461521f23af96b08d7ec7ecc70a7506b24cce96f6f36",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "db21ca4f58ad82e5d1a72ceb5d28eb247034712192552a84cd580315a1eb5feb",
+      "audit/registry/files.json": "c6e17d034bb7504fc2a98e4c8396ba2493ac02670994496d29b294d244fe8081",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "e06264541dfddaa381631a60c869d403cce6ed8fc69b37077f5f5504cd5987dd"
     },
-    "sotFingerprint": "c339e7408ebc"
+    "sotFingerprint": "c5fe0d246e7d"
   },
   "runtime": [
     {
