@@ -51,11 +51,14 @@ Use one of these simple verdicts:
 |---|---|
 | `GO` | useful, measured, low risk, tests pass → proceed |
 | `GO_WITH_WATCH` | proceed but monitor a specific signal post-merge |
-| `FIX_AND_RETEST` | small correction needed, then re-run the check |
+| `FIX_AND_RETEST` | small correction needed within the authorized scope, then re-run the check |
 | `OWNER_DECISION` | non-trivial trade-off — owner must arbitrate before action |
 | `STOP_LOW_VALUE` | gain marginal vs cost → backlog or drop |
 | `STOP_TOO_COMPLEX` | cost / complexity > envelope → simplify scope or abandon |
 | `ROLLBACK_REQUIRED` | regression detected → revert before continuing |
+
+A verdict recommends the next step; it never authorizes by itself a write, rollback, merge or
+deployment. Those stay governed by the task's mandate and the existing danger-zone rules.
 
 ## Risk modes
 
@@ -73,21 +76,28 @@ The check scales with risk. Pick one mode per change:
 - Prefer **extending existing mechanisms** over new layers (cf. anti-bricolage rules).
 - **No new workflow** unless repeated manual use has proven value (≥3 real PRs).
 - **No blocking gate** unless the owner explicitly promotes it.
-- A failed pilot must create a **fix-and-retest loop**, not just a write-up.
-- The `Next action` must be **concrete** (owner, file, command, or decision — not "to be defined").
+- After a failed pilot or `Test`, retry only when a concrete hypothesis or fix justifies it,
+  within the authorized scope (a fix outside it is reported, not applied). Otherwise report the
+  evidence and the decision needed.
+- The `Next action` must be **concrete** (owner, file, command, or decision — not "to be defined"),
+  or `none` when the scope is done.
 - "Improvement" that breaks existing surface = `ROLLBACK_REQUIRED`, never silently pivot to another topic.
 
 ## Anti-patterns
 
 - **Pivot to dodge a blocker** — if X fails, do not silently switch to Y to inflate the win rate.
-- **Over-loop without convergence** — more than 3 cycles without a result ⇒ `OWNER_DECISION` or `STOP_TOO_COMPLEX`.
+- **Over-loop without convergence** — a cycle is one fix, then re-running its `Test`; it fails
+  when the `Test` still fails or the fix breaks something new. At most **3 failed cycles per
+  problem**, counted from the start of the task (attempts made before this skill was invoked
+  count); after the third ⇒ `OWNER_DECISION` or `STOP_TOO_COMPLEX`. The cap requires neither
+  three attempts nor invoking `code-auto-review`.
 - **Scale before a working pilot** — bulk / mass-automation / ratchet CI / large SEO publication require ≥1 proven pilot.
 - **Adding a layer when a simpler path exists** — re-read the rules above; extension > creation.
 
 ## Post-fix simplification closeout
 
 When this skill is already in use and the fix has passed its `Test`, run one final advisory,
-read-only closeout before handoff :
+read-only closeout, reported in the existing handoff (no separate document or review) :
 
 - What new mechanism did the fix add ?
 - Could an existing mechanism absorb or replace it ?
