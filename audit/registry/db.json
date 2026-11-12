@@ -11227,7 +11227,6 @@
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
         "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
         "backend/src/modules/blog/services/guide.service.ts",
-        "backend/src/modules/catalog/services/cache-warming.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts"
       ]
     },
