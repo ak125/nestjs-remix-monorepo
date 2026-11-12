@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 283,
-      "loc_total": 60083,
+      "loc_total": 60221,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 353,
-      "loc_total": 70000,
+      "files_count": 354,
+      "loc_total": 70722,
       "has_barrel": true
     },
     "upload": {
