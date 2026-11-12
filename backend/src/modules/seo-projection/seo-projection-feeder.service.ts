@@ -11,7 +11,7 @@
  *
  * Choix BullMQ repeatable plutôt que `@Cron` : `@nestjs/schedule` est désactivé monorepo
  * (conflit de versions, cf. app.module.ts) → tous les `@Cron` sont inertes. Pattern canon =
- * repeatable jobs (cf. SitemapV10SchedulerService).
+ * repeatable jobs (cf. SeoMonitorSchedulerService).
  *
  * Garde-fous (controlled rollout, runtime-awareness CLAUDE.md) :
  *   - `SEO_PROJECTION_R1_FEED_ENABLED` défaut **OFF** → rien n'est planifié (owner valide l'activation).

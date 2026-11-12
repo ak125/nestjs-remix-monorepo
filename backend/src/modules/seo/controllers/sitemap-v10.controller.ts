@@ -62,9 +62,9 @@ export class SitemapV10Controller {
    *
    * Idempotence : deterministic jobId scoped to current UTC date
    * (`sitemap-v10-api-YYYY-MM-DD`) — multiple same-day API triggers dedupe
-   * to a single BullMQ job. Distinct from the nightly scheduler's
-   * `sitemap-v10-nightly-regeneration` repeatable jobId (worst case = 2
-   * regens per day; the regeneration itself is idempotent).
+   * to a single BullMQ job. This endpoint, called daily by that workflow, is
+   * the only producer of the regeneration : the in-app nightly repeatable
+   * was removed on 2026-11-12 (cf. `SitemapV10SchedulerService`).
    *
    * Tracking : observers can poll the `seo-monitor` BullMQ queue via
    * existing Bull Board admin tooling or the scheduler heartbeat (Phase 7,

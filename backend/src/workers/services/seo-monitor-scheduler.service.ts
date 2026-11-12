@@ -14,9 +14,10 @@ import { getErrorMessage } from '@common/utils/error.utils';
 /**
  * Noms des tâches que ce service planifie sur la queue `seo-monitor`.
  *
- * La queue est partagée : `SitemapV10SchedulerService` y planifie la
- * régénération du sitemap. Le nettoyage au démarrage ne retire que les tâches
- * répétables portant ces noms ; celles des autres services restent en place.
+ * La queue est partagée avec d'autres services. Le nettoyage au démarrage ne
+ * retire que les tâches répétables portant ces noms ; chaque service gère les
+ * siennes (`SitemapV10SchedulerService` retire la régénération nocturne qu'il
+ * ne planifie plus).
  */
 export const SEO_MONITOR_OWNED_JOB_NAMES: readonly string[] = [
   'check-pages',
@@ -158,7 +159,8 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
    *
    * `tz: 'UTC'` est explicite : sans lui, Bull lit le cron dans le fuseau du
    * processus (Europe/Paris dans l'image), soit 03:00 ou 02:00 UTC selon la
-   * saison — l'heure de la régénération du sitemap, prévue une heure avant.
+   * saison — l'heure de la régénération du sitemap par le workflow GitHub
+   * quotidien, prévue une heure avant.
    *
    * Ref : `.claude/plans/utiliser-la-meilleure-approche-zippy-waterfall.md` § V0.A
    */
