@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 440,
-    "backend_files_scanned": 1505
+    "backend_files_scanned": 1504
   },
   "tables": {
     "___config": {
@@ -2523,10 +2523,9 @@
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
         "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
         "backend/src/modules/blog/services/guide.service.ts",
-        "backend/src/modules/catalog/services/cache-warming.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts"
       ],
-      "used_by_count": 6,
+      "used_by_count": 5,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,

@@ -30,7 +30,7 @@
         "backend/src/modules/agentic-engine/types"
       ],
       "files_count": 14,
-      "loc_total": 2389,
+      "loc_total": 2396,
       "has_barrel": false
     },
     "ai-content": {
@@ -103,8 +103,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 43,
-      "loc_total": 15097,
+      "files_count": 42,
+      "loc_total": 14981,
       "has_barrel": false
     },
     "bot-guard": {
@@ -146,7 +146,7 @@
         "backend/src/modules/catalog/utils"
       ],
       "files_count": 40,
-      "loc_total": 10274,
+      "loc_total": 10213,
       "has_barrel": false
     },
     "commercial": {
@@ -186,8 +186,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 105,
-      "loc_total": 25189,
+      "files_count": 104,
+      "loc_total": 25128,
       "has_barrel": true
     },
     "customers": {
@@ -355,8 +355,8 @@
         "backend/src/modules/gamme-rest/utils",
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
-      "files_count": 19,
-      "loc_total": 6503,
+      "files_count": 20,
+      "loc_total": 6547,
       "has_barrel": true
     },
     "health": {
@@ -380,7 +380,7 @@
         "backend/src/modules/knowledge-graph"
       ],
       "files_count": 6,
-      "loc_total": 1647,
+      "loc_total": 1655,
       "has_barrel": true
     },
     "layout": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 351,
-      "loc_total": 69515,
+      "files_count": 353,
+      "loc_total": 70000,
       "has_barrel": true
     },
     "upload": {
@@ -1516,7 +1516,7 @@
     {
       "from": "blog",
       "to": "config",
-      "count": 7
+      "count": 6
     },
     {
       "from": "blog",
@@ -1756,7 +1756,7 @@
     {
       "from": "gamme-rest",
       "to": "catalog",
-      "count": 5
+      "count": 6
     },
     {
       "from": "gamme-rest",
@@ -1766,7 +1766,7 @@
     {
       "from": "gamme-rest",
       "to": "config",
-      "count": 3
+      "count": 2
     },
     {
       "from": "gamme-rest",
@@ -2593,6 +2593,11 @@
     {
       "from": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "to": "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
+      "to": "backend/src/modules/catalog/services/cache-warming.service.ts",
       "rule": "no-deep-module-access"
     },
     {
