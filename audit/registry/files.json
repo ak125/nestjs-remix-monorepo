@@ -18345,7 +18345,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts",
       "importedBy": [
-        "backend/src/modules/marketing/marketing.module.ts"
+        "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/marketing-data.backlinks.test.ts"
       ],
       "imports": [
         "@auth/is-admin.guard",
@@ -18710,7 +18711,8 @@
       "id": "backend/src/modules/marketing/services/marketing-backlinks.service.ts",
       "importedBy": [
         "backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts",
-        "backend/src/modules/marketing/marketing.module.ts"
+        "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/marketing-data.backlinks.test.ts"
       ],
       "imports": [
         "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
@@ -18806,21 +18808,48 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/marketing/services/marketing-data.backlinks.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "@security/rpc-gate/rpc-gate.service",
+        "backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts",
+        "backend/src/modules/marketing/services/marketing-backlinks.service.ts",
+        "backend/src/modules/marketing/services/marketing-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 336,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/marketing/services/marketing-data.backlinks.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/marketing/services/marketing-data.service.ts",
       "importedBy": [
         "backend/src/modules/marketing/marketing.module.ts",
         "backend/src/modules/marketing/services/marketing-backlinks.service.ts",
         "backend/src/modules/marketing/services/marketing-content-roadmap.service.ts",
         "backend/src/modules/marketing/services/marketing-dashboard.service.ts",
+        "backend/src/modules/marketing/services/marketing-data.backlinks.test.ts",
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/marketing/interfaces/marketing.interfaces.ts"
       ],
       "kind": "service",
-      "loc": 619,
+      "loc": 622,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/marketing-data.service.ts",
       "risk": "low",

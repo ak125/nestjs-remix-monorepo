@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: c7730794d50fd0a0fa2c73d9b270936ac62d7aac00ccc7f729fdac2df868fff1
+source_sha256: 8cda3735c9369bfad9295a171bd6fd169ccd9f1ea7102b04edf1345e1ce6a406
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3142 |
+| Files (Layer 1) | 3143 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `f8bf656ede55`.
+Source sotFingerprint: `8ea8d40fcfb8`.
 
 ## Comment l'utiliser
 
@@ -124,11 +124,11 @@ Source sotFingerprint: `f8bf656ede55`.
 
 ### D12 — Marketing & Video
 
-- **Files**: 82 (service=62, controller=12, config=5, test=3)
+- **Files**: 83 (service=62, controller=12, config=5, test=4)
 - **Runtime entrypoints**: 39
-- **Top owners**: @ak125/marketing-team (82)
+- **Top owners**: @ak125/marketing-team (83)
 - **Knowledge prose**: [`commercial`](modules/commercial.md), [`marketing`](modules/marketing.md), [`promo`](modules/promo.md)
-- **Status**: LIVE=53, UNKNOWN=29
+- **Status**: LIVE=53, UNKNOWN=30
 
 ### D13 — Config & System
 
