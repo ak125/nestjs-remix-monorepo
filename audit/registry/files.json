@@ -33485,14 +33485,15 @@
         "backend/src/modules/seo/controllers/sitemap-v10.controller.ts",
         "backend/src/modules/seo/processors/sitemap-regenerate.processor.ts",
         "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/sitemap-v10-scheduler.heartbeat.test.ts"
+        "backend/src/modules/seo/services/sitemap-v10-scheduler.heartbeat.test.ts",
+        "backend/src/workers/services/seo-monitor-scheduler.service.test.ts"
       ],
       "imports": [
         "@common/utils/error.utils",
         "os"
       ],
       "kind": "service",
-      "loc": 257,
+      "loc": 262,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts",
       "risk": "low",
@@ -40125,10 +40126,33 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/workers/services/seo-monitor-scheduler.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts",
+        "backend/src/workers/services/seo-monitor-scheduler.service.ts"
+      ],
+      "kind": "test",
+      "loc": 312,
+      "owner": "__unassigned__",
+      "path": "backend/src/workers/services/seo-monitor-scheduler.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/workers/services/seo-monitor-scheduler.service.ts",
       "importedBy": [
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/seo/controllers/seo-monitor.controller.ts",
+        "backend/src/workers/services/seo-monitor-scheduler.service.test.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -40136,7 +40160,7 @@
         "@common/utils/error.utils"
       ],
       "kind": "service",
-      "loc": 327,
+      "loc": 350,
       "owner": "__unassigned__",
       "path": "backend/src/workers/services/seo-monitor-scheduler.service.ts",
       "risk": "low",
@@ -42560,7 +42584,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 126,
+      "loc": 162,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/sitemap-v10-scheduler.test.ts",
       "risk": "low",
