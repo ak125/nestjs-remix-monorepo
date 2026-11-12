@@ -6,11 +6,34 @@
 
 set -euo pipefail
 
-SETTINGS_FILE="/opt/automecanik/app/.claude/settings.local.json"
+# Chemin surchargeable pour les tests (jamais en production : valeur par défaut figée).
+SETTINGS_FILE="${CLAUDE_SETTINGS_LOCAL_FILE:-/opt/automecanik/app/.claude/settings.local.json}"
 BACKUP_FILE="${SETTINGS_FILE}.bak"
+
+# Compte rendu d'état (scripts/cron/lib-supabase-report.sh), lu par le hook SessionStart.
+# Sans lui, un arrêt en erreur n'était écrit que dans un journal sous /tmp, que personne
+# ne lit. Passage hebdomadaire : muet au-delà de 8 jours = cron arrêté.
+source "$(dirname "$0")/../cron/lib-supabase-report.sh" 2>/dev/null || true
+: "${CRON_REPORT_MAX_AGE_S:=691200}"
+RESULT=""
+report_state() {
+  local rc=$?
+  if ! declare -F cron_report >/dev/null; then
+    echo "clean-settings-local : lib-supabase-report.sh introuvable — état NON enregistré" >&2
+    return 0
+  fi
+  if [ "$rc" -eq 0 ]; then
+    cron_report "clean-settings-local" "ok" "$SECONDS" '{}' "$RESULT"
+  else
+    cron_report "clean-settings-local" "error" "$SECONDS" '{}' \
+      "arrêt en erreur (exit ${rc}) — comparer ${SETTINGS_FILE} à sa sauvegarde .bak"
+  fi
+}
+trap report_state EXIT
 
 if [ ! -f "$SETTINGS_FILE" ]; then
   echo "settings.local.json not found — nothing to clean"
+  RESULT="fichier absent, rien à nettoyer"
   exit 0
 fi
 
@@ -18,6 +41,7 @@ fi
 LINE_COUNT=$(wc -l < "$SETTINGS_FILE")
 if [ "$LINE_COUNT" -lt 100 ]; then
   echo "settings.local.json is already clean ($LINE_COUNT lines)"
+  RESULT="déjà propre (${LINE_COUNT} lignes)"
   exit 0
 fi
 
@@ -66,3 +90,4 @@ jq --argjson allow "$JSON_ARRAY" '.permissions.allow = $allow' "$SETTINGS_FILE" 
 echo "=== After:  $(wc -l < "$SETTINGS_FILE") lines / $(wc -c < "$SETTINGS_FILE") bytes ==="
 echo "Cleaned! Reduced from $LINE_COUNT lines to $(wc -l < "$SETTINGS_FILE") lines"
 echo "Backup at: ${BACKUP_FILE}"
+RESULT="nettoyé : ${LINE_COUNT} → $(wc -l < "$SETTINGS_FILE") lignes"
