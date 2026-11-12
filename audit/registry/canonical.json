@@ -88772,10 +88772,11 @@
         "~/components/errors/ErrorGeneric",
         "~/utils/cache-control",
         "~/utils/internal-api.server",
-        "~/utils/logger"
+        "~/utils/logger",
+        "~/utils/url-builder.utils"
       ],
       "kind": "route",
-      "loc": 912,
+      "loc": 915,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.auto.$marque.$modele.tsx",
       "risk": "medium",
@@ -95324,6 +95325,26 @@
       "loc": 127,
       "owner": "@ak125",
       "path": "frontend/tests/unit/beacon.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/blog-model-motorisation-links.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 136,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/blog-model-motorisation-links.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -107158,11 +107179,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "95b31b5c1b87236aeee4461521f23af96b08d7ec7ecc70a7506b24cce96f6f36",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "540e0b5e436b10199ef4f9f4052f4bbc8fb2253ca84e32ccd7e4b7c5eede37e7",
+      "audit/registry/files.json": "d9a26de1c8b41f6d920e2f343f08a23d09937cd315b24307db0754c0ead400b5",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "05730f0cc1371febf753b41d88588ad7adcb0cf7e0eb51b67642df2aedd5ba3a"
     },
-    "sotFingerprint": "aed4773a52fa"
+    "sotFingerprint": "dfb4472dafa6"
   },
   "runtime": [
     {
