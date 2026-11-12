@@ -23596,6 +23596,8 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/common/pipes/zod-validation.pipe.ts",
         "backend/src/modules/products/dto/index.ts",
@@ -23604,7 +23606,7 @@
         "backend/src/modules/products/services/stock.service.ts"
       ],
       "kind": "controller",
-      "loc": 235,
+      "loc": 249,
       "owner": "__unassigned__",
       "path": "backend/src/modules/products/controllers/products-core.controller.ts",
       "risk": "low",
@@ -41746,6 +41748,25 @@
       "loc": 73,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/pr-proposition.planner.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/products-core-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 183,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/products-core-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

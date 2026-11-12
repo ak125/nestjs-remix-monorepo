@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 4a0c5ab1fe1ab8aeee8d48c99990083cbc248e501d1947672f4c7ff1fa67f668
+source_sha256: 079e8678906cb016207ec9e2e4765efd204057893e0911671681c5f43c7d5df7
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3159 |
+| Files (Layer 1) | 3160 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `58ec9bcffec5`.
+Source sotFingerprint: `0e1d4a89f54d`.
 
 ## Comment l'utiliser
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `58ec9bcffec5`.
 
 ### D15 — Security & Governance
 
-- **Files**: 315 (test=204, script=62, service=46, config=2, controller=1)
+- **Files**: 316 (test=205, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (315)
+- **Top owners**: @ak125 (316)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=256
+- **Status**: LIVE=59, UNKNOWN=257
 
 ### D16 — Maintenance
 
