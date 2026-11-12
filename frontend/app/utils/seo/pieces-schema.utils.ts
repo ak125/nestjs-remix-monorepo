@@ -13,7 +13,7 @@ import {
   isValidImagePath,
   resolvePartImagePath,
 } from "../image-optimizer";
-import { isPreorder, isSellable } from "../stock.utils";
+import { isSellable } from "../stock.utils";
 import {
   DEFAULT_RETURN_POLICY_FR,
   DEFAULT_SELLER,
@@ -54,25 +54,17 @@ interface SchemaParams {
   canonicalUrl: string;
 }
 
-const IN_STOCK = "https://schema.org/InStock";
-const BACK_ORDER = "https://schema.org/BackOrder";
-
 /**
  * Pièces que les cartes produit présentent comme achetables : même prédicat
  * que `PiecesGridView` et `PiecesListView` (`isSellable`). Une pièce affichée
- * « Indisponible » ne porte aucune offre : ni prix à zéro, ni disponibilité
- * supposée.
+ * « Indisponible » ne porte aucune offre, donc aucun prix à zéro.
+ *
+ * Décision de l'owner du 2026-11-12 : le balisage ne publie pas la
+ * disponibilité des stocks. Les offres ne portent ni `availability` ni
+ * statut dérivé du stock ; la page affichée n'en est pas modifiée.
  */
 function selectSellablePieces(pieces: PieceData[]): PieceData[] {
   return pieces.filter((piece) => isSellable(piece.price, piece.stockStatus));
-}
-
-/**
- * Disponibilité d'une pièce achetable. « Sur commande » (`PREORDER`) est une
- * commande en attente d'approvisionnement, pas une précommande avant sortie.
- */
-function offerAvailability(piece: PieceData): string {
-  return isPreorder(piece.stockStatus) ? BACK_ORDER : IN_STOCK;
 }
 
 /**
@@ -145,11 +137,6 @@ function buildProductSchema(
       lowPrice: Math.min(...prices),
       highPrice: Math.max(...prices),
       offerCount: sellablePieces.length,
-      availability: sellablePieces.every((piece) =>
-        isPreorder(piece.stockStatus),
-      )
-        ? BACK_ORDER
-        : IN_STOCK,
       priceValidUntil: computePriceValidUntil(),
       seller: DEFAULT_SELLER,
       shippingDetails: DEFAULT_SHIPPING_DETAILS_FR,
@@ -206,7 +193,6 @@ function buildItemListSchema(
             "@type": "Offer",
             price: piece.price,
             priceCurrency: "EUR",
-            availability: offerAvailability(piece),
           },
           isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
         },

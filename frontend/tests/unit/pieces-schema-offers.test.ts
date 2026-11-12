@@ -8,18 +8,29 @@ import { isSellable } from "~/utils/stock.utils";
 /**
  * Page pièces par véhicule (R2), balisage des offres.
  *
- * Défaut relevé le 2026-11-11 : des articles affichés comme achetables
- * sortaient en `PreOrder`, des articles affichés « Indisponible » portaient
- * une offre à `price: 0`, et l'agrégat annonçait `InStock` en dur en comptant
- * les articles indisponibles. Le balisage suit désormais le prédicat des
- * cartes produit (`isSellable`) : une offre par article achetable, aucune
- * pour les autres.
+ * Défaut relevé le 2026-11-11 : des articles affichés « Indisponible »
+ * portaient une offre à `price: 0`, et l'agrégat comptait les articles
+ * indisponibles. Le balisage suit désormais le prédicat des cartes produit
+ * (`isSellable`) : une offre par article achetable, aucune pour les autres.
+ *
+ * Décision de l'owner du 2026-11-12 : le balisage ne publie pas la
+ * disponibilité des stocks. Aucune offre ne porte `availability`, et aucune
+ * valeur schema.org de disponibilité n'apparaît dans le JSON-LD.
  */
 const CANONICAL =
   "https://www.automecanik.com/pieces/alternateur-4/audi-22/a4-iii-22042/2-5-tdi-18402.html";
 
-const IN_STOCK = "https://schema.org/InStock";
-const BACK_ORDER = "https://schema.org/BackOrder";
+const AVAILABILITY_VALUES = [
+  "InStock",
+  "OutOfStock",
+  "PreOrder",
+  "BackOrder",
+  "LimitedAvailability",
+  "SoldOut",
+  "Discontinued",
+  "InStoreOnly",
+  "OnlineOnly",
+];
 
 const piece = (
   id: number,
@@ -74,75 +85,61 @@ const listOffers = (pieces: PieceData[]) =>
     ...entry.item.offers,
   }));
 
-describe("balisage R2 — offres alignées sur l'affichage", () => {
-  it("articles achetables sans statut remonté → offres InStock au prix affiché", () => {
+/** Le JSON-LD sérialisé ne contient aucune disponibilité. */
+const expectNoAvailability = (pieces: PieceData[]) => {
+  const json = JSON.stringify(build(pieces));
+  expect(json).not.toContain('"availability"');
+  for (const value of AVAILABILITY_VALUES) {
+    expect(json).not.toContain(`schema.org/${value}`);
+  }
+};
+
+describe("balisage R2 — offres alignées sur l'affichage, sans disponibilité", () => {
+  it("articles achetables sans statut remonté → offres au prix affiché, sans disponibilité", () => {
     const pieces = [piece(1, 137), piece(2, 50), piece(3, 499)];
 
     expect(listOffers(pieces)).toEqual([
-      {
-        sku: "REF-1",
-        "@type": "Offer",
-        price: 137,
-        priceCurrency: "EUR",
-        availability: IN_STOCK,
-      },
-      {
-        sku: "REF-2",
-        "@type": "Offer",
-        price: 50,
-        priceCurrency: "EUR",
-        availability: IN_STOCK,
-      },
-      {
-        sku: "REF-3",
-        "@type": "Offer",
-        price: 499,
-        priceCurrency: "EUR",
-        availability: IN_STOCK,
-      },
+      { sku: "REF-1", "@type": "Offer", price: 137, priceCurrency: "EUR" },
+      { sku: "REF-2", "@type": "Offer", price: 50, priceCurrency: "EUR" },
+      { sku: "REF-3", "@type": "Offer", price: 499, priceCurrency: "EUR" },
     ]);
-    expect(node(pieces, "Product")?.offers).toMatchObject({
+    const aggregate = node(pieces, "Product")?.offers;
+    expect(aggregate).toMatchObject({
       "@type": "AggregateOffer",
       lowPrice: 50,
       highPrice: 499,
       offerCount: 3,
-      availability: IN_STOCK,
     });
+    expect(aggregate).not.toHaveProperty("availability");
+    expectNoAvailability(pieces);
   });
 
-  it("statuts en stock et stock limité → InStock", () => {
-    const pieces = [piece(1, 40, "IN_STOCK"), piece(2, 60, "LOW_STOCK")];
+  it.each([
+    ["en stock", "IN_STOCK"],
+    ["stock limité", "LOW_STOCK"],
+    ["sur commande", "PREORDER"],
+    ["sur commande (libellé)", "Sur commande"],
+    ["en stock (libellé)", "En stock"],
+  ])("statut %s → offre publiée, aucune disponibilité", (_label, status) => {
+    const pieces = [piece(1, 40, status), piece(2, 60, "IN_STOCK")];
 
-    expect(listOffers(pieces).map((o: Node) => o.availability)).toEqual([
-      IN_STOCK,
-      IN_STOCK,
-    ]);
-    expect(node(pieces, "Product")?.offers.availability).toBe(IN_STOCK);
+    expect(listOffers(pieces)).toHaveLength(2);
+    for (const offer of listOffers(pieces)) {
+      expect(offer).not.toHaveProperty("availability");
+    }
+    expect(node(pieces, "Product")?.offers).not.toHaveProperty("availability");
+    expectNoAvailability(pieces);
   });
 
-  it("article sur commande → BackOrder, jamais PreOrder ; l'agrégat reste InStock s'il existe un article en stock", () => {
-    const pieces = [piece(1, 40, "PREORDER"), piece(2, 60, "IN_STOCK")];
-
-    expect(listOffers(pieces).map((o: Node) => o.availability)).toEqual([
-      BACK_ORDER,
-      IN_STOCK,
-    ]);
-    expect(node(pieces, "Product")?.offers).toMatchObject({
-      offerCount: 2,
-      availability: IN_STOCK,
-    });
-    expect(JSON.stringify(build(pieces))).not.toContain("PreOrder");
-  });
-
-  it("tous les articles sur commande → agrégat BackOrder", () => {
+  it("tous les articles sur commande → agrégat au prix affiché, sans disponibilité", () => {
     const pieces = [piece(1, 40, "PREORDER"), piece(2, 60, "Sur commande")];
 
     expect(node(pieces, "Product")?.offers).toMatchObject({
       lowPrice: 40,
       highPrice: 60,
       offerCount: 2,
-      availability: BACK_ORDER,
     });
+    expectNoAvailability(pieces);
   });
 
   it("article indisponible → aucune offre, aucun prix à zéro, hors du compte de l'agrégat", () => {
@@ -158,11 +155,11 @@ describe("balisage R2 — offres alignées sur l'affichage", () => {
       lowPrice: 137,
       highPrice: 137,
       offerCount: 1,
-      availability: IN_STOCK,
     });
     const json = JSON.stringify(build(pieces));
     expect(json).not.toContain('"price":0');
     expect(json).not.toContain('"lowPrice":0');
+    expectNoAvailability(pieces);
   });
 
   it("statut inconnu ou prix inexploitable → traité comme l'affichage, sans offre", () => {
@@ -183,9 +180,8 @@ describe("balisage R2 — offres alignées sur l'affichage", () => {
 
     expect(types).toEqual(["Car", "CollectionPage"]);
     expect(node(pieces, "CollectionPage")).not.toHaveProperty("mainEntity");
-    const json = JSON.stringify(build(pieces));
-    expect(json).not.toContain("Offer");
-    expect(json).not.toContain("InStock");
+    expect(JSON.stringify(build(pieces))).not.toContain("Offer");
+    expectNoAvailability(pieces);
   });
 
   it("aucun article → pas de schéma", () => {
@@ -218,6 +214,7 @@ describe("balisage R2 — offres alignées sur l'affichage", () => {
     for (const p of pieces) {
       expect(offered.has(p.reference)).toBe(isSellable(p.price, p.stockStatus));
     }
+    expectNoAvailability(pieces);
   });
 
   it("page témoin (9 articles achetables, 2 indisponibles) → 9 offres, de 50 à 499 €", () => {
@@ -230,15 +227,12 @@ describe("balisage R2 — offres alignées sur l'affichage", () => {
     ];
 
     expect(listOffers(pieces)).toHaveLength(9);
-    expect(
-      listOffers(pieces).every((o: Node) => o.availability === IN_STOCK),
-    ).toBe(true);
     expect(node(pieces, "Product")?.offers).toMatchObject({
       lowPrice: 50,
       highPrice: 499,
       offerCount: 9,
-      availability: IN_STOCK,
     });
+    expectNoAvailability(pieces);
   });
 });
 
@@ -288,8 +282,19 @@ describe("buildPiecesVehicleMeta — JSON-LD de la page pièces", () => {
       lowPrice: 50,
       highPrice: 137,
       offerCount: 2,
-      availability: IN_STOCK,
     });
+  });
+
+  it("le JSON-LD de la page ne publie aucune disponibilité", () => {
+    const meta = buildPiecesVehicleMeta(
+      data([piece(1, 137, "IN_STOCK"), piece(2, 60, "PREORDER")]),
+      { pathname: "/x" },
+    );
+    const json = JSON.stringify(meta);
+    expect(json).not.toContain('"availability"');
+    for (const value of AVAILABILITY_VALUES) {
+      expect(json).not.toContain(`schema.org/${value}`);
+    }
   });
 
   it("aucun article achetable → aucun Product dans la page", () => {
