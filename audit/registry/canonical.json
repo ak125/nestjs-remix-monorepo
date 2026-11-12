@@ -40004,11 +40004,13 @@
         "backend/src/modules/ai-content/ai-content.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/ai-content/dto/prompt-template.dto.ts",
         "backend/src/modules/ai-content/prompt-template.service.ts"
       ],
       "kind": "controller",
-      "loc": 62,
+      "loc": 72,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/ai-content/prompt-template.controller.ts",
       "risk": "medium",
@@ -70447,6 +70449,26 @@
       "loc": 241,
       "owner": "@ak125",
       "path": "backend/tests/unit/admin-tools-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/ai-content-prompts-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 159,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/ai-content-prompts-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -107358,11 +107380,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "fb3b29869377b3cf1993875671f8157e670c912a12960ef3b4894015246a1ecf",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "0b6fd4ef62cffb6651c930e358a5e31e95ffea6c155ddcbc17ea0246e1fc7ceb",
+      "audit/registry/files.json": "784de0e4b267ccb4d842580981c716302b327d9f58461aa346747d3d04cd5cd1",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "05730f0cc1371febf753b41d88588ad7adcb0cf7e0eb51b67642df2aedd5ba3a"
     },
-    "sotFingerprint": "224774aaf70a"
+    "sotFingerprint": "6532f587ecea"
   },
   "runtime": [
     {
