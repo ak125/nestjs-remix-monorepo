@@ -24,7 +24,10 @@ import { CruxAlerterService } from '../services/crux-alerter.service';
 import { CruxFieldFetcherService } from '../services/crux-field-fetcher.service';
 import { Ga4DailyFetcherService } from '../services/ga4-daily-fetcher.service';
 import { GscDailyFetcherService } from '../services/gsc-daily-fetcher.service';
-import { GscLinksFetcherService } from '../services/gsc-links-fetcher.service';
+import {
+  GSC_LINKS_COLLECTOR_NOT_IMPLEMENTED,
+  GscLinksFetcherService,
+} from '../services/gsc-links-fetcher.service';
 import { GscIndexHistoryCollectorService } from '../services/gsc-index-history-collector.service';
 
 export type DailyFetchTask =
@@ -183,7 +186,8 @@ export class SeoDailyFetchProcessor {
           rowsInserted = r.rowsInserted;
           if (
             r.warnings.includes('monitoring_disabled') ||
-            r.warnings.includes('credentials_missing')
+            r.warnings.includes('credentials_missing') ||
+            r.warnings.includes(GSC_LINKS_COLLECTOR_NOT_IMPLEMENTED)
           ) {
             status = 'skipped';
             message = r.warnings.join(',');
