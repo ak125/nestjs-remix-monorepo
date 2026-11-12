@@ -410,8 +410,8 @@
         "backend/src/modules/marketing/services",
         "backend/src/modules/marketing/templates"
       ],
-      "files_count": 29,
-      "loc_total": 7016,
+      "files_count": 30,
+      "loc_total": 7355,
       "has_barrel": false
     },
     "mcp-validation": {
