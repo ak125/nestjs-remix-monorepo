@@ -19,7 +19,10 @@ import {
   normalizeTypeAlias,
   isMalformedSeoUrl,
 } from '../../../common/utils/url-builder.utils';
-import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
+import {
+  getTypeModelIndex,
+  sitemapLinkState,
+} from '../helpers/auto-type-valid-ids.helper';
 import {
   HubGenerationResult,
   HubType,
@@ -184,11 +187,12 @@ ${links}
       // Format: /constructeurs/{marque}/{modele}/{type}.html (R8 — niveau-modèle 2-seg supprimé, ADR-084)
       // ⚠️ PAGINATION COMPLÈTE - récupérer TOUS les véhicules puis dédupliquer
       // Anti-404 : filtrer les orphelins TecDoc V1 (type_ids absents d'auto_type)
-      const validTypeIds = await getValidTypeIds(this.supabase);
+      const typeModels = await getTypeModelIndex(this.supabase);
       const PAGE_SIZE = 1000;
       let offset = 0;
       let hasMore = true;
       let skippedOrphans = 0;
+      let skippedStaleModel = 0;
       let skippedMalformed = 0;
       const seen = new Set<string>();
       const vehicleUrls: string[] = [];
@@ -211,13 +215,15 @@ ${links}
 
         if (vehicles && vehicles.length > 0) {
           for (const v of vehicles) {
-            const typeIdNum =
-              typeof v.map_type_id === 'string'
-                ? parseInt(v.map_type_id, 10)
-                : (v.map_type_id as number);
-            // Skip orphan type_ids (TecDoc V1 remap residue)
-            if (!validTypeIds.has(typeIdNum)) {
+            // Skip orphan type_ids (TecDoc V1 remap residue) and links whose
+            // model is no longer the type's model (the URL would answer 301)
+            const linkState = sitemapLinkState(v, typeModels);
+            if (linkState === 'orphan_type') {
               skippedOrphans++;
+              continue;
+            }
+            if (linkState === 'stale_model') {
+              skippedStaleModel++;
               continue;
             }
             const key = `${v.map_marque_id}-${v.map_modele_id}-${v.map_type_id}`;
@@ -259,6 +265,11 @@ ${links}
       if (skippedOrphans > 0) {
         this.logger.warn(
           `   🧹 Filtered out ${skippedOrphans.toLocaleString()} orphan type_ids (TecDoc V1 remap residue)`,
+        );
+      }
+      if (skippedStaleModel > 0) {
+        this.logger.warn(
+          `   🧹 Filtered out ${skippedStaleModel.toLocaleString()} rows whose model is no longer the type's model (URL would redirect)`,
         );
       }
       if (skippedMalformed > 0) {

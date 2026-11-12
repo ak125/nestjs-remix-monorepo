@@ -19,7 +19,9 @@ interface ArticlePreview {
  * Sans pg_alias, `/blog-pieces-auto/article/{slug}` est le résolveur existant
  * (301 vers /conseils/{pg_alias} ou /guide-achat/{slug}).
  */
-export function articleHref(article: ArticlePreview): string {
+export function articleHref(
+  article: Pick<ArticlePreview, "slug" | "pg_alias">,
+): string {
   return article.pg_alias
     ? `/blog-pieces-auto/conseils/${article.pg_alias}`
     : `/blog-pieces-auto/article/${article.slug}`;

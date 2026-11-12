@@ -1,4 +1,5 @@
 import { GammeResponseBuilderService } from '../../src/modules/gamme-rest/services/gamme-response-builder.service';
+import { BuyingGuideDataService } from '../../src/modules/gamme-rest/services/buying-guide-data.service';
 
 describe('GammeResponseBuilderService buying guide fallback', () => {
   const makeBaseRpcPayload = () => ({
@@ -209,7 +210,11 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
   it('utilise le contrat guide DB quand il existe', async () => {
     const transformer = makeTransformerMock();
     const rpcService = makeRpcServiceMock();
-    const dbContract = { id: 479, pgId: '479' };
+    const dbContract = {
+      id: 479,
+      pgId: '479',
+      sectionSources: { faq: 'db', symptoms: 'db', antiMistakes: 'db' },
+    };
     const mappedGuide = makeAutoGuide();
 
     const buyingGuideService = {
@@ -267,7 +272,11 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
   it('rejette un guide anti-wiki et bascule sur le fallback safe', async () => {
     const transformer = makeTransformerMock();
     const rpcService = makeRpcServiceMock();
-    const dbContract = { id: 479, pgId: '479' };
+    const dbContract = {
+      id: 479,
+      pgId: '479',
+      sectionSources: { faq: 'db', symptoms: 'db', antiMistakes: 'db' },
+    };
     const mappedGuide = makeAutoGuide();
     const fallbackGuide = {
       ...makeAutoGuide(),
@@ -452,5 +461,204 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       [424, 'filtre-habitacle.webp', 'filtre-d-habitacle.webp'],
       [8, 'filtre-a-air.webp', null],
     ]);
+  });
+
+  // CT-01 : la FAQ d'un guide entièrement issue du gabarit de repli
+  // (« Comment choisir X compatible ? », « Quand remplacer X ? »…) était
+  // transmise à la page R1, qui l'affichait et la balisait en FAQPage.
+  describe('FAQ publiée dans purchaseGuideData', () => {
+    const dbFaq = [
+      {
+        question: 'Quelle référence vérifier ?',
+        answer:
+          'Comparez la référence constructeur indiquée dans le catalogue avec celle prévue pour votre véhicule avant de commander.',
+      },
+      {
+        question: 'Quelle motorisation sélectionner ?',
+        answer:
+          'Sélectionnez la motorisation exacte du véhicule dans le catalogue et vérifiez les caractéristiques de la référence proposée.',
+      },
+      {
+        question: 'Quelle date de fabrication renseigner ?',
+        answer:
+          'Renseignez la date de fabrication indiquée dans les documents du véhicule pour sélectionner sa variante dans le catalogue.',
+      },
+    ];
+
+    const build = (buyingGuideService: unknown) =>
+      new GammeResponseBuilderService(
+        makeTransformerMock(),
+        makeRpcServiceMock(),
+        buyingGuideService as any,
+        { getByPgId: jest.fn().mockResolvedValue(null) } as any,
+        {
+          resolve: jest.fn(() => ({
+            title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1', content: '',
+          })),
+        } as any,
+        { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any,
+        { run: jest.fn() } as any,
+        { mode: jest.fn(() => 'off') } as any,
+        {
+          getSnapshot: jest.fn(async () => ({
+            consolidationEnabled: false,
+            publishedGuideAliases: new Set<string>(),
+            conseilsAliases: new Set<string>(),
+          })),
+        } as any,
+      ).buildRpcV2Response('479');
+
+    const withContract = (faqSource: 'db' | 'mixed' | 'fallback') =>
+      build({
+        getBuyingGuideContractV1: jest.fn(async () => ({
+          id: 479,
+          pgId: '479',
+          faq: dbFaq,
+          sectionSources: {
+            faq: faqSource,
+            symptoms: 'db',
+            antiMistakes: 'db',
+          },
+        })),
+        toBuyingGuideV1: jest.fn(() => makeAutoGuide()),
+        passesBuyingGuideAntiWikiGate: jest.fn(() => ({ ok: true, reasons: [] })),
+        buildAutoBuyingGuideV1: jest.fn(),
+      });
+
+    const withoutContract = (autoGuide: Record<string, unknown>) =>
+      build({
+        getBuyingGuideContractV1: jest.fn(async () => null),
+        toBuyingGuideV1: jest.fn(),
+        passesBuyingGuideAntiWikiGate: jest.fn(() => ({
+          ok: false,
+          reasons: ['MISSING_GUIDE'],
+        })),
+        buildAutoBuyingGuideV1: jest.fn(() => autoGuide),
+      });
+
+    it.each(['db', 'mixed'] as const)(
+      'contrat dont la FAQ est de source %s : transmise telle quelle',
+      async (faqSource) => {
+        const result = await withContract(faqSource);
+
+        expect(result.purchaseGuideData?.faq).toEqual(dbFaq);
+      },
+    );
+
+    it('contrat dont la FAQ est le gabarit de repli : aucune question transmise', async () => {
+      const result = await withContract('fallback');
+
+      expect(result.purchaseGuideData?.faq).toEqual([]);
+    });
+
+    it('contrat rejeté par la porte anti-wiki : la FAQ suit toujours la provenance du contrat', async () => {
+      const result = await build({
+        getBuyingGuideContractV1: jest.fn(async () => ({
+          id: 479,
+          pgId: '479',
+          faq: dbFaq,
+          sectionSources: { faq: 'db', symptoms: 'db', antiMistakes: 'db' },
+        })),
+        toBuyingGuideV1: jest.fn(() => makeAutoGuide()),
+        passesBuyingGuideAntiWikiGate: jest.fn(() => ({
+          ok: false,
+          reasons: ['MISSING_SELECTION_CRITERIA'],
+        })),
+        buildAutoBuyingGuideV1: jest.fn(() => ({
+          ...makeAutoGuide(),
+          sectionSources: { faq: 'fallback' },
+        })),
+      });
+
+      expect(result.purchaseGuideData?.faq).toEqual(dbFaq);
+    });
+
+    it('sans contrat, guide automatique : aucune question transmise', async () => {
+      const result = await withoutContract({
+        ...makeAutoGuide(),
+        sectionSources: { faq: 'fallback' },
+      });
+
+      expect(result.purchaseGuideData?.faq).toEqual([]);
+      // Le guide lui-même n'est pas amputé : seule la FAQ publiée change.
+      expect(result.gammeBuyingGuide?.faq).toHaveLength(3);
+    });
+
+    it('sans contrat, guide sans provenance déclarée : FAQ inchangée', async () => {
+      const result = await withoutContract(makeAutoGuide());
+
+      expect(result.purchaseGuideData?.faq).toEqual(makeAutoGuide().faq);
+    });
+
+    it('sans contrat, guide sans FAQ : liste vide', async () => {
+      const result = await withoutContract({
+        ...makeAutoGuide(),
+        faq: undefined,
+        sectionSources: { faq: 'db' },
+      });
+
+      expect(result.purchaseGuideData?.faq).toEqual([]);
+    });
+
+    // Bout en bout avec le vrai service du guide : les slots au format
+    // { q, a } restent refusés (décision L2g) ; le gabarit qui les remplace
+    // ne sort plus de l'API.
+    describe('avec le vrai BuyingGuideDataService', () => {
+      const realService = (row: Record<string, unknown>) => {
+        const service = Object.create(
+          BuyingGuideDataService.prototype,
+        ) as BuyingGuideDataService;
+        Object.assign(service, {
+          logger: {
+            warn: jest.fn(),
+            error: jest.fn(),
+            log: jest.fn(),
+            debug: jest.fn(),
+          },
+          getBuyingGuideContractV1: jest.fn(async () =>
+            (
+              service as unknown as {
+                transformToV2(raw: Record<string, unknown>): unknown;
+              }
+            ).transformToV2(row),
+          ),
+        });
+        return service;
+      };
+      const row = {
+        sgpg_id: 479,
+        sgpg_pg_id: '479',
+        sgpg_intro_title: 'Disque de frein',
+      };
+
+      it('slots { q, a } : le gabarit substitué n est pas publié', async () => {
+        const result = await build(
+          realService({
+            ...row,
+            sgpg_faq: [
+              { q: 'Question héritée 1 ?', a: 'Réponse héritée 1.' },
+              { q: 'Question héritée 2 ?', a: 'Réponse héritée 2.' },
+              { q: 'Question héritée 3 ?', a: 'Réponse héritée 3.' },
+            ],
+          }),
+        );
+
+        expect(result.gammeBuyingGuide?.sectionSources?.faq).toBe('fallback');
+        expect(result.gammeBuyingGuide?.faq.length).toBeGreaterThanOrEqual(3);
+        expect(result.purchaseGuideData?.faq).toEqual([]);
+      });
+
+      it('FAQ absente de la base : le gabarit substitué n est pas publié', async () => {
+        const result = await build(realService(row));
+
+        expect(result.purchaseGuideData?.faq).toEqual([]);
+      });
+
+      it('trois questions valides en base : publiées sans ajout du gabarit', async () => {
+        const result = await build(realService({ ...row, sgpg_faq: dbFaq }));
+
+        expect(result.purchaseGuideData?.faq).toEqual(dbFaq);
+      });
+    });
   });
 });
