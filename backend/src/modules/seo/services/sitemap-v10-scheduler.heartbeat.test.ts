@@ -3,12 +3,12 @@
  *
  * Scope : verify that `writeHeartbeat()` writes a structured payload to
  * Redis (via Bull queue.client SET command) with the correct key, value
- * shape and TTL. Cleanup on `onModuleDestroy`. Does NOT test the BullMQ
- * repeatable job scheduling (covered elsewhere / by integration).
+ * shape and TTL. Cleanup on `onModuleDestroy`. The heartbeat no longer
+ * depends on a scheduling flag : the service schedules nothing (retirement of
+ * the nightly repeatable is covered by `tests/unit/sitemap-v10-scheduler.test.ts`).
  */
 
 import { Test } from '@nestjs/testing';
-import { ConfigService } from '@nestjs/config';
 import { getQueueToken } from '@nestjs/bull';
 import {
   SitemapV10SchedulerService,
@@ -37,21 +37,12 @@ function makeMockQueue(): {
 }
 
 async function buildService(opts: {
-  cronEnabled?: string | undefined;
   queue: ReturnType<typeof makeMockQueue>;
 }): Promise<SitemapV10SchedulerService> {
-  const env: Record<string, string | undefined> = {
-    SEO_SITEMAP_CRON_ENABLED: opts.cronEnabled,
-    SEO_SITEMAP_CRON: '0 3 * * *',
-  };
   const moduleRef = await Test.createTestingModule({
     providers: [
       SitemapV10SchedulerService,
       { provide: getQueueToken(QUEUE_NAME), useValue: opts.queue },
-      {
-        provide: ConfigService,
-        useValue: { get: (k: string, def?: string) => env[k] ?? def },
-      },
     ],
   }).compile();
   return moduleRef.get(SitemapV10SchedulerService);
@@ -84,21 +75,6 @@ describe('SitemapV10SchedulerService — Phase 7 heartbeat', () => {
     expect(typeof payload.startedAt).toBe('string');
     expect(typeof payload.lastHeartbeatAt).toBe('string');
     expect(payload.uptimeSec).toBeGreaterThanOrEqual(0);
-    await service.onModuleDestroy();
-  });
-
-  it('does NOT start heartbeat when SEO_SITEMAP_CRON_ENABLED=false', async () => {
-    const queue = makeMockQueue();
-    const service = await buildService({
-      cronEnabled: 'false',
-      queue,
-    });
-
-    service.onModuleInit();
-    await new Promise((r) => setImmediate(r));
-
-    expect(queue.client.set).not.toHaveBeenCalled();
-    expect(queue.add).not.toHaveBeenCalled();
     await service.onModuleDestroy();
   });
 

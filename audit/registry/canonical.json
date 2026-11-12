@@ -59935,7 +59935,7 @@
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
       "kind": "service",
-      "loc": 155,
+      "loc": 158,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/processors/sitemap-regenerate.processor.ts",
       "risk": "high",
@@ -63251,7 +63251,7 @@
         "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts"
       ],
       "kind": "test",
-      "loc": 148,
+      "loc": 124,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-scheduler.heartbeat.test.ts",
       "risk": "high",
@@ -63272,14 +63272,15 @@
         "backend/src/modules/seo/controllers/sitemap-v10.controller.ts",
         "backend/src/modules/seo/processors/sitemap-regenerate.processor.ts",
         "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/sitemap-v10-scheduler.heartbeat.test.ts"
+        "backend/src/modules/seo/services/sitemap-v10-scheduler.heartbeat.test.ts",
+        "backend/src/workers/services/seo-monitor-scheduler.service.test.ts"
       ],
       "imports": [
         "@common/utils/error.utils",
         "os"
       ],
       "kind": "service",
-      "loc": 257,
+      "loc": 201,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts",
       "risk": "high",
@@ -70131,10 +70132,34 @@
         "manual"
       ],
       "domain": "D9",
+      "id": "backend/src/workers/services/seo-monitor-scheduler.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts",
+        "backend/src/workers/services/seo-monitor-scheduler.service.ts"
+      ],
+      "kind": "test",
+      "loc": 288,
+      "owner": "@ak125",
+      "path": "backend/src/workers/services/seo-monitor-scheduler.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D9",
       "id": "backend/src/workers/services/seo-monitor-scheduler.service.ts",
       "importedBy": [
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/seo/controllers/seo-monitor.controller.ts",
+        "backend/src/workers/services/seo-monitor-scheduler.service.test.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -70142,7 +70167,7 @@
         "@common/utils/error.utils"
       ],
       "kind": "service",
-      "loc": 327,
+      "loc": 352,
       "owner": "@ak125",
       "path": "backend/src/workers/services/seo-monitor-scheduler.service.ts",
       "risk": "medium",
@@ -72868,7 +72893,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 126,
+      "loc": 133,
       "owner": "@ak125",
       "path": "backend/tests/unit/sitemap-v10-scheduler.test.ts",
       "risk": "medium",
@@ -107457,11 +107482,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "fb3b29869377b3cf1993875671f8157e670c912a12960ef3b4894015246a1ecf",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "0fa55db87bb0d4fbb80a9ab99cf337b03a5320bf85d6b6aba0294d54dbf7efc6",
+      "audit/registry/files.json": "efe6cdcd88c6cae255c8576e16881c129c194c18051b76b8d0247baa239dc9cc",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "9b0f91960e2c"
+    "sotFingerprint": "9d4c4a5d271a"
   },
   "runtime": [
     {
