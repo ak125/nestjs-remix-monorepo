@@ -247,7 +247,7 @@ export class MessageDataService extends SupabaseBaseService {
 
       // Filtrer par customer si spécifié
       if (customerId) {
-        query = query.eq('cst_id', customerId);
+        query = query.eq('msg_cst_id', customerId);
       }
 
       const { data, error } = await query;

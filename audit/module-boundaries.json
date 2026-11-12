@@ -43,7 +43,7 @@
         "backend/src/modules/ai-content/templates"
       ],
       "files_count": 12,
-      "loc_total": 3263,
+      "loc_total": 3273,
       "has_barrel": false
     },
     "analytics": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115140,
+      "loc_total": 115143,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -460,7 +460,7 @@
         "backend/src/modules/messages/repositories"
       ],
       "files_count": 8,
-      "loc_total": 1478,
+      "loc_total": 1644,
       "has_barrel": true
     },
     "metadata": {
@@ -635,7 +635,7 @@
         "backend/src/modules/products/types"
       ],
       "files_count": 27,
-      "loc_total": 7117,
+      "loc_total": 7131,
       "has_barrel": true
     },
     "promo": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 365,
-      "loc_total": 74214,
+      "files_count": 368,
+      "loc_total": 75043,
       "has_barrel": true
     },
     "upload": {

@@ -11148,11 +11148,13 @@
         "backend/src/modules/ai-content/ai-content.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/ai-content/dto/prompt-template.dto.ts",
         "backend/src/modules/ai-content/prompt-template.service.ts"
       ],
       "kind": "controller",
-      "loc": 62,
+      "loc": 72,
       "owner": "__unassigned__",
       "path": "backend/src/modules/ai-content/prompt-template.controller.ts",
       "risk": "low",
@@ -20524,11 +20526,14 @@
         "backend/src/modules/messages/messages.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "@auth/session-privilege",
         "@common/exceptions",
         "backend/src/modules/messages/messages.service.ts"
       ],
       "kind": "controller",
-      "loc": 409,
+      "loc": 575,
       "owner": "__unassigned__",
       "path": "backend/src/modules/messages/messages.controller.ts",
       "risk": "low",
@@ -23596,6 +23601,8 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/common/pipes/zod-validation.pipe.ts",
         "backend/src/modules/products/dto/index.ts",
@@ -23604,7 +23611,7 @@
         "backend/src/modules/products/services/stock.service.ts"
       ],
       "kind": "controller",
-      "loc": 235,
+      "loc": 249,
       "owner": "__unassigned__",
       "path": "backend/src/modules/products/controllers/products-core.controller.ts",
       "risk": "low",
@@ -40580,6 +40587,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/ai-content-prompts-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 159,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/ai-content-prompts-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/ai-probe/prompt-registry-schema.test.ts",
       "importedBy": [],
       "imports": [],
@@ -41416,6 +41442,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/messages-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 487,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/messages-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/order-actions.cancel-order.test.ts",
       "importedBy": [],
       "imports": [],
@@ -41746,6 +41791,25 @@
       "loc": 73,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/pr-proposition.planner.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/products-core-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 183,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/products-core-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -56065,7 +56129,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 704,
+      "loc": 707,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.messages.tsx",
       "risk": "low",
