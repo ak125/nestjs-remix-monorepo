@@ -27,7 +27,8 @@
  *   `SeoMonitorSchedulerService.cleanOldRepeatableJobs`)
  * - READ_ONLY gate au processor (mémoire
  *   `feedback_readonly_gate_at_processor_not_scheduler.md`)
- * - `SEO_SITEMAP_CRON_ENABLED=false` désactive l'enregistrement
+ * - `SEO_SITEMAP_CRON_ENABLED=false` désactive l'enregistrement et désarme
+ *   la tâche répétable laissée dans Redis par un démarrage précédent
  * - `onModuleInit` non-bloquant (`void` + fire-and-forget), pattern canon
  *   `.claude/rules/backend.md` § Non-blocking onModuleInit
  */
@@ -99,6 +100,10 @@ export class SitemapV10SchedulerService
       this.logger.log(
         'SEO_SITEMAP_CRON_ENABLED=false — sitemap regeneration scheduler skipped',
       );
+      // Bull garde une tâche répétable dans Redis d'un démarrage à l'autre :
+      // celle qu'un démarrage précédent a armée continuerait de se déclencher.
+      // La désactivation doit donc aussi la désarmer.
+      void this.removeStaleRepeatableJob();
       return;
     }
     this.logger.log({

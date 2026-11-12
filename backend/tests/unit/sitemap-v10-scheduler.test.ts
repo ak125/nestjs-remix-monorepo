@@ -89,8 +89,44 @@ describe('SitemapV10SchedulerService', () => {
     service.onModuleInit();
     await flushFireAndForget();
 
-    expect(queue.getRepeatableJobs).not.toHaveBeenCalled();
     expect(queue.add).not.toHaveBeenCalled();
+    expect(queue.removeRepeatableByKey).not.toHaveBeenCalled();
+  });
+
+  it('disarms the repeatable a previous boot left in Redis when SEO_SITEMAP_CRON_ENABLED=false', async () => {
+    const queue = makeQueueMock();
+    queue.getRepeatableJobs.mockResolvedValue([
+      // Armée par un démarrage précédent, quand le drapeau était actif
+      { name: SITEMAP_REGENERATE_JOB_NAME, key: 'armed::key::1' },
+      // Tâche d'un autre service de la queue — ne doit PAS être retirée
+      { name: 'daily-fetch', key: 'foreign::key::2' },
+    ] as Awaited<ReturnType<Queue['getRepeatableJobs']>>);
+
+    const service = new SitemapV10SchedulerService(
+      queue,
+      makeConfig({ SEO_SITEMAP_CRON_ENABLED: 'false' }),
+    );
+    service.onModuleInit();
+    await flushFireAndForget();
+
+    expect(queue.removeRepeatableByKey).toHaveBeenCalledTimes(1);
+    expect(queue.removeRepeatableByKey).toHaveBeenCalledWith('armed::key::1');
+    expect(queue.add).not.toHaveBeenCalled();
+  });
+
+  it('does not throw when disarming fails with SEO_SITEMAP_CRON_ENABLED=false', async () => {
+    const queue = makeQueueMock();
+    queue.getRepeatableJobs.mockRejectedValue(new Error('redis down'));
+
+    const service = new SitemapV10SchedulerService(
+      queue,
+      makeConfig({ SEO_SITEMAP_CRON_ENABLED: '0' }),
+    );
+    expect(() => service.onModuleInit()).not.toThrow();
+    await flushFireAndForget();
+
+    expect(queue.add).not.toHaveBeenCalled();
+    expect(queue.removeRepeatableByKey).not.toHaveBeenCalled();
   });
 
   it('removes stale sitemap repeatable jobs before re-registering', async () => {
