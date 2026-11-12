@@ -49700,10 +49700,11 @@
         "@auth/is-admin.guard",
         "@auth/session-privilege",
         "@common/exceptions",
-        "backend/src/modules/messages/messages.service.ts"
+        "backend/src/modules/messages/messages.service.ts",
+        "backend/src/modules/messages/repositories/message-data.service.ts"
       ],
       "kind": "controller",
-      "loc": 575,
+      "loc": 597,
       "owner": "@ak125",
       "path": "backend/src/modules/messages/messages.controller.ts",
       "risk": "medium",
@@ -49802,6 +49803,7 @@
       "id": "backend/src/modules/messages/repositories/message-data.service.ts",
       "importedBy": [
         "backend/src/modules/messages/index.ts",
+        "backend/src/modules/messages/messages.controller.ts",
         "backend/src/modules/messages/messages.module.ts",
         "backend/src/modules/messages/messages.service.ts"
       ],
@@ -49811,7 +49813,7 @@
         "@repo/database-types"
       ],
       "kind": "service",
-      "loc": 326,
+      "loc": 407,
       "owner": "@ak125",
       "path": "backend/src/modules/messages/repositories/message-data.service.ts",
       "risk": "medium",
@@ -71362,11 +71364,31 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/message-data-service.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 272,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/message-data-service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/messages-routes-authz.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 487,
+      "loc": 554,
       "owner": "@ak125",
       "path": "backend/tests/unit/messages-routes-authz.test.ts",
       "risk": "medium",
@@ -73453,7 +73475,6 @@
         "frontend/app/routes/account.messages.$messageId.tsx",
         "frontend/app/routes/account.messages._index.tsx",
         "frontend/app/routes/account.messages.compose.tsx",
-        "frontend/app/routes/account.messages.tsx",
         "frontend/app/routes/account.orders.tsx",
         "frontend/app/routes/account.profile.tsx",
         "frontend/app/routes/account.profile_.edit.tsx",
@@ -82313,7 +82334,7 @@
         "frontend/app/routes/account.claims.new.tsx",
         "frontend/app/routes/account.claims.tsx",
         "frontend/app/routes/account.dashboard.tsx",
-        "frontend/app/routes/account.messages.tsx",
+        "frontend/app/routes/account.messages._index.tsx",
         "frontend/app/routes/account.orders.tsx",
         "frontend/app/routes/account.profile.tsx",
         "frontend/app/routes/account.security.tsx",
@@ -82529,7 +82550,6 @@
         "frontend/app/routes/account.messages.$messageId.tsx",
         "frontend/app/routes/account.messages._index.tsx",
         "frontend/app/routes/account.messages.compose.tsx",
-        "frontend/app/routes/account.messages.tsx",
         "frontend/app/routes/account.orders.tsx",
         "frontend/app/routes/account.profile.tsx",
         "frontend/app/routes/account.profile_.edit.tsx",
@@ -82625,7 +82645,6 @@
         "frontend/app/routes/account.messages.$messageId.tsx",
         "frontend/app/routes/account.messages._index.tsx",
         "frontend/app/routes/account.messages.compose.tsx",
-        "frontend/app/routes/account.messages.tsx",
         "frontend/app/routes/account.orders.tsx",
         "frontend/app/routes/account.profile.tsx",
         "frontend/app/routes/account.profile_.edit.tsx",
@@ -82708,7 +82727,6 @@
         "frontend/app/routes/account.messages.$messageId.tsx",
         "frontend/app/routes/account.messages._index.tsx",
         "frontend/app/routes/account.messages.compose.tsx",
-        "frontend/app/routes/account.messages.tsx",
         "frontend/app/routes/account.orders.tsx",
         "frontend/app/routes/account.profile.tsx",
         "frontend/app/routes/account.profile_.edit.tsx",
@@ -83030,8 +83048,8 @@
         "frontend/app/components/products/ProductFilters.tsx",
         "frontend/app/components/ui/combobox.tsx",
         "frontend/app/components/ui/index.ts",
+        "frontend/app/routes/account.messages._index.tsx",
         "frontend/app/routes/account.messages.compose.tsx",
-        "frontend/app/routes/account.messages.tsx",
         "frontend/app/routes/account.settings.tsx",
         "frontend/app/routes/admin.leads.$id.tsx",
         "frontend/app/routes/admin.products.gammes.$gammeId.tsx",
@@ -85383,11 +85401,12 @@
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
         "~/components/errors/ErrorGeneric",
+        "~/utils/internal-api.server",
         "~/utils/logger",
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 180,
+      "loc": 171,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account.messages.$messageId.tsx",
       "risk": "medium",
@@ -85407,15 +85426,19 @@
       "importedBy": [],
       "imports": [
         "frontend/app/auth/unified.server.ts",
+        "frontend/app/components/ui/PublicBreadcrumb.tsx",
         "frontend/app/components/ui/alert.tsx",
         "frontend/app/components/ui/badge.tsx",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
+        "frontend/app/components/ui/input.tsx",
+        "frontend/app/utils/date.ts",
         "~/components/errors/ErrorGeneric",
+        "~/utils/internal-api.server",
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 258,
+      "loc": 473,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account.messages._index.tsx",
       "risk": "medium",
@@ -85465,18 +85488,10 @@
       "id": "frontend/app/routes/account.messages.tsx",
       "importedBy": [],
       "imports": [
-        "frontend/app/auth/unified.server.ts",
-        "frontend/app/components/ui/PublicBreadcrumb.tsx",
-        "frontend/app/components/ui/badge.tsx",
-        "frontend/app/components/ui/button.tsx",
-        "frontend/app/components/ui/card.tsx",
-        "frontend/app/components/ui/input.tsx",
-        "frontend/app/utils/date.ts",
-        "~/components/errors/ErrorGeneric",
-        "~/utils/logger"
+        "~/components/errors/ErrorGeneric"
       ],
       "kind": "route",
-      "loc": 434,
+      "loc": 47,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account.messages.tsx",
       "risk": "medium",
@@ -86650,7 +86665,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 707,
+      "loc": 691,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.messages.tsx",
       "risk": "medium",
@@ -93279,7 +93294,7 @@
       "domain": "D8",
       "id": "frontend/app/utils/date.ts",
       "importedBy": [
-        "frontend/app/routes/account.messages.tsx",
+        "frontend/app/routes/account.messages._index.tsx",
         "frontend/app/utils/orders.utils.ts"
       ],
       "imports": [],
@@ -96806,6 +96821,26 @@
       "loc": 96,
       "owner": "@ak125",
       "path": "frontend/tests/unit/login-role-redirect.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/messages-pages-loaders.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 424,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/messages-pages-loaders.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -107380,11 +107415,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "fb3b29869377b3cf1993875671f8157e670c912a12960ef3b4894015246a1ecf",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "784de0e4b267ccb4d842580981c716302b327d9f58461aa346747d3d04cd5cd1",
+      "audit/registry/files.json": "88c0871446fe761240d481abae5c00ae7a7d361b099a672230aaba8fc2651a59",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "05730f0cc1371febf753b41d88588ad7adcb0cf7e0eb51b67642df2aedd5ba3a"
+      "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "6532f587ecea"
+    "sotFingerprint": "ccc47c37bfb4"
   },
   "runtime": [
     {
@@ -111467,7 +111502,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/messages/messages.service.ts"
+        "runtime:backend/src/modules/messages/messages.service.ts",
+        "runtime:backend/src/modules/messages/repositories/message-data.service.ts"
       ],
       "id": "runtime:backend/src/modules/messages/messages.controller.ts",
       "kind": "nestjs-controller",
