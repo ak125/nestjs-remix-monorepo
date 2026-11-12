@@ -43,7 +43,7 @@
         "backend/src/modules/ai-content/templates"
       ],
       "files_count": 12,
-      "loc_total": 3263,
+      "loc_total": 3273,
       "has_barrel": false
     },
     "analytics": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 367,
-      "loc_total": 74884,
+      "files_count": 368,
+      "loc_total": 75043,
       "has_barrel": true
     },
     "upload": {

@@ -11148,11 +11148,13 @@
         "backend/src/modules/ai-content/ai-content.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/ai-content/dto/prompt-template.dto.ts",
         "backend/src/modules/ai-content/prompt-template.service.ts"
       ],
       "kind": "controller",
-      "loc": 62,
+      "loc": 72,
       "owner": "__unassigned__",
       "path": "backend/src/modules/ai-content/prompt-template.controller.ts",
       "risk": "low",
@@ -40573,6 +40575,25 @@
       "loc": 241,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/admin-tools-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/ai-content-prompts-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 159,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/ai-content-prompts-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
