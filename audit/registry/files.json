@@ -29777,7 +29777,7 @@
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
       "kind": "controller",
-      "loc": 494,
+      "loc": 497,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/controllers/sitemap-v10.controller.ts",
       "risk": "low",
@@ -33016,7 +33016,7 @@
         "backend/src/modules/seo/types/seo-pilotage.types.ts"
       ],
       "kind": "service",
-      "loc": 865,
+      "loc": 871,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/seo-pilotage.service.ts",
       "risk": "low",
@@ -33544,7 +33544,7 @@
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 543,
+      "loc": 672,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-scoring.service.ts",
       "risk": "low",
@@ -42608,6 +42608,25 @@
       "loc": 126,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/sitemap-v10-scheduler.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/sitemap-v10-scoring-fail-closed.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 722,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/sitemap-v10-scoring-fail-closed.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

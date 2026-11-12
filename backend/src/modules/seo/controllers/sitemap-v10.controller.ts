@@ -204,7 +204,9 @@ export class SitemapV10Controller {
 
   /**
    * POST /api/sitemap/v10/refresh-scores
-   * Recalcule les scores de toutes les pages
+   * Recalcule les scores de toutes les pages.
+   * Répond 503 tant que le recalcul n'a pas abouti : jamais de 2xx pour un
+   * recalcul arrêté (entrées indisponibles) ou en échec.
    */
   @Post('refresh-scores')
   @UseGuards(SitemapWriteGuard)
@@ -220,29 +222,28 @@ export class SitemapV10Controller {
   }> {
     this.logger.log('📊 POST /api/sitemap/v10/refresh-scores');
 
-    try {
-      const result = await this.scoringService.refreshAllScores();
+    const result = await this.scoringService.refreshAllScores();
+    const data = {
+      processed: result.processed,
+      updated: result.updated,
+      errors: result.errors,
+      durationMs: result.durationMs,
+    };
 
-      return {
-        success: result.success,
-        message: result.success
-          ? 'Scores refreshed successfully'
-          : 'Score refresh completed with errors',
-        data: {
-          processed: result.processed,
-          updated: result.updated,
-          errors: result.errors,
-          durationMs: result.durationMs,
-        },
-      };
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Refresh scores failed: ${message}`);
-      return {
+    if (!result.success) {
+      throw new ServiceUnavailableException({
         success: false,
-        message: `Refresh failed: ${message}`,
-      };
+        status: result.status,
+        message: `Score refresh did not complete: ${result.reason ?? result.status}`,
+        data,
+      });
     }
+
+    return {
+      success: true,
+      message: 'Scores refreshed successfully',
+      data,
+    };
   }
 
   /**
@@ -375,7 +376,9 @@ export class SitemapV10Controller {
 
   /**
    * GET /api/sitemap/v10/stats
-   * Retourne les statistiques de distribution par température
+   * Retourne les statistiques de distribution par température.
+   * Répond 503 quand la source est illisible : jamais de statistiques vides
+   * présentées comme un succès.
    */
   @Get('stats')
   async getStats(): Promise<{
@@ -408,10 +411,10 @@ export class SitemapV10Controller {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Get stats failed: ${message}`);
-      return {
+      throw new ServiceUnavailableException({
         success: false,
-        message: `Failed to get stats: ${message}`,
-      };
+        message: 'Sitemap statistics are unavailable',
+      });
     }
   }
 
