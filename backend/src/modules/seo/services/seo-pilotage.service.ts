@@ -401,7 +401,9 @@ export class SeoPilotageService extends SupabaseBaseService {
       avgPosition90d: 100,
       reasons: ['low_impressions'] as ZombiePage['reasons'],
       zombieScore: page.temperature === 'exclude' ? 90 : 60,
-      recommendation: page.temperature === 'exclude' ? 'noindex' : 'improve',
+      // Une température seule ne justifie jamais un noindex : elle vient d'un
+      // score, pas d'une mesure de trafic (aucune n'est lue ici).
+      recommendation: 'improve',
     }));
   }
 
@@ -459,7 +461,11 @@ export class SeoPilotageService extends SupabaseBaseService {
     const actions: MonthlyAction[] = [];
 
     // Actions pour zombies critiques
-    const criticalZombies = zombies.filter((z) => z.zombieScore >= 80);
+    // Un noindex n'est proposé que pour une page qui porte déjà cette
+    // recommandation, jamais sur le seul score.
+    const criticalZombies = zombies.filter(
+      (z) => z.zombieScore >= 80 && z.recommendation === 'noindex',
+    );
     if (criticalZombies.length > 0) {
       actions.push({
         id: 'zombies-critical',

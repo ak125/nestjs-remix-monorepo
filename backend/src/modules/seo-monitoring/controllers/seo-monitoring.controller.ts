@@ -4,7 +4,7 @@
  * Expose :
  *  GET  /api/admin/seo-monitoring/credentials/health  — check SA credentials
  *  GET  /api/admin/seo-monitoring/timeseries/gsc      — GSC clicks/impressions/ctr/position
- *  GET  /api/admin/seo-monitoring/timeseries/ga4      — GA4 sessions/conversions/bounce
+ *  GET  /api/admin/seo-monitoring/timeseries/ga4      — GA4 sessions/événements clés par jour
  *  GET  /api/admin/seo-monitoring/timeseries/cwv      — CWV LCP/CLS/INP par page
  *  GET  /api/admin/seo-monitoring/runs                — historique runs (event log)
  *  POST /api/admin/seo-monitoring/run/gsc             — trigger manuel GSC fetch (debug)
@@ -42,6 +42,17 @@ import {
 import { RContentAuditorService } from '../services/r-content-auditor.service';
 import { SeoMonitoringRunsService } from '../services/seo-monitoring-runs.service';
 import { RagMirrorFreshnessService } from '../services/rag-mirror-freshness.service';
+
+/**
+ * Lecture de `__seo_ga4_daily` par pages : PostgREST plafonne chaque réponse à
+ * 1000 lignes, et la table porte une ligne par (date, page, canal).
+ */
+const GA4_PAGE_SIZE = 1000;
+/**
+ * Borne de lecture (200 000 lignes). Atteinte, la série s'arrête au dernier
+ * jour lu en entier et la réponse le déclare (`totals_scope.exhaustive: false`).
+ */
+const GA4_MAX_PAGES = 200;
 
 @Controller('api/admin/seo-monitoring')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
@@ -269,6 +280,24 @@ export class SeoMonitoringController {
     };
   }
 
+  /**
+   * GET /timeseries/ga4?from=YYYY-MM-DD&to=YYYY-MM-DD&page=
+   *
+   * - `daily` + `totals` : somme de TOUTES les lignes (date, page, canal) de la
+   *   fenêtre, lues par pages ordonnées sur la clé primaire. Tous canaux
+   *   confondus, pas le seul trafic organique.
+   * - `conversions` = événements clés GA4 (métrique `keyEvents` du collecteur).
+   *   Ce ne sont pas des commandes payées.
+   * - `totals_scope` : lignes lues, jours présents, dernier jour. Si la borne de
+   *   lecture est atteinte, le dernier jour (lu en partie) est retiré de la
+   *   série et `exhaustive` vaut false. Un jour absent n'est pas un zéro.
+   * - `rows` : première page du détail, NON EXHAUSTIVE (`rows_scope`).
+   * - Erreur de lecture, à n'importe quelle page → `{ error }`, aucun total.
+   *
+   * Défaut corrigé 2026-11-12 : les totaux et la courbe sommaient une seule
+   * réponse non ordonnée, plafonnée à 1000 lignes — une fraction arbitraire de
+   * la fenêtre dès que celle-ci dépassait quelques jours.
+   */
   @Get('timeseries/ga4')
   async timeseriesGa4(
     @Query('from') from?: string,
@@ -278,31 +307,91 @@ export class SeoMonitoringController {
     const dateTo = to ?? new Date().toISOString().slice(0, 10);
     const dateFrom =
       from ?? new Date(Date.now() - 90 * 86_400_000).toISOString().slice(0, 10);
+    if (!isIsoDate(dateFrom) || !isIsoDate(dateTo) || dateFrom > dateTo) {
+      throw new BadRequestException(
+        `from/to : dates ISO YYYY-MM-DD attendues avec from <= to (reçu ${dateFrom} → ${dateTo})`,
+      );
+    }
 
-    let query = this.supabase
-      .from('__seo_ga4_daily')
-      .select(
-        'date, page, channel, sessions, conversions, bounce_rate, avg_session_duration',
-      )
-      .gte('date', dateFrom)
-      .lte('date', dateTo);
+    const byDate = new Map<string, { sessions: number; conversions: number }>();
+    let sample: Array<Record<string, unknown>> = [];
+    let rowsRead = 0;
+    let boundReached = false;
 
-    if (page) query = query.ilike('page', `%${page}%`);
+    for (let pageIndex = 0; pageIndex < GA4_MAX_PAGES; pageIndex++) {
+      const offset = pageIndex * GA4_PAGE_SIZE;
+      let query = this.supabase
+        .from('__seo_ga4_daily')
+        .select(
+          'date, page, channel, sessions, conversions, bounce_rate, avg_session_duration',
+        )
+        .gte('date', dateFrom)
+        .lte('date', dateTo);
 
-    const { data, error } = await query.limit(5000);
-    if (error) return { error: error.message, rows: [] };
+      if (page) query = query.ilike('page', `%${page}%`);
 
-    const rows = data ?? [];
-    const totals = rows.reduce(
-      (acc, r) => {
-        acc.sessions += r.sessions ?? 0;
-        acc.conversions += r.conversions ?? 0;
+      const { data, error } = await query
+        .order('date', { ascending: true })
+        .order('page', { ascending: true })
+        .order('channel', { ascending: true })
+        .range(offset, offset + GA4_PAGE_SIZE - 1);
+      if (error) return { error: error.message, rows: [] };
+
+      const batch = data ?? [];
+      if (pageIndex === 0) sample = batch;
+      for (const r of batch) {
+        const date = String(r.date);
+        const acc = byDate.get(date) ?? { sessions: 0, conversions: 0 };
+        acc.sessions += Number(r.sessions) || 0;
+        acc.conversions += Number(r.conversions) || 0;
+        byDate.set(date, acc);
+      }
+      rowsRead += batch.length;
+      boundReached = batch.length === GA4_PAGE_SIZE;
+      if (!boundReached) break;
+    }
+
+    const daily = Array.from(byDate.entries())
+      .map(([date, v]) => ({ date, ...v }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+    // Borne atteinte : le dernier jour lu peut être partiel, il sort de la série.
+    if (boundReached) {
+      const dropped = daily.pop();
+      this.logger.warn(
+        `timeseries/ga4 ${dateFrom}→${dateTo} : borne de lecture atteinte (${rowsRead} lignes), série arrêtée avant ${dropped?.date ?? 'n/a'}`,
+      );
+    }
+    const totals = daily.reduce(
+      (acc, d) => {
+        acc.sessions += d.sessions;
+        acc.conversions += d.conversions;
         return acc;
       },
       { sessions: 0, conversions: 0 },
     );
 
-    return { from: dateFrom, to: dateTo, rows, totals };
+    return {
+      from: dateFrom,
+      to: dateTo,
+      rows: sample,
+      rows_scope: {
+        grain: 'date_page_channel' as const,
+        exhaustive: false,
+        limit: GA4_PAGE_SIZE,
+        returned: sample.length,
+        truncated: sample.length >= GA4_PAGE_SIZE,
+      },
+      daily,
+      totals,
+      totals_scope: {
+        grain: 'date' as const,
+        channels: 'all' as const,
+        exhaustive: !boundReached,
+        rows_read: rowsRead,
+        days_present: daily.length,
+        last_data_date: daily.length ? daily[daily.length - 1].date : null,
+      },
+    };
   }
 
   @Get('timeseries/cwv')
