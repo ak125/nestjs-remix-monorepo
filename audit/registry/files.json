@@ -63310,7 +63310,7 @@
         "~/utils/seo/pieces-schema.utils"
       ],
       "kind": "service",
-      "loc": 179,
+      "loc": 177,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.meta.ts",
       "risk": "low",
@@ -63820,10 +63820,11 @@
       "imports": [
         "frontend/app/types/pieces-route.types.ts",
         "frontend/app/utils/image-optimizer.ts",
-        "frontend/app/utils/seo/pieces-schema-commerce.constants.ts"
+        "frontend/app/utils/seo/pieces-schema-commerce.constants.ts",
+        "frontend/app/utils/stock.utils.ts"
       ],
       "kind": "service",
-      "loc": 318,
+      "loc": 345,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/seo/pieces-schema.utils.ts",
       "risk": "low",
@@ -63882,7 +63883,8 @@
       "id": "frontend/app/utils/stock.utils.ts",
       "importedBy": [
         "frontend/app/components/pieces/PiecesGridView.tsx",
-        "frontend/app/components/pieces/PiecesListView.tsx"
+        "frontend/app/components/pieces/PiecesListView.tsx",
+        "frontend/app/utils/seo/pieces-schema.utils.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -66434,6 +66436,25 @@
       "loc": 237,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-related-articles-direct-links.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-schema-offers.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 304,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-schema-offers.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
