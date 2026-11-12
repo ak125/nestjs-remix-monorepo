@@ -131,7 +131,37 @@ const validSnapshot = {
   topLosers: [validTopLoser],
   lowCtrOpportunities: [],
   technicalAlerts: [validAlert],
+  conversionAttribution: {
+    measured: true,
+    reason: null,
+    source: '___xtr_order_line.orl_website_url',
+    from: '2026-09-04',
+    to: '2026-09-11',
+    paid_orders: 3,
+    paid_order_lines: 4,
+    attributed_order_lines: 4,
+  },
   conversionGap: null,
+};
+
+const notMeasuredAttribution = {
+  ...validSnapshot.conversionAttribution,
+  measured: false,
+  reason: 'no_attributed_order_line',
+  attributed_order_lines: 0,
+};
+
+const validConversionRow = {
+  page: '/pieces/demarreur-2.html',
+  surface_key: 'R1',
+  sessions: 320,
+  orders_count: 0,
+  conversion_rate: 0,
+  revenue: 0,
+  business_impact_score: 3.2,
+  impact_score_version: 'v1',
+  severity: 'critical',
+  decisions: validDecisions,
 };
 
 describe('RangeSchema', () => {
@@ -358,6 +388,73 @@ describe('SeoControlSnapshotSchema', () => {
   });
   it('accepts conversionGap null (Phase A masking)', () => {
     SeoControlSnapshotSchema.parse({ ...validSnapshot, conversionGap: null });
+  });
+  it('rejects a snapshot without conversionAttribution (no implicit "measured")', () => {
+    const { conversionAttribution: _omit, ...withoutAttribution } =
+      validSnapshot;
+    assert.throws(() => SeoControlSnapshotSchema.parse(withoutAttribution));
+  });
+  it('accepts conversion rows when order attribution is measured', () => {
+    SeoControlSnapshotSchema.parse({
+      ...validSnapshot,
+      conversionGap: [validConversionRow],
+    });
+  });
+  it('accepts a not-measured attribution with conversionGap null', () => {
+    SeoControlSnapshotSchema.parse({
+      ...validSnapshot,
+      conversionAttribution: notMeasuredAttribution,
+      conversionGap: null,
+    });
+  });
+  it('accepts order tables not readable as a not-measured reason', () => {
+    SeoControlSnapshotSchema.parse({
+      ...validSnapshot,
+      conversionAttribution: {
+        ...notMeasuredAttribution,
+        reason: 'order_tables_not_readable',
+        paid_orders: 0,
+        paid_order_lines: 0,
+      },
+      conversionGap: null,
+    });
+  });
+  it('rejects conversion rows when order attribution is not measured (no false zero)', () => {
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        conversionAttribution: notMeasuredAttribution,
+        conversionGap: [validConversionRow],
+      }),
+    );
+  });
+  it('rejects an attribution whose reason contradicts measured', () => {
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        conversionAttribution: {
+          ...validSnapshot.conversionAttribution,
+          reason: 'no_attributed_order_line',
+        },
+      }),
+    );
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        conversionAttribution: { ...notMeasuredAttribution, reason: null },
+      }),
+    );
+  });
+  it('rejects more attributed lines than paid order lines', () => {
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        conversionAttribution: {
+          ...validSnapshot.conversionAttribution,
+          attributed_order_lines: 5,
+        },
+      }),
+    );
   });
   it('rejects a snapshot without gscComparability (no implicit "comparable")', () => {
     const { gscComparability: _omit, ...withoutComparability } = validSnapshot;
