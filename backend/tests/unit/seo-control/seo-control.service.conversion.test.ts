@@ -196,7 +196,17 @@ function makeService(fixture: Fixture = {}) {
           {
             rpc_seo_traffic_v1: traffic,
             rpc_seo_top_losers_v1: [],
-            rpc_seo_low_ctr_v1: [],
+            rpc_seo_low_ctr_v4: {
+              rows: [],
+              grain: 'page_totals',
+              coverage_status: 'ok',
+              retrieval_status: 'complete',
+              data_from: null,
+              data_to: null,
+              days_expected: 7,
+              days_confirmed: 7,
+              total_qualifying: 0,
+            },
             rpc_seo_alerts_v1: [],
             rpc_seo_conversion_v1: conversionRows,
           }[name] ?? null,
