@@ -22,6 +22,7 @@ import {
   R1_BOUNDARY_EXTENSIONS,
 } from '../../../config/buying-guide-quality.constants';
 import { R3_FORBIDDEN_IN_R1 } from '../../../config/r1-keyword-plan.constants';
+import { isSelfGrantedVerification } from '../../../config/source-provenance.constants';
 
 // Re-export type for backward compatibility (other files import it from here)
 export type { GammeContentQualityFlag } from '../../../config/buying-guide-quality.constants';
@@ -80,6 +81,7 @@ interface PurchaseGuideRow {
   sgpg_source_type?: string | null;
   sgpg_source_ref?: string | null;
   sgpg_source_verified?: boolean | number | string | null;
+  sgpg_source_verified_by?: string | null;
   // R1 pipeline fields
   sgpg_hero_subtitle?: string | null;
   sgpg_selector_microcopy?: string | string[] | null;
@@ -371,7 +373,8 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       sgpg_compatibilities_intro, sgpg_equipementiers_line,
       sgpg_family_cross_sell_intro, sgpg_interest_nuggets,
       sgpg_h1_override, sgpg_safe_table_rows, sgpg_visual_plan, sgpg_intent_lock,
-      sgpg_source_type, sgpg_source_uri, sgpg_source_ref, sgpg_source_verified
+      sgpg_source_type, sgpg_source_uri, sgpg_source_ref, sgpg_source_verified,
+      sgpg_source_verified_by
     `;
 
     const { data, error } = await this.client
@@ -2481,7 +2484,15 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       flags: uniqueFlags,
       version: CONTRACT_VERSION,
       source: this.resolveQualitySource(raw, content.pgId),
-      verified: this.isSourceVerified(raw),
+      // La marque posée par le pipeline producteur sert encore à décider du
+      // service (isAcceptedProvenance) ; elle n'est pas rapportée comme une
+      // vérification.
+      verified:
+        this.isSourceVerified(raw) &&
+        !isSelfGrantedVerification({
+          tier: raw?.sgpg_source_type,
+          verifiedBy: raw?.sgpg_source_verified_by,
+        }),
     };
   }
 
