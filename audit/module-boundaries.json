@@ -806,7 +806,7 @@
         "backend/src/modules/seo-monitoring/services"
       ],
       "files_count": 51,
-      "loc_total": 11297,
+      "loc_total": 11242,
       "has_barrel": false
     },
     "seo-projection": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 353,
-      "loc_total": 70000,
+      "files_count": 354,
+      "loc_total": 70264,
       "has_barrel": true
     },
     "upload": {
