@@ -159,8 +159,13 @@ if [ -z "$SID" ]; then
 elif ! command -v sha256sum >/dev/null 2>&1; then
   printf '%s [DEDUP-SKIP no-sha256sum]\n' \
     "$(date -Iseconds 2>/dev/null || echo now)" >> "$LOG" 2>/dev/null || true
+elif ! { mkdir -p -m 700 "$DEDUP_DIR" 2>/dev/null; [ -d "$DEDUP_DIR" ] && [ ! -L "$DEDUP_DIR" ] && [ -O "$DEDUP_DIR" ]; }; then
+  # Dossier d'état sous /tmp : s'il est un lien ou appartient à un autre compte, l'état
+  # .seen/.lock/.tmp y serait écrit sous son contrôle. Pas de dédup (= injection, fail-open).
+  printf '%s [DEDUP-SKIP unsafe-state-dir]\n' \
+    "$(date -Iseconds 2>/dev/null || echo now)" >> "$LOG" 2>/dev/null || true
 else
-  mkdir -p "$DEDUP_DIR" 2>/dev/null || true; chmod 700 "$DEDUP_DIR" 2>/dev/null || true
+  chmod 700 "$DEDUP_DIR" 2>/dev/null || true
   STATE="$DEDUP_DIR/${SID_SAFE}.seen"
   KEPT=()
   SUPPRESSED_BN=""

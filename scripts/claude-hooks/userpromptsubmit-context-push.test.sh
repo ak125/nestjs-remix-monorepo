@@ -158,5 +158,13 @@ check "U13 sortie vide" "" "$(cat "$O")"
 check "U13 SKIP mktemp-fail tracé" 1 "$(command grep -c 'SKIP mktemp-fail' "$FIX/audit.log")"
 check "U13 rien enregistré comme injecté pour s9" absent "$([ -s "$FIX/dedup/s9.seen" ] && echo présent || echo absent)"
 
+echo "== U14 dossier d'état remplacé par un lien : pas de dédup, rien écrit à travers le lien"
+rm -rf "$FIX/dedup"; mkdir -p "$FIX/cible-lien"; ln -s "$FIX/cible-lien" "$FIX/dedup"
+run s10 "$SEO"
+check "U14 code de sortie" 0 "$rc"
+check "U14 trois fichiers injectés (fail-open)" 3 "$(heads)"
+check "U14 DEDUP-SKIP unsafe-state-dir tracé" 1 "$(command grep -c 'DEDUP-SKIP unsafe-state-dir' "$FIX/audit.log")"
+check "U14 rien écrit dans la cible du lien" "" "$(ls -A "$FIX/cible-lien")"
+
 echo
 if [[ $FAIL -ne 0 ]]; then echo "TESTS EN ÉCHEC"; exit 1; else echo "TOUS LES TESTS PASSENT"; fi
