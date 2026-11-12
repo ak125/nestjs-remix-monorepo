@@ -33949,6 +33949,28 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "backend/src/config/source-provenance.constants.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/source-provenance.constants.ts"
+      ],
+      "kind": "test",
+      "loc": 45,
+      "owner": "@ak125",
+      "path": "backend/src/config/source-provenance.constants.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -33957,15 +33979,18 @@
       "importedBy": [
         "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/content-write-gate.service.ts",
+        "backend/src/config/source-provenance.constants.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
-        "backend/src/modules/blog/utils/source-provenance.util.ts"
+        "backend/src/modules/blog/services/r6-guide.service.ts",
+        "backend/src/modules/blog/utils/source-provenance.util.ts",
+        "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 37,
+      "loc": 53,
       "owner": "@ak125",
       "path": "backend/src/config/source-provenance.constants.ts",
       "risk": "medium",
@@ -41514,14 +41539,38 @@
         "manual"
       ],
       "domain": "D5",
+      "id": "backend/src/modules/blog/services/r6-guide.service.source-verified.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/blog/services/r6-guide.service.ts"
+      ],
+      "kind": "test",
+      "loc": 101,
+      "owner": "@ak125/content-team",
+      "path": "backend/src/modules/blog/services/r6-guide.service.source-verified.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D5",
       "id": "backend/src/modules/blog/services/r6-guide.service.ts",
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
         "backend/src/modules/blog/controllers/r6-guide.controller.ts",
-        "backend/src/modules/blog/services/r6-guide.service.redirect.test.ts"
+        "backend/src/modules/blog/services/r6-guide.service.redirect.test.ts",
+        "backend/src/modules/blog/services/r6-guide.service.source-verified.test.ts"
       ],
       "imports": [
         "backend/src/config/feature-flags.service.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "backend/src/modules/blog/interfaces/r6-guide.interfaces.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/blog/utils/html-normalize.utils.ts",
@@ -41531,7 +41580,7 @@
         "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
-      "loc": 735,
+      "loc": 750,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r6-guide.service.ts",
       "risk": "medium",
@@ -46530,10 +46579,11 @@
         "@database/services/supabase-base.service",
         "backend/src/config/buying-guide-quality.constants.ts",
         "backend/src/config/r1-keyword-plan.constants.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts"
       ],
       "kind": "service",
-      "loc": 2721,
+      "loc": 2732,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "risk": "medium",
@@ -70448,7 +70498,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 700,
+      "loc": 738,
       "owner": "@ak125",
       "path": "backend/tests/unit/buying-guide-data.service.test.ts",
       "risk": "medium",
@@ -107061,11 +107111,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "95b31b5c1b87236aeee4461521f23af96b08d7ec7ecc70a7506b24cce96f6f36",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "db21ca4f58ad82e5d1a72ceb5d28eb247034712192552a84cd580315a1eb5feb",
+      "audit/registry/files.json": "d9ababbc7ee5b9e15a11b14ecc3b8c3444ecf1882490bab1ec019eabd9040ad1",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "e06264541dfddaa381631a60c869d403cce6ed8fc69b37077f5f5504cd5987dd"
     },
-    "sotFingerprint": "c339e7408ebc"
+    "sotFingerprint": "00bb0e6832cd"
   },
   "runtime": [
     {
