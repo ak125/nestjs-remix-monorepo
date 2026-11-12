@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 284,
-      "loc_total": 60911,
+      "loc_total": 60834,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 372,
-      "loc_total": 76552,
+      "loc_total": 76559,
       "has_barrel": true
     },
     "upload": {
@@ -1027,8 +1027,8 @@
         "backend/src/workers/services",
         "backend/src/workers/types"
       ],
-      "files_count": 20,
-      "loc_total": 5068,
+      "files_count": 21,
+      "loc_total": 5381,
       "has_barrel": false
     }
   },
@@ -2241,6 +2241,11 @@
     {
       "from": "workers",
       "to": "rag-proxy",
+      "count": 1
+    },
+    {
+      "from": "workers",
+      "to": "seo",
       "count": 1
     },
     {
