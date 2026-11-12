@@ -5291,6 +5291,27 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/config/source-provenance.constants.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/source-provenance.constants.ts"
+      ],
+      "kind": "test",
+      "loc": 45,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/source-provenance.constants.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -5299,15 +5320,18 @@
       "importedBy": [
         "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/content-write-gate.service.ts",
+        "backend/src/config/source-provenance.constants.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
-        "backend/src/modules/blog/utils/source-provenance.util.ts"
+        "backend/src/modules/blog/services/r6-guide.service.ts",
+        "backend/src/modules/blog/utils/source-provenance.util.ts",
+        "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 37,
+      "loc": 53,
       "owner": "__unassigned__",
       "path": "backend/src/config/source-provenance.constants.ts",
       "risk": "low",
@@ -12609,14 +12633,37 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/blog/services/r6-guide.service.source-verified.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/blog/services/r6-guide.service.ts"
+      ],
+      "kind": "test",
+      "loc": 101,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/blog/services/r6-guide.service.source-verified.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/blog/services/r6-guide.service.ts",
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
         "backend/src/modules/blog/controllers/r6-guide.controller.ts",
-        "backend/src/modules/blog/services/r6-guide.service.redirect.test.ts"
+        "backend/src/modules/blog/services/r6-guide.service.redirect.test.ts",
+        "backend/src/modules/blog/services/r6-guide.service.source-verified.test.ts"
       ],
       "imports": [
         "backend/src/config/feature-flags.service.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "backend/src/modules/blog/interfaces/r6-guide.interfaces.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/blog/utils/html-normalize.utils.ts",
@@ -12626,7 +12673,7 @@
         "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
-      "loc": 735,
+      "loc": 750,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r6-guide.service.ts",
       "risk": "low",
@@ -17450,10 +17497,11 @@
         "@database/services/supabase-base.service",
         "backend/src/config/buying-guide-quality.constants.ts",
         "backend/src/config/r1-keyword-plan.constants.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts"
       ],
       "kind": "service",
-      "loc": 2734,
+      "loc": 2745,
       "owner": "__unassigned__",
       "path": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "risk": "low",
@@ -40631,7 +40679,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 746,
+      "loc": 784,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/buying-guide-data.service.test.ts",
       "risk": "low",
