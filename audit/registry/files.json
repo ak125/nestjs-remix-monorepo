@@ -27326,7 +27326,7 @@
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "controller",
-      "loc": 473,
+      "loc": 562,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
       "risk": "low",
@@ -42303,7 +42303,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 407,
+      "loc": 771,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/seo-monitoring/seo-monitoring.controller.test.ts",
       "risk": "low",
@@ -57178,7 +57178,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 843,
+      "loc": 1009,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.seo-hub.observability.tsx",
       "risk": "low",
@@ -66630,6 +66630,25 @@
       "loc": 102,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/section-config-summary-sentence.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/seo-hub-observability-sources.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 413,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/seo-hub-observability-sources.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
