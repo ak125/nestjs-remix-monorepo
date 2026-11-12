@@ -215,7 +215,9 @@ export function stripHtmlForMeta(
 
   // 3. Supprimer les attributs style orphelins qui pourraient rester
   // Pattern: Calibri","sans-serif"" (résidu de <span style="font-family:Calibri...">)
-  result = result.replace(/[A-Za-z-]+["',]+[^"']*["']+/g, '');
+  // Seule la séquence `","` signe ce résidu : ni l'apostrophe ni la virgule
+  // seule, sinon le texte entre deux élisions (« d'embrayage … l'usure ») part.
+  result = result.replace(/[A-Za-z-]+","[^"]*"+/g, '');
 
   // 4. Décoder les entités HTML restantes (après strip des tags)
   result = decodeHtmlEntities(result);

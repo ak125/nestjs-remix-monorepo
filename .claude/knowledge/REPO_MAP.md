@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 80c24f9cada376a7bc8526d4930b94a7e531a8427f8a735ff29a18f33d7a52a5
+source_sha256: 2a8562d61f3d880689be82afc5d15d9a9446fdd232d3408b14bb881aa7c8cfaf
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3143 |
+| Files (Layer 1) | 3153 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `fda2a47e46e6`.
+Source sotFingerprint: `aed4773a52fa`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `fda2a47e46e6`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 168 (test=154, service=10, config=3, controller=1)
+- **Files**: 172 (test=158, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (153), __unassigned__ (15)
+- **Top owners**: @ak125 (157), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=153
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=157
 
 ### D3 — SEO & Sitemap
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `fda2a47e46e6`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 941 (config=454, route=246, service=179, controller=39, test=23)
+- **Files**: 942 (config=454, route=246, service=179, controller=39, test=24)
 - **Runtime entrypoints**: 346
-- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (266)
+- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (267)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=513, UNKNOWN=428
+- **Status**: LIVE=513, UNKNOWN=429
 
 ### D9 — Import / ETL / Normalisation
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `fda2a47e46e6`.
 
 ### D15 — Security & Governance
 
-- **Files**: 309 (test=198, script=62, service=46, config=2, controller=1)
+- **Files**: 314 (test=203, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (309)
+- **Top owners**: @ak125 (314)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=250
+- **Status**: LIVE=59, UNKNOWN=255
 
 ### D16 — Maintenance
 
