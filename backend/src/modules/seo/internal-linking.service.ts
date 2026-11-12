@@ -13,6 +13,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { TABLES } from '@repo/database-types';
+import { DatabaseException } from '@common/exceptions';
+import { buildGammeUrl } from '@common/utils/url-builder.utils';
 import {
   SEO_LINK_LIMITS,
   SEO_AB_TESTING_CONFIG,
@@ -67,6 +69,23 @@ export interface GammeInfo {
   pg_name: string;
   pg_alias: string;
 }
+
+// =====================================================
+// Liens éditoriaux vers une gamme
+// =====================================================
+
+/** Lien `<a href="/pieces/…">` d'un contenu éditorial : cible puis libellé. */
+const EDITORIAL_PIECES_LINK_RE =
+  /<a\s[^>]*?href="\/pieces\/([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
+/** Cible écrite avec identifiant : `{alias}-{id}.html`. */
+const CANONICAL_GAMME_TARGET_RE = /^[a-z0-9-]+-(\d+)\.html$/;
+/** Niveaux des gammes qui ont une page (`pg_level` est un texte en base). */
+const CATALOGUE_GAMME_LEVELS = ['1', '2'];
+const LINK_GAMME_TOKEN_RE = /#LinkGamme_(\d+)#/;
+const GAMME_ALIAS_RE = /^[a-z0-9-]+$/;
+
+/** Marqueur d'un nom de gamme rendu sans lien, faute de page à servir. */
+export const UNRESOLVED_GAMME_LINK_ATTR = 'data-gamme-link="unresolved"';
 
 // =====================================================
 // Cache Types
@@ -631,6 +650,131 @@ export class InternalLinkingService implements OnModuleInit {
     }
 
     return null;
+  }
+
+  /**
+   * 🔗 Résout les liens éditoriaux vers une page de gamme.
+   *
+   * La page d'une gamme n'existe qu'à l'adresse `/pieces/{alias}-{id}.html`,
+   * et seulement pour une gamme du catalogue (`pg_level` 1 ou 2).
+   *
+   * - Lien écrit sans identifiant (`/pieces/{alias}`) : résolu par l'alias
+   *   exact, ou par le jeton `#LinkGamme_N#` qu'il contient, et réécrit avec
+   *   le constructeur d'URL canonique.
+   * - Lien écrit avec identifiant : vérifié par l'identifiant ; son alias est
+   *   remis à celui de la gamme s'il a changé depuis la rédaction.
+   * - Aucune gamme du catalogue ne correspond : le libellé reste, sans lien.
+   *   Aucune adresse n'est devinée.
+   *
+   * Une lecture en échec lève : l'appelant ne doit pas servir, ni mettre en
+   * cache, un contenu dont les liens n'ont pas pu être vérifiés.
+   */
+  async resolveGammeAliasLinks(content: string): Promise<string> {
+    if (!content || !content.includes('href="/pieces/')) return content;
+
+    type Candidate = { alias: string | null; pgId: number | null };
+    const candidateOf = (target: string, label: string): Candidate | null => {
+      const canonical = CANONICAL_GAMME_TARGET_RE.exec(target);
+      if (canonical) return { alias: null, pgId: parseInt(canonical[1], 10) };
+      if (target.includes('/') && target.endsWith('.html')) return null;
+      const token = LINK_GAMME_TOKEN_RE.exec(`${target} ${label}`);
+      if (token) return { alias: null, pgId: parseInt(token[1], 10) };
+      const alias = target.replace(/\/$/, '').replace(/\.html$/, '');
+      return { alias: GAMME_ALIAS_RE.test(alias) ? alias : null, pgId: null };
+    };
+
+    const aliases = new Set<string>();
+    const pgIds = new Set<number>();
+    for (const match of content.matchAll(EDITORIAL_PIECES_LINK_RE)) {
+      const candidate = candidateOf(match[1], match[2]);
+      if (candidate?.alias) aliases.add(candidate.alias);
+      if (candidate?.pgId != null) pgIds.add(candidate.pgId);
+    }
+
+    const byAlias = await this.fetchCatalogueGammes('pg_alias', [...aliases]);
+    const byId = await this.fetchCatalogueGammes('pg_id', [...pgIds]);
+
+    let unresolved = 0;
+    const processed = content.replace(
+      EDITORIAL_PIECES_LINK_RE,
+      (anchor: string, target: string, rawLabel: string) => {
+        const candidate = candidateOf(target, rawLabel);
+        if (!candidate) return anchor;
+
+        const label = rawLabel.replace(/\s*#LinkGamme_\d+#/g, '').trim();
+        const gamme =
+          candidate.pgId != null
+            ? byId.get(String(candidate.pgId))
+            : candidate.alias
+              ? byAlias.get(candidate.alias)
+              : undefined;
+
+        if (!gamme) {
+          unresolved++;
+          return `<span ${UNRESOLVED_GAMME_LINK_ATTR}>${label}</span>`;
+        }
+
+        const url = buildGammeUrl(gamme.pg_alias, gamme.pg_id);
+        // Lien déjà écrit avec identifiant : seule son adresse est remise à jour.
+        if (CANONICAL_GAMME_TARGET_RE.test(target)) {
+          return anchor.replace(`href="/pieces/${target}"`, `href="${url}"`);
+        }
+        return `<a href="${url}" class="seo-internal-link" data-link-type="LinkGamme">${label || gamme.pg_name}</a>`;
+      },
+    );
+
+    if (unresolved > 0) {
+      this.logger.warn(
+        `[gamme-links] ${unresolved} lien(s) éditorial(aux) sans gamme du catalogue correspondante — libellé servi sans lien`,
+      );
+    }
+    return processed;
+  }
+
+  /**
+   * 📥 Gammes du catalogue pour une liste d'alias ou d'identifiants, indexées
+   * par la valeur demandée. Seules les gammes principales (`pg_level` 1 ou 2)
+   * ont une page ; `pg_display` n'en décide pas. Une valeur portée par
+   * plusieurs gammes est écartée : elle ne désigne pas une page.
+   */
+  private async fetchCatalogueGammes(
+    column: 'pg_alias' | 'pg_id',
+    values: Array<string | number>,
+  ): Promise<Map<string, GammeInfo>> {
+    const found = new Map<string, GammeInfo>();
+    if (values.length === 0) return found;
+
+    if (!this.supabase) {
+      throw new DatabaseException({
+        message: 'Résolution des liens de gamme impossible : client absent',
+      });
+    }
+
+    const { data, error } = await this.supabase
+      .from(TABLES.pieces_gamme)
+      .select('pg_id, pg_name, pg_alias')
+      .in('pg_level', CATALOGUE_GAMME_LEVELS)
+      .in(column, values);
+
+    if (error) {
+      throw new DatabaseException({
+        message: 'Résolution des liens de gamme impossible : lecture en échec',
+        details: error.message,
+      });
+    }
+
+    const ambiguous = new Set<string>();
+    for (const row of data ?? []) {
+      const key = String(row[column]);
+      if (found.has(key)) ambiguous.add(key);
+      found.set(key, {
+        pg_id: Number(row.pg_id),
+        pg_name: row.pg_name,
+        pg_alias: row.pg_alias,
+      });
+    }
+    for (const key of ambiguous) found.delete(key);
+    return found;
   }
 
   /**

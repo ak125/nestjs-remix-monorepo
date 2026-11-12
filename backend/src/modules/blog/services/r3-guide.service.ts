@@ -667,6 +667,9 @@ export class R3GuideService {
       html = normalizeDangerHtml(html);
     }
 
+    // Editorial `/pieces/{alias}` links → canonical gamme URL, or no link
+    html = await this.internalLinkingService.resolveGammeAliasLinks(html);
+
     // Resolve #LinkGamme_#### tokens → <a> links
     html = await this.internalLinkingService.processLinkGamme(html);
 

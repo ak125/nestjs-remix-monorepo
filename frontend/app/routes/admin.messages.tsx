@@ -44,29 +44,17 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-// Interfaces pour les messages
+// Message tel que le renvoie `GET /api/messages`.
 interface Message {
-  msg_id: string;
-  msg_cst_id: string;
-  msg_cnfa_id: string;
-  msg_ord_id?: string;
-  msg_orl_id?: string;
-  msg_date: string;
-  msg_subject: string;
-  msg_content: string;
-  msg_parent_id?: string;
-  msg_open: "0" | "1";
-  msg_close: "0" | "1";
-  customer?: {
-    cst_name: string;
-    cst_fname: string;
-    cst_mail: string;
-  };
-  staff?: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
+  id: string;
+  customerId: string;
+  staffId: string;
+  orderId?: string;
+  subject: string;
+  content: string;
+  status: "open" | "closed";
+  isRead: boolean;
+  createdAt: string;
 }
 
 interface MessageData {
@@ -81,6 +69,22 @@ interface MessageData {
   };
   error?: string;
   fallbackMode?: boolean;
+}
+
+/** Filtres de statut que l'API accepte, hors `all` (aucun filtre). */
+const STATUS_FILTERS = ["open", "closed", "unread"];
+
+/** État affiché quand l'API ne fournit pas la liste : l'erreur est montrée. */
+function unavailable(error: string): MessageData {
+  return {
+    messages: [],
+    total: 0,
+    page: 1,
+    totalPages: 1,
+    stats: { total: 0, open: 0, closed: 0 },
+    error,
+    fallbackMode: true,
+  };
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -103,6 +107,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
+            Cookie: request.headers.get("Cookie") || "",
           },
         },
       );
@@ -136,7 +141,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   const limit = parseInt(url.searchParams.get("limit") || "20");
   const staffFilter = url.searchParams.get("staff");
   const customerFilter = url.searchParams.get("customer");
-  const statusFilter = url.searchParams.get("status") || "all";
+  const requestedStatus = url.searchParams.get("status") || "";
+  const statusFilter = STATUS_FILTERS.includes(requestedStatus)
+    ? requestedStatus
+    : "all";
 
   try {
     logger.log("📧 Chargement messages depuis l'API...");
@@ -164,6 +172,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          Cookie: request.headers.get("Cookie") || "",
         },
         signal: controller.signal,
       }),
@@ -171,6 +180,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
+          Cookie: request.headers.get("Cookie") || "",
         },
         signal: controller.signal,
       }),
@@ -178,49 +188,43 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     clearTimeout(timeoutId);
 
-    if (messagesResponse.ok && statsResponse.ok) {
-      const messagesData = await messagesResponse.json();
-      const statsData = await statsResponse.json();
-
-      logger.log(`✅ ${messagesData.messages?.length || 0} messages récupérés`);
-
-      return {
-        messages: messagesData.messages || [],
-        total: messagesData.total || 0,
-        page: messagesData.page || 1,
-        totalPages: messagesData.totalPages || 1,
-        stats: statsData || { total: 0, open: 0, closed: 0 },
-        fallbackMode: false,
-      } as MessageData;
-    } else {
+    if (!messagesResponse.ok || !statsResponse.ok) {
       logger.error(
         "❌ Erreur API messages:",
         messagesResponse.status,
         statsResponse.status,
       );
 
-      return {
-        messages: [],
-        total: 0,
-        page: 1,
-        totalPages: 1,
-        stats: { total: 0, open: 0, closed: 0 },
-        error: `Erreur API (${messagesResponse.status})`,
-        fallbackMode: true,
-      } as MessageData;
+      return unavailable(
+        `Erreur API (liste ${messagesResponse.status}, statistiques ${statsResponse.status})`,
+      );
     }
+
+    // L'API répond { success, data, pagination } et { success, data }.
+    const messagesData = await messagesResponse.json();
+    const statsData = await statsResponse.json();
+    const pagination = messagesData?.pagination;
+
+    if (!Array.isArray(messagesData?.data) || !pagination || !statsData?.data) {
+      logger.error("❌ Réponse inattendue de l'API messages");
+
+      return unavailable("Réponse inattendue de l'API messages");
+    }
+
+    logger.log(`✅ ${messagesData.data.length} messages récupérés`);
+
+    return {
+      messages: messagesData.data,
+      total: pagination.total,
+      page: pagination.page,
+      totalPages: Math.max(pagination.totalPages, 1),
+      stats: statsData.data,
+      fallbackMode: false,
+    } satisfies MessageData;
   } catch (error: unknown) {
     logger.error("❌ Erreur lors du chargement des messages:", error);
 
-    return {
-      messages: [],
-      total: 0,
-      page: 1,
-      totalPages: 1,
-      stats: { total: 0, open: 0, closed: 0 },
-      error: "Erreur de connexion à l'API messages",
-      fallbackMode: true,
-    } as MessageData;
+    return unavailable("Erreur de connexion à l'API messages");
   }
 }
 
@@ -245,20 +249,20 @@ export default function AdminMessages() {
   };
 
   const getStatusColor = (message: Message) => {
-    if (message.msg_close === "1") return "error";
-    if (message.msg_open === "1") return "success";
+    if (message.status === "closed") return "error";
+    if (message.isRead) return "success";
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
   const getStatusText = (message: Message) => {
-    if (message.msg_close === "1") return "Fermé";
-    if (message.msg_open === "1") return "Ouvert";
+    if (message.status === "closed") return "Fermé";
+    if (message.isRead) return "Ouvert";
     return "En attente";
   };
 
   const getStatusIcon = (message: Message) => {
-    if (message.msg_close === "1") return <XCircle className="h-4 w-4" />;
-    if (message.msg_open === "1") return <CheckCircle className="h-4 w-4" />;
+    if (message.status === "closed") return <XCircle className="h-4 w-4" />;
+    if (message.isRead) return <CheckCircle className="h-4 w-4" />;
     return <Clock className="h-4 w-4" />;
   };
 
@@ -426,6 +430,7 @@ export default function AdminMessages() {
                 <option value="all">Tous</option>
                 <option value="open">Ouverts</option>
                 <option value="closed">Fermés</option>
+                <option value="unread">Non lus</option>
               </select>
             </div>
             <div className="flex items-end">
@@ -487,17 +492,17 @@ export default function AdminMessages() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {messages.map((message) => (
-                <tr key={message.msg_id} className="hover:bg-gray-50">
+                <tr key={message.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
                       <div className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                        {message.msg_subject}
+                        {message.subject}
                       </div>
                       <div className="text-sm text-gray-500 truncate max-w-xs">
-                        {message.msg_content}
+                        {message.content}
                       </div>
                       <div className="text-xs text-gray-400 mt-1">
-                        ID: {message.msg_id}
+                        ID: {message.id}
                       </div>
                     </div>
                   </td>
@@ -508,12 +513,7 @@ export default function AdminMessages() {
                       </div>
                       <div className="ml-3">
                         <div className="text-sm font-medium text-gray-900">
-                          {message.customer
-                            ? `${message.customer.cst_fname} ${message.customer.cst_name}`
-                            : "Client inconnu"}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {message.customer?.cst_mail || message.msg_cst_id}
+                          Client n° {message.customerId}
                         </div>
                       </div>
                     </div>
@@ -525,12 +525,7 @@ export default function AdminMessages() {
                       </div>
                       <div className="ml-3">
                         <div className="text-sm font-medium text-gray-900">
-                          {message.staff
-                            ? `${message.staff.firstName} ${message.staff.lastName}`
-                            : "Staff inconnu"}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {message.staff?.email || message.msg_cnfa_id}
+                          Staff n° {message.staffId}
                         </div>
                       </div>
                     </div>
@@ -538,7 +533,7 @@ export default function AdminMessages() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center text-sm text-gray-900">
                       <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                      {formatDate(message.msg_date)}
+                      {formatDate(message.createdAt)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -557,13 +552,13 @@ export default function AdminMessages() {
                       >
                         Voir
                       </button>
-                      {message.msg_open === "1" && (
+                      {message.status === "open" && (
                         <Form method="post" className="inline">
                           <input type="hidden" name="action" value="close" />
                           <input
                             type="hidden"
                             name="messageId"
-                            value={message.msg_id}
+                            value={message.id}
                           />
                           <button
                             type="submit"
@@ -642,14 +637,14 @@ export default function AdminMessages() {
             <div className="space-y-4">
               <div>
                 <span className="font-medium text-gray-700">Sujet:</span>
-                <p className="text-gray-900">{selectedMessage.msg_subject}</p>
+                <p className="text-gray-900">{selectedMessage.subject}</p>
               </div>
 
               <div>
                 <span className="font-medium text-gray-700">Contenu:</span>
                 <div className="bg-gray-50 p-3 rounded border mt-1">
                   <p className="text-gray-900 whitespace-pre-wrap">
-                    {selectedMessage.msg_content}
+                    {selectedMessage.content}
                   </p>
                 </div>
               </div>
@@ -657,24 +652,16 @@ export default function AdminMessages() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium text-gray-700">Client:</span>
-                  <p className="text-gray-900">
-                    {selectedMessage.customer
-                      ? `${selectedMessage.customer.cst_fname} ${selectedMessage.customer.cst_name}`
-                      : selectedMessage.msg_cst_id}
-                  </p>
+                  <p className="text-gray-900">{selectedMessage.customerId}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Staff:</span>
-                  <p className="text-gray-900">
-                    {selectedMessage.staff
-                      ? `${selectedMessage.staff.firstName} ${selectedMessage.staff.lastName}`
-                      : selectedMessage.msg_cnfa_id}
-                  </p>
+                  <p className="text-gray-900">{selectedMessage.staffId}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Date:</span>
                   <p className="text-gray-900">
-                    {formatDate(selectedMessage.msg_date)}
+                    {formatDate(selectedMessage.createdAt)}
                   </p>
                 </div>
                 <div>
@@ -688,10 +675,10 @@ export default function AdminMessages() {
                 </div>
               </div>
 
-              {selectedMessage.msg_ord_id && (
+              {selectedMessage.orderId && (
                 <div>
                   <span className="font-medium text-gray-700">Commande:</span>
-                  <p className="text-gray-900">{selectedMessage.msg_ord_id}</p>
+                  <p className="text-gray-900">{selectedMessage.orderId}</p>
                 </div>
               )}
             </div>

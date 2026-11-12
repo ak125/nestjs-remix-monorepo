@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 156,
-      "loc_total": 43800,
+      "files_count": 157,
+      "loc_total": 44099,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -43,7 +43,7 @@
         "backend/src/modules/ai-content/templates"
       ],
       "files_count": 12,
-      "loc_total": 3263,
+      "loc_total": 3273,
       "has_barrel": false
     },
     "analytics": {
@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6237,
+      "loc_total": 6239,
       "has_barrel": true
     },
     "blog": {
@@ -103,8 +103,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 42,
-      "loc_total": 14981,
+      "files_count": 43,
+      "loc_total": 15158,
       "has_barrel": false
     },
     "bot-guard": {
@@ -186,8 +186,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 104,
-      "loc_total": 25128,
+      "files_count": 105,
+      "loc_total": 25189,
       "has_barrel": true
     },
     "customers": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114971,
+      "loc_total": 114946,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110738,
+      "loc_total": 110807,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 20,
-      "loc_total": 6547,
+      "loc_total": 6579,
       "has_barrel": true
     },
     "health": {
@@ -410,8 +410,8 @@
         "backend/src/modules/marketing/services",
         "backend/src/modules/marketing/templates"
       ],
-      "files_count": 29,
-      "loc_total": 7016,
+      "files_count": 30,
+      "loc_total": 7355,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -460,7 +460,7 @@
         "backend/src/modules/messages/repositories"
       ],
       "files_count": 8,
-      "loc_total": 1478,
+      "loc_total": 1747,
       "has_barrel": true
     },
     "metadata": {
@@ -601,7 +601,7 @@
         "packages/seo-types/src"
       ],
       "files_count": 20,
-      "loc_total": 3328,
+      "loc_total": 3595,
       "has_barrel": true
     },
     "pkg-seo-url-contract": {
@@ -635,7 +635,7 @@
         "backend/src/modules/products/types"
       ],
       "files_count": 27,
-      "loc_total": 7117,
+      "loc_total": 7131,
       "has_barrel": true
     },
     "promo": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 222,
-      "loc_total": 52219,
+      "loc_total": 52276,
       "has_barrel": true
     },
     "search": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 283,
-      "loc_total": 60083,
+      "files_count": 284,
+      "loc_total": 60911,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -806,7 +806,7 @@
         "backend/src/modules/seo-monitoring/services"
       ],
       "files_count": 51,
-      "loc_total": 11297,
+      "loc_total": 11331,
       "has_barrel": false
     },
     "seo-projection": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 354,
-      "loc_total": 70299,
+      "files_count": 371,
+      "loc_total": 76248,
       "has_barrel": true
     },
     "upload": {
@@ -1516,7 +1516,7 @@
     {
       "from": "blog",
       "to": "config",
-      "count": 6
+      "count": 7
     },
     {
       "from": "blog",
@@ -1741,7 +1741,7 @@
     {
       "from": "frontend-routes",
       "to": "frontend-shared",
-      "count": 353
+      "count": 349
     },
     {
       "from": "frontend-shared",
@@ -1766,7 +1766,7 @@
     {
       "from": "gamme-rest",
       "to": "config",
-      "count": 2
+      "count": 3
     },
     {
       "from": "gamme-rest",

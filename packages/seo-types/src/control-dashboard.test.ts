@@ -17,6 +17,7 @@ import {
   ConversionGapSchema,
   DECISION_RULE_IDS,
   DecisionsSchema,
+  LowCtrCoverageSchema,
   LowCtrOpportunitySchema,
   RangeSchema,
   SEO_CONTROL_DECISION_RULES_V1,
@@ -85,6 +86,17 @@ const validTraffic = {
   },
 };
 
+const validLowCtrCoverage = {
+  grain: 'page_totals',
+  coverage_status: 'ok',
+  retrieval_status: 'complete',
+  data_from: '2026-09-04',
+  data_to: '2026-09-08',
+  days_expected: 5,
+  days_confirmed: 5,
+  total_qualifying: 0,
+};
+
 const validSnapshot = {
   snapshot_id: '550e8400-e29b-41d4-a716-446655440000',
   snapshot_hash:
@@ -94,7 +106,7 @@ const validSnapshot = {
     rpc_versions: {
       traffic: 'v1',
       losers: 'v1',
-      low_ctr: 'v1',
+      low_ctr: 'v4',
       alerts: 'v1',
       conversion: 'v1',
     },
@@ -129,9 +141,40 @@ const validSnapshot = {
   },
   trafficWindow: validTraffic,
   topLosers: [validTopLoser],
+  lowCtrCoverage: validLowCtrCoverage,
   lowCtrOpportunities: [],
   technicalAlerts: [validAlert],
+  conversionAttribution: {
+    measured: true,
+    reason: null,
+    source: '___xtr_order_line.orl_website_url',
+    from: '2026-09-04',
+    to: '2026-09-11',
+    paid_orders: 3,
+    paid_order_lines: 4,
+    attributed_order_lines: 4,
+  },
   conversionGap: null,
+};
+
+const notMeasuredAttribution = {
+  ...validSnapshot.conversionAttribution,
+  measured: false,
+  reason: 'no_attributed_order_line',
+  attributed_order_lines: 0,
+};
+
+const validConversionRow = {
+  page: '/pieces/demarreur-2.html',
+  surface_key: 'R1',
+  sessions: 320,
+  orders_count: 0,
+  conversion_rate: 0,
+  revenue: 0,
+  business_impact_score: 3.2,
+  impact_score_version: 'v1',
+  severity: 'critical',
+  decisions: validDecisions,
 };
 
 describe('RangeSchema', () => {
@@ -279,6 +322,87 @@ describe('LowCtrOpportunitySchema', () => {
   });
 });
 
+describe('LowCtrCoverageSchema — source du bloc Low CTR', () => {
+  it('accepte chaque statut de couverture et de collecte de la RPC', () => {
+    for (const coverage_status of [
+      'ok',
+      'incomplete_days',
+      'coverage_gap',
+      'insufficient_data',
+    ]) {
+      for (const retrieval_status of ['complete', 'gap', 'unknown']) {
+        LowCtrCoverageSchema.parse({
+          ...validLowCtrCoverage,
+          coverage_status,
+          retrieval_status,
+        });
+      }
+    }
+  });
+  it('accepte une fenêtre sans aucun jour commité (bornes nulles)', () => {
+    LowCtrCoverageSchema.parse({
+      ...validLowCtrCoverage,
+      coverage_status: 'insufficient_data',
+      retrieval_status: 'unknown',
+      data_from: null,
+      data_to: null,
+      days_expected: 0,
+      days_confirmed: 0,
+    });
+  });
+  it('rejette un grain autre que page_totals (pas de grain requêtes sous ce nom)', () => {
+    for (const grain of ['queries', 'pages', undefined]) {
+      assert.throws(() =>
+        LowCtrCoverageSchema.parse({ ...validLowCtrCoverage, grain }),
+      );
+    }
+  });
+  it('rejette un statut inconnu ou absent (pas de « ok » implicite)', () => {
+    assert.throws(() =>
+      LowCtrCoverageSchema.parse({
+        ...validLowCtrCoverage,
+        coverage_status: 'partial',
+      }),
+    );
+    for (const field of ['coverage_status', 'retrieval_status']) {
+      const { [field]: _omitted, ...rest } = validLowCtrCoverage as Record<
+        string,
+        unknown
+      >;
+      assert.throws(() => LowCtrCoverageSchema.parse(rest));
+    }
+  });
+  it('rejette un compte de jours ou de pages négatif, décimal ou absent', () => {
+    for (const field of ['days_expected', 'days_confirmed', 'total_qualifying']) {
+      for (const value of [-1, 1.5, '5', null, undefined]) {
+        assert.throws(() =>
+          LowCtrCoverageSchema.parse({ ...validLowCtrCoverage, [field]: value }),
+        );
+      }
+    }
+  });
+  it('le snapshot exige lowCtrCoverage (pas de couverture implicite)', () => {
+    const { lowCtrCoverage: _omitted, ...rest } = validSnapshot;
+    assert.throws(() => SeoControlSnapshotSchema.parse(rest));
+  });
+  it('le snapshot rejette une version de RPC Low CTR autre que v4', () => {
+    for (const low_ctr of ['v1', 'v2', 'v3']) {
+      assert.throws(() =>
+        SeoControlSnapshotSchema.parse({
+          ...validSnapshot,
+          generated_from: {
+            ...validSnapshot.generated_from,
+            rpc_versions: {
+              ...validSnapshot.generated_from.rpc_versions,
+              low_ctr,
+            },
+          },
+        }),
+      );
+    }
+  });
+});
+
 describe('ConversionGapSchema', () => {
   it('accepts conversion row', () => {
     ConversionGapSchema.parse({
@@ -358,6 +482,73 @@ describe('SeoControlSnapshotSchema', () => {
   });
   it('accepts conversionGap null (Phase A masking)', () => {
     SeoControlSnapshotSchema.parse({ ...validSnapshot, conversionGap: null });
+  });
+  it('rejects a snapshot without conversionAttribution (no implicit "measured")', () => {
+    const { conversionAttribution: _omit, ...withoutAttribution } =
+      validSnapshot;
+    assert.throws(() => SeoControlSnapshotSchema.parse(withoutAttribution));
+  });
+  it('accepts conversion rows when order attribution is measured', () => {
+    SeoControlSnapshotSchema.parse({
+      ...validSnapshot,
+      conversionGap: [validConversionRow],
+    });
+  });
+  it('accepts a not-measured attribution with conversionGap null', () => {
+    SeoControlSnapshotSchema.parse({
+      ...validSnapshot,
+      conversionAttribution: notMeasuredAttribution,
+      conversionGap: null,
+    });
+  });
+  it('accepts order tables not readable as a not-measured reason', () => {
+    SeoControlSnapshotSchema.parse({
+      ...validSnapshot,
+      conversionAttribution: {
+        ...notMeasuredAttribution,
+        reason: 'order_tables_not_readable',
+        paid_orders: 0,
+        paid_order_lines: 0,
+      },
+      conversionGap: null,
+    });
+  });
+  it('rejects conversion rows when order attribution is not measured (no false zero)', () => {
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        conversionAttribution: notMeasuredAttribution,
+        conversionGap: [validConversionRow],
+      }),
+    );
+  });
+  it('rejects an attribution whose reason contradicts measured', () => {
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        conversionAttribution: {
+          ...validSnapshot.conversionAttribution,
+          reason: 'no_attributed_order_line',
+        },
+      }),
+    );
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        conversionAttribution: { ...notMeasuredAttribution, reason: null },
+      }),
+    );
+  });
+  it('rejects more attributed lines than paid order lines', () => {
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        conversionAttribution: {
+          ...validSnapshot.conversionAttribution,
+          attributed_order_lines: 5,
+        },
+      }),
+    );
   });
   it('rejects a snapshot without gscComparability (no implicit "comparable")', () => {
     const { gscComparability: _omit, ...withoutComparability } = validSnapshot;
