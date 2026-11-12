@@ -2,7 +2,7 @@
 module: gamme-rest
 sources:
 - backend/src/modules/gamme-rest
-last_scan: '2026-10-04'
+last_scan: '2026-11-11'
 primary_files:
 - backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts
 - backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts
@@ -36,6 +36,7 @@ _Section à rédiger._
 - `GammePageDataService`
 - `BuyingGuideDataService`
 - `R1RelatedResourcesService`
+- `GammeCacheWarmingService`
 
 ### Fichiers primaires
 - [backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts](../../../backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts)

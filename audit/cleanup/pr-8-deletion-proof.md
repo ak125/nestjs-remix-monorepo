@@ -13,8 +13,8 @@
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `c916b30a2e33b599801190fab0358438e9557e814c7997235b7b379cf2ce2815`
-- `canonical`: `b152fef0ff08b9145374755e4529f318e54c69e8dddd94d7158e8deffa084712`
+- `deadCodeCandidates`: `c635e199e8a93857688a6aa35cb95a6b83108b2a5b9cc23df1752f1a0376c4ef`
+- `canonical`: `c7730794d50fd0a0fa2c73d9b270936ac62d7aac00ccc7f729fdac2df868fff1`
 - `ownershipYaml`: `2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be`
 - `contractHealth`: `<none>`
 - `validateScript`: `f89bd253b2e305831a01222da09bbef3b95fa51f461238886835fe4a0c2fa831`
@@ -22,9 +22,9 @@
 
 ## Counts
 
-- Total: **257**
-- By confidence: high=12 · medium=164 · low=81
-- By decision: candidate=176 · blocked=81 · excluded=0
+- Total: **252**
+- By confidence: high=12 · medium=164 · low=76
+- By decision: candidate=176 · blocked=76 · excluded=0
 
 ## candidate (176)
 
@@ -218,7 +218,7 @@
 
 _(empty)_
 
-## blocked (81)
+## blocked (76)
 
 ### blocked · high (0)
 
@@ -228,7 +228,7 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (81)
+### blocked · low (76)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -241,15 +241,10 @@ _(empty)_
 | `backend/src/config/r2-meta-builder.utils.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-scoring.utils.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/seo-switch-aliases.config.ts` | config | config | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `backend/src/modules/agentic-engine/agentic-engine.controller.ts` | agentic-engine | controller | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/arbiter.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/planner.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/solver.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/verifier.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `backend/src/modules/knowledge-graph/kg-data.service.ts` | knowledge-graph | service | low | LIVE | 4 | snapshot c1 failed (static import); canonical.importedBy=4 |
-| `backend/src/modules/knowledge-graph/kg.controller.ts` | knowledge-graph | controller | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
-| `backend/src/modules/knowledge-graph/kg.service.ts` | knowledge-graph | service | low | LIVE | 3 | snapshot c1 failed (static import); canonical.importedBy=3 |
-| `backend/src/modules/knowledge-graph/kg.types.ts` | knowledge-graph | type | low | LIVE | 4 | snapshot c1 failed (static import); canonical.importedBy=4 |
 | `backend/src/modules/mcp-validation/config/mcp-route-map.config.ts` | mcp-validation | config | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/mcp-validation/decorators/mcp-verify.decorator.ts` | mcp-validation | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/mcp-validation/interceptors/mcp-shadow.interceptor.ts` | mcp-validation | interceptor | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
