@@ -39137,12 +39137,35 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/services/seo-control.service.audit.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/seo-control.service.ts"
+      ],
+      "kind": "test",
+      "loc": 96,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/seo-control.service.audit.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/services/seo-control.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
         "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts",
-        "backend/src/modules/admin/processors/seo-control-refresh.processor.ts"
+        "backend/src/modules/admin/processors/seo-control-refresh.processor.ts",
+        "backend/src/modules/admin/services/seo-control.service.audit.test.ts"
       ],
       "imports": [
         "@repo/seo-types",
@@ -39152,7 +39175,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 423,
+      "loc": 429,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/seo-control.service.ts",
       "risk": "medium",
@@ -59238,10 +59261,6 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "@auth/admin-session.guard",
-        "@auth/any-of.guard",
-        "@auth/github-oidc.guard",
-        "@auth/legacy-internal-key.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts",
@@ -59249,7 +59268,7 @@
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
       "kind": "controller",
-      "loc": 494,
+      "loc": 467,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/sitemap-v10.controller.ts",
       "risk": "high",
@@ -72526,26 +72545,6 @@
       "loc": 147,
       "owner": "@ak125",
       "path": "backend/tests/unit/sitemap-v10-controller.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D15",
-      "id": "backend/tests/unit/sitemap-v10-routes-authz.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 351,
-      "owner": "@ak125",
-      "path": "backend/tests/unit/sitemap-v10-routes-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -106954,11 +106953,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "95b31b5c1b87236aeee4461521f23af96b08d7ec7ecc70a7506b24cce96f6f36",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "cadccf6052c387992d9833fdd1ba3513607e05130e0c4d42c89507532d433a61",
+      "audit/registry/files.json": "9064c787c0d7d996664e5d07e844103d9cbe0c8f3a90aa7f0869ab99df66b4c4",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "e06264541dfddaa381631a60c869d403cce6ed8fc69b37077f5f5504cd5987dd"
     },
-    "sotFingerprint": "03a7b79737a0"
+    "sotFingerprint": "0a953c796bc2"
   },
   "runtime": [
     {
