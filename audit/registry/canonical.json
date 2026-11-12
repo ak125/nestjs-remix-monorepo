@@ -69608,7 +69608,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 266,
+      "loc": 268,
       "owner": "__unassigned__",
       "path": "backend/src/utils/html-entities.ts",
       "risk": "low",
@@ -72648,6 +72648,26 @@
       "loc": 722,
       "owner": "@ak125",
       "path": "backend/tests/unit/sitemap-v10-scoring-fail-closed.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/strip-html-for-meta.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 104,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/strip-html-for-meta.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -94228,7 +94248,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 172,
+      "loc": 174,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/seo-clean.utils.ts",
       "risk": "medium",
@@ -97644,6 +97664,26 @@
       "loc": 53,
       "owner": "@ak125",
       "path": "frontend/tests/unit/stock-utils-sellable.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/strip-html-for-meta.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 116,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/strip-html-for-meta.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -107098,11 +107138,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "95b31b5c1b87236aeee4461521f23af96b08d7ec7ecc70a7506b24cce96f6f36",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "18edd361d88f01ba5add7d65014de5f7bd79be250cb7b97a95b78d186e45dc38",
+      "audit/registry/files.json": "84394b715178899e81bb90045e9b6bf6e81de916c4f6c9d0f000dfce346f6f62",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "05730f0cc1371febf753b41d88588ad7adcb0cf7e0eb51b67642df2aedd5ba3a"
     },
-    "sotFingerprint": "355651960367"
+    "sotFingerprint": "f9dd4a6279c7"
   },
   "runtime": [
     {
