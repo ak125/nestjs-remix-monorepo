@@ -29842,12 +29842,35 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
+        "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts"
+      ],
+      "kind": "test",
+      "loc": 339,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
       "importedBy": [
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
@@ -29855,7 +29878,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 100,
+      "loc": 146,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
       "risk": "low",
@@ -33260,7 +33283,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 770,
+      "loc": 765,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
       "risk": "low",
@@ -33295,7 +33318,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 597,
+      "loc": 588,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "risk": "low",
@@ -33326,7 +33349,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 702,
+      "loc": 713,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
       "risk": "low",
@@ -33403,6 +33426,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "importedBy": [
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
@@ -33418,7 +33442,7 @@
         "backend/src/modules/seo/services/sitemap-v10.types.ts"
       ],
       "kind": "service",
-      "loc": 600,
+      "loc": 596,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "risk": "low",
