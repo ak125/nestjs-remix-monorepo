@@ -49694,11 +49694,14 @@
         "backend/src/modules/messages/messages.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "@auth/session-privilege",
         "@common/exceptions",
         "backend/src/modules/messages/messages.service.ts"
       ],
       "kind": "controller",
-      "loc": 409,
+      "loc": 575,
       "owner": "@ak125",
       "path": "backend/src/modules/messages/messages.controller.ts",
       "risk": "medium",
@@ -71337,6 +71340,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/messages-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 487,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/messages-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/order-actions.cancel-order.test.ts",
       "importedBy": [],
       "imports": [],
@@ -86605,7 +86628,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 704,
+      "loc": 707,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.messages.tsx",
       "risk": "medium",
@@ -107335,11 +107358,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "fb3b29869377b3cf1993875671f8157e670c912a12960ef3b4894015246a1ecf",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "efd27b8618b215432b3eb267d11cf33f4ffc4c4b4f6f82ff29b2c9b25753857d",
+      "audit/registry/files.json": "0b6fd4ef62cffb6651c930e358a5e31e95ffea6c155ddcbc17ea0246e1fc7ceb",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "05730f0cc1371febf753b41d88588ad7adcb0cf7e0eb51b67642df2aedd5ba3a"
     },
-    "sotFingerprint": "0e1d4a89f54d"
+    "sotFingerprint": "224774aaf70a"
   },
   "runtime": [
     {
