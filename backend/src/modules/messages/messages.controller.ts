@@ -1,6 +1,14 @@
 /**
  * Contrôleur API Messages - Table ___xtr_msg
  * Gestion des communications client/staff - Architecture moderne avec Zod
+ *
+ * Frontière d'accès : toute route exige une session. Un administrateur lit et
+ * agit sur tous les messages ; un client seulement sur les siens, et son
+ * identifiant vient de sa session, jamais de la requête. Une session du
+ * personnel sous le niveau administrateur est refusée : son identifiant n'est
+ * pas un identifiant client.
+ *
+ * Classification exhaustive : backend/tests/unit/messages-routes-authz.test.ts
  */
 
 import {
@@ -13,11 +21,18 @@ import {
   Body,
   Logger,
   HttpException,
+  ForbiddenException,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+import { AuthSource, STAFF_LEVEL } from '@auth/session-privilege';
 import { MessagesService } from './messages.service';
 import {
   OperationFailedException,
   DomainNotFoundException,
+  DomainValidationException,
 } from '@common/exceptions';
 
 /** Extract message string from an unknown error */
@@ -40,7 +55,79 @@ function hasHttpStatus(error: unknown, status: number): boolean {
   return false;
 }
 
+interface SessionUser {
+  id?: string | number;
+  level?: string | number;
+  isAdmin?: boolean;
+  authSource?: AuthSource;
+}
+
+/** Appelant d'une route : administrateur, ou client titulaire de ses messages. */
+interface Caller {
+  id: string;
+  isAdmin: boolean;
+}
+
+/**
+ * Lit l'appelant sur la session. Même règle qu'`IsAdminGuard` pour
+ * l'administrateur ; sinon seule une session ouverte par un compte client est
+ * titulaire de messages.
+ */
+function resolveCaller(request: Express.Request): Caller {
+  const session = (request.user ?? {}) as SessionUser;
+  const id = session.id === undefined ? '' : String(session.id);
+  const level = parseInt(String(session.level ?? 0), 10) || 0;
+
+  if (session.isAdmin === true || level >= STAFF_LEVEL.ADMIN) {
+    return { id, isAdmin: true };
+  }
+  if (session.authSource === 'customer' && id !== '') {
+    return { id, isAdmin: false };
+  }
+  throw new ForbiddenException('Access denied');
+}
+
+/**
+ * Client au nom duquel la route agit. Un client n'agit que pour lui-même ; un
+ * administrateur nomme le client dans la requête.
+ */
+function actingCustomerId(
+  caller: Caller,
+  claimed: string | undefined,
+): string | undefined {
+  if (caller.isAdmin) return claimed;
+  if (claimed !== undefined && String(claimed) !== caller.id) {
+    throw new ForbiddenException('Access denied');
+  }
+  return caller.id;
+}
+
+/** Comme `actingCustomerId`, pour une route qui ne peut pas agir sans client. */
+function requireActingCustomerId(
+  caller: Caller,
+  claimed: string | undefined,
+  field: string,
+): string {
+  const customerId = actingCustomerId(caller, claimed);
+  if (customerId === undefined || customerId === '') {
+    throw new DomainValidationException({
+      message: `${field} est requis`,
+      field,
+    });
+  }
+  return customerId;
+}
+
+/** Le message d'un autre client répond comme un message absent. */
+function assertHolder(caller: Caller, message: { customerId: string }): void {
+  if (caller.isAdmin) return;
+  if (String(message.customerId) !== caller.id) {
+    throw new DomainNotFoundException({ message: 'Message non trouvé' });
+  }
+}
+
 @Controller('api/messages')
+@UseGuards(AuthenticatedGuard)
 export class MessagesController {
   private readonly logger = new Logger(MessagesController.name);
 
@@ -52,6 +139,7 @@ export class MessagesController {
    */
   @Get()
   async getMessages(
+    @Req() request: Express.Request,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('staff') staffId?: string,
@@ -61,6 +149,12 @@ export class MessagesController {
   ) {
     this.logger.log('API Messages: GET /api/messages');
 
+    // Hors du `try` : un refus ne doit pas devenir une erreur serveur.
+    const scopedCustomerId = actingCustomerId(
+      resolveCaller(request),
+      customerId,
+    );
+
     try {
       const pageNum = parseInt(page || '1', 10);
       const limitNum = parseInt(limit || '20', 10);
@@ -69,7 +163,7 @@ export class MessagesController {
         page: pageNum,
         limit: limitNum,
         staffId,
-        customerId,
+        customerId: scopedCustomerId,
         search,
         status: (status as 'open' | 'closed' | 'all') || 'all',
       };
@@ -100,11 +194,18 @@ export class MessagesController {
    * GET /api/messages/:id
    */
   @Get(':id')
-  async getMessageById(@Param('id') messageId: string) {
+  async getMessageById(
+    @Req() request: Express.Request,
+    @Param('id') messageId: string,
+  ) {
     this.logger.log(`API Messages: GET /api/messages/${messageId}`);
+
+    const caller = resolveCaller(request);
 
     try {
       const message = await this.messagesService.getMessageById(messageId);
+
+      assertHolder(caller, message);
 
       this.logger.log(`API Messages: Message ${messageId} trouvé`);
       return {
@@ -132,9 +233,10 @@ export class MessagesController {
    */
   @Post()
   async createMessage(
+    @Req() request: Express.Request,
     @Body()
     messageData: {
-      customerId: string;
+      customerId?: string;
       staffId: string;
       orderId?: string;
       subject: string;
@@ -144,8 +246,17 @@ export class MessagesController {
   ) {
     this.logger.log('API Messages: POST /api/messages');
 
+    const customerId = requireActingCustomerId(
+      resolveCaller(request),
+      messageData?.customerId,
+      'customerId',
+    );
+
     try {
-      const newMessage = await this.messagesService.createMessage(messageData);
+      const newMessage = await this.messagesService.createMessage({
+        ...messageData,
+        customerId,
+      });
 
       this.logger.log(`API Messages: Nouveau message créé ${newMessage.id}`);
       return {
@@ -166,6 +277,7 @@ export class MessagesController {
    * PUT /api/messages/:id/close
    */
   @Put(':id/close')
+  @UseGuards(IsAdminGuard)
   async closeMessage(@Param('id') messageId: string) {
     this.logger.log(`API Messages: PUT /api/messages/${messageId}/close`);
 
@@ -192,13 +304,25 @@ export class MessagesController {
    */
   @Put(':id/read')
   async markAsRead(
+    @Req() request: Express.Request,
     @Param('id') messageId: string,
     @Body() body?: { readerId?: string },
   ) {
     this.logger.log(`API Messages: PUT /api/messages/${messageId}/read`);
 
+    const caller = resolveCaller(request);
+    if (!caller.isAdmin) {
+      assertHolder(
+        caller,
+        await this.messagesService.getMessageById(messageId),
+      );
+    }
+
     try {
-      const readerId = body?.readerId || 'unknown';
+      // Le lecteur d'un client est le client de la session.
+      const readerId = caller.isAdmin
+        ? body?.readerId || caller.id || 'unknown'
+        : caller.id;
       const message = await this.messagesService.markAsRead(
         messageId,
         readerId,
@@ -225,11 +349,19 @@ export class MessagesController {
    * GET /api/messages/stats?customer=123
    */
   @Get('stats')
-  async getMessageStats(@Query('customer') customerId?: string) {
+  async getMessageStats(
+    @Req() request: Express.Request,
+    @Query('customer') customerId?: string,
+  ) {
     this.logger.log('API Messages: GET /api/messages/stats');
 
+    const scopedCustomerId = actingCustomerId(
+      resolveCaller(request),
+      customerId,
+    );
+
     try {
-      const stats = await this.messagesService.getStatistics(customerId);
+      const stats = await this.messagesService.getStatistics(scopedCustomerId);
 
       this.logger.log('API Messages: Statistiques calculées');
       return {
@@ -245,15 +377,20 @@ export class MessagesController {
   }
 
   /**
-   * Récupérer les statistiques globales des messages (admin)
+   * Récupérer les statistiques des messages visibles par l'appelant :
+   * globales pour un administrateur, les siennes pour un client.
    * GET /api/messages/stats/overview
    */
   @Get('stats/overview')
-  async getMessageStatsOverview() {
+  async getMessageStatsOverview(@Req() request: Express.Request) {
     this.logger.log('API Messages: GET /api/messages/stats/overview');
 
+    const caller = resolveCaller(request);
+
     try {
-      const stats = await this.messagesService.getStatistics();
+      const stats = await this.messagesService.getStatistics(
+        caller.isAdmin ? undefined : caller.id,
+      );
 
       this.logger.log('API Messages: Statistiques calculées');
       return {
@@ -273,6 +410,7 @@ export class MessagesController {
    * GET /api/messages/customers
    */
   @Get('customers')
+  @UseGuards(IsAdminGuard)
   async getCustomers(@Query('limit') limit?: string) {
     this.logger.log('API Messages: GET /api/messages/customers');
 
@@ -299,15 +437,22 @@ export class MessagesController {
    */
   @Put(':id/archive')
   async archiveMessage(
+    @Req() request: Express.Request,
     @Param('id') messageId: string,
-    @Body() body: { userId: string },
+    @Body() body?: { userId?: string },
   ) {
     this.logger.log(`API Messages: PUT /api/messages/${messageId}/archive`);
+
+    const userId = requireActingCustomerId(
+      resolveCaller(request),
+      body?.userId,
+      'userId',
+    );
 
     try {
       const message = await this.messagesService.archiveMessage(
         messageId,
-        body.userId,
+        userId,
       );
 
       this.logger.log(`API Messages: Message ${messageId} archivé`);
@@ -337,13 +482,20 @@ export class MessagesController {
    */
   @Put(':id/delete')
   async deleteMessage(
+    @Req() request: Express.Request,
     @Param('id') messageId: string,
-    @Body() body: { userId: string },
+    @Body() body?: { userId?: string },
   ) {
     this.logger.log(`API Messages: PUT /api/messages/${messageId}/delete`);
 
+    const userId = requireActingCustomerId(
+      resolveCaller(request),
+      body?.userId,
+      'userId',
+    );
+
     try {
-      await this.messagesService.deleteMessage(messageId, body.userId);
+      await this.messagesService.deleteMessage(messageId, userId);
 
       this.logger.log(`API Messages: Message ${messageId} supprimé`);
       return {
@@ -371,16 +523,30 @@ export class MessagesController {
    */
   @Post(':id/reply')
   async replyToMessage(
+    @Req() request: Express.Request,
     @Param('id') messageId: string,
-    @Body() body: { userId: string; content: string },
+    @Body() body?: { userId?: string; content?: string },
   ) {
     this.logger.log(`API Messages: POST /api/messages/${messageId}/reply`);
+
+    const userId = requireActingCustomerId(
+      resolveCaller(request),
+      body?.userId,
+      'userId',
+    );
+    const content = body?.content;
+    if (typeof content !== 'string' || content === '') {
+      throw new DomainValidationException({
+        message: 'content est requis',
+        field: 'content',
+      });
+    }
 
     try {
       const replyMessage = await this.messagesService.replyToMessage(
         messageId,
-        body.userId,
-        body.content,
+        userId,
+        content,
       );
 
       this.logger.log(
