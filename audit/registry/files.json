@@ -44536,7 +44536,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 202,
+      "loc": 204,
       "owner": "__unassigned__",
       "path": "frontend/app/components/blog/ArticleNavigation.tsx",
       "risk": "low",
@@ -50296,10 +50296,11 @@
       "importedBy": [],
       "imports": [
         "frontend/app/hooks/useSeoLinkTracking.ts",
-        "frontend/app/types/pieces-route.types.ts"
+        "frontend/app/types/pieces-route.types.ts",
+        "~/components/blog/ArticleNavigation"
       ],
       "kind": "config",
-      "loc": 177,
+      "loc": 178,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesRelatedArticles.tsx",
       "risk": "low",
@@ -61640,7 +61641,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 528,
+      "loc": 547,
       "owner": "__unassigned__",
       "path": "frontend/app/services/pieces/pieces-route.service.ts",
       "risk": "low",
@@ -61960,7 +61961,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 234,
+      "loc": 239,
       "owner": "__unassigned__",
       "path": "frontend/app/types/pieces-route.types.ts",
       "risk": "low",
@@ -66097,6 +66098,25 @@
       "loc": 151,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-oem-section.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-related-articles-direct-links.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 237,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-related-articles-direct-links.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
