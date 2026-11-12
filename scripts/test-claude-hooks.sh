@@ -249,6 +249,74 @@ assert_contains "sessionstart cron en warn → alerte AVERTISSEMENT" "cron disk 
 
 rm -rf "$D" "$H" "$W"
 
+# Crons de nettoyage Claude : chaque passage enregistre son issue, lue par le hook SessionStart.
+# Bac à sable : HOME, journal, état et fichier de réglages factices ; aucun processus visé
+# (motif sans correspondance).
+echo ""
+echo "=== clean-orphan-claude.sh + clean-settings-local.sh : issue enregistrée ==="
+
+CB=$(mktemp -d)
+mkdir -p "$CB/home/.claude/ide" "$CB/state"
+run_orphan() { # run_orphan <state_dir> <journal> [args…]
+  local dir="$1" log="$2"; shift 2
+  HOME="$CB/home" CRON_STATE_DIR="$dir" CLAUDE_ORPHAN_LOG="$log" \
+    CLAUDE_ORPHAN_PATTERN="zz-aucun-processus-$$" \
+    bash scripts/claude-hooks/clean-orphan-claude.sh "$@" >/dev/null 2>&1
+}
+
+run_orphan "$CB/state" "$CB/orphan.log"
+assert_exit "clean-orphan-claude nominal → exit 0" "0" "$?"
+assert_contains "clean-orphan-claude nominal → état ok" '^"ok"$' "$(state "$CB/state/clean-orphan-claude.json" '.status')"
+assert_contains "clean-orphan-claude nominal → cadence déclarée (30 min)" '^1800$' "$(state "$CB/state/clean-orphan-claude.json" '.max_age_s')"
+assert_contains "clean-orphan-claude nominal → métriques enregistrées" '^0$' "$(state "$CB/state/clean-orphan-claude.json" '.metrics.killed')"
+
+mkdir -p "$CB/state-dry"
+run_orphan "$CB/state-dry" "$CB/orphan.log" --dry-run
+assert_exit "clean-orphan-claude --dry-run → exit 0" "0" "$?"
+assert_exit "clean-orphan-claude --dry-run → aucun état enregistré" "absent" \
+  "$([ -e "$CB/state-dry/clean-orphan-claude.json" ] && echo present || echo absent)"
+
+# Arrêt en erreur : un verrou IDE périmé à retirer, journal dans un dossier inexistant.
+echo '{"pid": 4999999}' > "$CB/home/.claude/ide/perime.lock"
+run_orphan "$CB/state" "$CB/absent/orphan.log"
+assert_exit "clean-orphan-claude en erreur → code de sortie conservé" "1" "$?"
+assert_contains "clean-orphan-claude en erreur → état error" '^"error"$' "$(state "$CB/state/clean-orphan-claude.json" '.status')"
+OUT=$(run_hook "$CB/state")
+assert_contains "clean-orphan-claude en erreur → alerte SessionStart" "cron clean-orphan-claude : ÉCHEC depuis" "$OUT"
+rm -f "$CB/home/.claude/ide/perime.lock"
+
+run_settings() { # run_settings <fichier de réglages>
+  CRON_STATE_DIR="$CB/state" CLAUDE_SETTINGS_LOCAL_FILE="$1" \
+    bash scripts/claude-hooks/clean-settings-local.sh >/dev/null 2>&1
+}
+settings_state() { state "$CB/state/clean-settings-local.json" "$1"; }
+
+run_settings "$CB/absent.json"
+assert_exit "clean-settings-local fichier absent → exit 0" "0" "$?"
+assert_contains "clean-settings-local fichier absent → état ok" '^"ok"$' "$(settings_state '.status')"
+assert_contains "clean-settings-local → cadence déclarée (8 jours)" '^691200$' "$(settings_state '.max_age_s')"
+
+# Fichier long et valide : 150 permissions Bash du même préfixe, une clé à préserver.
+jq -n '{permissions: {allow: ([range(150)] | map("Bash(git log -\(.))") + ["WebFetch(domain:example.org)"]),
+        additionalDirectories: ["/tmp"]}}' > "$CB/long.json"
+run_settings "$CB/long.json"
+assert_exit "clean-settings-local fichier long → exit 0" "0" "$?"
+assert_contains "clean-settings-local fichier long → permissions regroupées" '^\["Bash(git:\*)","WebFetch(domain:example.org)"\]$' \
+  "$(state "$CB/long.json" '.permissions.allow')"
+assert_contains "clean-settings-local fichier long → autres clés préservées" '^\["/tmp"\]$' \
+  "$(state "$CB/long.json" '.permissions.additionalDirectories')"
+assert_contains "clean-settings-local fichier long → résumé enregistré" 'nettoyé' "$(settings_state '.summary')"
+
+# Fichier long et illisible : le nettoyage s'arrête, l'état passe en erreur.
+for i in $(seq 1 120); do echo "{pas du json"; done > "$CB/casse.json"
+run_settings "$CB/casse.json"
+assert_exit "clean-settings-local fichier illisible → exit non nul" "nonzero" "$([ "$?" -ne 0 ] && echo nonzero || echo zero)"
+assert_contains "clean-settings-local fichier illisible → état error" '^"error"$' "$(settings_state '.status')"
+OUT=$(run_hook "$CB/state")
+assert_contains "clean-settings-local en erreur → alerte SessionStart" "cron clean-settings-local : ÉCHEC depuis" "$OUT"
+
+rm -rf "$CB"
+
 # sync-dev-runtime.sh de bout en bout, dans un bac à sable : dépôt git local, aucun réseau,
 # `npm run build` factice, santé HTTP remplacée par une URL file:// qui répond.
 echo ""
