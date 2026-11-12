@@ -12,7 +12,7 @@ license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Append-only to log.md (no DDL, no infra).
 tags: [logging, session, audit-trail, stop-hook]
 metadata:
-  version: "1.0"
+  version: "1.1"
   spec: agentskills.io/specification v1
 ---
 
@@ -33,7 +33,7 @@ metadata:
 
 ## Strict format
 
-Append exactly this block at the END of `/opt/automecanik/app/log.md`:
+Append exactly this block at the END of `log.md` at the root of the checkout where the work happened (`git rev-parse --show-toplevel`), never another checkout's:
 
 ```markdown
 
@@ -65,6 +65,7 @@ Rules:
    - Get commits : `git log main..HEAD --pretty=format:'%h'` (short SHAs).
    - Get top-level files : look at the largest `git diff --stat` paths.
 6. Append the block to `log.md`.
+7. Bound the file : run `bash scripts/claude-hooks/rotate-log.sh` from the same checkout. It does nothing while `log.md` is at most 600 lines; above, it moves the oldest entries to `log-archive-<year>.md` and says so on stderr. Nothing else rotates `log.md` : the Stop hook only suggests. When it rotates, `log-archive-<year>.md` goes in the same commit as `log.md`.
 
 ## Anti-patterns
 
