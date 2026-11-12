@@ -384,7 +384,8 @@ export class SeoControlService extends SupabaseBaseService {
       return; // already logged within 15min window
     }
     try {
-      await this.supabase.from('__seo_event_log').insert({
+      // supabase-js ne lève pas sur un refus de la base : il renvoie { error }.
+      const { error } = await this.supabase.from('__seo_event_log').insert({
         event_type: 'dashboard_view',
         severity: 'info',
         entity_url: null,
@@ -395,6 +396,11 @@ export class SeoControlService extends SupabaseBaseService {
           viewed_at: new Date().toISOString(),
         },
       });
+      if (error) {
+        this.logger.error(
+          `dashboard_view audit insert failed: ${error.message}`,
+        );
+      }
     } catch (err) {
       this.logger.error('dashboard_view audit insert failed', err as Error);
     }

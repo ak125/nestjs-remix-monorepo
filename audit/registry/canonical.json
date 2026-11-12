@@ -39137,12 +39137,35 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/services/seo-control.service.audit.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/seo-control.service.ts"
+      ],
+      "kind": "test",
+      "loc": 96,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/seo-control.service.audit.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/services/seo-control.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
         "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts",
-        "backend/src/modules/admin/processors/seo-control-refresh.processor.ts"
+        "backend/src/modules/admin/processors/seo-control-refresh.processor.ts",
+        "backend/src/modules/admin/services/seo-control.service.audit.test.ts"
       ],
       "imports": [
         "@repo/seo-types",
@@ -39152,7 +39175,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 423,
+      "loc": 429,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/seo-control.service.ts",
       "risk": "medium",
@@ -59340,41 +59363,12 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
-      "id": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
-        "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
-        "fs",
-        "os",
-        "path"
-      ],
-      "kind": "test",
-      "loc": 480,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
         "manual",
         "reachability"
       ],
       "domain": "D3",
       "id": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
       "importedBy": [
-        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
@@ -59382,7 +59376,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 146,
+      "loc": 100,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
       "risk": "high",
@@ -62905,7 +62899,6 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
       "importedBy": [
-        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs.service.ts"
       ],
@@ -62920,7 +62913,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 765,
+      "loc": 770,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
       "risk": "high",
@@ -62938,7 +62931,6 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "importedBy": [
-        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts"
@@ -62957,7 +62949,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 588,
+      "loc": 597,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "risk": "high",
@@ -62989,7 +62981,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 713,
+      "loc": 702,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
       "risk": "high",
@@ -63069,7 +63061,6 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "importedBy": [
-        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
@@ -63085,7 +63076,7 @@
         "backend/src/modules/seo/services/sitemap-v10.types.ts"
       ],
       "kind": "service",
-      "loc": 596,
+      "loc": 600,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "risk": "high",
@@ -106962,11 +106953,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "95b31b5c1b87236aeee4461521f23af96b08d7ec7ecc70a7506b24cce96f6f36",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "5e7bdb69c8b9df68f223965442b63b944550a261d98fa9af44a4456a39fd1966",
+      "audit/registry/files.json": "9064c787c0d7d996664e5d07e844103d9cbe0c8f3a90aa7f0869ab99df66b4c4",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "e06264541dfddaa381631a60c869d403cce6ed8fc69b37077f5f5504cd5987dd"
     },
-    "sotFingerprint": "51016fee4f54"
+    "sotFingerprint": "0a953c796bc2"
   },
   "runtime": [
     {

@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 4d47236952a37461bd08b3df76534218725d51d01fed0543e08461f43909e0b0
+source_sha256: e635b9a1117d08577bcb793202595d02257acab26db6efb036db8e0b51bce034
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `51016fee4f54`.
+Source sotFingerprint: `0a953c796bc2`.
 
 ## Comment l'utiliser
 
@@ -53,11 +53,11 @@ Source sotFingerprint: `51016fee4f54`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 433 (service=220, test=125, controller=34, config=28, script=26)
+- **Files**: 432 (service=220, test=124, controller=34, config=28, script=26)
 - **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (433)
+- **Top owners**: @ak125/seo-team (432)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=222, UNKNOWN=211
+- **Status**: LIVE=222, UNKNOWN=210
 
 ### D4 — Vehicle / Compatibility
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `51016fee4f54`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 941 (config=454, route=246, service=179, controller=39, test=23)
+- **Files**: 942 (config=454, route=246, service=179, controller=39, test=24)
 - **Runtime entrypoints**: 346
-- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (266)
+- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (267)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=513, UNKNOWN=428
+- **Status**: LIVE=513, UNKNOWN=429
 
 ### D9 — Import / ETL / Normalisation
 
