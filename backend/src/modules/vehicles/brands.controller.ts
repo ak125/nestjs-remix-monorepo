@@ -20,7 +20,10 @@ import {
   Logger,
   ParseIntPipe,
   Header,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import type { Request } from 'express';
 import { OperationFailedException } from '@common/exceptions';
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
@@ -380,6 +383,7 @@ export class BrandsController {
    * Met à jour le SEO d'une marque dans __seo_marque
    */
   @Put(':id/seo')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async updateBrandSeo(
     @Param('id', ParseIntPipe) marqueId: number,
     @Body()
@@ -463,6 +467,7 @@ export class BrandsController {
    * 🔥 Préchauffe le cache pour les marques populaires
    */
   @Post('cache/warm')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async warmBrandCache(@Body() body: { marqueIds?: number[] }) {
     // Marques populaires par défaut
     const defaultPopularBrands = [140, 33, 32, 85, 177, 106, 121, 52]; // Renault, BMW, Audi, Mercedes, VW, Peugeot, Citroën, Ford
@@ -479,6 +484,7 @@ export class BrandsController {
    * 🗑️ Invalide le cache d'une marque spécifique
    */
   @Post(':id/cache/invalidate')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async invalidateBrandCache(@Param('id', ParseIntPipe) marqueId: number) {
     await this.brandRpcService.invalidateCache(marqueId);
     return { status: 200, message: `Cache invalidé pour brand ${marqueId}` };
