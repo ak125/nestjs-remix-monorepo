@@ -1,3 +1,4 @@
+import { FLAG_PENALTIES } from '../../src/config/buying-guide-quality.constants';
 import {
   BuyingGuideDataService,
   type BuyingGuideContractV1,
@@ -631,6 +632,51 @@ describe('BuyingGuideDataService quality gate', () => {
     expect(autoGuide.faq.length).toBeGreaterThanOrEqual(3);
     expect(autoGuide.quality.verified).toBe(false);
     expect(autoGuide.quality.source).toMatch(/^fallback:\/\//);
+  });
+
+  // CT-02 : le contrat automatique se notait 95 sans drapeau alors que ses
+  // sections sont un gabarit et que sa source n'est pas une provenance admise.
+  it('note le guide automatique par ses drapeaux, comme un contrat de la base', () => {
+    const autoGuide = service.buildAutoBuyingGuideV1({
+      pgId: '479',
+      pgName: 'Disque de frein',
+      familyName: 'Freinage',
+    });
+    const expectedFlags = [
+      'SYMPTOMS_TOO_SMALL',
+      'TOO_SHORT',
+      'FAQ_TOO_SMALL',
+      'MISSING_SOURCE_PROVENANCE',
+    ] as const;
+
+    expect(autoGuide.quality.flags).toEqual(expectedFlags);
+    expect(autoGuide.quality.score).toBe(
+      100 - expectedFlags.reduce((sum, flag) => sum + FLAG_PENALTIES[flag], 0),
+    );
+    expect(autoGuide.quality.score).toBeLessThan(60);
+    expect(autoGuide.quality.verified).toBe(false);
+  });
+
+  it('le guide automatique ne dépasse jamais un contrat de la base aux sections substituées', () => {
+    const autoGuide = service.buildAutoBuyingGuideV1({
+      pgId: '7',
+      pgName: 'Filtre à huile',
+    });
+    const weakDbContract = transform({
+      sgpg_id: 7,
+      sgpg_pg_id: '7',
+      sgpg_intro_title: 'Filtre à huile',
+      sgpg_source_type: 'manual',
+      sgpg_source_uri: 'manual://automecanik/test#pg=7',
+      sgpg_source_verified: true,
+    });
+
+    expect(weakDbContract.quality.flags).toEqual(
+      expect.arrayContaining(['FAQ_TOO_SMALL', 'SYMPTOMS_TOO_SMALL']),
+    );
+    expect(autoGuide.quality.score).toBeLessThanOrEqual(
+      weakDbContract.quality.score,
+    );
   });
 
   it('rejette un guide anti-wiki avec criteres insuffisants et blabla generique', () => {

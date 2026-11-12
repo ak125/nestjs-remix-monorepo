@@ -768,7 +768,12 @@ export class GammeResponseBuilderService {
           arguments: buyingGuideContract.arguments,
           howToChoose: buyingGuideContract.howToChoose,
           symptoms: buyingGuideContract.symptoms,
-          faq: buyingGuideContract.faq,
+          // Une FAQ entièrement issue du gabarit de repli n'est pas publiée :
+          // sans elle, la page R1 affiche et balise la FAQ du sélecteur.
+          faq:
+            buyingGuideContract.sectionSources.faq === 'fallback'
+              ? []
+              : buyingGuideContract.faq,
           h1Override: buyingGuideContract.h1Override || null,
           h2Overrides: buyingGuideContract.h2Overrides || null,
           heroSubtitle: buyingGuideContract.heroSubtitle || null,
@@ -815,7 +820,10 @@ export class GammeResponseBuilderService {
               })) || [],
             howToChoose: null as string | null,
             symptoms: gammeBuyingGuide.symptoms || [],
-            faq: gammeBuyingGuide.faq || [],
+            faq:
+              gammeBuyingGuide.sectionSources?.faq === 'fallback'
+                ? []
+                : gammeBuyingGuide.faq || [],
             h1Override: null as string | null,
             h2Overrides: null as Record<string, string> | null,
             heroSubtitle: null as string | null,
