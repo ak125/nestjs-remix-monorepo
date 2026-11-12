@@ -6,11 +6,18 @@
  * depuis la ligne répond 301. Invariants couverts :
  *   - getTypeModelIndex : pagination, cache, déduplication, erreur levée ;
  *   - sitemapLinkState : live / orphan_type / stale_model ;
- *   - SitemapV10PiecesService : le sitemap des pièces n'émet plus ces URL.
+ *   - SitemapV10PiecesService : le sitemap des pièces n'émet plus ces URL ;
+ *   - HubsClusterService, HubsPriorityService : les hubs non plus.
  *
- * Pas d'I/O réseau : client Supabase factice.
+ * Pas d'I/O réseau : client Supabase factice. Le hub « money » écrit dans un
+ * répertoire temporaire.
  */
 
+import { promises as fs } from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+import { HubsClusterService } from '../services/sitemap-v10-hubs-cluster.service';
+import { HubsPriorityService } from '../services/sitemap-v10-hubs-priority.service';
 import { SitemapV10PiecesService } from '../services/sitemap-v10-pieces.service';
 import {
   getTypeModelIndex,
@@ -24,6 +31,7 @@ type Row = Record<string, unknown>;
 interface FakeOptions {
   autoType?: Row[];
   links?: Row[];
+  gammes?: Row[];
   autoTypeError?: string;
   linksError?: string;
 }
@@ -39,24 +47,34 @@ function fakeSupabase(options: FakeOptions) {
           ? (options.autoType ?? [])
           : table === '__sitemap_p_link'
             ? (options.links ?? [])
-            : [];
+            : table === 'pieces_gamme'
+              ? (options.gammes ?? [])
+              : [];
       const error =
         table === 'auto_type'
           ? options.autoTypeError
           : table === '__sitemap_p_link'
             ? options.linksError
             : undefined;
+      const all = () =>
+        error
+          ? { data: null, error: { message: error } }
+          : { data: rows, error: null };
       const builder = {
         select: () => builder,
         eq: () => builder,
         in: () => builder,
         gt: () => builder,
+        order: () => builder,
         limit: () => builder,
         maybeSingle: async () => ({ data: null, error: null }),
         range: async (from: number, to: number) =>
           error
             ? { data: null, error: { message: error } }
             : { data: rows.slice(from, to + 1), error: null },
+        // Requête attendue sans .range() : toutes les lignes de la table.
+        then: (resolve: (value: ReturnType<typeof all>) => unknown) =>
+          resolve(all()),
       };
       return builder;
     },
@@ -241,18 +259,35 @@ describe('sitemapLinkState', () => {
   });
 });
 
-describe('SitemapV10PiecesService — sitemap des pièces', () => {
-  const link = (modeleAlias: string, modeleId: number, typeId: number) => ({
-    map_pg_alias: 'alternateur',
-    map_pg_id: 4,
-    map_marque_alias: 'peugeot',
-    map_marque_id: 128,
-    map_modele_alias: modeleAlias,
-    map_modele_id: modeleId,
-    map_type_alias: '1-9-d',
-    map_type_id: typeId,
-  });
+const link = (modeleAlias: string, modeleId: number, typeId: number) => ({
+  map_pg_alias: 'alternateur',
+  map_pg_id: 4,
+  map_marque_alias: 'peugeot',
+  map_marque_id: 128,
+  map_modele_alias: modeleAlias,
+  map_modele_id: modeleId,
+  map_type_alias: '1-9-d',
+  map_type_id: typeId,
+  map_has_item: 30,
+});
 
+// Le type 7961 a quitté le modèle 128081 ; le type 500 y est toujours.
+const AUTO_TYPE = [
+  { type_id_i: 7961, type_modele_id: '128138' },
+  { type_id_i: 500, type_modele_id: '128081' },
+];
+
+// Une ligne à jour, une au modèle périmé, une au type disparu.
+const THREE_LINKS = [
+  link('boxer-i', 128081, 500),
+  link('boxer-i', 128081, 7961),
+  link('boxer-i', 128081, 120000),
+];
+
+const LIVE_URL =
+  '/pieces/alternateur-4/peugeot-128/boxer-i-128081/1-9-d-500.html';
+
+describe('SitemapV10PiecesService — sitemap des pièces', () => {
   async function generate(options: FakeOptions) {
     const fake = fakeSupabase(options);
     const written: string[] = [];
@@ -280,23 +315,12 @@ describe('SitemapV10PiecesService — sitemap des pièces', () => {
     return { result, written, logger };
   }
 
-  const AUTO_TYPE = [
-    { type_id_i: 7961, type_modele_id: '128138' },
-    { type_id_i: 500, type_modele_id: '128081' },
-  ];
-
   it('émet la ligne à jour, écarte le modèle périmé et le type orphelin', async () => {
     const { result, written, logger } = await generate({
       autoType: AUTO_TYPE,
-      links: [
-        link('boxer-i', 128081, 500),
-        link('boxer-i', 128081, 7961),
-        link('boxer-i', 128081, 120000),
-      ],
+      links: THREE_LINKS,
     });
-    expect(written).toEqual([
-      '/pieces/alternateur-4/peugeot-128/boxer-i-128081/1-9-d-500.html',
-    ]);
+    expect(written).toEqual([LIVE_URL]);
     expect(result.totalCount).toBe(1);
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining('Filtered out 2 URLs'),
@@ -334,5 +358,122 @@ describe('SitemapV10PiecesService — sitemap des pièces', () => {
     const result = await svc.generatePiecesSitemapsFromV9Source('hot');
     expect(result).toEqual({ filePaths: [], totalCount: 0 });
     expect(fake.calls.auto_type).toBeUndefined();
+  });
+});
+
+describe('HubsClusterService — hubs de cluster', () => {
+  type Collected = {
+    urls: Array<{ url: string; subcategory: string }>;
+    subcategoryStats: Array<{ name: string; count: number }>;
+  };
+
+  async function collect(options: FakeOptions): Promise<Collected> {
+    const svc = Object.create(
+      HubsClusterService.prototype,
+    ) as HubsClusterService;
+    Object.assign(svc as unknown as Record<string, unknown>, {
+      supabase: fakeSupabase(options),
+      logger: { log: jest.fn(), warn: jest.fn(), error: jest.fn() },
+      BASE_URL: 'https://example.test',
+    });
+    return (
+      svc as unknown as {
+        collectFamilyUrlsWithMetadata(config: unknown): Promise<Collected>;
+      }
+    ).collectFamilyUrlsWithMetadata({
+      title: 'Électricité',
+      description: '',
+      subcategories: [{ name: 'Alternateur', gamme_names: ['Alternateur'] }],
+    });
+  }
+
+  it('garde la ligne à jour, écarte le modèle périmé et le type orphelin', async () => {
+    const { urls, subcategoryStats } = await collect({
+      autoType: AUTO_TYPE,
+      gammes: [{ pg_id: 4 }],
+      links: THREE_LINKS,
+    });
+    expect(urls.map((u) => u.url)).toEqual([`https://example.test${LIVE_URL}`]);
+    expect(subcategoryStats).toEqual([{ name: 'Alternateur', count: 1 }]);
+  });
+
+  it('toutes les lignes périmées → aucune URL, sous-catégorie non comptée', async () => {
+    const { urls, subcategoryStats } = await collect({
+      autoType: AUTO_TYPE,
+      gammes: [{ pg_id: 4 }],
+      links: [link('boxer-i', 128081, 7961)],
+    });
+    expect(urls).toEqual([]);
+    expect(subcategoryStats).toEqual([]);
+  });
+
+  it('lecture de auto_type en erreur → exception, pas de hub vide', async () => {
+    await expect(
+      collect({
+        autoTypeError: 'permission denied',
+        gammes: [{ pg_id: 4 }],
+        links: THREE_LINKS,
+      }),
+    ).rejects.toThrow('permission denied');
+  });
+});
+
+describe('HubsPriorityService — hub « money »', () => {
+  let outDir: string;
+
+  beforeEach(async () => {
+    outDir = await fs.mkdtemp(path.join(os.tmpdir(), 'hub-money-'));
+  });
+
+  afterEach(async () => {
+    await fs.rm(outDir, { recursive: true, force: true });
+  });
+
+  async function generateMoney(options: FakeOptions) {
+    const svc = Object.create(
+      HubsPriorityService.prototype,
+    ) as HubsPriorityService;
+    Object.assign(svc as unknown as Record<string, unknown>, {
+      supabase: fakeSupabase(options),
+      logger: { log: jest.fn(), warn: jest.fn(), error: jest.fn() },
+      callRpc: async () => ({ data: [{ gamme_id: 4 }], error: null }),
+      BASE_URL: 'https://example.test',
+      OUTPUT_DIR: outDir,
+    });
+    const result = await svc.generateMoneyHub();
+    const file = path.join(outDir, 'hot', 'money.html');
+    const html = await fs.readFile(file, 'utf8').catch(() => null);
+    return { result, html };
+  }
+
+  it('n’écrit que le lien à jour', async () => {
+    const { result, html } = await generateMoney({
+      autoType: AUTO_TYPE,
+      links: THREE_LINKS,
+    });
+    expect(result.success).toBe(true);
+    expect(result.urlCount).toBe(1);
+    expect(html).toContain(`https://example.test${LIVE_URL}`);
+    expect(html).not.toContain('1-9-d-7961.html');
+    expect(html).not.toContain('1-9-d-120000.html');
+  });
+
+  it('lecture de auto_type en erreur → échec déclaré, aucun fichier écrit', async () => {
+    const { result, html } = await generateMoney({
+      autoTypeError: 'connection refused',
+      links: THREE_LINKS,
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('connection refused');
+    expect(html).toBeNull();
+  });
+
+  it('lecture des liens en erreur → échec déclaré, aucun fichier écrit', async () => {
+    const { result, html } = await generateMoney({
+      autoType: AUTO_TYPE,
+      linksError: 'statement timeout',
+    });
+    expect(result.success).toBe(false);
+    expect(html).toBeNull();
   });
 });
