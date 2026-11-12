@@ -22,7 +22,7 @@
  * Lineage (forensic replay) :
  *   snapshot_id   = UUID v4 (Node 16+ crypto.randomUUID), v7 V2 backlog
  *   snapshot_hash = SHA256 hex of fast-json-stable-stringify(payload-without-hash)
- *   generated_from = { rpc_versions: v1×5, decision_service_version: 'v1',
+ *   generated_from = { rpc_versions: v1×4 + low_ctr v4, decision_service_version: 'v1',
  *                      impact_score_version: 'v1', rules_catalog_version: 'v1' }
  */
 import { z } from "zod";
@@ -123,6 +123,40 @@ export const LowCtrOpportunitySchema = z.object({
 });
 export type LowCtrOpportunity = z.infer<typeof LowCtrOpportunitySchema>;
 
+/**
+ * Source du bloc Low CTR : enveloppe de `rpc_seo_low_ctr_v4`, transmise sans
+ * réinterprétation. Les lignes sont agrégées par page sur
+ * `__seo_gsc_daily_page_totals` (grain page fidèle), sur les seuls jours commités
+ * de `[data_from, data_to]`.
+ *
+ * `coverage_status` (calculé par la RPC, sans ratio) :
+ *   insufficient_data — aucune impression commitée sur la fenêtre ;
+ *   coverage_gap      — jour commité avec impressions mais sans ligne page ;
+ *   incomplete_days   — jours attendus absents ou non confirmés ;
+ *   ok                — aucun des cas précédents.
+ * Jours attendus = du début de fenêtre au dernier jour commité : le retard de
+ * fraîcheur en queue de fenêtre se lit sur `data_to`, pas sur `days_expected`.
+ *
+ * `total_qualifying` : pages qui passent les seuils avant la limite de 50 ;
+ * supérieur au nombre de lignes publiées quand la liste est tronquée.
+ */
+export const LowCtrCoverageSchema = z.object({
+  grain: z.literal("page_totals"),
+  coverage_status: z.enum([
+    "ok",
+    "incomplete_days",
+    "coverage_gap",
+    "insufficient_data",
+  ]),
+  retrieval_status: z.enum(["complete", "gap", "unknown"]),
+  data_from: z.string().nullable(),
+  data_to: z.string().nullable(),
+  days_expected: z.number().int().nonnegative(),
+  days_confirmed: z.number().int().nonnegative(),
+  total_qualifying: z.number().int().nonnegative(),
+});
+export type LowCtrCoverage = z.infer<typeof LowCtrCoverageSchema>;
+
 // ─── Block 4 : Conversion Gap (Task 0 GO) ───────────────────────────
 
 export const ConversionGapSchema = z.object({
@@ -164,7 +198,7 @@ export const GeneratedFromSchema = z.object({
   rpc_versions: z.object({
     traffic: z.literal("v1"),
     losers: z.literal("v1"),
-    low_ctr: z.literal("v1"),
+    low_ctr: z.literal("v4"),
     alerts: z.literal("v1"),
     conversion: z.literal("v1"),
   }),
@@ -270,6 +304,7 @@ export const SeoControlSnapshotSchema = SnapshotLineageSchema.extend({
   gscComparability: GscComparabilitySchema,
   trafficWindow: TrafficWindowSchema,
   topLosers: z.array(TopLoserSchema).max(20),
+  lowCtrCoverage: LowCtrCoverageSchema,
   lowCtrOpportunities: z.array(LowCtrOpportunitySchema).max(50),
   technicalAlerts: z.array(TechnicalAlertSchema).max(50),
   conversionAttribution: ConversionAttributionSchema,

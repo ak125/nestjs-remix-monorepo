@@ -18,15 +18,66 @@ export interface ModernMessage {
   isRead: boolean;
 }
 
+/** Filtres de statut acceptés par la liste. */
+export const MESSAGE_STATUS_FILTERS = [
+  'all',
+  'open',
+  'closed',
+  'unread',
+] as const;
+export type MessageStatusFilter = (typeof MESSAGE_STATUS_FILTERS)[number];
+
 // Interface pour les filtres
 export interface MessageFilters {
   page?: number;
   limit?: number;
   search?: string;
-  status?: 'open' | 'closed' | 'all';
+  status?: MessageStatusFilter;
   customerId?: string;
   staffId?: string;
 }
+
+/** Ligne de `___xtr_msg` telle que la base la renvoie. */
+interface LegacyMessageRow {
+  msg_id: string;
+  msg_cst_id: string;
+  msg_cnfa_id: string;
+  msg_ord_id: string | null;
+  msg_subject: string | null;
+  msg_content: string | null;
+  msg_close: string | null;
+  msg_open: string | null;
+  msg_date: string;
+}
+
+/**
+ * `msg_close` et `msg_open` sont des colonnes texte : la base renvoie '0' ou
+ * '1', jamais un nombre.
+ */
+const FLAG_SET = '1';
+const FLAG_UNSET = '0';
+
+function isFlagSet(value: unknown): boolean {
+  return String(value) === FLAG_SET;
+}
+
+/**
+ * Motif `ilike` « contient ce texte », cité pour la grammaire de filtre
+ * PostgREST : le texte saisi ne peut ni fermer la valeur ni ajouter une
+ * condition, et `%`, `_` et `\` y sont cherchés tels quels.
+ */
+function containsPattern(term: string): string {
+  const literal = term.replace(/[\\%_]/g, '\\$&');
+  const quoted = `%${literal}%`.replace(/[\\"]/g, '\\$&');
+  return `"${quoted}"`;
+}
+
+/**
+ * Mode de comptage : exact tant que le résultat reste sous le plafond de
+ * lignes de l'API, estimation du planificateur au-delà. Un comptage exact de
+ * la table entière la parcourt à chaque appel.
+ */
+const COUNT_MODE = 'estimated';
 
 @Injectable()
 export class MessageDataService extends SupabaseBaseService {
@@ -55,12 +106,16 @@ export class MessageDataService extends SupabaseBaseService {
         .from(this.tableName)
         .select(
           'msg_id, msg_cst_id, msg_cnfa_id, msg_ord_id, msg_subject, msg_content, msg_close, msg_date, msg_open',
-          { count: 'exact' },
+          { count: COUNT_MODE },
         );
 
       // Filtres
-      if (status !== 'all') {
-        query = query.eq('msg_close', status === 'closed' ? 1 : 0);
+      if (status === 'closed') {
+        query = query.eq('msg_close', FLAG_SET);
+      } else if (status === 'open') {
+        query = query.eq('msg_close', FLAG_UNSET);
+      } else if (status === 'unread') {
+        query = query.eq('msg_open', FLAG_UNSET);
       }
 
       if (customerId) {
@@ -72,8 +127,9 @@ export class MessageDataService extends SupabaseBaseService {
       }
 
       if (search) {
+        const pattern = containsPattern(search);
         query = query.or(
-          `msg_subject.ilike.%${search}%,msg_content.ilike.%${search}%`,
+          `msg_subject.ilike.${pattern},msg_content.ilike.${pattern}`,
         );
       }
 
@@ -236,42 +292,67 @@ export class MessageDataService extends SupabaseBaseService {
 
   /**
    * Obtenir les statistiques
+   *
+   * Chaque chiffre est compté par la base. Les lire dans les lignes renvoyées
+   * les plafonnait au nombre de lignes d'une réponse.
    */
   async getStatistics(
     customerId?: string,
   ): Promise<{ total: number; open: number; closed: number; unread: number }> {
     try {
-      let query = this.supabase
-        .from(this.tableName)
-        .select('msg_close, msg_open');
+      const [total, closed, unread] = await Promise.all([
+        this.countMessages(customerId),
+        this.countMessages(customerId, {
+          column: 'msg_close',
+          value: FLAG_SET,
+        }),
+        this.countMessages(customerId, {
+          column: 'msg_open',
+          value: FLAG_UNSET,
+        }),
+      ]);
 
-      // Filtrer par customer si spécifié
-      if (customerId) {
-        query = query.eq('msg_cst_id', customerId);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        this.logger.error('Error fetching statistics:', error);
-        throw new DatabaseException({
-          code: ErrorCodes.MESSAGE.FETCH_FAILED,
-          message: `Failed to fetch statistics: ${error.message}`,
-          details: error.message,
-          cause: error instanceof Error ? error : new Error(String(error)),
-        });
-      }
-
-      const total = data?.length || 0;
-      const open = data?.filter((row) => row.msg_close === 0).length || 0;
-      const closed = data?.filter((row) => row.msg_close === 1).length || 0;
-      const unread = data?.filter((row) => row.msg_open === 0).length || 0;
-
-      return { total, open, closed, unread };
+      // Tout message non fermé est ouvert, comme dans `mapLegacyToModern`.
+      return { total, open: Math.max(total - closed, 0), closed, unread };
     } catch (error) {
       this.logger.error('Error in getStatistics:', error);
       throw error;
     }
+  }
+
+  /**
+   * Compter les messages d'un client (ou de tous), sans lire leurs lignes.
+   */
+  private async countMessages(
+    customerId: string | undefined,
+    flag?: { column: 'msg_close' | 'msg_open'; value: string },
+  ): Promise<number> {
+    let query = this.supabase
+      .from(this.tableName)
+      .select('msg_id', { count: COUNT_MODE, head: true });
+
+    if (customerId) {
+      query = query.eq('msg_cst_id', customerId);
+    }
+
+    if (flag) {
+      query = query.eq(flag.column, flag.value);
+    }
+
+    const { count, error } = await query;
+
+    if (error || count === null) {
+      const reason = error?.message || 'count missing from the response';
+      this.logger.error('Error counting messages:', error ?? reason);
+      throw new DatabaseException({
+        code: ErrorCodes.MESSAGE.FETCH_FAILED,
+        message: `Failed to fetch statistics: ${reason}`,
+        details: reason,
+        cause: error instanceof Error ? error : new Error(reason),
+      });
+    }
+
+    return count;
   }
 
   /**
@@ -307,7 +388,7 @@ export class MessageDataService extends SupabaseBaseService {
   /**
    * Mapper les données legacy vers le format moderne
    */
-  private mapLegacyToModern(row: any): ModernMessage {
+  private mapLegacyToModern(row: LegacyMessageRow): ModernMessage {
     return {
       id: row.msg_id,
       customerId: row.msg_cst_id,
@@ -315,11 +396,11 @@ export class MessageDataService extends SupabaseBaseService {
       orderId: row.msg_ord_id || undefined,
       subject: row.msg_subject || '',
       content: row.msg_content || '',
-      status: row.msg_close === 1 ? 'closed' : 'open',
+      status: isFlagSet(row.msg_close) ? 'closed' : 'open',
       priority: 'normal',
       createdAt: new Date(row.msg_date),
       updatedAt: new Date(row.msg_date),
-      isRead: row.msg_open === 1,
+      isRead: isFlagSet(row.msg_open),
     };
   }
 }
