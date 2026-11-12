@@ -12,10 +12,13 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
+import { AdminOrInternalKeyGuard } from '@auth/admin-or-internal-key.guard';
 import { SeoMonitorSchedulerService } from '../../../workers/services/seo-monitor-scheduler.service';
 
 @Controller('api/seo/monitor')
+@UseGuards(AdminOrInternalKeyGuard)
 export class SeoMonitorController {
   constructor(private readonly schedulerService: SeoMonitorSchedulerService) {}
 
