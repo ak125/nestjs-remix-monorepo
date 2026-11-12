@@ -227,6 +227,43 @@ export const GscComparabilitySchema = z
   });
 export type GscComparability = z.infer<typeof GscComparabilitySchema>;
 
+// ─── Attribution des commandes aux pages (bloc Conversion) ──────────
+
+/**
+ * `rpc_seo_conversion_v1` rattache une commande payée à une page par
+ * `___xtr_order_line.orl_website_url`. Quand aucune ligne des commandes payées
+ * de la fenêtre ne porte cette adresse, la jointure ne trouve rien et la RPC
+ * rend 0 commande pour chaque page : une absence de mesure, pas une absence de
+ * vente. `measured` vaut alors `false` et `conversionGap` est `null`.
+ *
+ * `order_tables_not_readable` : le backend tourne avec une clé qui ne lit pas
+ * les tables de commandes (mode lecture seule). Leur lecture rend zéro ligne
+ * sans erreur ; ce zéro ne prouve rien, les comptages publiés valent 0.
+ *
+ * `paid_orders` compte les commandes payées examinées sur `[from, to[` (dates
+ * UTC, mêmes bornes que la RPC), au plus les 1 000 plus récentes.
+ */
+export const ConversionAttributionSchema = z
+  .object({
+    measured: z.boolean(),
+    reason: z
+      .enum(["no_attributed_order_line", "order_tables_not_readable"])
+      .nullable(),
+    source: z.literal("___xtr_order_line.orl_website_url"),
+    from: z.string(),
+    to: z.string(),
+    paid_orders: z.number().int().nonnegative(),
+    paid_order_lines: z.number().int().nonnegative(),
+    attributed_order_lines: z.number().int().nonnegative(),
+  })
+  .refine((a) => a.measured === (a.reason === null), {
+    message: "reason doit être null si et seulement si measured",
+  })
+  .refine((a) => a.attributed_order_lines <= a.paid_order_lines, {
+    message: "attributed_order_lines ne peut pas dépasser paid_order_lines",
+  });
+export type ConversionAttribution = z.infer<typeof ConversionAttributionSchema>;
+
 export const SeoControlSnapshotSchema = SnapshotLineageSchema.extend({
   range: RangeSchema,
   window_days: z.number().int().positive(),
@@ -235,7 +272,11 @@ export const SeoControlSnapshotSchema = SnapshotLineageSchema.extend({
   topLosers: z.array(TopLoserSchema).max(20),
   lowCtrOpportunities: z.array(LowCtrOpportunitySchema).max(50),
   technicalAlerts: z.array(TechnicalAlertSchema).max(50),
+  conversionAttribution: ConversionAttributionSchema,
   conversionGap: z.array(ConversionGapSchema).max(20).nullable(),
+}).refine((s) => s.conversionAttribution.measured || s.conversionGap === null, {
+  message:
+    "conversionGap doit être null quand l'attribution des commandes n'est pas mesurée",
 });
 
 export type SeoControlSnapshot = z.infer<typeof SeoControlSnapshotSchema>;

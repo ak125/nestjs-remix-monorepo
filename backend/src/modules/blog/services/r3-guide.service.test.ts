@@ -124,6 +124,9 @@ function makeMocks() {
     getCompatibleVehicles: jest.fn().mockResolvedValue([]),
   };
   const internalLinkingService = {
+    resolveGammeAliasLinks: jest
+      .fn()
+      .mockImplementation(async (s: string) => s),
     processLinkGamme: jest.fn().mockImplementation(async (s: string) => s),
   };
   // Par défaut : HORS canary (flags OFF en prod) → le chemin legacy caché reste inchangé.
@@ -778,6 +781,61 @@ describe('R3GuideService — sections META servies seulement si conformes au con
     expect(payload?.metaSections[0].html).toContain(
       '<a href="/pieces/plaquette-de-frein-402.html">',
     );
+  });
+
+  it('liens de gamme sans identifiant résolus avant les jetons #LinkGamme_n#', async () => {
+    const { service, seoService, internalLinkingService } =
+      await buildService();
+    const calls: string[] = [];
+    internalLinkingService.resolveGammeAliasLinks.mockImplementation(
+      async (s: string) => {
+        calls.push('resolve');
+        return s.replace(
+          'href="/pieces/batterie"',
+          'href="/pieces/batterie-1.html"',
+        );
+      },
+    );
+    internalLinkingService.processLinkGamme.mockImplementation(
+      async (s: string) => {
+        calls.push('tokens');
+        return s;
+      },
+    );
+    seoService.getGammeConseil.mockResolvedValue([
+      {
+        ...body,
+        sectionType: 'S7',
+        content: '<b><a href="/pieces/batterie">batterie</a></b>',
+      },
+    ]);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(calls).toEqual(['resolve', 'tokens']);
+    expect(payload?.bodySections[0].html).toBe(
+      '<b><a href="/pieces/batterie-1.html">batterie</a></b>',
+    );
+  });
+
+  it('résolution des liens de gamme en échec : le guide échoue, rien n’est mis en cache', async () => {
+    const { service, seoService, internalLinkingService, cache } =
+      await buildService();
+    const setSpy = jest.spyOn(cache, 'set');
+    internalLinkingService.resolveGammeAliasLinks.mockRejectedValueOnce(
+      new Error('lecture en échec'),
+    );
+    seoService.getGammeConseil.mockResolvedValue([body]);
+
+    await expect(service.getR3GuidePayload(PG_ALIAS)).rejects.toThrow(
+      'lecture en échec',
+    );
+    expect(setSpy).not.toHaveBeenCalled();
+
+    // La panne passée, le guide est calculé puis mis en cache.
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+    expect(payload?.bodySections).toHaveLength(1);
+    expect(setSpy).toHaveBeenCalledTimes(1);
   });
 
   it('une section META écartée ne compte pas dans le temps de lecture', async () => {

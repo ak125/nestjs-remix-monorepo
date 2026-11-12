@@ -6165,8 +6165,7 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
-        "runtime:backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+        "runtime:backend/src/modules/seo-monitoring/services/google-credentials.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts",
       "kind": "nestjs-service",
