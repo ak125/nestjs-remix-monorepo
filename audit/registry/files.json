@@ -29849,10 +29849,15 @@
       "importedBy": [],
       "imports": [
         "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
-        "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts"
+        "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
+        "fs",
+        "os",
+        "path"
       ],
       "kind": "test",
-      "loc": 339,
+      "loc": 480,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
       "risk": "low",
@@ -33269,6 +33274,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
       "importedBy": [
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs.service.ts"
       ],
@@ -33300,6 +33306,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "importedBy": [
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts"
