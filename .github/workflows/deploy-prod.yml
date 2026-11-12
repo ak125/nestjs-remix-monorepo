@@ -38,6 +38,24 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
 
     steps:
+      # A run executes the deploy-prod.yml of the ref it was started on, and the
+      # dispatch form offers `main` by default. Started on a branch, this job
+      # would deploy a commit that no v* tag designates and publish its image
+      # under the branch name. The tag carries the owner's decision: refuse any
+      # other ref first, before the checkout, while nothing has touched the host.
+      # Same refs as the push trigger above (`v*`, where `*` does not match `/`).
+      # GITHUB_REF is set by the runner; no workflow input can change it.
+      - name: 🔖 Release ref gate — only a v* tag deploys PROD
+        run: |
+          set -euo pipefail
+          REF="${GITHUB_REF:-}"
+          if [[ ! "$REF" =~ ^refs/tags/v[^/]*$ ]]; then
+            echo "FATAL: PROD deploys only from a v* tag; this run was started on '${REF:-<unset>}'." >&2
+            echo "Start it again on the tag of the version to deploy." >&2
+            exit 1
+          fi
+          echo "Release ref: $REF"
+
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 

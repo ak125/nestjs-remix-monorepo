@@ -72834,7 +72834,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 298,
+      "loc": 355,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-image-selection.test.mjs",
       "risk": "low",
