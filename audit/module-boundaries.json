@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 156,
-      "loc_total": 43800,
+      "files_count": 157,
+      "loc_total": 43902,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -103,8 +103,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 43,
-      "loc_total": 15097,
+      "files_count": 42,
+      "loc_total": 15042,
       "has_barrel": false
     },
     "bot-guard": {
@@ -186,8 +186,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 105,
-      "loc_total": 25189,
+      "files_count": 104,
+      "loc_total": 25128,
       "has_barrel": true
     },
     "customers": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110699,
+      "loc_total": 110780,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 20,
-      "loc_total": 6558,
+      "loc_total": 6547,
       "has_barrel": true
     },
     "health": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 283,
-      "loc_total": 60083,
+      "loc_total": 60392,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 353,
-      "loc_total": 70038,
+      "files_count": 358,
+      "loc_total": 71772,
       "has_barrel": true
     },
     "upload": {
@@ -1516,7 +1516,7 @@
     {
       "from": "blog",
       "to": "config",
-      "count": 7
+      "count": 6
     },
     {
       "from": "blog",
@@ -1766,7 +1766,7 @@
     {
       "from": "gamme-rest",
       "to": "config",
-      "count": 3
+      "count": 2
     },
     {
       "from": "gamme-rest",
