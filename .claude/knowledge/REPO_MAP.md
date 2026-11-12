@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: b5e6b4a6e5d32b2d80c600451fb7328471c0f8fa26fe6797acc6e2a38dedc705
+source_sha256: 4a0c5ab1fe1ab8aeee8d48c99990083cbc248e501d1947672f4c7ff1fa67f668
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3158 |
+| Files (Layer 1) | 3159 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `4464b3f44c92`.
+Source sotFingerprint: `58ec9bcffec5`.
 
 ## Comment l'utiliser
 
@@ -69,11 +69,11 @@ Source sotFingerprint: `4464b3f44c92`.
 
 ### D5 — Blog / Content
 
-- **Files**: 46 (service=31, test=9, controller=6)
+- **Files**: 47 (service=31, test=10, controller=6)
 - **Runtime entrypoints**: 26
-- **Top owners**: @ak125/content-team (46)
+- **Top owners**: @ak125/content-team (47)
 - **Knowledge prose**: [`blog`](modules/blog.md)
-- **Status**: LIVE=33, UNKNOWN=13
+- **Status**: LIVE=33, UNKNOWN=14
 
 ### D6 — RAG & AI Engine
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `4464b3f44c92`.
 
 ### D13 — Config & System
 
-- **Files**: 246 (script=88, service=72, config=54, test=32)
+- **Files**: 247 (script=88, service=72, config=54, test=33)
 - **Runtime entrypoints**: 16
-- **Top owners**: @ak125 (246)
-- **Status**: LIVE=92, UNKNOWN=154
+- **Top owners**: @ak125 (247)
+- **Status**: LIVE=92, UNKNOWN=155
 
 ### D14 — Gamme Aggregates & V-Level
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `4464b3f44c92`.
 
 ### D15 — Security & Governance
 
-- **Files**: 316 (test=205, script=62, service=46, config=2, controller=1)
+- **Files**: 315 (test=204, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (316)
+- **Top owners**: @ak125 (315)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=257
+- **Status**: LIVE=59, UNKNOWN=256
 
 ### D16 — Maintenance
 

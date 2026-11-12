@@ -471,6 +471,44 @@ describe('BuyingGuideDataService quality gate', () => {
     expect(result.quality.verified).toBe(true);
   });
 
+  // CT-04 : une marque « vérifié » posée par le pipeline producteur garde son
+  // rôle pour la décision de service, mais n'est pas rapportée comme telle.
+  it.each([
+    { sgpg_source_type: 'rag' },
+    { sgpg_source_type: 'rag-legacy' },
+    { sgpg_source_type: 'pdf', sgpg_source_verified_by: 'pipeline:rag-enrich' },
+  ])(
+    'guide vérifié par son propre pipeline (%o) : servi, mais quality.verified = false',
+    (provenance) => {
+      const result = transform({
+        sgpg_id: 82,
+        sgpg_pg_id: '82',
+        sgpg_intro_title: 'Disque de frein',
+        sgpg_source_uri: 'rag://gammes/disque-de-frein.md',
+        sgpg_source_ref: 'gammes/disque-de-frein.md',
+        sgpg_source_verified: true,
+        ...provenance,
+      });
+
+      expect(result.quality.flags).not.toContain('MISSING_SOURCE_PROVENANCE');
+      expect(result.quality.verified).toBe(false);
+    },
+  );
+
+  it('guide RAG non marqué vérifié : provenance refusée, comme avant', () => {
+    const result = transform({
+      sgpg_id: 82,
+      sgpg_pg_id: '82',
+      sgpg_intro_title: 'Disque de frein',
+      sgpg_source_type: 'rag',
+      sgpg_source_uri: 'rag://gammes/disque-de-frein.md',
+      sgpg_source_verified: false,
+    });
+
+    expect(result.quality.flags).toContain('MISSING_SOURCE_PROVENANCE');
+    expect(result.quality.verified).toBe(false);
+  });
+
   it('rejette une source non verifiee meme si prefixe source est fiable', () => {
     const result = transform({
       sgpg_id: 82,
