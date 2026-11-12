@@ -30413,7 +30413,7 @@
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
       "kind": "service",
-      "loc": 155,
+      "loc": 158,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/processors/sitemap-regenerate.processor.ts",
       "risk": "low",
@@ -33607,7 +33607,7 @@
         "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts"
       ],
       "kind": "test",
-      "loc": 148,
+      "loc": 124,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-scheduler.heartbeat.test.ts",
       "risk": "low",
@@ -33635,7 +33635,7 @@
         "os"
       ],
       "kind": "service",
-      "loc": 262,
+      "loc": 201,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts",
       "risk": "low",
@@ -40275,7 +40275,7 @@
         "backend/src/workers/services/seo-monitor-scheduler.service.ts"
       ],
       "kind": "test",
-      "loc": 312,
+      "loc": 288,
       "owner": "__unassigned__",
       "path": "backend/src/workers/services/seo-monitor-scheduler.service.test.ts",
       "risk": "low",
@@ -40302,7 +40302,7 @@
         "@common/utils/error.utils"
       ],
       "kind": "service",
-      "loc": 350,
+      "loc": 352,
       "owner": "__unassigned__",
       "path": "backend/src/workers/services/seo-monitor-scheduler.service.ts",
       "risk": "low",
@@ -42897,7 +42897,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 162,
+      "loc": 133,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/sitemap-v10-scheduler.test.ts",
       "risk": "low",
