@@ -13,6 +13,7 @@ import {
   isValidImagePath,
   resolvePartImagePath,
 } from "../image-optimizer";
+import { isSellable } from "../stock.utils";
 import {
   DEFAULT_RETURN_POLICY_FR,
   DEFAULT_SELLER,
@@ -42,8 +43,6 @@ interface SchemaParams {
   gamme: GammeData;
   pieces: PieceData[];
   seo: { description: string };
-  minPrice: number;
-  maxPrice: number;
   count: number;
   oemRefs?: { oemRefs?: string[] };
   oemRefsSeo?: string[];
@@ -53,6 +52,19 @@ interface SchemaParams {
     PG_ID: number;
   }>;
   canonicalUrl: string;
+}
+
+/**
+ * Pièces que les cartes produit présentent comme achetables : même prédicat
+ * que `PiecesGridView` et `PiecesListView` (`isSellable`). Une pièce affichée
+ * « Indisponible » ne porte aucune offre, donc aucun prix à zéro.
+ *
+ * Décision de l'owner du 2026-11-12 : le balisage ne publie pas la
+ * disponibilité des stocks. Les offres ne portent ni `availability` ni
+ * statut dérivé du stock ; la page affichée n'en est pas modifiée.
+ */
+function selectSellablePieces(pieces: PieceData[]): PieceData[] {
+  return pieces.filter((piece) => isSellable(piece.price, piece.stockStatus));
 }
 
 /**
@@ -84,16 +96,18 @@ function buildCarSchema(vehicle: VehicleData, canonicalUrl: string) {
 }
 
 /**
- * Génère le schéma Product principal avec refs OEM
+ * Génère le schéma Product principal avec refs OEM.
+ * `sellablePieces` est non vide : l'agrégat ne décrit que des offres réelles.
  */
 function buildProductSchema(
   params: SchemaParams,
-  firstPiece: PieceData,
+  sellablePieces: PieceData[],
   oemRefsArray: string[],
   relatedProducts: Array<{ "@type": string; name: string; url: string }>,
 ) {
-  const { vehicle, gamme, seo, minPrice, maxPrice, count, canonicalUrl } =
-    params;
+  const { vehicle, gamme, seo, canonicalUrl } = params;
+  const firstPiece = sellablePieces[0];
+  const prices = sellablePieces.map((piece) => piece.price);
 
   return {
     "@type": "Product",
@@ -120,10 +134,9 @@ function buildProductSchema(
     offers: {
       "@type": "AggregateOffer",
       priceCurrency: "EUR",
-      lowPrice: minPrice,
-      highPrice: maxPrice,
-      offerCount: count,
-      availability: "https://schema.org/InStock",
+      lowPrice: Math.min(...prices),
+      highPrice: Math.max(...prices),
+      offerCount: sellablePieces.length,
       priceValidUntil: computePriceValidUntil(),
       seller: DEFAULT_SELLER,
       shippingDetails: DEFAULT_SHIPPING_DETAILS_FR,
@@ -141,10 +154,10 @@ function buildProductSchema(
 }
 
 /**
- * Génère le schéma ItemList pour les produits
+ * Génère le schéma ItemList pour les produits achetables
  */
 function buildItemListSchema(
-  pieces: PieceData[],
+  sellablePieces: PieceData[],
   gamme: GammeData,
   vehicle: VehicleData,
   count: number,
@@ -155,7 +168,7 @@ function buildItemListSchema(
     "@id": `${canonicalUrl}#list`,
     name: `${gamme.name} pour ${vehicle.marque} ${vehicle.modele}`,
     numberOfItems: count,
-    itemListElement: pieces
+    itemListElement: sellablePieces
       .filter((piece) => piece.image || piece.marque_logo)
       .slice(0, 20)
       .map((piece, index) => ({
@@ -180,10 +193,6 @@ function buildItemListSchema(
             "@type": "Offer",
             price: piece.price,
             priceCurrency: "EUR",
-            availability:
-              piece.stock === "En stock"
-                ? "https://schema.org/InStock"
-                : "https://schema.org/PreOrder",
           },
           isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
         },
@@ -279,8 +288,11 @@ export function buildPiecesProductSchema(params: SchemaParams) {
     canonicalUrl,
   } = params;
 
-  const firstPiece = pieces[0];
-  if (!firstPiece) return null;
+  if (pieces.length === 0) return null;
+
+  // Sans pièce achetable, la page ne publie ni Product ni liste d'offres.
+  const sellablePieces = selectSellablePieces(pieces);
+  const hasOffers = sellablePieces.length > 0;
 
   // Refs OEM
   const oemRefsArray = oemRefs?.oemRefs || oemRefsSeo || [];
@@ -297,14 +309,29 @@ export function buildPiecesProductSchema(params: SchemaParams) {
     "@context": "https://schema.org",
     "@graph": [
       buildCarSchema(vehicle, canonicalUrl),
-      buildProductSchema(params, firstPiece, oemRefsArray, relatedProducts),
-      buildItemListSchema(pieces, gamme, vehicle, count, canonicalUrl),
+      ...(hasOffers
+        ? [
+            buildProductSchema(
+              params,
+              sellablePieces,
+              oemRefsArray,
+              relatedProducts,
+            ),
+            buildItemListSchema(
+              sellablePieces,
+              gamme,
+              vehicle,
+              count,
+              canonicalUrl,
+            ),
+          ]
+        : []),
       {
         "@type": "CollectionPage",
         "@id": canonicalUrl,
         name: `${gamme.name} ${vehicle.marque} ${vehicle.modele}`,
         url: canonicalUrl,
-        mainEntity: { "@id": `${canonicalUrl}#list` },
+        ...(hasOffers && { mainEntity: { "@id": `${canonicalUrl}#list` } }),
         isPartOf: {
           "@type": "WebSite",
           "@id": "https://www.automecanik.com/#website",
