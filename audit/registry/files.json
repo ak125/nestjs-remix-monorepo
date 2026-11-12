@@ -47970,7 +47970,7 @@
         "~/components/blog/conseil/section-config"
       ],
       "kind": "config",
-      "loc": 219,
+      "loc": 244,
       "owner": "__unassigned__",
       "path": "frontend/app/components/guide/guide-schemas.ts",
       "risk": "low",
@@ -65460,6 +65460,25 @@
       "loc": 258,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/guide-achat-loader-status.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/guide-schemas-faq.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 268,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/guide-schemas-faq.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
