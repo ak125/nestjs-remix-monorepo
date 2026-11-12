@@ -75,15 +75,16 @@ Le repo a **deux tables backlinks** qui répondent à deux questions différente
 
 ### Pipeline `__seo_gsc_links_weekly` — vide intentionnellement
 
-`GscLinksFetcherService` ([gsc-links-fetcher.service.ts:103-130](../../../backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts)) :
+`GscLinksFetcherService` ([gsc-links-fetcher.service.ts](../../../backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts)) :
 
 - Tourne **chaque jour à 02:00 UTC** (worker BullMQ queue `seo-monitor`, processor `seo-daily-fetch.processor.ts`).
 - L'API Google Search Console v1 publique **n'expose pas** d'endpoint `listBacklinks` / top linking sites.
-- Le service appelle `sc.sites.list({})` comme health-check d'auth, log `runs.logCompleted({rowsInserted: 0})`, et pousse le warning `gsc_links_endpoint_not_publicly_available_v1__use_bulk_export_or_v2_dataforseo` dans `__seo_event_log`.
-- Comportement **100% intentionnel et documenté** dans le code. Pas un bug.
+- Le service ne collecte rien et ne journalise aucun run : il rend l'avertissement `collector_not_implemented`, et le job quotidien rapporte la source `gsc_links` « ignorée » (`skipped`) avec cette raison.
+- Jusqu'au 2026-11-12, il appelait `sc.sites.list({})` puis journalisait `ingestion_run_completed` à 0 ligne, avec le warning `gsc_links_endpoint_not_publicly_available_v1__use_bulk_export_or_v2_dataforseo`. La santé des sources lisait ce run comme un succès récent ; ces lignes historiques restent dans `__seo_event_log`.
+- Table vide : **intentionnel et documenté** dans le code. Pas un bug.
 - Débloquage prévu V2 paid provider (DataForSEO ou Ahrefs) — ADR-025 reporte budget.
 
-**Anti-pattern à éviter** : ouvrir une PR pour « réparer » l'ingestion `__seo_gsc_links_weekly`. Vérifier d'abord `__seo_event_log WHERE payload->>'source' = 'gsc_links'` — si warnings = `gsc_links_endpoint_not_publicly_available_v1__*`, c'est attendu. Verdict empirique 2026-05-24.
+**Anti-pattern à éviter** : ouvrir une PR pour « réparer » l'ingestion `__seo_gsc_links_weekly`. Vérifier d'abord le résultat du job quotidien : source `gsc_links` en `skipped` avec `collector_not_implemented`, c'est attendu. Dans `__seo_event_log WHERE payload->>'source' = 'gsc_links'`, l'absence de run récent est attendue elle aussi ; les runs antérieurs portent le warning `gsc_links_endpoint_not_publicly_available_v1__*`. Verdict empirique 2026-05-24, mis à jour 2026-11-12.
 
 ### Schémas distincts
 
