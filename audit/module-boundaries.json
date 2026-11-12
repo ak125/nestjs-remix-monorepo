@@ -30,7 +30,7 @@
         "backend/src/modules/agentic-engine/types"
       ],
       "files_count": 14,
-      "loc_total": 2389,
+      "loc_total": 2396,
       "has_barrel": false
     },
     "ai-content": {
@@ -74,8 +74,8 @@
         "backend/src/auth/guards",
         "backend/src/modules/auth/dto"
       ],
-      "files_count": 45,
-      "loc_total": 6027,
+      "files_count": 46,
+      "loc_total": 6050,
       "has_barrel": true
     },
     "backend-core": {
@@ -146,7 +146,7 @@
         "backend/src/modules/catalog/utils"
       ],
       "files_count": 40,
-      "loc_total": 10270,
+      "loc_total": 10213,
       "has_barrel": false
     },
     "commercial": {
@@ -355,8 +355,8 @@
         "backend/src/modules/gamme-rest/utils",
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
-      "files_count": 19,
-      "loc_total": 6492,
+      "files_count": 20,
+      "loc_total": 6547,
       "has_barrel": true
     },
     "health": {
@@ -380,7 +380,7 @@
         "backend/src/modules/knowledge-graph"
       ],
       "files_count": 6,
-      "loc_total": 1647,
+      "loc_total": 1655,
       "has_barrel": true
     },
     "layout": {
@@ -390,7 +390,7 @@
         "backend/src/modules/layout/services"
       ],
       "files_count": 10,
-      "loc_total": 2686,
+      "loc_total": 2697,
       "has_barrel": true
     },
     "maintenance": {
@@ -479,7 +479,7 @@
         "backend/src/modules/navigation/services"
       ],
       "files_count": 6,
-      "loc_total": 1428,
+      "loc_total": 1432,
       "has_barrel": false
     },
     "observability": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 283,
-      "loc_total": 60160,
+      "loc_total": 60083,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 350,
-      "loc_total": 69452,
+      "files_count": 353,
+      "loc_total": 70000,
       "has_barrel": true
     },
     "upload": {
@@ -1008,7 +1008,7 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 30,
-      "loc_total": 8995,
+      "loc_total": 9006,
       "has_barrel": false
     },
     "wiki": {
@@ -1756,7 +1756,7 @@
     {
       "from": "gamme-rest",
       "to": "catalog",
-      "count": 5
+      "count": 6
     },
     {
       "from": "gamme-rest",
@@ -2593,6 +2593,11 @@
     {
       "from": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "to": "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-cache-warming.service.ts",
+      "to": "backend/src/modules/catalog/services/cache-warming.service.ts",
       "rule": "no-deep-module-access"
     },
     {
