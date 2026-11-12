@@ -2474,18 +2474,13 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     flags: GammeContentQualityFlag[],
     raw: PurchaseGuideRow,
   ): GammeContentQuality {
-    let score = 100;
     const uniqueFlags: GammeContentQualityFlag[] = [];
     for (const flag of flags) {
       if (!uniqueFlags.includes(flag)) uniqueFlags.push(flag);
     }
 
-    for (const flag of uniqueFlags) {
-      score -= FLAG_PENALTIES[flag] || 0;
-    }
-
     return {
-      score: Math.max(0, Math.min(100, score)),
+      score: this.scoreFromFlags(uniqueFlags),
       flags: uniqueFlags,
       version: CONTRACT_VERSION,
       source: this.resolveQualitySource(raw, content.pgId),
@@ -2499,6 +2494,15 @@ export class BuyingGuideDataService extends SupabaseBaseService {
           verifiedBy: raw?.sgpg_source_verified_by,
         }),
     };
+  }
+
+  /** Score = 100 moins les pénalités des drapeaux, chacun compté une fois. */
+  private scoreFromFlags(flags: GammeContentQualityFlag[]): number {
+    let score = 100;
+    for (const flag of new Set(flags)) {
+      score -= FLAG_PENALTIES[flag] || 0;
+    }
+    return Math.max(0, Math.min(100, score));
   }
 
   private inferFamilyKeyFromLabels(
@@ -2535,6 +2539,15 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       familyKey === 'freinage'
         ? ['plaquettes de frein', 'étriers', "capteur d'usure (si équipé)"]
         : ['pièces associées au montage', 'fixations', 'consommables atelier'];
+    // Ce contrat est un gabarit : il porte les drapeaux que la porte qualité
+    // pose quand elle substitue ces mêmes sections, et celui d'une source
+    // hors des provenances admises. Son score en découle.
+    const flags: GammeContentQualityFlag[] = [
+      'SYMPTOMS_TOO_SMALL',
+      'TOO_SHORT',
+      'FAQ_TOO_SMALL',
+      'MISSING_SOURCE_PROVENANCE',
+    ];
 
     return {
       id: safeId,
@@ -2586,8 +2599,8 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         antiMistakes: 'fallback',
       },
       quality: {
-        score: 95,
-        flags: [],
+        score: this.scoreFromFlags(flags),
+        flags,
         version: CONTRACT_VERSION,
         source: `fallback://automecanik/gamme-buying-guide-template#pg=${pgId}`,
         verified: false,

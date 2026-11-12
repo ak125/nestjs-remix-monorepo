@@ -27,6 +27,7 @@ import {
   assessPeriodComparability,
   computeDayCoverage,
   SeoControlSnapshotSchema,
+  type ConversionAttribution,
   type DayCoverage,
   type GscComparability,
   type Range,
@@ -53,6 +54,9 @@ const BLOCK_TTL_SECONDS: Record<BlockKey, number> = {
 };
 
 const AUDIT_DEDUPE_TTL_SECONDS = 15 * 60; // 1 event/user/range/15min
+
+/** Taille des lots d'identifiants de commande passés à un filtre `in`. */
+const ORDER_ID_CHUNK = 100;
 
 @Injectable()
 export class SeoControlService extends SupabaseBaseService {
@@ -83,6 +87,7 @@ export class SeoControlService extends SupabaseBaseService {
 
     const [
       gscComparability,
+      conversionAttribution,
       trafficRaw,
       losersRaw,
       lowCtrRaw,
@@ -91,6 +96,8 @@ export class SeoControlService extends SupabaseBaseService {
     ] = await Promise.all([
       // Non caché : lecture ≤ 2N lignes, doit refléter la dernière ingestion.
       this.gscWindowComparability(days, nowIso),
+      // Non caché : au plus 1 000 identifiants puis des comptages sans lignes.
+      this.conversionAttribution(days, nowIso),
       this.getBlock<unknown>('traffic', range, () =>
         this.invokeRpc('rpc_seo_traffic_v1', {
           p_window_days: days,
@@ -151,8 +158,22 @@ export class SeoControlService extends SupabaseBaseService {
             },
           };
 
+    // Commandes payées sans adresse de page : la jointure de la RPC ne trouve
+    // rien et rend 0 commande par page. Ce zéro n'est pas une mesure : aucune
+    // ligne ni décision de conversion n'est publiée, et `conversionAttribution`
+    // dit pourquoi (raison + comptages).
+    if (!conversionAttribution.measured) {
+      this.logger.warn(
+        conversionAttribution.reason === 'order_tables_not_readable'
+          ? `Conversion non mesurée (${range}) : tables de commandes non lisibles en mode lecture seule`
+          : `Conversion non mesurée (${range}) : ${conversionAttribution.paid_orders} commande(s) payée(s), ` +
+              `${conversionAttribution.paid_order_lines} ligne(s), aucune rattachée à une page`,
+      );
+    }
+
     const enriched = {
       gscComparability,
+      conversionAttribution,
       trafficWindow,
       topLosers: (comparable ? losersArr : []).map((r: any) => ({
         ...r,
@@ -167,7 +188,7 @@ export class SeoControlService extends SupabaseBaseService {
         decisions: this.decisions.deriveAlert(r),
       })),
       conversionGap:
-        conversionArr == null
+        conversionArr == null || !conversionAttribution.measured
           ? null
           : conversionArr.map((r: any) => ({
               ...r,
@@ -289,6 +310,101 @@ export class SeoControlService extends SupabaseBaseService {
       source: '__seo_gsc_daily_property_total',
       current: toWindow(cur),
       previous: toWindow(prev),
+    };
+  }
+
+  /**
+   * Les commandes payées de la fenêtre sont-elles rattachées à une page ?
+   *
+   * rpc_seo_conversion_v1 joint `__seo_ga4_daily.page` à
+   * `___xtr_order_line.orl_website_url` sur [J-N, J[ (dates UTC, `ord_date` au
+   * format ISO). Sans adresse sur les lignes, elle rend 0 commande pour chaque
+   * page. Règle : au moins une commande payée et aucune ligne rattachée → non
+   * mesuré. Aucune commande payée → le zéro est réel, mesuré. Une attribution
+   * partielle reste mesurée, ses comptages sont publiés.
+   *
+   * Lecture bornée aux 1 000 commandes payées les plus récentes de la fenêtre
+   * (plafond supabase-js) : si aucune de leurs lignes n'est rattachée, la
+   * colonne n'est pas alimentée. Erreur de lecture → exception (même contrat
+   * fail-loud que invokeRpc), jamais « mesuré » par défaut.
+   *
+   * Mode lecture seule (clé anonyme) : les tables de commandes rendent zéro
+   * ligne sans erreur. Ce zéro ne prouve rien → non mesuré, sans lecture.
+   */
+  private async conversionAttribution(
+    days: number,
+    nowIso: string,
+  ): Promise<ConversionAttribution> {
+    const to = nowIso.slice(0, 10);
+    const from = addDaysIso(to, -days);
+    const source = '___xtr_order_line.orl_website_url' as const;
+    if (this.isReadOnlyMode) {
+      return {
+        measured: false,
+        reason: 'order_tables_not_readable',
+        source,
+        from,
+        to,
+        paid_orders: 0,
+        paid_order_lines: 0,
+        attributed_order_lines: 0,
+      };
+    }
+    const { data, error } = await this.supabase
+      .from('___xtr_order')
+      .select('ord_id')
+      .eq('ord_is_pay', '1')
+      .gte('ord_date', from)
+      .lt('ord_date', to)
+      .order('ord_date', { ascending: false })
+      .limit(1000);
+    if (error) {
+      this.logger.error('Paid orders read failed', error);
+      throw error;
+    }
+    const orderIds = ((data ?? []) as Array<{ ord_id: string }>).map((r) =>
+      String(r.ord_id),
+    );
+
+    let paidOrderLines = 0;
+    let attributedOrderLines = 0;
+    for (let i = 0; i < orderIds.length; i += ORDER_ID_CHUNK) {
+      const chunk = orderIds.slice(i, i + ORDER_ID_CHUNK);
+      const [lines, attributed] = await Promise.all([
+        this.supabase
+          .from('___xtr_order_line')
+          .select('orl_id', { count: 'exact', head: true })
+          .in('orl_ord_id', chunk),
+        this.supabase
+          .from('___xtr_order_line')
+          .select('orl_id', { count: 'exact', head: true })
+          .in('orl_ord_id', chunk)
+          .not('orl_website_url', 'is', null)
+          .neq('orl_website_url', '')
+          .neq('orl_website_url', 'System'),
+      ]);
+      const failed = lines.error ?? attributed.error;
+      if (failed) {
+        this.logger.error('Order lines attribution read failed', failed);
+        throw failed;
+      }
+      if (lines.count == null || attributed.count == null) {
+        throw new Error('Order lines attribution read returned no count');
+      }
+      paidOrderLines += lines.count;
+      attributedOrderLines += attributed.count;
+    }
+
+    const measured = orderIds.length === 0 || attributedOrderLines > 0;
+    return {
+      measured,
+      reason: measured ? null : 'no_attributed_order_line',
+      source,
+      from,
+      to,
+      paid_orders: orderIds.length,
+      paid_order_lines: paidOrderLines,
+      attributed_order_lines: attributedOrderLines,
     };
   }
 
