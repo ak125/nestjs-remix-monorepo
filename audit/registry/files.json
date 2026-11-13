@@ -33920,7 +33920,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "config",
-      "loc": 434,
+      "loc": 373,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/types/seo-kpis.types.ts",
       "risk": "low",
@@ -52093,9 +52093,7 @@
       ],
       "domain": "UNKNOWN",
       "id": "frontend/app/components/ui/SEOHelmet.tsx",
-      "importedBy": [
-        "frontend/app/components/ui/index.ts"
-      ],
+      "importedBy": [],
       "imports": [],
       "kind": "config",
       "loc": 324,
@@ -52670,7 +52668,6 @@
         "frontend/app/components/ui/PerformanceMetrics.tsx",
         "frontend/app/components/ui/PublicBreadcrumb.tsx",
         "frontend/app/components/ui/ResponsiveImage.tsx",
-        "frontend/app/components/ui/SEOHelmet.tsx",
         "frontend/app/components/ui/accordion.tsx",
         "frontend/app/components/ui/alert.tsx",
         "frontend/app/components/ui/avatar.tsx",
@@ -52701,7 +52698,7 @@
         "frontend/app/components/ui/textarea.tsx"
       ],
       "kind": "config",
-      "loc": 52,
+      "loc": 51,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ui/index.ts",
       "risk": "low",
