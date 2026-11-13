@@ -9,9 +9,12 @@ caller.
 
 A tripwire for agent commands, not the security boundary (GitHub permissions and a v* tag
 ruleset are). It reads the words bash would read: quotes, $'...', comments, operators,
-redirections (not command separators), here-document bodies (data, skipped). A word that
-itself reads as a git/gh command (bash -c '...', "$(...)") is analysed again. A command
-built from variables or a script file stays out of reach.
+redirections (their target is not an argument), arithmetic $((...)), here-documents
+(found in the word stream; a body is data, unless its command is a shell). A word that
+itself reads as a git/gh command (bash -c '...', "$(...)", a here-string) is analysed
+again; when such a word cannot be read, the commands complete before the error are still
+analysed, as bash would run them. A command built from variables or a script file stays
+out of reach.
 """
 import re
 import sys
@@ -19,11 +22,41 @@ import sys
 OPS = set(";&|()`\n")
 PROD = r"(release|deploy)[- ]prod|417610500|224452325"
 PREFILTER = (re.compile(r"\b(git|gh)\b"), re.compile(r"\b(tag|push|release|api|workflow)\b"))
+# Commands that run a here-document body as shell code.
+SHELLS = {"bash", "sh", "zsh", "dash", "ksh", "eval", "source", ".", "ssh"}
+
+
+class Unparsable(ValueError):
+    """The text is not valid shell; toks holds the tokens read before the error."""
+
+    def __init__(self, msg, toks):
+        super().__init__(msg)
+        self.toks = toks
+
+
+def matching_paren(s, i):
+    """Index of the ')' closing the '(' at s[i]."""
+    depth = 0
+    for j in range(i, len(s)):
+        depth += {"(": 1, ")": -1}.get(s[j], 0)
+        if depth == 0:
+            return j
+    raise ValueError("unclosed (")
 
 
 def lex(s):
-    """Shell words ('w', text), operators ('op', c) and redirections ('redir', text)."""
-    toks, word, pending, i, n = [], None, [], 0, len(s)
+    toks = []
+    try:
+        _lex(s, toks)
+    except ValueError as e:
+        raise Unparsable(str(e), toks) from e
+    return toks
+
+
+def _lex(s, toks):
+    """Shell words ('w', text), operators ('op', c), redirections ('redir', text) and
+    here-document bodies ('body', text), appended to toks."""
+    word, pending, i, n = None, [], 0, len(s)
 
     def end():
         nonlocal word
@@ -54,6 +87,13 @@ def lex(s):
                 raise ValueError("unclosed $'")
             word = (word or "") + buf
             i = j + 1
+        elif s.startswith("$((", i) or (s.startswith("((", i) and word is None):
+            # Arithmetic: '<<' is a shift there, not a here-document. The expression is
+            # kept as a word (analysed again like any word).
+            start = i + 1 if c == "$" else i
+            j = matching_paren(s, start)
+            word = (word or "") + s[start + 2:j - 1]
+            i = j + 1
         elif c == '"':
             j, buf = i + 1, ""
             while j < n and s[j] != '"':
@@ -77,7 +117,8 @@ def lex(s):
             end()
             toks.append(("op", "\n"))
             i += 1
-            for delim, strip in pending:
+            for delim, strip, idx in pending:
+                body = []
                 while True:
                     if i >= n:
                         raise ValueError("unterminated here-document")
@@ -85,6 +126,8 @@ def lex(s):
                     line, i = (s[i:], n) if j < 0 else (s[i:j], j + 1)
                     if (line.lstrip("\t") if strip else line) == delim:
                         break
+                    body.append(line)
+                toks[idx] = ("body", "\n".join(body))
             pending = []
         elif s.startswith("<<<", i):
             end()
@@ -112,7 +155,8 @@ def lex(s):
                     i += 1
             if not d:
                 raise ValueError("empty here-document delimiter")
-            pending.append((d, strip))
+            toks.append(("body", ""))  # filled when the body is read
+            pending.append((d, strip, len(toks) - 1))
         elif c in "<>" or s.startswith("&>", i):
             end()
             j = i + 1
@@ -130,17 +174,19 @@ def lex(s):
     if pending:
         raise ValueError("unterminated here-document")
     end()
-    return toks
 
 
 def commands(toks):
-    """Argument lists split on operators, and redirection targets (kept apart: a file name
-    or a here-string is not an argument, but a here-string may feed a shell)."""
-    out, cur, targets, skip = [], [], [], False
+    """(arguments, here-document bodies) per command, split on operators, and the
+    redirection targets (kept apart: a file name or a here-string is not an argument, but
+    a here-string may feed a shell)."""
+    out, cur, bodies, targets, skip = [], [], [], [], False
     for kind, text in toks:
         if kind == "op":
-            out.append(cur)
-            cur, skip = [], False
+            out.append((cur, bodies))
+            cur, bodies, skip = [], [], False
+        elif kind == "body":
+            bodies.append(text)
         elif kind == "redir":
             skip = True
         elif skip:
@@ -148,8 +194,9 @@ def commands(toks):
             skip = False
         else:
             cur.append(text)
-    out.append(cur)
-    return [c for c in out if c], targets
+    out.append((cur, bodies))
+    # A body token sits where its '<<' was, inside its own command.
+    return [(a, b) for a, b in out if a], targets
 
 
 # git tag: options that take a value (space or attached), and list/query options.
@@ -222,41 +269,54 @@ def gh_api(a):
     return found
 
 
+def check(c):
+    """Verdicts of one command's arguments."""
+    found = set()
+    for k, w in enumerate(c):
+        base = w.rsplit("/", 1)[-1]
+        if base == "git":
+            j = k + 1
+            while j < len(c) and c[j].startswith("-"):
+                j += 2 if c[j] in ("-C", "-c", "--git-dir", "--work-tree", "--namespace") else 1
+            if j < len(c) and c[j] == "tag" and git_tag(c[j + 1:]):
+                found.add("tag")
+            if j < len(c) and c[j] == "push" and git_push(c[j + 1:]):
+                found.add("tag")
+        elif base == "gh" and k + 1 < len(c):
+            a = c[k + 1:]
+            if a[0] == "release" and ("create" in a or "edit" in a):
+                found.add("tag")
+            if a[0] == "workflow" and ("run" in a or "enable" in a) \
+               and re.search(PROD, " ".join(a), re.I):
+                found.add("workflow")
+            if a[0] == "api":
+                found |= gh_api(a)
+    return found
+
+
 def analyse(s, depth=0):
     if not all(p.search(s) for p in PREFILTER):
         return set()
+    found = set()
     try:
         toks = lex(s)
-    except ValueError:
-        # Top level: bash would refuse it too, block. Nested (a quoted word): plain text.
-        return {"unparsable"} if depth == 0 else set()
-    found = set()
+    except Unparsable as e:
+        # Top level: bash would refuse the command, block. Nested (a quoted word, a body):
+        # bash runs what precedes the error, so the tokens read so far are still analysed.
+        if depth == 0:
+            return {"unparsable"}
+        toks = e.toks
     cmds, targets = commands(toks)
-    for w in targets:
-        if depth < 4 and w != s:
-            found |= analyse(w, depth + 1)
-    for c in cmds:
-        for k, w in enumerate(c):
-            if depth < 4 and w != s:
+    nested = list(targets)
+    for args, bodies in cmds:
+        found |= check(args)
+        nested += args
+        if any(w.rsplit("/", 1)[-1] in SHELLS for w in args):
+            nested += bodies
+    if depth < 4:
+        for w in nested:
+            if w != s:
                 found |= analyse(w, depth + 1)
-            base = w.rsplit("/", 1)[-1]
-            if base == "git":
-                j = k + 1
-                while j < len(c) and c[j].startswith("-"):
-                    j += 2 if c[j] in ("-C", "-c", "--git-dir", "--work-tree", "--namespace") else 1
-                if j < len(c) and c[j] == "tag" and git_tag(c[j + 1:]):
-                    found.add("tag")
-                if j < len(c) and c[j] == "push" and git_push(c[j + 1:]):
-                    found.add("tag")
-            elif base == "gh" and k + 1 < len(c):
-                a = c[k + 1:]
-                if a[0] == "release" and ("create" in a or "edit" in a):
-                    found.add("tag")
-                if a[0] == "workflow" and ("run" in a or "enable" in a) \
-                   and re.search(PROD, " ".join(a), re.I):
-                    found.add("workflow")
-                if a[0] == "api":
-                    found |= gh_api(a)
     return found
 
 

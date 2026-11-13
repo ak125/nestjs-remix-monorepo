@@ -1001,6 +1001,11 @@ assert_exit "bash-guard: commentaire # git tag vX → allow"         "0" "$(run_
 assert_exit "bash-guard: push branche 2>&1 → allow"                "0" "$(run_bash_guard_cmd 'git push -u origin fix/x 2>&1 | tail -3')"
 assert_exit "bash-guard: git tag --contains vX → allow"            "0" "$(run_bash_guard_cmd 'git tag --contains vfoo')"
 assert_exit "bash-guard: git tag -n5 vX* (liste) → allow"          "0" "$(run_bash_guard_cmd 'git tag -n5 "vfoo*"')"
+assert_exit "bash-guard: bash -c, tag puis guillemet ouvert → BLOCK" "2" "$(run_bash_guard_cmd $'bash -c "git tag vfoo\necho \'x"')"
+assert_exit "bash-guard: << dans \$((…)) puis tag → BLOCK"        "2" "$(run_bash_guard_cmd $'echo $((1<<2))\ngit tag vfoo\n2')"
+assert_exit "bash-guard: here-document passé à bash → BLOCK"       "2" "$(run_bash_guard_cmd $'bash <<EOF\ngit tag vfoo\nEOF')"
+assert_exit "bash-guard: here-document passé à cat → allow"        "0" "$(run_bash_guard_cmd $'cat <<EOF > m.txt\ngit tag vfoo\nEOF\ngit push -u origin fix/x')"
+assert_exit "bash-guard: message avec apostrophe et gh api → allow" "0" "$(run_bash_guard_cmd 'git commit -m "l'"'"'owner relit gh api"')"
 # Analyseur absent ou en erreur → BLOCK (échec fermé, jamais exit 0)
 G6_TMP=$(mktemp -d)
 cp scripts/claude-hooks/pretool-bash-guard.sh "$G6_TMP/"
