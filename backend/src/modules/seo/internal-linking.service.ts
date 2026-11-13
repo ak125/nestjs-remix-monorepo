@@ -87,6 +87,13 @@ const GAMME_ALIAS_RE = /^[a-z0-9-]+$/;
 /** Marqueur d'un nom de gamme rendu sans lien, faute de page à servir. */
 export const UNRESOLVED_GAMME_LINK_ATTR = 'data-gamme-link="unresolved"';
 
+/** Lien `<a href="/blog-pieces-auto/conseils/…">` d'un contenu éditorial : cible puis libellé. */
+const EDITORIAL_CONSEILS_LINK_RE =
+  /<a\s[^>]*?href="\/blog-pieces-auto\/conseils\/([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
+const CONSEILS_PREFIX = '/blog-pieces-auto/conseils/';
+/** Attribut href d'un lien conseils, insensible à la casse comme la recherche. */
+const CONSEILS_HREF_ATTR_RE = /href="\/blog-pieces-auto\/conseils\/[^"]*"/i;
+
 // =====================================================
 // Cache Types
 // =====================================================
@@ -729,6 +736,126 @@ export class InternalLinkingService implements OnModuleInit {
       );
     }
     return processed;
+  }
+
+  /**
+   * 🔗 Résout les liens éditoriaux vers une page conseil.
+   *
+   * La page conseil d'une gamme n'est servie qu'à `/blog-pieces-auto/conseils/{pg_alias}`,
+   * et seulement pour une gamme de `servedConseilsAliases` (ensemble
+   * `conseilsAliases` de `R6GuideLinkPolicyService.getSnapshot()`).
+   *
+   * - Cible égale à un alias servi : lien gardé.
+   * - Cible égale au `ba_alias` d'un conseil (ancienne adresse, répond 301) :
+   *   l'adresse est celle du conseil lui-même, `/conseils/{pg_alias}` de sa
+   *   gamme (règle d'`articleHref` côté frontend), si cette page est servie.
+   * - Sinon le libellé reste, sans lien. Aucune adresse n'est devinée depuis
+   *   la forme de la cible.
+   *
+   * Une lecture en échec lève : l'appelant ne doit pas servir, ni mettre en
+   * cache, un contenu dont les liens n'ont pas pu être vérifiés.
+   */
+  async resolveConseilsLinks(
+    content: string,
+    servedConseilsAliases: ReadonlySet<string>,
+  ): Promise<string> {
+    if (!content || !CONSEILS_HREF_ATTR_RE.test(content)) {
+      return content;
+    }
+
+    const slugOf = (target: string): string | null => {
+      const slug = target.replace(/[?#].*$/, '').replace(/\/$/, '');
+      return GAMME_ALIAS_RE.test(slug) ? slug : null;
+    };
+
+    const legacySlugs = new Set<string>();
+    for (const match of content.matchAll(EDITORIAL_CONSEILS_LINK_RE)) {
+      const slug = slugOf(match[1]);
+      if (slug && !servedConseilsAliases.has(slug)) legacySlugs.add(slug);
+    }
+
+    const adviceGammeIds = await this.fetchAdviceGammeIds([...legacySlugs]);
+    const gammes = await this.fetchCatalogueGammes('pg_id', [
+      ...new Set(adviceGammeIds.values()),
+    ]);
+
+    let unresolved = 0;
+    const processed = content.replace(
+      EDITORIAL_CONSEILS_LINK_RE,
+      (anchor: string, target: string, label: string) => {
+        const slug = slugOf(target);
+        let pgAlias: string | null = null;
+        if (slug && servedConseilsAliases.has(slug)) {
+          pgAlias = slug;
+        } else if (slug) {
+          const pgId = adviceGammeIds.get(slug);
+          const gamme = pgId != null ? gammes.get(String(pgId)) : undefined;
+          if (gamme && servedConseilsAliases.has(gamme.pg_alias)) {
+            pgAlias = gamme.pg_alias;
+          }
+        }
+
+        if (pgAlias === null) {
+          unresolved++;
+          return label;
+        }
+        if (target === pgAlias) return anchor;
+        return anchor.replace(
+          CONSEILS_HREF_ATTR_RE,
+          `href="${CONSEILS_PREFIX}${pgAlias}"`,
+        );
+      },
+    );
+
+    if (unresolved > 0) {
+      this.logger.warn(
+        `[conseils-links] ${unresolved} lien(s) éditorial(aux) sans page conseil servie correspondante — libellé servi sans lien`,
+      );
+    }
+    return processed;
+  }
+
+  /**
+   * 📥 Gamme de rattachement (`ba_pg_id`) des conseils, indexée par `ba_alias`.
+   * Un alias porté par des conseils de gammes différentes est écarté : il ne
+   * désigne pas une page.
+   */
+  private async fetchAdviceGammeIds(
+    baAliases: string[],
+  ): Promise<Map<string, number>> {
+    const found = new Map<string, number>();
+    if (baAliases.length === 0) return found;
+
+    if (!this.supabase) {
+      throw new DatabaseException({
+        message: 'Résolution des liens conseils impossible : client absent',
+      });
+    }
+
+    const { data, error } = await this.supabase
+      .from(TABLES.blog_advice)
+      .select('ba_alias, ba_pg_id')
+      .in('ba_alias', baAliases);
+
+    if (error) {
+      throw new DatabaseException({
+        message: 'Résolution des liens conseils impossible : lecture en échec',
+        details: error.message,
+      });
+    }
+
+    const ambiguous = new Set<string>();
+    for (const row of data ?? []) {
+      const pgId = Number(row.ba_pg_id);
+      if (!row.ba_pg_id || !Number.isInteger(pgId)) continue;
+      const previous = found.get(row.ba_alias);
+      if (previous !== undefined && previous !== pgId) {
+        ambiguous.add(row.ba_alias);
+      }
+      found.set(row.ba_alias, pgId);
+    }
+    for (const alias of ambiguous) found.delete(alias);
+    return found;
   }
 
   /**
