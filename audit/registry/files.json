@@ -33949,7 +33949,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "config",
-      "loc": 434,
+      "loc": 373,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/types/seo-kpis.types.ts",
       "risk": "low",
