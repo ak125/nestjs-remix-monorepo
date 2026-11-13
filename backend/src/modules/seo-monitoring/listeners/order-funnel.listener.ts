@@ -24,7 +24,8 @@
  *    logged at `error` (observable); a benign dedup is logged at `debug`.
  *
  * Authoritative facts (item_count, revenue) are read from the order SoT by
- * orderId so the payments emit stays a literal one-liner carrying only the event.
+ * orderId (FunnelEventsService.readOrderFacts, shared with the public beacon) so
+ * the payments emit stays a literal one-liner carrying only the event.
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -59,7 +60,7 @@ export class OrderFunnelListener extends SupabaseBaseService {
     if (this.isReadOnlyMode) return;
 
     try {
-      const facts = await this.fetchOrderFacts(event.orderId);
+      const facts = await this.funnelEvents.readOrderFacts(event.orderId);
       if (!facts || facts.itemCount < 1) {
         // A paid order with no readable line is anomalous — surface it, never
         // write a bogus event (item_count must be a positive int per contract).
@@ -100,50 +101,5 @@ export class OrderFunnelListener extends SupabaseBaseService {
         `r2_order_placed listener failed for order ${event.orderId} (non-blocking): ${error}`,
       );
     }
-  }
-
-  /**
-   * Authoritative order facts read from the legacy order tables by orderId.
-   * Returns null when the line count cannot be read (caller skips emission).
-   * revenue_cents is best-effort: null when the total is absent/unparseable
-   * (the contract allows a null revenue, but never a null/invalid item_count).
-   */
-  private async fetchOrderFacts(
-    orderId: string,
-  ): Promise<{ itemCount: number; revenueCents: number | null } | null> {
-    const { count, error: countError } = await this.supabase
-      .from('___xtr_order_line')
-      .select('*', { count: 'exact', head: true })
-      .eq('orl_ord_id', orderId);
-    if (countError) {
-      this.logger.error(
-        `r2_order_placed: order line count read failed for ${orderId}: ${countError.message}`,
-      );
-      return null;
-    }
-
-    const { data: order, error: orderError } = await this.supabase
-      .from('___xtr_order')
-      .select('ord_total_ttc')
-      .eq('ord_id', orderId)
-      .maybeSingle();
-    if (orderError) {
-      this.logger.warn(
-        `r2_order_placed: order total read failed for ${orderId} (revenue→null): ${orderError.message}`,
-      );
-    }
-
-    return {
-      itemCount: count ?? 0,
-      revenueCents: this.toCents(order?.ord_total_ttc),
-    };
-  }
-
-  /** ord_total_ttc is TEXT euros (e.g. "49.90") → integer cents, or null. */
-  private toCents(rawTotal: unknown): number | null {
-    if (rawTotal === null || rawTotal === undefined) return null;
-    const value = Number.parseFloat(String(rawTotal));
-    if (!Number.isFinite(value) || value < 0) return null;
-    return Math.round(value * 100);
   }
 }
