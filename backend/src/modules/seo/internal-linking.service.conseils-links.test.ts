@@ -181,6 +181,17 @@ describe('InternalLinkingService.resolveConseilsLinks — règles', () => {
     );
   });
 
+  it('réécrit aussi un ba_alias dont l’attribut est écrit en majuscules', async () => {
+    const { service } = makeService(TABLES_FIXTURE);
+    const out = await service.resolveConseilsLinks(
+      '<A HREF="/blog-pieces-auto/conseils/comment-changer-un-cardan">conseils</A>',
+      SERVED,
+    );
+    expect(out).toBe(
+      '<A href="/blog-pieces-auto/conseils/cardan">conseils</A>',
+    );
+  });
+
   it('ne touche pas un contenu sans lien conseils', async () => {
     const { service, calls } = makeService(TABLES_FIXTURE);
     const html = '<p><a href="/pieces/cardan-13.html">cardan</a></p>';

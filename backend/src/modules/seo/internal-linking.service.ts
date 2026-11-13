@@ -91,6 +91,8 @@ export const UNRESOLVED_GAMME_LINK_ATTR = 'data-gamme-link="unresolved"';
 const EDITORIAL_CONSEILS_LINK_RE =
   /<a\s[^>]*?href="\/blog-pieces-auto\/conseils\/([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
 const CONSEILS_PREFIX = '/blog-pieces-auto/conseils/';
+/** Attribut href d'un lien conseils, insensible à la casse comme la recherche. */
+const CONSEILS_HREF_ATTR_RE = /href="\/blog-pieces-auto\/conseils\/[^"]*"/i;
 
 // =====================================================
 // Cache Types
@@ -757,7 +759,7 @@ export class InternalLinkingService implements OnModuleInit {
     content: string,
     servedConseilsAliases: ReadonlySet<string>,
   ): Promise<string> {
-    if (!content || !content.includes(`href="${CONSEILS_PREFIX}`)) {
+    if (!content || !CONSEILS_HREF_ATTR_RE.test(content)) {
       return content;
     }
 
@@ -799,7 +801,7 @@ export class InternalLinkingService implements OnModuleInit {
         }
         if (target === pgAlias) return anchor;
         return anchor.replace(
-          `href="${CONSEILS_PREFIX}${target}"`,
+          CONSEILS_HREF_ATTR_RE,
           `href="${CONSEILS_PREFIX}${pgAlias}"`,
         );
       },
