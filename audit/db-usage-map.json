@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 440,
-    "backend_files_scanned": 1512
+    "backend_files_scanned": 1513
   },
   "tables": {
     "___config": {
@@ -10998,42 +10998,42 @@
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 459,
+      "line": 464,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 472,
+      "line": 477,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 512,
+      "line": 517,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 591,
+      "line": 596,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 628,
+      "line": 633,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 684,
+      "line": 689,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
