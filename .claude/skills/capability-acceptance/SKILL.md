@@ -132,7 +132,7 @@ devient NON VÉRIFIÉ.
   strict : `frontend/tests/e2e/commerce-journey.spec.ts` sur DEV.
 - Fusion sur `main` ≠ DEV à jour : DEV sert le working tree du checkout principal,
   resynchronisé par cron, qui peut avorter. Vérifier HEAD, état et démarrage du process.
-- CI verte ≠ servi ; succès de `deploy-prod.yml` ≠ santé de la PROD.
+- CI verte ≠ servi ; succès de `release-prod.yml` ≠ santé de la PROD.
 - Le contrôle `pr-dod-gate` exige les neuf lignes DoD cochées ou N/A ; il ne
   vérifie pas qu'elles sont vraies, et DoD2 (assignation, approbation) y reste
   indicatif.
