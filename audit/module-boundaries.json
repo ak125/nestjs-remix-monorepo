@@ -805,8 +805,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 51,
-      "loc_total": 11351,
+      "files_count": 52,
+      "loc_total": 11477,
       "has_barrel": false
     },
     "seo-projection": {
