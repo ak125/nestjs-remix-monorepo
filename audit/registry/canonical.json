@@ -59850,7 +59850,7 @@
         "backend/src/modules/seo/internal-linking.service.ts"
       ],
       "kind": "test",
-      "loc": 227,
+      "loc": 238,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
       "risk": "high",
@@ -59885,7 +59885,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 992,
+      "loc": 994,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/internal-linking.service.ts",
       "risk": "high",
@@ -107512,11 +107512,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "fb3b29869377b3cf1993875671f8157e670c912a12960ef3b4894015246a1ecf",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "31026a6d179e0492f27c0b7ec215cb1a39cafab874651bc360c4cfa53958b862",
+      "audit/registry/files.json": "c35a9ba5f11aba3db3541b386ab78e216ed99654300e19a1b51a4574c2e5116c",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "ce65fd45192e"
+    "sotFingerprint": "aa002e613734"
   },
   "runtime": [
     {

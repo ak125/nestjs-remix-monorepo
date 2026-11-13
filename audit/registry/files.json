@@ -30331,7 +30331,7 @@
         "backend/src/modules/seo/internal-linking.service.ts"
       ],
       "kind": "test",
-      "loc": 227,
+      "loc": 238,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
       "risk": "low",
@@ -30365,7 +30365,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 992,
+      "loc": 994,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/internal-linking.service.ts",
       "risk": "low",
