@@ -2933,14 +2933,58 @@
       ],
       "imports": [
         "backend/src/common/utils/error.utils.ts",
+        "backend/src/common/utils/postgrest-filter.util.ts",
         "backend/src/common/utils/splat-path.util.ts",
         "backend/src/common/utils/supabase-key.util.ts",
         "backend/src/common/utils/url-builder.utils.ts"
       ],
       "kind": "service",
-      "loc": 15,
+      "loc": 20,
       "owner": "__unassigned__",
       "path": "backend/src/common/utils/index.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/common/utils/postgrest-filter.util.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/utils/postgrest-filter.util.ts"
+      ],
+      "kind": "test",
+      "loc": 72,
+      "owner": "__unassigned__",
+      "path": "backend/src/common/utils/postgrest-filter.util.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/common/utils/postgrest-filter.util.ts",
+      "importedBy": [
+        "backend/src/common/utils/index.ts",
+        "backend/src/common/utils/postgrest-filter.util.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 28,
+      "owner": "__unassigned__",
+      "path": "backend/src/common/utils/postgrest-filter.util.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -12003,6 +12047,7 @@
         "backend/src/modules/blog/services/advice-enrichment.service.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/common/utils/url-builder.utils.ts",
@@ -12014,7 +12059,7 @@
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
-      "loc": 738,
+      "loc": 742,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/advice.service.ts",
       "risk": "low",
@@ -12065,6 +12110,7 @@
       ],
       "imports": [
         "@common/exceptions",
+        "@common/utils/postgrest-filter.util",
         "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
@@ -12072,7 +12118,7 @@
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
-      "loc": 818,
+      "loc": 819,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/blog-article-data.service.ts",
       "risk": "low",
@@ -12362,6 +12408,7 @@
         "backend/src/modules/blog/services/constructeur.service.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
@@ -12370,7 +12417,7 @@
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
-      "loc": 230,
+      "loc": 237,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/constructeur-search.service.ts",
       "risk": "low",
@@ -12420,6 +12467,7 @@
         "backend/src/modules/blog/services/constructeur-search.service.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
@@ -12428,7 +12476,7 @@
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
-      "loc": 810,
+      "loc": 812,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/constructeur.service.ts",
       "risk": "low",
@@ -12450,12 +12498,13 @@
         "backend/src/modules/blog/controllers/content.controller.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
-      "loc": 479,
+      "loc": 480,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/glossary.service.ts",
       "risk": "low",
@@ -13710,13 +13759,14 @@
         "@cache/cache.service",
         "@common/exceptions",
         "@common/utils/error.utils",
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/catalog/services/catalog-hierarchy.service.ts"
       ],
       "kind": "service",
-      "loc": 885,
+      "loc": 886,
       "owner": "__unassigned__",
       "path": "backend/src/modules/catalog/catalog.service.ts",
       "risk": "low",
@@ -14859,11 +14909,12 @@
       "imports": [
         "@cache/cache.service",
         "@common/exceptions",
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "backend/src/modules/config/dto/config.dto.ts"
       ],
       "kind": "service",
-      "loc": 401,
+      "loc": 402,
       "owner": "__unassigned__",
       "path": "backend/src/modules/config/services/database-config.service.ts",
       "risk": "low",
@@ -20662,11 +20713,12 @@
       ],
       "imports": [
         "@common/exceptions",
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types"
       ],
       "kind": "service",
-      "loc": 407,
+      "loc": 397,
       "owner": "__unassigned__",
       "path": "backend/src/modules/messages/repositories/message-data.service.ts",
       "risk": "low",
@@ -23936,12 +23988,13 @@
         "backend/src/modules/products/services/product-enhancement.service.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 576,
+      "loc": 582,
       "owner": "__unassigned__",
       "path": "backend/src/modules/products/products.service.ts",
       "risk": "low",
@@ -24151,13 +24204,14 @@
       ],
       "imports": [
         "@common/exceptions",
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/pricing/services/pricing-formula.service.ts"
       ],
       "kind": "service",
-      "loc": 627,
+      "loc": 628,
       "owner": "__unassigned__",
       "path": "backend/src/modules/products/services/products-admin.service.ts",
       "risk": "low",
@@ -26071,12 +26125,13 @@
       ],
       "imports": [
         "@cache/cache.service",
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 999,
+      "loc": 1002,
       "owner": "__unassigned__",
       "path": "backend/src/modules/search/services/search-simple.service.ts",
       "risk": "low",
@@ -34567,12 +34622,13 @@
         "backend/src/modules/staff/staff.service.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/staff/dto/staff.dto.ts"
       ],
       "kind": "service",
-      "loc": 317,
+      "loc": 318,
       "owner": "__unassigned__",
       "path": "backend/src/modules/staff/services/staff-data.service.ts",
       "risk": "low",
@@ -36248,11 +36304,12 @@
       ],
       "imports": [
         "@common/exceptions",
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types"
       ],
       "kind": "service",
-      "loc": 652,
+      "loc": 653,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers.service.ts",
       "risk": "low",
@@ -36747,13 +36804,14 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/support/services/notification.service.ts",
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 907,
+      "loc": 910,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/contact.service.ts",
       "risk": "low",
@@ -38328,12 +38386,13 @@
       ],
       "imports": [
         "@common/exceptions",
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/users/dto/user.dto.ts"
       ],
       "kind": "service",
-      "loc": 740,
+      "loc": 741,
       "owner": "__unassigned__",
       "path": "backend/src/modules/users/services/user-data-consolidated.service.ts",
       "risk": "low",
@@ -39021,6 +39080,7 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
@@ -39028,7 +39088,7 @@
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 525,
+      "loc": 526,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
       "risk": "low",
@@ -39051,6 +39111,7 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
@@ -39058,7 +39119,7 @@
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 491,
+      "loc": 494,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
       "risk": "low",
@@ -41895,6 +41956,25 @@
       "loc": 308,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/payment-core-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/postgrest-or-filter-wiring.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 141,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/postgrest-or-filter-wiring.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
