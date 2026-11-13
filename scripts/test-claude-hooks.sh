@@ -927,6 +927,21 @@ assert_exit "bash-guard: git push --tags → BLOCK"          "2" "$(run_bash_gua
 assert_exit "bash-guard: git tag (list) → allow"           "0" "$(run_bash_guard 'git tag')"
 assert_exit "bash-guard: push feature branch → allow"      "0" "$(run_bash_guard 'git push origin feat/foo')"
 assert_exit "bash-guard: git status → allow"               "0" "$(run_bash_guard 'git status')"
+# BLOCK : autres moyens de créer un tag v* ou de lancer un déploiement PROD
+assert_exit "bash-guard: tag au format réel → BLOCK"             "2" "$(run_bash_guard 'git tag v2026.11.13-r1-conseil-links-ce3ab80 ce3ab80')"
+assert_exit "bash-guard: gh release create v* → BLOCK"           "2" "$(run_bash_guard 'gh release create v2026.11.13-x --target main')"
+assert_exit "bash-guard: gh api création de refs/tags/v* → BLOCK" "2" "$(run_bash_guard 'gh api repos/o/r/git/refs -f ref=refs/tags/v1.2.3 -f sha=abc')"
+assert_exit "bash-guard: gh workflow run release-prod.yml → BLOCK" "2" "$(run_bash_guard 'gh workflow run release-prod.yml --ref v1.2.3')"
+assert_exit "bash-guard: gh workflow run deploy-prod.yml → BLOCK"  "2" "$(run_bash_guard 'gh workflow run deploy-prod.yml --ref v1.2.3')"
+assert_exit "bash-guard: gh workflow enable deploy-prod.yml → BLOCK" "2" "$(run_bash_guard 'gh workflow enable deploy-prod.yml -R o/r')"
+assert_exit "bash-guard: gh workflow run par nom affiché → BLOCK" "2" "$(run_bash_guard 'gh workflow run Release PROD --ref v1.2.3')"
+assert_exit "bash-guard: gh api dispatches release-prod → BLOCK" "2" "$(run_bash_guard 'gh api -X POST repos/o/r/actions/workflows/release-prod.yml/dispatches -f ref=v1.2.3')"
+assert_exit "bash-guard: gh api enable deploy-prod → BLOCK"      "2" "$(run_bash_guard 'gh api -X PUT repos/o/r/actions/workflows/deploy-prod.yml/enable')"
+# ALLOW : lectures des workflows PROD
+assert_exit "bash-guard: gh run list --workflow release-prod.yml → allow" "0" "$(run_bash_guard 'gh run list --workflow release-prod.yml -L 1')"
+assert_exit "bash-guard: gh workflow view release-prod.yml → allow"      "0" "$(run_bash_guard 'gh workflow view release-prod.yml')"
+assert_exit "bash-guard: gh api .state deploy-prod → allow"              "0" "$(run_bash_guard 'gh api repos/o/r/actions/workflows/deploy-prod.yml --jq .state')"
+assert_exit "bash-guard: gh release list → allow"                        "0" "$(run_bash_guard 'gh release list')"
 # Sanity : guard existant (Guard 1) toujours actif
 assert_exit "bash-guard: git push origin main → BLOCK (G1)" "2" "$(run_bash_guard 'git push origin main')"
 

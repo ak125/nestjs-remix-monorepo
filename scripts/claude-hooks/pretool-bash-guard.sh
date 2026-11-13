@@ -58,11 +58,22 @@ if grep -qE 'npm\s+(install|uninstall|update|remove|add)\s' <<<"$COMMAND"; then
   exit 2
 fi
 
-# Guard 6: Block version-tag create/push (v* = PROD deploy trigger, owner GO only)
-# Covers: git tag v1.2.3 / git tag -a v1.2.3 / git tag -s v1.2.3 / git push origin v1.2.3 / git push --tags
-# Rationale: tag v* promeut :preprod -> :production (voir .claude/rules/deployment.md).
-if grep -qE 'git\s+tag\b.*\bv[0-9]+(\.[0-9]+){1,3}\b|git\s+push\b.*(--tags|\bv[0-9]+(\.[0-9]+){1,3}\b)' <<<"$COMMAND"; then
+# Guard 6: Block every way of starting a PROD deploy (owner GO only)
+# A v* tag starts release-prod.yml, which deploys that tag's commit to PROD
+# (voir .claude/rules/deployment.md). Covers:
+# - tag creation or push: git tag v1.2.3 (-a/-s), git push origin v1.2.3, git push --tags,
+#   gh release create v1.2.3, gh api .../git/refs -f ref=refs/tags/v1.2.3;
+# - a manual run, or re-enabling the retired workflow: gh workflow run|enable
+#   release-prod.yml / deploy-prod.yml (or its display name), gh api .../actions/workflows/
+#   <file>/dispatches|enable.
+if grep -qE 'git\s+tag\b.*\bv[0-9]+(\.[0-9]+){1,3}\b|git\s+push\b.*(--tags|\bv[0-9]+(\.[0-9]+){1,3}\b)' <<<"$COMMAND" \
+   || grep -qE 'gh\s+release\s+create\b.*\bv[0-9]+(\.[0-9]+){1,3}\b|gh\s+api\b.*refs/tags/v[0-9]+(\.[0-9]+){1,3}\b' <<<"$COMMAND"; then
   echo "BLOCKED: tag v* = declencheur deploy PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
+  exit 2
+fi
+if grep -qE 'gh\s+workflow\s+(run|enable)\b.*((release|deploy)-prod|(Release|Deploy) PROD)' <<<"$COMMAND" \
+   || grep -qE 'gh\s+api\b.*actions/workflows/(release|deploy)-prod\.yml/(dispatches|enable)\b' <<<"$COMMAND"; then
+  echo "BLOCKED: lancement manuel ou reactivation d'un workflow de deploiement PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
   exit 2
 fi
 
