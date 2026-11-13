@@ -27484,7 +27484,7 @@
         "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
       ],
       "kind": "test",
-      "loc": 256,
+      "loc": 276,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.test.ts",
       "risk": "low",
