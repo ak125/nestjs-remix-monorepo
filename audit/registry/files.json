@@ -5883,12 +5883,11 @@
         "backend/src/database/services/index.ts"
       ],
       "imports": [
-        "@common/exceptions",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/orders.service.ts"
       ],
       "kind": "service",
-      "loc": 180,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/database-composition.service.ts",
       "risk": "low",
@@ -5994,7 +5993,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 1077,
+      "loc": 730,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/orders.service.ts",
       "risk": "low",
