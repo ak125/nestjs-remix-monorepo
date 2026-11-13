@@ -1758,3 +1758,9 @@ entries:
     owner: '@ak125/catalog-team'
     sourceConfidence: high
     risk: medium
+  # Proxy public PROD (Caddy) : aucun owner jusqu'ici (DoD2 de la PR #1966).
+  - glob: config/caddy/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
