@@ -245,6 +245,88 @@ describe('SyntheticCrawlerService', () => {
     expect(inserted.every((s) => s.tier === 'tier0')).toBe(true);
   });
 
+  it('probes tier1 conseil pages: sitemap-blog.xml feeds the tier1 pool declared in the criticality canon', async () => {
+    // Canon réel : tier1 = blog-pieces-auto/* (poids 0,30). Ces URL ne figurent
+    // que dans sitemap-blog.xml ; sans ce sous-sitemap le palier reste vide.
+    crit.setConfigForTest({
+      ...VALID_CONFIG,
+      tiers: {
+        ...VALID_CONFIG.tiers,
+        tier1: {
+          ...VALID_CONFIG.tiers.tier1,
+          routes: ['blog-pieces-auto/*'],
+        },
+      },
+    });
+    const responses = new Map<string, MockResponse>([
+      [
+        'https://www.automecanik.com/sitemap.xml',
+        {
+          status: 200,
+          body:
+            '<sitemap><loc>https://www.automecanik.com/sitemap-pieces-1.xml</loc></sitemap>' +
+            '<sitemap><loc>https://www.automecanik.com/sitemap-blog.xml</loc></sitemap>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/sitemap-pieces-1.xml',
+        {
+          status: 200,
+          body: '<url><loc>https://www.automecanik.com/pieces/foo-1.html</loc></url>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/sitemap-blog.xml',
+        {
+          status: 200,
+          body: '<url><loc>https://www.automecanik.com/blog-pieces-auto/conseils/amortisseur</loc></url>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/pieces/foo-1.html',
+        {
+          status: 200,
+          body: '<html><head></head><body></body></html>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/blog-pieces-auto/conseils/amortisseur',
+        { status: 503, body: 'Service Unavailable', headers: {} },
+      ],
+    ]);
+    globalThis.fetch = mockFetch(
+      responses,
+    ) as unknown as typeof globalThis.fetch;
+
+    const insertSpy = jest.fn().mockResolvedValue({ error: null });
+    const svc = buildSvc(
+      crit,
+      makeConfigService({ SEO_CP_SAMPLE_SIZE: 5, SEO_CP_CONCURRENCY: 2 }),
+      insertSpy,
+    );
+
+    const result = await svc.run({ triggeredBy: 'test' });
+
+    expect(result.by_tier.tier0.probed).toBe(1);
+    expect(result.by_tier.tier1.probed).toBe(1);
+    expect(result.by_tier.tier1.rate_5xx).toBe(1);
+    const inserted = insertSpy.mock.calls[0][0] as Array<{
+      tier: string;
+      url: string;
+      http_code: number;
+    }>;
+    expect(inserted.filter((s) => s.tier === 'tier1')).toEqual([
+      expect.objectContaining({
+        url: 'https://www.automecanik.com/blog-pieces-auto/conseils/amortisseur',
+        http_code: 503,
+      }),
+    ]);
+  });
+
   it('skips excluded routes (admin/*, sitemap*.xml) — does not probe nor persist', async () => {
     const responses = new Map<string, MockResponse>([
       [

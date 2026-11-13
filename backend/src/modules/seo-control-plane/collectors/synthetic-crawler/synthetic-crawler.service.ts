@@ -11,7 +11,9 @@
  *
  * Sampling :
  *   - URLs source = sitemap PROD (`sitemap-pieces-*.xml`,
- *     `sitemap-categories.xml`, `sitemap-vehicules.xml`).
+ *     `sitemap-categories.xml`, `sitemap-vehicules.xml`, `sitemap-blog.xml`).
+ *     `sitemap-blog.xml` est la seule source des routes `blog-pieces-auto/*`
+ *     (tier1 du canon) : sans lui, ce palier n'est jamais sondé.
  *   - Stratification par tier via `CriticalityLoaderService.classify()`.
  *   - Poids `sampling_weight` lu depuis L4 governance (criticality.yaml).
  *
@@ -43,7 +45,7 @@ import {
 
 const PROD_BASE_DEFAULT = 'https://www.automecanik.com';
 const SUB_PATTERN =
-  /(sitemap-pieces-\d+|sitemap-categories|sitemap-vehicules)\.xml$/;
+  /(sitemap-pieces-\d+|sitemap-categories|sitemap-vehicules|sitemap-blog)\.xml$/;
 
 interface UrlCandidate {
   url: string;
