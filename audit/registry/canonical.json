@@ -63240,6 +63240,34 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10.types.ts",
+        "fs/promises",
+        "os",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 820,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "importedBy": [
         "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
@@ -63382,6 +63410,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
@@ -63397,7 +63426,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 542,
+      "loc": 681,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "high",
@@ -63416,6 +63445,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
@@ -63449,7 +63479,8 @@
         "backend/src/modules/seo/controllers/sitemap-v10.controller.ts",
         "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/processors/sitemap-regenerate.processor.ts",
-        "backend/src/modules/seo/seo.module.ts"
+        "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts"
       ],
       "imports": [
         "@common/exceptions",
@@ -63463,7 +63494,7 @@
         "backend/src/modules/seo/services/sitemap-v10.types.ts"
       ],
       "kind": "service",
-      "loc": 623,
+      "loc": 668,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10.service.ts",
       "risk": "high",
@@ -63483,6 +63514,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10.types.ts",
       "importedBy": [
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
@@ -63490,7 +63522,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 126,
+      "loc": 131,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10.types.ts",
       "risk": "high",
@@ -107597,15 +107629,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
+      ".spec/00-canon/repository-registry/ownership.yaml": "dd6a96ee9dfd2b8df8fe35176fb5ef1b9432d8657418aae0154c8a0a37f816aa",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4c4a746b919d3080e8e67e3b1830ff465a5f746192ff9167ed747082c3402258",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "acc8a0641672cb92d31567a0c16dad20a3e079c146a53a3498df1ad733115cfd",
+      "audit/registry/files.json": "3b02fd575fc9320613e342cc3aa905aaef4892d3b0d775730298977e9e735725",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "439101b961cf"
+    "sotFingerprint": "9d48ddecd81a"
   },
   "runtime": [
     {
