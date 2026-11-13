@@ -46,7 +46,7 @@ clé de la base ni `DATABASE_URL` et n'est reliée qu'à un réseau interne : el
 passerelle, seule à détenir une clé, qui ne transmet que des lectures (#1963, #1964). Le job
 `🧪 Deploy PREPROD` contrôle ces points à chaque déploiement.
 
-**Sources de cette table** : [`.sops.yaml`](../../.sops.yaml) (rôle des machines), [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) (job `🧪 Deploy PREPROD`), [`docker-compose.preprod.yml`](../../docker-compose.preprod.yml), [`.github/workflows/deploy-prod.yml`](../../.github/workflows/deploy-prod.yml).
+**Sources de cette table** : [`.sops.yaml`](../../.sops.yaml) (rôle des machines), [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) (job `🧪 Deploy PREPROD`), [`docker-compose.preprod.yml`](../../docker-compose.preprod.yml), [`.github/workflows/release-prod.yml`](../../.github/workflows/release-prod.yml).
 
 **Conséquence importante** : l'hôte DEV **n'héberge PAS** de container `:preprod` ni `:production` — c'est un poste de travail SSH. PREPROD et PROD vivent tous les deux sur l'hôte PROD, qui porte aussi le runner GitHub Actions self-hosted.
 
@@ -106,10 +106,10 @@ suivant ; échec → alerte à chaque tick, nouvel essai au plus une fois par he
 ## Mécanique du tag Docker `:preprod` (alias flottant)
 
 - Le tag `:preprod` est **réécrit à chaque merge sur `main`** (workflow `ci.yml` → step `build`).
-- Le push d'un tag git `v*` sélectionne **`:sha-<SHA complet du commit>`**, publié par le même build. Après contrôle du label de provenance, `deploy-prod.yml` publie le tag de version sur son **identifiant local immuable**. `:production` n'est déplacé vers cet identifiant qu'après le point de non-retour (`DEPLOY_STARTED=1`), où tout échec déclenche le rollback : un refus de `.env` ou de flag avant ce point laisse `:production` sur la version en service. Un déplacement de `:preprod` ne change plus cette sélection.
+- Le push d'un tag git `v*` sélectionne **`:sha-<SHA complet du commit>`**, publié par le même build. Après contrôle du label de provenance, `release-prod.yml` publie le tag de version sur son **identifiant local immuable**. `:production` n'est déplacé vers cet identifiant qu'après le point de non-retour (`DEPLOY_STARTED=1`), où tout échec déclenche le rollback : un refus de `.env` ou de flag avant ce point laisse `:production` sur la version en service. Un déplacement de `:preprod` ne change plus cette sélection.
 - Ce n'est **pas une référence stable** — pour debug historique ou rollback, utiliser un SHA git ou un tag semver explicite.
-- Le label SHA de l'image sélectionnée prouve la **provenance**, pas la **validation** : `deploy-prod.yml` refuse aussi, avant toute mutation, un commit dont le run `ci.yml` (push `main`) n'a pas `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et `🔦 Lighthouse Performance Audit` en `success` (`scripts/ci/prod-preprod-evidence.mjs`). Un commit dont le run a été annulé par un merge suivant n'est pas validé : taguer le dernier commit vert.
-- Le déploiement PREPROD exécute lui aussi `:sha-<commit du run>`, vérifié par son label puis réétiqueté `:preprod` en local : relancer un ancien job ne sert plus l'image d'un commit plus récent. La **version servie** est contrôlée après le démarrage : le conteneur doit tourner sur l'identifiant vérifié et `/health` doit renvoyer `revision` égal à ce commit (`GIT_SHA`, posé par `build.yml` et le `Dockerfile` ; `null` hors image). `deploy-prod.yml` fait les mêmes contrôles (identifiant promu, `revision` égal au commit du tag) dans `🚀 Deploy to PROD` et `✅ Validate PROD` ; un écart échoue et déclenche le rollback.
+- Le label SHA de l'image sélectionnée prouve la **provenance**, pas la **validation** : `release-prod.yml` refuse aussi, avant toute mutation, un commit dont le run `ci.yml` (push `main`) n'a pas `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et `🔦 Lighthouse Performance Audit` en `success` (`scripts/ci/prod-preprod-evidence.mjs`). Un commit dont le run a été annulé par un merge suivant n'est pas validé : taguer le dernier commit vert.
+- Le déploiement PREPROD exécute lui aussi `:sha-<commit du run>`, vérifié par son label puis réétiqueté `:preprod` en local : relancer un ancien job ne sert plus l'image d'un commit plus récent. La **version servie** est contrôlée après le démarrage : le conteneur doit tourner sur l'identifiant vérifié et `/health` doit renvoyer `revision` égal à ce commit (`GIT_SHA`, posé par `build.yml` et le `Dockerfile` ; `null` hors image). `release-prod.yml` fait les mêmes contrôles (identifiant promu, `revision` égal au commit du tag) dans `🚀 Deploy to PROD` et `✅ Validate PROD` ; un écart échoue et déclenche le rollback.
 
 ## Pièges de nommage INTERDITS (CI lint enforcé)
 
@@ -133,8 +133,8 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 | Trigger git | Workflow | Image produite | Cible runtime | Latence | Validation humaine ? |
 |-------------|----------|----------------|---------------|---------|----------------------|
 | Fusion d'une PR sur `main` (push `main`) | `.github/workflows/ci.yml` job `deploy` | `:sha-<commit>` et alias `:preprod` sur DockerHub (`build.yml`) | pile PREPROD (hôte PROD, port 3200) redémarrée sur l'image du commit | ~10 min | NON (E2E Smoke + Lighthouse CI automatiques) |
-| `push origin v*` (tag) | `.github/workflows/deploy-prod.yml` | promote l'image du commit → `:production` | container PROD (hôte PROD, 80/443) redémarré | ~5 min | OUI (tag manuel = décision de l'owner) |
-| `workflow_dispatch` manuel sur `deploy-prod.yml`, lancé sur un tag `v*` (si le workflow de la ref contient la garde de ref, toute autre ref est refusée à la première étape ; voir « Ou via UI GitHub ») | idem `deploy-prod.yml` | idem | idem PROD | idem | OUI |
+| `push origin v*` (tag) | `.github/workflows/release-prod.yml` | promote l'image du commit → `:production` | container PROD (hôte PROD, 80/443) redémarré | ~5 min | OUI (tag manuel = décision de l'owner) |
+| `workflow_dispatch` manuel sur `release-prod.yml`, lancé sur un tag `v*` qui contient ce fichier (toute autre ref est refusée à la première étape ; voir « Ou via UI GitHub ») | idem `release-prod.yml` | idem | idem PROD | idem | OUI |
 
 **Règles mnémoniques** :
 
@@ -156,7 +156,7 @@ Chaque objet a sa preuve ; aucun ne prouve le suivant (ADR-075 D3).
 | Tag `v*` | `git tag --points-at <sha>` | que le déploiement PROD ait réussi |
 | Image | identifiant d'image et label `org.opencontainers.image.revision` de `:sha-<commit>` | qu'elle tourne ; un alias ne désigne pas une version |
 | Environnement | son rôle (glossaire) | la version qu'il sert |
-| Preuve CI | jobs en `success` sur le run `ci.yml` du commit, run `deploy-prod.yml` en `success` | que la version soit encore servie |
+| Preuve CI | jobs en `success` sur le run `ci.yml` du commit, run `release-prod.yml` en `success` | que la version soit encore servie |
 | Version servie | `/health` de l'environnement, `revision` égal au SHA attendu, lu et daté | quoi que ce soit sur un autre environnement |
 
 Une fusion, un tag ou une CI verte se nomment comme tels.
@@ -197,7 +197,7 @@ ou si la passerelle accepte une écriture.
    version en service, qui sert de point de retour (voir Rollback) ; le hook
    `pretool-bash-guard.sh` bloque ce geste pour un agent :
    `git tag v2.1.0 <sha40> && git push origin v2.1.0`.
-4. `deploy-prod.yml` refuse d'abord, sans rien modifier, un commit sans ces trois jobs verts. Il
+4. `release-prod.yml` refuse d'abord, sans rien modifier, un commit sans ces trois jobs verts. Il
    capture ensuite l'image en service comme point de rollback : son identifiant, épinglé pour le
    run, et l'alias `:production-previous`, poussé au registre (un échec de ce push n'arrête pas le
    run). Il vérifie le label `revision` de `:sha-<commit>` et la publie sous le nom du tag (section
@@ -215,65 +215,49 @@ ou si la passerelle accepte une écriture.
    l'absence du conteneur PROD ne fait refuser aucun run. Si le conteneur PROD existe, le mode ne
    change rien : l'image est capturée.
 
-Ou via UI GitHub : `Actions → "Deploy PROD (via tag)" → Run workflow`, en choisissant le **tag**
-`v*` dans « Use workflow from ». Le run exécute le `deploy-prod.yml` de la ref choisie, et le
-formulaire propose `main` par défaut. La première étape de ce workflow, `🔖 Release ref gate`,
-refuse toute ref autre qu'un tag `v*` (`refs/tags/v…`, sans `/` après le `v`, comme le déclencheur
-`push`), avant le checkout et avant toute action sur l'hôte : lancé sur `main` ou sur une branche
-dont le workflow contient cette étape, le run échoue sans rien modifier. Elle lit `GITHUB_REF`, posé par le runner ; aucune entrée du
-formulaire ne le change.
+Ou via UI GitHub : `Actions → "🚀 Release PROD (tag v*)" → Run workflow`, en choisissant le
+**tag** `v*` dans « Use workflow from ». Le run exécute le `release-prod.yml` de la ref choisie, et
+le formulaire propose `main` par défaut. La première étape, `🔖 Release ref gate`, refuse toute ref
+autre qu'un tag `v*` (`refs/tags/v…`, sans `/` après le `v`, comme le déclencheur `push`), avant le
+checkout et avant toute action sur l'hôte : lancé sur `main` ou sur une branche, le run échoue sans
+rien modifier. Elle lit `GITHUB_REF`, posé par le runner ; aucune entrée du formulaire ne le change.
+Une ref dont le commit ne contient pas `release-prod.yml` ne peut pas lancer ce workflow.
 
-Cette garde ne protège que les refs dont le workflow la contient. Une ref plus ancienne (branche,
-tag, ou ref nouvelle posée sur un commit antérieur à la garde) suit son propre workflow, comme pour
-un tag (voir Rollback) : au 2026-11-10, 25 branches distantes en portent un sans garde de label ni
-preuve PREPROD. Sur 24 d'entre elles (nom avec `/`), le run s'arrête avant tout push, mais après
-avoir fait pointer le tag local `:production` de l'hôte du runner sur l'image `:preprod` ; sur la
-25e, il promeut l'alias `:preprod` courant vers PROD.
+### Ancien workflow `deploy-prod.yml`, retiré
+
+Jusqu'au renommage, le workflow s'appelait `deploy-prod.yml` (« Deploy PROD (via tag) »). GitHub
+identifie un workflow par son chemin et un run exécute la copie de sa ref : les tags `v*` et les
+branches antérieurs au renommage portent encore ce fichier. Au 2026-11-13, les 305 tags `v*` le
+portent ; un seul contient la garde de ref (#2010), et 194 n'ont aucune garde de provenance (leur
+run promeut l'alias `:preprod` courant vers PROD).
+Après la fusion du renommage, l'owner le désactive :
+`gh workflow disable deploy-prod.yml --repo ak125/nestjs-remix-monorepo`. État, en lecture seule :
+`gh api repos/ak125/nestjs-remix-monorepo/actions/workflows/deploy-prod.yml --jq .state`, qui doit
+renvoyer `disabled_manually`.
+
+Désactivé ou non : **ne lancer aucun run de `deploy-prod.yml`, ne pas le réactiver, ne pas pousser
+de tag `v*` sur un commit qui ne contient pas `release-prod.yml`.** Remettre une version antérieure
+au renommage relève de l'intervention manuelle (Rollback, dernière ligne).
 
 ## Rollback
 
 | Environnement | Procédure |
 |---|---|
 | **PREPROD** | PR de revert du commit fautif (`git revert <sha>` sur une branche, puis `gh pr create`), fusionnée comme toute PR (étape 1 du workflow nominal). Le push `main` qui en résulte relance le cycle. Jamais de push direct ni de force-push sur `main`. |
-| **PROD, pendant un déploiement** | Automatique : après le point de non-retour, tout échec de `deploy-prod.yml` déclenche `⏪ Rollback PROD` (`scripts/ci/prod-rollback.sh`), qui remet `:production` sur l'image capturée avant la mutation et la redémarre. Il ne restaure que l'image : le Caddyfile, les fichiers compose et le `.env` posés par ce déploiement restent en place, et ses vérifications (`/health`, SSR) se font dans le conteneur, sans passer par Caddy. Un run annulé ou interrompu après le point de non-retour (annulation manuelle, perte du runner) ne déclenche pas ce rollback : dernière ligne. **Ne jamais annuler un run en cours de déploiement.** En mode break-glass (étape 5), si le conteneur PROD était absent, aucune image n'a été capturée : l'étape échoue et renvoie à l'intervention manuelle (dernière ligne). |
-| **PROD, après un déploiement réussi** | L'owner relance `Deploy PROD (via tag)` (`workflow_dispatch`) sur le tag `v*` de la version à restaurer, dans les limites ci-dessous. |
-| **PROD, workflow indisponible, run annulé ou interrompu après le point de non-retour, tag refusé ou tag sans garde** | Intervention manuelle de l'owner sur l'hôte PROD, par la console de l'hébergeur. Aucun agent ne modifie PROD ni ne se connecte à son hôte ; lire `/health` par l'URL publique n'est pas une modification. |
+| **PROD, pendant un déploiement** | Automatique : après le point de non-retour, tout échec de `release-prod.yml` déclenche `⏪ Rollback PROD` (`scripts/ci/prod-rollback.sh`), qui remet `:production` sur l'image capturée avant la mutation et la redémarre. Il ne restaure que l'image : le Caddyfile, les fichiers compose et le `.env` posés par ce déploiement restent en place, et ses vérifications (`/health`, SSR) se font dans le conteneur, sans passer par Caddy. Un run annulé ou interrompu après le point de non-retour (annulation manuelle, perte du runner) ne déclenche pas ce rollback : dernière ligne. **Ne jamais annuler un run en cours de déploiement.** En mode break-glass (étape 5), si le conteneur PROD était absent, aucune image n'a été capturée : l'étape échoue et renvoie à l'intervention manuelle (dernière ligne). |
+| **PROD, après un déploiement réussi** | L'owner relance `Release PROD (tag v*)` (`workflow_dispatch`) sur le tag `v*` de la version à restaurer, si ce tag contient `release-prod.yml`. |
+| **PROD, workflow indisponible, run annulé ou interrompu après le point de non-retour, ou version à restaurer antérieure au renommage** | Intervention manuelle de l'owner sur l'hôte PROD, par la console de l'hébergeur. Aucun agent ne modifie PROD ni ne se connecte à son hôte ; lire `/health` par l'URL publique n'est pas une modification. |
 
-Le run relancé exécute le `deploy-prod.yml` **du tag choisi**, pas celui de `main`. Ses contrôles
-dépendent des commits que contient le tag (303 tags `v*` au 2026-11-10 ; dates de fusion en UTC) :
+Le run relancé exécute le `release-prod.yml` **du tag choisi**, pas celui de `main`. Un tag qui le
+contient contient aussi la garde de ref (#2010), le contrôle de la version servie (#1881, #1884,
+#1887) et le traitement du Caddyfile (#1961) : ce sont les contrôles de l'étape 4. Un contrôle
+ajouté plus tard ne vaut que pour les tags qui le contiennent.
 
-- tag qui contient #1881, #1884 et #1887 (2026-10-24 et 2026-10-25 ; au 2026-11-10, deux tags :
-  ceux du 2026-10-30 et du 2026-11-05) : contrôles de l'étape 4, dont `/health` `revision`, sauf le
-  traitement du Caddyfile : `prod-caddy-config.sh` (#1961, 2026-11-05) n'est dans aucun tag. Le
-  workflow de ces deux tags copie le Caddyfile du tag sur l'hôte sans le valider, avant le point de
-  non-retour, puis arrête et supprime Caddy avec le conteneur PROD et les recrée ensemble : le site
-  ne répond pas pendant le remplacement, et Caddy redémarre sur le Caddyfile du tag, qui remplace
-  celui de l'hôte ;
-- tag qui contient #1696 (2026-10-02) mais pas #1881 (13 tags) : preuve PREPROD et provenance de
-  `:sha-<commit>` vérifiées, mais ni contrôle de la version servie, ni champ `revision` dans `/health` ;
-- tag qui contient `ed10ec6e5` (2026-04-21) mais pas #1696 (94 tags) : son workflow s'arrête si le
-  label `revision` de l'alias `:preprod` diffère du commit du tag, avant de toucher `:production` et
-  le conteneur PROD. L'alias suit `main` : le refus est la règle dès qu'un commit plus récent a été
-  construit (ligne « tag refusé ») ;
-- tag qui ne contient pas `ed10ec6e5` (194 tags) : **aucune garde de provenance** ; après le
-  déploiement, seuls des contrôles d'exécution (conteneur démarré, réponses HTTP dont `/health`)
-  vérifient l'état de PROD, jamais la version servie. Son workflow promeut l'alias `:preprod`
-  courant vers `:production`, le pousse sous le nom du tag (ce qui écrase le tag Docker de la
-  version d'origine) et redémarre PROD, quel que soit le commit de l'alias. Le rollback automatique
-  de 39 d'entre eux revient à `:production-previous`, copié de `:production` après la promotion : il
-  redémarre l'image promue. **Ne jamais le relancer** (ligne « tag sans garde »).
-
-Un tag qui contient #1288 (2026-07-18 ; 41 tags : les 15 qui contiennent #1696 et 26 de la classe
-`ed10ec6e5`) réétiquette `:production-previous` sur l'image en service et le pousse avant de
-vérifier la provenance de l'image : un run refusé à ce stade remplace le point de retour précédent.
-Les 15, et 5 des 26 qui contiennent aussi #1598 (2026-09-29), vérifient d'abord la preuve PREPROD du
-commit (`scripts/ci/prod-preprod-evidence.mjs`) : si le run `ci.yml` manque ou n'est pas lisible,
-ils refusent avant toute mutation. Les 26 refusent ensuite sur le label de `:preprod`, selon leur
-classe. Les 15 supposent aussi que `:sha-<commit>` est encore dans le registre : sans l'image, ils
-refusent avant de toucher `:production` et le conteneur PROD, mais après la capture. Après un tel
-refus, l'intervention manuelle ne s'appuie pas sur `:production-previous` ; elle désigne l'image à
-restaurer par le tag Docker poussé à son déploiement (nom du tag `v*`), ou par `:sha-<commit>` si
-cette image est encore dans le registre.
+Pour une version antérieure au renommage, l'intervention manuelle ne s'appuie pas sur
+`:production-previous`, qu'un ancien run a pu remplacer ; elle désigne l'image à restaurer par
+`:sha-<commit>` si cette image est encore dans le registre, sinon par le tag Docker poussé à son
+déploiement (nom du tag `v*`). Un ancien workflow a pu réécrire ce tag Docker avec une autre image :
+vérifier son label `org.opencontainers.image.revision` avant de l'utiliser.
 
 Un revert sur `main` ne change pas PROD : il redéploie PREPROD. PROD ne change que par un tag `v*`
 (workflow nominal) ou par une ligne de ce tableau.
@@ -284,7 +268,7 @@ Voir `feedback_rollback_via_revert_pr_branch_protected.md` : main est branch-pro
 
 - **GitHub Actions** : `https://github.com/ak125/nestjs-remix-monorepo/actions`
 - **PREPROD + PROD (hôte PROD)** : aucun accès agent. Les logs des jobs `ci.yml` et
-  `deploy-prod.yml` montrent les contrôles de déploiement ; la pile PREPROD (application
+  `release-prod.yml` montrent les contrôles de déploiement ; la pile PREPROD (application
   `nestjs-remix-monorepo-preprod` en `READ_ONLY=true`, derrière son proxy `caddy-preprod` sur le
   port 3200 de la boucle locale) et le conteneur `nestjs-remix-monorepo-prod` (80/443) ne
   s'inspectent que par l'owner, depuis la console de l'hébergeur.
@@ -308,7 +292,7 @@ La liste fait foi dans les workflows, pas ici :
   `CRUX_API_KEY`, `SLACK_WEBHOOK_URL` et `TURBO_TOKEN`/`TURBO_TEAM`. La clé de la passerelle
   PREPROD n'est pas un secret GitHub : elle est posée à part sur l'hôte, jamais copiée de PROD par
   la CI, et le job `🧪 Deploy PREPROD` refuse avant d'arrêter un conteneur si elle manque ;
-- `deploy-prod.yml` lit les secrets de PROD : clés de la base (`SUPABASE_ANON_KEY`,
+- `release-prod.yml` lit les secrets de PROD : clés de la base (`SUPABASE_ANON_KEY`,
   `SUPABASE_SERVICE_ROLE_KEY`), secrets `PROD_*`, `DOCKERHUB_*`, `SLACK_WEBHOOK_URL` ;
 - `build.yml` lit `DOCKERHUB_*` et `VITE_GOOGLE_CLIENT_ID` ; `deploy-monitoring-scripts.yml` n'en
   lit aucun.
@@ -320,7 +304,7 @@ Secrets SOPS : `secrets/sentry.dev.sops.env`, `secrets/sentry.prod.sops.env` (cl
 - `main` → déploiement de la **pile PREPROD de CI uniquement** (jamais PROD direct).
 - Tag `v*` → déploiement **PROD container live**.
 - Branche `dev` → `ci.yml` se déclenche aussi sur un push `dev`, mais `build.yml` et `🧪 Deploy PREPROD` ne publient et ne déploient que depuis `main`. Au 2026-11-10, la branche `dev` n'existe pas sur le dépôt distant.
-- **Ne jamais annuler un run `deploy-prod.yml` en cours** : passé le point de non-retour, l'annulation ne déclenche pas le rollback.
+- **Ne jamais annuler un run `release-prod.yml` en cours** : passé le point de non-retour, l'annulation ne déclenche pas le rollback.
 - **No Paid Render** — Docker + Caddy self-hosted exclusivement.
 - **Port 3000** = port canonique du backend NestJS (local `npm run dev` ou interne container). Pas de repro sur port alternatif (cf. `feedback_no_bricolage_no_alt_port_repro.md`).
 - **Port 3200** = port host de la pile PREPROD sur l'hôte PROD, publié par son proxy `caddy_preprod` (mapping `3200:3000`, boucle locale).

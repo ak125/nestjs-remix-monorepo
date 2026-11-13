@@ -15,7 +15,7 @@
  *      leaves the .env byte-identical (no temp file left behind);
  *   5. no value ever reaches stdout/stderr;
  *   6. re-running is idempotent and the file mode is kept;
- *   7. deploy-prod.yml runs the script BEFORE the point of no return.
+ *   7. release-prod.yml runs the script BEFORE the point of no return.
  *
  * Run: npm run test:prod-seo-collector-env
  */
@@ -37,7 +37,7 @@ import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(SCRIPT_DIR, "prod-seo-collector-env.sh");
-const DEPLOY_WORKFLOW = join(SCRIPT_DIR, "..", "..", ".github", "workflows", "deploy-prod.yml");
+const DEPLOY_WORKFLOW = join(SCRIPT_DIR, "..", "..", ".github", "workflows", "release-prod.yml");
 
 // A real throwaway PKCS#8 key, generated in memory for this run: real length and
 // base64 alphabet (`+`, `/`, `=`), and no key-shaped literal committed to the repo.
@@ -237,7 +237,7 @@ describe("refusals leave the .env byte-identical", () => {
   });
 });
 
-describe("deploy-prod.yml wiring", () => {
+describe("release-prod.yml wiring", () => {
   const wf = readFileSync(DEPLOY_WORKFLOW, "utf8");
 
   test("the script runs before the point of no return", () => {

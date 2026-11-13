@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 20,
-      "loc_total": 6579,
+      "loc_total": 6589,
       "has_barrel": true
     },
     "health": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 222,
-      "loc_total": 52276,
+      "files_count": 223,
+      "loc_total": 52437,
       "has_barrel": true
     },
     "search": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 284,
-      "loc_total": 60773,
+      "files_count": 285,
+      "loc_total": 61200,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -792,7 +792,7 @@
         "backend/src/modules/seo-logs/services"
       ],
       "files_count": 12,
-      "loc_total": 3639,
+      "loc_total": 3625,
       "has_barrel": false
     },
     "seo-monitoring": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 373,
-      "loc_total": 76882,
+      "loc_total": 76894,
       "has_barrel": true
     },
     "upload": {
@@ -1776,7 +1776,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 11
+      "count": 12
     },
     {
       "from": "health",
