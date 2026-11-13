@@ -10,10 +10,10 @@ caller.
 A tripwire for agent commands, not the security boundary (GitHub permissions and a v* tag
 ruleset are). It reads the words bash would read: quotes, $'...', comments, operators,
 redirections (their target is not an argument), arithmetic $((...)), here-documents
-(found in the word stream; a body is data, unless its command is a shell). A word that
-itself reads as a git/gh command (bash -c '...', "$(...)", a here-string) is analysed
-again; when such a word cannot be read, the commands complete before the error are still
-analysed, as bash would run them. A command built from variables or a script file stays
+(found in the word stream). A word that itself reads as a git/gh command (bash -c '...',
+"$(...)", a here-string, a here-document body) is analysed again, whatever its command:
+a pipe can hand any of them to a shell. When such a word cannot be read, the commands
+complete before the error are still analysed, as bash would run them. A command built from variables or a script file stays
 out of reach.
 """
 import re
@@ -22,8 +22,6 @@ import sys
 OPS = set(";&|()`\n")
 PROD = r"(release|deploy)[- ]prod|417610500|224452325"
 PREFILTER = (re.compile(r"\b(git|gh)\b"), re.compile(r"\b(tag|push|release|api|workflow)\b"))
-# Commands that run a here-document body as shell code.
-SHELLS = {"bash", "sh", "zsh", "dash", "ksh", "eval", "source", ".", "ssh"}
 
 
 class Unparsable(ValueError):
@@ -177,26 +175,26 @@ def _lex(s, toks):
 
 
 def commands(toks):
-    """(arguments, here-document bodies) per command, split on operators, and the
-    redirection targets (kept apart: a file name or a here-string is not an argument, but
-    a here-string may feed a shell)."""
-    out, cur, bodies, targets, skip = [], [], [], [], False
+    """Arguments per command, split on operators, and the words that are not arguments:
+    redirection targets (a file name, a here-string) and here-document bodies. They are
+    analysed again: a here-string or a body may reach a shell, directly (bash <<EOF) or
+    through a pipe (cat <<EOF | bash)."""
+    out, cur, other, skip = [], [], [], False
     for kind, text in toks:
         if kind == "op":
-            out.append((cur, bodies))
-            cur, bodies, skip = [], [], False
+            out.append(cur)
+            cur, skip = [], False
         elif kind == "body":
-            bodies.append(text)
+            other.append(text)
         elif kind == "redir":
             skip = True
         elif skip:
-            targets.append(text)
+            other.append(text)
             skip = False
         else:
             cur.append(text)
-    out.append((cur, bodies))
-    # A body token sits where its '<<' was, inside its own command.
-    return [(a, b) for a, b in out if a], targets
+    out.append(cur)
+    return [a for a in out if a], other
 
 
 # git tag: options that take a value (space or attached), and list/query options.
@@ -306,13 +304,10 @@ def analyse(s, depth=0):
         if depth == 0:
             return {"unparsable"}
         toks = e.toks
-    cmds, targets = commands(toks)
-    nested = list(targets)
-    for args, bodies in cmds:
+    cmds, nested = commands(toks)
+    for args in cmds:
         found |= check(args)
         nested += args
-        if any(w.rsplit("/", 1)[-1] in SHELLS for w in args):
-            nested += bodies
     if depth < 4:
         for w in nested:
             if w != s:
