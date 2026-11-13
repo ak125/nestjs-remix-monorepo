@@ -21302,7 +21302,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 384,
+      "loc": 363,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "low",
@@ -21629,7 +21629,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 756,
+      "loc": 569,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
       "risk": "low",
@@ -44027,7 +44027,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 397,
+      "loc": 332,
       "owner": "__unassigned__",
       "path": "frontend/app/components/admin/OrderLineActions.tsx",
       "risk": "low",
@@ -54739,7 +54739,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "route",
-      "loc": 103,
+      "loc": 100,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/_layout.tsx",
       "risk": "low",
@@ -54877,7 +54877,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1158,
+      "loc": 1155,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/register.tsx",
       "risk": "low",
