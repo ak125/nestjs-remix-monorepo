@@ -10,6 +10,8 @@
 # mission sans verrou, une écriture tardive (entre contrôle et retrait) et un `gh` en échec.
 # Un worktree de session hors du dépôt ($HOME/worktrees/claude-*) est géré, son voisin
 # d'un autre gestionnaire ne l'est pas ; une entrée vide de PRUNE_ROOTS ne couvre rien.
+# État enregistré pour le hook SessionStart (cron_report, en --apply seulement) : error si gh
+# échoue, warn si git refuse un retrait (W23), ok au passage suivant, rien en dry-run.
 # Une pointe en retard sur la tête d'une PR fusionnée (commit poussé ensuite d'ailleurs) est
 # publiée ; si la tête est absente localement, l'ascendance est invérifiable et rien ne part.
 # Passe 3 : un cache marqué CACHEDIR.TAG, ignoré et inactif part d'un worktree gardé (PR
@@ -37,6 +39,8 @@ branch()  { git -C "$R" show-ref --verify --quiet "refs/heads/$1" && echo presen
 
 # --- Isolation : aucune config globale/système, aucun hook, aucun dépôt réel ---
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR
+# État cron (cron_report) : sous le HOME fixture, jamais dans le dossier d'état réel.
+unset XDG_STATE_HOME CRON_STATE_DIR CRON_REPORT_MAX_AGE_S
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 export GIT_AUTHOR_NAME=fixture GIT_AUTHOR_EMAIL=fixture@example.invalid
 export GIT_COMMITTER_NAME=fixture GIT_COMMITTER_EMAIL=fixture@example.invalid
@@ -44,6 +48,8 @@ export GIT_COMMITTER_NAME=fixture GIT_COMMITTER_EMAIL=fixture@example.invalid
 export HOME="$FIX"
 
 R="$FIX/repo"; WT="$R/.claude/worktrees"
+STATE="$FIX/.local/state/automecanik/cron/prune-merged-worktrees.json"
+st() { jq -r "$1" "$STATE" 2>/dev/null || echo "(état absent)"; }
 git init -q --bare -b main "$FIX/origin.git"
 git init -q -b main "$R"
 git -C "$R" config core.hooksPath "$FIX/no-hooks"
@@ -273,6 +279,7 @@ EMPTY="$(cd "$R" && PRUNE_ROOTS='::' LOG_DIR="$FIX/logs/dry" bash "$SCRIPT" 2>&1
 check "PRUNE_ROOTS sans entrée non vide : aucun worktree proposé"    0 "$(grep -c '^WOULD-REMOVE ' <<<"$EMPTY" || true)"
 check "PRUNE_ROOTS sans entrée non vide : aucun cache proposé"      0 "$(grep -c '^WOULD-REMOVE-CACHE ' <<<"$EMPTY" || true)"
 check "PRUNE_ROOTS sans entrée non vide : W3 hors périmètre (témoin)" yes "$(grep -q 'other-manager.*w3-clean' <<<"$EMPTY" && echo yes || echo no)"
+check "dry-run : aucun état cron enregistré"                        absent "$(present "$STATE")"
 
 # ---------------- 2. apply sans état PR lisible ----------------
 before="$(snap_local)"
@@ -282,11 +289,19 @@ echo "[gh en échec]"
 check "gh en échec : code de sortie non nul"                     1 "$rc"
 check "gh en échec : branches, registrations et dossiers inchangés" same "$([[ "$before" == "$after" ]] && echo same || echo changed)"
 check "gh en échec : cause affichée"                             yes "$(grep -q 'FATAL' <<<"$GHFAIL" && echo yes || echo no)"
+check "gh en échec : état cron en erreur, cadence quotidienne"     "error 93600" "$(st '"\(.status) \(.max_age_s)"')"
+check "gh en échec : résumé nomme la cause"                       yes "$(st .summary | grep -q 'état des PR illisible' && echo yes || echo no)"
 
 # ---------------- 3. apply ----------------
 APPLY_OUT="$(cd "$R" && LOG_DIR="$FIX/logs/apply" LATE_WRITE_TARGET="$WT/w23-late" PATH="$FIX/shim:$PATH" bash "$SCRIPT" --apply 2>&1)"; rc=$?
 echo "[apply]"
 check "apply : code de sortie" 0 "$rc"
+# État lu tout de suite : l'idempotence (section 4) l'écrase.
+check "apply : W23 retrait refusé par git (témoin)"              1 "$(grep -c '^FAIL .*w23-late' <<<"$APPLY_OUT" || true)"
+check "apply : état cron warn, 1 refus, cadence quotidienne"     "warn 1 93600" "$(st '"\(.status) \(.metrics.fails) \(.max_age_s)"')"
+check "apply : worktrees retirés = lignes REMOVED"               "$(grep -c '^REMOVED ' <<<"$APPLY_OUT" || true)" "$(st .metrics.worktrees_removed)"
+check "apply : caches retirés = lignes CACHE-REMOVED"            "$(grep -c '^CACHE-REMOVED ' <<<"$APPLY_OUT" || true)" "$(st .metrics.caches_removed)"
+check "apply : branches supprimées comptées"                     yes "$([[ "$(st .metrics.branches_deleted)" -gt 0 ]] 2>/dev/null && echo yes || echo no)"
 check "W1 RM + .playwright-mcp : worktree conservé"                 present "$(present "$WT/w1-rm")"
 check "W1 RM + .playwright-mcp : travail non commité intact"        yes "$(grep -q 'TRAVAIL-NON-COMMITÉ' "$WT/w1-rm/r2.txt" 2>/dev/null && echo yes || echo no)"
 check "W2 MD : worktree conservé"                                    present "$(present "$WT/w2-md")"
@@ -368,6 +383,7 @@ check "1er apply : suppressions journalisées (témoin)" yes "$(cat "$FIX"/logs/
 check "2e apply : aucune suppression supplémentaire" 0 "$( { printf '%s\n' "$AGAIN"; cat "$FIX"/logs/again/* 2>/dev/null; } | grep -cE '^(REMOVED|BRANCH-DEL) ' || true)"
 check "2e apply : aucun échec de suppression"        0 "$(grep -c '^FAIL ' <<<"$AGAIN" || true)"
 check "2e apply : aucun cache retiré"                0 "$(grep -c '^CACHE-REMOVED ' <<<"$AGAIN" || true)"
+check "2e apply : état cron revenu à ok, rien retiré" "ok 0 0 0" "$(st '"\(.status) \(.metrics.worktrees_removed) \(.metrics.branches_deleted) \(.metrics.fails)"')"
 
 if [[ "${VERBOSE:-0}" == "1" ]]; then echo "--- sortie dry-run ---"; echo "$DRY"; echo "--- sortie apply ---"; echo "$APPLY_OUT"; echo "--- sortie gh en échec ---"; echo "$GHFAIL"; fi
 if [[ "$FAIL" == "0" ]]; then echo "TOUS LES TESTS PASSENT"; else echo "TESTS EN ÉCHEC"; fi
