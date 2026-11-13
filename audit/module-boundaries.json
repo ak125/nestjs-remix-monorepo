@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 157,
-      "loc_total": 44099,
+      "files_count": 158,
+      "loc_total": 44686,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114946,
+      "loc_total": 115122,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -781,7 +781,7 @@
         "backend/src/modules/seo-control-plane/services"
       ],
       "files_count": 27,
-      "loc_total": 5906,
+      "loc_total": 5547,
       "has_barrel": false
     },
     "seo-logs": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 372,
-      "loc_total": 76594,
+      "files_count": 373,
+      "loc_total": 76882,
       "has_barrel": true
     },
     "upload": {
