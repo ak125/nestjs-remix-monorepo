@@ -11589,8 +11589,7 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
-        "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-        "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
+        "backend/src/modules/admin/services/admin-gammes-seo.service.ts"
       ]
     },
     {
@@ -13053,7 +13052,6 @@
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/gamme-aggregator.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
-        "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "backend/src/modules/admin/services/image-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",

@@ -20900,8 +20900,7 @@
         "sourceConfidence": "low",
         "status": "LIVE",
         "usedBy": [
-          "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-          "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
+          "backend/src/modules/admin/services/admin-gammes-seo.service.ts"
         ]
       },
       {
@@ -22364,7 +22363,6 @@
           "backend/src/modules/admin/services/execution-router.service.ts",
           "backend/src/modules/admin/services/gamme-aggregator.service.ts",
           "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
-          "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
           "backend/src/modules/admin/services/gamme-vlevel.service.ts",
           "backend/src/modules/admin/services/image-gates.service.ts",
           "backend/src/modules/admin/services/page-brief.service.ts",
@@ -35406,7 +35404,8 @@
       "domain": "D14",
       "id": "backend/src/modules/admin/controllers/admin-gammes-seo-vlevel.controller.ts",
       "importedBy": [
-        "backend/src/modules/admin/admin.module.ts"
+        "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts"
       ],
       "imports": [
         "@auth/authenticated.guard",
@@ -35415,7 +35414,7 @@
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts"
       ],
       "kind": "controller",
-      "loc": 84,
+      "loc": 86,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/admin/controllers/admin-gammes-seo-vlevel.controller.ts",
       "risk": "high",
@@ -37716,14 +37715,15 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-        "backend/src/modules/admin/services/gamme-detail-enricher.service.ts"
+        "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
+        "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 347,
+      "loc": 546,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
       "risk": "medium",
@@ -37731,6 +37731,32 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "@common/exceptions",
+        "backend/src/modules/admin/controllers/admin-gammes-seo-vlevel.controller.ts",
+        "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
+      ],
+      "kind": "test",
+      "loc": 386,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -88503,7 +88529,6 @@
       "importedBy": [],
       "imports": [
         "~/components/ui/PublicBreadcrumb",
-        "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
         "~/components/ui/progress",
@@ -88511,7 +88536,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 369,
+      "loc": 545,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.v-level-status.tsx",
       "risk": "medium",
@@ -95488,6 +95513,26 @@
       "loc": 230,
       "owner": "@ak125",
       "path": "frontend/tests/unit/admin-order-supplement.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/admin-v-level-status.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 288,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/admin-v-level-status.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -107480,13 +107525,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "fb3b29869377b3cf1993875671f8157e670c912a12960ef3b4894015246a1ecf",
+      "audit/registry/db.json": "4c4a746b919d3080e8e67e3b1830ff465a5f746192ff9167ed747082c3402258",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "bc04cbc49f636846584496fd363f35eda04e289e5aadf0e39b9d252c135dd954",
+      "audit/registry/files.json": "61a8e01a09cfb65d17bcb01a5ce2bc119e8e76a552a853999146b2321684b03d",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "f0cdda8f55d7"
+    "sotFingerprint": "d6d972e199e2"
   },
   "runtime": [
     {
