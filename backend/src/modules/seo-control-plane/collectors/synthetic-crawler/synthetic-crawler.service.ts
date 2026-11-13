@@ -10,11 +10,12 @@
  * `__seo_snapshot_synthetic` uniquement.
  *
  * Sampling :
- *   - URLs source = sitemap PROD (`sitemap-pieces-*.xml`,
- *     `sitemap-categories.xml`, `sitemap-vehicules.xml`, `sitemap-blog.xml`).
- *     `sitemap-blog.xml` est la seule source des routes `blog-pieces-auto/*`
- *     (tier1 du canon) : sans lui, ce palier n'est jamais sondé.
- *   - Stratification par tier via `CriticalityLoaderService.classify()`.
+ *   - URLs source = tous les sous-sitemaps listés par l'index PROD servi
+ *     (`/sitemap.xml`), sans filtre par nom de fichier.
+ *   - Stratification par tier via `CriticalityLoaderService.classify()` : le
+ *     canon de criticité est la SEULE autorité qui décide ce qui est sondé.
+ *   - Un palier du canon sans aucune URL candidate est signalé en erreur à
+ *     chaque run (jamais non sondé en silence).
  *   - Poids `sampling_weight` lu depuis L4 governance (criticality.yaml).
  *
  * Sécurité runtime :
@@ -44,8 +45,6 @@ import {
 } from '../../types';
 
 const PROD_BASE_DEFAULT = 'https://www.automecanik.com';
-const SUB_PATTERN =
-  /(sitemap-pieces-\d+|sitemap-categories|sitemap-vehicules|sitemap-blog)\.xml$/;
 
 interface UrlCandidate {
   url: string;
@@ -225,17 +224,22 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
   private async collectCandidates(): Promise<UrlCandidate[]> {
     const base = this.cfg.get<string>('SEO_CP_PROD_BASE', PROD_BASE_DEFAULT);
     const indexXml = await this.fetchText(`${base}/sitemap.xml`, 15_000);
+    // Tous les sous-sitemaps de l'index servi sont lus. Un filtre par nom de
+    // fichier ferait ici une seconde autorité, concurrente du canon, capable
+    // de priver un palier de sa seule source sans que rien ne le signale.
     const subUrls: string[] = [];
     for (const m of indexXml.matchAll(/<loc>([^<]+)<\/loc>/g)) {
-      if (SUB_PATTERN.test(m[1])) subUrls.push(m[1]);
+      subUrls.push(m[1]);
     }
 
-    const allUrls: string[] = [];
+    // Set : une URL listée par deux sous-sitemaps (cas réel : `sitemap-brands`
+    // et `sitemap-vehicules`) ne compte qu'une fois dans son pool.
+    const allUrls = new Set<string>();
     for (const sub of subUrls) {
       try {
         const xml = await this.fetchText(sub, 15_000);
         for (const m of xml.matchAll(/<loc>([^<]+)<\/loc>/g)) {
-          allUrls.push(m[1]);
+          allUrls.add(m[1]);
         }
       } catch (err) {
         this.logger.warn(
@@ -304,13 +308,31 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     const rng = this.mulberry32(seed);
     const out: UrlCandidate[] = [];
     const tiers: TierId[] = ['tier0', 'tier1', 'tier2'];
+    const starved: TierId[] = [];
 
     for (const tier of tiers) {
       const weight = config.tiers[tier].sampling_weight;
       const want = Math.max(1, Math.floor(total * weight));
       const pool = candidates.filter((c) => c.tier === tier);
+      if (pool.length === 0) starved.push(tier);
       const shuffled = this.shuffle(pool, rng);
       out.push(...shuffled.slice(0, want));
+    }
+
+    // 🚨 Même discipline que l'alerte 429 du run : un palier déclaré dans le
+    // canon dont aucune route ne figure dans les sitemaps servis n'est jamais
+    // sondé. Sans ce signal, le budget du palier est perdu et la surveillance
+    // est aveugle sur ses routes sans que rien ne le dise.
+    if (starved.length > 0) {
+      const detail = starved
+        .map((t) => `${t} (${config.tiers[t].routes.join(', ')})`)
+        .join(' ; ');
+      this.logger.error(
+        `🚨 synthetic-crawler: aucune URL candidate pour ${detail} dans les ` +
+          `sitemaps servis — palier(s) non sondé(s), monitoring L1 aveugle sur ` +
+          `ces routes. Aligner les routes de seo-criticality.yaml ou le ` +
+          `contenu des sitemaps.`,
+      );
     }
     return out;
   }

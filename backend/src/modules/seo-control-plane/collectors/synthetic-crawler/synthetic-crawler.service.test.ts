@@ -245,9 +245,10 @@ describe('SyntheticCrawlerService', () => {
     expect(inserted.every((s) => s.tier === 'tier0')).toBe(true);
   });
 
-  it('probes tier1 conseil pages: sitemap-blog.xml feeds the tier1 pool declared in the criticality canon', async () => {
+  it('reads every sub-sitemap of the served index: the criticality canon alone decides what is probed', async () => {
     // Canon réel : tier1 = blog-pieces-auto/* (poids 0,30). Ces URL ne figurent
-    // que dans sitemap-blog.xml ; sans ce sous-sitemap le palier reste vide.
+    // que dans sitemap-blog.xml ; aucun filtre par nom de fichier ne doit
+    // priver un palier de sa source.
     crit.setConfigForTest({
       ...VALID_CONFIG,
       tiers: {
@@ -325,6 +326,164 @@ describe('SyntheticCrawlerService', () => {
         http_code: 503,
       }),
     ]);
+  });
+
+  it('probes a URL once per run even when two sub-sitemaps list it', async () => {
+    // Cas réel : sitemap-brands.xml et sitemap-vehicules.xml listent les mêmes
+    // pages marque.
+    const sameUrl =
+      '<url><loc>https://www.automecanik.com/pieces/foo-1.html</loc></url>';
+    const responses = new Map<string, MockResponse>([
+      [
+        'https://www.automecanik.com/sitemap.xml',
+        {
+          status: 200,
+          body:
+            '<sitemap><loc>https://www.automecanik.com/sitemap-brands.xml</loc></sitemap>' +
+            '<sitemap><loc>https://www.automecanik.com/sitemap-vehicules.xml</loc></sitemap>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/sitemap-brands.xml',
+        { status: 200, body: sameUrl, headers: {} },
+      ],
+      [
+        'https://www.automecanik.com/sitemap-vehicules.xml',
+        { status: 200, body: sameUrl, headers: {} },
+      ],
+      [
+        'https://www.automecanik.com/pieces/foo-1.html',
+        {
+          status: 200,
+          body: '<html><head></head><body></body></html>',
+          headers: {},
+        },
+      ],
+    ]);
+    globalThis.fetch = mockFetch(
+      responses,
+    ) as unknown as typeof globalThis.fetch;
+
+    const insertSpy = jest.fn().mockResolvedValue({ error: null });
+    const svc = buildSvc(
+      crit,
+      makeConfigService({ SEO_CP_SAMPLE_SIZE: 5, SEO_CP_CONCURRENCY: 2 }),
+      insertSpy,
+    );
+
+    const result = await svc.run({ triggeredBy: 'test' });
+
+    expect(result.by_tier.tier0.probed).toBe(1);
+    expect(insertSpy.mock.calls[0][0]).toHaveLength(1);
+  });
+
+  it('reports a canon tier that has no candidate URL instead of leaving it silently unprobed', async () => {
+    // VALID_CONFIG : tier0 = pieces/*, tier1 = blog/*, tier2 = support/*.
+    // Les sitemaps servis ne couvrent que tier0 et tier1 → tier2 est affamé.
+    const page = {
+      status: 200,
+      body: '<html><head></head><body></body></html>',
+      headers: {},
+    };
+    const responses = new Map<string, MockResponse>([
+      [
+        'https://www.automecanik.com/sitemap.xml',
+        {
+          status: 200,
+          body:
+            '<sitemap><loc>https://www.automecanik.com/sitemap-pieces-1.xml</loc></sitemap>' +
+            '<sitemap><loc>https://www.automecanik.com/sitemap-blog.xml</loc></sitemap>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/sitemap-pieces-1.xml',
+        {
+          status: 200,
+          body: '<url><loc>https://www.automecanik.com/pieces/foo-1.html</loc></url>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/sitemap-blog.xml',
+        {
+          status: 200,
+          body: '<url><loc>https://www.automecanik.com/blog/entretien</loc></url>',
+          headers: {},
+        },
+      ],
+      ['https://www.automecanik.com/pieces/foo-1.html', page],
+      ['https://www.automecanik.com/blog/entretien', page],
+    ]);
+    globalThis.fetch = mockFetch(
+      responses,
+    ) as unknown as typeof globalThis.fetch;
+
+    const svc = buildSvc(
+      crit,
+      makeConfigService({ SEO_CP_SAMPLE_SIZE: 5, SEO_CP_CONCURRENCY: 2 }),
+      jest.fn().mockResolvedValue({ error: null }),
+    );
+    const errorSpy = (svc as unknown as { logger: { error: jest.Mock } }).logger
+      .error;
+
+    const result = await svc.run({ triggeredBy: 'test' });
+
+    expect(result.by_tier.tier2.probed).toBe(0);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    const message = errorSpy.mock.calls[0][0] as string;
+    expect(message).toContain('tier2 (support/*)');
+    expect(message).not.toContain('tier0');
+    expect(message).not.toContain('tier1');
+  });
+
+  it('stays quiet when every canon tier has at least one candidate URL', async () => {
+    const page = {
+      status: 200,
+      body: '<html><head></head><body></body></html>',
+      headers: {},
+    };
+    const responses = new Map<string, MockResponse>([
+      [
+        'https://www.automecanik.com/sitemap.xml',
+        {
+          status: 200,
+          body: '<sitemap><loc>https://www.automecanik.com/sitemap-pages.xml</loc></sitemap>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/sitemap-pages.xml',
+        {
+          status: 200,
+          body:
+            '<url><loc>https://www.automecanik.com/pieces/foo-1.html</loc></url>' +
+            '<url><loc>https://www.automecanik.com/blog/entretien</loc></url>' +
+            '<url><loc>https://www.automecanik.com/support/contact</loc></url>',
+          headers: {},
+        },
+      ],
+      ['https://www.automecanik.com/pieces/foo-1.html', page],
+      ['https://www.automecanik.com/blog/entretien', page],
+      ['https://www.automecanik.com/support/contact', page],
+    ]);
+    globalThis.fetch = mockFetch(
+      responses,
+    ) as unknown as typeof globalThis.fetch;
+
+    const svc = buildSvc(
+      crit,
+      makeConfigService({ SEO_CP_SAMPLE_SIZE: 5, SEO_CP_CONCURRENCY: 2 }),
+      jest.fn().mockResolvedValue({ error: null }),
+    );
+    const errorSpy = (svc as unknown as { logger: { error: jest.Mock } }).logger
+      .error;
+
+    const result = await svc.run({ triggeredBy: 'test' });
+
+    expect(result.sample_size_effective).toBe(3);
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 
   it('skips excluded routes (admin/*, sitemap*.xml) — does not probe nor persist', async () => {
