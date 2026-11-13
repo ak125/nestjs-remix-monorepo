@@ -54,6 +54,18 @@ const PAID_EVENT: OrderPaidEvent = {
   timestamp: '2026-06-23T10:00:00.000Z',
 };
 
+/**
+ * Columns the filters must use. Like PostgREST, the mock answers an error for
+ * any other column (42703), so a wrong column name fails the test instead of
+ * silently returning the canned count.
+ */
+const ORDER_LINE_FK = 'orl_ord_id';
+const ORDER_PK = 'ord_id';
+
+function unknownColumn(table: string, column: string) {
+  return { message: `column ${table}.${column} does not exist` };
+}
+
 /** supabase mock returning a given line count + order total. */
 function supabaseWith(opts: {
   count?: number | null;
@@ -66,11 +78,12 @@ function supabaseWith(opts: {
       if (table === '___xtr_order_line') {
         return {
           select: jest.fn(() => ({
-            eq: jest.fn(() =>
-              Promise.resolve({
-                count: opts.count ?? 0,
-                error: opts.countError ?? null,
-              }),
+            eq: jest.fn((column: string) =>
+              Promise.resolve(
+                column === ORDER_LINE_FK
+                  ? { count: opts.count ?? 0, error: opts.countError ?? null }
+                  : { count: null, error: unknownColumn(table, column) },
+              ),
             ),
           })),
         };
@@ -78,15 +91,22 @@ function supabaseWith(opts: {
       // ___xtr_order
       return {
         select: jest.fn(() => ({
-          eq: jest.fn(() => ({
+          eq: jest.fn((column: string) => ({
             maybeSingle: jest.fn(() =>
-              Promise.resolve({
-                data:
-                  opts.total === undefined
-                    ? null
-                    : { ord_total_ttc: opts.total },
-                error: opts.orderError ?? null,
-              }),
+              Promise.resolve(
+                column === ORDER_PK
+                  ? {
+                      data:
+                        opts.total === undefined
+                          ? null
+                          : { ord_total_ttc: opts.total },
+                      error: opts.orderError ?? null,
+                    }
+                  : {
+                      data: null,
+                      error: unknownColumn('___xtr_order', column),
+                    },
+              ),
             ),
           })),
         })),

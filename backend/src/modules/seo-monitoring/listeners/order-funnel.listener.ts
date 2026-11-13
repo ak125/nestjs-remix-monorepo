@@ -114,7 +114,7 @@ export class OrderFunnelListener extends SupabaseBaseService {
     const { count, error: countError } = await this.supabase
       .from('___xtr_order_line')
       .select('*', { count: 'exact', head: true })
-      .eq('ordl_ord_id', orderId);
+      .eq('orl_ord_id', orderId);
     if (countError) {
       this.logger.error(
         `r2_order_placed: order line count read failed for ${orderId}: ${countError.message}`,

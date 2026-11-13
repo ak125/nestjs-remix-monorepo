@@ -781,7 +781,7 @@
         "backend/src/modules/seo-control-plane/services"
       ],
       "files_count": 27,
-      "loc_total": 5906,
+      "loc_total": 5547,
       "has_barrel": false
     },
     "seo-logs": {
@@ -806,7 +806,7 @@
         "backend/src/modules/seo-monitoring/services"
       ],
       "files_count": 51,
-      "loc_total": 11331,
+      "loc_total": 11351,
       "has_barrel": false
     },
     "seo-projection": {

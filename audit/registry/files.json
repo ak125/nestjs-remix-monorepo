@@ -26640,7 +26640,7 @@
         "backend/src/modules/seo-control-plane/types.ts"
       ],
       "kind": "test",
-      "loc": 846,
+      "loc": 534,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.test.ts",
       "risk": "low",
@@ -26670,7 +26670,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 662,
+      "loc": 615,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
       "risk": "low",
@@ -27484,7 +27484,7 @@
         "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
       ],
       "kind": "test",
-      "loc": 256,
+      "loc": 276,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.test.ts",
       "risk": "low",
