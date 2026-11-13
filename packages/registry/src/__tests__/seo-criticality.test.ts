@@ -134,6 +134,25 @@ describe("classifyRoute()", () => {
   test("returns null for uncovered routes (caller must default)", () => {
     assert.equal(classifyRoute(config, "/totally-unknown-path"), null);
   });
+
+  test("classifies the bare prefix of an `x/*` glob like its descendants", () => {
+    assert.equal(classifyRoute(config, "/blog-pieces-auto"), "tier1");
+    assert.equal(classifyRoute(config, "/support"), "tier2");
+  });
+
+  test("ignores a trailing slash (same page served, same tier)", () => {
+    assert.equal(classifyRoute(config, "/blog-pieces-auto/"), "tier1");
+    assert.equal(classifyRoute(config, "/pieces/foo-1.html/"), "tier0");
+    assert.equal(classifyRoute(config, "/aide/"), "tier2");
+    assert.equal(classifyRoute(config, "/admin/"), "excluded");
+    assert.equal(classifyRoute(config, "/api/"), "excluded");
+  });
+
+  test("keeps exact globs exact and the root uncovered", () => {
+    assert.equal(classifyRoute(config, "/aide/x"), null);
+    assert.equal(classifyRoute(config, "/contact-pro"), null);
+    assert.equal(classifyRoute(config, "/"), null);
+  });
 });
 
 describe("SeoCriticalitySchema — anti-pattern guards", () => {

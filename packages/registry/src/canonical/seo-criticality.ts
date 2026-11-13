@@ -160,7 +160,7 @@ export type SeoCriticality = z.infer<typeof SeoCriticalitySchema>;
  *   - `/*` at end means "this segment or any descendant"
  *   - everything else is a literal
  * Examples:
- *   `pieces/*` → matches `pieces/foo`, `pieces/foo/bar`, NOT `pieces` alone (no slash).
+ *   `pieces/*` → matches `pieces`, `pieces/foo`, `pieces/foo/bar`.
  *   `sitemap*.xml` → matches `sitemap.xml`, `sitemap-index.xml`, `sitemap-pieces-1.xml`.
  *   `robots.txt` → exact match only.
  */
@@ -181,12 +181,16 @@ function globToRegex(glob: string): RegExp {
  * or "excluded" if the route is in the exclusion allowlist, or null if the
  * route is not covered (uncovered routes default to tier2 in callers — be
  * explicit at the call site).
+ *
+ * A trailing slash is ignored: the app serves `/x/` exactly like `/x` (same
+ * page, same canonical), so both forms belong to the same tier.
  */
 export function classifyRoute(
   config: SeoCriticality,
   routePath: string,
 ): TierId | 'excluded' | null {
-  const normalized = routePath.startsWith('/') ? routePath.slice(1) : routePath;
+  const unprefixed = routePath.startsWith('/') ? routePath.slice(1) : routePath;
+  const normalized = unprefixed.endsWith('/') ? unprefixed.slice(0, -1) : unprefixed;
   const matchesGlob = (glob: string): boolean => globToRegex(glob).test(normalized);
 
   for (const ex of config.excluded.routes) {
