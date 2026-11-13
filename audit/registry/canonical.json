@@ -85214,7 +85214,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "route",
-      "loc": 100,
+      "loc": 103,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/_layout.tsx",
       "risk": "medium",
@@ -85358,7 +85358,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1155,
+      "loc": 1158,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/register.tsx",
       "risk": "medium",
@@ -107607,11 +107607,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "c160320dd21e29907ecf6c5fb7cdbb426acd6b817a0245177071459d8cda3a91",
+      "audit/registry/files.json": "179b5b0891d02b839d0ea860eb1780525c9ed668cbd4782b9ff04f2fb5a52ba9",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "2ddd7516852a"
+    "sotFingerprint": "5d0111bae095"
   },
   "runtime": [
     {
