@@ -33,19 +33,30 @@ const SCRIPT = join(
 let server;
 let base;
 
-const PAGES = {
-  "/sitemap-index.xml": () =>
-    `<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>${base}/sitemap-child.xml</loc></sitemap></sitemapindex>`,
-  "/sitemap-child.xml": () =>
-    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${base}/page-a.html</loc></url></urlset>`,
-  "/page-a.html": () =>
-    `<html><head><link rel="canonical" href="${base}/page-a.html"></head><body>ok</body></html>`,
-  "/empty.xml": () => "",
-};
+// A Map, not an object literal: the request path is looked up as data and can
+// never resolve to an inherited property such as `constructor`.
+const PAGES = new Map([
+  [
+    "/sitemap-index.xml",
+    () =>
+      `<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>${base}/sitemap-child.xml</loc></sitemap></sitemapindex>`,
+  ],
+  [
+    "/sitemap-child.xml",
+    () =>
+      `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${base}/page-a.html</loc></url></urlset>`,
+  ],
+  [
+    "/page-a.html",
+    () =>
+      `<html><head><link rel="canonical" href="${base}/page-a.html"></head><body>ok</body></html>`,
+  ],
+  ["/empty.xml", () => ""],
+]);
 
 before(async () => {
   server = createServer((req, res) => {
-    const page = PAGES[req.url];
+    const page = PAGES.get(req.url);
     if (!page) {
       res.writeHead(404, { "content-type": "text/html" });
       res.end("<html><body>404 Not Found</body></html>");
