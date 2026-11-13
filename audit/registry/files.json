@@ -6717,7 +6717,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/controllers/admin-gammes-seo-vlevel.controller.ts",
       "importedBy": [
-        "backend/src/modules/admin/admin.module.ts"
+        "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts"
       ],
       "imports": [
         "@auth/authenticated.guard",
@@ -6726,7 +6727,7 @@
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts"
       ],
       "kind": "controller",
-      "loc": 84,
+      "loc": 86,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/admin-gammes-seo-vlevel.controller.ts",
       "risk": "low",
@@ -8943,14 +8944,15 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-        "backend/src/modules/admin/services/gamme-detail-enricher.service.ts"
+        "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
+        "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 347,
+      "loc": 546,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
       "risk": "low",
@@ -8958,6 +8960,31 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "@common/exceptions",
+        "backend/src/modules/admin/controllers/admin-gammes-seo-vlevel.controller.ts",
+        "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
+      ],
+      "kind": "test",
+      "loc": 386,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -57913,7 +57940,6 @@
       "importedBy": [],
       "imports": [
         "~/components/ui/PublicBreadcrumb",
-        "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
         "~/components/ui/progress",
@@ -57921,7 +57947,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 369,
+      "loc": 545,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.v-level-status.tsx",
       "risk": "low",
@@ -64674,6 +64700,25 @@
       "loc": 230,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/admin-order-supplement.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/admin-v-level-status.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 288,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/admin-v-level-status.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
