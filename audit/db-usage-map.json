@@ -14654,42 +14654,42 @@
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 224,
+      "line": 226,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 270,
+      "line": 272,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 617,
+      "line": 619,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 641,
+      "line": 643,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 833,
+      "line": 835,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 878,
+      "line": 880,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
