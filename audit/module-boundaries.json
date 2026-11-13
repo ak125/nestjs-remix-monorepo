@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21794,
+      "loc_total": 21398,
       "has_barrel": true
     },
     "dev-only": {
@@ -781,7 +781,7 @@
         "backend/src/modules/seo-control-plane/services"
       ],
       "files_count": 27,
-      "loc_total": 5906,
+      "loc_total": 5547,
       "has_barrel": false
     },
     "seo-logs": {
@@ -898,8 +898,8 @@
         "backend/src/modules/support/services/__tests__",
         "backend/src/modules/support/types"
       ],
-      "files_count": 30,
-      "loc_total": 10417,
+      "files_count": 31,
+      "loc_total": 10577,
       "has_barrel": true
     },
     "system": {

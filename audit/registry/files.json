@@ -5883,12 +5883,11 @@
         "backend/src/database/services/index.ts"
       ],
       "imports": [
-        "@common/exceptions",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/orders.service.ts"
       ],
       "kind": "service",
-      "loc": 180,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/database-composition.service.ts",
       "risk": "low",
@@ -5994,7 +5993,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 1077,
+      "loc": 730,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/orders.service.ts",
       "risk": "low",
@@ -26640,7 +26639,7 @@
         "backend/src/modules/seo-control-plane/types.ts"
       ],
       "kind": "test",
-      "loc": 846,
+      "loc": 534,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.test.ts",
       "risk": "low",
@@ -26670,7 +26669,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 662,
+      "loc": 615,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
       "risk": "low",
@@ -36969,6 +36968,7 @@
         "backend/src/modules/support/index.ts",
         "backend/src/modules/support/services/ai-analysis.service.ts",
         "backend/src/modules/support/services/ai-smart-response.service.ts",
+        "backend/src/modules/support/services/review.verify-purchase.test.ts",
         "backend/src/modules/support/services/support-analytics.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
@@ -36979,7 +36979,7 @@
         "backend/src/modules/support/services/notification.service.ts"
       ],
       "kind": "service",
-      "loc": 773,
+      "loc": 789,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/review.service.ts",
       "risk": "low",
@@ -36987,6 +36987,28 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/support/services/review.verify-purchase.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/modules/support/services/review.service.ts"
+      ],
+      "kind": "test",
+      "loc": 144,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/support/services/review.verify-purchase.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",

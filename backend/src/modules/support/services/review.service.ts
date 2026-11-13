@@ -574,34 +574,50 @@ export class ReviewService extends SupabaseBaseService {
   }
 
   /**
-   * Vérifier si un client a acheté un produit
+   * Vérifier si un client a acheté un produit.
+   *
+   * ___xtr_order_line n'a pas de clé étrangère vers ___xtr_order : PostgREST
+   * ne peut pas les joindre, d'où deux lectures. La commande doit appartenir
+   * au client, puis porter une ligne du produit. `orl_pg_id` contient l'id
+   * pièce pour les commandes du site actuel (ORD-*), l'id gamme pour les
+   * commandes historiques : celles-ci ne valident donc pas l'achat. Une erreur
+   * de lecture est journalisée et l'avis reste non vérifié.
    */
   private async verifyPurchase(
     customerId: string,
     productId: string,
-    orderId?: string,
+    orderId: string,
   ): Promise<boolean> {
     try {
-      let query = this.supabase
-        .from(TABLES.xtr_order_line)
-        .select('*, ___xtr_order!inner(*)')
-        .eq('ordl_pce_id', productId)
-        .eq('___xtr_order.ord_cst_id', customerId);
+      const { data: order, error: orderError } = await this.supabase
+        .from(TABLES.xtr_order)
+        .select('ord_id')
+        .eq('ord_id', orderId)
+        .eq('ord_cst_id', customerId)
+        .maybeSingle();
 
-      if (orderId) {
-        query = query.eq('ordl_ord_id', orderId);
-      }
-
-      const { data: orderLines, error } = await query;
-
-      if (error) {
+      if (orderError) {
         this.logger.error(
-          `Erreur lors de la vérification d'achat: ${error.message}`,
+          `Erreur lors de la vérification d'achat (commande ${orderId}): ${orderError.message}`,
+        );
+        return false;
+      }
+      if (!order) return false;
+
+      const { count, error: lineError } = await this.supabase
+        .from(TABLES.xtr_order_line)
+        .select('orl_id', { count: 'exact', head: true })
+        .eq('orl_ord_id', orderId)
+        .eq('orl_pg_id', productId);
+
+      if (lineError) {
+        this.logger.error(
+          `Erreur lors de la vérification d'achat (lignes ${orderId}): ${lineError.message}`,
         );
         return false;
       }
 
-      return orderLines && orderLines.length > 0;
+      return (count ?? 0) > 0;
     } catch (error) {
       this.logger.error(
         `Erreur dans verifyPurchase: ${(error as Error).message}`,
@@ -630,7 +646,7 @@ export class ReviewService extends SupabaseBaseService {
         const { data: productData } = await this.supabase
           .from(TABLES.pieces)
           .select('*')
-          .eq('pce_id', content.product_id)
+          .eq('piece_id', content.product_id)
           .single();
         product = productData;
       }
