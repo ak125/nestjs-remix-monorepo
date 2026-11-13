@@ -54739,7 +54739,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "route",
-      "loc": 100,
+      "loc": 103,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/_layout.tsx",
       "risk": "low",
@@ -54877,7 +54877,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1155,
+      "loc": 1158,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/register.tsx",
       "risk": "low",
