@@ -28628,7 +28628,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 81,
+      "loc": 96,
       "owner": "__unassigned__",
       "path": "backend/jest.config.js",
       "risk": "low",
@@ -107553,15 +107553,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
+      ".spec/00-canon/repository-registry/ownership.yaml": "e2b28be5854e802c84353c53d1919d7a0ca9229b29b971c7db660db6de685c48",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4c4a746b919d3080e8e67e3b1830ff465a5f746192ff9167ed747082c3402258",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "4bceadf00f6c18459b16a7165932ab438f8a31f2d82e1a06e229710d3fa3deb1",
+      "audit/registry/files.json": "c39f674250a52a048c2cbc309f5e4a34c568cb12332f9a7246fbf677163542e4",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "3fc35ca0ec40"
+    "sotFingerprint": "12249bf930cc"
   },
   "runtime": [
     {
