@@ -1,8 +1,13 @@
 import type { ConfigService } from '@nestjs/config';
 import type { SeoCriticality } from '@repo/registry';
+import * as Sentry from '@sentry/nestjs';
 import { CriticalityLoaderService } from '../../services/criticality-loader.service';
 import { SyntheticCrawlerService } from './synthetic-crawler.service';
 import { SYNTHETIC_USER_AGENT } from '../../types';
+
+jest.mock('@sentry/nestjs', () => ({
+  captureMessage: jest.fn(),
+}));
 
 const VALID_CONFIG: SeoCriticality = {
   schemaVersion: '1.0.0',
@@ -126,6 +131,7 @@ describe('SyntheticCrawlerService', () => {
     crit = new CriticalityLoaderService();
     crit.setConfigForTest(VALID_CONFIG);
     originalFetch = globalThis.fetch;
+    (Sentry.captureMessage as jest.Mock).mockClear();
   });
 
   afterEach(() => {
@@ -436,6 +442,17 @@ describe('SyntheticCrawlerService', () => {
     expect(message).toContain('tier2 (support/*)');
     expect(message).not.toContain('tier0');
     expect(message).not.toContain('tier1');
+    // Le journal Nest n'est pas relayé vers Sentry : l'alerte doit aussi
+    // partir par le chemin d'alerte du backend, un événement par palier.
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'synthetic_crawler_tier_starved: tier2',
+      {
+        level: 'error',
+        tags: { collector: 'synthetic-crawler', tier: 'tier2' },
+        extra: { routes: ['support/*'] },
+      },
+    );
   });
 
   it('stays quiet when every canon tier has at least one candidate URL', async () => {
@@ -484,6 +501,60 @@ describe('SyntheticCrawlerService', () => {
 
     expect(result.sample_size_effective).toBe(3);
     expect(errorSpy).not.toHaveBeenCalled();
+    expect(Sentry.captureMessage).not.toHaveBeenCalled();
+  });
+
+  it('sends the throttling alert to Sentry when more than 20% of probes get a 429', async () => {
+    const throttled = { status: 429, body: '', headers: {} };
+    const responses = new Map<string, MockResponse>([
+      [
+        'https://www.automecanik.com/sitemap.xml',
+        {
+          status: 200,
+          body: '<sitemap><loc>https://www.automecanik.com/sitemap-pages.xml</loc></sitemap>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/sitemap-pages.xml',
+        {
+          status: 200,
+          body:
+            '<url><loc>https://www.automecanik.com/pieces/foo-1.html</loc></url>' +
+            '<url><loc>https://www.automecanik.com/blog/entretien</loc></url>' +
+            '<url><loc>https://www.automecanik.com/support/contact</loc></url>',
+          headers: {},
+        },
+      ],
+      ['https://www.automecanik.com/pieces/foo-1.html', throttled],
+      ['https://www.automecanik.com/blog/entretien', throttled],
+      ['https://www.automecanik.com/support/contact', throttled],
+    ]);
+    globalThis.fetch = mockFetch(
+      responses,
+    ) as unknown as typeof globalThis.fetch;
+
+    const svc = buildSvc(
+      crit,
+      makeConfigService({ SEO_CP_SAMPLE_SIZE: 5, SEO_CP_CONCURRENCY: 2 }),
+      jest.fn().mockResolvedValue({ error: null }),
+    );
+    const errorSpy = (svc as unknown as { logger: { error: jest.Mock } }).logger
+      .error;
+
+    const result = await svc.run({ triggeredBy: 'test' });
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy.mock.calls[0][0] as string).toContain('3/3 en 429');
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'synthetic_crawler_throttled',
+      {
+        level: 'error',
+        tags: { collector: 'synthetic-crawler' },
+        extra: { run_id: result.run_id, http_429: 3, probed: 3 },
+      },
+    );
   });
 
   it('skips excluded routes (admin/*, sitemap*.xml) — does not probe nor persist', async () => {

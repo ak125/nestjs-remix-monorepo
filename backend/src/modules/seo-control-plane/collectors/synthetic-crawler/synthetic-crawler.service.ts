@@ -14,8 +14,12 @@
  *     (`/sitemap.xml`), sans filtre par nom de fichier.
  *   - Stratification par tier via `CriticalityLoaderService.classify()` : le
  *     canon de criticité est la SEULE autorité qui décide ce qui est sondé.
- *   - Un palier du canon sans aucune URL candidate est signalé en erreur à
- *     chaque run (jamais non sondé en silence).
+ *   - Un palier du canon sans aucune URL candidate est signalé à chaque run
+ *     (jamais non sondé en silence).
+ *
+ * Alertes de santé du collecteur (palier sans candidat, sondes throttlées) :
+ * journal local ET événement Sentry. Le journal Nest n'est pas relayé vers
+ * Sentry ; sans l'événement, l'alerte ne quitte pas le journal du backend.
  *   - Poids `sampling_weight` lu depuis L4 governance (criticality.yaml).
  *
  * Sécurité runtime :
@@ -29,6 +33,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as Sentry from '@sentry/nestjs';
 import { randomUUID } from 'node:crypto';
 import type { TierId } from '@repo/registry';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
@@ -186,8 +191,8 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     // 🚨 Observabilité anti silent-fallback : si une part anormale des sondes est
     // throttlée (429), l'exemption rate-limit est probablement inactive (flag OFF,
     // secret non provisionné) ou a dérivé → le monitoring L1 redevient AVEUGLE.
-    // On le rend BRUYANT (log.error, visible Sentry) plutôt que de dégrader en
-    // silence (incident 2026-06-25 : 89,7 % de 429 jamais alertés).
+    // On le rend BRUYANT (log.error + événement Sentry) plutôt que de dégrader
+    // en silence (incident 2026-06-25 : 89,7 % de 429 jamais alertés).
     if (snapshots.length > 0) {
       const rate429 = http429 / snapshots.length;
       if (rate429 > 0.2) {
@@ -197,6 +202,15 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
             `probablement inactive (${SYNTHETIC_PROBE_ENABLED_KEY}/secret) ou a dérivé — ` +
             `monitoring L1 dégradé.`,
         );
+        Sentry.captureMessage('synthetic_crawler_throttled', {
+          level: 'error',
+          tags: { collector: 'synthetic-crawler' },
+          extra: {
+            run_id: runId,
+            http_429: http429,
+            probed: snapshots.length,
+          },
+        });
       }
     }
     for (const tier of ['tier0', 'tier1', 'tier2'] as TierId[]) {
@@ -333,6 +347,15 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
           `ces routes. Aligner les routes de seo-criticality.yaml ou le ` +
           `contenu des sitemaps.`,
       );
+      // Un événement par palier : chaque palier affamé forme son propre
+      // groupe Sentry, distinct des autres.
+      for (const t of starved) {
+        Sentry.captureMessage(`synthetic_crawler_tier_starved: ${t}`, {
+          level: 'error',
+          tags: { collector: 'synthetic-crawler', tier: t },
+          extra: { routes: config.tiers[t].routes },
+        });
+      }
     }
     return out;
   }
