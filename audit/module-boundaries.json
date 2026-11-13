@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21794,
+      "loc_total": 21398,
       "has_barrel": true
     },
     "dev-only": {
