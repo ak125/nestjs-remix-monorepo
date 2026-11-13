@@ -59,20 +59,43 @@ if grep -qE 'npm\s+(install|uninstall|update|remove|add)\s' <<<"$COMMAND"; then
 fi
 
 # Guard 6: Block every way of starting a PROD deploy (owner GO only)
-# A v* tag starts release-prod.yml, which deploys that tag's commit to PROD
-# (voir .claude/rules/deployment.md). Covers:
-# - tag creation or push: git tag v1.2.3 (-a/-s), git push origin v1.2.3, git push --tags,
-#   gh release create v1.2.3, gh api .../git/refs -f ref=refs/tags/v1.2.3;
-# - a manual run, or re-enabling the retired workflow: gh workflow run|enable
-#   release-prod.yml / deploy-prod.yml (or its display name), gh api .../actions/workflows/
-#   <file>/dispatches|enable.
-if grep -qE 'git\s+tag\b.*\bv[0-9]+(\.[0-9]+){1,3}\b|git\s+push\b.*(--tags|\bv[0-9]+(\.[0-9]+){1,3}\b)' <<<"$COMMAND" \
-   || grep -qE 'gh\s+release\s+create\b.*\bv[0-9]+(\.[0-9]+){1,3}\b|gh\s+api\b.*refs/tags/v[0-9]+(\.[0-9]+){1,3}\b' <<<"$COMMAND"; then
+# Any tag matching v* (not only vX.Y.Z) starts release-prod.yml, which deploys that tag's
+# commit to PROD (voir .claude/rules/deployment.md). This hook is a tripwire for agent
+# commands, not the security boundary: a v* tag ruleset on GitHub is. Covers:
+# - git tag with a v* name (list/query forms allowed);
+# - git push of tags: --tags, --follow-tags, any refs/tags/ refspec, a bare v* token
+#   (branch refspecs here always carry a slash, e.g. fix/vlevel-x, and stay allowed);
+# - gh release create (any), gh api writes to git/refs or releases;
+# - gh workflow run|enable, or gh api dispatches|enable, of release-prod.yml or of the
+#   retired deploy-prod.yml, by file name, display name (any case) or numeric id
+#   (417610500 = release-prod.yml, 224452325 = deploy-prod.yml).
+# Each test reads one sub-command (cut at ; & | or newline): a word of another command,
+# like `gh pr view` after `git push`, must not count as a v* token.
+segments() { grep -oE "$1[^;&|]*" <<<"$COMMAND" || true; }
+TAG_V=0
+while IFS= read -r seg; do
+  [ -n "$seg" ] || continue
+  if grep -qE '(\s|=)["'"'"']?v[^[:space:]/"'"'"']*' <<<"${seg#git*tag}" \
+     && ! grep -qE '\s(-l|--list|--contains|--no-contains|--merged|--no-merged|--points-at|-v|--verify)(\s|=|$)' <<<"$seg"; then
+    TAG_V=1
+  fi
+done <<<"$(segments 'git\s+tag\b')"
+API_WRITE=0
+while IFS= read -r seg; do
+  [ -n "$seg" ] || continue
+  if grep -qE '(git/refs|/releases)\b' <<<"$seg" \
+     && grep -qE '\s((-f|-F|--field|--raw-field|--input)\s|(-X|--method)\s*(POST|PATCH|PUT|DELETE))' <<<"$seg"; then
+    API_WRITE=1
+  fi
+done <<<"$(segments 'gh\s+api\b')"
+if [ "$TAG_V" = 1 ] || [ "$API_WRITE" = 1 ] \
+   || grep -qE '(--tags|--follow-tags|refs/tags/|\sv[^[:space:]/]*(\s|$))' <<<"$(segments 'git\s+push\b')" \
+   || grep -qE 'gh\s+release\s+create\b' <<<"$COMMAND"; then
   echo "BLOCKED: tag v* = declencheur deploy PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
   exit 2
 fi
-if grep -qE 'gh\s+workflow\s+(run|enable)\b.*((release|deploy)-prod|(Release|Deploy) PROD)' <<<"$COMMAND" \
-   || grep -qE 'gh\s+api\b.*actions/workflows/(release|deploy)-prod\.yml/(dispatches|enable)\b' <<<"$COMMAND"; then
+if grep -iqE '((release|deploy)[- ]prod|417610500|224452325)' <<<"$(segments 'gh\s+workflow\s+(run|enable)\b')" \
+   || grep -iqE 'actions/workflows/((release|deploy)-prod\.yml|417610500|224452325)/(dispatches|enable)\b' <<<"$(segments 'gh\s+api\b')"; then
   echo "BLOCKED: lancement manuel ou reactivation d'un workflow de deploiement PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
   exit 2
 fi
