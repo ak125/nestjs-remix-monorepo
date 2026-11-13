@@ -33,40 +33,37 @@ const SCRIPT = join(
 let server;
 let base;
 
-// A Map, not an object literal: the request path is looked up as data and can
-// never resolve to an inherited property such as `constructor`.
-const PAGES = new Map([
-  [
-    "/sitemap-index.xml",
-    () =>
-      `<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>${base}/sitemap-child.xml</loc></sitemap></sitemapindex>`,
-  ],
-  [
-    "/sitemap-child.xml",
-    () =>
-      `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${base}/page-a.html</loc></url></urlset>`,
-  ],
-  [
-    "/page-a.html",
-    () =>
-      `<html><head><link rel="canonical" href="${base}/page-a.html"></head><body>ok</body></html>`,
-  ],
-  ["/empty.xml", () => ""],
-]);
+// Response bodies are plain strings, built once the server port is known. The
+// request path is only a lookup key in a Map: no function is ever selected or
+// called from request data, and no inherited property can be reached.
+const PAGES = new Map();
 
 before(async () => {
   server = createServer((req, res) => {
-    const page = PAGES.get(req.url);
-    if (!page) {
+    const body = PAGES.get(req.url);
+    if (body === undefined) {
       res.writeHead(404, { "content-type": "text/html" });
       res.end("<html><body>404 Not Found</body></html>");
       return;
     }
     res.writeHead(200, { "content-type": "application/xml" });
-    res.end(page());
+    res.end(body);
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   base = `http://127.0.0.1:${server.address().port}`;
+  PAGES.set(
+    "/sitemap-index.xml",
+    `<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>${base}/sitemap-child.xml</loc></sitemap></sitemapindex>`,
+  );
+  PAGES.set(
+    "/sitemap-child.xml",
+    `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${base}/page-a.html</loc></url></urlset>`,
+  );
+  PAGES.set(
+    "/page-a.html",
+    `<html><head><link rel="canonical" href="${base}/page-a.html"></head><body>ok</body></html>`,
+  );
+  PAGES.set("/empty.xml", "");
 });
 
 after(() => server.close());
