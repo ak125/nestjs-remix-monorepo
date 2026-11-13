@@ -988,6 +988,24 @@ assert_exit "bash-guard: guillemet non fermé → BLOCK"             "2" "$(run_
 assert_exit "bash-guard: gh api -X GET avec -f → allow"           "0" "$(run_bash_guard_cmd 'gh api -X GET repos/o/r/git/refs/tags -f per_page=100')"
 assert_exit "bash-guard: git tag -n -l \"v2026*\" → allow"        "0" "$(run_bash_guard_cmd 'git tag -n -l "v2026*"')"
 assert_exit "bash-guard: heredoc de message (apostrophe) → allow" "0" "$(run_bash_guard_cmd $'git commit -F - <<\'EOF\'\nl\'owner relit gh api\nEOF')"
+# Analyseur prod-trigger-check.py : here-documents lus dans le flux des mots, valeurs
+# d'options, mots réanalysés, échec fermé.
+assert_exit "bash-guard: faux marqueur \"<<EOF\" puis tag → BLOCK"  "2" "$(run_bash_guard_cmd $'echo "<<EOF"\ngit tag vfoo')"
+assert_exit "bash-guard: here-document non terminé → BLOCK"        "2" "$(run_bash_guard_cmd $'git commit -F - <<EOF\nmsg push')"
+assert_exit "bash-guard: -m -l (valeur, pas un mode) → BLOCK"      "2" "$(run_bash_guard_cmd 'git tag -m -l vfoo')"
+assert_exit "bash-guard: bash -c 'git tag vX' → BLOCK"             "2" "$(run_bash_guard_cmd "bash -c 'git tag vfoo'")"
+assert_exit "bash-guard: \"\$(git tag vX)\" → BLOCK"               "2" "$(run_bash_guard_cmd 'echo "$(git tag vfoo)"')"
+assert_exit "bash-guard: bash <<< 'git tag vX' → BLOCK"            "2" "$(run_bash_guard_cmd "bash <<< 'git tag vfoo'")"
+assert_exit "bash-guard: tag après heredoc terminé → BLOCK"        "2" "$(run_bash_guard_cmd $'cat <<EOF\ntexte\nEOF\ngit tag vfoo')"
+assert_exit "bash-guard: commentaire # git tag vX → allow"         "0" "$(run_bash_guard_cmd $'git status # puis git tag vfoo')"
+assert_exit "bash-guard: push branche 2>&1 → allow"                "0" "$(run_bash_guard_cmd 'git push -u origin fix/x 2>&1 | tail -3')"
+assert_exit "bash-guard: git tag --contains vX → allow"            "0" "$(run_bash_guard_cmd 'git tag --contains vfoo')"
+assert_exit "bash-guard: git tag -n5 vX* (liste) → allow"          "0" "$(run_bash_guard_cmd 'git tag -n5 "vfoo*"')"
+# Analyseur absent ou en erreur → BLOCK (échec fermé, jamais exit 0)
+G6_TMP=$(mktemp -d)
+cp scripts/claude-hooks/pretool-bash-guard.sh "$G6_TMP/"
+assert_exit "bash-guard: analyseur absent → BLOCK" "2" "$(jq -nc --arg c 'git push -u origin fix/x' '{tool_name:"Bash",tool_input:{command:$c}}' | bash "$G6_TMP/pretool-bash-guard.sh" >/dev/null 2>&1; echo $?)"
+rm -rf "$G6_TMP"
 # Sanity : guard existant (Guard 1) toujours actif
 assert_exit "bash-guard: git push origin main → BLOCK (G1)" "2" "$(run_bash_guard 'git push origin main')"
 

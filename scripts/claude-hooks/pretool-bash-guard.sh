@@ -68,9 +68,11 @@ if grep -qE 'git\s+tag\b.*\bv[0-9]+(\.[0-9]+){1,3}\b|git\s+push\b.*(--tags|\bv[0
   echo "BLOCKED: tag v* = declencheur deploy PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
   exit 2
 fi
-# Every v* name, read on shell words (shlex: quotes, ; & | ( ) and newlines), so that a
-# quoted separator or a flag inside a message cannot change the verdict. Covers:
-# - git tag with a v* argument (list/query forms -l, --contains, -v... allowed);
+# Every v* name and every PROD workflow, read on shell words by prod-trigger-check.py (next
+# to this hook): quotes, comments, operators, redirections, here-document bodies (data),
+# words that read as commands themselves (bash -c '...', "$(...)"). Covers:
+# - git tag with a v* argument (list/query forms -l, -n, --contains, -v... allowed; option
+#   values such as -m <message> are read as values, never as a mode);
 # - git push of tags: --tags, --follow-tags, --mirror, a refspec side that starts with v
 #   (after +) or contains refs/tags/ (branch refspecs here carry a slash: fix/vlevel-x);
 # - gh release create|edit; gh api writes (-f, -F, --field, --raw-field, --input, -X or
@@ -79,85 +81,20 @@ fi
 # - gh workflow run|enable, gh api .../dispatches|enable, of release-prod.yml or of the
 #   retired deploy-prod.yml, by file name, display name (any case) or numeric id
 #   (417610500 = release-prod.yml, 224452325 = deploy-prod.yml).
-# Here-document bodies are data, removed before parsing. Unparsable command: block.
+# Fail closed: no python3, a non-zero exit, or a command it cannot read = block.
 if grep -qE '\b(git|gh)\b' <<<"$COMMAND" \
    && grep -qE '\b(tag|push|release|api|workflow)\b' <<<"$COMMAND"; then
   if ! command -v python3 &>/dev/null; then
     echo "BLOCKED: python3 requis pour le Guard 6 (git/gh tag, push, release, api, workflow). Garde en echec ferme." >&2
     exit 2
   fi
-  GUARD6=$(python3 -I -c '
-import re, shlex, sys
-cmd = sys.stdin.read().replace("\\\n", " ")
-lines, kept, i = cmd.split("\n"), [], 0
-while i < len(lines):
-    kept.append(lines[i]); i += 1
-    for m in re.finditer(r"(?<!<)<<(?!<)(-?)\s*([\x27\x22]?)([A-Za-z_][A-Za-z0-9_]*)\2", kept[-1]):
-        while i < len(lines):
-            i += 1
-            if (lines[i - 1].lstrip("\t") if m.group(1) else lines[i - 1]) == m.group(3):
-                break
-try:
-    lex = shlex.shlex("\n".join(kept), posix=True, punctuation_chars="();&|\n")
-    lex.whitespace, lex.whitespace_split, lex.commenters = " \t\r", True, ""
-    toks = list(lex)
-except ValueError:
-    print("unparsable"); sys.exit()
-SEP = set("();&|\n")
-cmds, cur = [], []
-for t in toks:
-    if t and set(t) <= SEP:
-        cmds.append(cur); cur = []
-    else:
-        cur.append(t)
-cmds.append(cur)
-LIST = {"-l", "--list", "--contains", "--no-contains", "--merged", "--no-merged", "--points-at", "-v", "--verify"}
-PROD = r"(release|deploy)[- ]prod|417610500|224452325"
-def method(a):
-    for j, t in enumerate(a):
-        if t in ("-X", "--method") and j + 1 < len(a): return a[j + 1].upper()
-        if t.startswith("--method="): return t.split("=", 1)[1].upper()
-        if t.startswith("-X") and len(t) > 2: return t[2:].upper()
-    return None
-def fields(a):
-    return any(t in ("-f", "-F", "--field", "--raw-field", "--input") or re.match(r"-[fF].|--(field|raw-field|input)=", t) for t in a)
-out = set()
-for c in cmds:
-    for k, w in enumerate(c):
-        base = w.rsplit("/", 1)[-1]
-        if base == "git":
-            j = k + 1
-            while j < len(c) and c[j].startswith("-"):
-                j += 2 if c[j] in ("-C", "-c", "--git-dir", "--work-tree", "--namespace") else 1
-            if j >= len(c): continue
-            sub, a = c[j], c[j + 1:]
-            if sub == "tag" and not any(t.split("=", 1)[0] in LIST for t in a) \
-               and any(t.startswith("v") or "refs/tags/v" in t for t in a):
-                out.add("tag")
-            if sub == "push":
-                if any(t.split("=", 1)[0] in ("--tags", "--follow-tags", "--mirror") for t in a):
-                    out.add("tag")
-                for t in a:
-                    if t.startswith("-"): continue
-                    for side in t.lstrip("+").split(":"):
-                        if side.startswith("v") or "refs/tags/" in side: out.add("tag")
-        elif base == "gh" and k + 1 < len(c):
-            a = c[k + 1:]
-            if a[0] == "release" and ("create" in a or "edit" in a): out.add("tag")
-            if a[0] == "workflow" and ("run" in a or "enable" in a) and re.search(PROD, " ".join(a), re.I):
-                out.add("workflow")
-            if a[0] == "api":
-                m = method(a)
-                write = m != "GET" if m else fields(a)
-                if write and any(re.search(r"git/(refs|tags)\b|/releases\b", t) for t in a): out.add("tag")
-                if "graphql" in a and any(re.search(r"create(Ref|Release)|updateRef", t) for t in a): out.add("tag")
-                if any(re.search(r"actions/workflows/[^/]*(" + PROD + r")[^/]*/(dispatches|enable)\b", t, re.I) for t in a):
-                    out.add("workflow")
-print(" ".join(sorted(out)))
-' <<<"$COMMAND")
+  if ! GUARD6=$(python3 -I "$(dirname "${BASH_SOURCE[0]}")/prod-trigger-check.py" <<<"$COMMAND"); then
+    echo "BLOCKED: analyseur du Guard 6 en erreur (scripts/claude-hooks/prod-trigger-check.py). Garde en echec ferme." >&2
+    exit 2
+  fi
   case " $GUARD6 " in
     *" unparsable "*)
-      echo "BLOCKED: commande illisible (guillemets non fermes) qui cite git/gh tag, push, release, api ou workflow : le Guard 6 ne peut pas la verifier. Ecrire le texte dans un fichier." >&2
+      echo "BLOCKED: commande illisible (guillemet ou here-document non fermes) qui cite git/gh tag, push, release, api ou workflow : le Guard 6 ne peut pas la verifier. Ecrire le texte dans un fichier." >&2
       exit 2 ;;
     *" tag "*)
       echo "BLOCKED: tag v* = declencheur deploy PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
