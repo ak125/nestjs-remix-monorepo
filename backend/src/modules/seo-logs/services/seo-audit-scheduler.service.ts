@@ -137,16 +137,9 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
     try {
       await job.updateProgress(20);
 
+      // Le script hérite de l'environnement du processus et porte lui-même
+      // ses valeurs par défaut (SITEMAP_URL, LOKI_URL, MEILISEARCH_*).
       const { stdout, stderr } = await execAsync(this.scriptPath, {
-        env: {
-          ...process.env,
-          SITEMAP_URL:
-            process.env.SITEMAP_URL || 'https://automecanik.fr/sitemap.xml',
-          LOKI_URL: process.env.LOKI_URL || 'http://loki:3100',
-          MEILISEARCH_HOST:
-            process.env.MEILISEARCH_HOST || 'http://localhost:7700',
-          MEILISEARCH_API_KEY: process.env.MEILISEARCH_API_KEY,
-        },
         maxBuffer: 10 * 1024 * 1024,
       });
 

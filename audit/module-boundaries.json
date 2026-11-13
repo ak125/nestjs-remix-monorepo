@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 20,
-      "loc_total": 6579,
+      "loc_total": 6589,
       "has_barrel": true
     },
     "health": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 222,
-      "loc_total": 52276,
+      "files_count": 223,
+      "loc_total": 52437,
       "has_barrel": true
     },
     "search": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 285,
-      "loc_total": 61843,
+      "loc_total": 61139,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -792,7 +792,7 @@
         "backend/src/modules/seo-logs/services"
       ],
       "files_count": 12,
-      "loc_total": 3639,
+      "loc_total": 3625,
       "has_barrel": false
     },
     "seo-monitoring": {
@@ -806,7 +806,7 @@
         "backend/src/modules/seo-monitoring/services"
       ],
       "files_count": 51,
-      "loc_total": 11331,
+      "loc_total": 11351,
       "has_barrel": false
     },
     "seo-projection": {
@@ -898,8 +898,8 @@
         "backend/src/modules/support/services/__tests__",
         "backend/src/modules/support/types"
       ],
-      "files_count": 30,
-      "loc_total": 10417,
+      "files_count": 31,
+      "loc_total": 10577,
       "has_barrel": true
     },
     "system": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 373,
-      "loc_total": 76882,
+      "loc_total": 76894,
       "has_barrel": true
     },
     "upload": {
@@ -1776,7 +1776,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 11
+      "count": 12
     },
     {
       "from": "health",

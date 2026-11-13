@@ -34,6 +34,7 @@ import {
   applyGuideLinkRuleToHtml,
   resolveGuideLink,
 } from '../../seo/services/r6-guide-link-policy.service';
+import { InternalLinkingService } from '../../seo';
 
 interface MotorizationRow {
   type_id: number;
@@ -90,6 +91,7 @@ export class GammeResponseBuilderService {
     private readonly chainOrchestrator: SeoChainOrchestratorService,
     private readonly chainFlags: SeoFeatureFlagRegistry,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
+    private readonly internalLinking: InternalLinkingService,
   ) {}
 
   /**
@@ -348,6 +350,12 @@ export class GammeResponseBuilderService {
     if (buyingGuideHref) guideLinkCtx.linkedPaths.add(buyingGuideHref);
     let guideLinksChanged = 0;
     if (pageContent) {
+      // Liens vers une page conseil : adresse servie, sinon libellé sans lien.
+      // Avant la règle des guides, qui compte les liens conseils déjà présents.
+      pageContent = await this.internalLinking.resolveConseilsLinks(
+        pageContent,
+        guideLinkSnapshot.conseilsAliases,
+      );
       const out = applyGuideLinkRuleToHtml(
         pageContent,
         guideLinkSnapshot,
