@@ -132,25 +132,26 @@ if [ ${#MATCHED[@]} -ge "$BROAD" ]; then
   exit 0
 fi
 
-# Dedupe (ordre préservé), garde existants, cap dur.
+# Dedupe (ordre préservé) et garde des existants. Le cap s'applique APRÈS la dédup
+# de session : un candidat déjà injecté ne doit pas occuper une place du cap et
+# masquer les suivants, jamais injectés.
 CAP=3
 declare -A SEEN
-FINAL=()
-UNIQ_EXIST=0
+EXIST=()
 for f in "${CANDS[@]}"; do
   [ -n "${SEEN[$f]:-}" ] && continue
   SEEN[$f]=1
-  [ -f "$f" ] || continue
-  UNIQ_EXIST=$((UNIQ_EXIST + 1))
-  [ ${#FINAL[@]} -lt $CAP ] && FINAL+=("$f")
+  [ -f "$f" ] && EXIST+=("$f")
 done
-[ ${#FINAL[@]} -eq 0 ] && exit 0
+[ ${#EXIST[@]} -eq 0 ] && exit 0
 
 # --- Dédup session-scoped content-hash (TOUCH-POINT B) ------------------------
-# Tourne APRÈS la garde too-broad (≥4) et APRÈS le dedupe per-prompt + CAP=3 +
-# existence. Réécrit FINAL[] au sous-ensemble survivant et stage les nouveaux tuples
-# dans NEW_TUPLES[] (enregistrés plus bas APRÈS émission stdout, touch-point C).
-NEW_TUPLES=()
+# Tourne APRÈS la garde too-broad (≥4) et le dedupe per-prompt + existence, AVANT
+# le cap. Réduit EXIST[] aux candidats jamais injectés cette session (FRESH[]) et
+# retient l'empreinte de chacun ; seuls ceux retenus sous le cap sont stagés dans
+# NEW_TUPLES[] (enregistrés plus bas APRÈS émission stdout, touch-point C).
+declare -A HASH
+FRESH=("${EXIST[@]}")
 if [ -z "$SID" ]; then
   # contrainte #7 : session_id manquant => fail-open = comportement d'aujourd'hui,
   # mais OBSERVABLE.
@@ -167,23 +168,22 @@ elif ! { mkdir -p -m 700 "$DEDUP_DIR" 2>/dev/null; [ -d "$DEDUP_DIR" ] && [ ! -L
 else
   chmod 700 "$DEDUP_DIR" 2>/dev/null || true
   STATE="$DEDUP_DIR/${SID_SAFE}.seen"
-  KEPT=()
+  FRESH=()
   SUPPRESSED_BN=""
-  for f in "${FINAL[@]}"; do
+  for f in "${EXIST[@]}"; do
     chash=$(sha256sum "$f" 2>/dev/null | cut -d' ' -f1)
     if [ -z "$chash" ]; then
       # échec de hash => fail vers l'injection, ne JAMAIS supprimer sur erreur.
-      KEPT+=("$f")
+      FRESH+=("$f")
       printf '%s [DEDUP-HASH-FAIL %s]\n' \
         "$(date -Iseconds 2>/dev/null || echo now)" "$(basename "$f")" >> "$LOG" 2>/dev/null || true
       continue
     fi
-    tuple="$f $chash"
-    if [ -f "$STATE" ] && grep -Fxq "$tuple" "$STATE" 2>/dev/null; then
+    if [ -f "$STATE" ] && grep -Fxq "$f $chash" "$STATE" 2>/dev/null; then
       SUPPRESSED_BN="$SUPPRESSED_BN $(basename "$f")"      # déjà injecté cette session
     else
-      KEPT+=("$f")
-      NEW_TUPLES+=("$tuple")                               # stage pour record-après-émission
+      FRESH+=("$f")
+      HASH[$f]=$chash
     fi
   done
   # observabilité : logger toute suppression (contrainte #2, no silent fallback).
@@ -192,11 +192,18 @@ else
       "$(date -Iseconds 2>/dev/null || echo now)" "${SID_SAFE:0:8}" "${MATCHED[*]}" "$SUPPRESSED_BN" \
       >> "$LOG" 2>/dev/null || true
   fi
-  FINAL=("${KEPT[@]}")
 fi
 # tous les candidats déjà injectés cette session => rien de neuf => exit clean
 # (le régime permanent du 114×-repeat).
-[ ${#FINAL[@]} -eq 0 ] && exit 0
+[ ${#FRESH[@]} -eq 0 ] && exit 0
+
+# Cap dur sur les candidats neufs ; UNIQ_EXIST compte ceux en attente pour la NOTE.
+UNIQ_EXIST=${#FRESH[@]}
+FINAL=("${FRESH[@]:0:$CAP}")
+NEW_TUPLES=()                                              # stage pour record-après-émission
+for f in "${FINAL[@]}"; do
+  [ -n "${HASH[$f]:-}" ] && NEW_TUPLES+=("$f ${HASH[$f]}")
+done
 
 # --- Assemblage ---------------------------------------------------------------
 PERFILE=4000

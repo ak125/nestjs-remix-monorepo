@@ -110,6 +110,10 @@ echo "== U6 deux domaines, six candidats : cap à 3 fichiers, note"
 run s4 "marge et seo"
 check "U6 trois fichiers injectés" 3 "$(heads)"
 check "U6 note au-delà du cap" 1 "$(has 'au-delà du cap')"
+check "U6 note : trois candidats en attente" 1 "$(has '3 fichier(s) candidat(s) au-delà du cap')"
+run s4 "marge et seo"
+check "U6 même prompt, second tour : les trois candidats restés au-delà du cap" "3 1 0" "$(heads) $(has MARQUE-SEO-3) $(has MARQUE-PRICING)"
+check "U6 second tour : plus de note de cap" 0 "$(has 'au-delà du cap')"
 
 echo "== U7 prompt trop large (≥ 4 domaines) : rien, raison tracée"
 run s5 "prix fournisseur seo wiki"
@@ -165,6 +169,16 @@ check "U14 code de sortie" 0 "$rc"
 check "U14 trois fichiers injectés (fail-open)" 3 "$(heads)"
 check "U14 DEDUP-SKIP unsafe-state-dir tracé" 1 "$(command grep -c 'DEDUP-SKIP unsafe-state-dir' "$FIX/audit.log")"
 check "U14 rien écrit dans la cible du lien" "" "$(ls -A "$FIX/cible-lien")"
+
+echo "== U15 dédup avant plafond : les candidats déjà injectés ne masquent pas les suivants"
+rm -f "$FIX/dedup"; mkdir -m 700 "$FIX/dedup"
+run s11 "$PRICING"
+check "U15 premier tour : les trois fichiers pricing" "3 1" "$(heads) $(has MARQUE-PRICING-3)"
+run s11 "marge et seo"
+check "U15 second tour : les trois fichiers seo, encore jamais injectés" "3 1 0" "$(heads) $(has MARQUE-SEO-3) $(has MARQUE-PRICING)"
+check "U15 second tour : aucune note de cap (rien d'autre en attente)" 0 "$(has 'au-delà du cap')"
+run s11 "marge et seo"
+check "U15 troisième tour : tout est déjà injecté, sortie vide" "" "$(cat "$O")"
 
 echo
 if [[ $FAIL -ne 0 ]]; then echo "TESTS EN ÉCHEC"; exit 1; else echo "TOUS LES TESTS PASSENT"; fi
