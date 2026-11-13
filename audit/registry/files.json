@@ -26951,7 +26951,7 @@
         "util"
       ],
       "kind": "controller",
-      "loc": 473,
+      "loc": 466,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
       "risk": "low",
@@ -27164,7 +27164,7 @@
         "util"
       ],
       "kind": "service",
-      "loc": 472,
+      "loc": 465,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "risk": "low",
@@ -74281,6 +74281,25 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/seo-audit-weekly.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 142,
+      "owner": "__unassigned__",
+      "path": "scripts/seo-audit-weekly.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
