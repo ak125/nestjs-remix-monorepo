@@ -285,15 +285,15 @@ Voir `feedback_rollback_via_revert_pr_branch_protected.md` : main est branch-pro
 ## Secrets GitHub Actions
 
 La liste fait foi dans les workflows, pas ici :
-`grep -o 'secrets\.[A-Z0-9_]*' .github/workflows/<fichier>.yml | sort -u`. Au 2026-11-10 :
+`grep -o 'secrets\.[A-Z0-9_]*' .github/workflows/<fichier>.yml | sort -u`. Au 2026-11-13 :
 
 - `ci.yml` (chaîne PREPROD) ne lit ni clé de la base ni `DATABASE_URL`. Il lit
   `PREPROD_JWT_SECRET`, `PREPROD_SESSION_SECRET`, `SUPABASE_URL`, `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN`,
-  `CRUX_API_KEY`, `SLACK_WEBHOOK_URL` et `TURBO_TOKEN`/`TURBO_TEAM`. La clé de la passerelle
+  `CRUX_API_KEY` et `TURBO_TOKEN`/`TURBO_TEAM`. La clé de la passerelle
   PREPROD n'est pas un secret GitHub : elle est posée à part sur l'hôte, jamais copiée de PROD par
   la CI, et le job `🧪 Deploy PREPROD` refuse avant d'arrêter un conteneur si elle manque ;
 - `release-prod.yml` lit les secrets de PROD : clés de la base (`SUPABASE_ANON_KEY`,
-  `SUPABASE_SERVICE_ROLE_KEY`), secrets `PROD_*`, `DOCKERHUB_*`, `SLACK_WEBHOOK_URL` ;
+  `SUPABASE_SERVICE_ROLE_KEY`), secrets `PROD_*` et `DOCKERHUB_*` ;
 - `build.yml` lit `DOCKERHUB_*` et `VITE_GOOGLE_CLIENT_ID` ; `deploy-monitoring-scripts.yml` n'en
   lit aucun.
 
