@@ -48,3 +48,4 @@ export * from "./OptimizedSearchBar";
 export { BrandLogo } from "./BrandLogo";
 export { ResponsiveImage, PartImage } from "./ResponsiveImage";
 export { PublicBreadcrumb } from "./PublicBreadcrumb";
+export { SEOHelmet } from "./SEOHelmet";
