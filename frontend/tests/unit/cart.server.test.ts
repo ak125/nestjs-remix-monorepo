@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getCart } from "~/services/cart.server";
+import { buildOrderLines } from "~/services/order.server";
 
 vi.mock("~/utils/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), log: vi.fn(), debug: vi.fn() },
@@ -120,5 +121,39 @@ describe("cartServerService.getCart — no silent fallback", () => {
     );
 
     await expect(getCart(makeRequest())).rejects.toThrow(/non-object body/);
+  });
+});
+
+describe("cartServerService.getCart — attribution website_url (orl_website_url)", () => {
+  it("conserve website_url jusqu'aux lignes de commande", async () => {
+    const backend = {
+      user_id: "usr_1",
+      items: [
+        {
+          id: "i1",
+          product_id: "123",
+          quantity: 1,
+          price: 10,
+          website_url: "/pieces/filtre-a-huile-7.html",
+        },
+      ],
+      totals: { total_items: 1, total: 10, subtotal: 10 },
+      metadata: {},
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify(backend), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    const cart = await getCart(makeRequest());
+    expect(cart.items[0].website_url).toBe("/pieces/filtre-a-huile-7.html");
+
+    const lines = buildOrderLines(cart.items);
+    expect(lines[0].website_url).toBe("/pieces/filtre-a-huile-7.html");
   });
 });
