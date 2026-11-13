@@ -13,8 +13,8 @@
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `c635e199e8a93857688a6aa35cb95a6b83108b2a5b9cc23df1752f1a0376c4ef`
-- `canonical`: `bfd5c524f994b0ebf9486ccdc41e18fcd0441b95d2cb53729fc94734c2cff49e`
+- `deadCodeCandidates`: `fccc735555cee9d6aae7b0ccf2353bfb08fe8845adf7da5eeb87da790663ae6e`
+- `canonical`: `1050c6d91a747b9ff104c514d210750ead01b3a567f6890adeea0a04b7cd2453`
 - `ownershipYaml`: `2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be`
 - `contractHealth`: `<none>`
 - `validateScript`: `f89bd253b2e305831a01222da09bbef3b95fa51f461238886835fe4a0c2fa831`
@@ -22,11 +22,11 @@
 
 ## Counts
 
-- Total: **252**
-- By confidence: high=12 · medium=164 · low=76
-- By decision: candidate=176 · blocked=76 · excluded=0
+- Total: **251**
+- By confidence: high=12 · medium=163 · low=76
+- By decision: candidate=175 · blocked=76 · excluded=0
 
-## candidate (176)
+## candidate (175)
 
 ### candidate · high (12)
 
@@ -45,7 +45,7 @@
 | `frontend/app/utils/storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/utils/supabase-storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 
-### candidate · medium (164)
+### candidate · medium (163)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -95,7 +95,6 @@
 | `backend/src/modules/seo/config/sitemap.config.ts` | seo | config | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/constants/seo-templates.constants.ts` | seo | config | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/controllers/r2-page.controller.ts` | seo | controller | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `backend/src/modules/seo/index.ts` | seo | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/interceptors/crawl-logger.interceptor.ts` | seo | interceptor | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/r2/schemas/r2-diversity.schema.ts` | seo | schema | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/services/seo-v4-switch-engine.service.ts` | seo | service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
