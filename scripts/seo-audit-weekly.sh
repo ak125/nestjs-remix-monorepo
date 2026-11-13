@@ -28,7 +28,6 @@ _SA_START=$(date +%s)
 # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # CONFIGURATION
 # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-# ðŸ”§ PRODUCTION: Remplacer .fr par .com lors du dÃ©ploiement en production
 SITEMAP_URL="${SITEMAP_URL:-https://www.automecanik.com/sitemap.xml}"
 BASE_URL="${BASE_URL:-https://www.automecanik.com}"
 LOKI_URL="${LOKI_URL:-http://loki:3100}"
@@ -62,13 +61,16 @@ echo ""
 
 echo -e "${BLUE}ðŸ“‹ [1/5] Validation XSD du sitemap...${NC}"
 
-# TÃ©lÃ©charger le sitemap
+# Télécharger le sitemap. Sans lui, aucune étape de l'audit n'a d'objet :
+# hôte injoignable, délai dépassé, réponse HTTP >= 400 ou corps vide arrêtent
+# l'audit, avec la cause sur stderr, que le planificateur journalise.
 SITEMAP_FILE="$OUTPUT_DIR/sitemap.xml"
-curl -s "$SITEMAP_URL" -o "$SITEMAP_FILE"
-
-if [ ! -s "$SITEMAP_FILE" ]; then
-  echo -e "${RED}âŒ ERREUR: Impossible de tÃ©lÃ©charger le sitemap${NC}"
-  ((TOTAL_ERRORS++)) || true
+if ! curl -sS --fail --connect-timeout 15 --max-time 120 "$SITEMAP_URL" -o "$SITEMAP_FILE" \
+  || [ ! -s "$SITEMAP_FILE" ]; then
+  echo "ERREUR: sitemap indisponible ($SITEMAP_URL), audit interrompu" >&2
+  cron_report "seo-audit" "error" "$(( $(date +%s) - _SA_START ))" \
+    '{"sitemap_available":false}' "sitemap indisponible"
+  exit 2
 else
   # DÃ©tecter si c'est un sitemap index ou un sitemap standard
   if grep -q "<sitemapindex" "$SITEMAP_FILE"; then

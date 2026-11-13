@@ -5883,12 +5883,11 @@
         "backend/src/database/services/index.ts"
       ],
       "imports": [
-        "@common/exceptions",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/orders.service.ts"
       ],
       "kind": "service",
-      "loc": 180,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/database-composition.service.ts",
       "risk": "low",
@@ -5994,7 +5993,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 1077,
+      "loc": 730,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/orders.service.ts",
       "risk": "low",
@@ -26952,7 +26951,7 @@
         "util"
       ],
       "kind": "controller",
-      "loc": 473,
+      "loc": 466,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
       "risk": "low",
@@ -27165,7 +27164,7 @@
         "util"
       ],
       "kind": "service",
-      "loc": 472,
+      "loc": 465,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "risk": "low",
@@ -27484,7 +27483,7 @@
         "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
       ],
       "kind": "test",
-      "loc": 256,
+      "loc": 276,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.test.ts",
       "risk": "low",
@@ -33949,7 +33948,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "config",
-      "loc": 434,
+      "loc": 373,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/types/seo-kpis.types.ts",
       "risk": "low",
@@ -36969,6 +36968,7 @@
         "backend/src/modules/support/index.ts",
         "backend/src/modules/support/services/ai-analysis.service.ts",
         "backend/src/modules/support/services/ai-smart-response.service.ts",
+        "backend/src/modules/support/services/review.verify-purchase.test.ts",
         "backend/src/modules/support/services/support-analytics.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
@@ -36979,7 +36979,7 @@
         "backend/src/modules/support/services/notification.service.ts"
       ],
       "kind": "service",
-      "loc": 773,
+      "loc": 789,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/review.service.ts",
       "risk": "low",
@@ -36987,6 +36987,28 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/support/services/review.verify-purchase.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/modules/support/services/review.service.ts"
+      ],
+      "kind": "test",
+      "loc": 144,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/support/services/review.verify-purchase.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -74310,6 +74332,25 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/seo-audit-weekly.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 150,
+      "owner": "__unassigned__",
+      "path": "scripts/seo-audit-weekly.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
