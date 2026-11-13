@@ -18,20 +18,25 @@ export class FunnelEventsController {
 
   constructor(private readonly funnelEvents: FunnelEventsService) {}
 
+  /**
+   * 202 sans corps, quel que soit le sort de l'événement : la balise ne lit
+   * pas la réponse, et un corps disant si un `r2_order_placed` a été retenu
+   * indiquerait à un appelant anonyme qu'un `order_id` (ORD-<ms>-<3 chiffres>)
+   * existe. Les refus restent visibles côté serveur, dans les journaux du
+   * service.
+   */
   @Post('event')
   @HttpCode(202)
-  async event(
-    @Body() body: unknown,
-  ): Promise<{ ok: boolean; deduped?: boolean }> {
+  async event(@Body() body: unknown): Promise<void> {
     const parsed = FunnelEventInputSchema.safeParse(body);
     if (!parsed.success) {
-      // Beacon malformé : ignoré silencieusement (202) pour ne pas polluer les
-      // logs ni casser le client. On trace en debug uniquement.
+      // Beacon malformé : ignoré (202) pour ne pas polluer les logs ni casser
+      // le client. On trace en debug uniquement.
       this.logger.debug(
         `funnel event rejected (schema): ${parsed.error.message}`,
       );
-      return { ok: false };
+      return;
     }
-    return this.funnelEvents.record(parsed.data);
+    await this.funnelEvents.record(parsed.data);
   }
 }

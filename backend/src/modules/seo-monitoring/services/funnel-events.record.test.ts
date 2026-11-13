@@ -7,6 +7,7 @@
  * pour toute colonne inconnue.
  */
 import type { FunnelEventInput } from '@repo/seo-types';
+import { FunnelEventsController } from '../controllers/funnel-events.controller';
 import { FunnelEventsService, toCents } from './funnel-events.service';
 
 const COLUMNS: Record<string, Set<string>> = {
@@ -163,6 +164,32 @@ describe('FunnelEventsService.record — r2_order_placed', () => {
       payload: { session_id: 's1', product_id: 'p1', quantity: 1 },
     } as FunnelEventInput);
     expect(inserted).toHaveLength(1);
+  });
+});
+
+describe('FunnelEventsController.event — balise publique', () => {
+  it("répond pareil pour une commande connue et inconnue (pas d'oracle d'existence)", async () => {
+    const known = makeService(COMMANDE);
+    const unknown = makeService(COMMANDE);
+    const knownRes = await new FunnelEventsController(known.service).event(
+      BEACON,
+    );
+    const unknownRes = await new FunnelEventsController(unknown.service).event({
+      ...BEACON,
+      payload: { ...BEACON.payload, order_id: 'ORD-404' },
+    });
+    expect(known.inserted).toHaveLength(1);
+    expect(unknown.inserted).toEqual([]);
+    expect(knownRes).toBeUndefined();
+    expect(unknownRes).toBeUndefined();
+  });
+
+  it('ignore un corps malformé sans toucher à la base', async () => {
+    const { service, inserted } = makeService(COMMANDE);
+    await expect(
+      new FunnelEventsController(service).event({ event_type: 'nope' }),
+    ).resolves.toBeUndefined();
+    expect(inserted).toEqual([]);
   });
 });
 
