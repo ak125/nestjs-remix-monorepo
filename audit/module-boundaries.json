@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 586,
-      "loc_total": 110925,
+      "files_count": 585,
+      "loc_total": 110776,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6583,
+      "loc_total": 6375,
       "has_barrel": true
     },
     "payments": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 373,
-      "loc_total": 77127,
+      "loc_total": 76894,
       "has_barrel": true
     },
     "upload": {
@@ -1462,6 +1462,11 @@
       "from": "backend-core",
       "to": "trend-signals",
       "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "uncategorized",
+      "count": 4
     },
     {
       "from": "backend-core",
