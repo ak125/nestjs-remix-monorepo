@@ -1,10 +1,10 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 252,
+  "count": 251,
   "by_confidence": {
     "high": 12,
-    "medium": 164,
+    "medium": 163,
     "low": 76
   },
   "candidates": [
@@ -1375,23 +1375,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/seo/index.ts",
-      "domain": "seo",
-      "kind": "other",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },
