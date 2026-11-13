@@ -158,7 +158,7 @@ gh pr create --base main --title 'chore(secrets): bootstrap sentry.prod.sops.env
 ```bash
 git tag v$(date +%Y.%m.%d)
 git push origin v$(date +%Y.%m.%d)
-# triggers .github/workflows/deploy-prod.yml
+# triggers .github/workflows/release-prod.yml
 # wrapper logs should show "✅ Injecting Sentry secrets via sops exec-env"
 ```
 
