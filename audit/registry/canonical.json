@@ -46560,7 +46560,7 @@
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
       ],
       "kind": "test",
-      "loc": 60,
+      "loc": 61,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
       "risk": "medium",
@@ -46583,7 +46583,7 @@
         "backend/src/modules/seo/registries/seo-feature-flag.registry.ts"
       ],
       "kind": "test",
-      "loc": 220,
+      "loc": 221,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
       "risk": "medium",
@@ -46723,6 +46723,7 @@
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
         "backend/src/modules/gamme-rest/utils/r1-image-normalizer.ts",
+        "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
@@ -46732,7 +46733,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 1251,
+      "loc": 1259,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "medium",
@@ -59536,12 +59537,16 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
-        "manual"
+        "manual",
+        "reachability"
       ],
       "domain": "D3",
       "id": "backend/src/modules/seo/index.ts",
-      "importedBy": [],
+      "importedBy": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
+      ],
       "imports": [
+        "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/seo.controller.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/seo.service.ts",
@@ -59551,14 +59556,14 @@
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
       "kind": "service",
-      "loc": 10,
+      "loc": 11,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/index.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -59864,6 +59869,29 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/seo/internal-linking.service.ts"
+      ],
+      "kind": "test",
+      "loc": 238,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo/internal-linking.service.ts",
       "importedBy": [
         "backend/src/modules/blog/services/blog-seo.service.ts",
@@ -59871,6 +59899,8 @@
         "backend/src/modules/blog/services/r3-guide.service.test.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
+        "backend/src/modules/seo/index.ts",
+        "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
@@ -59881,7 +59911,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 867,
+      "loc": 994,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/internal-linking.service.ts",
       "risk": "high",
@@ -71179,7 +71209,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 665,
+      "loc": 677,
       "owner": "@ak125",
       "path": "backend/tests/unit/gamme-response-builder.service.test.ts",
       "risk": "medium",
@@ -107527,11 +107557,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4c4a746b919d3080e8e67e3b1830ff465a5f746192ff9167ed747082c3402258",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "61a8e01a09cfb65d17bcb01a5ce2bc119e8e76a552a853999146b2321684b03d",
+      "audit/registry/files.json": "4bceadf00f6c18459b16a7165932ab438f8a31f2d82e1a06e229710d3fa3deb1",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "d6d972e199e2"
+    "sotFingerprint": "3fc35ca0ec40"
   },
   "runtime": [
     {

@@ -1,6 +1,12 @@
 import { GammeResponseBuilderService } from '../../src/modules/gamme-rest/services/gamme-response-builder.service';
 import { BuyingGuideDataService } from '../../src/modules/gamme-rest/services/buying-guide-data.service';
 
+// Résolveur des liens conseils du texte R1 : passe-plat ici, couvert par
+// internal-linking.service.conseils-links.test.ts.
+const internalLinking = {
+  resolveConseilsLinks: jest.fn(async (html: string) => html),
+} as any;
+
 describe('GammeResponseBuilderService buying guide fallback', () => {
   const makeBaseRpcPayload = () => ({
     pageData: {
@@ -185,6 +191,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainOrchestrator,
       chainFlags,
       guideLinkPolicy,
+      internalLinking,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -254,6 +261,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainOrchestrator,
       chainFlags,
       guideLinkPolicy,
+      internalLinking,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -323,6 +331,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainOrchestrator,
       chainFlags,
       guideLinkPolicy,
+      internalLinking,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -380,6 +389,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
         { run: jest.fn() } as any,
         { mode: jest.fn(() => 'off') } as any,
         guideLinkPolicy,
+        internalLinking,
       );
     };
 
@@ -451,6 +461,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
           conseilsAliases: new Set<string>(),
         })),
       } as any,
+      internalLinking,
     );
 
     await service.buildRpcV2Response('7');
@@ -506,6 +517,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
             conseilsAliases: new Set<string>(),
           })),
         } as any,
+        internalLinking,
       ).buildRpcV2Response('479');
 
     const withContract = (faqSource: 'db' | 'mixed' | 'fallback') =>
