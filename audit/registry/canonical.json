@@ -34476,6 +34476,29 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/database/services/cart-data.attribution.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 215,
+      "owner": "__unassigned__",
+      "path": "backend/src/database/services/cart-data.attribution.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "manual"
       ],
@@ -34510,6 +34533,7 @@
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/database/database.module.ts",
+        "backend/src/database/services/cart-data.attribution.test.ts",
         "backend/src/database/services/cart-data.sellable-guard.test.ts",
         "backend/src/database/services/database-composition.service.ts",
         "backend/src/database/services/index.ts",
@@ -34535,7 +34559,7 @@
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1037,
+      "loc": 1046,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -34727,6 +34751,7 @@
       "id": "backend/src/database/services/piece-price-data.service.ts",
       "importedBy": [
         "backend/src/database/database.module.ts",
+        "backend/src/database/services/cart-data.attribution.test.ts",
         "backend/src/database/services/cart-data.sellable-guard.test.ts",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/piece-price-data.service.test.ts"
@@ -76163,9 +76188,11 @@
         "frontend/app/components/cart/CartSummaryBlock.tsx",
         "frontend/app/components/cart/FreeShippingProgress.tsx"
       ],
-      "imports": [],
+      "imports": [
+        "~/utils/safe-storage"
+      ],
       "kind": "config",
-      "loc": 67,
+      "loc": 75,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/cart/cart-utils.ts",
       "risk": "low",
@@ -89553,7 +89580,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 596,
+      "loc": 593,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "medium",
@@ -95743,6 +95770,26 @@
       "loc": 149,
       "owner": "@ak125",
       "path": "frontend/tests/unit/cache-control.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/cart-utils.restore.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 108,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/cart-utils.restore.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -107577,11 +107624,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4c4a746b919d3080e8e67e3b1830ff465a5f746192ff9167ed747082c3402258",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "af9bc4e04279d1590cce2aab7e464fdc9c6569abb4b5a49bd0deafd26ef8f496",
+      "audit/registry/files.json": "7eeb62af0a85bac853da77cbcee3badbfdb1d1e5f6419766804c9fd3e37a79af",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "6188610029a2"
+    "sotFingerprint": "1475c68a715f"
   },
   "runtime": [
     {
