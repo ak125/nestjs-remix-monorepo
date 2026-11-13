@@ -3,9 +3,9 @@
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
   "count": 252,
   "by_confidence": {
-    "high": 12,
+    "high": 13,
     "medium": 164,
-    "low": 76
+    "low": 75
   },
   "candidates": [
     {
@@ -3385,17 +3385,19 @@
       "path": "frontend/app/components/ui/SEOHelmet.tsx",
       "domain": "frontend-shared",
       "kind": "component",
-      "confidence": "low",
+      "confidence": "high",
       "derived_from": [
-        "knip"
+        "knip",
+        "depcruise-orphan",
+        "depcruise-no-dependents"
       ],
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
+        "c1_zero_static_import": true,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },
-      "reason": "knip unused"
+      "reason": "knip unused + depcruise orphan"
     },
     {
       "path": "frontend/app/components/ui/command.tsx",

@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110841,
+      "loc_total": 110840,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 284,
-      "loc_total": 60834,
+      "loc_total": 60773,
       "has_barrel": true
     },
     "seo-control-plane": {
