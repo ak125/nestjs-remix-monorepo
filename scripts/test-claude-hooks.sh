@@ -962,6 +962,32 @@ assert_exit "bash-guard: gh run list --workflow release-prod.yml → allow" "0" 
 assert_exit "bash-guard: gh workflow view release-prod.yml → allow"      "0" "$(run_bash_guard 'gh workflow view release-prod.yml')"
 assert_exit "bash-guard: gh api .state deploy-prod → allow"              "0" "$(run_bash_guard 'gh api repos/o/r/actions/workflows/deploy-prod.yml --jq .state')"
 assert_exit "bash-guard: gh release list → allow"                        "0" "$(run_bash_guard 'gh release list')"
+# Mots shell (guillemets, séparateurs, sauts de ligne) : enveloppe construite par jq,
+# pour qu'un guillemet de la commande ne la rende pas illisible (BLOCK pour une autre raison).
+run_bash_guard_cmd() {
+  jq -nc --arg c "$1" '{tool_name:"Bash",tool_input:{command:$c}}' \
+    | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "bash-guard: --list dans un message → BLOCK"          "2" "$(run_bash_guard_cmd 'git tag -a vfoo -m "use --list here"')"
+assert_exit "bash-guard: ; entre guillemets → BLOCK"              "2" "$(run_bash_guard_cmd 'git tag -m "a;b" vfoo')"
+assert_exit "bash-guard: git -C dir tag vX → BLOCK"               "2" "$(run_bash_guard_cmd 'git -C /tmp/x tag vfoo')"
+assert_exit "bash-guard: git tag en sous-shell → BLOCK"           "2" "$(run_bash_guard_cmd '(git tag vfoo)')"
+assert_exit "bash-guard: push +vX → BLOCK"                        "2" "$(run_bash_guard_cmd 'git push origin +vfoo')"
+assert_exit "bash-guard: push \"vX\" → BLOCK"                     "2" "$(run_bash_guard_cmd 'git push origin "vfoo"')"
+assert_exit "bash-guard: push HEAD:vX → BLOCK"                    "2" "$(run_bash_guard_cmd 'git push origin HEAD:vfoo')"
+assert_exit "bash-guard: push tag vX → BLOCK"                     "2" "$(run_bash_guard_cmd 'git push origin tag vfoo')"
+assert_exit "bash-guard: push --mirror → BLOCK"                   "2" "$(run_bash_guard_cmd 'git push --mirror origin')"
+assert_exit "bash-guard: push branche, saut de ligne, tag → BLOCK" "2" "$(run_bash_guard_cmd $'git push origin fix/x\ngit tag vfoo')"
+assert_exit "bash-guard: gh api -fref= attaché → BLOCK"           "2" "$(run_bash_guard_cmd 'gh api repos/o/r/git/refs -fref=refs/tags/vfoo -fsha=abc')"
+assert_exit "bash-guard: gh api --method=POST releases → BLOCK"   "2" "$(run_bash_guard_cmd 'gh api --method=POST repos/o/r/releases')"
+assert_exit "bash-guard: gh api -XPOST git/refs → BLOCK"          "2" "$(run_bash_guard_cmd 'gh api -XPOST repos/o/r/git/refs')"
+assert_exit "bash-guard: gh api graphql createRef → BLOCK"        "2" "$(run_bash_guard_cmd 'gh api graphql -f query="mutation{createRef(input:{}){clientMutationId}}"')"
+assert_exit "bash-guard: gh release edit → BLOCK"                 "2" "$(run_bash_guard_cmd 'gh release edit vfoo --draft=false')"
+assert_exit "bash-guard: guillemet non fermé → BLOCK"             "2" "$(run_bash_guard_cmd 'git push origin "fix/x')"
+assert_exit "bash-guard: gh api -X GET avec -f → allow"           "0" "$(run_bash_guard_cmd 'gh api -X GET repos/o/r/git/refs/tags -f per_page=100')"
+assert_exit "bash-guard: git tag -n -l \"v2026*\" → allow"        "0" "$(run_bash_guard_cmd 'git tag -n -l "v2026*"')"
+assert_exit "bash-guard: heredoc de message (apostrophe) → allow" "0" "$(run_bash_guard_cmd $'git commit -F - <<\'EOF\'\nl\'owner relit gh api\nEOF')"
 # Sanity : guard existant (Guard 1) toujours actif
 assert_exit "bash-guard: git push origin main → BLOCK (G1)" "2" "$(run_bash_guard 'git push origin main')"
 
