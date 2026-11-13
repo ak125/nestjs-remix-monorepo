@@ -3,7 +3,7 @@
  *
  * Enregistre le job `seo-cp-synthetic-crawl` toutes les 15 min sur la
  * queue dédiée `seo-crawler-monitor`. Pattern aligné
- * `SitemapV10SchedulerService` + `SeoMonitorSchedulerService`.
+ * `SeoMonitorSchedulerService`.
  *
  * ADR-064 §Architecture L1 — fréquence q15min :
  *   - MTTD cible 15 min pour breach SLO tier0 (vs J-7 actuel via email GSC)
@@ -14,7 +14,7 @@
  * pattern `void this.configureRepeatableJob()`.
  *
  * Garde `SEO_CP_SYNTHETIC_ENABLED=false` désactive l'enregistrement
- * (default = true). Cohérent pattern toggle SEO_SITEMAP_CRON_ENABLED.
+ * (default = true).
  */
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';

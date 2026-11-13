@@ -13,8 +13,8 @@
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `ae0ff76491b220b8eef34816872eb507f69fd4d4122593651a283d68a9efe954`
-- `canonical`: `58b74fe2a6ae2c329f4f0ebea23b540825c47c13a83c87a90d2f769b67a4451d`
+- `deadCodeCandidates`: `c635e199e8a93857688a6aa35cb95a6b83108b2a5b9cc23df1752f1a0376c4ef`
+- `canonical`: `7ebb69c695758b390561a099c2d8d9777bc8ee935701cd604928fd7ec5c7face`
 - `ownershipYaml`: `2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be`
 - `contractHealth`: `<none>`
 - `validateScript`: `f89bd253b2e305831a01222da09bbef3b95fa51f461238886835fe4a0c2fa831`
@@ -22,9 +22,9 @@
 
 ## Counts
 
-- Total: **256**
-- By confidence: high=12 · medium=164 · low=80
-- By decision: candidate=176 · blocked=80 · excluded=0
+- Total: **252**
+- By confidence: high=12 · medium=164 · low=76
+- By decision: candidate=176 · blocked=76 · excluded=0
 
 ## candidate (176)
 
@@ -218,7 +218,7 @@
 
 _(empty)_
 
-## blocked (80)
+## blocked (76)
 
 ### blocked · high (0)
 
@@ -228,27 +228,23 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (80)
+### blocked · low (76)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
 | `backend/src/auth/dto/logout-response.dto.ts` | auth | dto | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/common/pipes/index.ts` | common | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
+| `backend/src/config/content-section-policy.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-content-contract.defaults.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-fingerprint.utils.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-heading-policy.utils.ts` | config | other | low | UNKNOWN | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
 | `backend/src/config/r2-meta-builder.utils.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-scoring.utils.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/seo-switch-aliases.config.ts` | config | config | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `backend/src/modules/agentic-engine/agentic-engine.controller.ts` | agentic-engine | controller | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/arbiter.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/planner.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/solver.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/verifier.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `backend/src/modules/knowledge-graph/kg-data.service.ts` | knowledge-graph | service | low | LIVE | 4 | snapshot c1 failed (static import); canonical.importedBy=4 |
-| `backend/src/modules/knowledge-graph/kg.controller.ts` | knowledge-graph | controller | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
-| `backend/src/modules/knowledge-graph/kg.service.ts` | knowledge-graph | service | low | LIVE | 3 | snapshot c1 failed (static import); canonical.importedBy=3 |
-| `backend/src/modules/knowledge-graph/kg.types.ts` | knowledge-graph | type | low | LIVE | 4 | snapshot c1 failed (static import); canonical.importedBy=4 |
 | `backend/src/modules/mcp-validation/config/mcp-route-map.config.ts` | mcp-validation | config | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/mcp-validation/decorators/mcp-verify.decorator.ts` | mcp-validation | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/mcp-validation/interceptors/mcp-shadow.interceptor.ts` | mcp-validation | interceptor | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |

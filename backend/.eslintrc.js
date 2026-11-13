@@ -92,7 +92,6 @@ module.exports = {
         '**/r5-diagnostic.constants.ts',
         '**/seo-pilotage.service.ts',
         '**/admin-keyword-planner.controller.ts',
-        '**/brief-gates.service.ts',
       ],
       rules: {
         'no-restricted-syntax': 'off',

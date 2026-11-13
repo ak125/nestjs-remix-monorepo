@@ -13,13 +13,19 @@ En cas d'écart entre cette page et ces fichiers, le code fait foi : signaler l'
 |---|---|---|
 | `schema_version` | `command-center-digest.v1` attendu | Autre valeur = dérive de contrat, arrêter |
 | `generated_at` | Heure de calcul de la réponse (mise en cache 60 s, 15 s si dégradée) | Ce n'est pas l'âge des faits |
-| `git_sha` | Révision du backend qui a servi la lecture | null = révision non attribuable |
+| `git_sha` | Révision que le backend déclare (`GIT_SHA`, posé à la construction de l'image) : SHA complet de 40 caractères | Une déclaration, pas une preuve de build. null = non attribuable, motif `build identity absent`, `invalid` ou `divergent` dans `reasons[]` |
 | `mode` | `full`, `light` ou `disabled` | Hors `full` : aucun rapport ni action |
 | `degraded` | true = lecture partielle du référentiel | true : aucun rapport ni action |
-| `stale_status` | Âge de `source_truth.last_verified` du référentiel : FRESH ≤ 7 j, WARNING ≤ 14 j, STALE au-delà, UNKNOWN si absent | Le digest n'expose pas la date elle-même |
+| `stale_status` | Âge de `source_truth.last_verified` du référentiel : FRESH ≤ 7 j, WARNING ≤ 14 j, STALE au-delà, UNKNOWN si la date est absente, illisible ou future | Le digest n'expose pas la date elle-même |
 | `global_status` | `level` OK/WARNING/CRITICAL, `verdict` OPERATIONAL/PARTIAL_READY/BLOCKED, `reasons[]` | Recopier les raisons, ne pas les résumer en « tout va bien » |
 | `owner_go_actions_total` | Nombre total d'actions qui attendent l'owner | Peut dépasser la liste |
 | `owner_go_actions[]` | 10 au plus, sans `details` | Liste tronquée : le dire |
+
+Motifs de `reasons[]` qui retirent `OPERATIONAL` à eux seuls, et restent listés
+sous `BLOCKED` : `snapshot source stale (>14d)`, `snapshot source freshness unknown`,
+`build identity absent` / `invalid` / `divergent`, `operating-map validation unknown`
+(rapport du validateur de la carte absent ou illisible). Un contrôle que le backend
+n'a pas pu lire n'est donc jamais présenté comme réussi.
 
 Sans `COMMAND_CENTER_MODE`, un backend `NODE_ENV=production` vaut `disabled` :
 c'est le cas de PROD et aussi de PREPROD si la variable n'y est pas fixée. La
@@ -71,7 +77,7 @@ lecture réelle.
   "degraded": false,
   "stale_status": "STALE",
   "global_status": {"level": "WARNING", "verdict": "PARTIAL_READY",
-                    "reasons": ["snapshot source stale (>14d)"]},
+                    "reasons": ["snapshot source stale (>14d)", "build identity absent"]},
   "department_reports": [
     {"department": "example-a", "kpi": {"measure": "MESURE", "value": 12, "unit": "%"},
      "score": "NON_MESURE", "evolution": "INCONNUE", "decision": "IMPROVE",
@@ -88,8 +94,8 @@ lecture réelle.
 Sortie attendue, à vérifier point par point :
 
 - Source « actuel », lue le 2026-01-15 08:00 UTC ; référentiel STALE ; révision
-  non attribuable.
-- Statut global WARNING / PARTIAL_READY, raison recopiée.
+  non attribuable (aucune déclaration).
+- Statut global WARNING / PARTIAL_READY, les deux raisons recopiées.
 - `example-a` : 12 % mesuré sur 30 j, performance non évaluée (critère non
   qualifié), évolution inconnue.
 - `example-b` : non mesuré (aucun producteur) ; jamais « 0 ».

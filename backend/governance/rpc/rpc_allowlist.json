@@ -505,11 +505,6 @@
       "reason": "SELECT only — liste R4 /reference-auto (231 refs publiées) ; absent de l'allowlist → RpcBlockedError en PROD enforce P2 → index vide (fix 2026-06-10)"
     },
     {
-      "name": "get_alternative_vehicles_for_gamme",
-      "volatility": "STABLE",
-      "reason": "Top véhicules par gamme pour le batch R1 keyword-plan (admin, 0-LLM). LANGUAGE sql STABLE (ADR-017, 395 ms), résultat dépend de p_gamme_id seul — mis en cache côté NestJS (r1kp:top-vehicles:{pgId}). Called by R1KeywordPlanBatchService.getTopVehicles via callRpc source admin (A4, plan massdoc 2026-09-02)."
-    },
-    {
       "name": "get_r5_redirect_target",
       "volatility": "STABLE",
       "reason": "SELECT only — résout la redirection 301 détail R5 → R3 conseils#diagnostic-rapide (consolidation R5)"

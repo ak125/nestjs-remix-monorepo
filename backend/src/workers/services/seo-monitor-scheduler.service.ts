@@ -11,6 +11,19 @@ import { Queue } from 'bull';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { getErrorMessage } from '@common/utils/error.utils';
 
+/**
+ * Noms des tâches que ce service planifie sur la queue `seo-monitor`.
+ *
+ * La queue est partagée avec d'autres services. Le nettoyage au démarrage ne
+ * retire que les tâches répétables portant ces noms ; chaque service gère les
+ * siennes (`SitemapV10SchedulerService` retire la régénération nocturne qu'il
+ * ne planifie plus).
+ */
+export const SEO_MONITOR_OWNED_JOB_NAMES: readonly string[] = [
+  'check-pages',
+  'daily-fetch',
+];
+
 @Injectable()
 export class SeoMonitorSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(SeoMonitorSchedulerService.name);
@@ -62,12 +75,18 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
   }
 
   /**
-   * 🗑️ Nettoie les anciens jobs répétitifs
+   * 🗑️ Nettoie les anciens jobs répétitifs de ce service, et eux seuls.
+   *
+   * Bull garde les tâches répétables dans Redis d'un démarrage à l'autre : il
+   * faut retirer les nôtres avant de les réinscrire (sinon un ancien cron
+   * survit à un changement de planification). Les tâches des autres services
+   * de la queue ne sont pas à nous : les retirer les rendrait inertes.
    */
   private async cleanOldRepeatableJobs() {
     const repeatableJobs = await this.seoMonitorQueue.getRepeatableJobs();
 
     for (const job of repeatableJobs) {
+      if (!SEO_MONITOR_OWNED_JOB_NAMES.includes(job.name)) continue;
       await this.seoMonitorQueue.removeRepeatableByKey(job.key);
       this.logger.log(`🗑️ Ancien job répétitif supprimé: ${job.name}`);
     }
@@ -138,6 +157,11 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
    * `daily-fetch` sur la queue `seo-monitor` et délègue aux 4 fetchers du
    * `SeoMonitoringModule`. Date par défaut : J-3 (latence GSC/GA4 ~3 jours).
    *
+   * `tz: 'UTC'` est explicite : sans lui, Bull lit le cron dans le fuseau du
+   * processus (Europe/Paris dans l'image), soit 03:00 ou 02:00 UTC selon la
+   * saison — l'heure de la régénération du sitemap par le workflow GitHub
+   * quotidien, prévue une heure avant.
+   *
    * Ref : `.claude/plans/utiliser-la-meilleure-approche-zippy-waterfall.md` § V0.A
    */
   private async setupDailyFetchJob(): Promise<void> {
@@ -150,6 +174,7 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
       {
         repeat: {
           cron: '0 4 * * *', // 04:00 UTC quotidien
+          tz: 'UTC',
         },
         jobId: 'seo-daily-fetch',
         removeOnComplete: 30, // ~1 mois d'historique

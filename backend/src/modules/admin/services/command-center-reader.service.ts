@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { resolveBuildIdentity } from '@common/utils/build-identity.util';
 import { CacheService } from '../../../cache/cache.service';
 import { CommandCenterActionsService } from './command-center-actions.service';
 import {
@@ -158,7 +159,7 @@ export class CommandCenterReaderService {
     'mode' | 'action_queue' | 'department_reports'
   > {
     const now = new Date();
-    const gitSha = process.env.GIT_SHA || process.env.SOURCE_COMMIT || null;
+    const identity = resolveBuildIdentity();
     const snapshotPath = join(this.registryDir, 'command-center-snapshot.json');
     let raw: unknown;
     let failure = 'snapshot_unavailable';
@@ -247,6 +248,7 @@ export class CommandCenterReaderService {
       departments,
       staleStatus,
       validationStatus,
+      identity.problem,
     );
 
     return {
@@ -261,7 +263,7 @@ export class CommandCenterReaderService {
       alerts: snapshot.alerts,
       owner_actions: snapshot.owner_actions,
       generated_at: now.toISOString(),
-      git_sha: gitSha,
+      git_sha: identity.sha,
       stale_status: staleStatus,
       validation_status: validationStatus,
       global_status: globalStatus,
@@ -275,7 +277,10 @@ export class CommandCenterReaderService {
     if (!lastVerified) return 'UNKNOWN';
     const lv = Date.parse(lastVerified);
     if (Number.isNaN(lv)) return 'UNKNOWN';
-    const days = Math.floor((now.getTime() - lv) / 86_400_000);
+    const ageMs = now.getTime() - lv;
+    // Une vérification postérieure à l'instant de calcul ne prouve rien.
+    if (ageMs < 0) return 'UNKNOWN';
+    const days = Math.floor(ageMs / 86_400_000);
     if (days <= CommandCenterReaderService.STALE_WARNING_DAYS) return 'FRESH';
     if (days <= CommandCenterReaderService.STALE_DAYS) return 'WARNING';
     return 'STALE';
@@ -313,12 +318,23 @@ export class CommandCenterReaderService {
     >,
     stale: StaleStatus,
     validation: ValidationStatus,
+    identityProblem: string | null,
   ): GlobalStatus {
     const reasons: string[] = [];
     const p0Broken = departments.filter(
       (d) => d.priority === 'P0' && d.certification === 'BROKEN',
     );
     const errorAlerts = snapshot.alerts.filter((a) => a.severity === 'error');
+    // Motifs de la source, du build et de la validation : listés quel que soit le
+    // verdict. Chacun retire OPERATIONAL : une preuve absente n'est pas une preuve.
+    const sourceReasons: string[] = [];
+    if (stale === 'STALE') sourceReasons.push('snapshot source stale (>14d)');
+    if (stale === 'UNKNOWN')
+      sourceReasons.push('snapshot source freshness unknown');
+    if (identityProblem) sourceReasons.push(identityProblem);
+    // Rapport de validation absent ou illisible (computeValidationStatus).
+    if (validation === 'UNKNOWN')
+      sourceReasons.push('operating-map validation unknown');
 
     let level: GlobalStatus['level'] = 'OK';
     let verdict: GlobalStatus['verdict'] = 'OPERATIONAL';
@@ -332,9 +348,10 @@ export class CommandCenterReaderService {
         );
       if (validation === 'STRICT_FAIL')
         reasons.push('operating-map validation STRICT_FAIL');
+      reasons.push(...sourceReasons);
     } else if (
       errorAlerts.length > 0 ||
-      stale === 'STALE' ||
+      sourceReasons.length > 0 ||
       snapshot.summary.handoffs_incomplete > 0 ||
       snapshot.summary.capabilities_without_evidence > 0
     ) {
@@ -342,7 +359,7 @@ export class CommandCenterReaderService {
       verdict = 'PARTIAL_READY';
       if (errorAlerts.length)
         reasons.push(`${errorAlerts.length} error alert(s)`);
-      if (stale === 'STALE') reasons.push('snapshot source stale (>14d)');
+      reasons.push(...sourceReasons);
       if (snapshot.summary.handoffs_incomplete > 0)
         reasons.push(
           `${snapshot.summary.handoffs_incomplete} incomplete handoff(s)`,
