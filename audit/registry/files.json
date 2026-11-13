@@ -61711,7 +61711,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 592,
+      "loc": 601,
       "owner": "__unassigned__",
       "path": "frontend/app/services/cart.server.ts",
       "risk": "low",
@@ -64861,7 +64861,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 125,
+      "loc": 160,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/cart.server.test.ts",
       "risk": "low",

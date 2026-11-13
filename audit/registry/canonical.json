@@ -92421,7 +92421,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 592,
+      "loc": 601,
       "owner": "__unassigned__",
       "path": "frontend/app/services/cart.server.ts",
       "risk": "low",
@@ -95685,7 +95685,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 125,
+      "loc": 160,
       "owner": "@ak125",
       "path": "frontend/tests/unit/cart.server.test.ts",
       "risk": "medium",
@@ -107482,11 +107482,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "fb3b29869377b3cf1993875671f8157e670c912a12960ef3b4894015246a1ecf",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "efe6cdcd88c6cae255c8576e16881c129c194c18051b76b8d0247baa239dc9cc",
+      "audit/registry/files.json": "bc04cbc49f636846584496fd363f35eda04e289e5aadf0e39b9d252c135dd954",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "9d4c4a5d271a"
+    "sotFingerprint": "f0cdda8f55d7"
   },
   "runtime": [
     {
