@@ -13,8 +13,8 @@
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `e0cc915fbdd00a8a87a0abed566e24ea2f2168ecc7a53c5398f925418973bb6b`
-- `canonical`: `7d45859b2004a6a45cec5975ee4127486e1dfccb58a9ac04ea74d7ade7208670`
+- `deadCodeCandidates`: `c635e199e8a93857688a6aa35cb95a6b83108b2a5b9cc23df1752f1a0376c4ef`
+- `canonical`: `f83fd7dbd049fd4d60fc29b892e98f6d5ecbf272334b29fb6d603ca53450cc86`
 - `ownershipYaml`: `2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be`
 - `contractHealth`: `<none>`
 - `validateScript`: `f89bd253b2e305831a01222da09bbef3b95fa51f461238886835fe4a0c2fa831`
@@ -23,12 +23,12 @@
 ## Counts
 
 - Total: **252**
-- By confidence: high=13 · medium=164 · low=75
-- By decision: candidate=177 · blocked=75 · excluded=0
+- By confidence: high=12 · medium=164 · low=76
+- By decision: candidate=176 · blocked=76 · excluded=0
 
-## candidate (177)
+## candidate (176)
 
-### candidate · high (13)
+### candidate · high (12)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -40,7 +40,6 @@
 | `backend/src/modules/diagnostic-engine/types/diagnostic-failure-category.ts` | diagnostic-engine | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/products/types/product.types.ts` | products | type | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/types/order.types.ts` | backend-core | type | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `frontend/app/components/ui/SEOHelmet.tsx` | frontend-shared | component | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/lib/auth.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/types/layout.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/utils/storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
@@ -219,7 +218,7 @@
 
 _(empty)_
 
-## blocked (75)
+## blocked (76)
 
 ### blocked · high (0)
 
@@ -229,7 +228,7 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (75)
+### blocked · low (76)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -302,6 +301,7 @@ _(empty)_
 | `frontend/app/components/ui/MultiCarousel.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/OptimizedSearchBar.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/PerformanceMetrics.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
+| `frontend/app/components/ui/SEOHelmet.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/hover-card.tsx` | frontend-shared | component | low | UNKNOWN | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
 | `frontend/app/components/ui/pagination.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/popover.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
