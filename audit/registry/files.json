@@ -74292,7 +74292,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 142,
+      "loc": 153,
       "owner": "__unassigned__",
       "path": "scripts/seo-audit-weekly.test.mjs",
       "risk": "low",
