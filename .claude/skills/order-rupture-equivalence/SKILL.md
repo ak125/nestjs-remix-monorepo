@@ -345,9 +345,10 @@ Ni contourner, ni utiliser. Corriger l'un d'eux = PR de code séparée, sur GO o
 et paiement ; le module `payments/` ne se modifie pas).
 
 - Flux d'équivalence admin (statuts 91–94, `order-actions.controller.ts`) : `ParseIntPipe` refuse
-  les ids `ORD-…` ; le front appelle `PATCH …/validate-equivalent`, absent du backend ;
-  `propose-equivalent` lit le tarif hors `PiecePriceDataService` et lit `pieces_marque[0]` sur une
-  relation qui renvoie un objet ; ni mail ni interface client.
+  les ids `ORD-…` ; ni mail ni interface client. `propose-equivalent` (ligne sans `orl_id`, tarif
+  hors `PiecePriceDataService`, aucun contrôle de perte) et l'action « Valider équiv » (route
+  absente du backend) sont retirés ; restent accepter/refuser sur les lignes 91 héritées. Un
+  échange passe par le supplément.
 - `proceed-supplement` renvoie un `redirectUrl` indéfini.
 - Route admin `POST /api/admin/orders/:id/cancel` (bouton « Annuler ») : quelle que soit la
   version servie, elle envoie au client le mail automatique « Commande <id> annulée » — motif

@@ -95,27 +95,6 @@ export class OrderActionsController {
   }
 
   /**
-   * POST /api/admin/orders/:orderId/lines/:lineId/propose-equivalent
-   * Proposer équivalence (statut 91)
-   */
-  @Post(':orderId/lines/:lineId/propose-equivalent')
-  @RequirePermission('canValidate')
-  async proposeEquivalent(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Param('lineId', ParseIntPipe) lineId: number,
-    @Body() body: { productId: number; quantity: number },
-    @Req() req: Request,
-  ) {
-    return this.orderActionsService.proposeEquivalent(
-      orderId,
-      lineId,
-      body.productId,
-      body.quantity,
-      (req.user as any)?.id,
-    );
-  }
-
-  /**
    * PATCH /api/admin/orders/:orderId/lines/:lineId/accept-equivalent
    * Accepter équivalence (statut 92)
    */
