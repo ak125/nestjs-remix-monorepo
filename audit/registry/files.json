@@ -52093,7 +52093,9 @@
       ],
       "domain": "UNKNOWN",
       "id": "frontend/app/components/ui/SEOHelmet.tsx",
-      "importedBy": [],
+      "importedBy": [
+        "frontend/app/components/ui/index.ts"
+      ],
       "imports": [],
       "kind": "config",
       "loc": 324,
@@ -52668,6 +52670,7 @@
         "frontend/app/components/ui/PerformanceMetrics.tsx",
         "frontend/app/components/ui/PublicBreadcrumb.tsx",
         "frontend/app/components/ui/ResponsiveImage.tsx",
+        "frontend/app/components/ui/SEOHelmet.tsx",
         "frontend/app/components/ui/accordion.tsx",
         "frontend/app/components/ui/alert.tsx",
         "frontend/app/components/ui/avatar.tsx",
@@ -52698,7 +52701,7 @@
         "frontend/app/components/ui/textarea.tsx"
       ],
       "kind": "config",
-      "loc": 51,
+      "loc": 52,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ui/index.ts",
       "risk": "low",
