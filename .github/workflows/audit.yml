@@ -23,7 +23,7 @@ on:
       - "**/package.json"   # root + backend/ + frontend/ + all workspaces (was root-only -> #1052 skip)
       - "package-lock.json"
       - "audit-reports/phase0-baseline.json"
-      - ".github/workflows/**"   # ci-test-wiring reads EVERY workflow; prod-seo-*-env tests assert deploy-prod.yml wiring
+      - ".github/workflows/**"   # ci-test-wiring reads EVERY workflow; prod-seo-*-env tests assert release-prod.yml wiring
       - ".spec/00-canon/repository-registry/**"   # ALL L2 overlays the contract suite reads (was architecture+db only)
       - "audit/registry/**"                        # L1 projections the contract tests assert against
       - ".dependency-cruiser.generated.cjs"
@@ -76,7 +76,7 @@ jobs:
         run: npm run test:prod-rollback
 
       - name: 🖥️ PROD SSR gate — behavioural proof vs stubbed docker (BLOCKING)
-        # The SSR gate runs ONLY in deploy-prod.yml (never PREPROD/CI), so it shipped
+        # The SSR gate runs ONLY in release-prod.yml (never PREPROD/CI), so it shipped
         # untested and false-failed in PROD on 2026-07-19: it wrote the body to a temp
         # file inside a read-only-rootfs container, capturing an empty body and rejecting
         # even the known-good image on rollback. This executes prod-ssr-probe.sh against a
@@ -85,11 +85,11 @@ jobs:
         run: npm run test:prod-ssr-probe
 
       - name: 🌐 PROD Caddy stays up during a deploy — behavioural proof vs stubbed docker (BLOCKING)
-        # prod-caddy-config.sh runs ONLY in deploy-prod.yml, at tag time. The PROD
+        # prod-caddy-config.sh runs ONLY in release-prod.yml, at tag time. The PROD
         # deploy of 2026-11-05 stopped Caddy with the app: ~20 s of errors. This
         # executes the script against a stubbed docker (Caddyfile unchanged, changed,
         # invalid, not yet loaded, Caddy absent or restarting) and asserts that
-        # deploy-prod.yml calls it past the point of no return, before the app stops,
+        # release-prod.yml calls it past the point of no return, before the app stops,
         # and that no stop or rm names the Caddy container any more.
         run: node --test scripts/ci/prod-caddy-config.test.mjs
 
@@ -102,7 +102,7 @@ jobs:
         run: node --test scripts/ci/prod-observation-report.test.mjs
 
       - name: 📈 PROD SEO collector env writer — behavioural proof on a scratch .env (BLOCKING)
-        # prod-seo-collector-env.sh runs ONLY in deploy-prod.yml, on the real PROD
+        # prod-seo-collector-env.sh runs ONLY in release-prod.yml, on the real PROD
         # .env. This executes it against scratch .env files: a GSC/GA4 private key
         # must read back byte-identical through bash `.` AND docker compose
         # `env_file`, any partial group or wrong-shaped value must fail with the
@@ -112,7 +112,7 @@ jobs:
 
       - name: 🚩 PROD SEO rollout flags writer — behavioural proof on a scratch .env (BLOCKING)
         # prod-seo-projection-env.sh writes the SEO Projection and R6 consolidation
-        # (ADR-103) flags into the real PROD .env, in deploy-prod.yml only. Until
+        # (ADR-103) flags into the real PROD .env, in release-prod.yml only. Until
         # now its test also ran only there — at tag time. Running it on every PR
         # surfaces a broken writer or wiring before merge, not on the PROD tag.
         run: node --test scripts/ci/prod-seo-projection-env.test.mjs

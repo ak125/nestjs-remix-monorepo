@@ -14,6 +14,10 @@
 #     reindex_two_pass_cron.sh) : l'archive ne capture pas un dossier en cours d'écriture ;
 #   - écrit l'archive sous un nom temporaire, la contrôle (gzip -t), puis la renomme :
 #     une archive tronquée ne prend jamais le nom du jour ;
+#   - l'archive garde le mode 0600 du fichier temporaire (mktemp) : lisible par deploy seul.
+#     L'ancienne ligne tar suivait l'umask (0664). Aucun autre lecteur des archives
+#     (crontab, scripts, cron système : vérifié le 2026-11-13) ; une restauration se fait
+#     sous deploy ;
 #   - ne retire les archives de plus de RAG_BACKUP_KEEP_DAYS jours qu'après une archive
 #     réussie. Avant, la purge de 04:00 tournait même si la sauvegarde avait échoué :
 #     huit échecs de suite effaçaient toutes les archives.

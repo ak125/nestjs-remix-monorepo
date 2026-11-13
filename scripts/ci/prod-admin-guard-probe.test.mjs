@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = readFileSync(
-  join(root, ".github/workflows/deploy-prod.yml"),
+  join(root, ".github/workflows/release-prod.yml"),
   "utf8",
 );
 const adminBlock = workflow

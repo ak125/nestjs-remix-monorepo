@@ -15,7 +15,7 @@ import { spawnSync } from "node:child_process";
 // Execute the workflow's real promotion blocks. Only Docker (an external,
 // mutating boundary) is replaced; these tests never contact a registry/daemon.
 const workflow = readFileSync(
-  new URL("../../.github/workflows/deploy-prod.yml", import.meta.url),
+  new URL("../../.github/workflows/release-prod.yml", import.meta.url),
   "utf8",
 );
 
@@ -215,6 +215,17 @@ test("the release ref gate accepts the refs of the push trigger", () => {
   assert.match(
     workflow,
     /\non:\n {2}push:\n {4}tags:\n {6}- 'v\*'\n {2}workflow_dispatch:\n/,
+  );
+});
+
+// GitHub keeps one workflow per file path, and a run executes the copy found
+// on its ref. Every commit before the rename carries a deploy-prod.yml without
+// the release ref gate; the owner disables that workflow once this file
+// replaces it. Adding the path back would revive it under the same identity.
+test("the retired deploy-prod.yml path is not added back", () => {
+  assert.equal(
+    existsSync(new URL("../../.github/workflows/deploy-prod.yml", import.meta.url)),
+    false,
   );
 });
 
