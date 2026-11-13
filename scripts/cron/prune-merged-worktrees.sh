@@ -25,6 +25,15 @@
 #   PRUNE_ROOTS     préfixes de chemin des worktrees gérés, séparés par « : »
 #                   (défaut: <dépôt>/.claude/worktrees/:$HOME/worktrees/claude-)
 #   CACHE_IDLE_MIN  minutes sans écriture exigées avant de retirer un cache (défaut: 1440)
+#   CRON_REPORT_MAX_AGE_S  silence au-delà duquel le hook SessionStart signale le cron arrêté
+#                   (défaut: 93600 = passage quotidien + 2 h de marge)
+#
+# Observabilité : chaque exécution --apply enregistre son issue via cron_report
+# (scripts/cron/lib-supabase-report.sh), lue par le hook SessionStart : error si le script
+# s'arrête (état des PR illisible, outil absent, arrêt imprévu) ; warn si une suppression a été
+# refusée (FAIL, CACHE-FAIL) ou si le fetch a échoué ; ok sinon. Un essai à blanc n'enregistre
+# rien : lancé à la main, il masquerait l'état du cron. Avant, l'issue n'allait que dans
+# /tmp/prune-merged-worktrees.log, sans lecteur (MAILTO sans MTA).
 #
 # Dépendances: git, gh (authentifié), jq.
 set -euo pipefail
@@ -33,6 +42,48 @@ unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR
 
 APPLY=0
 [[ "${1:-}" == "--apply" ]] && APPLY=1
+
+LOG_TAG=prune-merged-worktrees
+START="$(date +%s)"
+CRON_REPORT_MAX_AGE_S="${CRON_REPORT_MAX_AGE_S:-93600}"
+# shellcheck source=lib-supabase-report.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib-supabase-report.sh" 2>/dev/null || true
+LOG=""
+PRSTATE=""
+FAILURE=""
+count_log() { # count_log <regex> -> nombre de lignes du manifeste qui correspondent
+  if [[ -n "$LOG" && -f "$LOG" ]]; then grep -cE "$1" "$LOG" || true; else echo 0; fi
+}
+report_outcome() {
+  local rc=$? status=ok summary removed branches caches cache_mb fails fetch_warn metrics
+  if [[ -n "$PRSTATE" ]]; then rm -f "$PRSTATE"; fi
+  [[ $APPLY -eq 1 ]] || return 0
+  removed="$(count_log '^REMOVED ')"
+  branches="$(count_log '^BRANCH-DEL ')"
+  caches="$(count_log '^CACHE-REMOVED ')"
+  cache_mb=0
+  if [[ -n "$LOG" && -f "$LOG" ]]; then
+    cache_mb="$(awk '$1 == "CACHE-REMOVED" { s += $2 } END { print s + 0 }' "$LOG")"
+  fi
+  fails="$(count_log '^(FAIL|CACHE-FAIL) ')"
+  fetch_warn="$(count_log '^WARN +fetch ')"
+  summary="worktrees retirés=$removed  branches supprimées=$branches  caches retirés=$caches (${cache_mb} Mo)"
+  if [[ "$rc" -ne 0 ]]; then
+    status=error
+    summary="arrêt en erreur (code $rc)${FAILURE:+ : $FAILURE} — $summary"
+  elif [[ "$fails" -gt 0 || "$fetch_warn" -gt 0 ]]; then
+    status=warn
+    summary="$fails suppression(s) refusée(s), fetch en échec=$fetch_warn — $summary — voir ${LOG:-le journal}"
+  fi
+  metrics="$(printf '{"worktrees_removed":%d,"branches_deleted":%d,"caches_removed":%d,"cache_mb":%d,"fails":%d,"fetch_failed":%d}' \
+    "$removed" "$branches" "$caches" "$cache_mb" "$fails" "$fetch_warn")"
+  if command -v cron_report >/dev/null 2>&1; then
+    cron_report "$LOG_TAG" "$status" "$(( $(date +%s) - START ))" "$metrics" "$summary"
+  else
+    echo "WARN    cron_report indisponible (lib-supabase-report.sh non chargée) — issue du run NON enregistrée" >&2
+  fi
+}
+trap report_outcome EXIT
 
 REPO="${REPO:-ak125/nestjs-remix-monorepo}"
 LOG_DIR="${LOG_DIR:-/tmp}"
@@ -53,7 +104,7 @@ ALLOW_IGNORED='(^|/)(node_modules|\.turbo|\.nyc_output|__pycache__|\.pytest_cach
 MAIN_REF=refs/remotes/origin/main
 
 for bin in git gh jq; do
-  command -v "$bin" >/dev/null 2>&1 || { echo "FATAL: '$bin' requis mais absent" >&2; exit 2; }
+  command -v "$bin" >/dev/null 2>&1 || { FAILURE="'$bin' requis mais absent"; echo "FATAL: $FAILURE" >&2; exit 2; }
 done
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
@@ -65,7 +116,6 @@ managed() { local r; for r in "${ROOTS[@]}"; do [[ -n "$r" && "$1" == "$r"* ]] &
 TS="$(date +%Y%m%d-%H%M%S)"
 LOG="$LOG_DIR/worktree-cleanup-$TS.log"
 PRSTATE="$(mktemp)"
-trap 'rm -f "$PRSTATE"' EXIT
 
 mode_label="DRY-RUN (aucune suppression — utiliser --apply pour agir)"
 [[ $APPLY -eq 1 ]] && mode_label="APPLY"
@@ -92,7 +142,8 @@ fi
 # --- État PR batché : 1 seul appel ; sans état PR lisible, rien n'est supprimé ---
 if ! gh pr list --repo "$REPO" --state all --json number,state,headRefName,headRefOid --limit 1000 > "$PRSTATE" \
    || ! jq -e 'type == "array"' "$PRSTATE" >/dev/null 2>&1; then
-  echo "FATAL   état des PR illisible (gh pr list) — aucune suppression" | tee -a "$LOG" >&2
+  FAILURE="état des PR illisible (gh pr list) — aucune suppression"
+  echo "FATAL   $FAILURE" | tee -a "$LOG" >&2
   exit 1
 fi
 

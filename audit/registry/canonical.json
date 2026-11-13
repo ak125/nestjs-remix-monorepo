@@ -20900,8 +20900,7 @@
         "sourceConfidence": "low",
         "status": "LIVE",
         "usedBy": [
-          "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-          "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
+          "backend/src/modules/admin/services/admin-gammes-seo.service.ts"
         ]
       },
       {
@@ -22364,7 +22363,6 @@
           "backend/src/modules/admin/services/execution-router.service.ts",
           "backend/src/modules/admin/services/gamme-aggregator.service.ts",
           "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
-          "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
           "backend/src/modules/admin/services/gamme-vlevel.service.ts",
           "backend/src/modules/admin/services/image-gates.service.ts",
           "backend/src/modules/admin/services/page-brief.service.ts",
@@ -35406,7 +35404,8 @@
       "domain": "D14",
       "id": "backend/src/modules/admin/controllers/admin-gammes-seo-vlevel.controller.ts",
       "importedBy": [
-        "backend/src/modules/admin/admin.module.ts"
+        "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts"
       ],
       "imports": [
         "@auth/authenticated.guard",
@@ -35415,7 +35414,7 @@
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts"
       ],
       "kind": "controller",
-      "loc": 84,
+      "loc": 86,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/admin/controllers/admin-gammes-seo-vlevel.controller.ts",
       "risk": "high",
@@ -37716,14 +37715,15 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-        "backend/src/modules/admin/services/gamme-detail-enricher.service.ts"
+        "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
+        "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 347,
+      "loc": 546,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
       "risk": "medium",
@@ -37731,6 +37731,32 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "@common/exceptions",
+        "backend/src/modules/admin/controllers/admin-gammes-seo-vlevel.controller.ts",
+        "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
+      ],
+      "kind": "test",
+      "loc": 386,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -46534,7 +46560,7 @@
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
       ],
       "kind": "test",
-      "loc": 60,
+      "loc": 61,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
       "risk": "medium",
@@ -46557,7 +46583,7 @@
         "backend/src/modules/seo/registries/seo-feature-flag.registry.ts"
       ],
       "kind": "test",
-      "loc": 220,
+      "loc": 221,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
       "risk": "medium",
@@ -46697,6 +46723,7 @@
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
         "backend/src/modules/gamme-rest/utils/r1-image-normalizer.ts",
+        "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
@@ -46706,7 +46733,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 1251,
+      "loc": 1259,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "medium",
@@ -56309,7 +56336,7 @@
         "util"
       ],
       "kind": "controller",
-      "loc": 473,
+      "loc": 466,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
       "risk": "medium",
@@ -56530,7 +56557,7 @@
         "util"
       ],
       "kind": "service",
-      "loc": 472,
+      "loc": 465,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "risk": "medium",
@@ -59510,12 +59537,16 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
-        "manual"
+        "manual",
+        "reachability"
       ],
       "domain": "D3",
       "id": "backend/src/modules/seo/index.ts",
-      "importedBy": [],
+      "importedBy": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
+      ],
       "imports": [
+        "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/seo.controller.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/seo.service.ts",
@@ -59525,14 +59556,14 @@
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
       "kind": "service",
-      "loc": 10,
+      "loc": 11,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/index.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -59838,6 +59869,29 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/seo/internal-linking.service.ts"
+      ],
+      "kind": "test",
+      "loc": 238,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo/internal-linking.service.ts",
       "importedBy": [
         "backend/src/modules/blog/services/blog-seo.service.ts",
@@ -59845,6 +59899,8 @@
         "backend/src/modules/blog/services/r3-guide.service.test.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
+        "backend/src/modules/seo/index.ts",
+        "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
@@ -59855,7 +59911,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 867,
+      "loc": 994,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/internal-linking.service.ts",
       "risk": "high",
@@ -71153,7 +71209,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 665,
+      "loc": 677,
       "owner": "@ak125",
       "path": "backend/tests/unit/gamme-response-builder.service.test.ts",
       "risk": "medium",
@@ -88503,7 +88559,6 @@
       "importedBy": [],
       "imports": [
         "~/components/ui/PublicBreadcrumb",
-        "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
         "~/components/ui/progress",
@@ -88511,7 +88566,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 369,
+      "loc": 545,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.v-level-status.tsx",
       "risk": "medium",
@@ -95488,6 +95543,26 @@
       "loc": 230,
       "owner": "@ak125",
       "path": "frontend/tests/unit/admin-order-supplement.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/admin-v-level-status.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 288,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/admin-v-level-status.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -104121,7 +104196,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 355,
+      "loc": 366,
       "owner": "@ak125",
       "path": "scripts/ci/prod-image-selection.test.mjs",
       "risk": "medium",
@@ -105549,6 +105624,26 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/seo-audit-weekly.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 150,
+      "owner": "@ak125",
+      "path": "scripts/seo-audit-weekly.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -107480,13 +107575,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "fb3b29869377b3cf1993875671f8157e670c912a12960ef3b4894015246a1ecf",
+      "audit/registry/db.json": "4c4a746b919d3080e8e67e3b1830ff465a5f746192ff9167ed747082c3402258",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "bc04cbc49f636846584496fd363f35eda04e289e5aadf0e39b9d252c135dd954",
+      "audit/registry/files.json": "af9bc4e04279d1590cce2aab7e464fdc9c6569abb4b5a49bd0deafd26ef8f496",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "f0cdda8f55d7"
+    "sotFingerprint": "6188610029a2"
   },
   "runtime": [
     {
