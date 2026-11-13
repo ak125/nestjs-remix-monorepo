@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 01b31f55b6a387e05ceea31eb438e5d0d3ed0729e53c9a21f713646669796dae
+source_sha256: 31486bb815855622dda0d4782e409b9d635c69078f3de67741945de283ad6f0e
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -19,12 +19,12 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Layer | Count |
 |---|---|
 | Files (Layer 1) | 3172 |
-| DB tables (Layer 1) | 316 |
+| DB tables (Layer 1) | 315 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `c653d49830b3`.
+Source sotFingerprint: `03ab32e97a5e`.
 
 ## Comment l'utiliser
 
@@ -164,7 +164,7 @@ Source sotFingerprint: `c653d49830b3`.
 ### UNKNOWN — Unknown (overlay non résolu)
 
 - **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
-- **DB tables**: 316
+- **DB tables**: 315
 - **DB RPC**: 265
 - **Runtime entrypoints**: 83
 - **Top owners**: __unassigned__ (243)
