@@ -20,7 +20,7 @@ on:
 # commits fusionnés après #1667 ont tous vu leur run annulé avant Deploy PREPROD + E2E +
 # Lighthouse — aucun commit taguable.
 # Sur une pull_request, un nouveau push rend l'ancien run inutile : on l'annule.
-# PROD (deploy-prod.yml) = workflow distinct, non affecté.
+# PROD (release-prod.yml) = workflow distinct, non affecté.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -231,9 +231,9 @@ jobs:
       - name: Test deployment probes
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
 
-      # deploy-prod.yml refuses a commit unless the deploy / e2e-smoke / lighthouse
+      # release-prod.yml refuses a commit unless the deploy / e2e-smoke / lighthouse
       # jobs below passed; this catches a rename of those jobs at PR time.
-      - name: Test PREPROD evidence gate (deploy-prod)
+      - name: Test PREPROD evidence gate (release-prod)
         run: node --test scripts/ci/prod-preprod-evidence.test.mjs scripts/ci/prod-image-selection.test.mjs
 
       - name: Test PREPROD image routing projection
@@ -865,7 +865,7 @@ jobs:
         run: |
           # The image of THIS run's commit, not the shared :preprod alias: a later
           # re-run of this job would otherwise deploy a newer commit's image under
-          # this commit's name, and deploy-prod.yml's PREPROD evidence would lie.
+          # this commit's name, and release-prod.yml's PREPROD evidence would lie.
           EXPECTED_SHA="${{ github.sha }}"
           COMMIT_IMAGE="massdoc/nestjs-remix-monorepo:sha-$EXPECTED_SHA"
           docker pull "$COMMIT_IMAGE"
