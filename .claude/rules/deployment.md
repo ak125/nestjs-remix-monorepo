@@ -226,9 +226,10 @@ Une ref dont le commit ne contient pas `release-prod.yml` ne peut pas lancer ce 
 ### Ancien workflow `deploy-prod.yml`, retiré
 
 Jusqu'au renommage, le workflow s'appelait `deploy-prod.yml` (« Deploy PROD (via tag) »). GitHub
-identifie un workflow par son chemin et un run exécute la copie de sa ref : tous les tags `v*` et
-toutes les branches antérieurs au renommage portent encore ce fichier, sans la garde de ref, et 194
-de ces tags sans aucune garde de provenance (leur run promeut l'alias `:preprod` courant vers PROD).
+identifie un workflow par son chemin et un run exécute la copie de sa ref : les tags `v*` et les
+branches antérieurs au renommage portent encore ce fichier. Au 2026-11-13, les 305 tags `v*` le
+portent ; un seul contient la garde de ref (#2010), et 194 n'ont aucune garde de provenance (leur
+run promeut l'alias `:preprod` courant vers PROD).
 Après la fusion du renommage, l'owner le désactive :
 `gh workflow disable deploy-prod.yml --repo ak125/nestjs-remix-monorepo`. État, en lecture seule :
 `gh api repos/ak125/nestjs-remix-monorepo/actions/workflows/deploy-prod.yml --jq .state`, qui doit
