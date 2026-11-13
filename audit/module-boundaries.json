@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 20,
-      "loc_total": 6579,
+      "loc_total": 6589,
       "has_barrel": true
     },
     "health": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 284,
-      "loc_total": 60834,
+      "files_count": 285,
+      "loc_total": 61187,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 372,
-      "loc_total": 76594,
+      "loc_total": 76606,
       "has_barrel": true
     },
     "upload": {
@@ -1776,7 +1776,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 11
+      "count": 12
     },
     {
       "from": "health",
