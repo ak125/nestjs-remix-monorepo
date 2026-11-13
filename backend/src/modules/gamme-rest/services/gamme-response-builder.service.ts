@@ -34,7 +34,7 @@ import {
   applyGuideLinkRuleToHtml,
   resolveGuideLink,
 } from '../../seo/services/r6-guide-link-policy.service';
-import { InternalLinkingService } from '../../seo/internal-linking.service';
+import { InternalLinkingService } from '../../seo';
 
 interface MotorizationRow {
   type_id: number;
