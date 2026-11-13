@@ -26639,7 +26639,7 @@
         "backend/src/modules/seo-control-plane/types.ts"
       ],
       "kind": "test",
-      "loc": 534,
+      "loc": 846,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.test.ts",
       "risk": "low",
@@ -26669,7 +26669,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 615,
+      "loc": 662,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
       "risk": "low",
