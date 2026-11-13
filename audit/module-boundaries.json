@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110841,
+      "loc_total": 110776,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6583,
+      "loc_total": 6375,
       "has_barrel": true
     },
     "payments": {
@@ -593,7 +593,7 @@
         "packages/registry/src/vehicle-context"
       ],
       "files_count": 57,
-      "loc_total": 6891,
+      "loc_total": 6868,
       "has_barrel": true
     },
     "pkg-seo-types": {
@@ -781,7 +781,7 @@
         "backend/src/modules/seo-control-plane/services"
       ],
       "files_count": 27,
-      "loc_total": 5906,
+      "loc_total": 5547,
       "has_barrel": false
     },
     "seo-logs": {
