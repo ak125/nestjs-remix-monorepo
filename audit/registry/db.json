@@ -207,25 +207,6 @@
       "columns": [],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",
-      "id": "___xtr_order_line_equiv_ticket",
-      "inMigrations": [],
-      "indexes": [],
-      "name": "___xtr_order_line_equiv_ticket",
-      "owner": "__unassigned__",
-      "risk": "low",
-      "rlsEnabled": false,
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
-      "status": "LIVE",
-      "usedBy": [
-        "backend/src/modules/orders/services/order-actions.service.ts"
-      ]
-    },
-    {
-      "columns": [],
-      "deletePolicy": "FREE",
-      "domain": "UNKNOWN",
       "id": "___xtr_order_status_history",
       "inMigrations": [],
       "indexes": [],
@@ -11589,8 +11570,7 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
-        "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-        "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
+        "backend/src/modules/admin/services/admin-gammes-seo.service.ts"
       ]
     },
     {
@@ -13053,7 +13033,6 @@
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/gamme-aggregator.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
-        "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "backend/src/modules/admin/services/image-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",

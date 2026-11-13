@@ -29,6 +29,7 @@ describe('GammeResponseBuilderService — guideAchat', () => {
       dummy, // SeoChainOrchestratorService
       dummy, // SeoFeatureFlagRegistry
       dummy, // R6GuideLinkPolicyService
+      dummy, // InternalLinkingService
     );
     const helper = (service as never as { buildGuideAchat: BuildGuideAchat })
       .buildGuideAchat;

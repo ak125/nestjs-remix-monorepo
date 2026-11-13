@@ -50,6 +50,7 @@ reset_backups
 check "code de sortie" 0 "$(run)"
 check "archive du jour créée" oui "$(present "$TODAY")"
 check "archive lisible" 0 "$(gzip -t "$TODAY" 2>/dev/null; echo $?)"
+check "archive réservée au propriétaire" 600 "$(stat -c %a "$TODAY")"
 check "archive contient knowledge/gammes/disque.md" 1 "$(tar tzf "$TODAY" | grep -cx 'knowledge/gammes/disque.md')"
 check "archive de 10 jours retirée" non "$(present "$OLD")"
 check "archive de 2 jours conservée" oui "$(present "$RECENT")"
