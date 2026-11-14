@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 951d445ecefd3b93c826a410cd0bd9bc66fdac8de5c2434987e4bfb264f984ef
+source_sha256: ce7b32d98baa45a483aa6cbf628353f74a83c934951413f9dbe5767fd2886a08
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3171 |
-| DB tables (Layer 1) | 316 |
+| Files (Layer 1) | 3173 |
+| DB tables (Layer 1) | 315 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `a661b74ac22f`.
+Source sotFingerprint: `2ddd7516852a`.
 
 ## Comment l'utiliser
 
@@ -53,11 +53,11 @@ Source sotFingerprint: `a661b74ac22f`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 434 (service=220, test=126, controller=34, config=28, script=26)
+- **Files**: 435 (service=220, test=127, controller=34, config=28, script=26)
 - **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (434)
+- **Top owners**: @ak125/seo-team (435)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=223, UNKNOWN=211
+- **Status**: LIVE=223, UNKNOWN=212
 
 ### D4 — Vehicle / Compatibility
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `a661b74ac22f`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 299 (service=193, test=65, controller=40, config=1)
+- **Files**: 300 (service=193, test=66, controller=40, config=1)
 - **Runtime entrypoints**: 130
-- **Top owners**: @ak125 (128), @ak125/payments-team (83), @ak125/auth-team (76)
+- **Top owners**: @ak125 (129), @ak125/payments-team (83), @ak125/auth-team (76)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=180, UNKNOWN=119
+- **Status**: LIVE=180, UNKNOWN=120
 
 ### D12 — Marketing & Video
 
@@ -164,7 +164,7 @@ Source sotFingerprint: `a661b74ac22f`.
 ### UNKNOWN — Unknown (overlay non résolu)
 
 - **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
-- **DB tables**: 316
+- **DB tables**: 315
 - **DB RPC**: 265
 - **Runtime entrypoints**: 83
 - **Top owners**: __unassigned__ (243)

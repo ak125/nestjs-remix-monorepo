@@ -9390,7 +9390,7 @@
           "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
           "backend/src/modules/payments/controllers/payment-core.controller.ts",
           "backend/src/modules/payments/services/paybox-callback-gate.service.ts",
-          "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
+          "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
         ]
       },
       {
@@ -9491,7 +9491,7 @@
         "usedBy": [
           "backend/src/modules/admin/services/seo-control.service.ts",
           "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
-          "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
+          "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
           "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
         ]
       },
@@ -9503,25 +9503,6 @@
         "inMigrations": [],
         "indexes": [],
         "name": "___xtr_order_line_audit",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": false,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "low",
-        "status": "LIVE",
-        "usedBy": [
-          "backend/src/modules/orders/services/order-actions.service.ts"
-        ]
-      },
-      {
-        "columns": [],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
-        "id": "___xtr_order_line_equiv_ticket",
-        "inMigrations": [],
-        "indexes": [],
-        "name": "___xtr_order_line_equiv_ticket",
         "owner": "__unassigned__",
         "risk": "low",
         "rlsEnabled": false,
@@ -34556,12 +34537,11 @@
         "backend/src/database/services/index.ts"
       ],
       "imports": [
-        "@common/exceptions",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/orders.service.ts"
       ],
       "kind": "service",
-      "loc": 180,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/database-composition.service.ts",
       "risk": "low",
@@ -34667,7 +34647,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 1077,
+      "loc": 730,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/orders.service.ts",
       "risk": "low",
@@ -50489,7 +50469,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 384,
+      "loc": 363,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "high",
@@ -50829,7 +50809,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 756,
+      "loc": 569,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
       "risk": "high",
@@ -56748,14 +56728,15 @@
       "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
       "importedBy": [
-        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
+        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts"
       ],
       "imports": [
         "@repo/seo-types",
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "controller",
-      "loc": 38,
+      "loc": 43,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
       "risk": "medium",
@@ -56889,7 +56870,7 @@
         "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
       ],
       "kind": "test",
-      "loc": 256,
+      "loc": 154,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.test.ts",
       "risk": "medium",
@@ -56918,7 +56899,7 @@
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "service",
-      "loc": 150,
+      "loc": 106,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
       "risk": "medium",
@@ -57271,18 +57252,43 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/seo-types",
+        "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
+      ],
+      "kind": "test",
+      "loc": 212,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
       "importedBy": [
         "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
         "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
-        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
+        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/seo-types"
       ],
       "kind": "service",
-      "loc": 84,
+      "loc": 159,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
       "risk": "medium",
@@ -66732,6 +66738,7 @@
         "backend/src/modules/support/index.ts",
         "backend/src/modules/support/services/ai-analysis.service.ts",
         "backend/src/modules/support/services/ai-smart-response.service.ts",
+        "backend/src/modules/support/services/review.verify-purchase.test.ts",
         "backend/src/modules/support/services/support-analytics.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
@@ -66742,7 +66749,7 @@
         "backend/src/modules/support/services/notification.service.ts"
       ],
       "kind": "service",
-      "loc": 773,
+      "loc": 789,
       "owner": "@ak125",
       "path": "backend/src/modules/support/services/review.service.ts",
       "risk": "medium",
@@ -66750,6 +66757,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/support/services/review.verify-purchase.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/modules/support/services/review.service.ts"
+      ],
+      "kind": "test",
+      "loc": 144,
+      "owner": "@ak125",
+      "path": "backend/src/modules/support/services/review.verify-purchase.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -74045,7 +74075,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 397,
+      "loc": 332,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/admin/OrderLineActions.tsx",
       "risk": "low",
@@ -107575,13 +107605,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "4c4a746b919d3080e8e67e3b1830ff465a5f746192ff9167ed747082c3402258",
+      "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "7d251428471cfc5ee13aad5e00c4ccdc1ee8f0ec9d6ffc577652a91187f497f6",
+      "audit/registry/files.json": "c160320dd21e29907ecf6c5fb7cdbb426acd6b817a0245177071459d8cda3a91",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "a661b74ac22f"
+    "sotFingerprint": "2ddd7516852a"
   },
   "runtime": [
     {
