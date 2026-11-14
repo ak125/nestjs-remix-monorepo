@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { SeoLinkTrackingController } from './seo-link-tracking.controller';
 import type { SeoLinkTrackingService } from './infrastructure/seo-link-tracking.service';
 
@@ -116,4 +117,46 @@ describe('SeoLinkTrackingController — malformed body resilience', () => {
       );
     });
   });
+});
+
+/**
+ * `POST /api/seo/cleanup` purges raw clicks and impressions older than
+ * `daysToKeep`. The value used to go through `parseInt`, which accepted
+ * "-5", "7abc" or "0" — a cutoff in the future or now, i.e. a full purge.
+ */
+describe('SeoLinkTrackingController — cleanup retention validation', () => {
+  const result = { success: true, deletedClicks: 0, deletedImpressions: 0 };
+  let cleanupOldData: jest.Mock;
+  let controller: SeoLinkTrackingController;
+
+  beforeEach(() => {
+    cleanupOldData = jest.fn().mockResolvedValue(result);
+    controller = new SeoLinkTrackingController({
+      cleanupOldData,
+    } as unknown as SeoLinkTrackingService);
+  });
+
+  it('leaves the default retention to the service when absent', async () => {
+    await expect(controller.cleanupOldData(undefined)).resolves.toBe(result);
+    expect(cleanupOldData).toHaveBeenCalledWith(undefined);
+  });
+
+  it.each([
+    ['90', 90],
+    ['1', 1],
+    ['365', 365],
+  ])('forwards %s as %d days', async (raw, days) => {
+    await controller.cleanupOldData(raw);
+    expect(cleanupOldData).toHaveBeenCalledWith(days);
+  });
+
+  it.each(['0', '-5', '7abc', '7.5', '1e3', ' 90', '', 'abc'])(
+    'rejects %p with 400 and never reaches the service',
+    async (raw) => {
+      await expect(controller.cleanupOldData(raw)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(cleanupOldData).not.toHaveBeenCalled();
+    },
+  );
 });
