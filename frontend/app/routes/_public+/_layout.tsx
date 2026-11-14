@@ -67,12 +67,15 @@ export default function AuthLayout() {
         <div className="max-w-[1280px] mx-auto px-5 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/50">
           <span>&copy; {new Date().getFullYear()} AutoMecanik</span>
           <div className="flex items-center gap-3">
-            <Link to="/cgv" className="hover:text-white/80 transition-colors">
+            <Link
+              to="/legal/cgv"
+              className="hover:text-white/80 transition-colors"
+            >
               CGV
             </Link>
             <span className="text-white/20">|</span>
             <Link
-              to="/confidentialite"
+              to="/legal/privacy"
               className="hover:text-white/80 transition-colors"
             >
               Confidentialité

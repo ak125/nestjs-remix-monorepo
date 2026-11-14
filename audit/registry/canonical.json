@@ -59710,31 +59710,8 @@
         "manual"
       ],
       "domain": "D3",
-      "id": "backend/src/modules/seo/infrastructure/seo-link-tracking.cleanup.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/seo/infrastructure/seo-link-tracking.service.ts"
-      ],
-      "kind": "test",
-      "loc": 105,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/infrastructure/seo-link-tracking.cleanup.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
       "id": "backend/src/modules/seo/infrastructure/seo-link-tracking.service.ts",
       "importedBy": [
-        "backend/src/modules/seo/infrastructure/seo-link-tracking.cleanup.test.ts",
         "backend/src/modules/seo/seo-link-tracking.controller.test.ts",
         "backend/src/modules/seo/seo-link-tracking.controller.ts",
         "backend/src/modules/seo/seo.module.ts"
@@ -59744,7 +59721,7 @@
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 501,
+      "loc": 498,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/infrastructure/seo-link-tracking.service.ts",
       "risk": "high",
@@ -61461,7 +61438,7 @@
         "backend/src/modules/seo/seo-link-tracking.controller.ts"
       ],
       "kind": "test",
-      "loc": 163,
+      "loc": 120,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/seo-link-tracking.controller.test.ts",
       "risk": "high",
@@ -61483,11 +61460,10 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "@auth/admin-or-internal-key.guard",
         "backend/src/modules/seo/infrastructure/seo-link-tracking.service.ts"
       ],
       "kind": "controller",
-      "loc": 319,
+      "loc": 294,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/seo-link-tracking.controller.ts",
       "risk": "high",
@@ -66530,6 +66506,30 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/support/services/legal-page.service.ts",
+        "backend/src/modules/support/services/legal-version.service.ts",
+        "backend/src/modules/support/services/legal.service.ts"
+      ],
+      "kind": "test",
+      "loc": 46,
+      "owner": "@ak125",
+      "path": "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/modules/support/services/__tests__/legal.service.slug.test.ts",
       "importedBy": [],
       "imports": [
@@ -66728,6 +66728,7 @@
       "domain": "D11",
       "id": "backend/src/modules/support/services/legal-page.service.ts",
       "importedBy": [
+        "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
         "backend/src/modules/support/services/legal.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
@@ -66754,6 +66755,7 @@
       "domain": "D11",
       "id": "backend/src/modules/support/services/legal-version.service.ts",
       "importedBy": [
+        "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
         "backend/src/modules/support/services/legal.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
@@ -66783,6 +66785,7 @@
       "importedBy": [
         "backend/src/modules/support/controllers/legal.controller.ts",
         "backend/src/modules/support/index.ts",
+        "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
         "backend/src/modules/support/services/__tests__/legal.service.slug.test.ts",
         "backend/src/modules/support/services/legal-page.service.ts",
         "backend/src/modules/support/services/legal-version.service.ts",
@@ -66796,7 +66799,7 @@
         "backend/src/modules/support/services/legal-version.service.ts"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 773,
       "owner": "@ak125",
       "path": "backend/src/modules/support/services/legal.service.ts",
       "risk": "medium",
@@ -72623,7 +72626,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 472,
+      "loc": 456,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo-maintenance-routes-authz.test.ts",
       "risk": "medium",
@@ -85400,7 +85403,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "route",
-      "loc": 100,
+      "loc": 103,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/_layout.tsx",
       "risk": "medium",
@@ -85422,7 +85425,7 @@
         "~/components/ui/button"
       ],
       "kind": "route",
-      "loc": 272,
+      "loc": 284,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/aide.tsx",
       "risk": "medium",
@@ -85544,7 +85547,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1155,
+      "loc": 1158,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/register.tsx",
       "risk": "medium",
@@ -89769,7 +89772,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 593,
+      "loc": 596,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "medium",
@@ -107840,11 +107843,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "e0f1e61c9bb6a6244a9ed6af0f39b0f87ce6b3040673a759ef776a268276ecdb",
+      "audit/registry/files.json": "d8338ada3e9d0a82713343499adcb1bb2f2ae12f720ccc5498fbf51e9c6f0484",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "7ead27941fe5"
+    "sotFingerprint": "584aad14d84f"
   },
   "runtime": [
     {

@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: f2a48201ca6e5f6b7ce130535a8fe806c845033431bf764310d91c47359a446a
+source_sha256: 7efeff0fa61cf6666c74c1bbd94819e6433094b81cc7f725cde4b812f5fe8654
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `7ead27941fe5`.
+Source sotFingerprint: `584aad14d84f`.
 
 ## Comment l'utiliser
 
@@ -53,11 +53,11 @@ Source sotFingerprint: `7ead27941fe5`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 438 (service=220, test=130, controller=34, config=28, script=26)
+- **Files**: 437 (service=220, test=129, controller=34, config=28, script=26)
 - **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (438)
+- **Top owners**: @ak125/seo-team (437)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=223, UNKNOWN=215
+- **Status**: LIVE=223, UNKNOWN=214
 
 ### D4 — Vehicle / Compatibility
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `7ead27941fe5`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 300 (service=193, test=66, controller=40, config=1)
+- **Files**: 301 (service=193, test=67, controller=40, config=1)
 - **Runtime entrypoints**: 130
-- **Top owners**: @ak125 (129), @ak125/payments-team (83), @ak125/auth-team (76)
+- **Top owners**: @ak125 (130), @ak125/payments-team (83), @ak125/auth-team (76)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=180, UNKNOWN=120
+- **Status**: LIVE=180, UNKNOWN=121
 
 ### D12 — Marketing & Video
 
