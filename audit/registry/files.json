@@ -63403,7 +63403,7 @@
         "frontend/app/utils/remix-application-port.ts"
       ],
       "kind": "service",
-      "loc": 176,
+      "loc": 197,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "low",
@@ -63469,7 +63469,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 756,
+      "loc": 760,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "low",
@@ -63488,10 +63488,12 @@
       "importedBy": [],
       "imports": [
         "~/components/pieces/NoProductsAlternatives",
+        "~/utils/image-optimizer",
+        "~/utils/og-image.utils",
         "~/utils/seo/pieces-schema.utils"
       ],
       "kind": "service",
-      "loc": 177,
+      "loc": 191,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.meta.ts",
       "risk": "low",
@@ -66785,7 +66787,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 97,
+      "loc": 197,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-vehicle-meta.test.ts",
       "risk": "low",
