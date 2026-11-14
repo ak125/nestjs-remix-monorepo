@@ -13,20 +13,20 @@
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `ae0ff76491b220b8eef34816872eb507f69fd4d4122593651a283d68a9efe954`
-- `canonical`: `5c5f37bb201187111b270ee8b1c28db92ada923223240e62e1f04cc8b2dd9758`
-- `ownershipYaml`: `2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be`
+- `deadCodeCandidates`: `fccc735555cee9d6aae7b0ccf2353bfb08fe8845adf7da5eeb87da790663ae6e`
+- `canonical`: `0f7e18bb63d151f11c19faca71934f2202710fcea83320ded9e0ba97498cc4e3`
+- `ownershipYaml`: `ea6feced416fa89922e8498e8d3c62ab550a17223afe01802cf96dd431c903c2`
 - `contractHealth`: `<none>`
 - `validateScript`: `f89bd253b2e305831a01222da09bbef3b95fa51f461238886835fe4a0c2fa831`
 - `unreachableModules`: `75f4f5946d480ab8244e853aa25ffedb5d198bb4e7aee837cdb80e04e9e75e94`
 
 ## Counts
 
-- Total: **256**
-- By confidence: high=12 · medium=164 · low=80
-- By decision: candidate=176 · blocked=80 · excluded=0
+- Total: **251**
+- By confidence: high=12 · medium=163 · low=76
+- By decision: candidate=175 · blocked=76 · excluded=0
 
-## candidate (176)
+## candidate (175)
 
 ### candidate · high (12)
 
@@ -45,7 +45,7 @@
 | `frontend/app/utils/storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/utils/supabase-storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 
-### candidate · medium (164)
+### candidate · medium (163)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -95,7 +95,6 @@
 | `backend/src/modules/seo/config/sitemap.config.ts` | seo | config | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/constants/seo-templates.constants.ts` | seo | config | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/controllers/r2-page.controller.ts` | seo | controller | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `backend/src/modules/seo/index.ts` | seo | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/interceptors/crawl-logger.interceptor.ts` | seo | interceptor | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/r2/schemas/r2-diversity.schema.ts` | seo | schema | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/services/seo-v4-switch-engine.service.ts` | seo | service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
@@ -218,7 +217,7 @@
 
 _(empty)_
 
-## blocked (80)
+## blocked (76)
 
 ### blocked · high (0)
 
@@ -228,27 +227,23 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (80)
+### blocked · low (76)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
 | `backend/src/auth/dto/logout-response.dto.ts` | auth | dto | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/common/pipes/index.ts` | common | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
+| `backend/src/config/content-section-policy.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-content-contract.defaults.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-fingerprint.utils.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-heading-policy.utils.ts` | config | other | low | UNKNOWN | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
 | `backend/src/config/r2-meta-builder.utils.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/r2-scoring.utils.ts` | config | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/config/seo-switch-aliases.config.ts` | config | config | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `backend/src/modules/agentic-engine/agentic-engine.controller.ts` | agentic-engine | controller | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/arbiter.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/planner.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/solver.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/agentic-engine/services/verifier.service.ts` | agentic-engine | service | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `backend/src/modules/knowledge-graph/kg-data.service.ts` | knowledge-graph | service | low | LIVE | 4 | snapshot c1 failed (static import); canonical.importedBy=4 |
-| `backend/src/modules/knowledge-graph/kg.controller.ts` | knowledge-graph | controller | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
-| `backend/src/modules/knowledge-graph/kg.service.ts` | knowledge-graph | service | low | LIVE | 3 | snapshot c1 failed (static import); canonical.importedBy=3 |
-| `backend/src/modules/knowledge-graph/kg.types.ts` | knowledge-graph | type | low | LIVE | 4 | snapshot c1 failed (static import); canonical.importedBy=4 |
 | `backend/src/modules/mcp-validation/config/mcp-route-map.config.ts` | mcp-validation | config | low | LIVE | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/mcp-validation/decorators/mcp-verify.decorator.ts` | mcp-validation | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/mcp-validation/interceptors/mcp-shadow.interceptor.ts` | mcp-validation | interceptor | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |

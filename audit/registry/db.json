@@ -74,11 +74,12 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/orders/controllers/orders.controller.ts",
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
         "backend/src/modules/payments/services/paybox-callback-gate.service.ts",
-        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ]
     },
     {
@@ -177,8 +178,9 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
-        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ]
     },
@@ -190,25 +192,6 @@
       "inMigrations": [],
       "indexes": [],
       "name": "___xtr_order_line_audit",
-      "owner": "__unassigned__",
-      "risk": "low",
-      "rlsEnabled": false,
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
-      "status": "LIVE",
-      "usedBy": [
-        "backend/src/modules/orders/services/order-actions.service.ts"
-      ]
-    },
-    {
-      "columns": [],
-      "deletePolicy": "FREE",
-      "domain": "UNKNOWN",
-      "id": "___xtr_order_line_equiv_ticket",
-      "inMigrations": [],
-      "indexes": [],
-      "name": "___xtr_order_line_equiv_ticket",
       "owner": "__unassigned__",
       "risk": "low",
       "rlsEnabled": false,
@@ -3276,7 +3259,6 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
-        "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/brief-template.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts"
       ]
@@ -7288,7 +7270,6 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
       ]
     },
@@ -8000,7 +7981,6 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/blog/services/blog-seo.service.ts"
       ]
@@ -11230,7 +11210,6 @@
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
         "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
         "backend/src/modules/blog/services/guide.service.ts",
-        "backend/src/modules/catalog/services/cache-warming.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts"
       ]
     },
@@ -11552,8 +11531,7 @@
       "usedBy": [
         "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-        "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
+        "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
       ]
     },
     {
@@ -11592,8 +11570,7 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
-        "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
-        "backend/src/modules/admin/services/gamme-seo-badges.service.ts"
+        "backend/src/modules/admin/services/admin-gammes-seo.service.ts"
       ]
     },
     {
@@ -13056,12 +13033,10 @@
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/gamme-aggregator.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
-        "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "backend/src/modules/admin/services/image-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",

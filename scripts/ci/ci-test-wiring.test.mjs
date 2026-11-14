@@ -2,7 +2,7 @@
  * Behavioural proof of the scripts/ci test-wiring guard (ci-test-wiring.mjs).
  *
  * Three scripts/ci tests once ran on no pull request at all: one cited only in
- * a YAML comment, one run only by deploy-prod.yml, one only behind an npm
+ * a YAML comment, one run only by release-prod.yml, one only behind an npm
  * script no workflow called. These tests assert:
  *
  *   1. a test is wired when a step of a pull_request workflow names it, either

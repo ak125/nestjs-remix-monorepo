@@ -1,0 +1,13 @@
+{
+  "//": "Types de tests/ (hors include de tsconfig.json). jest transpile sans vérifier (jest.config.js, isolatedModules) ; npm run typecheck lance ce fichier à sa place. module/moduleResolution = ceux de ts-jest (import() sans extension).",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsc/backend-typecheck-spec.tsbuildinfo",
+    "rootDir": "..",
+    "module": "preserve",
+    "moduleResolution": "bundler"
+  },
+  "include": ["src/**/*.d.ts", "tests/**/*.ts"]
+}

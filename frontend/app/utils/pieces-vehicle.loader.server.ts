@@ -19,14 +19,18 @@ import { fetchJsonOrNull } from "~/utils/fetch.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import {
+  IdResolutionUnavailableError,
+  resolveGammeId,
+  resolveVehicleIds,
+} from "~/utils/pieces-id-resolution.server";
+import {
   buildCataloguePromise,
+  findGammeThumbnail,
   type HierarchyData,
 } from "~/utils/pieces-loader.utils";
 import {
   detectMalformedSegment,
   parseUrlParam,
-  resolveGammeId,
-  resolveVehicleIds,
   validateVehicleIds,
 } from "~/utils/pieces-route.utils";
 import { mapRmV2ToLoaderData, isRmV2DataUsable } from "~/utils/rm-mapper";
@@ -171,7 +175,28 @@ export async function piecesVehicleLoader({
       ]),
     );
   } catch (resolveErr) {
-    // Si la resolution echoue (API down, params invalides), retourner 404
+    // API de résolution indisponible : une panne n'est pas la preuve que la page
+    // n'existe pas. 503 non mis en cache, jamais un 404/410 (désindexation).
+    if (resolveErr instanceof IdResolutionUnavailableError) {
+      logger.error(
+        `❌ [LOADER] ID resolution unavailable for ${url.pathname}:`,
+        resolveErr.message,
+      );
+      await notify503ToErrorLog(
+        url.pathname,
+        "LOADER_503_ID_RESOLUTION_UNAVAILABLE",
+        resolveErr.message,
+        { target: resolveErr.target },
+      );
+      throw new Response("Service temporairement indisponible", {
+        status: 503,
+        headers: {
+          "Retry-After": "300",
+          "Cache-Control": "no-store, must-revalidate",
+        },
+      });
+    }
+    // Paramètres invalides : 404
     logger.error(
       `❌ [LOADER] ID resolution failed for ${url.pathname}:`,
       resolveErr instanceof Error ? resolveErr.message : resolveErr,
@@ -586,6 +611,8 @@ export async function piecesVehicleLoader({
       () => catalogueMameFamillePromise,
     );
     const catalogueTop8 = catalogueMameFamille?.items?.slice(0, 8) ?? [];
+    // Vignette de la gamme pour og:image (hiérarchie déjà résolue ci-dessus)
+    const gammeThumbnail = findGammeThumbnail(await hierarchyPromise, gammeId);
 
     // Filters from RM V2 (already includes counts)
     const filtersData: FiltersData | null = rmV2Response.filters
@@ -657,6 +684,7 @@ export async function piecesVehicleLoader({
         oemRefsSeo: loaderData.oemRefsSeo,
         voirAussiLinks,
         catalogueTop8,
+        gammeThumbnail,
         seo: {
           title:
             rmV2Response.seo?.title ||

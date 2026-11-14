@@ -20,9 +20,14 @@ import {
   HttpCode,
   HttpStatus,
   ServiceUnavailableException,
+  UseGuards,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { AdminSessionGuard } from '@auth/admin-session.guard';
+import { AnyOf } from '@auth/any-of.guard';
+import { GithubOidcGuard } from '@auth/github-oidc.guard';
+import { LegacyInternalKeyGuard } from '@auth/legacy-internal-key.guard';
 import {
   SitemapV10Service,
   TemperatureBucket,
@@ -34,6 +39,21 @@ import {
   SitemapRegenerateJobData,
 } from '../services/sitemap-v10-scheduler.service';
 import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
+
+/**
+ * Frontière des routes qui écrivent (génération, recalcul, ping).
+ *
+ * Trois identités, chacune portée par une garde atomique fournie par
+ * `AuthModule` : la session administrateur, le jeton OIDC du workflow
+ * planifié `sitemap-daily-regen.yml`, et la clé interne `X-Internal-Key`
+ * tant que son interrupteur `SITEMAP_LEGACY_INTERNAL_KEY_ENABLED` vaut
+ * `true`. Fermé par défaut. `GET stats` reste une lecture publique.
+ */
+const SitemapWriteGuard = AnyOf(
+  AdminSessionGuard,
+  GithubOidcGuard,
+  LegacyInternalKeyGuard,
+);
 
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('api/sitemap/v10')
@@ -62,15 +82,16 @@ export class SitemapV10Controller {
    *
    * Idempotence : deterministic jobId scoped to current UTC date
    * (`sitemap-v10-api-YYYY-MM-DD`) — multiple same-day API triggers dedupe
-   * to a single BullMQ job. Distinct from the nightly scheduler's
-   * `sitemap-v10-nightly-regeneration` repeatable jobId (worst case = 2
-   * regens per day; the regeneration itself is idempotent).
+   * to a single BullMQ job. This endpoint, called daily by that workflow, is
+   * the only producer of the regeneration : the in-app nightly repeatable
+   * was removed on 2026-11-12 (cf. `SitemapV10SchedulerService`).
    *
    * Tracking : observers can poll the `seo-monitor` BullMQ queue via
    * existing Bull Board admin tooling or the scheduler heartbeat (Phase 7,
    * PR #566).
    */
   @Post('generate-all')
+  @UseGuards(SitemapWriteGuard)
   @HttpCode(HttpStatus.ACCEPTED)
   async generateAll(): Promise<{
     success: true;
@@ -133,6 +154,7 @@ export class SitemapV10Controller {
    * Génère le sitemap d'un bucket spécifique
    */
   @Post('generate/:bucket')
+  @UseGuards(SitemapWriteGuard)
   async generateBucket(@Param('bucket') bucket: string): Promise<{
     success: boolean;
     message: string;
@@ -182,9 +204,12 @@ export class SitemapV10Controller {
 
   /**
    * POST /api/sitemap/v10/refresh-scores
-   * Recalcule les scores de toutes les pages
+   * Recalcule les scores de toutes les pages.
+   * Répond 503 tant que le recalcul n'a pas abouti : jamais de 2xx pour un
+   * recalcul arrêté (entrées indisponibles) ou en échec.
    */
   @Post('refresh-scores')
+  @UseGuards(SitemapWriteGuard)
   async refreshScores(): Promise<{
     success: boolean;
     message: string;
@@ -197,29 +222,28 @@ export class SitemapV10Controller {
   }> {
     this.logger.log('📊 POST /api/sitemap/v10/refresh-scores');
 
-    try {
-      const result = await this.scoringService.refreshAllScores();
+    const result = await this.scoringService.refreshAllScores();
+    const data = {
+      processed: result.processed,
+      updated: result.updated,
+      errors: result.errors,
+      durationMs: result.durationMs,
+    };
 
-      return {
-        success: result.success,
-        message: result.success
-          ? 'Scores refreshed successfully'
-          : 'Score refresh completed with errors',
-        data: {
-          processed: result.processed,
-          updated: result.updated,
-          errors: result.errors,
-          durationMs: result.durationMs,
-        },
-      };
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Refresh scores failed: ${message}`);
-      return {
+    if (!result.success) {
+      throw new ServiceUnavailableException({
         success: false,
-        message: `Refresh failed: ${message}`,
-      };
+        status: result.status,
+        message: `Score refresh did not complete: ${result.reason ?? result.status}`,
+        data,
+      });
     }
+
+    return {
+      success: true,
+      message: 'Scores refreshed successfully',
+      data,
+    };
   }
 
   /**
@@ -227,6 +251,7 @@ export class SitemapV10Controller {
    * Génère les hubs de crawl (version legacy - non paginée)
    */
   @Post('generate-hubs')
+  @UseGuards(SitemapWriteGuard)
   async generateHubs(): Promise<{
     success: boolean;
     message: string;
@@ -285,6 +310,7 @@ export class SitemapV10Controller {
    * - risk/weak-cluster.html (pages à risque)
    */
   @Post('generate-hubs-robust')
+  @UseGuards(SitemapWriteGuard)
   async generateHubsRobust(): Promise<{
     success: boolean;
     message: string;
@@ -350,7 +376,9 @@ export class SitemapV10Controller {
 
   /**
    * GET /api/sitemap/v10/stats
-   * Retourne les statistiques de distribution par température
+   * Retourne les statistiques de distribution par température.
+   * Répond 503 quand la source est illisible : jamais de statistiques vides
+   * présentées comme un succès.
    */
   @Get('stats')
   async getStats(): Promise<{
@@ -383,10 +411,10 @@ export class SitemapV10Controller {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Get stats failed: ${message}`);
-      return {
+      throw new ServiceUnavailableException({
         success: false,
-        message: `Failed to get stats: ${message}`,
-      };
+        message: 'Sitemap statistics are unavailable',
+      });
     }
   }
 
@@ -395,6 +423,7 @@ export class SitemapV10Controller {
    * Ping Google pour le sitemap index
    */
   @Post('ping')
+  @UseGuards(SitemapWriteGuard)
   async pingGoogle(): Promise<{
     success: boolean;
     message: string;
@@ -427,6 +456,7 @@ export class SitemapV10Controller {
    * Ping Google pour un bucket spécifique
    */
   @Post('ping/:bucket')
+  @UseGuards(SitemapWriteGuard)
   async pingGoogleBucket(@Param('bucket') bucket: string): Promise<{
     success: boolean;
     message: string;

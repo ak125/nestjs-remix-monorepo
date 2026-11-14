@@ -6,7 +6,7 @@
 
 import { type CatalogueMameFamille } from "../components/pieces/PiecesCatalogueFamille";
 import { type GammeData, type VehicleData } from "../types/pieces-route.types";
-import { getOptimizedPartImageUrl } from "./image-optimizer";
+import { getOptimizedPartImageUrl, isValidImagePath } from "./image-optimizer";
 import { toTitleCaseFromSlug } from "./pieces-route.utils";
 import { type HomepageFamiliesResult } from "./remix-application-port";
 
@@ -126,6 +126,27 @@ export function buildCompatibilityInfo(vehicle: VehicleData) {
  * Interface pour la hiérarchie des gammes
  */
 export type HierarchyData = HomepageFamiliesResult;
+
+/**
+ * Vignette catalogue (`pg_img`) de la gamme, lue dans la hiérarchie déjà
+ * chargée par le loader. `pg_pic`, seule image de la réponse RM V2, ne nomme
+ * pas toujours un objet du dossier catalogue/.
+ *
+ * @returns nom de fichier `pg_img`, ou null si la gamme est absente de la
+ * hiérarchie ou sans vignette valide
+ */
+export function findGammeThumbnail(
+  hierarchyData: HierarchyData | null,
+  gammeId: number,
+): string | null {
+  for (const family of hierarchyData?.catalog?.families ?? []) {
+    const gamme = family.gammes?.find((g) => g.pg_id === gammeId);
+    if (gamme) {
+      return isValidImagePath(gamme.pg_img) ? (gamme.pg_img as string) : null;
+    }
+  }
+  return null;
+}
 
 /**
  * Construit la promesse pour le catalogue de la même famille

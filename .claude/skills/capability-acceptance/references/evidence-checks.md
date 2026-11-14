@@ -9,10 +9,14 @@ dans la preuve, avec la date UTC de l'exécution.
 **PROD** — dernier déploiement réussi, puis appartenance du correctif :
 
 ```bash
-gh run list --workflow deploy-prod.yml --status success -L 1 --json headSha,createdAt
+gh run list --workflow release-prod.yml --status success -L 1 --json headSha,createdAt
 git merge-base --is-ancestor <sha-du-correctif> <headSha> && echo "dans la PROD"
 git rev-list --count <headSha>..origin/main   # commits de main absents de la PROD
 ```
+
+Tant que l'ancien workflow `deploy-prod.yml` n'est pas désactivé, un tag `v*`
+posé sur un commit antérieur au renommage peut encore le lancer : lire aussi
+`--workflow deploy-prod.yml` et retenir le run réussi le plus récent des deux.
 
 Un run réussi prouve la chaîne de déploiement, pas la santé : compléter par le
 dernier résultat de `prod-smoke-tests.yml`. Jamais de SSH PROD.
@@ -26,7 +30,7 @@ curl -s https://www.automecanik.com/health   # "revision" = commit du tag déplo
 `revision` absent : l'image servie est antérieure à #1881 (constaté le
 2026-10-26) ; le commit servi n'est alors prouvé que par le run de déploiement.
 
-**PREPROD** — la même garde que `deploy-prod.yml`, en lecture seule :
+**PREPROD** — la même garde que `release-prod.yml`, en lecture seule :
 
 ```bash
 GITHUB_SHA=<sha-40> GITHUB_API_URL=https://api.github.com \

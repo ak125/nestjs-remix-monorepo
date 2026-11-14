@@ -7,6 +7,8 @@
 
 import { type MetaDescriptor } from "react-router";
 import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives";
+import { resolvePartImagePath } from "~/utils/image-optimizer";
+import { getOgImageUrl } from "~/utils/og-image.utils";
 import {
   buildHeroImagePreload,
   buildPiecesProductSchema,
@@ -110,8 +112,6 @@ export function buildPiecesVehicleMeta(
     gamme: d.gamme,
     pieces: d.pieces,
     seo: { description: d.seo.description },
-    minPrice: d.minPrice,
-    maxPrice: d.maxPrice,
     count: d.count,
     oemRefs: d.oemRefs,
     oemRefsSeo: d.oemRefsSeo,
@@ -125,6 +125,18 @@ export function buildPiecesVehicleMeta(
     { property: "og:title", content: d.seo.title },
     { property: "og:description", content: d.seo.description },
     { property: "og:url", content: canonicalUrl },
+    // OG image — canon image-matrix-v1, classe TRANSACTION : dérivée de la
+    // vignette pg_img de la gamme, sinon asset statique de la classe.
+    {
+      property: "og:image",
+      content: getOgImageUrl(
+        d.gammeThumbnail ? resolvePartImagePath(d.gammeThumbnail) : null,
+        "transaction",
+      ),
+    },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { property: "og:image:alt", content: d.seo.title },
     // Robots: directive décidée server-side dans le loader (owner rule 2026-06-10).
     // Gate OFF → règle legacy (count>=2 || count===1 && dataQuality>=50) ;
     // Gate ON → index seulement si sellableCount >= seuil. Toujours `follow`.

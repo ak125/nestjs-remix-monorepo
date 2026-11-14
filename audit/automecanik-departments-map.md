@@ -175,6 +175,71 @@ veut pas dire zéro. Unité, fenêtre et fraîcheur sont sans objet tant qu'aucu
 | 23 | IA, Agents & Automatisation | carte opérationnelle, snapshot Command Center, lecteur registry, MCP | LIVE (PAUSE création) | DEV | `ia-agents-lead` | doublons et orphelins de handoff désormais signalés (warn) ; snapshot environ 120, lecteur 23, MCP 54 verts | auto-test handoffs (r) | 10/10 handoffs `planned` ; aucun chemin d'exécution ne consomme `department_handoffs`, ni refus ni reprise | owner : contrat d'un premier handoff avant tout câblage |
 | 24 | People, Formation & Doc | REPO_MAP (D16 rendu), staff | LIVE | DEV | `people-lead` (homonyme) | test REPO_MAP 7/7 (r) ; staff 1/3 | `tsx --test tests/registry/llm-repo-map.test.ts` | test non câblé en CI ; homonymie de slug | owner : patch 01, et décider d'un second slug |
 
+### Recette technique transversale au 2026-11-09
+
+**Base** : `origin/main` f9d7de916. Le tableau du 2026-10-04 reste valable pour ce qu'il a observé ; celui-ci le complète.
+
+**Environnement** : DEV uniquement. Les 370 suites jest du backend ont tourné avec base, Redis et recherche pointées
+vers `127.0.0.1:1`. Résultat : 6002 tests verts, 1 en échec (voir ligne 11). Ce sont des tests unitaires avec mocks :
+aucun parcours de bout en bout, aucune application démarrée, rien d'observé en PREPROD ou en PROD, aucune transaction.
+
+**Lecture du tableau**
+
+- L'analyse couvre les 24 départements. Une ligne ne vaut pas autorisation de modifier le code du département.
+- État, certification et score viennent du snapshot Command Center, régénéré sans différence le 2026-11-09. La
+  certification reste structurelle.
+- Les volumes de tests sont regroupés par chemin de fichier : suites / tests verts.
+- « Lecture » signifie que seuls la carte et les contrats ont été examinés.
+
+| # | Département | État · certif. · score | Exercé | Limite observée |
+|---|---|---|---|---|
+| 1 | Direction générale | dormant · UNKNOWN · 30 | lecture | ni domaine ni capacité |
+| 2 | Gouvernance | live · CERTIFIED · 90 | validateur de la carte : 0 erreur, 0 avertissement | `accountable_owner` vide pour les 24 |
+| 3 | Stratégie & Scoring | live · CERTIFIED · 90 | lecture | capacité non exercée |
+| 4 | Marketing & Acquisition | partial · PARTIAL · 55 | 14/265 avec la ligne 8 | handoff sortant non contractualisé |
+| 5 | Brand & Communication | partial · PARTIAL · 49 | lecture | `fafa-brand-safety-reviewer` sans preuve |
+| 6 | Contenu éditorial | PARTIAL · 73 | passage complet | handoff vers SEO non contractualisé |
+| 7 | Production Pages & SEO | PARTIAL · 49 | 106/1321 ; pilote filtre à huile : exports idempotents sur deux passages | `seo-gamme-audit` sans preuve |
+| 8 | Media & Fafa | PARTIAL · 49 | 14/265 avec la ligne 4 | `fafa-media-factory`, `fafa-script-generator` sans preuve |
+| 9 | Knowledge RAW & WIKI | PARTIAL · 55 | 8/78 ; quality-gates 24/24 ; readiness READY sur `origin/main` | clone DEV sur une branche de juin, 176 commits de retard : #1976 retire son effet sur le verdict |
+| 10 | Catalogue & Compatibilité | PARTIAL · 81 | 23/311 | dépend de la disponibilité fournisseur |
+| 11 | Diagnostic & Assistance | PARTIAL · 67 | 35/712 | l'unique échec est `diag-canon.schema.test.ts`, causé par le même clone ; 18/18 sur `origin/main` |
+| 12 | Achats & Fournisseurs | PARTIAL · 73 | 27/337 | preuve déclarée ancienne |
+| 13 | Commercial & Ventes | PARTIAL · 78 | Zone STOP owner, résultat tenu hors dépôt public | — |
+| 14 | Service Client & Fidélisation | dormant · UNKNOWN · 60 | 3/322 | certification inconnue |
+| 15 | Logistique & Opérations | PARTIAL · 55 | 2/15 | opérations physiques externes |
+| 16 | Pricing | partial · CERTIFIED · 90 | Zone STOP owner, résultat tenu hors dépôt public | — |
+| 17 | Finance & Comptabilité | PARTIAL · 55 | aucune suite dédiée | comptabilité externe |
+| 18 | Juridique & Assurances | dormant · UNKNOWN · 30 | lecture | hors code |
+| 19 | Risk & Audit | dormant · UNKNOWN · 30 | lecture | ce document dit LIVE, le YAML dit dormant |
+| 20 | Produit & Expérience Client | dormant · UNKNOWN · 30 | lecture | KPI déclaré, ni domaine ni capacité |
+| 21 | IT & Runtime | partial · CERTIFIED · 90 | santé DEV 200 ; digest sans clé refusé (403) | cron de synchronisation DEV en échec depuis le 2026-11-07 |
+| 22 | Data & Analytics | PARTIAL · 73 | passage complet | KPI indisponible |
+| 23 | IA, Agents & Automatisation | live · CERTIFIED · 90 | Command Center 10/340 ; collecteur Hermes 20/20 ; mesure de contexte | 9 handoffs sur 10 `planned` ; contenu du digest vivant non lu |
+| 24 | People, Formation & Doc | partial · PARTIAL · 55 | lecture | capacité `staff` homonyme |
+
+**Trois scénarios**
+
+- **Commerce** : couvert par les suites des lignes 10, 12, 13, 15, 16 et 14, séparément. La chaîne complète n'a pas été
+  rejouée, et la facturation n'a pas de test dans le dépôt.
+- **Knowledge / SEO** : sur le pilote filtre à huile, deux générations produisent le même contenu. La différence avec
+  l'export versionné se limite à `generated_at` et `source_wiki_commit`. Rien n'a été publié.
+- **Incident et décision** : le blocage de la synchronisation DEV se retrouve côté exécutant (message de début de
+  session, état du cron) et côté contrôle (journal, `git status`). Le digest et Hermes ne le voient pas.
+
+**Mesure du contexte** (une seule mesure par configuration, un tour, 2026-11-09)
+
+| Configuration | Tokens d'entrée |
+|---|---|
+| Dossier vide | 47 286 |
+| Racine du dépôt | 66 990 |
+| Workspace `seo-batch` | 75 239 |
+| Workspace `marketing` | 71 185 |
+| Workspace `wiki` | 73 972 |
+
+Le premier appel des 61 sessions racine depuis le 2026-10-25 a une médiane de 71 020 et un 90e centile de 77 366. Aucune
+surcharge propre au dépôt n'a été confirmée : aucune réduction n'a été appliquée.
+
 **Usage du Command Center** (réutilisé ; aucun cron, aucun coût, pas de « run all »)
 
 - `npm run governance:command-center` : régénère le snapshot depuis le YAML.

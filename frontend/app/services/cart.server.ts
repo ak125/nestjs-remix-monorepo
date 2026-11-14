@@ -46,7 +46,10 @@ class CartServerService {
   /**
    * Obtenir le panier complet
    */
-  async getCart(request: Request, context?: Readonly<RouterContextProvider>): Promise<CartData> {
+  async getCart(
+    request: Request,
+    context?: Readonly<RouterContextProvider>,
+  ): Promise<CartData> {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const cookie = request.headers.get("Cookie") || "";
 
@@ -444,6 +447,8 @@ class CartServerService {
         pg_id: item.pg_id || undefined,
         // Vehicle type_id pour cross-sell contextuel
         type_id: item.type_id || undefined,
+        // Attribution F1 : page d'ajout → buildOrderLines → orl_website_url
+        website_url: item.website_url || undefined,
       })),
       summary: {
         total_items: (totals?.total_items as number) || 0,
@@ -561,8 +566,10 @@ export const cartServerService = new CartServerService();
 /**
  * 🎯 Fonctions utilitaires pour l'export
  */
-export const getCart = (request: Request, context?: Readonly<RouterContextProvider>) =>
-  cartServerService.getCart(request, context);
+export const getCart = (
+  request: Request,
+  context?: Readonly<RouterContextProvider>,
+) => cartServerService.getCart(request, context);
 
 export const addItem = (
   request: Request,
@@ -582,8 +589,10 @@ export const removeFromCart = (request: Request, itemId: string) =>
 export const clearCart = (request: Request) =>
   cartServerService.clearCart(request);
 
-export const validateCart = (request: Request, context?: Readonly<RouterContextProvider>) =>
-  cartServerService.validateCart(request, context);
+export const validateCart = (
+  request: Request,
+  context?: Readonly<RouterContextProvider>,
+) => cartServerService.validateCart(request, context);
 
 /**
  * 🚀 Service par défaut

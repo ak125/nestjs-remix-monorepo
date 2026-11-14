@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Morning health digest — collect 7 signals, classify, write digest body file,
+# Morning health digest — collect 8 signals, classify, write digest body file,
 # emit GitHub Actions outputs.
 #
 # Called by .github/workflows/morning-health-digest.yml. Requires gh CLI with
@@ -126,6 +126,46 @@ else
   if echo "$LEDGER" | grep -q failure; then
     echo "⛔ \`infra.schema_migrations\` no longer describes the database — drift, a stuck apply, or a migration pending past 30 days. The run's job summary lists which." >> "$OUT"
     STATUS_OVERALL="⛔"
+  fi
+fi
+echo "" >> "$OUT"
+
+# ---- Signal 8 — Automation registry freshness ----
+# Reads the VERDICT LINE of the last completed run of
+# automation-registry-freshness.yml on main (04:15 UTC, i.e. before this
+# digest). The conclusion is not enough: stale entries are warn-only there, so
+# a green run can carry a WARN verdict, and until 2026-11-10 a green run
+# carried no verdict at all. This digest is the reader of that verdict.
+echo "## Signal 8 — Automation registry freshness" >> "$OUT"
+FRESH=$(gh run list --workflow=automation-registry-freshness.yml --branch main --status completed \
+  --limit 1 --repo "$REPO" --json databaseId,conclusion,createdAt \
+  --jq '.[] | "\(.databaseId) \(.createdAt) \(.conclusion)"' 2>/dev/null || echo "")
+if [ -z "$FRESH" ]; then
+  echo "⚠️ No completed run on main" >> "$OUT"
+  [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
+else
+  read -r FRESH_ID FRESH_AT FRESH_CONCLUSION <<< "$FRESH"
+  FRESH_URL="${GITHUB_SERVER_URL:-https://github.com}/$REPO/actions/runs/$FRESH_ID"
+  FRESH_AGE_HRS=$(( ( $(date -u +%s) - $(date -u -d "$FRESH_AT" +%s) ) / 3600 ))
+  FRESH_LOG=$(gh run view "$FRESH_ID" --repo "$REPO" --log 2>/dev/null || echo "")
+  FRESH_VERDICT=$(grep -m1 -oE '\[freshness\] (OK|WARN) — [0-9]+/[0-9]+ entries stale \(threshold [0-9]+d\)' <<< "$FRESH_LOG" || true)
+  if [ "$FRESH_CONCLUSION" != "success" ]; then
+    echo "⛔ The check did not run (conclusion=\`$FRESH_CONCLUSION\`) — the registry was not evaluated. $FRESH_URL" >> "$OUT"
+    STATUS_OVERALL="⛔"
+  elif [ "$FRESH_AGE_HRS" -ge 26 ]; then
+    echo "⛔ Last completed run is ${FRESH_AGE_HRS}h old (threshold <26h) — the daily check is not running. $FRESH_URL" >> "$OUT"
+    STATUS_OVERALL="⛔"
+  elif [ -z "$FRESH_LOG" ]; then
+    echo "⚠️ Could not read the log of the last run — verdict unknown. $FRESH_URL" >> "$OUT"
+    [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
+  elif [ -z "$FRESH_VERDICT" ]; then
+    echo "⛔ Run green but no verdict line — the registry was not evaluated. $FRESH_URL" >> "$OUT"
+    STATUS_OVERALL="⛔"
+  elif [[ "$FRESH_VERDICT" == "[freshness] WARN "* ]]; then
+    echo "⚠️ \`$FRESH_VERDICT\` — entries to re-verify against runtime ; the run summary lists them. $FRESH_URL" >> "$OUT"
+    [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
+  else
+    echo "✅ \`$FRESH_VERDICT\`" >> "$OUT"
   fi
 fi
 echo "" >> "$OUT"

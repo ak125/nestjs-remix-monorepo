@@ -1758,3 +1758,17 @@ entries:
     owner: '@ak125/catalog-team'
     sourceConfidence: high
     risk: medium
+  # Proxy public PROD (Caddy) : aucun owner jusqu'ici (DoD2 de la PR #1966).
+  - glob: config/caddy/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # Types de backend/tests/ (PR #2050) : jest ne vérifie plus les types
+  # (isolatedModules) ; npm run typecheck lance ce fichier pour tests/.
+  # Même domaine et même owner que backend/tests/**. Glob exact.
+  - glob: backend/tsconfig.spec.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
