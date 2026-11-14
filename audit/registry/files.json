@@ -38896,6 +38896,7 @@
       "importedBy": [
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
         "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
         "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
         "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
         "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
@@ -38951,6 +38952,7 @@
       "id": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
         "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
         "backend/src/modules/vehicles/vehicles.controller.ts",
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -38963,7 +38965,7 @@
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 697,
+      "loc": 716,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
       "risk": "low",
@@ -38978,9 +38980,35 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@security/rpc-gate/rpc-gate.errors",
+        "@security/rpc-gate/rpc-gate.service",
+        "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-models.service.ts"
+      ],
+      "kind": "test",
+      "loc": 237,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
         "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
         "backend/src/modules/vehicles/vehicles.controller.ts",
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -38988,12 +39016,13 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.errors",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 805,
+      "loc": 833,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "risk": "low",

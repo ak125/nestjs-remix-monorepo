@@ -145,6 +145,10 @@ export class VehicleBrandsService extends SupabaseBaseService {
 
   /**
    * 🏷️ Obtenir une marque par alias (slug URL)
+   *
+   * `null` = aucune marque affichée ne porte cet alias. Une erreur de lecture
+   * est une panne : elle est levée, pas rendue comme une absence, et rien n'est
+   * mis en cache.
    */
   async getBrandByAlias(alias: string): Promise<VehicleBrand | null> {
     if (!alias?.trim()) return null;
@@ -155,24 +159,39 @@ export class VehicleBrandsService extends SupabaseBaseService {
       CacheType.BRANDS,
       cacheKey,
       async () => {
-        try {
-          const { data, error } = await this.client
-            .from(TABLES.auto_marque)
-            .select('*')
-            .eq('marque_alias', alias.toLowerCase())
-            .eq('marque_display', 1)
-            .single();
+        // Même fonction SECURITY DEFINER que getBrands : une lecture directe de
+        // auto_marque est refusée (42501) au backend PREPROD, qui tourne en `anon`.
+        // Deux lignes au plus : comme `.single()` avant, un alias porté par
+        // plusieurs marques affichées ne désigne aucune marque.
+        const { data, error } = await this.callRpc<VehicleBrand[]>(
+          'get_vehicle_api_brands',
+          {},
+          { source: 'api', role: 'service_role' },
+          {
+            get: true,
+            refine: (rpc) =>
+              rpc
+                .select('*')
+                .eq('marque_alias', alias.toLowerCase())
+                .eq('marque_display', 1)
+                .limit(2),
+          },
+        );
 
-          if (error) {
-            this.logger.debug(`Marque non trouvée pour alias: ${alias}`);
-            return null;
-          }
-
-          return data;
-        } catch (error) {
-          this.logger.error(`Erreur getBrandByAlias ${alias}:`, error);
-          return null;
+        if (error) {
+          const cause = this.rpcFailure(error);
+          this.logger.error(`Erreur getBrandByAlias ${alias}:`, cause);
+          throw cause;
         }
+
+        if (data?.length === 1) return data[0];
+
+        if (data?.length) {
+          this.logger.warn(`Alias porté par plusieurs marques: ${alias}`);
+        } else {
+          this.logger.debug(`Marque non trouvée pour alias: ${alias}`);
+        }
+        return null;
       },
     );
   }
