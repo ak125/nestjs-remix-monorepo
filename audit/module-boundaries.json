@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21398,
+      "loc_total": 21407,
       "has_barrel": true
     },
     "dev-only": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115122,
+      "loc_total": 115119,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 586,
-      "loc_total": 110860,
+      "loc_total": 110868,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 373,
-      "loc_total": 77142,
+      "files_count": 375,
+      "loc_total": 77465,
       "has_barrel": true
     },
     "upload": {
