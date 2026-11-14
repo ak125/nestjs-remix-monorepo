@@ -2,27 +2,27 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "771 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "762 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
     "8 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
     "0 call-site(s) non résolu(s) : récepteur ni prouvé DB ni rejeté — voir unresolved_callsites[]. Un nom non résolu ne peut pas être déclaré orphelin."
   ],
   "summary": {
-    "tables_seen": 316,
-    "tables_with_callsites": 214,
+    "tables_seen": 315,
+    "tables_with_callsites": 213,
     "candidate_orphan_tables": 75,
     "partitions": 27,
     "rpc_seen": 259,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
     "candidate_orphan_rpc": 215,
-    "dynamic_from_callsites": 771,
+    "dynamic_from_callsites": 762,
     "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 440,
-    "backend_files_scanned": 1515
+    "backend_files_scanned": 1514
   },
   "tables": {
     "___config": {
@@ -63,7 +63,7 @@
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
         "backend/src/modules/payments/services/paybox-callback-gate.service.ts",
-        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "used_by_count": 6,
       "in_migrations": [],
@@ -85,7 +85,7 @@
       "used_by": [
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
-        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "used_by_count": 4,
@@ -95,16 +95,6 @@
       "partition_of": null
     },
     "___xtr_order_line_audit": {
-      "used_by": [
-        "backend/src/modules/orders/services/order-actions.service.ts"
-      ],
-      "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": false,
-      "in_knowledge_db": false,
-      "partition_of": null
-    },
-    "___xtr_order_line_equiv_ticket": {
       "used_by": [
         "backend/src/modules/orders/services/order-actions.service.ts"
       ],
@@ -11600,210 +11590,210 @@
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 149,
+      "line": 148,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
+      "line": 294,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/advice.service.ts",
+      "line": 342,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/advice.service.ts",
+      "line": 387,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/advice.service.ts",
+      "line": 393,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/advice.service.ts",
+      "line": 463,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/advice.service.ts",
+      "line": 542,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/advice.service.ts",
+      "line": 549,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/advice.service.ts",
+      "line": 708,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 51,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 55,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 71,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 113,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 124,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 135,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 166,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 182,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 248,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
       "line": 296,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
-      "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 346,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 391,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 397,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 467,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 546,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 553,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 712,
+      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "line": 343,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 52,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 56,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 72,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 114,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 125,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 136,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 167,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 183,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 249,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 297,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 344,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 460,
+      "line": 459,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 477,
+      "line": 476,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 514,
+      "line": 513,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 550,
+      "line": 549,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 569,
+      "line": 568,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 628,
+      "line": 627,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 653,
+      "line": 652,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 707,
+      "line": 706,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 719,
+      "line": 718,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 782,
+      "line": 781,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -11950,21 +11940,21 @@
     },
     {
       "file": "backend/src/modules/blog/services/constructeur-search.service.ts",
-      "line": 95,
+      "line": 90,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur-search.service.ts",
-      "line": 96,
+      "line": 91,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur-search.service.ts",
-      "line": 215,
+      "line": 208,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -11992,196 +11982,196 @@
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 120,
+      "line": 119,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 181,
+      "line": 180,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 186,
+      "line": 185,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 240,
+      "line": 238,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 245,
+      "line": 243,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 250,
+      "line": 248,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 330,
+      "line": 328,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 364,
+      "line": 362,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 404,
+      "line": 402,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 451,
+      "line": 449,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 525,
+      "line": 523,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 528,
+      "line": 526,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 533,
+      "line": 531,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 538,
+      "line": 536,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 711,
+      "line": 709,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 758,
+      "line": 756,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 779,
+      "line": 777,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/constructeur.service.ts",
-      "line": 789,
+      "line": 787,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 54,
+      "line": 53,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 107,
+      "line": 106,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 141,
+      "line": 140,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 177,
+      "line": 176,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 221,
+      "line": 220,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 266,
+      "line": 265,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 323,
+      "line": 322,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 363,
+      "line": 362,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 407,
+      "line": 406,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/glossary.service.ts",
-      "line": 418,
+      "line": 417,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -12405,91 +12395,91 @@
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 193,
+      "line": 192,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 199,
+      "line": 198,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 252,
+      "line": 251,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 294,
+      "line": 293,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 395,
+      "line": 394,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 444,
+      "line": 443,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 498,
+      "line": 497,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 627,
+      "line": 626,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 633,
+      "line": 632,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 639,
+      "line": 638,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 784,
+      "line": 783,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 845,
+      "line": 844,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/catalog/catalog.service.ts",
-      "line": 860,
+      "line": 859,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
@@ -12748,35 +12738,35 @@
     },
     {
       "file": "backend/src/modules/config/services/database-config.service.ts",
-      "line": 54,
+      "line": 53,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/config/services/database-config.service.ts",
-      "line": 126,
+      "line": 125,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/config/services/database-config.service.ts",
-      "line": 179,
+      "line": 178,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/config/services/database-config.service.ts",
-      "line": 231,
+      "line": 230,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/config/services/database-config.service.ts",
-      "line": 269,
+      "line": 268,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
@@ -13063,42 +13053,42 @@
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 95,
+      "line": 105,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 164,
+      "line": 174,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 217,
+      "line": 227,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 259,
+      "line": 269,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 320,
+      "line": 330,
       "form": "THIS_FIELD",
       "resolved_table": null,
       "refusal": "class-field-not-private-readonly"
     },
     {
       "file": "backend/src/modules/messages/repositories/message-data.service.ts",
-      "line": 355,
+      "line": 365,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13161,133 +13151,70 @@
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 158,
+      "line": 150,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 181,
+      "line": 174,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 222,
+      "line": 186,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 233,
+      "line": 195,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 239,
+      "line": 247,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 270,
+      "line": 264,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 294,
+      "line": 304,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 306,
+      "line": 365,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 315,
+      "line": 422,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 339,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 345,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 369,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 374,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 434,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 451,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 491,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 552,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 609,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 657,
+      "line": 470,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13644,84 +13571,84 @@
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 58,
+      "line": 54,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 115,
+      "line": 111,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 228,
+      "line": 224,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 261,
+      "line": 257,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 269,
+      "line": 265,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 324,
+      "line": 320,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 359,
+      "line": 353,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 383,
+      "line": 377,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 411,
+      "line": 405,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 439,
+      "line": 433,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 508,
+      "line": 502,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
-      "line": 556,
+      "line": 550,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13889,84 +13816,84 @@
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 47,
+      "line": 46,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 70,
+      "line": 69,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 111,
+      "line": 110,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 231,
+      "line": 230,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 296,
+      "line": 295,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 305,
+      "line": 304,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 312,
+      "line": 311,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 426,
+      "line": 425,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 525,
+      "line": 524,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 545,
+      "line": 544,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 580,
+      "line": 579,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 600,
+      "line": 599,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -14421,84 +14348,84 @@
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 304,
+      "line": 303,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 327,
+      "line": 326,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 382,
+      "line": 381,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 401,
+      "line": 400,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 485,
+      "line": 484,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 512,
+      "line": 511,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 676,
+      "line": 675,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 682,
+      "line": 681,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 689,
+      "line": 688,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 859,
+      "line": 858,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 890,
+      "line": 887,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-simple.service.ts",
-      "line": 907,
+      "line": 904,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -14862,63 +14789,63 @@
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 54,
+      "line": 53,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 108,
+      "line": 107,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 130,
+      "line": 129,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 155,
+      "line": 154,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 196,
+      "line": 195,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 219,
+      "line": 218,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 264,
+      "line": 263,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 267,
+      "line": 266,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 271,
+      "line": 270,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -14967,105 +14894,105 @@
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 57,
+      "line": 56,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 101,
+      "line": 100,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 201,
+      "line": 200,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 237,
+      "line": 236,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 248,
+      "line": 247,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 273,
+      "line": 272,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 310,
+      "line": 309,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 334,
+      "line": 333,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 439,
+      "line": 438,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 473,
+      "line": 472,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 508,
+      "line": 507,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 528,
+      "line": 527,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 572,
+      "line": 571,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 625,
+      "line": 624,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 635,
+      "line": 634,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -15142,105 +15069,105 @@
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 130,
+      "line": 129,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 150,
+      "line": 149,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 190,
+      "line": 189,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 232,
+      "line": 231,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 280,
+      "line": 279,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 363,
+      "line": 362,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 421,
+      "line": 420,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 443,
+      "line": 442,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 482,
+      "line": 479,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 520,
+      "line": 517,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 527,
+      "line": 524,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 536,
+      "line": 533,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 738,
+      "line": 735,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 777,
+      "line": 774,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 834,
+      "line": 831,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -15695,147 +15622,147 @@
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 67,
+      "line": 66,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 88,
+      "line": 87,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 122,
+      "line": 121,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 190,
+      "line": 189,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 216,
+      "line": 215,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 236,
+      "line": 235,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 262,
+      "line": 261,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 292,
+      "line": 291,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 313,
+      "line": 312,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 332,
+      "line": 331,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 355,
+      "line": 354,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 374,
+      "line": 373,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 393,
+      "line": 392,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 426,
+      "line": 425,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 453,
+      "line": 452,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 490,
+      "line": 489,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 529,
+      "line": 528,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 557,
+      "line": 556,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 577,
+      "line": 576,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 599,
+      "line": 598,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 624,
+      "line": 623,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -16136,105 +16063,105 @@
     },
     {
       "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
+      "line": 75,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
+      "line": 155,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
+      "line": 224,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
+      "line": 287,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
+      "line": 350,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
+      "line": 413,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
+      "line": 420,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
+      "line": 442,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
       "line": 76,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
-      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
-      "line": 156,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
-      "line": 225,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
-      "line": 288,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
-      "line": 351,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
-      "line": 414,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
-      "line": 421,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
-      "line": 443,
+      "file": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
+      "line": 167,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
-      "line": 77,
+      "line": 287,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
-      "line": 168,
+      "line": 350,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
-      "line": 290,
+      "line": 446,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
-      "line": 353,
+      "line": 458,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
-      "line": 449,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
-      "line": 461,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
-      "line": 473,
+      "line": 470,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
