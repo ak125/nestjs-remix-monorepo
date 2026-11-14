@@ -71,6 +71,40 @@ export const designTokens = {
       "dangerContrast": "#FFFFFF",
       "neutral": "#4B5563",
       "neutralContrast": "#FFFFFF"
+    },
+    "cta": {
+      "50": "#FFF7ED",
+      "100": "#FFEDD5",
+      "200": "#FED7AA",
+      "300": "#FDBA74",
+      "400": "#FB923C",
+      "500": "#F97316",
+      "600": "#EA580C",
+      "700": "#C2410C",
+      "800": "#9A3412",
+      "900": "#7C2D12",
+      "DEFAULT": "#F97316",
+      "hover": "#EA580C",
+      "light": "#FB923C",
+      "lighter": "#FDBA74",
+      "dark": "#C2410C"
+    },
+    "navy": {
+      "50": "#E8EDF5",
+      "100": "#C5D0E6",
+      "200": "#9BAFD4",
+      "300": "#708EC1",
+      "400": "#4F74B3",
+      "500": "#162D5A",
+      "600": "#122750",
+      "700": "#0F1E38",
+      "800": "#091430",
+      "900": "#050D1F",
+      "DEFAULT": "#0F1E38",
+      "light": "#162D5A",
+      "mid": "#122750",
+      "mid-light": "#153060",
+      "dark": "#091430"
     }
   },
   "spacing": {

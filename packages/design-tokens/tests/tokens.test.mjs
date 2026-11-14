@@ -69,6 +69,54 @@ describe("DTCG source contract", () => {
   });
 });
 
+describe("cta & navy ramps (moved from frontend/tailwind.config.cjs, 2026-11-14)", () => {
+  // Exact values hard-coded in frontend/tailwind.config.cjs at 55cef6fe0, before
+  // the move. Any change here is a visible change, outside that mandate.
+  const BASELINE = {
+    cta: {
+      DEFAULT: "#F97316", hover: "#EA580C", light: "#FB923C", lighter: "#FDBA74", dark: "#C2410C",
+      50: "#FFF7ED", 100: "#FFEDD5", 200: "#FED7AA", 300: "#FDBA74", 400: "#FB923C",
+      500: "#F97316", 600: "#EA580C", 700: "#C2410C", 800: "#9A3412", 900: "#7C2D12",
+    },
+    navy: {
+      DEFAULT: "#0F1E38", light: "#162D5A", mid: "#122750", "mid-light": "#153060", dark: "#091430",
+      50: "#E8EDF5", 100: "#C5D0E6", 200: "#9BAFD4", 300: "#708EC1", 400: "#4F74B3",
+      500: "#162D5A", 600: "#122750", 700: "#0F1E38", 800: "#091430", 900: "#050D1F",
+    },
+  };
+
+  it("source and Tailwind projection carry the baseline values, key for key", () => {
+    for (const [group, expected] of Object.entries(BASELINE)) {
+      const fromSource = Object.fromEntries(
+        Object.entries(source.color[group]).map(([k, v]) => [k, v.$value]),
+      );
+      expect(fromSource).toEqual(expected);
+      expect(projection.colors[group]).toEqual(expected);
+    }
+  });
+
+  it("rejects a missing named alias", () => {
+    const bad = structuredClone(source);
+    delete bad.color.navy["mid-light"];
+    const { ok, errors } = validateTokens(bad);
+    expect(ok).toBe(false);
+    expect(errors).toContain("color.navy · missing key: mid-light");
+  });
+
+  it("rejects a missing ramp group", () => {
+    const bad = structuredClone(source);
+    delete bad.color.cta;
+    const { ok, errors } = validateTokens(bad);
+    expect(ok).toBe(false);
+    expect(errors).toContain("color · missing group: cta");
+  });
+
+  it("are not emitted as CSS custom properties (tokens.css unchanged)", () => {
+    const css = readFileSync(join(PKG, "src/styles/tokens.css"), "utf8");
+    expect(css).not.toMatch(/--am-color-(cta|navy)-/);
+  });
+});
+
 describe("color math (v3-oracle verified)", () => {
   it("contrast threshold matches the committed oracle", () => {
     expect(getContrastColor("#4F74B3")).toBe("#ffffff"); // primary.400

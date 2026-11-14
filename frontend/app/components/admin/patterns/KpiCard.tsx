@@ -1,7 +1,7 @@
 /**
  * KpiCard - Carte KPI standardisée pour dashboards admin
  *
- * @see packages/design-tokens/DESIGN-SYSTEM.automecanik.md
+ * @see .claude/skills/frontend-design/SKILL.md (règles UI) et packages/design-tokens/src/tokens.json (valeurs)
  *
  * Patterns respectés:
  * - shadcn/ui Card + Badge
