@@ -10,6 +10,7 @@ import {
 import { BlogCacheService } from './blog-cache.service';
 import { ConstructeurSearchService } from './constructeur-search.service';
 import { ConstructeurTransformService } from './constructeur-transform.service';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 export interface ConstructeurFilters {
   search?: string;
@@ -187,7 +188,8 @@ export class ConstructeurService {
         .select('*', { count: 'exact', head: true });
 
       if (filters.search) {
-        const searchFilter = `bc_constructeur.ilike.%${filters.search}%,bc_alias.ilike.%${filters.search}%,bc_keywords.ilike.%${filters.search}%`;
+        const pattern = ilikeContains(filters.search);
+        const searchFilter = `bc_constructeur.ilike.${pattern},bc_alias.ilike.${pattern},bc_keywords.ilike.${pattern}`;
         query = query.or(searchFilter);
         countQuery = countQuery.or(searchFilter);
       }
@@ -364,8 +366,8 @@ export class ConstructeurService {
         .select('*')
         .or(
           [
-            `bc_constructeur.ilike.%${brand}%`,
-            `bc_alias.ilike.%${brand.toLowerCase()}%`,
+            `bc_constructeur.ilike.${ilikeContains(brand)}`,
+            `bc_alias.ilike.${ilikeContains(brand.toLowerCase())}`,
           ].join(','),
         )
         .single();

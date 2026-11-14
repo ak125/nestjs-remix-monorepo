@@ -394,6 +394,11 @@ export class CartDataService extends SupabaseBaseService {
 
         updatedItems[existingItemIndex].updated_at = new Date().toISOString();
         if (typeId) updatedItems[existingItemIndex].type_id = typeId;
+        // F1 attribution : la page du premier ajout est conservée ; elle n'est
+        // renseignée ici que si la ligne n'en porte pas encore.
+        if (sourceUrl && !updatedItems[existingItemIndex].website_url) {
+          updatedItems[existingItemIndex].website_url = sourceUrl;
+        }
         await this.saveCartToRedis(sessionId, updatedItems);
         return updatedItems[existingItemIndex];
       } else {
@@ -970,6 +975,10 @@ export class CartDataService extends SupabaseBaseService {
           // Garder le prix le plus récent (celui du panier source)
           existingItem.price = sourceItem.price;
           existingItem.type_id = sourceItem.type_id || existingItem.type_id;
+          // F1 attribution : la page d'ajout déjà portée par le panier cible
+          // prime ; celle du panier source ne comble qu'un manque.
+          existingItem.website_url =
+            existingItem.website_url || sourceItem.website_url;
           this.logger.log(
             `➕ Fusion produit ${sourceItem.product_name}: ${existingItem.quantity} total`,
           );
