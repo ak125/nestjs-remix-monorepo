@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 440,
-    "backend_files_scanned": 1518
+    "backend_files_scanned": 1519
   },
   "tables": {
     "___config": {
@@ -15223,70 +15223,70 @@
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 111,
+      "line": 117,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 153,
+      "line": 159,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 164,
+      "line": 170,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 197,
+      "line": 203,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 233,
+      "line": 239,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 303,
+      "line": 309,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 351,
+      "line": 357,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 391,
+      "line": 397,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 442,
+      "line": 448,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/support/services/legal.service.ts",
-      "line": 481,
+      "line": 487,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
