@@ -97669,7 +97669,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 702,
+      "loc": 703,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "medium",
@@ -107666,11 +107666,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "062d7ef35009984236576ffbf4522b0f0c5ba824b32e65119030ab9556f35a98",
+      "audit/registry/files.json": "1c20a7874c4692c34224ead1da4274519908166e29c66648fb5ee51d77eb9dfd",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "d4fb483df096"
+    "sotFingerprint": "7f1148d67677"
   },
   "runtime": [
     {

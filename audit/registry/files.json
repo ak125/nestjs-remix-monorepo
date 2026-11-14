@@ -66768,7 +66768,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 702,
+      "loc": 703,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "low",
