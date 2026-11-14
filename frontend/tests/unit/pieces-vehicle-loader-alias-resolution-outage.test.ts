@@ -1,4 +1,7 @@
 // @vitest-environment node
+import { createServer, type Server } from "node:http";
+import { type AddressInfo } from "node:net";
+
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { fetchRmPageV2 } from "~/services/api/rm-api.service";
@@ -6,7 +9,8 @@ import {
   IdResolutionUnavailableError,
   resolveGammeId,
   resolveVehicleIds,
-} from "~/utils/pieces-route.utils";
+} from "~/utils/pieces-id-resolution.server";
+import { parseUrlParam } from "~/utils/pieces-route.utils";
 import { piecesVehicleLoader } from "~/utils/pieces-vehicle.loader.server";
 
 vi.mock("~/utils/logger", () => ({
@@ -19,7 +23,7 @@ vi.mock("~/utils/logger", () => ({
   },
 }));
 // Seules les frontières réseau en aval de la résolution sont simulées. Les
-// résolveurs d'ID (`pieces-route.utils`) et le loader sont réels.
+// résolveurs d'ID (`pieces-id-resolution.server`) et le loader sont réels.
 vi.mock("~/services/api/rm-api.service", () => ({ fetchRmPageV2: vi.fn() }));
 vi.mock("~/services/pieces/pieces-route.service", () => ({
   fetchBlogArticleWithRelated: vi.fn(() =>
@@ -70,13 +74,16 @@ function stubBackend(routes: Record<string, Route>) {
   return fetchMock;
 }
 
-const BRANDS = "/api/vehicles/brands?search=";
+const BRANDS = "/api/vehicles/brands?";
 const MODELS = "/api/vehicles/brands/140/models";
 const GAMME_BY_ALIAS = "/api/catalog/gammes/by-alias/";
 const ERROR_LOG = "/api/internal/error-log";
 
 const brandsFound: Route = () =>
-  json({ success: true, data: [{ marque_id: 140, marque_name: "Renault" }] });
+  json({
+    success: true,
+    data: [{ marque_id: 140, marque_alias: "renault", marque_name: "RENAULT" }],
+  });
 const modelsFound: Route = () =>
   json({
     success: true,
@@ -107,7 +114,7 @@ async function thrownResponse(path: string): Promise<Response> {
 
 beforeEach(() => {
   vi.stubEnv("INTERNAL_API_KEY", "");
-  vi.stubEnv("BACKEND_URL", "");
+  vi.stubEnv("INTERNAL_API_BASE_URL", "");
   vi.mocked(fetchRmPageV2).mockReset();
 });
 
@@ -174,14 +181,21 @@ describe("resolveVehicleIds — panne distincte d'un alias inconnu", () => {
     ).resolves.toEqual({ marqueId: 0, modeleId: 0, typeId: 12345 });
   });
 
-  it("modèle inconnu de l'API → IDs de l'URL (0), comportement inchangé", async () => {
+  it("modèle inconnu de l'API → modeleId 0 (410 côté loader)", async () => {
     stubBackend({
       [MODELS]: () => json({ success: true, data: [] }),
       [BRANDS]: brandsFound,
     });
     await expect(
       resolveVehicleIds("renault", "modele-inconnu", "diesel-12345"),
-    ).resolves.toEqual({ marqueId: 0, modeleId: 0, typeId: 12345 });
+    ).resolves.toEqual({ marqueId: 140, modeleId: 0, typeId: 12345 });
+  });
+
+  it("réponse 200 sans liste → résolution indisponible, pas « alias inconnu »", async () => {
+    stubBackend({ [BRANDS]: () => json({ success: true }) });
+    await expect(
+      resolveVehicleIds("renault", "clio-iii", "diesel-12345"),
+    ).rejects.toBeInstanceOf(IdResolutionUnavailableError);
   });
 
   it("demande refusée par l'API (400) → traitée comme alias inconnu", async () => {
@@ -287,5 +301,221 @@ describe("loader R2 — URL sans ID pendant une panne de résolution", () => {
     expect(res.status).toBe(410);
     expect(await res.json()).toMatchObject({ reason: "invalid_vehicle" });
     expect(res.headers.get("X-Robots-Tag")).toBe("noindex, follow");
+  });
+});
+
+/**
+ * R2 — un ID n'est jamais fabriqué, et un alias existant est toujours retrouvé.
+ *
+ * Constats du 2026-11-13 sur le runtime DEV :
+ *   - `…/clio-iii-140004/1-5-dci.html` (type sans ID) était servi en 200
+ *     « non référencé » pour la motorisation 5, lue dans « 1-5-dci » ;
+ *   - `…/renault/twingo-ii/1-2-23485.html` répondait 410 alors que la page
+ *     existe : seule la première page de 50 modèles de la marque était lue ;
+ *   - `alfa-romeo`, `land-rover` n'étaient jamais retrouvées (recherche sur le
+ *     nom « ALFA ROMEO », pas sur l'alias).
+ */
+describe("parseUrlParam — l'ID est le dernier élément, entièrement numérique", () => {
+  it.each([
+    ["renault-140", "renault", 140],
+    ["clio-iii-140004", "clio-iii", 140004],
+    ["1-5-dci-12345", "1-5-dci", 12345],
+    ["206", "", 206],
+    // Ambiguïté irréductible sans la base (alias « serie-3 » ou ID 3) : inchangé.
+    ["serie-3", "serie", 3],
+  ])("%s → alias « %s », id %i", (segment, alias, id) => {
+    expect(parseUrlParam(segment)).toEqual({ alias, id });
+  });
+
+  it.each([
+    "1-5-dci",
+    "1-2-16v",
+    "1-5-dci-110cv",
+    "206-sw",
+    "320d",
+    "essence",
+    "renault-0",
+    "type-99999999999999999999",
+  ])("%s ne porte pas d'ID : alias intact, id 0", (segment) => {
+    expect(parseUrlParam(segment)).toEqual({ alias: segment, id: 0 });
+  });
+
+  it("segment absent → id 0", () => {
+    expect(parseUrlParam(undefined).id).toBe(0);
+  });
+});
+
+describe("resolveVehicleIds — résolution exacte et complète", () => {
+  const PAGE_SIZE = 200;
+  const fullPage = Array.from({ length: PAGE_SIZE }, (_, i) => ({
+    modele_id: 1000 + i,
+    modele_alias: `modele-${i}`,
+    modele_name: `MODELE ${i}`,
+  }));
+
+  it("type sans ID : typeId 0, aucun appel réseau", async () => {
+    const fetchMock = stubBackend({});
+    await expect(
+      resolveVehicleIds("renault", "clio-iii", "1-5-dci"),
+    ).resolves.toEqual({ marqueId: 0, modeleId: 0, typeId: 0 });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("modèle au-delà de la première page de l'API : retrouvé", async () => {
+    const fetchMock = stubBackend({
+      [MODELS]: (url) =>
+        url.includes("page=0")
+          ? json({ success: true, data: fullPage, total: PAGE_SIZE + 1 })
+          : json({
+              success: true,
+              data: [
+                {
+                  modele_id: 140098,
+                  modele_alias: "twingo-ii",
+                  modele_name: "TWINGO II",
+                },
+              ],
+              total: PAGE_SIZE + 1,
+            }),
+    });
+    await expect(
+      resolveVehicleIds("renault-140", "twingo-ii", "1-2-23485"),
+    ).resolves.toEqual({ marqueId: 140, modeleId: 140098, typeId: 23485 });
+    expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
+      `http://127.0.0.1:3000${MODELS}?limit=${PAGE_SIZE}&page=0`,
+      `http://127.0.0.1:3000${MODELS}?limit=${PAGE_SIZE}&page=1`,
+    ]);
+  });
+
+  it("marque à nom composé : retrouvée par son alias", async () => {
+    stubBackend({
+      "/api/vehicles/brands/13/models": () =>
+        json({
+          success: true,
+          data: [
+            { modele_id: 13044, modele_alias: "giulietta", modele_name: "X" },
+          ],
+        }),
+      [BRANDS]: () =>
+        json({
+          success: true,
+          data: [
+            {
+              marque_id: 13,
+              marque_alias: "alfa-romeo",
+              marque_name: "ALFA ROMEO",
+            },
+            { marque_id: 140, marque_alias: "renault", marque_name: "RENAULT" },
+          ],
+        }),
+    });
+    await expect(
+      resolveVehicleIds("alfa-romeo", "giulietta", "1-4-tb-33333"),
+    ).resolves.toEqual({ marqueId: 13, modeleId: 13044, typeId: 33333 });
+  });
+
+  it("alias exact préféré à un nom qui contient l'alias", async () => {
+    stubBackend({
+      [MODELS]: () =>
+        json({
+          success: true,
+          data: [
+            { modele_id: 1, modele_alias: "clio-i", modele_name: "CLIO I" },
+            { modele_id: 2, modele_alias: "clio", modele_name: "CLIO" },
+          ],
+        }),
+    });
+    await expect(
+      resolveVehicleIds("renault-140", "clio", "diesel-12345"),
+    ).resolves.toEqual({ marqueId: 140, modeleId: 2, typeId: 12345 });
+  });
+
+  it("alias de modèle commençant par un nombre (206-sw) : résolu en entier", async () => {
+    const fetchMock = stubBackend({
+      "/api/vehicles/brands/128/models": () =>
+        json({
+          success: true,
+          data: [
+            { modele_id: 128001, modele_alias: "206", modele_name: "206" },
+            {
+              modele_id: 128020,
+              modele_alias: "206-sw",
+              modele_name: "206 SW",
+            },
+          ],
+        }),
+    });
+    await expect(
+      resolveVehicleIds("peugeot-128", "206-sw", "1-4-hdi-9999"),
+    ).resolves.toEqual({ marqueId: 128, modeleId: 128020, typeId: 9999 });
+    // La marque porte son ID : elle n'est pas redemandée à l'API.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("API qui ne cesse de renvoyer des pages pleines → résolution indisponible", async () => {
+    stubBackend({
+      [MODELS]: () => json({ success: true, data: fullPage }),
+    });
+    await expect(
+      resolveVehicleIds("renault-140", "twingo-ii", "1-2-23485"),
+    ).rejects.toBeInstanceOf(IdResolutionUnavailableError);
+  });
+});
+
+describe("résolution — délai maximal contre un vrai serveur muet", () => {
+  let server: Server;
+
+  beforeEach(async () => {
+    // Accepte la connexion et ne répond jamais.
+    server = createServer(() => {});
+    await new Promise<void>((resolve) =>
+      server.listen(0, "127.0.0.1", resolve),
+    );
+    const { port } = server.address() as AddressInfo;
+    vi.stubEnv("INTERNAL_API_BASE_URL", `http://127.0.0.1:${port}`);
+  });
+
+  afterEach(async () => {
+    server.closeAllConnections();
+    await new Promise((resolve) => server.close(resolve));
+  });
+
+  it("backend qui ne répond pas : indisponible après 3 s, pas d'attente sans fin", async () => {
+    const startedAt = Date.now();
+    await expect(
+      resolveGammeId("bougie-de-prechauffage"),
+    ).rejects.toBeInstanceOf(IdResolutionUnavailableError);
+    const elapsed = Date.now() - startedAt;
+    expect(elapsed).toBeGreaterThanOrEqual(2900);
+    expect(elapsed).toBeLessThan(6000);
+  }, 10_000);
+
+  it("loader : 503 non mis en cache quand la résolution dépasse le délai", async () => {
+    const res = await thrownResponse(VEHICLE_ALIAS_PATH);
+    expect(res.status).toBe(503);
+    expect(res.headers.get("Retry-After")).toBe("300");
+    expect(res.headers.get("Cache-Control")).toBe("no-store, must-revalidate");
+    expect(fetchRmPageV2).not.toHaveBeenCalled();
+  }, 10_000);
+});
+
+describe("loader R2 — URL dont le type ne porte pas d'ID", () => {
+  it.each([
+    "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci.html",
+    "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-2-16v.html",
+    "/pieces/filtre-a-huile-7/renault-140/clio-iii/1-5-dci-110cv.html",
+    "/pieces/filtre-a-huile-7/peugeot/206-sw/1-4-hdi.html",
+    "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/essence.html",
+  ])("%s → 410 invalid_vehicle, aucune motorisation inventée", async (path) => {
+    const fetchMock = stubBackend({});
+
+    const res = await thrownResponse(path);
+
+    expect(res.status).toBe(410);
+    expect(await res.json()).toMatchObject({ reason: "invalid_vehicle" });
+    expect(res.headers.get("X-Robots-Tag")).toBe("noindex, follow");
+    // Ni catalogue interrogé avec un type fabriqué, ni beacon soft-404.
+    expect(fetchRmPageV2).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

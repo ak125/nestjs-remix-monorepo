@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21794,
+      "loc_total": 21398,
       "has_barrel": true
     },
     "dev-only": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 585,
-      "loc_total": 110841,
+      "files_count": 586,
+      "loc_total": 110860,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6583,
+      "loc_total": 6375,
       "has_barrel": true
     },
     "payments": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 222,
-      "loc_total": 52276,
+      "files_count": 223,
+      "loc_total": 52437,
       "has_barrel": true
     },
     "search": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 285,
-      "loc_total": 61200,
+      "loc_total": 61139,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -792,7 +792,7 @@
         "backend/src/modules/seo-logs/services"
       ],
       "files_count": 12,
-      "loc_total": 3639,
+      "loc_total": 3625,
       "has_barrel": false
     },
     "seo-monitoring": {
@@ -805,8 +805,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 51,
-      "loc_total": 11331,
+      "files_count": 52,
+      "loc_total": 11477,
       "has_barrel": false
     },
     "seo-projection": {
@@ -898,8 +898,8 @@
         "backend/src/modules/support/services/__tests__",
         "backend/src/modules/support/types"
       ],
-      "files_count": 30,
-      "loc_total": 10417,
+      "files_count": 31,
+      "loc_total": 10577,
       "has_barrel": true
     },
     "system": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 373,
-      "loc_total": 76909,
+      "loc_total": 77127,
       "has_barrel": true
     },
     "upload": {
