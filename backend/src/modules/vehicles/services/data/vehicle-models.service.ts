@@ -2,6 +2,7 @@ import { TABLES, AutoType } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { SupabaseRpcError } from '@security/rpc-gate/rpc-gate.errors';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import {
   VehicleModel,
@@ -13,6 +14,9 @@ type TypePartial = Pick<
   AutoType,
   'type_id' | 'type_modele_id' | 'type_year_from' | 'type_year_to' | 'type_fuel'
 >;
+
+/** Code PostgREST d'une plage demandée au-delà du nombre de lignes (HTTP 416). */
+const POSTGREST_RANGE_NOT_SATISFIABLE = 'PGRST103';
 
 /**
  * 🚗 VEHICLE MODELS SERVICE - Service dédié à la gestion des modèles
@@ -335,38 +339,59 @@ export class VehicleModelsService extends SupabaseBaseService {
         // 📋 Construire la requête principale avec filtre sur les modèles ayant des motorisations
         // ⚠️ Éviter la jointure auto_marque!inner qui échoue (pas de FK dans Supabase)
         // La fonction ne renvoie que les modèles de la marque (modele_marque_id)
-        const { data, error, count } = await this.callRpc<
-          Record<string, unknown>[]
-        >(
-          'get_vehicle_api_brand_models',
-          { p_marque_id: marqueId },
-          { source: 'api', role: 'service_role' },
-          {
-            get: true,
-            count: 'exact',
-            refine: (rpc) => {
-              let query = rpc.select('*').in('modele_id', modelIdsWithTypes);
+        const readModels = (rangeFrom: number, rangeTo: number) =>
+          this.callRpc<Record<string, unknown>[]>(
+            'get_vehicle_api_brand_models',
+            { p_marque_id: marqueId },
+            { source: 'api', role: 'service_role' },
+            {
+              get: true,
+              count: 'exact',
+              refine: (rpc) => {
+                let query = rpc.select('*').in('modele_id', modelIdsWithTypes);
 
-              if (!options.includeAll) {
-                query = query.eq('modele_display', 1);
-              }
+                if (!options.includeAll) {
+                  query = query.eq('modele_display', 1);
+                }
 
-              if (search?.trim()) {
-                // Recherche par alias OU par nom
-                query = query.or(
-                  `modele_alias.ilike.%${search}%,modele_name.ilike.%${search}%`,
-                );
-              }
+                if (search?.trim()) {
+                  // Recherche par alias OU par nom
+                  query = query.or(
+                    `modele_alias.ilike.%${search}%,modele_name.ilike.%${search}%`,
+                  );
+                }
 
-              return query
-                .limit(limit)
-                .range(offset, offset + limit - 1)
-                .order('modele_name');
+                return query.range(rangeFrom, rangeTo).order('modele_name');
+              },
             },
-          },
+          );
+
+        const { data, error, count } = await readModels(
+          offset,
+          offset + limit - 1,
         );
 
         if (error) {
+          // Page au-delà de la dernière : PostgREST, qui compte les lignes
+          // (count=exact), refuse la plage (416, PGRST103) au lieu de rendre une
+          // page vide. Ce n'est pas une panne : la page est vide et le total se
+          // relit sur la première ligne, par la même requête (une relecture
+          // réduite à `modele_id` est refusée : le tri porte sur `modele_name`).
+          if (
+            error instanceof SupabaseRpcError &&
+            error.code === POSTGREST_RANGE_NOT_SATISFIABLE
+          ) {
+            const { error: totalError, count: total } = await readModels(0, 0);
+
+            if (totalError) {
+              const cause = this.rpcFailure(totalError);
+              this.logger.error('Erreur getModelsByBrand (total):', cause);
+              throw cause;
+            }
+
+            return { success: true, data: [], total: total || 0, page, limit };
+          }
+
           const cause = this.rpcFailure(error);
           this.logger.error('Erreur getModelsByBrand:', cause);
           throw cause;
