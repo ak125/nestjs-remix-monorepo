@@ -32,10 +32,16 @@ if grep -qE 'git\s+push\s+.*\b(origin\s+main|main)\b' <<<"$COMMAND"; then
   exit 2
 fi
 
-# Guard 2: Block destructive docker commands on production containers
-if grep -qE '(docker[- ]compose\s+down|docker\s+stop\s|docker\s+rm\s)' <<<"$COMMAND"; then
-  if grep -qE '(prod|nestjs-remix|automecanik)' <<<"$COMMAND"; then
-    echo "BLOCKED: Commande Docker destructive sur containers production detectee. Demande confirmation explicite a l'utilisateur." >&2
+# Guard 2: distinguish literal documentation from actual Docker targets.
+# The helper never executes COMMAND. It accepts only explicit, isolated DEV
+# container IDs after read-only inspection; PROD and uncertainty stay blocked.
+if grep -qiE 'docker' <<<"$COMMAND" && grep -qiE '\b(stop|rm|down)\b' <<<"$COMMAND"; then
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "BLOCKED: python3 requis pour qualifier les cibles Docker." >&2
+    exit 2
+  fi
+  GUARD_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+  if ! jq -c '.tool_input.command' <<<"$INPUT" | python3 -B "$GUARD_DIR/docker-target-guard.py"; then
     exit 2
   fi
 fi
