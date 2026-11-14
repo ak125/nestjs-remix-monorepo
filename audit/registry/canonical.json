@@ -28609,7 +28609,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 81,
+      "loc": 96,
       "owner": "__unassigned__",
       "path": "backend/jest.config.js",
       "risk": "low",
@@ -34516,7 +34516,7 @@
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1037,
+      "loc": 1046,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -63052,29 +63052,6 @@
         "manual"
       ],
       "domain": "D3",
-      "id": "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10.types.ts"
-      ],
-      "kind": "test",
-      "loc": 81,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
       "id": "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
@@ -63439,7 +63416,6 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
@@ -63456,7 +63432,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 686,
+      "loc": 681,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "high",
@@ -63543,7 +63519,6 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/services/sitemap-v10.types.ts",
       "importedBy": [
-        "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
@@ -70772,6 +70747,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/cart-data.attribution.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 215,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/cart-data.attribution.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/cart-recovery.unsubscribe.test.ts",
       "importedBy": [],
       "imports": [],
@@ -76250,9 +76245,11 @@
         "frontend/app/components/cart/CartSummaryBlock.tsx",
         "frontend/app/components/cart/FreeShippingProgress.tsx"
       ],
-      "imports": [],
+      "imports": [
+        "~/utils/safe-storage"
+      ],
       "kind": "config",
-      "loc": 67,
+      "loc": 75,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/cart/cart-utils.ts",
       "risk": "low",
@@ -89640,7 +89637,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 596,
+      "loc": 593,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "medium",
@@ -94163,7 +94160,7 @@
         "frontend/app/utils/remix-application-port.ts"
       ],
       "kind": "service",
-      "loc": 176,
+      "loc": 197,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "medium",
@@ -94231,7 +94228,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 756,
+      "loc": 760,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "medium",
@@ -94251,10 +94248,12 @@
       "importedBy": [],
       "imports": [
         "~/components/pieces/NoProductsAlternatives",
+        "~/utils/image-optimizer",
+        "~/utils/og-image.utils",
         "~/utils/seo/pieces-schema.utils"
       ],
       "kind": "service",
-      "loc": 177,
+      "loc": 191,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.meta.ts",
       "risk": "medium",
@@ -95855,6 +95854,26 @@
       "loc": 149,
       "owner": "@ak125",
       "path": "frontend/tests/unit/cache-control.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/cart-utils.restore.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 108,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/cart-utils.restore.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -97692,7 +97711,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 702,
+      "loc": 703,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "medium",
@@ -97712,7 +97731,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 97,
+      "loc": 197,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-vehicle-meta.test.ts",
       "risk": "medium",
@@ -107685,15 +107704,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "dd6a96ee9dfd2b8df8fe35176fb5ef1b9432d8657418aae0154c8a0a37f816aa",
+      ".spec/00-canon/repository-registry/ownership.yaml": "ea6feced416fa89922e8498e8d3c62ab550a17223afe01802cf96dd431c903c2",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "1dde33f928a1f2d36559eea5a578d347fb695074ebcf26358bdd2047ba64863b",
+      "audit/registry/files.json": "e91a167e5555143c4141e57b6e0e3d6255573389850171a544d207a1f1ba76f6",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "5f0bb5d40cec"
+    "sotFingerprint": "c0198a8ea76e"
   },
   "runtime": [
     {
