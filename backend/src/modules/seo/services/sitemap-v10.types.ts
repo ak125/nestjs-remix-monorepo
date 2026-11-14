@@ -92,18 +92,23 @@ export const ENTITY_PAGE_TYPES: Record<EntityType, string[]> = {
 
 export const MAX_URLS_PER_FILE = 50000;
 
+/**
+ * Pages statiques de sitemap-pages.xml : seules les destinations servies en
+ * 200 indexable, et non déjà portées par un autre fichier du même index.
+ *
+ * Retirées le 2026-11-06 (relevé HTTP du 2026-11-06, révision PROD 0b291e9b) :
+ *   - `/`               → déjà unique entrée de sitemap-racine.xml
+ *   - `/diagnostic-auto`→ déjà unique entrée de sitemap-diagnostic.xml
+ *   - `/constructeurs`, `/cgv`, `/faq` → 404
+ *   - `/blog`           → 301
+ *   - `/mentions-legales`, `/politique-confidentialite` → 200 `noindex, follow`
+ * Aucune de ces URL n'est modifiée ni supprimée du site : seule leur
+ * déclaration dans le sitemap cesse.
+ */
 export const STATIC_PAGES = [
-  { loc: '/', priority: '1.0', changefreq: 'daily' },
-  { loc: '/constructeurs', priority: '0.8', changefreq: 'weekly' },
-  { loc: '/blog', priority: '0.7', changefreq: 'daily' },
-  { loc: '/diagnostic-auto', priority: '0.8', changefreq: 'weekly' },
   { loc: '/reference-auto', priority: '0.8', changefreq: 'weekly' },
-  { loc: '/cgv', priority: '0.3', changefreq: 'yearly' },
-  { loc: '/mentions-legales', priority: '0.3', changefreq: 'yearly' },
-  { loc: '/politique-confidentialite', priority: '0.3', changefreq: 'yearly' },
   { loc: '/contact', priority: '0.4', changefreq: 'yearly' },
   { loc: '/aide', priority: '0.4', changefreq: 'monthly' },
-  { loc: '/faq', priority: '0.4', changefreq: 'monthly' },
 ];
 
 export const OBSOLETE_FILES = [
