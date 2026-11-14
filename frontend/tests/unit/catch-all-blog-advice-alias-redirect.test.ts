@@ -73,6 +73,7 @@ function apiResponding(articleStatus?: number) {
 const call = (path: string) =>
   loader({
     request: new Request(`https://www.automecanik.com${path}`),
+    url: new URL(`https://www.automecanik.com${path}`),
     params: {},
     context: {},
   } as never);
