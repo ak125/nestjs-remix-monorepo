@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 877d99944c8fc90bccd0f93a663b500885521b35c93ede6b0e96e86803501514
+source_sha256: 0f7e18bb63d151f11c19faca71934f2202710fcea83320ded9e0ba97498cc4e3
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3176 |
+| Files (Layer 1) | 3180 |
 | DB tables (Layer 1) | 315 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `5b9245327bb5`.
+Source sotFingerprint: `2bca7ee41762`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `5b9245327bb5`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 176 (test=162, service=10, config=3, controller=1)
+- **Files**: 177 (test=163, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (161), __unassigned__ (15)
+- **Top owners**: @ak125 (162), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=161
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=162
 
 ### D3 — SEO & Sitemap
 
@@ -61,11 +61,11 @@ Source sotFingerprint: `5b9245327bb5`.
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 118 (service=67, test=33, config=12, controller=6)
+- **Files**: 117 (service=67, test=32, config=12, controller=6)
 - **Runtime entrypoints**: 47
-- **Top owners**: @ak125/vehicle-team (78), @ak125 (40)
+- **Top owners**: @ak125/vehicle-team (78), @ak125 (39)
 - **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=71, UNKNOWN=47
+- **Status**: LIVE=71, UNKNOWN=46
 
 ### D5 — Blog / Content
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `5b9245327bb5`.
 
 ### D13 — Config & System
 
-- **Files**: 248 (script=89, service=72, config=54, test=33)
+- **Files**: 250 (script=89, service=73, config=54, test=34)
 - **Runtime entrypoints**: 16
-- **Top owners**: @ak125 (248)
-- **Status**: LIVE=92, UNKNOWN=156
+- **Top owners**: @ak125 (250)
+- **Status**: LIVE=92, UNKNOWN=158
 
 ### D14 — Gamme Aggregates & V-Level
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `5b9245327bb5`.
 
 ### D15 — Security & Governance
 
-- **Files**: 320 (test=209, script=62, service=46, config=2, controller=1)
+- **Files**: 322 (test=211, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (320)
+- **Top owners**: @ak125 (322)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=261
+- **Status**: LIVE=59, UNKNOWN=263
 
 ### D16 — Maintenance
 

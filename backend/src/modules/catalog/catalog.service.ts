@@ -10,6 +10,7 @@ import { getErrorMessage } from '@common/utils/error.utils';
 
 // import { GammeService } from './services/gamme.service'; // TEMPORAIREMENT DÉSACTIVÉ - dépendance VehicleCacheService
 import { CatalogHierarchyService } from './services/catalog-hierarchy.service';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 // ========================================
 // 📊 INTERFACES ÉTENDUES
@@ -308,7 +309,7 @@ export class CatalogService
       // Recherche textuelle
       if (query) {
         queryBuilder = queryBuilder.or(
-          `pg_name.ilike.%${query}%,pg_alias.ilike.%${query}%`,
+          `pg_name.ilike.${ilikeContains(query)},pg_alias.ilike.${ilikeContains(query)}`,
         );
       }
 
@@ -509,7 +510,7 @@ export class CatalogService
         `,
         )
         .or(
-          `piece_ref.ilike.%${query}%,piece_name.ilike.%${query}%,piece_des.ilike.%${query}%`,
+          `piece_ref.ilike.${ilikeContains(query)},piece_name.ilike.${ilikeContains(query)},piece_des.ilike.${ilikeContains(query)}`,
         )
         .eq('piece_display', true)
         .order('piece_sort', { ascending: true })

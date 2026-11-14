@@ -7,6 +7,7 @@ import {
   computeMargePct,
   eurToCents,
 } from '../../pricing/services/pricing-formula.service';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 /**
  * Service pour l'interface commerciale et admin des produits :
@@ -78,7 +79,7 @@ export class ProductsAdminService extends SupabaseBaseService {
       // Recherche si fournie
       if (search) {
         query = query.or(
-          `piece_name.ilike.%${search}%,piece_ref.ilike.%${search}%,piece_des.ilike.%${search}%`,
+          `piece_name.ilike.${ilikeContains(search)},piece_ref.ilike.${ilikeContains(search)},piece_des.ilike.${ilikeContains(search)}`,
         );
       }
 
@@ -237,7 +238,7 @@ export class ProductsAdminService extends SupabaseBaseService {
       // Filtres
       if (search) {
         query = query.or(
-          `piece_name.ilike.%${search}%,piece_ref.ilike.%${search}%`,
+          `piece_name.ilike.${ilikeContains(search)},piece_ref.ilike.${ilikeContains(search)}`,
         );
       }
 

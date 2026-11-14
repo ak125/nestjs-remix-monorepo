@@ -4,6 +4,7 @@ import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { CacheService } from '@cache/cache.service';
 // ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
 import { buildRackImageUrl } from '../../catalog/utils/image-urls.utils';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 type SearchFilters = {
   marqueIds?: number[];
@@ -858,7 +859,9 @@ export class SearchSimpleService extends SupabaseBaseService {
     const gammesResult = await this.client
       .from(TABLES.pieces_gamme)
       .select('pg_id, pg_name, pg_alias, pg_level')
-      .or(`pg_name.ilike.%${query}%,pg_name.ilike.%${normalizedQuery}%`)
+      .or(
+        `pg_name.ilike.${ilikeContains(query)},pg_name.ilike.${ilikeContains(normalizedQuery)}`,
+      )
       .eq('pg_display', '1')
       .order('pg_level', { ascending: false }) // Level 1 (main) avant level 0 (obscur)
       .limit(10);

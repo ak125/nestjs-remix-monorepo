@@ -6,6 +6,11 @@ import { BlogArticle } from '../interfaces/blog.interfaces';
 import { BlogCacheService } from './blog-cache.service';
 import { ConstructeurTransformService } from './constructeur-transform.service';
 import { ConstructeurFilters } from './constructeur.service';
+import {
+  escapeLikePattern,
+  ilikeContains,
+  quoteFilterValue,
+} from '@common/utils/postgrest-filter.util';
 
 /**
  * ConstructeurSearchService - Search-related operations for constructeurs
@@ -94,16 +99,18 @@ export class ConstructeurSearchService {
 
       // Recherche multi-colonnes avec priorite
       const searchConditions = [
-        `bc_constructeur.ilike.%${searchTermClean}%`,
-        `bc_alias.ilike.%${searchTermClean}%`,
-        `bc_keywords.ilike.%${searchTermClean}%`,
-        `bc_content.ilike.%${searchTermClean}%`,
+        `bc_constructeur.ilike.${ilikeContains(searchTermClean)}`,
+        `bc_alias.ilike.${ilikeContains(searchTermClean)}`,
+        `bc_keywords.ilike.${ilikeContains(searchTermClean)}`,
+        `bc_content.ilike.${ilikeContains(searchTermClean)}`,
       ];
 
       if (fuzzyMatch) {
         // Ajout recherche fuzzy pour tolerer les fautes de frappe
-        const fuzzyTerm = searchTermClean.replace(/./g, '$&%');
-        searchConditions.push(`bc_constructeur.ilike.%${fuzzyTerm}%`);
+        const fuzzyPattern = quoteFilterValue(
+          `%${Array.from(searchTermClean, escapeLikePattern).join('%')}%`,
+        );
+        searchConditions.push(`bc_constructeur.ilike.${fuzzyPattern}`);
       }
 
       const searchFilter = searchConditions.join(',');
@@ -209,7 +216,7 @@ export class ConstructeurSearchService {
         .from(TABLES.blog_seo_marque)
         .select('bsm_marque_id')
         .or(
-          `bc_constructeur.ilike.%${searchTerm.charAt(0)}%,bc_constructeur.ilike.%${searchTerm.slice(0, 3)}%`,
+          `bc_constructeur.ilike.${ilikeContains(searchTerm.charAt(0))},bc_constructeur.ilike.${ilikeContains(searchTerm.slice(0, 3))}`,
         )
         // .order() removed - column doesn't exist
         .limit(5);
