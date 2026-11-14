@@ -26694,7 +26694,7 @@
         "backend/src/modules/seo-control-plane/types.ts"
       ],
       "kind": "test",
-      "loc": 534,
+      "loc": 846,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.test.ts",
       "risk": "low",
@@ -26724,7 +26724,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 615,
+      "loc": 662,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
       "risk": "low",
@@ -33489,6 +33489,28 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10.types.ts"
+      ],
+      "kind": "test",
+      "loc": 81,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
@@ -33841,6 +33863,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
@@ -33857,7 +33880,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 681,
+      "loc": 686,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "low",
@@ -33941,6 +33964,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10.types.ts",
       "importedBy": [
+        "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
@@ -36745,6 +36769,29 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/support/services/legal-page.service.ts",
+        "backend/src/modules/support/services/legal-version.service.ts",
+        "backend/src/modules/support/services/legal.service.ts"
+      ],
+      "kind": "test",
+      "loc": 46,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/support/services/__tests__/legal.service.slug.test.ts",
       "importedBy": [],
       "imports": [
@@ -36936,6 +36983,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/support/services/legal-page.service.ts",
       "importedBy": [
+        "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
         "backend/src/modules/support/services/legal.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
@@ -36961,6 +37009,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/support/services/legal-version.service.ts",
       "importedBy": [
+        "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
         "backend/src/modules/support/services/legal.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
@@ -36989,6 +37038,7 @@
       "importedBy": [
         "backend/src/modules/support/controllers/legal.controller.ts",
         "backend/src/modules/support/index.ts",
+        "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
         "backend/src/modules/support/services/__tests__/legal.service.slug.test.ts",
         "backend/src/modules/support/services/legal-page.service.ts",
         "backend/src/modules/support/services/legal-version.service.ts",
@@ -37002,7 +37052,7 @@
         "backend/src/modules/support/services/legal-version.service.ts"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 773,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/legal.service.ts",
       "risk": "low",
@@ -54896,7 +54946,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "route",
-      "loc": 100,
+      "loc": 103,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/_layout.tsx",
       "risk": "low",
@@ -54917,7 +54967,7 @@
         "~/components/ui/button"
       ],
       "kind": "route",
-      "loc": 272,
+      "loc": 284,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/aide.tsx",
       "risk": "low",
@@ -55034,7 +55084,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1155,
+      "loc": 1158,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/register.tsx",
       "risk": "low",
@@ -59107,7 +59157,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 593,
+      "loc": 596,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "low",
@@ -68940,7 +68990,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 251,
+      "loc": 270,
       "owner": "__unassigned__",
       "path": "packages/registry/src/__tests__/seo-criticality.test.ts",
       "risk": "low",
@@ -69225,7 +69275,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 202,
+      "loc": 206,
       "owner": "__unassigned__",
       "path": "packages/registry/src/canonical/seo-criticality.ts",
       "risk": "low",
