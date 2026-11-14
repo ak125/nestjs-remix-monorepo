@@ -21,6 +21,7 @@ SCRIPTS = [
     "test-cwv-trend-detector-vacancy.sh",
     "test-diag-capture-maintenance-schema.sh",
     "test-diag-link-provenance.sh",
+    "test-editorial-filtre-huile-lot.sh",
     "test-kg-maintenance-schedule-fuel-filter.sh",
     "test-seo-gsc-page-totals-migrations.sh",
     "test-tecdoc-api-surface-lockdown.sh",

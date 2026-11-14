@@ -146,6 +146,22 @@ export function extractEditorialBlocks(html: string): EditorialBlocks {
   return result;
 }
 
+/** Mention de prix dans le texte d'un bloc (balises retirées). */
+const PRICE_MENTION =
+  /\bprix\b|\btarifs?\b|€|&euro;|\beuros?\b|\bco[uû]ts?\b|\bbudget\b|fourchette|pas\s+cher|bon\s+march[eé]/i;
+
+/**
+ * Le H2 « Qualité, prix et marques » annonce-t-il des prix que la section montre ?
+ * Faux seulement si la section a des blocs et qu'aucun ne parle de prix (bloc de
+ * prix retiré du contenu) ; une section sans bloc garde le titre historique.
+ */
+export function priceSectionMentionsPrice(priceSection: string[]): boolean {
+  if (priceSection.length === 0) return true;
+  return priceSection.some((block) =>
+    PRICE_MENTION.test(block.replace(/<[^>]+>/g, " ")),
+  );
+}
+
 /**
  * Fusionne les blocs FAQ éditoriaux avec les FAQ statiques.
  * Priorité : FAQ éditorial, puis fallback statique (sans doublons).
