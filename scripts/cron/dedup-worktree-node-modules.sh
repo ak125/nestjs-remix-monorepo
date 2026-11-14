@@ -36,7 +36,8 @@
 #
 # Env (optionnel):
 #   DEDUP_ROOTS  préfixes de chemin des worktrees concernés, séparés par « : »
-#                (défaut : <checkout principal>/.claude/worktrees/:$HOME/worktrees/claude-)
+#                (défaut : <checkout principal>/.claude/worktrees/:$HOME/worktrees/claude-:${TMPDIR:-/tmp}/claude-<uid>/,
+#                le dernier = scratchpads des sessions Claude, mêmes préfixes que prune-merged-worktrees.sh)
 #   SETTLE_MIN   minutes depuis la fin de l'installation sous lesquelles un worktree est épargné (défaut : 15)
 #   CRON_REPORT_MAX_AGE_S  silence au-delà duquel le hook SessionStart signale le cron arrêté (défaut : 10800)
 #
@@ -79,7 +80,7 @@ hardlink --version 2>&1 | grep -q util-linux || fatal "hardlink n'est pas celui 
 
 MAIN="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
 SETTLE_MIN="${SETTLE_MIN:-15}"
-IFS=: read -r -a ROOTS <<<"${DEDUP_ROOTS:-$MAIN/.claude/worktrees/:$HOME/worktrees/claude-}"
+IFS=: read -r -a ROOTS <<<"${DEDUP_ROOTS:-$MAIN/.claude/worktrees/:$HOME/worktrees/claude-:${TMPDIR:-/tmp}/claude-$(id -u)/}"
 # Chemins complets (hardlink -x s'applique au chemin entier).
 EXCL='/node_modules/(\.cache|\.vite|\.vite-temp)/|/node_modules/\.package-lock\.json$'
 STAMP=node-modules-dedup
