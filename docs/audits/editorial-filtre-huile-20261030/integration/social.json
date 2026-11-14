@@ -1,0 +1,103 @@
+{
+  "objet": "Déclinaisons sociales du dossier filtre à huile (pg_id 7) : carrousels Instagram, posts Facebook, légendes des courts, métadonnées YouTube et couvertures. Propositions non publiées.",
+  "revision": 5,
+  "statut": "PROPOSITION. Rien n'est publié ni programmé. Publication : choix de l'owner, après les contrôles de SOCIAL.md § 4.",
+  "regles_appliquees": [
+    "Voix ECOMMERCE du miroir .claude/canon-mirrors/marketing-voice.md : vouvoiement, pédagogique, pièces neuves, vérification par véhicule proposée, aucun prix, stock, délai ni concurrent.",
+    "Règles de canal de backend/src/modules/marketing/templates/brand-rules-seed.ts : #automecanik en tête, Instagram 20 à 25 hashtags en commentaire séparé, Facebook 3 à 5 hashtags dans le texte et 500 caractères au plus, lien avec utm_source, utm_medium et utm_campaign, au moins un appel à l'action de la liste, mention AutoMecanik, formats 1080 × 1350 et 1080 × 1920.",
+    "Faits : seuls les faits admis de la fiche WIKI servent le carrousel A, les légendes des courts V1 à C3 et le post Facebook A. Le carrousel B, le post Facebook B et C4 portent des faits vérifiés sur des sources de fabricants (integration/candidats.json), non admis : ils restent marqués comme tels.",
+    "Aucun nom de source, aucun nombre de tours, couple, kilométrage ni intervalle."
+  ],
+  "conflits_signales": [
+    "Instagram : brand-rules-seed.ts impose le tutoiement, le canon marketing-voice le vouvoiement (conflit relevé par editorial-review.md § 7). Décision de l'owner du 31/10 pour ce dossier : vouvoiement sur Instagram et Facebook ; la voix de Fafa garde le tutoiement de la persona V1. Le seed n'est pas modifié.",
+    "Canon « envoyez votre plaque d'immatriculation ou votre carte grise » : aucun canal d'envoi vérifié dans ce lot. Les textes proposent la recherche par véhicule ou par type mine, que R1 sert déjà."
+  ],
+  "liens": {
+    "r1": "https://www.automecanik.com/pieces/filtre-a-huile-7.html?utm_source={plateforme}&utm_medium=social&utm_campaign={campagne}",
+    "r3": "https://www.automecanik.com/blog-pieces-auto/conseils/filtre-a-huile?utm_source={plateforme}&utm_medium=social&utm_campaign={campagne}",
+    "note": "Le site ne lit que utm_source et utm_medium ; le détail par campagne vient de GA4. Sur Instagram, le lien va en bio (« Lien en bio »)."
+  },
+  "carrousels": [
+    {
+      "id": "IG-A",
+      "plateforme": "instagram",
+      "format": "1080x1350",
+      "campagne": "fafa-filtre-huile-carrousel-forme",
+      "destination": "r1",
+      "statut_faits": "admis (fiche WIKI : Fonctionnement, Critères de choix) + catalogue (sélecteur servi sur R1)",
+      "slides": [
+        { "n": 1, "titre": "Filtre à huile :\nvissé ou cartouche ?", "texte": "Les deux formes, et comment trouver la vôtre.", "visuel": { "asset": "assets/r1-hero-filtre-visse-usage.webp" } },
+        { "n": 2, "titre": "Le filtre vissé", "texte": "Il se remplace en entier.", "visuel": { "asset": "assets/r1-types-visse-cartouche.webp", "extract": [24, 24, 564, 780] } },
+        { "n": 3, "titre": "La cartouche", "texte": "Seul l'élément filtrant se remplace. Le boîtier reste sur le moteur.", "visuel": { "asset": "assets/r1-types-visse-cartouche.webp", "extract": [612, 24, 564, 780] } },
+        { "n": 4, "titre": "La forme ne se choisit pas", "texte": "C'est le moteur qui impose un filtre vissé ou une cartouche.", "visuel": { "schema": "vs" } },
+        { "n": 5, "titre": "Pareils dehors, différents dedans", "texte": "Selon le moteur, deux filtres d'aspect proche peuvent différer : clapet anti-retour, filetage, pression d'ouverture du by-pass, média filtrant, finesse de filtration.", "visuel": { "asset": "assets/r3-s3-coupe-filtre-visse.webp" } },
+        { "n": 6, "titre": "Partez du véhicule", "texte": "Marque, modèle, année, puis motorisation exacte. Ou le type mine, sur votre carte grise.", "visuel": { "schema": "selecteur" }, "pied": "Filtres à huile neufs sur automecanik.com" }
+      ],
+      "legende": "Vissé ou cartouche ? Votre filtre à huile n'a pas le choix : c'est le moteur qui impose sa forme.\n\nLe filtre vissé se remplace en entier. Avec une cartouche, seul l'élément filtrant change et le boîtier reste en place.\n\nDeux filtres d'aspect proche peuvent aussi différer à l'intérieur, selon le moteur : clapet anti-retour, filetage, pression d'ouverture du by-pass, média filtrant. Le bon filtre se trouve donc à partir du véhicule : marque, modèle, année, puis motorisation exacte, ou type mine de votre carte grise.\n\nSauvegardez ce post pour le retrouver avant votre prochain entretien. Lien en bio vers les filtres à huile neufs AutoMecanik.\n\nConseil informatif.",
+      "hashtags_commentaire": ["#automecanik", "#filtreahuile", "#filtreahuilemoteur", "#entretienauto", "#entretienvoiture", "#mecaniqueauto", "#mecanique", "#piecesauto", "#piecesdetachees", "#huilemoteur", "#vidange", "#moteur", "#voiture", "#auto", "#automobile", "#conseilauto", "#astuceauto", "#bricolageauto", "#revisionauto", "#garageauto"]
+    },
+    {
+      "id": "IG-B",
+      "plateforme": "instagram",
+      "format": "1080x1350",
+      "campagne": "fafa-filtre-huile-carrousel-montage",
+      "destination": "r3",
+      "statut_faits": "vérifié, non admis : F-C3, F-C4, F-C5, F-C9 (sources de fabricants, integration/candidats.json). Claims de procédure. Publication après admission ou décision de l'owner.",
+      "slides": [
+        { "n": 1, "titre": "Filtre à huile neuf :\n6 points contre la fuite", "texte": "Avant, pendant et après le montage.", "visuel": { "asset": "assets/r1-hero-filtre-visse-usage.webp" } },
+        { "n": 2, "titre": "La bonne référence", "texte": "Vérifiez que le filtre neuf est celui prévu pour votre motorisation.", "visuel": { "schema": "selecteur" } },
+        { "n": 3, "titre": "L'ancien joint", "texte": "Après la dépose, vérifiez qu'il n'est pas resté collé sur la portée. S'il y est, retirez-le, puis nettoyez la surface d'étanchéité.", "visuel": { "schema": "ancien-joint" } },
+        { "n": 4, "titre": "Le joint neuf", "texte": "Huilez-le avec de l'huile moteur propre. Sur une cartouche, posez les joints neufs prévus pour l'élément.", "visuel": { "schema": "joint-huile" } },
+        { "n": 5, "titre": "Le serrage", "texte": "Vissez jusqu'au contact du joint, puis serrez selon l'instruction imprimée sur le filtre ou sur sa notice : elle change d'un filtre à l'autre.", "visuel": { "schema": "serrage" } },
+        { "n": 6, "titre": "Après le montage", "texte": "Faites l'appoint, démarrez, contrôlez le niveau sans dépasser le maximum et vérifiez l'absence de fuite.", "visuel": { "asset": "assets/picto-niveau-huile.webp" } },
+        { "n": 7, "titre": "Témoin de pression allumé ?", "texte": "Suivez la notice de votre véhicule.", "visuel": { "asset": "assets/picto-temoin-pression-huile.webp" }, "pied": "Le guide complet sur automecanik.com" }
+      ],
+      "legende": "Un filtre à huile neuf ne fait son travail que s'il est bien monté. Six points à vérifier :\n\n1. La référence prévue pour votre motorisation.\n2. L'ancien joint : il ne doit pas rester collé sur la portée.\n3. Le joint neuf, huilé avec de l'huile moteur propre. Sur une cartouche, les joints neufs prévus pour l'élément.\n4. Le serrage : jusqu'au contact du joint, puis selon l'instruction imprimée sur le filtre ou sa notice. Elle change d'un filtre à l'autre.\n5. Après le montage : appoint, démarrage, niveau sans dépasser le maximum, aucune fuite.\n6. Si le témoin de pression d'huile s'allume, la notice de votre véhicule.\n\nSauvegardez ce post. Le guide complet du filtre à huile est sur AutoMecanik, lien en bio.\n\nConseil informatif. Suivez toujours les instructions du constructeur du véhicule et du fabricant du filtre.",
+      "hashtags_commentaire": ["#automecanik", "#filtreahuile", "#filtreahuilemoteur", "#entretienauto", "#entretienvoiture", "#mecaniqueauto", "#mecanique", "#piecesauto", "#huilemoteur", "#vidange", "#moteur", "#voiture", "#auto", "#automobile", "#conseilauto", "#astuceauto", "#bricolageauto", "#revisionauto", "#garageauto", "#tutoauto"]
+    }
+  ],
+  "facebook": [
+    {
+      "id": "FB-A",
+      "campagne": "fafa-filtre-huile-post-forme",
+      "destination": "r1",
+      "statut_faits": "admis + catalogue",
+      "visuel": "assets/social/ig-a-1.webp",
+      "texte": "Filtre à huile vissé ou cartouche ? Le moteur décide. Le vissé se change en entier ; avec une cartouche, seul l'élément filtrant change. Pour trouver le vôtre, partez du véhicule : marque, modèle, année, motorisation, ou type mine. Filtres neufs : retrouvez-nous sur automecanik.com {lien} Conseil informatif. #automecanik #filtreahuile #entretienauto #mecaniqueauto"
+    },
+    {
+      "id": "FB-B",
+      "campagne": "fafa-filtre-huile-post-montage",
+      "destination": "r3",
+      "statut_faits": "vérifié, non admis (F-C3, F-C4, F-C5, F-C9)",
+      "visuel": "assets/social/ig-b-1.webp",
+      "texte": "Filtre à huile neuf : avant de le visser, vérifiez que l'ancien joint n'est pas resté sur la portée et huilez le joint neuf. Serrez selon l'instruction du filtre ou de sa notice, puis contrôlez le niveau et l'absence de fuite. Guide complet : retrouvez-nous sur automecanik.com {lien} Conseil informatif. #automecanik #filtreahuile #entretienauto #vidange"
+    }
+  ],
+  "courts_legendes": [
+    {
+      "video": "C4",
+      "statut_faits": "vérifié, non admis (F-C2 reformulé, F-C3, F-C4)",
+      "campagne": "fafa-filtre-huile-c4",
+      "destination": "r3",
+      "texte": "Comment serrer un filtre à huile vissé ? Vérifiez d'abord que l'ancien joint n'est pas resté en place, huilez le joint neuf, vissez jusqu'au contact, puis serrez comme l'indique le fabricant du filtre : la consigne change d'un filtre à l'autre. Le guide complet est sur AutoMecanik, lien en bio. Conseil informatif ; Fafa est un mécano IA.",
+      "hashtags_instagram": "commentaire séparé, même liste que IG-B",
+      "hashtags_tiktok": ["#automecanik", "#filtreahuile", "#entretienauto", "#mecaniqueauto"],
+      "youtube_description": "Reprendre la légende, puis le lien R3 avec utm_source=youtube, utm_medium=social, utm_campaign=fafa-filtre-huile-c4."
+    }
+  ],
+  "youtube": [
+    { "video": "V1", "titre": "Filtre à huile : vissé ou cartouche ?", "tags": ["automecanik", "pieces auto", "filtre à huile", "filtre à huile vissé", "cartouche filtre à huile", "entretien voiture", "entretien auto", "Fafa mécano IA"] },
+    { "video": "C1", "titre": "Voyant d'huile allumé : faut-il changer le filtre ?", "tags": ["automecanik", "pieces auto", "voyant huile", "témoin pression huile", "filtre à huile", "diagnostic auto"] },
+    { "video": "C2", "titre": "Deux filtres à huile identiques sont-ils interchangeables ?", "tags": ["automecanik", "pieces auto", "filtre à huile", "compatibilité filtre à huile", "choisir filtre à huile"] },
+    { "video": "C3", "titre": "À quoi servent les clapets d'un filtre à huile ?", "tags": ["automecanik", "pieces auto", "filtre à huile", "clapet anti-retour", "clapet by-pass", "fonctionnement filtre à huile"] },
+    { "video": "C4", "titre": "Comment serrer un filtre à huile vissé ?", "tags": ["automecanik", "pieces auto", "filtre à huile", "serrage filtre à huile", "joint filtre à huile", "changer filtre à huile"] }
+  ],
+  "couvertures": [
+    { "video": "V1", "format": "1080x1920", "texte": "Vissé ou cartouche ?", "visuel": { "asset": "assets/r1-types-visse-cartouche.webp" } },
+    { "video": "C1", "format": "1080x1920", "texte": "Voyant d'huile : par où commencer ?", "visuel": { "asset": "assets/picto-temoin-pression-huile.webp" } },
+    { "video": "C2", "format": "1080x1920", "texte": "Identiques ?", "visuel": { "schema": "deux-filtres" } },
+    { "video": "C3", "format": "1080x1920", "texte": "3 clapets, 3 rôles", "visuel": { "asset": "assets/r3-s3-coupe-filtre-visse.webp" } },
+    { "video": "C4", "format": "1080x1920", "texte": "Serrage : selon le filtre", "visuel": { "schema": "serrage" } }
+  ]
+}
