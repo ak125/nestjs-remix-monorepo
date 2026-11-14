@@ -38990,7 +38990,7 @@
         "backend/src/modules/vehicles/services/data/vehicle-models.service.ts"
       ],
       "kind": "test",
-      "loc": 235,
+      "loc": 237,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
       "risk": "low",
@@ -39022,7 +39022,7 @@
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 830,
+      "loc": 833,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "risk": "low",
