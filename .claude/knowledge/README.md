@@ -1,31 +1,30 @@
 # Knowledge — Mémoire codebase AutoMecanik
 
-> **But** : permettre à Claude Code de répondre aux questions sur le codebase
-> **sans relire tous les fichiers**. Cette mémoire est lue en premier, avant
-> tout `Grep` ou `Glob` en rafale.
+> **But** : orienter vers les sources et notices utiles pour répondre aux
+> questions sur le codebase sans relire tous les fichiers.
 
-## Hiérarchie de lecture
+## Navigation documentaire
 
-### Registry Lookup First (ADR-058 PR-F)
+La méthode de recherche, selon le périmètre de la question, est définie dans
+[CLAUDE.md](../../CLAUDE.md#contrat-dexécution--9-invariants) et
+[Recherche documentaire — sources ciblées](../rules/agent-doc-search.md).
+Cet index renvoie à ces instructions sans définir un autre ordre de lecture.
 
-**Pour toute question de type « qui possède X », « quel domaine », « où vit Y », « est-ce que Z est runtime » :**
+- [audit/registry/canonical.json](../../audit/registry/canonical.json) —
+  projection des sources L1 et L2, à interroger de manière ciblée.
+- [REPO_MAP.md](REPO_MAP.md) — index généré par domaine D1..D16.
 
-0a. **[`REPO_MAP.md`](REPO_MAP.md)** — index unifié par domaine D1..D15 (généré depuis `audit/registry/canonical.json`). ~6KB, lecture rapide humaine.
-
-0b. **[`audit/registry/canonical.json`](../../audit/registry/canonical.json)** — Source of Truth machine-readable (Layer 1 auto + Layer 2 overlay couplés). Query programmatique via `jq` ou Node.
-
-Si la réponse n'est pas dans REPO_MAP ni canonical, passer à la prose ci-dessous. **Grep en dernier recours.**
+Les notices ci-dessous complètent ces entrées selon le besoin.
 
 ### Prose détaillée
 
-1. `README.md` (ce fichier) — index + règles de navigation
+1. `README.md` (ce fichier) — index des notices
 2. `modules/<name>.md` — pour toute question portant sur un module backend NestJS
 3. `db/*.md` — pour les questions sur les tables, RPCs, migrations Supabase
 4. `integrations/*.md` — pour Paybox, SystemPay, Supabase, catalogue fournisseur (parts-feed)
-5. `routes/*.md` — pour les routes React Router critiques
-6. `ops/*.md` — pour toute question sur **cleanup / refactor / suppression** (procédures, backlog, playbook cycles)
+5. `ops/*.md` — pour toute question sur **cleanup / refactor / suppression** (procédures, backlog, playbook cycles)
 
-Si la question n'est pas couverte ici, lire `.claude/rules/*` puis grepper.
+Pour poursuivre la recherche, suivre les sources de navigation ci-dessus et consulter uniquement les règles pertinentes au besoin.
 
 ### Voisins (pas dans ce dossier mais souvent utiles)
 
@@ -88,14 +87,6 @@ seo-logs, shipping, staff, suppliers, support, system, upload
 | [integrations/supabase.md](integrations/supabase.md) | Projet `cxpojprgwgubzjyqzmoq`, MCP, RLS |
 | [integrations/parts-feed.md](integrations/parts-feed.md) | Pipeline V2 catalogue fournisseur, remap, noindex legacy |
 
-## Routes React Router critiques
-
-| Fichier | Couvre |
-|---|---|
-| [routes/pieces.md](routes/pieces.md) | Catalogue pièces (pieces.*) |
-| [routes/admin.md](routes/admin.md) | Dashboard interne (admin.*) |
-| [routes/panier.md](routes/panier.md) | Panier + checkout (panier.*) |
-
 ## Opérations cleanup / refactor / fusion
 
 Toute action de suppression, refactor, ou fusion de module DOIT passer par ces docs d'abord :
@@ -121,7 +112,7 @@ Ces règles vivent dans `.claude/rules/*` — `knowledge/` les référence, jama
 - [rules/deployment.md](../rules/deployment.md) — the PREPROD container / PROD (tag), Docker, Caddy
 - [rules/payments.md](../rules/payments.md) — règles HMAC critiques, timingSafeEqual, security
 - [rules/context7.md](../rules/context7.md) — Context7 MCP usage (frugal)
-- [rules/agent-exit-contract.md](../rules/agent-exit-contract.md) — anti-overclaim pour agents
+- [canon-mirrors/agent-exit-contract.md](../canon-mirrors/agent-exit-contract.md) — anti-overclaim pour agents
 
 ## Gouvernance
 
