@@ -18,7 +18,10 @@ import {
 import { fetchRmPageV2 } from "~/services/api/rm-api.service";
 import { ApiError } from "~/services/common/errors";
 import { buildCacheHeaders } from "~/utils/cache-control";
-import { resolveGammeId, resolveVehicleIds } from "~/utils/pieces-route.utils";
+import {
+  resolveGammeId,
+  resolveVehicleIds,
+} from "~/utils/pieces-id-resolution.server";
 import { piecesVehicleLoader } from "~/utils/pieces-vehicle.loader.server";
 import { mapRmV2ToLoaderData } from "~/utils/rm-mapper";
 import routeConfig from "../../app/routes";
@@ -54,7 +57,7 @@ vi.mock("~/utils/rm-mapper", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   mapRmV2ToLoaderData: vi.fn(),
 }));
-vi.mock("~/utils/pieces-route.utils", async (importOriginal) => ({
+vi.mock("~/utils/pieces-id-resolution.server", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   resolveVehicleIds: vi.fn(),
   resolveGammeId: vi.fn(),
