@@ -230,10 +230,18 @@ identifie un workflow par son chemin et un run exécute la copie de sa ref : les
 branches antérieurs au renommage portent encore ce fichier. Au 2026-11-13, les 305 tags `v*` le
 portent ; un seul contient la garde de ref (#2010), et 194 n'ont aucune garde de provenance (leur
 run promeut l'alias `:preprod` courant vers PROD).
-Après la fusion du renommage, l'owner le désactive :
-`gh workflow disable deploy-prod.yml --repo ak125/nestjs-remix-monorepo`. État, en lecture seule :
-`gh api repos/ak125/nestjs-remix-monorepo/actions/workflows/deploy-prod.yml --jq .state`, qui doit
-renvoyer `disabled_manually`.
+Après la fusion du renommage (#2046), l'API renvoie `deleted` pour ce workflow, parce que son
+fichier n'est plus sur `main` :
+`gh api repos/ak125/nestjs-remix-monorepo/actions/workflows/deploy-prod.yml --jq .state`. Cet état
+n'est pas une désactivation : un push de tag déclenche les workflows du commit tagué, y compris ceux
+absents de la branche par défaut (documentation GitHub, événement `push`). Un tag `v*` posé sur un
+commit antérieur à #2046 lance donc l'ancien fichier.
+
+L'owner désactive ce workflow depuis son propre compte GitHub (onglet Actions, workflow, « … »,
+« Disable workflow ») ; l'état attendu est alors `disabled_manually`. L'identité `gh` de la machine
+DEV est un jeton d'application sans droit d'écriture sur Actions : `gh workflow disable` y répond
+`HTTP 403: Resource not accessible by integration`. Un ruleset de tags `v*` qui réserve leur
+création à l'owner ferme la même voie côté serveur, désactivation possible ou non.
 
 Désactivé ou non : **ne lancer aucun run de `deploy-prod.yml`, ne pas le réactiver, ne pas pousser
 de tag `v*` sur un commit qui ne contient pas `release-prod.yml`.** Remettre une version antérieure

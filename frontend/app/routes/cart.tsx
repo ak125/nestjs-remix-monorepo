@@ -30,6 +30,8 @@ import {
   useRouteError,
 } from "react-router";
 import {
+  buildRestoreAddItemBody,
+  type CartBackupItem,
   formatPrice,
   saveCartToLocalStorage,
   loadCartFromLocalStorage,
@@ -286,9 +288,7 @@ export default function CartPage() {
   };
 
   // Restore cart from localStorage if session is empty
-  const [backupItems, setBackupItems] = useState<
-    { product_id: number; quantity: number; product_name?: string }[] | null
-  >(null);
+  const [backupItems, setBackupItems] = useState<CartBackupItem[] | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
 
   useEffect(() => {
@@ -311,10 +311,7 @@ export default function CartPage() {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            product_id: item.product_id,
-            quantity: item.quantity,
-          }),
+          body: JSON.stringify(buildRestoreAddItemBody(item)),
         });
       }
       clearCartLocalStorage();

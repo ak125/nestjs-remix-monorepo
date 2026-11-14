@@ -2,6 +2,10 @@ import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import {
+  ilikeContains,
+  quoteFilterValue,
+} from '@common/utils/postgrest-filter.util';
 
 // DTOs comme interfaces simples (pas de dépendances externes)
 interface CreateProductDto {
@@ -62,7 +66,7 @@ export class ProductsService extends SupabaseBaseService {
 
       if (filters?.search) {
         query = query.or(
-          `piece_name.ilike.%${filters.search}%,piece_ref.ilike.%${filters.search}%,piece_ref_brut.ilike.%${filters.search}%`,
+          `piece_name.ilike.${ilikeContains(filters.search)},piece_ref.ilike.${ilikeContains(filters.search)},piece_ref_brut.ilike.${ilikeContains(filters.search)}`,
         );
       }
 
@@ -125,7 +129,7 @@ export class ProductsService extends SupabaseBaseService {
       // Recherche si fournie
       if (search) {
         query = query.or(
-          `piece_name.ilike.%${search}%,piece_ref.ilike.%${search}%,piece_des.ilike.%${search}%`,
+          `piece_name.ilike.${ilikeContains(search)},piece_ref.ilike.${ilikeContains(search)},piece_des.ilike.${ilikeContains(search)}`,
         );
       }
 
@@ -320,7 +324,9 @@ export class ProductsService extends SupabaseBaseService {
       const { data, error } = await this.client
         .from(TABLES.pieces)
         .select('*')
-        .or(`piece_ref.eq.${sku},piece_ref_brut.eq.${sku}`)
+        .or(
+          `piece_ref.eq.${quoteFilterValue(sku)},piece_ref_brut.eq.${quoteFilterValue(sku)}`,
+        )
         .single();
 
       if (error) {
@@ -497,7 +503,7 @@ export class ProductsService extends SupabaseBaseService {
    */
   async searchProducts(query: string, limit: number = 10) {
     try {
-      const searchTerm = `%${query}%`;
+      const searchTerm = ilikeContains(query);
 
       const { data, error } = await this.client
         .from(TABLES.pieces)
