@@ -56,8 +56,8 @@ import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
 } from "~/schemas/cart.schemas";
-import { serverObservabilityContext } from "~/utils/load-context";
 import { trackViewCart } from "~/utils/analytics";
+import { serverObservabilityContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 import { reportLoaderError } from "~/utils/observability.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -553,12 +553,15 @@ export default function CartPage() {
       <div className="border-t border-slate-100 bg-slate-50/50 py-3 text-center text-[11px] text-slate-400">
         <Container>
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-            <Link to="/cgv" className="hover:text-slate-700 hover:underline">
+            <Link
+              to="/legal/cgv"
+              className="hover:text-slate-700 hover:underline"
+            >
               CGV
             </Link>
             <span>&middot;</span>
             <Link
-              to="/confidentialite"
+              to="/legal/privacy"
               className="hover:text-slate-700 hover:underline"
             >
               Confidentialité
