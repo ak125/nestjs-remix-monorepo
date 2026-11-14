@@ -179,22 +179,34 @@ export default function Aide() {
           </h3>
           <ul className="space-y-3">
             <li>
-              <Link to="/livraison" className="text-blue-600 hover:underline">
+              <Link
+                to="/legal/shipping"
+                className="text-blue-600 hover:underline"
+              >
                 Informations de livraison
               </Link>
             </li>
             <li>
-              <Link to="/retours" className="text-blue-600 hover:underline">
+              <Link
+                to="/legal/warranty"
+                className="text-blue-600 hover:underline"
+              >
                 Politique de retour
               </Link>
             </li>
             <li>
-              <Link to="/garantie" className="text-blue-600 hover:underline">
+              <Link
+                to="/legal/warranty"
+                className="text-blue-600 hover:underline"
+              >
                 Conditions de garantie
               </Link>
             </li>
             <li>
-              <Link to="/paiement" className="text-blue-600 hover:underline">
+              <Link
+                to="/legal/paiement"
+                className="text-blue-600 hover:underline"
+              >
                 Moyens de paiement acceptés
               </Link>
             </li>

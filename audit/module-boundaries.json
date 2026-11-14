@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115122,
+      "loc_total": 115140,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 585,
-      "loc_total": 110877,
+      "files_count": 586,
+      "loc_total": 110907,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -593,7 +593,7 @@
         "packages/registry/src/vehicle-context"
       ],
       "files_count": 57,
-      "loc_total": 6868,
+      "loc_total": 6891,
       "has_barrel": true
     },
     "pkg-seo-types": {
@@ -781,7 +781,7 @@
         "backend/src/modules/seo-control-plane/services"
       ],
       "files_count": 27,
-      "loc_total": 5547,
+      "loc_total": 5906,
       "has_barrel": false
     },
     "seo-logs": {
@@ -898,8 +898,8 @@
         "backend/src/modules/support/services/__tests__",
         "backend/src/modules/support/types"
       ],
-      "files_count": 31,
-      "loc_total": 10580,
+      "files_count": 32,
+      "loc_total": 10487,
       "has_barrel": true
     },
     "system": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 375,
-      "loc_total": 77836,
+      "files_count": 376,
+      "loc_total": 77707,
       "has_barrel": true
     },
     "upload": {
