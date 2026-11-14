@@ -58,12 +58,51 @@ if grep -qE 'npm\s+(install|uninstall|update|remove|add)\s' <<<"$COMMAND"; then
   exit 2
 fi
 
-# Guard 6: Block version-tag create/push (v* = PROD deploy trigger, owner GO only)
-# Covers: git tag v1.2.3 / git tag -a v1.2.3 / git tag -s v1.2.3 / git push origin v1.2.3 / git push --tags
-# Rationale: tag v* promeut :preprod -> :production (voir .claude/rules/deployment.md).
+# Guard 6: Block every way of starting a PROD deploy (owner GO only)
+# Any tag matching v* (not only vX.Y.Z) starts release-prod.yml, which deploys that tag's
+# commit to PROD (voir .claude/rules/deployment.md). This hook is a tripwire for agent
+# commands, not the security boundary: GitHub permissions and a v* tag ruleset are. It
+# cannot see a command built indirectly (variable, script, here-document fed to a shell).
+# Floor, unchanged from the first version of this guard: whole-command match on vX.Y.Z.
 if grep -qE 'git\s+tag\b.*\bv[0-9]+(\.[0-9]+){1,3}\b|git\s+push\b.*(--tags|\bv[0-9]+(\.[0-9]+){1,3}\b)' <<<"$COMMAND"; then
   echo "BLOCKED: tag v* = declencheur deploy PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
   exit 2
+fi
+# Every v* name and every PROD workflow, read on shell words by prod-trigger-check.py (next
+# to this hook): quotes, comments, operators, redirections, here-document bodies (data),
+# words that read as commands themselves (bash -c '...', "$(...)"). Covers:
+# - git tag with a v* argument (list/query forms -l, -n, --contains, -v... allowed; option
+#   values such as -m <message> are read as values, never as a mode);
+# - git push of tags: --tags, --follow-tags, --mirror, a refspec side that starts with v
+#   (after +) or contains refs/tags/ (branch refspecs here carry a slash: fix/vlevel-x);
+# - gh release create|edit; gh api writes (-f, -F, --field, --raw-field, --input, -X or
+#   --method other than GET, attached forms included) to git/refs, git/tags or releases,
+#   and graphql createRef/updateRef/createRelease;
+# - gh workflow run|enable, gh api .../dispatches|enable, of release-prod.yml or of the
+#   retired deploy-prod.yml, by file name, display name (any case) or numeric id
+#   (417610500 = release-prod.yml, 224452325 = deploy-prod.yml).
+# Fail closed: no python3, a non-zero exit, or a command it cannot read = block.
+if grep -qE '\b(git|gh)\b' <<<"$COMMAND" \
+   && grep -qE '\b(tag|push|release|api|workflow)\b' <<<"$COMMAND"; then
+  if ! command -v python3 &>/dev/null; then
+    echo "BLOCKED: python3 requis pour le Guard 6 (git/gh tag, push, release, api, workflow). Garde en echec ferme." >&2
+    exit 2
+  fi
+  if ! GUARD6=$(python3 -I "$(dirname "${BASH_SOURCE[0]}")/prod-trigger-check.py" <<<"$COMMAND"); then
+    echo "BLOCKED: analyseur du Guard 6 en erreur (scripts/claude-hooks/prod-trigger-check.py). Garde en echec ferme." >&2
+    exit 2
+  fi
+  case " $GUARD6 " in
+    *" unparsable "*)
+      echo "BLOCKED: commande illisible (guillemet ou here-document non fermes) qui cite git/gh tag, push, release, api ou workflow : le Guard 6 ne peut pas la verifier. Ecrire le texte dans un fichier." >&2
+      exit 2 ;;
+    *" tag "*)
+      echo "BLOCKED: tag v* = declencheur deploy PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
+      exit 2 ;;
+    *" workflow "*)
+      echo "BLOCKED: lancement manuel ou reactivation d'un workflow de deploiement PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
+      exit 2 ;;
+  esac
 fi
 
 # Guard 7: WARN on full-content dump of a giant GENERATED registry artifact (token blow-up)
