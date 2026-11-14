@@ -15,7 +15,6 @@ import {
 } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
 import { getProxyHeaders } from "~/utils/proxy-headers.server";
-import { stripSingleFetchSuffix } from "~/utils/single-fetch";
 
 export const meta: MetaFunction = () => [
   { title: "Page non trouvée | Automecanik" },
@@ -49,14 +48,18 @@ class CatchAllStatusError extends Error {
   }
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  const url = new URL(request.url);
-  // 🛡️ RR8 single-fetch (navigation client) garde le suffixe `.data` sur
-  // request.url. Le retirer pour que la détection garbage, les quick-redirects
-  // et les résolveurs redirect/legacy voient le VRAI chemin — sinon les 301
-  // legacy (/blog, /pieces-auto/*) ne se déclenchent pas en navigation client
-  // (404 au lieu du 301). Encodage préservé. Voir incident 2026-06-25.
-  const pathname = stripSingleFetchSuffix(url.pathname);
+export async function loader({
+  request,
+  url: documentUrl,
+}: LoaderFunctionArgs) {
+  // 🛡️ RR8 single-fetch (navigation client) : request.url reste brut — suffixe
+  // `.data`, `/_.data` pour un chemin à slash final, paramètre `_routes`. La
+  // détection garbage, les quick-redirects et les résolveurs redirect/legacy
+  // lisent donc l'argument `url`, normalisé par React Router (encodage
+  // préservé) : document et navigation client voient le MÊME chemin. Sinon les
+  // 301 legacy (/blog, /pieces-auto/*) ne sortent pas en navigation client, ou
+  // sortent vers une cible à segment `_` parasite. Voir incident 2026-06-25.
+  const pathname = documentUrl.pathname;
 
   // 0a. Short-circuit URLs garbage (base64 spam, bots) — évite 3 appels API inutiles
   if (isGarbageUrl(pathname)) {
@@ -87,7 +90,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       referrer: request.headers.get("referer") || undefined,
       metadata: {
         method: request.method,
-        query: Object.fromEntries(url.searchParams),
+        query: Object.fromEntries(documentUrl.searchParams),
         timestamp: new Date().toISOString(),
         originalUrl: request.url,
       },
