@@ -25,8 +25,13 @@ export function toTitleCaseFromSlug(slug: string): string {
 }
 
 /**
- * Parse les paramètres d'URL avec IDs (format: nom-id ou nom-id-id)
+ * Sépare un segment d'URL `{alias}-{id}` (ADR-062) en alias et ID.
  * Exemple: "renault-23" => { alias: "renault", id: 23 }
+ *
+ * L'ID est le dernier élément du segment, et seulement s'il est entièrement
+ * numérique. Un chiffre situé ailleurs appartient à l'alias : "1-5-dci" ou
+ * "206-sw" ne portent pas d'ID (id 0, alias intact). Ne jamais en fabriquer un :
+ * un ID inventé désigne une autre motorisation ou une page qui n'existe pas.
  */
 export function parseUrlParam(param: string | undefined): {
   alias: string;
@@ -38,18 +43,16 @@ export function parseUrlParam(param: string | undefined): {
     return { alias: "undefined", id: 0 };
   }
 
-  const parts = param.split("-");
-
-  // Chercher le dernier nombre dans l'URL
-  for (let i = parts.length - 1; i >= 0; i--) {
-    const id = parseInt(parts[i]);
-    if (!isNaN(id) && id > 0) {
-      const alias = parts.slice(0, i).join("-");
-      return { alias, id };
+  const separator = param.lastIndexOf("-");
+  const lastElement = param.slice(separator + 1);
+  if (/^\d+$/.test(lastElement)) {
+    const id = Number(lastElement);
+    if (Number.isSafeInteger(id) && id > 0) {
+      return { alias: separator > 0 ? param.slice(0, separator) : "", id };
     }
   }
 
-  // Fallback si pas d'ID trouvé
+  // Pas d'ID : le segment entier est l'alias
   return { alias: param, id: 0 };
 }
 
@@ -222,212 +225,6 @@ export function generateRelatedArticles(
       readTime: 12,
     },
   ];
-}
-
-/**
- * La résolution alias → ID n'a pas pu être menée : backend injoignable, réponse
- * 5xx / 408 / 429 ou corps illisible. Ce n'est pas « alias inconnu » : l'appelant
- * doit répondre 503, jamais un 404/410 qui affirmerait que la page n'existe pas.
- */
-export class IdResolutionUnavailableError extends Error {
-  constructor(
-    readonly target: "vehicle" | "gamme",
-    reason: string,
-  ) {
-    super(`Résolution ${target} indisponible : ${reason}`);
-    this.name = "IdResolutionUnavailableError";
-  }
-}
-
-const describeCause = (cause: unknown) =>
-  cause instanceof Error ? cause.message : String(cause);
-
-/**
- * Lit une réponse JSON de l'API de résolution. Retourne `null` quand l'API
- * refuse la demande (4xx définitif) : l'alias est alors traité comme introuvable.
- * Lève `IdResolutionUnavailableError` quand l'API n'a pas pu répondre.
- */
-async function fetchResolutionJson(
-  url: string,
-  target: "vehicle" | "gamme",
-): Promise<any | null> {
-  let response: Response;
-  try {
-    response = await fetch(url);
-  } catch (cause) {
-    throw new IdResolutionUnavailableError(
-      target,
-      `API injoignable (${describeCause(cause)})`,
-    );
-  }
-  if (
-    response.status >= 500 ||
-    response.status === 408 ||
-    response.status === 429
-  ) {
-    throw new IdResolutionUnavailableError(target, `HTTP ${response.status}`);
-  }
-  if (!response.ok) return null;
-  try {
-    return await response.json();
-  } catch (cause) {
-    throw new IdResolutionUnavailableError(
-      target,
-      `réponse illisible (${describeCause(cause)})`,
-    );
-  }
-}
-
-/**
- * Résout les IDs du véhicule depuis les alias ou depuis l'URL
- */
-export async function resolveVehicleIds(
-  marqueParam: string,
-  modeleParam: string,
-  typeParam: string,
-) {
-  // Validation des paramètres
-  if (!marqueParam || !modeleParam || !typeParam) {
-    logger.error(`❌ [RESOLVE-VEHICLE] Paramètres invalides:`, {
-      marqueParam,
-      modeleParam,
-      typeParam,
-    });
-    throw new Error(`Paramètres véhicule invalides ou manquants`);
-  }
-
-  // Parse les paramètres avec IDs
-  const marque = parseUrlParam(marqueParam);
-  const modele = parseUrlParam(modeleParam);
-  const type = parseUrlParam(typeParam);
-
-  // ✅ PRIORITÉ 1: Si on a déjà tous les IDs dans l'URL, les retourner directement
-  // 🚀 LCP OPTIMIZATION: Le RM V2 RPC fait déjà la validation en interne
-  // Supprimer l'appel redondant à validate-type (économise ~80ms)
-  if (marque.id > 0 && modele.id > 0 && type.id > 0) {
-    return {
-      marqueId: marque.id,
-      modeleId: modele.id,
-      typeId: type.id,
-    };
-  }
-
-  logger.warn(
-    `⚠️ [RESOLVE-VEHICLE] IDs manquants dans l'URL, tentative résolution API...`,
-  );
-
-  // Sinon essayer l'API de résolution. Une API qui n'a pas pu répondre lève
-  // IdResolutionUnavailableError : seul un alias réellement introuvable atteint
-  // le fallback ci-dessous (et le 410 de l'appelant).
-  const brandsData = await fetchResolutionJson(
-    `http://localhost:3000/api/vehicles/brands?search=${marque.alias}&limit=1`,
-    "vehicle",
-  );
-  const brand = brandsData?.data?.[0];
-
-  if (brand) {
-    const modelsData = await fetchResolutionJson(
-      `http://localhost:3000/api/vehicles/brands/${brand.marque_id}/models`,
-      "vehicle",
-    );
-    const modelData = modelsData?.data?.find(
-      (m: any) =>
-        m.modele_alias === modele.alias ||
-        m.modele_name?.toLowerCase().includes(modele.alias),
-    );
-
-    if (modelData) {
-      // 🛡️ SEO: Retourner les IDs même si typeId=0
-      // Le RM V2 RPC validera et retournera 404 si nécessaire
-      return {
-        marqueId: brand.marque_id,
-        modeleId: modelData.modele_id,
-        typeId: type.id, // Peut être 0 → RM V2 retournera 404
-      };
-    }
-  }
-
-  // 🛡️ Fallback: Retourner les IDs parsés depuis l'URL (peuvent être 0 si invalides)
-  // Note: Le RM V2 RPC validera ensuite et retournera 404 HTTP si IDs inexistants en DB
-  // Ceci est le comportement attendu pour les URLs malformées ou obsolètes
-  logger.warn(
-    `⚠️ [RESOLVE-VEHICLE] Fallback IDs URL: marque=${marque.alias}(${marque.id}), modele=${modele.alias}(${modele.id}), type=${type.alias}(${type.id})`,
-  );
-  return {
-    marqueId: marque.id,
-    modeleId: modele.id,
-    typeId: type.id, // RM V2 retournera 404 si 0
-  };
-}
-
-/**
- * Récupère l'ID de gamme avec parsing URL intelligent
- * 🔧 Fix SEO: API fallback dynamique si alias non trouvé dans la map statique
- */
-export async function resolveGammeId(gammeParam: string): Promise<number> {
-  // Parse le paramètre pour extraire l'ID s'il existe
-  const gamme = parseUrlParam(gammeParam);
-
-  // Mappings directs avec les IDs réels de la base de données
-  // ⚠️ Ces mappings sont pour les routes SANS ID dans l'URL
-  // Les routes avec ID (ex: courroie-d-accessoire-10) utilisent directement l'ID
-  const knownGammeMap: Record<string, number> = {
-    freinage: 402,
-    "plaquettes-de-frein": 402,
-    "plaquette-de-frein": 402,
-    "disques-de-frein": 403,
-    "disque-de-frein": 403,
-    "kit-de-distribution": 128,
-    "filtres-a-huile": 75,
-    "filtres-a-air": 76,
-    "filtres-a-carburant": 77,
-    "filtres-habitacle": 78,
-    amortisseurs: 854,
-    amortisseur: 854,
-  };
-
-  // 🚀 LCP OPTIMIZATION: Si on a un ID dans l'URL, le retourner directement
-  // Le RM V2 RPC fait déjà la validation de l'existence de la gamme en interne
-  // Supprimer l'appel redondant à /api/catalog/gammes (économise ~50-100ms)
-  if (gamme.id > 0) {
-    logger.log(
-      `✅ [GAMME-ID] ID trouvé dans l'URL: ${gamme.id} (validation déléguée au RM V2)`,
-    );
-    return gamme.id;
-  }
-
-  const gammeId = knownGammeMap[gamme.alias];
-
-  if (gammeId) {
-    logger.log(`✅ [GAMME-ID] Mapping trouvé pour ${gamme.alias}: ${gammeId}`);
-    return gammeId;
-  }
-
-  // 🔍 API fallback: Chercher dans la base de données si alias non trouvé localement.
-  // Une API qui n'a pas pu répondre lève IdResolutionUnavailableError : seul un
-  // alias réellement introuvable retourne 0.
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
-  const result = await fetchResolutionJson(
-    `${backendUrl}/api/catalog/gammes/by-alias/${encodeURIComponent(gamme.alias)}`,
-    "gamme",
-  );
-  if (result?.success && result.data?.id) {
-    logger.log(
-      `✅ [GAMME-ID] API fallback trouvé pour ${gamme.alias}: ${result.data.id}`,
-    );
-    return result.data.id;
-  }
-
-  logger.warn(
-    `⚠️ [GAMME-ID] API fallback: alias "${gamme.alias}" non trouvé en base`,
-  );
-
-  // 🛡️ Sécurité SEO: Ne pas retourner un ID incorrect si gamme inconnue
-  // Le RM V2 RPC gérera la validation et retournera 404 si nécessaire
-  logger.error(
-    `❌ [GAMME-ID] Gamme inconnue: ${gamme.alias} - retour 0 pour validation RM V2`,
-  );
-  return 0; // Le RM V2 RPC validera et retournera 404 si gamme inexistante
 }
 
 /**

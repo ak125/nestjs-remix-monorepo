@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CartDataService } from './cart-data.service';
-import { OrdersService, CreateLegacyOrderData } from './orders.service';
-import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { OrdersService } from './orders.service';
 
 /**
  * Service principal qui compose tous les services spécialisés
@@ -94,10 +93,6 @@ export class DatabaseCompositionService {
     return this.ordersService.getOrderById(String(orderId));
   }
 
-  async createOrder(orderData: CreateLegacyOrderData) {
-    return this.ordersService.createLegacyOrder(orderData);
-  }
-
   async updateOrderStatus(orderId: number, status: number) {
     // Mapper le status number vers le format string
     const statusString = status === 1 ? 'paid' : 'pending';
@@ -107,50 +102,6 @@ export class DatabaseCompositionService {
   // ============================================
   // CROSS-SERVICE OPERATIONS - Orchestration
   // ============================================
-
-  /**
-   * Convertit un panier en commande (opération cross-service)
-   */
-  async convertCartToOrder(
-    userId: string,
-    orderData: Partial<CreateLegacyOrderData>,
-  ) {
-    try {
-      // 1. Récupérer le panier
-      const cartTotals = await this.cartDataService.calculateCartTotals(userId);
-
-      if (!cartTotals.items.length) {
-        throw new DatabaseException({
-          code: ErrorCodes.DATABASE.OPERATION_FAILED,
-          message: 'Panier vide',
-        });
-      }
-
-      // 2. Créer la commande
-      const order = await this.ordersService.createLegacyOrder({
-        customerId: userId,
-        orderLines: cartTotals.items.map((item: any) => ({
-          productId: item.product_id,
-          productName: item.product_name || 'Produit',
-          productReference: item.product_ref || '',
-          quantity: item.quantity,
-          unitPrice: item.unit_price,
-          vatRate: 20,
-          discount: 0,
-        })),
-        ...orderData,
-      });
-
-      // 3. Vider le panier
-      await this.cartDataService.clearUserCart(userId);
-
-      this.logger.log(`Cart converted to order ${order.id} for user ${userId}`);
-      return order;
-    } catch (error) {
-      this.logger.error('Failed to convert cart to order:', error);
-      throw error;
-    }
-  }
 
   /**
    * Statistiques utilisateur (opération cross-service)

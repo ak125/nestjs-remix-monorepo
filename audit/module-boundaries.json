@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21794,
+      "loc_total": 21398,
       "has_barrel": true
     },
     "dev-only": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 585,
-      "loc_total": 110841,
+      "files_count": 586,
+      "loc_total": 110860,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6583,
+      "loc_total": 6375,
       "has_barrel": true
     },
     "payments": {
@@ -805,8 +805,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 51,
-      "loc_total": 11351,
+      "files_count": 52,
+      "loc_total": 11477,
       "has_barrel": false
     },
     "seo-projection": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 373,
-      "loc_total": 76894,
+      "loc_total": 77127,
       "has_barrel": true
     },
     "upload": {

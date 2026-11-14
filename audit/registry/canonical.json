@@ -9390,7 +9390,7 @@
           "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
           "backend/src/modules/payments/controllers/payment-core.controller.ts",
           "backend/src/modules/payments/services/paybox-callback-gate.service.ts",
-          "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
+          "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
         ]
       },
       {
@@ -9491,7 +9491,7 @@
         "usedBy": [
           "backend/src/modules/admin/services/seo-control.service.ts",
           "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
-          "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
+          "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
           "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
         ]
       },
@@ -9503,25 +9503,6 @@
         "inMigrations": [],
         "indexes": [],
         "name": "___xtr_order_line_audit",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": false,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "low",
-        "status": "LIVE",
-        "usedBy": [
-          "backend/src/modules/orders/services/order-actions.service.ts"
-        ]
-      },
-      {
-        "columns": [],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
-        "id": "___xtr_order_line_equiv_ticket",
-        "inMigrations": [],
-        "indexes": [],
-        "name": "___xtr_order_line_equiv_ticket",
         "owner": "__unassigned__",
         "risk": "low",
         "rlsEnabled": false,
@@ -34556,12 +34537,11 @@
         "backend/src/database/services/index.ts"
       ],
       "imports": [
-        "@common/exceptions",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/orders.service.ts"
       ],
       "kind": "service",
-      "loc": 180,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/database-composition.service.ts",
       "risk": "low",
@@ -34667,7 +34647,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 1077,
+      "loc": 730,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/orders.service.ts",
       "risk": "low",
@@ -50489,7 +50469,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 384,
+      "loc": 363,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "high",
@@ -50829,7 +50809,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 756,
+      "loc": 569,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
       "risk": "high",
@@ -56748,14 +56728,15 @@
       "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
       "importedBy": [
-        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
+        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts"
       ],
       "imports": [
         "@repo/seo-types",
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "controller",
-      "loc": 38,
+      "loc": 43,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
       "risk": "medium",
@@ -56889,7 +56870,7 @@
         "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
       ],
       "kind": "test",
-      "loc": 276,
+      "loc": 154,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.test.ts",
       "risk": "medium",
@@ -56918,7 +56899,7 @@
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "service",
-      "loc": 150,
+      "loc": 106,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
       "risk": "medium",
@@ -57271,18 +57252,43 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/seo-types",
+        "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
+      ],
+      "kind": "test",
+      "loc": 212,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
       "importedBy": [
         "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
         "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
-        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
+        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/seo-types"
       ],
       "kind": "service",
-      "loc": 84,
+      "loc": 159,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
       "risk": "medium",
@@ -63240,34 +63246,6 @@
         "manual"
       ],
       "domain": "D3",
-      "id": "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10.types.ts",
-        "fs/promises",
-        "os",
-        "path"
-      ],
-      "kind": "test",
-      "loc": 820,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
       "id": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "importedBy": [
         "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
@@ -63410,7 +63388,6 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
@@ -63426,7 +63403,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 681,
+      "loc": 542,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "high",
@@ -63445,7 +63422,6 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
@@ -63479,8 +63455,7 @@
         "backend/src/modules/seo/controllers/sitemap-v10.controller.ts",
         "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/processors/sitemap-regenerate.processor.ts",
-        "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts"
+        "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
         "@common/exceptions",
@@ -63494,7 +63469,7 @@
         "backend/src/modules/seo/services/sitemap-v10.types.ts"
       ],
       "kind": "service",
-      "loc": 668,
+      "loc": 623,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10.service.ts",
       "risk": "high",
@@ -63514,7 +63489,6 @@
       "id": "backend/src/modules/seo/services/sitemap-v10.types.ts",
       "importedBy": [
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
@@ -63522,7 +63496,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 131,
+      "loc": 126,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10.types.ts",
       "risk": "high",
@@ -74101,7 +74075,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 397,
+      "loc": 332,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/admin/OrderLineActions.tsx",
       "risk": "low",
@@ -94098,6 +94072,30 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "frontend/app/utils/pieces-id-resolution.server.ts",
+      "importedBy": [],
+      "imports": [
+        "~/utils/internal-api.server",
+        "~/utils/logger",
+        "~/utils/pieces-route.utils"
+      ],
+      "kind": "config",
+      "loc": 285,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/utils/pieces-id-resolution.server.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "frontend/app/utils/pieces-loader.utils.ts",
       "importedBy": [],
       "imports": [
@@ -94138,7 +94136,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 548,
+      "loc": 345,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-route.utils.ts",
       "risk": "medium",
@@ -94166,6 +94164,7 @@
         "~/utils/fetch.utils",
         "~/utils/internal-api.server",
         "~/utils/logger",
+        "~/utils/pieces-id-resolution.server",
         "~/utils/pieces-loader.utils",
         "~/utils/pieces-route.utils",
         "~/utils/rm-mapper",
@@ -94175,7 +94174,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 754,
+      "loc": 756,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "medium",
@@ -97616,7 +97615,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 292,
+      "loc": 522,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-vehicle-loader-alias-resolution-outage.test.ts",
       "risk": "medium",
@@ -97636,7 +97635,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 699,
+      "loc": 702,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "medium",
@@ -107629,15 +107628,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "dd6a96ee9dfd2b8df8fe35176fb5ef1b9432d8657418aae0154c8a0a37f816aa",
+      ".spec/00-canon/repository-registry/ownership.yaml": "2454462bac0c0bfb7a81561c9dfa5a1b18d1038d015a92d51b4ce06b783810be",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "4c4a746b919d3080e8e67e3b1830ff465a5f746192ff9167ed747082c3402258",
+      "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "3b02fd575fc9320613e342cc3aa905aaef4892d3b0d775730298977e9e735725",
+      "audit/registry/files.json": "686ccfc76a403a5d819c0eb0a19ec76903a9c047481cfe1730186d60617a8338",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "9d48ddecd81a"
+    "sotFingerprint": "7be59ffb1811"
   },
   "runtime": [
     {
