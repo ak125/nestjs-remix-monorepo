@@ -54795,7 +54795,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "route",
-      "loc": 100,
+      "loc": 103,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/_layout.tsx",
       "risk": "low",
@@ -54816,7 +54816,7 @@
         "~/components/ui/button"
       ],
       "kind": "route",
-      "loc": 272,
+      "loc": 284,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/aide.tsx",
       "risk": "low",
@@ -54933,7 +54933,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1155,
+      "loc": 1158,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/_public+/register.tsx",
       "risk": "low",
@@ -59006,7 +59006,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 596,
+      "loc": 599,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "low",
