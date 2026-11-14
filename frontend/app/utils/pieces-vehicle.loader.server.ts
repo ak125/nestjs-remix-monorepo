@@ -19,15 +19,17 @@ import { fetchJsonOrNull } from "~/utils/fetch.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import {
+  IdResolutionUnavailableError,
+  resolveGammeId,
+  resolveVehicleIds,
+} from "~/utils/pieces-id-resolution.server";
+import {
   buildCataloguePromise,
   type HierarchyData,
 } from "~/utils/pieces-loader.utils";
 import {
   detectMalformedSegment,
-  IdResolutionUnavailableError,
   parseUrlParam,
-  resolveGammeId,
-  resolveVehicleIds,
   validateVehicleIds,
 } from "~/utils/pieces-route.utils";
 import { mapRmV2ToLoaderData, isRmV2DataUsable } from "~/utils/rm-mapper";
