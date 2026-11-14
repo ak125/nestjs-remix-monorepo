@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 585,
-      "loc_total": 110776,
+      "files_count": 586,
+      "loc_total": 110860,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -593,7 +593,7 @@
         "packages/registry/src/vehicle-context"
       ],
       "files_count": 57,
-      "loc_total": 6891,
+      "loc_total": 6868,
       "has_barrel": true
     },
     "pkg-seo-types": {
@@ -781,7 +781,7 @@
         "backend/src/modules/seo-control-plane/services"
       ],
       "files_count": 27,
-      "loc_total": 5906,
+      "loc_total": 5547,
       "has_barrel": false
     },
     "seo-logs": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 373,
-      "loc_total": 76894,
+      "loc_total": 77127,
       "has_barrel": true
     },
     "upload": {
