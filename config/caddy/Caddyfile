@@ -200,10 +200,12 @@ automecanik.com, www.automecanik.com {
     }
 
     # ===== CRAWL HUBS (HTML pour Googlebot) =====
-    # Redirect index crawl → page plan du site propre
+    # Redirect index crawl → page plan du site propre. `*` obligatoire : sans
+    # matcher explicite, `/plan-du-site` serait lu comme matcher de chemin
+    # (redir vers « 301 » en 302, jamais déclenché pour index.html).
     @crawl_index path /__crawl__/index.html
     handle @crawl_index {
-        redir /plan-du-site 301
+        redir * /plan-du-site 301
     }
 
     # Pages de liens internes pour faciliter le crawl Google

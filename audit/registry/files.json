@@ -33434,28 +33434,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10.types.ts"
-      ],
-      "kind": "test",
-      "loc": 81,
-      "owner": "__unassigned__",
-      "path": "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
@@ -33644,6 +33622,33 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10.types.ts",
+        "fs/promises",
+        "os",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 820,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "importedBy": [
         "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
@@ -33781,7 +33786,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
@@ -33797,7 +33802,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 547,
+      "loc": 681,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "low",
@@ -33815,6 +33820,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
@@ -33847,7 +33853,8 @@
         "backend/src/modules/seo/controllers/sitemap-v10.controller.ts",
         "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/processors/sitemap-regenerate.processor.ts",
-        "backend/src/modules/seo/seo.module.ts"
+        "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts"
       ],
       "imports": [
         "@common/exceptions",
@@ -33861,7 +33868,7 @@
         "backend/src/modules/seo/services/sitemap-v10.types.ts"
       ],
       "kind": "service",
-      "loc": 623,
+      "loc": 668,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10.service.ts",
       "risk": "low",
@@ -33879,8 +33886,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10.types.ts",
       "importedBy": [
-        "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
@@ -33888,7 +33895,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 126,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10.types.ts",
       "risk": "low",
