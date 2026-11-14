@@ -1,0 +1,97 @@
+name: Pilote de la file (ADR-128)
+
+# Fichier d'attente : la garde pretool-file-guard réserve .github/ à l'owner.
+# Geste owner : git mv scripts/ops/pilote-file.workflow.yml .github/workflows/pilote-file.yml
+# (commit signé sur la branche de la PR). Hors de .github/workflows/, ce fichier ne s'exécute pas.
+#
+# routine:
+#   id: pilote-file
+#   owner: Marwane
+#   departement: 23-ia-agents
+#   kpi: absent (useful_capabilities_not_complexity, producteur absent — ADR-128 D2)
+#   trigger: schedule cron "0 6-19 * * *" (horaire, 14 exécutions/jour — ADR-128 D3)
+#   approach: contrôle déterministe d'abord (gh issue list, gh pr list) ; session Claude Code
+#             (claude -p, sans outil, sortie JSON sous schéma) seulement si l'empreinte de la
+#             file a changé depuis l'exécution précédente. Le pilote propose (commentaire borné
+#             sur l'issue concernée + issue de pilotage unique mise à jour) ; il ne ferme, ne
+#             fusionne et ne relabellise rien (ADR-128 D6, AI2).
+#   evidence: artifact pilote-file-<run_id> (etat.json, cout.json, corps.md, 90 jours) +
+#             issue de pilotage « Pilotage de la file (pilote-file, ADR-128 D6) » (ADR-034 axe 3)
+#   escalation: exécution rouge visible dans Actions ; une demande d'arrêt passe par le label
+#               needs-human posé par l'owner ; arrêt N2 = gh workflow disable pilote-file.yml
+#   secret: ANTHROPIC_API_KEY (session Claude seulement ; jamais transmis à gh)
+
+on:
+  schedule:
+    - cron: "0 6-19 * * *"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: pilote-file
+  cancel-in-progress: false
+
+jobs:
+  pilote:
+    name: Contrôle de la file et propositions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      REPO: ${{ github.repository }}
+      PILOTE_MODELE: claude-sonnet-5-5
+      PILOTE_BUDGET_USD: "1"
+      PILOTE_MAX_COMMENTAIRES: "5"
+      PILOTE_CLI_VERSION: 2.1.316
+    steps:
+      - name: Checkout (scripts et carte des départements)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/ops
+            .spec/00-canon/ai-registry
+
+      - name: Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Contrôle déterministe (lecture seule)
+        id: controle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ops/pilote-file.sh controle --sortie "$RUNNER_TEMP/pilote-file"
+
+      - name: Session Claude (seulement si nouveau)
+        id: session
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bash scripts/ops/pilote-file.sh session --sortie "$RUNNER_TEMP/pilote-file"
+
+      - name: Publication (issue de pilotage, commentaires bornés)
+        if: ${{ always() && steps.controle.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ops/pilote-file.sh publier --sortie "$RUNNER_TEMP/pilote-file"
+
+      - name: Mesure du coût
+        if: ${{ always() && steps.controle.outcome == 'success' }}
+        run: |
+          {
+            echo "### pilote-file — coût de l'exécution"
+            echo '```json'
+            jq . "$RUNNER_TEMP/pilote-file/cout.json"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Artifact de preuve (90 jours)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: pilote-file-${{ github.run_id }}
+          path: ${{ runner.temp }}/pilote-file
+          retention-days: 90
+          if-no-files-found: warn
