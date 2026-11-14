@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 153cddd68eb92dd4f3487b7a25c272ecda87590481db600238d44bf44c603566
+source_sha256: afdc85339b142fb04f20d931380ef6517d9df1da98a54cfcc7f7315a184acd3b
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `1475c68a715f`.
+Source sotFingerprint: `3948be62ed37`.
 
 ## Comment l'utiliser
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `1475c68a715f`.
 
 ### D15 — Security & Governance
 
-- **Files**: 320 (test=209, script=62, service=46, config=2, controller=1)
+- **Files**: 321 (test=210, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (320)
+- **Top owners**: @ak125 (321)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=261
+- **Status**: LIVE=59, UNKNOWN=262
 
 ### D16 — Maintenance
 
@@ -163,13 +163,13 @@ Source sotFingerprint: `1475c68a715f`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 244 (service=149, config=57, controller=20, script=14, test=4)
+- **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
 - **DB tables**: 316
 - **DB RPC**: 265
 - **Runtime entrypoints**: 83
-- **Top owners**: __unassigned__ (244)
+- **Top owners**: __unassigned__ (243)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=140, UNKNOWN=104
+- **Status**: LIVE=139, UNKNOWN=104
 
 ## Voir aussi
 
