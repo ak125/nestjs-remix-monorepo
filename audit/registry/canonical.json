@@ -85214,7 +85214,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "route",
-      "loc": 100,
+      "loc": 103,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/_layout.tsx",
       "risk": "medium",
@@ -85236,7 +85236,7 @@
         "~/components/ui/button"
       ],
       "kind": "route",
-      "loc": 272,
+      "loc": 284,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/aide.tsx",
       "risk": "medium",
@@ -85358,7 +85358,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1155,
+      "loc": 1158,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/register.tsx",
       "risk": "medium",
@@ -89583,7 +89583,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 596,
+      "loc": 599,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "medium",
@@ -107632,11 +107632,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "686ccfc76a403a5d819c0eb0a19ec76903a9c047481cfe1730186d60617a8338",
+      "audit/registry/files.json": "3c5747dd0795fb19a7e65ceba563b9c8954804bbbb541ae41031c542390dcf4f",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "7be59ffb1811"
+    "sotFingerprint": "c6c05ac25c8a"
   },
   "runtime": [
     {
