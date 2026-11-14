@@ -1,7 +1,7 @@
 /**
  * ValidationPanel - Panel de validation avec tests et drill-down
  *
- * @see packages/design-tokens/DESIGN-SYSTEM.automecanik.md Section 8
+ * @see .claude/skills/frontend-design/SKILL.md (règles UI) et packages/design-tokens/src/tokens.json (valeurs)
  *
  * Pattern tests T-A à T-F avec status PASS/FAIL/WARN
  */
