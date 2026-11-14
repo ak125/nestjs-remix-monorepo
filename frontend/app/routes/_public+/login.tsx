@@ -377,12 +377,12 @@ export default function LoginPage() {
           {/* Mention légale */}
           <p className="text-center text-xs text-slate-400 font-body mt-6">
             En vous connectant, vous acceptez nos{" "}
-            <Link to="/cgv" className="underline hover:text-slate-600">
+            <Link to="/legal/cgv" className="underline hover:text-slate-600">
               conditions d'utilisation
             </Link>{" "}
             et notre{" "}
             <Link
-              to="/confidentialite"
+              to="/legal/privacy"
               className="underline hover:text-slate-600"
             >
               politique de confidentialité

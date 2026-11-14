@@ -54,7 +54,7 @@ export default function Unauthorized() {
               </Button>
 
               <Button variant="outline" asChild className="w-full">
-                <Link to="/_public/aide">
+                <Link to="/aide">
                   <Mail className="w-4 h-4 mr-2" />
                   Centre d'aide
                 </Link>
