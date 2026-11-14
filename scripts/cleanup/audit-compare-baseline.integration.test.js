@@ -21,7 +21,7 @@ test('installed analysers: findings, clean reports, legacy count parity and brok
     write('package.json', JSON.stringify({ name: 'audit-comparator-fixture', version: '1.0.0', private: true }));
     write('backend/src/a.ts', "import './b'; console.log('warning'); export const x = 1; export const y = 2; export default x;\n");
     write('backend/src/b.ts', "import './a';\n");
-    write('frontend/app/entry.ts', 'debugger;\n');
+    write('frontend/app/entry.ts', "import './missing';\ndebugger;\n");
     write('unused.ts', 'export const unused = 1;\n');
     write('knip.json', JSON.stringify({ entry: ['backend/src/a.ts', 'frontend/app/entry.ts'], project: ['**/*.ts'], includeEntryExports: true }));
     write('.dependency-cruiser.cjs', "module.exports = { forbidden: [{ name: 'cycle', severity: 'warn', from: {}, to: { circular: true } }] };\n");
@@ -32,7 +32,7 @@ test('installed analysers: findings, clean reports, legacy count parity and brok
     const knip = runAudit('knip', { root });
     const legacy = spawnSync(process.execPath, [path.join(root, 'node_modules/knip/bin/knip.js'), '--no-exit-code', '--no-progress', '--reporter', 'compact'], { cwd: root, encoding: 'utf8', timeout: 30_000 });
     assert.equal(legacy.status, 0, legacy.stderr);
-    const titles = { unused_files: 'Unused files', unused_dependencies: 'Unused dependencies', unused_dev_dependencies: 'Unused devDependencies', unlisted_dependencies: 'Unlisted dependencies', unlisted_binaries: 'Unlisted binaries', unused_exports: 'Unused exports', unused_types: 'Unused exported types', duplicate_exports: 'Duplicate exports' };
+    const titles = { unused_files: 'Unused files', unused_dependencies: 'Unused dependencies', unused_dev_dependencies: 'Unused devDependencies', unlisted_dependencies: 'Unlisted dependencies', unlisted_binaries: 'Unlisted binaries', unused_exports: 'Unused exports', unused_types: 'Unused exported types', duplicate_exports: 'Duplicate exports', unresolved_imports: 'Unresolved imports' };
     for (const [metric, title] of Object.entries(titles)) {
       const match = legacy.stdout.match(new RegExp(`^${title} \\((\\d+)\\)`, 'm'));
       assert.equal(knip[metric], match ? Number(match[1]) : 0, `${metric}: legacy count drift`);
@@ -40,6 +40,7 @@ test('installed analysers: findings, clean reports, legacy count parity and brok
     assert.ok(knip.unused_exports > 0);
     assert.equal(knip.unused_files, 1);
     assert.ok(knip.duplicate_exports > 0);
+    assert.equal(knip.unresolved_imports, 1);
     assert.deepEqual(runAudit('madge', { root }), { cycles: 1 });
     assert.deepEqual(runAudit('depcruise', { root }), { violations: 1, warnings: 1, errors: 0 });
     assert.deepEqual(runAudit('ast_grep', { root }), { warnings: 1, errors: 1 });
