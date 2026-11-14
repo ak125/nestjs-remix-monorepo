@@ -311,8 +311,13 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
+      // Alias vide = hub du blog. Son adresse canonique n'a pas de barre
+      // finale : `/blog-pieces-auto/` est servie avec un canonical vers
+      // `/blog-pieces-auto`, seule forme à déclarer.
       const allUrls: SitemapUrl[] = articles.map((a) => ({
-        url: `/blog-pieces-auto/${a.map_alias}`,
+        url: a.map_alias
+          ? `/blog-pieces-auto/${a.map_alias}`
+          : '/blog-pieces-auto',
         page_type: 'blog',
         changefreq: 'monthly',
         priority: '0.6',
