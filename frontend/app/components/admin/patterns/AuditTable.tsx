@@ -1,7 +1,7 @@
 /**
  * AuditTable - Table d'audit avec vue mobile cards
  *
- * @see packages/design-tokens/DESIGN-SYSTEM.automecanik.md Section 4
+ * @see .claude/skills/frontend-design/SKILL.md (règles UI) et packages/design-tokens/src/tokens.json (valeurs)
  *
  * Pattern responsive: Table sur desktop, Cards sur mobile
  * Utilise shadcn/ui Table + lucide-react icons

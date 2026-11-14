@@ -1,7 +1,8 @@
 /**
  * Admin Patterns - Composants UI standardisés pour dashboards admin
  *
- * Ces patterns suivent les règles de DESIGN-SYSTEM.automecanik.md:
+ * Règles suivies (référence : .claude/skills/frontend-design/SKILL.md ;
+ * valeurs : packages/design-tokens/src/tokens.json) :
  * - shadcn/ui obligatoire
  * - lucide-react pour icônes
  * - Couleurs sémantiques (success, destructive, warning, info)

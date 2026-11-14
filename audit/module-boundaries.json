@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 586,
-      "loc_total": 110907,
+      "loc_total": 110908,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -550,7 +550,7 @@
         "packages/design-tokens/tests"
       ],
       "files_count": 13,
-      "loc_total": 2007,
+      "loc_total": 2147,
       "has_barrel": true
     },
     "pkg-domain-commerce": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 376,
-      "loc_total": 77707,
+      "loc_total": 77677,
       "has_barrel": true
     },
     "upload": {

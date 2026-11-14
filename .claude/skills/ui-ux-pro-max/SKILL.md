@@ -317,28 +317,34 @@ python3 skills/ui-ux-pro-max/scripts/search.py "beauty spa wellness service" --d
 
 ### Step 2b: Persist Design System (Master + Overrides Pattern)
 
-To save the design system for hierarchical retrieval across sessions, add `--persist`:
+> **AutoMecanik (2026-11-14)** — a persisted design system is a generated,
+> non-normative proposal. It never replaces `packages/design-tokens/src/tokens.json`
+> (the only source of design values) nor `.claude/skills/frontend-design/SKILL.md`
+> (UI rules). The repository file `design-system/MASTER.md` is retired and must
+> not be cited. Persist outside the repository with `--output-dir <tmp dir>`.
+
+To save the proposal for hierarchical retrieval across sessions, add `--persist`:
 
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name"
+python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name" -o <tmp dir>
 ```
 
-This creates:
-- `design-system/MASTER.md` — Global Source of Truth with all design rules
-- `design-system/pages/` — Folder for page-specific overrides
+This creates, under `<tmp dir>`:
+- `design-system/<project-slug>/MASTER.md` — generated proposal (not a source of truth)
+- `design-system/<project-slug>/pages/` — Folder for page-specific overrides of that proposal
 
 **With page-specific override:**
 ```bash
-python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name" --page "dashboard"
+python3 skills/ui-ux-pro-max/scripts/search.py "<query>" --design-system --persist -p "Project Name" --page "dashboard" -o <tmp dir>
 ```
 
 This also creates:
-- `design-system/pages/dashboard.md` — Page-specific deviations from Master
+- `design-system/<project-slug>/pages/dashboard.md` — Page-specific deviations from the proposal's MASTER.md
 
-**How hierarchical retrieval works:**
-1. When building a specific page (e.g., "Checkout"), first check `design-system/pages/checkout.md`
-2. If the page file exists, its rules **override** the Master file
-3. If not, use `design-system/MASTER.md` exclusively
+**How hierarchical retrieval works (inside one generated proposal):**
+1. When building a specific page (e.g., "Checkout"), first check `design-system/<project-slug>/pages/checkout.md`
+2. If the page file exists, its rules **override** the proposal's MASTER.md
+3. If not, use the proposal's `design-system/<project-slug>/MASTER.md`; values still come from `packages/design-tokens/src/tokens.json`
 
 ### Step 3: Supplement with Detailed Searches (as needed)
 

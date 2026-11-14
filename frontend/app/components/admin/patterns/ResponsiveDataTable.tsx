@@ -1,7 +1,7 @@
 /**
  * ResponsiveDataTable - Table dual-mode (cards mobile / table desktop)
  *
- * @see packages/design-tokens/DESIGN-SYSTEM.automecanik.md Section "Mobile-First Data UX"
+ * @see .claude/skills/frontend-design/SKILL.md (règles UI) et packages/design-tokens/src/tokens.json (valeurs)
  *
  * Mobile (< md): Cards avec 3 champs prioritaires + "Voir+" drawer
  * Desktop (>= md): Table complète avec tri et pagination
