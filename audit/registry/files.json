@@ -36769,6 +36769,29 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/support/services/legal-page.service.ts",
+        "backend/src/modules/support/services/legal-version.service.ts",
+        "backend/src/modules/support/services/legal.service.ts"
+      ],
+      "kind": "test",
+      "loc": 46,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/support/services/__tests__/legal.service.slug.test.ts",
       "importedBy": [],
       "imports": [
@@ -36960,6 +36983,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/support/services/legal-page.service.ts",
       "importedBy": [
+        "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
         "backend/src/modules/support/services/legal.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
@@ -36985,6 +37009,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/support/services/legal-version.service.ts",
       "importedBy": [
+        "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
         "backend/src/modules/support/services/legal.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
@@ -37013,6 +37038,7 @@
       "importedBy": [
         "backend/src/modules/support/controllers/legal.controller.ts",
         "backend/src/modules/support/index.ts",
+        "backend/src/modules/support/services/__tests__/legal.service.boot.test.ts",
         "backend/src/modules/support/services/__tests__/legal.service.slug.test.ts",
         "backend/src/modules/support/services/legal-page.service.ts",
         "backend/src/modules/support/services/legal-version.service.ts",
@@ -37026,7 +37052,7 @@
         "backend/src/modules/support/services/legal-version.service.ts"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 773,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/legal.service.ts",
       "risk": "low",
