@@ -19,6 +19,16 @@ session de préparation n'a ni enregistré de runner, ni créé d'utilisateur, n
 - Droits minimaux : utilisateur système dédié, sans `sudo`, hors des groupes `docker` (équivalent
   root) et `deploy` ; service durci par systemd (§5) qui masque `/home` et `/opt/automecanik`.
 
+## Identité à utiliser
+
+Sur le DEV, `gh` est connecté avec l'app `automecanik-agents[bot]` (jeton `ghs_…`, à vérifier avec
+`gh auth status`). Cette app n'a pas le droit « Administration » du dépôt : les §3, §6 et §7
+reçoivent HTTP 403 (« Resource not accessible by integration ») depuis le shell DEV. Ils se font
+avec le compte de l'owner, soit dans l'interface web (voie indiquée à chaque paragraphe), soit
+avec `gh` connecté au compte de l'owner sur son poste. Donner ce droit à l'app des agents
+élargirait leur périmètre (runners, réglages du dépôt) : ce n'est pas la voie retenue. Seuls les
+§0, §1, §2, §4 et §5 s'exécutent sur le DEV.
+
 ## 0. Pré-contrôles (lecture seule)
 
 ```bash
@@ -66,8 +76,11 @@ Jeton à usage unique, valable une heure. Il se demande avec le compte de l'owne
 agent reçoit HTTP 403 sur l'API des runners) et **ne s'écrit nulle part** : ni issue, ni PR, ni chat,
 ni fichier, ni historique du shell.
 
+Voie web : *Settings → Actions → Runners → New self-hosted runner* (Linux, x64) ; le jeton figure
+dans la commande `./config.sh` affichée, à copier dans l'invite du §4 et nulle part ailleurs.
+Voie `gh`, sur le poste de l'owner, connecté à son compte (pas le shell DEV) :
+
 ```bash
-# poste de l'owner, jeton gh de l'owner :
 gh api -X POST repos/ak125/nestjs-remix-monorepo/actions/runners/registration-token --jq .token
 ```
 
@@ -140,20 +153,23 @@ propre à `gh-agents` dans son répertoire et un assouplissement nommé, à déc
 ## 6. Code de fork (D4.4)
 
 Réglage du dépôt : *Settings → Actions → General → Approval for running fork pull request workflows
-from contributors* → **Require approval for all external contributors**. Contrôle :
+from contributors* → **Require approval for all external contributors**. La page affiche la
+valeur en cours : c'est le contrôle. Voie `gh`, sur le poste de l'owner, connecté à son compte :
 
 ```bash
 gh api repos/ak125/nestjs-remix-monorepo/actions/permissions/fork-pr-contributor-approval
 # attendu : {"approval_policy":"all_external_contributors"}
 ```
 
-Le jeton agent reçoit HTTP 403 sur cette API (constaté le 2026-11-15) : la valeur actuelle du
-réglage n'est pas connue de la session de préparation.
+Depuis le shell DEV, cette API répond HTTP 403 (constaté le 2026-11-15 par la session et par
+l'owner) : la valeur actuelle du réglage n'est pas connue.
 
 ## 7. Vérification (critère de sortie de l'étape 1)
 
+Voie web : *Settings → Actions → Runners* : `dev-agents` en « Idle » (vert), label `agents` seul.
+Voie `gh`, sur le poste de l'owner, connecté à son compte :
+
 ```bash
-# jeton de l'owner :
 gh api repos/ak125/nestjs-remix-monorepo/actions/runners \
   --jq '.runners[] | {name, status, busy, labels: [.labels[].name]}'
 # attendu : dev-agents, status "online", labels ["agents"] seulement ;
