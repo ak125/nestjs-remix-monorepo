@@ -94138,7 +94138,7 @@
         "frontend/app/utils/remix-application-port.ts"
       ],
       "kind": "service",
-      "loc": 176,
+      "loc": 197,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "medium",
@@ -94206,7 +94206,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 756,
+      "loc": 760,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "medium",
@@ -94226,10 +94226,12 @@
       "importedBy": [],
       "imports": [
         "~/components/pieces/NoProductsAlternatives",
+        "~/utils/image-optimizer",
+        "~/utils/og-image.utils",
         "~/utils/seo/pieces-schema.utils"
       ],
       "kind": "service",
-      "loc": 177,
+      "loc": 191,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.meta.ts",
       "risk": "medium",
@@ -97667,7 +97669,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 702,
+      "loc": 703,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "medium",
@@ -97687,7 +97689,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 97,
+      "loc": 197,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-vehicle-meta.test.ts",
       "risk": "medium",
@@ -107664,11 +107666,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "002451d34abdf811ea0d7f39d9afa6a39669011c842656b6b019e30117089dd0",
+      "audit/registry/files.json": "f8cd92411b46c816d98f354a9b75caa0efaf91335ab8f1a0967ac46d554c2cbd",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "4e776d973e89"
+    "sotFingerprint": "fe18c470ae5f"
   },
   "runtime": [
     {
