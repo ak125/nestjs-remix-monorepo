@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 287,
-      "loc_total": 62234,
+      "files_count": 288,
+      "loc_total": 62410,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 376,
-      "loc_total": 77707,
+      "loc_total": 77723,
       "has_barrel": true
     },
     "upload": {

@@ -1,15 +1,18 @@
 /**
  * SEO maintenance triggers and SEO dashboards — access boundary.
  *
- * Nine controllers of the SEO module. Three classes of access:
+ * Ten controllers of the SEO module. Three classes of access:
  * - `adminOrKey` : `AdminOrInternalKeyGuard`, i.e. an admin session OR the
  *   internal key (`X-Internal-Key`). Triggers a scheduled task or an
  *   operations script may call (sitemap generation and cleanup, sitemap
- *   submission, monitoring run, risk refresh) and the reads of the
- *   controllers that carry them.
+ *   submission, monitoring run, risk refresh, link-tracking aggregation and
+ *   purge) and the reads of the controllers that carry them.
  * - `admin`      : `AuthenticatedGuard + IsAdminGuard`. Read-only dashboards
  *   (keywords, crawl logs, pilotage).
- * - `public`     : the served `latest.xml` and the sitemap diagnostic reads.
+ * - `public`     : the served `latest.xml`, the sitemap diagnostic reads, the
+ *   link-tracking beacons the storefront sends without a session, and the
+ *   link-tracking metric reads (current state, recorded as such: the admin
+ *   SEO dashboard fetches them server-side without credentials).
  *
  * Each handler → access map below is EXHAUSTIVE: a handler added later
  * without a classification fails the test.
@@ -37,6 +40,7 @@ import {
 } from '../../src/auth/session-privilege';
 import { KeywordsDashboardController } from '../../src/modules/seo/controllers/keywords-dashboard.controller';
 import { SeoDashboardController } from '../../src/modules/seo/controllers/seo-dashboard.controller';
+import { SeoLinkTrackingController } from '../../src/modules/seo/seo-link-tracking.controller';
 import { SeoLogsController } from '../../src/modules/seo/controllers/seo-logs.controller';
 import { SeoMonitorController } from '../../src/modules/seo/controllers/seo-monitor.controller';
 import { SeoMonitoringController } from '../../src/modules/seo/controllers/seo-monitoring.controller';
@@ -300,6 +304,18 @@ const CONTRACTS: Array<{
       'getSummary',
     ],
     public: [],
+  },
+  {
+    name: 'api/seo link tracking (SeoLinkTrackingController)',
+    controller: SeoLinkTrackingController,
+    adminOrKey: ['aggregateDailyMetrics', 'cleanupOldData'],
+    admin: [],
+    public: [
+      'trackClick',
+      'trackImpression',
+      'getPerformanceReport',
+      'getMetricsByLinkType',
+    ],
   },
 ];
 
