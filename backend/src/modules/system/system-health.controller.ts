@@ -1,5 +1,7 @@
-import { Controller, Get, Injectable, Logger } from '@nestjs/common';
+import { Controller, Get, Injectable, Logger, UseGuards } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { SystemService } from './services/system.service';
 
 @Injectable()
@@ -30,6 +32,11 @@ export class SystemHealthService {
   }
 }
 
+/**
+ * `health` est une sonde de vie (statut et durée de fonctionnement), publique
+ * comme `/health`. Les quatre autres routes décrivent l'état interne du
+ * système et sont réservées aux administrateurs.
+ */
 @SkipThrottle() // 🛡️ Health checks exemptés du rate limiting
 @Controller('api/system')
 export class SystemHealthController {
@@ -58,6 +65,7 @@ export class SystemHealthController {
   }
 
   @Get('metrics')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getMetrics() {
     this.logger.log('📊 Métriques système demandées');
     try {
@@ -77,6 +85,7 @@ export class SystemHealthController {
   // 🚀 Nouveaux endpoints avancés utilisant le SystemService existant
 
   @Get('status')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getSystemStatus() {
     this.logger.log('🎯 System status demandé (avancé)');
     try {
@@ -101,6 +110,7 @@ export class SystemHealthController {
   }
 
   @Get('insights')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getSystemInsights() {
     this.logger.log('🧠 System insights demandés');
     try {
@@ -124,6 +134,7 @@ export class SystemHealthController {
   }
 
   @Get('dashboard')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getSystemDashboard() {
     this.logger.log('📈 System dashboard demandé');
     try {

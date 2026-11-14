@@ -1,4 +1,14 @@
-import { Controller, Get, Query, Param, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  Post,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { LayoutService, LayoutConfig } from '../services/layout.service';
 import { HeaderService } from '../services/header.service';
 import { FooterService } from '../services/footer.service';
@@ -228,6 +238,7 @@ export class LayoutController {
    * POST /layout/invalidate-cache
    */
   @Post('invalidate-cache')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async invalidateCache(
     @Body() body: { type?: string; context?: string; userId?: string },
   ) {
@@ -250,7 +261,7 @@ export class LayoutController {
       'commercial',
       'public',
     ];
-    const defaults: Record<string, any> = {};
+    const defaults: Record<string, unknown> = {};
 
     for (const context of contexts) {
       defaults[context] = await this.layoutService.getLayoutData(context);

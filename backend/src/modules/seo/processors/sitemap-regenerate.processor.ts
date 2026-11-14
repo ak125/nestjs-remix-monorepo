@@ -1,7 +1,9 @@
 /**
  * SitemapRegenerateProcessor — consume du job `sitemap-regenerate-all`.
  *
- * Scheduled by `SitemapV10SchedulerService` (BullMQ repeatable, 03:00 UTC).
+ * Mis en file par `POST /api/sitemap/v10/generate-all`, qu'appelle le workflow
+ * GitHub `sitemap-daily-regen.yml` à 03:00 UTC : seul producteur de la
+ * régénération quotidienne (cf. `SitemapV10SchedulerService`).
  * Delegate `SitemapV10Service.generateAll()` qui régénère tous les buckets
  * (racine, categories, vehicules, blog, pages, diagnostic, reference, brands,
  * pieces-1..N, hubs). Aucun changement de comportement métier — uniquement
@@ -58,11 +60,12 @@ export class SitemapRegenerateProcessor {
   ): Promise<SitemapRegenerateResult> {
     const startedAtMs = Date.now();
     const startedAtIso = new Date(startedAtMs).toISOString();
-    const triggeredBy = job.data?.triggeredBy ?? 'scheduler';
+    // L'API met en file cette tâche avec `triggeredBy` ; une tâche ajoutée
+    // hors de l'API peut ne pas le porter.
+    const triggeredBy = job.data?.triggeredBy ?? 'manual';
 
     // ADR-028 Option D — READ_ONLY gate au processor.
-    // Le scheduler reste enregistré pour valider le wiring BullMQ en preprod
-    // miroir prod, mais le handler court-circuite sans écrire de fichiers.
+    // En READ_ONLY, la tâche est consommée sans générer ni écrire.
     if (this.readOnly) {
       this.logger.log(
         `[READ_ONLY] Skipping sitemap regeneration (triggeredBy=${triggeredBy})`,

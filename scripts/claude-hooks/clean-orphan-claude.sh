@@ -28,6 +28,31 @@ for arg in "$@"; do
 done
 
 KILLED=0
+
+# Compte rendu d'état (scripts/cron/lib-supabase-report.sh), lu par le hook SessionStart.
+# Sans lui, un arrêt en erreur de ce cron ne laissait aucune trace : la ligne de crontab
+# n'a pas de redirection et la machine n'a pas de messagerie. Passage toutes les 5 min :
+# muet au-delà de 30 min = cron arrêté. Un essai à blanc n'enregistre rien.
+source "$(dirname "$0")/../cron/lib-supabase-report.sh" 2>/dev/null || true
+: "${CRON_REPORT_MAX_AGE_S:=1800}"
+report_state() {
+  local rc=$?
+  [[ "$DRY_RUN" == "1" ]] && return 0
+  if ! declare -F cron_report >/dev/null; then
+    echo "clean-orphan-claude : lib-supabase-report.sh introuvable — état NON enregistré" >&2
+    return 0
+  fi
+  if [[ "$rc" -eq 0 ]]; then
+    cron_report "clean-orphan-claude" "ok" "$SECONDS" \
+      "{\"killed\":${KILLED},\"ide_locks\":${LOCKS_CLEANED:-0},\"agent_counters\":${COUNTERS_CLEANED:-0}}" \
+      "${KILLED} orphelin(s) arrêté(s), ${LOCKS_CLEANED:-0} verrou(s) IDE et ${COUNTERS_CLEANED:-0} compteur(s) retirés"
+  else
+    cron_report "clean-orphan-claude" "error" "$SECONDS" '{}' \
+      "arrêt en erreur (exit ${rc}) avant la fin du nettoyage — relancer à la main avec --verbose"
+  fi
+}
+trap report_state EXIT
+
 # Motif surchargeable pour les tests (jamais en production : valeur par défaut figée).
 CLAUDE_PATTERN="${CLAUDE_ORPHAN_PATTERN:-native-binary/claude}"
 mapfile -t CLAUDE_PIDS < <(pgrep -f "$CLAUDE_PATTERN" 2>/dev/null || true)

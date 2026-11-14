@@ -62,6 +62,98 @@ export interface GammeAggregatesResult {
   execution_status: 'PASS' | 'WARN' | 'FAIL';
 }
 
+/**
+ * Contrat V-Level des indicateurs globaux (lot A, 2026-11-04).
+ *
+ * Grain : LIGNE de `public.__seo_keywords` (pas un véhicule unique, pas une
+ * audience). Périmètre catalogue et G1 : `public.pieces_gamme`.
+ * Identité de contrôle, vérifiée avant toute réponse :
+ *   keywords.total = keywords.classified + keywords.unclassified + keywords.unexpectedLevel
+ *   somme des tranches de fraîcheur = keywords.total
+ * Une lecture incomplète ou incohérente lève une erreur : jamais de zéro substitué.
+ */
+export const VLEVEL_RECOGNIZED_LEVELS = [
+  'V1',
+  'V2',
+  'V3',
+  'V4',
+  'V5',
+  'V6',
+] as const;
+export type VLevelRecognized = (typeof VLEVEL_RECOGNIZED_LEVELS)[number];
+
+export const VLEVEL_GLOBAL_STATS_CONTRACT = 'vlevel-global-stats.v2' as const;
+
+export interface VLevelGlobalStats {
+  contract: typeof VLEVEL_GLOBAL_STATS_CONTRACT;
+  source: {
+    keywords: '__seo_keywords';
+    catalogue: 'pieces_gamme';
+  };
+  /** Fenêtre de lecture : plusieurs requêtes successives, pas un instantané transactionnel. */
+  read: {
+    startedAt: string;
+    completedAt: string;
+    pageSize: number;
+    keywordPages: number;
+    cataloguePages: number;
+  };
+  keywords: {
+    /** Nombre de lignes de mots-clés. */
+    total: number;
+    byLevel: Record<VLevelRecognized, number>;
+    /** Somme des lignes V1 à V6 : dénominateur des pourcentages par niveau. */
+    classified: number;
+    /** v_level NULL. */
+    unclassified: number;
+    /** v_level non NULL hors V1 à V6 (casse comprise) : anomalie signalée. */
+    unexpectedLevel: number;
+    /** Valeurs inattendues observées, au plus 20, par nombre décroissant. */
+    unexpectedLevelValues: Array<{ value: string; count: number }>;
+    /** Lignes dont le pg_id est NULL ou absent de pieces_gamme. */
+    withoutCatalogueGamme: number;
+  };
+  gammes: {
+    /** Lignes de pieces_gamme. */
+    catalogueTotal: number;
+    /** pg_id distincts de pieces_gamme portant au moins une ligne V1 à V6. */
+    withClassification: number;
+    /** Gammes pg_top = '1'. */
+    g1Total: number;
+    /** Gammes pg_top = '1' portant au moins une ligne V2 (« enregistré », pas « validé »). */
+    g1WithV2: number;
+  };
+  /**
+   * Âge de collected_at à l'instant read.startedAt. Bornes incluses :
+   * ≤ 7 jours ; > 7 et ≤ 30 jours ; > 30 jours. Absente, invalide ou future = inconnue.
+   */
+  freshness: {
+    upTo7Days: number;
+    from7To30Days: number;
+    over30Days: number;
+    unknownOrInvalid: number;
+  };
+  dates: {
+    /** max(collected_at) parmi les dates valides non futures. */
+    latestCollectedAt: string | null;
+    /** max(updated_at) parmi les dates valides non futures ; ce n'est pas une date de collecte. */
+    latestUpdatedAt: string | null;
+  };
+}
+
+/** Lecture V-Level impossible ou incohérente : le contrôleur la rend en échec explicite. */
+export class VLevelStatsReadError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'VLevelStatsReadError';
+  }
+}
+
+const VLEVEL_STATS_PAGE_SIZE = 1000;
+/** Borne du travail : 200 pages de 1 000 lignes, au-delà la lecture échoue explicitement. */
+const VLEVEL_STATS_MAX_PAGES = 200;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 @Injectable()
 export class GammeSeoBadgesService extends SupabaseBaseService {
   protected readonly logger = new Logger(GammeSeoBadgesService.name);
@@ -72,151 +164,258 @@ export class GammeSeoBadgesService extends SupabaseBaseService {
   }
 
   /**
-   * 📊 Statistiques globales V-Level pour le dashboard
+   * 📊 Indicateurs globaux V-Level (lecture seule, sans recalcul).
+   *
+   * Lecture exhaustive par pagination en keyset (ordre unique sur la clé
+   * primaire), contrôlée par un comptage exact préalable : une page en erreur,
+   * un `data` nul, un dépassement de borne ou un écart entre lignes lues et
+   * comptage lèvent `VLevelStatsReadError`. Aucune écriture.
    */
-  async getVLevelGlobalStats(): Promise<{
-    totalGammes: number;
-    gammesWithVLevel: number;
-    distribution: {
-      v1: number;
-      v2: number;
-      v3: number;
-      v4: number;
-      v5: number;
-      total: number;
+  async getVLevelGlobalStats(
+    now: Date = new Date(),
+  ): Promise<VLevelGlobalStats> {
+    const startedAt = now.toISOString();
+    const nowMs = now.getTime();
+    this.logger.log('📊 Lecture des indicateurs V-Level (__seo_keywords)');
+
+    const catalogue = await this.readAllPages<{
+      pg_id: number | string | null;
+      pg_top: string | number | null;
+    }>('pieces_gamme', 'pg_id, pg_top', 'pg_id');
+
+    const catalogueIds = new Set<string>();
+    const g1Ids = new Set<string>();
+    for (const row of catalogue.rows) {
+      if (row.pg_id === null || row.pg_id === undefined) continue;
+      const id = String(row.pg_id);
+      catalogueIds.add(id);
+      if (row.pg_top !== null && String(row.pg_top) === '1') g1Ids.add(id);
+    }
+
+    const keywords = await this.readAllPages<{
+      id: number;
+      pg_id: number | string | null;
+      v_level: string | null;
+      collected_at: string | null;
+      updated_at: string | null;
+    }>('__seo_keywords', 'id, pg_id, v_level, collected_at, updated_at', 'id');
+
+    const byLevel = Object.fromEntries(
+      VLEVEL_RECOGNIZED_LEVELS.map((l) => [l, 0]),
+    ) as Record<VLevelRecognized, number>;
+    const recognized = new Set<string>(VLEVEL_RECOGNIZED_LEVELS);
+    const unexpected = new Map<string, number>();
+    const gammesClassified = new Set<string>();
+    const g1WithV2 = new Set<string>();
+    const freshness = {
+      upTo7Days: 0,
+      from7To30Days: 0,
+      over30Days: 0,
+      unknownOrInvalid: 0,
     };
-    freshness: {
-      fresh: number;
-      stale: number;
-      old: number;
-    };
-    lastUpdated: string | null;
-    g1Stats: {
-      total: number;
-      withV2: number;
-      coverage: number;
-    };
-  }> {
-    try {
-      this.logger.log('📊 Fetching V-Level global stats');
+    let unclassified = 0;
+    let withoutCatalogueGamme = 0;
+    let latestCollectedMs: number | null = null;
+    let latestUpdatedMs: number | null = null;
 
-      // 1. Total gammes
-      const { count: totalGammes } = await this.supabase
-        .from('pieces_gamme')
-        .select('*', { count: 'exact', head: true });
+    for (const row of keywords.rows) {
+      const pgId =
+        row.pg_id === null || row.pg_id === undefined
+          ? null
+          : String(row.pg_id);
+      const inCatalogue = pgId !== null && catalogueIds.has(pgId);
+      if (!inCatalogue) withoutCatalogueGamme++;
 
-      // 2. Gammes avec V-Level data
-      const { data: gammesWithData } = await this.supabase
-        .from('gamme_seo_metrics')
-        .select('gamme_id')
-        .not('v_level', 'is', null);
-
-      const uniqueGammes = new Set(
-        (gammesWithData || []).map((g: any) => g.gamme_id),
-      );
-
-      // 3. Distribution par V-Level
-      const { data: allVLevels } = await this.supabase
-        .from('gamme_seo_metrics')
-        .select('v_level, updated_at');
-
-      const distribution = {
-        v1: 0,
-        v2: 0,
-        v3: 0,
-        v4: 0,
-        v5: 0,
-        total: 0,
-      };
-
-      const freshness = {
-        fresh: 0,
-        stale: 0,
-        old: 0,
-      };
-
-      let lastUpdated: string | null = null;
-      const now = Date.now();
-      const sevenDays = 7 * 24 * 60 * 60 * 1000;
-      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-
-      for (const item of allVLevels || []) {
-        distribution.total++;
-        switch (item.v_level) {
-          case 'V1':
-            distribution.v1++;
-            break;
-          case 'V2':
-            distribution.v2++;
-            break;
-          case 'V3':
-            distribution.v3++;
-            break;
-          case 'V4':
-            distribution.v4++;
-            break;
-          case 'V5':
-            distribution.v5++;
-            break;
+      const level = row.v_level;
+      if (level === null || level === undefined) {
+        unclassified++;
+      } else if (recognized.has(level)) {
+        byLevel[level as VLevelRecognized]++;
+        if (inCatalogue && pgId !== null) {
+          gammesClassified.add(pgId);
+          if (level === 'V2' && g1Ids.has(pgId)) g1WithV2.add(pgId);
         }
+      } else {
+        unexpected.set(level, (unexpected.get(level) ?? 0) + 1);
+      }
 
-        // Freshness
-        if (item.updated_at) {
-          const updated = new Date(item.updated_at).getTime();
-          const age = now - updated;
-          if (age <= sevenDays) {
-            freshness.fresh++;
-          } else if (age <= thirtyDays) {
-            freshness.stale++;
-          } else {
-            freshness.old++;
-          }
-
-          if (!lastUpdated || item.updated_at > lastUpdated) {
-            lastUpdated = item.updated_at;
-          }
+      const collectedMs = this.parsePastTimestamp(row.collected_at, nowMs);
+      if (collectedMs === null) {
+        freshness.unknownOrInvalid++;
+      } else {
+        const age = nowMs - collectedMs;
+        if (age <= 7 * DAY_MS) freshness.upTo7Days++;
+        else if (age <= 30 * DAY_MS) freshness.from7To30Days++;
+        else freshness.over30Days++;
+        if (latestCollectedMs === null || collectedMs > latestCollectedMs) {
+          latestCollectedMs = collectedMs;
         }
       }
 
-      // 4. G1 stats
-      const { count: g1Total } = await this.supabase
-        .from('pieces_gamme')
-        .select('*', { count: 'exact', head: true })
-        .eq('pg_top', '1');
-
-      const { data: g1WithV2 } = await this.supabase
-        .from('gamme_seo_metrics')
-        .select('gamme_id')
-        .eq('v_level', 'V2');
-
-      const g1GammesWithV2 = new Set(
-        (g1WithV2 || []).map((g: any) => g.gamme_id),
-      );
-
-      const stats = {
-        totalGammes: totalGammes || 0,
-        gammesWithVLevel: uniqueGammes.size,
-        distribution,
-        freshness,
-        lastUpdated,
-        g1Stats: {
-          total: g1Total || 0,
-          withV2: g1GammesWithV2.size,
-          coverage: g1Total
-            ? Math.round((g1GammesWithV2.size / g1Total) * 100)
-            : 0,
-        },
-      };
-
-      this.logger.log(
-        `✅ V-Level global stats: ${distribution.total} entries, ${uniqueGammes.size} gammes`,
-      );
-
-      return stats;
-    } catch (error) {
-      this.logger.error('❌ Error in getVLevelGlobalStats():', error);
-      throw error;
+      const updatedMs = this.parsePastTimestamp(row.updated_at, nowMs);
+      if (
+        updatedMs !== null &&
+        (latestUpdatedMs === null || updatedMs > latestUpdatedMs)
+      ) {
+        latestUpdatedMs = updatedMs;
+      }
     }
+
+    const total = keywords.rows.length;
+    const classified = VLEVEL_RECOGNIZED_LEVELS.reduce(
+      (sum, l) => sum + byLevel[l],
+      0,
+    );
+    const unexpectedLevel = [...unexpected.values()].reduce((s, n) => s + n, 0);
+    const freshnessSum =
+      freshness.upTo7Days +
+      freshness.from7To30Days +
+      freshness.over30Days +
+      freshness.unknownOrInvalid;
+    if (classified + unclassified + unexpectedLevel !== total) {
+      throw new VLevelStatsReadError(
+        'Identité de contrôle rompue : total ≠ classés + sans niveau + inattendus',
+      );
+    }
+    if (freshnessSum !== total) {
+      throw new VLevelStatsReadError(
+        'Tranches de fraîcheur incomplètes : somme ≠ total',
+      );
+    }
+
+    if (total === 0) {
+      this.logger.warn('⚠️ __seo_keywords lue intégralement : source vide');
+    }
+    if (unexpectedLevel > 0) {
+      this.logger.warn(
+        `⚠️ ${unexpectedLevel} mot(s)-clé(s) avec un niveau hors V1–V6`,
+      );
+    }
+
+    const stats: VLevelGlobalStats = {
+      contract: VLEVEL_GLOBAL_STATS_CONTRACT,
+      source: { keywords: '__seo_keywords', catalogue: 'pieces_gamme' },
+      read: {
+        startedAt,
+        completedAt: new Date().toISOString(),
+        pageSize: VLEVEL_STATS_PAGE_SIZE,
+        keywordPages: keywords.pages,
+        cataloguePages: catalogue.pages,
+      },
+      keywords: {
+        total,
+        byLevel,
+        classified,
+        unclassified,
+        unexpectedLevel,
+        unexpectedLevelValues: [...unexpected.entries()]
+          .map(([value, count]) => ({ value, count }))
+          // Ordre déterministe indépendant de la locale : nombre décroissant, puis code de caractère.
+          .sort(
+            (a, b) =>
+              b.count - a.count ||
+              (a.value < b.value ? -1 : a.value > b.value ? 1 : 0),
+          )
+          .slice(0, 20),
+        withoutCatalogueGamme,
+      },
+      gammes: {
+        catalogueTotal: catalogueIds.size,
+        withClassification: gammesClassified.size,
+        g1Total: g1Ids.size,
+        g1WithV2: g1WithV2.size,
+      },
+      freshness,
+      dates: {
+        latestCollectedAt:
+          latestCollectedMs === null
+            ? null
+            : new Date(latestCollectedMs).toISOString(),
+        latestUpdatedAt:
+          latestUpdatedMs === null
+            ? null
+            : new Date(latestUpdatedMs).toISOString(),
+      },
+    };
+
+    this.logger.log(
+      `✅ Indicateurs V-Level : ${total} mots-clés (${classified} classés), ${catalogueIds.size} gammes catalogue, ${keywords.pages}+${catalogue.pages} pages`,
+    );
+    return stats;
+  }
+
+  /** Date valide et non future, sinon null (comptée « inconnue ou invalide »). */
+  private parsePastTimestamp(
+    value: string | null | undefined,
+    nowMs: number,
+  ): number | null {
+    if (!value) return null;
+    const ms = Date.parse(value);
+    if (Number.isNaN(ms) || ms > nowMs) return null;
+    return ms;
+  }
+
+  /**
+   * Lecture exhaustive d'une table : comptage exact, puis pages en keyset
+   * (`key > dernière clé`, ordre croissant) jusqu'à une page vide. S'arrêter
+   * sur une page vide plutôt que sur une page « courte » évite de prendre une
+   * limite de réponse du serveur pour la fin de la table.
+   */
+  private async readAllPages<T extends Record<string, unknown>>(
+    table: string,
+    columns: string,
+    key: string,
+  ): Promise<{ rows: T[]; pages: number }> {
+    const { count, error: countError } = await this.supabase
+      .from(table)
+      .select(key, { count: 'exact', head: true });
+    if (countError || typeof count !== 'number') {
+      this.logger.error(
+        `❌ Comptage ${table} impossible: ${countError?.message ?? 'count absent'}`,
+      );
+      throw new VLevelStatsReadError(`Comptage ${table} impossible`);
+    }
+
+    const rows: T[] = [];
+    let lastKey: unknown = undefined;
+    let pages = 0;
+    for (;;) {
+      if (pages >= VLEVEL_STATS_MAX_PAGES) {
+        throw new VLevelStatsReadError(
+          `${table} dépasse la borne de ${VLEVEL_STATS_MAX_PAGES} pages`,
+        );
+      }
+      let query = this.supabase
+        .from(table)
+        .select(columns)
+        .order(key, { ascending: true })
+        .limit(VLEVEL_STATS_PAGE_SIZE);
+      if (lastKey !== undefined) query = query.gt(key, lastKey);
+      const { data, error } = await query;
+      pages++;
+      if (error || !Array.isArray(data)) {
+        this.logger.error(
+          `❌ Lecture ${table} page ${pages} impossible: ${error?.message ?? 'data absent'}`,
+        );
+        throw new VLevelStatsReadError(`Lecture ${table} interrompue`);
+      }
+      if (data.length === 0) break;
+      const page = data as unknown as T[];
+      const nextKey = page[page.length - 1][key];
+      if (nextKey === null || nextKey === undefined || nextKey === lastKey) {
+        throw new VLevelStatsReadError(`Clé de pagination ${table} invalide`);
+      }
+      rows.push(...page);
+      lastKey = nextKey;
+    }
+
+    if (rows.length !== count) {
+      this.logger.error(
+        `❌ ${table} : ${rows.length} lignes lues pour ${count} comptées (écriture concurrente ou limite)`,
+      );
+      throw new VLevelStatsReadError(`Lecture ${table} incohérente`);
+    }
+    return { rows, pages };
   }
 
   /**

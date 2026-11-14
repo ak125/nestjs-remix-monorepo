@@ -7,7 +7,10 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AiContentService } from './ai-content.service';
 import {
   GenerateContentDto,
@@ -31,8 +34,12 @@ import {
  * - Generate endpoints: 5 req/min (strict - LLM calls are expensive)
  * - Batch endpoint: 2 req/min (very strict - multiple LLM calls)
  * - Status endpoint: 30 req/min (moderate - monitoring)
+ *
+ * Réservé aux administrateurs : chaque génération appelle un fournisseur
+ * facturé, et la page `admin.ai-content` est son seul client.
  */
 @Controller('api/ai-content')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AiContentController {
   private readonly logger = new Logger(AiContentController.name);
 

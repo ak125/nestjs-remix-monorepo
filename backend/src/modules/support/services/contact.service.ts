@@ -8,6 +8,7 @@ import {
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { NotificationService } from './notification.service';
 import { MailService } from '../../../services/mail.service';
+import { quoteFilterValue } from '@common/utils/postgrest-filter.util';
 
 export interface ContactRequest {
   name: string;
@@ -451,7 +452,9 @@ export class ContactService extends SupabaseBaseService {
         )
       `,
       )
-      .or(`msg_id.eq.${ticketId},msg_parent_id.eq.${ticketId}`)
+      .or(
+        `msg_id.eq.${quoteFilterValue(ticketId)},msg_parent_id.eq.${quoteFilterValue(ticketId)}`,
+      )
       .order('msg_date', { ascending: true });
 
     if (error) {

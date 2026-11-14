@@ -5,6 +5,7 @@ import {
   Param,
   Logger,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -14,6 +15,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { CatalogService, HomeCatalogData } from './catalog.service';
 import { CatalogHierarchyService } from './services/catalog-hierarchy.service';
 import { HomepageRpcService } from './services/homepage-rpc.service';
@@ -467,6 +470,7 @@ export class CatalogController {
    * Invalide le cache du catalogue (admin)
    */
   @Get('invalidate-cache')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({
     summary: 'Invalidation du cache (admin)',
     description: 'Invalide le cache complet ou avec pattern spécifique',

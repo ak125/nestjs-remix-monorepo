@@ -16,7 +16,7 @@
  * RÈGLES BLOQUANTES (non-négociables):
  * - confusionRisk >= 50 → EXCLUDE
  * - meta_robots contains 'noindex' → EXCLUDE
- * - status_target != 200 → EXCLUDE
+ * - status_target connu et != 200 → EXCLUDE (inconnu = non bloquant)
  * - canonical_url incohérent → EXCLUDE
  *
  * Buckets (score brut 0-200):
@@ -50,7 +50,7 @@ export interface EntityInputs {
 
   // Métadonnées pour règles bloquantes
   metaRobots?: string; // Pour vérifier noindex
-  statusTarget?: number; // Pour vérifier != 200
+  statusTarget?: number | null; // Pour vérifier != 200 (absent = inconnu)
   canonicalUrl?: string; // Pour vérifier incohérence
   url?: string; // URL de la page
   isRecent?: boolean; // < 48h depuis publication
@@ -70,8 +70,22 @@ export interface EntityScore {
   };
 }
 
+/**
+ * Issue d'un recalcul :
+ * - `ok`                 : toutes les entrées lues, tous les scores écrits ;
+ * - `inputs_unavailable` : une source d'entrée est vide ou non alimentée,
+ *                          aucun score n'a été écrit ;
+ * - `failed`             : une lecture, une écriture ou la propagation des
+ *                          températures a échoué.
+ */
+export type ScoringStatus = 'ok' | 'inputs_unavailable' | 'failed';
+
 export interface ScoringResult {
+  /** Vrai seulement quand `status === 'ok'`. */
   success: boolean;
+  status: ScoringStatus;
+  /** Libellé fixe de la cause (le détail technique reste dans les logs). */
+  reason?: string;
   processed: number;
   updated: number;
   errors: number;
@@ -102,6 +116,22 @@ const THRESHOLDS = {
   EXCLUDE: 60, // score < 60
   NEW_MIN: 90, // Pour NEW: isRecent + score >= 90
 };
+
+// Taille de page des lectures (plafond de lignes par requête PostgREST)
+const READ_PAGE_SIZE = 1000;
+
+interface ScoringPageRow {
+  id: number;
+  url: string;
+  entity_id: number | null;
+  page_type: string | null;
+  meta_robots: string | null;
+  canonical_url: string | null;
+  status_target: number | null;
+  last_published_at: string | null;
+  title: string | null;
+  meta_description: string | null;
+}
 
 @Injectable()
 export class SitemapV10ScoringService extends SupabaseBaseService {
@@ -138,8 +168,8 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
       blockReason = 'meta_robots contains noindex';
     }
 
-    // Règle 3: status_target != 200
-    if (inputs.statusTarget !== undefined && inputs.statusTarget !== 200) {
+    // Règle 3: status_target connu et != 200 (absent = inconnu, non bloquant)
+    if (inputs.statusTarget != null && inputs.statusTarget !== 200) {
       isBlocked = true;
       blockReason = `status_target = ${inputs.statusTarget} (not 200)`;
     }
@@ -221,50 +251,115 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
     };
   }
 
+  /** Recalcul en cours dans ce processus, s'il y en a un. */
+  private refreshInFlight: Promise<ScoringResult> | null = null;
+
   /**
-   * Recalcule les scores pour toutes les pages
+   * Lit toutes les lignes d'une source, page par page. Une erreur de lecture
+   * lève : une source illisible n'est jamais traitée comme une source vide.
+   */
+  private async readAll<T>(
+    label: string,
+    fetchPage: (
+      from: number,
+      to: number,
+    ) => PromiseLike<{
+      data: T[] | null;
+      error: { message: string } | null;
+    }>,
+  ): Promise<T[]> {
+    const rows: T[] = [];
+    for (let from = 0; ; from += READ_PAGE_SIZE) {
+      const { data, error } = await fetchPage(from, from + READ_PAGE_SIZE - 1);
+      if (error) {
+        throw new DatabaseException({
+          code: ErrorCodes.DATABASE.OPERATION_FAILED,
+          message: `Failed to load ${label}: ${error.message}`,
+          details: error.message,
+          cause: error instanceof Error ? error : undefined,
+        });
+      }
+      rows.push(...(data ?? []));
+      if (!data || data.length < READ_PAGE_SIZE) return rows;
+    }
+  }
+
+  /**
+   * Recalcule les scores pour toutes les pages.
+   *
+   * Fermé par défaut : aucun score n'est écrit tant qu'une source d'entrée est
+   * illisible, vide ou non alimentée. Une entrée inconnue n'est pas une
+   * pénalité — sans graphe de liens, toute page serait notée orpheline, et
+   * sans titre ni description, toute page serait notée dupliquée et pauvre.
+   *
+   * Une seule exécution à la fois par processus : un appel reçu pendant un
+   * recalcul attend ce recalcul et en reçoit le résultat, sans relire ni
+   * réécrire.
    */
   async refreshAllScores(): Promise<ScoringResult> {
+    if (!this.refreshInFlight) {
+      this.refreshInFlight = this.runRefresh().finally(() => {
+        this.refreshInFlight = null;
+      });
+    }
+    return this.refreshInFlight;
+  }
+
+  private async runRefresh(): Promise<ScoringResult> {
     const startTime = Date.now();
     this.logger.log('🔄 Starting full score refresh...');
 
     let processed = 0;
     let updated = 0;
     let errors = 0;
+    let phase = 'input read';
+
+    const finish = (status: ScoringStatus, reason?: string): ScoringResult => {
+      const durationMs = Date.now() - startTime;
+      const summary = `processed=${processed} updated=${updated} errors=${errors} durationMs=${durationMs}`;
+      if (status === 'ok') {
+        this.logger.log(`✅ Score refresh complete: ${summary}`);
+      } else {
+        this.logger.warn(
+          `Score refresh stopped (${status}: ${reason}): ${summary}`,
+        );
+      }
+      return {
+        success: status === 'ok',
+        status,
+        reason,
+        processed,
+        updated,
+        errors,
+        durationMs,
+      };
+    };
 
     try {
-      // 1. Charger les pages AVEC meta_robots, canonical, status
-      const { data: pages, error: pagesError } = await this.supabase
-        .from('__seo_page')
-        .select(
-          'id, url, entity_id, page_type, meta_robots, canonical_url, status_target, last_published_at, title, meta_description',
-        )
-        .eq('is_indexable_hint', true);
-      // Note: On ne filtre plus status_target ici pour détecter les erreurs
+      // 1. Liens entrants avec types (GraphStrength, orphanRisk) — lus en
+      //    premier : sans eux, rien d'autre n'a besoin d'être chargé.
+      const inboundData = await this.readAll<{
+        to_url: string;
+        link_type: string | null;
+      }>('inbound links', (from, to) =>
+        this.supabase
+          .from('__seo_internal_link')
+          .select('to_url, link_type')
+          .eq('is_active', true)
+          .order('id', { ascending: true })
+          .range(from, to),
+      );
 
-      if (pagesError) {
-        throw new DatabaseException({
-          code: ErrorCodes.DATABASE.OPERATION_FAILED,
-          message: `Failed to load pages: ${pagesError.message}`,
-          details: pagesError.message,
-          cause: pagesError instanceof Error ? pagesError : undefined,
-        });
+      if (inboundData.length === 0) {
+        return finish('inputs_unavailable', 'inbound link graph is empty');
       }
-
-      this.logger.log(`   Found ${pages?.length || 0} pages to score`);
-
-      // 2. Charger les liens entrants avec types (pour GraphStrength)
-      const { data: inboundData } = await this.supabase
-        .from('__seo_internal_link')
-        .select('to_url, link_type')
-        .eq('is_active', true);
 
       // Compter liens par URL et type
       const inboundMap = new Map<
         string,
         { total: number; hub: number; breadcrumb: number }
       >();
-      for (const row of inboundData || []) {
+      for (const row of inboundData) {
         const current = inboundMap.get(row.to_url) || {
           total: 0,
           hub: 0,
@@ -276,36 +371,67 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
         inboundMap.set(row.to_url, current);
       }
 
-      // 3. Charger les violations/blockers (30 jours)
+      // 2. Charger les violations/blockers (30 jours)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const { data: violationsData } = await this.supabase
-        .from('__seo_quality_log')
-        .select('sql_record_id, sql_severity')
-        .gte('sql_created_at', thirtyDaysAgo.toISOString());
+      const violationsData = await this.readAll<{
+        sql_record_id: string;
+        sql_severity: string | null;
+      }>('quality log', (from, to) =>
+        this.supabase
+          .from('__seo_quality_log')
+          .select('sql_record_id, sql_severity')
+          .gte('sql_created_at', thirtyDaysAgo.toISOString())
+          .order('sql_id', { ascending: true })
+          .range(from, to),
+      );
 
       const blockersMap = new Map<string, boolean>();
-      for (const row of violationsData || []) {
+      for (const row of violationsData) {
         if (row.sql_severity === 'block') {
           blockersMap.set(row.sql_record_id, true);
         }
       }
 
-      // 4. Compter pages par entity (pour ClusterDepth)
-      const { data: clusterData } = await this.supabase
-        .from('__seo_page')
-        .select('entity_id')
-        .eq('is_indexable_hint', true)
-        .not('entity_id', 'is', null);
+      // 3. Charger les pages AVEC meta_robots, canonical, status
+      // Note: On ne filtre pas status_target ici pour détecter les erreurs
+      const pages = await this.readAll<ScoringPageRow>('pages', (from, to) =>
+        this.supabase
+          .from('__seo_page')
+          .select(
+            'id, url, entity_id, page_type, meta_robots, canonical_url, status_target, last_published_at, title, meta_description',
+          )
+          .eq('is_indexable_hint', true)
+          .order('id', { ascending: true })
+          .range(from, to),
+      );
 
+      this.logger.log(`   Found ${pages.length} pages to score`);
+
+      if (pages.length === 0) {
+        return finish('inputs_unavailable', 'no indexable page to score');
+      }
+      if (!pages.some((page) => page.title)) {
+        return finish('inputs_unavailable', 'no page carries a title');
+      }
+      if (!pages.some((page) => page.meta_description)) {
+        return finish(
+          'inputs_unavailable',
+          'no page carries a meta description',
+        );
+      }
+
+      // 4. Compter pages par entity (pour ClusterDepth)
       const clusterMap = new Map<number, number>();
-      for (const row of clusterData || []) {
-        if (row.entity_id) {
-          const count = clusterMap.get(row.entity_id) || 0;
-          clusterMap.set(row.entity_id, count + 1);
+      for (const page of pages) {
+        if (page.entity_id) {
+          const count = clusterMap.get(page.entity_id) || 0;
+          clusterMap.set(page.entity_id, count + 1);
         }
       }
+
+      phase = 'scoring';
 
       // 5. Calculer et mettre à jour les scores
       const recentThreshold = new Date(Date.now() - 48 * 60 * 60 * 1000); // 48h
@@ -328,7 +454,7 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
         bucket: 'hot' | 'new' | 'stable' | 'cold' | 'exclude';
       }> = [];
 
-      for (const page of pages || []) {
+      for (const page of pages) {
         processed++;
 
         const links = inboundMap.get(page.url) || {
@@ -357,8 +483,9 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
         if (page.meta_robots?.toLowerCase().includes('noindex'))
           confusionRisk = 100;
 
-        // Règle 3: status_target != 200
-        if (page.status_target !== 200) confusionRisk = 100;
+        // Règle 3: status_target connu et != 200 (absent = inconnu)
+        if (page.status_target != null && page.status_target !== 200)
+          confusionRisk = 100;
 
         // Règle 4: canonical incohérent
         if (page.canonical_url && page.canonical_url !== page.url)
@@ -426,9 +553,9 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
           orphanRisk,
           thinContentRisk,
           confusionRisk,
-          metaRobots: page.meta_robots,
+          metaRobots: page.meta_robots ?? undefined,
           statusTarget: page.status_target,
-          canonicalUrl: page.canonical_url,
+          canonicalUrl: page.canonical_url ?? undefined,
           url: page.url,
           isRecent: isRecent || false,
         });
@@ -456,7 +583,9 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
         });
       }
 
-      // 5. Upsert par batch de 1000
+      // 6. Upsert par batch de 1000 — arrêt au premier lot refusé : des
+      //    scores partiels ne doivent pas atteindre les températures.
+      phase = 'score write';
       const batchSize = 1000;
       for (let i = 0; i < scoresToInsert.length; i += batchSize) {
         const batch = scoresToInsert.slice(i, i + batchSize);
@@ -467,60 +596,60 @@ export class SitemapV10ScoringService extends SupabaseBaseService {
 
         if (upsertError) {
           this.logger.error(`Batch upsert error: ${upsertError.message}`);
-          errors += batch.length;
-        } else {
-          updated += batch.length;
+          errors = scoresToInsert.length - updated;
+          return finish('failed', 'score write failed');
         }
+        updated += batch.length;
       }
 
-      // 6. Mettre à jour les températures dans __seo_page
+      // 7. Mettre à jour les températures dans __seo_page
       // 🛡️ RPC Safety Gate
-      const { data: refreshResult } = await this.callRpc<number>(
-        'refresh_temperature_scores',
-        {},
-        { source: 'cron' },
-      );
+      phase = 'temperature refresh';
+      const { data: refreshResult, error: refreshError } =
+        await this.callRpc<number>(
+          'refresh_temperature_scores',
+          {},
+          { source: 'cron' },
+        );
+      if (refreshError) {
+        this.logger.error(`Temperature refresh error: ${refreshError.message}`);
+        errors++;
+        return finish('failed', 'temperature refresh failed');
+      }
       this.logger.log(
         `   Updated temperatures for ${refreshResult || 0} pages`,
       );
 
-      const durationMs = Date.now() - startTime;
-      this.logger.log(`✅ Score refresh complete:`);
-      this.logger.log(`   Processed: ${processed}`);
-      this.logger.log(`   Updated: ${updated}`);
-      this.logger.log(`   Errors: ${errors}`);
-      this.logger.log(`   Duration: ${durationMs}ms`);
-
-      return {
-        success: errors === 0,
-        processed,
-        updated,
-        errors,
-        durationMs,
-      };
+      return finish('ok');
     } catch (error) {
-      this.logger.error(`Score refresh failed: ${error}`);
-      return {
-        success: false,
-        processed,
-        updated,
-        errors: errors + 1,
-        durationMs: Date.now() - startTime,
-      };
+      this.logger.error(`Score refresh failed during ${phase}: ${error}`);
+      errors++;
+      return finish('failed', `${phase} failed`);
     }
   }
 
   /**
-   * Obtenir les statistiques de distribution des scores
+   * Obtenir les statistiques de distribution des scores.
+   * Lève si la vue est illisible (jamais de zéros à la place d'une panne).
    */
   async getScoreDistribution(): Promise<{
     byBucket: Record<string, number>;
     avgScore: number;
     totalScored: number;
   }> {
-    const { data: stats } = await this.supabase
+    const { data: stats, error } = await this.supabase
       .from('v_seo_temperature_stats')
       .select('*');
+
+    // Une vue illisible n'est pas une distribution vide.
+    if (error) {
+      throw new DatabaseException({
+        code: ErrorCodes.DATABASE.OPERATION_FAILED,
+        message: `Failed to load score distribution: ${error.message}`,
+        details: error.message,
+        cause: error instanceof Error ? error : undefined,
+      });
+    }
 
     const byBucket: Record<string, number> = {};
     let totalUrls = 0;

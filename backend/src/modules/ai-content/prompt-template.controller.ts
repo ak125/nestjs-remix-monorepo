@@ -7,7 +7,10 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { PromptTemplateService } from './prompt-template.service';
 import {
   CreatePromptTemplateDto,
@@ -15,7 +18,14 @@ import {
   PromptTemplate,
 } from './dto/prompt-template.dto';
 
+/**
+ * Modèles de prompts du contenu IA : lecture, écriture, suppression et rendu
+ * d'essai. Réservé aux administrateurs, comme `ai-content.controller.ts`.
+ * Classification exhaustive :
+ * backend/tests/unit/ai-content-prompts-routes-authz.test.ts
+ */
 @Controller('api/ai-content/prompts')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class PromptTemplateController {
   constructor(private readonly promptService: PromptTemplateService) {}
 
@@ -54,7 +64,7 @@ export class PromptTemplateController {
   @Post(':id/test')
   async testTemplate(
     @Param('id') id: string,
-    @Body() variables: Record<string, any>,
+    @Body() variables: Record<string, unknown>,
   ): Promise<{ rendered: string }> {
     return this.promptService.testTemplate(id, variables);
   }

@@ -8,6 +8,7 @@ import { BlogArticle } from '../interfaces/blog.interfaces';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { AdviceTransformService } from './advice-transform.service';
 import { AdviceEnrichmentService } from './advice-enrichment.service';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 export interface BlogAdvice {
   id?: number;
@@ -156,9 +157,10 @@ export class AdviceService {
 
       if (filters.keywords?.length) {
         const keywordFilter = filters.keywords
+          .map(ilikeContains)
           .map(
-            (k) =>
-              `ba_title.ilike.%${k}%,ba_keywords.ilike.%${k}%,ba_descrip.ilike.%${k}%`,
+            (p) =>
+              `ba_title.ilike.${p},ba_keywords.ilike.${p},ba_descrip.ilike.${p}`,
           )
           .join(',');
         query = query.or(keywordFilter);
@@ -294,7 +296,9 @@ export class AdviceService {
       const { data, error } = await this.supabaseService.client
         .from(TABLES.blog_advice)
         .select('*')
-        .or(`ba_title.ilike.%${gammeCode}%,ba_keywords.ilike.%${gammeCode}%`)
+        .or(
+          `ba_title.ilike.${ilikeContains(gammeCode)},ba_keywords.ilike.${ilikeContains(gammeCode)}`,
+        )
         .order('ba_visit', { ascending: false });
 
       if (error) {
@@ -343,7 +347,7 @@ export class AdviceService {
         .from(TABLES.blog_advice)
         .select('*')
         .or(
-          `ba_title.ilike.%produit%,ba_keywords.ilike.%produit%,ba_title.ilike.%${productId}%`,
+          `ba_title.ilike.%produit%,ba_keywords.ilike.%produit%,ba_title.ilike.${ilikeContains(String(productId))}`,
         )
         .order('ba_visit', { ascending: false })
         .limit(limit);

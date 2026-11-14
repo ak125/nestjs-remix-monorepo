@@ -3,7 +3,7 @@
  *
  * Dashboard timeseries unifié des sources Google :
  *  - GSC : positions, clicks, impressions, CTR sur 90 jours
- *  - GA4 : sessions, conversions, bounce rate
+ *  - GA4 : sessions et événements clés par jour, tous canaux
  *  - CWV : Core Web Vitals (LCP, CLS, INP) sur sample top pages
  *  - Runs : audit trail des fetchers (event_log)
  *
@@ -12,6 +12,10 @@
  * État vide gracieux : si credentials Google manquantes ou aucune ingestion
  * encore exécutée, affiche message "Configurer Service Account dans runbook"
  * sans crash.
+ *
+ * Une source en échec (HTTP non-2xx, ou corps `{ error }` de l'API) n'est pas
+ * une source vide : elle est nommée dans l'alerte « Sources indisponibles » et
+ * ses totaux affichent « — », jamais 0.
  *
  * Refs:
  * - ADR-025 (vault) : architecture département SEO
@@ -122,14 +126,37 @@ interface GscRowsScope {
   truncated: boolean;
 }
 
-interface Ga4Row {
+/**
+ * Total GA4 d'un jour, tous canaux. `conversions` = événements clés GA4
+ * (métrique `keyEvents`), pas des commandes payées.
+ */
+interface Ga4DailyTotal {
   date: string;
-  page: string;
-  channel: string;
   sessions: number;
   conversions: number;
-  bounce_rate: number | null;
-  avg_session_duration: number | null;
+}
+
+/** Portée des totaux GA4 ; `exhaustive: false` = borne de lecture atteinte côté API. */
+interface Ga4TotalsScope {
+  grain: "date";
+  channels: "all";
+  exhaustive: boolean;
+  rows_read: number;
+  days_present: number;
+  last_data_date: string | null;
+}
+
+interface GscTotals {
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  avg_position: number;
+}
+
+/** Source dont la lecture a échoué : à ne jamais confondre avec « aucune donnée ». */
+interface UnavailableSource {
+  source: string;
+  reason: string;
 }
 
 interface CwvRow {
@@ -201,13 +228,33 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }),
     ]);
 
-    const health: CredentialsHealth | null = healthRes.ok
-      ? await healthRes.json()
-      : null;
-    const gscData = gscRes.ok ? await gscRes.json() : null;
-    const ga4Data = ga4Res.ok ? await ga4Res.json() : null;
-    const cwvData = cwvRes.ok ? await cwvRes.json() : null;
-    const runsData = runsRes.ok ? await runsRes.json() : null;
+    const unavailable: UnavailableSource[] = [];
+    const read = async (source: string, res: Response) => {
+      const { data, reason } = await readSource(res);
+      if (reason) unavailable.push({ source, reason });
+      return data;
+    };
+
+    const health = (await read(
+      "État des credentials",
+      healthRes,
+    )) as CredentialsHealth | null;
+    const gscData = await read("GSC", gscRes);
+    let ga4Data = await read("GA4", ga4Res);
+    const cwvData = await read("Core Web Vitals", cwvRes);
+    const runsData = await read("Runs", runsRes);
+
+    // Sans série quotidienne, totaux et portée, GA4 n'est pas interprétable.
+    if (
+      ga4Data &&
+      !(Array.isArray(ga4Data.daily) && ga4Data.totals && ga4Data.totals_scope)
+    ) {
+      unavailable.push({
+        source: "GA4",
+        reason: "réponse sans série quotidienne, totaux ou portée",
+      });
+      ga4Data = null;
+    }
 
     return {
       health,
@@ -215,14 +262,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
       gscRowsScope: (gscData?.rows_scope ?? null) as GscRowsScope | null,
       gscDaily: (gscData?.daily ?? []) as GscDailyTotal[],
       gscCoverage: (gscData?.coverage ?? null) as GscCoverage | null,
-      gscTotals: gscData?.totals ?? {
-        clicks: 0,
-        impressions: 0,
-        ctr: 0,
-        avg_position: 0,
-      },
-      ga4Rows: (ga4Data?.rows ?? []) as Ga4Row[],
-      ga4Totals: ga4Data?.totals ?? { sessions: 0, conversions: 0 },
+      gscTotals: (gscData?.totals ?? null) as GscTotals | null,
+      ga4Daily: (ga4Data?.daily ?? []) as Ga4DailyTotal[],
+      ga4Totals: (ga4Data?.totals ?? null) as {
+        sessions: number;
+        conversions: number;
+      } | null,
+      ga4Scope: (ga4Data?.totals_scope ?? null) as Ga4TotalsScope | null,
+      unavailable,
       cwvRows: (cwvData?.rows ?? []) as CwvRow[],
       runs: (runsData?.rows ?? []) as RunRow[],
       dateFrom,
@@ -238,9 +285,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       gscRowsScope: null as GscRowsScope | null,
       gscDaily: [] as GscDailyTotal[],
       gscCoverage: null as GscCoverage | null,
-      gscTotals: { clicks: 0, impressions: 0, ctr: 0, avg_position: 0 },
-      ga4Rows: [] as Ga4Row[],
-      ga4Totals: { sessions: 0, conversions: 0 },
+      gscTotals: null as GscTotals | null,
+      ga4Daily: [] as Ga4DailyTotal[],
+      ga4Totals: null as { sessions: number; conversions: number } | null,
+      ga4Scope: null as Ga4TotalsScope | null,
+      unavailable: [] as UnavailableSource[],
       cwvRows: [] as CwvRow[],
       runs: [] as RunRow[],
       dateFrom: new Date(Date.now() - 30 * 86_400_000)
@@ -264,7 +313,9 @@ export default function SeoHubObservability() {
   const monitoringOn = data.health?.monitoring_enabled ?? false;
   const hasGscData = data.gscRows.length > 0;
   const hasGscDaily = data.gscDaily.length > 0;
-  const hasGa4Data = data.ga4Rows.length > 0;
+  const hasGa4Data = data.ga4Daily.length > 0;
+  const ga4Scope = data.ga4Scope;
+  const runsUnavailable = data.unavailable.some((u) => u.source === "Runs");
   const gscCov = data.gscCoverage;
   const gscDaysLabel =
     gscCov && gscCov.days_expected > 0
@@ -277,9 +328,10 @@ export default function SeoHubObservability() {
       dailySeriesWithGaps(data.gscDaily, data.gscCoverage?.missing_dates ?? []),
     [data.gscDaily, data.gscCoverage],
   );
+  // Série GA4 calculée par l'API sur toutes les lignes ; jours sans donnée = null.
   const ga4ByDay = useMemo(
-    () => aggregateGa4ByDate(data.ga4Rows),
-    [data.ga4Rows],
+    () => ga4SeriesWithGaps(data.ga4Daily, data.dateFrom, data.dateTo),
+    [data.ga4Daily, data.dateFrom, data.dateTo],
   );
 
   return (
@@ -323,7 +375,28 @@ export default function SeoHubObservability() {
         </Alert>
       ) : null}
 
-      {!credsReady || !monitoringOn ? (
+      {data.unavailable.length > 0 ? (
+        <Alert variant="destructive">
+          <AlertCircle className="size-4" />
+          <AlertTitle>Sources indisponibles</AlertTitle>
+          <AlertDescription className="space-y-1">
+            <p>
+              La lecture de ces sources a échoué : leurs totaux ne sont pas
+              affichés, et un bloc vide ci-dessous ne signifie pas « aucune
+              donnée ».
+            </p>
+            <ul className="list-disc list-inside text-sm">
+              {data.unavailable.map((u) => (
+                <li key={`${u.source}-${u.reason}`}>
+                  {u.source} : <span className="font-mono">{u.reason}</span>
+                </li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {data.health && (!credsReady || !monitoringOn) ? (
         <Alert>
           <AlertCircle className="size-4" />
           <AlertTitle>Configuration requise</AlertTitle>
@@ -398,31 +471,66 @@ export default function SeoHubObservability() {
         </Alert>
       ) : null}
 
+      {ga4Scope && !ga4Scope.exhaustive ? (
+        <Alert>
+          <AlertCircle className="size-4" />
+          <AlertTitle>Données GA4 partielles</AlertTitle>
+          <AlertDescription>
+            La borne de lecture a été atteinte (
+            {ga4Scope.rows_read.toLocaleString("fr-FR")} lignes lues) :{" "}
+            {ga4Scope.last_data_date
+              ? `la série et les totaux GA4 s'arrêtent au ${ga4Scope.last_data_date}`
+              : "aucun jour n'a pu être lu en entier"}
+            . Réduire la fenêtre pour un total complet.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           icon={<TrendingUp className="size-4" />}
           label="Clicks GSC"
-          value={data.gscTotals.clicks.toLocaleString("fr-FR")}
-          hint={`${data.gscTotals.impressions.toLocaleString("fr-FR")} impressions · ${gscDaysLabel}${gscCov?.last_data_date ? ` · dernier jour ${gscCov.last_data_date}` : ""}`}
+          value={
+            data.gscTotals ? data.gscTotals.clicks.toLocaleString("fr-FR") : "—"
+          }
+          hint={
+            data.gscTotals
+              ? `${data.gscTotals.impressions.toLocaleString("fr-FR")} impressions · ${gscDaysLabel}${gscCov?.last_data_date ? ` · dernier jour ${gscCov.last_data_date}` : ""}`
+              : "GSC indisponible"
+          }
         />
         <KpiCard
           icon={<Gauge className="size-4" />}
           label="CTR moyen"
-          value={`${(data.gscTotals.ctr * 100).toFixed(2)}%`}
-          hint={`Position moy : ${data.gscTotals.avg_position.toFixed(1)}`}
+          value={
+            data.gscTotals ? `${(data.gscTotals.ctr * 100).toFixed(2)}%` : "—"
+          }
+          hint={
+            data.gscTotals
+              ? `Position moy : ${data.gscTotals.avg_position.toFixed(1)}`
+              : "GSC indisponible"
+          }
         />
         <KpiCard
           icon={<Users className="size-4" />}
           label="Sessions GA4"
-          value={data.ga4Totals.sessions.toLocaleString("fr-FR")}
-          hint={`${data.ga4Totals.conversions.toLocaleString("fr-FR")} conversions`}
+          value={
+            data.ga4Totals
+              ? data.ga4Totals.sessions.toLocaleString("fr-FR")
+              : "—"
+          }
+          hint={
+            data.ga4Totals
+              ? `${data.ga4Totals.conversions.toLocaleString("fr-FR")} événements clés · tous canaux${ga4Scope?.last_data_date ? ` · dernier jour ${ga4Scope.last_data_date}` : ""}`
+              : "GA4 indisponible"
+          }
         />
         <KpiCard
           icon={<Clock className="size-4" />}
           label="Runs récents"
-          value={data.runs.length.toString()}
-          hint="event_log fetchers"
+          value={runsUnavailable ? "—" : data.runs.length.toString()}
+          hint={runsUnavailable ? "Runs indisponibles" : "event_log fetchers"}
         />
       </div>
 
@@ -477,8 +585,15 @@ export default function SeoHubObservability() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Sessions & conversions (GA4)</CardTitle>
-              <CardDescription>Évolution sur {data.days} jours</CardDescription>
+              <CardTitle>Sessions & événements clés (GA4)</CardTitle>
+              <CardDescription>
+                Tous canaux, par jour
+                {ga4Scope
+                  ? ` · ${ga4Scope.days_present} jours avec données`
+                  : ""}{" "}
+                · jours sans donnée non tracés · un événement clé GA4 n'est pas
+                une commande payée
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {hasGa4Data ? (
@@ -501,12 +616,18 @@ export default function SeoHubObservability() {
                       type="monotone"
                       dataKey="conversions"
                       stroke="#16a34a"
-                      name="Conversions"
+                      name="Événements clés"
                     />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <EmptyState message="Aucune donnée GA4 ingérée." />
+                <EmptyState
+                  message={
+                    data.ga4Totals
+                      ? "Aucune donnée GA4 ingérée sur cette fenêtre."
+                      : "GA4 indisponible : la série n'a pas pu être lue."
+                  }
+                />
               )}
             </CardContent>
           </Card>
@@ -793,19 +914,64 @@ function dailySeriesWithGaps(
   ].sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function aggregateGa4ByDate(
-  rows: Ga4Row[],
-): Array<{ date: string; sessions: number; conversions: number }> {
-  const m = new Map<string, { sessions: number; conversions: number }>();
-  for (const r of rows) {
-    const acc = m.get(r.date) ?? { sessions: 0, conversions: 0 };
-    acc.sessions += r.sessions;
-    acc.conversions += r.conversions;
-    m.set(r.date, acc);
+/**
+ * Série GA4 sur la fenêtre demandée : un jour sans ligne vaut `null` (trou dans
+ * la courbe), jamais 0 — même règle que la série GSC.
+ */
+function ga4SeriesWithGaps(
+  daily: Ga4DailyTotal[],
+  dateFrom: string,
+  dateTo: string,
+): Array<{
+  date: string;
+  sessions: number | null;
+  conversions: number | null;
+}> {
+  const byDate = new Map(daily.map((d) => [d.date, d]));
+  const start = Date.parse(`${dateFrom}T00:00:00Z`);
+  const end = Date.parse(`${dateTo}T00:00:00Z`);
+  if (Number.isNaN(start) || Number.isNaN(end)) {
+    return daily.map((d) => ({ ...d }));
   }
-  return Array.from(m.entries())
-    .map(([date, v]) => ({ date, ...v }))
-    .sort((a, b) => a.date.localeCompare(b.date));
+  const series: Array<{
+    date: string;
+    sessions: number | null;
+    conversions: number | null;
+  }> = [];
+  for (let t = start; t <= end; t += 86_400_000) {
+    const date = new Date(t).toISOString().slice(0, 10);
+    const day = byDate.get(date);
+    series.push({
+      date,
+      sessions: day ? day.sessions : null,
+      conversions: day ? day.conversions : null,
+    });
+  }
+  return series;
+}
+
+/**
+ * Lit la réponse d'un endpoint `seo-monitoring`. L'API signale une lecture en
+ * échec par un corps `{ error }` en HTTP 200 : c'est une panne, pas un vide.
+ */
+async function readSource(
+  res: Response,
+): Promise<{ data: Record<string, unknown> | null; reason: string | null }> {
+  if (!res.ok) return { data: null, reason: `HTTP ${res.status}` };
+  let body: unknown;
+  try {
+    body = await res.json();
+  } catch {
+    return { data: null, reason: "réponse illisible" };
+  }
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return { data: null, reason: "réponse inattendue" };
+  }
+  const data = body as Record<string, unknown>;
+  if (typeof data.error === "string" && data.error) {
+    return { data: null, reason: data.error };
+  }
+  return { data, reason: null };
 }
 
 function topPages(

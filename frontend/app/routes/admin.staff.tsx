@@ -65,6 +65,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     try {
       const staffResponse = await fetch(
         `${baseUrl}/api/legacy-users/test-staff?page=1&limit=100`,
+        { headers: { Cookie: request.headers.get("Cookie") || "" } },
       );
 
       if (staffResponse.ok) {
@@ -106,6 +107,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        Cookie: request.headers.get("Cookie") || "",
       },
       signal: controller.signal,
     });

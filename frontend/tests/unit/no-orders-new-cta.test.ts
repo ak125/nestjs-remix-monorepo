@@ -71,7 +71,7 @@ describe("no /orders/new CTA while order creation is disabled (503)", () => {
     );
 
     // The component still exists and still renders a quick-actions CTA...
-    expect(src).toContain("/account/messages/new");
+    expect(src).toContain("/account/messages/compose");
     // ...but none of them targets the disabled route.
     expect(LINK_TO_ORDERS_NEW.test(src)).toBe(false);
   });

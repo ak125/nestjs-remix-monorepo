@@ -31,7 +31,7 @@ import {
   getPaymentById,
   processRefund,
 } from "../services/payment-admin.server";
-import { type Payment, PaymentStatus } from "../types/payment";
+import { PaymentStatus } from "../types/payment";
 
 export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
@@ -39,10 +39,6 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
       ? `Paiement #${data.payment.id.slice(0, 8)} - Admin`
       : "Paiement - Admin",
   );
-
-interface LoaderData {
-  payment: Payment | null;
-}
 
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   await requireAdmin({ context });
@@ -53,7 +49,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   }
 
   try {
-    const payment = await getPaymentById(paymentId);
+    const payment = await getPaymentById(request, paymentId);
     return { payment };
   } catch (error) {
     logger.error("❌ Error loading payment:", error);

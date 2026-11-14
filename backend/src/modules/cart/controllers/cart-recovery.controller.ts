@@ -7,8 +7,11 @@ import {
   Req,
   Res,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AbandonedCartDataService } from '../services/abandoned-cart-data.service';
 import { AbandonedCartService } from '../services/abandoned-cart.service';
 import { CartDataService } from '../../../database/services/cart-data.service';
@@ -181,9 +184,12 @@ export class CartRecoveryController {
   }
 
   /**
-   * Admin stats endpoint
+   * Statistiques des paniers abandonnés : réservées aux administrateurs.
+   * Les autres routes de ce contrôleur sont ouvertes par conception : elles
+   * sont suivies depuis un e-mail, sans session, et protégées par leur jeton.
    */
   @Get('abandoned-stats')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getStats(): Promise<Record<string, unknown>> {
     const stats = await this.abandonedCartData.getStats();
     const recoveryRate =

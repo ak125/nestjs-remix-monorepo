@@ -17,6 +17,11 @@ import { GammeRpcService } from './services/gamme-rpc.service';
 import { CacheService } from '@cache/cache.service';
 import { R6GuideLinkPolicyService } from '../seo/services/r6-guide-link-policy.service';
 
+/** Réponse construite d'une page gamme, telle qu'elle est mise en cache. */
+type GammePageResponse = Awaited<
+  ReturnType<GammeResponseBuilderService['buildRpcV2Response']>
+>;
+
 interface SupabaseRpcError {
   message?: string;
   details?: string;
@@ -66,7 +71,7 @@ export class GammeRestRpcV2Controller {
         pgId,
         this.guideLinkPolicy.cacheKeySegment(),
       );
-      const cached = await this.cacheService.get<Record<string, any>>(cacheKey);
+      const cached = await this.cacheService.get<GammePageResponse>(cacheKey);
       if (cached) {
         this.logger.log(`RPC V2 RESPONSE CACHE HIT pour gamme ${pgIdNum}`);
         return {
@@ -115,8 +120,12 @@ export class GammeRestRpcV2Controller {
   /**
    * 🔥 Warm Cache - Précharge les gammes populaires
    * Endpoint: POST /api/gamme-rest/cache/warm
+   *
+   * Admin uniquement. Le préchauffage du démarrage n'appelle pas cette
+   * route : il passe par `GammeCacheWarmingService`, dans le processus.
    */
   @Post('cache/warm')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async warmCache(@Body() body: { pgIds?: string[] }) {
     const pgIds =
       body.pgIds?.length > 0
@@ -150,9 +159,9 @@ export class GammeRestRpcV2Controller {
    * Endpoint: POST /api/gamme-rest/:pgId/cache/invalidate
    *
    * Admin uniquement : la route était ouverte à toute requête anonyme
-   * (aucun appelant légitime non authentifié, le préchauffage passe par
-   * `cache/warm`). Clés effacées en un seul DEL : `gamme:rpc:v2:<pgId>`,
-   * `gamme:rpc:v2:stale:<pgId>` et `gamme:resp:v2:<r6c0|r6c1>:<pgId>`.
+   * (aucun appelant légitime non authentifié). Clés effacées en un seul DEL :
+   * `gamme:rpc:v2:<pgId>`, `gamme:rpc:v2:stale:<pgId>` et
+   * `gamme:resp:v2:<r6c0|r6c1>:<pgId>`.
    * Redis indisponible → 503 : aucune réponse de succès sans purge confirmée.
    */
   @Post(':pgId/cache/invalidate')

@@ -20,7 +20,6 @@ import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { getEffectiveSupabaseKey } from '@common/utils';
-import { R1KeywordPlanBatchService } from '../services/r1-keyword-plan-batch.service';
 
 interface CoverageRow {
   role: string;
@@ -42,7 +41,6 @@ export class AdminKeywordPlannerController {
 
   constructor(
     private readonly configService: ConfigService,
-    @Optional() private readonly r1BatchService?: R1KeywordPlanBatchService,
     @Optional() @Inject(CACHE_MANAGER) private readonly cacheManager?: Cache,
   ) {
     const url = this.configService.get<string>('SUPABASE_URL') || '';
@@ -1248,29 +1246,6 @@ export class AdminKeywordPlannerController {
         reject_rate: Math.round((rejected.length / keywords.length) * 100),
       },
     };
-  }
-
-  /**
-   * POST /api/admin/keyword-planner/batch-r1
-   * 0-LLM batch generation of R1 keyword plans.
-   * Generates deterministic KP from RAG + R3 anti-cannib + vehicles DB.
-   */
-  @Post('batch-r1')
-  async batchR1(
-    @Body() body: { limit?: number; minR3Score?: number; dryRun?: boolean },
-  ) {
-    if (!this.r1BatchService) {
-      return { error: 'R1KeywordPlanBatchService not available' };
-    }
-    const limit = Math.min(body.limit ?? 50, 200);
-    this.logger.log(
-      `POST batch-r1 limit=${limit} minR3Score=${body.minR3Score ?? 70} dryRun=${body.dryRun ?? false}`,
-    );
-    return this.r1BatchService.batchGenerate({
-      limit,
-      minR3Score: body.minR3Score,
-      dryRun: body.dryRun,
-    });
   }
 
   // ── Private helpers ──

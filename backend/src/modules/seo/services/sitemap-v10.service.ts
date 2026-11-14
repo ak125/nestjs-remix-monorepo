@@ -27,7 +27,10 @@ import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
-import { SitemapV10StaticService } from './sitemap-v10-static.service';
+import {
+  SitemapV10StaticService,
+  VehiculesCollectionError,
+} from './sitemap-v10-static.service';
 import {
   SitemapV10PiecesService,
   PRODUCT_FAMILY_KEYS,
@@ -90,6 +93,10 @@ export class SitemapV10Service extends SupabaseBaseService {
 
     const results: GenerationResult[] = [];
     const allFilePaths: string[] = [];
+    // sitemap-brands.xml non publié alors que des URLs marque existent (ou
+    // source illisible) : couverture gardée par vehicules, run en échec.
+    let brandsFailed = false;
+    let vehiculesFailed = false;
 
     // 🧹 Nettoyer les fichiers obsolètes
     await this.xmlService.cleanupObsoleteFiles();
@@ -105,9 +112,42 @@ export class SitemapV10Service extends SupabaseBaseService {
       const categories = await this.staticService.generateCategoriesSitemap();
       if (categories) allFilePaths.push(categories);
 
-      // 3. Véhicules fusionné
+      // 3. Véhicules fusionné (+ écriture préalable de sitemap-brands.xml)
+      // Une seule lecture des URLs marque, partagée par brands et vehicules :
+      // une URL = un seul fichier de l'index. brands est écrit AVANT vehicules,
+      // qui ne retire que les URLs réellement publiées dans sitemap-brands.xml.
+      // Lecture ou écriture brands en échec ⇒ vehicules les garde (couverture
+      // conservée, index valide) et le run est signalé en échec.
+      this.logger.log('🏭 [3/9] Generating sitemap-brands.xml (R7)...');
+      const brandUrls = await this.staticService.collectBrandUrls();
+      const brands = await this.staticService.generateBrandsSitemap(brandUrls);
+      brandsFailed =
+        brandUrls === null || (brandUrls.length > 0 && brands === null);
       this.logger.log('🚗 [3/9] Generating sitemap-vehicules.xml...');
-      const vehicules = await this.staticService.generateVehiculesSitemap();
+      // Écriture brands en échec après lecture saine : vehicules ne retire
+      // rien et porte aussi les URLs marque absentes de sa propre vue.
+      const brandsUnpublished = brandsFailed && brandUrls !== null;
+      let vehicules: string | null = null;
+      try {
+        vehicules = await this.staticService.generateVehiculesSitemap(
+          brandsUnpublished ? [] : brandsFailed ? null : brandUrls,
+          brandsUnpublished ? brandUrls : [],
+          brands !== null,
+        );
+      } catch (error) {
+        vehiculesFailed = true;
+        if (error instanceof VehiculesCollectionError) {
+          // Lecture en échec : dernier fichier intact, gardé dans l'index.
+          vehicules = error.keptFilePath;
+          this.logger.error(
+            `❌ sitemap-vehicules.xml : lecture en échec, dernier fichier ${vehicules ? 'gardé dans l’index' : 'absent'}, run signalé en échec (${error.message})`,
+          );
+        } else {
+          this.logger.error(
+            `❌ sitemap-vehicules.xml : écriture ou retrait en échec, run signalé en échec (${error})`,
+          );
+        }
+      }
       if (vehicules) allFilePaths.push(vehicules);
 
       // 4. Blog
@@ -130,9 +170,7 @@ export class SitemapV10Service extends SupabaseBaseService {
       const reference = await this.staticService.generateReferenceSitemap();
       if (reference) allFilePaths.push(reference);
 
-      // 8. Brands R7
-      this.logger.log('🏭 [8/10] Generating sitemap-brands.xml...');
-      const brands = await this.staticService.generateBrandsSitemap();
+      // 8. Brands R7 (écrit à l'étape 3 ; position inchangée dans l'index)
       if (brands) allFilePaths.push(brands);
 
       // 9. Pièces par température (714k URLs via source V9)
@@ -251,8 +289,15 @@ export class SitemapV10Service extends SupabaseBaseService {
       };
     }
 
+    if (brandsFailed) {
+      this.logger.error(
+        '❌ sitemap-brands.xml non publié : URLs marque gardées dans sitemap-vehicules.xml, run signalé en échec',
+      );
+    }
+
     return {
-      success: results.every((r) => r.success),
+      success:
+        results.every((r) => r.success) && !brandsFailed && !vehiculesFailed,
       results,
       totalUrls,
       totalFiles,

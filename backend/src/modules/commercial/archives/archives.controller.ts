@@ -7,7 +7,10 @@ import {
   Body,
   ParseIntPipe,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { CommercialArchivesService } from './archives.service';
 
 /**
@@ -16,8 +19,11 @@ import { CommercialArchivesService } from './archives.service';
  * ✅ API moderne avec validation
  * ✅ Pagination et filtrage avancé
  * ✅ Intégré au système d'authentification
+ *
+ * Lecture, archivage et restauration de commandes : réservé aux administrateurs.
  */
 @Controller('commercial/archives')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class CommercialArchivesController {
   private readonly logger = new Logger(CommercialArchivesController.name);
 

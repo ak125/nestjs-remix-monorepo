@@ -10,7 +10,16 @@
  * - POST /api/seo/dashboard/refresh-risks - Recalculer les risk flags
  */
 
-import { Controller, Get, Post, Param, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Query,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
+import { AdminOrInternalKeyGuard } from '@auth/admin-or-internal-key.guard';
 import {
   RiskFlagsEngineService,
   RiskFlag,
@@ -22,6 +31,7 @@ import { GooglebotDetectorService } from '../services/googlebot-detector.service
 import type { AdminApiResponse } from '@repo/database-types';
 
 @Controller('api/seo/dashboard')
+@UseGuards(AdminOrInternalKeyGuard)
 export class SeoDashboardController {
   private readonly logger = new Logger(SeoDashboardController.name);
 

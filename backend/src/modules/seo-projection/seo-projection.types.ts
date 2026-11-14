@@ -24,7 +24,7 @@ export const PROJECTION_REFRESH_JOB = 'seo-projection-refresh';
 /**
  * Feeder R1 (PR-6c, ADR-090 §C2) : queue/job du déclencheur qui découvre les exports/seo/gamme
  * et enqueue des write-jobs. Repeatable BullMQ (le ScheduleModule @nestjs/schedule est désactivé
- * monorepo → pattern canon = repeatable jobs, cf. SitemapV10SchedulerService). Flag-gated OFF.
+ * monorepo → pattern canon = repeatable jobs, cf. SeoMonitorSchedulerService). Flag-gated OFF.
  */
 export const PROJECTION_FEED_QUEUE = 'projection-feed-queue';
 export const PROJECTION_FEED_JOB = 'seo-projection-r1-feed';

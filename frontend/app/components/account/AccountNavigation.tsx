@@ -176,7 +176,7 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
             className="w-full justify-start"
             asChild
           >
-            <Link to="/account/messages/new">
+            <Link to="/account/messages/compose">
               <Mail className="w-4 h-4 mr-2" />
               Contacter le support
             </Link>

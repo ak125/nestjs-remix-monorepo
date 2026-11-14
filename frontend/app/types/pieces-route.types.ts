@@ -105,6 +105,11 @@ export interface BlogArticle {
   title: string;
   excerpt: string;
   slug: string;
+  /**
+   * Alias de gamme d'un conseil rattaché à une gamme : sa page est
+   * `/blog-pieces-auto/conseils/{pg_alias}`. Absent pour tout autre article.
+   */
+  pg_alias?: string | null;
   image?: string;
   date: string;
   readTime: number;

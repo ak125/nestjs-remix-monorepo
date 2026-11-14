@@ -16,7 +16,7 @@
  *   6. Caddy restarting after the update: deploy fails.
  *   7. No deployed file: deploy fails before any Docker call.
  *
- * Then the wiring in deploy-prod.yml: the script runs past the point of no
+ * Then the wiring in release-prod.yml: the script runs past the point of no
  * return and before the app is stopped, it is the only writer of the PROD
  * Caddyfile, and no stop or rm names the Caddy container.
  *
@@ -289,9 +289,9 @@ describe("prod-caddy-config.sh — Caddy stays up unless its Caddyfile changes",
   });
 });
 
-// ── Wiring in deploy-prod.yml ────────────────────────────────────────────────
+// ── Wiring in release-prod.yml ────────────────────────────────────────────────
 const workflow = readFileSync(
-  new URL("../../.github/workflows/deploy-prod.yml", import.meta.url),
+  new URL("../../.github/workflows/release-prod.yml", import.meta.url),
   "utf8",
 );
 
@@ -305,7 +305,7 @@ function stepRun(name) {
   );
 }
 
-describe("deploy-prod.yml — Caddy is not stopped by the deploy", () => {
+describe("release-prod.yml — Caddy is not stopped by the deploy", () => {
   const deploy = stepRun("🚀 Deploy to PROD");
   const PONR = 'echo "DEPLOY_STARTED=1" >> "$GITHUB_ENV"';
   const CALL =

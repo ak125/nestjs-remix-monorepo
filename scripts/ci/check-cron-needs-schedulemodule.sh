@@ -15,7 +15,7 @@
 # Si `app.module.ts` ne contient PAS `ScheduleModule.forRoot()` actif
 # (non commenté), alors AUCUN `@Cron(` ou `@Interval(` ou `@Timeout(`
 # ne doit subsister dans `backend/src` — il faut migrer vers BullMQ
-# (pattern canonique : SeoMonitorSchedulerService, SitemapV10SchedulerService).
+# (pattern canonique : SeoMonitorSchedulerService).
 #
 # Exemptions
 # ----------
@@ -104,7 +104,7 @@ done < "$FILTERED_FILE"
 echo ""
 echo "Options pour corriger :"
 echo "  1. Migrer le job vers BullMQ repeatable (pattern canonique du monorepo)."
-echo "     Cf. SeoMonitorSchedulerService, SitemapV10SchedulerService (PR #487)."
+echo "     Cf. SeoMonitorSchedulerService."
 echo "  2. Réactiver ScheduleModule.forRoot() dans backend/src/app.module.ts"
 echo "     après avoir résolu le conflit de versions @nestjs/{schedule,common}."
 echo "  3. Si le décorateur est intentionnellement inerte (debug / TODO),"

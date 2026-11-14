@@ -15,6 +15,7 @@ import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import { buildTypeSlug } from "~/utils/url-builder.utils";
 import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { Card, CardContent } from "../components/ui/card";
@@ -668,7 +669,9 @@ export default function BlogPiecesAutoMarqueModele() {
                           return (
                             <Link
                               key={type.id}
-                              to={`/constructeurs/${brand.alias}-${brand.id}/${modelGroup.alias}-${modelGroup.id}/${type.id}.html`}
+                              // Adresse servie de la fiche motorisation (alias + id) :
+                              // sans l'alias, le lien passe par une redirection 301.
+                              to={`/constructeurs/${brand.alias}-${brand.id}/${modelGroup.alias}-${modelGroup.id}/${buildTypeSlug({ type_alias: type.slug, type_name: type.designation, type_id: type.id })}.html`}
                               target="_blank"
                               className="block group"
                             >

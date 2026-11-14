@@ -106,12 +106,32 @@ function makeService(
   const rpcData: Record<string, unknown> = {
     rpc_seo_traffic_v1: traffic,
     rpc_seo_top_losers_v1: [loser],
-    rpc_seo_low_ctr_v1: [],
+    rpc_seo_low_ctr_v4: {
+      rows: [],
+      grain: 'page_totals',
+      coverage_status: 'ok',
+      retrieval_status: 'complete',
+      data_from: '2026-09-04',
+      data_to: '2026-09-10',
+      days_expected: 7,
+      days_confirmed: 7,
+      total_qualifying: 0,
+    },
     rpc_seo_alerts_v1: [],
     rpc_seo_conversion_v1: null,
   };
+  // Aucune commande payée dans la fenêtre : attribution des commandes hors sujet ici.
+  const noPaidOrders: Record<string, unknown> = {};
+  for (const op of ['select', 'eq', 'gte', 'lt', 'order', 'limit']) {
+    noPaidOrders[op] = () => noPaidOrders;
+  }
+  noPaidOrders.then = (resolve: (v: unknown) => unknown) =>
+    resolve({ data: [], error: null });
   const supabase = {
     from: jest.fn((table: string) => {
+      if (table === '___xtr_order') {
+        return noPaidOrders;
+      }
       if (table !== '__seo_gsc_daily_property_total') {
         throw new Error(`unexpected table ${table}`);
       }

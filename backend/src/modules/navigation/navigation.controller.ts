@@ -5,7 +5,10 @@ import {
   Logger,
   Delete,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { NavigationService } from './navigation.service';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CommercialMenuService } from './services/commercial-menu.service';
@@ -143,6 +146,7 @@ export class NavigationController {
    * Invalide le cache de navigation
    */
   @Delete('cache')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async invalidateCache(@Query('context') context?: string) {
     try {
       this.logger.log(`Invalidation cache navigation: ${context || 'tous'}`);

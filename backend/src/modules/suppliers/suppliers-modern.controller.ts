@@ -6,7 +6,10 @@ import {
   NotFoundException,
   ParseIntPipe,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { SuppliersService } from './suppliers.service';
 import { SupplierFilters, validateSupplierFilters } from './dto';
 
@@ -18,6 +21,7 @@ import { SupplierFilters, validateSupplierFilters } from './dto';
  * ✅ Utilise seulement les méthodes disponibles dans le service
  */
 @Controller('api/suppliers/modern')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class SuppliersModernController {
   private readonly logger = new Logger(SuppliersModernController.name);
 

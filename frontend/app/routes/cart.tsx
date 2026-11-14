@@ -30,6 +30,8 @@ import {
   useRouteError,
 } from "react-router";
 import {
+  buildRestoreAddItemBody,
+  type CartBackupItem,
   formatPrice,
   saveCartToLocalStorage,
   loadCartFromLocalStorage,
@@ -56,8 +58,8 @@ import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
 } from "~/schemas/cart.schemas";
-import { serverObservabilityContext } from "~/utils/load-context";
 import { trackViewCart } from "~/utils/analytics";
+import { serverObservabilityContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 import { reportLoaderError } from "~/utils/observability.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -286,9 +288,7 @@ export default function CartPage() {
   };
 
   // Restore cart from localStorage if session is empty
-  const [backupItems, setBackupItems] = useState<
-    { product_id: number; quantity: number; product_name?: string }[] | null
-  >(null);
+  const [backupItems, setBackupItems] = useState<CartBackupItem[] | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
 
   useEffect(() => {
@@ -311,10 +311,7 @@ export default function CartPage() {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            product_id: item.product_id,
-            quantity: item.quantity,
-          }),
+          body: JSON.stringify(buildRestoreAddItemBody(item)),
         });
       }
       clearCartLocalStorage();
@@ -553,12 +550,15 @@ export default function CartPage() {
       <div className="border-t border-slate-100 bg-slate-50/50 py-3 text-center text-[11px] text-slate-400">
         <Container>
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-            <Link to="/cgv" className="hover:text-slate-700 hover:underline">
+            <Link
+              to="/legal/cgv"
+              className="hover:text-slate-700 hover:underline"
+            >
               CGV
             </Link>
             <span>&middot;</span>
             <Link
-              to="/confidentialite"
+              to="/legal/privacy"
               className="hover:text-slate-700 hover:underline"
             >
               Confidentialité

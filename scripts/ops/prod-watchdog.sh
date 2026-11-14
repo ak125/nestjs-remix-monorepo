@@ -21,7 +21,7 @@
 #   it exits non-zero.
 #
 # OBSERVE-ONLY: never restarts or mutates anything. Deploy-time rollback is the job
-#   of .github/workflows/deploy-prod.yml; a cron that restarts PROD would mask real
+#   of .github/workflows/release-prod.yml; a cron that restarts PROD would mask real
 #   failures and risk flapping.
 #
 # SCOPE: "is the site serving users?" — app container + image + internal health +

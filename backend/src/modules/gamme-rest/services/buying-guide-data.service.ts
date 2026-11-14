@@ -22,6 +22,7 @@ import {
   R1_BOUNDARY_EXTENSIONS,
 } from '../../../config/buying-guide-quality.constants';
 import { R3_FORBIDDEN_IN_R1 } from '../../../config/r1-keyword-plan.constants';
+import { isSelfGrantedVerification } from '../../../config/source-provenance.constants';
 
 // Re-export type for backward compatibility (other files import it from here)
 export type { GammeContentQualityFlag } from '../../../config/buying-guide-quality.constants';
@@ -80,6 +81,7 @@ interface PurchaseGuideRow {
   sgpg_source_type?: string | null;
   sgpg_source_ref?: string | null;
   sgpg_source_verified?: boolean | number | string | null;
+  sgpg_source_verified_by?: string | null;
   // R1 pipeline fields
   sgpg_hero_subtitle?: string | null;
   sgpg_selector_microcopy?: string | string[] | null;
@@ -371,7 +373,8 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       sgpg_compatibilities_intro, sgpg_equipementiers_line,
       sgpg_family_cross_sell_intro, sgpg_interest_nuggets,
       sgpg_h1_override, sgpg_safe_table_rows, sgpg_visual_plan, sgpg_intent_lock,
-      sgpg_source_type, sgpg_source_uri, sgpg_source_ref, sgpg_source_verified
+      sgpg_source_type, sgpg_source_uri, sgpg_source_ref, sgpg_source_verified,
+      sgpg_source_verified_by
     `;
 
     const { data, error } = await this.client
@@ -2471,23 +2474,35 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     flags: GammeContentQualityFlag[],
     raw: PurchaseGuideRow,
   ): GammeContentQuality {
-    let score = 100;
     const uniqueFlags: GammeContentQualityFlag[] = [];
     for (const flag of flags) {
       if (!uniqueFlags.includes(flag)) uniqueFlags.push(flag);
     }
 
-    for (const flag of uniqueFlags) {
-      score -= FLAG_PENALTIES[flag] || 0;
-    }
-
     return {
-      score: Math.max(0, Math.min(100, score)),
+      score: this.scoreFromFlags(uniqueFlags),
       flags: uniqueFlags,
       version: CONTRACT_VERSION,
       source: this.resolveQualitySource(raw, content.pgId),
-      verified: this.isSourceVerified(raw),
+      // La marque posée par le pipeline producteur sert encore à décider du
+      // service (isAcceptedProvenance) ; elle n'est pas rapportée comme une
+      // vérification.
+      verified:
+        this.isSourceVerified(raw) &&
+        !isSelfGrantedVerification({
+          tier: raw?.sgpg_source_type,
+          verifiedBy: raw?.sgpg_source_verified_by,
+        }),
     };
+  }
+
+  /** Score = 100 moins les pénalités des drapeaux, chacun compté une fois. */
+  private scoreFromFlags(flags: GammeContentQualityFlag[]): number {
+    let score = 100;
+    for (const flag of new Set(flags)) {
+      score -= FLAG_PENALTIES[flag] || 0;
+    }
+    return Math.max(0, Math.min(100, score));
   }
 
   private inferFamilyKeyFromLabels(
@@ -2524,6 +2539,15 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       familyKey === 'freinage'
         ? ['plaquettes de frein', 'étriers', "capteur d'usure (si équipé)"]
         : ['pièces associées au montage', 'fixations', 'consommables atelier'];
+    // Ce contrat est un gabarit : il porte les drapeaux que la porte qualité
+    // pose quand elle substitue ces mêmes sections, et celui d'une source
+    // hors des provenances admises. Son score en découle.
+    const flags: GammeContentQualityFlag[] = [
+      'SYMPTOMS_TOO_SMALL',
+      'TOO_SHORT',
+      'FAQ_TOO_SMALL',
+      'MISSING_SOURCE_PROVENANCE',
+    ];
 
     return {
       id: safeId,
@@ -2575,8 +2599,8 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         antiMistakes: 'fallback',
       },
       quality: {
-        score: 95,
-        flags: [],
+        score: this.scoreFromFlags(flags),
+        flags,
         version: CONTRACT_VERSION,
         source: `fallback://automecanik/gamme-buying-guide-template#pg=${pgId}`,
         verified: false,

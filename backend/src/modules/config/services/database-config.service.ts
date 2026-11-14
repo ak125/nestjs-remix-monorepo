@@ -9,6 +9,7 @@ import {
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { CacheService } from '@cache/cache.service';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 /** Raw row shape from ___config table */
 interface ConfigRow {
@@ -59,7 +60,7 @@ export class DatabaseConfigService extends SupabaseBaseService {
 
       if (query.search) {
         queryBuilder = queryBuilder.or(
-          `config_key.ilike.%${query.search}%,description.ilike.%${query.search}%`,
+          `config_key.ilike.${ilikeContains(query.search)},description.ilike.${ilikeContains(query.search)}`,
         );
       }
 

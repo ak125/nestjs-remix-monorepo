@@ -34,3 +34,19 @@ export type SourceTier = (typeof SOURCE_TIER)[keyof typeof SOURCE_TIER];
 export function isLegacyRagTier(tier?: string | null): boolean {
   return tier === 'rag' || tier === SOURCE_TIER.RAG_LEGACY;
 }
+
+/**
+ * True when a row's "verified" mark was granted by its own producer rather
+ * than by a reviewer: legacy-RAG provenance, or a verifier recorded as a
+ * `pipeline:*` producer. Such a mark keeps its role for serving decisions but
+ * must not be reported, or shown, as a verification (ADR-031/046).
+ */
+export function isSelfGrantedVerification(p: {
+  tier?: string | null;
+  verifiedBy?: string | null;
+}): boolean {
+  return (
+    isLegacyRagTier(p.tier?.trim().toLowerCase()) ||
+    (p.verifiedBy ?? '').trim().toLowerCase().startsWith('pipeline:')
+  );
+}

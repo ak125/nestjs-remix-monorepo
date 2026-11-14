@@ -17,7 +17,7 @@ type LoggerStub = {
 
 interface Harness {
   flags?: { funnelServerEmitEnabled: boolean };
-  funnelEvents?: { recordOnce: jest.Mock };
+  funnelEvents?: { recordOnce: jest.Mock; readOrderFacts?: jest.Mock };
   isReadOnlyMode?: boolean;
   supabase?: unknown;
 }
@@ -29,8 +29,10 @@ function makeListener(over: Harness = {}) {
     debug: jest.fn(),
     log: jest.fn(),
   };
-  const funnelEvents = over.funnelEvents ?? {
+  const funnelEvents = {
     recordOnce: jest.fn().mockResolvedValue({ ok: true, deduped: false }),
+    readOrderFacts: jest.fn(),
+    ...over.funnelEvents,
   };
   const listener = Object.create(
     OrderFunnelListener.prototype,
@@ -54,71 +56,29 @@ const PAID_EVENT: OrderPaidEvent = {
   timestamp: '2026-06-23T10:00:00.000Z',
 };
 
-/** supabase mock returning a given line count + order total. */
-function supabaseWith(opts: {
-  count?: number | null;
-  countError?: { message: string } | null;
-  total?: unknown;
-  orderError?: { message: string } | null;
-}) {
-  return {
-    from: jest.fn((table: string) => {
-      if (table === '___xtr_order_line') {
-        return {
-          select: jest.fn(() => ({
-            eq: jest.fn(() =>
-              Promise.resolve({
-                count: opts.count ?? 0,
-                error: opts.countError ?? null,
-              }),
-            ),
-          })),
-        };
-      }
-      // ___xtr_order
-      return {
-        select: jest.fn(() => ({
-          eq: jest.fn(() => ({
-            maybeSingle: jest.fn(() =>
-              Promise.resolve({
-                data:
-                  opts.total === undefined
-                    ? null
-                    : { ord_total_ttc: opts.total },
-                error: opts.orderError ?? null,
-              }),
-            ),
-          })),
-        })),
-      };
-    }),
-  };
-}
-
 describe('OrderFunnelListener.onOrderPaid', () => {
   it('is inert when the flag is OFF (no fetch, no emit)', async () => {
     const { listener, funnelEvents } = makeListener({
       flags: { funnelServerEmitEnabled: false },
     });
-    const fetchSpy = jest.spyOn(listener as never, 'fetchOrderFacts');
     await listener.onOrderPaid(PAID_EVENT);
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(funnelEvents.readOrderFacts).not.toHaveBeenCalled();
     expect(funnelEvents.recordOnce).not.toHaveBeenCalled();
   });
 
   it('skips emission under READ_ONLY (PROD-only)', async () => {
     const { listener, funnelEvents } = makeListener({ isReadOnlyMode: true });
-    const fetchSpy = jest.spyOn(listener as never, 'fetchOrderFacts');
     await listener.onOrderPaid(PAID_EVENT);
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(funnelEvents.readOrderFacts).not.toHaveBeenCalled();
     expect(funnelEvents.recordOnce).not.toHaveBeenCalled();
   });
 
   it('records r2_order_placed with the correct payload on the happy path', async () => {
     const { listener, funnelEvents } = makeListener();
-    jest
-      .spyOn(listener as never, 'fetchOrderFacts')
-      .mockResolvedValue({ itemCount: 2, revenueCents: 4990 } as never);
+    funnelEvents.readOrderFacts.mockResolvedValue({
+      itemCount: 2,
+      revenueCents: 4990,
+    });
 
     await listener.onOrderPaid(PAID_EVENT);
 
@@ -138,9 +98,10 @@ describe('OrderFunnelListener.onOrderPaid', () => {
 
   it('skips (no bogus row) and warns when the order has no readable lines', async () => {
     const { listener, logger, funnelEvents } = makeListener();
-    jest
-      .spyOn(listener as never, 'fetchOrderFacts')
-      .mockResolvedValue({ itemCount: 0, revenueCents: null } as never);
+    funnelEvents.readOrderFacts.mockResolvedValue({
+      itemCount: 0,
+      revenueCents: null,
+    });
 
     await listener.onOrderPaid(PAID_EVENT);
 
@@ -152,10 +113,13 @@ describe('OrderFunnelListener.onOrderPaid', () => {
     const recordOnce = jest
       .fn()
       .mockResolvedValue({ ok: false, deduped: false });
-    const { listener, logger } = makeListener({ funnelEvents: { recordOnce } });
-    jest
-      .spyOn(listener as never, 'fetchOrderFacts')
-      .mockResolvedValue({ itemCount: 1, revenueCents: 1000 } as never);
+    const { listener, logger, funnelEvents } = makeListener({
+      funnelEvents: { recordOnce },
+    });
+    funnelEvents.readOrderFacts.mockResolvedValue({
+      itemCount: 1,
+      revenueCents: 1000,
+    });
 
     await listener.onOrderPaid(PAID_EVENT);
 
@@ -164,10 +128,13 @@ describe('OrderFunnelListener.onOrderPaid', () => {
 
   it('treats an idempotent dedup as benign (debug, not error)', async () => {
     const recordOnce = jest.fn().mockResolvedValue({ ok: true, deduped: true });
-    const { listener, logger } = makeListener({ funnelEvents: { recordOnce } });
-    jest
-      .spyOn(listener as never, 'fetchOrderFacts')
-      .mockResolvedValue({ itemCount: 1, revenueCents: 1000 } as never);
+    const { listener, logger, funnelEvents } = makeListener({
+      funnelEvents: { recordOnce },
+    });
+    funnelEvents.readOrderFacts.mockResolvedValue({
+      itemCount: 1,
+      revenueCents: 1000,
+    });
 
     await listener.onOrderPaid(PAID_EVENT);
 
@@ -177,79 +144,10 @@ describe('OrderFunnelListener.onOrderPaid', () => {
 
   it('never throws when fetching facts fails (non-blocking)', async () => {
     const { listener, logger, funnelEvents } = makeListener();
-    jest
-      .spyOn(listener as never, 'fetchOrderFacts')
-      .mockRejectedValue(new Error('boom') as never);
+    funnelEvents.readOrderFacts.mockRejectedValue(new Error('boom'));
 
     await expect(listener.onOrderPaid(PAID_EVENT)).resolves.toBeUndefined();
     expect(funnelEvents.recordOnce).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledTimes(1);
   });
-});
-
-describe('OrderFunnelListener.fetchOrderFacts (supabase chain)', () => {
-  it('reads line count + parses the order total into cents', async () => {
-    const { listener } = makeListener({
-      supabase: supabaseWith({ count: 3, total: '49.90' }),
-    });
-    const facts = await (
-      listener as unknown as {
-        fetchOrderFacts: (id: string) => Promise<unknown>;
-      }
-    ).fetchOrderFacts('ORD-123');
-    expect(facts).toEqual({ itemCount: 3, revenueCents: 4990 });
-  });
-
-  it('returns null when the line-count read errors', async () => {
-    const { listener } = makeListener({
-      supabase: supabaseWith({
-        count: null,
-        countError: { message: 'db down' },
-      }),
-    });
-    const facts = await (
-      listener as unknown as {
-        fetchOrderFacts: (id: string) => Promise<unknown>;
-      }
-    ).fetchOrderFacts('ORD-123');
-    expect(facts).toBeNull();
-  });
-
-  it('yields null revenue when the total is absent/unparseable', async () => {
-    const { listener } = makeListener({
-      supabase: supabaseWith({ count: 1, total: 'n/a' }),
-    });
-    const facts = await (
-      listener as unknown as {
-        fetchOrderFacts: (
-          id: string,
-        ) => Promise<{ revenueCents: number | null }>;
-      }
-    ).fetchOrderFacts('ORD-123');
-    expect(facts.revenueCents).toBeNull();
-  });
-});
-
-describe('OrderFunnelListener.toCents', () => {
-  const cents = (v: unknown) =>
-    (
-      makeListener().listener as unknown as {
-        toCents: (v: unknown) => number | null;
-      }
-    ).toCents(v);
-
-  it.each([
-    ['49.90', 4990],
-    ['10', 1000],
-    ['0', 0],
-  ])('parses %s → %s cents', (input, expected) => {
-    expect(cents(input)).toBe(expected);
-  });
-
-  it.each([[null], [undefined], ['abc'], ['-5']])(
-    'returns null for %s',
-    (input) => {
-      expect(cents(input)).toBeNull();
-    },
-  );
 });

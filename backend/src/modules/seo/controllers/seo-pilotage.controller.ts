@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   SeoPilotageService,
   AutoDiagnosticsReport,
@@ -23,6 +32,7 @@ import {
  * - GET /api/seo/pilotage/clusters/health - Scores santé de tous les clusters
  */
 @Controller('api/seo/pilotage')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class SeoPilotageController {
   private readonly logger = new Logger(SeoPilotageController.name);
 
@@ -68,7 +78,8 @@ export class SeoPilotageController {
 
   /**
    * Diagnostics automatiques SEO
-   * Détecte: R3 sans impressions, R1 contaminé, R4 sous-performant
+   * Détecte : pages conseil sans impressions, pages gamme contaminées,
+   * pages référence sous-performantes
    * GET /api/seo/pilotage/diagnostics
    */
   @Get('diagnostics')

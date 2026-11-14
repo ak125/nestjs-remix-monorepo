@@ -12,7 +12,11 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
-import { type MetaFunction, useLoaderData } from "react-router";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -50,18 +54,22 @@ interface ReportOrder {
   total?: string;
 }
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     logger.log("📊 Chargement des données pour les rapports...");
 
     // Récupérer les données depuis les différentes APIs
     const [usersResponse, ordersResponse, ordersStatsResponse] =
       await Promise.all([
-        fetch("http://127.0.0.1:3000/api/legacy-users?limit=1000"),
-        fetch("http://127.0.0.1:3000/api/legacy-orders?limit=1000"),
-        fetch("http://127.0.0.1:3000/api/legacy-orders/stats").catch(
-          () => null,
-        ),
+        fetch("http://127.0.0.1:3000/api/legacy-users?limit=1000", {
+          headers: { Cookie: request.headers.get("Cookie") || "" },
+        }),
+        fetch("http://127.0.0.1:3000/api/legacy-orders?limit=1000", {
+          headers: { Cookie: request.headers.get("Cookie") || "" },
+        }),
+        fetch("http://127.0.0.1:3000/api/legacy-orders/stats", {
+          headers: { Cookie: request.headers.get("Cookie") || "" },
+        }).catch(() => null),
       ]);
 
     let reportData = {

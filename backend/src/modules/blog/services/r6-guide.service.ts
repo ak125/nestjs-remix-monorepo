@@ -8,6 +8,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import { isSelfGrantedVerification } from '../../../config/source-provenance.constants';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogArticleTransformService } from './blog-article-transform.service';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
@@ -495,7 +496,7 @@ export class R6GuideService {
             ref: row.sgpg_source_ref as string | undefined,
           })
         : null,
-      sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
+      sourceVerified: this.isShownAsVerified(row),
     };
   }
 
@@ -581,7 +582,7 @@ export class R6GuideService {
             ref: row.sgpg_source_ref as string | undefined,
           })
         : null,
-      sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
+      sourceVerified: this.isShownAsVerified(row),
     };
   }
 
@@ -608,6 +609,20 @@ export class R6GuideService {
       .eq('sgcs_pg_id', gamme.pg_id);
 
     return (count ?? 0) > 0;
+  }
+
+  /**
+   * « Vérifié par nos experts » n'est affiché que pour une vérification qui
+   * ne vient pas du pipeline producteur du contenu.
+   */
+  private isShownAsVerified(row: Record<string, unknown>): boolean {
+    return (
+      row.sgpg_source_verified === true &&
+      !isSelfGrantedVerification({
+        tier: row.sgpg_source_type as string | null | undefined,
+        verifiedBy: row.sgpg_source_verified_by as string | null | undefined,
+      })
+    );
   }
 
   private async buildPage(

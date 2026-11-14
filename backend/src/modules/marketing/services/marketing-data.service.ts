@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { DatabaseException, DomainNotFoundException } from '@common/exceptions';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import {
@@ -16,6 +17,9 @@ import {
   PipelineStatusResult,
 } from '../interfaces/marketing.interfaces';
 
+/** Code PostgREST de `.single()` quand aucune ligne ne correspond. */
+const NO_ROW = 'PGRST116';
+
 /** Safe parseInt — returns null for non-numeric values */
 const toInt = (v: unknown): number | null => {
   const n = Number.parseInt(String(v ?? ''), 10);
@@ -32,6 +36,21 @@ export class MarketingDataService extends SupabaseBaseService {
   }
 
   // --- Backlinks ---
+  /**
+   * Une erreur de base sur le suivi des backlinks est une panne, pas une
+   * absence de liens : elle est journalisée et remonte à l'appelant.
+   */
+  private backlinkFailure(
+    operation: string,
+    error: { message: string },
+  ): DatabaseException {
+    this.logger.error(`Backlinks — ${operation} : ${error.message}`);
+    return new DatabaseException({
+      message: `Suivi des backlinks indisponible (${operation})`,
+      details: error.message,
+    });
+  }
+
   async getBacklinks(
     filters: BacklinkFilters,
   ): Promise<PaginatedResult<MarketingBacklink>> {
@@ -55,10 +74,7 @@ export class MarketingDataService extends SupabaseBaseService {
       .range(offset, offset + limit - 1);
 
     const { data, count, error } = await query;
-    if (error) {
-      this.logger.error('Error fetching backlinks:', error);
-      return { data: [], total: 0, page, limit, totalPages: 0 };
-    }
+    if (error) throw this.backlinkFailure('lecture de la liste', error);
 
     return {
       data: data || [],
@@ -74,21 +90,11 @@ export class MarketingDataService extends SupabaseBaseService {
       .from('__marketing_backlinks')
       .select('status, da_score, source_domain, source_category');
 
-    if (error || !data) {
-      return {
-        total: 0,
-        live: 0,
-        lost: 0,
-        pending: 0,
-        broken: 0,
-        da30plus: 0,
-        uniqueDomains: 0,
-        byCategory: {},
-      };
-    }
+    if (error) throw this.backlinkFailure('lecture des statistiques', error);
 
+    const rows = data ?? [];
     const stats: BacklinkStats = {
-      total: data.length,
+      total: rows.length,
       live: 0,
       lost: 0,
       pending: 0,
@@ -99,7 +105,7 @@ export class MarketingDataService extends SupabaseBaseService {
     };
     const domains = new Set<string>();
 
-    for (const row of data) {
+    for (const row of rows) {
       if (row.status === 'live') stats.live++;
       else if (row.status === 'lost') stats.lost++;
       else if (row.status === 'pending') stats.pending++;
@@ -115,16 +121,13 @@ export class MarketingDataService extends SupabaseBaseService {
 
   async createBacklink(
     data: Partial<MarketingBacklink>,
-  ): Promise<MarketingBacklink | null> {
+  ): Promise<MarketingBacklink> {
     const { data: result, error } = await this.supabase
       .from('__marketing_backlinks')
       .insert(data)
       .select()
       .single();
-    if (error) {
-      this.logger.error('Error creating backlink:', error);
-      return null;
-    }
+    if (error) throw this.backlinkFailure('création', error);
     return result;
   }
 
@@ -133,27 +136,26 @@ export class MarketingDataService extends SupabaseBaseService {
       .from('__marketing_backlinks')
       .insert(items)
       .select('id');
-    if (error) {
-      this.logger.error('Error bulk creating backlinks:', error);
-      return 0;
-    }
+    if (error) throw this.backlinkFailure('import', error);
     return data?.length || 0;
   }
 
   async updateBacklink(
     id: number,
     updates: Partial<MarketingBacklink>,
-  ): Promise<MarketingBacklink | null> {
+  ): Promise<MarketingBacklink> {
     const { data, error } = await this.supabase
       .from('__marketing_backlinks')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
-    if (error) {
-      this.logger.error('Error updating backlink:', error);
-      return null;
+    if (error?.code === NO_ROW) {
+      throw new DomainNotFoundException({
+        message: `Backlink ${id} introuvable`,
+      });
     }
+    if (error) throw this.backlinkFailure('mise à jour', error);
     return data;
   }
 
@@ -162,7 +164,8 @@ export class MarketingDataService extends SupabaseBaseService {
       .from('__marketing_backlinks')
       .delete()
       .eq('id', id);
-    return !error;
+    if (error) throw this.backlinkFailure('suppression', error);
+    return true;
   }
 
   // --- Content Roadmap ---

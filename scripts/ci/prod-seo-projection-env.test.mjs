@@ -23,7 +23,7 @@
  *      provenance PRIMARY true while EXPOSE is not true (the code would ignore it);
  *   5. a canary set while the master flag is OFF is written, with a notice;
  *   6. re-running is idempotent and the file mode is kept;
- *   7. deploy-prod.yml maps each input from a variable, verifies this test and
+ *   7. release-prod.yml maps each input from a variable, verifies this test and
  *      runs the script BEFORE the point of no return.
  *
  * Run: node --test scripts/ci/prod-seo-projection-env.test.mjs
@@ -45,7 +45,7 @@ import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(SCRIPT_DIR, "prod-seo-projection-env.sh");
-const DEPLOY_WORKFLOW = join(SCRIPT_DIR, "..", "..", ".github", "workflows", "deploy-prod.yml");
+const DEPLOY_WORKFLOW = join(SCRIPT_DIR, "..", "..", ".github", "workflows", "release-prod.yml");
 
 const KEYS = [
   "SEO_PROJECTION_R1_FEED_ENABLED",
@@ -499,7 +499,7 @@ describe("refusals leave the .env byte-identical", () => {
   });
 });
 
-describe("deploy-prod.yml wiring", () => {
+describe("release-prod.yml wiring", () => {
   const wf = readFileSync(DEPLOY_WORKFLOW, "utf8");
 
   test("the script runs on .env before the point of no return", () => {
@@ -513,7 +513,7 @@ describe("deploy-prod.yml wiring", () => {
   test("this test is verified before any PROD mutation", () => {
     const verify = wf.indexOf("scripts/ci/prod-seo-projection-env.test.mjs");
     const firstMutation = wf.indexOf("docker/login-action");
-    assert.ok(verify > 0, "deploy-prod.yml must run prod-seo-projection-env.test.mjs");
+    assert.ok(verify > 0, "release-prod.yml must run prod-seo-projection-env.test.mjs");
     assert.ok(verify < firstMutation, "the test must run before the first PROD-facing step");
   });
 

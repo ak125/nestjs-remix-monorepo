@@ -1,7 +1,7 @@
 /**
  * Behavioural proof of the PREPROD evidence gate (prod-preprod-evidence.mjs).
  *
- * The SHA gate in deploy-prod.yml proves only that :preprod was BUILT from the
+ * The SHA gate in release-prod.yml proves only that :preprod was BUILT from the
  * tagged commit; build.yml publishes it before ci.yml validates it. f54aa333f
  * (2026-09-28) failed "🧪 Deploy PREPROD" with a correctly labelled :preprod.
  * These tests assert:
@@ -15,7 +15,7 @@
  *      nothing for a validated commit on 2026-09-30), and every API, config or
  *      consistency failure exits non-zero;
  *   4. the job names the gate requires are the ones ci.yml defines, and
- *      deploy-prod.yml runs the gate before any Docker step with `actions: read`
+ *      release-prod.yml runs the gate before any Docker step with `actions: read`
  *      and `checks: read`.
  *
  * Run: node --test scripts/ci/prod-preprod-evidence.test.mjs
@@ -408,7 +408,7 @@ describe("end-to-end against a local GitHub API", () => {
 
 describe("workflow wiring", () => {
   const ci = readFileSync(join(WORKFLOWS, "ci.yml"), "utf8");
-  const deploy = readFileSync(join(WORKFLOWS, "deploy-prod.yml"), "utf8");
+  const deploy = readFileSync(join(WORKFLOWS, "release-prod.yml"), "utf8");
 
   test("every required job is defined in ci.yml under that exact display name", () => {
     // A rename would make the gate refuse every tag ("absent"): fail here, at PR
@@ -421,10 +421,10 @@ describe("workflow wiring", () => {
     }
   });
 
-  test("deploy-prod.yml runs the gate before any Docker step", () => {
+  test("release-prod.yml runs the gate before any Docker step", () => {
     const gate = deploy.indexOf("node scripts/ci/prod-preprod-evidence.mjs");
     const firstDocker = deploy.indexOf("uses: docker/login-action");
-    assert.ok(gate > 0, "deploy-prod.yml must run prod-preprod-evidence.mjs");
+    assert.ok(gate > 0, "release-prod.yml must run prod-preprod-evidence.mjs");
     assert.ok(firstDocker > 0, "docker/login-action step not found");
     assert.ok(gate < firstDocker, "the gate must run before any Docker step");
   });

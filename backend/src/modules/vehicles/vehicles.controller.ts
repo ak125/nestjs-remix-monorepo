@@ -9,7 +9,10 @@ import {
   Res,
   Logger,
   ServiceUnavailableException,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { DomainNotFoundException } from '@common/exceptions';
 import { PositiveIntParamPipe } from '../../common/pipes/params';
 import { StrictZodQueryValidationPipe } from '../../common/pipes/strict-zod-query-validation.pipe';
@@ -398,6 +401,7 @@ export class VehiclesController {
    * 🔥 Préchauffe le cache pour les véhicules populaires
    */
   @Post('cache/warm')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async warmVehicleCache(@Body() body: { typeIds?: number[] }) {
     // Véhicules populaires par défaut (à enrichir via analytics)
     const defaultPopularVehicles = [17173, 22547, 15432, 25896, 18765];
@@ -414,6 +418,7 @@ export class VehiclesController {
    * 🗑️ Invalide le cache d'un véhicule spécifique
    */
   @Post('types/:typeId/cache/invalidate')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async invalidateVehicleCache(@Param('typeId') typeId: string) {
     const typeIdNum = parseInt(typeId, 10);
     await this.vehicleRpcService.invalidateCache(typeIdNum);

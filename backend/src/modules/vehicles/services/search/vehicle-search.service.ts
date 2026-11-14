@@ -4,6 +4,7 @@ import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import { VehicleEnrichmentService } from '../core/vehicle-enrichment.service';
 import { PaginationOptions, VehicleResponse } from '../../types/vehicle.types';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 /**
  * 🔍 VEHICLE SEARCH SERVICE - Service de recherche avancée pour véhicules
@@ -94,9 +95,9 @@ export class VehicleSearchService extends SupabaseBaseService {
 
           // Recherche flexible par code
           query = query.or(
-            `type_mine_code.ilike.%${code}%,` +
-              `type_cnit_code.ilike.%${code}%,` +
-              `type_name.ilike.%${code}%`,
+            `type_mine_code.ilike.${ilikeContains(code)},` +
+              `type_cnit_code.ilike.${ilikeContains(code)},` +
+              `type_name.ilike.${ilikeContains(code)}`,
           );
 
           const { data, error, count } = await query.order('type_name');
@@ -188,16 +189,18 @@ export class VehicleSearchService extends SupabaseBaseService {
 
           if (searchIn.includes('marque')) {
             searchConditions.push(
-              `auto_modele.auto_marque.marque_name.ilike.%${query}%`,
+              `auto_modele.auto_marque.marque_name.ilike.${ilikeContains(query)}`,
             );
           }
 
           if (searchIn.includes('modele')) {
-            searchConditions.push(`auto_modele.modele_name.ilike.%${query}%`);
+            searchConditions.push(
+              `auto_modele.modele_name.ilike.${ilikeContains(query)}`,
+            );
           }
 
           if (searchIn.includes('type')) {
-            searchConditions.push(`type_name.ilike.%${query}%`);
+            searchConditions.push(`type_name.ilike.${ilikeContains(query)}`);
           }
 
           // Ajout de critères spécifiques
@@ -388,9 +391,9 @@ export class VehicleSearchService extends SupabaseBaseService {
 
           if (filters.query) {
             query = query.or(
-              `auto_modele.auto_marque.marque_name.ilike.%${filters.query}%,` +
-                `auto_modele.modele_name.ilike.%${filters.query}%,` +
-                `type_name.ilike.%${filters.query}%`,
+              `auto_modele.auto_marque.marque_name.ilike.${ilikeContains(filters.query)},` +
+                `auto_modele.modele_name.ilike.${ilikeContains(filters.query)},` +
+                `type_name.ilike.${ilikeContains(filters.query)}`,
             );
           }
 

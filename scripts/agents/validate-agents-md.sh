@@ -25,7 +25,13 @@ MEMORY_HINT="feedback_no_hardcoded_infra_in_agentsmd.md"
 EXCLUDE_REGEX='(^|/)(backend/content/automecanik-wiki|\.worktrees|node_modules|dist|\.git|\.husky/_)(/|$)'
 
 # Anti-pattern regexes (sur lignes ajoutées en mode diff)
-RE_IP_VPS='46\.224\.118\.55|49\.12\.233\.2|178\.104\.1\.118'
+# Toute adresse IPv4 brute : une machine se nomme par son rôle (« hôte DEV », « hôte PROD »),
+# le dépôt est public (ADR-075 D4). La règle ne liste aucune adresse : en écrire une ici la
+# publierait. Non signalés : quatre segments collés à une lettre ou à un chiffre (v1.2.3.4) ou
+# pris dans une suite de cinq segments ou plus. Signalées aussi, sans être des machines : les
+# adresses de boucle locale, non routables ou de plages privées, même sans port, et une version
+# à quatre segments sans préfixe. Les écrire autrement (« boucle locale », v<numéro>).
+RE_IPV4='(^|[^[:alnum:].]|[^0-9]\.)([0-9]{1,3}\.){3}[0-9]{1,3}($|[^[:alnum:].]|\.($|[^0-9]))'
 RE_URL_INFRA='https?://[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(:[0-9]+)?|localhost:[0-9]+|127\.0\.0\.1:[0-9]+'
 RE_SECRET='(token|api[_-]?key|secret)[[:space:]]*[:=][[:space:]]*[A-Za-z0-9_.-]+'
 RE_UUID='[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}'
@@ -119,8 +125,8 @@ check_antipattern_lines() {
     lineno=$(printf '%s\n' "$line" | sed 's/:.*//')
     local body
     body=$(printf '%s\n' "$line" | sed 's/^[0-9]*://')
-    if echo "$body" | grep -Eiq "$RE_IP_VPS"; then
-      emit_block "$label" "$f" "$lineno" "IP brute des 3 VPS"
+    if echo "$body" | grep -Eq "$RE_IPV4"; then
+      emit_block "$label" "$f" "$lineno" "adresse IPv4 brute (nommer la machine par son rôle)"
     fi
     if echo "$body" | grep -Eiq "$RE_URL_INFRA"; then
       emit_block "$label" "$f" "$lineno" "URL infra sensible (IP+port / localhost / 127.0.0.1)"
@@ -137,7 +143,7 @@ check_antipattern_lines() {
     if echo "$body" | grep -Eq "$RE_STATE_FIGE"; then
       emit_block "$label" "$f" "$lineno" "assertion d'état infra figée"
     fi
-  done < <(printf '%s\n' "$content" | grep -niE "$RE_IP_VPS|$RE_URL_INFRA|$RE_SECRET|$RE_UUID|$RE_ADR_TODO|$RE_STATE_FIGE" 2>/dev/null || true)
+  done < <(printf '%s\n' "$content" | grep -niE "$RE_IPV4|$RE_URL_INFRA|$RE_SECRET|$RE_UUID|$RE_ADR_TODO|$RE_STATE_FIGE" 2>/dev/null || true)
 
   # WARN — URL hors infra (non bloquante : github.com/ADR vault légitime)
   while IFS= read -r line; do
@@ -254,10 +260,20 @@ run_self_test() {
     fi
   }
 
-  # 1. BLOCK IP
-  echo 'Voir http://46.224.118.55:3000 pour audit' > "$tmp/ip.md"
-  bash "$0" --file "$tmp/ip.md" >/dev/null 2>&1
-  test_case "BLOCK IP brute" 1 $?
+  # 1. BLOCK IP — adresses de documentation (RFC 5737). Ligne 1 : adresse nue, seule la règle
+  #    IPv4 la voit. Ligne 2 : URL d'infra, vue par la règle URL.
+  local out1 ec1
+  printf 'Voir la machine 203.0.113.7 pour audit\nVoir http://198.51.100.9:3000 pour audit\n' > "$tmp/ip.md"
+  out1=$(bash "$0" --file "$tmp/ip.md" 2>&1); ec1=$?
+  if [ "$ec1" = "1" ] \
+    && printf '%s' "$out1" | grep -q 'ip\.md:1: BLOCK — adresse IPv4 brute' \
+    && ! printf '%s' "$out1" | grep -q 'ip\.md:1: BLOCK — URL infra' \
+    && printf '%s' "$out1" | grep -q 'ip\.md:2: BLOCK — URL infra'; then
+    printf '  ✓ %s\n' "BLOCK IP brute (adresse nue, puis URL d'infra)"
+  else
+    printf '  ✗ %s (exit=%s)\n' "BLOCK IP brute (adresse nue, puis URL d'infra)" "$ec1"
+    failed=$((failed + 1))
+  fi
 
   # 2. BLOCK UUID
   echo 'agent_id: 12345678-aaaa-bbbb-cccc-1234567890ab' > "$tmp/uuid.md"
@@ -289,8 +305,9 @@ EOF
   bash "$0" --file "$tmp/url.md" >/dev/null 2>&1
   test_case "WARN URL github (non bloquant)" 0 $?
 
-  # 7. PASS — fichier markdown banal sans AGENTS.md schema requis
-  echo 'Note interne sans secret ni IP.' > "$tmp/clean.md"
+  # 7. PASS — fichier markdown banal sans AGENTS.md schema requis. Une version préfixée et une
+  #    suite de cinq segments ne sont pas des adresses.
+  echo 'Note interne sans secret ni IP. Version v1.2.3.4, section 1.2.3.4.5.' > "$tmp/clean.md"
   bash "$0" --file "$tmp/clean.md" >/dev/null 2>&1
   test_case "PASS — fichier propre" 0 $?
 

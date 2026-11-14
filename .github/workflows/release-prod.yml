@@ -1,4 +1,11 @@
-name: 🚀 Deploy PROD (via tag)
+name: 🚀 Release PROD (tag v*)
+
+# Successor of deploy-prod.yml, retired. GitHub keys a workflow by its path, and
+# a run executes the copy found on its ref: tags and branches from before the
+# rename still carry a deploy-prod.yml. On 2026-11-13, all 305 v* tags do; one
+# has the release ref gate and 194 have no provenance check at all. The owner
+# disables that path; only a commit that contains this file can start a PROD
+# deploy.
 
 on:
   push:
@@ -38,6 +45,24 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
 
     steps:
+      # A run executes the release-prod.yml of the ref it was started on, and the
+      # dispatch form offers `main` by default. Started on a branch, this job
+      # would deploy a commit that no v* tag designates and publish its image
+      # under the branch name. The tag carries the owner's decision: refuse any
+      # other ref first, before the checkout, while nothing has touched the host.
+      # Same refs as the push trigger above (`v*`, where `*` does not match `/`).
+      # GITHUB_REF is set by the runner; no workflow input can change it.
+      - name: 🔖 Release ref gate — only a v* tag deploys PROD
+        run: |
+          set -euo pipefail
+          REF="${GITHUB_REF:-}"
+          if [[ ! "$REF" =~ ^refs/tags/v[^/]*$ ]]; then
+            echo "FATAL: PROD deploys only from a v* tag; this run was started on '${REF:-<unset>}'." >&2
+            echo "Start it again on the tag of the version to deploy." >&2
+            exit 1
+          fi
+          echo "Release ref: $REF"
+
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
@@ -110,7 +135,7 @@ jobs:
               echo ""
               echo "  If this is a FIRST deploy or a host rebuild (i.e. there is legitimately"
               echo "  nothing to roll back to), re-run deliberately in break-glass mode:"
-              echo "    - Actions → 'Deploy PROD (via tag)' → Run workflow → break_glass_no_rollback_point = true"
+              echo "    - Actions → 'Release PROD (tag v*)' → Run workflow → break_glass_no_rollback_point = true"
               echo "    - or set repo variable PROD_BREAK_GLASS_NO_ROLLBACK_POINT=true for a tag push"
               echo ""
               echo "  Otherwise investigate why PROD is not running before deploying over it."

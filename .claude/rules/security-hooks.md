@@ -10,8 +10,14 @@ dangereux (`exec`, `eval`, `innerHTML`, `dangerouslySetInnerHTML`, `os.system`,
 
 - Un warning déclenche une vérification et, si confirmé, une correction minimale ;
   il ne devient pas un gate bloquant.
-- La source de vérité sécurité reste CI : CodeQL, gitleaks, ESLint flat,
-  ast-grep, `block-new` ownership, Improvement Gate, tests, review humaine.
+- La source de vérité sécurité reste hors de ce plugin : les contrôles CI
+  (CodeQL, gitleaks, ESLint flat, ast-grep, `block-new` ownership, tests) et la
+  Definition of Done canonique, règle vault `rules-engineering-definition-of-done`
+  (DoD2 amendée par ADR-120). Ce plugin n'ajoute ni ne retire aucune exigence
+  de contrôle, de revue ou d'autorisation, zones STOP de CLAUDE.md comprises.
+- Recommandations, non bloquantes : les warnings de ce plugin et l'Improvement
+  Check (bloc du modèle de PR, skill `continuous-improvement-global` sur demande
+  explicite).
 - Interdit : transformer security-hooks en gate bloquante, en workflow CI,
   en nouvelle phase ADR-082, en "security control plane".
 

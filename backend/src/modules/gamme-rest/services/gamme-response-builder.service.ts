@@ -34,6 +34,7 @@ import {
   applyGuideLinkRuleToHtml,
   resolveGuideLink,
 } from '../../seo/services/r6-guide-link-policy.service';
+import { InternalLinkingService } from '../../seo';
 
 interface MotorizationRow {
   type_id: number;
@@ -90,6 +91,7 @@ export class GammeResponseBuilderService {
     private readonly chainOrchestrator: SeoChainOrchestratorService,
     private readonly chainFlags: SeoFeatureFlagRegistry,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
+    private readonly internalLinking: InternalLinkingService,
   ) {}
 
   /**
@@ -348,6 +350,12 @@ export class GammeResponseBuilderService {
     if (buyingGuideHref) guideLinkCtx.linkedPaths.add(buyingGuideHref);
     let guideLinksChanged = 0;
     if (pageContent) {
+      // Liens vers une page conseil : adresse servie, sinon libellé sans lien.
+      // Avant la règle des guides, qui compte les liens conseils déjà présents.
+      pageContent = await this.internalLinking.resolveConseilsLinks(
+        pageContent,
+        guideLinkSnapshot.conseilsAliases,
+      );
       const out = applyGuideLinkRuleToHtml(
         pageContent,
         guideLinkSnapshot,
@@ -768,7 +776,12 @@ export class GammeResponseBuilderService {
           arguments: buyingGuideContract.arguments,
           howToChoose: buyingGuideContract.howToChoose,
           symptoms: buyingGuideContract.symptoms,
-          faq: buyingGuideContract.faq,
+          // Une FAQ entièrement issue du gabarit de repli n'est pas publiée :
+          // sans elle, la page R1 affiche et balise la FAQ du sélecteur.
+          faq:
+            buyingGuideContract.sectionSources.faq === 'fallback'
+              ? []
+              : buyingGuideContract.faq,
           h1Override: buyingGuideContract.h1Override || null,
           h2Overrides: buyingGuideContract.h2Overrides || null,
           heroSubtitle: buyingGuideContract.heroSubtitle || null,
@@ -815,7 +828,10 @@ export class GammeResponseBuilderService {
               })) || [],
             howToChoose: null as string | null,
             symptoms: gammeBuyingGuide.symptoms || [],
-            faq: gammeBuyingGuide.faq || [],
+            faq:
+              gammeBuyingGuide.sectionSources?.faq === 'fallback'
+                ? []
+                : gammeBuyingGuide.faq || [],
             h1Override: null as string | null,
             h2Overrides: null as Record<string, string> | null,
             heroSubtitle: null as string | null,

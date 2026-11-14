@@ -587,7 +587,7 @@ jobs:
       - name: 🧭 R6 guides — served posture matches the deployed flag (ADR-103)
         id: r6-posture-check
         # SEO_R6_CONSOLIDATION_ENABLED is written into the PROD .env by
-        # deploy-prod.yml (scripts/ci/prod-seo-projection-env.sh, ADR-103 D6). The
+        # release-prod.yml (scripts/ci/prod-seo-projection-env.sh, ADR-103 D6). The
         # value the container really runs with is read here, and the pages must
         # match it. The code reads only the literal `true` as on (bool(),
         # feature-flags.service.ts); unset = off.

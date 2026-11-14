@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
-// PREPROD evidence gate — runs in deploy-prod.yml BEFORE any PROD mutation.
+// PREPROD evidence gate — runs in release-prod.yml BEFORE any PROD mutation.
 //
 // The SHA gate proves PROVENANCE: the :preprod image was built from the tagged
 // commit (INC-2026-006). It does not prove VALIDATION: build.yml publishes

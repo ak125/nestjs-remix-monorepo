@@ -57,7 +57,9 @@ export class AdminGammesSeoVlevelController {
 
   /**
    * GET /api/admin/gammes-seo/v-level/global-stats
-   * Global V-Level distribution stats for dashboard
+   * Indicateurs V-Level (contrat vlevel-global-stats.v2) : lecture seule de
+   * __seo_keywords et pieces_gamme, sans recalcul ni écriture. Lecture
+   * incomplète ou incohérente = 500 explicite, jamais de zéros substitués.
    */
   @Get('v-level/global-stats')
   async getVLevelGlobalStats() {
@@ -76,7 +78,7 @@ export class AdminGammesSeoVlevelController {
     } catch (error) {
       this.logger.error('Error fetching V-Level global stats:', error);
       throw new OperationFailedException({
-        message: 'Erreur lors de la recuperation des stats V-Level',
+        message: 'Indicateurs V-Level indisponibles',
       });
     }
   }

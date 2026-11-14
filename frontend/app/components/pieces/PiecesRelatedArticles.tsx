@@ -14,6 +14,7 @@
 import { BookOpen, Clock, ArrowRight, Newspaper } from "lucide-react";
 import { useEffect, memo } from "react";
 import { Link } from "react-router";
+import { articleHref } from "~/components/blog/ArticleNavigation";
 import { useSeoLinkTracking } from "../../hooks/useSeoLinkTracking";
 import { type BlogArticle } from "../../types/pieces-route.types";
 
@@ -51,7 +52,7 @@ export const PiecesRelatedArticles = memo(function PiecesRelatedArticles({
     const seoAnchor = vehicleName
       ? `${article.title} - Guide ${gammeName} ${vehicleName}`
       : `${article.title} - Conseils ${gammeName}`;
-    trackClick("RelatedArticles", `/blog-pieces-auto/article/${article.slug}`, {
+    trackClick("RelatedArticles", articleHref(article), {
       anchorText: seoAnchor,
       position: "content",
     });
@@ -134,7 +135,7 @@ export const PiecesRelatedArticles = memo(function PiecesRelatedArticles({
 
                   {/* Lien vers l'article - Ancre SEO optimisée */}
                   <Link
-                    to={`/blog-pieces-auto/article/${article.slug}`}
+                    to={articleHref(article)}
                     className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 group-hover:gap-2 transition-all"
                     title={`Lire notre guide complet: ${article.title}`}
                   >
@@ -146,7 +147,7 @@ export const PiecesRelatedArticles = memo(function PiecesRelatedArticles({
 
               {/* Overlay lien sur toute la carte - Ancre SEO enrichie */}
               <Link
-                to={`/blog-pieces-auto/article/${article.slug}`}
+                to={articleHref(article)}
                 className="absolute inset-0"
                 aria-label={`Guide complet: ${article.title} - Conseils ${gammeName}`}
                 title={`${article.title} - Découvrez nos conseils pour ${gammeName}`}

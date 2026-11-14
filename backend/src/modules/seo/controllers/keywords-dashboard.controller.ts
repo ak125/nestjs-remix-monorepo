@@ -16,7 +16,10 @@ import {
   Logger,
   ParseIntPipe,
   DefaultValuePipe,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   KeywordsDashboardService,
   GammeStats,
@@ -27,6 +30,7 @@ import {
 import type { AdminApiResponse } from '@repo/database-types';
 
 @Controller('api/seo/keywords')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class KeywordsDashboardController {
   private readonly logger = new Logger(KeywordsDashboardController.name);
 

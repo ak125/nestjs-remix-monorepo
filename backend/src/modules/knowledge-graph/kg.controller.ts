@@ -2,6 +2,10 @@
  * 🧠 Knowledge Graph Controller - AI-COS v2.8.0
  *
  * API REST pour le Knowledge Graph et le Reasoning Engine
+ *
+ * Admin only (`AuthenticatedGuard` + `IsAdminGuard`). The module is not
+ * registered in `AppModule` (disabled 2026-02-02, experimental); the boundary
+ * is declared here so that registering it again cannot open these routes.
  */
 
 import {
@@ -16,7 +20,10 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { KgService } from './kg.service';
 import { KgDataService } from './kg-data.service';
 import {
@@ -30,6 +37,7 @@ import {
 } from './kg.types';
 
 @Controller('api/knowledge-graph')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class KgController {
   private readonly logger = new Logger(KgController.name);
 

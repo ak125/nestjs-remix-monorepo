@@ -1,35 +1,39 @@
 /**
- * Sitemap V10 — régénération automatique nocturne via BullMQ.
+ * Sitemap V10 — retrait de la planification interne et signal de vie du
+ * worker de régénération.
  *
- * Pourquoi ce service existe
- * --------------------------
- * Avant ce fix, la génération des sitemaps n'avait AUCUN déclencheur
- * automatique : `SitemapV10Service.generateAll()` n'était appelable que
- * manuellement via `POST /api/sitemap/v10/generate-all`. La dernière
- * régénération manuelle datait du 2026-04-23 (post PR #135 — filtre
- * TecDoc orphans). Conséquence : `<lastmod>2026-04-23</lastmod>` figé
- * pendant 21 jours sur ~102 000 URLs `/pieces/*`, signal de site stagnant
- * pour Googlebot → érosion progressive du crawl budget → −40 % impressions
- * `/pieces/*` GSC entre W17 et W19 (cf. `audit-reports/seo-smoke/2026-05-13/`).
+ * Producteur unique de la régénération
+ * ------------------------------------
+ * La régénération quotidienne des sitemaps a un seul déclencheur : le
+ * workflow GitHub `.github/workflows/sitemap-daily-regen.yml` (03:00 UTC). Il
+ * appelle, authentifié par OIDC, `POST /api/sitemap/v10/generate-all` en
+ * PROD seulement ; le contrôleur met en file la tâche `sitemap-regenerate-all`
+ * (`triggeredBy: 'api'`), que `SitemapRegenerateProcessor` exécute. Un échec
+ * du workflow ouvre une issue `incident-sitemap-cron` ; une génération
+ * manquante déclenche l'alerte `SITEMAP_STALE_V1` (`__seo_event_log`).
  *
- * Pourquoi BullMQ et pas `@Cron`
- * ------------------------------
- * Le `ScheduleModule` de `@nestjs/schedule` est désactivé monorepo
- * (cf. app.module.ts:10, conflit version `@nestjs/common@^10` ×
- * `@nestjs/schedule@^6`). Tous les `@Cron` du codebase sont inertes.
- * Le pattern canonique du monorepo est BullMQ avec repeatable jobs
- * (cf. `SeoMonitorSchedulerService`, `AbandonedCartService:58`).
+ * Ce service armait aussi une tâche répétable Bull à 03:00 UTC, dans toute
+ * instance de l'application qui démarre, DEV et PREPROD compris : un second
+ * producteur possible, sur une base partagée entre les environnements. Il ne
+ * régénérait rien en pratique : toutes les générations journalisées depuis
+ * juin 2026 portent `triggeredBy: 'api'`, aucune `scheduler`. Décision de
+ * l'owner du 2026-11-12 : le workflow reste le seul producteur, la
+ * planification interne est supprimée.
  *
- * Garde-fous
- * ----------
- * - Job repeatable BullMQ avec `jobId` stable → pas de doublon
- * - Nettoyage des anciens jobs au boot (pattern repeated dans
- *   `SeoMonitorSchedulerService.cleanOldRepeatableJobs`)
- * - READ_ONLY gate au processor (mémoire
- *   `feedback_readonly_gate_at_processor_not_scheduler.md`)
- * - `SEO_SITEMAP_CRON_ENABLED=false` désactive l'enregistrement
- * - `onModuleInit` non-bloquant (`void` + fire-and-forget), pattern canon
- *   `.claude/rules/backend.md` § Non-blocking onModuleInit
+ * Ce qui reste ici
+ * ----------------
+ * - Au démarrage, retrait de toute tâche répétable `sitemap-regenerate-all`
+ *   encore inscrite dans Redis : Bull la conserve d'un démarrage à l'autre, et
+ *   une instance déployée avant ce retrait l'y a laissée. Les tâches
+ *   ponctuelles mises en file par l'API ne sont pas répétables : elles ne sont
+ *   pas touchées.
+ * - Le signal de vie du processus qui consomme la queue `seo-monitor`
+ *   (clé Redis à durée de vie courte, rafraîchie toutes les 30 s).
+ * - `onModuleInit` non bloquant (`void` + fire-and-forget), pattern canon
+ *   `.claude/rules/backend.md` § Non-blocking onModuleInit.
+ *
+ * Le nom du service est conservé : ses exports sont importés par le
+ * contrôleur, le processeur et leurs tests.
  */
 
 import {
@@ -39,13 +43,11 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
-import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bull';
 import * as os from 'node:os';
 import { getErrorMessage } from '@common/utils/error.utils';
 
 export const SITEMAP_REGENERATE_JOB_NAME = 'sitemap-regenerate-all';
-export const SITEMAP_REGENERATE_JOB_ID = 'sitemap-v10-nightly-regeneration';
 
 /**
  * Redis key prefix for per-process worker heartbeats (Phase 7 observability).
@@ -68,7 +70,7 @@ export interface SitemapWorkerHeartbeat {
 }
 
 export interface SitemapRegenerateJobData {
-  triggeredBy: 'scheduler' | 'api' | 'manual';
+  triggeredBy: 'api' | 'manual';
 }
 
 @Injectable()
@@ -82,7 +84,6 @@ export class SitemapV10SchedulerService
 
   constructor(
     @InjectQueue('seo-monitor') private readonly seoMonitorQueue: Queue,
-    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -90,27 +91,18 @@ export class SitemapV10SchedulerService
    * Bloquer ici stallerait `app.listen()` (cf. PR #224 / run 25166916535).
    *
    * Phase 7 : starts the per-process heartbeat (Redis SET with TTL 60s
-   * refreshed every 30s) so the diagnostic endpoint (Phase 8) can detect
-   * worker liveness without depending on bull's `getWorkers()` (not in
-   * @types/bull v4.10.4).
+   * refreshed every 30s) so worker liveness can be observed without
+   * depending on bull's `getWorkers()` (not in @types/bull v4.10.4).
    */
   onModuleInit(): void {
-    if (!this.isEnabled()) {
-      this.logger.log(
-        'SEO_SITEMAP_CRON_ENABLED=false — sitemap regeneration scheduler skipped',
-      );
-      return;
-    }
     this.logger.log({
       event: 'sitemap_scheduler_worker_online',
       pid: process.pid,
       hostname: os.hostname(),
       queue: 'seo-monitor',
-      cron: this.getCron(),
-      timezone: 'UTC',
       startedAt: this.startedAt.toISOString(),
     });
-    void this.configureRepeatableJob();
+    void this.removeRetiredRepeatableJobs();
     this.heartbeatTimer = setInterval(
       () => void this.writeHeartbeat(),
       HEARTBEAT_INTERVAL_MS,
@@ -120,9 +112,8 @@ export class SitemapV10SchedulerService
 
   /**
    * Phase 7 : symmetric shutdown — stop the interval, delete heartbeat key,
-   * emit lifecycle log. Permits the diagnostic endpoint to observe a clean
-   * worker shutdown vs a crash (silent disappearance of heartbeat key after
-   * TTL expiry).
+   * emit lifecycle log. Permits observers to tell a clean worker shutdown
+   * from a crash (silent disappearance of heartbeat key after TTL expiry).
    */
   async onModuleDestroy(): Promise<void> {
     if (this.heartbeatTimer) {
@@ -153,11 +144,10 @@ export class SitemapV10SchedulerService
    * Write the current process's heartbeat to Redis. Idempotent + cheap
    * (~1ms intra-VPS) — re-written every HEARTBEAT_INTERVAL_MS to refresh
    * the TTL. If the worker crashes, the key expires after
-   * HEARTBEAT_TTL_SECONDS, disappearing from the diagnostic endpoint.
+   * HEARTBEAT_TTL_SECONDS.
    *
-   * Failure is non-fatal : logs a warning, does not crash the scheduler.
-   * The next interval tick will retry. The diagnostic endpoint will simply
-   * see a stale heartbeat (timestamp gap) or absent key.
+   * Failure is non-fatal : logs a warning, does not crash the service.
+   * The next interval tick will retry.
    */
   private async writeHeartbeat(): Promise<void> {
     const now = new Date();
@@ -182,75 +172,29 @@ export class SitemapV10SchedulerService
     }
   }
 
-  private async configureRepeatableJob(): Promise<void> {
-    try {
-      await this.removeStaleRepeatableJob();
-
-      await this.seoMonitorQueue.add(
-        SITEMAP_REGENERATE_JOB_NAME,
-        {
-          triggeredBy: 'scheduler',
-        } satisfies SitemapRegenerateJobData,
-        {
-          repeat: {
-            cron: this.getCron(),
-            tz: 'UTC',
-          },
-          jobId: SITEMAP_REGENERATE_JOB_ID,
-          removeOnComplete: 14, // 2 semaines d'historique
-          removeOnFail: 30,
-          attempts: 2,
-          backoff: {
-            type: 'exponential',
-            delay: 60_000, // 1 min puis 2 min
-          },
-        },
-      );
-
-      this.logger.log(
-        `✅ Sitemap V10 nightly regeneration scheduled (cron="${this.getCron()}" UTC)`,
-      );
-    } catch (err) {
-      this.logger.error(
-        '❌ Failed to configure sitemap regeneration repeatable job',
-        getErrorMessage(err),
-      );
-    }
-  }
-
   /**
-   * Idempotence : supprime l'ancien repeatable job avant de le réinsérer
-   * (sinon BullMQ stocke les anciens cron strings au redeploy).
+   * Retire les tâches répétables `sitemap-regenerate-all` que la
+   * planification interne supprimée a pu laisser dans Redis. Bull retire avec
+   * elles leur prochaine exécution différée. Les tâches répétables des autres
+   * services de la queue ne sont pas touchées.
+   *
+   * Un échec est journalisé et n'interrompt pas le démarrage : la tâche
+   * restante serait retirée au démarrage suivant.
    */
-  private async removeStaleRepeatableJob(): Promise<void> {
+  private async removeRetiredRepeatableJobs(): Promise<void> {
     try {
       const jobs = await this.seoMonitorQueue.getRepeatableJobs();
       for (const job of jobs) {
-        if (job.name === SITEMAP_REGENERATE_JOB_NAME) {
-          await this.seoMonitorQueue.removeRepeatableByKey(job.key);
-          this.logger.log(
-            `🗑️ Removed stale sitemap repeatable job: ${job.key}`,
-          );
-        }
+        if (job.name !== SITEMAP_REGENERATE_JOB_NAME) continue;
+        await this.seoMonitorQueue.removeRepeatableByKey(job.key);
+        this.logger.log(
+          `🗑️ Retired sitemap repeatable job removed: ${job.key}`,
+        );
       }
     } catch (err) {
       this.logger.warn(
-        `Could not enumerate stale sitemap jobs: ${getErrorMessage(err)}`,
+        `Could not remove retired sitemap repeatable jobs: ${getErrorMessage(err)}`,
       );
     }
-  }
-
-  /**
-   * 03:00 UTC = ~05:00 Paris, creux trafic FR, AVANT le job daily-fetch
-   * (04:00 UTC GSC/GA4) pour que sitemap soit frais avant l'ingestion KPI.
-   */
-  private getCron(): string {
-    return this.configService.get<string>('SEO_SITEMAP_CRON', '0 3 * * *');
-  }
-
-  private isEnabled(): boolean {
-    const raw = this.configService.get<string>('SEO_SITEMAP_CRON_ENABLED');
-    if (raw === undefined || raw === null) return true;
-    return raw.toLowerCase() !== 'false' && raw !== '0';
   }
 }

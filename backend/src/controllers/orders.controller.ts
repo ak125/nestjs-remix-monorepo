@@ -1,8 +1,29 @@
-import { Controller, Get, Param, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { RequirePermission } from '@auth/decorators/require-permission.decorator';
+import { PermissionsGuard } from '@auth/guards/permissions.guard';
 import { OperationFailedException, DomainException } from '@common/exceptions';
 import { OrdersService } from '../database/services/orders.service';
 
+/**
+ * Commandes, lecture seule, pour le personnel.
+ *
+ * Chaque route exige une session du personnel et une permission de la matrice
+ * canonique (`PermissionsService`), comme `api/admin/orders` : liste et détail
+ * portent les coordonnées du client (`canSeeCustomerDetails`, dès le niveau
+ * commercial), les statistiques portent le chiffre d'affaires
+ * (`canSeeFinancials`). Une route sans `@RequirePermission` serait ouverte à
+ * toute session : le test `legacy-orders-routes-authz` l'interdit.
+ */
 @Controller('api/legacy-orders')
+@UseGuards(AuthenticatedGuard, PermissionsGuard)
 export class OrdersController {
   private readonly logger = new Logger(OrdersController.name);
 
@@ -13,6 +34,7 @@ export class OrdersController {
    * Récupère toutes les commandes avec pagination
    */
   @Get()
+  @RequirePermission('canSeeCustomerDetails')
   async getAllOrders(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -81,6 +103,7 @@ export class OrdersController {
    * Récupère les statistiques des commandes
    */
   @Get('stats')
+  @RequirePermission('canSeeFinancials')
   async getOrdersStats(@Query('userId') userId?: string) {
     try {
       this.logger.log('Calcul des statistiques des commandes...');
@@ -105,6 +128,7 @@ export class OrdersController {
    * Récupère une commande par son ID
    */
   @Get(':id')
+  @RequirePermission('canSeeCustomerDetails')
   async getOrderById(@Param('id') orderId: string) {
     try {
       this.logger.log(`Récupération commande ID: ${orderId}`);

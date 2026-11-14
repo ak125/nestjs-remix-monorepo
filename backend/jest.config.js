@@ -10,9 +10,24 @@ module.exports = {
     // NodeNext construit au démarrage, en bâtit un second complet au premier
     // fichier, puis un programme et un vérificateur de types neufs à chaque
     // fichier de src/ : la CI dépassait ses 4 Go de tas.
+    //
+    // isolatedModules : chaque fichier est transpilé seul, sans programme ni
+    // vérificateur de types (ts-jest transpileModule). Avec la vérification par
+    // fichier, un worker atteignait 4,3 Go et l'OOM-killer de DEV tuait le
+    // service applicatif avant lui. Les types restent vérifiés par
+    // `npm run typecheck` : tsconfig.json pour src/ (tests compris),
+    // tsconfig.spec.json pour tests/, avec la même résolution qu'ici.
     '^.+\\.(t|j)s$': [
       'ts-jest',
-      { tsconfig: { module: 'commonjs', moduleResolution: 'bundler' } },
+      {
+        tsconfig: {
+          module: 'commonjs',
+          moduleResolution: 'bundler',
+          isolatedModules: true,
+          incremental: false,
+        },
+        diagnostics: false,
+      },
     ],
   },
   collectCoverageFrom: ['src/**/*.(t|j)s'],

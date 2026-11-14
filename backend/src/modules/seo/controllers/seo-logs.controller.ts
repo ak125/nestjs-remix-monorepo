@@ -1,7 +1,16 @@
-import { Controller, Get, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { LogIngestionService } from '../services/log-ingestion.service';
 
 @Controller('seo-logs')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class SeoLogsController {
   constructor(private readonly logIngestionService: LogIngestionService) {}
 

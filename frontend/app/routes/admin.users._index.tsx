@@ -127,7 +127,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     if (userType) apiUrl += `&userType=${userType}`;
     if (level) apiUrl += `&level=${level}`;
 
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      headers: { Cookie: request.headers.get("Cookie") || "" },
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -285,7 +287,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         // Export CSV - récupérer tous les utilisateurs filtrés
         const url = new URL(request.url);
         const exportUrl = `http://127.0.0.1:3000/api/legacy-users?limit=10000&${url.searchParams.toString()}`;
-        const exportResponse = await fetch(exportUrl);
+        const exportResponse = await fetch(exportUrl, {
+          headers: { Cookie: request.headers.get("Cookie") || "" },
+        });
 
         if (!exportResponse.ok) throw new Error("Erreur lors de l'export");
 

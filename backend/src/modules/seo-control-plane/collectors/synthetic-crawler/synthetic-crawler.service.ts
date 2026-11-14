@@ -10,9 +10,16 @@
  * `__seo_snapshot_synthetic` uniquement.
  *
  * Sampling :
- *   - URLs source = sitemap PROD (`sitemap-pieces-*.xml`,
- *     `sitemap-categories.xml`, `sitemap-vehicules.xml`).
- *   - Stratification par tier via `CriticalityLoaderService.classify()`.
+ *   - URLs source = tous les sous-sitemaps listés par l'index PROD servi
+ *     (`/sitemap.xml`), sans filtre par nom de fichier.
+ *   - Stratification par tier via `CriticalityLoaderService.classify()` : le
+ *     canon de criticité est la SEULE autorité qui décide ce qui est sondé.
+ *   - Un palier du canon sans aucune URL candidate est signalé à chaque run
+ *     (jamais non sondé en silence).
+ *
+ * Alertes de santé du collecteur (palier sans candidat, sondes throttlées) :
+ * journal local ET événement Sentry. Le journal Nest n'est pas relayé vers
+ * Sentry ; sans l'événement, l'alerte ne quitte pas le journal du backend.
  *   - Poids `sampling_weight` lu depuis L4 governance (criticality.yaml).
  *
  * Sécurité runtime :
@@ -26,6 +33,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as Sentry from '@sentry/nestjs';
 import { randomUUID } from 'node:crypto';
 import type { TierId } from '@repo/registry';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
@@ -42,8 +50,6 @@ import {
 } from '../../types';
 
 const PROD_BASE_DEFAULT = 'https://www.automecanik.com';
-const SUB_PATTERN =
-  /(sitemap-pieces-\d+|sitemap-categories|sitemap-vehicules)\.xml$/;
 
 interface UrlCandidate {
   url: string;
@@ -185,8 +191,8 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     // 🚨 Observabilité anti silent-fallback : si une part anormale des sondes est
     // throttlée (429), l'exemption rate-limit est probablement inactive (flag OFF,
     // secret non provisionné) ou a dérivé → le monitoring L1 redevient AVEUGLE.
-    // On le rend BRUYANT (log.error, visible Sentry) plutôt que de dégrader en
-    // silence (incident 2026-06-25 : 89,7 % de 429 jamais alertés).
+    // On le rend BRUYANT (log.error + événement Sentry) plutôt que de dégrader
+    // en silence (incident 2026-06-25 : 89,7 % de 429 jamais alertés).
     if (snapshots.length > 0) {
       const rate429 = http429 / snapshots.length;
       if (rate429 > 0.2) {
@@ -196,6 +202,15 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
             `probablement inactive (${SYNTHETIC_PROBE_ENABLED_KEY}/secret) ou a dérivé — ` +
             `monitoring L1 dégradé.`,
         );
+        Sentry.captureMessage('synthetic_crawler_throttled', {
+          level: 'error',
+          tags: { collector: 'synthetic-crawler' },
+          extra: {
+            run_id: runId,
+            http_429: http429,
+            probed: snapshots.length,
+          },
+        });
       }
     }
     for (const tier of ['tier0', 'tier1', 'tier2'] as TierId[]) {
@@ -223,17 +238,22 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
   private async collectCandidates(): Promise<UrlCandidate[]> {
     const base = this.cfg.get<string>('SEO_CP_PROD_BASE', PROD_BASE_DEFAULT);
     const indexXml = await this.fetchText(`${base}/sitemap.xml`, 15_000);
+    // Tous les sous-sitemaps de l'index servi sont lus. Un filtre par nom de
+    // fichier ferait ici une seconde autorité, concurrente du canon, capable
+    // de priver un palier de sa seule source sans que rien ne le signale.
     const subUrls: string[] = [];
     for (const m of indexXml.matchAll(/<loc>([^<]+)<\/loc>/g)) {
-      if (SUB_PATTERN.test(m[1])) subUrls.push(m[1]);
+      subUrls.push(m[1]);
     }
 
-    const allUrls: string[] = [];
+    // Set : une URL listée par deux sous-sitemaps (cas réel : `sitemap-brands`
+    // et `sitemap-vehicules`) ne compte qu'une fois dans son pool.
+    const allUrls = new Set<string>();
     for (const sub of subUrls) {
       try {
         const xml = await this.fetchText(sub, 15_000);
         for (const m of xml.matchAll(/<loc>([^<]+)<\/loc>/g)) {
-          allUrls.push(m[1]);
+          allUrls.add(m[1]);
         }
       } catch (err) {
         this.logger.warn(
@@ -302,13 +322,40 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     const rng = this.mulberry32(seed);
     const out: UrlCandidate[] = [];
     const tiers: TierId[] = ['tier0', 'tier1', 'tier2'];
+    const starved: TierId[] = [];
 
     for (const tier of tiers) {
       const weight = config.tiers[tier].sampling_weight;
       const want = Math.max(1, Math.floor(total * weight));
       const pool = candidates.filter((c) => c.tier === tier);
+      if (pool.length === 0) starved.push(tier);
       const shuffled = this.shuffle(pool, rng);
       out.push(...shuffled.slice(0, want));
+    }
+
+    // 🚨 Même discipline que l'alerte 429 du run : un palier déclaré dans le
+    // canon dont aucune route ne figure dans les sitemaps servis n'est jamais
+    // sondé. Sans ce signal, le budget du palier est perdu et la surveillance
+    // est aveugle sur ses routes sans que rien ne le dise.
+    if (starved.length > 0) {
+      const detail = starved
+        .map((t) => `${t} (${config.tiers[t].routes.join(', ')})`)
+        .join(' ; ');
+      this.logger.error(
+        `🚨 synthetic-crawler: aucune URL candidate pour ${detail} dans les ` +
+          `sitemaps servis — palier(s) non sondé(s), monitoring L1 aveugle sur ` +
+          `ces routes. Aligner les routes de seo-criticality.yaml ou le ` +
+          `contenu des sitemaps.`,
+      );
+      // Un événement par palier : chaque palier affamé forme son propre
+      // groupe Sentry, distinct des autres.
+      for (const t of starved) {
+        Sentry.captureMessage(`synthetic_crawler_tier_starved: ${t}`, {
+          level: 'error',
+          tags: { collector: 'synthetic-crawler', tier: t },
+          extra: { routes: config.tiers[t].routes },
+        });
+      }
     }
     return out;
   }

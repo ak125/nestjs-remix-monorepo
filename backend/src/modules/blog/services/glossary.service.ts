@@ -5,6 +5,7 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
 import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 export interface GlossaryFilters {
   letter?: string;
@@ -178,9 +179,9 @@ export class GlossaryService {
         .select('*')
         .or(
           [
-            `bgl_terme.ilike.%${query}%`,
-            `bgl_definition.ilike.%${query}%`,
-            `bgl_keywords.ilike.%${query}%`,
+            `bgl_terme.ilike.${ilikeContains(query)}`,
+            `bgl_definition.ilike.${ilikeContains(query)}`,
+            `bgl_keywords.ilike.${ilikeContains(query)}`,
           ].join(','),
         )
         .order('ba_visit', { ascending: false })

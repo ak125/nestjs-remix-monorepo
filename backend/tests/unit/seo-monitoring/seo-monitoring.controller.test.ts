@@ -6,8 +6,12 @@
  * du grain requêtes. Les totaux viennent désormais du total propriété, un jour
  * absent est listé manquant (jamais un zéro) et l'échantillon requêtes est
  * déclaré non exhaustif.
+ *
+ * GET timeseries/ga4 (2026-11-12) : totaux et série quotidienne calculés sur
+ * toutes les lignes de la fenêtre (lecture paginée ordonnée), et non plus sur
+ * une seule réponse plafonnée à 1000 lignes.
  */
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { ConfigService } from '@nestjs/config';
 import { createClient } from '@supabase/supabase-js';
@@ -19,37 +23,64 @@ import { SeoMonitoringController } from '../../../src/modules/seo-monitoring/con
 jest.mock('@supabase/supabase-js', () => ({ createClient: jest.fn() }));
 
 type Row = Record<string, unknown>;
+/** Lignes d'une table, ou fonction qui rend la tranche demandée par `range`. */
+type TableSource = Row[] | ((from: number, to: number) => Row[]);
+/** `afterCalls` : nombre de lectures de la table servies avant que l'erreur tombe. */
+type TableError = { code: string; message: string; afterCalls?: number };
 
-/** Builder PostgREST minimal : enregistre les filtres, résout les lignes (ou l'erreur) de la table. */
+/**
+ * Builder PostgREST minimal : enregistre les filtres, résout les lignes (ou
+ * l'erreur) de la table. `range` découpe les lignes comme PostgREST.
+ */
 function fakeSupabase(
-  tables: Record<string, Row[]>,
-  errors: Record<string, { code: string; message: string }> = {},
+  tables: Record<string, TableSource>,
+  errors: Record<string, TableError> = {},
 ) {
   const calls: Array<{ table: string; ops: Array<[string, unknown[]]> }> = [];
   const from = jest.fn((table: string) => {
     const call = { table, ops: [] as Array<[string, unknown[]]> };
+    const previousCalls = calls.filter((c) => c.table === table).length;
     calls.push(call);
     const builder: Record<string, unknown> = {};
-    for (const op of ['select', 'gte', 'lte', 'order', 'ilike', 'limit']) {
+    for (const op of [
+      'select',
+      'gte',
+      'lte',
+      'order',
+      'ilike',
+      'limit',
+      'range',
+    ]) {
       builder[op] = (...args: unknown[]) => {
         call.ops.push([op, args]);
         return builder;
       };
     }
-    builder.then = (resolve: (v: unknown) => unknown) =>
-      resolve(
-        errors[table]
-          ? { data: null, error: errors[table] }
-          : { data: tables[table] ?? [], error: null },
-      );
+    builder.then = (resolve: (v: unknown) => unknown) => {
+      const failure = errors[table];
+      if (failure && previousCalls >= (failure.afterCalls ?? 0)) {
+        return resolve({ data: null, error: failure });
+      }
+      const range = call.ops.find(([op]) => op === 'range')?.[1] as
+        | [number, number]
+        | undefined;
+      const source = tables[table] ?? [];
+      const data =
+        typeof source === 'function'
+          ? source(range?.[0] ?? 0, range?.[1] ?? Number.MAX_SAFE_INTEGER)
+          : range
+            ? source.slice(range[0], range[1] + 1)
+            : source;
+      return resolve({ data, error: null });
+    };
     return builder;
   });
   return { client: { from }, calls };
 }
 
 function makeController(
-  tables: Record<string, Row[]>,
-  errors: Record<string, { code: string; message: string }> = {},
+  tables: Record<string, TableSource>,
+  errors: Record<string, TableError> = {},
 ) {
   const fake = fakeSupabase(tables, errors);
   (createClient as jest.Mock).mockReturnValue(fake.client);
@@ -401,6 +432,339 @@ describe('SeoMonitoringController — GET timeseries/gsc', () => {
     await expect(
       controller.timeseriesGsc('2026-09-10', '2026-09-01'),
     ).rejects.toBeInstanceOf(BadRequestException);
+    expect(calls).toHaveLength(0);
+  });
+});
+
+describe('SeoMonitoringController — GET timeseries/ga4', () => {
+  const originalEnv = process.env;
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env = { ...originalEnv, SUPABASE_SERVICE_ROLE_KEY: 'svc-key' };
+  });
+  afterAll(() => {
+    process.env = originalEnv;
+  });
+
+  const ga4Row = (
+    date: string,
+    page: string,
+    channel: string,
+    sessions: unknown,
+    conversions: unknown,
+  ): Row => ({
+    date,
+    page,
+    channel,
+    sessions,
+    conversions,
+    bounce_rate: null,
+    avg_session_duration: null,
+  });
+
+  /** `count` lignes réparties sur `days` jours consécutifs, 2 sessions et 1 événement clé par ligne. */
+  const manyRows = (count: number, days: number): Row[] =>
+    Array.from({ length: count }, (_, i) => {
+      const day = Math.floor((i * days) / count) + 1;
+      return ga4Row(
+        `2026-10-${String(day).padStart(2, '0')}`,
+        `https://www.automecanik.com/p-${i}`,
+        'organic search',
+        2,
+        1,
+      );
+    });
+
+  const ga4Calls = (calls: ReturnType<typeof makeController>['calls']) =>
+    calls.filter((c) => c.table === '__seo_ga4_daily');
+  const ranges = (calls: ReturnType<typeof makeController>['calls']) =>
+    ga4Calls(calls).map((c) => c.ops.find(([op]) => op === 'range')?.[1]);
+
+  it('série quotidienne et totaux = somme de toutes les lignes, tous canaux, lues dans l’ordre de la clé primaire', async () => {
+    const { controller, calls } = makeController({
+      __seo_ga4_daily: [
+        ga4Row('2026-10-01', 'https://www.automecanik.com/a', 'direct', 5, 0),
+        ga4Row(
+          '2026-10-01',
+          'https://www.automecanik.com/a',
+          'organic search',
+          10,
+          2,
+        ),
+        ga4Row(
+          '2026-10-02',
+          'https://www.automecanik.com/b',
+          'organic search',
+          7,
+          1,
+        ),
+      ],
+    });
+    const res = (await controller.timeseriesGa4(
+      '2026-10-01',
+      '2026-10-07',
+    )) as Record<string, any>;
+
+    expect(res.daily).toEqual([
+      { date: '2026-10-01', sessions: 15, conversions: 2 },
+      { date: '2026-10-02', sessions: 7, conversions: 1 },
+    ]);
+    expect(res.totals).toEqual({ sessions: 22, conversions: 3 });
+    expect(res.totals_scope).toEqual({
+      grain: 'date',
+      channels: 'all',
+      exhaustive: true,
+      rows_read: 3,
+      days_present: 2,
+      last_data_date: '2026-10-02',
+    });
+    expect(res.rows).toHaveLength(3);
+    expect(res.rows_scope).toEqual({
+      grain: 'date_page_channel',
+      exhaustive: false,
+      limit: 1000,
+      returned: 3,
+      truncated: false,
+    });
+    expect(res.from).toBe('2026-10-01');
+    expect(res.to).toBe('2026-10-07');
+
+    expect(ga4Calls(calls)).toHaveLength(1);
+    expect(ga4Calls(calls)[0].ops).toEqual([
+      [
+        'select',
+        [
+          'date, page, channel, sessions, conversions, bounce_rate, avg_session_duration',
+        ],
+      ],
+      ['gte', ['date', '2026-10-01']],
+      ['lte', ['date', '2026-10-07']],
+      ['order', ['date', { ascending: true }]],
+      ['order', ['page', { ascending: true }]],
+      ['order', ['channel', { ascending: true }]],
+      ['range', [0, 999]],
+    ]);
+  });
+
+  it('fenêtre de plus de 1000 lignes : toutes les pages sont lues, les totaux ne s’arrêtent pas à la première', async () => {
+    const { controller, calls } = makeController({
+      __seo_ga4_daily: manyRows(2500, 5),
+    });
+    const res = (await controller.timeseriesGa4(
+      '2026-10-01',
+      '2026-10-05',
+    )) as Record<string, any>;
+
+    expect(ranges(calls)).toEqual([
+      [0, 999],
+      [1000, 1999],
+      [2000, 2999],
+    ]);
+    expect(res.totals).toEqual({ sessions: 5000, conversions: 2500 });
+    expect(res.daily).toHaveLength(5);
+    expect(res.daily.every((d: Row) => d.sessions === 1000)).toBe(true);
+    expect(res.totals_scope.exhaustive).toBe(true);
+    expect(res.totals_scope.rows_read).toBe(2500);
+    // l'échantillon reste la première page, et le dit
+    expect(res.rows).toHaveLength(1000);
+    expect(res.rows_scope.truncated).toBe(true);
+  });
+
+  it('nombre de lignes multiple exact de la taille de page : une lecture vide clôt la série, déclarée exhaustive', async () => {
+    const { controller, calls } = makeController({
+      __seo_ga4_daily: manyRows(2000, 2),
+    });
+    const res = (await controller.timeseriesGa4(
+      '2026-10-01',
+      '2026-10-02',
+    )) as Record<string, any>;
+
+    expect(ranges(calls)).toHaveLength(3);
+    expect(res.totals).toEqual({ sessions: 4000, conversions: 2000 });
+    expect(res.totals_scope.exhaustive).toBe(true);
+  });
+
+  it('aucune ligne dans la fenêtre → série vide, rien d’inventé', async () => {
+    const { controller, calls } = makeController({ __seo_ga4_daily: [] });
+    const res = (await controller.timeseriesGa4(
+      '2026-10-01',
+      '2026-10-07',
+    )) as Record<string, any>;
+
+    expect(ga4Calls(calls)).toHaveLength(1);
+    expect(res.error).toBeUndefined();
+    expect(res.daily).toEqual([]);
+    expect(res.totals).toEqual({ sessions: 0, conversions: 0 });
+    expect(res.totals_scope).toEqual({
+      grain: 'date',
+      channels: 'all',
+      exhaustive: true,
+      rows_read: 0,
+      days_present: 0,
+      last_data_date: null,
+    });
+  });
+
+  it('jour absent de la table : absent de la série, jamais un zéro', async () => {
+    const { controller } = makeController({
+      __seo_ga4_daily: [
+        ga4Row('2026-10-01', 'https://www.automecanik.com/a', 'direct', 4, 0),
+        ga4Row('2026-10-03', 'https://www.automecanik.com/a', 'direct', 6, 1),
+      ],
+    });
+    const res = (await controller.timeseriesGa4(
+      '2026-10-01',
+      '2026-10-03',
+    )) as Record<string, any>;
+
+    expect(res.daily.map((d: Row) => d.date)).toEqual([
+      '2026-10-01',
+      '2026-10-03',
+    ]);
+    expect(res.totals_scope.days_present).toBe(2);
+  });
+
+  it('valeurs absentes ou textuelles : comptées pour ce qu’elles valent, sans NaN', async () => {
+    const { controller } = makeController({
+      __seo_ga4_daily: [
+        ga4Row(
+          '2026-10-01',
+          'https://www.automecanik.com/a',
+          'direct',
+          null,
+          null,
+        ),
+        ga4Row(
+          '2026-10-01',
+          'https://www.automecanik.com/b',
+          'direct',
+          '12',
+          '3',
+        ),
+        ga4Row(
+          '2026-10-01',
+          'https://www.automecanik.com/c',
+          'direct',
+          undefined,
+          'n/a',
+        ),
+      ],
+    });
+    const res = (await controller.timeseriesGa4(
+      '2026-10-01',
+      '2026-10-01',
+    )) as Record<string, any>;
+
+    expect(res.daily).toEqual([
+      { date: '2026-10-01', sessions: 12, conversions: 3 },
+    ]);
+    expect(res.totals).toEqual({ sessions: 12, conversions: 3 });
+  });
+
+  it.each([
+    ['dès la première page', 0],
+    ['à la troisième page', 2],
+  ])(
+    'erreur de lecture %s → erreur explicite, aucun total partiel',
+    async (_label, afterCalls) => {
+      const { controller } = makeController(
+        { __seo_ga4_daily: manyRows(5000, 5) },
+        {
+          __seo_ga4_daily: {
+            code: '57014',
+            message: 'canceling statement due to statement timeout',
+            afterCalls,
+          },
+        },
+      );
+      const res = (await controller.timeseriesGa4(
+        '2026-10-01',
+        '2026-10-05',
+      )) as Record<string, any>;
+
+      expect(res).toEqual({
+        error: 'canceling statement due to statement timeout',
+        rows: [],
+      });
+      expect(res.totals).toBeUndefined();
+      expect(res.daily).toBeUndefined();
+    },
+  );
+
+  it('borne de lecture atteinte : le dernier jour, lu en partie, sort de la série et la réponse le déclare', async () => {
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+    // 150 000 lignes par jour : la borne (200 000 lignes) tombe au milieu du 2e jour.
+    const endless = (from: number, to: number): Row[] =>
+      Array.from({ length: to - from + 1 }, (_, i) =>
+        ga4Row(
+          `2026-10-${String(Math.floor((from + i) / 150_000) + 1).padStart(2, '0')}`,
+          `https://www.automecanik.com/p-${from + i}`,
+          'direct',
+          1,
+          0,
+        ),
+      );
+    const { controller, calls } = makeController({ __seo_ga4_daily: endless });
+    const res = (await controller.timeseriesGa4(
+      '2026-10-01',
+      '2026-10-31',
+    )) as Record<string, any>;
+
+    expect(ga4Calls(calls)).toHaveLength(200);
+    expect(res.daily).toEqual([
+      { date: '2026-10-01', sessions: 150_000, conversions: 0 },
+    ]);
+    expect(res.totals).toEqual({ sessions: 150_000, conversions: 0 });
+    expect(res.totals_scope).toEqual({
+      grain: 'date',
+      channels: 'all',
+      exhaustive: false,
+      rows_read: 200_000,
+      days_present: 1,
+      last_data_date: '2026-10-01',
+    });
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('borne de lecture atteinte'),
+    );
+    warn.mockRestore();
+  });
+
+  it('filtre `page` appliqué à chaque page lue', async () => {
+    const { controller, calls } = makeController({
+      __seo_ga4_daily: manyRows(1200, 2),
+    });
+    await controller.timeseriesGa4('2026-10-01', '2026-10-02', '/pieces/');
+
+    expect(ga4Calls(calls)).toHaveLength(2);
+    for (const call of ga4Calls(calls)) {
+      expect(call.ops).toContainEqual(['ilike', ['page', '%/pieces/%']]);
+    }
+  });
+
+  it('sans from/to : fenêtre de 90 jours, bornes ISO valides', async () => {
+    const { controller, calls } = makeController({ __seo_ga4_daily: [] });
+    const res = (await controller.timeseriesGa4()) as Record<string, any>;
+
+    expect(res.from).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(res.to).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(
+      Math.round((Date.parse(res.to) - Date.parse(res.from)) / 86_400_000),
+    ).toBe(90);
+    expect(ga4Calls(calls)[0].ops).toContainEqual(['gte', ['date', res.from]]);
+  });
+
+  it.each([
+    ['jour inexistant', '2026-02-30', '2026-03-01'],
+    ['bornes inversées', '2026-10-10', '2026-10-01'],
+    ['texte libre', 'hier', '2026-10-01'],
+    ['filtre injecté', '2026-10-01', '2026-10-07,page.ilike.*'],
+  ])('%s → 400 explicite, aucune lecture', async (_label, from, to) => {
+    const { controller, calls } = makeController({ __seo_ga4_daily: [] });
+    await expect(controller.timeseriesGa4(from, to)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
     expect(calls).toHaveLength(0);
   });
 });

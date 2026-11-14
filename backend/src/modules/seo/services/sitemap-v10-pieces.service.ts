@@ -22,7 +22,10 @@ import {
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { FAMILY_CLUSTERS } from './sitemap-v10-hubs.types';
-import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
+import {
+  getTypeModelIndex,
+  sitemapLinkState,
+} from '../helpers/auto-type-valid-ids.helper';
 import {
   type TemperatureBucket,
   type SitemapUrl,
@@ -215,9 +218,9 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
 
     // Anti-404 : charger le Set des type_ids valides dans auto_type
     // (filtre les ~3,545 orphelins TecDoc V1 = 100001-134362)
-    const validTypeIds = await getValidTypeIds(this.supabase);
+    const typeModels = await getTypeModelIndex(this.supabase);
     this.logger.log(
-      `  Loaded ${validTypeIds.size.toLocaleString()} valid type_ids (auto_type WHERE type_display='1')`,
+      `  Loaded ${typeModels.size.toLocaleString()} valid type_ids (auto_type WHERE type_display='1')`,
     );
 
     let currentBatch: PieceV9[] = [];
@@ -251,14 +254,11 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       }
 
       if (pieces && pieces.length > 0) {
-        // Anti-404 : filtrer les pieces dont map_type_id n'existe plus dans auto_type
+        // Anti-404 / anti-301 : écarter les pieces dont le type n'existe plus
+        // dans auto_type, ou dont le modèle n'est plus celui du type
         const rawCount = pieces.length;
-        const validPieces = (pieces as PieceV9[]).filter((p) =>
-          validTypeIds.has(
-            typeof p.map_type_id === 'string'
-              ? parseInt(p.map_type_id, 10)
-              : (p.map_type_id as number),
-          ),
+        const validPieces = (pieces as PieceV9[]).filter(
+          (p) => sitemapLinkState(p, typeModels) === 'live',
         );
         skippedOrphans += rawCount - validPieces.length;
 
@@ -340,7 +340,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
     );
     if (skippedOrphans > 0) {
       this.logger.warn(
-        `  🧹 Filtered out ${skippedOrphans.toLocaleString()} URLs with orphan type_ids (TecDoc V1 remap residue)`,
+        `  🧹 Filtered out ${skippedOrphans.toLocaleString()} URLs with an orphan type_id or a model that is no longer the type's model`,
       );
     }
     if (skippedMalformed > 0) {
@@ -456,7 +456,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
 
       // 3. Recuperer TOUTES les pieces depuis __sitemap_p_link (pagination)
       // Anti-404 : filtrer les orphelins TecDoc V1 (type_ids absents d'auto_type)
-      const validTypeIds = await getValidTypeIds(this.supabase);
+      const typeModels = await getTypeModelIndex(this.supabase);
       const allPieces: PieceV9[] = [];
       const PAGE_SIZE = 1000;
       let offset = 0;
@@ -485,12 +485,8 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
 
         if (pieces && pieces.length > 0) {
           const rawCount = pieces.length;
-          const validPieces = (pieces as PieceV9[]).filter((p) =>
-            validTypeIds.has(
-              typeof p.map_type_id === 'string'
-                ? parseInt(p.map_type_id, 10)
-                : (p.map_type_id as number),
-            ),
+          const validPieces = (pieces as PieceV9[]).filter(
+            (p) => sitemapLinkState(p, typeModels) === 'live',
           );
           skippedOrphans += rawCount - validPieces.length;
           allPieces.push(...validPieces);
@@ -506,7 +502,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       );
       if (skippedOrphans > 0) {
         this.logger.warn(
-          `   🧹 Filtered out ${skippedOrphans.toLocaleString()} orphan type_ids for ${familyKey}`,
+          `   🧹 Filtered out ${skippedOrphans.toLocaleString()} URLs with an orphan type_id or a stale model for ${familyKey}`,
         );
       }
 

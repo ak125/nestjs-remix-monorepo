@@ -59,6 +59,27 @@ function parseHowTo(
 
 // --- FAQPage from S8 ---
 
+/** Texte d'un fragment HTML ; les fins de bloc deviennent des espaces. */
+function blockText(html: string): string {
+  return stripHtml(html.replace(/<\/(?:p|li|div|h[1-6])>|<br\s*\/?>/gi, " "));
+}
+
+/** Paires question/réponse : groupe 1 = question, groupe 2 = réponse. */
+function collectFaqPairs(
+  html: string,
+  qaRegex: RegExp,
+): { q: string; a: string }[] {
+  const pairs: { q: string; a: string }[] = [];
+  for (const match of html.matchAll(qaRegex)) {
+    const q = blockText(match[1]);
+    const a = blockText(match[2]);
+    if (q.length > 5 && a.length > 5) {
+      pairs.push({ q, a });
+    }
+  }
+  return pairs;
+}
+
 function parseFAQ(
   conseil: GammeConseil[] | null,
   canonicalUrl: string,
@@ -71,17 +92,21 @@ function parseFAQ(
   const combined = faqSections.map((s) => s.content).join("\n");
   const cleaned = combined.replace(/#LinkGamme_\d+#/g, "");
 
-  const qaRegex =
-    /<details>\s*<summary>\s*<b>(.*?)<\/b>\s*<\/summary>\s*<p>(.*?)<\/p>\s*<\/details>/gi;
-  const pairs: { q: string; a: string }[] = [];
-  let match: RegExpExecArray | null;
-  while ((match = qaRegex.exec(cleaned)) !== null) {
-    const q = stripHtml(match[1]).trim();
-    const a = stripHtml(match[2]).trim();
-    if (q.length > 5 && a.length > 5) {
-      pairs.push({ q, a });
-    }
-  }
+  // Les sections S8 sont stockées sous deux balisages, tous deux affichés tels
+  // quels : <details><summary>Q</summary>R</details> (question nue, en <b> ou
+  // en <strong>) et <h3>Q</h3> suivi de la réponse. Lire les deux, sinon la
+  // FAQ visible n'a pas de FAQPage.
+  const detailsPairs = collectFaqPairs(
+    cleaned,
+    /<details[^>]*>\s*<summary[^>]*>([\s\S]*?)<\/summary>([\s\S]*?)<\/details>/gi,
+  );
+  const pairs =
+    detailsPairs.length > 0
+      ? detailsPairs
+      : collectFaqPairs(
+          cleaned,
+          /<h3[^>]*>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h3[^>]*>|$)/gi,
+        );
 
   if (pairs.length < 3) return null;
 

@@ -344,67 +344,6 @@ export const KPI_THRESHOLDS: Record<
 };
 
 // =====================================================
-// Requêtes SQL pour collecter les KPIs
-// =====================================================
-
-/**
- * Requêtes SQL pour dashboard KPIs
- */
-export const KPI_QUERIES = {
-  /** Distribution des pages par rôle */
-  roleDistribution: `
-    SELECT page_role, COUNT(*) as count
-    FROM __seo_page
-    WHERE page_role IS NOT NULL
-    GROUP BY page_role
-    ORDER BY page_role
-  `,
-
-  /** Pages indexées vs soumises par rôle */
-  indexCoverage: `
-    SELECT
-      page_role,
-      COUNT(*) as total,
-      COUNT(*) FILTER (WHERE is_indexed = true) as indexed,
-      ROUND(COUNT(*) FILTER (WHERE is_indexed = true)::numeric / COUNT(*)::numeric * 100, 2) as coverage_pct
-    FROM __seo_page
-    WHERE page_role IS NOT NULL
-    GROUP BY page_role
-  `,
-
-  /** Température par rôle (corrélation crawl) */
-  temperatureByRole: `
-    SELECT
-      page_role,
-      temperature,
-      COUNT(*) as count
-    FROM __seo_page
-    WHERE page_role IS NOT NULL
-    GROUP BY page_role, temperature
-    ORDER BY page_role, temperature
-  `,
-
-  /** Maillage santé (liens valides vs invalides) */
-  linkHealthByRole: `
-    SELECT
-      source_role,
-      target_role,
-      COUNT(*) as link_count,
-      CASE
-        WHEN source_role = 'R1' AND target_role = 'R2' THEN 'valid'
-        WHEN source_role = 'R2' AND target_role IN ('R4', 'R3') THEN 'valid'
-        WHEN source_role = 'R3' AND target_role IN ('R4', 'R2') THEN 'valid'
-        WHEN source_role = 'R4' AND target_role IN ('R3', 'R5', 'R1') THEN 'valid'
-        WHEN source_role = 'R5' AND target_role IN ('R4', 'R1') THEN 'valid'
-        ELSE 'invalid'
-      END as validity
-    FROM __seo_internal_links
-    GROUP BY source_role, target_role
-    ORDER BY source_role, target_role
-  `,
-};
-
-// =====================================================
 // Types pour le dashboard
 // =====================================================
 
