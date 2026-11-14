@@ -33434,6 +33434,28 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10.types.ts"
+      ],
+      "kind": "test",
+      "loc": 81,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
@@ -33786,6 +33808,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
@@ -33802,7 +33825,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 681,
+      "loc": 686,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "low",
@@ -33886,6 +33909,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10.types.ts",
       "importedBy": [
+        "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
