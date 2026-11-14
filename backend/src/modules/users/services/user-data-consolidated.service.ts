@@ -21,6 +21,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import { TABLES } from '@repo/database-types';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 const MARKETING_CONSENT_SELECT =
   'cst_marketing_consent_at, cst_marketing_consent_source';
@@ -139,7 +140,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
       // Recherche globale
       if (search) {
         query = query.or(
-          `cst_mail.ilike.%${search}%,cst_fname.ilike.%${search}%,cst_name.ilike.%${search}%`,
+          `cst_mail.ilike.${ilikeContains(search)},cst_fname.ilike.${ilikeContains(search)},cst_name.ilike.${ilikeContains(search)}`,
         );
       }
 
@@ -394,7 +395,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
         .select('*')
         .eq('cst_activ', '1')
         .or(
-          `cst_mail.ilike.%${searchTerm}%,cst_fname.ilike.%${searchTerm}%,cst_name.ilike.%${searchTerm}%`,
+          `cst_mail.ilike.${ilikeContains(searchTerm)},cst_fname.ilike.${ilikeContains(searchTerm)},cst_name.ilike.${ilikeContains(searchTerm)}`,
         )
         .limit(limit);
 
