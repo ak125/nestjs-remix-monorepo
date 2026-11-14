@@ -34516,7 +34516,7 @@
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1037,
+      "loc": 1046,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -70715,6 +70715,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/cart-data.attribution.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 215,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/cart-data.attribution.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/cart-recovery.unsubscribe.test.ts",
       "importedBy": [],
       "imports": [],
@@ -76193,9 +76213,11 @@
         "frontend/app/components/cart/CartSummaryBlock.tsx",
         "frontend/app/components/cart/FreeShippingProgress.tsx"
       ],
-      "imports": [],
+      "imports": [
+        "~/utils/safe-storage"
+      ],
       "kind": "config",
-      "loc": 67,
+      "loc": 75,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/cart/cart-utils.ts",
       "risk": "low",
@@ -89583,7 +89605,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 596,
+      "loc": 593,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "medium",
@@ -95798,6 +95820,26 @@
       "loc": 149,
       "owner": "@ak125",
       "path": "frontend/tests/unit/cache-control.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/cart-utils.restore.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 108,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/cart-utils.restore.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -107632,11 +107674,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "686ccfc76a403a5d819c0eb0a19ec76903a9c047481cfe1730186d60617a8338",
+      "audit/registry/files.json": "97e2144729181ad84c1ab21151c3c25d17bf57cfe03dc6ca9c6e2a9c6d6c0736",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "7be59ffb1811"
+    "sotFingerprint": "ca1ed29c4c6c"
   },
   "runtime": [
     {
