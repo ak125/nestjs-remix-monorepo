@@ -480,12 +480,15 @@ export class SeoLinkTrackingService extends SupabaseBaseService {
         );
       }
 
+      // A refused delete is a failure, not a partial success: the caller
+      // (scheduled job) must see it. Counts stay those actually deleted.
+      const success = !clicksError && !impressionsError;
       this.logger.log(
-        `✅ Nettoyage terminé: ${deletedClicks || 0} clics, ${deletedImpressions || 0} impressions supprimés`,
+        `${success ? '✅' : '⚠️'} Nettoyage terminé: ${deletedClicks || 0} clics, ${deletedImpressions || 0} impressions supprimés`,
       );
 
       return {
-        success: true,
+        success,
         deletedClicks: deletedClicks || 0,
         deletedImpressions: deletedImpressions || 0,
       };
