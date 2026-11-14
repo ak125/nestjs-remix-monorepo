@@ -1,7 +1,7 @@
 /**
  * Component Contracts - Validation des props avec Zod
  *
- * @see packages/design-tokens/DESIGN-SYSTEM.automecanik.md Section 9
+ * @see .claude/skills/frontend-design/SKILL.md (règles UI) et packages/design-tokens/src/tokens.json (valeurs)
  *
  * Interfaces strictes pour garantir la robustesse des composants admin.
  * Validation runtime en dev uniquement pour performance.
