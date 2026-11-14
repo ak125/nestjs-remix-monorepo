@@ -26,7 +26,6 @@ export function OrderLineActions({
     supplierName: "",
     priceHT: line.orl_art_price_buy_unit_ht || 0,
   });
-  const [productId, setProductId] = useState("");
 
   const status = line.orl_orls_id;
 
@@ -110,24 +109,6 @@ export function OrderLineActions({
         );
         break;
 
-      case "propose-equivalent":
-        // Statut 91: Proposer équivalence
-        if (!productId) {
-          alert("Veuillez entrer un ID produit");
-          return;
-        }
-        fetcher.submit(
-          {
-            productId,
-            quantity: line.orl_art_quantity.toString(),
-          },
-          {
-            method: "POST",
-            action: `/api/admin/orders/${orderId}/lines/${lineId}/propose-equivalent`,
-          },
-        );
-        break;
-
       case "accept-equivalent":
         // Statut 92: Accepter équivalence
         fetcher.submit(
@@ -146,17 +127,6 @@ export function OrderLineActions({
           {
             method: "PATCH",
             action: `/api/admin/orders/${orderId}/lines/${lineId}/reject-equivalent`,
-          },
-        );
-        break;
-
-      case "validate-equivalent":
-        // Statut 94: Valider équivalence
-        fetcher.submit(
-          {},
-          {
-            method: "PATCH",
-            action: `/api/admin/orders/${orderId}/lines/${lineId}/validate-equivalent`,
           },
         );
         break;
@@ -240,16 +210,6 @@ export function OrderLineActions({
           </Button>
         )}
 
-        {(status === 3 || status === 4) && (
-          <Button
-            size="sm"
-            variant="default"
-            onClick={() => handleAction("propose-equivalent")}
-          >
-            🔄 Proposer équivalence
-          </Button>
-        )}
-
         {status === 91 && (
           <>
             <Button
@@ -267,16 +227,6 @@ export function OrderLineActions({
               ❌ Refuser équiv
             </Button>
           </>
-        )}
-
-        {status === 92 && (
-          <Button
-            size="sm"
-            variant="default"
-            onClick={() => handleAction("validate-equivalent")}
-          >
-            💰 Valider équiv
-          </Button>
         )}
       </div>
 
@@ -346,21 +296,6 @@ export function OrderLineActions({
                     }
                   />
                 </div>
-              </div>
-            )}
-
-            {action === "propose-equivalent" && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">
-                  ID Produit équivalent
-                </label>
-                <input
-                  type="number"
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="Ex: 12345"
-                  value={productId}
-                  onChange={(e) => setProductId(e.target.value)}
-                />
               </div>
             )}
 
