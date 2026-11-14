@@ -14,8 +14,9 @@ git merge-base --is-ancestor <sha-du-correctif> <headSha> && echo "dans la PROD"
 git rev-list --count <headSha>..origin/main   # commits de main absents de la PROD
 ```
 
-Sans run réussi de `release-prod.yml`, le dernier déploiement est sous l'ancien
-workflow, retiré : `--workflow deploy-prod.yml`.
+Tant que l'ancien workflow `deploy-prod.yml` n'est pas désactivé, un tag `v*`
+posé sur un commit antérieur au renommage peut encore le lancer : lire aussi
+`--workflow deploy-prod.yml` et retenir le run réussi le plus récent des deux.
 
 Un run réussi prouve la chaîne de déploiement, pas la santé : compléter par le
 dernier résultat de `prod-smoke-tests.yml`. Jamais de SSH PROD.
