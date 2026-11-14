@@ -1007,8 +1007,8 @@
         "backend/src/modules/vehicles/services/seo",
         "backend/src/modules/vehicles/types"
       ],
-      "files_count": 30,
-      "loc_total": 9006,
+      "files_count": 31,
+      "loc_total": 9285,
       "has_barrel": false
     },
     "wiki": {
@@ -1462,11 +1462,6 @@
       "from": "backend-core",
       "to": "trend-signals",
       "count": 1
-    },
-    {
-      "from": "backend-core",
-      "to": "uncategorized",
-      "count": 4
     },
     {
       "from": "backend-core",
