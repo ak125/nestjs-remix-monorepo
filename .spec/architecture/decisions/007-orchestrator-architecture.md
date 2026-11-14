@@ -14,6 +14,8 @@ created: 2025-12-29
 
 ## Contexte
 
+> Note historique (2026-11-14) : ce document décrit l'état du 2025-12-29. Les agents Python, `core/` et `run.py` cités ici appartenaient à `ai-agents-python/`, prototype retiré par #1821 le 2026-10-17 à 23:44 UTC (18 octobre, heure de Paris). Code consultable dans l'historique Git. `orchestrator/` et `metrics/` (Phase 2) n'y ont jamais été versionnés (`git log --all`, branches et tags consultés le 2026-11-14). Aucun appelant trouvé le 2026-11-14 sur `main` `f5906975f` (fichiers suivis : code, scripts, workflows GitHub, fichiers Docker) ni sur la machine DEV (crontab, timers systemd, processus, conteneurs Docker).
+
 Le systeme AI-COS necessite un orchestrateur pour coordonner :
 - Les 16 agents Python existants (12 analyse + 4 fixproof)
 - Le systeme RAG (Weaviate) pour la connaissance metier
@@ -76,6 +78,8 @@ analyse → fix → validation → decision
 4. **Evolution incrementale** : Ajout de fonctionnalites sans regression
 
 ### Structure des fichiers
+
+> `ai-agents-python/` : prototype retiré par #1821 le 2026-10-17 à 23:44 UTC (18 octobre, heure de Paris), voir la note du Contexte. Structure historique : `orchestrator/` et `metrics/` n'ont jamais été versionnés.
 
 ```
 ai-agents-python/
@@ -181,7 +185,7 @@ Conforme a ADR-006 :
 - [ADR-006: Controle d'Acces RAG](./006-rag-write-access-control.md)
 - [CDC RAG System](../../features/rag-system.md)
 - [CDC AI-COS Operating System](../../features/ai-cos-operating-system.md)
-- `ai-agents-python/core/runner.py` - AgentRunner (prototype retiré le 2026-10-17, consultable dans l'historique Git)
+- `ai-agents-python/core/runner.py` - AgentRunner — prototype retiré par #1821 le 2026-10-17 à 23:44 UTC (18 octobre, heure de Paris), consultable dans l'historique Git
 
 ## Historique
 
