@@ -55993,7 +55993,7 @@
         "backend/src/modules/seo-control-plane/types.ts"
       ],
       "kind": "test",
-      "loc": 534,
+      "loc": 846,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.test.ts",
       "risk": "high",
@@ -56024,7 +56024,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 615,
+      "loc": 662,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
       "risk": "high",
@@ -99823,7 +99823,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 251,
+      "loc": 270,
       "owner": "@ak125",
       "path": "packages/registry/src/__tests__/seo-criticality.test.ts",
       "risk": "high",
@@ -100123,7 +100123,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 202,
+      "loc": 206,
       "owner": "@ak125",
       "path": "packages/registry/src/canonical/seo-criticality.ts",
       "risk": "high",
@@ -107664,11 +107664,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "2954385aba98174b3e658a4b1885d945b936ad6959bffea56514272f55e912ef",
+      "audit/registry/files.json": "c644373f8aa6ff0bc2db51b02b5bd0f39ae2baac5748e7881015ab0c7825a96b",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "209e939128bb"
+    "sotFingerprint": "f24d95fafe9a"
   },
   "runtime": [
     {

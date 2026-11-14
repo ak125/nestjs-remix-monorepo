@@ -70,6 +70,8 @@ tiers:
       auto_issue: false
     routes:
       - support/*
+      - aide
+      - contact
 
 # Allowlist inverse : ces patterns NE FONT PAS PARTIE du SEO Control Plane.
 # Auth, technique, jamais indexé → exclus du synthetic crawler, du SLO et du
