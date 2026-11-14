@@ -361,7 +361,10 @@ export class VehicleModelsService extends SupabaseBaseService {
                   );
                 }
 
-                return query.range(rangeFrom, rangeTo).order('modele_name');
+                return query
+                  .limit(rangeTo - rangeFrom + 1)
+                  .range(rangeFrom, rangeTo)
+                  .order('modele_name');
               },
             },
           );

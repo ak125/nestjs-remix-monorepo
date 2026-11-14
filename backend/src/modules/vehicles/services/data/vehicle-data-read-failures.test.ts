@@ -107,12 +107,14 @@ describe('VehicleModelsService.getModelsByBrand — page au-delà du total', () 
     expect(recordRefine(callRpc.mock.calls[2][3].refine)).toEqual([
       'select("*")',
       ...filters,
+      'limit(200)',
       'range(400,599)',
       'order("modele_name")',
     ]);
     expect(recordRefine(callRpc.mock.calls[3][3].refine)).toEqual([
       'select("*")',
       ...filters,
+      'limit(1)',
       'range(0,0)',
       'order("modele_name")',
     ]);
