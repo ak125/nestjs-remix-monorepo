@@ -13,11 +13,11 @@ process.env.SUPABASE_URL ||= 'https://exemple.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY ||= 'cle-de-service-factice';
 
 import type { CacheService } from '@cache/cache.service';
-import { CartDataService, type CartItem } from './cart-data.service';
+import { CartDataService, type CartItem } from '../../src/database/services/cart-data.service';
 import type {
   PiecePriceDataService,
   SellablePriceRow,
-} from './piece-price-data.service';
+} from '../../src/database/services/piece-price-data.service';
 
 const PIECE_ID = 1946026;
 
