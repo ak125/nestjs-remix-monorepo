@@ -68765,6 +68765,7 @@
       "importedBy": [
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
         "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
         "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
         "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
         "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
@@ -68822,6 +68823,7 @@
       "id": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
         "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
         "backend/src/modules/vehicles/vehicles.controller.ts",
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -68834,7 +68836,7 @@
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 697,
+      "loc": 716,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
       "risk": "high",
@@ -68850,9 +68852,36 @@
         "manual"
       ],
       "domain": "D4",
+      "id": "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@security/rpc-gate/rpc-gate.errors",
+        "@security/rpc-gate/rpc-gate.service",
+        "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-models.service.ts"
+      ],
+      "kind": "test",
+      "loc": 237,
+      "owner": "@ak125",
+      "path": "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
         "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
         "backend/src/modules/vehicles/vehicles.controller.ts",
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -68860,12 +68889,13 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.errors",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 805,
+      "loc": 833,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "risk": "high",
@@ -107791,11 +107821,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "41095121a1b14fb7291ea5e3a657b892339dddd90d1da82f00d44bc584c62901",
+      "audit/registry/files.json": "6022e2aefdda410aa3a1f3d75016604cfd7014e4c5259d0d773029519932169b",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "2bca7ee41762"
+    "sotFingerprint": "382e1b807ef3"
   },
   "runtime": [
     {
