@@ -214,4 +214,4 @@ redis-cli DEL gamme:rpc:v2:{pg_id}
 - **generator.md** → sections structurees courtes (buy_args, faq, equip, motorisations)
 - **editorial.md** (ce fichier) → contenu editorial long (sg_content, 1500-2000 mots)
 - Les deux coexistent sur la page sans chevauchement
-- Le `/content-gen --r1` appelle les deux sequentiellement
+- L'ancien `/content-gen --r1` (neutralise le 2026-07-02) appelait les deux sequentiellement ; contenu R1 : boucle `seo-content-loop` (ADR-111)

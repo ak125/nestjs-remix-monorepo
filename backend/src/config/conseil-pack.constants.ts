@@ -1,6 +1,6 @@
 /**
  * Conseil Pack definitions — section requirements, quality thresholds, E-E-A-T markers.
- * Used by ConseilQualityScorerService, ConseilPriorityService, and conseil-batch agent.
+ * Used by ConseilQualityScorerService and ConseilPriorityService.
  */
 
 import { type PlannableSection } from './keyword-plan.constants';

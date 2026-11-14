@@ -176,12 +176,7 @@ export const GOAL_REGISTRY: Record<GoalType, GoalRegistryEntry> = {
     description: 'Planification mots-cles SEO par role R*',
   },
   content_generation: {
-    agents: [
-      'r1-content-batch',
-      'r4-content-batch',
-      'r6-content-batch',
-      'conseil-batch',
-    ],
+    agents: ['r1-content-batch', 'r4-content-batch', 'r6-content-batch'],
     targetTables: [
       '__seo_r1_gamme_slots',
       '__seo_reference',

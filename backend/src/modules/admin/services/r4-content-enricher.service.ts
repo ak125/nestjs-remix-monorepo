@@ -1,8 +1,8 @@
 /**
  * R4ContentEnricherService — 0-LLM audit & orchestration pipeline for R4 Reference pages.
  *
- * Skills-first architecture: content generation is delegated to Claude Code
- * agents/skills (/content-gen --r4). This service provides:
+ * No content is generated here: R4 content comes from the WIKI through the
+ * seo-content-loop (RAW → WIKI → projection). This service provides:
  * - Section audit (identifies what needs improvement)
  * - RAG + KW loading (data preparation)
  * - Lint gates (post-write quality validation)
@@ -32,7 +32,7 @@ export interface R4EnrichResult {
   pgId: number;
   sectionsAudited: string[];
   sectionsImproved: string[];
-  /** Sections marked IMPROVE by audit — used by /content-gen skill */
+  /** Sections marked IMPROVE by audit */
   sectionsToImprove?: string[];
   lintScore: number;
   lintReport: Record<string, unknown> | null;
@@ -137,11 +137,11 @@ export class R4ContentEnricherService extends SupabaseBaseService {
       }
 
       // ── Step 3: Delegate to skill ──
-      // Skills-first: content generation is handled by /content-gen --r4 (Claude Code).
-      // This service returns the audit data for the skill to consume.
+      // No generator is invoked: R4 content comes from the seo-content-loop.
+      // This service returns the audit data only.
 
       this.logger.log(
-        `[R4] Delegating ${sectionsToImprove.length} sections to /content-gen skill for ${pgAlias}`,
+        `[R4] ${sectionsToImprove.length} sections to improve for ${pgAlias}; no generator invoked (seo-content-loop)`,
       );
 
       await this.logRun(existing.pg_id, pgAlias, {
@@ -456,7 +456,7 @@ export class R4ContentEnricherService extends SupabaseBaseService {
 
   /**
    * Validate existing R4 content against lint gates.
-   * Called post-write (after /content-gen skill has written to DB).
+   * Called after a write to the R4 content.
    */
   async validatePostWrite(pgAlias: string): Promise<{
     pass: boolean;

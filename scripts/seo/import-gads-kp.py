@@ -3,8 +3,8 @@
 Google Ads KP → __seo_keywords (Skills-First Architecture)
 
 Script minimaliste : import RAW + filtre pertinence gamme.
-AUCUNE classification semantique (role/intent). C'est /content-gen (Claude)
-qui classifie au moment de generer le contenu.
+AUCUNE classification semantique (role/intent). La classification par role
+est faite ensuite par /kw-classify (__seo_keyword_results).
 
 Usage:
     # Fichier unique (detecte gamme depuis le nom du fichier)
@@ -512,7 +512,7 @@ def process_file(
         for r in relevant[:5]:
             print(f"          ✓ {r['keyword'][:55]:55} vol={r['volume']}")
 
-    # 6. UPSERT __seo_keywords (SANS role — sera classifie par /content-gen)
+    # 6. UPSERT __seo_keywords (SANS role — classification par /kw-classify)
     print(f"  [4/4] UPSERT __seo_keywords ({len(relevant)} rows)...")
     records = []
     for r in relevant:
@@ -526,7 +526,7 @@ def process_file(
             'pg_id': pg_id,
             'competition': r.get('competition'),
             'competition_idx': r.get('competition_idx'),
-            # PAS de content_type — sera rempli par /content-gen
+            # PAS de content_type a l'import
         })
 
     n = upsert_to_db('__seo_keywords', records, 'keyword,gamme', dry_run)
@@ -614,8 +614,8 @@ def main():
         print(f"  Total pertinents: {total_relevant}")
         print(f"  Rejets: {dict(total_rejects)}")
 
-    print(f"\nProchaine etape: /content-gen <gamme> --r1|--r3|--r4|--r6")
-    print(f"  → Le skill classifie les KW par role au moment de generer le contenu.")
+    print(f"\nProchaine etape: /kw-classify <gamme>")
+    print(f"  → Contenu : boucle /seo-content-loop <gamme> (RAW → WIKI → projection).")
 
 
 if __name__ == '__main__':
