@@ -1038,7 +1038,7 @@ export default function RegisterPage() {
                         <span>
                           J'accepte les{" "}
                           <Link
-                            to="/cgv"
+                            to="/legal/cgv"
                             target="_blank"
                             className="text-cta hover:text-cta-hover underline"
                           >
@@ -1046,7 +1046,7 @@ export default function RegisterPage() {
                           </Link>{" "}
                           et la{" "}
                           <Link
-                            to="/confidentialite"
+                            to="/legal/privacy"
                             target="_blank"
                             className="text-cta hover:text-cta-hover underline"
                           >
@@ -1131,12 +1131,15 @@ export default function RegisterPage() {
                   {/* Mention légale (renforcée par checkbox CGV) */}
                   <p className="text-center text-[11px] text-slate-400 font-body pt-2">
                     Vos données sont protégées conformément à nos{" "}
-                    <Link to="/cgv" className="underline hover:text-slate-600">
+                    <Link
+                      to="/legal/cgv"
+                      className="underline hover:text-slate-600"
+                    >
                       conditions d'utilisation
                     </Link>{" "}
                     et notre{" "}
                     <Link
-                      to="/confidentialite"
+                      to="/legal/privacy"
                       className="underline hover:text-slate-600"
                     >
                       politique de confidentialité

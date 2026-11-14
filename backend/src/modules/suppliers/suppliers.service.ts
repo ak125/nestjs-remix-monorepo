@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 /** Typed row returned by Supabase for xtr_supplier table */
 interface SupplierRow {
@@ -62,7 +63,7 @@ export class SuppliersService extends SupabaseBaseService {
       // Appliquer le filtre de recherche sur les colonnes réelles
       if (search) {
         query = query.or(
-          `spl_name.ilike.%${search}%,spl_alias.ilike.%${search}%`,
+          `spl_name.ilike.${ilikeContains(search)},spl_alias.ilike.${ilikeContains(search)}`,
         );
       }
 

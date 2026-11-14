@@ -77,8 +77,14 @@ export class LegalService extends SupabaseBaseService {
     @Inject(forwardRef(() => LegalPageService))
     private readonly legalPageService: LegalPageService,
   ) {
+    // Aucun document n'est créé au démarrage. Le constructeur cherchait les CGV
+    // et les politiques de confidentialité, de cookies et de retour par un
+    // LIKE '%…%' non indexable sur toute la table des messages, puis insérait un
+    // texte rédigé dans le code. L'insertion n'a jamais abouti (msg_id NOT NULL
+    // sans valeur par défaut) et aurait recréé un brouillon à chaque démarrage,
+    // le brouillon n'étant jamais retrouvé par le filtre « publié ». Un document
+    // légal se crée par POST /api/support/legal (admin).
     super();
-    this.initializeDefaultDocuments();
   }
 
   /**
@@ -643,62 +649,6 @@ export class LegalService extends SupabaseBaseService {
   // ==================== PRIVATE UTILITY METHODS ====================
 
   /**
-   * Initialiser les documents par défaut
-   */
-  private async initializeDefaultDocuments(): Promise<void> {
-    try {
-      const defaultDocs = [
-        {
-          type: 'terms' as const,
-          title: 'Conditions Générales de Vente',
-          content: this.getDefaultTermsContent(),
-          slug: 'cgv',
-        },
-        {
-          type: 'privacy' as const,
-          title: 'Politique de Confidentialité',
-          content: this.getDefaultPrivacyContent(),
-          slug: 'confidentialite',
-        },
-        {
-          type: 'cookies' as const,
-          title: 'Politique des Cookies',
-          content: this.getDefaultCookieContent(),
-          slug: 'cookies',
-        },
-        {
-          type: 'returns' as const,
-          title: 'Politique de Retour',
-          content: this.getDefaultReturnContent(),
-          slug: 'retours',
-        },
-      ];
-
-      // Vérifier si les documents existent déjà
-      for (const doc of defaultDocs) {
-        const existing = await this.getDocumentByType(doc.type);
-        if (!existing) {
-          await this.createDocument({
-            type: doc.type,
-            title: doc.title,
-            content: doc.content,
-            createdBy: 'system', // Retour à 'system' car géré dans createDocument
-            language: 'fr',
-            effectiveDate: new Date('2024-01-01'),
-            metadata: { isDefault: true },
-          });
-        }
-      }
-
-      this.logger.log('Documents légaux par défaut initialisés');
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors de l'initialisation des documents: ${(error as Error).message}`,
-      );
-    }
-  }
-
-  /**
    * Enrichir les données de document avec les informations dérivées
    */
   private async enrichDocumentData(message: any): Promise<LegalDocument> {
@@ -818,94 +768,5 @@ export class LegalService extends SupabaseBaseService {
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/[\s-]+/g, '-')
       .replace(/^-|-$/g, '');
-  }
-
-  /**
-   * Contenu par défaut pour les CGV
-   */
-  private getDefaultTermsContent(): string {
-    return `# Conditions Générales de Vente
-
-## 1. Objet
-Les présentes conditions générales de vente s'appliquent à toutes les commandes passées sur notre site.
-
-## 2. Produits
-Nos produits sont conformes à la réglementation française en vigueur.
-
-## 3. Prix
-Les prix sont indiqués en euros TTC.
-
-## 4. Livraison
-Les délais de livraison sont indiqués lors de la commande.
-
-## 5. Garanties
-Nos produits bénéficient de la garantie légale de conformité.
-
-*Dernière mise à jour : ${new Date().toLocaleDateString('fr-FR')}*`;
-  }
-
-  /**
-   * Contenu par défaut pour la politique de confidentialité
-   */
-  private getDefaultPrivacyContent(): string {
-    return `# Politique de Confidentialité
-
-## 1. Collecte des données
-Nous collectons uniquement les données nécessaires au traitement de votre commande.
-
-## 2. Utilisation des données
-Vos données sont utilisées pour traiter votre commande et améliorer nos services.
-
-## 3. Conservation des données
-Vos données sont conservées selon les durées légales.
-
-## 4. Vos droits
-Vous disposez d'un droit d'accès, de rectification et de suppression de vos données.
-
-*Dernière mise à jour : ${new Date().toLocaleDateString('fr-FR')}*`;
-  }
-
-  /**
-   * Contenu par défaut pour la politique des cookies
-   */
-  private getDefaultCookieContent(): string {
-    return `# Politique des Cookies
-
-## 1. Qu'est-ce qu'un cookie ?
-Un cookie est un petit fichier texte stocké sur votre ordinateur.
-
-## 2. Utilisation des cookies
-Nous utilisons des cookies pour améliorer votre expérience de navigation.
-
-## 3. Types de cookies
-- Cookies techniques nécessaires au fonctionnement du site
-- Cookies d'analyse de trafic
-- Cookies de personnalisation
-
-## 4. Gestion des cookies
-Vous pouvez désactiver les cookies dans votre navigateur.
-
-*Dernière mise à jour : ${new Date().toLocaleDateString('fr-FR')}*`;
-  }
-
-  /**
-   * Contenu par défaut pour la politique de retour
-   */
-  private getDefaultReturnContent(): string {
-    return `# Politique de Retour
-
-## 1. Droit de rétractation
-Vous disposez de 14 jours pour retourner votre commande.
-
-## 2. Conditions de retour
-Les produits doivent être dans leur emballage d'origine.
-
-## 3. Modalités de retour
-Contactez notre service client pour organiser le retour.
-
-## 4. Remboursement
-Le remboursement sera effectué sous 14 jours après réception du retour.
-
-*Dernière mise à jour : ${new Date().toLocaleDateString('fr-FR')}*`;
   }
 }
