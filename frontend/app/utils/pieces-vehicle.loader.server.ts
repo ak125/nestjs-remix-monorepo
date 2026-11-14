@@ -25,6 +25,7 @@ import {
 } from "~/utils/pieces-id-resolution.server";
 import {
   buildCataloguePromise,
+  findGammeThumbnail,
   type HierarchyData,
 } from "~/utils/pieces-loader.utils";
 import {
@@ -610,6 +611,8 @@ export async function piecesVehicleLoader({
       () => catalogueMameFamillePromise,
     );
     const catalogueTop8 = catalogueMameFamille?.items?.slice(0, 8) ?? [];
+    // Vignette de la gamme pour og:image (hiérarchie déjà résolue ci-dessus)
+    const gammeThumbnail = findGammeThumbnail(await hierarchyPromise, gammeId);
 
     // Filters from RM V2 (already includes counts)
     const filtersData: FiltersData | null = rmV2Response.filters
@@ -681,6 +684,7 @@ export async function piecesVehicleLoader({
         oemRefsSeo: loaderData.oemRefsSeo,
         voirAussiLinks,
         catalogueTop8,
+        gammeThumbnail,
         seo: {
           title:
             rmV2Response.seo?.title ||
