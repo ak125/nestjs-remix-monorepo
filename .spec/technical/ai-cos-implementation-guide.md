@@ -674,6 +674,8 @@ export class EventBusService {
 
 ### Intégration Agents Python Existants
 
+> Note historique (2026-11-14) : `ai-agents-python/` est un prototype retiré par #1821 le 2026-10-17 à 23:44 UTC (18 octobre, heure de Paris). Code consultable dans l'historique Git. Aucun appelant trouvé le 2026-11-14 sur `main` `f5906975f` (fichiers suivis : code, scripts, workflows GitHub, fichiers Docker) ni sur la machine DEV (crontab, timers systemd, processus, conteneurs Docker). Le service ci-dessous (`python-bridge.service.ts`) est absent de l'historique des branches et tags consultés le 2026-11-14 (`git log --all`) : exemple jamais implémenté, conservé pour l'historique.
+
 #### Bridge Python → TypeScript KPIs
 
 ```typescript
@@ -778,6 +780,8 @@ frontend/app/
 ```
 
 ### CI/CD Pipeline
+
+> Note historique (2026-11-14) : ce workflow (`.github/workflows/ai-cos-snapshot.yml`) est absent de l'historique des branches et tags consultés le 2026-11-14 (`git log --all`) : exemple jamais implémenté, conservé pour l'historique. `ai-agents-python/`, qu'il lance, est un prototype retiré par #1821 le 2026-10-17 à 23:44 UTC (18 octobre, heure de Paris), consultable dans l'historique Git.
 
 ```yaml
 # .github/workflows/ai-cos-snapshot.yml (ENRICHED)
