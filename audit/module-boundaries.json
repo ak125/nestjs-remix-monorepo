@@ -104,7 +104,7 @@
         "backend/src/modules/blog/utils"
       ],
       "files_count": 43,
-      "loc_total": 15173,
+      "loc_total": 15158,
       "has_barrel": false
     },
     "bot-guard": {
@@ -146,7 +146,7 @@
         "backend/src/modules/catalog/utils"
       ],
       "files_count": 40,
-      "loc_total": 10214,
+      "loc_total": 10213,
       "has_barrel": false
     },
     "commercial": {
@@ -171,8 +171,8 @@
         "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 42,
-      "loc_total": 1819,
+      "files_count": 40,
+      "loc_total": 1714,
       "has_barrel": true
     },
     "config": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 105,
-      "loc_total": 25190,
+      "loc_total": 25189,
       "has_barrel": true
     },
     "customers": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 585,
-      "loc_total": 110776,
+      "files_count": 586,
+      "loc_total": 110860,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -460,7 +460,7 @@
         "backend/src/modules/messages/repositories"
       ],
       "files_count": 8,
-      "loc_total": 1737,
+      "loc_total": 1747,
       "has_barrel": true
     },
     "metadata": {
@@ -635,7 +635,7 @@
         "backend/src/modules/products/types"
       ],
       "files_count": 27,
-      "loc_total": 7138,
+      "loc_total": 7131,
       "has_barrel": true
     },
     "promo": {
@@ -711,7 +711,7 @@
         "backend/src/modules/search/services"
       ],
       "files_count": 17,
-      "loc_total": 6266,
+      "loc_total": 6263,
       "has_barrel": false
     },
     "seo": {
@@ -856,7 +856,7 @@
         "backend/src/modules/staff/services"
       ],
       "files_count": 6,
-      "loc_total": 1113,
+      "loc_total": 1112,
       "has_barrel": false
     },
     "substitution": {
@@ -886,7 +886,7 @@
         "backend/src/modules/suppliers/dto"
       ],
       "files_count": 7,
-      "loc_total": 1300,
+      "loc_total": 1299,
       "has_barrel": true
     },
     "support": {
@@ -899,7 +899,7 @@
         "backend/src/modules/support/types"
       ],
       "files_count": 31,
-      "loc_total": 10580,
+      "loc_total": 10577,
       "has_barrel": true
     },
     "system": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 374,
-      "loc_total": 77035,
+      "files_count": 373,
+      "loc_total": 77127,
       "has_barrel": true
     },
     "upload": {
@@ -982,7 +982,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5427,
+      "loc_total": 5426,
       "has_barrel": true
     },
     "vehicle-context": {
@@ -1008,7 +1008,7 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 30,
-      "loc_total": 9010,
+      "loc_total": 9006,
       "has_barrel": false
     },
     "wiki": {

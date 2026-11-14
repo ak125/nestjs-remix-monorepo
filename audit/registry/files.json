@@ -63419,6 +63419,29 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/app/utils/pieces-id-resolution.server.ts",
+      "importedBy": [],
+      "imports": [
+        "~/utils/internal-api.server",
+        "~/utils/logger",
+        "~/utils/pieces-route.utils"
+      ],
+      "kind": "config",
+      "loc": 285,
+      "owner": "__unassigned__",
+      "path": "frontend/app/utils/pieces-id-resolution.server.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/app/utils/pieces-loader.utils.ts",
       "importedBy": [],
       "imports": [
@@ -63458,7 +63481,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 548,
+      "loc": 345,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-route.utils.ts",
       "risk": "low",
@@ -63485,6 +63508,7 @@
         "~/utils/fetch.utils",
         "~/utils/internal-api.server",
         "~/utils/logger",
+        "~/utils/pieces-id-resolution.server",
         "~/utils/pieces-loader.utils",
         "~/utils/pieces-route.utils",
         "~/utils/rm-mapper",
@@ -63494,7 +63518,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 754,
+      "loc": 756,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "low",
@@ -66772,7 +66796,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 292,
+      "loc": 522,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-vehicle-loader-alias-resolution-outage.test.ts",
       "risk": "low",
@@ -66791,7 +66815,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 699,
+      "loc": 702,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "low",
