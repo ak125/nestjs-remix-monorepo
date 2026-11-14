@@ -5862,7 +5862,7 @@
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1037,
+      "loc": 1046,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -40880,6 +40880,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/cart-data.attribution.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 215,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/cart-data.attribution.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/cart-recovery.unsubscribe.test.ts",
       "importedBy": [],
       "imports": [],
@@ -46115,9 +46134,11 @@
         "frontend/app/components/cart/CartSummaryBlock.tsx",
         "frontend/app/components/cart/FreeShippingProgress.tsx"
       ],
-      "imports": [],
+      "imports": [
+        "~/utils/safe-storage"
+      ],
       "kind": "config",
-      "loc": 67,
+      "loc": 75,
       "owner": "__unassigned__",
       "path": "frontend/app/components/cart/cart-utils.ts",
       "risk": "low",
@@ -59006,7 +59027,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 596,
+      "loc": 593,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "low",
@@ -63403,7 +63424,7 @@
         "frontend/app/utils/remix-application-port.ts"
       ],
       "kind": "service",
-      "loc": 197,
+      "loc": 176,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "low",
@@ -63469,7 +63490,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 760,
+      "loc": 756,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "low",
@@ -63488,12 +63509,10 @@
       "importedBy": [],
       "imports": [
         "~/components/pieces/NoProductsAlternatives",
-        "~/utils/image-optimizer",
-        "~/utils/og-image.utils",
         "~/utils/seo/pieces-schema.utils"
       ],
       "kind": "service",
-      "loc": 191,
+      "loc": 177,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.meta.ts",
       "risk": "low",
@@ -65023,6 +65042,25 @@
       "loc": 149,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/cache-control.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/cart-utils.restore.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 108,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/cart-utils.restore.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -66768,7 +66806,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 703,
+      "loc": 702,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "low",
@@ -66787,7 +66825,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 197,
+      "loc": 97,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-vehicle-meta.test.ts",
       "risk": "low",
