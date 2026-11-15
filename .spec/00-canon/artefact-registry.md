@@ -2,6 +2,8 @@
 
 > Date : 2026-03-14
 > Version : 1.0.0
+>
+> **Carte du circuit (2026-11-15, mandat AD)** : les pièces qui exécutent le circuit du contenu sont nommées dans `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md` §« Carte du circuit ». Les prompts marqués « retiré » n’avaient aucun lecteur (preuves : `audit/seo-content-circuit-2026-11-15.md`). R3_CONSEILS, R5_DIAGNOSTIC et leurs fichiers `_shared` restent listés jusqu’à la livraison du mandat AB.
 
 ## Par rôle
 
@@ -9,8 +11,8 @@
 
 | Artefact | Emplacement | Statut |
 |----------|-------------|--------|
-| Planner | `.claude/prompts/R0_HOME/planner.md` | — (pas de prompt, surface statique) |
-| Generator | `.claude/prompts/R0_HOME/generator.md` | — |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | — (pas de prompt, surface statique) |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | — |
 | Validator | `.claude/agents/r0-home-validator.md` | ✅ |
 | Execution | `.claude/agents/r0-home-execution.md` | ✅ |
 | Role reference | — | — (couvert par page-roles.md) |
@@ -21,8 +23,8 @@
 
 | Artefact | Emplacement | Statut |
 |----------|-------------|--------|
-| Planner | `.claude/prompts/R1_ROUTER/planner.md` | ✅ |
-| Generator | `.claude/prompts/R1_ROUTER/generator.md` | ✅ hardened |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ hardened |
 | Validator | `.claude/agents/r1-router-validator.md` | ✅ maximum |
 | Role reference | `.claude/skills/.../references/r1-router-role.md` | ✅ canon |
 | Contrat | `backend/src/config/page-contract-r1.schema.ts` | ✅ |
@@ -64,8 +66,8 @@
 
 | Artefact | Emplacement | Statut |
 |----------|-------------|--------|
-| Planner | `.claude/prompts/R4_REFERENCE/planner.md` | ✅ |
-| Generator | `.claude/prompts/R4_REFERENCE/generator.md` | ✅ hardened |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ hardened |
 | Validator | `.claude/agents/r4-reference-validator.md` | ✅ |
 | Execution | `.claude/agents/r4-reference-execution.md` | ✅ |
 | Role reference | `.claude/skills/.../references/r4-reference-role.md` | ✅ canon |
@@ -94,8 +96,8 @@
 
 | Artefact | Emplacement | Statut |
 |----------|-------------|--------|
-| Planner | `.claude/prompts/R6_GUIDE_ACHAT/planner.md` | ✅ |
-| Generator | `.claude/prompts/R6_GUIDE_ACHAT/generator.md` | ✅ hardened (price gate) |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ hardened (price gate) |
 | Validator | `.claude/agents/r6-guide-achat-validator.md` | ✅ maximum |
 | Role reference | `.claude/skills/.../references/guide-achat-role.md` | ✅ canon |
 | Contrat | `backend/src/config/page-contract-r6.schema.ts` | ✅ |
@@ -110,8 +112,8 @@
 
 | Artefact | Emplacement | Statut |
 |----------|-------------|--------|
-| Planner | `.claude/prompts/R7_BRAND/planner.md` | ✅ |
-| Generator | `.claude/prompts/R7_BRAND/generator.md` | ✅ hardened |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ hardened |
 | Validator | `.claude/agents/r7-brand-validator.md` | ✅ |
 | Execution | `.claude/agents/r7-brand-execution.md` | ✅ |
 | Role reference | `.claude/skills/.../references/r7-brand-role.md` | ✅ canon |
@@ -125,8 +127,8 @@
 
 | Artefact | Emplacement | Statut |
 |----------|-------------|--------|
-| Planner | `.claude/prompts/R8_VEHICLE/planner.md` | ✅ |
-| Generator | `.claude/prompts/R8_VEHICLE/generator.md` | ✅ hardened |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ✅ hardened |
 | Validator | `.claude/agents/r8-vehicle-validator.md` | ✅ |
 | Execution | `.claude/agents/r8-vehicle-execution.md` | ✅ |
 | Role reference | `.claude/skills/.../references/r8-vehicle-role.md` | ✅ canon |
@@ -155,7 +157,7 @@
 | Stop conditions (shared) | `.claude/prompts/_shared/stop-conditions.md` |
 | Quality constraints (shared) | `.claude/prompts/_shared/quality-constraints.md` |
 | Upstream required (shared) | `.claude/prompts/_shared/upstream-required.md` |
-| Write/publish boundary (shared) | `.claude/prompts/_shared/write-publish-boundary.md` |
+| Write/publish boundary (shared) | — retiré 2026-11-15 (mandat AD, sans lecteur) |
 | Role IDs enum | `backend/src/config/role-ids.ts` |
 | Bridge functions | `backend/src/config/content-section-policy.ts` |
 | Scoring bridge | `backend/src/config/scoring-profiles.config.ts` |
@@ -198,7 +200,7 @@ Voir [`phase-matrix.md`](phase-matrix.md) pour la matrice canonique des phases :
 
 | Type | Nombre |
 |------|--------|
-| Prompts (planner+generator+validator) | 21 (7 roles × 3) |
+| Prompts (planner+generator+validator) | 6 (R3, R5 × 3 ; 15 retirés le 2026-11-15) |
 | Shared prompt blocks | 4 |
 | Agent execution prompts | 5 (R0, R4, R5, R7, R8) |
 | Agent validators | 10 (R0-R8 + R6_SUPPORT) |
