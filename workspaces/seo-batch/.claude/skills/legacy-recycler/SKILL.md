@@ -1,6 +1,6 @@
 ---
 name: legacy-recycler
-description: "Recycle contenu legacy (__blog_advice*) vers __seo_gamme_conseil v5. Use when user mentions recycler legacy, injecter contenu expert, enrichir depuis CSV, importer blog advice. À utiliser après pollution-scanner."
+description: "Recycle contenu legacy (__blog_advice*) vers __seo_gamme_conseil v5. Use when user mentions recycler legacy, injecter contenu expert, enrichir depuis CSV, importer blog advice. À utiliser après v5-guardian (module 1)."
 ---
 
 # Legacy Recycler — Recyclage de contenu expert hérité
@@ -176,7 +176,7 @@ Pour chaque bloc scoré WRITE ou REVIEW validé :
 
 ## Workflow complet d'utilisation
 
-1. **Scanner** d'abord avec `pollution-scanner` pour identifier les sections faibles/vides
+1. **Scanner** d'abord avec `v5-guardian` (module 1) pour identifier les sections faibles/vides
 2. **Lister** les articles legacy disponibles pour la gamme ciblée
 3. **Nettoyer** le HTML legacy (`cleanCmsHtml`)
 4. **Découper** en sections (`splitIntoSections`)
