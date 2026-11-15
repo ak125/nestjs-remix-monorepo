@@ -2896,6 +2896,7 @@
       ".github/workflows/morning-health-digest.yml",
       ".github/workflows/orphan-files-ratchet.yml",
       ".github/workflows/perf-gates.yml",
+      ".github/workflows/pilote-file.yml",
       ".github/workflows/pr-2e-readiness-gate.yml",
       ".github/workflows/pr-dod-gate.yml",
       ".github/workflows/preprod-vocabulary-guard.yml",
@@ -3046,7 +3047,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1639,
+  "runtime_files_count": 1640,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3088,6 +3089,7 @@
     ".github/workflows/morning-health-digest.yml",
     ".github/workflows/orphan-files-ratchet.yml",
     ".github/workflows/perf-gates.yml",
+    ".github/workflows/pilote-file.yml",
     ".github/workflows/pr-2e-readiness-gate.yml",
     ".github/workflows/pr-dod-gate.yml",
     ".github/workflows/preprod-vocabulary-guard.yml",
