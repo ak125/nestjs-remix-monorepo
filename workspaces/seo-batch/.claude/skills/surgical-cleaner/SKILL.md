@@ -1,6 +1,6 @@
 ---
 name: surgical-cleaner
-description: "Nettoyage chirurgical sections polluées __seo_gamme_conseil. Use when user mentions nettoyer section, supprimer pollution, clean gamme, couper pollution, remplacer S4_DEPOSE. À utiliser APRÈS pollution-scanner."
+description: "Nettoyage chirurgical sections polluées __seo_gamme_conseil. Use when user mentions nettoyer section, supprimer pollution, clean gamme, couper pollution, remplacer S4_DEPOSE. À utiliser APRÈS v5-guardian (module 1, détection de pollution)."
 ---
 
 # Surgical Cleaner — Nettoyage section par section

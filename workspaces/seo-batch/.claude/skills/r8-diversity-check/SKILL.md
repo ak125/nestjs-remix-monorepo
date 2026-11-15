@@ -54,7 +54,7 @@ python3 scripts/qa/r8-diversity-check.py --batch
 | Audit SEO global R1-R8 (métriques, maillage, score composite) | `seo-gamme-audit` |
 | Qualité éditoriale R2D2 (Intent-First, lisibilité) | `content-audit` |
 | Anti-cannibalisation cross-role (R1 vs R3 vs R4) | `blog-hub-planner` |
-| Scanner pollution OEM/scraping dans sections conseil v5 | `pollution-scanner` |
+| Scanner pollution OEM/scraping dans sections conseil v5 | `v5-guardian` (module 1) |
 | Guardian v5 (pollution + quality + régression) | `v5-guardian` |
 
 Si l'utilisateur demande "vérifier mes pages SMART", c'est ce skill pour la diversité

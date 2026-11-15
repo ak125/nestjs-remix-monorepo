@@ -9,8 +9,8 @@
       "to": "automecanik-wiki/proposals/",
       "kind": "promotion",
       "status": "PARTIAL",
-      "scripts": ["automecanik-wiki/_scripts/recycle-from-rag.py"],
-      "gaps": ["claim extraction structurée", "source_map typed Pydantic", "structured proposal renderer"],
+      "scripts": [],
+      "gaps": ["claim extraction structurée", "source_map typed Pydantic", "structured proposal renderer", "écriture des propositions par le skill workspaces/wiki/.claude/skills/wiki-proposal-writer, sans script dédié ; recycle-from-rag.py retiré le 2026-11-15 (lisait automecanik-rag, contraire ADR-046)"],
       "owner_pr": "PR-3a (monorepo orchestration) + PR-3b (wiki repo bridge)",
       "adr": "ADR-058"
     },
