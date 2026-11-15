@@ -118,76 +118,191 @@ function containsCall(node) {
   return Boolean(ts.forEachChild(node, (child) => (containsCall(child) ? true : undefined)));
 }
 
+/** Condition constante : littéral, `undefined`, `void …`, éventuellement niée ou entre parenthèses. */
+function isConstant(expression) {
+  let node = expression;
+  while (ts.isParenthesizedExpression(node) || (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.ExclamationToken)) {
+    node = ts.isParenthesizedExpression(node) ? node.expression : node.operand;
+  }
+  return (
+    ts.isLiteralExpression(node) ||
+    ts.isVoidExpression(node) ||
+    [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(node.kind) ||
+    (ts.isIdentifier(node) && node.text === "undefined")
+  );
+}
+
 /**
  * Test qui ne vérifie plus rien : aucun rappel littéral, rappel sans aucun appel (`() => undefined`,
- * `() => void 0`, corps vide), ou corps ouvert par un `return` sans appel (`return;`, `return undefined;`).
+ * `() => void 0`, corps vide), corps ouvert par un `return` sans appel (`return;`, `return undefined;`),
+ * instruction après un `return` ou un `throw` du corps (code mort), ou branche du corps sur une constante.
  */
 function isNeutralised(call) {
+  if (ts.isCallExpression(call.parent) && call.parent.expression === call) return false;
   const callback = [...call.arguments].reverse().find((argument) => ts.isArrowFunction(argument) || ts.isFunctionExpression(argument));
   if (!callback || !containsCall(callback.body)) return true;
   if (!ts.isBlock(callback.body)) return false;
-  const [first] = callback.body.statements;
-  return ts.isReturnStatement(first) && !(first.expression && containsCall(first.expression));
+  const statements = callback.body.statements;
+  const [first] = statements;
+  if (ts.isReturnStatement(first) && !(first.expression && containsCall(first.expression))) return true;
+  return statements.some(
+    (statement, index) =>
+      ((ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) && index < statements.length - 1) ||
+      (ts.isIfStatement(statement) && isConstant(statement.expression)),
+  );
 }
 
-// Modules d'où un nom de test peut être importé ; toute autre liaison de ces noms est une redéfinition.
+// Modules d'où un nom de test peut être importé sous son propre nom.
 const TEST_FRAMEWORK_MODULES = new Set(["vitest", "@jest/globals", "node:test"]);
+
+/** Vrai si `node` est la racine ou un segment de la chaîne appelée d'un appel (`describe` dans `describe.each(t)(…)`). */
+function isInCallee(node) {
+  let current = ts.isPropertyAccessExpression(node.parent) && node.parent.name === node ? node.parent : node;
+  for (;;) {
+    const parent = current.parent;
+    if (
+      (ts.isPropertyAccessExpression(parent) ||
+        ts.isElementAccessExpression(parent) ||
+        ts.isNonNullExpression(parent) ||
+        ts.isParenthesizedExpression(parent) ||
+        ts.isAsExpression(parent)) &&
+      parent.expression === current
+    ) {
+      current = parent;
+    } else {
+      return ts.isCallExpression(parent) && parent.expression === current;
+    }
+  }
+}
+
+/** Import d'un nom de test depuis un module de test, sous son propre nom (`import { it } from "vitest"`). */
+function isFrameworkImport(node) {
+  const specifier = node.parent;
+  if (!ts.isImportSpecifier(specifier) || specifier.name !== node) return false;
+  if (specifier.propertyName && specifier.propertyName.text !== node.text) return false;
+  const declaration = specifier.parent.parent.parent;
+  return ts.isStringLiteral(declaration.moduleSpecifier) && TEST_FRAMEWORK_MODULES.has(declaration.moduleSpecifier.text);
+}
+
 const GLOBAL_OBJECTS = new Set(["globalThis", "global", "window", "self"]);
+// Appels qui modifient un objet ou un module par une clé : une clé de test y est une redéfinition.
+const MUTATING_CALLS = new Set(["stubGlobal", "defineProperty", "defineProperties", "assign", "set", "setPrototypeOf", "spyOn", "mock", "doMock"]);
+// Parmi eux, ceux qui modifient l'objet passé en premier argument, quelle que soit la clé.
+const OBJECT_MUTATORS = new Set(["defineProperty", "defineProperties", "assign", "set", "setPrototypeOf"]);
+
+function unwrap(node) {
+  let current = node;
+  while (ts.isParenthesizedExpression(current) || ts.isAsExpression(current) || ts.isNonNullExpression(current) || ts.isTypeAssertionExpression(current) || ts.isSatisfiesExpression(current)) {
+    current = current.expression;
+  }
+  return current;
+}
+
+function isGlobalObject(node) {
+  const inner = unwrap(node);
+  return ts.isIdentifier(inner) && GLOBAL_OBJECTS.has(inner.text);
+}
+
+function lastSegment(call) {
+  const segments = calleeSegments(call.expression);
+  return segments ? segments.filter((segment) => segment !== "()").at(-1) : undefined;
+}
+
+function isAssignmentTarget(node) {
+  for (let current = node; current.parent; current = current.parent) {
+    const parent = current.parent;
+    if (ts.isBinaryExpression(parent) && parent.left === current) {
+      return parent.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && parent.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
+    }
+    if ((ts.isPrefixUnaryExpression(parent) || ts.isPostfixUnaryExpression(parent)) && [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(parent.operator)) return true;
+    if (!(ts.isObjectLiteralExpression(parent) || ts.isArrayLiteralExpression(parent) || ts.isPropertyAssignment(parent) || ts.isShorthandPropertyAssignment(parent) || ts.isSpreadElement(parent) || ts.isSpreadAssignment(parent) || ts.isParenthesizedExpression(parent) || ts.isAsExpression(parent) || ts.isNonNullExpression(parent) || ts.isPropertyAccessExpression(parent) || ts.isElementAccessExpression(parent))) return false;
+  }
+  return false;
+}
 
 /**
- * Noms de test (`it`, `test`, `describe`) liés ou réassignés dans le fichier : déclaration, paramètre,
- * import hors des modules de test, affectation directe ou sur un objet global. Un `describe` redéfini
- * en fonction vide fait disparaître ses tests sans changer leur clé.
+ * Modification d'un objet global à clés lisibles : `defineProperty(g, "clé", …)`, `Reflect.set(g, "clé", …)`,
+ * `Object.assign(g, { clé: … })`, `defineProperties(g, { clé: … })` ; les clés de test y sont relevées à part.
  */
-function redefinedTestNames(source) {
-  const names = new Set();
-  const bind = (name) => {
-    if (name && ts.isIdentifier(name) && TEST_CALLEES.has(name.text)) names.add(name.text);
-    else if (name && (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name))) {
-      for (const element of name.elements) if (ts.isBindingElement(element)) bind(element.name);
-    }
-  };
+function hasLiteralKeys(call) {
+  const name = lastSegment(call);
+  const [, key, ...rest] = call.arguments;
+  if (name === "defineProperty" || name === "set") return Boolean(key) && ts.isStringLiteralLike(unwrap(key));
+  if (name === "assign" || name === "defineProperties") {
+    return [key, ...rest].every((argument) => {
+      const object = argument && unwrap(argument);
+      return object && ts.isObjectLiteralExpression(object) && object.properties.every((property) => (ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property) || ts.isMethodDeclaration(property)) && !ts.isComputedPropertyName(property.name));
+    });
+  }
+  return false;
+}
+
+/** Argument (direct) d'un appel qui modifie par clé, ou d'un appel qui reçoit aussi un objet global. */
+function isMutatingArgument(node) {
+  let current = node;
+  while (ts.isPropertyAssignment(current.parent) || ts.isObjectLiteralExpression(current.parent) || ts.isComputedPropertyName(current.parent) || ts.isArrayLiteralExpression(current.parent)) {
+    current = current.parent;
+  }
+  const call = current.parent;
+  if (!ts.isCallExpression(call) || !call.arguments.includes(current)) return false;
+  return MUTATING_CALLS.has(lastSegment(call)) || call.arguments.some(isGlobalObject);
+}
+
+/** Les données (`{ test: 1 }`, `dept("test")`, `config.test`) ne sont pas des références. */
+function isDataKey(node) {
+  const parent = node.parent;
+  return (
+    ((ts.isPropertyAssignment(parent) || ts.isPropertySignature(parent) || ts.isPropertyDeclaration(parent) || ts.isMethodDeclaration(parent)) && parent.name === node) ||
+    (ts.isPropertyAccessExpression(parent) && parent.name === node)
+  );
+}
+
+/**
+ * Références à un nom de test (`it`, `test`, `describe`) ou à l'objet global qui peuvent faire
+ * disparaître des tests sans changer leur clé : nom lié, paramètre, alias, import renommé ou hors
+ * module de test, affectation sous toute forme ; clé de test écrite sur un objet global ou passée à un
+ * appel qui modifie par clé (`vi.stubGlobal("it", …)`, `Object.defineProperty(globalThis, "it", …)`) ;
+ * modification d'un objet global à clé non littérale (`globalThis[k] = …`, `Object.assign(globalThis, patch)`) ;
+ * alias d'un objet global (`const g = globalThis`) ; module de test cité hors d'un import (`vi.mock("vitest", …)`).
+ * Chacune par sa nature et sa position : une référence nouvelle à la tête est refusée.
+ */
+function testNameReferences(source) {
+  const references = [];
+  const record = (label, node) => references.push(`${label} : ${ts.SyntaxKind[node.parent.kind]} @ ${positionOf(node, source)}`);
   const visit = (node) => {
-    if (ts.isImportDeclaration(node)) {
-      const module = ts.isStringLiteral(node.moduleSpecifier) ? node.moduleSpecifier.text : "";
-      if (!TEST_FRAMEWORK_MODULES.has(module)) {
-        const clause = node.importClause;
-        bind(clause?.name);
-        const bindings = clause?.namedBindings;
-        if (bindings && ts.isNamespaceImport(bindings)) bind(bindings.name);
-        if (bindings && ts.isNamedImports(bindings)) for (const element of bindings.elements) bind(element.name);
-      }
-    } else if (
-      ts.isVariableDeclaration(node) ||
-      ts.isParameter(node) ||
-      ts.isFunctionDeclaration(node) ||
-      ts.isClassDeclaration(node) ||
-      ts.isImportEqualsDeclaration(node)
-    ) {
-      bind(node.name);
-    } else if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
-      let target = node.left;
-      while (ts.isParenthesizedExpression(target)) target = target.expression;
-      if (ts.isIdentifier(target)) bind(target);
-      else if (
-        (ts.isPropertyAccessExpression(target) || ts.isElementAccessExpression(target)) &&
-        ts.isIdentifier(target.expression) &&
-        GLOBAL_OBJECTS.has(target.expression.text)
-      ) {
-        const key = ts.isPropertyAccessExpression(target) ? target.name.text : ts.isStringLiteralLike(target.argumentExpression) ? target.argumentExpression.text : "";
-        if (TEST_CALLEES.has(key)) names.add(key);
-      }
+    if (ts.isIdentifier(node) && TEST_CALLEES.has(node.text) && !isInCallee(node) && !isFrameworkImport(node)) {
+      const parent = node.parent;
+      const globalProperty = ts.isPropertyAccessExpression(parent) && parent.name === node && isGlobalObject(parent.expression);
+      if (!isDataKey(node) || globalProperty || isAssignmentTarget(node) || isMutatingArgument(node)) record(node.text, node);
+    } else if (ts.isStringLiteralLike(node)) {
+      const parent = node.parent;
+      const isModuleSpecifier = (ts.isImportDeclaration(parent) || ts.isExportDeclaration(parent)) && parent.moduleSpecifier === node;
+      const isKey = (ts.isElementAccessExpression(parent) && parent.argumentExpression === node) || ts.isComputedPropertyName(parent);
+      if (TEST_CALLEES.has(node.text) && (isKey || isMutatingArgument(node))) record(node.text, node);
+      if (TEST_FRAMEWORK_MODULES.has(node.text) && !isModuleSpecifier) record(node.text, node);
+    } else if (ts.isElementAccessExpression(node) && isGlobalObject(node.expression) && !ts.isStringLiteralLike(unwrap(node.argumentExpression))) {
+      record("clé calculée sur un objet global", node);
+    } else if (ts.isCallExpression(node) && OBJECT_MUTATORS.has(lastSegment(node)) && node.arguments.length && isGlobalObject(node.arguments[0]) && !hasLiteralKeys(node)) {
+      record(`${lastSegment(node)} sur un objet global, clé non littérale`, node);
+    } else if (ts.isCallExpression(node) && lastSegment(node) === "stubGlobal" && node.arguments.length && !ts.isStringLiteralLike(unwrap(node.arguments[0]))) {
+      record("stubGlobal à clé calculée", node);
+    } else if (ts.isIdentifier(node) && GLOBAL_OBJECTS.has(node.text)) {
+      let outer = node;
+      while (ts.isParenthesizedExpression(outer.parent) || ts.isAsExpression(outer.parent) || ts.isNonNullExpression(outer.parent)) outer = outer.parent;
+      const parent = outer.parent;
+      const aliased = (ts.isVariableDeclaration(parent) && parent.initializer === outer) || (ts.isBinaryExpression(parent) && parent.right === outer);
+      if (aliased) record(`alias de ${node.text}`, node);
     }
     ts.forEachChild(node, visit);
   };
   visit(source);
-  return [...names];
+  return references;
 }
 
 /**
  * Déclarations de test d'un fichier : pour chacune, sa clé (position, puis appel sans modificateur et
  * premier argument), si elle porte un modificateur désactivant et si son rappel est neutralisé ; et les
- * noms de test redéfinis. `null` si le fichier ne s'analyse pas sans erreur.
+ * références aux noms de test hors appel. `null` si le fichier ne s'analyse pas sans erreur.
  */
 export function testDeclarations(filename, text) {
   const source = ts.createSourceFile(filename, text, ts.ScriptTarget.Latest, true, scriptKind(filename));
@@ -204,7 +319,7 @@ export function testDeclarations(filename, text) {
     ts.forEachChild(node, visit);
   };
   visit(source);
-  declarations.redefined = redefinedTestNames(source);
+  declarations.references = testNameReferences(source);
   return declarations;
 }
 
@@ -447,10 +562,11 @@ export function evaluateLevelBFiles(policy, files) {
       after.filter((declaration) => declaration.neutralised).map((declaration) => declaration.key),
       before.filter((declaration) => declaration.neutralised).map((declaration) => declaration.key),
     ).filter((key) => before.some((declaration) => declaration.key === key));
-    // Un nom de test redéfini à la tête (et non à la base) peut vider tous les tests sans changer leur clé.
-    const redefined = after.redefined.filter((name) => !(before.redefined ?? []).includes(name));
-    if (redefined.length) {
-      refusals.push(refusal("TEST_REMOVED", `${file.filename} (nom de test redéfini : ${redefined.join(", ")})`));
+    // Une référence nouvelle à un nom de test (redéfinition, alias, global modifié) peut vider les tests
+    // sans changer leur clé : comparée par nature et position, pas par nom seul.
+    const references = missingFrom(after.references, before.references ?? []);
+    if (references.length) {
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (nom de test redéfini ou référencé hors appel : ${references[0]})`));
     } else if (lost.length) {
       refusals.push(refusal("TEST_REMOVED", `${file.filename} (déclaration retirée ou déplacée : ${lost[0]})`));
     } else if (neutralised.length) {

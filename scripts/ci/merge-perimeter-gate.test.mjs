@@ -476,6 +476,53 @@ test("niveau B : test enveloppé, vidé sans bloc ou nom de test redéfini : ref
   }
 });
 
+test("niveau B : nom de test redéfini sous toute forme, global modifié ou code mort : refusé (revue Codex 6e passage, revue de sécurité)", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const base = 'it("contrôle critique", () => {\n  assertSecurity();\n});';
+  const call = 'it("contrôle critique", () => {\n  assertSecurity();\n});';
+  for (const head of [
+    `({ it } = { it: (_n, _cb) => {} });\n${call}`,
+    `[it] = [() => {}];\n${call}`,
+    `it ||= () => {};\n${call}`,
+    `Object.defineProperty(globalThis, "it", { value: () => {} });\n${call}`,
+    `Reflect.set(globalThis, "it", () => {});\n${call}`,
+    `Object.assign(globalThis, { it: () => {} });\n${call}`,
+    `const patch = { it: () => {} };\nObject.assign(globalThis, patch);\n${call}`,
+    `const k = "i" + "t";\nglobalThis[k] = () => {};\n${call}`,
+    `const g = globalThis;\ng.it = () => {};\n${call}`,
+    `(globalThis as any).it = () => {};\n${call}`,
+    `globalThis["it"] = () => {};\n${call}`,
+    `vi.stubGlobal("it", () => {});\n${call}`,
+    `vi.mock("vitest", () => ({ it: () => {} }));\n${call}`,
+    `import { bench as it } from "vitest";\n${call}`,
+    `import { it as check } from "vitest";\ncheck("contrôle critique", () => {\n  assertSecurity();\n});\n${call}`,
+    `const t = test;\n${call}`,
+    `const maybe = process.env.CI ? it : it.skip;\n${call}`,
+    'it("contrôle critique", () => {\n  setup();\n  return;\n  assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  setup();\n  throw new Error("x");\n  assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  if (false) {\n    assertSecurity();\n  }\n});',
+    'it("contrôle critique", () => {\n  if (!true) assertSecurity();\n});',
+  ]) {
+    const patch = `@@ -1,3 +1,3 @@\n${base.split("\n").map((l) => `-${l}`).join("\n")}\n${head.split("\n").map((l) => `+${l}`).join("\n")}`;
+    assert.deepEqual(lbFiles(modified(t, patch)), ["TEST_REMOVED"], head);
+  }
+});
+
+test("niveau B : données nommées test, global modifié à clé littérale, regex .test : admis", () => {
+  const t = "frontend/tests/unit/a.test.ts";
+  for (const added of [
+    "+const rows = [dept('test', 'P1'), { id: 'test', department: \"test\" }];",
+    "+const config = { test: /x/, it: 1, describe: 'd' };\n+expect(config.test.source).toBe('x');",
+    '+Object.defineProperty(window, "location", { value: { href: "/" } });',
+    '+Object.assign(globalThis, { fetch: vi.fn() });',
+    "+const deps = { window };",
+    "+expect(/a/.test('a')).toBe(true);",
+  ]) {
+    const patch = `@@ -1,3 +1,${3 + added.split("\n").length} @@\n it("a", () => {\n   expect(1).toBe(1);\n });\n${added}`;
+    assert.deepEqual(lbFiles(modified(t, patch)), [], added);
+  }
+});
+
 test("niveau B : test déjà vide à la base, retour d'une promesse, import depuis vitest, corps changé dans un describe : admis", () => {
   const t = "backend/tests/unit/a.test.ts";
   const empty = '@@ -1,2 +1,3 @@\n it("vide", () => {});\n+it("nouveau", () => expect(1).toBe(1));';
