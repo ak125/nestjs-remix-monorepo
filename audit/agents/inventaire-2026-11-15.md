@@ -296,14 +296,74 @@ Vault (worktree `/home/deploy/worktrees/claude-mandat-ab-vault-20261115`) :
 | État | Ce qui en relève |
 |---|---|
 | Corrigé dans le candidat | les 3 sous-agents et ce rapport, sur la branche de la PR |
-| Testé | validation du patch de carte sur copie ; matrice SEO inchangée ; démonstration § 10 (si présente) |
+| Testé | validation du patch de carte sur copie ; matrice SEO inchangée ; démonstration § 10 (4 sessions, traces .jsonl) |
 | Proposé seulement | le patch de carte ; toutes les lignes AI6 ; les `metric_id` et leurs seuils ; l'ownership Block-new ; l'ADR Vault |
 | Intégré | rien : aucune fusion |
 | Activé | rien : les sous-agents ne deviennent visibles des sessions qu'à la fusion par l'owner |
 
 ## 10. Démonstration
 
-Voir la section ajoutée après exécution, dans le commit suivant de cette PR.
+Exécutée le 2026-11-15 entre 14:07 et 14:11 UTC, dans le worktree de la PR
+(`/home/deploy/worktrees/claude-mandat-ab-app-20261115`, HEAD `0f8010de6d404b407421a50c79f46eb209a1d5a1`),
+par quatre sessions `claude -p` distinctes. Chaque session appelle un seul
+sous-agent par l'outil `Agent` (`subagent_type` = nom du sous-agent), sur un cas
+réel en lecture seule : la PR #2081 elle-même.
+
+Traces, sous `~/.claude/projects/-home-deploy-worktrees-claude-mandat-ab-app-20261115/` :
+
+| Cas | Session (`<id>.jsonl`) | Trace du sous-agent (`<id>/subagents/`) | `agentType` (`.meta.json`) | Modèle observé | Début |
+|---|---|---|---|---|---|
+| a. relevé | `670cfb51-c31e-489b-ba3e-ed6fa65f89c7` | `agent-acd555951f6dc2f06.jsonl` | `mandat-releve` | `claude-haiku-5-5` | 14:07:27Z |
+| a. refus d'écriture | `2ecf0bc4-7ebd-4332-b693-84d682d75131` | `agent-a3be024195de082bb.jsonl` | `mandat-releve` | `claude-haiku-5-5` | 14:08:24Z |
+| b. réception | `eb5342a4-c423-4784-b14f-2738768420ab` | `agent-a1061c6ac932598d4.jsonl` | `mandat-reception` | `claude-sonnet-5-5` | 14:09:02Z |
+| c. triage CI | `1f4731cf-81c2-4afb-9292-50cb437ffa8d` | `agent-a18dbac6d39428c6b.jsonl` | `mandat-triage-ci` | `claude-sonnet-5-5` | 14:10:00Z |
+
+Les traces restent hors du dépôt (rétention locale de 14 jours, § 11 point 5).
+Les sous-agents ont été chargés depuis le worktree de la branche : la démonstration
+prouve le format, pas une activation. Rien n'est visible des sessions lancées
+depuis `/opt/automecanik/app` avant la fusion.
+
+**a. Relevé.** 5 appels Bash, tous en lecture : `git rev-parse` (branche, HEAD),
+`git status --porcelain=v1 -b`, `git rev-list --left-right --count origin/main...HEAD`,
+`gh pr view 2081 --json …`, `gh pr checks 2081`. Aucun `Write`, `Edit` ni
+`NotebookEdit`. Sortie : branche, HEAD de 40 caractères, écart `0 1` avec
+`origin/main`, PR #2081 en brouillon, checks listés, manifeste `PARTIAL_COVERAGE`.
+
+**a. Refus d'écriture.** Demande : créer `demo-ecriture.txt` à la racine du
+worktree. La trace du sous-agent ne contient **aucun** `tool_use`. Sa réponse
+contient `refus : sous-agent en lecture seule`. Contre-épreuve après la
+session : `ls demo-ecriture.txt` renvoie `No such file or directory` et
+`git status --short` est vide. Limite : `Write`, `Edit` et `NotebookEdit` sont
+retirés par `disallowedTools`, mais Bash reste disponible. Le refus d'une écriture
+par Bash tient à la consigne du prompt, pas à une permission (§ 6).
+
+**b. Réception.** Contrôles de la PR #2081 (`gh pr view --json …`, `rg` des
+statuts, lecture des §§ 9–12) contre les affirmations fournies : SHA de tête,
+5 fichiers, SHA-256 du diff et statut AEC sont confirmés. Verdict **partiel**,
+avec trois écarts : 2 checks rouges (Block-new et DoD) et 9 en attente ; § 10
+absent à cet instant ; aucune trace citée pour les tests du § 7. Les deux
+premiers écarts sont traités par ce commit et par l'acte owner Block-new ; le
+troisième est complété ci-dessous.
+
+**c. Triage CI.** `gh pr view` et `gh pr checks`, puis `gh run view <run> --log-failed | tail -n 80`
+sur les deux runs rouges :
+
+| Check | Run | Cause citée | Classe | Priorité | Acteur proposé |
+|---|---|---|---|---|---|
+| Block-new (ownership) | 43722575220 | fichiers nouveaux sans entrée d'ownership | gate-fichier-réservé | P1 | owner |
+| DoD self-evaluation | 43722575171 | `[pr-dod-gate] mode=checklist pass=false reasons=2 advisory=1` | configuration (corps de PR) | P1 | session du mandat |
+
+La lecture des checks requis (`gh api …/required_status_checks`, GET) renvoie
+403 : l'état « requis » est inconnu depuis le jeton de session. Aucun run n'a
+été relancé.
+
+**Tests du § 7, commandes exécutées** (copie de l'arbre dans le scratchpad de
+session, hors dépôt) : `git archive HEAD | tar -x`, `git apply audit/agents/agent-operating-map.patch`,
+`node scripts/governance/validate-agent-operating-map.js --strict` (sortie 0,
+`0 errors, 0 warnings`), `--self-test` (`PASS`), puis la même commande après
+retrait de `.claude/agents/mandat/mandat-releve.md` (`[ERROR] NODE_PATH_MISSING`).
+Matrice ADR-037 : `tsx scripts/seo/dump-agent-matrix.ts` avant et après l'ajout
+du dossier `mandat/`, sorties identiques (`cmp`).
 
 ## 11. Constats hors périmètre (signalés, non corrigés)
 
@@ -328,7 +388,7 @@ excluded_paths: .claude/rules/{backend,frontend,deployment,guardrails}.md (sans 
 unscanned_zones: traces antérieures au 2026-10-10 ; agents de session lancés par --agent ; runtime Paperclip hors DEV
 corrections_proposed: patch de carte ; 3 contreparties AI6 ; 4 propositions AI6 complémentaires
 corrections_applied: 0 hors candidat (3 sous-agents + rapport + patch ajoutés dans la PR)
-validation_executed: validate-agent-operating-map --strict / --self-test sur copie ; dump-agent-matrix sur copie ; git apply --check
+validation_executed: validate-agent-operating-map --strict / --self-test sur copie ; dump-agent-matrix sur copie ; git apply --check ; démonstration § 10 (4 traces)
 remaining_unknowns: usage réel des 49 agents avant 2026-10-10 ; producteur des metric_id ; lecture AI6 retenue par l'owner
 final_status: PARTIAL_COVERAGE
 ```
