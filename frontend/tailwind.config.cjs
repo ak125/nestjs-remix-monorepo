@@ -21,43 +21,13 @@ module.exports = {
 
         // ─── Semantic UI Colors ───────────────────────────
 
-        // CTA / Action orange
-        cta: {
-          DEFAULT: '#F97316',
-          hover: '#EA580C',
-          light: '#FB923C',
-          lighter: '#FDBA74',
-          dark: '#C2410C',
-          50: '#FFF7ED',
-          100: '#FFEDD5',
-          200: '#FED7AA',
-          300: '#FDBA74',
-          400: '#FB923C',
-          500: '#F97316',
-          600: '#EA580C',
-          700: '#C2410C',
-          800: '#9A3412',
-          900: '#7C2D12',
-        },
+        // CTA / Action orange — source: color.cta in packages/design-tokens/src/tokens.json
+        // (steps 50–900 + DEFAULT, hover, light, lighter, dark).
+        cta: tokens.colors.cta,
 
-        // Navy / Dark backgrounds
-        navy: {
-          DEFAULT: '#0F1E38',
-          light: '#162D5A',
-          mid: '#122750',
-          'mid-light': '#153060',
-          dark: '#091430',
-          50: '#E8EDF5',
-          100: '#C5D0E6',
-          200: '#9BAFD4',
-          300: '#708EC1',
-          400: '#4F74B3',
-          500: '#162D5A',
-          600: '#122750',
-          700: '#0F1E38',
-          800: '#091430',
-          900: '#050D1F',
-        },
+        // Navy / Dark backgrounds — source: color.navy in packages/design-tokens/src/tokens.json
+        // (steps 50–900 + DEFAULT, light, mid, mid-light, dark).
+        navy: tokens.colors.navy,
 
         khmerCurry: tokens.colors.accent.khmerCurry,
         persianIndigo: tokens.colors.accent.persianIndigo,

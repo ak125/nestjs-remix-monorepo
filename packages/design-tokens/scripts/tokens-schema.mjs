@@ -4,7 +4,8 @@
  * Runs at build time (`build-tokens.mjs`) and in tests. A failing contract
  * FAILS the build (no warn-and-continue — the original generator's silent
  * tolerance was a P0). Covers: structure, hex format, breakpoint ordering,
- * required shadcn roles, and the primary.500 -> shadcn HSL drift guard.
+ * required shadcn roles, required cta/navy ramp keys, and the
+ * primary.500 -> shadcn HSL drift guard.
  */
 import { z } from "zod";
 import { hexToHSL } from "./color-utils.mjs";
@@ -62,6 +63,15 @@ const SHADCN_ROLES = [
   "chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "radius",
 ];
 
+// Tailwind color ramps consumed by frontend/tailwind.config.cjs (`bg-cta-hover`,
+// `bg-navy-mid-light`…). A missing key would silently drop the utility class,
+// so every step and named alias is required.
+const RAMP_STEPS = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900"];
+export const REQUIRED_COLOR_KEYS = {
+  cta: ["DEFAULT", "hover", "light", "lighter", "dark", ...RAMP_STEPS],
+  navy: ["DEFAULT", "light", "mid", "mid-light", "dark", ...RAMP_STEPS],
+};
+
 /**
  * Validate the DTCG source. Returns { ok, errors[] }. Beyond the structural
  * schema, asserts invariants the schema cannot express.
@@ -87,6 +97,12 @@ export function validateTokens(tokens) {
   for (const role of SHADCN_ROLES) if (!tokens?.shadcn?.[role]) errors.push(`shadcn · missing role: ${role}`);
   for (const role of SHADCN_ROLES.filter((r) => r !== "radius"))
     if (!tokens?.shadcnDark?.[role]) errors.push(`shadcnDark · missing role: ${role}`);
+
+  // Required Tailwind ramps (cta, navy): every step and named alias present.
+  for (const [group, keys] of Object.entries(REQUIRED_COLOR_KEYS)) {
+    if (!tokens?.color?.[group]) { errors.push(`color · missing group: ${group}`); continue; }
+    for (const k of keys) if (!tokens.color[group][k]) errors.push(`color.${group} · missing key: ${k}`);
+  }
 
   // Drift guard: shadcn primary & ring are derived from color.primary.500.
   const p500 = tokens?.color?.primary?.["500"]?.$value;
