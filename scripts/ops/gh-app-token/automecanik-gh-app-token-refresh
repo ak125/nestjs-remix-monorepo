@@ -1,0 +1,50 @@
+#!/bin/bash
+# GO 13 : réécrit ~/.config/gh/hosts.yml avec un jeton d'App neuf (1 h). Lancé par automecanik-gh-app-token-refresh.timer.
+# Source : scripts/ops/gh-app-token/ du monorepo ; installation et contrôle : README.md du même dossier.
+#
+# Échec visible (2026-11-15) : le délivreur tourne sous sudo, dont la règle porte use_pty ; sa sortie
+# d'erreur écrite directement dans le flux du journal du service n'y arrive pas. Du 15 nov. 09:24 au
+# 11:03 UTC, le journal ne montrait que « status=1/FAILURE », sans cause. La sortie d'erreur est donc
+# recueillie dans un fichier, réécrite sur stderr (journal du service) et enregistrée par cron_report,
+# que le hook SessionStart affiche ; CRON_REPORT_MAX_AGE_S signale aussi un minuteur arrêté.
+set -euo pipefail
+umask 077
+readonly DELIVREUR=/usr/local/libexec/automecanik-gh-app-token
+readonly LIB_RAPPORT=/opt/automecanik/app/scripts/cron/lib-supabase-report.sh
+readonly JOB=gh-app-token-refresh
+# Jeton valable 1 h, renouvelé toutes les 20 min : au-delà d'une heure sans rapport, le jeton a expiré.
+export CRON_REPORT_MAX_AGE_S=3600
+
+if [ -r "$LIB_RAPPORT" ]; then
+  # shellcheck source=SCRIPTDIR/../../cron/lib-supabase-report.sh
+  . "$LIB_RAPPORT"
+else
+  echo "automecanik-gh-app-token-refresh: $LIB_RAPPORT illisible — état non enregistré" >&2
+  cron_report() { :; }
+fi
+
+f=$HOME/.config/gh/hosts.yml
+err=$(mktemp)
+trap 'rm -f "$err" "$f.tmp"' EXIT
+debut=$(date +%s)
+
+echec() {
+  echo "automecanik-gh-app-token-refresh: ÉCHEC : $1" >&2
+  cron_report "$JOB" error "$(($(date +%s) - debut))" '{}' "$1"
+  exit 1
+}
+
+rc=0
+T=$(sudo -n -u automecanik-ghapp "$DELIVREUR" 2>"$err") || rc=$?
+if [ "$rc" -ne 0 ]; then
+  # Le délivreur n'écrit sur stderr que ses refus (jamais le jeton) ; sudo, ses propres erreurs.
+  cause=$(tr -s '\n\t' '  ' <"$err" | head -c 300)
+  [ -n "$cause" ] || cause="sortie d'erreur vide"
+  echec "délivreur en échec (code $rc) : $cause — refus journalisés : journalctl -t automecanik-gh-app-token (groupe adm)"
+fi
+[[ "$T" =~ ^ghs_[A-Za-z0-9._-]{36,2048}$ ]] || echec "délivreur sans jeton de forme attendue — hosts.yml laissé en place"
+
+printf 'github.com:\n    user: %s\n    git_protocol: https\n    users:\n        %s:\n            oauth_token: %s\n    oauth_token: %s\n' \
+  'automecanik-agents[bot]' 'automecanik-agents[bot]' "$T" "$T" >"$f.tmp" || echec "écriture de $f.tmp impossible"
+mv -f "$f.tmp" "$f" || echec "remplacement de $f impossible"
+cron_report "$JOB" ok "$(($(date +%s) - debut))" '{}' "jeton d'App renouvelé dans $f"

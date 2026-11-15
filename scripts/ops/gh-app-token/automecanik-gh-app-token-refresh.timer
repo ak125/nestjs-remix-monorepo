@@ -1,0 +1,10 @@
+[Unit]
+Description=GO 13 : renouvelle le jeton GitHub App toutes les 20 min
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=20min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
