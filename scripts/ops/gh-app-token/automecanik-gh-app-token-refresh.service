@@ -1,0 +1,6 @@
+[Unit]
+Description=GO 13 : jeton GitHub App des agents (1 h) dans gh/hosts.yml
+
+[Service]
+Type=oneshot
+ExecStart=/home/deploy/.local/libexec/automecanik-gh-app-token-refresh
