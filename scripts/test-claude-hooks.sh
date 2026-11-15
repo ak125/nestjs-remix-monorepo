@@ -1048,6 +1048,49 @@ assert_exit "bash-guard: git reset --hard + 1 Mo → BLOCK"      "2" "$(run_bash
 assert_exit "bash-guard: git tag v1.2.3 + 1 Mo → BLOCK"        "2" "$(run_bash_guard_long 'git tag v1.2.3')"
 assert_exit "bash-guard: git status + 1 Mo → allow"            "0" "$(run_bash_guard_long 'git status')"
 
+# Guard 5b : npm qui réécrit node_modules à travers un lien symbolique (incident DEV 2026-11-15).
+# Bac à sable : un « checkout partagé » au node_modules réel, des dépôts git dont un node_modules
+# est un lien vers lui, et un dossier hors git.
+echo ""
+echo "=== pretool-bash-guard.sh (Guard 5b npm + node_modules en lien) ==="
+G5=$(mktemp -d)
+mkdir -p "$G5/shared/node_modules/keep" "$G5/real/node_modules" "$G5/plain/sub"
+for r in real lroot lback lpkg; do git init -q "$G5/$r"; done
+mkdir -p "$G5/lback/backend" "$G5/lpkg/packages/x"
+ln -s "$G5/shared/node_modules" "$G5/lroot/node_modules"
+ln -s "$G5/shared/node_modules" "$G5/lback/backend/node_modules"
+ln -s "$G5/shared/node_modules" "$G5/lpkg/packages/x/node_modules"
+ln -s "$G5/shared/node_modules" "$G5/plain/sub/node_modules"
+run_npm_guard() { # $1 = cwd de l'enveloppe ("" = absent), $2 = commande
+  if [ -n "$1" ]; then
+    jq -nc --arg d "$1" --arg c "$2" '{cwd:$d,tool_name:"Bash",tool_input:{command:$c}}'
+  else
+    jq -nc --arg c "$2" '{tool_name:"Bash",tool_input:{command:$c}}'
+  fi | bash "$REPO_ROOT/scripts/claude-hooks/pretool-bash-guard.sh" >/dev/null 2>&1
+  echo $?
+}
+assert_exit "bash-guard 5b: npm ci, node_modules racine en lien → BLOCK"       "2" "$(run_npm_guard "$G5/lroot" 'npm ci')"
+assert_exit "bash-guard 5b: npm ci depuis backend/ (lien sur backend) → BLOCK" "2" "$(run_npm_guard "$G5/lback/backend" 'npm ci')"
+assert_exit "bash-guard 5b: npm ci, lien sur packages/x → BLOCK"               "2" "$(run_npm_guard "$G5/lpkg" 'npm ci')"
+assert_exit "bash-guard 5b: cd <lien> && npm ci depuis un checkout réel → BLOCK" "2" "$(run_npm_guard "$G5/real" "cd $G5/lroot && npm ci")"
+assert_exit "bash-guard 5b: cd relatif puis npm ci → BLOCK"                    "2" "$(run_npm_guard "$G5" 'cd lroot; npm ci')"
+assert_exit "bash-guard 5b: npm --prefix <lien> ci → BLOCK"                    "2" "$(run_npm_guard "$G5/real" "npm --prefix $G5/lroot ci")"
+assert_exit "bash-guard 5b: npm -C <lien> clean-install → BLOCK"                "2" "$(run_npm_guard "$G5/real" "npm -C $G5/lroot clean-install")"
+assert_exit "bash-guard 5b: npm i (alias), lien → BLOCK"                       "2" "$(run_npm_guard "$G5/lroot" 'npm i')"
+assert_exit "bash-guard 5b: npm prune, lien → BLOCK"                           "2" "$(run_npm_guard "$G5/lroot" 'npm prune')"
+assert_exit "bash-guard 5b: npm --silent ci, lien → BLOCK"                     "2" "$(run_npm_guard "$G5/lroot" 'npm --silent ci')"
+assert_exit "bash-guard 5b: npm ci sans cwd, lancé dans le lien → BLOCK"       "2" "$(cd "$G5/lroot" && run_npm_guard '' 'npm ci')"
+assert_contains "bash-guard 5b: motif du refus nomme le lien" "lien symbolique ($G5/lroot/node_modules" \
+  "$(jq -nc --arg d "$G5/lroot" '{cwd:$d,tool_name:"Bash",tool_input:{command:"npm ci"}}' | bash scripts/claude-hooks/pretool-bash-guard.sh 2>&1)"
+assert_exit "bash-guard 5b: npm ci, node_modules réel → allow"                 "0" "$(run_npm_guard "$G5/real" 'npm ci')"
+assert_exit "bash-guard 5b: npm run ci (script, pas une install), lien → allow" "0" "$(run_npm_guard "$G5/lroot" 'npm run ci')"
+assert_exit "bash-guard 5b: npm test, lien → allow"                            "0" "$(run_npm_guard "$G5/lroot" 'npm test')"
+assert_exit "bash-guard 5b: npm ls, lien → allow"                              "0" "$(run_npm_guard "$G5/lroot" 'npm ls')"
+assert_exit "bash-guard 5b: hors git, lien dans un sous-dossier voisin → allow" "0" "$(run_npm_guard "$G5/plain" 'npm ci')"
+assert_exit "bash-guard 5b: npm install, node_modules réel → BLOCK (Guard 5 inchangé)" "2" "$(run_npm_guard "$G5/real" 'npm install x')"
+assert_contains "bash-guard 5b: cible du lien intacte" "keep" "$(ls "$G5/shared/node_modules")"
+rm -rf "$G5"
+
 # ============================================================
 # Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)
 # ============================================================

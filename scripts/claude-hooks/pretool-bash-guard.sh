@@ -52,6 +52,45 @@ if grep -qE 'git\s+reset\s+--hard' <<<"$COMMAND"; then
   exit 2
 fi
 
+# Guard 5b: Block npm commands that rebuild node_modules through a symbolic link
+# Incident DEV 2026-11-15 : `npm ci` dans un worktree dont node_modules est un lien vers le
+# checkout servi vide la CIBLE du lien, et le backend DEV perd ses dépendances. Un script
+# preinstall ne protège pas : npm 11.13 vide node_modules avant de le lancer (essai du
+# 2026-11-15). Répertoires contrôlés : le cwd de l'enveloppe et chaque argument de cd, pushd,
+# --prefix ou -C de la commande ; pour chacun, sa racine git. Refus si node_modules du
+# répertoire, de la racine, d'un dossier de premier niveau ou de packages/* est un lien.
+# Les verbes listés sont ceux de npm qui réécrivent node_modules, alias compris.
+NPM_REIFY_RE='(^|[^[:alnum:]_./-])npm([[:space:]]+-[^[:space:]]+([[:space:]]+[^-[:space:]][^[:space:]]*)?)*[[:space:]]+(ci|clean-install|ic|install-clean|isntall-clean|install-ci-test|cit|clean-install-test|sit|i|in|ins|inst|insta|instal|install|isnt|isnta|isntal|isntall|add|install-test|it|uninstall|unlink|remove|rm|r|un|update|up|upgrade|udpate|dedupe|ddp|prune)([[:space:];&|)]|$)'
+if grep -qE "$NPM_REIFY_RE" <<<"$COMMAND"; then
+  HOOK_CWD=$(jq -r 'if (.cwd | type) == "string" then .cwd else empty end' <<<"$INPUT")
+  [ -n "$HOOK_CWD" ] || HOOK_CWD=$PWD
+  NPM_DIRS=("$HOOK_CWD")
+  while IFS= read -r d; do
+    [ -n "$d" ] || continue
+    d=${d//\"/}; d=${d//\'/}; d=${d/#\~/$HOME}
+    case "$d" in /*) ;; *) d="$HOOK_CWD/$d" ;; esac
+    NPM_DIRS+=("$d")
+  done < <(
+    { grep -oE '(^|[[:space:];&|(])(cd|pushd)[[:space:]]+[^[:space:];&|)]+' <<<"$COMMAND" | awk '{print $NF}'
+      grep -oE -- '(--prefix|-C)(=|[[:space:]]+)[^[:space:];&|)]+' <<<"$COMMAND" | sed -E 's/^(--prefix|-C)(=|[[:space:]]+)//'
+    } || true
+  )
+  for dir in "${NPM_DIRS[@]}"; do
+    [ -d "$dir" ] || continue
+    NM_CANDIDATES=("$dir/node_modules")
+    # Hors dépôt git (ex. /tmp) : le répertoire seul, sans parcourir ses voisins.
+    if top=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) && [ -n "$top" ]; then
+      NM_CANDIDATES+=("$top/node_modules" "$top"/*/node_modules "$top"/packages/*/node_modules)
+    fi
+    for nm in "${NM_CANDIDATES[@]}"; do
+      if [ -L "$nm" ]; then
+        echo "BLOCKED: cette commande npm réinstallerait node_modules à travers un lien symbolique ($nm -> $(readlink "$nm")). npm vide la cible du lien, ici le node_modules d'un autre checkout (incident DEV 2026-11-15). Retirer d'abord le lien (rm \"$nm\", sans / final : la cible reste intacte), ou travailler sans installer." >&2
+        exit 2
+      fi
+    done
+  done
+fi
+
 # Guard 5: Block npm install/uninstall without confirmation
 if grep -qE 'npm\s+(install|uninstall|update|remove|add)\s' <<<"$COMMAND"; then
   echo "BLOCKED: Gestion de paquets (npm install/uninstall) necessite confirmation explicite. Risque: breaking changes, lock file corruption." >&2
