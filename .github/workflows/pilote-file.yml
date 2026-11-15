@@ -1,9 +1,5 @@
 name: Pilote de la file (ADR-128)
 
-# Fichier d'attente : la garde pretool-file-guard réserve .github/ à l'owner.
-# Geste owner : git mv scripts/ops/pilote-file.workflow.yml .github/workflows/pilote-file.yml
-# (commit signé sur la branche de la PR). Hors de .github/workflows/, ce fichier ne s'exécute pas.
-#
 # routine:
 #   id: pilote-file
 #   owner: Marwane
