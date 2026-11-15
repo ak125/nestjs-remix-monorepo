@@ -118,38 +118,96 @@ function containsCall(node) {
   return Boolean(ts.forEachChild(node, (child) => (containsCall(child) ? true : undefined)));
 }
 
-/** Condition constante : littéral, `undefined`, `void …`, éventuellement niée ou entre parenthèses. */
+/** Condition faite de littéraux et d'opérateurs seulement (`false`, `!0`, `1 === 2`, `false as const`, `[]`). */
 function isConstant(expression) {
-  let node = expression;
-  while (ts.isParenthesizedExpression(node) || (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.ExclamationToken)) {
-    node = ts.isParenthesizedExpression(node) ? node.expression : node.operand;
-  }
+  const node = unwrap(expression);
+  if (ts.isPrefixUnaryExpression(node)) return isConstant(node.operand);
+  if (ts.isTypeOfExpression(node) || ts.isVoidExpression(node)) return ts.isVoidExpression(node) || isConstant(node.expression);
+  if (ts.isBinaryExpression(node)) return isConstant(node.left) && isConstant(node.right);
+  if (ts.isConditionalExpression(node)) return isConstant(node.condition) && isConstant(node.whenTrue) && isConstant(node.whenFalse);
   return (
     ts.isLiteralExpression(node) ||
-    ts.isVoidExpression(node) ||
+    ts.isArrayLiteralExpression(node) ||
+    ts.isObjectLiteralExpression(node) ||
+    ts.isArrowFunction(node) ||
+    ts.isFunctionExpression(node) ||
     [ts.SyntaxKind.TrueKeyword, ts.SyntaxKind.FalseKeyword, ts.SyntaxKind.NullKeyword].includes(node.kind) ||
-    (ts.isIdentifier(node) && node.text === "undefined")
+    (ts.isIdentifier(node) && ["undefined", "NaN", "Infinity"].includes(node.text))
   );
+}
+
+/** Conditions d'un nœud : `if`, `?:`, boucles, opérande gauche de `&&`, `||`, `??`. */
+function conditionOf(node) {
+  if (ts.isIfStatement(node) || ts.isWhileStatement(node) || ts.isDoStatement(node)) return node.expression;
+  if (ts.isConditionalExpression(node)) return node.condition;
+  if (ts.isForStatement(node)) return node.condition;
+  if (
+    ts.isBinaryExpression(node) &&
+    [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.QuestionQuestionToken,
+      ts.SyntaxKind.AmpersandAmpersandEqualsToken, ts.SyntaxKind.BarBarEqualsToken, ts.SyntaxKind.QuestionQuestionEqualsToken].includes(node.operatorToken.kind)
+  ) {
+    return node.left;
+  }
+  return undefined;
+}
+
+function isFunctionLike(node) {
+  return ts.isFunctionLike(node) && !ts.isTypeNode(node);
+}
+
+/**
+ * Programme TypeScript réduit au seul fichier (sans bibliothèque ni résolution de modules) : son analyse
+ * de flot donne le code inatteignable, son vérificateur la portée des noms.
+ */
+function analysisProgram(source) {
+  const host = ts.createCompilerHost({});
+  host.getSourceFile = (name) => (name === source.fileName ? source : undefined);
+  const options = { allowJs: true, checkJs: true, allowUnreachableCode: false, noLib: true, noResolve: true, types: [] };
+  return ts.createProgram([source.fileName], options, host);
+}
+
+/**
+ * Plages de code inatteignable selon l'analyse de flot de TypeScript (diagnostic 7027) :
+ * instruction après un `return`, un `throw`, un `break` ou un `continue`, à toute profondeur,
+ * branche `if (false)`, corps de boucle sortie aussitôt.
+ */
+function unreachableRanges(program, source) {
+  return program
+    .getSemanticDiagnostics(source)
+    .filter((diagnostic) => diagnostic.code === 7027)
+    .map((diagnostic) => [diagnostic.start, diagnostic.start + diagnostic.length]);
 }
 
 /**
  * Test qui ne vérifie plus rien : aucun rappel littéral, rappel sans aucun appel (`() => undefined`,
- * `() => void 0`, corps vide), corps ouvert par un `return` sans appel (`return;`, `return undefined;`),
- * instruction après un `return` ou un `throw` du corps (code mort), ou branche du corps sur une constante.
+ * `() => void 0`, corps vide), corps ouvert par un `return` sans appel ; ou, dans le rappel hors
+ * fonctions imbriquées : un `return` autre que la dernière instruction du corps (`if (x) return;`,
+ * `{ return; }`), du code inatteignable, une condition faite de littéraux (`if (false as const)`, `false && …`).
  */
-function isNeutralised(call) {
+function isNeutralised(call, unreachable) {
   if (ts.isCallExpression(call.parent) && call.parent.expression === call) return false;
   const callback = [...call.arguments].reverse().find((argument) => ts.isArrowFunction(argument) || ts.isFunctionExpression(argument));
   if (!callback || !containsCall(callback.body)) return true;
-  if (!ts.isBlock(callback.body)) return false;
+  if (unreachable.some(([start, end]) => start >= callback.body.pos && end <= callback.body.end)) return true;
+  if (!ts.isBlock(callback.body)) return Boolean(findInBody(callback.body, (node) => conditionOf(node) && isConstant(conditionOf(node))));
   const statements = callback.body.statements;
   const [first] = statements;
   if (ts.isReturnStatement(first) && !(first.expression && containsCall(first.expression))) return true;
-  return statements.some(
-    (statement, index) =>
-      ((ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) && index < statements.length - 1) ||
-      (ts.isIfStatement(statement) && isConstant(statement.expression)),
+  const last = statements.at(-1);
+  return Boolean(
+    findInBody(callback.body, (node) =>
+      (ts.isReturnStatement(node) && node !== last) || (conditionOf(node) !== undefined && isConstant(conditionOf(node)))),
   );
+}
+
+/** Premier nœud du corps (fonctions imbriquées exclues) qui satisfait `predicate`. */
+function findInBody(body, predicate) {
+  const visit = (node) => {
+    if (predicate(node)) return node;
+    if (isFunctionLike(node)) return undefined;
+    return ts.forEachChild(node, visit);
+  };
+  return predicate(body) ? body : ts.forEachChild(body, visit);
 }
 
 // Modules d'où un nom de test peut être importé sous son propre nom.
@@ -257,45 +315,131 @@ function isDataKey(node) {
   );
 }
 
+/** Propriété du parent qui porte `node` (`name`, `initializer`, `arguments`…) : le rôle de la référence. */
+function roleOf(node) {
+  const parent = node.parent;
+  for (const key of Object.keys(parent)) {
+    if (key === "parent") continue;
+    const value = parent[key];
+    if (value === node || (Array.isArray(value) && value.includes(node))) return key;
+  }
+  return "?";
+}
+
+function isInType(node) {
+  for (let current = node.parent; current && !ts.isSourceFile(current); current = current.parent) {
+    if (ts.isTypeNode(current) && !ts.isExpressionWithTypeArguments(current)) return true;
+  }
+  return false;
+}
+
+/** Nom lié (déclaration, paramètre, import) ou affecté sous toute forme. */
+function isBinding(node) {
+  const parent = node.parent;
+  return ((ts.isDeclaration(parent) || ts.isImportSpecifier(parent) || ts.isImportClause(parent)) && parent.name === node) || isAssignmentTarget(node);
+}
+
 /**
- * Références à un nom de test (`it`, `test`, `describe`) ou à l'objet global qui peuvent faire
- * disparaître des tests sans changer leur clé : nom lié, paramètre, alias, import renommé ou hors
- * module de test, affectation sous toute forme ; clé de test écrite sur un objet global ou passée à un
- * appel qui modifie par clé (`vi.stubGlobal("it", …)`, `Object.defineProperty(globalThis, "it", …)`) ;
- * modification d'un objet global à clé non littérale (`globalThis[k] = …`, `Object.assign(globalThis, patch)`) ;
- * alias d'un objet global (`const g = globalThis`) ; module de test cité hors d'un import (`vi.mock("vitest", …)`).
- * Chacune par sa nature et sa position : une référence nouvelle à la tête est refusée.
+ * Lecture ordinaire d'un objet global, seul usage admis : propriété nommée (`window.location`), clé
+ * littérale (`globalThis["fetch"]`), `typeof window`, position de type, nom local (`const { window } = dom`),
+ * premier argument d'une modification à clés littérales (`Object.defineProperty(window, "location", …)`,
+ * `vi.spyOn(window, "fetch")`).
  */
-function testNameReferences(source) {
+function isPlainGlobalUse(node) {
+  let outer = node;
+  while (ts.isParenthesizedExpression(outer.parent) || ts.isAsExpression(outer.parent) || ts.isNonNullExpression(outer.parent) || ts.isSatisfiesExpression(outer.parent)) outer = outer.parent;
+  const parent = outer.parent;
+  if (isInType(node) || isDataKey(node)) return true;
+  if ((ts.isDeclaration(parent) || ts.isBindingElement(parent)) && !ts.isShorthandPropertyAssignment(parent) && parent.name === node) return true;
+  if (ts.isPropertyAccessExpression(parent) && parent.expression === outer) return parent.name.text !== "constructor";
+  if (ts.isElementAccessExpression(parent) && parent.expression === outer) return ts.isStringLiteralLike(unwrap(parent.argumentExpression)) && unwrap(parent.argumentExpression).text !== "constructor";
+  if (ts.isTypeOfExpression(parent)) return true;
+  if (ts.isCallExpression(parent) && parent.arguments[0] === outer) {
+    const name = lastSegment(parent);
+    if (name === "assign" || name === "defineProperties") return hasLiteralKeys(parent);
+    const key = parent.arguments[1] && unwrap(parent.arguments[1]);
+    if (KEYED_CALLS.has(name)) return Boolean(key) && ts.isStringLiteralLike(key) && key.text !== "constructor";
+  }
+  return false;
+}
+
+// Appels qui lisent ou modifient un objet par une clé en second argument.
+const KEYED_CALLS = new Set(["defineProperty", "set", "get", "has", "deleteProperty", "getOwnPropertyDescriptor", "hasOwn", "hasOwnProperty", "spyOn"]);
+
+// Voies d'accès au code dynamique ou à l'objet global sans le nommer.
+const DYNAMIC_CODE_NAMES = new Set(["eval", "Function"]);
+const DYNAMIC_CODE_MODULES = new Set(["vm", "node:vm"]);
+
+/**
+ * `this` hors fonction fléchée et hors classe, dans un script non strict (ni import, ni export, ni
+ * `"use strict"`) : il y vaut l'objet global. Un module est strict, son `this` de fonction vaut `undefined`.
+ */
+function isLooseThis(node, source) {
+  if (source.externalModuleIndicator || source.statements.some((statement) => ts.isExpressionStatement(statement) && ts.isStringLiteral(statement.expression) && statement.expression.text === "use strict")) return false;
+  for (let current = node.parent; current; current = current.parent) {
+    if (ts.isArrowFunction(current)) continue;
+    if (ts.isClassLike(current) || ts.isMethodDeclaration(current) || ts.isGetAccessorDeclaration(current) || ts.isSetAccessorDeclaration(current) || ts.isConstructorDeclaration(current)) return false;
+    if (ts.isFunctionDeclaration(current) || ts.isFunctionExpression(current) || ts.isSourceFile(current)) return true;
+  }
+  return true;
+}
+
+/**
+ * Références qui peuvent faire disparaître des tests sans changer leur clé : nom de test (`it`, `test`,
+ * `describe`) lié, paramètre, alias, import renommé ou hors module de test, affecté sous toute forme ;
+ * clé de test écrite sur un objet global ou passée à un appel qui modifie par clé
+ * (`vi.stubGlobal("it", …)`, `Object.defineProperty(globalThis, "it", …)`) ; tout usage d'un objet
+ * global autre qu'une lecture ordinaire (`isPlainGlobalUse`) ; module de test cité hors d'un import
+ * (`vi.mock("vitest", …)`) ; `eval`, `Function`, `.constructor`, module `vm`, `this` non strict.
+ * Chacune par son nom, la nature et la propriété du parent qui la porte, et sa position : une référence
+ * nouvelle à la tête est refusée. Les noms liés ou affectés sont en outre comptés par nom seul.
+ */
+function testNameReferences(source, checker) {
+  // Nom déclaré dans le fichier (variable locale `window`, paramètre) : ce n'est pas l'objet global.
+  const isLocal = (node) => {
+    const symbol = ts.isShorthandPropertyAssignment(node.parent) ? checker.getShorthandAssignmentValueSymbol(node.parent) : checker.getSymbolAtLocation(node);
+    return Boolean(symbol?.declarations?.some((declaration) => declaration.getSourceFile() === source));
+  };
+  // `expect.any(Function)`, `toBeInstanceOf(Function)`, `x instanceof Function` : le constructeur comme type attendu.
+  const isExpectedType = (node) =>
+    (ts.isCallExpression(node.parent) && node.parent.arguments.includes(node) && ["any", "toBeInstanceOf"].includes(lastSegment(node.parent))) ||
+    (ts.isBinaryExpression(node.parent) && node.parent.right === node && node.parent.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword);
   const references = [];
-  const record = (label, node) => references.push(`${label} : ${ts.SyntaxKind[node.parent.kind]} @ ${positionOf(node, source)}`);
+  const bindings = [];
+  const record = (label, node) => references.push(`${label} : ${ts.SyntaxKind[node.parent.kind]}.${roleOf(node)} @ ${positionOf(node, source)}`);
   const visit = (node) => {
     if (ts.isIdentifier(node) && TEST_CALLEES.has(node.text) && !isInCallee(node) && !isFrameworkImport(node)) {
       const parent = node.parent;
       const globalProperty = ts.isPropertyAccessExpression(parent) && parent.name === node && isGlobalObject(parent.expression);
-      if (!isDataKey(node) || globalProperty || isAssignmentTarget(node) || isMutatingArgument(node)) record(node.text, node);
+      if (!isDataKey(node) || globalProperty || isAssignmentTarget(node) || isMutatingArgument(node)) {
+        record(node.text, node);
+        if (isBinding(node) || globalProperty || isMutatingArgument(node)) bindings.push(node.text);
+      }
     } else if (ts.isStringLiteralLike(node)) {
       const parent = node.parent;
       const isModuleSpecifier = (ts.isImportDeclaration(parent) || ts.isExportDeclaration(parent)) && parent.moduleSpecifier === node;
       const isKey = (ts.isElementAccessExpression(parent) && parent.argumentExpression === node) || ts.isComputedPropertyName(parent);
-      if (TEST_CALLEES.has(node.text) && (isKey || isMutatingArgument(node))) record(node.text, node);
+      if (TEST_CALLEES.has(node.text) && (isKey || isMutatingArgument(node))) {
+        record(node.text, node);
+        bindings.push(node.text);
+      }
       if (TEST_FRAMEWORK_MODULES.has(node.text) && !isModuleSpecifier) record(node.text, node);
-    } else if (ts.isElementAccessExpression(node) && isGlobalObject(node.expression) && !ts.isStringLiteralLike(unwrap(node.argumentExpression))) {
-      record("clé calculée sur un objet global", node);
-    } else if (ts.isCallExpression(node) && OBJECT_MUTATORS.has(lastSegment(node)) && node.arguments.length && isGlobalObject(node.arguments[0]) && !hasLiteralKeys(node)) {
-      record(`${lastSegment(node)} sur un objet global, clé non littérale`, node);
+      if (DYNAMIC_CODE_MODULES.has(node.text) || (node.text === "constructor" && isKey)) record(node.text, node);
     } else if (ts.isCallExpression(node) && lastSegment(node) === "stubGlobal" && node.arguments.length && !ts.isStringLiteralLike(unwrap(node.arguments[0]))) {
       record("stubGlobal à clé calculée", node);
-    } else if (ts.isIdentifier(node) && GLOBAL_OBJECTS.has(node.text)) {
-      let outer = node;
-      while (ts.isParenthesizedExpression(outer.parent) || ts.isAsExpression(outer.parent) || ts.isNonNullExpression(outer.parent)) outer = outer.parent;
-      const parent = outer.parent;
-      const aliased = (ts.isVariableDeclaration(parent) && parent.initializer === outer) || (ts.isBinaryExpression(parent) && parent.right === outer);
-      if (aliased) record(`alias de ${node.text}`, node);
+    } else if (ts.isIdentifier(node) && GLOBAL_OBJECTS.has(node.text) && !isPlainGlobalUse(node) && !isLocal(node)) {
+      record(`usage de ${node.text}`, node);
+    } else if (ts.isIdentifier(node) && DYNAMIC_CODE_NAMES.has(node.text) && !isDataKey(node) && !isInType(node) && !isLocal(node) && !isExpectedType(node)) {
+      record(node.text, node);
+    } else if (ts.isIdentifier(node) && node.text === "constructor" && ts.isPropertyAccessExpression(node.parent) && node.parent.name === node) {
+      record("constructor", node);
+    } else if (node.kind === ts.SyntaxKind.ThisKeyword && isLooseThis(node, source)) {
+      record("this", node);
     }
     ts.forEachChild(node, visit);
   };
   visit(source);
+  references.bindings = bindings;
   return references;
 }
 
@@ -308,18 +452,20 @@ export function testDeclarations(filename, text) {
   const source = ts.createSourceFile(filename, text, ts.ScriptTarget.Latest, true, scriptKind(filename));
   if (source.parseDiagnostics?.length) return null;
   const declarations = [];
+  const program = analysisProgram(source);
+  const unreachable = unreachableRanges(program, source);
   const visit = (node) => {
     if (isTestCall(node)) {
       declarations.push({
         key: `${descriptorOf(node, source)} @ ${positionOf(node, source)}`,
         disabled: calleeSegments(node.expression).some((segment) => DISABLING_MODIFIERS.has(segment)),
-        neutralised: isNeutralised(node),
+        neutralised: isNeutralised(node, unreachable),
       });
     }
     ts.forEachChild(node, visit);
   };
   visit(source);
-  declarations.references = testNameReferences(source);
+  declarations.references = testNameReferences(source, program.getTypeChecker());
   return declarations;
 }
 
@@ -563,8 +709,12 @@ export function evaluateLevelBFiles(policy, files) {
       before.filter((declaration) => declaration.neutralised).map((declaration) => declaration.key),
     ).filter((key) => before.some((declaration) => declaration.key === key));
     // Une référence nouvelle à un nom de test (redéfinition, alias, global modifié) peut vider les tests
-    // sans changer leur clé : comparée par nature et position, pas par nom seul.
-    const references = missingFrom(after.references, before.references ?? []);
+    // sans changer leur clé : comparée par nature, rôle et position ; un nom lié ou affecté de plus
+    // qu'à la base est en outre refusé, quelle que soit sa position.
+    const references = [
+      ...missingFrom(after.references, before.references ?? []),
+      ...missingFrom(after.references.bindings, before.references?.bindings ?? []).map((name) => `${name} lié ou affecté`),
+    ];
     if (references.length) {
       refusals.push(refusal("TEST_REMOVED", `${file.filename} (nom de test redéfini ou référencé hors appel : ${references[0]})`));
     } else if (lost.length) {

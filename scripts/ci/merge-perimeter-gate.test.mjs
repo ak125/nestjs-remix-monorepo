@@ -508,6 +508,58 @@ test("niveau B : nom de test redéfini sous toute forme, global modifié ou code
   }
 });
 
+test("niveau B : référence existante prise comme crédit, code mort imbriqué, objet global ou code dynamique : refusé (revue Codex 7e passage, revue de sécurité)", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const call = 'it("contrôle critique", () => {\n  assertSecurity();\n});';
+  const collision = `@@ -1,4 +1,4 @@\n-const original = it;\n+const it = (_name, _callback) => {};\n ${call.split("\n").join("\n ")}`;
+  assert.deepEqual(lbFiles(modified(t, collision)), ["TEST_REMOVED"], "collision");
+  const base = call;
+  for (const head of [
+    'it("contrôle critique", () => {\n  { return; }\n  assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  if (process.env.CI) return;\n  assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  if (false as const) assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  false && assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  1 === 2 ? assertSecurity() : null;\n});',
+    'it("contrôle critique", () => {\n  while (true) { break; assertSecurity(); }\n});',
+    'it("contrôle critique", () => {\n  done: { break done; assertSecurity(); }\n});',
+    'it("contrôle critique", () => {\n  try { throw 0; assertSecurity(); } catch {}\n});',
+    'it("contrôle critique", () => (null ?? assertSecurity()));',
+    `const k = ["i", "t"].join("");\nReflect.set([globalThis][0], k, () => {});\n${call}`,
+    `patchAll(globalThis);\n${call}`,
+    `const deps = { globalThis };\n${call}`,
+    `const k = ["i", "t"].join("");\nReflect.set(Function("return this")(), k, () => {});\n${call}`,
+    `const k = ["i", "t"].join("");\nReflect.set((0, eval)("globalThis"), k, () => {});\n${call}`,
+    `const k = ["i", "t"].join("");\nReflect.set((() => {}).constructor("return this")(), k, () => {});\n${call}`,
+    `import vm from "node:vm";\nvm.runInThisContext("it = () => {}");\n${call}`,
+    `const k = ["i", "t"].join("");\nReflect.set((function () { return this; })(), k, () => {});\n${call}`,
+  ]) {
+    const patch = `@@ -1,3 +1,3 @@\n${base.split("\n").map((l) => `-${l}`).join("\n")}\n${head.split("\n").map((l) => `+${l}`).join("\n")}`;
+    assert.deepEqual(lbFiles(modified(t, patch)), ["TEST_REMOVED"], head);
+  }
+});
+
+test("niveau B : garde qui lève, condition sur une variable, retour dans un rappel imbriqué : admis", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  for (const body of [
+    '  const r = load();\n  if (!r) throw new Error("absent");\n  expect(r.id).toBe(1);',
+    "  const r = load() ?? fallback();\n  r.ok && expect(r.id).toBe(1);",
+    "  [1, 2].forEach((x) => {\n    if (!x) return;\n    expect(x).toBeGreaterThan(0);\n  });",
+    "  for (const x of load()) {\n    if (!x) continue;\n    expect(x).toBeTruthy();\n  }",
+  ]) {
+    const patch = `@@ -1,3 +1,${2 + body.split("\n").length} @@\n it("a", () => {\n-  expect(1).toBe(1);\n${body.split("\n").map((l) => `+${l}`).join("\n")}\n });`;
+    assert.deepEqual(lbFiles(modified(t, patch)), [], body);
+  }
+});
+
+test("niveau B : this d'une fonction dans un module (strict) : admis ; dans un script non strict : refusé", () => {
+  const t = "frontend/tests/unit/a.test.tsx";
+  const mock = "+HTMLDialogElement.prototype.showModal = function () {\n+  this.open = true;\n+};";
+  const inModule = `@@ -1,4 +1,${4 + 3} @@\n import { it, expect } from "vitest";\n it("a", () => {\n   expect(1).toBe(1);\n });\n${mock}`;
+  assert.deepEqual(lbFiles(modified(t, inModule)), []);
+  const inScript = `@@ -1,3 +1,${3 + 3} @@\n it("a", () => {\n   expect(1).toBe(1);\n });\n${mock}`;
+  assert.deepEqual(lbFiles(modified(t, inScript)), ["TEST_REMOVED"]);
+});
+
 test("niveau B : données nommées test, global modifié à clé littérale, regex .test : admis", () => {
   const t = "frontend/tests/unit/a.test.ts";
   for (const added of [
@@ -515,7 +567,12 @@ test("niveau B : données nommées test, global modifié à clé littérale, reg
     "+const config = { test: /x/, it: 1, describe: 'd' };\n+expect(config.test.source).toBe('x');",
     '+Object.defineProperty(window, "location", { value: { href: "/" } });',
     '+Object.assign(globalThis, { fetch: vi.fn() });',
-    "+const deps = { window };",
+    "+const { window } = dom;\n+expect(window.document.title).toBe('t');",
+    '+vi.spyOn(window, "fetch");\n+expect(typeof window).toBe("object");',
+    "+class Page { title() { return this.name; } }",
+    "+expect(save).toHaveBeenCalledWith(expect.any(Function));\n+expect(save).toBeInstanceOf(Function);",
+    '+const descriptor = Object.getOwnPropertyDescriptor(window, "sessionStorage");',
+    "+const window = '30d';\n+const row = { window };",
     "+expect(/a/.test('a')).toBe(true);",
   ]) {
     const patch = `@@ -1,3 +1,${3 + added.split("\n").length} @@\n it("a", () => {\n   expect(1).toBe(1);\n });\n${added}`;
