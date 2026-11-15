@@ -38,7 +38,7 @@ Huit registres décrivent tout ou partie du circuit :
 | Registre | Nature | Décision AD |
 |---|---|---|
 | `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md` | Skill de la boucle (ADR-111), lu par les sessions | **Choisi comme carte unique** : il est déjà lu par la boucle. C'est une section ajoutée, pas un cinquième registre. |
-| `.claude/prompts/_registry/canon-registry.md` | Complétude par rôle R0–R8, datée du 2026-03-14 | Bandeau vers la carte et lignes retirées marquées (#2083). Sa suppression attend AB : `r7-brand-rag-generator.md:34`, cité par #2081, le nomme. |
+| `.claude/prompts/_registry/canon-registry.md` | Complétude par rôle R0-R8, datée du 2026-03-14 | Bandeau vers la carte et lignes retirées marquées (#2083). Sa suppression attend AB : `r7-brand-rag-generator.md:34`, cité par #2081, le nomme. |
 | `.spec/00-canon/prompt-registry.md` | Table rôle → triplet de prompts. Porte de dérive en mode warn. | Owner-only : patch préparé (§6.1). |
 | `.spec/00-canon/artefact-registry.md` | Artefacts par rôle | Owner-only : patch préparé (§6.2). |
 | `.spec/00-canon/repository-registry/pipelines.registry.json` | Arêtes du pipeline (L2) | Owner-only : patch préparé (§6.3). |
