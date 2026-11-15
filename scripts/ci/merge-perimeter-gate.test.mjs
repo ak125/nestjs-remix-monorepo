@@ -658,6 +658,38 @@ test("niveau B : clé de données nommée eval ou Function, lecture ordinaire d'
   }
 });
 
+test("niveau B : rappel générateur, itération d'un littéral vide, switch littéral : refusé (revue Codex 12e passage)", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const base = 'it("contrôle critique", () => {\n  assertSecurity();\n});';
+  for (const head of [
+    'it("contrôle critique", function* () {\n  assertSecurity();\n});',
+    'it("contrôle critique", async function* () {\n  assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  for (const unused of []) assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  for (const key in {}) assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  for (const unused of [...[]]) assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  [].forEach(() => assertSecurity());\n});',
+    'it("contrôle critique", () => [].map(() => assertSecurity()));',
+    'it("contrôle critique", () => {\n  switch (false) { case true: assertSecurity(); }\n});',
+  ]) {
+    const patch = `@@ -1,3 +1,3 @@\n${base.split("\n").map((l) => `-${l}`).join("\n")}\n${head.split("\n").map((l) => `+${l}`).join("\n")}`;
+    assert.deepEqual(lbFiles(modified(t, patch)), ["TEST_REMOVED"], head);
+  }
+});
+
+test("niveau B : boucle sur un tableau non vide, forEach ordinaire, switch (true) à conditions : admis (revue Codex 12e passage)", () => {
+  const t = "frontend/tests/unit/a.test.ts";
+  for (const body of [
+    "  for (const v of [1, 2]) expect(v).toBeGreaterThan(0);",
+    "  [1, 2].forEach((v) => expect(v).toBeTruthy());",
+    "  for (const key in { a: 1 }) expect(key).toBe('a');",
+    "  const value = 2;\n  switch (true) { case value > 1: expect(value).toBe(2); }",
+  ]) {
+    const added = `+it("b", () => {\n${body.split("\n").map((l) => `+${l}`).join("\n")}\n+});`;
+    const patch = `@@ -1,3 +1,${3 + added.split("\n").length} @@\n it("a", () => {\n   expect(1).toBe(1);\n });\n${added}`;
+    assert.deepEqual(lbFiles(modified(t, patch)), [], body);
+  }
+});
+
 test("niveau B : this d'une fonction dans un module (strict) : admis ; dans un script non strict : refusé", () => {
   const t = "frontend/tests/unit/a.test.tsx";
   const mock = "+HTMLDialogElement.prototype.showModal = function () {\n+  this.open = true;\n+};";

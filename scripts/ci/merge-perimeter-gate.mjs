@@ -178,6 +178,36 @@ function isFunctionLike(node) {
   return ts.isFunctionLike(node) && !ts.isTypeNode(node);
 }
 
+/** Littéral vide à l'itération : `[]`, `[...[]]`, `{}`, `""`. */
+function isEmptyLiteral(expression) {
+  const node = unwrap(expression);
+  if (ts.isArrayLiteralExpression(node)) return node.elements.every((element) => ts.isSpreadElement(element) && isEmptyLiteral(element.expression));
+  if (ts.isObjectLiteralExpression(node)) return node.properties.every((property) => ts.isSpreadAssignment(property) && isEmptyLiteral(property.expression));
+  return ts.isStringLiteralLike(node) && node.text === "";
+}
+
+// Méthodes de tableau qui n'appellent leur rappel que pour chaque élément.
+const ITERATION_METHODS = new Set(["forEach", "map", "flatMap", "filter", "some", "every", "find", "findIndex", "findLast", "findLastIndex", "reduce", "reduceRight"]);
+
+/**
+ * Code mort par construction littérale, hors conditions (`conditionOf`) : `for … of []`, `for … in {}`,
+ * `[].forEach(…)`, `switch` dont le discriminant et chaque `case` sont des littéraux (`switch (false) { case true: … }`).
+ * `switch (true) { case x > 1: … }` reste ordinaire.
+ */
+function isDeadConstruct(node) {
+  if ((ts.isForOfStatement(node) || ts.isForInStatement(node)) && isEmptyLiteral(node.expression)) return true;
+  if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && ITERATION_METHODS.has(node.expression.name.text) && isEmptyLiteral(node.expression.expression)) return true;
+  if (ts.isSwitchStatement(node) && isConstant(node.expression)) {
+    return node.caseBlock.clauses.every((clause) => !ts.isCaseClause(clause) || isConstant(clause.expression));
+  }
+  return false;
+}
+
+/** Condition faite de littéraux, ou construction littérale qui saute du code. */
+function isDeadCode(node) {
+  return (conditionOf(node) !== undefined && isConstant(conditionOf(node))) || isDeadConstruct(node);
+}
+
 /**
  * Programme TypeScript réduit au seul fichier (sans bibliothèque ni résolution de modules) : son analyse
  * de flot donne le code inatteignable, son vérificateur la portée des noms.
@@ -205,21 +235,24 @@ function unreachableRanges(program, source) {
  * Test qui ne vérifie plus rien : aucun rappel littéral, rappel sans aucun appel (`() => undefined`,
  * `() => void 0`, corps vide), corps ouvert par un `return` sans appel ; ou, dans le rappel hors
  * fonctions imbriquées : un `return` autre que la dernière instruction du corps (`if (x) return;`,
- * `{ return; }`), du code inatteignable, une condition faite de littéraux (`if (false as const)`, `false && …`).
+ * `{ return; }`), du code inatteignable, une condition faite de littéraux (`if (false as const)`, `false && …`),
+ * une construction littérale qui saute du code (`isDeadConstruct`) ; ou un rappel générateur.
  */
 function isNeutralised(call, unreachable) {
   if (ts.isCallExpression(call.parent) && call.parent.expression === call) return false;
   const callback = [...call.arguments].reverse().find(isFunctionLiteral);
   if (!callback || !containsCall(callback.body)) return true;
+  // Un rappel générateur n'exécute rien tant qu'on ne l'itère pas : le runner l'appelle et s'arrête là.
+  if (callback.asteriskToken) return true;
   if (unreachable.some(([start, end]) => start >= callback.body.pos && end <= callback.body.end)) return true;
-  if (!ts.isBlock(callback.body)) return Boolean(findInBody(callback.body, (node) => conditionOf(node) && isConstant(conditionOf(node))));
+  if (!ts.isBlock(callback.body)) return Boolean(findInBody(callback.body, isDeadCode));
   const statements = callback.body.statements;
   const [first] = statements;
   if (ts.isReturnStatement(first) && !(first.expression && containsCall(first.expression))) return true;
   const last = statements.at(-1);
   return Boolean(
     findInBody(callback.body, (node) =>
-      (ts.isReturnStatement(node) && node !== last) || (conditionOf(node) !== undefined && isConstant(conditionOf(node)))),
+      (ts.isReturnStatement(node) && node !== last) || isDeadCode(node)),
   );
 }
 
