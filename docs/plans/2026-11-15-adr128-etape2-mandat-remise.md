@@ -108,6 +108,14 @@ suivants. La frontière de confiance est donc le mandat écrit et approuvé par 
 borne l'effet sur GitHub : il ne croit que le bundle, revérifie tout sur une machine neuve et seul
 lui détient la clé de l'App.
 
+Atténuations livrées : tout git lancé après la session sur le clone (recherche de secrets, état
+figé, nettoyage) passe sans jeton, sans config globale ni système, sans fsmonitor ni hook ; la
+recherche de secrets lit aussi les fichiers binaires (`git diff --text`) ; le clone de l'espace de
+travail est vidé en fin de job, pour qu'une config git ou un hook posé par la session ne survive pas
+au job. Atténuation forte, hors périmètre de cette PR (runner = acte de l'owner) : session sous un
+second utilisateur ou dans un conteneur ne montant que le worktree, ou runner éphémère. Non couvert :
+un secret encodé (base64, chiffré) dans un commit échappe à la recherche par motif.
+
 ## Point 4 — identité GitHub et jetons
 
 - **GITHUB_TOKEN seul ne suffit pas** : une PR ouverte par lui ne déclenche pas les workflows

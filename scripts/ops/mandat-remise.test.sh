@@ -65,6 +65,7 @@ case "$(cat "$FIX/scenario")" in
   ok|bloque) echo "contenu" > docs-mandat.md; git add -A; git commit -qm "docs: mandat Refs #7" ;;
   workflow) echo "on: push" >> .github/workflows/ci.yml; git commit -qam "ci: modifie un workflow" ;;
   fuite) echo "cle=sk-ant-oat01-ABCDEFGHIJKLMNOPQRSTUVWXYZ0123" > f.txt; git add -A; git commit -qm "f" ;;
+  binaire) printf '\000\001PNG cle=sk-ant-oat01-ABCDEFGHIJKLMNOPQRSTUVWXYZ0123\000' > f.png; git add -A; git commit -qm "f" ;;
   sale) echo a > a.md; git add a.md; git commit -qm a; echo b > b.md ;;
   rien) ;;
   echec) echo '{"type":"result","is_error":true,"subtype":"error_max_budget_usd","total_cost_usd":20}'; exit 1 ;;
@@ -242,6 +243,9 @@ chaine fuite fuite implémenté vert
 check "secret dans un commit : pas de bundle" "true/false" "$(jq -r '"\(.secret_detecte)/\(.bundle)"' "$S/figer.json")"
 check "secret dans un commit : bloqué" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
 check "secret dans un commit : aucun bundle dans l'artifact" "absent" "$([[ -f "$S/mandat.bundle" ]] && echo présent || echo absent)"
+chaine binaire binaire implémenté vert
+check "secret dans un fichier binaire : détecté, pas de bundle" "true/false" "$(jq -r '"\(.secret_detecte)/\(.bundle)"' "$S/figer.json")"
+check "secret dans un fichier binaire : bloqué" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
 chaine sale sale implémenté vert
 check "fichier non commité : bloqué" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
 chaine echec echec implémenté vert

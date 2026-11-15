@@ -64,6 +64,12 @@ done
 [[ -n "$SORTIE" ]] || die "--sortie DIR obligatoire"
 mkdir -p "$SORTIE/brut"
 
+# git sur un dépôt que la session a pu toucher (config partagée par le worktree) : sans jeton dans
+# l'environnement, sans config système ni globale, sans fsmonitor ni hook.
+git_sur() { local d="$1"; shift
+  env -i PATH="$PATH" HOME="$(mktemp -d)" GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null \
+    git -c core.fsmonitor=false -c core.hooksPath=/dev/null -C "$d" "$@"; }
+
 meme_compte() { [[ -n "$1" && "${1,,}" == "${2,,}" ]]; }   # logins GitHub insensibles à la casse
 
 slug() { # titre → [a-z0-9-], 40 caractères au plus (substitutions littérales, sans dépendance de locale)
@@ -248,8 +254,9 @@ recherche_secrets() { # recherche_secrets <git -C ...> <base> <tete> → 0 si un
   valeurs_secretes "$valeurs"
   # Texte écrit d'abord dans un fichier : avec pipefail, `git … | grep -q` peut échouer par SIGPIPE
   # quand grep trouve tôt, et un secret passerait alors pour absent.
-  { git -C "$depot" diff --no-ext-diff --no-textconv "$base" "$tete"
-    git -C "$depot" log --format='%B' "$base..$tete"; } > "$texte" || { rm -f "$valeurs" "$texte"; die "lecture du diff impossible"; }
+  # --text : un fichier binaire est lu comme du texte, sinon son contenu échappe à la recherche.
+  { git_sur "$depot" diff --text --no-ext-diff --no-textconv "$base" "$tete"
+    git_sur "$depot" log --format='%B' "$base..$tete"; } > "$texte" || { rm -f "$valeurs" "$texte"; die "lecture du diff impossible"; }
   local trouve=1
   if grep -qE -- "$MOTIFS_SECRETS" "$texte"; then trouve=0; fi
   if [[ -s "$valeurs" ]] && grep -qF -f "$valeurs" "$texte"; then trouve=0; fi
@@ -309,9 +316,9 @@ expurger() { # remplace les valeurs secrètes et les motifs de jetons dans les f
 nettoyer() {
   [[ -f "$SORTIE/preparation.json" ]] || { echo "rien à nettoyer"; return 0; }
   local wt br; wt="$(jq -r .worktree "$SORTIE/preparation.json")"; br="$(jq -r .branche "$SORTIE/preparation.json")"
-  git -C "$RACINE" worktree remove --force "$wt" 2>/dev/null || rm -rf "$wt"
-  git -C "$RACINE" worktree prune
-  git -C "$RACINE" branch -D "$br" > /dev/null 2>&1 || true
+  git_sur "$RACINE" worktree remove --force "$wt" 2>/dev/null || rm -rf "$wt"
+  git_sur "$RACINE" worktree prune
+  git_sur "$RACINE" branch -D "$br" > /dev/null 2>&1 || true
   echo "nettoyé : $wt, branche locale $br"
 }
 
