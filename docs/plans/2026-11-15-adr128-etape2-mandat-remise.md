@@ -31,13 +31,17 @@ secret, variable, environnement ni runner n'a été créé ou modifié. Le workf
      `GITHUB_TOKEN` ; journal `.jsonl` complet copié ;
    - `figer` : worktree propre exigé, recherche de secrets dans le diff et les messages, bundle git
      `refs/heads/mandat/… ^base` seulement si tout est sain ;
-   - `expurger` retire jetons et clés des fichiers, puis artifact `mandat-remise-<run_id>` (90 jours),
+   - `expurger` retient d'abord le journal entier (remplacé par `journal/RETENU.txt` et ses empreintes)
+     s'il contient un motif qu'un remplacement n'expurge pas sûrement : clé PEM, JWT, identifiants dans
+     une URL, clé AWS, en-tête `Bearer`, paramètres RSA d'un fichier d'identité de runner ; il retire
+     ensuite jetons et clés des autres fichiers, puis artifact `mandat-remise-<run_id>` (90 jours),
      coût dans le résumé de l'exécution ; `nettoyer` retire worktree et branche locale.
 3. **Job `publication`** sur un runner hébergé neuf (`environment: mandat-remise`, GITHUB_TOKEN
    `contents: read`, `issues: write`) :
    - `garde --publication` (label toujours présent) ;
    - `verifier` recalcule tout depuis le bundle sans rien croire du premier job : base atteignable
-     depuis `main` (API compare), commits, fichiers, aucun fichier `.github/workflows/`
+     depuis `main` (API compare), commits, fichiers lus en chemins bruts (`diff -z`,
+     `core.quotePath=false`), aucun fichier sous `.github/` : workflows, actions composites, réglages
      (ADR-130 D3.4), aucun secret, branche absente d'origin ; `vérifié` sans contrôle `vert` est
      déclassé en `implémenté` ; un statut `bloqué` avec commits part en PR brouillon ;
    - jeton d'installation de l'App (`contents: write`, `pull-requests: write`, ce dépôt seul) créé
@@ -112,7 +116,9 @@ Atténuations livrées : tout git lancé après la session sur le clone (recherc
 figé, nettoyage) passe sans jeton, sans config globale ni système, sans fsmonitor ni hook ; la
 recherche de secrets lit aussi les fichiers binaires (`git diff --text`) ; le clone de l'espace de
 travail est vidé en fin de job, pour qu'une config git ou un hook posé par la session ne survive pas
-au job. Atténuation forte, hors périmètre de cette PR (runner = acte de l'owner) : session sous un
+au job ; le journal publié est retenu en entier (fail-closed) dès qu'un motif de clé ou de jeton non
+expurgeable y figure, car l'artifact d'un dépôt public est téléchargeable par tout compte GitHub.
+Atténuation forte, hors périmètre de cette PR (runner = acte de l'owner) : session sous un
 second utilisateur ou dans un conteneur ne montant que le worktree, ou runner éphémère. Non couvert :
 un secret encodé (base64, chiffré) dans un commit échappe à la recherche par motif.
 
@@ -186,6 +192,14 @@ font avec le compte de l'owner (interface web ou `gh` sur son poste).
 - Les contrôles déclarés par la session sont auto-déclarés ; seul le déclassement de `vérifié` sans
   contrôle `vert` est automatique. La CI de la PR reste la preuve indépendante.
 - Risque résiduel du même uid (point 3).
+- Journal : la liste de motifs qui le retient ne couvre pas un secret de forme inconnue (chaîne à
+  forte entropie sans préfixe). Proposé seulement : chiffrer le journal avec une clé publique dont
+  l'owner détient seul la clé privée, ou le garder hors de l'artifact public. Une fausse alerte
+  (le mandat lit un fichier de test contenant un en-tête de clé) fait perdre le journal, pas le
+  mandat.
+- Fichiers du dépôt exécutés par la CI hors de `.github/` (scripts `scripts/ci/`, manifestes) : une
+  PR `mandat/*` peut les modifier comme toute PR de branche du dépôt. Proposé seulement : exiger
+  l'approbation de l'owner avant la CI à secrets sur les branches `mandat/*` (réglage du dépôt).
 - Chargement de `CLAUDE.md` sous `--restricted` non vérifié sur une vraie session.
 - `node_modules` absent du worktree : un mandat qui lance des tests paie un `npm ci` (temps, disque,
   budget) ; à mesurer au mandat 1.

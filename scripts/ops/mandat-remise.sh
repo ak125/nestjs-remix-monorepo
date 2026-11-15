@@ -41,6 +41,10 @@ GIT_EMAIL="${MANDAT_GIT_EMAIL:-mandat-remise@users.noreply.github.com}"
 OUTILS="Bash,Read,Edit,Write,Glob,Grep"
 STATUTS="implémenté intégré vérifié bloqué"     # statut:opérationnel reste à l'owner (D4.3)
 MOTIFS_SECRETS='sk-ant-[A-Za-z0-9_-]{20,}|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|-----BEGIN ([A-Z]+ )?PRIVATE KEY-----'
+# Motifs qui retiennent tout le journal de session au lieu d'être expurgés : clé PEM (le corps
+# survivrait au remplacement de l'en-tête), JWT, identifiants dans une URL, clé AWS, en-tête Bearer,
+# paramètres RSA du fichier d'identité d'un runner (guillemets échappés ou non dans le JSONL).
+MOTIFS_RETENUE='-----BEGIN [A-Z ]*PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}|[A-Za-z][A-Za-z0-9+.-]*://[^/[:space:]:@"]+:[^/[:space:]@"]+@|AKIA[0-9A-Z]{16}|[Bb]earer [A-Za-z0-9._~+/=-]{20,}|\\?"(modulus|inverseQ|privateExponent)\\?"'
 VARS_SECRETES="CLAUDE_CODE_OAUTH_TOKEN ANTHROPIC_API_KEY GH_TOKEN GITHUB_TOKEN MANDAT_TOKEN_PR"
 
 die() { echo "mandat-remise : $*" >&2; exit 1; }
@@ -295,7 +299,25 @@ figer() {
   jq -c . "$SORTIE/figer.json"
 }
 
+retenir_journal() { # journal retenu en entier (fail-closed) si un motif non expurgeable y figure
+  local j="$SORTIE/journal" f trouve=false
+  [[ -d "$j" ]] || return 0
+  while IFS= read -r -d '' f; do
+    if grep -qE -- "$MOTIFS_RETENUE" "$f"; then trouve=true; fi
+  done < <(find "$j" -type f -print0)
+  [[ "$trouve" == true ]] || return 0
+  local note; note="$(mktemp)"
+  { echo "Journal retenu : un motif de clé ou de jeton non expurgeable par remplacement y figure."
+    echo "Il n'est pas publié dans l'artifact (dépôt public). Empreintes des fichiers retirés :"
+    ( cd "$j" && find . -type f -exec sha256sum {} + ); } > "$note"
+  rm -rf "$j"; mkdir -p "$j"; mv "$note" "$j/RETENU.txt"
+  echo "expurger : journal retenu (motif non expurgeable)"
+}
+
 expurger() { # remplace les valeurs secrètes et les motifs de jetons dans les fichiers texte de DIR
+  # D'abord le journal : une clé PEM ou un jeton de forme inconnue ne s'expurge pas par remplacement
+  # d'un en-tête ; le journal entier est alors retenu.
+  retenir_journal
   local valeurs n=0 f; valeurs="$(mktemp)"; valeurs_secretes "$valeurs"
   while IFS= read -r -d '' f; do
     if grep -qE -- "$MOTIFS_SECRETS" "$f" || { [[ -s "$valeurs" ]] && grep -qF -f "$valeurs" "$f"; }; then
@@ -363,10 +385,14 @@ verifier() {
       tete="$(git -C "$RACINE" rev-parse refs/mandat/tete)"
       if git -C "$RACINE" merge-base --is-ancestor "$base" "$tete"; then
         commits="$(git -C "$RACINE" rev-list --count "$base..$tete")"
-        fichiers="$(git -C "$RACINE" diff --no-renames --name-only "$base" "$tete" | jq -R . | jq -sc .)"
+        # Chemins bruts séparés par NUL : sans -z, git cite un chemin non ASCII entre guillemets
+        # (".github/workflows/\303\251.yml") et le filtre ci-dessous ne le reconnaîtrait pas.
+        fichiers="$(git -C "$RACINE" -c core.quotePath=false diff -z --no-renames --name-only "$base" "$tete" \
+          | jq -Rsc 'split("\u0000") | map(select(length > 0))')"
         [[ "$commits" -gt 0 ]] || bloquants+=("aucun commit au-dessus de la base")
-        if jq -e 'any(.[]; startswith(".github/workflows/"))' <<< "$fichiers" > /dev/null; then
-          bloquants+=("fichier sous .github/workflows/ modifié : interdit à une identité d'agent (ADR-130 D3.4)")
+        # Tout .github/ : workflows, mais aussi actions composites et réglages que ces workflows exécutent.
+        if jq -e 'any(.[]; startswith(".github/"))' <<< "$fichiers" > /dev/null; then
+          bloquants+=("fichier sous .github/ modifié (workflows, actions, réglages CI) : interdit à une identité d'agent (ADR-130 D3.4)")
         fi
         if recherche_secrets "$RACINE" "$base" "$tete"; then
           bloquants+=("secret détecté dans les commits")
@@ -431,7 +457,8 @@ rediger() { # rediger <url PR ou vide> <raison push/PR ou vide> → corps de PR 
   commun=(--slurpfile d "$SORTIE/decision.json" --slurpfile m "$SORTIE/mandat.json"
           --slurpfile r "$SORTIE/resultat.json" --slurpfile c "$SORTIE/cout.json"
           --arg pr "$pr_url" --arg echec "$echec" --arg run "$run_url" --arg base_br "$BASE_BRANCHE"
-          --arg modele "$MODELE" --arg cli "$CLI_VERSION")
+          --arg modele "$MODELE" --arg cli "$CLI_VERSION"
+          --argjson retenu "$([[ -f "$SORTIE/journal/RETENU.txt" ]] && echo true || echo false)")
 
   jq -nr "${commun[@]}" "$JQ_NEUTRE"'
     $d[0] as $d | $m[0] as $m | ($r[0] // {}) as $r
@@ -476,12 +503,13 @@ rediger() { # rediger <url PR ou vide> <raison push/PR ou vide> → corps de PR 
       + "- statut déclaré par la session : \($d.statut_session // "aucun") ; statut retenu : `statut:\($d.statut)`"
       + (if $d.declassement then " — \($d.declassement)" else "" end) + "\n"
       + "- coût : \(($c.total_cost_usd // 0) | tostring) USD ; jetons entrée \(($c.usage.input_tokens // 0) | tostring), sortie \(($c.usage.output_tokens // 0) | tostring)\n"
-      + "- journal complet, résultat, coût et bundle : artifact `mandat-remise-\($m.run_id)` (90 jours)\n"
+      + (if $retenu then "- journal **retenu** (motif de clé ou de jeton non expurgeable, voir `journal/RETENU.txt`) ; résultat, coût et bundle : artifact `mandat-remise-\($m.run_id)` (90 jours)\n"
+         else "- journal complet, résultat, coût et bundle : artifact `mandat-remise-\($m.run_id)` (90 jours)\n" end)
       + "- `statut:opérationnel` et la fusion restent à l’owner ; `mandat-prêt` n’est pas retiré par la routine\n\n"
       + "<details><summary>Manifeste de couverture (AEC 1.2.0)</summary>\n\n```yaml\n"
       + "scope_requested: \"mandat de l’issue #\($m.issue) (corps sha256 \($m.corps_sha256))\"\n"
       + "scope_actually_scanned: \"déclaré par la session, non recalculé par la routine (voir journal)\"\n"
-      + "excluded_paths: [\".github/workflows/** (ADR-130 D3.4)\"]\n"
+      + "excluded_paths: [\".github/** (ADR-130 D3.4)\"]\n"
       + "corrections_proposed: \"\($d.commits) commit(s) sur \($d.branche)\"\n"
       + "corrections_applied: \"aucune sur \($base_br) (fusion réservée à l’owner)\"\n"
       + "validation_executed: \"\(($r.controles // []) | length) contrôle(s) déclaré(s), \(([($r.controles // [])[] | select(.resultat == "vert")] | length)) vert(s)\"\n"

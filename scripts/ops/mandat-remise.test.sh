@@ -66,6 +66,10 @@ printf '{"jeton":"%s","jeton_github_vu":"%s"}\n' "${CLAUDE_CODE_OAUTH_TOKEN:-}" 
 case "$(cat "$FIX/scenario")" in
   ok|bloque) echo "contenu" > docs-mandat.md; git add -A; git commit -qm "docs: mandat Refs #7" ;;
   workflow) echo "on: push" >> .github/workflows/ci.yml; git commit -qam "ci: modifie un workflow" ;;
+  workflow_nonascii) echo "on: push" > .github/workflows/é.yml; git add -A; git commit -qm "ci: nom non ASCII" ;;
+  action) mkdir -p .github/actions/x; echo "runs: {using: composite}" > .github/actions/x/action.yml; git add -A; git commit -qm "ci: action" ;;
+  cle_journal) printf '{"sortie":"%s\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC"}\n' "-----BEGIN OPENSSH ""PRIVATE KEY-----" >> "$HOME/.claude/projects/p/s.jsonl"
+              echo "contenu" > docs-mandat.md; git add -A; git commit -qm "docs: mandat Refs #7" ;;
   fuite) echo "cle=$fausse_cle" > f.txt; git add -A; git commit -qm "f" ;;
   binaire) printf '\000\001PNG cle=%s\000' "$fausse_cle" > f.png; git add -A; git commit -qm "f" ;;
   sale) echo a > a.md; git add a.md; git commit -qm a; echo b > b.md ;;
@@ -240,6 +244,16 @@ echo "== chaîne : refus structurels (aucun push) =="
 chaine workflow workflow intégré vert
 check "workflow modifié : bloqué, pas de push" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
 contient "motif ADR-130 D3.4" "ADR-130 D3.4" "$P/decision.json"
+chaine wfna workflow_nonascii intégré vert
+check "workflow au nom non ASCII : bloqué, pas de push" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
+contient "chemin non ASCII lu en clair" '.github/workflows/é.yml' "$P/decision.json"
+chaine action action intégré vert
+check "action composite sous .github/ : bloqué, pas de push" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
+chaine retenu cle_journal intégré vert
+check "clé dans le journal : journal retenu" "RETENU.txt" "$(ls "$S/journal" | tr -d '\n')"
+absent "clé dans le journal : corps de clé absent de l'artifact" "MIIEvQIBADANBgkq" "$S/journal/RETENU.txt"
+contient "commentaire : journal retenu signalé" "journal **retenu**" "$P/commentaire.md"
+check "journal retenu : le mandat reste publiable" "intégré/true" "$(dec .statut)/$(dec .pousser)"
 chaine rien rien implémenté vert
 check "aucun commit : bloqué" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
 contient "motif aucun commit" "aucun commit transmis" "$P/decision.json"

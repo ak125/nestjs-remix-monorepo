@@ -19,7 +19,8 @@ name: Remise de mandat par issue (ADR-128 D4)
 #             d'installation de l'App créé dans ce job seulement, commentaire AEC et label
 #             statut:* avec GITHUB_TOKEN. Jamais statut:opérationnel, jamais de fusion (D4.3).
 #   evidence: commentaire AEC sur l'issue ; artifacts mandat-remise-<run_id> (journal complet de la
-#             session, mandat, préparation, coût, résultat, bundle) et
+#             session, retenu en entier si un motif de clé non expurgeable y figure ; mandat,
+#             préparation, coût, résultat, bundle) et
 #             mandat-remise-publication-<run_id> (décision, plan, commentaire), 90 jours ; coût
 #             dans le résumé de l'exécution (ADR-034 axe 3)
 #   escalation: refus ou échec = exécution rouge visible dans Actions + statut:bloqué sur l'issue

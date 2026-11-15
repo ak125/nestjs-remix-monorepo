@@ -11,7 +11,7 @@ s'applique en entier, zones STOP comprises.
   routine le fait après toi, à partir de tes commits et de l'objet JSON que tu rends.
 - Tu commits ton travail sur la branche courante (messages conventionnels, en français, terminés par
   `Refs #<N>`). Un fichier non commité est perdu : la routine refuse un worktree modifié.
-- Tu ne crées ni ne modifies aucun fichier de `.github/workflows/` (ADR-130 D3.4) : la routine
+- Tu ne crées ni ne modifies aucun fichier sous `.github/` (workflows, actions, ADR-130 D3.4) : la routine
   refuserait de pousser. Un changement de workflow se livre hors de ce répertoire, pour l'owner.
 - Tu ne fusionnes rien, ne crées ni label, ni secret, ni variable, ne touches ni à la PROD, ni à la
   base, ni au déploiement.
