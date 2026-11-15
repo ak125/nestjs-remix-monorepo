@@ -343,7 +343,23 @@ test("niveau B : un cas de test retiré d'un fichier modifié est refusé", () =
   const patch = "@@ -1,3 +1 @@\n-it('a', () => {});\n-test('b', () => {});\n+it('a', () => {});";
   assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", patch)), ["TEST_REMOVED"]);
   const retitled = "@@ -1 +1 @@\n-it('ancien titre', () => {});\n+it('nouveau titre', () => {});";
-  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", retitled)), []);
+  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", retitled)), ["TEST_REMOVED"]);
+});
+
+test("niveau B : un test retiré et compensé par un autre ajouté est refusé (revue Codex)", () => {
+  const swapped = "@@ -1 +1 @@\n-it('contrôle critique', () => assertSecurity());\n+it('factice', () => {});";
+  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", swapped)), ["TEST_REMOVED"]);
+  const table = "@@ -1,2 +1,2 @@\n-test.each([[1]])('important %s', (n) => expect(n).toBe(1));\n+test('autre', () => {});";
+  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", table)), ["TEST_REMOVED"]);
+  const block = "@@ -1 +1 @@\n-describe('bloc', () => {\n+describe('autre bloc', () => {";
+  assert.deepEqual(lbFiles(modified("frontend/tests/unit/a.test.tsx", block)), ["TEST_REMOVED"]);
+});
+
+test("niveau B : corps d'un test modifié, titre inchangé : admis", () => {
+  const body = "@@ -1 +1 @@\n-it('calcule', () => expect(f(1)).toBe(2));\n+it('calcule', () => expect(f(1)).toBe(3));";
+  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", body)), []);
+  const moved = "@@ -1,3 +1,3 @@\n-it('a', () => {});\n it('b', () => {});\n+it('a', () => {});";
+  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", moved)), []);
 });
 
 test("niveau B : .skip( ou .only( ajouté est refusé, retiré est admis", () => {

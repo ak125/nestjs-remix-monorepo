@@ -38,7 +38,17 @@ const PROSE_FILE = /\.(?:md|markdown)$/i;
 // Une revue COMMENTED ne change pas la décision d'un relecteur ; ces trois états la fixent.
 const DECISIVE_REVIEW_STATES = new Set(["APPROVED", "CHANGES_REQUESTED", "DISMISSED"]);
 // Déclaration d'un cas de test, sur une ligne de diff (sans le `+` ou le `-`).
-const TEST_DECLARATION = /^\s*(?:it|test)(?:\.\w+)*\s*\(/;
+const TEST_DECLARATION = /^\s*(?:it|test|describe)(?:\.\w+)*\s*\(/;
+const TITLED_DECLARATION = /^\s*((?:it|test|describe)(?:\.\w+)*)\s*\(\s*(["'`])((?:\\.|(?!\2).)*)\2/;
+/**
+ * Clé d'une déclaration de test : l'appel sans `.skip`/`.only` et son titre, ou la ligne entière
+ * quand le titre n'est pas sur la ligne (tableau `.each`, déclaration sur plusieurs lignes).
+ */
+function declarationKey(line) {
+  const titled = TITLED_DECLARATION.exec(line);
+  if (!titled) return line.trim().replace(/\.(?:skip|only)\b/g, "");
+  return `${titled[1].replace(/\.(?:skip|only)\b/g, "")}(${titled[2]}${titled[3]}${titled[2]})`;
+}
 const LEVEL_B_ARRAYS = [
   "review_identities",
   "allowed_paths",
@@ -240,9 +250,20 @@ export function evaluateLevelBFiles(policy, files) {
     const lines = file.patch.split("\n");
     const addedLines = lines.filter((line) => line.startsWith("+")).map((line) => line.slice(1));
     const removedLines = lines.filter((line) => line.startsWith("-")).map((line) => line.slice(1));
-    const declarations = (list) => list.filter((line) => TEST_DECLARATION.test(line)).length;
-    if (declarations(removedLines) > declarations(addedLines)) {
-      refusals.push(refusal("TEST_REMOVED", `${file.filename} (cas de test retirés)`));
+    // Chaque déclaration retirée doit réapparaître, même appel et même titre, parmi les ajouts :
+    // un test retiré ne se compense pas par un autre ajouté ; un titre changé compte comme un retrait.
+    const remaining = addedLines.filter((line) => TEST_DECLARATION.test(line)).map(declarationKey);
+    const lost = removedLines
+      .filter((line) => TEST_DECLARATION.test(line))
+      .map(declarationKey)
+      .filter((key) => {
+        const index = remaining.indexOf(key);
+        if (index === -1) return true;
+        remaining.splice(index, 1);
+        return false;
+      });
+    if (lost.length) {
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (déclaration retirée : ${lost[0]})`));
     }
     if (addedLines.some((line) => addedPatterns.some((pattern) => pattern.test(line)))) {
       refusals.push(refusal("LEVEL_B_DIFF_PATTERN", file.filename));
