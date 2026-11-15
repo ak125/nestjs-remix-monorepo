@@ -1,9 +1,12 @@
 # Triage de la file des issues (ADR-128 D1 et D6)
 
 Proposition de classement des issues ouvertes de `ak125/nestjs-remix-monorepo`, une ligne par
-issue : un département, une confiance, une raison et une suite proposée. **Rien n'est appliqué** :
-aucun label posé, aucune issue fermée, commentée ou modifiée. Le pilote propose, l'owner décide
-(ADR-128 D6).
+issue : un département, une confiance, une raison et une suite proposée. Le pilote propose,
+l'owner décide (ADR-128 D6).
+
+- **Appliqué** : les 11 labels `dept:` des lignes forte et garder, posés par l'owner le
+  2026-11-15 à 13:08 UTC avec son compte (événements `labeled` relus par l'API). Aucune issue
+  fermée, commentée ou modifiée d'autre façon.
 
 - **Relevé** : 2026-11-15T12:10:47Z, `gh issue list --state open` et `gh pr list --state open`,
   lecture seule avec le `gh` du shell DEV (`automecanik-agents[bot]`).
@@ -51,10 +54,17 @@ aucun label posé, aucune issue fermée, commentée ou modifiée. Le pilote prop
 | Suite proposée | Issues |
 |---|---|
 | garder | 15 |
-| fermer comme obsolète | 164 : 156 instantanés de digest remplacés, plus #203, #439, #582, #650, #744, #745, #1113 et #1916 |
-| fusionner avec une autre | 2 : #1037 et #1063 → #1113 |
+| fermer comme obsolète | 166 : 156 instantanés de digest remplacés, plus #203, #439, #582, #650, #744, #745, #1037, #1063, #1113 et #1916 |
+| fusionner avec une autre | 0 |
 
-Le script appliquerait 11 lignes (forte et garder) : #264, #411, #412, #413, #414, #430, #432,
+#1037, #1063 et #1113 sont trois rapports de la même routine de suivi des prérequis du PR-2 du
+control plane, bloquée sur la lecture du statut d'ADR-058. Ce statut est désormais `accepted`, et
+la routine n'a rien publié depuis le 2026-06-23. Aucune des trois ne reste ouverte comme cible :
+#1037 et #1063 se ferment comme doublons de #1113, qui se ferme aussi. Si le PR-2 du control plane
+reste à faire, il vaut mieux l'ouvrir dans une issue neuve que garder un rapport de routine
+périmé.
+
+Le script retient 11 lignes (forte et garder), appliquées le 2026-11-15 : #264, #411, #412, #413, #414, #430, #432,
 #593, #1947, #2036 et #2073. Les 4 lignes à garder de confiance moyenne (#226, #431, #788 et
 #1975) restent à classer à la main.
 
@@ -109,8 +119,8 @@ Le script appliquerait 11 lignes (forte et garder) : #264, #411, #412, #413, #41
 | #1011 | 2026-06-17 | Morning health digest — 2026-06-17 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-17 remplacé par #2036 |
 | #1023 | 2026-06-18 | Morning health digest — 2026-06-18 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-18 remplacé par #2036 |
 | #1027 | 2026-06-19 | Morning health digest — 2026-06-19 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-19 remplacé par #2036 |
-| #1037 | 2026-06-20 | PR-2 prereqs monitor — Gate 1 bloqué (vault hors scope session) | `dept:23-ia-agents` | moyenne | routine de suivi des prérequis du PR-2 du control plane (ADR-058), bloquée | fusionner→#1113 | même blocage que #1113 (accès vault de la routine), rapport du 2026-06-20 |
-| #1063 | 2026-06-21 | PR-2 daily monitor: GATE 1 bloquée — governance-vault hors scope session | `dept:23-ia-agents` | moyenne | routine de suivi des prérequis du PR-2 du control plane (ADR-058), bloquée | fusionner→#1113 | même blocage que #1113 (accès vault de la routine), rapport du 2026-06-21 |
+| #1037 | 2026-06-20 | PR-2 prereqs monitor — Gate 1 bloqué (vault hors scope session) | `dept:23-ia-agents` | moyenne | routine de suivi des prérequis du PR-2 du control plane (ADR-058), bloquée | fermer | doublon de #1113 (même routine, même blocage d'accès au vault), rapport du 2026-06-20 ; #1113 étant elle-même proposée à la fermeture, aucune cible ne reste ouverte |
+| #1063 | 2026-06-21 | PR-2 daily monitor: GATE 1 bloquée — governance-vault hors scope session | `dept:23-ia-agents` | moyenne | routine de suivi des prérequis du PR-2 du control plane (ADR-058), bloquée | fermer | doublon de #1113 (même routine, même blocage d'accès au vault), rapport du 2026-06-21 ; #1113 étant elle-même proposée à la fermeture, aucune cible ne reste ouverte |
 | #1095 | 2026-06-22 | Morning health digest — 2026-06-22 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-22 remplacé par #2036 |
 | #1099 | 2026-06-22 | Weekly PR hygiene W26 — 2026-06-22 (🔀 Rebase cascade (oldest stack first)) | `dept:23-ia-agents` | moyenne | bilan hebdomadaire de la file des PR (stale, conflits, Dependabot) | fermer | instantané W26 remplacé par #1975 |
 | #1112 | 2026-06-23 | Morning health digest — 2026-06-23 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-23 remplacé par #2036 |
@@ -304,8 +314,9 @@ l'issue ouverte qui la couvre, ou `aucune`.
   en base » de #745 ne sont pas vérifiées en base, qui est hors périmètre.
 - **Preuve servie ponctuelle.** Pour #744 et #745, l'état servi a été lu une fois au relevé, sur
   une seule page. Ce n'est pas une mesure continue.
-- **Fermeture et fusion.** Les propositions s'appuient sur une preuve citée, mais la décision
-  revient à l'owner. Aucune commande de fermeture ni de fusion n'est fournie.
+- **Fermetures.** Les propositions s'appuient sur une preuve citée, mais la décision revient à
+  l'owner. Les commandes, non exécutées, sont dans
+  `docs/plans/2026-11-15-adr128-triage-file-fermetures.md`.
 - **Instantané daté.** Une issue ouverte ou fermée après 2026-11-15T12:10:47Z n'est pas dans
   ce tableau. Le script ignore une issue fermée entre-temps, ou qui porte déjà un label `dept:`.
 
@@ -316,7 +327,7 @@ Les labels `dept:` doivent exister (`docs/plans/2026-11-15-adr128-labels-d1.md`)
 
 ```bash
 bash scripts/ops/triage-file-apply.sh            # à blanc : affiche les 11 commandes, aucun appel gh
-bash scripts/ops/triage-file-apply.sh --apply    # avec le compte de l'owner : ajoute les 11 labels dept:
+bash scripts/ops/triage-file-apply.sh --apply    # avec le compte de l'owner : fait le 2026-11-15 à 13:08 UTC
 ```
 
 Retour arrière d'une ligne : `gh issue edit <n> --repo ak125/nestjs-remix-monorepo --remove-label "<dept:…>"`.
