@@ -10,7 +10,7 @@ Page gamme/catégorie. Intention : **aider l'utilisateur à trouver la bonne pi�
 
 | Couche | Table / Source | Générateur | Rôle |
 |--------|---------------|-----------|------|
-| Corpus SEO long | `__seo_gamme.sg_content` | `/content-gen --r1` (editorial.md) | 1500-2000 mots, 6-8 H2, maillage interne |
+| Corpus SEO long | `__seo_gamme.sg_content` | `/content-gen --r1` (editorial.md), neutralise le 2026-07-02 → `seo-content-loop` | 1500-2000 mots, 6-8 H2, maillage interne |
 | Micro-sections UX | `__seo_r1_gamme_slots.r1s_*` | `r1-content-batch` agent (generator.md) | Courtes (<150 mots), scannables, rendues directement |
 | Keyword plan | `__seo_r1_keyword_plan` | `r1-keyword-planner` agent | Intent, section terms, anti-cannib R3 |
 
@@ -39,7 +39,7 @@ Page gamme/catégorie. Intention : **aider l'utilisateur à trouver la bonne pi�
 
 | Système | Champs | Fréquence | Garde-fou |
 |---------|--------|-----------|-----------|
-| `/content-gen --r1` | `sg_content`, meta draft | On-demand | Guard anti-régression (longueur ≥ existant) |
+| `/content-gen --r1` (neutralise le 2026-07-02 → `seo-content-loop`) | `sg_content`, meta draft | On-demand | Guard anti-régression (longueur ≥ existant) |
 | `r1-content-batch` | `r1s_*` (5 colonnes) | Batch | Cannib guard score ≥ 65 |
 | `r1-image-prompt.service` | `__seo_r1_image_prompts` | Admin trigger | Anti-overwrite (ne pas écraser image existante) |
 | Admin UI | Upload/select/approve | Manuel | forceSelect pour remplacement, index DB unique |

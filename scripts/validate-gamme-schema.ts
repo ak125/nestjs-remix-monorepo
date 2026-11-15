@@ -155,7 +155,7 @@ function scoreV4(errors: ValidationError[], fm: any): number {
 }
 
 // ── R1 readiness (WIKI_EXPORT dimension only) ──
-// Validates the WIKI EXPORT .md (the source content-gen R1 actually reads), NOT RAG
+// Validates the WIKI EXPORT .md, NOT RAG
 // (__rag_knowledge / RagFoundationGate). Presence gates = hard BLOCK ; depth gates flag
 // thin content. Reason codes align with the /r1-readiness verdict (see plan).
 const R1_READINESS_THRESHOLDS = {

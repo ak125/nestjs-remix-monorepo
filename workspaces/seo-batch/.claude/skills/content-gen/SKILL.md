@@ -20,5 +20,6 @@ jamais une source de contenu/SEO.
 L'outil `execute_sql` a été retiré d'`allowed-tools` : même recopié, ce skill ne peut
 plus écrire en base.
 
-> Le dossier `references/` est conservé (lu par `rag-phase2a-shadow-audit.service.ts`).
+> Aucun dossier `references/` n'existe sous ce skill (jamais suivi par Git) ; `rag-phase2a-shadow-audit.service.ts`
+> lit `seo-content-architect/references`, pas ce skill.
 > Réf : `audit/rag-legacy-inventory-2026-07-02.md` (§2, §12bis, §13). Rollback = `git revert`.

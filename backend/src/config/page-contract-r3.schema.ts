@@ -1,7 +1,7 @@
 /**
  * R3PageContract Zod Schema — contrat formel pour les sorties des agents SEO R3.
  * Valide section plans, media slots, query clusters, gate reports.
- * Utilise par keyword-planner et conseil-batch comme reference de structure.
+ * Utilise par keyword-planner comme reference de structure.
  */
 
 import { z } from 'zod';

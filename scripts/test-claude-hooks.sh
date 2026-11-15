@@ -343,8 +343,10 @@ git clone -q -b main "$SB/origin.git" "$SB/up" 2>/dev/null
 mkdir -p "$SB/tmp" "$SB/crash" "$SB/fake"
 # systemctl et journalctl factices : le faux systemctl rend $SB/unit-state (défaut : unit
 # non installée) ou échoue si $SB/unit-fail existe ; le faux journalctl rend $SB/unit-journal.
+# stop et start sont notés dans $SB/order (cas 23+) ; $SB/unit-stop-fail fait échouer stop.
 cat > "$SB/fake/systemctl" <<EOF
 #!/bin/sh
+case "\$2" in stop|start) echo "\$2" >> "$SB/order"; [ -e "$SB/unit-\$2-fail" ] && exit 1; exit 0 ;; esac
 [ -e "$SB/unit-fail" ] && { echo "Failed to connect to bus" >&2; exit 1; }
 [ -f "$SB/unit-state" ] && exec cat "$SB/unit-state"
 printf 'LoadState=not-found\nActiveState=inactive\nSubState=dead\nControlGroup=\n'
@@ -677,6 +679,60 @@ SB_WARM="$SB/absent-warm"
 run_sync
 assert_contains "cache Hermes : script introuvable → warn" '"warn".*introuvable' "$(sync_state '[.status,.summary]')"
 unset SB_WARM SB_HCACHE
+
+# npm ci de la synchro et stack DEV (incident 2026-11-15 : `npm ci` dans le checkout servi,
+# stack en marche → recompilation sur un node_modules vide, 5 sorties sur stock_dto_1).
+# Vrai `npm ci`, hors ligne, sur un lockfile écrit à la main ; postinstall et build notent
+# leur passage dans $SB/order, à la suite des stop/start du faux systemctl.
+export npm_config_offline=true npm_config_audit=false npm_config_fund=false \
+  npm_config_update_notifier=false npm_config_cache="$SB/npm-cache"
+lock_commit() { # $1 version, [$2 fragment JSON de dépendances]
+  ( cd "$SB/up" \
+    && printf '{"name":"sandbox","version":"%s","private":true%s,"scripts":{"build":"echo build >> %s/order; :","postinstall":"echo ci >> %s/order"}}\n' "$1" "${2:-}" "$SB" "$SB" > package.json \
+    && printf '{"name":"sandbox","version":"%s","lockfileVersion":3,"requires":true,"packages":{"":{"name":"sandbox","version":"%s"}}}\n' "$1" "$1" > package-lock.json \
+    && git add -A && commit_sb "lockfile $1" && git push -q origin main )
+}
+order() { tr '\n' ' ' < "$SB/order" 2>/dev/null; }
+dist_mtime() { stat -c %Y "$SB/app/backend/dist/main.js" 2>/dev/null || echo 0; }
+
+# 23. Lockfile modifié, unit active → stack arrêté avant npm ci, relancé après le build
+unit_state active running "/user.slice/automecanik-dev.service"
+rm -f "$SB/order"; touch -d '1 hour ago' "$SB/app/backend/dist/main.js"; DIST_BEFORE=$(dist_mtime)
+lock_commit 1.0.1
+run_sync; EXIT=$?
+assert_exit "npm ci : unit active → tick au bout (exit 0)" "0" "$EXIT"
+assert_contains "npm ci : unit active → arrêt, npm ci, build, relance, dans cet ordre" "^stop ci build start $" "$(order)"
+assert_contains "npm ci : relance journalisée" "relancé après npm ci" "$(cat "$SB/out")"
+assert_contains "npm ci : unit relancée → issue ok" '"ok"' "$(sync_state '.status')"
+assert_contains "npm ci : unit relancée → backend/dist/main.js non touché" "^$DIST_BEFORE$" "$(dist_mtime)"
+
+# 24. npm ci en échec, unit active → abort, et l'unit est quand même relancée (piège EXIT)
+rm -f "$SB/order"
+lock_commit 1.0.2 ',"dependencies":{"absent-pkg-sandbox":"1.0.0"}'
+run_sync; EXIT=$?
+assert_exit "npm ci en échec : abort (exit 1)" "1" "$EXIT"
+assert_contains "npm ci en échec : unit relancée malgré l'abort, sans build" "^stop start $" "$(order)"
+assert_contains "npm ci en échec : issue error" '"error".*npm ci échoué' "$(sync_state '[.status,.summary]')"
+
+# 25. Arrêt de l'unit refusé → abort AVANT npm ci (le stack ne recompile pas sur un node_modules vide)
+rm -f "$SB/order"; touch "$SB/unit-stop-fail"
+lock_commit 1.0.3
+run_sync; EXIT=$?
+assert_exit "arrêt de l'unit refusé : abort (exit 1)" "1" "$EXIT"
+assert_contains "arrêt de l'unit refusé : ni npm ci ni build ni relance" "^stop $" "$(order)"
+assert_contains "arrêt de l'unit refusé : issue error" '"error".*npm ci non lancé' "$(sync_state '[.status,.summary]')"
+rm -f "$SB/unit-stop-fail"
+
+# 26. Lockfile modifié, unit non installée (stack de terminal) → npm ci sans stop ni start
+rm -f "$SB/order" "$SB/unit-state"
+lock_commit 1.0.4
+run_sync; EXIT=$?
+assert_exit "npm ci sans unit : tick au bout (exit 0)" "0" "$EXIT"
+assert_contains "npm ci sans unit : ni stop ni start" "^ci build $" "$(order)"
+assert_contains "npm ci sans unit : arrêt non tenté, journalisé" "inactif ou non installé" "$(cat "$SB/out")"
+assert_contains "npm ci sans unit : backend/dist/main.js touché (relance par nodemon)" "^1$" \
+  "$([ "$(dist_mtime)" -gt "$DIST_BEFORE" ] && echo 1 || echo 0)"
+unset npm_config_offline npm_config_audit npm_config_fund npm_config_update_notifier npm_config_cache
 
 rm -rf "$SB"
 
@@ -1047,6 +1103,49 @@ assert_exit "bash-guard: git push --force + 1 Mo → BLOCK"      "2" "$(run_bash
 assert_exit "bash-guard: git reset --hard + 1 Mo → BLOCK"      "2" "$(run_bash_guard_long 'git reset --hard')"
 assert_exit "bash-guard: git tag v1.2.3 + 1 Mo → BLOCK"        "2" "$(run_bash_guard_long 'git tag v1.2.3')"
 assert_exit "bash-guard: git status + 1 Mo → allow"            "0" "$(run_bash_guard_long 'git status')"
+
+# Guard 5b : npm qui réécrit node_modules à travers un lien symbolique (incident DEV 2026-11-15).
+# Bac à sable : un « checkout partagé » au node_modules réel, des dépôts git dont un node_modules
+# est un lien vers lui, et un dossier hors git.
+echo ""
+echo "=== pretool-bash-guard.sh (Guard 5b npm + node_modules en lien) ==="
+G5=$(mktemp -d)
+mkdir -p "$G5/shared/node_modules/keep" "$G5/real/node_modules" "$G5/plain/sub"
+for r in real lroot lback lpkg; do git init -q "$G5/$r"; done
+mkdir -p "$G5/lback/backend" "$G5/lpkg/packages/x"
+ln -s "$G5/shared/node_modules" "$G5/lroot/node_modules"
+ln -s "$G5/shared/node_modules" "$G5/lback/backend/node_modules"
+ln -s "$G5/shared/node_modules" "$G5/lpkg/packages/x/node_modules"
+ln -s "$G5/shared/node_modules" "$G5/plain/sub/node_modules"
+run_npm_guard() { # $1 = cwd de l'enveloppe ("" = absent), $2 = commande
+  if [ -n "$1" ]; then
+    jq -nc --arg d "$1" --arg c "$2" '{cwd:$d,tool_name:"Bash",tool_input:{command:$c}}'
+  else
+    jq -nc --arg c "$2" '{tool_name:"Bash",tool_input:{command:$c}}'
+  fi | bash "$REPO_ROOT/scripts/claude-hooks/pretool-bash-guard.sh" >/dev/null 2>&1
+  echo $?
+}
+assert_exit "bash-guard 5b: npm ci, node_modules racine en lien → BLOCK"       "2" "$(run_npm_guard "$G5/lroot" 'npm ci')"
+assert_exit "bash-guard 5b: npm ci depuis backend/ (lien sur backend) → BLOCK" "2" "$(run_npm_guard "$G5/lback/backend" 'npm ci')"
+assert_exit "bash-guard 5b: npm ci, lien sur packages/x → BLOCK"               "2" "$(run_npm_guard "$G5/lpkg" 'npm ci')"
+assert_exit "bash-guard 5b: cd <lien> && npm ci depuis un checkout réel → BLOCK" "2" "$(run_npm_guard "$G5/real" "cd $G5/lroot && npm ci")"
+assert_exit "bash-guard 5b: cd relatif puis npm ci → BLOCK"                    "2" "$(run_npm_guard "$G5" 'cd lroot; npm ci')"
+assert_exit "bash-guard 5b: npm --prefix <lien> ci → BLOCK"                    "2" "$(run_npm_guard "$G5/real" "npm --prefix $G5/lroot ci")"
+assert_exit "bash-guard 5b: npm -C <lien> clean-install → BLOCK"                "2" "$(run_npm_guard "$G5/real" "npm -C $G5/lroot clean-install")"
+assert_exit "bash-guard 5b: npm i (alias), lien → BLOCK"                       "2" "$(run_npm_guard "$G5/lroot" 'npm i')"
+assert_exit "bash-guard 5b: npm prune, lien → BLOCK"                           "2" "$(run_npm_guard "$G5/lroot" 'npm prune')"
+assert_exit "bash-guard 5b: npm --silent ci, lien → BLOCK"                     "2" "$(run_npm_guard "$G5/lroot" 'npm --silent ci')"
+assert_exit "bash-guard 5b: npm ci sans cwd, lancé dans le lien → BLOCK"       "2" "$(cd "$G5/lroot" && run_npm_guard '' 'npm ci')"
+assert_contains "bash-guard 5b: motif du refus nomme le lien" "lien symbolique ($G5/lroot/node_modules" \
+  "$(jq -nc --arg d "$G5/lroot" '{cwd:$d,tool_name:"Bash",tool_input:{command:"npm ci"}}' | bash scripts/claude-hooks/pretool-bash-guard.sh 2>&1)"
+assert_exit "bash-guard 5b: npm ci, node_modules réel → allow"                 "0" "$(run_npm_guard "$G5/real" 'npm ci')"
+assert_exit "bash-guard 5b: npm run ci (script, pas une install), lien → allow" "0" "$(run_npm_guard "$G5/lroot" 'npm run ci')"
+assert_exit "bash-guard 5b: npm test, lien → allow"                            "0" "$(run_npm_guard "$G5/lroot" 'npm test')"
+assert_exit "bash-guard 5b: npm ls, lien → allow"                              "0" "$(run_npm_guard "$G5/lroot" 'npm ls')"
+assert_exit "bash-guard 5b: hors git, lien dans un sous-dossier voisin → allow" "0" "$(run_npm_guard "$G5/plain" 'npm ci')"
+assert_exit "bash-guard 5b: npm install, node_modules réel → BLOCK (Guard 5 inchangé)" "2" "$(run_npm_guard "$G5/real" 'npm install x')"
+assert_contains "bash-guard 5b: cible du lien intacte" "keep" "$(ls "$G5/shared/node_modules")"
+rm -rf "$G5"
 
 # ============================================================
 # Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)

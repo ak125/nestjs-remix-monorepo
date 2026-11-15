@@ -102,7 +102,9 @@ describe('VehicleModelsService.getModelsByBrand — page au-delà du total', () 
     const filters = [
       'in("modele_id",[140001,140002])',
       'eq("modele_display",1)',
-      'or("modele_alias.ilike.%clio%,modele_name.ilike.%clio%")',
+      `or(${JSON.stringify(
+        'modele_alias.ilike."%clio%",modele_name.ilike."%clio%"',
+      )})`,
     ];
     expect(recordRefine(callRpc.mock.calls[2][3].refine)).toEqual([
       'select("*")',
@@ -163,6 +165,58 @@ describe('VehicleModelsService.getModelsByBrand — page au-delà du total', () 
       },
     ]);
     expect(callRpc).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('VehicleModelsService — texte de recherche cité dans les filtres .or()', () => {
+  // Une virgule ou une parenthèse non citée coupe la valeur : PostgREST lit
+  // alors une condition de plus (ici « id > 0 ») ou rejette le filtre.
+  const hostile = 'clio,id.gt.0)';
+  const quoted = '"%clio,id.gt.0)%"';
+
+  let service: VehicleModelsService;
+
+  beforeEach(() => {
+    service = new VehicleModelsService(passThroughCache(), noGate);
+  });
+
+  it('getModelsByBrand passe le texte saisi entre guillemets', async () => {
+    const callRpc = jest
+      .fn()
+      .mockResolvedValueOnce({ data: [{ modele_id: 140001 }], error: null })
+      .mockResolvedValueOnce({
+        data: [{ type_id: 1, type_modele_id: '140001', type_fuel: 'Diesel' }],
+        error: null,
+      })
+      .mockResolvedValueOnce({ data: [], error: null, count: 0 });
+    (service as unknown as { callRpc: jest.Mock }).callRpc = callRpc;
+
+    await service.getModelsByBrand(140, { page: 0, search: hostile });
+
+    expect(recordRefine(callRpc.mock.calls[2][3].refine)).toContain(
+      `or(${JSON.stringify(
+        `modele_alias.ilike.${quoted},modele_name.ilike.${quoted}`,
+      )})`,
+    );
+  });
+
+  it('searchModels passe le texte saisi entre guillemets', async () => {
+    const or = jest.fn();
+    const query: Record<string, jest.Mock> = {};
+    for (const method of ['from', 'select', 'eq', 'limit', 'range']) {
+      query[method] = jest.fn(() => query);
+    }
+    query.or = or.mockImplementation(() => query);
+    query.order = jest.fn(() =>
+      Promise.resolve({ data: [], error: null, count: 0 }),
+    );
+    Object.defineProperty(service, 'client', { value: query });
+
+    await service.searchModels(hostile);
+
+    expect(or).toHaveBeenCalledWith(
+      `modele_name.ilike.${quoted},modele_alias.ilike.${quoted}`,
+    );
   });
 });
 

@@ -10,10 +10,10 @@ description: "[DEPRECATED → /v5-guardian] Scanner pollution OEM/scraping dans 
 
 ## Position dans le pipeline
 
-- **Quand** : AVANT `content-gen` (nettoyage préalable) ou APRÈS (vérification post-production)
+- **Quand** : AVANT une reprise par la boucle `seo-content-loop` (nettoyage préalable) ou APRÈS (vérification post-production)
 - **Entrée** : sections `__seo_gamme_conseil` en DB
 - **Sortie** : rapport de pollution avec patterns détectés, scores, et propositions de nettoyage
-- **Chaîne** : `pollution-scanner` → `surgical-cleaner` (nettoyage) → `content-gen` (regénération si besoin)
+- **Chaîne** : `pollution-scanner` → `surgical-cleaner` (nettoyage) → boucle `seo-content-loop` (reprise si besoin)
 - **Ne fait PAS** : génération de contenu, écriture en DB, audit SEO global
 
 ## Contexte

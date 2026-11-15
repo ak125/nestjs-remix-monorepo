@@ -6850,7 +6850,7 @@
         "path"
       ],
       "kind": "controller",
-      "loc": 1488,
+      "loc": 1486,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
       "risk": "low",
@@ -7062,7 +7062,7 @@
         "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts"
       ],
       "kind": "controller",
-      "loc": 174,
+      "loc": 176,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
       "risk": "low",
@@ -7376,7 +7376,7 @@
         "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
       "kind": "controller",
-      "loc": 186,
+      "loc": 187,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
       "risk": "low",
@@ -10701,7 +10701,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 267,
+      "loc": 262,
       "owner": "__unassigned__",
       "path": "backend/src/modules/agentic-engine/constants/agentic.constants.ts",
       "risk": "low",
@@ -39122,7 +39122,7 @@
         "backend/src/modules/vehicles/services/data/vehicle-models.service.ts"
       ],
       "kind": "test",
-      "loc": 237,
+      "loc": 291,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/data/vehicle-data-read-failures.test.ts",
       "risk": "low",
@@ -39146,6 +39146,7 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
+        "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@security/rpc-gate/rpc-gate.errors",
@@ -39154,7 +39155,7 @@
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 833,
+      "loc": 836,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "risk": "low",
@@ -56263,7 +56264,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 2168,
+      "loc": 2166,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.keyword-planner.tsx",
       "risk": "low",
