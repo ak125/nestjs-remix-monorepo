@@ -76,31 +76,59 @@ function calleeSegments(expression) {
   }
 }
 
+function isTestCall(node) {
+  return ts.isCallExpression(node) && Boolean(calleeSegments(node.expression)?.some((segment) => TEST_CALLEES.has(segment)));
+}
+
+function isTestCallback(node) {
+  return (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) && isTestCall(node.parent) && node.parent.arguments.includes(node);
+}
+
 /**
- * Déclarations de test d'un fichier : pour chacune, sa clé (appel sans modificateur, puis premier
- * argument : le titre s'il est littéral, sinon son texte sans blancs) et si elle porte un modificateur
- * désactivant. `null` si le fichier ne s'analyse pas sans erreur.
+ * Position syntaxique d'une déclaration : nature des nœuds entre l'appel et le fichier ou le rappel du
+ * test englobant. Un test placé sous un `if`, un `&&`, un `?:` ou une boucle change de position.
+ */
+function positionOf(node) {
+  const kinds = [];
+  for (let parent = node.parent; parent && !ts.isSourceFile(parent) && !isTestCallback(parent); parent = parent.parent) {
+    if (ts.isBlock(parent) && isTestCallback(parent.parent)) continue;
+    kinds.push(ts.SyntaxKind[parent.kind]);
+  }
+  return kinds.join(">");
+}
+
+/** Rappel vidé, ou ouvert par un `return;` nu : le test ne vérifie plus rien. */
+function isNeutralised(call) {
+  const callback = [...call.arguments].reverse().find((argument) => ts.isArrowFunction(argument) || ts.isFunctionExpression(argument));
+  if (!callback || !ts.isBlock(callback.body)) return false;
+  const [first] = callback.body.statements;
+  return !first || (ts.isReturnStatement(first) && !first.expression);
+}
+
+/**
+ * Déclarations de test d'un fichier : pour chacune, sa clé (position, appel sans modificateur, puis
+ * premier argument : le titre s'il est littéral, sinon son texte sans blancs), si elle porte un
+ * modificateur désactivant et si son rappel est neutralisé. `null` si le fichier ne s'analyse pas sans erreur.
  */
 export function testDeclarations(filename, text) {
   const source = ts.createSourceFile(filename, text, ts.ScriptTarget.Latest, true, scriptKind(filename));
   if (source.parseDiagnostics?.length) return null;
   const declarations = [];
   const visit = (node) => {
-    if (ts.isCallExpression(node)) {
+    if (isTestCall(node)) {
       const segments = calleeSegments(node.expression);
-      if (segments?.some((segment) => TEST_CALLEES.has(segment))) {
-        const first = node.arguments[0];
-        const title = !first
-          ? ""
-          : ts.isStringLiteralLike(first)
-            ? JSON.stringify(first.text)
-            : first.getText(source).replace(/\s+/g, "");
-        const callee = segments.filter((segment) => segment !== "()" && !DISABLING_MODIFIERS.has(segment)).join(".");
-        declarations.push({
-          key: `${callee}(${title})`,
-          disabled: segments.some((segment) => DISABLING_MODIFIERS.has(segment)),
-        });
-      }
+      const first = node.arguments[0];
+      const title = !first
+        ? ""
+        : ts.isStringLiteralLike(first)
+          ? JSON.stringify(first.text)
+          : first.getText(source).replace(/\s+/g, "");
+      const callee = segments.filter((segment) => segment !== "()" && !DISABLING_MODIFIERS.has(segment)).join(".");
+      declarations.push({
+        key: `${callee}(${title}) @ ${positionOf(node)}`,
+        disabled: segments.some((segment) => DISABLING_MODIFIERS.has(segment)),
+        neutralised: isNeutralised(node),
+      });
     }
     ts.forEachChild(node, visit);
   };
@@ -342,8 +370,15 @@ export function evaluateLevelBFiles(policy, files) {
       after.filter((declaration) => declaration.disabled).map((declaration) => declaration.key),
       before.filter((declaration) => declaration.disabled).map((declaration) => declaration.key),
     );
+    // Un test de la base vidé à la tête ; un test nouveau, vide, ne retire rien.
+    const neutralised = missingFrom(
+      after.filter((declaration) => declaration.neutralised).map((declaration) => declaration.key),
+      before.filter((declaration) => declaration.neutralised).map((declaration) => declaration.key),
+    ).filter((key) => before.some((declaration) => declaration.key === key));
     if (lost.length) {
-      refusals.push(refusal("TEST_REMOVED", `${file.filename} (déclaration retirée : ${lost[0]})`));
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (déclaration retirée ou déplacée : ${lost[0]})`));
+    } else if (neutralised.length) {
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (test vidé ou neutralisé : ${neutralised[0]})`));
     }
     if (disabled.length) {
       refusals.push(refusal("LEVEL_B_DIFF_PATTERN", `${file.filename} (test désactivé ou isolé : ${disabled[0]})`));

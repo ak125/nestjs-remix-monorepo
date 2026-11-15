@@ -434,6 +434,30 @@ test("niveau B : contenu à la base ou à la tête absent, ou fichier non analys
   assert.deepEqual(lbFiles(modified(t, broken)), ["TEST_REMOVED"]);
 });
 
+test("niveau B : test placé sous condition, vidé ou ouvert par return; : refusé (revue Codex, 4e passage)", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const base = 'it("contrôle critique", () => {\n  assertSecurity();\n});';
+  for (const head of [
+    'if (false) it("contrôle critique", () => {\n  assertSecurity();\n});',
+    'false && it("contrôle critique", () => {\n  assertSecurity();\n});',
+    'for (const x of []) it("contrôle critique", () => {\n  assertSecurity();\n});',
+    'it("contrôle critique", () => {\n});',
+    'it("contrôle critique", () => {\n  return;\n  assertSecurity();\n});',
+    'it("contrôle critique", function () {});',
+  ]) {
+    const patch = `@@ -1,3 +1,3 @@\n${base.split("\n").map((l) => `-${l}`).join("\n")}\n${head.split("\n").map((l) => `+${l}`).join("\n")}`;
+    assert.deepEqual(lbFiles(modified(t, patch)), ["TEST_REMOVED"], head);
+  }
+});
+
+test("niveau B : test déplacé dans un describe, ou déjà vide à la base : admis", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const nest = '@@ -1,1 +1,3 @@\n+describe("groupe", () => {\n it("a", () => expect(1).toBe(1));\n+});';
+  assert.deepEqual(lbFiles(modified(t, nest)), []);
+  const empty = '@@ -1,2 +1,3 @@\n it("vide", () => {});\n+it("nouveau", () => expect(1).toBe(1));';
+  assert.deepEqual(lbFiles(modified(t, empty)), []);
+});
+
 test("niveau B : corps d'un test modifié, titre inchangé : admis", () => {
   const body = "@@ -1 +1 @@\n-it('calcule', () => expect(f(1)).toBe(2));\n+it('calcule', () => expect(f(1)).toBe(3));";
   assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", body)), []);
