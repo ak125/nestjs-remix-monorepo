@@ -42,7 +42,7 @@ export const WRITER_CONTRACT_VERSION = '1.0.0';
  * Corrige le bug historique : le feeder posait `pipeline_version="r1-feeder/<trigger>"` (non-semver)
  * → tout run réel échouait `validate_run_for_replay`.
  */
-export const PROJECTION_BUILDER_VERSION = '1.0.0'; // adaptateur export→DB (mapExportBlockToDbBlock)
+export const PROJECTION_BUILDER_VERSION = '1.1.0'; // adaptateur export→DB (mapExportBlockToDbBlock) — 1.1.0 : recopie `qa` (ADR-107 D2)
 export const PROJECTION_PIPELINE_VERSION = '1.0.0'; // pipeline d'écriture (projectExports)
 export const PROJECTION_EXTRACTOR_VERSION = '1.0.0'; // extraction facts/blocks depuis l'export
 export const PROJECTION_RUNNER_VERSION = '1.0.0'; // runner (processor → writer)
@@ -135,6 +135,16 @@ export interface SeoProjectionExport {
 /** Niveau de vérité d'un bloc (ADR-086). Porte la provenance lue par D1/D2 (sépare DB-owned de sourced). */
 export type BlockTruthLevel = 'db_owned' | 'sourced' | 'inferred' | 'editorial';
 
+/** Paire question-réponse d'un bloc FAQ (exports-seo 1.2.0, `blocks[].qa[]`, ADR-107 D2). */
+export interface SeoProjectionQaPair {
+  /** Question ; se termine par `?`. */
+  question: string;
+  /** Réponse en Markdown. */
+  answer_md: string;
+  /** ≥1 source préfixée (db:|web:|raw:|oem:|specialist:). */
+  source_ids: string[];
+}
+
 /**
  * Bloc tel qu'émis par le builder wiki — forme **FLAT**, miroir de `exports-seo.schema.json`
  * (`role`, `content_md`, `source_ids`, `truth_level` requis ; `section`/`usefulness_target` optionnels ;
@@ -148,6 +158,12 @@ export interface SeoProjectionBlock {
   truth_level: BlockTruthLevel;
   section?: string | null;
   usefulness_target?: string | null;
+  /**
+   * Paires question-réponse typées (exports-seo 1.2.0, ADR-107 D2), présentes seulement sur un bloc
+   * de section `faq`. `content_md` en est le rendu dérivé côté WIKI ; recopiées verbatim, jamais
+   * reconstruites depuis la prose.
+   */
+  qa?: SeoProjectionQaPair[];
   // Provenance citable optionnelle (D3 ADR-086) — copiée verbatim dans content si présente, jamais fabriquée.
   evidence_type?: string;
   applies_to?: { scope: string; key: string } | null;

@@ -178,3 +178,68 @@ describe('presentR3Projection — structure servie', () => {
     expect(presentR3Projection(slots)).toEqual(presentR3Projection(slots));
   });
 });
+
+describe('presentR3Projection — FAQ à paires qa (ADR-107 D2/D3)', () => {
+  const qa = [
+    {
+      question: 'Quand remplacer le **filtre** ?',
+      answer_md:
+        'Aux échéances du constructeur. Voir [la gamme](/pieces/filtre-a-huile-7.html).',
+      source_ids: ['oem:ev-m'],
+    },
+    {
+      question: 'Faut-il <b>huiler</b> le joint ?',
+      answer_md: 'Oui, avec de l’huile moteur propre.',
+      source_ids: ['oem:ev-j'],
+    },
+  ];
+  const faqQa = {
+    role: R3_MAPPER_ROLE,
+    content: {
+      section: 'faq',
+      content_md: '**Quand remplacer le filtre ?** Aux échéances du constructeur.',
+      source_ids: ['oem:ev-j', 'oem:ev-m'],
+      truth_level: 'sourced',
+      usefulness_target: 'faq',
+      qa,
+    },
+  };
+
+  it('S8 rendu des paires en <details>, liens internes conservés, HTML de la question échappé', () => {
+    const { bodySections, faqPairs } = presentR3Projection(
+      slotsOf([...TIER_M, faqQa]),
+    );
+    const s8 = bodySections.find((s) => s.sectionType === 'S8');
+    expect(s8?.html).toBe(
+      '<details><summary><b>Quand remplacer le <strong>filtre</strong> ?</b></summary>' +
+        '<p>Aux échéances du constructeur. Voir <a href="/pieces/filtre-a-huile-7.html">la gamme</a>.</p></details>' +
+        '<details><summary><b>Faut-il &lt;b&gt;huiler&lt;/b&gt; le joint ?</b></summary>' +
+        '<p>Oui, avec de l’huile moteur propre.</p></details>',
+    );
+    expect(faqPairs).toEqual([
+      {
+        questionHtml: 'Quand remplacer le <strong>filtre</strong> ?',
+        answerHtml:
+          '<p>Aux échéances du constructeur. Voir <a href="/pieces/filtre-a-huile-7.html">la gamme</a>.</p>',
+      },
+      {
+        questionHtml: 'Faut-il &lt;b&gt;huiler&lt;/b&gt; le joint ?',
+        answerHtml: '<p>Oui, avec de l’huile moteur propre.</p>',
+      },
+    ]);
+  });
+
+  it('FAQ en prose → rendue telle quelle, aucune paire exposée (pas de FAQPage)', () => {
+    const { bodySections, faqPairs } = presentR3Projection(
+      slotsOf(ALL_SECTIONS),
+    );
+    expect(bodySections.find((s) => s.sectionType === 'S8')?.html).toBe(
+      '<p>Quand changer ? À chaque vidange.</p>',
+    );
+    expect(faqPairs).toEqual([]);
+  });
+
+  it('sans FAQ → faqPairs vide', () => {
+    expect(presentR3Projection(slotsOf(TIER_M)).faqPairs).toEqual([]);
+  });
+});

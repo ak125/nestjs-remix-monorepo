@@ -39,6 +39,8 @@ export interface ProjectionBlock {
     truth_level?: string;
     section?: string;
     usefulness_target?: string;
+    /** Brut depuis la RPC (exports-seo 1.2.0, ADR-107 D2) ; validé par le mapper du rôle. */
+    qa?: unknown;
   } | null;
 }
 

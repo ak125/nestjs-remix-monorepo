@@ -373,6 +373,8 @@ export const meta: MetaFunction<typeof loader> = ({
       },
       page.sourceType === "conseil" ? allConseil : null,
       canonicalUrl,
+      // Chemin projeté : FAQPage des seules paires typées (ADR-107 D3) ; absent en legacy.
+      guide.projectionFaq,
     );
 
   const result: Array<Record<string, string | object>> = [

@@ -7,6 +7,7 @@ import {
   type GammeConseil,
   normalizeStepHtml,
 } from "~/components/blog/conseil/section-config";
+import { type R3ProjectedFaqPair } from "~/types/r3-guide.types";
 
 // --- Internal helpers ---
 
@@ -126,6 +127,35 @@ function parseFAQ(
   };
 }
 
+/**
+ * FAQPage du chemin projeté (ADR-107 D3) : construite des seules paires typées `qa`, jamais lue
+ * dans le HTML. Aucune paire ⇒ aucune FAQPage (une FAQ en prose n'en produit pas).
+ */
+function faqFromProjectedPairs(
+  pairs: readonly R3ProjectedFaqPair[],
+  canonicalUrl: string,
+): Record<string, unknown> | null {
+  const entities = pairs
+    .map((p) => ({ q: blockText(p.questionHtml), a: blockText(p.answerHtml) }))
+    .filter(({ q, a }) => q.length > 0 && a.length > 0);
+  if (entities.length === 0) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${canonicalUrl}#faq`,
+    url: canonicalUrl,
+    mainEntity: entities.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: a,
+      },
+    })),
+  };
+}
+
 // --- Public API ---
 
 export interface GuideSchemaArticle {
@@ -149,10 +179,16 @@ export interface GuideSchemaOutput {
   breadcrumbSchema: Record<string, unknown>;
 }
 
+/**
+ * @param projectedFaq paires de la FAQ projetée (`R3GuidePayload.projectionFaq`). Défini ⇔ corps
+ * servi depuis la projection : la FAQPage vient alors d'elles seules (ADR-107 D3), sans lecture
+ * du HTML de S8. Indéfini (chemin legacy) : FAQPage lue dans le HTML de S8, comme avant.
+ */
 export function buildGuideSchemas(
   article: GuideSchemaArticle,
   conseil: GammeConseil[] | null,
   canonicalUrl: string,
+  projectedFaq?: readonly R3ProjectedFaqPair[],
 ): GuideSchemaOutput {
   const title = article.meta_title || article.h1 || article.title;
   const description = article.meta_description;
@@ -237,7 +273,10 @@ export function buildGuideSchemas(
   return {
     articleSchema,
     howToSchema: parseHowTo(conseil, title, canonicalUrl),
-    faqSchema: parseFAQ(conseil, canonicalUrl),
+    faqSchema:
+      projectedFaq !== undefined
+        ? faqFromProjectedPairs(projectedFaq, canonicalUrl)
+        : parseFAQ(conseil, canonicalUrl),
     breadcrumbSchema,
   };
 }

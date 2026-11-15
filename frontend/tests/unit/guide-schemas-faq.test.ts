@@ -265,3 +265,49 @@ describe("buildGuideSchemas — FAQPage, pas d'émission", () => {
     ).toBeNull();
   });
 });
+
+describe("buildGuideSchemas — FAQPage du chemin projeté (paires qa, ADR-107 D3)", () => {
+  const legacyFaq = s8(
+    "<details><summary><b>Question legacy une ?</b></summary><p>Réponse une.</p></details>" +
+      "<details><summary><b>Question legacy deux ?</b></summary><p>Réponse deux.</p></details>" +
+      "<details><summary><b>Question legacy trois ?</b></summary><p>Réponse trois.</p></details>",
+  );
+  const projected = (pairs: { questionHtml: string; answerHtml: string }[]) =>
+    buildGuideSchemas(article, [legacyFaq], URL, pairs).faqSchema as {
+      "@id": string;
+      mainEntity: { name: string; acceptedAnswer: { text: string } }[];
+    } | null;
+
+  it("construit le FAQPage depuis les seules paires projetées, jamais depuis le HTML legacy", () => {
+    const schema = projected([
+      {
+        questionHtml: "Quand changer le <strong>filtre</strong> ?",
+        answerHtml:
+          '<p>Aux échéances du constructeur, voir <a href="/pieces/filtre-a-huile-7.html">les filtres</a>.</p>',
+      },
+    ]);
+    expect(schema?.["@id"]).toBe(`${URL}#faq`);
+    expect(schema?.mainEntity).toEqual([
+      {
+        "@type": "Question",
+        name: "Quand changer le filtre ?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Aux échéances du constructeur, voir les filtres.",
+        },
+      },
+    ]);
+  });
+
+  it("aucune paire exploitable ⇒ pas de FAQPage (pas de repli sur le legacy)", () => {
+    expect(projected([])).toBeNull();
+    expect(projected([{ questionHtml: " ", answerHtml: "<p>x</p>" }])).toBeNull();
+  });
+
+  it("sans paires projetées, le chemin legacy reste inchangé", () => {
+    const schema = buildGuideSchemas(article, [legacyFaq], URL).faqSchema as {
+      mainEntity: unknown[];
+    } | null;
+    expect(schema?.mainEntity).toHaveLength(3);
+  });
+});
