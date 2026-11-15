@@ -1,0 +1,84 @@
+#!/bin/bash
+# Délivre un jeton d'installation GitHub App (1 h), limité aux dépôts REPOS et aux droits PERMS.
+# Installé root:root 0755 en /usr/local/libexec/automecanik-gh-app-token par identite-github.sh,
+# exécuté sous automecanik-ghapp (seul lecteur de la clé) par la règle sudoers du kit.
+#   (sans argument)  imprime le jeton sur stdout, rien d'autre
+#   describe         imprime les droits et la sélection de l'installation (aucun jeton)
+# Chaque délivrance et chaque refus est journalisé (journalctl -t automecanik-gh-app-token).
+set -euo pipefail
+umask 077
+export LC_ALL=C
+cd /
+readonly CONF=/etc/automecanik/github-app/app.conf
+readonly KEY=/etc/automecanik/github-app/private-key.pem
+readonly API=https://api.github.com
+readonly PERMS='{"actions":"read","checks":"read","contents":"write","metadata":"read","pull_requests":"write","statuses":"read"}'
+# Dépôts où travaillent les agents de DEV (checkouts, tâches planifiées, PR), liste triée.
+readonly REPOS='["automecanik-rag","automecanik-raw","automecanik-wiki","governance-vault","nestjs-remix-monorepo","space-archive"]'
+
+die() {
+  echo "automecanik-gh-app-token: $*" >&2
+  logger -t automecanik-gh-app-token -- "refus uid=${SUDO_UID:-$(id -u)}: $*" 2>/dev/null || true
+  exit 1
+}
+
+[ "$#" -le 1 ] || die "usage: automecanik-gh-app-token [describe]"
+MODE=${1:-token}
+case "$MODE" in token | describe) ;; *) die "mode inconnu" ;; esac
+
+# app.conf : lignes clé=valeur, lues sans source ni eval.
+APP_ID='' INSTALLATION_ID=''
+while IFS='=' read -r k v || [ -n "$k" ]; do
+  case "$k" in
+    APP_ID) APP_ID=$v ;;
+    INSTALLATION_ID) INSTALLATION_ID=$v ;;
+    '' | '#'*) ;;
+    *) die "clé inconnue dans app.conf" ;;
+  esac
+done <"$CONF"
+[[ "$APP_ID" =~ ^[0-9]{1,12}$ && "$INSTALLATION_ID" =~ ^[0-9]{1,12}$ ]] ||
+  die "app.conf invalide"
+[ -r "$KEY" ] || die "clé illisible"
+
+b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
+now=$(date +%s)
+h=$(printf '%s' '{"alg":"RS256","typ":"JWT"}' | b64url)
+p=$(printf '{"iat":%d,"exp":%d,"iss":"%s"}' "$((now - 60))" "$((now + 540))" "$APP_ID" | b64url)
+s=$(printf '%s.%s' "$h" "$p" | openssl dgst -sha256 -sign "$KEY" -binary | b64url) || die "signature impossible"
+[ -n "$s" ] || die "signature impossible"
+JWT="$h.$p.$s"
+
+# Le JWT ouvre tous les droits de l'App pendant 10 min : il passe par un descripteur, jamais par argv.
+call() { # méthode chemin [corps]
+  curl -sS --max-time 20 --proto '=https' -X "$1" \
+    -H @<(printf 'Authorization: Bearer %s\n' "$JWT") \
+    -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' \
+    -w '\n%{http_code}' ${3:+--data "$3"} "$API$2"
+}
+RESP_CODE='' RESP_BODY=''
+split() { RESP_CODE=${1##*$'\n'}; RESP_BODY=${1%$'\n'*}; }
+message() { jq -r '.message? // empty' <<<"$RESP_BODY" 2>/dev/null | head -c 200; }
+
+if [ "$MODE" = describe ]; then
+  out=$(call GET "/app/installations/$INSTALLATION_ID") || die "appel GitHub impossible"
+  split "$out"
+  [ "$RESP_CODE" = 200 ] || die "describe HTTP $RESP_CODE $(message)"
+  jq -c '{app_slug, account: .account.login, repository_selection, permissions}' <<<"$RESP_BODY"
+  exit 0
+fi
+
+body=$(jq -nc --argjson r "$REPOS" --argjson p "$PERMS" '{repositories: $r, permissions: $p}')
+out=$(call POST "/app/installations/$INSTALLATION_ID/access_tokens" "$body") || die "appel GitHub impossible"
+split "$out"
+[ "$RESP_CODE" = 201 ] || die "HTTP $RESP_CODE $(message)"
+# Fermé par défaut : tout écart de droits, de dépôt ou de forme écarte le jeton.
+# Forme : jetons sans état de GitHub depuis 2026-10-02 (ghs_ + ~520 car. avec « . _ - »), jeu de
+# caractères borné pour rester sûr dans hosts.yml ; \z et non $, qui tolère un saut de ligne final.
+jq -e --argjson p "$PERMS" --argjson r "$REPOS" '
+  .permissions == $p and .repository_selection == "selected"
+  and ([.repositories[]?.name] | sort) == $r
+  and (.token | type == "string" and test("^ghs_[A-Za-z0-9._-]{36,2048}\\z"))' <<<"$RESP_BODY" >/dev/null ||
+  die "réponse hors périmètre (droits, dépôt ou forme du jeton)"
+logger -t automecanik-gh-app-token -- \
+  "jeton délivré uid=${SUDO_UID:-$(id -u)} dépôts=$(jq -r 'join(",")' <<<"$REPOS") expire=$(jq -r .expires_at <<<"$RESP_BODY")" 2>/dev/null || true
+jq -r .token <<<"$RESP_BODY"
