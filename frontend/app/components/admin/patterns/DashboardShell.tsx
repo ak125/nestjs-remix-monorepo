@@ -1,7 +1,7 @@
 /**
  * DashboardShell - Layout standardisé pour dashboards admin
  *
- * @see packages/design-tokens/DESIGN-SYSTEM.automecanik.md Section 6
+ * @see .claude/skills/frontend-design/SKILL.md (règles UI) et packages/design-tokens/src/tokens.json (valeurs)
  *
  * Hiérarchie obligatoire: Header → KPIs → Filters → Data → Actions
  * Mobile-first avec responsive breakpoints progressifs

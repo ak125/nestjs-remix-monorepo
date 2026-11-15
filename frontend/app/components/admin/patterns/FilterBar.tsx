@@ -1,7 +1,7 @@
 /**
  * FilterBar - Barre de filtres responsive
  *
- * @see packages/design-tokens/DESIGN-SYSTEM.automecanik.md
+ * @see .claude/skills/frontend-design/SKILL.md (règles UI) et packages/design-tokens/src/tokens.json (valeurs)
  *
  * Mobile: Bouton → Bottom Sheet (80vh)
  * Desktop: Barre inline avec flex wrap

@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115140,
+      "loc_total": 115143,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 586,
-      "loc_total": 110907,
+      "files_count": 585,
+      "loc_total": 110878,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -550,7 +550,7 @@
         "packages/design-tokens/tests"
       ],
       "files_count": 13,
-      "loc_total": 2007,
+      "loc_total": 2147,
       "has_barrel": true
     },
     "pkg-domain-commerce": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 376,
-      "loc_total": 77723,
+      "files_count": 375,
+      "loc_total": 77822,
       "has_barrel": true
     },
     "upload": {
@@ -1007,8 +1007,8 @@
         "backend/src/modules/vehicles/services/seo",
         "backend/src/modules/vehicles/types"
       ],
-      "files_count": 30,
-      "loc_total": 9010,
+      "files_count": 31,
+      "loc_total": 9294,
       "has_barrel": false
     },
     "wiki": {

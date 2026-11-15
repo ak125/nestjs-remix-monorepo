@@ -43,6 +43,7 @@ describe("catch-all $.tsx — le statut décidé n'est plus remplacé par la 404
     try {
       await loader({
         request: new Request(`https://www.automecanik.com${path}`),
+        url: new URL(`https://www.automecanik.com${path}`),
         params: {},
         context: {},
       } as never);

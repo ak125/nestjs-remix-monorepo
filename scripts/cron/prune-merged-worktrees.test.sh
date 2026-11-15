@@ -44,8 +44,11 @@ unset XDG_STATE_HOME CRON_STATE_DIR CRON_REPORT_MAX_AGE_S
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 export GIT_AUTHOR_NAME=fixture GIT_AUTHOR_EMAIL=fixture@example.invalid
 export GIT_COMMITTER_NAME=fixture GIT_COMMITTER_EMAIL=fixture@example.invalid
-# Le périmètre par défaut lit $HOME/worktrees/claude- : jamais le vrai HOME.
-export HOME="$FIX"
+# Le périmètre par défaut lit $HOME/worktrees/claude- et ${TMPDIR}/claude-<uid>/ : jamais
+# le vrai HOME ni le vrai TMPDIR (celui d'une session Claude couvrirait toute la fixture).
+export HOME="$FIX" TMPDIR="$FIX/tmp"
+mkdir -p "$TMPDIR"
+SP="$TMPDIR/claude-$(id -u)/-proj/sess/scratchpad"
 
 R="$FIX/repo"; WT="$R/.claude/worktrees"
 STATE="$FIX/.local/state/automecanik/cron/prune-merged-worktrees.json"
@@ -170,6 +173,10 @@ s=$(mkwt "$HOME/worktrees/claude-w24" feat/w24-home); pr 38 MERGED feat/w24-home
 s=$(mkwt "$WT/w25-behind" feat/w25-behind)
 h="$(git -C "$R" commit-tree -p "$s" -m "Merge origin/main into feat/w25-behind" "$(git -C "$R" rev-parse "$s^{tree}")")"
 git -C "$R" push -q origin "$h:refs/heads/feat/w25-behind"; pr 39 MERGED feat/w25-behind "$h"
+# W28 — MERGED, propre, worktree créé dans le scratchpad d'une session Claude (témoin positif)
+s=$(mkwt "$SP/w28-scratch" feat/w28-scratch); pr 42 MERGED feat/w28-scratch "$s"
+# W29 — MERGED, propre, préfixe voisin claude-<uid>0/ : hors périmètre (le « / » final compte)
+s=$(mkwt "$TMPDIR/claude-$(id -u)0/sess/w29-neighbour" feat/w29-neighbour); pr 43 MERGED feat/w29-neighbour "$s"
 # W26 — MERGED, propre, tête de PR inconnue localement : ascendance invérifiable
 s=$(mkwt "$WT/w26-unknown" feat/w26-unknown); pr 40 MERGED feat/w26-unknown 0123456789abcdef0123456789abcdef01234567
 # W27 — PR OUVERTE (gardée par la passe 1) portant des caches marqués CACHEDIR.TAG (passe 3)
@@ -208,7 +215,8 @@ git -C "$R" fetch -q origin
 git -C "$FIX/origin.git" update-ref -d refs/heads/feat/remote-gone
 
 # Vieillir toutes les dates (sauf l'index/reflog de W8, laissés « maintenant »)
-for d in "$WT"/w* "$FIX/worktrees/codex-w10" "$HOME/worktrees/claude-w24"; do
+for d in "$WT"/w* "$FIX/worktrees/codex-w10" "$HOME/worktrees/claude-w24" "$SP/w28-scratch" \
+         "$TMPDIR/claude-$(id -u)0/sess/w29-neighbour"; do
   [[ -d "$d" ]] || continue
   gd="$(git -C "$d" rev-parse --absolute-git-dir 2>/dev/null || true)"
   touch -d '2 days ago' "$d"
@@ -273,6 +281,8 @@ check "dry-run : ref distante origin/feat/remote-gone conservée"   present "$(g
 check "dry-run : W9 (statut illisible) non proposé à la suppression" no "$(grep -q 'WOULD-REMOVE.*w9-statuserr' <<<"$DRY" && echo yes || echo no)"
 check "dry-run : W14 (.env ignoré) non proposé à la suppression"    no "$(grep -q 'WOULD-REMOVE.*w14-env' <<<"$DRY" && echo yes || echo no)"
 check "dry-run : W24 (\$HOME/worktrees/claude-*) proposé à la suppression" yes "$(grep -q 'WOULD-REMOVE.*claude-w24' <<<"$DRY" && echo yes || echo no)"
+check "dry-run : W28 (scratchpad de session) proposé à la suppression" yes "$(grep -q '^WOULD-REMOVE .*w28-scratch' <<<"$DRY" && echo yes || echo no)"
+check "dry-run : W29 (préfixe voisin) hors périmètre"               yes "$(grep -q 'other-manager.*w29-neighbour' <<<"$DRY" && echo yes || echo no)"
 check "dry-run : W27 cache inactif proposé au retrait"               yes "$(grep -q '^WOULD-REMOVE-CACHE .*w27-caches/svc/target ' <<<"$DRY" && echo yes || echo no)"
 check "dry-run : W27 cache inactif toujours présent"                 present "$(present "$C/svc/target/debug/app")"
 EMPTY="$(cd "$R" && PRUNE_ROOTS='::' LOG_DIR="$FIX/logs/dry" bash "$SCRIPT" 2>&1)"
@@ -338,6 +348,10 @@ check "W23 écriture tardive : worktree conservé"                    present "$
 check "W23 : écriture tardive intacte"                              yes "$(grep -q 'ÉCRITURE-TARDIVE' "$WT/w23-late/a.txt" 2>/dev/null && echo yes || echo no)"
 check "W24 \$HOME/worktrees/claude-* MERGED propre : supprimé (témoin)" absent "$(present "$HOME/worktrees/claude-w24")"
 check "W24 : branche supprimée"                                     absent "$(branch feat/w24-home)"
+check "W28 scratchpad de session MERGED propre : supprimé (témoin)"  absent "$(present "$SP/w28-scratch")"
+check "W28 : branche supprimée"                                     absent "$(branch feat/w28-scratch)"
+check "W29 préfixe voisin : worktree conservé"                      present "$(present "$TMPDIR/claude-$(id -u)0/sess/w29-neighbour")"
+check "W29 : branche conservée"                                     present "$(branch feat/w29-neighbour)"
 check "W25 pointe = ancêtre de la tête PR : worktree supprimé (témoin)" absent "$(present "$WT/w25-behind")"
 check "W25 : branche supprimée"                                     absent "$(branch feat/w25-behind)"
 check "W26 tête PR inconnue localement : worktree conservé"         present "$(present "$WT/w26-unknown")"

@@ -63,12 +63,20 @@ function toProjection(t) {
   };
 }
 
+// Color groups projected to Tailwind (tailwind-tokens.cjs) and generated.ts but
+// NOT emitted as --am-color-* custom properties: cta and navy moved here from
+// hard-coded values in frontend/tailwind.config.cjs (2026-11-14) with the rule
+// "no visible change", so tokens.css — shipped in the production CSS — stays
+// byte-identical. Emitting them as CSS vars is a separate decision.
+const CSS_EXCLUDED_COLOR_GROUPS = new Set(["cta", "navy"]);
+
 // ── format 1 : tokens.css (verified byte-identical to the v3 generator) ──────
 function renderTokensCss(t) {
   const L = [];
   L.push("/**", " * 🎨 Design Tokens - Auto-généré", " * ⚠️  NE PAS MODIFIER MANUELLEMENT", " * Source: src/tokens.json", " */", "", ":root {", "");
   L.push("  /* Colors */");
   for (const { path, val } of leaves(t.color)) {
+    if (CSS_EXCLUDED_COLOR_GROUPS.has(path[0])) continue;
     const name = "am-color-" + path.join("-");
     L.push(`  --${name}: ${val};`);
     L.push(`  --${name}-contrast: ${getContrastColor(val)};`);
