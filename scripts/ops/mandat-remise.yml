@@ -1,0 +1,213 @@
+name: Remise de mandat par issue (ADR-128 D4)
+
+# Livré sous scripts/ops/ (ADR-130 D3.4) : inactif tant que l'owner ne l'a pas déplacé dans
+# .github/workflows/ (gestes d'activation : docs/plans/2026-11-15-adr128-etape2-mandat-remise.md).
+#
+# routine:
+#   id: mandat-remise
+#   owner: Marwane
+#   departement: 23-ia-agents
+#   kpi: absent (useful_capabilities_not_complexity, producteur absent — ADR-128 D2)
+#   trigger: issues labeled « mandat-prêt », posé par MANDAT_OWNER sur une issue ouverte écrite par
+#            MANDAT_OWNER (ADR-128 D4.1) ; tout autre événement est ignoré avant tout runner
+#   approach: job « session » sur le runner auto-hébergé `agents` (GITHUB_TOKEN en lecture) : garde
+#             (événement + API, corps figé au label, dernier éditeur), worktree isolé sur une
+#             branche mandat/<N>-<slug> depuis origin/main, claude -p (corps de l'événement en
+#             prompt, sortie JSON sous schéma, sans jeton GitHub), état figé dans un bundle git.
+#             Job « publication » sur un runner hébergé neuf : tout est recalculé depuis le bundle
+#             (base, commits, fichiers, workflows, secrets), puis push + PR avec un jeton
+#             d'installation de l'App créé dans ce job seulement, commentaire AEC et label
+#             statut:* avec GITHUB_TOKEN. Jamais statut:opérationnel, jamais de fusion (D4.3).
+#   evidence: commentaire AEC sur l'issue ; artifacts mandat-remise-<run_id> (journal complet de la
+#             session, mandat, préparation, coût, résultat, bundle) et
+#             mandat-remise-publication-<run_id> (décision, plan, commentaire), 90 jours ; coût
+#             dans le résumé de l'exécution (ADR-034 axe 3)
+#   escalation: refus ou échec = exécution rouge visible dans Actions + statut:bloqué sur l'issue
+#               (sauf refus de garde : aucune écriture) ; arrêts ADR-128 D6 : N3 retrait du label
+#               mandat-prêt (relu au début de chaque job), N2 gh workflow disable mandat-remise.yml,
+#               N1 arrêt du service du runner agents
+#   secret: CLAUDE_CODE_OAUTH_TOKEN (dépôt) ; MANDAT_APP_PRIVATE_KEY (environnement mandat-remise,
+#           restreint à main) ; variables MANDAT_OWNER et MANDAT_APP_ID
+#
+# Concurrence (ADR-128 D3) : un groupe par issue, sans annulation ; deux issues différentes peuvent
+# tourner en parallèle, chacune dans son worktree, dans la limite d'un runner `agents`.
+
+on:
+  issues:
+    types: [labeled]
+
+permissions: {}
+
+concurrency:
+  group: mandat-remise-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  session:
+    name: Session du mandat (runner agents)
+    if: >-
+      ${{ vars.MANDAT_OWNER != ''
+          && github.event.label.name == 'mandat-prêt'
+          && github.event.sender.login == vars.MANDAT_OWNER
+          && github.event.issue.user.login == vars.MANDAT_OWNER
+          && github.event.issue.state == 'open'
+          && !github.event.issue.pull_request }}
+    runs-on: [agents]
+    timeout-minutes: 150
+    permissions:
+      contents: read
+      issues: read
+    outputs:
+      garde: ${{ steps.garde.outputs.garde }}
+    env:
+      REPO: ${{ github.repository }}
+      MANDAT_OWNER: ${{ vars.MANDAT_OWNER }}
+      MANDAT_MODELE: claude-opus-5-5
+      MANDAT_BUDGET_USD: "20"
+      MANDAT_CLI_VERSION: 2.1.316
+    steps:
+      - name: Checkout (arbre complet, base du worktree)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Garde (événement, API, corps figé, éditeur)
+        id: garde
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ops/mandat-remise.sh garde --sortie "$RUNNER_TEMP/mandat-remise"
+
+      - name: Worktree isolé
+        id: preparer
+        run: bash scripts/ops/mandat-remise.sh preparer --sortie "$RUNNER_TEMP/mandat-remise"
+
+      - name: Session Claude (sans jeton GitHub)
+        id: session
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bash scripts/ops/mandat-remise.sh session --sortie "$RUNNER_TEMP/mandat-remise"
+
+      - name: État figé (worktree, secrets, bundle)
+        if: ${{ always() && steps.preparer.outcome == 'success' }}
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bash scripts/ops/mandat-remise.sh figer --sortie "$RUNNER_TEMP/mandat-remise"
+
+      - name: Expurgation avant artifact
+        if: ${{ always() && steps.garde.outputs.garde == 'ok' }}
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: bash scripts/ops/mandat-remise.sh expurger --sortie "$RUNNER_TEMP/mandat-remise"
+
+      - name: Mesure du coût
+        if: ${{ always() && steps.garde.outputs.garde == 'ok' }}
+        run: |
+          {
+            echo "### mandat-remise — coût de la session"
+            echo '```json'
+            if [[ -f "$RUNNER_TEMP/mandat-remise/cout.json" ]]; then jq . "$RUNNER_TEMP/mandat-remise/cout.json"; else echo '{"sessions_ouvertes": 0}'; fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Artifact de preuve (90 jours)
+        if: ${{ always() && steps.garde.outputs.garde == 'ok' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: mandat-remise-${{ github.run_id }}
+          path: ${{ runner.temp }}/mandat-remise
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Nettoyage du clone du runner
+        if: ${{ always() }}
+        run: |
+          bash scripts/ops/mandat-remise.sh nettoyer --sortie "$RUNNER_TEMP/mandat-remise" || true
+          rm -rf "$RUNNER_TEMP/mandat-remise"
+          # Clone vidé : une config git ou un hook laissé par la session ne survit pas au job.
+          find "$GITHUB_WORKSPACE" -mindepth 1 -delete
+
+  publication:
+    name: Publication (runner hébergé, jeton de l'App)
+    needs: session
+    if: ${{ always() && needs.session.outputs.garde == 'ok' }}
+    runs-on: ubuntu-latest
+    environment: mandat-remise
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+    env:
+      REPO: ${{ github.repository }}
+      MANDAT_OWNER: ${{ vars.MANDAT_OWNER }}
+    steps:
+      - name: Checkout (scripts, clone neuf)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/ops
+
+      - name: Artifact de la session
+        uses: actions/download-artifact@v8
+        with:
+          name: mandat-remise-${{ github.run_id }}
+          path: ${{ runner.temp }}/mandat-remise
+
+      - name: Garde (label encore présent, N3)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ops/mandat-remise.sh garde --sortie "$RUNNER_TEMP/mandat-remise" --publication
+
+      - name: Vérification depuis le bundle
+        id: verifier
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ops/mandat-remise.sh verifier --sortie "$RUNNER_TEMP/mandat-remise"
+
+      - name: Jeton d'installation de l'App (contents, pull-requests)
+        id: app
+        if: ${{ steps.verifier.outputs.pousser == 'true' }}
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.MANDAT_APP_ID }}
+          private-key: ${{ secrets.MANDAT_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Push, PR, commentaire AEC et label statut
+        # Même si le jeton de l'App n'a pas pu être créé : l'issue reçoit alors statut:bloqué.
+        if: ${{ always() && steps.verifier.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MANDAT_TOKEN_PR: ${{ steps.app.outputs.token }}
+        run: bash scripts/ops/mandat-remise.sh publier --sortie "$RUNNER_TEMP/mandat-remise"
+
+      - name: Expurgation avant artifact
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MANDAT_TOKEN_PR: ${{ steps.app.outputs.token }}
+        run: bash scripts/ops/mandat-remise.sh expurger --sortie "$RUNNER_TEMP/mandat-remise"
+
+      - name: Artifact de publication (90 jours)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: mandat-remise-publication-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/mandat-remise
+            !${{ runner.temp }}/mandat-remise/**/*.bundle
+          retention-days: 90
+          if-no-files-found: warn
