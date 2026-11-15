@@ -41,6 +41,7 @@ describe("catch-all $.tsx — URL au %-encoding corrompu (U+FFFD) → 410, jamai
   const call = (path: string) =>
     loader({
       request: new Request(`https://www.automecanik.com${path}`),
+      url: new URL(`https://www.automecanik.com${path}`),
       params: {},
       context: {},
     } as never);
