@@ -374,16 +374,35 @@ function isPlainGlobalUse(node) {
   const parent = outer.parent;
   if (isInType(node) || isDataKey(node)) return true;
   if ((ts.isDeclaration(parent) || ts.isBindingElement(parent)) && !ts.isShorthandPropertyAssignment(parent) && parent.name === node) return true;
-  if (ts.isPropertyAccessExpression(parent) && parent.expression === outer) return parent.name.text !== "constructor";
-  if (ts.isElementAccessExpression(parent) && parent.expression === outer) return ts.isStringLiteralLike(unwrap(parent.argumentExpression)) && unwrap(parent.argumentExpression).text !== "constructor";
+  // Un global atteint par un autre (`globalThis.window`) est jugé comme le premier : `typeof globalThis.window`
+  // reste une lecture ordinaire, `globalThis.globalThis[k] = …` non.
+  if (ts.isPropertyAccessExpression(parent) && parent.expression === outer) {
+    return GLOBAL_OBJECTS.has(parent.name.text) ? isPlainGlobalUse(parent) : !isUnsafeGlobalKey(parent.name.text);
+  }
+  if (ts.isElementAccessExpression(parent) && parent.expression === outer) {
+    const key = unwrap(parent.argumentExpression);
+    if (!ts.isStringLiteralLike(key)) return false;
+    return GLOBAL_OBJECTS.has(key.text) ? isPlainGlobalUse(parent) : !isUnsafeGlobalKey(key.text);
+  }
   if (ts.isTypeOfExpression(parent)) return true;
   if (ts.isCallExpression(parent) && parent.arguments[0] === outer) {
     const name = lastSegment(parent);
     if (name === "assign" || name === "defineProperties") return hasLiteralKeys(parent);
     const key = parent.arguments[1] && unwrap(parent.arguments[1]);
-    if (KEYED_CALLS.has(name)) return Boolean(key) && ts.isStringLiteralLike(key) && key.text !== "constructor";
+    if (KEYED_CALLS.has(name)) return Boolean(key) && ts.isStringLiteralLike(key) && !isUnsafeGlobalKey(key.text);
   }
   return false;
+}
+
+/** Clés d'un objet global qui ne sont pas une lecture ordinaire : code dynamique, `constructor`, un autre global (`globalThis.globalThis`). */
+function isUnsafeGlobalKey(name) {
+  return name === "constructor" || DYNAMIC_CODE_NAMES.has(name) || GLOBAL_OBJECTS.has(name);
+}
+
+/** Clé littérale lue ou écrite par un appel à clé en second argument (`Reflect.get(o, "eval")`). */
+function isKeyedCallKey(node) {
+  const call = node.parent;
+  return ts.isCallExpression(call) && call.arguments[1] === node && KEYED_CALLS.has(lastSegment(call));
 }
 
 // Appels qui lisent ou modifient un objet par une clé en second argument.
@@ -466,11 +485,21 @@ function testNameReferences(source, checker) {
       }
       if (TEST_FRAMEWORK_MODULES.has(node.text) && !isModuleSpecifier) record(node.text, node);
       if (DYNAMIC_CODE_MODULES.has(node.text) || (node.text === "constructor" && isKey)) record(node.text, node);
+      // `o["eval"]`, `Reflect.get(o, "eval")` : code dynamique atteint par une clé, quel que soit le récepteur.
+      if (DYNAMIC_CODE_NAMES.has(node.text) && ((isKey && !isObjectDataKey) || isKeyedCallKey(node))) record(node.text, node);
     } else if (ts.isCallExpression(node) && lastSegment(node) === "stubGlobal" && node.arguments.length && !ts.isStringLiteralLike(unwrap(node.arguments[0]))) {
       record("stubGlobal à clé calculée", node);
     } else if (ts.isIdentifier(node) && GLOBAL_OBJECTS.has(node.text) && !isPlainGlobalUse(node) && !isLocal(node)) {
       record(`usage de ${node.text}`, node);
-    } else if (ts.isIdentifier(node) && DYNAMIC_CODE_NAMES.has(node.text) && !isDataKey(node) && !isInType(node) && !isLocal(node) && !isExpectedType(node)) {
+    } else if (
+      ts.isIdentifier(node) &&
+      DYNAMIC_CODE_NAMES.has(node.text) &&
+      // `o.eval` reste une référence quel que soit `o` (`document.defaultView.eval`) ; `{ eval: 1 }` est une donnée.
+      (!isDataKey(node) || ts.isPropertyAccessExpression(node.parent)) &&
+      !isInType(node) &&
+      !isLocal(node) &&
+      !isExpectedType(node)
+    ) {
       record(node.text, node);
     } else if (ts.isIdentifier(node) && node.text === "constructor" && ts.isPropertyAccessExpression(node.parent) && node.parent.name === node) {
       record("constructor", node);

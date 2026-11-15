@@ -629,6 +629,35 @@ test("niveau B : méthode ou accesseur à clé calculée test, it ou describe da
   }
 });
 
+test("niveau B : eval ou Function atteint par propriété ou clé littérale, global atteint par un autre global : refusé (revue Codex 11e passage)", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const patchOf = (added) => `@@ -1,3 +1,${3 + added.split("\n").length} @@\n it("contrôle critique", () => {\n   assertSecurity();\n });\n${added}`;
+  for (const added of [
+    '+globalThis.eval("globalThis.it = (_name, _callback) => {}");',
+    '+globalThis["eval"]("globalThis.it = () => {}");',
+    '+window.eval("window.it = () => {}");',
+    '+document.defaultView.eval("it = () => {}");',
+    '+globalThis.Function("globalThis.it = () => {}")();',
+    '+Reflect.get(globalThis, "eval")("globalThis.it = () => {}");',
+    '+const k = ["i", "t"].join("");\n+globalThis.globalThis[k] = () => {};',
+    '+window.self[["i", "t"].join("")] = () => {};',
+  ]) {
+    assert.deepEqual(lbFiles(modified(t, patchOf(added))), ["TEST_REMOVED"], added);
+  }
+});
+
+test("niveau B : clé de données nommée eval ou Function, lecture ordinaire d'une propriété globale : admis (revue Codex 11e passage)", () => {
+  const t = "frontend/tests/unit/a.test.ts";
+  const patchOf = (added) => `@@ -1,3 +1,${3 + added.split("\n").length} @@\n it("a", () => {\n   expect(1).toBe(1);\n });\n${added}`;
+  for (const added of [
+    "+const fixture = { eval: 1, Function: 'f' };",
+    "+expect(window.location.href).toBe('/');\n+expect(globalThis.fetch).toBeDefined();",
+    "+expect(typeof (globalThis as { window?: unknown }).window).toBe('undefined');",
+  ]) {
+    assert.deepEqual(lbFiles(modified(t, patchOf(added))), [], added);
+  }
+});
+
 test("niveau B : this d'une fonction dans un module (strict) : admis ; dans un script non strict : refusé", () => {
   const t = "frontend/tests/unit/a.test.tsx";
   const mock = "+HTMLDialogElement.prototype.showModal = function () {\n+  this.open = true;\n+};";
