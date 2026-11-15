@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: f00c3accee55a26f356e7213d9ad9e17f28754d73f9f973914fe986b7c7e08de
+source_sha256: 888c14c23cc6a6994ffa6291c3cdb6efec0202a04cd065bc9c7bd30545578bb4
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3181 |
+| Files (Layer 1) | 3184 |
 | DB tables (Layer 1) | 315 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `e7651563868e`.
+Source sotFingerprint: `a47316e368bf`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `e7651563868e`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 176 (test=162, service=10, config=3, controller=1)
+- **Files**: 177 (test=163, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (161), __unassigned__ (15)
+- **Top owners**: @ak125 (162), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=161
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=162
 
 ### D3 — SEO & Sitemap
 
@@ -61,11 +61,11 @@ Source sotFingerprint: `e7651563868e`.
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 117 (service=67, test=32, config=12, controller=6)
+- **Files**: 118 (service=67, test=33, config=12, controller=6)
 - **Runtime entrypoints**: 47
-- **Top owners**: @ak125/vehicle-team (78), @ak125 (39)
+- **Top owners**: @ak125/vehicle-team (78), @ak125 (40)
 - **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=71, UNKNOWN=46
+- **Status**: LIVE=71, UNKNOWN=47
 
 ### D5 — Blog / Content
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `e7651563868e`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 943 (config=455, route=246, service=178, controller=39, test=25)
+- **Files**: 944 (config=455, route=246, service=179, controller=39, test=25)
 - **Runtime entrypoints**: 346
-- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (268)
+- **Top owners**: @ak125/frontend-team (676), @ak125/admin-team (268)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=513, UNKNOWN=430
+- **Status**: LIVE=513, UNKNOWN=431
 
 ### D9 — Import / ETL / Normalisation
 

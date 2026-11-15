@@ -1007,8 +1007,8 @@
         "backend/src/modules/vehicles/services/seo",
         "backend/src/modules/vehicles/types"
       ],
-      "files_count": 30,
-      "loc_total": 9010,
+      "files_count": 31,
+      "loc_total": 9294,
       "has_barrel": false
     },
     "wiki": {
