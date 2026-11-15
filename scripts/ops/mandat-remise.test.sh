@@ -264,6 +264,12 @@ contient "jeton dans le résultat : motif" "résultat de session retenu" "$P/dec
 absent "jeton dans le résultat : absent du commentaire" "c2lnbmF0dXJl" "$P/commentaire.md"
 absent "jeton dans le résultat : absent de l'artifact" "c2lnbmF0dXJl" "$S/resultat.json"
 absent "clé dans les erreurs de session : retenue" "MIIEowIBAAKCAQEA" "$S/session.stderr"
+chaine cleesc ok intégré vert
+# Résultat altéré dans l'artifact avec un échappement JSON : la publication le décode et le refuse.
+printf '{"statut":"intégré","titre_pr":"x","controles":[],"resume":"\\u002d\\u002d\\u002d\\u002d\\u002dBEGIN RSA %s-----"}\n' "PRIVATE KEY" > "$P/resultat.json"
+MANDAT_DEPOT="$FIX/neuf-cleesc" GITHUB_EVENT_PATH="$FIX/evt.json" "$SCRIPT" verifier --sortie "$P" > /dev/null 2>&1
+check "motif masqué par échappement JSON : décodé et bloqué" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
+check "motif masqué : résultat neutralisé" '{"retenu":true}' "$(jq -c . "$P/resultat.json")"
 chaine rien rien implémenté vert
 check "aucun commit : bloqué" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
 contient "motif aucun commit" "aucun commit transmis" "$P/decision.json"

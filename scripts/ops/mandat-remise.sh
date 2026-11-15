@@ -377,10 +377,18 @@ verifier() {
 
   # Résultat de la session : rendu dans la PR et le commentaire publics, donc refusé s'il contient
   # un motif de clé ou de jeton (recontrôlé ici : le job session partage l'uid de la session).
-  if [[ -f "$SORTIE/resultat.json" ]] && { jq -e '.retenu? == true' "$SORTIE/resultat.json" > /dev/null 2>&1 \
-       || grep -qE -- "$MOTIFS_SECRETS|$MOTIFS_RETENUE" "$SORTIE/resultat.json"; }; then
-    bloquants+=("résultat de session retenu : motif de clé ou de jeton, rien n'en est publié")
-    jq -n '{retenu: true}' > "$SORTIE/resultat.json"
+  # Contrôle sur le texte brut ET sur les chaînes décodées par jq : un échappement JSON (-…)
+  # masquerait un motif au grep brut alors que le rendu le décode.
+  if [[ -f "$SORTIE/resultat.json" ]]; then
+    local decode; decode="$(mktemp)"
+    jq -r '.. | strings' "$SORTIE/resultat.json" > "$decode" 2> /dev/null || true
+    if jq -e '.retenu? == true' "$SORTIE/resultat.json" > /dev/null 2>&1 \
+       || grep -qE -- "$MOTIFS_SECRETS|$MOTIFS_RETENUE" "$SORTIE/resultat.json" \
+       || grep -qE -- "$MOTIFS_SECRETS|$MOTIFS_RETENUE" "$decode"; then
+      bloquants+=("résultat de session retenu : motif de clé ou de jeton, rien n'en est publié")
+      jq -n '{retenu: true}' > "$SORTIE/resultat.json"
+    fi
+    rm -f "$decode"
   fi
   # Résultat de la session : objet du schéma, statut parmi les quatre autorisés.
   if jq -e --arg s "$STATUTS" '(.statut | type == "string") and ((.statut) as $x | ($s | split(" ") | index($x)) != null)
