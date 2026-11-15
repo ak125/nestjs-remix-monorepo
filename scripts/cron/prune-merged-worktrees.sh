@@ -11,7 +11,8 @@
 # CACHEDIR.TAG et inactifs (passe 3) : jamais le worktree, jamais un fichier suivi.
 #
 # Périmètre : seuls les worktrees des sessions Claude ($PRUNE_ROOTS, mêmes préfixes que
-# dedup-worktree-node-modules.sh) sont candidats. Les autres gestionnaires (pont Hermes,
+# dedup-worktree-node-modules.sh) sont candidats, y compris ceux créés dans le scratchpad d'une
+# session (${TMPDIR:-/tmp}/claude-<uid>/<projet>/<session>/scratchpad/). Les autres gestionnaires (pont Hermes,
 # worktrees Codex directs) gardent leur propre cycle de vie — ce script ne les retire jamais.
 #
 # Usage:
@@ -23,7 +24,7 @@
 #   LOG_DIR         dossier des manifestes (défaut: /tmp)
 #   RECENT_MIN      minutes sous lesquelles un worktree récent est épargné (défaut: 180)
 #   PRUNE_ROOTS     préfixes de chemin des worktrees gérés, séparés par « : »
-#                   (défaut: <dépôt>/.claude/worktrees/:$HOME/worktrees/claude-)
+#                   (défaut: <dépôt>/.claude/worktrees/:$HOME/worktrees/claude-:${TMPDIR:-/tmp}/claude-<uid>/)
 #   CACHE_IDLE_MIN  minutes sans écriture exigées avant de retirer un cache (défaut: 1440)
 #   CRON_REPORT_MAX_AGE_S  silence au-delà duquel le hook SessionStart signale le cron arrêté
 #                   (défaut: 93600 = passage quotidien + 2 h de marge)
@@ -109,7 +110,7 @@ done
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
-IFS=: read -r -a ROOTS <<<"${PRUNE_ROOTS:-$REPO_ROOT/.claude/worktrees/:$HOME/worktrees/claude-}"
+IFS=: read -r -a ROOTS <<<"${PRUNE_ROOTS:-$REPO_ROOT/.claude/worktrees/:$HOME/worktrees/claude-:${TMPDIR:-/tmp}/claude-$(id -u)/}"
 # Une entrée vide couvrirait tous les chemins : elle est ignorée.
 managed() { local r; for r in "${ROOTS[@]}"; do [[ -n "$r" && "$1" == "$r"* ]] && return 0; done; return 1; }
 

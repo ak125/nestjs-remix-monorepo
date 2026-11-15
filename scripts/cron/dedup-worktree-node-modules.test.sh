@@ -75,12 +75,15 @@ mkwt() { git -C "$R" worktree add -q --detach "$1" "${2:-main}"; }
 A="$H/claude-a"; B="$H/claude-b"; C="$R/.claude/worktrees/c"; SP="$H/claude-sp ace"; D="$H/claude-diff"
 LK="$H/claude-locked"; CX="$H/codex-x"; BZ="$H/claude-busy"; FR="$H/claude-fresh"; SL="$H/claude-symlink"
 OL="$H/claude-other-lock"
-for w in "$A" "$B" "$C" "$SP" "$D" "$LK" "$CX" "$BZ" "$FR" "$SL"; do mkwt "$w"; done
+# Scratchpad d'une session Claude (géré) et préfixe voisin claude-<uid>0/ (hors périmètre)
+SC="$TMPDIR/claude-$(id -u)/-proj/sess/scratchpad/wt-scratch"; NB="$TMPDIR/claude-$(id -u)0/sess/wt-neighbour"
+for w in "$A" "$B" "$C" "$SP" "$D" "$LK" "$CX" "$BZ" "$FR" "$SL" "$SC" "$NB"; do mkwt "$w"; done
 mkwt "$OL" other-lock
 mknm "$R" '2026-01-01 00:00'
 mknm "$A" '2026-01-02 00:00'; mknm "$B" '2026-01-03 00:00'; mknm "$C" '2026-01-04 00:00'
 mknm "$SP" '2026-01-05 00:00'; mknm "$D" '2026-01-06 00:00'; mknm "$LK" '2026-01-07 00:00'
 mknm "$CX" '2026-01-08 00:00'; mknm "$BZ" '2026-01-09 00:00'; mknm "$OL" '2026-01-10 00:00'
+mknm "$SC" '2026-01-12 00:00'; mknm "$NB" '2026-01-13 00:00'
 mknm "$FR" '2026-01-11 00:00'; touch "$FR/node_modules/.package-lock.json"        # installation terminée à l'instant
 printf 'module.exports = 999;\n' > "$D/node_modules/pkg/index.js"; touch -d '2026-01-06 00:00' "$D/node_modules/pkg/index.js"
 ln -s "$A/node_modules" "$SL/node_modules"
@@ -96,13 +99,13 @@ out="$(run 2>&1)"; rc=$?
 check "dry-run : code retour" 0 "$rc"
 check "dry-run : aucun inode ni nombre de liens modifié" "$before" "$(snapshot)"
 check "dry-run : aucune empreinte écrite" 0 "$(find "$R/.git/worktrees" -name node-modules-dedup | wc -l)"
-check "dry-run : passes annoncées (b, c, diff, sp ace contre a)" 4 "$(grep -c '^-- ' <<<"$out")"
+check "dry-run : passes annoncées (b, c, diff, sp ace, scratch contre a)" 5 "$(grep -c '^-- ' <<<"$out")"
 check "dry-run : aucun état cron enregistré" absent "$( [[ -e "$STATE" ]] && echo présent || echo absent)"
 
 echo "--- 2. --apply ---"
 out="$(run --apply 2>&1)"; rc=$?
 check "apply : code retour" 0 "$rc"
-for w in "$B" "$C" "$SP"; do
+for w in "$B" "$C" "$SP" "$SC"; do
   check "fichier identique lié à la référence : ${w#"$FIX"/}" same "$(same "$A/node_modules/pkg/index.js" "$w/node_modules/pkg/index.js")"
 done
 check "dates différentes ignorées (gros fichier lié)" same "$(same "$A/node_modules/pkg/big.bin" "$D/node_modules/pkg/big.bin")"
@@ -114,21 +117,21 @@ for f in node_modules/.cache/tsc/x.tsbuildinfo node_modules/.vite/deps/_metadata
   check "jamais partagé : $f" 1 "$(links "$A/$f")"
 done
 check "checkout principal intact" 1 "$(links "$R/node_modules/pkg/index.js")"
-for w in "$LK" "$CX" "$BZ" "$FR" "$OL"; do
+for w in "$LK" "$CX" "$BZ" "$FR" "$OL" "$NB"; do
   check "intact : ${w#"$FIX"/}" 1 "$(links "$w/node_modules/pkg/index.js")"
 done
 check "verrouillé signalé" 1 "$(grep -c "^SKIP    locked .*claude-locked$" <<<"$out")"
 check "occupé signalé" 1 "$(grep -c "^SKIP    in-use .*claude-busy$" <<<"$out")"
 check "installation récente signalée" 1 "$(grep -c "^SKIP    recent-install.*claude-fresh$" <<<"$out")"
 check "node_modules en lien symbolique non suivi" symlink "$( [[ -L "$SL/node_modules" ]] && echo symlink || echo autre)"
-check "empreintes écrites (a, b, c, diff, sp ace)" 5 "$(find "$R/.git/worktrees" -name node-modules-dedup | wc -l)"
-check "état cron : statut, passes, cadence attendue" "ok 4 10800" "$(jq -r '"\(.status) \(.metrics.passes) \(.max_age_s)"' "$STATE" 2>/dev/null)"
+check "empreintes écrites (a, b, c, diff, sp ace, scratch)" 6 "$(find "$R/.git/worktrees" -name node-modules-dedup | wc -l)"
+check "état cron : statut, passes, cadence attendue" "ok 5 10800" "$(jq -r '"\(.status) \(.metrics.passes) \(.max_age_s)"' "$STATE" 2>/dev/null)"
 
 echo "--- 3. second passage : rien à refaire ---"
 out="$(run --apply 2>&1)"; rc=$?
 check "2e passage : code retour" 0 "$rc"
 check "2e passage : aucune passe" 0 "$(grep -c '^-- ' <<<"$out")"
-check "2e passage : 5 déjà dédoublonnés" 1 "$(grep -c 'déjà-dédoublonnés=5 ' <<<"$out")"
+check "2e passage : 6 déjà dédoublonnés" 1 "$(grep -c 'déjà-dédoublonnés=6 ' <<<"$out")"
 
 echo "--- 4. référence réinstallée : elle rejoint les inodes du groupe ---"
 group_ino="$(ino "$B/node_modules/pkg/index.js")"
