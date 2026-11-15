@@ -40,8 +40,9 @@ const PROSE_FILE = /\.(?:md|markdown)$/i;
 const DECISIVE_REVIEW_STATES = new Set(["APPROVED", "CHANGES_REQUESTED", "DISMISSED"]);
 // Déclarations de cas de test, lues par l'analyseur TypeScript sur le fichier entier (base et tête) :
 // commentaires et chaînes, même sur plusieurs lignes, ne peuvent ni cacher ni simuler un test.
-// Compte tout appel dont la chaîne d'appel nomme `it`, `test` ou `describe` (`it(`, `suite.test(`,
-// `test.each(t)(`) : le doute vaut refus.
+// Compte tout appel dont la chaîne d'appel part de `it`, `test` ou `describe` (`it(`, `test.each(t)(`),
+// et tout appel qui nomme l'un d'eux plus loin et reçoit un rappel littéral (`suite.test("x", () => …)`) ;
+// `/a/.test(v)` ou `motif.test(v)`, sans rappel, n'en est pas un.
 const TEST_CALLEES = new Set(["it", "test", "describe"]);
 // Modificateurs qui désactivent ou isolent un cas : ignorés pour reconnaître le même test, refusés à l'ajout.
 const DISABLING_MODIFIERS = new Set(["skip", "only", "todo", "skipIf", "runIf"]);
@@ -77,7 +78,19 @@ function calleeSegments(expression) {
 }
 
 function isTestCall(node) {
-  return ts.isCallExpression(node) && Boolean(calleeSegments(node.expression)?.some((segment) => TEST_CALLEES.has(segment)));
+  if (!ts.isCallExpression(node)) return false;
+  const segments = calleeSegments(node.expression);
+  if (!segments?.some((segment) => TEST_CALLEES.has(segment))) return false;
+  return TEST_CALLEES.has(segments[0]) || node.arguments.some(isFunctionLiteral);
+}
+
+/** Appel de test sur un récepteur autre qu'un nom de test (`suite.test(…)`, `this.it(…)`) : la porte ne suit pas ce récepteur. */
+function isQualifiedTestCall(node) {
+  return isTestCall(node) && !TEST_CALLEES.has(calleeSegments(node.expression)[0]);
+}
+
+function isFunctionLiteral(node) {
+  return ts.isArrowFunction(node) || ts.isFunctionExpression(node);
 }
 
 function isTestCallback(node) {
@@ -112,9 +125,13 @@ function positionOf(node, source) {
   return steps.join(">");
 }
 
-/** Vrai si le sous-arbre contient un appel (`f()`, `new F()`, gabarit étiqueté) : sans appel, rien n'est vérifié. */
+/**
+ * Vrai si le sous-arbre contient un appel (`f()`, `new F()`, gabarit étiqueté) hors fonctions imbriquées :
+ * sans appel, rien n'est vérifié ; un appel dans une fonction jamais appelée (`const f = () => check()`) ne compte pas.
+ */
 function containsCall(node) {
   if (ts.isCallExpression(node) || ts.isNewExpression(node) || ts.isTaggedTemplateExpression(node)) return true;
+  if (isFunctionLike(node)) return false;
   return Boolean(ts.forEachChild(node, (child) => (containsCall(child) ? true : undefined)));
 }
 
@@ -136,11 +153,17 @@ function isConstant(expression) {
   );
 }
 
-/** Conditions d'un nœud : `if`, `?:`, boucles, opérande gauche de `&&`, `||`, `??`. */
+/**
+ * Condition d'un nœud qui peut sauter du code : `if`, `?:`, `while`, `for`, opérande gauche de `&&`, `||`, `??`.
+ * Le corps d'un `do … while` s'exécute avant sa condition ; `while (true)` et `for (;; )` sont des boucles
+ * ordinaires (le code qui les suit sans `break` est relevé inatteignable par l'analyse de flot).
+ */
 function conditionOf(node) {
-  if (ts.isIfStatement(node) || ts.isWhileStatement(node) || ts.isDoStatement(node)) return node.expression;
+  if (ts.isWhileStatement(node) || ts.isForStatement(node)) {
+    return node.condition && unwrap(node.condition).kind !== ts.SyntaxKind.TrueKeyword ? node.condition : undefined;
+  }
+  if (ts.isIfStatement(node)) return node.expression;
   if (ts.isConditionalExpression(node)) return node.condition;
-  if (ts.isForStatement(node)) return node.condition;
   if (
     ts.isBinaryExpression(node) &&
     [ts.SyntaxKind.AmpersandAmpersandToken, ts.SyntaxKind.BarBarToken, ts.SyntaxKind.QuestionQuestionToken,
@@ -186,7 +209,7 @@ function unreachableRanges(program, source) {
  */
 function isNeutralised(call, unreachable) {
   if (ts.isCallExpression(call.parent) && call.parent.expression === call) return false;
-  const callback = [...call.arguments].reverse().find((argument) => ts.isArrowFunction(argument) || ts.isFunctionExpression(argument));
+  const callback = [...call.arguments].reverse().find(isFunctionLiteral);
   if (!callback || !containsCall(callback.body)) return true;
   if (unreachable.some(([start, end]) => start >= callback.body.pos && end <= callback.body.end)) return true;
   if (!ts.isBlock(callback.body)) return Boolean(findInBody(callback.body, (node) => conditionOf(node) && isConstant(conditionOf(node))));
@@ -391,6 +414,7 @@ function isLooseThis(node, source) {
  * (`vi.stubGlobal("it", …)`, `Object.defineProperty(globalThis, "it", …)`) ; tout usage d'un objet
  * global autre qu'une lecture ordinaire (`isPlainGlobalUse`) ; module de test cité hors d'un import
  * (`vi.mock("vitest", …)`) ; `eval`, `Function`, `.constructor`, module `vm`, `this` non strict.
+ * À part, `qualified` : les appels de test sur un récepteur non suivi (`suite.test(…)`), refusés à la tête.
  * Chacune par son nom, la nature et la propriété du parent qui la porte, et sa position : une référence
  * nouvelle à la tête est refusée. Les noms liés ou affectés sont en outre comptés par nom seul.
  */
@@ -406,6 +430,7 @@ function testNameReferences(source, checker) {
     (ts.isBinaryExpression(node.parent) && node.parent.right === node && node.parent.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword);
   const references = [];
   const bindings = [];
+  const qualified = [];
   const record = (label, node) => references.push(`${label} : ${ts.SyntaxKind[node.parent.kind]}.${roleOf(node)} @ ${positionOf(node, source)}`);
   const visit = (node) => {
     if (ts.isIdentifier(node) && TEST_CALLEES.has(node.text) && !isInCallee(node) && !isFrameworkImport(node)) {
@@ -436,10 +461,12 @@ function testNameReferences(source, checker) {
     } else if (node.kind === ts.SyntaxKind.ThisKeyword && isLooseThis(node, source)) {
       record("this", node);
     }
+    if (isQualifiedTestCall(node)) qualified.push(descriptorOf(node, source));
     ts.forEachChild(node, visit);
   };
   visit(source);
   references.bindings = bindings;
+  references.qualified = qualified;
   return references;
 }
 
@@ -715,7 +742,10 @@ export function evaluateLevelBFiles(policy, files) {
       ...missingFrom(after.references, before.references ?? []),
       ...missingFrom(after.references.bindings, before.references?.bindings ?? []).map((name) => `${name} lié ou affecté`),
     ];
-    if (references.length) {
+    // Le récepteur de `suite.test(…)` peut être remplacé sans changer la clé : la porte ne le suit pas.
+    if (after.references.qualified.length) {
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (appel de test sur un récepteur non suivi : ${after.references.qualified[0]})`));
+    } else if (references.length) {
       refusals.push(refusal("TEST_REMOVED", `${file.filename} (nom de test redéfini ou référencé hors appel : ${references[0]})`));
     } else if (lost.length) {
       refusals.push(refusal("TEST_REMOVED", `${file.filename} (déclaration retirée ou déplacée : ${lost[0]})`));

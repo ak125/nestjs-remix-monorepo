@@ -538,6 +538,37 @@ test("niveau B : référence existante prise comme crédit, code mort imbriqué,
   }
 });
 
+test("niveau B : appel seulement dans une fonction jamais appelée, récepteur de test non suivi : refusé (revue Codex 8e passage)", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const swap = (base, head) => `@@ -1,9 +1,9 @@\n${base.split("\n").map((l) => `-${l}`).join("\n")}\n${head.split("\n").map((l) => `+${l}`).join("\n")}`;
+  const call = 'it("contrôle critique", () => {\n  assertSecurity();\n});';
+  for (const head of [
+    'it("contrôle critique", () => {\n  const jamais = () => assertSecurity();\n});',
+    'it("contrôle critique", () => {\n  function jamais() { assertSecurity(); }\n});',
+    'it("contrôle critique", () => () => assertSecurity());',
+  ]) {
+    assert.deepEqual(lbFiles(modified(t, swap(call, head))), ["TEST_REMOVED"], head);
+  }
+  const suite = (from) => `import * as suite from "${from}";\nsuite.test("contrôle critique", () => {\n  assertSecurity();\n});`;
+  assert.deepEqual(lbFiles(modified(t, swap(suite("vitest"), suite("./faux.js")))), ["TEST_REMOVED"], "récepteur remplacé");
+  assert.deepEqual(lbFiles(modified(t, swap(call, `const suite = { test() {} };\nsuite.test("contrôle critique", () => {\n  assertSecurity();\n});\n${call}`))), ["TEST_REMOVED"], "récepteur ajouté");
+});
+
+test("niveau B : méthode .test d'une expression régulière modifiée, boucle while (true) ou do … while (false) : admis (revue Codex 8e passage)", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  for (const [before, after] of [
+    ["  expect(/a/.test(value)).toBe(true);", "  expect(/a/.exec(value)).not.toBeNull();"],
+    ["  const motif = /a/;\n  expect(motif.test(value)).toBe(true);", "  expect(value).toContain('a');"],
+    ["  expect(1).toBe(1);", "  while (true) {\n    if (ready()) break;\n  }\n  expect(state()).toBe('prêt');"],
+    ["  expect(1).toBe(1);", "  do {\n    step();\n  } while (false);\n  expect(state()).toBe('fait');"],
+  ]) {
+    const b = before.split("\n");
+    const a = after.split("\n");
+    const patch = `@@ -1,${b.length + 2} +1,${a.length + 2} @@\n it("a", () => {\n${b.map((l) => `-${l}`).join("\n")}\n${a.map((l) => `+${l}`).join("\n")}\n });`;
+    assert.deepEqual(lbFiles(modified(t, patch)), [], after);
+  }
+});
+
 test("niveau B : garde qui lève, condition sur une variable, retour dans un rappel imbriqué : admis", () => {
   const t = "backend/tests/unit/a.test.ts";
   for (const body of [
