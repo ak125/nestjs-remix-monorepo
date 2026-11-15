@@ -564,7 +564,8 @@ describe('mapR3Projection — 9. paires qa (exports-seo 1.2.0, ADR-107 D2)', () 
     role: R3_MAPPER_ROLE,
     content: {
       section,
-      content_md: '**Quand remplacer le filtre ?** Aux échéances du constructeur.',
+      content_md:
+        '**Quand remplacer le filtre ?** Aux échéances du constructeur.',
       source_ids: ['oem:ev-j', 'oem:ev-m', 'web:ev-k'],
       truth_level: 'sourced',
       usefulness_target: 'faq',

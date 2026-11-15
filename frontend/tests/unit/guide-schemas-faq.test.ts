@@ -301,7 +301,9 @@ describe("buildGuideSchemas — FAQPage du chemin projeté (paires qa, ADR-107 D
 
   it("aucune paire exploitable ⇒ pas de FAQPage (pas de repli sur le legacy)", () => {
     expect(projected([])).toBeNull();
-    expect(projected([{ questionHtml: " ", answerHtml: "<p>x</p>" }])).toBeNull();
+    expect(
+      projected([{ questionHtml: " ", answerHtml: "<p>x</p>" }]),
+    ).toBeNull();
   });
 
   it("sans paires projetées, le chemin legacy reste inchangé", () => {

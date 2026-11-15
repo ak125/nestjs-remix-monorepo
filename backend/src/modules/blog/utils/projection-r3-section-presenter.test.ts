@@ -197,7 +197,8 @@ describe('presentR3Projection — FAQ à paires qa (ADR-107 D2/D3)', () => {
     role: R3_MAPPER_ROLE,
     content: {
       section: 'faq',
-      content_md: '**Quand remplacer le filtre ?** Aux échéances du constructeur.',
+      content_md:
+        '**Quand remplacer le filtre ?** Aux échéances du constructeur.',
       source_ids: ['oem:ev-j', 'oem:ev-m'],
       truth_level: 'sourced',
       usefulness_target: 'faq',
