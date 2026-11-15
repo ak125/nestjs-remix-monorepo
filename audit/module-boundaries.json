@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 586,
-      "loc_total": 110907,
+      "loc_total": 110908,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -550,7 +550,7 @@
         "packages/design-tokens/tests"
       ],
       "files_count": 13,
-      "loc_total": 2007,
+      "loc_total": 2147,
       "has_barrel": true
     },
     "pkg-domain-commerce": {
@@ -593,7 +593,7 @@
         "packages/registry/src/vehicle-context"
       ],
       "files_count": 57,
-      "loc_total": 6868,
+      "loc_total": 6891,
       "has_barrel": true
     },
     "pkg-seo-types": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 223,
-      "loc_total": 52437,
+      "loc_total": 52467,
       "has_barrel": true
     },
     "search": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 287,
-      "loc_total": 62234,
+      "files_count": 288,
+      "loc_total": 62410,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -781,7 +781,7 @@
         "backend/src/modules/seo-control-plane/services"
       ],
       "files_count": 27,
-      "loc_total": 5547,
+      "loc_total": 5906,
       "has_barrel": false
     },
     "seo-logs": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 376,
-      "loc_total": 77707,
+      "loc_total": 77693,
       "has_barrel": true
     },
     "upload": {

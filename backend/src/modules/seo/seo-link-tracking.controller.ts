@@ -8,9 +8,12 @@
  * - POST /api/seo/track-impression : Enregistre une impression de liens
  * - GET /api/seo/metrics/:linkType : Métriques par type de lien
  * - GET /api/seo/metrics/report : Rapport complet de performance
+ * - POST /api/seo/aggregate : Agrégation quotidienne (session admin ou clé interne)
+ * - POST /api/seo/cleanup : Purge des données brutes (session admin ou clé interne)
  */
 
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -19,6 +22,7 @@ import {
   Query,
   Headers,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -27,6 +31,7 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
+import { AdminOrInternalKeyGuard } from '@auth/admin-or-internal-key.guard';
 import {
   SeoLinkTrackingService,
   LinkClickEvent,
@@ -84,6 +89,17 @@ const TrackImpressionSchema = z.object({
   linkCount: z.number(),
   sessionId: z.string().optional(),
 });
+
+// ── Maintenance (scheduled job or admin) ───────────────────────────────────
+// Retention in whole days, digits only. `parseInt` used to accept "-5",
+// "7abc" or "0", i.e. a cutoff in the future or now, which purges every raw
+// click and impression. Absent → the service default (90 days).
+const DaysToKeepSchema = z
+  .string()
+  .regex(/^\d+$/, 'daysToKeep must be a whole number of days')
+  .transform(Number)
+  .pipe(z.number().int().min(1, 'daysToKeep must be at least 1'))
+  .optional();
 
 @ApiTags('SEO Link Tracking')
 @Controller('api/seo')
@@ -259,6 +275,7 @@ export class SeoLinkTrackingController {
    * 📊 Agrège les métriques quotidiennes (appelé par cron job)
    */
   @Post('aggregate')
+  @UseGuards(AdminOrInternalKeyGuard)
   @ApiOperation({ summary: 'Agrège les métriques quotidiennes (cron job)' })
   @ApiResponse({ status: 200, description: 'Agrégation effectuée' })
   async aggregateDailyMetrics(): Promise<{
@@ -274,6 +291,7 @@ export class SeoLinkTrackingController {
    * 🧹 Nettoie les anciennes données brutes
    */
   @Post('cleanup')
+  @UseGuards(AdminOrInternalKeyGuard)
   @ApiOperation({ summary: 'Nettoie les données de plus de 90 jours' })
   @ApiQuery({
     name: 'daysToKeep',
@@ -281,13 +299,20 @@ export class SeoLinkTrackingController {
     description: 'Nombre de jours à conserver (défaut: 90)',
   })
   @ApiResponse({ status: 200, description: 'Nettoyage effectué' })
+  @ApiResponse({ status: 400, description: 'daysToKeep invalide' })
   async cleanupOldData(@Query('daysToKeep') daysToKeep?: string): Promise<{
     success: boolean;
     deletedClicks: number;
     deletedImpressions: number;
   }> {
-    const days = daysToKeep ? parseInt(daysToKeep, 10) : 90;
-    this.logger.log(`🧹 Déclenchement nettoyage données > ${days} jours...`);
+    const parsed = DaysToKeepSchema.safeParse(daysToKeep);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.issues[0]?.message);
+    }
+    const days = parsed.data;
+    this.logger.log(
+      `🧹 Déclenchement nettoyage données > ${days ?? 'défaut'} jours...`,
+    );
     return this.trackingService.cleanupOldData(days);
   }
 }

@@ -7,7 +7,7 @@ const { runAudit, parseKnip, parseMadge, parseDepcruise, parseAstGrep } = requir
 
 const source = fs.readFileSync(path.join(__dirname, 'audit-compare-baseline.js'), 'utf8');
 const baseline = JSON.parse(fs.readFileSync(path.join(__dirname, '../../audit-reports/phase0-baseline.json'), 'utf8'));
-const emptyIssue = (file, values = {}) => ({ file, files: [], dependencies: [], devDependencies: [], unlisted: [], binaries: [], exports: [], types: [], duplicates: [], ...values });
+const emptyIssue = (file, values = {}) => ({ file, files: [], dependencies: [], devDependencies: [], unlisted: [], binaries: [], exports: [], types: [], duplicates: [], unresolved: [], ...values });
 const depReport = (severities = []) => ({
   modules: [{ source: 'a.ts', dependencies: [] }],
   summary: {
@@ -106,12 +106,12 @@ test('the original all-tools-crash regression exits 2, never zero metrics', () =
 
 test('Knip preserves compact reporter units: files per category, duplicate groups', () => {
   const counts = parseKnip({ issues: [
-    emptyIssue('a.ts', { exports: [{ name: 'a' }, { name: 'b' }], types: [{ name: 'A' }, { name: 'B' }], duplicates: [[{ name: 'a' }, { name: 'default' }], [{ name: 'b' }, { name: 'alias' }]] }),
-    emptyIssue('b.ts', { exports: [{ name: 'c' }] }),
+    emptyIssue('a.ts', { exports: [{ name: 'a' }, { name: 'b' }], types: [{ name: 'A' }, { name: 'B' }], duplicates: [[{ name: 'a' }, { name: 'default' }], [{ name: 'b' }, { name: 'alias' }]], unresolved: [{ name: './gone' }, { name: './lost' }] }),
+    emptyIssue('b.ts', { exports: [{ name: 'c' }], unresolved: [{ name: './gone' }] }),
     emptyIssue('unused.ts', { files: [{ name: 'unused.ts' }] }),
     emptyIssue('package.json', { dependencies: [{ name: 'dep-a' }, { name: 'dep-b' }], devDependencies: [{ name: 'dev' }], unlisted: [{ name: 'missing' }], binaries: [{ name: 'bin' }] }),
   ] });
-  assert.deepEqual(counts, { unused_files: 1, unused_dependencies: 1, unused_dev_dependencies: 1, unlisted_dependencies: 1, unlisted_binaries: 1, unused_exports: 2, unused_types: 1, duplicate_exports: 2 });
+  assert.deepEqual(counts, { unused_files: 1, unused_dependencies: 1, unused_dev_dependencies: 1, unlisted_dependencies: 1, unlisted_binaries: 1, unused_exports: 2, unused_types: 1, duplicate_exports: 2, unresolved_imports: 2 });
 });
 
 test('Knip missing category, malformed symbols, duplicate files and unknown shape are rejected', () => {
@@ -190,7 +190,7 @@ test('valid evidence preserves comparison, strict mode and machine-readable succ
   assert.equal(observed.status, 0);
   const data = JSON.parse(observed.stdout);
   assert.equal(data.failed, false);
-  assert.equal(data.rows.length, 10);
+  assert.equal(data.rows.length, 11);
   assert.equal(data.current.madge.cycles, 0);
   assert.equal(observed.writes.length, 0);
   assert.equal(cli({ args: ['--strict'] }).status, 0);
@@ -205,6 +205,26 @@ test('valid findings remain subject to baseline thresholds; regressions exit 1',
   assert.equal(observed.status, 1);
   assert.equal(JSON.parse(observed.stdout).failed, true);
   assert.equal(observed.writes.length, 0);
+});
+
+test('one unresolved import above the baseline is a regression at threshold 0', () => {
+  const broken = { issues: Array.from({ length: baseline.knip.unresolved_imports + 1 }, (_, i) => emptyIssue(`broken-${i}.ts`, { unresolved: [{ name: './missing' }] })) };
+  const observed = cli({ args: ['--json'], results: { knip: success(broken) } });
+  assert.equal(observed.status, 1);
+  const row = JSON.parse(observed.stdout).rows.find((r) => r.metric === 'knip.unresolved_imports');
+  assert.ok(row, 'knip.unresolved_imports is compared');
+  assert.deepEqual([row.delta, row.threshold, row.status], [1, 0, 'REGRESSION']);
+  assert.equal(observed.writes.length, 0);
+});
+
+test('a baseline without the unresolved import count is invalid evidence and never refreshes', () => {
+  const without = structuredClone(baseline);
+  delete without.knip.unresolved_imports;
+  for (const args of [['--json'], ['--refresh']]) {
+    const observed = cli({ args, baselineValue: without });
+    assert.equal(observed.status, 2);
+    assert.equal(observed.writes.length, 0);
+  }
 });
 
 test('valid findings exit codes do not turn ordinary baseline debt into tool failures', () => {
