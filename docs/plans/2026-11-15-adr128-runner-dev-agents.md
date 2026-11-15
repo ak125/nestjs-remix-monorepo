@@ -162,7 +162,8 @@ gh api repos/ak125/nestjs-remix-monorepo/actions/permissions/fork-pr-contributor
 ```
 
 Depuis le shell DEV, cette API répond HTTP 403 (constaté le 2026-11-15 par la session et par
-l'owner) : la valeur actuelle du réglage n'est pas connue.
+l'owner). Constat de l'owner du 2026-11-15, dans le web après rechargement de la page : **Require
+approval for all external contributors**.
 
 ## 7. Vérification (critère de sortie de l'étape 1)
 

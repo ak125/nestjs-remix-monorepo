@@ -12,7 +12,8 @@
 # Le coût (sessions ouvertes, jetons, USD) est écrit dans DIR/cout.json à chaque exécution.
 #
 # Environnement : REPO (owner/nom, obligatoire) ; gh authentifié (GH_TOKEN en CI) ;
-# ANTHROPIC_API_KEY pour `session` (jamais transmis à gh ni affiché).
+# pour `session`, CLAUDE_CODE_OAUTH_TOKEN (jeton d'abonnement Claude, `claude setup-token`) ou, à
+# défaut, ANTHROPIC_API_KEY ; un seul des deux est transmis à la CLI, aucun à gh, aucun affiché.
 set -euo pipefail
 
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -97,10 +98,11 @@ PY
 
 ecrire_cout() { # ecrire_cout <sessions> [fichier sortie CLI] [erreur]
   jq -n --argjson s "$1" --arg brut "${2:-}" --arg err "${3:-}" --arg modele "$MODELE" \
-    --arg cli "$CLI_VERSION" --arg run "${GITHUB_RUN_ID:-local}" --arg jour "$(date -u +%F)" \
+    --arg cli "$CLI_VERSION" --arg auth "${AUTH:-}" --arg run "${GITHUB_RUN_ID:-local}" --arg jour "$(date -u +%F)" \
     --slurpfile r "${2:-/dev/null}" '
     ($r[0] // {}) as $o
     | { jour: $jour, run_id: $run, sessions_ouvertes: $s, modele: $modele, cli_version: $cli,
+        authentification: (if $auth == "" then null else $auth end),
         total_cost_usd: ($o.total_cost_usd // 0),
         usage: { input_tokens: ($o.usage.input_tokens // 0),
                  output_tokens: ($o.usage.output_tokens // 0),
@@ -116,15 +118,21 @@ session() {
   if [[ "$(jq -r .nouveau "$SORTIE/etat.json")" != "true" ]]; then
     ecrire_cout 0; echo "rien de nouveau depuis l'exécution précédente : aucune session"; return 0
   fi
-  if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
-    ecrire_cout 0 "" "secret ANTHROPIC_API_KEY absent"; die "secret ANTHROPIC_API_KEY absent"
+  local auth
+  if [[ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]]; then
+    AUTH=abonnement; auth=(CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN")
+  elif [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
+    AUTH=cle-api; auth=(ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY")
+  else
+    local m="secret CLAUDE_CODE_OAUTH_TOKEN (ou ANTHROPIC_API_KEY) absent"
+    ecrire_cout 0 "" "$m"; die "$m"
   fi
   local tmp; tmp="$(mktemp -d)"
   jq '{jours_sans_mouvement, constats, file, departements}' "$SORTIE/etat.json" > "$tmp/entree.json"
   local rc=0
   # Environnement vidé : la session ne reçoit ni GH_TOKEN ni GITHUB_TOKEN ; aucun outil, aucun MCP,
   # aucun réglage lu ; sa sortie est un objet JSON validé par le schéma, publié par `publier`.
-  ( cd "$tmp" && env -i PATH="$PATH" HOME="$tmp" ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+  ( cd "$tmp" && env -i PATH="$PATH" HOME="$tmp" "${auth[@]}" \
       CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
       npx -y "@anthropic-ai/claude-code@$CLI_VERSION" -p \
         "Analyse la file fournie sur l'entrée standard et rends l'objet JSON demandé." \

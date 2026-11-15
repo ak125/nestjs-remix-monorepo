@@ -108,17 +108,37 @@ check "aucune écriture GitHub en à blanc" "0" "$(wc -l < "$FAKE_LOG")"
 
 echo "== session : rien de nouveau ⇒ aucune session, coût nul =="
 D3="$FIX/run3"; mkdir -p "$D3/brut"; cp "$D2/etat.json" "$D3/etat.json"; cp "$FIX/issues.json" "$D3/brut/issues.json"
-env -u ANTHROPIC_API_KEY bash "$ICI/pilote-file.sh" session --sortie "$D3" > /dev/null
+env -u ANTHROPIC_API_KEY -u CLAUDE_CODE_OAUTH_TOKEN bash "$ICI/pilote-file.sh" session --sortie "$D3" > /dev/null
 check "sessions ouvertes" "0" "$(jq .sessions_ouvertes "$D3/cout.json")"
 echo "== session : nouveau sans secret ⇒ échec visible =="
 jq '.nouveau = true' "$D2/etat.json" > "$D3/etat.json"
-rc=0; env -u ANTHROPIC_API_KEY bash "$ICI/pilote-file.sh" session --sortie "$D3" > /dev/null 2>&1 || rc=$?
+rc=0; env -u ANTHROPIC_API_KEY -u CLAUDE_CODE_OAUTH_TOKEN bash "$ICI/pilote-file.sh" session --sortie "$D3" > /dev/null 2>&1 || rc=$?
 check "code de sortie non nul" "1" "$rc"
-check "erreur tracée dans cout.json" "secret ANTHROPIC_API_KEY absent" "$(jq -r .erreur "$D3/cout.json")"
+check "erreur tracée dans cout.json" "secret CLAUDE_CODE_OAUTH_TOKEN (ou ANTHROPIC_API_KEY) absent" "$(jq -r .erreur "$D3/cout.json")"
 jq '.empreinte_precedente = ("b" * 64)' "$D3/etat.json" > "$D3/etat.tmp" && mv "$D3/etat.tmp" "$D3/etat.json"
 bash "$ICI/pilote-file.sh" publier --sortie "$D3" --a-blanc > /dev/null
 check "échec ⇒ empreinte précédente gardée (retente au tour suivant)" "1" "$(grep -c 'pilote-file:empreinte:bbbb' "$D3/corps.md")"
 check "échec affiché dans le corps" "1" "$(grep -c 'session Claude : échec' "$D3/corps.md")"
+
+echo "== session : un seul secret transmis à la CLI, environnement vidé =="
+mkdir -p "$FIX/npx"
+cat > "$FIX/npx/npx" <<'SH'
+#!/usr/bin/env bash
+env | cut -d= -f1 | grep -E 'TOKEN|KEY' | sort | tr '\n' ' ' >&2   # capturé dans session.stderr
+cat > /dev/null
+echo '{"type":"result","subtype":"success","is_error":false,"structured_output":{"propositions":[]},"total_cost_usd":0.1,"usage":{"input_tokens":10,"output_tokens":5}}'
+SH
+chmod +x "$FIX/npx/npx"
+D4="$FIX/run4"; mkdir -p "$D4"; cp "$D3/etat.json" "$D4/etat.json"
+PATH="$FIX/npx:$PATH" CLAUDE_CODE_OAUTH_TOKEN=jeton-factice ANTHROPIC_API_KEY=cle-factice GH_TOKEN=gh-factice \
+  bash "$ICI/pilote-file.sh" session --sortie "$D4" > /dev/null
+check "jeton d'abonnement préféré, seul transmis" "CLAUDE_CODE_OAUTH_TOKEN " "$(cat "$D4/session.stderr")"
+check "mode tracé dans cout.json" "abonnement" "$(jq -r .authentification "$D4/cout.json")"
+PATH="$FIX/npx:$PATH" ANTHROPIC_API_KEY=cle-factice GH_TOKEN=gh-factice \
+  env -u CLAUDE_CODE_OAUTH_TOKEN bash "$ICI/pilote-file.sh" session --sortie "$D4" > /dev/null
+check "clé API seule transmise à défaut" "ANTHROPIC_API_KEY " "$(cat "$D4/session.stderr")"
+check "mode tracé dans cout.json" "cle-api" "$(jq -r .authentification "$D4/cout.json")"
+check "aucune valeur de secret dans la sortie" "0" "$(grep -rlE 'jeton-factice|cle-factice' "$D4" | wc -l)"
 
 [[ "$FAIL" -eq 0 ]] && echo "RÉSULTAT : tous les contrôles passent" || echo "RÉSULTAT : ÉCHEC"
 exit "$FAIL"
