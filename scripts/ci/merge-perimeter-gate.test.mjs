@@ -450,12 +450,41 @@ test("niveau B : test placé sous condition, vidé ou ouvert par return; : refus
   }
 });
 
-test("niveau B : test déplacé dans un describe, ou déjà vide à la base : admis", () => {
+test("niveau B : test enveloppé, vidé sans bloc ou nom de test redéfini : refusé (revue Codex, 5e passage)", () => {
   const t = "backend/tests/unit/a.test.ts";
-  const nest = '@@ -1,1 +1,3 @@\n+describe("groupe", () => {\n it("a", () => expect(1).toBe(1));\n+});';
-  assert.deepEqual(lbFiles(modified(t, nest)), []);
+  const base = 'it("contrôle critique", () => {\n  assertSecurity();\n});';
+  for (const head of [
+    // Enveloppe dont le rappel ne s'exécute jamais : la position du test change.
+    'const registry = { test(_n, _cb) {} };\nregistry.test("leurre", () => {\n  it("contrôle critique", () => {\n    assertSecurity();\n  });\n});',
+    'describe.each([])("leurre", () => {\n  it("contrôle critique", () => {\n    assertSecurity();\n  });\n});',
+    'describe("groupe", () => {\n  it("contrôle critique", () => {\n    assertSecurity();\n  });\n});',
+    // Rappel sans aucun appel, ou ouvert par un return sans appel.
+    'it("contrôle critique", () => undefined);',
+    'it("contrôle critique", () => void 0);',
+    'it("contrôle critique", () => {\n  return undefined;\n});',
+    'it("contrôle critique", () => {\n  const ok = true;\n});',
+    'it("contrôle critique", noop);',
+    'it("contrôle critique");',
+    // Nom de test redéfini : la clé reste la même, le test ne s'exécute plus.
+    'const it = (_n, _cb) => {};\nit("contrôle critique", () => {\n  assertSecurity();\n});',
+    'import { it } from "./faux";\nit("contrôle critique", () => {\n  assertSecurity();\n});',
+    'globalThis.it = () => {};\nit("contrôle critique", () => {\n  assertSecurity();\n});',
+    'function wrap(it) {\n  it("contrôle critique", () => {\n    assertSecurity();\n  });\n}',
+  ]) {
+    const patch = `@@ -1,3 +1,3 @@\n${base.split("\n").map((l) => `-${l}`).join("\n")}\n${head.split("\n").map((l) => `+${l}`).join("\n")}`;
+    assert.deepEqual(lbFiles(modified(t, patch)), ["TEST_REMOVED"], head);
+  }
+});
+
+test("niveau B : test déjà vide à la base, retour d'une promesse, import depuis vitest, corps changé dans un describe : admis", () => {
+  const t = "backend/tests/unit/a.test.ts";
   const empty = '@@ -1,2 +1,3 @@\n it("vide", () => {});\n+it("nouveau", () => expect(1).toBe(1));';
   assert.deepEqual(lbFiles(modified(t, empty)), []);
+  const promise = '@@ -1,3 +1,3 @@\n it("async", () => {\n-  return check(1);\n+  return check(2);\n });';
+  assert.deepEqual(lbFiles(modified(t, promise)), []);
+  const vitest =
+    '@@ -1,4 +1,5 @@\n import { describe, it, expect } from "vitest";\n describe("groupe", () => {\n-  it("a", () => expect(1).toBe(1));\n+  it("a", () => expect(2).toBe(2));\n+  it("b", () => expect(3).toBe(3));\n });';
+  assert.deepEqual(lbFiles(modified(t, vitest)), []);
 });
 
 test("niveau B : corps d'un test modifié, titre inchangé : admis", () => {

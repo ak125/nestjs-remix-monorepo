@@ -84,31 +84,110 @@ function isTestCallback(node) {
   return (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) && isTestCall(node.parent) && node.parent.arguments.includes(node);
 }
 
-/**
- * Position syntaxique d'une déclaration : nature des nœuds entre l'appel et le fichier ou le rappel du
- * test englobant. Un test placé sous un `if`, un `&&`, un `?:` ou une boucle change de position.
- */
-function positionOf(node) {
-  const kinds = [];
-  for (let parent = node.parent; parent && !ts.isSourceFile(parent) && !isTestCallback(parent); parent = parent.parent) {
-    if (ts.isBlock(parent) && isTestCallback(parent.parent)) continue;
-    kinds.push(ts.SyntaxKind[parent.kind]);
-  }
-  return kinds.join(">");
+/** Appel sans modificateur et premier argument (titre littéral, sinon texte sans blancs) : `describe("A")`. */
+function descriptorOf(call, source) {
+  const first = call.arguments[0];
+  const title = !first
+    ? ""
+    : ts.isStringLiteralLike(first)
+      ? JSON.stringify(first.text)
+      : first.getText(source).replace(/\s+/g, "");
+  const callee = calleeSegments(call.expression)
+    .filter((segment) => segment !== "()" && !DISABLING_MODIFIERS.has(segment))
+    .join(".");
+  return `${callee}(${title})`;
 }
 
-/** Rappel vidé, ou ouvert par un `return;` nu : le test ne vérifie plus rien. */
+/**
+ * Position syntaxique d'une déclaration : du fichier jusqu'à l'appel, chaque appel de test englobant par
+ * son descripteur et chaque autre nœud par sa nature. Un test placé sous un `if`, un `&&`, un `?:`, une
+ * boucle ou dans un nouvel appel englobant (`describe`, `registry.test`, `describe.each([])`) change de position.
+ */
+function positionOf(node, source) {
+  const steps = [];
+  for (let parent = node.parent; parent && !ts.isSourceFile(parent); parent = parent.parent) {
+    if (isTestCallback(parent) || (ts.isBlock(parent) && isTestCallback(parent.parent))) continue;
+    steps.unshift(isTestCall(parent) ? descriptorOf(parent, source) : ts.SyntaxKind[parent.kind]);
+  }
+  return steps.join(">");
+}
+
+/** Vrai si le sous-arbre contient un appel (`f()`, `new F()`, gabarit étiqueté) : sans appel, rien n'est vérifié. */
+function containsCall(node) {
+  if (ts.isCallExpression(node) || ts.isNewExpression(node) || ts.isTaggedTemplateExpression(node)) return true;
+  return Boolean(ts.forEachChild(node, (child) => (containsCall(child) ? true : undefined)));
+}
+
+/**
+ * Test qui ne vérifie plus rien : aucun rappel littéral, rappel sans aucun appel (`() => undefined`,
+ * `() => void 0`, corps vide), ou corps ouvert par un `return` sans appel (`return;`, `return undefined;`).
+ */
 function isNeutralised(call) {
   const callback = [...call.arguments].reverse().find((argument) => ts.isArrowFunction(argument) || ts.isFunctionExpression(argument));
-  if (!callback || !ts.isBlock(callback.body)) return false;
+  if (!callback || !containsCall(callback.body)) return true;
+  if (!ts.isBlock(callback.body)) return false;
   const [first] = callback.body.statements;
-  return !first || (ts.isReturnStatement(first) && !first.expression);
+  return ts.isReturnStatement(first) && !(first.expression && containsCall(first.expression));
+}
+
+// Modules d'où un nom de test peut être importé ; toute autre liaison de ces noms est une redéfinition.
+const TEST_FRAMEWORK_MODULES = new Set(["vitest", "@jest/globals", "node:test"]);
+const GLOBAL_OBJECTS = new Set(["globalThis", "global", "window", "self"]);
+
+/**
+ * Noms de test (`it`, `test`, `describe`) liés ou réassignés dans le fichier : déclaration, paramètre,
+ * import hors des modules de test, affectation directe ou sur un objet global. Un `describe` redéfini
+ * en fonction vide fait disparaître ses tests sans changer leur clé.
+ */
+function redefinedTestNames(source) {
+  const names = new Set();
+  const bind = (name) => {
+    if (name && ts.isIdentifier(name) && TEST_CALLEES.has(name.text)) names.add(name.text);
+    else if (name && (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name))) {
+      for (const element of name.elements) if (ts.isBindingElement(element)) bind(element.name);
+    }
+  };
+  const visit = (node) => {
+    if (ts.isImportDeclaration(node)) {
+      const module = ts.isStringLiteral(node.moduleSpecifier) ? node.moduleSpecifier.text : "";
+      if (!TEST_FRAMEWORK_MODULES.has(module)) {
+        const clause = node.importClause;
+        bind(clause?.name);
+        const bindings = clause?.namedBindings;
+        if (bindings && ts.isNamespaceImport(bindings)) bind(bindings.name);
+        if (bindings && ts.isNamedImports(bindings)) for (const element of bindings.elements) bind(element.name);
+      }
+    } else if (
+      ts.isVariableDeclaration(node) ||
+      ts.isParameter(node) ||
+      ts.isFunctionDeclaration(node) ||
+      ts.isClassDeclaration(node) ||
+      ts.isImportEqualsDeclaration(node)
+    ) {
+      bind(node.name);
+    } else if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+      let target = node.left;
+      while (ts.isParenthesizedExpression(target)) target = target.expression;
+      if (ts.isIdentifier(target)) bind(target);
+      else if (
+        (ts.isPropertyAccessExpression(target) || ts.isElementAccessExpression(target)) &&
+        ts.isIdentifier(target.expression) &&
+        GLOBAL_OBJECTS.has(target.expression.text)
+      ) {
+        const key = ts.isPropertyAccessExpression(target) ? target.name.text : ts.isStringLiteralLike(target.argumentExpression) ? target.argumentExpression.text : "";
+        if (TEST_CALLEES.has(key)) names.add(key);
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return [...names];
 }
 
 /**
- * Déclarations de test d'un fichier : pour chacune, sa clé (position, appel sans modificateur, puis
- * premier argument : le titre s'il est littéral, sinon son texte sans blancs), si elle porte un
- * modificateur désactivant et si son rappel est neutralisé. `null` si le fichier ne s'analyse pas sans erreur.
+ * Déclarations de test d'un fichier : pour chacune, sa clé (position, puis appel sans modificateur et
+ * premier argument), si elle porte un modificateur désactivant et si son rappel est neutralisé ; et les
+ * noms de test redéfinis. `null` si le fichier ne s'analyse pas sans erreur.
  */
 export function testDeclarations(filename, text) {
   const source = ts.createSourceFile(filename, text, ts.ScriptTarget.Latest, true, scriptKind(filename));
@@ -116,23 +195,16 @@ export function testDeclarations(filename, text) {
   const declarations = [];
   const visit = (node) => {
     if (isTestCall(node)) {
-      const segments = calleeSegments(node.expression);
-      const first = node.arguments[0];
-      const title = !first
-        ? ""
-        : ts.isStringLiteralLike(first)
-          ? JSON.stringify(first.text)
-          : first.getText(source).replace(/\s+/g, "");
-      const callee = segments.filter((segment) => segment !== "()" && !DISABLING_MODIFIERS.has(segment)).join(".");
       declarations.push({
-        key: `${callee}(${title}) @ ${positionOf(node)}`,
-        disabled: segments.some((segment) => DISABLING_MODIFIERS.has(segment)),
+        key: `${descriptorOf(node, source)} @ ${positionOf(node, source)}`,
+        disabled: calleeSegments(node.expression).some((segment) => DISABLING_MODIFIERS.has(segment)),
         neutralised: isNeutralised(node),
       });
     }
     ts.forEachChild(node, visit);
   };
   visit(source);
+  declarations.redefined = redefinedTestNames(source);
   return declarations;
 }
 
@@ -375,7 +447,11 @@ export function evaluateLevelBFiles(policy, files) {
       after.filter((declaration) => declaration.neutralised).map((declaration) => declaration.key),
       before.filter((declaration) => declaration.neutralised).map((declaration) => declaration.key),
     ).filter((key) => before.some((declaration) => declaration.key === key));
-    if (lost.length) {
+    // Un nom de test redéfini à la tête (et non à la base) peut vider tous les tests sans changer leur clé.
+    const redefined = after.redefined.filter((name) => !(before.redefined ?? []).includes(name));
+    if (redefined.length) {
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (nom de test redéfini : ${redefined.join(", ")})`));
+    } else if (lost.length) {
       refusals.push(refusal("TEST_REMOVED", `${file.filename} (déclaration retirée ou déplacée : ${lost[0]})`));
     } else if (neutralised.length) {
       refusals.push(refusal("TEST_REMOVED", `${file.filename} (test vidé ou neutralisé : ${neutralised[0]})`));
