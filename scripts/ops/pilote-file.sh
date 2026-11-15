@@ -3,6 +3,7 @@
 #
 #   pilote-file.sh controle --sortie DIR            lecture seule : constats + empreinte → DIR/etat.json
 #   pilote-file.sh session  --sortie DIR            session Claude seulement si l'empreinte a changé
+#                                                   et si le producteur du KPI du rôle est présent (D2)
 #   pilote-file.sh publier  --sortie DIR [--a-blanc]
 #                                                   issue de pilotage + commentaires bornés ;
 #                                                   --a-blanc : n'écrit rien sur GitHub
@@ -19,6 +20,8 @@ set -euo pipefail
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RACINE="$(cd "$ICI/../.." && pwd)"
 CARTE="$RACINE/.spec/00-canon/ai-registry/agent-operating-map.yaml"
+# ADR-128 D2 : producteur « présent » = l'identifiant du KPI figure dans ce fichier du code.
+SOURCE_KPI="backend/src/modules/admin/services/command-center-kpi.service.ts"
 
 : "${REPO:?REPO (owner/nom) manquant}"
 TITRE="${PILOTE_TITRE:-Pilotage de la file (pilote-file, ADR-128 D6)}"
@@ -27,6 +30,8 @@ MAX_COMMENTAIRES="${PILOTE_MAX_COMMENTAIRES:-5}"
 MODELE="${PILOTE_MODELE:-claude-sonnet-5-5}"
 BUDGET="${PILOTE_BUDGET_USD:-1}"
 CLI_VERSION="${PILOTE_CLI_VERSION:-2.1.316}"
+DEPARTEMENT="${PILOTE_DEPARTEMENT:-23}"              # rôle de la routine (bloc routine:)
+REF="${GITHUB_SHA:-main}"                           # version du code lue pour le producteur
 LIMITE=1000
 
 die() { echo "pilote-file : $*" >&2; exit 1; }
@@ -75,6 +80,24 @@ if len(rows) != 24 or len({r["label"] for r in rows}) != 24:
 print(json.dumps(rows, ensure_ascii=False))
 PY
 
+  # KPI du rôle (kpi_primary de la carte) et présence de son producteur (ADR-128 D2, AI1).
+  local kpi producteur=absent
+  kpi="$(python3 - "$CARTE" "$DEPARTEMENT" <<'PY'
+import sys, yaml
+carte = yaml.safe_load(open(sys.argv[1], encoding="utf-8"))
+for v in carte.values() if isinstance(carte, dict) else []:
+    if isinstance(v, list):
+        for d in v:
+            if isinstance(d, dict) and d.get("business_number") == int(sys.argv[2]):
+                print(d.get("kpi_primary") or "")
+PY
+)"
+  [[ -n "$kpi" ]] || die "kpi_primary du département $DEPARTEMENT introuvable dans la carte"
+  gh api "repos/$REPO/contents/$SOURCE_KPI?ref=$REF" -H 'Accept: application/vnd.github.raw' \
+    > "$SORTIE/brut/source-kpi.txt" || die "lecture de $SOURCE_KPI impossible"
+  [[ -s "$SORTIE/brut/source-kpi.txt" ]] || die "$SOURCE_KPI vide"
+  grep -qF "$kpi" "$SORTIE/brut/source-kpi.txt" && producteur=présent
+
   jq -n --slurpfile i "$SORTIE/brut/issues.json" --slurpfile p "$SORTIE/brut/prs.json" \
     --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson jours "$JOURS" --arg titre "$TITRE" \
     '{issues: $i[0], prs: $p[0], maintenant: $now, jours_sans_mouvement: $jours, titre_pilote: $titre}' \
@@ -85,20 +108,22 @@ PY
                | sha256sum | cut -d' ' -f1)"
   precedente="$(corps_pilote | grep -o 'pilote-file:empreinte:[0-9a-f]\{64\}' | head -n1 | cut -d: -f3 || true)"
   jq --arg e "$empreinte" --arg p "$precedente" --slurpfile d "$SORTIE/brut/departements.json" \
+    --arg kpi "$kpi" --arg prod "$producteur" --arg src "$SOURCE_KPI@$REF" \
     '. + {empreinte: $e, empreinte_precedente: (if $p == "" then null else $p end),
-          nouveau: ($e != $p), departements: $d[0]}' "$SORTIE/etat.json" > "$SORTIE/etat.tmp"
+          nouveau: ($e != $p), departements: $d[0],
+          kpi: {id: $kpi, producteur: $prod, source: $src}}' "$SORTIE/etat.json" > "$SORTIE/etat.tmp"
   mv "$SORTIE/etat.tmp" "$SORTIE/etat.json"
 
   local nouveau; nouveau="$(jq -r .nouveau "$SORTIE/etat.json")"
   [[ -z "${GITHUB_OUTPUT:-}" ]] || echo "nouveau=$nouveau" >> "$GITHUB_OUTPUT"
-  jq '{pilote_issue, nouveau, empreinte, empreinte_precedente, compteurs,
+  jq '{pilote_issue, nouveau, empreinte, empreinte_precedente, kpi, compteurs,
        constats: (.constats | with_entries(.value |= (if type == "array" then length else . end)))}' \
     "$SORTIE/etat.json"
 }
 
 ecrire_cout() { # ecrire_cout <sessions> [fichier sortie CLI] [erreur]
   jq -n --argjson s "$1" --arg brut "${2:-}" --arg err "${3:-}" --arg modele "$MODELE" \
-    --arg cli "$CLI_VERSION" --arg auth "${AUTH:-}" --arg run "${GITHUB_RUN_ID:-local}" --arg jour "$(date -u +%F)" \
+    --arg cli "$CLI_VERSION" --arg auth "${AUTH:-}" --arg susp "${SUSPENSION:-}" --arg run "${GITHUB_RUN_ID:-local}" --arg jour "$(date -u +%F)" \
     --slurpfile r "${2:-/dev/null}" '
     ($r[0] // {}) as $o
     | { jour: $jour, run_id: $run, sessions_ouvertes: $s, modele: $modele, cli_version: $cli,
@@ -109,7 +134,8 @@ ecrire_cout() { # ecrire_cout <sessions> [fichier sortie CLI] [erreur]
                  cache_creation_input_tokens: ($o.usage.cache_creation_input_tokens // 0),
                  cache_read_input_tokens: ($o.usage.cache_read_input_tokens // 0) },
         num_turns: ($o.num_turns // null), duration_ms: ($o.duration_ms // null),
-        subtype: ($o.subtype // null), erreur: (if $err == "" then null else $err end) }' \
+        subtype: ($o.subtype // null), erreur: (if $err == "" then null else $err end),
+        suspension: (if $susp == "" then null else $susp end) }' \
     > "$SORTIE/cout.json"
 }
 
@@ -117,6 +143,12 @@ session() {
   [[ -f "$SORTIE/etat.json" ]] || die "etat.json absent : lancer controle d'abord"
   if [[ "$(jq -r .nouveau "$SORTIE/etat.json")" != "true" ]]; then
     ecrire_cout 0; echo "rien de nouveau depuis l'exécution précédente : aucune session"; return 0
+  fi
+  # ADR-128 D2 (AI1) : pas de session agent tant que le producteur du KPI du rôle est absent.
+  # La routine reste déterministe (contrôle + constats publiés) ; exécution verte, suspension tracée.
+  if [[ "$(jq -r '.kpi.producteur // "absent"' "$SORTIE/etat.json")" != "présent" ]]; then
+    SUSPENSION="producteur du KPI $(jq -r '.kpi.id // "?"' "$SORTIE/etat.json") absent (ADR-128 D2)"
+    ecrire_cout 0; echo "session suspendue : $SUSPENSION"; return 0
   fi
   local auth
   if [[ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]]; then
@@ -238,6 +270,7 @@ publier() {
     + "Le pilote ne ferme, ne fusionne et ne relabellise rien. Corps régénéré à chaque exécution : ne pas l\u2019éditer à la main.\n\n"
     + "Dernière exécution : [run](" + $run + ") · session Claude : "
     + (if $c[0].erreur != null then "échec (" + $c[0].erreur + ")"
+       elif $c[0].suspension != null then "suspendue (" + $c[0].suspension + ")"
        elif $c[0].sessions_ouvertes == 1 then "ouverte" else "non ouverte (rien de nouveau)" end) + "\n\n"
     + "## Constats (" + (.compteurs.issues_ouvertes | tostring) + " issues, " + (.compteurs.prs_ouvertes | tostring) + " PR ouvertes)\n\n"
     + "| Signal | Nombre | Éléments |\n|---|---:|---|\n"
@@ -255,8 +288,8 @@ publier() {
         + (.cache_creation_input_tokens | tostring) + " | " + (.cache_read_input_tokens | tostring) + " | "
         + (.usd | tostring) + " |") | join("\n")) + "\n\n"
     + ($j[0] | map("<!-- pilote-file:cout " + tojson + " -->") | join("\n")) + "\n"
-    # Session en échec : empreinte précédente gardée, pour que le tour suivant retente.
-    + (if $c[0].erreur == null then "<!-- pilote-file:empreinte:" + .empreinte + " -->\n"
+    # Session en échec ou suspendue : empreinte précédente gardée, pour que le tour suivant retente.
+    + (if $c[0].erreur == null and $c[0].suspension == null then "<!-- pilote-file:empreinte:" + .empreinte + " -->\n"
        elif .empreinte_precedente != null then "<!-- pilote-file:empreinte:" + .empreinte_precedente + " -->\n"
        else "" end)' "$SORTIE/etat.json" > "$SORTIE/corps.md"
 

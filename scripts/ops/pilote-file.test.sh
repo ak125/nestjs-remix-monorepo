@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Test de pilote-file.sh sur FIXTURES (jamais le dépôt réel) : constats, filtrage des propositions,
 # bornage et dédoublonnage des commentaires, reprise de la section, cumul du coût, mode à blanc.
-# `gh` est remplacé par un faux qui ne sait que relire un corps d'issue ; toute autre commande
-# gh fait échouer le test (preuve que --a-blanc n'écrit rien).
+# `gh` est remplacé par un faux qui ne sait que lire (corps d'issue, listes, contenu d'un fichier) ;
+# toute autre commande gh fait échouer le test (preuve que --a-blanc n'écrit rien).
 set -uo pipefail
 
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -15,6 +15,9 @@ mkdir -p "$FIX/bin"
 cat > "$FIX/bin/gh" <<'SH'
 #!/usr/bin/env bash
 if [[ "$1 $2" == "issue view" ]]; then cat "$FAKE_BODY"; exit 0; fi
+if [[ "$1 $2" == "issue list" ]]; then cat "$FAKE_ISSUES"; exit 0; fi
+if [[ "$1 $2" == "pr list" ]]; then cat "$FAKE_PRS"; exit 0; fi
+if [[ "$1" == "api" && "$2" == repos/*/contents/* ]]; then cat "$FAKE_SOURCE_KPI"; exit 0; fi
 echo "faux gh : commande interdite dans le test : $*" >&2; echo "$*" >> "$FAKE_LOG"; exit 99
 SH
 chmod +x "$FIX/bin/gh"
@@ -111,7 +114,7 @@ D3="$FIX/run3"; mkdir -p "$D3/brut"; cp "$D2/etat.json" "$D3/etat.json"; cp "$FI
 env -u ANTHROPIC_API_KEY -u CLAUDE_CODE_OAUTH_TOKEN bash "$ICI/pilote-file.sh" session --sortie "$D3" > /dev/null
 check "sessions ouvertes" "0" "$(jq .sessions_ouvertes "$D3/cout.json")"
 echo "== session : nouveau sans secret ⇒ échec visible =="
-jq '.nouveau = true' "$D2/etat.json" > "$D3/etat.json"
+jq '.nouveau = true | .kpi = {id: "k", producteur: "présent", source: "x"}' "$D2/etat.json" > "$D3/etat.json"
 rc=0; env -u ANTHROPIC_API_KEY -u CLAUDE_CODE_OAUTH_TOKEN bash "$ICI/pilote-file.sh" session --sortie "$D3" > /dev/null 2>&1 || rc=$?
 check "code de sortie non nul" "1" "$rc"
 check "erreur tracée dans cout.json" "secret CLAUDE_CODE_OAUTH_TOKEN (ou ANTHROPIC_API_KEY) absent" "$(jq -r .erreur "$D3/cout.json")"
@@ -139,6 +142,28 @@ PATH="$FIX/npx:$PATH" ANTHROPIC_API_KEY=cle-factice GH_TOKEN=gh-factice \
 check "clé API seule transmise à défaut" "ANTHROPIC_API_KEY " "$(cat "$D4/session.stderr")"
 check "mode tracé dans cout.json" "cle-api" "$(jq -r .authentification "$D4/cout.json")"
 check "aucune valeur de secret dans la sortie" "0" "$(grep -rlE 'jeton-factice|cle-factice' "$D4" | wc -l)"
+
+echo "== controle : producteur du KPI du rôle 23 (ADR-128 D2) =="
+export FAKE_ISSUES="$FIX/issues.json" FAKE_PRS="$FIX/prs.json" FAKE_SOURCE_KPI="$FIX/source-kpi.ts"
+D5="$FIX/run5"; mkdir -p "$D5"; : > "$FAKE_BODY"; : > "$FAKE_LOG"
+echo 'const k = { pages_generating_atc: 1, metric_reliability: 2 };' > "$FAKE_SOURCE_KPI"
+bash "$ICI/pilote-file.sh" controle --sortie "$D5" > /dev/null
+check "KPI lu dans la carte" "useful_capabilities_not_complexity" "$(jq -r .kpi.id "$D5/etat.json")"
+check "producteur absent" "absent" "$(jq -r .kpi.producteur "$D5/etat.json")"
+rc=0; PATH="$FIX/npx:$PATH" CLAUDE_CODE_OAUTH_TOKEN=jeton-factice \
+  bash "$ICI/pilote-file.sh" session --sortie "$D5" > /dev/null 2>&1 || rc=$?
+check "session suspendue : exécution verte" "0" "$rc"
+check "aucune session ouverte" "0" "$(jq .sessions_ouvertes "$D5/cout.json")"
+check "CLI non appelée" "absent" "$([[ -e "$D5/session.json" ]] && echo présent || echo absent)"
+check "suspension tracée" "producteur du KPI useful_capabilities_not_complexity absent (ADR-128 D2)" "$(jq -r .suspension "$D5/cout.json")"
+check "pas d'erreur" "null" "$(jq -r .erreur "$D5/cout.json")"
+bash "$ICI/pilote-file.sh" publier --sortie "$D5" --a-blanc > /dev/null
+check "suspension affichée dans le corps" "1" "$(grep -c 'session Claude : suspendue' "$D5/corps.md")"
+check "suspendue ⇒ nouvelle empreinte non inscrite" "0" "$(grep -c "pilote-file:empreinte:$(jq -r .empreinte "$D5/etat.json")" "$D5/corps.md")"
+echo 'const k = { useful_capabilities_not_complexity: 3 };' > "$FAKE_SOURCE_KPI"
+bash "$ICI/pilote-file.sh" controle --sortie "$D5" > /dev/null
+check "producteur présent" "présent" "$(jq -r .kpi.producteur "$D5/etat.json")"
+check "contrôle en lecture seule" "0" "$(wc -l < "$FAKE_LOG")"
 
 [[ "$FAIL" -eq 0 ]] && echo "RÉSULTAT : tous les contrôles passent" || echo "RÉSULTAT : ÉCHEC"
 exit "$FAIL"
