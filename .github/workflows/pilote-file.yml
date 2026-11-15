@@ -15,7 +15,7 @@ name: Pilote de la file (ADR-128)
 #             issue de pilotage « Pilotage de la file (pilote-file, ADR-128 D6) » (ADR-034 axe 3)
 #   escalation: exécution rouge visible dans Actions ; une demande d'arrêt passe par le label
 #               needs-human posé par l'owner ; arrêt N2 = gh workflow disable pilote-file.yml
-#   secret: ANTHROPIC_API_KEY (session Claude seulement ; jamais transmis à gh)
+#   secret: CLAUDE_CODE_OAUTH_TOKEN (abonnement, claude setup-token)
 
 on:
   schedule:
@@ -64,6 +64,7 @@ jobs:
       - name: Session Claude (seulement si nouveau)
         id: session
         env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: bash scripts/ops/pilote-file.sh session --sortie "$RUNNER_TEMP/pilote-file"
 
