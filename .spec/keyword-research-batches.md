@@ -15,7 +15,7 @@
 7. **`scp`** vers VPS : `scp *.csv deploy@46.224.118.55:/opt/automecanik/app/data/keywords/raw/`
 8. **Import** : `python3 scripts/seo/import-gads-kp.py data/keywords/raw/{fichier}.csv --pg-id {id}`
 9. **Classify** : `/kw-classify {gamme}`
-10. **Generate** : `/content-gen {gamme} --all`
+10. **Contenu** : `/seo-content-loop {gamme}` (RAW → WIKI → projection)
 
 ---
 

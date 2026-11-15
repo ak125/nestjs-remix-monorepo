@@ -1,7 +1,7 @@
 /**
  * Media Slots Rules & Layout Contract — configuration statique pour les pages gamme R3.
  * PAS injecté dans les prompts LLM (économie de tokens).
- * Utilisé par le frontend, le pipeline de build d'images, et les agents keyword-planner/conseil-batch.
+ * Utilisé par le frontend, le pipeline de build d'images, et l'agent keyword-planner.
  */
 
 import {

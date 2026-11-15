@@ -6850,7 +6850,7 @@
         "path"
       ],
       "kind": "controller",
-      "loc": 1488,
+      "loc": 1486,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
       "risk": "low",
@@ -7062,7 +7062,7 @@
         "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts"
       ],
       "kind": "controller",
-      "loc": 174,
+      "loc": 176,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
       "risk": "low",
@@ -7376,7 +7376,7 @@
         "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
       "kind": "controller",
-      "loc": 186,
+      "loc": 187,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
       "risk": "low",
@@ -10701,7 +10701,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 267,
+      "loc": 262,
       "owner": "__unassigned__",
       "path": "backend/src/modules/agentic-engine/constants/agentic.constants.ts",
       "risk": "low",
@@ -56264,7 +56264,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 2168,
+      "loc": 2166,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.keyword-planner.tsx",
       "risk": "low",

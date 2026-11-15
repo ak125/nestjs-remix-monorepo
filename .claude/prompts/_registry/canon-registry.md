@@ -56,7 +56,7 @@
 | Generator | `.claude/prompts/R3_CONSEILS/generator.md` | ✅ |
 | Validator prompt | `.claude/prompts/R3_CONSEILS/validator.md` | ✅ |
 | Validator agent | `.claude/agents/r3-conseils-validator.md` | ✅ |
-| Execution | `.claude/agents/conseil-batch.md` | ✅ |
+| Execution | skill `seo-content-loop` (`conseil-batch` neutralise le 2026-07-19) | ✅ |
 | Skill ref | `.claude/skills/.../references/conseils-role.md` | ✅ |
 | Page contract | `backend/src/config/page-contract-r3.schema.ts` | ✅ |
 | Keyword plan | `backend/src/config/keyword-plan.constants.ts` (shared) | ✅ |

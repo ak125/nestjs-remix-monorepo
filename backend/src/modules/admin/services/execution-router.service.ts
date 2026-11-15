@@ -358,7 +358,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
   ): Promise<unknown> {
     const slug = pgAlias ?? targetId;
 
-    // Route to R4ContentEnricherService (0-LLM audit — delegates content gen to /content-gen skill)
+    // Route to R4ContentEnricherService (0-LLM audit; R4 content comes from the seo-content-loop, RAW → WIKI → projection)
     if (source === 'r4_batch') {
       const enricher0llm = this.getR4ContentEnricher();
       if (enricher0llm) {
