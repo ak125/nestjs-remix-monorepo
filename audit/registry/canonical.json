@@ -35523,7 +35523,7 @@
         "path"
       ],
       "kind": "controller",
-      "loc": 1488,
+      "loc": 1486,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
       "risk": "medium",
@@ -35743,7 +35743,7 @@
         "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts"
       ],
       "kind": "controller",
-      "loc": 174,
+      "loc": 176,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
       "risk": "medium",
@@ -36069,7 +36069,7 @@
         "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
       "kind": "controller",
-      "loc": 186,
+      "loc": 187,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
       "risk": "medium",
@@ -39520,7 +39520,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 267,
+      "loc": 262,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/agentic-engine/constants/agentic.constants.ts",
       "risk": "high",
@@ -86770,7 +86770,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 2168,
+      "loc": 2166,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.keyword-planner.tsx",
       "risk": "medium",
@@ -107857,11 +107857,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "f2626fa8db8ac51fc48d13b9486c425c877fdd561e819c4aa17b0f739178b2b3",
+      "audit/registry/files.json": "6f4d2d2d1dac2ba2a9905a40777c81daa443a413a46c123b173e8cd2241d7e56",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "e823d4f267d7"
+    "sotFingerprint": "9d1bffbb2c2a"
   },
   "runtime": [
     {
