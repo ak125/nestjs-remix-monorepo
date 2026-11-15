@@ -54,7 +54,7 @@ Selon le `goal_type` du run, les agents disponibles sont :
 | goal_type | Agents | Max branches |
 |-----------|--------|--------------|
 | `keyword_plan` | r1/r3/r4/r5/r6/r7/r8-keyword-planner | 3 |
-| `content_generation` | r1/r4/r6-content-batch, conseil-batch | 3 |
+| `content_generation` | r1/r4/r6-content-batch | 3 |
 | `rag_quality_check` | phase1-auditor | 2 |
 | `seo_audit` | research-agent, brief-enricher, blog-hub-planner | 3 |
 | `brand_content` | r7-brand-rag-generator, r7-keyword-planner | 2 |
@@ -82,7 +82,7 @@ Genere 2-3 strategies paralleles pour atteindre l'objectif. Chaque strategie a :
 ### Strategies par goal_type :
 
 **keyword_plan** : une branche par role R* pertinent (ex: r3-keyword-planner, r6-keyword-planner)
-**content_generation** : une branche par type de contenu (ex: conseil-batch, r4-content-batch)
+**content_generation** : une branche par type de contenu (ex: r4-content-batch)
 **rag_quality_check** : une branche audit complet, une branche verification structure
 **seo_audit** : research-agent, brief-enricher, blog-hub-planner en parallele
 **brand_content** : r7-brand-rag-generator puis r7-keyword-planner

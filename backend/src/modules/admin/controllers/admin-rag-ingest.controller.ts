@@ -20,7 +20,8 @@ import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
  * Admin endpoints for the PDF → RAG merge pipeline.
  *
  * Flow: PDF upload → text extraction → LLM classification → merge into .md
- * Content generation is handled by /content-gen skill (not automated pipeline).
+ * The RAG serves the chatbot only (ADR-031/046): content comes from the WIKI
+ * through the seo-content-loop (RAW → WIKI → projection).
  */
 @Controller('api/admin/rag/pdf-merge')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
@@ -77,7 +78,7 @@ export class AdminRagIngestController {
 
   /**
    * Apply: extract + classify + merge .md + sync to DB.
-   * Content generation: use /content-gen skill after apply.
+   * No content generation follows: the RAG serves the chatbot only.
    */
   @Post('apply')
   @HttpCode(HttpStatus.OK)
@@ -137,7 +138,7 @@ export class AdminRagIngestController {
     );
 
     this.logger.log(
-      `RAG merged for ${dto.pgAlias}. Use /content-gen skill to generate content.`,
+      `RAG merged for ${dto.pgAlias}. RAG serves the chatbot only; content comes from the seo-content-loop.`,
     );
 
     return {
@@ -146,13 +147,14 @@ export class AdminRagIngestController {
       extractedChars: extractResult.fullText.length,
       mergedFile: mergeResult.filePath,
       dbSync: syncResult,
-      message: 'RAG merged. Use /content-gen skill to generate content.',
+      message:
+        'RAG merged. RAG serves the chatbot only; content comes from the seo-content-loop (RAW → WIKI → projection).',
     };
   }
 
   /**
    * Force-enrich: no longer queues automated pipeline.
-   * Use /content-gen skill instead.
+   * Content comes from the seo-content-loop (RAW → WIKI → projection).
    */
   @Post('force-enrich')
   @HttpCode(HttpStatus.OK)
@@ -160,14 +162,14 @@ export class AdminRagIngestController {
     @Body() dto: { pgAlias: string; sectionsFilter?: string[] },
   ) {
     this.logger.log(
-      `Force-enrich requested for ${dto.pgAlias} — use /content-gen skill instead`,
+      `Force-enrich requested for ${dto.pgAlias}; pipeline removed, content comes from the seo-content-loop`,
     );
 
     return {
       status: 'pipeline_removed',
       pgAlias: dto.pgAlias,
       message:
-        'Content refresh pipeline removed. Use /content-gen skill to generate content.',
+        'Content refresh pipeline removed. Content comes from the seo-content-loop (RAW → WIKI → projection).',
     };
   }
 }

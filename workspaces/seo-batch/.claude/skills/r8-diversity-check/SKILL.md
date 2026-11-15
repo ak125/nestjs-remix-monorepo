@@ -50,7 +50,7 @@ python3 scripts/qa/r8-diversity-check.py --batch
 | Besoin | Skill à utiliser |
 |--------|------------------|
 | Mesurer diversité R8 post-wire (ce skill) | `r8-diversity-check` |
-| Générer le contenu R8 d'une page | `content-gen` ou endpoint `/api/admin/r8/enrich/:typeId` |
+| Générer le contenu R8 d'une page | boucle `seo-content-loop` |
 | Audit SEO global R1-R8 (métriques, maillage, score composite) | `seo-gamme-audit` |
 | Qualité éditoriale R2D2 (Intent-First, lisibilité) | `content-audit` |
 | Anti-cannibalisation cross-role (R1 vs R3 vs R4) | `blog-hub-planner` |

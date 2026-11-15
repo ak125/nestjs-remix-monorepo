@@ -96,7 +96,7 @@ export interface RagData {
     paa_questions?: string[];
   };
 
-  /** Rendering — FAQ, arguments, qualité (consommé par content-gen) */
+  /** Rendering — FAQ, arguments, qualité (consommé par l'ancien skill content-gen, neutralisé le 2026-07-02) */
   rendering?: {
     faq?: Array<{ question: string; answer: string }>;
     arguments?: Array<{ title: string; content: string; icon?: string }>;

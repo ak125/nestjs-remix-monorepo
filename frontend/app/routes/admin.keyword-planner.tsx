@@ -1788,9 +1788,7 @@ function ContentGenButton({
   imported: number;
 }) {
   const alias = gammes?.[0]?.pg_alias ?? "";
-  const roles = [...new Set(gammes?.flatMap((g) => g.roles) ?? [])];
-  const roleFlags = roles.map((r) => `--${r.toLowerCase()}`).join(" ");
-  const command = `/content-gen ${alias} ${roleFlags}`;
+  const command = `/seo-content-loop ${alias}`;
 
   return (
     <div className="flex flex-col gap-2">

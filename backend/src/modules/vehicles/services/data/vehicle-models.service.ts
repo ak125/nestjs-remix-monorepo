@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { SupabaseRpcError } from '@security/rpc-gate/rpc-gate.errors';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import {
   VehicleModel,
@@ -357,7 +358,7 @@ export class VehicleModelsService extends SupabaseBaseService {
                 if (search?.trim()) {
                   // Recherche par alias OU par nom
                   query = query.or(
-                    `modele_alias.ilike.%${search}%,modele_name.ilike.%${search}%`,
+                    `modele_alias.ilike.${ilikeContains(search)},modele_name.ilike.${ilikeContains(search)}`,
                   );
                 }
 
@@ -469,7 +470,9 @@ export class VehicleModelsService extends SupabaseBaseService {
             .from(TABLES.auto_modele)
             .select('*')
             .eq('modele_display', 1)
-            .or(`modele_name.ilike.%${query}%,modele_alias.ilike.%${query}%`)
+            .or(
+              `modele_name.ilike.${ilikeContains(query)},modele_alias.ilike.${ilikeContains(query)}`,
+            )
             .limit(limit)
             .range(offset, offset + limit - 1);
 

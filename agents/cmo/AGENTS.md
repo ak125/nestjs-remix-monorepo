@@ -36,7 +36,7 @@ GET /api/agents/993a4a02-b3b5-4414-9d5c-94b143ff1fe5
 ```
 
 Points à vérifier :
-- Skills configurées : keyword-planner, content-gen, seo-gamme-audit, rag-check, content-quality-gate
+- Skills configurées : keyword-planner, seo-content-loop (remplace content-gen, neutralisé le 2026-07-02), seo-gamme-audit, rag-check, content-quality-gate
 - `instructionsFilePath` → fichier AGENTS.md chargé et à jour
 - Routine heartbeat active (cron `0 9 * * *`)
 

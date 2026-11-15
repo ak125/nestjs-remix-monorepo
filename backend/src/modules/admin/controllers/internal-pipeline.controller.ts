@@ -158,7 +158,8 @@ export class InternalPipelineController {
   /**
    * POST /api/internal/pipeline/r4-audit/:pgAlias
    * Skills-first bridge: run R4 audit (0-LLM) and return sections to improve.
-   * Used by /content-gen skill and Paperclip agents to know what to generate.
+   * Audit only: R4 content comes from the WIKI through the seo-content-loop
+   * (RAW → WIKI → projection); this endpoint triggers no generator.
    */
   @Post('r4-audit/:pgAlias')
   async r4Audit(@Param('pgAlias') pgAlias: string) {
@@ -178,7 +179,7 @@ export class InternalPipelineController {
         pgAlias,
         status: target?.status ?? 'failed',
         auditResult: target?.data ?? null,
-        hint: 'Use /content-gen --r4 to generate content for sections marked IMPROVE',
+        hint: 'R4 content comes from the seo-content-loop (RAW → WIKI → projection); this audit triggers no generator',
       },
     };
   }

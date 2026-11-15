@@ -388,7 +388,7 @@ export class AdminKeywordPlannerController {
   /**
    * GET /api/admin/keyword-planner/keywords-for-content
    * Returns prioritized keywords for content injection (H1, H2, meta, body).
-   * Used by content-gen skill to auto-integrate KW into generated content.
+   * Former consumer: the content-gen skill, neutralised on 2026-07-02.
    *
    * Query params: pg_id (required), role (optional, defaults to all)
    */
@@ -794,16 +794,14 @@ export class AdminKeywordPlannerController {
     }
 
     const alias = body.pg_alias || '';
-    const roleFlags = targetRoles.map((r) => `--${r.toLowerCase()}`).join(' ');
-
     return {
-      message: `${kwCount} KW disponibles pour ${targetRoles.length} role(s). Lancez : /content-gen ${alias} ${roleFlags}`,
+      message: `${kwCount} KW disponibles pour ${targetRoles.length} role(s). Contenu : boucle /seo-content-loop ${alias} (RAW → WIKI → projection)`,
       pg_id: pgId,
       pg_alias: alias,
       kw_total: kwCount,
       roles_ready: targetRoles,
       roles_detail: byRole,
-      command: `/content-gen ${alias} ${roleFlags}`,
+      command: `/seo-content-loop ${alias}`,
     };
   }
 
