@@ -1,0 +1,691 @@
+--- /dev/null
++++ b/.github/scripts/report-issue-publish.sh
+@@ -0,0 +1,84 @@
++#!/usr/bin/env bash
++# report-issue-publish.sh — one standing GitHub issue per report, updated in place.
++#
++# Sourced by .github/scripts/morning-health-digest.sh and weekly-pr-hygiene.sh
++# (mandat AM, 2026-11-16). Same publication pattern as scripts/ops/pilote-file.sh:
++# the open issue with a FIXED title is the report, its body is replaced, and
++# `gh issue create` runs only when it is missing. No label is created or required
++# (creating a label is an owner act).
++#
++#   report_issue_publish <title> <body_file> <state_json> [assignee]
++#
++# - <title>      exact title of the standing issue (open, authored by GitHub Actions).
++# - <body_file>  new body (markdown). A one-line state marker is appended to it.
++# - <state_json> {"<id>": {"c": "<couleur>", "l": "<libellé>"}, ...}
++#                The previous marker is read from the current body. A short comment
++#                is posted ONLY when an id present in both states changed colour,
++#                so the owner is notified on change, not every morning.
++#
++# Requires gh (GH_TOKEN), jq and REPO=<owner/name>. Prints the issue number.
++
++REPORT_STATE_TAG="report-state:v1"
++
++report_issue_find() { # <title> → number of the open standing issue (lowest if several), or empty
++  gh issue list --repo "$REPO" --state open --limit 500 --json number,title,author \
++    | jq -r --arg t "$1" '[.[] | select(.title == $t)
++        | select(.author.login == "app/github-actions" or .author.login == "github-actions[bot]" or .author.login == "github-actions")
++        | .number] | min // empty'
++}
++
++report_state_extract() { # stdin: issue body → previous state JSON, or {}
++  local line
++  line=$(grep -o "<!-- ${REPORT_STATE_TAG} .* -->" | tail -n1 || true)
++  line=${line#"<!-- ${REPORT_STATE_TAG} "}
++  line=${line%" -->"}
++  if [ -n "$line" ] && printf '%s' "$line" | jq -e 'type == "object"' >/dev/null 2>&1; then
++    printf '%s' "$line"
++  else
++    printf '{}'
++  fi
++}
++
++report_state_changes() { # <prev_json> <cur_json> → one markdown line per colour change, empty if none
++  jq -rn --argjson p "$1" --argjson c "$2" '
++    $c | to_entries[]
++    | select($p[.key] != null and $p[.key].c != .value.c)
++    | "- \(.value.l) : \($p[.key].c) → **\(.value.c)**"'
++}
++
++report_issue_publish() {
++  local title="$1" body_file="$2" state="$3" assignee="${4:-}"
++  local number prev changes comment_file
++
++  state=$(printf '%s' "$state" | jq -c 'if type == "object" then . else error("état non objet") end') \
++    || { echo "report-issue-publish : état invalide" >&2; return 1; }
++  # One line, and it must not close the HTML comment early.
++  state=${state//-->/—>}
++  printf '\n<!-- %s %s -->\n' "$REPORT_STATE_TAG" "$state" >> "$body_file"
++
++  number=$(report_issue_find "$title")
++  if [ -z "$number" ]; then
++    local args=(--repo "$REPO" --title "$title" --body-file "$body_file")
++    [ -n "$assignee" ] && args+=(--assignee "$assignee")
++    number=$(gh issue create "${args[@]}" | grep -o '[0-9]\+$')
++    echo "$number"
++    return 0
++  fi
++
++  prev=$(gh issue view "$number" --repo "$REPO" --json body --jq '.body' | report_state_extract)
++  gh issue edit "$number" --repo "$REPO" --body-file "$body_file" > /dev/null
++
++  changes=$(report_state_changes "$prev" "$state")
++  if [ -n "$changes" ]; then
++    comment_file=$(mktemp)
++    {
++      echo "Changement de couleur, lecture du $(date -u +'%F %H:%M') UTC :"
++      echo ""
++      echo "$changes"
++      echo ""
++      echo "Détail à jour dans le corps de l'issue."
++    } > "$comment_file"
++    gh issue comment "$number" --repo "$REPO" --body-file "$comment_file" > /dev/null
++  fi
++  echo "$number"
++}
+--- a/.github/scripts/morning-health-digest.sh
++++ b/.github/scripts/morning-health-digest.sh
+@@ -1,148 +1,331 @@
+ #!/usr/bin/env bash
+-# Morning health digest — collect 8 signals, classify, write digest body file,
+-# emit GitHub Actions outputs.
++# Morning health digest — ONE standing issue, body replaced on every run (mandat AM,
++# 2026-11-16). Each signal carries its colour, value, source, read time (UTC) and
++# confidence level. A source that cannot be read is written « indisponible »,
++# never zero.
+ #
+-# Called by .github/workflows/morning-health-digest.yml. Requires gh CLI with
+-# GH_TOKEN env var and REPO env var (owner/name).
++#   bash .github/scripts/morning-health-digest.sh            legacy contract: writes the
++#        body and emits `title` + `body_path` outputs (the unpatched workflow then creates
++#        a dated issue, as before).
++#   bash .github/scripts/morning-health-digest.sh --publish  updates the standing issue
++#        through report-issue-publish.sh; a short comment only on a colour change.
++#
++# Called by .github/workflows/morning-health-digest.yml. Requires gh (GH_TOKEN), jq,
++# curl and REPO=<owner/name>. Optional: SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (the
++# secrets already given to diag-canon-slugs-export.yml); without them every database
++# signal is « indisponible ».
++#
++# PUBLIC REPOSITORY: this body lands verbatim in a public issue and the run log is
++# public. Only aggregates go out: rule names, counts, URL paths without query string,
++# day totals. Never a row, an order id, an e-mail, an IP or a user agent string other
++# than the internal/external split. No credential is ever echoed.
+ set -euo pipefail
+ 
+ : "${GH_TOKEN:?missing}"
+ : "${REPO:?missing}"
+ 
++MODE="${1:-}"
++HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++ROOT=$(cd "$HERE/../.." && pwd)
++TITLE="Rapport du matin — santé de la plateforme (morning-health-digest)"
+ NOW_UTC=$(date -u +%FT%TZ)
+ TODAY=$(date -u +%F)
+ YESTERDAY=$(date -u -d 'yesterday' +%F)
+-OUT=$(mktemp)
+-STATUS_OVERALL="✅"
++SIG=$(mktemp)   # one JSON object per signal
++DET=$(mktemp)   # detail sections
++OUT=$(mktemp)   # final body
++
++# signal <id> <libellé> <couleur> <valeur> <source> <confiance>
++# couleur ∈ vert | orange | rouge | indisponible | info (info = no governed threshold)
++signal() {
++  jq -cn --arg id "$1" --arg l "$2" --arg c "$3" --arg v "$4" --arg s "$5" --arg q "$6" \
++    --arg t "$(date -u +%FT%TZ)" '{id:$id, l:$l, c:$c, v:$v, s:$s, q:$q, t:$t}' >> "$SIG"
++}
++detail() { printf '%s\n' "$@" >> "$DET"; }
++
++Q_QUAL="qualifié"
++Q_COH="cohérent en interne"
++Q_REQ="à requalifier"
++Q_NON="non qualifié"
++
++# ---- Database access (read only, PostgREST) ----
++DB_WHY=""
++if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]; then
++  DB_WHY="SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY non transmis au job"
++fi
++# pg_get <table?query> <outfile> [range] → body in outfile, exact total on stdout; non-zero on failure
++pg_get() {
++  local hdr code
++  hdr=$(mktemp)
++  code=$(curl -sS --max-time 20 -o "$2" -D "$hdr" -w '%{http_code}' \
++    "${SUPABASE_URL}/rest/v1/$1" \
++    -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
++    -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
++    -H 'Prefer: count=exact' -H "Range: ${3:-0-999}" 2>/dev/null) || code=000
++  case "$code" in 200|206) ;; *) rm -f "$hdr"; return 1 ;; esac
++  awk 'tolower($0) ~ /^content-range:/ { n=$0; sub(/.*\//,"",n); gsub(/[^0-9]/,"",n); print n }' "$hdr"
++  rm -f "$hdr"
++}
++is_int() { case "${1:-}" in ''|*[!0-9]*) return 1 ;; *) return 0 ;; esac; }
++
++# ======================================================================
++# Business and runtime signals (mandat AM)
++# ======================================================================
++
++# ---- Payment tunnel — the very reading of the PROD cron ----
++# scripts/monitoring/check-payment-tunnel.sh in CHECK_ONLY mode: same RPC, same
++# counts, same thresholds (CREATION, SUSTAINED, BURST), no e-mail, no dedup file.
++TUNNEL_SCRIPT="$ROOT/scripts/monitoring/check-payment-tunnel.sh"
++TUNNEL_SRC="check-payment-tunnel.sh en mode CHECK_ONLY (RPC check_payment_tunnel_health, order_idempotency, ___xtr_order)"
++if [ -n "$DB_WHY" ]; then
++  signal tunnel "Tunnel de paiement" indisponible "$DB_WHY" "$TUNNEL_SRC" "$Q_COH"
++elif ! grep -q 'CHECK_ONLY_RESULT' "$TUNNEL_SCRIPT" 2>/dev/null; then
++  signal tunnel "Tunnel de paiement" indisponible "mode CHECK_ONLY absent du script (patch non appliqué)" "$TUNNEL_SRC" "$Q_COH"
++else
++  set +e
++  T_OUT=$(CHECK_ONLY=1 bash "$TUNNEL_SCRIPT" 2>/dev/null)
++  T_RC=$?
++  set -e
++  T_LINE=$(grep '^CHECK_ONLY_RESULT ' <<< "$T_OUT" | tail -n1 || true)
++  t_get() { grep -o " $1=[^ ]*" <<< "$T_LINE" | head -n1 | cut -d= -f2-; }
++  T_RULE=$(t_get rule); T_SILENCE=$(t_get silence_days)
++  T_SINCE="dernier paiement : $( is_int "$T_SILENCE" && echo "il y a ${T_SILENCE} j" || echo "date inconnue" )"
++  # The script turns a failed count into -1 and then stays silent: for this report a
++  # rule that could not be evaluated is not « vert ».
++  T_FAILED=""
++  for k in oc_completed oc_failed unpaid_since_last silence_days; do
++    is_int "$(t_get "$k")" || T_FAILED="$T_FAILED $k"
++  done
++  if [ "$T_RC" = "0" ] && [ -n "$T_LINE" ] && [ -n "$T_FAILED" ]; then
++    signal tunnel "Tunnel de paiement" indisponible "lecture partielle : aucune règle déclenchée, mais comptage illisible pour${T_FAILED}" "$TUNNEL_SRC" "$Q_COH"
++  elif [ "$T_RC" = "0" ] && [ -n "$T_LINE" ]; then
++    signal tunnel "Tunnel de paiement" vert "aucune règle déclenchée (CREATION, SUSTAINED, BURST) ; $T_SINCE" "$TUNNEL_SRC" "$Q_COH"
++  elif [ "$T_RC" = "3" ] && [ -n "$T_LINE" ]; then
++    signal tunnel "Tunnel de paiement" rouge "règle ${T_RULE:-?} déclenchée ; $T_SINCE ; runbook .spec/runbooks/payments-tunnel-debug.md" "$TUNNEL_SRC" "$Q_COH"
++  else
++    signal tunnel "Tunnel de paiement" indisponible "lecture en échec (code $T_RC)" "$TUNNEL_SRC" "$Q_COH"
++  fi
++fi
+ 
+-# ---- Signal 1 — Sitemap freshness ----
+-echo "## Signal 1 — Sitemap freshness (PROD)" >> "$OUT"
+-LM=$(curl -fsS -m 10 -I https://www.automecanik.com/sitemap.xml 2>/dev/null \
+-  | grep -i '^last-modified:' \
+-  | sed 's/[Ll]ast-[Mm]odified:[[:space:]]*//I; s/\r$//' \
+-  || echo "")
+-if [ -n "$LM" ]; then
+-  AGE_SEC=$(( $(date -u +%s) - $(date -u -d "$LM" +%s) ))
+-  AGE_HRS=$(( AGE_SEC / 3600 ))
+-  if [ "$AGE_HRS" -lt 26 ]; then
+-    S="✅"
+-  elif [ "$AGE_HRS" -lt 30 ]; then
+-    S="⚠️"
+-    [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
++# ---- Orders still unpaid more than 24 h after creation (count only) ----
++# Window J-30 → J-1: the table holds every unpaid order since 2020; the all-time total
++# says nothing about this morning. `ord_date` is ISO-8601 TEXT, compared
++# lexicographically, as in check-payment-tunnel.sh.
++UNPAID_SRC="___xtr_order, ord_is_pay=0, ord_date entre J-30 et J-1"
++if [ -n "$DB_WHY" ]; then
++  signal unpaid "Commandes non payées > 24 h" indisponible "$DB_WHY" "$UNPAID_SRC" "$Q_NON"
++else
++  D1=$(date -u -d '24 hours ago' +%FT%T)
++  D30=$(date -u -d '30 days ago' +%FT%T)
++  N_UNPAID=$(pg_get "___xtr_order?select=ord_id&ord_is_pay=eq.0&and=(ord_date.lt.${D1},ord_date.gte.${D30})" /dev/null 0-0 || true)
++  if is_int "$N_UNPAID"; then
++    signal unpaid "Commandes non payées > 24 h" info "$N_UNPAID (créées entre J-30 et J-1, toujours non payées)" "$UNPAID_SRC" "$Q_NON"
+   else
+-    S="⛔"
+-    STATUS_OVERALL="⛔"
++    signal unpaid "Commandes non payées > 24 h" indisponible "lecture PostgREST en échec" "$UNPAID_SRC" "$Q_NON"
+   fi
+-  echo "$S last-modified=\`$LM\` (age=${AGE_HRS}h, threshold <26h)" >> "$OUT"
++fi
++
++# ---- PROD 5xx over 24 h by path, internal (agent `node`) vs external ----
++# Same 5xx criteria and same noise exclusions as the RPC check_error_logs_5xx_threshold
++# (PREV-2), plus err_env=production. The RPC itself mixes environments and agents.
++ERR_SRC="__error_logs, err_env=production, 24 h, critères de check_error_logs_5xx_threshold"
++if [ -n "$DB_WHY" ]; then
++  signal err5xx "Erreurs 5xx PROD (24 h)" indisponible "$DB_WHY" "$ERR_SRC" "$Q_REQ"
++else
++  SINCE=$(date -u -d '24 hours ago' +%FT%TZ)
++  CODES='ServiceUnavailableException,InternalServerErrorException,OperationFailedException,GatewayTimeoutException,BadGatewayException,NotImplementedException'
++  F_ERR=$(mktemp)
++  N_ERR=$(pg_get "__error_logs?select=err_url,err_user_agent,err_status,err_code&err_env=eq.production&err_created_at=gte.${SINCE}&or=(err_status.gte.500,err_code.in.(${CODES}))" "$F_ERR" 0-4999 || true)
++  if is_int "$N_ERR" && jq -e 'type == "array"' "$F_ERR" >/dev/null 2>&1; then
++    AGG=$(jq -c '
++      map({path: ((.err_url // "") | split("?")[0] | gsub("[`|\n\r]"; "") | .[0:100]),
++           cls: (if .err_user_agent == "node" then "interne" else "externe" end),
++           st: (((.err_status // 0) | tostring) as $s | if $s == "0" then (.err_code // "?") else $s end)})
++      | map(select((.path | startswith("/.well-known/") or startswith("/robots.txt") or startswith("/favicon.ico")) | not))
++      | {rows: length,
++         ext: (map(select(.cls == "externe")) | length),
++         int: (map(select(.cls == "interne")) | length),
++         top: (group_by([.cls, .path])
++               | map({cls: .[0].cls, path: .[0].path, n: length, st: (map(.st) | unique | join(","))})
++               | sort_by(-.n))}' "$F_ERR")
++    EXT=$(jq '.ext' <<< "$AGG"); INT=$(jq '.int' <<< "$AGG")
++    FETCHED=$(jq 'length' "$F_ERR")
++    TRUNC=""
++    [ "$N_ERR" -gt "$FETCHED" ] && TRUNC=" ; lecture tronquée à $FETCHED lignes sur $N_ERR"
++    signal err5xx "Erreurs 5xx PROD (24 h)" info "externes : $EXT ; internes (agent node) : $INT$TRUNC" "$ERR_SRC" "$Q_REQ"
++    detail "### Erreurs 5xx PROD sur 24 h, par chemin" ""
++    for CLS in externe interne; do
++      detail "**Appels ${CLS}s$( [ "$CLS" = interne ] && echo " (agent \`node\`, rendu serveur)" )** — 10 premiers chemins :" ""
++      LINES=$(jq -r --arg c "$CLS" '[.top[] | select(.cls == $c)][:10][] | "| `\(.path)` | \(.n) | \(.st) |"' <<< "$AGG")
++      if [ -n "$LINES" ]; then
++        detail "| Chemin | Nombre | Statut ou code |" "|---|---|---|" "$LINES" ""
++      else
++        detail "_Aucun._" ""
++      fi
++    done
++  else
++    signal err5xx "Erreurs 5xx PROD (24 h)" indisponible "lecture PostgREST en échec" "$ERR_SRC" "$Q_REQ"
++  fi
++  rm -f "$F_ERR"
++fi
++
++# ---- Google clicks, weekly trend ----
++# __seo_gsc_daily_property_total (1 row per day, property total; the reading of
++# GET /timeseries/gsc). A missing or unconfirmed day (commit_version null) makes the
++# week incomplete: the trend is then « indisponible », never a partial sum.
++GSC_SRC="__seo_gsc_daily_property_total (total propriété Search Console, jour confirmé)"
++if [ -n "$DB_WHY" ]; then
++  signal gsc "Clics Google, tendance hebdomadaire" indisponible "$DB_WHY" "$GSC_SRC" "$Q_COH"
++else
++  F_GSC=$(mktemp)
++  N_GSC=$(pg_get "__seo_gsc_daily_property_total?select=date,clicks,commit_version&date=gte.$(date -u -d '35 days ago' +%F)&order=date.desc" "$F_GSC" 0-99 || true)
++  if is_int "$N_GSC" && [ "$N_GSC" -gt 0 ] && jq -e 'type == "array"' "$F_GSC" >/dev/null 2>&1; then
++    TREND=$(jq -c '
++      (map(.date) | max) as $last
++      | ($last + "T00:00:00Z" | fromdateiso8601) as $t
++      | (INDEX(.date)) as $by
++      | [range(0; 14) | ($t - . * 86400 | strftime("%Y-%m-%d"))] as $days
++      | {last: $last,
++         missing: [$days[] | select(($by[.] == null) or ($by[.].commit_version == null))],
++         w1: ([$days[0:7][] | $by[.].clicks // 0] | add),
++         w0: ([$days[7:14][] | $by[.].clicks // 0] | add),
++         w1_from: $days[6], w0_from: $days[13], w0_to: $days[7]}' "$F_GSC")
++    MISSING=$(jq -r '.missing | join(", ")' <<< "$TREND")
++    LAST=$(jq -r '.last' <<< "$TREND")
++    if [ -n "$MISSING" ]; then
++      signal gsc "Clics Google, tendance hebdomadaire" indisponible "semaines incomplètes (jours absents ou non confirmés : $MISSING)" "$GSC_SRC" "$Q_COH"
++    else
++      W1=$(jq '.w1' <<< "$TREND"); W0=$(jq '.w0' <<< "$TREND")
++      PCT=$(jq -rn --argjson a "$W1" --argjson b "$W0" 'if $b == 0 then "n/a" else ((($a - $b) * 1000 / $b | round) / 10 | tostring) + " %" end')
++      signal gsc "Clics Google, tendance hebdomadaire" info "$W1 clics du $(jq -r .w1_from <<< "$TREND") au $LAST contre $W0 la semaine précédente ($PCT) ; dernier jour publié : $LAST" "$GSC_SRC" "$Q_COH"
++    fi
++  else
++    signal gsc "Clics Google, tendance hebdomadaire" indisponible "lecture PostgREST en échec ou table vide" "$GSC_SRC" "$Q_COH"
++  fi
++  rm -f "$F_GSC"
++fi
++
++# ---- PROD smoke tests, last completed run ----
++SMOKE_SRC="runs GitHub de prod-smoke-tests.yml (sans panier, commande ni paiement)"
++SMOKE=$(gh run list --workflow=prod-smoke-tests.yml --repo "$REPO" --status completed --limit 1 \
++  --json conclusion,createdAt,url --jq '.[0] // empty | "\(.conclusion) \(.createdAt) \(.url)"' 2>/dev/null || true)
++if [ -z "$SMOKE" ]; then
++  signal smoke "Tests de fumée PROD" indisponible "aucun run terminé lisible" "$SMOKE_SRC" "$Q_QUAL"
++else
++  read -r S_CONC S_AT S_URL <<< "$SMOKE"
++  S_AGE=$(( ( $(date -u +%s) - $(date -u -d "$S_AT" +%s) ) / 3600 ))
++  case "$S_CONC" in success) S_C=vert ;; failure) S_C=rouge ;; *) S_C=orange ;; esac
++  signal smoke "Tests de fumée PROD" "$S_C" "$S_CONC il y a ${S_AGE} h — $S_URL" "$SMOKE_SRC" "$Q_QUAL"
++fi
++
++# ---- Issues waiting for the owner (label attend-marwane, if it exists) ----
++OWNER_SRC="issues ouvertes au label attend-marwane"
++if ! LABELS=$(gh label list --repo "$REPO" --limit 500 --json name --jq '.[].name' 2>/dev/null); then
++  signal owner "Issues en attente de Marwane" indisponible "lecture des labels en échec" "$OWNER_SRC" "$Q_QUAL"
++elif ! grep -qx 'attend-marwane' <<< "$LABELS"; then
++  signal owner "Issues en attente de Marwane" info "label attend-marwane inexistant (sa création revient à l'owner)" "$OWNER_SRC" "$Q_QUAL"
++elif OWNER_LIST=$(gh issue list --repo "$REPO" --state open --label attend-marwane --limit 100 --json number --jq '[.[].number | "#\(.)"] | join(" ")' 2>/dev/null); then
++  N_OWNER=$(wc -w <<< "$OWNER_LIST")
++  signal owner "Issues en attente de Marwane" info "$N_OWNER ${OWNER_LIST:+: $OWNER_LIST}" "$OWNER_SRC" "$Q_QUAL"
+ else
+-  echo "❓ Could not fetch \`last-modified\`" >> "$OUT"
++  signal owner "Issues en attente de Marwane" indisponible "lecture des issues en échec" "$OWNER_SRC" "$Q_QUAL"
+ fi
+-echo "" >> "$OUT"
+ 
+-# ---- Signal 2 — OIDC daily sitemap cron ----
+-echo "## Signal 2 — OIDC daily sitemap cron" >> "$OUT"
++# ======================================================================
++# Delivery-chain signals (unchanged logic, carried over from the dated digest)
++# ======================================================================
++
++# ---- Sitemap freshness ----
++LM=$(curl -fsS -m 10 -I https://www.automecanik.com/sitemap.xml 2>/dev/null \
++  | grep -i '^last-modified:' | sed 's/[Ll]ast-[Mm]odified:[[:space:]]*//I; s/\r$//' || echo "")
++if [ -n "$LM" ]; then
++  AGE_HRS=$(( ( $(date -u +%s) - $(date -u -d "$LM" +%s) ) / 3600 ))
++  if [ "$AGE_HRS" -lt 26 ]; then S=vert; elif [ "$AGE_HRS" -lt 30 ]; then S=orange; else S=rouge; fi
++  signal sitemap "Fraîcheur du sitemap PROD" "$S" "last-modified $LM (${AGE_HRS} h, seuil < 26 h)" "en-tête HTTP de https://www.automecanik.com/sitemap.xml" "$Q_QUAL"
++else
++  signal sitemap "Fraîcheur du sitemap PROD" indisponible "en-tête last-modified illisible" "en-tête HTTP de https://www.automecanik.com/sitemap.xml" "$Q_QUAL"
++fi
++
++# ---- Daily sitemap regeneration (OIDC) ----
+ OIDC=$(gh run list --workflow=sitemap-daily-regen.yml --limit 2 --repo "$REPO" \
+-  --json conclusion,createdAt \
+-  --jq '.[] | "\(.createdAt[:19]) \(.conclusion // "running")"' 2>/dev/null || echo "")
++  --json conclusion,createdAt --jq '.[] | "\(.createdAt[:16]) \(.conclusion // "running")"' 2>/dev/null || echo "")
+ if [ -z "$OIDC" ]; then
+-  echo "⚠️ No runs yet" >> "$OUT"
+-  [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
++  signal oidc "Régénération quotidienne du sitemap" orange "aucun run" "runs GitHub de sitemap-daily-regen.yml" "$Q_QUAL"
+ else
+-  echo '```' >> "$OUT"
+-  echo "$OIDC" >> "$OUT"
+-  echo '```' >> "$OUT"
+-  if echo "$OIDC" | grep -q failure; then STATUS_OVERALL="⛔"; fi
++  S=vert; grep -q failure <<< "$OIDC" && S=rouge
++  signal oidc "Régénération quotidienne du sitemap" "$S" "$(tr '\n' ';' <<< "$OIDC" | sed 's/;$//; s/;/ ; /g')" "runs GitHub de sitemap-daily-regen.yml" "$Q_QUAL"
+ fi
+-echo "" >> "$OUT"
+ 
+-# ---- Signal 3 — CI deploys on main ----
+-echo "## Signal 3 — CI deploys on main (last 3)" >> "$OUT"
++# ---- CI on main ----
+ CI=$(gh run list --repo "$REPO" --branch main --workflow=ci.yml --limit 3 \
+-  --json conclusion,createdAt,headSha \
+-  --jq '.[] | "\(.createdAt[:19]) sha=\(.headSha[:7]) \(.conclusion // "running")"' 2>/dev/null || echo "")
+-echo '```' >> "$OUT"
+-echo "$CI" >> "$OUT"
+-echo '```' >> "$OUT"
+-if echo "$CI" | grep -q failure; then STATUS_OVERALL="⛔"; fi
+-echo "" >> "$OUT"
+-
+-# ---- Signal 4 — Open PRs with failing checks ----
+-echo "## Signal 4 — Open PRs with failing checks" >> "$OUT"
+-FAILS=$(gh pr list --repo "$REPO" --state open --limit 60 \
++  --json conclusion,createdAt,headSha --jq '.[] | "\(.createdAt[:16]) \(.headSha[:7]) \(.conclusion // "running")"' 2>/dev/null || echo "")
++if [ -z "$CI" ]; then
++  signal ci "CI sur main (3 derniers runs)" indisponible "aucun run lisible" "runs GitHub de ci.yml sur main" "$Q_QUAL"
++else
++  S=vert; grep -q failure <<< "$CI" && S=rouge
++  signal ci "CI sur main (3 derniers runs)" "$S" "$(tr '\n' ';' <<< "$CI" | sed 's/;$//; s/;/ ; /g')" "runs GitHub de ci.yml sur main" "$Q_QUAL"
++fi
++
++# ---- Open PRs with failing checks ----
++if FAILS=$(gh pr list --repo "$REPO" --state open --limit 60 \
+   --json number,title,headRefName,statusCheckRollup \
+-  --jq '[.[] | {n: .number, t: (.title[:65]), head: .headRefName, failed: ([.statusCheckRollup[] | select(.conclusion=="FAILURE") | .name] | unique)} | select((.failed | length) > 0)]' 2>/dev/null || echo "[]")
+-DEPENDABOT=$(echo "$FAILS" | jq '[.[] | select(.head | startswith("dependabot/"))] | length')
+-OTHER=$(echo "$FAILS" | jq '[.[] | select(.head | startswith("dependabot/") | not)] | length')
+-echo "- Dependabot freshness-gate blocked: **$DEPENDABOT** (expected, PR-9a control plane)" >> "$OUT"
+-echo "- Other failing PRs (actionable): **$OTHER**" >> "$OUT"
+-if [ "$OTHER" -gt 0 ]; then
+-  [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
+-  echo "" >> "$OUT"
+-  echo "**Actionable:**" >> "$OUT"
+-  echo "$FAILS" | jq -r '.[] | select(.head | startswith("dependabot/") | not) | "- #\(.n) \(.t) — failing: \(.failed | join(", "))"' >> "$OUT"
++  --jq '[.[] | {n: .number, t: (.title[:65]), head: .headRefName, failed: ([.statusCheckRollup[] | select(.conclusion=="FAILURE") | .name] | unique)} | select((.failed | length) > 0)]' 2>/dev/null); then
++  DEPENDABOT=$(jq '[.[] | select(.head | startswith("dependabot/"))] | length' <<< "$FAILS")
++  OTHER=$(jq '[.[] | select(.head | startswith("dependabot/") | not)] | length' <<< "$FAILS")
++  S=vert; [ "$OTHER" -gt 0 ] && S=orange
++  signal prfail "PR ouvertes en échec" "$S" "$OTHER hors Dependabot ; $DEPENDABOT Dependabot (attendu, PR-9a)" "gh pr list, statusCheckRollup des 60 dernières PR" "$Q_QUAL"
++  if [ "$OTHER" -gt 0 ]; then
++    detail "### PR en échec hors Dependabot" ""
++    detail "$(jq -r '.[] | select(.head | startswith("dependabot/") | not) | "- #\(.n) \(.t | gsub("[`|]"; "")) — en échec : \(.failed | join(", "))"' <<< "$FAILS")" ""
++  fi
++else
++  signal prfail "PR ouvertes en échec" indisponible "lecture des PR en échec" "gh pr list, statusCheckRollup des 60 dernières PR" "$Q_QUAL"
+ fi
+-echo "" >> "$OUT"
+ 
+-# ---- Signal 5 — Audit + drift on main ----
+-echo "## Signal 5 — Audit & drift workflows on main" >> "$OUT"
++# ---- Audit & drift on main ----
+ AUD=$(gh run list --workflow=audit.yml --limit 3 --repo "$REPO" --branch main \
+   --json conclusion --jq '.[] | .conclusion // "running"' 2>/dev/null | tr '\n' ' ' || echo "")
+ DRF=$(gh run list --workflow=contract-drift-observatory.yml --limit 3 --repo "$REPO" --branch main \
+   --json conclusion --jq '.[] | .conclusion // "running"' 2>/dev/null | tr '\n' ' ' || echo "")
+-echo "- audit.yml (last 3): $AUD" >> "$OUT"
+-echo "- contract-drift-observatory.yml (last 3): $DRF" >> "$OUT"
+-if echo "$AUD $DRF" | grep -q failure; then STATUS_OVERALL="⛔"; fi
+-echo "" >> "$OUT"
+-
+-# ---- Signal 6 — Yesterday's merges ----
+-echo "## Signal 6 — PRs merged yesterday ($YESTERDAY)" >> "$OUT"
+-MERGED=$(gh pr list --repo "$REPO" --state merged \
+-  --search "merged:>=$YESTERDAY merged:<$TODAY" \
+-  --json number,title,mergedAt \
+-  --jq '.[] | "- #\(.number) \(.title[:70]) (\(.mergedAt[:16]))"' 2>/dev/null || echo "")
+-if [ -z "$MERGED" ]; then
+-  echo "_None._" >> "$OUT"
+-else
+-  echo "$MERGED" >> "$OUT"
+-fi
+-echo "" >> "$OUT"
+-
+-# ---- Signal 7 — Migration ledger freshness ----
+-# Reads only the CONCLUSION of migration-ledger-freshness.yml (04:30 UTC, i.e.
+-# before this digest). That workflow is the only holder of DATABASE_URL: this
+-# repo is public and this body is pasted verbatim into a GitHub issue, so no
+-# database credential and no database content belongs in here.
+-echo "## Signal 7 — Migration ledger freshness" >> "$OUT"
++if [ -z "$AUD$DRF" ]; then
++  S=indisponible
++else
++  S=vert; grep -q failure <<< "$AUD $DRF" && S=rouge
++fi
++signal audit "Audit et dérive de contrat sur main" "$S" "audit.yml : ${AUD:-aucun run sur main} ; contract-drift-observatory.yml : ${DRF:-aucun run sur main}" "runs GitHub (3 derniers de chaque)" "$Q_QUAL"
++
++# ---- Yesterday's merges (information) ----
++if MERGED=$(gh pr list --repo "$REPO" --state merged --search "merged:>=$YESTERDAY merged:<$TODAY" \
++  --json number --jq '[.[].number | "#\(.)"] | join(" ")' 2>/dev/null); then
++  signal merged "PR fusionnées hier ($YESTERDAY)" info "$(wc -w <<< "$MERGED")${MERGED:+ : $MERGED}" "gh pr list --state merged" "$Q_QUAL"
++else
++  signal merged "PR fusionnées hier ($YESTERDAY)" indisponible "lecture des PR fusionnées en échec" "gh pr list --state merged" "$Q_QUAL"
++fi
++
++# ---- Migration ledger freshness ----
++# Reads only the CONCLUSION of migration-ledger-freshness.yml (04:30 UTC), the only
++# holder of DATABASE_URL.
+ LEDGER=$(gh run list --workflow=migration-ledger-freshness.yml --limit 2 --repo "$REPO" \
+-  --json conclusion,createdAt \
+-  --jq '.[] | "\(.createdAt[:19]) \(.conclusion // "running")"' 2>/dev/null || echo "")
++  --json conclusion,createdAt --jq '.[] | "\(.createdAt[:16]) \(.conclusion // "running")"' 2>/dev/null || echo "")
+ if [ -z "$LEDGER" ]; then
+-  echo "⚠️ No runs yet" >> "$OUT"
+-  [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
++  signal ledger "Registre des migrations" orange "aucun run" "runs GitHub de migration-ledger-freshness.yml" "$Q_QUAL"
+ else
+-  echo '```' >> "$OUT"
+-  echo "$LEDGER" >> "$OUT"
+-  echo '```' >> "$OUT"
+-  if echo "$LEDGER" | grep -q failure; then
+-    echo "⛔ \`infra.schema_migrations\` no longer describes the database — drift, a stuck apply, or a migration pending past 30 days. The run's job summary lists which." >> "$OUT"
+-    STATUS_OVERALL="⛔"
+-  fi
+-fi
+-echo "" >> "$OUT"
+-
+-# ---- Signal 8 — Automation registry freshness ----
+-# Reads the VERDICT LINE of the last completed run of
+-# automation-registry-freshness.yml on main (04:15 UTC, i.e. before this
+-# digest). The conclusion is not enough: stale entries are warn-only there, so
+-# a green run can carry a WARN verdict, and until 2026-11-10 a green run
+-# carried no verdict at all. This digest is the reader of that verdict.
+-echo "## Signal 8 — Automation registry freshness" >> "$OUT"
++  S=vert; V="$(tr '\n' ';' <<< "$LEDGER" | sed 's/;$//; s/;/ ; /g')"
++  if grep -q failure <<< "$LEDGER"; then
++    S=rouge; V="$V — infra.schema_migrations ne décrit plus la base ; le résumé du run liste la cause"
++  fi
++  signal ledger "Registre des migrations" "$S" "$V" "runs GitHub de migration-ledger-freshness.yml" "$Q_QUAL"
++fi
++
++# ---- Automation registry freshness ----
++# Reads the VERDICT LINE of the last completed run on main (04:15 UTC): a green run
++# can carry a WARN verdict. This digest is the reader of that verdict.
++FR_SRC="ligne de verdict du dernier run d'automation-registry-freshness.yml sur main"
+ FRESH=$(gh run list --workflow=automation-registry-freshness.yml --branch main --status completed \
+   --limit 1 --repo "$REPO" --json databaseId,conclusion,createdAt \
+   --jq '.[] | "\(.databaseId) \(.createdAt) \(.conclusion)"' 2>/dev/null || echo "")
+ if [ -z "$FRESH" ]; then
+-  echo "⚠️ No completed run on main" >> "$OUT"
+-  [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
++  signal registry "Fraîcheur du registre d'automatisation" orange "aucun run terminé sur main" "$FR_SRC" "$Q_QUAL"
+ else
+   read -r FRESH_ID FRESH_AT FRESH_CONCLUSION <<< "$FRESH"
+   FRESH_URL="${GITHUB_SERVER_URL:-https://github.com}/$REPO/actions/runs/$FRESH_ID"
+@@ -150,31 +333,77 @@
+   FRESH_LOG=$(gh run view "$FRESH_ID" --repo "$REPO" --log 2>/dev/null || echo "")
+   FRESH_VERDICT=$(grep -m1 -oE '\[freshness\] (OK|WARN) — [0-9]+/[0-9]+ entries stale \(threshold [0-9]+d\)' <<< "$FRESH_LOG" || true)
+   if [ "$FRESH_CONCLUSION" != "success" ]; then
+-    echo "⛔ The check did not run (conclusion=\`$FRESH_CONCLUSION\`) — the registry was not evaluated. $FRESH_URL" >> "$OUT"
+-    STATUS_OVERALL="⛔"
++    S=rouge; V="contrôle non exécuté (conclusion $FRESH_CONCLUSION) $FRESH_URL"
+   elif [ "$FRESH_AGE_HRS" -ge 26 ]; then
+-    echo "⛔ Last completed run is ${FRESH_AGE_HRS}h old (threshold <26h) — the daily check is not running. $FRESH_URL" >> "$OUT"
+-    STATUS_OVERALL="⛔"
++    S=rouge; V="dernier run terminé il y a ${FRESH_AGE_HRS} h (seuil < 26 h) $FRESH_URL"
+   elif [ -z "$FRESH_LOG" ]; then
+-    echo "⚠️ Could not read the log of the last run — verdict unknown. $FRESH_URL" >> "$OUT"
+-    [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
++    S=indisponible; V="journal du dernier run illisible $FRESH_URL"
+   elif [ -z "$FRESH_VERDICT" ]; then
+-    echo "⛔ Run green but no verdict line — the registry was not evaluated. $FRESH_URL" >> "$OUT"
+-    STATUS_OVERALL="⛔"
++    S=rouge; V="run vert sans ligne de verdict : registre non évalué $FRESH_URL"
+   elif [[ "$FRESH_VERDICT" == "[freshness] WARN "* ]]; then
+-    echo "⚠️ \`$FRESH_VERDICT\` — entries to re-verify against runtime ; the run summary lists them. $FRESH_URL" >> "$OUT"
+-    [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
++    S=orange; V="$FRESH_VERDICT — entrées à revérifier, listées dans le résumé du run $FRESH_URL"
+   else
+-    echo "✅ \`$FRESH_VERDICT\`" >> "$OUT"
++    S=vert; V="$FRESH_VERDICT"
+   fi
++  signal registry "Fraîcheur du registre d'automatisation" "$S" "$V" "$FR_SRC" "$Q_QUAL"
+ fi
+-echo "" >> "$OUT"
+ 
+-echo "---" >> "$OUT"
+-echo "Run: ${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-$REPO}/actions/runs/${GITHUB_RUN_ID:-?}" >> "$OUT"
+-echo "Replaces Claude Desktop routine \`trig_017ywezN156yjiVW8BRVcYi6\` (disabled 2026-05-17)." >> "$OUT"
++# ======================================================================
++# Assemble
++# ======================================================================
++OVERALL=$(jq -rs 'map(.c) as $c
++  | if any($c[]; . == "rouge") then "rouge"
++    elif any($c[]; . == "orange" or . == "indisponible") then "orange"
++    else "vert" end' "$SIG")
++badge() { case "$1" in vert) echo "🟢 vert" ;; orange) echo "🟠 orange" ;; rouge) echo "🔴 rouge" ;; indisponible) echo "⚪ indisponible" ;; *) echo "🔵 info" ;; esac; }
+ 
+ {
+-  echo "title=$STATUS_OVERALL Morning health digest — $TODAY"
+-  echo "body_path=$OUT"
+-} >> "${GITHUB_OUTPUT:-/dev/stdout}"
++  echo "## État au $NOW_UTC — couleur globale : $(badge "$OVERALL")"
++  echo ""
++  if [ "$MODE" = "--publish" ]; then
++    echo "Issue unique, corps remplacé à chaque exécution de \`morning-health-digest\` (jours ouvrés, 05:00 UTC)."
++    echo "Un commentaire n'est posté que lorsqu'un signal change de couleur."
++  fi
++  echo "Une source illisible est écrite « indisponible », jamais zéro."
++  echo ""
++  echo "| Signal | Couleur | Valeur | Source | Lu à (UTC) | Confiance |"
++  echo "|---|---|---|---|---|---|"
++  jq -r '[.l, .c, .v, .s, .t, .q] | map(gsub("\\|"; "\\|") | gsub("[\n\r]"; " ")) | @tsv' "$SIG" \
++    | while IFS=$'\t' read -r L C V S T Q; do
++        echo "| $L | $(badge "$C") | $V | $S | ${T:11:8} | $Q |"
++      done
++  echo ""
++  if [ -s "$DET" ]; then
++    echo "## Détail"
++    echo ""
++    cat "$DET"
++  fi
++  echo "## Niveaux de confiance"
++  echo ""
++  echo "- **qualifié** : valeur lue à la source qui fait foi pour ce qu'elle affirme (conclusion d'un run GitHub, en-tête HTTP servi, label GitHub)."
++  echo "- **cohérent en interne** : plusieurs lectures de nos propres données concordent (recoupement du 2026-11-15), sans rapprochement avec la source externe (Paybox, Google)."
++  echo "- **à requalifier** : lecture connue pour mêler des causes ; ne pas conclure sans requalification (5xx : 319 sur \`/api/rm/alternatives\`, agent node, mandat dédié)."
++  echo "- **non qualifié** : jamais recoupé."
++  echo "- 🔵 **info** : aucun seuil gouverné pour ce signal ; il ne change pas de couleur."
++  echo ""
++  echo "---"
++  echo "Run : ${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-$REPO}/actions/runs/${GITHUB_RUN_ID:-?}"
++} > "$OUT"
++
++if [ "$MODE" = "--publish" ]; then
++  # shellcheck source=report-issue-publish.sh
++  . "$HERE/report-issue-publish.sh"
++  STATE=$(jq -cs 'map({(.id): {c: .c, l: .l}}) | add' "$SIG")
++  N=$(report_issue_publish "$TITLE" "$OUT" "$STATE" ak125)
++  echo "Issue de rapport : #$N (couleur globale : $OVERALL)"
++  {
++    echo "issue=$N"
++    echo "overall=$OVERALL"
++  } >> "${GITHUB_OUTPUT:-/dev/null}"
++else
++  case "$OVERALL" in vert) E="✅" ;; orange) E="⚠️" ;; *) E="⛔" ;; esac
++  {
++    echo "title=$E Morning health digest — $TODAY"
++    echo "body_path=$OUT"
++  } >> "${GITHUB_OUTPUT:-/dev/stdout}"
++fi
+--- a/.github/scripts/weekly-pr-hygiene.sh
++++ b/.github/scripts/weekly-pr-hygiene.sh
+@@ -4,11 +4,21 @@
+ #
+ # Called by .github/workflows/weekly-pr-hygiene.yml. Requires gh CLI with
+ # GH_TOKEN env var and REPO env var (owner/name).
++#
++#   bash .github/scripts/weekly-pr-hygiene.sh            legacy contract: emits `title` +
++#        `body_path` (the unpatched workflow then creates a dated issue, as before).
++#   bash .github/scripts/weekly-pr-hygiene.sh --publish  mandat AM (2026-11-16): updates ONE
++#        standing issue (fixed title) through report-issue-publish.sh; a short comment
++#        only when the weekly focus or a bucket colour changes.
+ set -euo pipefail
+ 
+ : "${GH_TOKEN:?missing}"
+ : "${REPO:?missing}"
+ 
++MODE="${1:-}"
++HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
++TITLE="Hygiène hebdomadaire des PR — rapport unique (weekly-pr-hygiene)"
++
+ TODAY=$(date -u +%F)
+ WEEKNUM=$(date -u +%V)
+ SEVEN_DAYS_AGO=$(date -u -d '7 days ago' +%F)
+@@ -152,8 +162,35 @@
+ Replaces Claude Desktop routine \`trig_01N7BCAuPai8ZRwX88ytNU3i\` (disabled 2026-05-17).
+ EOF
+ 
+-# ---- Emit GitHub Actions outputs ----
+-{
+-  echo "title=📊 Weekly PR hygiene W$WEEKNUM — $TODAY ($FOCUS)"
+-  echo "body_path=$OUT"
+-} >> "${GITHUB_OUTPUT:-/dev/stdout}"
++# ---- Publish ----
++if [ "$MODE" = "--publish" ]; then
++  # Colours follow the decision tree above (its own thresholds, none added here).
++  c_ge() { if [ "$1" -ge "$2" ]; then echo orange; else echo vert; fi; }
++  STATE=$(jq -cn \
++    --arg focus "$FOCUS" \
++    --arg stale "$(c_ge "$STALE_COUNT" 10)" \
++    --arg conflict "$(c_ge "$CONFLICT_COUNT" 1)" \
++    --arg dependabot "$(c_ge "$DEPABOT_COUNT" 5)" \
++    --arg audit "$(if [ "$AUDIT_FAILS" -gt 0 ]; then echo rouge; else echo vert; fi)" \
++    '{focus: {c: $focus, l: "Focus de la semaine"},
++      stale: {c: $stale, l: "PR inactives depuis 7 j (seuil 10)"},
++      conflict: {c: $conflict, l: "PR en conflit"},
++      dependabot: {c: $dependabot, l: "PR Dependabot bloquées (seuil 5)"},
++      audit: {c: $audit, l: "audit.yml sur main (5 derniers runs)"}}')
++  BODY=$(mktemp)
++  {
++    echo "_Issue unique, corps remplacé chaque lundi par \`weekly-pr-hygiene\` ; un commentaire seulement quand le focus ou une couleur change. Lu le $(date -u +%FT%TZ)._"
++    echo ""
++    cat "$OUT"
++  } > "$BODY"
++  # shellcheck source=report-issue-publish.sh
++  . "$HERE/report-issue-publish.sh"
++  N=$(report_issue_publish "$TITLE" "$BODY" "$STATE" ak125)
++  echo "Issue de rapport : #$N (semaine $WEEKNUM, focus : $FOCUS)"
++  echo "issue=$N" >> "${GITHUB_OUTPUT:-/dev/null}"
++else
++  {
++    echo "title=📊 Weekly PR hygiene W$WEEKNUM — $TODAY ($FOCUS)"
++    echo "body_path=$OUT"
++  } >> "${GITHUB_OUTPUT:-/dev/stdout}"
++fi

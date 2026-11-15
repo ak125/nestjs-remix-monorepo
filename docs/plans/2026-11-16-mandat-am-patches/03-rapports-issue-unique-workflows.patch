@@ -1,0 +1,82 @@
+--- a/.github/workflows/morning-health-digest.yml
++++ b/.github/workflows/morning-health-digest.yml
+@@ -1,7 +1,13 @@
+ name: 🌅 Morning health digest
+ 
+-# Daily weekday digest published as a GitHub issue assigned to @ak125.
+-# Owner (subscribed to repo) receives the email automatically.
++# Daily weekday digest: ONE standing issue assigned to @ak125, body replaced on
++# every run, short comment only when a signal changes colour (mandat AM,
++# 2026-11-16 ; logic in .github/scripts/morning-health-digest.sh --publish).
++# Owner (subscribed to repo) receives the email on creation and on each comment.
++#
++# SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY: existing repository secrets (already
++# used by diag-canon-slugs-export.yml); read-only PostgREST counts. Without them
++# the database signals are written « indisponible ».
+ #
+ # Replaces Claude Desktop routine `trig_017ywezN156yjiVW8BRVcYi6` (disabled
+ # 2026-05-17) — self-hosted in repo, audit-trail via git history.
+@@ -23,7 +29,7 @@
+ 
+ jobs:
+   digest:
+-    name: Collect signals + publish digest issue
++    name: Collect signals + update the standing digest issue
+     runs-on: ubuntu-latest
+     timeout-minutes: 8
+     steps:
+@@ -32,20 +38,11 @@
+         with:
+           fetch-depth: 1
+ 
+-      - name: Run morning digest script
++      - name: Collect signals and update the standing digest issue
+         id: collect
+         env:
+           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+           REPO: ${{ github.repository }}
+-        run: bash .github/scripts/morning-health-digest.sh
+-
+-      - name: Create digest issue
+-        env:
+-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-          REPO: ${{ github.repository }}
+-        run: |
+-          gh issue create \
+-            --repo "$REPO" \
+-            --title "${{ steps.collect.outputs.title }}" \
+-            --body-file "${{ steps.collect.outputs.body_path }}" \
+-            --assignee ak125
++          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
++          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
++        run: bash .github/scripts/morning-health-digest.sh --publish
+--- a/.github/workflows/weekly-pr-hygiene.yml
++++ b/.github/workflows/weekly-pr-hygiene.yml
+@@ -1,7 +1,8 @@
+ name: 📊 Weekly PR hygiene & sprint recommendation
+ 
+-# Monday morning digest published as a GitHub issue assigned to @ak125.
+-# Owner (subscribed to repo) receives the email automatically.
++# Monday morning digest: ONE standing issue assigned to @ak125, body replaced
++# every week, short comment only when the focus or a bucket colour changes
++# (mandat AM, 2026-11-16 ; .github/scripts/weekly-pr-hygiene.sh --publish).
+ #
+ # Replaces Claude Desktop routine `trig_01N7BCAuPai8ZRwX88ytNU3i` (disabled
+ # 2026-05-17) — self-hosted in repo, audit-trail via git history.
+@@ -38,15 +39,4 @@
+         env:
+           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+           REPO: ${{ github.repository }}
+-        run: bash .github/scripts/weekly-pr-hygiene.sh
+-
+-      - name: Create hygiene digest issue
+-        env:
+-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+-          REPO: ${{ github.repository }}
+-        run: |
+-          gh issue create \
+-            --repo "$REPO" \
+-            --title "${{ steps.collect.outputs.title }}" \
+-            --body-file "${{ steps.collect.outputs.body_path }}" \
+-            --assignee ak125
++        run: bash .github/scripts/weekly-pr-hygiene.sh --publish
