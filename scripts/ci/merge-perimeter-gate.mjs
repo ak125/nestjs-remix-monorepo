@@ -23,6 +23,7 @@ import { fileURLToPath } from "node:url";
 const require = createRequire(import.meta.url);
 const micromatch = require("micromatch");
 const yaml = require("js-yaml");
+const ts = require("typescript");
 const { findOwnershipMatch } = require("../registry/check-new-files.js");
 
 const REPO = "ak125/nestjs-remix-monorepo";
@@ -37,20 +38,87 @@ const PASSING_CONCLUSIONS = new Set(["SUCCESS", "NEUTRAL", "SKIPPED"]);
 const PROSE_FILE = /\.(?:md|markdown)$/i;
 // Une revue COMMENTED ne change pas la décision d'un relecteur ; ces trois états la fixent.
 const DECISIVE_REVIEW_STATES = new Set(["APPROVED", "CHANGES_REQUESTED", "DISMISSED"]);
-// Déclaration d'un cas de test, sur une ligne de diff (sans le `+` ou le `-`).
-// Tout appel `it`, `test` ou `describe` dans la ligne, même précédé (`const c = test(`, `suite.test(`)
-// ou séparé de sa parenthèse par un commentaire : le doute vaut refus.
-const TEST_DECLARATION = /(?<![\w$])(?:it|test|describe)(?:\s*\.\s*[\w$]+)*\s*(?:\/\*[\s\S]*?\*\/\s*)*\(/;
-const TITLED_DECLARATION = /^\s*((?:it|test|describe)(?:\.\w+)*)\s*\(\s*(["'`])((?:\\.|(?!\2).)*)\2/;
-/**
- * Clé d'une déclaration de test : l'appel sans `.skip`/`.only` et son titre, ou la ligne entière
- * quand le titre n'est pas sur la ligne (tableau `.each`, déclaration sur plusieurs lignes).
- */
-function declarationKey(line) {
-  const titled = TITLED_DECLARATION.exec(line);
-  if (!titled) return line.trim().replace(/\.(?:skip|only)\b/g, "");
-  return `${titled[1].replace(/\.(?:skip|only)\b/g, "")}(${titled[2]}${titled[3]}${titled[2]})`;
+// Déclarations de cas de test, lues par l'analyseur TypeScript sur le fichier entier (base et tête) :
+// commentaires et chaînes, même sur plusieurs lignes, ne peuvent ni cacher ni simuler un test.
+// Compte tout appel dont la chaîne d'appel nomme `it`, `test` ou `describe` (`it(`, `suite.test(`,
+// `test.each(t)(`) : le doute vaut refus.
+const TEST_CALLEES = new Set(["it", "test", "describe"]);
+// Modificateurs qui désactivent ou isolent un cas : ignorés pour reconnaître le même test, refusés à l'ajout.
+const DISABLING_MODIFIERS = new Set(["skip", "only", "todo", "skipIf", "runIf"]);
+
+function scriptKind(filename) {
+  if (/\.[jt]sx$/.test(filename)) return ts.ScriptKind.TSX;
+  if (/\.[cm]?js$/.test(filename)) return ts.ScriptKind.JS;
+  return ts.ScriptKind.TS;
 }
+
+/** Segments de la chaîne d'appel (`describe.each(t)` → describe, each, ()), ou null si elle n'est pas nommée. */
+function calleeSegments(expression) {
+  const segments = [];
+  let node = expression;
+  for (;;) {
+    if (ts.isIdentifier(node)) return [node.text, ...segments];
+    if (ts.isPropertyAccessExpression(node)) {
+      segments.unshift(node.name.text);
+      node = node.expression;
+    } else if (ts.isElementAccessExpression(node)) {
+      const key = node.argumentExpression;
+      segments.unshift(ts.isStringLiteralLike(key) ? key.text : "[]");
+      node = node.expression;
+    } else if (ts.isCallExpression(node)) {
+      segments.unshift("()");
+      node = node.expression;
+    } else if (ts.isParenthesizedExpression(node) || ts.isNonNullExpression(node) || ts.isAsExpression(node)) {
+      node = node.expression;
+    } else {
+      return segments.length ? ["?", ...segments] : null;
+    }
+  }
+}
+
+/**
+ * Déclarations de test d'un fichier : pour chacune, sa clé (appel sans modificateur, puis premier
+ * argument : le titre s'il est littéral, sinon son texte sans blancs) et si elle porte un modificateur
+ * désactivant. `null` si le fichier ne s'analyse pas sans erreur.
+ */
+export function testDeclarations(filename, text) {
+  const source = ts.createSourceFile(filename, text, ts.ScriptTarget.Latest, true, scriptKind(filename));
+  if (source.parseDiagnostics?.length) return null;
+  const declarations = [];
+  const visit = (node) => {
+    if (ts.isCallExpression(node)) {
+      const segments = calleeSegments(node.expression);
+      if (segments?.some((segment) => TEST_CALLEES.has(segment))) {
+        const first = node.arguments[0];
+        const title = !first
+          ? ""
+          : ts.isStringLiteralLike(first)
+            ? JSON.stringify(first.text)
+            : first.getText(source).replace(/\s+/g, "");
+        const callee = segments.filter((segment) => segment !== "()" && !DISABLING_MODIFIERS.has(segment)).join(".");
+        declarations.push({
+          key: `${callee}(${title})`,
+          disabled: segments.some((segment) => DISABLING_MODIFIERS.has(segment)),
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return declarations;
+}
+
+/** Éléments de `before` absents de `after`, en multiensemble. */
+function missingFrom(before, after) {
+  const remaining = [...after];
+  return before.filter((item) => {
+    const index = remaining.indexOf(item);
+    if (index === -1) return true;
+    remaining.splice(index, 1);
+    return false;
+  });
+}
+
 const LEVEL_B_ARRAYS = [
   "review_identities",
   "allowed_paths",
@@ -249,25 +317,37 @@ export function evaluateLevelBFiles(policy, files) {
       refusals.push(refusal("PATCH_UNAVAILABLE", file.filename));
       continue;
     }
-    const lines = file.patch.split("\n");
-    const addedLines = lines.filter((line) => line.startsWith("+")).map((line) => line.slice(1));
-    const removedLines = lines.filter((line) => line.startsWith("-")).map((line) => line.slice(1));
-    // Chaque déclaration retirée doit réapparaître, même appel et même titre, parmi les ajouts :
-    // un test retiré ne se compense pas par un autre ajouté ; un titre changé compte comme un retrait.
-    const remaining = addedLines.filter((line) => TEST_DECLARATION.test(line)).map(declarationKey);
-    const lost = removedLines
-      .filter((line) => TEST_DECLARATION.test(line))
-      .map(declarationKey)
-      .filter((key) => {
-        const index = remaining.indexOf(key);
-        if (index === -1) return true;
-        remaining.splice(index, 1);
-        return false;
-      });
+    const addedLines = file.patch
+      .split("\n")
+      .filter((line) => line.startsWith("+") && !line.startsWith("+++"))
+      .map((line) => line.slice(1));
+    // Le fichier entier à la base de fusion et à la tête : sans eux, rien n'est prouvé.
+    if (typeof file.head_content !== "string" || (file.status !== "added" && typeof file.base_content !== "string")) {
+      refusals.push(refusal("PATCH_UNAVAILABLE", `${file.filename} (contenu à la base ou à la tête indisponible)`));
+      continue;
+    }
+    const before = file.status === "added" ? [] : testDeclarations(file.filename, file.base_content);
+    const after = testDeclarations(file.filename, file.head_content);
+    if (!before || !after) {
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (fichier de test non analysable)`));
+      continue;
+    }
+    // Chaque déclaration de la base se retrouve à la tête, même appel et même titre : un test retiré
+    // ou mis en commentaire ne se compense pas par un autre ; un titre changé compte comme un retrait.
+    const lost = missingFrom(
+      before.map((declaration) => declaration.key),
+      after.map((declaration) => declaration.key),
+    );
+    const disabled = missingFrom(
+      after.filter((declaration) => declaration.disabled).map((declaration) => declaration.key),
+      before.filter((declaration) => declaration.disabled).map((declaration) => declaration.key),
+    );
     if (lost.length) {
       refusals.push(refusal("TEST_REMOVED", `${file.filename} (déclaration retirée : ${lost[0]})`));
     }
-    if (addedLines.some((line) => addedPatterns.some((pattern) => pattern.test(line)))) {
+    if (disabled.length) {
+      refusals.push(refusal("LEVEL_B_DIFF_PATTERN", `${file.filename} (test désactivé ou isolé : ${disabled[0]})`));
+    } else if (addedLines.some((line) => addedPatterns.some((pattern) => pattern.test(line)))) {
       refusals.push(refusal("LEVEL_B_DIFF_PATTERN", file.filename));
     }
   }
@@ -390,6 +470,23 @@ function readFiles(number, expected) {
   return files;
 }
 
+/** Fichiers de test du niveau B : contenu à la base de fusion et à la tête ; un échec de lecture laisse le champ absent (refus). */
+export function readTestContents(policy, files, base, head) {
+  const at = (path, ref) => {
+    try {
+      return ghRaw(`repos/${REPO}/contents/${path.split("/").map(encodeURIComponent).join("/")}?ref=${ref}`);
+    } catch {
+      return undefined;
+    }
+  };
+  for (const file of files) {
+    if (!matches(file.filename, policy.level_b.test_paths) || file.previous_filename) continue;
+    if (!policy.level_b.allowed_test_file_statuses.includes(file.status)) continue;
+    file.head_content = at(file.filename, head);
+    if (file.status !== "added" && typeof base === "string") file.base_content = at(file.filename, base);
+  }
+}
+
 function readReviews(number) {
   const reviews = [];
   for (let page = 1; ; page++) {
@@ -418,7 +515,11 @@ function evaluate(number, policyFile) {
   if (!Array.isArray(required) || required.length === 0) throw new Error("contrôles requis illisibles");
   const files = readFiles(number, pr.changedFiles);
   // L'option `strict` de la protection n'est pas lisible par ce compte : on mesure le retard.
-  pr.behindBy = JSON.parse(gh("api", `repos/${REPO}/compare/${pr.baseRefOid}...${pr.headRefOid}?per_page=1`, "--jq", ".behind_by"));
+  const compare = JSON.parse(
+    gh("api", `repos/${REPO}/compare/${pr.baseRefOid}...${pr.headRefOid}?per_page=1`, "--jq", "{behind_by, merge_base: .merge_base_commit.sha}"),
+  );
+  pr.behindBy = compare.behind_by;
+  pr.mergeBase = compare.merge_base;
   const review = evaluateReview(policy, pr.body, pr.headRefOid, files, pr.baseRefOid);
   refusals.push(
     ...evaluatePullRequest(policy, pr, required),
@@ -426,6 +527,7 @@ function evaluate(number, policyFile) {
     ...evaluateFiles(policy, ownership.entries, files),
   );
   if (review.level === "B" && levelBActive(policy)) {
+    readTestContents(policy, files, pr.mergeBase, pr.headRefOid);
     refusals.push(
       ...evaluateLevelBFiles(policy, files),
       ...evaluateApproval(policy, pr.author, readReviews(number), pr.headRefOid),

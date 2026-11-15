@@ -286,9 +286,21 @@ test("l'identité de revue ne peut pas être le compte exécutant", () => {
 // ---- Niveau B : liste fermée de fichiers ----
 
 const lbFiles = (...files) => codes(gate.evaluateLevelBFiles(policy, files));
-const added = (filename, patch = "@@ -0,0 +1 @@\n+it('x', () => {});") => file(filename, patch, { status: "added" });
+// Fichier à la base et à la tête, reconstruit depuis un patch d'un seul tenant (la porte lit les deux par l'API).
+const sides = (patch) => {
+  const before = [];
+  const after = [];
+  for (const line of patch.split("\n")) {
+    if (line.startsWith("@@") || line.startsWith("\\")) continue;
+    if (!line.startsWith("+")) before.push(line.slice(1));
+    if (!line.startsWith("-")) after.push(line.slice(1));
+  }
+  return { base_content: before.join("\n"), head_content: after.join("\n") };
+};
+const added = (filename, patch = "@@ -0,0 +1 @@\n+it('x', () => {});") =>
+  file(filename, patch, { status: "added", head_content: sides(patch).head_content });
 const modified = (filename, patch = "@@ -1 +1 @@\n-  expect(1).toBe(1);\n+  expect(2).toBe(2);") =>
-  file(filename, patch, { status: "modified" });
+  file(filename, patch, { status: "modified", ...sides(patch) });
 
 test("niveau B : Markdown, rapport d'audit et tests unitaires ajoutés ou modifiés passent", () => {
   assert.deepEqual(
@@ -366,6 +378,60 @@ test("niveau B : déclaration retirée sous une forme indirecte : refusée (revu
   }
   const helper = "@@ -1 +1 @@\n-  expect(result).toBe(1);\n+  expect(result).toBe(2);";
   assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", helper)), []);
+});
+
+test("niveau B : test mis en commentaire : refusé (revue Codex, 3e passage)", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const block = '@@ -1 +1,3 @@\n-it("contrôle critique", () => assertSecurity());\n+/*\n+it("contrôle critique", () => assertSecurity());\n+*/';
+  assert.deepEqual(lbFiles(modified(t, block)), ["TEST_REMOVED"]);
+  const around = '@@ -1,2 +1,4 @@\n+/*\n it("contrôle critique", () => assertSecurity());\n+*/\n it("b", () => {});';
+  assert.deepEqual(lbFiles(modified(t, around)), ["TEST_REMOVED"]);
+  const line = '@@ -1 +1 @@\n-it("contrôle critique", () => assertSecurity());\n+// it("contrôle critique", () => assertSecurity());';
+  assert.deepEqual(lbFiles(modified(t, line)), ["TEST_REMOVED"]);
+  const inline = '@@ -1 +1 @@\n-it("contrôle critique", () => assertSecurity());\n+/* it("contrôle critique", () => assertSecurity()); */';
+  assert.deepEqual(lbFiles(modified(t, inline)), ["TEST_REMOVED"]);
+});
+
+test("niveau B : commentaires et chaînes ordinaires d'un test : admis", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const globs = '@@ -1,2 +1,3 @@\n it("liste", () => {\n+  expect(list("src/**/*.ts")).toEqual([]); // vide\n });';
+  assert.deepEqual(lbFiles(modified(t, globs)), []);
+  const url = '@@ -1 +1 @@\n-it("appelle http://x", () => expect(f()).toBe(1));\n+it("appelle http://x", () => expect(f()).toBe(2));';
+  assert.deepEqual(lbFiles(modified(t, url)), []);
+  const dead = "@@ -1 +0,0 @@\n-// it('ancien test commenté', () => {});";
+  assert.deepEqual(lbFiles(modified(t, dead)), []);
+});
+
+test("niveau B : JSDoc ajouté, contexte dans un commentaire existant : admis (analyse du fichier entier)", () => {
+  const t = "frontend/tests/unit/a.test.ts";
+  const jsdoc = '@@ -1 +1,5 @@\n+/**\n+ * Rôle du test.\n+ * @see doc\n+ */\n it("a", () => {});';
+  assert.deepEqual(lbFiles(modified(t, jsdoc)), []);
+  const inside = '@@ -1,4 +1,4 @@\n /**\n- * ancienne note\n+ * nouvelle note\n  */\n it("a", () => {});';
+  assert.deepEqual(lbFiles(modified(t, inside)), []);
+});
+
+test("niveau B : test simulé dans une chaîne sur plusieurs lignes : refusé", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const fake = '@@ -1 +1,3 @@\n-it("contrôle critique", () => assertSecurity());\n+const s = `\n+it("contrôle critique", () => assertSecurity());\n+`;';
+  assert.deepEqual(lbFiles(modified(t, fake)), ["TEST_REMOVED"]);
+});
+
+test("niveau B : désactivation sous une autre écriture que .skip( : refusée", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  for (const form of ['it.skip ("a", () => {});', 'it["skip"]("a", () => {});', 'it.todo("a");', 'it.skipIf(true)("a", () => {});', 'describe . only ("a", () => {});']) {
+    const callee = form.startsWith("describe") ? "describe" : "it";
+    const patch = `@@ -1 +1 @@\n-${callee}("a", () => {});\n+${form}`;
+    assert.deepEqual(lbFiles(modified(t, patch)), ["LEVEL_B_DIFF_PATTERN"], form);
+  }
+});
+
+test("niveau B : contenu à la base ou à la tête absent, ou fichier non analysable : refusé", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const patch = "@@ -1 +1 @@\n-it('a', () => {});\n+it('a', () => { });";
+  assert.deepEqual(lbFiles(file(t, patch, { status: "modified", head_content: "it('a', () => { });" })), ["PATCH_UNAVAILABLE"]);
+  assert.deepEqual(lbFiles(file(t, patch, { status: "modified", base_content: "it('a', () => {});" })), ["PATCH_UNAVAILABLE"]);
+  const broken = "@@ -1 +1 @@\n-it('a', () => {});\n+it('a', () => {";
+  assert.deepEqual(lbFiles(modified(t, broken)), ["TEST_REMOVED"]);
 });
 
 test("niveau B : corps d'un test modifié, titre inchangé : admis", () => {
