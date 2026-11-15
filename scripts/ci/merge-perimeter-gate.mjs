@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Porte de périmètre de fusion automatique (ADR-123, ADR-124 du vault).
+// Porte de périmètre de fusion automatique (ADR-123, ADR-124 et ADR-133 du vault).
 //
 //   node scripts/ci/merge-perimeter-gate.mjs <PR>                     évalue puis fusionne
 //   node scripts/ci/merge-perimeter-gate.mjs <PR> --dry-run           évalue seulement
@@ -10,6 +10,11 @@
 // est épinglée à la tête nommée par l'enregistrement de revue (DoD2) : si `main` a bougé,
 // la PR est refusée, à resynchroniser puis à faire réenregistrer. Code de sortie : 0 admise
 // ou fusionnée, 1 refusée, 2 usage ou échec après l'acte.
+//
+// Niveau B (ADR-133) : il ne s'ouvre que par le bloc `level_b` de la politique, à l'état
+// `active`. Il exige, en plus de l'enregistrement DoD2, une approbation GitHub d'une identité
+// listée, distincte de l'auteur, sur la tête exacte, et un diff dans la liste fermée de la
+// classe « faible risque » d'ADR-128 D5.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -30,6 +35,20 @@ const RISK_ORDER = { low: 0, medium: 1, high: 2, critical: 3 };
 const CONFIDENCE_ORDER = { low: 0, medium: 1, high: 2 };
 const PASSING_CONCLUSIONS = new Set(["SUCCESS", "NEUTRAL", "SKIPPED"]);
 const PROSE_FILE = /\.(?:md|markdown)$/i;
+// Une revue COMMENTED ne change pas la décision d'un relecteur ; ces trois états la fixent.
+const DECISIVE_REVIEW_STATES = new Set(["APPROVED", "CHANGES_REQUESTED", "DISMISSED"]);
+// Déclaration d'un cas de test, sur une ligne de diff (sans le `+` ou le `-`).
+const TEST_DECLARATION = /^\s*(?:it|test)(?:\.\w+)*\s*\(/;
+const LEVEL_B_ARRAYS = [
+  "review_identities",
+  "allowed_paths",
+  "test_paths",
+  "test_file_globs",
+  "allowed_test_file_statuses",
+  "deny_paths",
+  "stop_zone_fragments",
+  "deny_added_line_patterns",
+];
 
 // Format DoD2 (ADR-120 D2) :
 //   - [x] Revue niveau <A|B|C> — tête <sha40>, base <sha40>
@@ -41,6 +60,9 @@ const OUTSIDE_REVIEW = /^\s*revue\s+(?:ind[ée]pendante|humaine)\s*(?:[,;]\s*)?p
 
 const refusal = (code, detail) => ({ code, detail });
 const matches = (path, globs) => micromatch.isMatch(path, globs, { dot: true });
+const levelBActive = (policy) => policy?.level_b?.status === "active";
+// Zone STOP nommée dans le chemin d'un test (dossier ou fichier), sans tenir compte de la casse.
+const stopZoneFragment = (path, fragments) => fragments.find((f) => path.toLowerCase().includes(f.toLowerCase()));
 
 /** Vérifie la forme de la politique, pour refuser au lieu d'évaluer à moitié. */
 export function validatePolicy(policy) {
@@ -62,6 +84,23 @@ export function validatePolicy(policy) {
   if (!Array.isArray(c?.allowed_domains)) problems.push("classification.allowed_domains absent");
   if (!(c?.max_risk in RISK_ORDER)) problems.push("classification.max_risk invalide");
   if (!(c?.min_source_confidence in CONFIDENCE_ORDER)) problems.push("classification.min_source_confidence invalide");
+  // Le niveau B ne s'ouvre que par `level_b` (ADR-133) ; le niveau C n'est jamais automatique.
+  if (Array.isArray(policy?.authorized_review_levels) && policy.authorized_review_levels.some((l) => l !== "A")) {
+    problems.push("authorized_review_levels : seul A ; le niveau B s'ouvre par level_b");
+  }
+  const b = policy?.level_b;
+  if (b !== undefined) {
+    if (!["active", "inactive"].includes(b?.status)) problems.push("level_b.status invalide");
+    for (const key of LEVEL_B_ARRAYS) if (!Array.isArray(b?.[key])) problems.push(`level_b.${key} absent`);
+    const identities = Array.isArray(b?.review_identities) ? b.review_identities : [];
+    if (identities.length === 0) problems.push("level_b.review_identities vide");
+    if (identities.some((login) => typeof login !== "string" || !login.endsWith("[bot]"))) {
+      problems.push("level_b.review_identities : identité d'App GitHub (…[bot]) seulement");
+    }
+    if (identities.includes(policy?.executor?.account)) {
+      problems.push("level_b.review_identities : identité confondue avec le compte exécutant");
+    }
+  }
   return problems;
 }
 
@@ -140,8 +179,13 @@ export function evaluateReview(policy, body, head, files, base) {
   }
   const otherBase = atHead.find((record) => record.base !== base);
   if (otherBase) return { refusals: [refusal("REVIEW_OTHER_BASE", otherBase.base)], level: null };
-  const refused = atHead.filter((record) => !policy.authorized_review_levels.includes(record.level));
-  if (refused.length) return { refusals: [refusal("REVIEW_LEVEL_REFUSED", refused[0].level)], level: refused[0].level };
+  const levelC = atHead.find((record) => record.level === "C");
+  if (levelC) return { refusals: [refusal("REVIEW_LEVEL_REFUSED", "C")], level: "C" };
+  if (atHead.some((record) => record.level === "B") && !levelBActive(policy)) {
+    return { refusals: [refusal("LEVEL_B_NOT_ACTIVE", String(policy.level_b?.status ?? "absent"))], level: "B" };
+  }
+  const refused = atHead.filter((record) => record.level === "A" && !policy.authorized_review_levels.includes("A"));
+  if (refused.length) return { refusals: [refusal("REVIEW_LEVEL_REFUSED", "A")], level: "A" };
   const refusals = [];
   const level = atHead.some((record) => record.level === "B") ? "B" : "A";
   if (level === "B" && !atHead.some((record) => record.level === "B" && OUTSIDE_REVIEW.test(record.procedure))) {
@@ -154,6 +198,89 @@ export function evaluateReview(policy, body, head, files, base) {
     if (code) refusals.push(refusal("REVIEW_LEVEL_TOO_LOW", code));
   }
   return { refusals, level };
+}
+
+/**
+ * Niveau B : chaque fichier doit appartenir à la liste fermée de la classe « faible risque »
+ * (ADR-128 D5). S'ajoute à `evaluateFiles`, qui reste appliquée.
+ */
+export function evaluateLevelBFiles(policy, files) {
+  const b = policy.level_b;
+  const refusals = [];
+  const addedPatterns = b.deny_added_line_patterns.map((pattern) => new RegExp(pattern));
+  for (const file of files) {
+    const paths = [file.filename, file.previous_filename].filter(Boolean);
+    let refused = false;
+    for (const path of paths) {
+      let reason = null;
+      if (matches(path, b.deny_paths) || matches(path, policy.deny_paths) || matches(path, policy.generated_projections)) {
+        reason = refusal("LEVEL_B_DENY_PATH", path);
+      } else if (!matches(path, b.allowed_paths)) {
+        reason = refusal("LEVEL_B_PATH_REFUSED", path);
+      } else if (matches(path, b.test_paths) && !matches(path, b.test_file_globs)) {
+        reason = refusal("LEVEL_B_NOT_TEST_FILE", path);
+      } else if (matches(path, b.test_paths) && stopZoneFragment(path, b.stop_zone_fragments)) {
+        reason = refusal("LEVEL_B_STOP_ZONE", `${path} (${stopZoneFragment(path, b.stop_zone_fragments)})`);
+      }
+      if (reason) {
+        refusals.push(reason);
+        refused = true;
+      }
+    }
+    if (refused || !paths.some((path) => matches(path, b.test_paths))) continue;
+    // Tests : ajout ou modification seulement, aucun cas retiré, aucun test désactivé.
+    if (!b.allowed_test_file_statuses.includes(file.status) || file.previous_filename) {
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (${file.status ?? "statut inconnu"})`));
+      continue;
+    }
+    if (typeof file.patch !== "string") {
+      refusals.push(refusal("PATCH_UNAVAILABLE", file.filename));
+      continue;
+    }
+    const lines = file.patch.split("\n");
+    const addedLines = lines.filter((line) => line.startsWith("+")).map((line) => line.slice(1));
+    const removedLines = lines.filter((line) => line.startsWith("-")).map((line) => line.slice(1));
+    const declarations = (list) => list.filter((line) => TEST_DECLARATION.test(line)).length;
+    if (declarations(removedLines) > declarations(addedLines)) {
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (cas de test retirés)`));
+    }
+    if (addedLines.some((line) => addedPatterns.some((pattern) => pattern.test(line)))) {
+      refusals.push(refusal("LEVEL_B_DIFF_PATTERN", file.filename));
+    }
+  }
+  return refusals;
+}
+
+/**
+ * Niveau B : une approbation GitHub d'une identité listée dans `level_b.review_identities`,
+ * distincte de l'auteur, sur la tête exacte (`commit_id`). Pour chaque identité listée, seule sa
+ * dernière revue décisive compte (APPROVED, CHANGES_REQUESTED ou DISMISSED).
+ */
+export function evaluateApproval(policy, author, reviews, head) {
+  if (!levelBActive(policy)) return [refusal("LEVEL_B_NOT_ACTIVE", String(policy.level_b?.status ?? "absent"))];
+  const identities = policy.level_b.review_identities;
+  // `gh pr view` nomme une App `app/<slug>`, l'API des revues `<slug>[bot]` : même identité.
+  const authorLogin = /^app\//.test(author?.login ?? "") ? `${author.login.slice(4)}[bot]` : author?.login;
+  if (!authorLogin) return [refusal("APPROVAL_BY_AUTHOR", "auteur de la PR illisible")];
+  const stamp = (review) => Date.parse(review.submitted_at) || 0;
+  const latest = new Map();
+  for (const review of reviews ?? []) {
+    const login = review.user?.login;
+    if (!DECISIVE_REVIEW_STATES.has(review.state) || !login) continue;
+    const current = latest.get(login);
+    if (!current || stamp(review) >= stamp(current)) latest.set(login, review);
+  }
+  if (identities.includes(authorLogin) || latest.get(authorLogin)?.state === "APPROVED") {
+    return [refusal("APPROVAL_BY_AUTHOR", authorLogin)];
+  }
+  const listed = [...latest.entries()].filter(([login]) => identities.includes(login));
+  const withdrawn = listed.find(([, review]) => review.state !== "APPROVED");
+  if (withdrawn) return [refusal("APPROVAL_WITHDRAWN", `${withdrawn[0]} : ${withdrawn[1].state}`)];
+  if (listed.some(([, review]) => review.commit_id === head)) return [];
+  if (listed.length) return [refusal("APPROVAL_OTHER_HEAD", `${listed[0][0]} sur ${listed[0][1].commit_id}`)];
+  const unlisted = [...latest.entries()].find(([, review]) => review.state === "APPROVED");
+  if (unlisted) return [refusal("APPROVAL_UNLISTED_IDENTITY", unlisted[0])];
+  return [refusal("APPROVAL_MISSING", head)];
 }
 
 function checkName(check) {
@@ -240,6 +367,16 @@ function readFiles(number, expected) {
   return files;
 }
 
+function readReviews(number) {
+  const reviews = [];
+  for (let page = 1; ; page++) {
+    const batch = JSON.parse(gh("api", `repos/${REPO}/pulls/${number}/reviews?per_page=100&page=${page}`));
+    reviews.push(...batch);
+    if (batch.length < 100) break;
+  }
+  return reviews;
+}
+
 function evaluate(number, policyFile) {
   const { commit, policy } = readPolicy(policyFile);
   const problems = validatePolicy(policy);
@@ -248,7 +385,7 @@ function evaluate(number, policyFile) {
   if (policy.status !== "active") refusals.push(refusal("POLICY_NOT_ACTIVE", String(policy.status)));
   if (existsSync(PAUSE_FILE)) refusals.push(refusal("PAUSED", PAUSE_FILE));
   const fields =
-    "number,state,isDraft,title,body,headRefName,headRefOid,baseRefName,baseRefOid,isCrossRepository,assignees,mergeStateStatus,statusCheckRollup,changedFiles";
+    "number,state,isDraft,title,body,author,headRefName,headRefOid,baseRefName,baseRefOid,isCrossRepository,assignees,mergeStateStatus,statusCheckRollup,changedFiles";
   const pr = JSON.parse(gh("pr", "view", String(number), "--repo", REPO, "--json", fields));
   const ownership = yaml.load(ghRaw(`repos/${REPO}/contents/${policy.classification.source_path}?ref=${pr.baseRefOid}`));
   if (!Array.isArray(ownership?.entries)) throw new Error("classification illisible");
@@ -265,6 +402,12 @@ function evaluate(number, policyFile) {
     ...review.refusals,
     ...evaluateFiles(policy, ownership.entries, files),
   );
+  if (review.level === "B" && levelBActive(policy)) {
+    refusals.push(
+      ...evaluateLevelBFiles(policy, files),
+      ...evaluateApproval(policy, pr.author, readReviews(number), pr.headRefOid),
+    );
+  }
   return { commit, policy, pr, level: review.level, refusals };
 }
 

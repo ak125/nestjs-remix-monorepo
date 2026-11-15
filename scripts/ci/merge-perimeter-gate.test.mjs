@@ -7,6 +7,8 @@ import {
   parseReviewRecords,
   validatePolicy,
 } from "./merge-perimeter-gate.mjs";
+// Accès par espace de noms : un export absent fait échouer le seul test qui l'appelle.
+import * as gate from "./merge-perimeter-gate.mjs";
 
 const HEAD = "a".repeat(40);
 const BASE = "b".repeat(40);
@@ -16,7 +18,7 @@ const policy = {
   status: "active",
   repo: "ak125/nestjs-remix-monorepo",
   base: "main",
-  authorized_review_levels: ["A", "B"],
+  authorized_review_levels: ["A"],
   classification: {
     source_path: ".spec/00-canon/repository-registry/ownership.yaml",
     allowed_domains: ["D10", "D12"],
@@ -29,6 +31,19 @@ const policy = {
   deny_diff_patterns: ["noindex", "@(UseGuards|Public)\\b"],
   deny_head_branch_prefixes: ["dependabot/"],
   deny_title_patterns: ["NE PAS FUSIONNER"],
+  executor: { account: "automecanik-agents[bot]" },
+  level_b: {
+    status: "active",
+    source_adr: "ADR-133",
+    review_identities: ["automecanik-reviewer[bot]"],
+    allowed_paths: ["**/*.md", "audit/**/*.md", "backend/tests/unit/**", "frontend/tests/unit/**"],
+    test_paths: ["backend/tests/unit/**", "frontend/tests/unit/**"],
+    test_file_globs: ["**/*.test.{ts,tsx,js,mjs}", "**/*.spec.{ts,tsx,js,mjs}"],
+    allowed_test_file_statuses: ["added", "modified"],
+    deny_paths: [".github/**", ".spec/00-canon/**", "packages/seo-role-contracts/**"],
+    stop_zone_fragments: ["payment", "cart"],
+    deny_added_line_patterns: ["\\.skip\\(", "\\.only\\("],
+  },
 };
 
 const entry = (glob, domain, risk = "medium", sourceConfidence = "high", owner = "@ak125") => ({
@@ -116,7 +131,7 @@ test("une case non cochée n'est pas un enregistrement", () => {
   assert.deepEqual(parseReviewRecords(record("B").replace("[x]", "[ ]")), []);
 });
 
-test("revue de niveau B indépendante sur la tête : admise", () => {
+test("revue de niveau B indépendante sur la tête, niveau B actif : admise", () => {
   assert.deepEqual(reviewCodes(record("B")), []);
 });
 
@@ -131,10 +146,13 @@ test("revue écrite sur une autre base : refusée", () => {
   assert.deepEqual(reviewCodes(other), ["REVIEW_OTHER_BASE"]);
 });
 
-test("une politique limitée au niveau A refuse le niveau B", () => {
-  const onlyA = { ...policy, authorized_review_levels: ["A"] };
-  const result = evaluateReview(onlyA, record("B"), HEAD, [file("docs/a.md")], BASE);
-  assert.deepEqual(codes(result.refusals), ["REVIEW_LEVEL_REFUSED"]);
+test("niveau B inactif ou absent de la politique : refusé (ADR-133)", () => {
+  const inactive = { ...policy, level_b: { ...policy.level_b, status: "inactive" } };
+  const absent = { ...policy, level_b: undefined };
+  for (const p of [inactive, absent]) {
+    const result = evaluateReview(p, record("B"), HEAD, [file("docs/a.md")], BASE);
+    assert.deepEqual(codes(result.refusals), ["LEVEL_B_NOT_ACTIVE"]);
+  }
 });
 
 test("niveau C à côté d'un niveau B sur la même tête : refusée", () => {
@@ -242,4 +260,156 @@ test("une politique de forme invalide est signalée", () => {
   assert.ok(validatePolicy({}).length > 0);
   assert.ok(validatePolicy({ ...policy, repo: "autre/depot" }).includes("repo différent du monorepo"));
   assert.ok(validatePolicy({ ...policy, deny_paths: undefined }).includes("deny_paths absent"));
+});
+
+// ---- Niveau B (ADR-133) : politique ----
+
+test("le niveau B ne s'ouvre pas par authorized_review_levels", () => {
+  assert.ok(validatePolicy({ ...policy, authorized_review_levels: ["A", "B"] }).length > 0);
+  assert.ok(validatePolicy({ ...policy, authorized_review_levels: ["A", "C"] }).length > 0);
+});
+
+test("un bloc level_b mal formé est signalé", () => {
+  const lb = (over) => ({ ...policy, level_b: { ...policy.level_b, ...over } });
+  assert.ok(validatePolicy(lb({ status: "ouvert" })).length > 0);
+  assert.ok(validatePolicy(lb({ review_identities: [] })).length > 0);
+  assert.ok(validatePolicy(lb({ review_identities: ["ak125"] })).length > 0);
+  assert.ok(validatePolicy(lb({ allowed_paths: undefined })).length > 0);
+  assert.ok(validatePolicy(lb({ deny_added_line_patterns: undefined })).length > 0);
+});
+
+test("l'identité de revue ne peut pas être le compte exécutant", () => {
+  const same = { ...policy, level_b: { ...policy.level_b, review_identities: ["automecanik-agents[bot]"] } };
+  assert.ok(validatePolicy(same).length > 0);
+});
+
+// ---- Niveau B : liste fermée de fichiers ----
+
+const lbFiles = (...files) => codes(gate.evaluateLevelBFiles(policy, files));
+const added = (filename, patch = "@@ -0,0 +1 @@\n+it('x', () => {});") => file(filename, patch, { status: "added" });
+const modified = (filename, patch = "@@ -1 +1 @@\n-  expect(1).toBe(1);\n+  expect(2).toBe(2);") =>
+  file(filename, patch, { status: "modified" });
+
+test("niveau B : Markdown, rapport d'audit et tests unitaires ajoutés ou modifiés passent", () => {
+  assert.deepEqual(
+    lbFiles(
+      modified("docs/a.md"),
+      added("audit/x/rapport.md", "+# Rapport"),
+      added("backend/tests/unit/a.test.ts"),
+      modified("frontend/tests/unit/b.test.tsx"),
+    ),
+    [],
+  );
+});
+
+test("niveau B : un fichier hors de la liste fermée est refusé", () => {
+  assert.deepEqual(lbFiles(modified("backend/src/modules/ok/a.ts")), ["LEVEL_B_PATH_REFUSED"]);
+  assert.deepEqual(lbFiles(modified("backend/tests/e2e/a.test.ts")), ["LEVEL_B_PATH_REFUSED"]);
+});
+
+test("niveau B : un fichier source sous un dossier de tests unitaires est refusé", () => {
+  assert.deepEqual(lbFiles(added("backend/tests/unit/fixtures/data.ts", "+export const x = 1;")), [
+    "LEVEL_B_NOT_TEST_FILE",
+  ]);
+});
+
+test("niveau B : chemins exclus dans tous les cas, même en Markdown", () => {
+  assert.deepEqual(lbFiles(modified(".github/a.md")), ["LEVEL_B_DENY_PATH"]);
+  assert.deepEqual(lbFiles(modified(".spec/00-canon/a.md")), ["LEVEL_B_DENY_PATH"]);
+  assert.deepEqual(lbFiles(modified("packages/seo-role-contracts/README.md")), ["LEVEL_B_DENY_PATH"]);
+});
+
+test("niveau B : un test qui nomme une zone STOP est refusé", () => {
+  assert.deepEqual(lbFiles(added("backend/tests/unit/payment-return.test.ts")), ["LEVEL_B_STOP_ZONE"]);
+  assert.deepEqual(lbFiles(added("frontend/tests/unit/Cart.server.test.ts")), ["LEVEL_B_STOP_ZONE"]);
+  assert.deepEqual(lbFiles(added("backend/tests/unit/payments/a.test.ts")), ["LEVEL_B_STOP_ZONE"]);
+});
+
+test("niveau B : un renommage est évalué sur ses deux chemins", () => {
+  const moved = file("docs/a.md", "", { status: "renamed", previous_filename: "backend/src/modules/ok/a.ts" });
+  assert.deepEqual(lbFiles(moved), ["LEVEL_B_PATH_REFUSED"]);
+});
+
+test("niveau B : suppression ou renommage d'un fichier de test refusé", () => {
+  assert.deepEqual(lbFiles(file("backend/tests/unit/a.test.ts", "-it('x')", { status: "removed" })), ["TEST_REMOVED"]);
+  const renamed = file("backend/tests/unit/b.test.ts", "", {
+    status: "renamed",
+    previous_filename: "backend/tests/unit/a.test.ts",
+  });
+  assert.deepEqual(lbFiles(renamed), ["TEST_REMOVED"]);
+});
+
+test("niveau B : un cas de test retiré d'un fichier modifié est refusé", () => {
+  const patch = "@@ -1,3 +1 @@\n-it('a', () => {});\n-test('b', () => {});\n+it('a', () => {});";
+  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", patch)), ["TEST_REMOVED"]);
+  const retitled = "@@ -1 +1 @@\n-it('ancien titre', () => {});\n+it('nouveau titre', () => {});";
+  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", retitled)), []);
+});
+
+test("niveau B : .skip( ou .only( ajouté est refusé, retiré est admis", () => {
+  assert.deepEqual(lbFiles(added("backend/tests/unit/a.test.ts", "+it.skip('x', () => {});")), ["LEVEL_B_DIFF_PATTERN"]);
+  assert.deepEqual(lbFiles(added("frontend/tests/unit/a.test.ts", "+describe.only('x', () => {});")), [
+    "LEVEL_B_DIFF_PATTERN",
+  ]);
+  const unskip = "@@ -1 +1 @@\n-it.skip('x', () => {});\n+it('x', () => {});";
+  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", unskip)), []);
+});
+
+test("niveau B : patch absent ou statut inconnu d'un test : refusé", () => {
+  assert.deepEqual(lbFiles({ filename: "backend/tests/unit/a.test.ts", status: "added" }), ["PATCH_UNAVAILABLE"]);
+  assert.deepEqual(lbFiles(file("backend/tests/unit/a.test.ts", "+it('x')", { status: "copied" })), ["TEST_REMOVED"]);
+});
+
+// ---- Niveau B : approbation par l'identité listée sur la tête exacte ----
+
+const AUTHOR = "automecanik-agents[bot]";
+const REVIEWER = "automecanik-reviewer[bot]";
+const review = (login, state = "APPROVED", commit_id = HEAD, submitted_at = "2026-11-15T10:00:00Z") => ({
+  user: { login, type: login.endsWith("[bot]") ? "Bot" : "User" },
+  state,
+  commit_id,
+  submitted_at,
+});
+const approvalCodes = (reviews, author = AUTHOR, p = policy) =>
+  codes(gate.evaluateApproval(p, { login: author }, reviews, HEAD));
+
+test("approbation de l'identité listée sur la tête exacte : admise", () => {
+  assert.deepEqual(approvalCodes([review(REVIEWER)]), []);
+  assert.deepEqual(approvalCodes([review(REVIEWER, "COMMENTED", HEAD, "2026-11-15T11:00:00Z"), review(REVIEWER)]), []);
+});
+
+test("approbation absente : refusée", () => {
+  assert.deepEqual(approvalCodes([]), ["APPROVAL_MISSING"]);
+  assert.deepEqual(approvalCodes([review(REVIEWER, "COMMENTED")]), ["APPROVAL_MISSING"]);
+});
+
+test("approbation sur une autre tête : refusée", () => {
+  assert.deepEqual(approvalCodes([review(REVIEWER, "APPROVED", "c".repeat(40))]), ["APPROVAL_OTHER_HEAD"]);
+});
+
+test("approbation par l'auteur : refusée", () => {
+  assert.deepEqual(approvalCodes([review(REVIEWER)], REVIEWER), ["APPROVAL_BY_AUTHOR"]);
+  assert.deepEqual(approvalCodes([review(AUTHOR)]), ["APPROVAL_BY_AUTHOR"]);
+  // Forme de `gh pr view --json author` pour une App : `app/<slug>`.
+  assert.deepEqual(approvalCodes([review(REVIEWER)], "app/automecanik-reviewer"), ["APPROVAL_BY_AUTHOR"]);
+  assert.deepEqual(approvalCodes([review("automecanik-agents[bot]")], "app/automecanik-agents"), ["APPROVAL_BY_AUTHOR"]);
+  assert.deepEqual(approvalCodes([review(REVIEWER)], "app/automecanik-agents"), []);
+});
+
+test("approbation par une identité non listée : refusée", () => {
+  assert.deepEqual(approvalCodes([review("ak125")]), ["APPROVAL_UNLISTED_IDENTITY"]);
+  assert.deepEqual(approvalCodes([review("autre-app[bot]")]), ["APPROVAL_UNLISTED_IDENTITY"]);
+});
+
+test("approbation retirée ou suivie d'une demande de changements : refusée", () => {
+  const later = "2026-11-15T12:00:00Z";
+  assert.deepEqual(approvalCodes([review(REVIEWER), review(REVIEWER, "CHANGES_REQUESTED", HEAD, later)]), [
+    "APPROVAL_WITHDRAWN",
+  ]);
+  assert.deepEqual(approvalCodes([review(REVIEWER, "DISMISSED")]), ["APPROVAL_WITHDRAWN"]);
+});
+
+test("approbation sans niveau B actif : refusée", () => {
+  const inactive = { ...policy, level_b: { ...policy.level_b, status: "inactive" } };
+  assert.deepEqual(approvalCodes([review(REVIEWER)], AUTHOR, inactive), ["LEVEL_B_NOT_ACTIVE"]);
 });
