@@ -53,11 +53,11 @@ beforeEach(() => {
 describe("catch-all $.tsx — log 404", () => {
   const call404 = async () => {
     try {
+      const href = "https://www.automecanik.com/this-page-does-not-exist-12345";
       await loader({
-        request: new Request(
-          "https://www.automecanik.com/this-page-does-not-exist-12345",
-          { headers: proxied },
-        ),
+        request: new Request(href, { headers: proxied }),
+        // React Router passe au chargeur l'URL normalisée de la requête.
+        url: new URL(href),
         params: {},
         context: {},
       } as never);

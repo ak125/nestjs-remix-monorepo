@@ -85381,11 +85381,10 @@
         "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/logger",
-        "~/utils/proxy-headers.server",
-        "~/utils/single-fetch"
+        "~/utils/proxy-headers.server"
       ],
       "kind": "route",
-      "loc": 579,
+      "loc": 582,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/$.tsx",
       "risk": "medium",
@@ -95015,26 +95014,6 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
-        "manual"
-      ],
-      "domain": "D8",
-      "id": "frontend/app/utils/single-fetch.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 30,
-      "owner": "@ak125/frontend-team",
-      "path": "frontend/app/utils/single-fetch.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
         "manual",
         "reachability"
       ],
@@ -96160,7 +96139,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 132,
+      "loc": 153,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catch-all-404-noindex.test.ts",
       "risk": "medium",
@@ -96180,7 +96159,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 216,
+      "loc": 217,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catch-all-blog-advice-alias-redirect.test.ts",
       "risk": "medium",
@@ -96200,7 +96179,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 89,
+      "loc": 90,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catch-all-corrupted-encoding-410.test.ts",
       "risk": "medium",
@@ -96220,7 +96199,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 49,
+      "loc": 188,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catch-all-data-suffix-redirect.test.ts",
       "risk": "medium",
@@ -96240,7 +96219,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 95,
+      "loc": 96,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catch-all-old-link-410.test.ts",
       "risk": "medium",
@@ -98343,26 +98322,6 @@
       "loc": 413,
       "owner": "@ak125",
       "path": "frontend/tests/unit/seo-hub-observability-sources.test.tsx",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
-      "id": "frontend/tests/unit/single-fetch-suffix.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 34,
-      "owner": "@ak125",
-      "path": "frontend/tests/unit/single-fetch-suffix.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -107897,11 +107856,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "b1bf94f714fea4f1af99f7d87aa5e8915b7b13db49d1e2953b06a65f7f7ff558",
+      "audit/registry/files.json": "2c563378bdaa1518c8dae899b1210c545cda00b11ff4a17ceefe75c2fefd6a1e",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "a47316e368bf"
+    "sotFingerprint": "e7abfc462160"
   },
   "runtime": [
     {
