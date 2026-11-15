@@ -101796,7 +101796,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 111,
+      "loc": 112,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-roles/src/intents.ts",
       "risk": "high",
@@ -107857,11 +107857,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "6f4d2d2d1dac2ba2a9905a40777c81daa443a413a46c123b173e8cd2241d7e56",
+      "audit/registry/files.json": "3f7824ebff4c665252aba6495aaaa7bd9478381a0d30abf8e49133e2ff942888",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
     },
-    "sotFingerprint": "9d1bffbb2c2a"
+    "sotFingerprint": "c7fe4e1c4cbb"
   },
   "runtime": [
     {
