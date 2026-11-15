@@ -608,6 +608,27 @@ test("niveau B : clé calculée test, it ou describe dans un objet de données :
   }
 });
 
+test("niveau B : alias d'un nom de test déjà présent à la base, appel aliasé retiré ou fichier modifié ailleurs : refusé (revue Codex 10e passage)", () => {
+  const t = "backend/tests/unit/a.test.ts";
+  const swap = (base, head) => `@@ -1,9 +1,9 @@\n${base.split("\n").map((l) => `-${l}`).join("\n")}\n${head.split("\n").map((l) => `+${l}`).join("\n")}`;
+  const imported = 'import { test as check } from "vitest";';
+  const call = 'check("contrôle critique", () => {\n  assertSecurity();\n});';
+  assert.deepEqual(lbFiles(modified(t, swap(`${imported}\n${call}`, imported))), ["TEST_REMOVED"], "import aliasé, appel retiré");
+  const bound = 'import { test } from "vitest";\nconst check = test;';
+  assert.deepEqual(lbFiles(modified(t, swap(`${bound}\n${call}`, bound))), ["TEST_REMOVED"], "const check = test, appel retiré");
+  const conditional = 'const describeIf = process.env.DB ? describe : describe.skip;\ndescribeIf("bloc", () => {\n  it("a", () => expect(1).toBe(1));\n});';
+  const elsewhere = `@@ -1,4 +1,5 @@\n${conditional.split("\n").map((l) => ` ${l}`).join("\n")}\n+it("b", () => expect(2).toBe(2));`;
+  assert.deepEqual(lbFiles(modified(t, elsewhere)), ["TEST_REMOVED"], "alias conditionnel présent à la base");
+});
+
+test("niveau B : méthode ou accesseur à clé calculée test, it ou describe dans un objet de données : admis (revue Codex 10e passage)", () => {
+  const t = "frontend/tests/unit/a.test.ts";
+  const patchOf = (added) => `@@ -1,3 +1,${3 + added.split("\n").length} @@\n it("a", () => {\n   expect(1).toBe(1);\n });\n${added}`;
+  for (const added of ['+const fixture = { ["test"]() { return 1; } };', "+const fixture = { get ['it']() { return 1; }, set [`describe`](v) {} };"]) {
+    assert.deepEqual(lbFiles(modified(t, patchOf(added))), [], added);
+  }
+});
+
 test("niveau B : this d'une fonction dans un module (strict) : admis ; dans un script non strict : refusé", () => {
   const t = "frontend/tests/unit/a.test.tsx";
   const mock = "+HTMLDialogElement.prototype.showModal = function () {\n+  this.open = true;\n+};";

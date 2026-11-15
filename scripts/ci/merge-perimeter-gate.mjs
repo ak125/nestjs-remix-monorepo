@@ -414,7 +414,9 @@ function isLooseThis(node, source) {
  * (`vi.stubGlobal("it", …)`, `Object.defineProperty(globalThis, "it", …)`) ; tout usage d'un objet
  * global autre qu'une lecture ordinaire (`isPlainGlobalUse`) ; module de test cité hors d'un import
  * (`vi.mock("vitest", …)`) ; `eval`, `Function`, `.constructor`, module `vm`, `this` non strict.
- * À part, `qualified` : les appels de test sur un récepteur non suivi (`suite.test(…)`), refusés à la tête.
+ * À part, `qualified` : les appels de test sur un récepteur non suivi (`suite.test(…)`), refusés à la tête ;
+ * et `aliases` : les références au nom de test lui-même (alias, import renommé, `cond ? describe : …`),
+ * qui refusent le fichier dès la base, car les tests déclarés par un alias ne sont pas suivis.
  * Chacune par son nom, la nature et la propriété du parent qui la porte, et sa position : une référence
  * nouvelle à la tête est refusée. Les noms liés ou affectés sont en outre comptés par nom seul.
  */
@@ -431,13 +433,20 @@ function testNameReferences(source, checker) {
   const references = [];
   const bindings = [];
   const qualified = [];
+  // Références à un nom de test hors appel direct (alias, import renommé, `cond ? describe : …`) :
+  // présentes à la base, elles portent des tests que la porte ne suit pas.
+  const aliases = [];
   const record = (label, node) => references.push(`${label} : ${ts.SyntaxKind[node.parent.kind]}.${roleOf(node)} @ ${positionOf(node, source)}`);
+  const recordTestName = (label, node) => {
+    record(label, node);
+    aliases.push(references[references.length - 1]);
+  };
   const visit = (node) => {
     if (ts.isIdentifier(node) && TEST_CALLEES.has(node.text) && !isInCallee(node) && !isFrameworkImport(node)) {
       const parent = node.parent;
       const globalProperty = ts.isPropertyAccessExpression(parent) && parent.name === node && isGlobalObject(parent.expression);
       if (!isDataKey(node) || globalProperty || isAssignmentTarget(node) || isMutatingArgument(node)) {
-        record(node.text, node);
+        recordTestName(node.text, node);
         if (isBinding(node) || globalProperty || isMutatingArgument(node)) bindings.push(node.text);
       }
     } else if (ts.isStringLiteralLike(node)) {
@@ -445,10 +454,14 @@ function testNameReferences(source, checker) {
       const isModuleSpecifier = (ts.isImportDeclaration(parent) || ts.isExportDeclaration(parent)) && parent.moduleSpecifier === node;
       const isKey = (ts.isElementAccessExpression(parent) && parent.argumentExpression === node) || ts.isComputedPropertyName(parent);
       // `{ ["test"]: 1 }` est une donnée, comme `{ test: 1 }` ; passée à un appel qui modifie, elle reste refusée.
+      const member = parent.parent;
       const isObjectDataKey =
-        ts.isComputedPropertyName(parent) && ts.isPropertyAssignment(parent.parent) && parent.parent.name === parent && ts.isObjectLiteralExpression(parent.parent.parent);
+        ts.isComputedPropertyName(parent) &&
+        (ts.isPropertyAssignment(member) || ts.isMethodDeclaration(member) || ts.isGetAccessorDeclaration(member) || ts.isSetAccessorDeclaration(member)) &&
+        member.name === parent &&
+        ts.isObjectLiteralExpression(member.parent);
       if (TEST_CALLEES.has(node.text) && ((isKey && !isObjectDataKey) || isMutatingArgument(node))) {
-        record(node.text, node);
+        recordTestName(node.text, node);
         bindings.push(node.text);
       }
       if (TEST_FRAMEWORK_MODULES.has(node.text) && !isModuleSpecifier) record(node.text, node);
@@ -470,6 +483,7 @@ function testNameReferences(source, checker) {
   visit(source);
   references.bindings = bindings;
   references.qualified = qualified;
+  references.aliases = aliases;
   return references;
 }
 
@@ -749,6 +763,10 @@ export function evaluateLevelBFiles(policy, files) {
     // Le récepteur de `suite.test(…)` peut être remplacé sans changer la clé : la porte ne le suit pas.
     if (after.references.qualified.length) {
       refusals.push(refusal("TEST_REMOVED", `${file.filename} (appel de test sur un récepteur non suivi : ${after.references.qualified[0]})`));
+    } else if (before.references?.aliases.length) {
+      // Un test déclaré par un alias (`check = test`, `import { test as check }`) n'est pas suivi :
+      // le retirer ne changerait aucune clé. Le fichier est refusé dès que la base en contient un.
+      refusals.push(refusal("TEST_REMOVED", `${file.filename} (nom de test référencé hors appel à la base, alias non suivi : ${before.references.aliases[0]})`));
     } else if (references.length) {
       refusals.push(refusal("TEST_REMOVED", `${file.filename} (nom de test redéfini ou référencé hors appel : ${references[0]})`));
     } else if (lost.length) {
