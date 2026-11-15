@@ -136,12 +136,12 @@ Chemins sous `workspaces/seo-batch/.claude/skills/`, sauf mention contraire.
 
 | Famille | Dépôt | PR | État |
 |---|---|---|---|
-| Carte et preuves | monorepo | `docs/mandat-ad-carte-circuit-contenu-20261115` | Brouillon |
+| Carte et preuves | monorepo | #2084 | Brouillon |
 | Prompts | monorepo | #2083 | Brouillon. Fusion après application des patches §6.1–6.2. |
-| Skills | monorepo | `chore/mandat-ad-retrait-skills-20261115` | Brouillon |
+| Skills | monorepo | #2085 | Brouillon |
 | Scripts WIKI | automecanik-wiki | #137 | Brouillon. Fusion après le patch §6.3. |
 | Backend | monorepo | — | Différé jusqu'à AB (`seo-agent-matrix.json`, cité par #2081) |
-| Fiches Vault | governance-vault | projet ADR-136 (§7) | Brouillon |
+| Fiches Vault | governance-vault | ak125/governance-vault#418, projet ADR-136 (§7) | Brouillon |
 
 Différés jusqu'à la livraison d'AB, avec reprise de ses verdicts :
 - `content-quality-gate`, `content-gen`, `surgical-cleaner`, `legacy-recycler`, `rag-check` ;
@@ -426,3 +426,5 @@ Il intègre aussi la condition D3 d'ADR-131 et la boucle de corroboration. Rien 
 9. Des propositions WIKI de la phase F ont été générées depuis le RAG (`ingested_by: skill:recycle-from-rag@v0.1`). Ce sont des données, conservées.
 10. #1924 (brouillon) est en conflit ; il touche `seo-content-loop/SKILL.md` et `editorial-review.md`.
 11. L'étape 11 n'a aucune pièce câblée : la condition `technical_qualification_pass` (ADR-131 D3) n'est pas lue par le décideur (mandat S).
+12. `pilote-file.yml` (ADR-128) porte déjà une étape de session. Seule la suspension sur le producteur du KPI `useful_capabilities_not_complexity` l'empêche de s'exécuter (run du 2026-11-15 à 15:06Z : « session suspendue »).
+13. `scripts/test-claude-hooks.sh`, cas 3 de `stop-claude-md-suggest` (`git checkout --detach` puis `git checkout -`), modifie le checkout appelant. Lancé depuis un HEAD détaché, il bascule sur le HEAD précédent en cours de run : observé le 2026-11-15 à 15:33Z dans un worktree isolé. La suite de tests a été relancée sur une branche locale.
