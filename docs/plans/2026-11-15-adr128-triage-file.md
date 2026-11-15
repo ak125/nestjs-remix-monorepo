@@ -7,6 +7,8 @@ l'owner décide (ADR-128 D6).
 - **Appliqué** : les 11 labels `dept:` des lignes forte et garder, posés par l'owner le
   2026-11-15 à 13:08 UTC avec son compte (événements `labeled` relus par l'API). Aucune issue
   fermée, commentée ou modifiée d'autre façon.
+- **Décidé** : l'owner a tranché le 2026-11-15 (section « Décision de l'owner ») : fermer les
+  lignes « fermer », sauf #745, qui reste ouverte avec `dept:07-seo` et un commentaire.
 
 - **Relevé** : 2026-11-15T12:10:47Z, `gh issue list --state open` et `gh pr list --state open`,
   lecture seule avec le `gh` du shell DEV (`automecanik-agents[bot]`).
@@ -14,10 +16,10 @@ l'owner décide (ADR-128 D6).
   180, parce que `pilote-file.constats.jq` exclut sa propre issue de récapitulatif (#2073), qui
   figure ici.
 - **Issue de sécurité** : aucune issue de sécurité ouverte au relevé.
-- **Application** : `scripts/ops/triage-file-apply.sh` lit ce fichier et ne retient que les
-  lignes de confiance `forte` marquées `garder`. Elle n'ajoute que le label `dept:` de la ligne
-  (`gh issue edit --add-label`). Elle ne ferme rien et ne retire aucun label. Par défaut, elle
-  tourne à blanc.
+- **Application** : `scripts/ops/triage-file-apply.sh` lit ce fichier. Il ajoute le label
+  `dept:` des lignes de confiance `forte` marquées `garder`, poste les commentaires de la section
+  « Décision de l'owner », puis ferme les lignes « fermer » hors exclusions : d'abord les
+  doublons, ensuite les autres. Par défaut, il tourne à blanc.
 
 ## Méthode
 
@@ -53,9 +55,18 @@ l'owner décide (ADR-128 D6).
 
 | Suite proposée | Issues |
 |---|---|
-| garder | 15 |
-| fermer comme obsolète | 166 : 156 instantanés de digest remplacés, plus #203, #439, #582, #650, #744, #745, #1037, #1063, #1113 et #1916 |
+| garder | 16 |
+| fermer | 165 : 156 instantanés de digest remplacés, plus #203, #439, #582, #650, #744, #1037, #1063, #1113 et #1916 |
 | fusionner avec une autre | 0 |
+
+La colonne « Suite » prend quatre valeurs, que le script lit :
+
+- `garder` ;
+- `fermer` : fermeture avec la raison `not planned` (instantané remplacé, rapport sans reste à
+  faire) ;
+- `fermer (résolue)` : raison `completed`, quand une PR fusionnée ou l'état servi règle l'objet
+  de l'issue (#203, #439, #744, #1916) ;
+- `fermer (doublon de #N)` : fermeture comme doublon de #N (#1037 et #1063, doublons de #1113).
 
 #1037, #1063 et #1113 sont trois rapports de la même routine de suivi des prérequis du PR-2 du
 control plane, bloquée sur la lecture du statut d'ADR-058. Ce statut est désormais `accepted`, et
@@ -64,15 +75,41 @@ la routine n'a rien publié depuis le 2026-06-23. Aucune des trois ne reste ouve
 reste à faire, il vaut mieux l'ouvrir dans une issue neuve que garder un rapport de routine
 périmé.
 
-Le script retient 11 lignes (forte et garder), appliquées le 2026-11-15 : #264, #411, #412, #413, #414, #430, #432,
-#593, #1947, #2036 et #2073. Les 4 lignes à garder de confiance moyenne (#226, #431, #788 et
-#1975) restent à classer à la main.
+Le script retient 12 lignes pour un label (forte et garder) : #264, #411, #412, #413, #414,
+#430, #432, #593, #1947, #2036 et #2073, labellisées le 2026-11-15 à 13:08 UTC, plus #745. Les
+4 lignes à garder de confiance moyenne (#226, #431, #788 et #1975) restent à classer à la main.
+
+## Décision de l'owner (2026-11-15)
+
+Décision de Marwane sur la PR #2076, transmise par le pilotage le 2026-11-15 vers 14:12 UTC :
+
+1. les 11 labels des lignes forte et garder (posés à 13:08 UTC) ;
+2. fermeture de toutes les lignes « fermer », sauf #745, qui reste ouverte avec `dept:07-seo`
+   et un commentaire ;
+3. #1037 et #1063 fermées comme doublons de #1113, puis #1113 fermée (ADR-058 `accepted`) ;
+4. chaque fermeture porte un commentaire qui cite cette décision, la PR #2076 et la preuve de sa
+   ligne.
+
+Le script lit les deux tableaux ci-dessous. Une exclusion empêche la fermeture d'une issue, même
+si sa ligne passe un jour à « fermer » ; `--exclure` en ajoute d'autres au lancement.
+
+### Exclusions
+
+| Issue | Motif |
+|---|---|
+| #745 | décision de l'owner du 2026-11-15 : reste ouverte, partie « règle en base » à vérifier |
+
+### Commentaires
+
+| Issue | Commentaire |
+|---|---|
+| #745 | Décision de l'owner du 2026-11-15 sur le triage ADR-128 D6 (PR #2076) : cette issue reste ouverte. La partie sitemap est corrigée par #1074 : la route `sitemap-$.tsx` est supprimée et les sitemaps sont servis par `SitemapStaticMiddleware` ; `/sitemap-racine.xml` répondait 200 `application/xml` en DEV et en PROD au relevé du 2026-11-15T12:10:47Z. La partie « règle de redirection en base » (`___xtr_msg`, `REDIRECT_RULE`) reste à vérifier. |
 
 ## Issues ouvertes au relevé
 
 | Issue | Créée | Titre | Département | Confiance | Raison | Suite | Preuve de la suite |
 |---|---|---|---|---|---|---|---|
-| #203 | 2026-04-28 | Soak report PR #190 alias TS — verdict YELLOW (J+1) | `dept:21-runtime` | forte | rapport de soak DEV de la PR #190 (alias TS du backend) avant promotion PROD | fermer | PR #190 fusionnée le 2026-04-27 (852dda55e8) ; fenêtre de soak J+1 du 2026-04-28 close depuis |
+| #203 | 2026-04-28 | Soak report PR #190 alias TS — verdict YELLOW (J+1) | `dept:21-runtime` | forte | rapport de soak DEV de la PR #190 (alias TS du backend) avant promotion PROD | fermer (résolue) | PR #190 fusionnée le 2026-04-27 (852dda55e8) ; fenêtre de soak J+1 du 2026-04-28 close depuis |
 | #226 | 2026-04-30 | perf-gates: calibrate budgets to CI runner reality + add /health/ready warmer… | `dept:21-runtime` | moyenne | budgets du gate CI perf-gates (Lighthouse) et gate de fin de warm-up /health/ready | garder | budgets revus par #235 (resserrés) et #509 (temps seuls) ; aucun gate /health/ready dans perf-gates.yml : reste ouvert pour cette partie |
 | #264 | 2026-05-02 | [INC-2026-013] Probabilités non sourcées dans __diag_symptom_cause_link — 4 P… | `dept:11-diagnostic` | forte | incident INC-2026-013 : scores de causes non sourcés du moteur de diagnostic | garder | atténuation en base non vérifiée (base hors périmètre) ; aucune PR liée fusionnée relevée |
 | #411 | 2026-05-09 | SEO shadow: activer R7/R8/RM en preprod et valider les signaux reels | `dept:07-seo` | forte | activation des modes shadow SEO R7/R8/RM en PREPROD (ADR-055) | garder | flags injectés par #415 (fusionnée le 2026-05-09) ; preuves terrain demandées (boot, Sentry, __seo_event_log) jamais rapportées |
@@ -82,7 +119,7 @@ Le script retient 11 lignes (forte et garder), appliquées le 2026-11-15 : #264,
 | #430 | 2026-05-10 | tech-debt(seo-v9): extract parseNumericTargetId + skip resolvePgAlias for num… | `dept:07-seo` | forte | dette ExecutionRouter : resolvePgAlias appelé pour les rôles à cible numérique (R7, R8) | garder | resolvePgAlias toujours appelé avant le switch de rôle dans dispatchSingle (execution-router.service.ts:245) |
 | #431 | 2026-05-10 | tech-debt(pipeline): rename __pipeline_chain_queue.pcq_pg_id to a generic pcq… | `dept:07-seo` | moyenne | renommage de la colonne pcq_pg_id de la file du pipeline SEO (cible multi-rôle) | garder | pcq_pg_id toujours utilisé par execution-router.service.ts ; renommage = migration de base, zone owner |
 | #432 | 2026-05-10 | bug(seo-v9): ExecutionRouter.executeWithConcurrency does not preserve targetI… | `dept:07-seo` | forte | bug ExecutionRouter : ordre des résultats de executeWithConcurrency | garder | results.push dans l'ordre d'achèvement toujours présent (execution-router.service.ts:531-533) |
-| #439 | 2026-05-11 | ADR-024 promotion blocked at J+14 — données de mesure indisponibles (tooling… | `dept:07-seo` | forte | promotion d'ADR-024 (cache matview de la page gamme R1) bloquée faute de mesure | fermer | ADR-024 porte `status: accepted` dans le vault (copie DEV, commit 156b143 du 2026-11-15) : le blocage de promotion n'a plus d'objet |
+| #439 | 2026-05-11 | ADR-024 promotion blocked at J+14 — données de mesure indisponibles (tooling… | `dept:07-seo` | forte | promotion d'ADR-024 (cache matview de la page gamme R1) bloquée faute de mesure | fermer (résolue) | ADR-024 porte `status: accepted` dans le vault (copie DEV, commit 156b143 du 2026-11-15) : le blocage de promotion n'a plus d'objet |
 | #582 | 2026-05-17 | Closure 2026-05-17 — 4 PRs sitemap/auth/PR-9a MERGED + 13 stales closed (T+0… | `dept:21-runtime` | faible | récapitulatif de fermeture du 2026-05-17 (PR sitemap, auth, PR-9a) | fermer | rapport daté sans reste à faire : les 4 PR citées sont fusionnées depuis le 2026-05-17 |
 | #587 | 2026-05-18 | Morning health digest — 2026-05-18 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-05-18 remplacé par #2036 |
 | #588 | 2026-05-18 | Weekly PR hygiene W21 — 2026-05-18 (🔀 Rebase cascade (oldest stack first)) | `dept:23-ia-agents` | moyenne | bilan hebdomadaire de la file des PR (stale, conflits, Dependabot) | fermer | instantané W21 remplacé par #1975 |
@@ -94,8 +131,8 @@ Le script retient 11 lignes (forte et garder), appliquées le 2026-11-15 : #264,
 | #688 | 2026-05-22 | Morning health digest — 2026-05-22 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-05-22 remplacé par #2036 |
 | #742 | 2026-05-25 | Morning health digest — 2026-05-25 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-05-25 remplacé par #2036 |
 | #743 | 2026-05-25 | Weekly PR hygiene W22 — 2026-05-25 (🔀 Rebase cascade (oldest stack first)) | `dept:23-ia-agents` | moyenne | bilan hebdomadaire de la file des PR (stale, conflits, Dependabot) | fermer | instantané W22 remplacé par #1975 |
-| #744 | 2026-05-25 | fix(edge): Caddy >Cache-Control replace mode (PROD duplicate header) | `dept:21-runtime` | forte | en-tête Cache-Control doublé par Caddy en PROD | fermer | corrigé par #1272 (Cache-Control à propriétaire unique, `header ?Cache-Control` dans @public_cached) ; un seul Cache-Control sur la page d'accueil PROD au relevé |
-| #745 | 2026-05-25 | fix(seo): sitemap-$.tsx flat-routes naming + ___xtr_msg REDIRECT_RULE cleanup | `dept:07-seo` | forte | routes /sitemap-*.xml cassées (nommage flat-routes) et règle de redirection en base | fermer | route supprimée par #1074 (sitemaps servis par SitemapStaticMiddleware) ; /sitemap-racine.xml répond 200 application/xml en DEV et en PROD au relevé ; partie « règle en base » non vérifiée (base hors périmètre) |
+| #744 | 2026-05-25 | fix(edge): Caddy >Cache-Control replace mode (PROD duplicate header) | `dept:21-runtime` | forte | en-tête Cache-Control doublé par Caddy en PROD | fermer (résolue) | corrigé par #1272 (Cache-Control à propriétaire unique, `header ?Cache-Control` dans @public_cached) ; un seul Cache-Control sur la page d'accueil PROD au relevé |
+| #745 | 2026-05-25 | fix(seo): sitemap-$.tsx flat-routes naming + ___xtr_msg REDIRECT_RULE cleanup | `dept:07-seo` | forte | routes /sitemap-*.xml cassées (nommage flat-routes) et règle de redirection en base | garder | décision de l'owner du 2026-11-15 : reste ouverte. Partie sitemap corrigée par #1074 (sitemaps servis par SitemapStaticMiddleware ; /sitemap-racine.xml répond 200 application/xml en DEV et en PROD au relevé) ; partie « règle en base » à vérifier (base hors périmètre) |
 | #760 | 2026-05-26 | Morning health digest — 2026-05-26 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-05-26 remplacé par #2036 |
 | #767 | 2026-05-27 | Morning health digest — 2026-05-27 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-05-27 remplacé par #2036 |
 | #777 | 2026-05-28 | Morning health digest — 2026-05-28 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-05-28 remplacé par #2036 |
@@ -119,8 +156,8 @@ Le script retient 11 lignes (forte et garder), appliquées le 2026-11-15 : #264,
 | #1011 | 2026-06-17 | Morning health digest — 2026-06-17 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-17 remplacé par #2036 |
 | #1023 | 2026-06-18 | Morning health digest — 2026-06-18 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-18 remplacé par #2036 |
 | #1027 | 2026-06-19 | Morning health digest — 2026-06-19 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-19 remplacé par #2036 |
-| #1037 | 2026-06-20 | PR-2 prereqs monitor — Gate 1 bloqué (vault hors scope session) | `dept:23-ia-agents` | moyenne | routine de suivi des prérequis du PR-2 du control plane (ADR-058), bloquée | fermer | doublon de #1113 (même routine, même blocage d'accès au vault), rapport du 2026-06-20 ; #1113 étant elle-même proposée à la fermeture, aucune cible ne reste ouverte |
-| #1063 | 2026-06-21 | PR-2 daily monitor: GATE 1 bloquée — governance-vault hors scope session | `dept:23-ia-agents` | moyenne | routine de suivi des prérequis du PR-2 du control plane (ADR-058), bloquée | fermer | doublon de #1113 (même routine, même blocage d'accès au vault), rapport du 2026-06-21 ; #1113 étant elle-même proposée à la fermeture, aucune cible ne reste ouverte |
+| #1037 | 2026-06-20 | PR-2 prereqs monitor — Gate 1 bloqué (vault hors scope session) | `dept:23-ia-agents` | moyenne | routine de suivi des prérequis du PR-2 du control plane (ADR-058), bloquée | fermer (doublon de #1113) | doublon de #1113 (même routine, même blocage d'accès au vault), rapport du 2026-06-20 ; #1113 se ferme après elle (ADR-058 `accepted`) |
+| #1063 | 2026-06-21 | PR-2 daily monitor: GATE 1 bloquée — governance-vault hors scope session | `dept:23-ia-agents` | moyenne | routine de suivi des prérequis du PR-2 du control plane (ADR-058), bloquée | fermer (doublon de #1113) | doublon de #1113 (même routine, même blocage d'accès au vault), rapport du 2026-06-21 ; #1113 se ferme après elle (ADR-058 `accepted`) |
 | #1095 | 2026-06-22 | Morning health digest — 2026-06-22 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-22 remplacé par #2036 |
 | #1099 | 2026-06-22 | Weekly PR hygiene W26 — 2026-06-22 (🔀 Rebase cascade (oldest stack first)) | `dept:23-ia-agents` | moyenne | bilan hebdomadaire de la file des PR (stale, conflits, Dependabot) | fermer | instantané W26 remplacé par #1975 |
 | #1112 | 2026-06-23 | Morning health digest — 2026-06-23 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-06-23 remplacé par #2036 |
@@ -234,7 +271,7 @@ Le script retient 11 lignes (forte et garder), appliquées le 2026-11-15 : #264,
 | #1894 | 2026-10-26 | Weekly PR hygiene W44 — 2026-10-26 (📦 PR-9b first batch upgrade (scope ≤ 3 pa… | `dept:23-ia-agents` | moyenne | bilan hebdomadaire de la file des PR (stale, conflits, Dependabot) | fermer | instantané W44 remplacé par #1975 |
 | #1903 | 2026-10-27 | Morning health digest — 2026-10-27 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-10-27 remplacé par #2036 |
 | #1907 | 2026-10-28 | Morning health digest — 2026-10-28 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-10-28 remplacé par #2036 |
-| #1916 | 2026-10-29 | Sitemap regen failed - 2026-10-29 | `dept:07-seo` | forte | échec de la régénération quotidienne du sitemap le 2026-10-29 | fermer | sitemap-daily-regen en succès chaque jour du 2026-11-11 au 2026-11-15 ; producteur unique depuis #2027 |
+| #1916 | 2026-10-29 | Sitemap regen failed - 2026-10-29 | `dept:07-seo` | forte | échec de la régénération quotidienne du sitemap le 2026-10-29 | fermer (résolue) | sitemap-daily-regen en succès chaque jour du 2026-11-11 au 2026-11-15 ; producteur unique depuis #2027 |
 | #1917 | 2026-10-29 | Morning health digest — 2026-10-29 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-10-29 remplacé par #2036 |
 | #1923 | 2026-10-30 | Morning health digest — 2026-10-30 | `dept:21-runtime` | forte | digest de santé du matin (fraîcheur sitemap, déploiements main, PR en échec) | fermer | instantané du 2026-10-30 remplacé par #2036 |
 | #1947 | 2026-10-31 | Passation ChatGPT Space → Claude Code CLI (code) + Codex (revue) — retrait me… | `dept:23-ia-agents` | forte | passation du code vers Claude Code CLI et de la revue vers Codex | garder | PR liées #1924, #1938 et #1944 encore ouvertes |
@@ -314,20 +351,30 @@ l'issue ouverte qui la couvre, ou `aucune`.
   en base » de #745 ne sont pas vérifiées en base, qui est hors périmètre.
 - **Preuve servie ponctuelle.** Pour #744 et #745, l'état servi a été lu une fois au relevé, sur
   une seule page. Ce n'est pas une mesure continue.
-- **Fermetures.** Les propositions s'appuient sur une preuve citée, mais la décision revient à
-  l'owner. Les commandes, non exécutées, sont dans
+- **Fermetures.** Décidées par l'owner le 2026-11-15, appliquées par le script avec son
+  compte. La liste, par famille et par confiance, est dans
   `docs/plans/2026-11-15-adr128-triage-file-fermetures.md`.
 - **Instantané daté.** Une issue ouverte ou fermée après 2026-11-15T12:10:47Z n'est pas dans
-  ce tableau. Le script ignore une issue fermée entre-temps, ou qui porte déjà un label `dept:`.
+  ce tableau. Le script ignore et liste une issue fermée entre-temps, modifiée depuis le relevé
+  (`updatedAt` postérieur), exclue, ou qui porte déjà un label `dept:`. Un second lancement
+  ignore donc ce que le premier a fait.
 
 ## Commandes (owner)
 
 Les labels `dept:` doivent exister (`docs/plans/2026-11-15-adr128-labels-d1.md`), sinon
-`gh issue edit` échoue sur la ligne concernée et le script passe à la suivante.
+`gh issue edit` échoue sur la ligne concernée et le script passe à la suivante. Un échec est
+compté et rend un code de sortie non nul.
 
 ```bash
-bash scripts/ops/triage-file-apply.sh            # à blanc : affiche les 11 commandes, aucun appel gh
-bash scripts/ops/triage-file-apply.sh --apply    # avec le compte de l'owner : fait le 2026-11-15 à 13:08 UTC
+bash scripts/ops/triage-file-apply.sh            # à blanc : lit l'état des issues, n'écrit rien
+bash scripts/ops/triage-file-apply.sh --apply    # avec le compte de l'owner, depuis main
 ```
 
-Retour arrière d'une ligne : `gh issue edit <n> --repo ak125/nestjs-remix-monorepo --remove-label "<dept:…>"`.
+Le 2026-11-15 à 13:08 UTC, l'owner a lancé `--apply` avec la version précédente du script, qui
+ne posait que les labels : les 11 lignes concernées sont ignorées au prochain lancement.
+
+Retour arrière :
+
+- un label : `gh issue edit <n> --repo ak125/nestjs-remix-monorepo --remove-label "<dept:…>"` ;
+- une fermeture : `gh issue reopen <n> --repo ak125/nestjs-remix-monorepo` ;
+- un commentaire : suppression depuis l'interface de GitHub.
