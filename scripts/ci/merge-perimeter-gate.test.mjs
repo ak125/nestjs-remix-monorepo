@@ -337,6 +337,17 @@ test("niveau B : un test qui nomme une zone STOP est refusé", () => {
   assert.deepEqual(lbFiles(added("backend/tests/unit/payments/a.test.ts")), ["LEVEL_B_STOP_ZONE"]);
 });
 
+test("niveau B : un Markdown ou un rapport d'audit qui nomme une zone STOP est refusé (revue Codex 9e passage)", () => {
+  const withFragments = { ...policy, level_b: { ...policy.level_b, stop_zone_fragments: ["payment", "cart", "checkout", "seo", "production"] } };
+  const evaluate = (...files) => codes(gate.evaluateLevelBFiles(withFragments, files));
+  assert.deepEqual(evaluate(modified("docs/payment-guide.md")), ["LEVEL_B_STOP_ZONE"]);
+  assert.deepEqual(evaluate(modified("audit/production.md")), ["LEVEL_B_STOP_ZONE"]);
+  assert.deepEqual(evaluate(modified("docs/seo.md")), ["LEVEL_B_STOP_ZONE"]);
+  const moved = file("docs/guide.md", "", { status: "renamed", previous_filename: "docs/checkout.md" });
+  assert.deepEqual(evaluate(moved), ["LEVEL_B_STOP_ZONE"]);
+  assert.deepEqual(evaluate(modified("docs/guide-agents.md")), []);
+});
+
 test("niveau B : un renommage est évalué sur ses deux chemins", () => {
   const moved = file("docs/a.md", "", { status: "renamed", previous_filename: "backend/src/modules/ok/a.ts" });
   assert.deepEqual(lbFiles(moved), ["LEVEL_B_PATH_REFUSED"]);
@@ -579,6 +590,21 @@ test("niveau B : garde qui lève, condition sur une variable, retour dans un rap
   ]) {
     const patch = `@@ -1,3 +1,${2 + body.split("\n").length} @@\n it("a", () => {\n-  expect(1).toBe(1);\n${body.split("\n").map((l) => `+${l}`).join("\n")}\n });`;
     assert.deepEqual(lbFiles(modified(t, patch)), [], body);
+  }
+});
+
+test("niveau B : clé calculée test, it ou describe dans un objet de données : admise ; passée à un appel qui modifie : refusée (revue Codex 9e passage)", () => {
+  const t = "frontend/tests/unit/a.test.ts";
+  const patchOf = (added) => `@@ -1,3 +1,${3 + added.split("\n").length} @@\n it("a", () => {\n   expect(1).toBe(1);\n });\n${added}`;
+  for (const added of ['+const fixture = { ["test"]: 1 };', "+const fixture = { [`it`]: 1, ['describe']: 2 };"]) {
+    assert.deepEqual(lbFiles(modified(t, patchOf(added))), [], added);
+  }
+  for (const added of [
+    '+Object.assign(globalThis, { ["test"]: () => {} });',
+    '+const o = {};\n+o["test"] = 1;',
+    '+class C { ["test"]() {} }',
+  ]) {
+    assert.deepEqual(lbFiles(modified(t, patchOf(added))), ["TEST_REMOVED"], added);
   }
 });
 

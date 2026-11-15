@@ -444,7 +444,10 @@ function testNameReferences(source, checker) {
       const parent = node.parent;
       const isModuleSpecifier = (ts.isImportDeclaration(parent) || ts.isExportDeclaration(parent)) && parent.moduleSpecifier === node;
       const isKey = (ts.isElementAccessExpression(parent) && parent.argumentExpression === node) || ts.isComputedPropertyName(parent);
-      if (TEST_CALLEES.has(node.text) && (isKey || isMutatingArgument(node))) {
+      // `{ ["test"]: 1 }` est une donnée, comme `{ test: 1 }` ; passée à un appel qui modifie, elle reste refusée.
+      const isObjectDataKey =
+        ts.isComputedPropertyName(parent) && ts.isPropertyAssignment(parent.parent) && parent.parent.name === parent && ts.isObjectLiteralExpression(parent.parent.parent);
+      if (TEST_CALLEES.has(node.text) && ((isKey && !isObjectDataKey) || isMutatingArgument(node))) {
         record(node.text, node);
         bindings.push(node.text);
       }
@@ -529,7 +532,7 @@ const OUTSIDE_REVIEW = /^\s*revue\s+(?:ind[ée]pendante|humaine)\s*(?:[,;]\s*)?p
 const refusal = (code, detail) => ({ code, detail });
 const matches = (path, globs) => micromatch.isMatch(path, globs, { dot: true });
 const levelBActive = (policy) => policy?.level_b?.status === "active";
-// Zone STOP nommée dans le chemin d'un test (dossier ou fichier), sans tenir compte de la casse.
+// Zone STOP nommée dans le chemin d'un fichier de niveau B (dossier ou nom), Markdown compris, sans tenir compte de la casse.
 const stopZoneFragment = (path, fragments) => fragments.find((f) => path.toLowerCase().includes(f.toLowerCase()));
 
 /** Vérifie la forme de la politique, pour refuser au lieu d'évaluer à moitié. */
@@ -687,7 +690,8 @@ export function evaluateLevelBFiles(policy, files) {
         reason = refusal("LEVEL_B_PATH_REFUSED", path);
       } else if (matches(path, b.test_paths) && !matches(path, b.test_file_globs)) {
         reason = refusal("LEVEL_B_NOT_TEST_FILE", path);
-      } else if (matches(path, b.test_paths) && stopZoneFragment(path, b.stop_zone_fragments)) {
+      } else if (stopZoneFragment(path, b.stop_zone_fragments)) {
+        // Zones STOP exclues dans tous les cas (ADR-128 D5) : Markdown et rapports d'audit compris.
         reason = refusal("LEVEL_B_STOP_ZONE", `${path} (${stopZoneFragment(path, b.stop_zone_fragments)})`);
       }
       if (reason) {
