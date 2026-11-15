@@ -33,8 +33,9 @@ secret, variable, environnement ni runner n'a été créé ou modifié. Le workf
      `refs/heads/mandat/… ^base` seulement si tout est sain ;
    - `expurger` retient d'abord le journal entier (remplacé par `journal/RETENU.txt` et ses empreintes)
      s'il contient un motif qu'un remplacement n'expurge pas sûrement : clé PEM, JWT, identifiants dans
-     une URL, clé AWS, en-tête `Bearer`, paramètres RSA d'un fichier d'identité de runner ; il retire
-     ensuite jetons et clés des autres fichiers, puis artifact `mandat-remise-<run_id>` (90 jours),
+     une URL, clé AWS, en-tête `Bearer`, paramètres RSA d'un fichier d'identité de runner ; tout autre
+     fichier qui en contient (sortie et erreurs de session, résultat) est remplacé par son empreinte ;
+     il retire ensuite les jetons connus des autres fichiers, puis artifact `mandat-remise-<run_id>` (90 jours),
      coût dans le résumé de l'exécution ; `nettoyer` retire worktree et branche locale.
 3. **Job `publication`** sur un runner hébergé neuf (`environment: mandat-remise`, GITHUB_TOKEN
    `contents: read`, `issues: write`) :
@@ -42,7 +43,8 @@ secret, variable, environnement ni runner n'a été créé ou modifié. Le workf
    - `verifier` recalcule tout depuis le bundle sans rien croire du premier job : base atteignable
      depuis `main` (API compare), commits, fichiers lus en chemins bruts (`diff -z`,
      `core.quotePath=false`), aucun fichier sous `.github/` : workflows, actions composites, réglages
-     (ADR-130 D3.4), aucun secret, branche absente d'origin ; `vérifié` sans contrôle `vert` est
+     (ADR-130 D3.4), aucun secret ni motif retenu dans les commits, un résultat de session sans
+     motif de clé ou de jeton (sinon bloqué et rien n'en est rendu), branche absente d'origin ; `vérifié` sans contrôle `vert` est
      déclassé en `implémenté` ; un statut `bloqué` avec commits part en PR brouillon ;
    - jeton d'installation de l'App (`contents: write`, `pull-requests: write`, ce dépôt seul) créé
      dans ce job seulement, si la vérification autorise le push ;
@@ -197,9 +199,12 @@ font avec le compte de l'owner (interface web ou `gh` sur son poste).
   l'owner détient seul la clé privée, ou le garder hors de l'artifact public. Une fausse alerte
   (le mandat lit un fichier de test contenant un en-tête de clé) fait perdre le journal, pas le
   mandat.
-- Fichiers du dépôt exécutés par la CI hors de `.github/` (scripts `scripts/ci/`, manifestes) : une
-  PR `mandat/*` peut les modifier comme toute PR de branche du dépôt. Proposé seulement : exiger
-  l'approbation de l'owner avant la CI à secrets sur les branches `mandat/*` (réglage du dépôt).
+- Fichiers du dépôt exécutés par la CI hors de `.github/` (`package.json`, lockfiles, `scripts/ci/`,
+  configurations de build) : une PR `mandat/*` peut les modifier, et la CI `pull_request` d'une
+  branche du dépôt reçoit ses secrets, exactement comme pour toute branche d'agent poussée
+  aujourd'hui. Les bloquer refuserait la plupart des mandats ordinaires. Proposé seulement (réglage
+  du dépôt, acte de l'owner) : retirer les secrets des jobs `pull_request`, ou les placer derrière un
+  environnement à approbation requise pour les branches `mandat/*`.
 - Chargement de `CLAUDE.md` sous `--restricted` non vérifié sur une vraie session.
 - `node_modules` absent du worktree : un mandat qui lance des tests paie un `npm ci` (temps, disque,
   budget) ; à mesurer au mandat 1.

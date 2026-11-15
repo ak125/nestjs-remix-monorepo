@@ -72,6 +72,10 @@ case "$(cat "$FIX/scenario")" in
               echo "contenu" > docs-mandat.md; git add -A; git commit -qm "docs: mandat Refs #7" ;;
   fuite) echo "cle=$fausse_cle" > f.txt; git add -A; git commit -qm "f" ;;
   binaire) printf '\000\001PNG cle=%s\000' "$fausse_cle" > f.png; git add -A; git commit -qm "f" ;;
+  cle_resultat) echo "contenu" > docs-mandat.md; git add -A; git commit -qm "docs: mandat Refs #7"
+               echo "-----BEGIN RSA ""PRIVATE KEY----- MIIEowIBAAKCAQEA" >&2
+               jq --arg j "ey""JhbGciOiJIUzI1NiJ9.ey""JzdWIiOiJ0ZXN0In0.c2lnbmF0dXJl" '.resume += " " + $j' \
+                 "$FIX/resultat.json" > "$FIX/resultat.tmp" && mv "$FIX/resultat.tmp" "$FIX/resultat.json" ;;
   sale) echo a > a.md; git add a.md; git commit -qm a; echo b > b.md ;;
   rien) ;;
   echec) echo '{"type":"result","is_error":true,"subtype":"error_max_budget_usd","total_cost_usd":20}'; exit 1 ;;
@@ -254,6 +258,12 @@ check "clé dans le journal : journal retenu" "RETENU.txt" "$(ls "$S/journal" | 
 absent "clé dans le journal : corps de clé absent de l'artifact" "MIIEvQIBADANBgkq" "$S/journal/RETENU.txt"
 contient "commentaire : journal retenu signalé" "journal **retenu**" "$P/commentaire.md"
 check "journal retenu : le mandat reste publiable" "intégré/true" "$(dec .statut)/$(dec .pousser)"
+chaine cleres cle_resultat intégré vert
+check "jeton dans le résultat : bloqué, pas de push" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
+contient "jeton dans le résultat : motif" "résultat de session retenu" "$P/decision.json"
+absent "jeton dans le résultat : absent du commentaire" "c2lnbmF0dXJl" "$P/commentaire.md"
+absent "jeton dans le résultat : absent de l'artifact" "c2lnbmF0dXJl" "$S/resultat.json"
+absent "clé dans les erreurs de session : retenue" "MIIEowIBAAKCAQEA" "$S/session.stderr"
 chaine rien rien implémenté vert
 check "aucun commit : bloqué" "bloqué/false" "$(dec .statut)/$(dec .pousser)"
 contient "motif aucun commit" "aucun commit transmis" "$P/decision.json"
@@ -284,9 +294,13 @@ check "base absente de main : bloqué" "bloqué/false" "$(dec .statut)/$(dec .po
 
 echo "== expurger =="
 D="$FIX/expurge"; mkdir -p "$D"
-printf 'a %s b\nc github_pat_%s d\n-----BEGIN RSA PRIVATE KEY-----\n' "$CLAUDE_CODE_OAUTH_TOKEN" "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" > "$D/f.txt"
+printf 'a %s b\nc github_pat_%s d\n' "$CLAUDE_CODE_OAUTH_TOKEN" "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" > "$D/f.txt"
+printf 'a %s b\n-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA\n' "$CLAUDE_CODE_OAUTH_TOKEN" > "$D/k.txt"
 "$SCRIPT" expurger --sortie "$D" > /dev/null
-check "valeur, motif et clé privée retirés" "3" "$(grep -c 'expurgé' "$D/f.txt")"
+check "valeur et motif de jeton remplacés" "2" "$(grep -c 'expurgé' "$D/f.txt")"
+contient "fichier à clé privée retenu en entier" "Fichier retenu" "$D/k.txt"
+absent "corps de la clé privée absent" "MIIEowIBAAKCAQEA" "$D/k.txt"
+absent "jeton absent du fichier retenu" "$CLAUDE_CODE_OAUTH_TOKEN" "$D/k.txt"
 
 echo
 if [[ "$FAIL" -eq 0 ]]; then echo "mandat-remise.test.sh : tous les contrôles passent"; else echo "mandat-remise.test.sh : ÉCHECS"; exit 1; fi

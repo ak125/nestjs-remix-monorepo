@@ -262,7 +262,7 @@ recherche_secrets() { # recherche_secrets <git -C ...> <base> <tete> → 0 si un
   { git_sur "$depot" diff --text --no-ext-diff --no-textconv "$base" "$tete"
     git_sur "$depot" log --format='%B' "$base..$tete"; } > "$texte" || { rm -f "$valeurs" "$texte"; die "lecture du diff impossible"; }
   local trouve=1
-  if grep -qE -- "$MOTIFS_SECRETS" "$texte"; then trouve=0; fi
+  if grep -qE -- "$MOTIFS_SECRETS|$MOTIFS_RETENUE" "$texte"; then trouve=0; fi
   if [[ -s "$valeurs" ]] && grep -qF -f "$valeurs" "$texte"; then trouve=0; fi
   rm -f "$valeurs" "$texte"
   return "$trouve"
@@ -299,25 +299,38 @@ figer() {
   jq -c . "$SORTIE/figer.json"
 }
 
-retenir_journal() { # journal retenu en entier (fail-closed) si un motif non expurgeable y figure
-  local j="$SORTIE/journal" f trouve=false
-  [[ -d "$j" ]] || return 0
+retenir() { # fail-closed : retient ce qu'un remplacement n'expurge pas sûrement (tout DIR, bundle exclu)
+  local j="$SORTIE/journal" f trouve=false somme
+  # Journal : retenu en entier si l'un de ses fichiers contient un motif.
+  if [[ -d "$j" ]]; then
+    while IFS= read -r -d '' f; do
+      if grep -qE -- "$MOTIFS_RETENUE" "$f"; then trouve=true; fi
+    done < <(find "$j" -type f -print0)
+    if [[ "$trouve" == true ]]; then
+      local note; note="$(mktemp)"
+      { echo "Journal retenu : un motif de clé ou de jeton non expurgeable par remplacement y figure."
+        echo "Il n'est pas publié dans l'artifact (dépôt public). Empreintes des fichiers retirés :"
+        ( cd "$j" && find . -type f -exec sha256sum {} + ); } > "$note"
+      rm -rf "$j"; mkdir -p "$j"; mv "$note" "$j/RETENU.txt"
+      echo "expurger : journal retenu (motif non expurgeable)"
+    fi
+  fi
+  # Autres fichiers (sortie et erreurs de session, résultat, entrée…) : remplacés un à un par une
+  # empreinte ; un JSON reste un JSON, que verifier lit comme un résultat retenu.
   while IFS= read -r -d '' f; do
-    if grep -qE -- "$MOTIFS_RETENUE" "$f"; then trouve=true; fi
-  done < <(find "$j" -type f -print0)
-  [[ "$trouve" == true ]] || return 0
-  local note; note="$(mktemp)"
-  { echo "Journal retenu : un motif de clé ou de jeton non expurgeable par remplacement y figure."
-    echo "Il n'est pas publié dans l'artifact (dépôt public). Empreintes des fichiers retirés :"
-    ( cd "$j" && find . -type f -exec sha256sum {} + ); } > "$note"
-  rm -rf "$j"; mkdir -p "$j"; mv "$note" "$j/RETENU.txt"
-  echo "expurger : journal retenu (motif non expurgeable)"
+    grep -qE -- "$MOTIFS_RETENUE" "$f" || continue
+    somme="$(sha256sum "$f" | cut -d' ' -f1)"
+    case "$f" in
+      *.json) jq -n --arg s "$somme" '{retenu: true, sha256: $s}' > "$f" ;;
+      *) printf 'Fichier retenu (motif de clé ou de jeton non expurgeable), sha256 %s\n' "$somme" > "$f" ;;
+    esac
+    echo "expurger : ${f#"$SORTIE"/} retenu (motif non expurgeable)"
+  done < <(find "$SORTIE" -type f ! -name '*.bundle' ! -path "$j/*" -print0)
 }
 
 expurger() { # remplace les valeurs secrètes et les motifs de jetons dans les fichiers texte de DIR
-  # D'abord le journal : une clé PEM ou un jeton de forme inconnue ne s'expurge pas par remplacement
-  # d'un en-tête ; le journal entier est alors retenu.
-  retenir_journal
+  # D'abord la rétention : une clé PEM ne s'expurge pas par le remplacement de son en-tête.
+  retenir
   local valeurs n=0 f; valeurs="$(mktemp)"; valeurs_secretes "$valeurs"
   while IFS= read -r -d '' f; do
     if grep -qE -- "$MOTIFS_SECRETS" "$f" || { [[ -s "$valeurs" ]] && grep -qF -f "$valeurs" "$f"; }; then
@@ -362,6 +375,13 @@ verifier() {
       || { bloquants+=("base $base absente de $BASE_BRANCHE (compare : ${cmp:-erreur})"); base=""; }
   fi
 
+  # Résultat de la session : rendu dans la PR et le commentaire publics, donc refusé s'il contient
+  # un motif de clé ou de jeton (recontrôlé ici : le job session partage l'uid de la session).
+  if [[ -f "$SORTIE/resultat.json" ]] && { jq -e '.retenu? == true' "$SORTIE/resultat.json" > /dev/null 2>&1 \
+       || grep -qE -- "$MOTIFS_SECRETS|$MOTIFS_RETENUE" "$SORTIE/resultat.json"; }; then
+    bloquants+=("résultat de session retenu : motif de clé ou de jeton, rien n'en est publié")
+    jq -n '{retenu: true}' > "$SORTIE/resultat.json"
+  fi
   # Résultat de la session : objet du schéma, statut parmi les quatre autorisés.
   if jq -e --arg s "$STATUTS" '(.statut | type == "string") and ((.statut) as $x | ($s | split(" ") | index($x)) != null)
         and (.titre_pr | type == "string") and (.controles | type == "array")' "$SORTIE/resultat.json" > /dev/null 2>&1; then
