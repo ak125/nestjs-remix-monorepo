@@ -6,7 +6,7 @@
 > **Carte du circuit (2026-11-15, mandat AD)** : le circuit du contenu (une pièce canon par
 > étape) est décrit dans `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md`
 > §« Carte du circuit ». Les prompts marqués « retiré » n'avaient aucun lecteur ; preuves dans
-> `audit/content-circuit-carte-et-preuves-2026-11-15.md`. Les lignes R3 et R5 restent en l'état
+> `audit/seo-content-circuit-2026-11-15.md`. Les lignes R3 et R5 restent en l'état
 > jusqu'à la livraison du mandat AB (agents).
 
 ---
