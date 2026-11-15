@@ -214,7 +214,7 @@ describe('VehicleModelsService — lectures DEFINER', () => {
       ['select', '*'],
       ['in', 'modele_id', [101]],
       ['eq', 'modele_display', 1],
-      ['or', 'modele_alias.ilike.%gi%,modele_name.ilike.%gi%'],
+      ['or', 'modele_alias.ilike."%gi%",modele_name.ilike."%gi%"'],
       ['limit', 50],
       ['range', 0, 49],
       ['order', 'modele_name'],
