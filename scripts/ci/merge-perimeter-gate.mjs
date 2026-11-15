@@ -38,7 +38,9 @@ const PROSE_FILE = /\.(?:md|markdown)$/i;
 // Une revue COMMENTED ne change pas la décision d'un relecteur ; ces trois états la fixent.
 const DECISIVE_REVIEW_STATES = new Set(["APPROVED", "CHANGES_REQUESTED", "DISMISSED"]);
 // Déclaration d'un cas de test, sur une ligne de diff (sans le `+` ou le `-`).
-const TEST_DECLARATION = /^\s*(?:it|test|describe)(?:\.\w+)*\s*\(/;
+// Tout appel `it`, `test` ou `describe` dans la ligne, même précédé (`const c = test(`, `suite.test(`)
+// ou séparé de sa parenthèse par un commentaire : le doute vaut refus.
+const TEST_DECLARATION = /(?<![\w$])(?:it|test|describe)(?:\s*\.\s*[\w$]+)*\s*(?:\/\*[\s\S]*?\*\/\s*)*\(/;
 const TITLED_DECLARATION = /^\s*((?:it|test|describe)(?:\.\w+)*)\s*\(\s*(["'`])((?:\\.|(?!\2).)*)\2/;
 /**
  * Clé d'une déclaration de test : l'appel sans `.skip`/`.only` et son titre, ou la ligne entière

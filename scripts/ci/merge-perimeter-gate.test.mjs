@@ -355,6 +355,19 @@ test("niveau B : un test retiré et compensé par un autre ajouté est refusé (
   assert.deepEqual(lbFiles(modified("frontend/tests/unit/a.test.tsx", block)), ["TEST_REMOVED"]);
 });
 
+test("niveau B : déclaration retirée sous une forme indirecte : refusée (revue Codex, 2e passage)", () => {
+  for (const line of [
+    'const caseCritique = test("contrôle", () => {});',
+    'suite.test("contrôle", () => {});',
+    'test /* commentaire */ ("contrôle", () => {});',
+  ]) {
+    const patch = `@@ -1 +1 @@\n-${line}\n+expect(1).toBe(1);`;
+    assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", patch)), ["TEST_REMOVED"], line);
+  }
+  const helper = "@@ -1 +1 @@\n-  expect(result).toBe(1);\n+  expect(result).toBe(2);";
+  assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", helper)), []);
+});
+
 test("niveau B : corps d'un test modifié, titre inchangé : admis", () => {
   const body = "@@ -1 +1 @@\n-it('calcule', () => expect(f(1)).toBe(2));\n+it('calcule', () => expect(f(1)).toBe(3));";
   assert.deepEqual(lbFiles(modified("backend/tests/unit/a.test.ts", body)), []);
