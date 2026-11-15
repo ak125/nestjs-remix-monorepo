@@ -12,7 +12,7 @@ Les trois sources sont celles du relevé du mandat (15 nov. 2026, 13:31 UTC) :
 
 | Source | Chemin | Entrées |
 |---|---|---|
-| S1 — sous-agents Claude Code des workspaces | `workspaces/seo-batch/.claude/agents/*.md` (39), `workspaces/marketing/.claude/agents/*.md` (3) | 42 |
+| S1 — sous-agents Claude Code des workspaces | `workspaces/seo-batch/.claude/agents/*.md` (39), `workspaces/marketing/.claude/agents/*.md` (3) ; exclu : `workspaces/seo-batch/.claude/agents/_shared/kp-shared-output.md`, gabarit partagé sans en-tête `name`, donc pas un agent (`git ls-files` en compte 43) | 42 |
 | S2 — agents Paperclip | `agents/{ceo,cmo,cpo,cto,rag-lead,seo-content,seo-qa}/AGENTS.md` | 7 |
 | S3 — carte d'exploitation | `.spec/00-canon/ai-registry/agent-operating-map.yaml` : 5 `surfaces` + 5 `handoffs` + 24 `departments` + 10 `department_handoffs` | 44 |
 
