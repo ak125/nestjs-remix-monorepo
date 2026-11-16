@@ -12,6 +12,9 @@
  *   --strict     exit 1 if any error finding (default: warn-only, exit 0)
  *   --self-test  run the schema fixture and assert SCHEMA error is detected
  *   --json       print the JSON report to stdout (in addition to file)
+ *   --contracts  department contracts only (owner decision 72): exit 1 on a
+ *                schema error or an incomplete contract, whatever --strict says;
+ *                lists the fields left pending_owner_decision. The CI gate.
  *
  * Exit codes (aligned with sibling validate-skills-frontmatter.js):
  *   0  OK, or warn-only run (no --strict)
@@ -59,6 +62,7 @@ const argv = new Set(process.argv.slice(2));
 const strict = argv.has("--strict");
 const selfTest = argv.has("--self-test");
 const jsonOut = argv.has("--json");
+const contractsOnly = argv.has("--contracts");
 
 // Exit codes (aligned with sibling validate-skills-frontmatter.js).
 const EXIT_OK = 0;
@@ -109,6 +113,63 @@ function checkDepartmentProfiles(departments, profileText) {
     if (d.profile_ref !== expected || !profileText.includes(`<a id="department-${d.id}"></a>`)) errors.push(`unresolved department profile: ${d.id}`);
   }
   return errors;
+}
+
+const CONTRACT_FIELDS = ["surveillance", "kpi", "source", "seuil_action", "ligne_rapport", "decisions"];
+
+/** True when a contract field holds an explicit, reasoned gap instead of a value. */
+function isPending(value) {
+  return Boolean(value && typeof value === "object" && "pending_owner_decision" in value);
+}
+
+/**
+ * Department contracts (owner decision 72). Pure: returns
+ * { errors: [{ id, message }], pending: [{ id, field, reason }] }.
+ * An error is an incomplete contract (missing or empty field, KPI producer that
+ * does not exist, KPI producer without kpi_primary, fewer than 24 contracts).
+ * A pending field is complete but surfaced: the owner has not decided it yet.
+ * `fileExists(rel)` is injected so the projection writer and tests stay pure.
+ */
+function checkDepartmentContracts(departments, fileExists) {
+  const errors = [];
+  const pending = [];
+  const err = (id, message) => errors.push({ id, message });
+  if (departments.length !== 24) {
+    err("departments", `expected 24 department contracts, found ${departments.length} departments`);
+  }
+  for (const d of departments) {
+    const c = d.contract;
+    if (!c || typeof c !== "object") {
+      err(d.id, `department ${d.id} has no contract`);
+      continue;
+    }
+    for (const field of CONTRACT_FIELDS) {
+      const v = c[field];
+      const empty =
+        v == null ||
+        (typeof v === "string" && v.trim().length < 3) ||
+        (Array.isArray(v) && v.length === 0) ||
+        (typeof v === "object" && !Array.isArray(v) && Object.keys(v).length === 0);
+      if (empty) {
+        err(d.id, `department ${d.id} contract field "${field}" is missing or empty`);
+        continue;
+      }
+      if (isPending(v)) {
+        const reason = String(v.pending_owner_decision || "").trim();
+        if (reason.length < 10) err(d.id, `department ${d.id} contract field "${field}" is pending without a reason`);
+        else pending.push({ id: d.id, field, reason });
+      }
+    }
+    const kpi = c.kpi;
+    if (kpi && typeof kpi === "object" && typeof kpi.producer === "string") {
+      if (!d.kpi_primary) err(d.id, `department ${d.id} contract names a KPI producer but has no kpi_primary`);
+      if (!fileExists(kpi.producer)) err(d.id, `department ${d.id} KPI producer not on disk: ${kpi.producer}`);
+    }
+    for (const n of Array.isArray(c.decisions) ? c.decisions : []) {
+      if (!Number.isInteger(n) || n < 1 || n > 90) err(d.id, `department ${d.id} cites decision ${n}, outside 1-90`);
+    }
+  }
+  return { errors, pending };
 }
 
 /**
@@ -256,6 +317,14 @@ function checkMap(map, ajvValidate) {
     for (const message of checkDepartmentProfiles(departments, profileText)) {
       add("warn", "DEPT_PROFILE_CONTRACT", message, "departments");
     }
+    // 7-bis) Department contracts (decision 72) — severity error: an incomplete
+    //        contract is refused; blocking in CI through --contracts.
+    const contracts = checkDepartmentContracts(departments, (rel) =>
+      fs.existsSync(path.join(REPO_ROOT, rel)),
+    );
+    for (const e of contracts.errors) {
+      add("error", "DEPT_CONTRACT_INCOMPLETE", e.message, e.id);
+    }
     const declaredCaps = new Set(
       (map.declared_capabilities || []).map((c) => c.id),
     );
@@ -402,6 +471,41 @@ function runSchemaSelfTest() {
   console.log(
     "handoff self-test: PASS (duplicate id + unresolved department detected)",
   );
+
+  // Department contracts (decision 72): an incomplete contract must be refused,
+  // by the schema (contract absent) and by checkDepartmentContracts (producer
+  // missing on disk, producer without kpi_primary, fewer than 24 contracts).
+  const contractFixturePath = path.join(
+    REPO_ROOT,
+    "scripts/governance/__fixtures__/agent-operating-map.contract.invalid.yaml",
+  );
+  let contractFixture;
+  try {
+    contractFixture = loadYaml(contractFixturePath);
+  } catch (e) {
+    console.error(`[FATAL] contract self-test setup failed: ${e.message}`);
+    process.exit(EXIT_OP_ERROR);
+  }
+  const exists = (rel) => fs.existsSync(path.join(REPO_ROOT, rel));
+  const contractCheck = checkDepartmentContracts(contractFixture.departments, exists);
+  const wanted = [/producer not on disk/, /has no kpi_primary/, /expected 24/];
+  const notRaised = wanted.filter((re) => !contractCheck.errors.some((e) => re.test(e.message)));
+  const withoutContract = structuredClone(contractFixture);
+  delete withoutContract.departments[0].contract;
+  const schemaRefuses = !ajvValidate(withoutContract);
+  const inMap = checkMap(contractFixture, ajvValidate).some(
+    (f) => f.code === "DEPT_CONTRACT_INCOMPLETE" && f.severity === "error",
+  );
+  if (notRaised.length > 0 || !schemaRefuses || !inMap) {
+    console.error(
+      `contract self-test: FAIL — not raised: ${notRaised.map(String).join(", ") || "none"}; ` +
+        `schema refuses missing contract: ${schemaRefuses}; checkMap error: ${inMap}`,
+    );
+    process.exit(EXIT_VALIDATION);
+  }
+  console.log(
+    "contract self-test: PASS (missing contract, absent producer, producer without KPI and count detected)",
+  );
   process.exit(EXIT_OK);
 }
 
@@ -442,6 +546,39 @@ function failOperational(code, message) {
   process.exit(EXIT_OP_ERROR);
 }
 
+/**
+ * --contracts: the blocking gate of decision 72. Schema errors and incomplete
+ * contracts fail (exit 1); pending fields are listed, never hidden, never a failure.
+ */
+function runContractsGate(map, ajvValidate) {
+  const schemaErrors = ajvValidate(map) ? [] : ajvValidate.errors || [];
+  const { errors, pending } =
+    schemaErrors.length === 0
+      ? checkDepartmentContracts(map.departments || [], (rel) =>
+          fs.existsSync(path.join(REPO_ROOT, rel)),
+        )
+      : { errors: [], pending: [] };
+  const result = {
+    ok: schemaErrors.length === 0 && errors.length === 0,
+    schema_errors: schemaErrors.map((e) => `${e.instancePath || "<root>"} ${e.message}`),
+    contract_errors: errors,
+    pending_owner_decision: pending,
+    departments_with_pending: [...new Set(pending.map((p) => p.id))].length,
+  };
+  if (jsonOut) {
+    console.log(JSON.stringify(result, null, 2));
+  } else {
+    console.log(
+      `department contracts: ${result.schema_errors.length} schema errors, ${errors.length} contract errors, ` +
+        `${pending.length} fields pending owner decision in ${result.departments_with_pending} departments`,
+    );
+    for (const m of result.schema_errors) console.log(`  [ERROR] SCHEMA: ${m}`);
+    for (const e of errors) console.log(`  [ERROR] DEPT_CONTRACT_INCOMPLETE: ${e.message}`);
+    for (const p of pending) console.log(`  [PENDING] ${p.id}.${p.field}: ${p.reason}`);
+  }
+  process.exit(result.ok ? EXIT_OK : EXIT_VALIDATION);
+}
+
 function main() {
   if (selfTest) return runSchemaSelfTest();
 
@@ -472,6 +609,8 @@ function main() {
     );
   }
 
+  if (contractsOnly) return runContractsGate(map, ajvValidate);
+
   const findings = checkMap(map, ajvValidate);
   const { report, errors, warns } = writeReport(findings);
 
@@ -500,4 +639,10 @@ if (require.main === module) {
   }
 }
 
-module.exports = { checkMap, checkDepartmentProfiles, makeAjv, loadYaml };
+module.exports = {
+  checkMap,
+  checkDepartmentProfiles,
+  checkDepartmentContracts,
+  makeAjv,
+  loadYaml,
+};

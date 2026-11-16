@@ -163,6 +163,15 @@ departments:
     repo_domains: [D11, D13, D15]
     capabilities: [suppliers-service, supplier-truth]
     state: partial                   # activation runtime non verifiee par cette projection
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Paiements annulés pour indisponibilité : 3 sur 3 sur 30 jours (mesure du 2026-05-31, Vue 1)."
+      kpi:
+        pending_owner_decision: "supplier_unavailability_cancellations : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: "Tarif price-import, suppliers.service, ___xtr_supplier, pri_dispo et pri_marge_n ; supplier-truth inerte tant que SUPPLIER_TRUTH_SYNC_ENABLED ne vaut pas true (Vue 1, ligne 12)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "supplier availability report"
+      decisions: [72]
 
   - id: sales
     business_number: 13
@@ -176,6 +185,15 @@ departments:
     repo_domains: [D11]
     capabilities: [cart, orders, funnel-events]
     state: partial                   # funnel instrumentation partial (not all events emitted)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Panier, checkout, payé, gardé (Vue 1)."
+      kpi:
+        producer: "backend/src/modules/admin/services/command-center-kpi.service.ts"
+        rule: "toPaymentsKeptKpi"
+      source: "___xtr_order, cinq colonnes d'état et motif d'annulation, lecture seule, sans montant ni client."
+      seuil_action: "CRITICAL si aucune commande payée n'est gardée sur 30 jours ; WARNING si au moins une annulation après paiement ; OK sinon (toPaymentsKeptKpi, seuils repris de audit/sales-funnel-scorecard.md)."
+      ligne_rapport: "sales funnel report"
+      decisions: [72]
 
   - id: pricing
     business_number: 16
@@ -189,6 +207,15 @@ departments:
     repo_domains: [D11]
     capabilities: [pricing-invariants]
     state: partial                   # economic-governance system; invariants live, CP partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Marge sur paniers réels (Vue 1)."
+      kpi:
+        pending_owner_decision: "margin_protected : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: "Module pricing et PricingInvariantsService (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "margin risk report"
+      decisions: [72]
 
   - id: data
     business_number: 22
@@ -202,6 +229,15 @@ departments:
     repo_domains: [D10]
     capabilities: [analytics, cwv-beacon]
     state: partial                   # measurement exists; reliability gaps (funnel/CWV instrumentation)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Segment panier vers paiement et attribution à 0 % (Vue 1)."
+      kpi:
+        producer: "backend/src/modules/admin/services/command-center-kpi.service.ts"
+        rule: "command-center-action-rules/department-kpi.rules.ts, toMetricReliabilityKpi"
+      source: "Verdict TrackingIntegrityService (contrôles de la mesure des commandes)."
+      seuil_action: "OK si le verdict est CERTIFIED ; CRITICAL si aucun contrôle ne passe ; WARNING sinon ; UNKNOWN sans verdict (toMetricReliabilityKpi)."
+      ligne_rapport: "tracking integrity report"
+      decisions: [72]
 
   - id: runtime
     business_number: 21
@@ -215,6 +251,15 @@ departments:
     repo_domains: [D10, D13]
     capabilities: [observability, health, rpc-alerts]
     state: partial                   # observability live; commerce-runtime plane (RCOP) partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Segment panier vers paiement non instrumenté (Vue 1)."
+      kpi:
+        pending_owner_decision: "runtime_health : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts ; intitulé seul, sans formule ni fenêtre (mandat AJ, 2026-11-15). Formule, fenêtre et seuils à décider."
+      source: "NestJS, Remix, Supabase et skill runtime-truth-audit (Vue 1) ; /health."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "runtime health report"
+      decisions: [72]
 
   - id: wiki
     business_number: 9
@@ -228,6 +273,15 @@ departments:
     repo_domains: [D6]
     capabilities: [wiki-proposal-writer, rag-knowledge-bootstrap]
     state: partial                   # ADR-033 Phase 2 sas; readiness chain partial (wiki produces, consumers read)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Chaîne de readiness RAW vers WIKI (ADR-033, Vue 1)."
+      kpi:
+        pending_owner_decision: "wiki_readiness : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: "Dépôt automecanik-wiki : fiches validées et contrôle wiki-readiness-check.py."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "wiki readiness report"
+      decisions: [72]
 
   - id: seo
     business_number: 7
@@ -241,6 +295,15 @@ departments:
     repo_domains: [D3]
     capabilities: [seo-pages, seo-roles, internal-linking, seo-gamme-audit]
     state: partial                   # pages live; ATC conversion gap (IMPROVE) — resolves wiki→seo handoff
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Pages vues sans ajout au panier (452 vues pour 18 ajouts, mesure du 2026-06-01, Vue 1)."
+      kpi:
+        producer: "backend/src/modules/admin/services/command-center-kpi.service.ts"
+        rule: "command-center-action-rules/department-kpi.rules.ts, toPagesGeneratingAtcKpi"
+      source: "__seo_event_log (session, date, page source), lecture seule, 30 jours glissants."
+      seuil_action: "CRITICAL si aucune page SEO n'a généré d'ajout au panier sur 30 jours, sinon UNKNOWN (toPagesGeneratingAtcKpi) ; aucun seuil OK ou WARNING fixé."
+      ligne_rapport: "page report"
+      decisions: [72]
 
   - id: catalog
     business_number: 10
@@ -254,6 +317,15 @@ departments:
     repo_domains: [D1, D4]
     capabilities: [catalog-core, compatibility, catalog-integrity, vehicle-ops]   # vehicle-ops resolves via skills.registry
     state: partial                   # catalog live; displayed-vs-real availability gap (epicentre rupture, IMPROVE)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Pièces affichées vendables en rupture (environ 11,7k en embrayage, mesure du 2026-06-01) ; quarantaine seulement après la sentinelle de disponibilité du 12 (Vue 1)."
+      kpi:
+        pending_owner_decision: "compat_and_displayed_availability : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts ; intitulé seul, sans formule ni fenêtre (mandat AJ, 2026-11-15). Formule, fenêtre et seuils à décider."
+      source: "Modules catalog et vehicles, catalog-integrity (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "catalog integrity report"
+      decisions: [72]
 
   - id: diagnostic
     business_number: 11
@@ -267,6 +339,18 @@ departments:
     repo_domains: [D7]
     capabilities: [diagnostic-engine, knowledge-graph, vehicle-ops]   # vehicle-ops via skills.registry
     state: partial                   # V1A.0 OFF; __diag_* peuplé, kg_* vides
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance:
+        pending_owner_decision: "Rôle redéfini le 2026-11-04 (Expertise technique automobile) sans objet de surveillance écrit."
+      kpi:
+        none: "Sans KPI propre depuis l'organisation du 2026-11-04 ; diagnostic_to_product est porté par le 20 (audit/automecanik-departments-map.md)."
+      source:
+        pending_owner_decision: "Aucune source de mesure désignée depuis l'organisation du 2026-11-04."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport:
+        pending_owner_decision: "« diagnostic report » de Vue 1 est un état daté, antérieur à l'organisation du 2026-11-04."
+      decisions: [72]
 
   - id: marketing
     business_number: 4
@@ -280,6 +364,15 @@ departments:
     repo_domains: [D12]
     capabilities: [marketing, marketing-backlinks]
     state: partial                   # ADR-036 Phase 1-2 (G1 agents)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Qualité du trafic direct (75 % des sessions, rebond proche de 100 %) et routage accueil/blog vers produit (Vue 1, mesure du 2026-06-01)."
+      kpi:
+        pending_owner_decision: "qualified_demands : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: "__seo_ga4_daily (sessions GA4) ; module marketing (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "acquisition report"
+      decisions: [72]
 
   - id: brand
     business_number: 5
@@ -293,6 +386,15 @@ departments:
     repo_domains: [D12]
     capabilities: [brand-compliance-gate, fafa-brand-safety-reviewer]
     state: partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Avis et cohérence de marque (Vue 1)."
+      kpi:
+        pending_owner_decision: "brand_trust : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: "brand-compliance-gate et skill fafa-brand-safety-reviewer (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "brand compliance report"
+      decisions: [72]
 
   - id: content
     business_number: 6
@@ -306,6 +408,15 @@ departments:
     repo_domains: [D5]
     capabilities: [blog, ai-content]
     state: partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Contenu, puis page, puis ajout au panier (Vue 1)."
+      kpi:
+        pending_owner_decision: "reusable_validated_content : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts ; intitulé seul, sans formule ni fenêtre (mandat AJ, 2026-11-15). Formule, fenêtre et seuils à décider."
+      source: "Modules blog et ai-content, skill content-audit (Vue 1) ; contenu sourcé WIKI (CLAUDE.md, invariant 4)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "content coverage report"
+      decisions: [72]
 
   - id: media
     business_number: 8
@@ -319,6 +430,15 @@ departments:
     repo_domains: [D12]
     capabilities: [fafa-media-factory, fafa-script-generator]
     state: partial                   # MANUAL mode; pilot (#805/#806)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "source_code vers demande : 0 (Vue 1)."
+      kpi:
+        pending_owner_decision: "demands_from_video : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts ; intitulé seul, sans formule ni fenêtre (mandat AJ, 2026-11-15). Formule, fenêtre et seuils à décider."
+      source: "Fafa factory et skills fafa-* (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "media performance report"
+      decisions: [72]
 
   - id: support
     business_number: 14
@@ -332,6 +452,15 @@ departments:
     repo_domains: [D11]
     capabilities: [support, customers]
     state: dormant                   # 0 panier abandonné capturé
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Paniers abandonnés capturés : 0 (Vue 1)."
+      kpi:
+        pending_owner_decision: "reactivation_satisfaction : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: "Module support, retention agent, abandoned-cart (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "retention report"
+      decisions: [72]
 
   - id: logistics
     business_number: 15
@@ -345,6 +474,15 @@ departments:
     repo_domains: [D11]
     capabilities: [shipping]
     state: partial                   # physique externe
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Délai réel d'expédition (Vue 1)."
+      kpi:
+        pending_owner_decision: "delays_and_returns : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: "Modules shipping et orders ; logistique physique externe (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "délais/retours report"
+      decisions: [72]
 
   - id: finance
     business_number: 17
@@ -358,6 +496,15 @@ departments:
     repo_domains: [D11]
     capabilities: [invoices]
     state: partial                   # distinct de pricing (Pricing ≠ Finance)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Cash net après annulations (Vue 1)."
+      kpi:
+        pending_owner_decision: "billing_integrity : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: "Module invoices et comptabilité externe (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "cash digest (manuel)"
+      decisions: [72]
 
   - id: people
     business_number: 24
@@ -371,6 +518,15 @@ departments:
     repo_domains: [D8]
     capabilities: [staff]
     state: partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Modules dont le rôle reste à rédiger (Vue 1)."
+      kpi:
+        pending_owner_decision: "staff_coverage : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: ".claude/knowledge, REPO_MAP et .claude/rules (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "doc coverage report"
+      decisions: [72]
 
   - id: governance
     business_number: 2
@@ -384,6 +540,15 @@ departments:
     repo_domains: [D15]
     capabilities: [governance-vault-ops]   # via skills.registry
     state: live                      # governance-vault actif
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Gates sans bypass (Vue 1)."
+      kpi:
+        pending_owner_decision: "limits_respected : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts ; intitulé seul, sans formule ni fenêtre (mandat AJ, 2026-11-15). Formule, fenêtre et seuils à décider."
+      source: "Contrôles CI du monorepo et registres .spec/00-canon ; le Vault (governance-vault-ops, Vue 1) passe en archive après déplacement (décision 73)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "vault audit (à renommer après la sortie du Vault, décision 73)"
+      decisions: [72, 73]
 
   - id: strategy
     business_number: 3
@@ -397,6 +562,15 @@ departments:
     repo_domains: [D10]
     capabilities: [continuous-improvement-global]   # via skills.registry
     state: live
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Gap-score par département (Vue 1)."
+      kpi:
+        pending_owner_decision: "reuse_improve_create_verdicts : aucun producteur dans backend/src/modules/admin/services/command-center-kpi.service.ts. Formule, fenêtre et seuils à décider."
+      source: "Skill continuous-improvement-global (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "weekly improvement verdict"
+      decisions: [72]
 
   # #23 of audit/automecanik-departments-map.md (Vue 1). Groundable but missed in
   # PR #848's seed — the agent-governance machinery (operating map + skills registry)
@@ -414,6 +588,15 @@ departments:
     repo_domains: [D15]
     capabilities: [agent-operating-map, skills-registry]
     state: live                      # operating-map validator + skills registry are live, evidence-backed
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Agents non reliés ou inutilisés (Vue 1)."
+      kpi:
+        pending_owner_decision: "useful_capabilities_not_complexity : aucun producteur ; intitulé seul (mandat AJ). Ne citer cet identifiant dans le service KPI qu'avec un producteur réel : sa présence ouvre la session pilote-file (ADR-128 D2)."
+      source: "canonical.json, skills registry et continuous-improvement-global (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "capability report"
+      decisions: [72]
 
   - id: direction
     business_number: 1
@@ -425,6 +608,16 @@ departments:
     repo_domains: []
     capabilities: []
     state: dormant
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Une décision par semaine, tracée (Vue 1)."
+      kpi:
+        pending_owner_decision: "Aucun kpi_primary : Vue 1 nomme « priorité semaine claire » sans formule ni producteur."
+      source:
+        pending_owner_decision: "Aucune source de mesure désignée pour la Direction."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "board digest hebdo"
+      decisions: [72]
 
   - id: legal
     business_number: 18
@@ -436,6 +629,18 @@ departments:
     repo_domains: []
     capabilities: []
     state: dormant
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance:
+        pending_owner_decision: "Aucun objet de surveillance dans Vue 1 (NO-CODE, dormant)."
+      kpi:
+        pending_owner_decision: "Aucun kpi_primary ; Vue 1 nomme « conformité » sans formule ni producteur."
+      source:
+        pending_owner_decision: "Aucune source désignée (Vue 1 : NO-CODE)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport:
+        pending_owner_decision: "Vue 1 ne prévoit aucun rapport pour Juridique et Assurances."
+      decisions: [72]
 
   - id: risk-audit
     business_number: 19
@@ -447,6 +652,15 @@ departments:
     repo_domains: []
     capabilities: []
     state: dormant
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Risques ouverts et fermés (Vue 1)."
+      kpi:
+        pending_owner_decision: "Aucun kpi_primary ; Vue 1 nomme « risques suivis » sans formule ni producteur."
+      source: "audit/, ratchets CI et skill runtime-truth-audit (Vue 1)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé : la feuille « Décisions du 15 nov. » n'a pas été lue par le mandat AR ; aucun seuil inventé."
+      ligne_rapport: "risk/drift report"
+      decisions: [72]
 
   - id: product
     business_number: 20
@@ -459,6 +673,15 @@ departments:
     repo_domains: []
     capabilities: []
     state: dormant
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Sessions du diagnostic qui voient ensuite un produit ; conversion et abandon (organisation du 2026-11-04)."
+      kpi:
+        producer: "backend/src/modules/admin/services/command-center-kpi.service.ts"
+        rule: "command-center-action-rules/department-kpi.rules.ts, toDiagnosticToProductKpi"
+      source: "__seo_event_log (session, date, page source), lecture seule, 30 jours glissants."
+      seuil_action: "CRITICAL si des sessions ont visité le diagnostic et qu'aucune n'a vu de produit ensuite, sinon UNKNOWN (toDiagnosticToProductKpi) ; aucun seuil OK ou WARNING fixé."
+      ligne_rapport: "UX/CWV audit report"
+      decisions: [72]
 
 # Allowlist of capabilities that resolve to neither a registry skill nor a node
 # yet (modules/engines/services/signals). Keeps department.capabilities from being

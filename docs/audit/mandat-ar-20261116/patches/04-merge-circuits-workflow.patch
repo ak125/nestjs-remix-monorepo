@@ -1,0 +1,159 @@
+--- /dev/null
++++ b/.github/workflows/merge-circuits.yml
+@@ -0,0 +1,156 @@
++name: 🚦 Circuit de fusion
++
++# Décision 72 de l'owner (2026-11-15) : trois circuits de fusion.
++#   faible : CI verte → fusion automatique ;
++#   moyen  : CI verte + revue Codex approuvée sur la tête → fusion automatique ;
++#   élevé  : approbation de l'owner sur la tête ; l'owner fusionne.
++#
++# Le circuit est calculé par scripts/ci/merge-circuit.mjs, lu sur le commit de BASE :
++# une PR ne peut pas abaisser son propre circuit en modifiant le classeur,
++# ownership.yaml ou CODEOWNERS (ces chemins sont eux-mêmes en zone CODEOWNERS).
++# Aucun code de la PR n'est exécuté : la liste des fichiers vient de l'API.
++#
++# Le job échoue tant que l'approbation exigée par le circuit manque sur la tête.
++# Rendu requis sur `main` (réglage owner), il est donc le verrou des circuits moyen
++# et élevé ; la fusion automatique n'est armée que sur une tête dont le check passe.
++# Jeton de fusion : GitHub App (secrets MERGE_CIRCUIT_APP_ID / MERGE_CIRCUIT_APP_PRIVATE_KEY),
++# car une fusion faite par GITHUB_TOKEN ne déclenche pas ci.yml (chaîne PREPROD).
++# Secrets absents : le circuit est calculé, étiqueté et vérifié, rien n'est armé
++# (avis visible dans le run), jamais de repli silencieux sur GITHUB_TOKEN.
++
++on:
++  pull_request_target:
++    types: [opened, synchronize, reopened, ready_for_review]
++  pull_request_review:
++    types: [submitted, dismissed]
++
++permissions:
++  contents: read
++  pull-requests: write
++
++concurrency:
++  group: merge-circuit-${{ github.event.pull_request.number }}
++  cancel-in-progress: true
++
++jobs:
++  circuit:
++    name: 🚦 Circuit de fusion
++    runs-on: ubuntu-latest
++    timeout-minutes: 10
++    env:
++      GH_REPO: ${{ github.repository }}
++      PR: ${{ github.event.pull_request.number }}
++      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
++      IS_DRAFT: ${{ github.event.pull_request.draft }}
++      OWNER_LOGIN: ak125
++      CODEX_REVIEWER_LOGIN: ${{ vars.CODEX_REVIEWER_LOGIN }}
++      # `secrets` n'est pas lisible dans un `if:` de step : on expose sa présence seule.
++      HAS_MERGE_APP: ${{ secrets.MERGE_CIRCUIT_APP_ID != '' }}
++    steps:
++      - name: Checkout de la base (jamais la tête de PR)
++        uses: actions/checkout@v7
++        with:
++          ref: ${{ github.event.pull_request.base.sha }}
++          persist-credentials: false
++
++      - name: Setup Node
++        uses: actions/setup-node@v7
++        with:
++          node-version: "24"
++          cache: "npm"
++
++      - name: Install (sans scripts, ADR-030)
++        run: npm ci --ignore-scripts
++
++      - name: Calcul du circuit
++        id: circuit
++        env:
++          GH_TOKEN: ${{ github.token }}
++        run: |
++          set -euo pipefail
++          node scripts/ci/merge-circuit.mjs --pr "$PR" > /tmp/verdict.json
++          circuit=$(jq -r .circuit /tmp/verdict.json)
++          echo "circuit=$circuit" >> "$GITHUB_OUTPUT"
++          {
++            echo "### Circuit : $circuit"
++            echo
++            echo "| circuit | motif | chemin | détail |"
++            echo "|---|---|---|---|"
++            jq -r '.reasons[] | "| \(.circuit) | \(.code) | `\(.path)` | \(.detail // "") |"' /tmp/verdict.json
++          } >> "$GITHUB_STEP_SUMMARY"
++
++      - name: Étiquette du circuit
++        env:
++          GH_TOKEN: ${{ github.token }}
++          CIRCUIT: ${{ steps.circuit.outputs.circuit }}
++        run: |
++          set -euo pipefail
++          for c in faible moyen eleve; do
++            if [ "$c" != "$CIRCUIT" ]; then
++              gh pr edit "$PR" --remove-label "circuit:$c" >/dev/null 2>&1 || true
++            fi
++          done
++          gh pr edit "$PR" --add-label "circuit:$CIRCUIT"
++
++      - name: Approbation exigée sur la tête
++        id: approval
++        env:
++          GH_TOKEN: ${{ github.token }}
++          CIRCUIT: ${{ steps.circuit.outputs.circuit }}
++        run: |
++          set -euo pipefail
++          # Dernier avis de chaque relecteur, sur la tête exacte de la PR.
++          gh api --paginate "repos/$GH_REPO/pulls/$PR/reviews" > /tmp/reviews.json
++          approved_by() {
++            jq -s --arg sha "$HEAD_SHA" --arg who "$1" '
++              add | map(select(.commit_id == $sha and .user.login == $who
++                               and (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")))
++              | last | (.state // "") == "APPROVED"' /tmp/reviews.json
++          }
++          ok=false
++          case "$CIRCUIT" in
++            faible) ok=true ;;
++            moyen)
++              if [ -z "$CODEX_REVIEWER_LOGIN" ]; then
++                echo "::error::Circuit moyen : variable de dépôt CODEX_REVIEWER_LOGIN non définie, aucune revue Codex ne peut être reconnue."
++              elif [ "$(approved_by "$CODEX_REVIEWER_LOGIN")" = "true" ]; then ok=true
++              else echo "::error::Circuit moyen : revue Codex approuvée absente sur $HEAD_SHA."; fi ;;
++            eleve)
++              if [ "$(approved_by "$OWNER_LOGIN")" = "true" ]; then ok=true
++              else echo "::error::Circuit élevé : approbation de l'owner absente sur $HEAD_SHA."; fi ;;
++            *) echo "::error::Circuit inconnu : $CIRCUIT" ;;
++          esac
++          echo "ok=$ok" >> "$GITHUB_OUTPUT"
++
++      - name: Jeton de fusion (GitHub App)
++        id: app
++        if: steps.approval.outputs.ok == 'true' && steps.circuit.outputs.circuit != 'eleve' && env.IS_DRAFT != 'true' && env.HAS_MERGE_APP == 'true'
++        uses: actions/create-github-app-token@v3
++        with:
++          app-id: ${{ secrets.MERGE_CIRCUIT_APP_ID }}
++          private-key: ${{ secrets.MERGE_CIRCUIT_APP_PRIVATE_KEY }}
++
++      - name: Armer ou désarmer la fusion automatique
++        env:
++          GH_TOKEN: ${{ github.token }}
++          APP_TOKEN: ${{ steps.app.outputs.token }}
++          CIRCUIT: ${{ steps.circuit.outputs.circuit }}
++          OK: ${{ steps.approval.outputs.ok }}
++        run: |
++          set -euo pipefail
++          if [ "$CIRCUIT" = "eleve" ] || [ "$OK" != "true" ] || [ "$IS_DRAFT" = "true" ]; then
++            gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
++            echo "Fusion automatique non armée (circuit $CIRCUIT, approbation=$OK, brouillon=$IS_DRAFT)."
++            exit 0
++          fi
++          if [ -z "$APP_TOKEN" ]; then
++            echo "::notice::Circuit $CIRCUIT admis, mais MERGE_CIRCUIT_APP_ID absent : fusion automatique non armée."
++            exit 0
++          fi
++          GH_TOKEN="$APP_TOKEN" gh pr merge "$PR" --auto --squash --match-head-commit "$HEAD_SHA"
++          echo "Fusion automatique armée sur $HEAD_SHA (circuit $CIRCUIT)."
++
++      - name: Verdict du circuit
++        env:
++          OK: ${{ steps.approval.outputs.ok }}
++        run: test "$OK" = "true"
