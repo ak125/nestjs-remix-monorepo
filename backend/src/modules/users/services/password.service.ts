@@ -18,6 +18,7 @@ import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { MailService } from '../../../services/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { TABLES } from '@repo/database-types';
+import { PasswordCryptoService } from '../../../shared/crypto/password-crypto.service';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 
@@ -38,6 +39,7 @@ export class PasswordService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly mailService: MailService,
+    private readonly passwordCrypto: PasswordCryptoService,
   ) {
     super(configService);
     this.logger.log('PasswordService initialized - Modern architecture');
@@ -307,42 +309,23 @@ export class PasswordService extends SupabaseBaseService {
   }
 
   /**
-   * Vérifier un mot de passe (compatible avec l'ancien système)
-   * ✅ Support legacy MD5+crypt et moderne bcrypt
+   * Vérifier un mot de passe : même règle que la connexion (bcrypt, empreinte
+   * enveloppée, anciens formats), portée par PasswordCryptoService.
    */
   async verifyPassword(
     plainPassword: string,
     hashedPassword: string,
   ): Promise<boolean> {
     try {
-      if (hashedPassword.startsWith('$2')) {
-        // Format bcrypt moderne
-        return await bcrypt.compare(plainPassword, hashedPassword);
-      } else {
-        // Ancien format MD5+crypt
-        const md5Hash = crypto
-          .createHash('md5')
-          .update(plainPassword)
-          .digest('hex');
-        const salt = 'im10tech7';
-        const legacyHash = this.phpCrypt(md5Hash, salt);
-        return legacyHash === hashedPassword;
-      }
+      const result = await this.passwordCrypto.validatePassword(
+        plainPassword,
+        hashedPassword,
+      );
+      return result.isValid;
     } catch (error) {
       this.logger.error('Error verifying password:', error);
       return false;
     }
-  }
-
-  /**
-   * Simuler crypt() PHP pour compatibilité legacy
-   */
-  private phpCrypt(password: string, salt: string): string {
-    return crypto
-      .createHash('sha256')
-      .update(salt + password)
-      .digest('base64')
-      .substring(0, 13);
   }
 
   /**

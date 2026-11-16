@@ -1,21 +1,43 @@
 name: 🌅 Morning health digest
 
-# Daily weekday digest published as a GitHub issue assigned to @ak125.
-# Owner (subscribed to repo) receives the email automatically.
+# ONE standing issue assigned to @ak125 (mandat AM and its complement, decisions
+# 67, 68 and 72 of 2026-11-16; logic in .github/scripts/morning-health-digest.sh).
 #
+# - Every 15 minutes: urgent signals only (simulated purchase path, critical
+#   security alerts, price guard-rail), one mail per incident.
+# - Once a day, on the first run at or after 7 h Europe/Paris (hour read from the
+#   report configuration if any): body replaced, one line per department, the
+#   owner's gestures on top, a short mail only if a gesture is expected.
+# - workflow_dispatch: the daily report at once (--force). A mail already sent the
+#   same Paris day is not sent again.
+# A comment is posted only when a signal changes colour.
+#
+# Secrets, by name (values never printed):
+#   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY  existing (diag-canon-slugs-export.yml);
+#     read-only PostgREST counts, else database signals « indisponible ».
+#   GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN, GMAIL_USER_EMAIL,
+#   ALERT_EMAIL_TO, EMAIL_FROM  same names as scripts/monitoring/check-payment-tunnel.sh;
+#     to be created as repository secrets by the owner, else the mail is written
+#     « canal indisponible » in the issue and the run log.
+# Repository variables (optional, empty if unset):
+#   REPORT_CONFIG_PATH  path in the repo of a report-config.v1 JSON file (hook for
+#     the department contracts, mandat AR). Unset → the script defaults, declared.
+#   GARDE_PRIX_JSON_PATH  path of a garde-prix.v1 file (no producer yet).
+#
+# Cron granularity: GitHub may start a scheduled run late; the 15-minute cadence
+# bounds the delay of the 7 h report and of an urgent mail to one or two slots.
 # Replaces Claude Desktop routine `trig_017ywezN156yjiVW8BRVcYi6` (disabled
-# 2026-05-17) — self-hosted in repo, audit-trail via git history.
-#
-# Cron: 05:00 UTC = 07:00 Europe/Paris (CEST) on weekdays.
+# 2026-05-17).
 on:
   schedule:
-    - cron: "0 5 * * 1-5"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
   issues: write
   actions: read
   contents: read
+  security-events: read
 
 concurrency:
   group: morning-health-digest
@@ -23,29 +45,34 @@ concurrency:
 
 jobs:
   digest:
-    name: Collect signals + publish digest issue
+    name: Urgent checks, daily report on the standing issue
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - name: Checkout (shallow)
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
-      - name: Run morning digest script
+      - name: Collect signals and update the standing digest issue
         id: collect
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-        run: bash .github/scripts/morning-health-digest.sh
-
-      - name: Create digest issue
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
+          GMAIL_USER_EMAIL: ${{ secrets.GMAIL_USER_EMAIL }}
+          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          REPORT_CONFIG: ${{ vars.REPORT_CONFIG_PATH }}
+          GARDE_PRIX_JSON: ${{ vars.GARDE_PRIX_JSON_PATH }}
+          EVENT: ${{ github.event_name }}
         run: |
-          gh issue create \
-            --repo "$REPO" \
-            --title "${{ steps.collect.outputs.title }}" \
-            --body-file "${{ steps.collect.outputs.body_path }}" \
-            --assignee ak125
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            bash .github/scripts/morning-health-digest.sh --publish --force
+          else
+            bash .github/scripts/morning-health-digest.sh --publish
+          fi

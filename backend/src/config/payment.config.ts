@@ -21,6 +21,14 @@ export interface PaymentConfig {
     certificateTest: string;
     mode: PaymentMode;
     apiUrl: string;
+    /**
+     * Mandat AY (2026-11-16) : les routes SystemPay/Cyberplus (confirmation
+     * `callback/cyberplus`, retour `callback/error`, `api/systempay/redirect`)
+     * et la méthode proposée au client sont fermées tant que
+     * SYSTEMPAY_CALLBACK_ENABLED ne vaut pas exactement `true`. Absente ou
+     * non renseignée (config de test incluse) = fermé.
+     */
+    callbackEnabled?: boolean;
   };
   app: {
     url: string;
@@ -56,6 +64,8 @@ export default registerAs('payment', (): PaymentConfig => {
     });
   }
 
+  const callbackEnabled = process.env.SYSTEMPAY_CALLBACK_ENABLED === 'true';
+
   const readOnly = isReadOnlyMode();
 
   if (readOnly) {
@@ -74,6 +84,7 @@ export default registerAs('payment', (): PaymentConfig => {
         apiUrl:
           process.env.SYSTEMPAY_API_URL ||
           'https://paiement.systempay.fr/vads-payment/',
+        callbackEnabled,
       },
       app: {
         url: process.env.APP_URL || 'http://localhost:3000',
@@ -128,6 +139,7 @@ export default registerAs('payment', (): PaymentConfig => {
       apiUrl:
         process.env.SYSTEMPAY_API_URL ||
         'https://paiement.systempay.fr/vads-payment/',
+      callbackEnabled,
     },
     app: {
       url: process.env.APP_URL!,
