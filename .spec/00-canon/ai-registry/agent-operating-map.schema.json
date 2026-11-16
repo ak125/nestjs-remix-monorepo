@@ -14,8 +14,10 @@
     "handoffs": { "type": "array", "items": { "$ref": "#/$defs/handoff" } },
     "departments":           { "type": "array", "items": { "$ref": "#/$defs/department" } },
     "declared_capabilities": { "type": "array", "items": { "$ref": "#/$defs/declaredCapability" } },
-    "department_handoffs":   { "type": "array", "items": { "$ref": "#/$defs/departmentHandoff" } }
+    "department_handoffs":   { "type": "array", "items": { "$ref": "#/$defs/departmentHandoff" } },
+    "department_contract_common": { "$ref": "#/$defs/departmentContractCommon" }
   },
+  "dependentRequired": { "departments": ["department_contract_common"] },
   "$defs": {
     "surfaceId":   { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
     "nodeId":      { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$" },
@@ -248,7 +250,18 @@
               "additionalProperties": false,
               "properties": {
                 "producer": { "type": "string", "pattern": "^[A-Za-z0-9_./-]+\\.(ts|js|mjs|cjs|sql|py|sh)$" },
-                "rule": { "type": "string", "minLength": 3 }
+                "rule": { "type": "string", "minLength": 3 },
+                "definition": { "type": "string", "minLength": 10 }
+              }
+            },
+            {
+              "description": "KPI defined by an owner decision but not produced yet: `definition` is what the decision measures, `producer_pending` says what is missing (producer, reliability sheet of decision 8). Listed by the validator, never treated as a measure.",
+              "type": "object",
+              "required": ["definition", "producer_pending"],
+              "additionalProperties": false,
+              "properties": {
+                "definition": { "type": "string", "minLength": 10 },
+                "producer_pending": { "type": "string", "minLength": 10 }
               }
             },
             {
@@ -266,6 +279,33 @@
         "source":{ "$ref": "#/$defs/contractText" },
         "seuil_action": { "$ref": "#/$defs/contractText" },
         "ligne_rapport": { "$ref": "#/$defs/contractText" },
+        "decisions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 1, "maximum": 90 }
+        }
+      }
+    },
+    "departmentContractCommon": {
+      "description": "Rules shared by every department contract (owner decisions cited by number): the single report, the KPI entry condition, what a crossed threshold opens, the missing-data wording and the measurement sources.",
+      "type": "object",
+      "required": ["rapport", "entree_kpi", "seuil_franchi", "donnee_absente", "sources"],
+      "additionalProperties": false,
+      "properties": {
+        "rapport":        { "$ref": "#/$defs/contractCommonRule" },
+        "entree_kpi":     { "$ref": "#/$defs/contractCommonRule" },
+        "seuil_franchi":  { "$ref": "#/$defs/contractCommonRule" },
+        "donnee_absente": { "$ref": "#/$defs/contractCommonRule" },
+        "sources":        { "$ref": "#/$defs/contractCommonRule" }
+      }
+    },
+    "contractCommonRule": {
+      "type": "object",
+      "required": ["regle", "decisions"],
+      "additionalProperties": false,
+      "properties": {
+        "regle": { "type": "string", "minLength": 10 },
         "decisions": {
           "type": "array",
           "minItems": 1,

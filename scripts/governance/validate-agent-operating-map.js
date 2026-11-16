@@ -124,15 +124,19 @@ function isPending(value) {
 
 /**
  * Department contracts (owner decision 72). Pure: returns
- * { errors: [{ id, message }], pending: [{ id, field, reason }] }.
+ * { errors: [{ id, message }], pending: [{ id, field, reason }],
+ *   unproduced: [{ id, definition, missing }] }.
  * An error is an incomplete contract (missing or empty field, KPI producer that
  * does not exist, KPI producer without kpi_primary, fewer than 24 contracts).
  * A pending field is complete but surfaced: the owner has not decided it yet.
+ * An unproduced KPI is decided (definition) but has no producer yet: listed,
+ * never counted as pending, never read as a measure (decisions 8 and 24).
  * `fileExists(rel)` is injected so the projection writer and tests stay pure.
  */
 function checkDepartmentContracts(departments, fileExists) {
   const errors = [];
   const pending = [];
+  const unproduced = [];
   const err = (id, message) => errors.push({ id, message });
   if (departments.length !== 24) {
     err("departments", `expected 24 department contracts, found ${departments.length} departments`);
@@ -165,11 +169,14 @@ function checkDepartmentContracts(departments, fileExists) {
       if (!d.kpi_primary) err(d.id, `department ${d.id} contract names a KPI producer but has no kpi_primary`);
       if (!fileExists(kpi.producer)) err(d.id, `department ${d.id} KPI producer not on disk: ${kpi.producer}`);
     }
+    if (kpi && typeof kpi === "object" && typeof kpi.producer_pending === "string") {
+      unproduced.push({ id: d.id, definition: kpi.definition, missing: kpi.producer_pending });
+    }
     for (const n of Array.isArray(c.decisions) ? c.decisions : []) {
       if (!Number.isInteger(n) || n < 1 || n > 90) err(d.id, `department ${d.id} cites decision ${n}, outside 1-90`);
     }
   }
-  return { errors, pending };
+  return { errors, pending, unproduced };
 }
 
 /**
@@ -492,19 +499,26 @@ function runSchemaSelfTest() {
   const notRaised = wanted.filter((re) => !contractCheck.errors.some((e) => re.test(e.message)));
   const withoutContract = structuredClone(contractFixture);
   delete withoutContract.departments[0].contract;
-  const schemaRefuses = !ajvValidate(withoutContract);
+  const schemaRefuses =
+    !ajvValidate(withoutContract) &&
+    (ajvValidate.errors || []).some((e) => e.params && e.params.missingProperty === "contract");
+  const withoutCommon = structuredClone(contractFixture);
+  delete withoutCommon.department_contract_common;
+  const commonRequired =
+    !ajvValidate(withoutCommon) &&
+    (ajvValidate.errors || []).some((e) => e.params && e.params.missingProperty === "department_contract_common");
   const inMap = checkMap(contractFixture, ajvValidate).some(
     (f) => f.code === "DEPT_CONTRACT_INCOMPLETE" && f.severity === "error",
   );
-  if (notRaised.length > 0 || !schemaRefuses || !inMap) {
+  if (notRaised.length > 0 || !schemaRefuses || !commonRequired || !inMap) {
     console.error(
       `contract self-test: FAIL — not raised: ${notRaised.map(String).join(", ") || "none"}; ` +
-        `schema refuses missing contract: ${schemaRefuses}; checkMap error: ${inMap}`,
+        `schema refuses missing contract: ${schemaRefuses}; common rules required: ${commonRequired}; checkMap error: ${inMap}`,
     );
     process.exit(EXIT_VALIDATION);
   }
   console.log(
-    "contract self-test: PASS (missing contract, absent producer, producer without KPI and count detected)",
+    "contract self-test: PASS (missing contract, missing common rules, absent producer, producer without KPI and count detected)",
   );
   process.exit(EXIT_OK);
 }
@@ -552,29 +566,32 @@ function failOperational(code, message) {
  */
 function runContractsGate(map, ajvValidate) {
   const schemaErrors = ajvValidate(map) ? [] : ajvValidate.errors || [];
-  const { errors, pending } =
+  const { errors, pending, unproduced } =
     schemaErrors.length === 0
       ? checkDepartmentContracts(map.departments || [], (rel) =>
           fs.existsSync(path.join(REPO_ROOT, rel)),
         )
-      : { errors: [], pending: [] };
+      : { errors: [], pending: [], unproduced: [] };
   const result = {
     ok: schemaErrors.length === 0 && errors.length === 0,
     schema_errors: schemaErrors.map((e) => `${e.instancePath || "<root>"} ${e.message}`),
     contract_errors: errors,
     pending_owner_decision: pending,
     departments_with_pending: [...new Set(pending.map((p) => p.id))].length,
+    kpi_without_producer: unproduced,
   };
   if (jsonOut) {
     console.log(JSON.stringify(result, null, 2));
   } else {
     console.log(
       `department contracts: ${result.schema_errors.length} schema errors, ${errors.length} contract errors, ` +
-        `${pending.length} fields pending owner decision in ${result.departments_with_pending} departments`,
+        `${pending.length} fields pending owner decision in ${result.departments_with_pending} departments, ` +
+        `${unproduced.length} decided KPIs without producer`,
     );
     for (const m of result.schema_errors) console.log(`  [ERROR] SCHEMA: ${m}`);
     for (const e of errors) console.log(`  [ERROR] DEPT_CONTRACT_INCOMPLETE: ${e.message}`);
     for (const p of pending) console.log(`  [PENDING] ${p.id}.${p.field}: ${p.reason}`);
+    for (const u of unproduced) console.log(`  [NO PRODUCER] ${u.id}.kpi: ${u.missing}`);
   }
   process.exit(result.ok ? EXIT_OK : EXIT_VALIDATION);
 }

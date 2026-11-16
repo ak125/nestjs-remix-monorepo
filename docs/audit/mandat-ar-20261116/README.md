@@ -23,9 +23,18 @@ correctifs passent `git apply --check` sur la base. Ils s'appliquent par la comm
 
 ## Champs de contrat en attente
 
-La feuille « Contrats de département et indicateurs AutoMecanik », onglet « Décisions du 15 nov. »,
-n'a pas été trouvée. Seules les décisions 72 et 73, citées dans le mandat, sont reprises. Les
-champs que cette feuille devait remplir, dont tous les `seuil_action`, portent
-`pending_owner_decision` avec la raison. Le schéma les accepte, et
-`validate-agent-operating-map.js --contracts` les compte (46 au 2026-11-16). Aucun numéro de
-décision ni aucun seuil n'a été inventé.
+Le complément au mandat AR (décisions de l'owner des 15 et 16 nov. 2026) a rempli les 24 contrats.
+Chaque champ cite ses décisions par numéro, sans en recopier le texte ni aucun montant. Les règles
+communes (rapport, fiche de fiabilité, seuil franchi, donnée absente, sources) sont dans
+`department_contract_common`.
+
+`validate-agent-operating-map.js --contracts` au 2026-11-16 :
+
+- 16 champs en `pending_owner_decision`, dans 14 départements (46 avant le complément). Ce sont
+  surtout des `seuil_action` que les décisions ne fixent pas, le N du département 15 (décision 27),
+  et trois sources non désignées (08, 11, 18).
+- 19 KPI décidés sans producteur (forme `definition` + `producer_pending`). Ils n'entrent pas au
+  rapport tant qu'ils n'ont ni producteur ni fiche de fiabilité (décision 8).
+- `kpi_primary` n'a pas changé. Les décisions 45, 49 et 40 remplacent `brand_trust`,
+  `compat_and_displayed_availability` et `staff_coverage`, mais l'identifiant du nouveau KPI n'a pas
+  été transmis : le contrat le dit, et rien n'a été inventé.

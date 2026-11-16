@@ -33,7 +33,7 @@ son décideur sur preuve, auto-review de sens comprise.
 
 | # | Où | Ce qui est écrit | État |
 |---|---|---|---|
-| 8 | `.spec/00-canon/ai-registry/agent-operating-map.schema.json:5` | « Hard-fail enforcement requires a vault ADR » | **corrigé dans le candidat** : les contrats sont bloquants en CI (décision 72) |
+| 8 | `.spec/00-canon/ai-registry/agent-operating-map.schema.json:5` et le commentaire d'en-tête des départements de `agent-operating-map.yaml` | « Hard-fail enforcement requires a vault ADR » | **corrigé dans le candidat** : les contrats sont bloquants en CI (décision 72) |
 | 9 | `.github/workflows/skills-canon-gate.yml:125` | « Hard-fail enforcement = vault ADR required » | **correctif proposé** : `patches/03-skills-canon-gate-fixture.patch` |
 | 10 | `.github/CODEOWNERS:7` | en-tête « ADR-015 (vault single source of truth) » | **correctif proposé** : `patches/01-codeowners.patch` |
 | 11 | `CLAUDE.md:5` et `CLAUDE.md:102-104` (§Gouvernance) | « gouvernance canonique dans le dépôt séparé ak125/governance-vault » ; « aucune nouvelle ADR, rule, policy… dans ce monorepo » ; « changement vault = PR signée, fusion humaine » | à corriger par l'owner (`/CLAUDE.md` est en zone CODEOWNERS) ; texte proposé dans [`commandes-owner.md`](commandes-owner.md) §6 |

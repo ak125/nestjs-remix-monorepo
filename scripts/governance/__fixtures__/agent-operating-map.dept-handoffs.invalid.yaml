@@ -20,6 +20,12 @@ surfaces:
       agents: []
 nodes: []
 handoffs: []
+department_contract_common:      # fixture : forme minimale valide des règles communes
+  rapport: { regle: "Rapport unique, fixture.", decisions: [7] }
+  entree_kpi: { regle: "Fiche de fiabilité, fixture.", decisions: [8] }
+  seuil_franchi: { regle: "Issue dept:NN, fixture.", decisions: [9] }
+  donnee_absente: { regle: "Pas de mesure, fixture.", decisions: [24] }
+  sources: { regle: "Sources de mesure, fixture.", decisions: [36] }
 departments:
   - id: a
     business_number: 1
