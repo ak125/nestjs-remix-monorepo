@@ -756,3 +756,58 @@ PR. C'est attendu.
 - `dependabot-auto-merge.yml` (contradiction 23) arme encore avec `GITHUB_TOKEN`. Il n'est pas
   raccordé à l'App : un run déclenché par Dependabot ne reçoit pas les secrets Actions, ce qui est
   à vérifier. Hors périmètre AR-6.
+
+## 16. Premier passage réel du circuit faible et précision de GATE-3 (complément AR-9)
+
+### Constats du 2026-11-16
+
+| Fait | Preuve |
+|---|---|
+| Sur #2109 (circuit faible), le job `🚦 Circuit de fusion` admet l'armement : `HAS_ACTIONS_APP: true`, `OK: true`, « Circuit faible admis sur `25fdfdd5…` : armement confié au job « 🔐 Armement » ». | run `43957012088` (`pull_request_target`), job terminé à 21:11:18 UTC |
+| Le job `🔐 Armement de la fusion automatique (App)` est **sauté** (0 étape), alors que sa condition explicite est vraie. La fusion automatique n'est pas armée. | même run, 21:11:18-19 UTC ; `autoMergeRequest` de #2109 = `null` |
+| Cause : le `if:` du job n'a pas de fonction d'état, donc GitHub y ajoute `success()`. En circuit faible, `claude-review` est sauté et, bien qu'il ne soit qu'un ancêtre indirect (`arm` → `circuit` → `claude-review`), il fait passer `success()` à faux. Ce comportement est observé, pas documenté. La doc ne parle d'ancêtres que pour `failure()`. | [actions/runner#2205](https://github.com/actions/runner/issues/2205) (ouvert, « bug ») ; expressions, « Status check functions » |
+| `🔍 DEV Safety (Observe)` est rouge sur toutes les PR, GATE-3 : « merge-circuits.yml uses pull_request_target with actions/checkout ». Les deux checkouts de ce fichier extraient `base.sha` avec `persist-credentials: false`. Ce check n'est pas requis, mais `merge-pr.sh` refuse tout check rouge. | #2109 et #2106, 2026-11-16 vers 21:08 UTC |
+
+Conséquences :
+- en circuit faible, la fusion automatique ne s'arme jamais ;
+- en circuit moyen, `claude-review` tourne, et le défaut ne se manifeste pas ;
+- en circuit élevé, rien n'est armé, par conception.
+
+### Corrections
+
+| Livrable | Fichier visé | Réservé ? | sha256 |
+|---|---|---|---|
+| PR #2110 | `tools/validator-gates/gate-3-runner-blast-radius.sh` et son test (17 cas) : seul un checkout de `base.sha`, avec `persist-credentials: false` et sans `repository`, est admis sous `pull_request_target` ; tout autre checkout reste rouge | non (circuit élevé : approbation de l'owner) | — |
+| `patches/10-merge-circuits-arm-condition.patch` | `merge-circuits.yml`, job `arm` : `if: ${{ !cancelled() && needs.circuit.result == 'success' && … }}` | oui | `44606faf6eccd85242f705a52cb494866f07c6d5f7d2ee3a461608929b227332` |
+| `patches/11-dev-safety-gate3-tests.patch` (après #2110) | `validator-dev-safety-observe.yml` : lance le test de GATE-3 dans le job Observe | oui | `34fb3ab7c90c4857cf826f5e9b80b4a96f43d0ebdd06c8f6c6d12082d8777c3e` |
+
+Option écartée : retirer le checkout de `merge-circuits.yml` et lire le script par l'API à `base.sha`.
+- `classify` installe les dépendances de la base avant de lancer `merge-circuit.mjs`, et `claude-review` lit les règles du dépôt. Il faudrait réécrire `actions/checkout` fichier par fichier.
+- La garde resterait imprécise pour le prochain workflow sûr.
+
+### Gestes de l'owner (poste, PowerShell 32 bits)
+
+Ordre : #2110 et #2109 d'abord, puis les patches 10 et 11 dans une seule PR, poussée depuis le poste. Le jeton du DEV ne peut pas pousser `.github/workflows/`.
+
+```powershell
+$R = "<chemin du clone local du monorepo>"
+git -C $R fetch origin
+git -C $R switch -c fix/merge-circuits-arm-gate3-tests origin/main
+git -C $R apply --check docs/audit/mandat-ar-20261116/patches/10-merge-circuits-arm-condition.patch
+git -C $R apply docs/audit/mandat-ar-20261116/patches/10-merge-circuits-arm-condition.patch
+git -C $R apply --check docs/audit/mandat-ar-20261116/patches/11-dev-safety-gate3-tests.patch
+git -C $R apply docs/audit/mandat-ar-20261116/patches/11-dev-safety-gate3-tests.patch
+git -C $R commit -m "fix(ci): armement du circuit faible et tests GATE-3 en CI (mandat AR-9, patches 10 et 11)" -- .github/workflows/merge-circuits.yml .github/workflows/validator-dev-safety-observe.yml
+git -C $R push -u origin fix/merge-circuits-arm-gate3-tests
+gh pr create --repo ak125/nestjs-remix-monorepo --base main --head fix/merge-circuits-arm-gate3-tests --title "fix(ci): armement du circuit faible et tests GATE-3 en CI (mandat AR-9)" --body "Patches 10 et 11 du dossier docs/audit/mandat-ar-20261116 (commandes-owner.md section 16)."
+```
+
+Le corps de cette PR doit ensuite recevoir la section DoD. Un agent peut la poser.
+
+### Vérification
+
+1. Sur #2110 : `🔍 DEV Safety (Observe)` est vert. Le job exécute la garde modifiée.
+2. Après la PR des patches 10 et 11, à la prochaine PR en circuit faible :
+   `gh run list --repo ak125/nestjs-remix-monorepo --workflow merge-circuits.yml --limit 3`.
+   Dans le run, le job `🔐 Armement` est `success`, et `gh pr view <N> --json autoMergeRequest` n'est plus `null`.
+3. Le job Observe d'une PR quelconque affiche l'étape « GATE-3: tests de la garde » à 17/17.

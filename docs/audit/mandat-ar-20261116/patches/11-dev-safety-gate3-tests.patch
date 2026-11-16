@@ -1,0 +1,12 @@
+--- a/.github/workflows/validator-dev-safety-observe.yml
++++ b/.github/workflows/validator-dev-safety-observe.yml
+@@ -51,6 +51,9 @@
+           MODE: observe
+         run: bash tools/validator-gates/gate-3-runner-blast-radius.sh
+ 
++      - name: "GATE-3: tests de la garde"
++        run: bash tools/validator-gates/gate-3-runner-blast-radius.test.sh
++
+       - name: Summary
+         if: always()
+         run: |
