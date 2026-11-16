@@ -768,6 +768,8 @@ PR. C'est attendu.
 | Cause : le `if:` du job n'a pas de fonction d'état, donc GitHub y ajoute `success()`. En circuit faible, `claude-review` est sauté et, bien qu'il ne soit qu'un ancêtre indirect (`arm` → `circuit` → `claude-review`), il fait passer `success()` à faux. Ce comportement est observé, pas documenté. La doc ne parle d'ancêtres que pour `failure()`. | [actions/runner#2205](https://github.com/actions/runner/issues/2205) (ouvert, « bug ») ; expressions, « Status check functions » |
 | `🔍 DEV Safety (Observe)` est rouge sur toutes les PR, GATE-3 : « merge-circuits.yml uses pull_request_target with actions/checkout ». Les deux checkouts de ce fichier extraient `base.sha` avec `persist-credentials: false`. Ce check n'est pas requis, mais `merge-pr.sh` refuse tout check rouge. | #2109 et #2106, 2026-11-16 vers 21:08 UTC |
 
+| #2108 (`canon-sync/auto`) n'a **aucun** run de `merge-circuits.yml` : ni circuit, ni label. Elle a été ouverte par `github-actions` avec le `GITHUB_TOKEN`. Ses runs `pull_request` ont attendu une approbation, mais aucun run `pull_request_target` n'a été créé. Le check du circuit n'est pas requis, la fusion n'est donc pas bloquée, mais les PR `canon-sync` échappent aux circuits. | runs de la tête `ecb54f02…` ; `gh run list --workflow merge-circuits.yml`, 2026-11-16 21:25 UTC |
+
 Conséquences :
 - en circuit faible, la fusion automatique ne s'arme jamais ;
 - en circuit moyen, `claude-review` tourne, et le défaut ne se manifeste pas ;
@@ -777,9 +779,9 @@ Conséquences :
 
 | Livrable | Fichier visé | Réservé ? | sha256 |
 |---|---|---|---|
-| PR #2110 | `tools/validator-gates/gate-3-runner-blast-radius.sh` et son test (17 cas) : seul un checkout de `base.sha`, avec `persist-credentials: false` et sans `repository`, est admis sous `pull_request_target` ; tout autre checkout reste rouge | non (circuit élevé : approbation de l'owner) | — |
+| PR #2110 | `tools/validator-gates/gate-3-runner-blast-radius.sh` et son test `scripts/ci/gate-3-runner-blast-radius.test.sh` (17 cas ; dans `scripts/ci/` parce que le registre block-new n'a pas de glob pour `tools/validator-gates/`) : seul un checkout de `base.sha`, avec `persist-credentials: false` et sans `repository`, est admis sous `pull_request_target` ; tout autre checkout reste rouge | non (circuit élevé : approbation de l'owner) | — |
 | `patches/10-merge-circuits-arm-condition.patch` | `merge-circuits.yml`, job `arm` : `if: ${{ !cancelled() && needs.circuit.result == 'success' && … }}` | oui | `44606faf6eccd85242f705a52cb494866f07c6d5f7d2ee3a461608929b227332` |
-| `patches/11-dev-safety-gate3-tests.patch` (après #2110) | `validator-dev-safety-observe.yml` : lance le test de GATE-3 dans le job Observe | oui | `34fb3ab7c90c4857cf826f5e9b80b4a96f43d0ebdd06c8f6c6d12082d8777c3e` |
+| `patches/11-dev-safety-gate3-tests.patch` (après #2110) | `validator-dev-safety-observe.yml` : lance le test de GATE-3 dans le job **Blocking** (requis). Le job Observe est en `continue-on-error` : un test placé là ne pourrait pas échouer. GATE-3 lui-même reste en mode observe. | oui | `17500dfe309f846615388fc0050099be2aece750d4b0d74a3a033ddcae04635c` |
 
 Option écartée : retirer le checkout de `merge-circuits.yml` et lire le script par l'API à `base.sha`.
 - `classify` installe les dépendances de la base avant de lancer `merge-circuit.mjs`, et `claude-review` lit les règles du dépôt. Il faudrait réécrire `actions/checkout` fichier par fichier.
@@ -810,4 +812,6 @@ Le corps de cette PR doit ensuite recevoir la section DoD. Un agent peut la pose
 2. Après la PR des patches 10 et 11, à la prochaine PR en circuit faible :
    `gh run list --repo ak125/nestjs-remix-monorepo --workflow merge-circuits.yml --limit 3`.
    Dans le run, le job `🔐 Armement` est `success`, et `gh pr view <N> --json autoMergeRequest` n'est plus `null`.
-3. Le job Observe d'une PR quelconque affiche l'étape « GATE-3: tests de la garde » à 17/17.
+3. Le job `🔒 DEV Safety (Blocking)` d'une PR quelconque affiche l'étape « GATE-3: tests de la garde (BLOCKING) » à 17/17.
+
+Non traité ici : faire passer les PR `canon-sync` dans les circuits (ouverture par une App, ou `workflow_dispatch` du circuit). C'est une décision de l'owner, qui touche `.github/workflows/canon-sync.yml`.

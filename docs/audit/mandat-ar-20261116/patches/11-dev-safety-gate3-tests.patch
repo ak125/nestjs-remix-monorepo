@@ -1,12 +1,15 @@
 --- a/.github/workflows/validator-dev-safety-observe.yml
 +++ b/.github/workflows/validator-dev-safety-observe.yml
-@@ -51,6 +51,9 @@
-           MODE: observe
-         run: bash tools/validator-gates/gate-3-runner-blast-radius.sh
+@@ -29,6 +29,12 @@
+           MODE: block
+         run: bash tools/validator-gates/gate-4-secrets-hygiene.sh
  
-+      - name: "GATE-3: tests de la garde"
-+        run: bash tools/validator-gates/gate-3-runner-blast-radius.test.sh
++      # Teste la logique de GATE-3 (pull_request_target + checkout) : 17 cas, sans réseau.
++      # Ici et non dans le job Observe : un test sous continue-on-error ne peut pas échouer.
++      # GATE-3 lui-même reste en mode observe.
++      - name: "GATE-3: tests de la garde (BLOCKING)"
++        run: bash scripts/ci/gate-3-runner-blast-radius.test.sh
 +
-       - name: Summary
-         if: always()
-         run: |
+   dev-safety-observe:
+     name: "\U0001F50D DEV Safety (Observe)"
+     runs-on: ubuntu-latest
