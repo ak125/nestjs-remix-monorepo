@@ -54,6 +54,30 @@ passe **uniquement** par `POST /api/admin/pricing/import/commit`.
 
 ## Garde-fou storefront `[CRITICAL]` — 3 couches : coût ≠ dispo ≠ vendable
 
+> **Remplacé sur la définition de « vendable » par la décision 51 (owner,
+> 2026-11-15/16).** Vendable = **`pri_dispo = '1'`**, ligne non `FROZEN`, pièce
+> non masquée (`piece_display = true`), `pri_vente_ttc_n > 0` — rien d'autre.
+> `'2'` (stock faible) et `'3'` (sur commande) **ne vendent plus**. Source unique
+> côté serveur : `backend/src/database/services/vendable.ts` (`estVendable`),
+> utilisée par le panier et par le retrait de dispo du module tarifaire.
+> Le texte ci-dessous reste l'historique de la règle `IN ('1','2','3')` ; il
+> décrit encore ce que servent la RPC R2, la quarantaine SQL et le `isSellable`
+> frontend, dont l'alignement est à mandater séparément (effet SEO / JSON-LD).
+>
+> Ajouts de la décision 51 :
+> - **Fraîcheur par fournisseur** (`backend/src/modules/pricing/config/supplier-sale-rules.ts`,
+>   clé `pri_frs`) : avant la première mise à jour complète datée d'un
+>   fournisseur, un retrait `DISCONTINUED_TARIFF` **alerte seulement** ; après,
+>   ne sort que l'absent (`DISCONTINUED_TARIFF`) ou l'indisponible
+>   (`CONFIRMED_OUT`) du nouveau tarif.
+> - **Garde-fou 5 %** : un lot de retrait qui ferait sortir plus de 5 % des
+>   pièces vendables de la marque s'arrête (lot `FAILED`, opération
+>   `DISPO_DEACTIVATION_GUARD_HALT`) et attend l'acquittement de Marwane
+>   (`guardAcknowledgement`).
+> - **Rapport** : `scripts/audit/supplier-sale-report.sql` (lecture seule) —
+>   en attente de mise à jour par fournisseur, entrées et sorties de vente par
+>   lot, arrêts du garde-fou.
+
 Séparer **trois** états, jamais les confondre :
 
 1. **Coût fournisseur connu** = une ligne `pieces_price` existe (quel que soit `pri_dispo`).

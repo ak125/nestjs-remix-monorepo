@@ -65,6 +65,9 @@ function ligne(over: Partial<SellablePriceRow> = {}): SellablePriceRow {
     pri_des: null,
     pri_poids: null,
     pri_udm_poids: null,
+    pricing_state: 'ACTIVE',
+    pri_frs: 'ACR',
+    pieces: { piece_display: true },
     ...over,
   };
 }
@@ -131,6 +134,52 @@ describe('PiecePriceDataService — choix de la ligne de prix', () => {
     ]);
 
     expect(await sujet.findSellablePrice(42)).toBeNull();
+  });
+
+  it("décision 51 : écarte une ligne '2' ou '3' (stock faible, sur commande)", async () => {
+    const { sujet } = service([
+      [
+        ligne({ pri_type: '1', pri_dispo: '2' }),
+        ligne({ pri_type: '2', pri_dispo: '3' }),
+      ],
+    ]);
+
+    expect(await sujet.findSellablePrice(42)).toBeNull();
+  });
+
+  it('décision 51 : écarte une ligne gelée (FROZEN) même à pri_dispo 1', async () => {
+    const { sujet } = service([
+      [ligne({ pri_dispo: '1', pricing_state: 'FROZEN' })],
+    ]);
+
+    expect(await sujet.findSellablePrice(42)).toBeNull();
+  });
+
+  it('décision 51 : écarte la ligne d’une pièce masquée ou dont l’affichage est inconnu', async () => {
+    const { sujet } = service([
+      [
+        ligne({ pri_piece_id_i: 1, pieces: { piece_display: false } }),
+        ligne({ pri_piece_id_i: 2, pieces: null }),
+      ],
+    ]);
+
+    const vendables = await sujet.findSellablePrices([1, 2]);
+
+    expect(vendables.size).toBe(0);
+  });
+
+  it('rend toutes les offres vendables d’une pièce, sans les non vendables', async () => {
+    const { sujet } = service([
+      [
+        ligne({ pri_type: '0', pri_frs: 'ACR', pri_achat_ht_n: 8 }),
+        ligne({ pri_type: '1', pri_frs: 'DCA', pri_achat_ht_n: 7 }),
+        ligne({ pri_type: '2', pri_frs: 'CAL', pri_dispo: '0' }),
+      ],
+    ]);
+
+    const offres = await sujet.findSellableOffers(42);
+
+    expect(offres.map((o) => o.pri_frs)).toEqual(['ACR', 'DCA']);
   });
 
   it("n'invente aucun prix : une pièce sans ligne vendable rend null", async () => {
