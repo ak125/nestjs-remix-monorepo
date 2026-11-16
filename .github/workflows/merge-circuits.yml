@@ -296,7 +296,10 @@ jobs:
     name: 🔐 Armement de la fusion automatique (App)
     needs: circuit
     # Seulement sur pull_request_target : la référence est alors `main`, admise par l'environnement.
-    if: github.event_name == 'pull_request_target' && needs.circuit.outputs.armer == 'true'
+    # Condition explicite : sans fonction d'état, GitHub ajoute success(), qui tient compte des
+    # ancêtres indirects. claude-review, sauté hors circuit moyen, sautait alors ce job même avec
+    # armer=true (run 43957012088, PR #2109 ; actions/runner#2205).
+    if: ${{ !cancelled() && needs.circuit.result == 'success' && github.event_name == 'pull_request_target' && needs.circuit.outputs.armer == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: app-actions
