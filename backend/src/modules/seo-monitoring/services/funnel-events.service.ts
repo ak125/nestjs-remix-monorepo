@@ -19,7 +19,7 @@ import {
   R2OrderPlacedPayloadSchema,
   type FunnelEventInput,
 } from '@repo/seo-types';
-import type { TrafficClass } from '../../seo/services/googlebot-detector.service';
+import type { TrafficClass } from '../../../common/utils/user-agent-class.util';
 
 /**
  * Clé du payload qui porte la classe de trafic. Posée par le serveur après la

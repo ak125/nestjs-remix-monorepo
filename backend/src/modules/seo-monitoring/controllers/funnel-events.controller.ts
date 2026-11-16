@@ -21,7 +21,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { FunnelEventInputSchema } from '@repo/seo-types';
-import { classifyUserAgent } from '../../seo/services/googlebot-detector.service';
+import { classifyUserAgent } from '../../../common/utils/user-agent-class.util';
 import { FunnelEventsService } from '../services/funnel-events.service';
 
 @Controller('api/seo/funnel')

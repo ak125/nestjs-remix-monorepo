@@ -8,7 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '@cache/cache.service';
 import { CACHE_STRATEGIES } from '../../config/cache-ttl.config';
-import { SUSPICIOUS_UA_PATTERNS } from './suspicious-user-agent';
+import { SUSPICIOUS_UA_PATTERNS } from '../../common/utils/user-agent-class.util';
 
 interface RequestFingerprint {
   ip: string;
@@ -145,7 +145,7 @@ export class BotGuardService implements OnModuleInit {
     },
   ];
 
-  // Suspicious user-agent patterns (liste partagée, suspicious-user-agent.ts)
+  // Suspicious user-agent patterns (liste partagée, common/utils/user-agent-class.util.ts)
   private readonly SUSPICIOUS_UA = SUSPICIOUS_UA_PATTERNS;
 
   constructor(

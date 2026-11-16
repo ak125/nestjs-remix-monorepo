@@ -3,12 +3,12 @@
  * (mandat AT, décisions 36 et 68). Signatures existantes uniquement :
  * GooglebotDetectorService (robots connus) et BotGuard (clients scriptés).
  */
-import { SUSPICIOUS_UA_PATTERNS } from '../../bot-guard/suspicious-user-agent';
 import {
   classifyUserAgent,
-  GooglebotDetectorService,
   isKnownBotUserAgent,
-} from './googlebot-detector.service';
+  SUSPICIOUS_UA_PATTERNS,
+} from '../../../common/utils/user-agent-class.util';
+import { GooglebotDetectorService } from './googlebot-detector.service';
 
 describe('classifyUserAgent', () => {
   it.each([
