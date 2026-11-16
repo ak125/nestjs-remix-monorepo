@@ -74,8 +74,8 @@
         "backend/src/auth/guards",
         "backend/src/modules/auth/dto"
       ],
-      "files_count": 46,
-      "loc_total": 6055,
+      "files_count": 47,
+      "loc_total": 6361,
       "has_barrel": true
     },
     "backend-core": {
@@ -1206,12 +1206,12 @@
     {
       "from": "auth",
       "to": "shared",
-      "count": 3
+      "count": 4
     },
     {
       "from": "auth",
       "to": "users",
-      "count": 9
+      "count": 10
     },
     {
       "from": "backend-core",

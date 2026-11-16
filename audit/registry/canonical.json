@@ -29496,6 +29496,7 @@
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/cookie-serializer.ts",
         "backend/src/auth/local.strategy.ts",
         "backend/src/auth/profile.controller.ts",
@@ -29511,7 +29512,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 1150,
+      "loc": 1170,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "high",
@@ -29774,9 +29775,37 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/auth/cookie-serializer.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/auth/auth.service.ts",
+        "backend/src/auth/cookie-serializer.ts",
+        "backend/src/auth/session-privilege.ts",
+        "backend/src/modules/users/services/user-data-consolidated.service.ts",
+        "backend/src/shared/crypto/password-crypto.service.ts"
+      ],
+      "kind": "test",
+      "loc": 286,
+      "owner": "@ak125/auth-team",
+      "path": "backend/src/auth/cookie-serializer.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/auth/cookie-serializer.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
       "imports": [
@@ -30499,6 +30528,7 @@
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-permissions.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/permissions.service.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
@@ -68329,6 +68359,7 @@
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/modules/users/services/profile.service.ts",
@@ -70040,6 +70071,7 @@
       "importedBy": [
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/users/services/password.service.ts",
         "backend/src/shared/crypto/crypto.module.ts",
@@ -108105,11 +108137,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "29ff461f9dcbd3a0bce4afee94f0c623e98b59471d8e02dca1b52f8445390370",
+      "audit/registry/files.json": "e838777fa779dc37817a4d550908d4c4b559b1b2cbdf8050d3e73c173e3ea00f",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "050c788fdf7bd3a1350974b04a682446077dca041f78a3f4d97a805624ed64ee"
     },
-    "sotFingerprint": "4cceb771c59b"
+    "sotFingerprint": "5e1f3b990493"
   },
   "runtime": [
     {

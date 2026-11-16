@@ -1008,6 +1008,7 @@
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/cookie-serializer.ts",
         "backend/src/auth/local.strategy.ts",
         "backend/src/auth/profile.controller.ts",
@@ -1023,7 +1024,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 1150,
+      "loc": 1170,
       "owner": "__unassigned__",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "low",
@@ -1276,9 +1277,36 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/auth/cookie-serializer.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/auth/auth.service.ts",
+        "backend/src/auth/cookie-serializer.ts",
+        "backend/src/auth/session-privilege.ts",
+        "backend/src/modules/users/services/user-data-consolidated.service.ts",
+        "backend/src/shared/crypto/password-crypto.service.ts"
+      ],
+      "kind": "test",
+      "loc": 286,
+      "owner": "__unassigned__",
+      "path": "backend/src/auth/cookie-serializer.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/auth/cookie-serializer.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
       "imports": [
@@ -1973,6 +2001,7 @@
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-permissions.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/permissions.service.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
@@ -38535,6 +38564,7 @@
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/modules/users/services/profile.service.ts",
@@ -40198,6 +40228,7 @@
       "importedBy": [
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/users/services/password.service.ts",
         "backend/src/shared/crypto/crypto.module.ts",
