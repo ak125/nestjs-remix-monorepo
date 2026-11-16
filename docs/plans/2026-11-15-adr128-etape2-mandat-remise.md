@@ -136,6 +136,12 @@ un secret encodé (base64, chiffré) dans un commit échappe à la recherche par
   privée de la même App, générée par l'owner dans les réglages de l'App, stockée seulement comme
   secret de l'environnement `mandat-remise` (restreint à `main`), révocable séparément. Variante plus
   stricte : une App dédiée `mandat-remise` (droits `contents` et `pull_requests` seuls).
+  **Remplacé par le mandat AR-6 (2026-11-16).** Une seconde clé de `automecanik-agents` mint les mêmes
+  jetons que la clé du DEV : elle ne sépare rien. La routine utilise l'App `automecanik-actions`,
+  commune aux trois workflows qui attendaient une App (`merge-circuits.yml`,
+  `registry-deps-self-heal.yml`, ce workflow). Sa clé est stockée une seule fois, dans l'environnement
+  `app-actions` restreint à `main`, et n'est jamais présente sur le DEV. Gestes :
+  `docs/audit/mandat-ar-20261116/commandes-owner.md` §15.
 - **Commits** : auteur `mandat-remise <mandat-remise@users.noreply.github.com>`, non signés (aucune
   clé sur le runner). La fusion squash par l'owner produit un commit signé par GitHub.
 
@@ -156,15 +162,11 @@ font avec le compte de l'owner (interface web ou `gh` sur son poste).
 3. **Variables du dépôt** :
    ```bash
    gh variable set MANDAT_OWNER --repo ak125/nestjs-remix-monorepo --body ak125
-   gh variable set MANDAT_APP_ID --repo ak125/nestjs-remix-monorepo --body <ID de l'App>
+   # ACTIONS_APP_ID : posée au §15 de docs/audit/mandat-ar-20261116/commandes-owner.md (mandat AR-6)
    ```
-4. **Environnement et clé** : *Settings → Environments → New environment* `mandat-remise`,
-   *Deployment branches* = `main` seulement ; dans les réglages de l'App, *Generate a private key*
-   (seconde clé), puis :
-   ```bash
-   gh secret set MANDAT_APP_PRIVATE_KEY --repo ak125/nestjs-remix-monorepo --env mandat-remise < cle.pem
-   shred -u cle.pem
-   ```
+4. **Environnement et clé** : remplacé par le §15 de `docs/audit/mandat-ar-20261116/commandes-owner.md`
+   (mandat AR-6). Il s'agit de l'environnement `app-actions`, restreint à `main`, et du secret
+   `ACTIONS_APP_PRIVATE_KEY` de l'App `automecanik-actions`. Ces gestes ne se font jamais sur le DEV.
    `CLAUDE_CODE_OAUTH_TOKEN` existe déjà (secret du dépôt, utilisé par `pilote-file`).
 5. **Mandat de réception n° 1** : une issue écrite par l'owner, petit périmètre documentaire, par
    exemple « Ajouter à `docs/plans/2026-11-15-adr128-etape2-mandat-remise.md` la date de la première
