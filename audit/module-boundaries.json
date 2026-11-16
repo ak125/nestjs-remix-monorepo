@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 105,
-      "loc_total": 25190,
+      "loc_total": 25202,
       "has_barrel": true
     },
     "customers": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110878,
+      "loc_total": 110881,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -515,8 +515,8 @@
         "backend/src/modules/payments/services",
         "backend/src/modules/payments/utils"
       ],
-      "files_count": 28,
-      "loc_total": 5706,
+      "files_count": 29,
+      "loc_total": 5814,
       "has_barrel": true
     },
     "pkg-cwv-taxonomy": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 375,
-      "loc_total": 77822,
+      "files_count": 377,
+      "loc_total": 78192,
       "has_barrel": true
     },
     "upload": {
