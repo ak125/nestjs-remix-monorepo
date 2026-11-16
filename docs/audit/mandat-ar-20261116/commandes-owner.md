@@ -12,8 +12,12 @@ servir à aucun de ces actes.
 
 ## Ordre
 
-1. Fusion de cette PR (circuit élevé : `.spec/00-canon/**` et `.claude/governance/**`).
-2. PR des correctifs `.github/` (§2), puis fusion par l'owner.
+1. Correctifs `.github/` (§2), commités par l'owner **sur la branche de cette PR**, avant la fusion.
+   Les deux vont ensemble : le patch 02 appelle `--contracts`, qui n'existe que dans cette PR, et le
+   garde `🔌 scripts/ci test wiring` (job `🛡️ Deterministic gates`) reste rouge tant que
+   `scripts/ci/merge-circuit.test.mjs` n'est lancé par aucun workflow de PR. C'est le patch 02 qui
+   le lance.
+2. Fusion de cette PR (§1 ; circuit élevé : `.spec/00-canon/**`, `.claude/governance/**`, `.github/**`).
 3. Labels, variable, App et secrets (§3 à §5). Rien ne fusionne tant que l'App n'est pas posée.
 4. PR de test (§7) qui vérifie le check `🚦 Circuit de fusion`.
 5. Protection de `main` (§6), en ajoutant `🚦 Circuit de fusion` seulement après le §7.
@@ -30,14 +34,17 @@ gh pr merge <N> -R $R --squash --match-head-commit <sha40>
 
 ## 2. Correctifs `.github/` (hook `pretool-file-guard.sh` : fichiers réservés à l'owner)
 
-Sur un clone à jour de `main` qui contient cette PR :
+Sur la branche de cette PR, **avant la fusion** (voir l'ordre ci-dessus) :
 
 ```bash
-git switch -c governance/mandat-ar-github-patches origin/main
+git fetch origin governance/mandat-ar-department-contracts-20261116
+git switch governance/mandat-ar-department-contracts-20261116
+git merge --ff-only origin/governance/mandat-ar-department-contracts-20261116
 git apply --check docs/audit/mandat-ar-20261116/patches/*.patch
 git apply docs/audit/mandat-ar-20261116/patches/*.patch
 git add .github && git commit -m "ci(governance): CODEOWNERS des zones à risque élevé, contrats bloquants, circuits de fusion (décision 72)"
-git push -u origin governance/mandat-ar-github-patches && gh pr create -R $R --fill
+git push origin governance/mandat-ar-department-contracts-20261116
+gh pr checks <N> -R $R   # attendu : 🛡️ Deterministic gates vert
 ```
 
 | Patch | Effet |
