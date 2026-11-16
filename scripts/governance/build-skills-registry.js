@@ -13,6 +13,12 @@
  * tags sorted, fields ordered), and includes a sha256 content checksum
  * per skill for change detection.
  *
+ * Third-party skills (ADR-137) : an entry whose name is a key of
+ * `skills-lock.json` is marked `origin: "third_party"` with its lock pin
+ * (`source`, `ref`). Its upstream frontmatter is not expected to follow the
+ * local schema, so it stays `spec_compliant: false` but is not reported in
+ * `issues` ; `validate-skills-frontmatter.js` checks it against the lock.
+ *
  * Usage :
  *   node scripts/governance/build-skills-registry.js
  *   node scripts/governance/build-skills-registry.js --check  # diff vs current
@@ -25,7 +31,10 @@ const crypto = require("crypto");
 const yaml = require("js-yaml");
 const stableStringify = require("fast-json-stable-stringify");
 
-const { extractFrontmatter } = require("./validate-skills-frontmatter");
+const {
+  extractFrontmatter,
+  loadSkillsLock,
+} = require("./validate-skills-frontmatter");
 
 const MONOREPO_ROOT = path.resolve(__dirname, "..", "..");
 const SKILLS_DIR = path.join(MONOREPO_ROOT, ".claude", "skills");
@@ -99,11 +108,22 @@ function listSkills() {
     .sort();
 }
 
+function markThirdParty(entry, lockSkills) {
+  if (!Object.prototype.hasOwnProperty.call(lockSkills, entry.name)) return entry;
+  const pin = lockSkills[entry.name] || {};
+  entry.origin = "third_party";
+  entry.lock = { ref: pin.ref, source: pin.source };
+  return entry;
+}
+
 function buildRegistry() {
   const names = listSkills();
-  const skills = names.map(buildEntry);
+  const lockSkills = loadSkillsLock().skills;
+  const skills = names
+    .map(buildEntry)
+    .map((entry) => markThirdParty(entry, lockSkills));
   const issues = skills
-    .filter((s) => !s.spec_compliant)
+    .filter((s) => !s.spec_compliant && s.origin !== "third_party")
     .map((s) => ({ skill: s.name, reason: "frontmatter not spec-compliant" }));
 
   return {
@@ -171,4 +191,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { buildRegistry };
+module.exports = { buildRegistry, markThirdParty };

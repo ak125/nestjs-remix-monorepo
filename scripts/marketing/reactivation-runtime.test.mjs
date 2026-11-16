@@ -363,7 +363,8 @@ test("workspace skill frontmatter uses the repository schema, names are unique a
       ),
     ),
   );
-  const dirs = [".claude/skills", "workspaces/marketing/.claude/skills"];
+  const marketingSkillsDir = "workspaces/marketing/.claude/skills";
+  const dirs = [".claude/skills", marketingSkillsDir];
   const names = new Set();
   for (const dir of dirs)
     for (const entry of fs.readdirSync(path.join(root, dir), {
@@ -375,7 +376,11 @@ test("workspace skill frontmatter uses the repository schema, names are unique a
       const fm = yaml.load(contents.match(/^---\r?\n([\s\S]+?)\r?\n---/)[1]);
       assert.ok(!names.has(fm.name), "duplicate skill " + fm.name);
       names.add(fm.name);
-      if (!entry.name.startsWith("amk-")) continue;
+      // The amk-* marketing skills live in the marketing workspace only ; the
+      // root .claude/skills also hosts amk-* wrappers of third-party skills
+      // (ADR-137 D4), which carry no marketing version.
+      if (dir !== marketingSkillsDir || !entry.name.startsWith("amk-"))
+        continue;
       assert.equal(validate(fm), true, JSON.stringify(validate.errors));
       assert.equal(fm.name, entry.name);
       assert.equal(

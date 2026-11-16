@@ -16,6 +16,14 @@
  *   7. (Soft) `last_verified` is not in the future and not older than
  *      365 days for stable skills.
  *
+ * Third-party skills (ADR-137) : a directory whose name is a key of
+ * `skills-lock.json` (repo root) is an upstream skill. Its SKILL.md follows
+ * the upstream Agent Skills format, so it is checked against the lock instead
+ * of the local schema : `source`, 40-char `ref`, `skillPath`, `computedHash`
+ * recomputed on the committed folder, upstream `name` and `description`, and
+ * an `amk-<name>` wrapper. Every directory absent from the lock keeps the full
+ * local validation above, unchanged.
+ *
  * Usage :
  *   node scripts/governance/validate-skills-frontmatter.js
  *   node scripts/governance/validate-skills-frontmatter.js --skill <name>
@@ -30,6 +38,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const yaml = require("js-yaml");
 const Ajv2020 = require("ajv/dist/2020");
 const addFormats = require("ajv-formats");
@@ -50,6 +59,10 @@ const OWNERSHIP_PATH = path.join(
   "repository-registry",
   "ownership.yaml"
 );
+// ADR-137 D3/D7 — lock of the third-party skills, written by the `skills` CLI.
+const LOCK_PATH = path.join(MONOREPO_ROOT, "skills-lock.json");
+const LOCK_VERSION = 2;
+const WRAPPER_PREFIX = "amk-";
 const DOMAINS_PATH = path.join(
   MONOREPO_ROOT,
   ".spec",
@@ -115,8 +128,176 @@ function extractFrontmatter(content) {
   }
 }
 
+/**
+ * Reads skills-lock.json. A missing lock means "no third-party skill".
+ * Returns { skills, errors } ; errors describe a lock that cannot be trusted.
+ */
+function loadSkillsLock(lockPath = LOCK_PATH) {
+  if (!fs.existsSync(lockPath)) return { skills: {}, errors: [] };
+  let lock;
+  try {
+    lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
+  } catch (e) {
+    return { skills: {}, errors: [`invalid JSON: ${e.message}`] };
+  }
+  const errors = [];
+  if (!lock || typeof lock !== "object" || Array.isArray(lock)) {
+    return { skills: {}, errors: ["lock must be a JSON object"] };
+  }
+  if (lock.version !== LOCK_VERSION) {
+    errors.push(`lock version must be ${LOCK_VERSION}, got ${JSON.stringify(lock.version)}`);
+  }
+  const skills = lock.skills;
+  if (!skills || typeof skills !== "object" || Array.isArray(skills)) {
+    errors.push("lock `skills` must be an object");
+    return { skills: {}, errors };
+  }
+  return { skills, errors };
+}
+
+const HASH_EXCLUDED_FILES = new Set(["metadata.json"]);
+const HASH_EXCLUDED_DIRS = new Set([".git", "__pycache__", "__pypackages__"]);
+
+function isHashExcluded(name, isDirectory) {
+  return (
+    HASH_EXCLUDED_FILES.has(name) ||
+    (isDirectory && HASH_EXCLUDED_DIRS.has(name))
+  );
+}
+
+/**
+ * Folder hash written by the `skills` CLI as `computedHash` in
+ * skills-lock.json (skills 1.8.1, `computeSkillFolderHash`) : files sorted by
+ * their relative path, sha256 over `path \0 length \0 content`, CRLF folded
+ * to LF for text files, `metadata.json` files and `.git`, `__pycache__`,
+ * `__pypackages__` directories skipped, symlinks followed inside the folder.
+ */
+function computeSkillFolderHash(skillDir) {
+  const root = fs.realpathSync(skillDir);
+  const files = [];
+  const walk = (dir, prefix, ancestors) => {
+    const realDir = fs.realpathSync(dir);
+    if (ancestors.has(realDir)) return;
+    const branch = new Set(ancestors).add(realDir);
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (isHashExcluded(entry.name, entry.isDirectory())) continue;
+      const fullPath = path.join(dir, entry.name);
+      const rel = prefix + entry.name;
+      let isDirectory = entry.isDirectory();
+      if (entry.isSymbolicLink()) {
+        let target;
+        try {
+          target = fs.realpathSync(fullPath);
+        } catch {
+          continue;
+        }
+        if (target !== root && !target.startsWith(root + path.sep)) continue;
+        isDirectory = fs.statSync(target).isDirectory();
+        if (isDirectory && isHashExcluded(entry.name, true)) continue;
+      } else if (!isDirectory && !entry.isFile()) {
+        continue;
+      }
+      if (isDirectory) walk(fullPath, `${rel}/`, branch);
+      else files.push({ path: rel, content: fs.readFileSync(fullPath) });
+    }
+  };
+  walk(skillDir, "", new Set());
+  const entries = files.map((f) => {
+    let content = f.content;
+    if (!content.includes(0) && content.includes("\r\n")) {
+      content = Buffer.from(
+        content.toString("latin1").replaceAll("\r\n", "\n"),
+        "latin1"
+      );
+    }
+    return { path: Buffer.from(f.path.split("\\").join("/"), "utf-8"), content };
+  });
+  entries.sort((a, b) => Buffer.compare(a.path, b.path));
+  const hash = crypto.createHash("sha256");
+  for (const { path: p, content } of entries) {
+    hash.update(p);
+    hash.update("\0");
+    hash.update(String(content.length));
+    hash.update("\0");
+    hash.update(content);
+  }
+  return hash.digest("hex");
+}
+
+function validateThirdPartySkill(name, entry, result, ctx) {
+  const skillsDir = ctx.skillsDir || SKILLS_DIR;
+  const skillDir = path.join(skillsDir, name);
+  result.origin = "third_party";
+  const fail = (verdict, msg) => {
+    if (result.verdict === "ok") result.verdict = verdict;
+    result.errors.push(msg);
+  };
+  const e = entry && typeof entry === "object" ? entry : {};
+  if (typeof e.source !== "string" || !/^[\w.-]+\/[\w.-]+$/.test(e.source)) {
+    fail("third_party_lock_invalid", "lock entry `source` must be <owner>/<repo>");
+  }
+  if (e.sourceType !== "github") {
+    fail("third_party_lock_invalid", "lock entry `sourceType` must be \"github\"");
+  }
+  if (typeof e.ref !== "string" || !/^[0-9a-f]{40}$/.test(e.ref)) {
+    fail(
+      "third_party_lock_invalid",
+      "lock entry `ref` must pin a full 40-char commit SHA (ADR-137 D3)"
+    );
+  }
+  if (
+    typeof e.skillPath !== "string" ||
+    path.posix.basename(e.skillPath) !== "SKILL.md" ||
+    path.posix.isAbsolute(e.skillPath) ||
+    e.skillPath.split("/").includes("..")
+  ) {
+    fail(
+      "third_party_lock_invalid",
+      "lock entry `skillPath` must be a relative path to the upstream SKILL.md"
+    );
+  }
+  if (typeof e.computedHash !== "string" || !/^[0-9a-f]{64}$/.test(e.computedHash)) {
+    fail("third_party_lock_invalid", "lock entry `computedHash` must be a sha256 hex digest");
+  } else {
+    const actual = computeSkillFolderHash(skillDir);
+    if (actual !== e.computedHash) {
+      fail(
+        "third_party_hash_mismatch",
+        `folder hash ${actual} differs from lock computedHash ${e.computedHash} — the upstream folder must not be modified (ADR-137 D3.3)`
+      );
+    }
+  }
+
+  let fm = null;
+  try {
+    fm = extractFrontmatter(fs.readFileSync(path.join(skillDir, "SKILL.md"), "utf8"));
+  } catch (err) {
+    fail("yaml_parse_error", err.message);
+  }
+  if (
+    !fm ||
+    fm.name !== name ||
+    typeof fm.description !== "string" ||
+    !fm.description.trim()
+  ) {
+    fail(
+      "third_party_frontmatter_invalid",
+      `upstream frontmatter must carry name "${name}" and a non-empty description`
+    );
+  }
+
+  const wrapper = path.join(skillsDir, WRAPPER_PREFIX + name, "SKILL.md");
+  if (!fs.existsSync(wrapper)) {
+    fail(
+      "third_party_unwrapped",
+      `third-party skill has no local wrapper ${WRAPPER_PREFIX}${name}/SKILL.md (ADR-137 D4)`
+    );
+  }
+  return result;
+}
+
 function validateSkill(name, ctx) {
-  const skillDir = path.join(SKILLS_DIR, name);
+  const skillDir = path.join(ctx.skillsDir || SKILLS_DIR, name);
   const skillFile = path.join(skillDir, "SKILL.md");
   const result = {
     skill: name,
@@ -130,6 +311,10 @@ function validateSkill(name, ctx) {
     result.verdict = "missing_file";
     result.errors.push(`SKILL.md not found at ${skillFile}`);
     return result;
+  }
+
+  if (ctx.lockSkills && Object.prototype.hasOwnProperty.call(ctx.lockSkills, name)) {
+    return validateThirdPartySkill(name, ctx.lockSkills[name], result, ctx);
   }
 
   const content = fs.readFileSync(skillFile, "utf8");
@@ -204,6 +389,37 @@ function validateSkill(name, ctx) {
   return result;
 }
 
+/**
+ * Lock-level findings : an unreadable lock, or a lock entry without its
+ * committed folder. Reported as extra results so the gate fails visibly.
+ */
+function validateLock(lock, skillNames, filterName, skillsDir = SKILLS_DIR) {
+  const results = [];
+  const rel = path.relative(MONOREPO_ROOT, LOCK_PATH);
+  if (lock.errors.length && !filterName) {
+    results.push({
+      skill: rel,
+      path: rel,
+      verdict: "third_party_lock_invalid",
+      errors: lock.errors.slice(),
+      warnings: [],
+    });
+  }
+  for (const name of Object.keys(lock.skills).sort()) {
+    if (filterName && name !== filterName) continue;
+    if (skillNames.includes(name)) continue;
+    results.push({
+      skill: name,
+      path: path.relative(MONOREPO_ROOT, path.join(skillsDir, name, "SKILL.md")),
+      origin: "third_party",
+      verdict: "third_party_missing_folder",
+      errors: [`${rel} lists "${name}" but .claude/skills/${name}/ is absent`],
+      warnings: [],
+    });
+  }
+  return results;
+}
+
 function main() {
   const args = parseArgs();
   let schema;
@@ -221,7 +437,8 @@ function main() {
   const knownOwners = loadKnownOwners();
   const knownDomains = loadKnownDomains();
 
-  const ctx = { validate, knownOwners, knownDomains };
+  const lock = loadSkillsLock();
+  const ctx = { validate, knownOwners, knownDomains, lockSkills: lock.skills };
 
   const skills = listSkills(args.skill);
   if (skills.length === 0) {
@@ -234,6 +451,7 @@ function main() {
   }
 
   const results = skills.map((name) => validateSkill(name, ctx));
+  results.push(...validateLock(lock, skills, args.skill));
   const failures = results.filter((r) => r.verdict !== "ok");
   const ok = failures.length === 0;
 
@@ -281,4 +499,10 @@ if (require.main === module) {
   }
 }
 
-module.exports = { extractFrontmatter, validateSkill };
+module.exports = {
+  extractFrontmatter,
+  validateSkill,
+  loadSkillsLock,
+  computeSkillFolderHash,
+  validateLock,
+};
