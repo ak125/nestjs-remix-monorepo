@@ -4636,7 +4636,7 @@
         "backend/src/config/env-validation.ts"
       ],
       "kind": "config",
-      "loc": 138,
+      "loc": 150,
       "owner": "__unassigned__",
       "path": "backend/src/config/payment.config.ts",
       "risk": "low",
@@ -22006,10 +22006,11 @@
         "backend/src/modules/payments/entities/payment.entity.ts",
         "backend/src/modules/payments/repositories/payment-data.service.ts",
         "backend/src/modules/payments/services/cyberplus.service.ts",
-        "backend/src/modules/payments/services/payment.service.ts"
+        "backend/src/modules/payments/services/payment.service.ts",
+        "backend/src/modules/payments/utils/systempay-closure.ts"
       ],
       "kind": "controller",
-      "loc": 279,
+      "loc": 321,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/controllers/payment-callback.controller.ts",
       "risk": "low",
@@ -22094,10 +22095,11 @@
         "backend/src/modules/payments/dto/create-payment.dto.ts",
         "backend/src/modules/payments/entities/payment.entity.ts",
         "backend/src/modules/payments/repositories/payment-data.service.ts",
+        "backend/src/modules/payments/services/cyberplus.service.ts",
         "backend/src/modules/payments/services/payment.service.ts"
       ],
       "kind": "controller",
-      "loc": 191,
+      "loc": 196,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/controllers/payment-methods.controller.ts",
       "risk": "low",
@@ -22117,10 +22119,11 @@
         "backend/src/modules/payments/payments.module.ts"
       ],
       "imports": [
-        "backend/src/modules/payments/services/cyberplus.service.ts"
+        "backend/src/modules/payments/services/cyberplus.service.ts",
+        "backend/src/modules/payments/utils/systempay-closure.ts"
       ],
       "kind": "controller",
-      "loc": 58,
+      "loc": 71,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/controllers/systempay-redirect.controller.ts",
       "risk": "low",
@@ -22453,6 +22456,7 @@
       "importedBy": [
         "backend/src/modules/payments/controllers/payment-callback.controller.ts",
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
+        "backend/src/modules/payments/controllers/payment-methods.controller.ts",
         "backend/src/modules/payments/controllers/systempay-redirect.controller.ts",
         "backend/src/modules/payments/index.ts",
         "backend/src/modules/payments/payments.module.ts",
@@ -22463,7 +22467,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 387,
+      "loc": 400,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/services/cyberplus.service.ts",
       "risk": "low",
@@ -22628,6 +22632,29 @@
       "loc": 51,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/utils/normalize-order-id.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/payments/utils/systempay-closure.ts",
+      "importedBy": [
+        "backend/src/modules/payments/controllers/payment-callback.controller.ts",
+        "backend/src/modules/payments/controllers/systempay-redirect.controller.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 35,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/payments/utils/systempay-closure.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -43496,6 +43523,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/systempay-callback-closure.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 320,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/systempay-callback-closure.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/template-registry.test.ts",
       "importedBy": [],
       "imports": [],
@@ -62350,7 +62396,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 279,
+      "loc": 282,
       "owner": "__unassigned__",
       "path": "frontend/app/services/payment.server.ts",
       "risk": "low",
@@ -66690,6 +66736,25 @@
       "loc": 121,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/page-role-normalization.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/payment-server-systempay-closed.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 50,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/payment-server-systempay-closed.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

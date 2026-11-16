@@ -6,7 +6,9 @@ import {
   HttpStatus,
   Logger,
   BadRequestException,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { OperationFailedException } from '@common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -16,6 +18,11 @@ import { PaymentDataService } from '../repositories/payment-data.service';
 import { PaymentStatus } from '../entities/payment.entity';
 import { logPaymentError } from './payment-controller.utils';
 import {
+  SYSTEMPAY_CLOSED_BODY,
+  SYSTEMPAY_CLOSED_STATUS,
+  logSystemPayRouteClosed,
+} from '../utils/systempay-closure';
+import {
   CyberplusCallbackSchema,
   type CyberplusCallbackDto,
   PaymentSuccessReturnSchema,
@@ -24,6 +31,11 @@ import {
 
 /**
  * Callbacks bancaires Cyberplus/BNP + pages de retour success/error
+ *
+ * Mandat AY : `callback/cyberplus` et `callback/error` modifient un paiement
+ * (et, via handlePaymentCallback, la commande) ; ils répondent 410 tant que
+ * SYSTEMPAY_CALLBACK_ENABLED ne vaut pas `true`. `callback/success` ne fait
+ * qu'une lecture et reste inchangé. Voir utils/systempay-closure.ts.
  */
 @ApiTags('payments')
 @Controller('api/payments')
@@ -56,9 +68,24 @@ export class PaymentCallbackController {
     status: 400,
     description: 'Signature invalide ou donnees manquantes',
   })
+  @ApiResponse({
+    status: 410,
+    description: 'SystemPay ferme (SYSTEMPAY_CALLBACK_ENABLED absent)',
+  })
   async handleCyberplusCallback(
     @Body() body: Record<string, string | undefined>,
+    @Res({ passthrough: true }) res: Response,
   ) {
+    // Mandat AY : refus avant validation, ecriture ic_postback et signature.
+    if (!this.cyberplusService.isCallbackEnabled()) {
+      logSystemPayRouteClosed(
+        this.logger,
+        'POST /api/payments/callback/cyberplus',
+      );
+      res.status(SYSTEMPAY_CLOSED_STATUS);
+      return SYSTEMPAY_CLOSED_BODY;
+    }
+
     // Validation Zod — rejeter les callbacks malformes avant tout traitement
     const parsed = CyberplusCallbackSchema.safeParse(body);
     if (!parsed.success) {
@@ -199,7 +226,22 @@ export class PaymentCallbackController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Page de retour apres erreur de paiement' })
   @ApiResponse({ status: 200, description: 'Erreur enregistree' })
-  async handleErrorReturn(@Body() body: Record<string, string | undefined>) {
+  @ApiResponse({
+    status: 410,
+    description: 'SystemPay ferme (SYSTEMPAY_CALLBACK_ENABLED absent)',
+  })
+  async handleErrorReturn(
+    @Body() body: Record<string, string | undefined>,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // Mandat AY : sans signature, cette route passait un paiement PENDING en
+    // FAILED pour n'importe quel numero de commande.
+    if (!this.cyberplusService.isCallbackEnabled()) {
+      logSystemPayRouteClosed(this.logger, 'POST /api/payments/callback/error');
+      res.status(SYSTEMPAY_CLOSED_STATUS);
+      return SYSTEMPAY_CLOSED_BODY;
+    }
+
     const parsed = PaymentErrorReturnSchema.safeParse(body);
     // Error return is best-effort — log but don't reject on validation failure
     const validBody = parsed.success

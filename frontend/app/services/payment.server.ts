@@ -262,7 +262,10 @@ export async function processPaymentReturn({
     );
 
     if (!response.ok) {
-      if (response.status === 404) {
+      // 410 : SystemPay fermé côté backend (mandat AY,
+      // SYSTEMPAY_CALLBACK_ENABLED absent) — même issue qu'une transaction
+      // introuvable, pas une erreur serveur.
+      if (response.status === 404 || response.status === 410) {
         return null;
       }
       throw new Error(
