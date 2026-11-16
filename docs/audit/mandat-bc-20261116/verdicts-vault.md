@@ -271,7 +271,7 @@ Contrôles faits sur le texte : ASCII seul, aucun `&&`, accolades, parenthèses 
 
 Ordre : (1) fermeture commentée de 39 PR du vault ; (2) pour #240, #345, #392, #413 et #414, dont la
 suite est à décider (section D), une question au clavier par PR : « non » la laisse ouverte ;
-(3) attente des checks de la PR #PRNUM, accord au clavier, approbation, attente du check
+(3) sortie du brouillon de la PR #PRNUM, attente de ses checks, accord au clavier, approbation, attente du check
 « 🚦 Circuit de fusion », fusion épinglée sur la tête lue ; (4) fermeture de #315 et #415, dont le
 commentaire cite P32 et P33 ; (5) compte des PR restées ouvertes dans le vault (0 si tout est accepté).
 
@@ -288,7 +288,7 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
   $CIRC = "*Circuit de fusion*"
   $RAW = (gh pr checks PRNUM --repo $REPO --json name,state)
   if (-not $RAW) { Write-Host "ARRET : checks illisibles (gh 2.50 ou plus recent requis), rien n'est modifie"; return }
-  $A = @(
+  $LOTA = @(
     @("13", "Fermeture sans fusion : note de session sans regle a reprendre. Le vault passe en archive en lecture seule (ADR-138) ; le texte reste lisible dans cette PR."),
     @("22", "Fermeture sans fusion : le fichier ADR-019 de cette PR est identique a celui de main. Rien a fusionner."),
     @("29", "Fermeture sans fusion : note de session sans regle a reprendre, et le rapport Redis du 2026-04-22 existe deja sur main dans une autre version."),
@@ -329,39 +329,47 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
     @("418", "Fermeture sans fusion : la routine mandat-remise existe dans le monorepo mais reste inactive, hors de .github/workflows. Aucune regle sans mecanisme en service ; les principes voisins sont P24 et P25 du journal du monorepo."),
     @("420", "Fermeture sans fusion : entree de sommaire interne au vault, sans objet une fois le vault en archive (ADR-138).")
   )
-  $C = @(
+  $LOTC = @(
     @("240", "Fermeture sans fusion : aucune regle ne sera plus fusionnee dans le vault (ADR-138). La regle des URL immuables se lit dans le monorepo : CLAUDE.md, invariant 6.", "D4"),
     @("345", "Fermeture sans fusion : le vault ne recoit plus de PR de registre (ADR-138). Le compte rendu INC-2026-017 reste lisible dans cette PR ; la rotation des secrets reste suivie par le proprietaire.", "D5"),
     @("392", "Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). Les trois textes approuves le 2026-11-04 restent lisibles dans cette PR ; leur application passe par une PR du monorepo.", "D1"),
     @("413", "Fermeture sans fusion : la qualification technique reste non cablee (PR WIKI 134 en brouillon). Aucune regle sans mecanisme ; le principe P10 du journal du monorepo reste en vigueur.", "D2"),
     @("414", "Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). La question Q4 et la regle de signature reviennent au proprietaire, dans le monorepo.", "D3a et D3b")
   )
-  $B = @(
+  $LOTB = @(
     @("315", "Fermeture sans fusion : la regle du tarif (ADR-084) est reprise au principe P32 du journal du monorepo, .claude/governance/journal-des-principes.md. Le second texte, sur les trois surfaces fournisseur, est couvert par P23 et par le contrat du departement 12."),
     @("415", "Fermeture sans fusion : le principe est repris au journal du monorepo (P33), .claude/governance/journal-des-principes.md. Le texte de DoD5 sera corrige au deplacement de la Definition of Done dans le monorepo.")
   )
 
-  foreach ($x in $A) {
-    $ST = (gh pr view $x[0] --repo $VAULT --json state --jq .state)
-    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : etat illisible, PR " + $x[0]); return }
-    if ($ST -ne "OPEN") { Write-Host ("Deja fermee : " + $x[0]); continue }
-    gh pr close $x[0] --repo $VAULT --comment $x[1]
-    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : fermeture refusee, PR " + $x[0]); return }
+  foreach ($x in $LOTA) {
+    $N = $x[0]
+    $MSG = $x[1]
+    $ST = (gh pr view $N --repo $VAULT --json state --jq .state)
+    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : etat illisible, PR " + $N); return }
+    if ($ST -ne "OPEN") { Write-Host ("Deja fermee : " + $N); continue }
+    gh pr close $N --repo $VAULT --comment $MSG
+    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : fermeture refusee, PR " + $N); return }
   }
   Write-Host "Lot A termine : 39 PR du vault traitees. Suite : 5 PR dont la suite est a decider."
-  foreach ($x in $C) {
-    $ST = (gh pr view $x[0] --repo $VAULT --json state --jq .state)
-    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : etat illisible, PR " + $x[0]); return }
-    if ($ST -ne "OPEN") { Write-Host ("Deja fermee : " + $x[0]); continue }
-    $GO = Read-Host ("Fermer la PR " + $x[0] + " du vault (suite dans le monorepo : question " + $x[2] + ") ? (oui/non)")
-    if ($GO -ne "oui") { Write-Host ("Laissee ouverte : " + $x[0]); continue }
-    gh pr close $x[0] --repo $VAULT --comment $x[1]
-    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : fermeture refusee, PR " + $x[0]); return }
+  foreach ($x in $LOTC) {
+    $N = $x[0]
+    $MSG = $x[1]
+    $ST = (gh pr view $N --repo $VAULT --json state --jq .state)
+    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : etat illisible, PR " + $N); return }
+    if ($ST -ne "OPEN") { Write-Host ("Deja fermee : " + $N); continue }
+    $QN = $x[2]
+    $GO = Read-Host ("Fermer la PR " + $N + " du vault (suite dans le monorepo : question " + $QN + ") ? (oui/non)")
+    if ($GO -ne "oui") { Write-Host ("Laissee ouverte : " + $N); continue }
+    gh pr close $N --repo $VAULT --comment $MSG
+    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : fermeture refusee, PR " + $N); return }
   }
   Write-Host "Suite : PR du journal."
 
   $HEAD = (gh pr view PRNUM --repo $REPO --json headRefOid --jq .headRefOid)
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : tete illisible"; return }
+  gh pr ready PRNUM --repo $REPO
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : passage en revue refuse"; return }
+  Start-Sleep -Seconds 120
   $VERT = $false
   for ($i = 0; $i -lt 90; $i++) {
     $RAW = (gh pr checks PRNUM --repo $REPO --json name,state)
@@ -399,12 +407,14 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
   gh pr merge PRNUM --repo $REPO --squash --match-head-commit $HEAD
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : fusion refusee, PR 315 et 415 du vault laissees ouvertes"; return }
 
-  foreach ($x in $B) {
-    $ST = (gh pr view $x[0] --repo $VAULT --json state --jq .state)
-    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : etat illisible, PR " + $x[0]); return }
-    if ($ST -ne "OPEN") { Write-Host ("Deja fermee : " + $x[0]); continue }
-    gh pr close $x[0] --repo $VAULT --comment $x[1]
-    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : fermeture refusee, PR " + $x[0]); return }
+  foreach ($x in $LOTB) {
+    $N = $x[0]
+    $MSG = $x[1]
+    $ST = (gh pr view $N --repo $VAULT --json state --jq .state)
+    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : etat illisible, PR " + $N); return }
+    if ($ST -ne "OPEN") { Write-Host ("Deja fermee : " + $N); continue }
+    gh pr close $N --repo $VAULT --comment $MSG
+    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : fermeture refusee, PR " + $N); return }
   }
   Write-Host "PR encore ouvertes dans le vault (0 si tout est accepte) :"
   gh pr list --repo $VAULT --state open --limit 100 --json number --jq length
