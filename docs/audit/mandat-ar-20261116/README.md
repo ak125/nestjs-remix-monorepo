@@ -19,7 +19,8 @@ Le rapport complet (session, empreinte du diff, tests, limites) est dans le corp
 | AR-4 point 3. Contradictions A, B, C12, D16, E19 | fichiers non réservés ; états dans [`contradictions.md`](contradictions.md) | corrigé dans la PR #2107 |
 | AR-4 point 4. Textes d'agents | [`textes-agents-vault.md`](textes-agents-vault.md) | constat |
 | AR-4 point 5. `pull_request_target` | [`commandes-owner.md`](commandes-owner.md) §13 | geste de l'owner |
-| AR-5. Authentification de la revue Claude | [`patches/06a`, `06b`, `07a`, `07b`](patches/) ; [`commandes-owner.md`](commandes-owner.md) §4 et §14 | patches, non appliqués |
+| AR-5 et AR-6 a. Authentification de la revue Claude (décision 105) | [`patches/06a`, `07a`](patches/) ; [`commandes-owner.md`](commandes-owner.md) §4 et §14 | patches, non appliqués ; 06b et 07b retirés |
+| AR-6 b. Une seule GitHub App pour Actions | [`patches/08`, `09`](patches/) ; `scripts/ops/mandat-remise.yml` ; [`commandes-owner.md`](commandes-owner.md) §15 | patches non appliqués ; `mandat-remise.yml` modifié dans la PR #2107 |
 
 ## Correctifs `.github/`
 

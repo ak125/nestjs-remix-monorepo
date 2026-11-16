@@ -83,8 +83,14 @@ corrigé par PR.
   authentifie la revue Claude par `ANTHROPIC_API_KEY`, qui n'existe pas dans le dépôt (relevé
   de l'owner à 19:38 UTC). En l'état, la revue ne rend aucun verdict et toute PR du circuit moyen
   reste en HOLD : c'est un échec fermé, jamais un GO. Le secret présent est
-  `CLAUDE_CODE_OAUTH_TOKEN`. Le changement d'authentification est proposé en patch à l'owner
-  (`docs/audit/mandat-ar-20261116/patches/06a`, ou `06b`).
+  `CLAUDE_CODE_OAUTH_TOKEN`. Décision 105 de l'owner : la revue tourne par ce seul jeton, sans clé
+  d'API ni repli. Le changement est proposé en patch à l'owner
+  (`docs/audit/mandat-ar-20261116/patches/06a`).
+  **Constat AR-6 (2026-11-16) :** l'armement de la fusion attend une GitHub App jamais créée. Trois
+  workflows attendent chacun la leur (`MERGE_CIRCUIT_APP_*`, `SELF_HEAL_APP_*`, `MANDAT_APP_*`).
+  Proposé : une seule App, `automecanik-actions`, réservée à GitHub Actions. Sa clé est stockée
+  une seule fois, dans l'environnement `app-actions` restreint à `main`, et jamais sur le DEV
+  (`commandes-owner.md` §15, patches 08 et 09).
 - **P21.** Mandat, revue, décision et fusion sont des actes distincts. Le mandat couvre son
   exécution. Source : ADR-121.
 - **P22.** La preuve de revue est liée au SHA de tête de la PR. Source : ADR-120.

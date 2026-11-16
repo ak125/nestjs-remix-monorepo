@@ -18,7 +18,7 @@ servir à aucun de ces actes.
    `scripts/ci/merge-circuit.test.mjs` n'est lancé par aucun workflow de PR. C'est le patch 02 qui
    le lance.
 2. Fusion de cette PR (§1 ; circuit élevé : `.spec/00-canon/**`, `.claude/governance/**`, `.github/**`).
-3. Labels, puis App et secrets (§3 et §5). Le §4 n'appelle plus aucun geste (décision 91). Rien ne fusionne tant que l'App n'est pas posée.
+3. Labels (§3), puis App, environnement, variable et secret (§15, qui remplace le §5). Le §4 n'appelle plus aucun geste (décision 91). Rien ne fusionne tant que l'App n'est pas posée.
 4. PR de test (§7) qui vérifie le check `🚦 Circuit de fusion`.
 5. Protection de `main` (§6), en ajoutant `🚦 Circuit de fusion` seulement après le §7.
 6. Ruleset des tags `v*` (§8). Cet acte est indépendant des autres et peut se faire à tout moment.
@@ -97,12 +97,17 @@ Points à connaître :
 - `allowed_bots: "automecanik-agents[bot]"` : les PR des agents sont ouvertes par cette App (27 des
   30 dernières PR). Sans cette ligne, l'action refuserait de tourner sur elles.
 - Chaque nouvelle tête d'une PR moyenne relance une revue, et un avis d'un humain sur la PR aussi.
-  Chaque passage consomme le quota du compte qui porte `CLAUDE_CODE_OAUTH_TOKEN`, ou, avec le
-  patch 06b et sans jeton, la facturation de `ANTHROPIC_API_KEY`.
+  Chaque passage consomme le quota de l'abonnement qui porte `CLAUDE_CODE_OAUTH_TOKEN`
+  (décision 105).
 - Ne jamais rendre requis le check `🤖 Revue Claude (circuit moyen)` : il est sauté hors du circuit
   moyen. Seul `🚦 Circuit de fusion` devient requis.
 
 ## 5. GitHub App de fusion
+
+> **Remplacé par le §15 (mandat AR-6, 2026-11-16).** La conception retenue est une seule App,
+> `automecanik-actions`, pour trois workflows. Sa clé est stockée une seule fois, dans
+> l'environnement `app-actions`. Ne pas créer `MERGE_CIRCUIT_APP_ID` ni
+> `MERGE_CIRCUIT_APP_PRIVATE_KEY`. Le texte ci-dessous reste comme trace.
 
 Une fusion armée avec `GITHUB_TOKEN` ne déclenche pas `ci.yml` sur `main`, ce qui coupe la chaîne
 PREPROD. L'auto-fusion doit donc être armée par une App.
@@ -272,8 +277,10 @@ $DEV = "deploy@<hôte DEV>"
 2. Application du patch 05 sur la branche de la PR monorepo #2107 (§12), puis fusion de #2107.
 3. Politique `pull_request_target` (§13), **avant le 2 décembre 2026**. Cet acte est indépendant
    des deux autres.
-4. Authentification de la revue Claude (§14, complément AR-5) : un patch par workflow, sur la même
-   branche que le patch 05, **avant** la fusion de #2107.
+4. Authentification de la revue Claude (§14, complément AR-5 ; décision 105) : patches 06a et 07a,
+   sur la même branche que le patch 05, **avant** la fusion de #2107.
+5. App `automecanik-actions` (§15, complément AR-6) : environnement, App, variable et secret depuis
+   le poste, **avant** les patches 08 et 09 ; puis ces patches, sur la même branche, après 06a.
 
 ## 11. PR vault #422 : signature et fusion
 
@@ -424,29 +431,23 @@ Si le `POST` répond 404 ou 422, passer par l'interface et vérifier par « Poli
 première preuve sera le premier run de `🤖 Revue Claude (circuit moyen)` après application du patch.
 
 L'action ne fournit pas de repli propre. Fournir les deux secrets ne crée pas un repli vers la clé :
-la clé deviendrait la source principale dès qu'elle existerait. Un repli ne s'obtient que par une
-expression dans le workflow. D'où deux variantes par fichier, au choix de l'owner.
+la clé deviendrait la source principale dès qu'elle existerait.
 
-### Variantes (fichiers `.github/` réservés : patches seulement)
+**Décision 105 de l'owner (2026-11-16, 20:42 Paris).** La revue du circuit moyen tourne sur Opus,
+avec l'abonnement de l'owner, donc par `CLAUDE_CODE_OAUTH_TOKEN`. Il n'y a ni clé d'API ni repli sur
+`ANTHROPIC_API_KEY`. Les variantes à repli (06b et 07b, préparées pour AR-5) sont **retirées** du
+dossier. Le pilotage appelait « patch 05 » le patch de `merge-circuits.yml`. Il porte ici le
+numéro 06a, parce que le numéro 05 est déjà pris par `CLAUDE.md`.
+
+### Patches (fichiers `.github/` réservés : patches seulement)
 
 | Patch | Fichier | Effet | sha256 |
 |---|---|---|---|
-| **06a** (recommandé) | `merge-circuits.yml` | `claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}` seul ; en-tête corrigé | `1680aee93f9235f4666b4fb9dcd7de882d1dfbffac8a547cce544b2c188786c6` |
-| 06b | `merge-circuits.yml` | jeton d'abord ; clé transmise seulement si le jeton est vide (`secrets.CLAUDE_CODE_OAUTH_TOKEN == '' && secrets.ANTHROPIC_API_KEY \|\| ''`) ; source affichée par son nom dans le résumé du run | `726a75fd9ed6e4602ed16cbe9a985ad5ebdcf617414b166254cfe59cfc3f9478` |
-| **07a** (recommandé) | `dependabot-claude-review.yml` | même changement que 06a | `3604cf4faf65cf2b8ed59345b8614f6c788bdd20106f9a4b455f37cf1caaa80d` |
-| 07b | `dependabot-claude-review.yml` | même changement que 06b, plus une étape « Source d'authentification » dans le résumé | `9a0362edd2a8754c7a90636370455192374edf804139c152307aef5e1e2b8079` |
+| **06a** | `merge-circuits.yml` | `claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}` seul ; en-tête corrigé | `1680aee93f9235f4666b4fb9dcd7de882d1dfbffac8a547cce544b2c188786c6` |
+| **07a** | `dependabot-claude-review.yml` | même changement, pour la revue Dependabot (même règle que la décision 105 : un seul secret, aucun repli) | `3604cf4faf65cf2b8ed59345b8614f6c788bdd20106f9a4b455f37cf1caaa80d` |
 
-Les quatre passent `git apply --check` sur `origin/main` `f9e288348`. Le YAML résultant se charge
-sans erreur (`yaml.safe_load`). `actionlint` n'est pas installé sur DEV : il n'a pas tourné.
-
-**Pourquoi recommander 06a et 07a.** Ils utilisent un seul secret, celui qui existe, sans valeur
-implicite. Une panne donne déjà HOLD, donc le repli n'apporte aucune sécurité, seulement de la
-disponibilité. Il ne sert que si l'owner crée un jour `ANTHROPIC_API_KEY`, ce qu'aucune décision ne
-prévoit. 06b et 07b restent conformes à l'invariant 3 : le repli y est observable par le nom de la
-source.
-
-Utiliser la clé API seule reviendrait au fichier actuel, plus la création du secret
-`ANTHROPIC_API_KEY` par l'owner. Aucun patch n'est nécessaire pour cette option.
+Les deux passent `git apply --check` sur `origin/main` `f9e288348`. Le YAML résultant se charge sans
+erreur (`yaml.safe_load`). `actionlint` n'est pas installé sur DEV : il n'a pas tourné.
 
 ### Commandes (poste, PowerShell 32 bits)
 
@@ -462,10 +463,6 @@ Utiliser la clé API seule reviendrait au fichier actuel, plus la création du s
 & $SSH $DEV "git -C /tmp/owner-ar4 commit -m 'fix(ci): revue Claude authentifiée par CLAUDE_CODE_OAUTH_TOKEN (mandat AR-5, patches 06a et 07a)' -- .github/workflows/merge-circuits.yml .github/workflows/dependabot-claude-review.yml"
 ```
 
-Pour 06b et 07b, remplacer les noms de fichiers par `06b-merge-circuits-oauth-repli-cle.patch` et
-`07b-dependabot-review-oauth-repli-cle.patch`. Ne pas mélanger 06a et 06b : ils touchent les mêmes
-lignes.
-
 Vérification après fusion, sans afficher de valeur :
 
 ```powershell
@@ -474,12 +471,11 @@ gh run list -R ak125/nestjs-remix-monorepo --workflow merge-circuits.yml --limit
 ```
 
 À la première PR classée moyen, le job `🤖 Revue Claude (circuit moyen)` doit finir avec un verdict
-GO ou HOLD motivé, et non « Revue Claude sans verdict exploitable ». Avec 06b, le résumé du run
-affiche « authentification : CLAUDE_CODE_OAUTH_TOKEN ».
+GO ou HOLD motivé, et non « Revue Claude sans verdict exploitable ».
 
 ### Restes et inconnues
 
-- `CLAUDE_REVIEW_ENABLED` : même avec 07a ou 07b, la revue Dependabot ne tourne que si l'owner crée
+- `CLAUDE_REVIEW_ENABLED` : même avec 07a, la revue Dependabot ne tourne que si l'owner crée
   la variable (`gh variable set CLAUDE_REVIEW_ENABLED --body true -R ak125/nestjs-remix-monorepo`),
   de préférence avec `CLAUDE_REVIEW_DRY_RUN` à `true` d'abord. C'est une décision de l'owner : ce
   workflow peut approuver et armer l'auto-fusion d'une PR Dependabot.
@@ -488,7 +484,179 @@ affiche « authentification : CLAUDE_CODE_OAUTH_TOKEN ».
   web refusé). Si le premier run de la revue Dependabot échoue faute d'authentification, il faudra
   aussi poser le secret côté Dependabot (`gh secret set CLAUDE_CODE_OAUTH_TOKEN --app dependabot`).
   La valeur se saisit au clavier, jamais en argument.
-- `MERGE_CIRCUIT_APP_ID` est absent du même relevé : c'est attendu, la GitHub App du §5 n'est pas
-  encore posée. Sans elle, le circuit ne peut pas armer l'auto-fusion.
+- `MERGE_CIRCUIT_APP_ID` est absent du même relevé : la GitHub App n'est pas encore créée. Sans
+  elle, le circuit ne peut pas armer l'auto-fusion. Conception et gestes : §15.
 - Le jeton OAuth est lié à un abonnement. La consommation des revues va sur le quota de ce compte,
   sans plafond par run comme le `--max-budget-usd` de `pilote-file`.
+
+## 15. Une seule GitHub App pour Actions (complément AR-6)
+
+### Constat
+
+Relevé du pilotage (2026-11-16, 19:46 UTC) et lecture publique `gh api /apps/<slug>` par l'agent :
+
+| Workflow | Attend | Événements | État |
+|---|---|---|---|
+| `.github/workflows/merge-circuits.yml` | secrets `MERGE_CIRCUIT_APP_ID`, `MERGE_CIRCUIT_APP_PRIVATE_KEY` | `pull_request_target`, `pull_request_review` | absents : rien n'est armé (avis dans le run) |
+| `.github/workflows/registry-deps-self-heal.yml` | secrets `SELF_HEAL_APP_ID`, `SELF_HEAL_APP_PRIVATE_KEY` (repli PAT `SELF_HEAL_TOKEN`, absent aussi) | push `main`, `schedule`, `workflow_dispatch` | absents : runs verts, aucune PR ouverte |
+| `scripts/ops/mandat-remise.yml` (inactif, hors `.github/workflows/`) | variable `MANDAT_APP_ID`, secret `MANDAT_APP_PRIVATE_KEY` de l'environnement `mandat-remise` | `issues` (label `mandat-prêt`) | absents ; environnement `mandat-remise` inexistant (seul `github-pages` existe) |
+
+Les trois usages ont besoin des mêmes droits : pousser une branche, ouvrir une PR, armer
+l'auto-fusion. Il faut donc `contents: write` et `pull_requests: write`.
+
+| App existante | Droits | Clé | Convient ? |
+|---|---|---|---|
+| `automecanik-agents` | `contents: write`, `pull_requests: write`, `actions/checks/statuses: read` | sur le DEV (`/etc/automecanik/github-app/`) ; auteur de 27 des 30 dernières PR | **Non.** Toute clé de la même App crée les mêmes jetons. Une seconde clé ne sépare donc rien : un agent du DEV pourrait armer une fusion, contre P21 et ADR-102. L'identité qui écrit les PR des agents serait aussi celle qui arme leur fusion. |
+| `automecanik-canon-dispatch` | `contents: write` seul, sans `pull_requests` | côté vault | **Non.** Il lui manque `pull_requests`. Elle sert la chaîne du vault, qui part en archive (décision 73). Copier sa clé dans le monorepo créerait une copie divergente. |
+
+### Conception retenue : une App, une clé, un seul endroit
+
+- **App `automecanik-actions`**, réservée à GitHub Actions et installée sur
+  `ak125/nestjs-remix-monorepo` seulement. Droits de dépôt : *Contents* en lecture et écriture,
+  *Pull requests* en lecture et écriture, *Metadata* en lecture (obligatoire). Rien d'autre :
+  pas de *Workflows*, donc aucun fichier `.github/workflows/` modifiable, pas de droit de compte,
+  pas de webhook.
+- **Clé privée** : secret `ACTIONS_APP_PRIVATE_KEY` de l'environnement **`app-actions`**, dont la
+  branche de déploiement est `main` seulement. Elle n'est stockée nulle part ailleurs : ni secret de
+  dépôt, ni DEV, ni fichier conservé sur le poste.
+- **Identifiant** : variable de dépôt `ACTIONS_APP_ID`. Ce n'est pas un secret, et un `if:` peut le
+  lire.
+- **Jeton** : chaque job crée un jeton d'installation de courte durée, borné au seul dépôt et aux
+  deux droits (`owner`, `repositories`, `permission-contents`, `permission-pull-requests`).
+
+Pourquoi une seule App plutôt que trois :
+
+1. **Moindre privilège** : trois Apps auraient exactement les mêmes droits, puisque les trois
+   usages écrivent une branche et une PR. Le privilège n'est pas réduit, il est copié trois fois.
+   La seule séparation qui compte est entre le DEV, où vivent les agents, et Actions. La nouvelle
+   App la réalise.
+2. **Rotation** : une clé à un seul endroit, donc une rotation en un geste. Avec trois clés, il
+   faudrait trois rotations, et une copie oubliée diverge.
+3. **Restriction par environnement** : la restriction à `main` voulue pour `mandat-remise`
+   s'applique ici aux trois workflows. Un job lancé depuis une autre branche ne reçoit pas la clé.
+4. **« Un agent ne fusionne jamais »** : la clé n'existe que dans GitHub. Un agent du DEV ne peut ni
+   la lire ni créer de jeton. L'armement reste un acte du workflow, conditionné au circuit.
+5. **Ce qu'on perd** : l'identité par usage. Les trois workflows signent `automecanik-actions[bot]`.
+   La provenance reste lisible par le run et le nom de la branche (`self-heal/…`, `mandat/…`).
+
+### Patches et fichier modifié
+
+| Livrable | Fichier | Changement | sha256 |
+|---|---|---|---|
+| `patches/08-merge-circuits-app-actions.patch` (**à appliquer après 06a**) | `.github/workflows/merge-circuits.yml` | job `circuit` : désarme, ou sort `armer=true` (plus de clé dans ce job). Nouveau job `🔐 Armement` : `environment: app-actions`, `permissions: {}`, seulement sur `pull_request_target`, avec un jeton borné, puis `gh pr merge --auto --squash --match-head-commit`. `allowed_bots` ajoute `automecanik-actions[bot]`. | `2cd6f21527264c75a8a8ca5169c9f170afb3047ec30aa40571e97708e5ec07ea` |
+| `patches/09-self-heal-app-actions.patch` | `.github/workflows/registry-deps-self-heal.yml` | `environment: app-actions` sur le job ; `vars.ACTIONS_APP_ID` et `secrets.ACTIONS_APP_PRIVATE_KEY` ; jeton borné ; en-tête renvoyé ici. Le repli PAT `SELF_HEAL_TOKEN` est **inchangé**. | `3c9d8ecd26d58757f6d5f463740ea78f458b26a9736b97e252c5d5417ee910b7` |
+| modifié dans la PR #2107 (fichier non réservé) | `scripts/ops/mandat-remise.yml` | `environment: app-actions` ; `vars.ACTIONS_APP_ID` et `secrets.ACTIONS_APP_PRIVATE_KEY` ; en-tête | — |
+
+Vérification : `git apply --check` de 09 sur `origin/main` `f9e288348`, et de 08 sur `main` +
+06a (08 seul, sur `main`, ne passe pas : il dépend de 06a). Le YAML résultant se charge
+(`yaml.safe_load`). `actionlint` n'est pas installé sur le DEV.
+
+Pourquoi l'armement passe dans un job séparé : un environnement restreint à `main` refuse un job
+dont la référence n'est pas `main`. Or, sur `pull_request_review`, la référence est celle de la PR.
+Le job `🔐 Armement` ne tourne donc que sur `pull_request_target`, dont la référence est la base
+(`main`). Rien n'est perdu : seuls les circuits faible et moyen arment. Le circuit faible n'exige
+rien. Pour le circuit moyen, le verdict de la revue Claude est rendu dans le même run
+`pull_request_target` (job `claude-review`, sur la tête de l'événement). L'approbation de l'owner,
+qui arrive par `pull_request_review`, ne sert qu'au circuit élevé, et celui-ci n'arme jamais. Un run
+`pull_request_review` continue de désarmer quand il le faut.
+
+### Gestes de l'owner, dans l'ordre (poste, PowerShell 32 bits)
+
+L'environnement doit exister **avant** l'application de 09. Un job qui cite un environnement absent
+le crée sans aucune restriction.
+
+1. **Créer l'environnement restreint à `main`** :
+
+```powershell
+gh api --method PUT repos/ak125/nestjs-remix-monorepo/environments/app-actions -F "deployment_branch_policy[protected_branches]=false" -F "deployment_branch_policy[custom_branch_policies]=true"
+gh api --method POST repos/ak125/nestjs-remix-monorepo/environments/app-actions/deployment-branch-policies -f name=main -f type=branch
+gh api repos/ak125/nestjs-remix-monorepo/environments/app-actions/deployment-branch-policies --jq ".branch_policies[].name"
+```
+
+   La dernière ligne doit afficher `main` seul. N'ajouter **aucun** relecteur requis : il bloquerait
+   chaque run automatique.
+
+2. **Créer l'App** sur github.com : *Settings → Developer settings → GitHub Apps → New GitHub App*.
+   - *GitHub App name* : `automecanik-actions`. Le nom semble libre (`/apps/automecanik-actions`
+     répond 404 à la lecture publique), mais ce n'est pas prouvé. S'il est pris, il faut un autre
+     nom et ajuster `allowed_bots` dans le patch 08.
+   - *Homepage URL* : `https://github.com/ak125/nestjs-remix-monorepo`.
+   - *Webhook* : décocher *Active*.
+   - *Repository permissions* : *Contents* = *Read and write* ; *Pull requests* = *Read and
+     write* ; *Metadata* = *Read-only*, posé d'office. Tout le reste à *No access*.
+   - *Organization* et *Account permissions* : aucune.
+   - *Where can this GitHub App be installed?* : *Only on this account*.
+   - *Create GitHub App*, puis noter l'*App ID* affiché. Ce n'est pas un secret.
+
+3. **Installer l'App** : page de l'App → *Install App* → `ak125` → *Only select repositories* →
+   `nestjs-remix-monorepo`.
+
+4. **Poser l'identifiant** :
+
+```powershell
+gh variable set ACTIONS_APP_ID --body "<App ID>" -R ak125/nestjs-remix-monorepo
+```
+
+5. **Générer la clé et la poser, sans l'afficher.** Page de l'App → *Private keys* → *Generate a
+   private key*. Le navigateur télécharge un fichier `.pem`. Remplacer `<fichier>` par son nom
+   exact (pas de joker) :
+
+```powershell
+Get-Content -Raw "$HOME\Downloads\<fichier>.pem" | gh secret set ACTIONS_APP_PRIVATE_KEY --env app-actions -R ak125/nestjs-remix-monorepo
+Remove-Item "$HOME\Downloads\<fichier>.pem"
+gh secret list --env app-actions -R ak125/nestjs-remix-monorepo
+```
+
+   La dernière ligne doit lister `ACTIONS_APP_PRIVATE_KEY` par son nom seul. La clé ne va jamais sur
+   le DEV et ne se copie nulle part ailleurs.
+
+6. **Appliquer 08 et 09** dans le même worktree et le même push que le §12, après 06a :
+
+```powershell
+& $SSH $DEV "sha256sum /tmp/owner-ar4/docs/audit/mandat-ar-20261116/patches/08-merge-circuits-app-actions.patch /tmp/owner-ar4/docs/audit/mandat-ar-20261116/patches/09-self-heal-app-actions.patch"
+& $SSH $DEV "git -C /tmp/owner-ar4 apply --check docs/audit/mandat-ar-20261116/patches/08-merge-circuits-app-actions.patch"
+& $SSH $DEV "git -C /tmp/owner-ar4 apply docs/audit/mandat-ar-20261116/patches/08-merge-circuits-app-actions.patch"
+& $SSH $DEV "git -C /tmp/owner-ar4 apply --check docs/audit/mandat-ar-20261116/patches/09-self-heal-app-actions.patch"
+& $SSH $DEV "git -C /tmp/owner-ar4 apply docs/audit/mandat-ar-20261116/patches/09-self-heal-app-actions.patch"
+& $SSH $DEV "git -C /tmp/owner-ar4 commit -m 'fix(ci): une seule GitHub App pour Actions, clé dans l environnement app-actions (mandat AR-6, patches 08 et 09)' -- .github/workflows/merge-circuits.yml .github/workflows/registry-deps-self-heal.yml"
+```
+
+   La 1ʳᵉ ligne doit afficher les deux empreintes du tableau. Sinon, s'arrêter.
+
+**Ne plus créer** `MERGE_CIRCUIT_APP_ID`, `MERGE_CIRCUIT_APP_PRIVATE_KEY`, `SELF_HEAL_APP_ID`,
+`SELF_HEAL_APP_PRIVATE_KEY`, `MANDAT_APP_ID`, `MANDAT_APP_PRIVATE_KEY`, ni l'environnement
+`mandat-remise`. Le §5 et les gestes 3 et 4 de
+`docs/plans/2026-11-15-adr128-etape2-mandat-remise.md` sont remplacés par ce paragraphe.
+
+**Rotation** : générer une nouvelle clé (geste 5), poser le secret, puis supprimer l'ancienne clé dans
+*Private keys*. Un seul endroit à mettre à jour.
+
+### Vérification après fusion
+
+```powershell
+gh run list -R ak125/nestjs-remix-monorepo --workflow registry-deps-self-heal.yml --limit 3
+gh run list -R ak125/nestjs-remix-monorepo --workflow merge-circuits.yml --limit 5
+gh api repos/ak125/nestjs-remix-monorepo/deployments --jq ".[] | select(.environment==\"app-actions\") | .ref"
+```
+
+À la première PR admise au circuit faible ou moyen, le job `🔐 Armement` doit afficher « Fusion
+automatique armée sur <sha> ». Chaque passage laisse une trace de déploiement `app-actions` dans la
+PR. C'est attendu.
+
+### Restes et inconnues
+
+- **Non vérifié** : qu'un environnement restreint à `main` accepte un job `pull_request_target`.
+  L'agent n'a pas pu lire la doc GitHub dans cette session. S'il le refuse, le job `🔐 Armement`
+  échoue, rouge, et rien n'est armé : l'échec est fermé. Il faudrait alors trancher entre une
+  politique de branche plus large et l'abandon de l'environnement pour ce job.
+- **`automecanik-agents` a déjà `contents: write`.** Avec la clé du DEV, un agent peut fusionner
+  par l'API une PR dont les checks requis sont verts. Seule la protection de `main` (§6) l'en
+  empêche. Le retrait de ce droit d'écriture est hors du mandat AR-6 : il casserait le push des
+  branches d'agents. Signalé pour décision de l'owner. Ne jamais ajouter `automecanik-actions` ni
+  `automecanik-agents` aux contournements de la protection de `main`.
+- `registry-deps-self-heal.yml` arme lui-même l'auto-fusion de sa PR (`gh pr merge --auto`). Avec
+  les circuits, la PR passe aussi par `🚦 Circuit de fusion`. Ce double armement n'est pas modifié
+  ici (étape 6 du plan).
+- `dependabot-auto-merge.yml` (contradiction 23) arme encore avec `GITHUB_TOKEN`. Il n'est pas
+  raccordé à l'App : un run déclenché par Dependabot ne reçoit pas les secrets Actions, ce qui est
+  à vérifier. Hors périmètre AR-6.
