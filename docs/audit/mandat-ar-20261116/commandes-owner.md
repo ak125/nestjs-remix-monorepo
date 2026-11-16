@@ -18,7 +18,7 @@ servir à aucun de ces actes.
    `scripts/ci/merge-circuit.test.mjs` n'est lancé par aucun workflow de PR. C'est le patch 02 qui
    le lance.
 2. Fusion de cette PR (§1 ; circuit élevé : `.spec/00-canon/**`, `.claude/governance/**`, `.github/**`).
-3. Labels, variable, App et secrets (§3 à §5). Rien ne fusionne tant que l'App n'est pas posée.
+3. Labels, puis App et secrets (§3 et §5). Le §4 n'appelle plus aucun geste (décision 91). Rien ne fusionne tant que l'App n'est pas posée.
 4. PR de test (§7) qui vérifie le check `🚦 Circuit de fusion`.
 5. Protection de `main` (§6), en ajoutant `🚦 Circuit de fusion` seulement après le §7.
 6. Ruleset des tags `v*` (§8). Cet acte est indépendant des autres et peut se faire à tout moment.
@@ -52,25 +52,44 @@ gh pr checks <N> -R $R   # attendu : 🛡️ Deterministic gates vert
 | `01-codeowners.patch` | Ajoute les zones de la décision 72 : paiements, prix et stock, panier et commande, migrations, déploiement PROD, sécurité, gouvernance. L'en-tête cite la décision 72 à la place d'ADR-015. |
 | `02-ci-contrats-departement.patch` | Le job requis `🛡️ ADR-010 Governance` lance `validate-agent-operating-map.js --contracts` et `--self-test`, puis les tests du classeur. Un contrat incomplet bloque toute PR. |
 | `03-skills-canon-gate-fixture.patch` | Ajoute la nouvelle fixture aux filtres de chemin et retire le texte « vault ADR required ». |
-| `04-merge-circuits-workflow.patch` | Nouveau workflow `🚦 Circuit de fusion` : il calcule le circuit, pose le label et vérifie l'approbation exigée sur la tête. Il arme l'auto-fusion seulement en circuit faible, ou en moyen une fois approuvé. |
+| `04-merge-circuits-workflow.patch` | Nouveau workflow `🚦 Circuit de fusion`. Il calcule le circuit et pose le label. En circuit moyen, il lance la revue Claude en lecture seule (décision 91) ; en circuit élevé, il exige l'approbation de l'owner sur la tête. Il arme l'auto-fusion seulement en circuit faible, ou en moyen avec un verdict GO. |
 
 ## 3. Labels
 
 ```bash
 gh label create "circuit:faible" -R $R --color 0E8A16 --description "Décision 72 : CI verte, puis fusion automatique"
-gh label create "circuit:moyen"  -R $R --color FBCA04 --description "Décision 72 : CI verte et revue Codex, puis fusion automatique"
+gh label create "circuit:moyen"  -R $R --color FBCA04 --description "Décision 72 : CI verte et verdict GO de la revue Claude, puis fusion automatique"
 gh label create "circuit:eleve"  -R $R --color B60205 --description "Décision 72 : approbation de l'owner"
 ```
 
-## 4. Relecteur Codex (circuit moyen)
+## 4. Relecteur du circuit moyen : revue Claude (décision 91)
 
-Aucune revue Codex n'existe aujourd'hui sur le dépôt : ni workflow, ni App, ni trace sur les PR.
-Tant que cette variable n'est pas posée, une PR du circuit moyen garde le check rouge et ne fusionne
-pas. Il n'y a aucun repli.
+**Aucun geste.** La variable `CODEX_REVIEWER_LOGIN` n'est plus nécessaire : ne pas la créer.
 
-```bash
-gh variable set CODEX_REVIEWER_LOGIN -R $R --body "<login GitHub exact de l'identité qui poste les revues Codex>"
-```
+Le patch 04 ajoute au workflow `🚦 Circuit de fusion` le job `🤖 Revue Claude (circuit moyen)`. Il
+reprend l'action `anthropics/claude-code-action@v1` et le secret `ANTHROPIC_API_KEY` de
+`dependabot-claude-review.yml`, sans nouvelle App ni nouveau secret. Ce job :
+- ne tourne que pour une PR classée moyen, du dépôt (jamais un fork), hors brouillon ;
+- relit seulement : son jeton est en lecture (`contents: read`, `pull-requests: read`), les outils
+  d'écriture sont interdits, et le code de la PR n'est jamais extrait (le diff vient de l'API) ;
+- rend un verdict GO ou HOLD, au format JSON imposé (`--json-schema`). Une panne, un format
+  invalide ou une absence de verdict donnent HOLD.
+
+Le job du circuit lit ce verdict comme sortie de job du même run, lié à la tête de l'événement, puis
+le poste sur la PR dans un commentaire unique, mis à jour à chaque passage. Il ne lit jamais un
+commentaire pour décider : un verdict ne peut donc pas être forgé ni repris d'une tête précédente.
+
+Pour vérifier que le secret est posé, sans l'afficher : `gh secret list -R $R | grep ANTHROPIC_API_KEY`.
+
+Points à connaître :
+- Modèle : `claude-sonnet-5-5`. Dependabot utilise `claude-haiku-4-5-20251001`. À changer dans le
+  patch avant de l'appliquer, si l'owner préfère un autre modèle.
+- `allowed_bots: "automecanik-agents[bot]"` : les PR des agents sont ouvertes par cette App (27 des
+  30 dernières PR). Sans cette ligne, l'action refuserait de tourner sur elles.
+- Chaque nouvelle tête d'une PR moyenne relance une revue, et un avis d'un humain sur la PR aussi.
+  Chaque passage est facturé sur `ANTHROPIC_API_KEY`.
+- Ne jamais rendre requis le check `🤖 Revue Claude (circuit moyen)` : il est sauté hors du circuit
+  moyen. Seul `🚦 Circuit de fusion` devient requis.
 
 ## 5. GitHub App de fusion
 
@@ -166,6 +185,10 @@ check requis :
    `gh api repos/$R/commits/<sha>/check-runs --jq '.check_runs[] | select(.name=="🚦 Circuit de fusion") | {conclusion, head_sha}'`.
    Vérifier aussi que le label posé est le bon.
 4. Sur la PR élevée, approuver depuis `ak125`, puis vérifier que le check est relancé et passe au vert.
+5. Ouvrir une PR du circuit moyen (un fichier à risque `medium` de `ownership.yaml`). Vérifier :
+   - que `🤖 Revue Claude (circuit moyen)` tourne et que le commentaire de verdict apparaît, avec le SHA de tête ;
+   - qu'aucune écriture n'a eu lieu dans la branche : `git log` inchangé ;
+   - que `🚦 Circuit de fusion` suit le verdict (vert sur GO, rouge sur HOLD).
 
 ## 8. Ruleset des tags `v*` (déploiement PROD)
 

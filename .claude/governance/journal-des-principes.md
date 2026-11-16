@@ -66,13 +66,14 @@ corrigé par PR.
 
 - **P20.** Un changement passe par une branche et une PR. La fusion suit l'un des trois circuits.
   - **Faible** : CI verte, puis fusion automatique.
-  - **Moyen** : CI verte et revue Codex approuvée sur la tête, puis fusion automatique.
+  - **Moyen** : CI verte et verdict GO de la revue Claude sur la tête, puis fusion automatique.
+    La revue Claude relit sans écrire ; elle remplace la revue Codex (décision 91).
   - **Élevé** : approbation de l'owner sur la tête. Ce circuit couvre les zones CODEOWNERS, tout
     risque `high`/`critical` de `ownership.yaml` et tout chemin non classé.
 
   Le circuit est calculé par `scripts/ci/merge-circuit.mjs`. Un agent ne fusionne jamais lui-même
-  et n'arme jamais l'auto-fusion : seul le workflow des circuits l'arme. Source : décision 72
-  (remplace ADR-102, ADR-123, ADR-124 sur ce point).
+  et n'arme jamais l'auto-fusion : seul le workflow des circuits l'arme. Source : décisions 72 et 91
+  (remplacent ADR-102, ADR-123, ADR-124 sur ce point).
   **Statut au 2026-11-16 : proposé, non activé.** Tant que l'owner n'a pas appliqué le workflow
   et réglé la protection de `main`, la règle de la porte ADR-124 reste celle qui s'applique.
 - **P21.** Mandat, revue, décision et fusion sont des actes distincts. Le mandat couvre son

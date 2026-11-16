@@ -2,7 +2,7 @@
 // Classe une PR dans l'un des trois circuits de fusion (décision 72 de l'owner).
 //
 //   faible : fusion automatique, CI verte ;
-//   moyen  : CI verte et revue Codex, puis fusion automatique ;
+//   moyen  : CI verte et verdict GO de la revue Claude (décision 91), puis fusion automatique ;
 //   eleve  : approbation de l'owner (CODEOWNERS).
 //
 //   node scripts/ci/merge-circuit.mjs --files <chemin>...   classe des chemins (arbre courant)
