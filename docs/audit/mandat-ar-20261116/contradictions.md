@@ -70,3 +70,9 @@ son décideur sur preuve, auto-review de sens comprise.
 |---|---|---|---|
 | 22 | ADR-102 « un agent ne fusionne jamais », ADR-121 D4, ADR-123 (périmètre au vault) | la décision 72 confie la fusion des circuits faible et moyen à GitHub (auto-fusion armée par un workflow, jamais par l'agent) | proposé : `patches/04-merge-circuits-workflow.patch` ; l'agent ne fusionne toujours pas ; la porte ADR-124 reste en place jusqu'à décision de l'owner. AR-4 : ADR-138 amende ADR-102, ADR-121 et ADR-123 côté vault (PR #422) ; `.claude/rules/deployment.md` aligné (ligne 12) |
 | 23 | `.github/workflows/dependabot-auto-merge.yml` | arme `gh pr merge --auto --squash` avec `GITHUB_TOKEN` : la fusion ne déclenche pas `ci.yml` sur `main` (chaîne PREPROD) | à aligner sur le jeton d'App du workflow des circuits ; voir [`releve-ci.md`](releve-ci.md) |
+
+## G. Secret absent sous la décision 91 (complément AR-5)
+
+| # | Où | Constat | État |
+|---|---|---|---|
+| 24 | `.github/workflows/merge-circuits.yml:136`, `.github/workflows/dependabot-claude-review.yml:73` | la revue Claude s'authentifie par `ANTHROPIC_API_KEY`, absent du dépôt (relevé de l'owner, 2026-11-16 19:38 UTC) ; le circuit moyen resterait toujours en HOLD | proposé : `patches/06a` ou `06b`, `07a` ou `07b` (`CLAUDE_CODE_OAUTH_TOKEN`) ; journal P20 et `commandes-owner.md` §4 et §14 corrigés |

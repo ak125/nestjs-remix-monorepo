@@ -1,0 +1,45 @@
+--- a/.github/workflows/merge-circuits.yml
++++ b/.github/workflows/merge-circuits.yml
+@@ -3,8 +3,9 @@
+ # Décision 72 de l'owner (2026-11-15) : trois circuits de fusion.
+ #   faible : CI verte → fusion automatique ;
+ #   moyen  : CI verte + verdict GO de la revue Claude sur la tête → fusion automatique
+-#            (décision 91, 2026-11-16 : la revue Claude déjà en place, anthropics/claude-code-action
+-#            et le secret ANTHROPIC_API_KEY de dependabot-claude-review.yml, remplace la revue Codex) ;
++#            (décision 91, 2026-11-16 : la revue Claude, anthropics/claude-code-action, remplace la
++#            revue Codex ; authentification par CLAUDE_CODE_OAUTH_TOKEN, ANTHROPIC_API_KEY en repli
++#            si le jeton est absent, source affichée dans le résumé du run, mandat AR-5) ;
+ #   élevé  : approbation de l'owner sur la tête ; l'owner fusionne.
+ #
+ # Le circuit est calculé par scripts/ci/merge-circuit.mjs, lu sur le commit de BASE :
+@@ -133,7 +134,11 @@
+         continue-on-error: true # une panne donne HOLD à l'étape suivante, jamais GO
+         uses: anthropics/claude-code-action@v1
+         with:
+-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
++          # Jeton d'abonnement d'abord ; la clé API n'est transmise que si le jeton est absent.
++          # Les deux à la fois : Claude Code prendrait la clé (ANTHROPIC_API_KEY passe avant
++          # CLAUDE_CODE_OAUTH_TOKEN dans son ordre d'authentification).
++          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
++          anthropic_api_key: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN == '' && secrets.ANTHROPIC_API_KEY || '' }}
+           github_token: ${{ github.token }}
+           # Les PR des agents sont ouvertes et poussées par l'App automecanik-agents.
+           allowed_bots: "automecanik-agents[bot]"
+@@ -177,6 +182,8 @@
+         env:
+           CONCLUSION: ${{ steps.review.outputs.conclusion }}
+           STRUCTURED: ${{ steps.review.outputs.structured_output }}
++          # Source d'authentification de la revue (nom seulement, jamais la valeur).
++          AUTH_SOURCE: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' && 'CLAUDE_CODE_OAUTH_TOKEN' || (secrets.ANTHROPIC_API_KEY != '' && 'ANTHROPIC_API_KEY' || 'aucune') }}
+         run: |
+           set -euo pipefail
+           verdict=HOLD
+@@ -189,7 +196,7 @@
+           echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+           delim="EOF_$(openssl rand -hex 8)"
+           { echo "reason<<$delim"; echo "$reason"; echo "$delim"; } >> "$GITHUB_OUTPUT"
+-          echo "Verdict Claude sur $HEAD_SHA : $verdict — $reason" >> "$GITHUB_STEP_SUMMARY"
++          echo "Verdict Claude sur $HEAD_SHA : $verdict — $reason (authentification : $AUTH_SOURCE)" >> "$GITHUB_STEP_SUMMARY"
+ 
+   circuit:
+     name: 🚦 Circuit de fusion

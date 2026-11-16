@@ -79,6 +79,12 @@ corrigé par PR.
   (remplacent ADR-102, ADR-123, ADR-124 sur ce point).
   **Statut au 2026-11-16 : proposé, non activé.** Tant que l'owner n'a pas appliqué le workflow
   et réglé la protection de `main`, la règle de la porte ADR-124 reste celle qui s'applique.
+  **Constat AR-5 (2026-11-16) :** la décision 91 reposait sur un secret absent. Le workflow
+  authentifie la revue Claude par `ANTHROPIC_API_KEY`, qui n'existe pas dans le dépôt (relevé
+  de l'owner à 19:38 UTC). En l'état, la revue ne rend aucun verdict et toute PR du circuit moyen
+  reste en HOLD : c'est un échec fermé, jamais un GO. Le secret présent est
+  `CLAUDE_CODE_OAUTH_TOKEN`. Le changement d'authentification est proposé en patch à l'owner
+  (`docs/audit/mandat-ar-20261116/patches/06a`, ou `06b`).
 - **P21.** Mandat, revue, décision et fusion sont des actes distincts. Le mandat couvre son
   exécution. Source : ADR-121.
 - **P22.** La preuve de revue est liée au SHA de tête de la PR. Source : ADR-120.

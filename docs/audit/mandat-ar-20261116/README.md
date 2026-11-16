@@ -14,6 +14,12 @@ Le rapport complet (session, empreinte du diff, tests, limites) est dans le corp
 | 5. Tri des ADR | [`tri-adr.md`](tri-adr.md) | constat |
 | 6. Lecteurs du Vault et plan de déplacement | [`inventaire-vault-et-plan.md`](inventaire-vault-et-plan.md) | constat et plan |
 | 7. Contradictions | [`contradictions.md`](contradictions.md) | constat, une ligne corrigée |
+| AR-4 point 1. Dernière PR du vault | ak125/governance-vault#422 (ADR-138, AEC 1.3.0) ; signature et fusion : [`commandes-owner.md`](commandes-owner.md) §11 | PR ouverte, non signée |
+| AR-4 point 2. `CLAUDE.md` | [`patches/05-claude-md.patch`](patches/05-claude-md.patch) ; application : §12 | patch, non appliqué |
+| AR-4 point 3. Contradictions A, B, C12, D16, E19 | fichiers non réservés ; états dans [`contradictions.md`](contradictions.md) | corrigé dans la PR #2107 |
+| AR-4 point 4. Textes d'agents | [`textes-agents-vault.md`](textes-agents-vault.md) | constat |
+| AR-4 point 5. `pull_request_target` | [`commandes-owner.md`](commandes-owner.md) §13 | geste de l'owner |
+| AR-5. Authentification de la revue Claude | [`patches/06a`, `06b`, `07a`, `07b`](patches/) ; [`commandes-owner.md`](commandes-owner.md) §4 et §14 | patches, non appliqués |
 
 ## Correctifs `.github/`
 
