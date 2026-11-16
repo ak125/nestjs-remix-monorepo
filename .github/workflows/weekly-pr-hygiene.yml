@@ -1,7 +1,8 @@
 name: 📊 Weekly PR hygiene & sprint recommendation
 
-# Monday morning digest published as a GitHub issue assigned to @ak125.
-# Owner (subscribed to repo) receives the email automatically.
+# Monday morning digest: ONE standing issue assigned to @ak125, body replaced
+# every week, short comment only when the focus or a bucket colour changes
+# (mandat AM, 2026-11-16 ; .github/scripts/weekly-pr-hygiene.sh --publish).
 #
 # Replaces Claude Desktop routine `trig_01N7BCAuPai8ZRwX88ytNU3i` (disabled
 # 2026-05-17) — self-hosted in repo, audit-trail via git history.
@@ -38,15 +39,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-        run: bash .github/scripts/weekly-pr-hygiene.sh
-
-      - name: Create hygiene digest issue
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-          gh issue create \
-            --repo "$REPO" \
-            --title "${{ steps.collect.outputs.title }}" \
-            --body-file "${{ steps.collect.outputs.body_path }}" \
-            --assignee ak125
+        run: bash .github/scripts/weekly-pr-hygiene.sh --publish
