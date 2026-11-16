@@ -546,7 +546,7 @@ export class AuthService {
     try {
       if (authSource === 'admin') {
         const admin = await this.userDataService.findAdminById(userId);
-        if (admin) return this.mapAdminToAuthUser(admin);
+        if (admin) return this.activeAdminOrNull(admin);
         return null;
       }
 
@@ -568,9 +568,11 @@ export class AuthService {
    */
   async getUserById(userId: string): Promise<AuthUser | null> {
     try {
-      // 1. Chercher dans les admins d'abord (évite collision ID admin/customer)
+      // 1. Chercher dans les admins d'abord (évite collision ID admin/customer).
+      //    Un compte du personnel désactivé arrête la recherche : pas de repli
+      //    sur un compte client de même identifiant.
       const admin = await this.userDataService.findAdminById(userId);
-      if (admin) return this.mapAdminToAuthUser(admin);
+      if (admin) return this.activeAdminOrNull(admin);
 
       // 2. Fallback: chercher dans les customers
       const user = await this.userDataService.findById(userId);
@@ -581,6 +583,24 @@ export class AuthService {
       this.logger.error(`Error getting user by ID ${userId}:`, error);
       return null;
     }
+  }
+
+  /**
+   * Compte du personnel relu par identifiant (session, jeton). Un compte
+   * désactivé (`cnfa_activ` ≠ '1') ne donne aucune identité : la relecture de
+   * session le refuse comme un compte introuvable, ce qui ferme les sessions
+   * ouvertes avant la désactivation. La connexion applique déjà la même règle.
+   */
+  private activeAdminOrNull(
+    admin: NonNullable<
+      Awaited<ReturnType<UserDataConsolidatedService['findAdminById']>>
+    >,
+  ): AuthUser | null {
+    if (!admin.isActive) {
+      this.logger.warn(`Inactive admin account refused: ${admin.id}`);
+      return null;
+    }
+    return this.mapAdminToAuthUser(admin);
   }
 
   private mapAdminToAuthUser(admin: {
