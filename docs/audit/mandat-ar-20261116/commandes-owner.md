@@ -34,6 +34,8 @@ gh pr merge <N> -R $R --squash --match-head-commit <sha40>
 
 ## 2. Correctifs `.github/` (hook `pretool-file-guard.sh` : fichiers réservés à l'owner)
 
+**Fait le 2026-11-16** par l'owner (commit `4672ba04d`), avec la ligne `--model claude-opus-5-5` (décision 98). Le patch 04 reprend cette ligne. Les quatre fichiers de la tête sont identiques, octet pour octet, au résultat des quatre patches appliqués sur `0442799ce`.
+
 Sur la branche de cette PR, **avant la fusion** (voir l'ordre ci-dessus) :
 
 ```bash
@@ -82,8 +84,8 @@ commentaire pour décider : un verdict ne peut donc pas être forgé ni repris d
 Pour vérifier que le secret est posé, sans l'afficher : `gh secret list -R $R | grep ANTHROPIC_API_KEY`.
 
 Points à connaître :
-- Modèle : `claude-sonnet-5-5`. Dependabot utilise `claude-haiku-4-5-20251001`. À changer dans le
-  patch avant de l'appliquer, si l'owner préfère un autre modèle.
+- Modèle : `claude-opus-5-5`, dès le départ (décision 98). La revue Dependabot garde
+  `claude-haiku-4-5-20251001`.
 - `allowed_bots: "automecanik-agents[bot]"` : les PR des agents sont ouvertes par cette App (27 des
   30 dernières PR). Sans cette ligne, l'action refuserait de tourner sur elles.
 - Chaque nouvelle tête d'une PR moyenne relance une revue, et un avis d'un humain sur la PR aussi.

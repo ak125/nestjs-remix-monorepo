@@ -15,11 +15,12 @@ Le rapport complet (session, empreinte du diff, tests, limites) est dans le corp
 | 6. Lecteurs du Vault et plan de déplacement | [`inventaire-vault-et-plan.md`](inventaire-vault-et-plan.md) | constat et plan |
 | 7. Contradictions | [`contradictions.md`](contradictions.md) | constat, une ligne corrigée |
 
-## Pourquoi les correctifs `.github/` ne sont pas appliqués
+## Correctifs `.github/`
 
-Le hook `scripts/claude-hooks/pretool-file-guard.sh` réserve `.github/**` à l'owner. Les quatre
-correctifs passent `git apply --check` sur la base. Ils s'appliquent par la commande du §2 de
-[`commandes-owner.md`](commandes-owner.md).
+Le hook `scripts/claude-hooks/pretool-file-guard.sh` réserve `.github/**` à l'owner. L'agent a donc
+livré quatre correctifs, que l'owner a appliqués sur cette branche le 2026-11-16 (commit
+`4672ba04d`, décision 98 pour le modèle de la revue). Les fichiers de `patches/` restent comme
+trace : ils sont identiques à ce qui a été appliqué.
 
 ## Champs de contrat en attente
 
