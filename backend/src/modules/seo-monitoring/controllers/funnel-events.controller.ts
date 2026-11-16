@@ -7,9 +7,21 @@
  * Public à dessein (mesure de parcours utilisateur, pas de donnée sensible).
  * Validation stricte Zod (FunnelEventInputSchema). L'écriture passe par
  * `FunnelEventsService` (extends SupabaseBaseService → service-role + RLS ADR-028).
+ *
+ * Classe de trafic (mandat AT, décisions 36 et 68) : l'en-tête User-Agent est
+ * classé à la réception par classifyUserAgent (humain, robot connu, douteux) ;
+ * seule la classe est enregistrée, jamais l'agent brut.
  */
-import { Body, Controller, HttpCode, Logger, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Headers,
+  HttpCode,
+  Logger,
+  Post,
+} from '@nestjs/common';
 import { FunnelEventInputSchema } from '@repo/seo-types';
+import { classifyUserAgent } from '../../seo/services/googlebot-detector.service';
 import { FunnelEventsService } from '../services/funnel-events.service';
 
 @Controller('api/seo/funnel')
@@ -27,7 +39,10 @@ export class FunnelEventsController {
    */
   @Post('event')
   @HttpCode(202)
-  async event(@Body() body: unknown): Promise<void> {
+  async event(
+    @Body() body: unknown,
+    @Headers('user-agent') userAgent?: string,
+  ): Promise<void> {
     const parsed = FunnelEventInputSchema.safeParse(body);
     if (!parsed.success) {
       // Beacon malformé : ignoré (202) pour ne pas polluer les logs ni casser
@@ -37,6 +52,6 @@ export class FunnelEventsController {
       );
       return;
     }
-    await this.funnelEvents.record(parsed.data);
+    await this.funnelEvents.record(parsed.data, classifyUserAgent(userAgent));
   }
 }

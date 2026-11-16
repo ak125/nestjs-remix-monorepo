@@ -13,6 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getEffectiveSupabaseKey } from '@common/utils';
+import { isSuspiciousUserAgent } from '../../bot-guard/suspicious-user-agent';
 
 export interface GooglebotInfo {
   isGooglebot: boolean;
@@ -41,40 +42,78 @@ interface CrawlStats {
   avgResponseMs: number;
 }
 
+// Patterns for bot detection (reused from LogIngestionService)
+const GOOGLEBOT_PATTERNS: readonly string[] = [
+  'googlebot',
+  'googlebot-image',
+  'googlebot-news',
+  'googlebot-video',
+  'google-inspectiontool',
+  'storebot-google',
+  'google-extended',
+  'adsbot-google',
+  'mediapartners-google',
+  'apis-google',
+];
+
+const OTHER_BOT_PATTERNS: readonly string[] = [
+  'bingbot',
+  'slurp', // Yahoo
+  'duckduckbot',
+  'baiduspider',
+  'yandexbot',
+  'sogou',
+  'exabot',
+  'facebot',
+  'ia_archiver', // Alexa
+  'semrushbot',
+  'ahrefsbot',
+  'dotbot',
+  'mj12bot',
+];
+
+/** Toutes les signatures de robot connues de ce détecteur, génériques comprises. */
+const KNOWN_BOT_PATTERNS: readonly string[] = [
+  ...GOOGLEBOT_PATTERNS,
+  ...OTHER_BOT_PATTERNS,
+  'crawler',
+  'spider',
+  'bot',
+];
+
+/** Agent utilisateur connu de ce détecteur comme robot (même règle que isBot). */
+export function isKnownBotUserAgent(userAgent: string): boolean {
+  const ua = userAgent.toLowerCase();
+  return KNOWN_BOT_PATTERNS.some((pattern) => ua.includes(pattern));
+}
+
+/**
+ * Classe de trafic d'un événement du parcours, calculée à la réception :
+ *   - `bot`     : robot connu (signatures de ce détecteur) ;
+ *   - `suspect` : douteux — agent absent, client scripté ou navigateur piloté
+ *                 (SUSPICIOUS_UA_PATTERNS du BotGuard), ou agent qui ne se
+ *                 présente pas comme un navigateur (pas de préfixe `Mozilla/`) ;
+ *   - `human`   : navigateur ordinaire. L'agent est déclaratif : `human` veut
+ *                 dire « aucun signe de robot », pas une preuve d'humanité.
+ * Aucune nouvelle liste : les signatures sont celles des deux détecteurs existants.
+ */
+export type TrafficClass = 'human' | 'bot' | 'suspect';
+
+export function classifyUserAgent(
+  userAgent: string | null | undefined,
+): TrafficClass {
+  const ua = userAgent?.trim() ?? '';
+  if (ua === '') return 'suspect';
+  if (isKnownBotUserAgent(ua)) return 'bot';
+  if (isSuspiciousUserAgent(ua)) return 'suspect';
+  if (!/^mozilla\//i.test(ua)) return 'suspect';
+  return 'human';
+}
+
 @Injectable()
 export class GooglebotDetectorService {
   private readonly logger = new Logger(GooglebotDetectorService.name);
   private readonly supabase: SupabaseClient;
-
-  // Patterns for bot detection (reused from LogIngestionService)
-  private readonly googlebotPatterns = [
-    'googlebot',
-    'googlebot-image',
-    'googlebot-news',
-    'googlebot-video',
-    'google-inspectiontool',
-    'storebot-google',
-    'google-extended',
-    'adsbot-google',
-    'mediapartners-google',
-    'apis-google',
-  ];
-
-  private readonly otherBotPatterns = [
-    'bingbot',
-    'slurp', // Yahoo
-    'duckduckbot',
-    'baiduspider',
-    'yandexbot',
-    'sogou',
-    'exabot',
-    'facebot',
-    'ia_archiver', // Alexa
-    'semrushbot',
-    'ahrefsbot',
-    'dotbot',
-    'mj12bot',
-  ];
 
   constructor(private readonly configService: ConfigService) {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL') || '';
@@ -96,7 +135,7 @@ export class GooglebotDetectorService {
     clientIp: string = 'unknown',
   ): GooglebotInfo {
     const ua = userAgent.toLowerCase();
-    const isGooglebot = this.googlebotPatterns.some((pattern) =>
+    const isGooglebot = GOOGLEBOT_PATTERNS.some((pattern) =>
       ua.includes(pattern),
     );
     const botName = this.detectBotName(ua);
@@ -113,15 +152,7 @@ export class GooglebotDetectorService {
    * Check if user-agent is any known bot
    */
   isBot(userAgent: string): boolean {
-    const ua = userAgent.toLowerCase();
-    const allPatterns = [
-      ...this.googlebotPatterns,
-      ...this.otherBotPatterns,
-      'crawler',
-      'spider',
-      'bot',
-    ];
-    return allPatterns.some((pattern) => ua.includes(pattern));
+    return isKnownBotUserAgent(userAgent);
   }
 
   /**

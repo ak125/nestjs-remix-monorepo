@@ -184,6 +184,74 @@ describe('FunnelEventsController.event — balise publique', () => {
     expect(unknownRes).toBeUndefined();
   });
 
+  it("classe l'agent utilisateur et n'enregistre que la classe, jamais l'agent brut", async () => {
+    const chrome =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+    const cases = [
+      [chrome, 'human'],
+      [
+        'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        'bot',
+      ],
+      ['curl/8.5.0', 'suspect'],
+      [undefined, 'suspect'],
+    ] as const;
+    for (const [ua, expected] of cases) {
+      const { service, inserted } = makeService({ lines: [], orders: [] });
+      await new FunnelEventsController(service).event(
+        {
+          event_type: 'r2_view',
+          entity_url:
+            'https://www.example.test/pieces/plaquette-de-frein-402.html',
+          payload: {
+            session_id: 's1',
+            referrer: 'diagnostic',
+            gamme_slug: 'plaquette-de-frein',
+          },
+        },
+        ua,
+      );
+      expect(inserted).toHaveLength(1);
+      const payload = (inserted[0] as { payload: Record<string, unknown> })
+        .payload;
+      expect(payload.traffic_class).toBe(expected);
+      if (ua) expect(JSON.stringify(inserted)).not.toContain(ua);
+    }
+  });
+
+  it('une classe fournie par le client est retirée et remplacée par celle du serveur', async () => {
+    const { service, inserted } = makeService({ lines: [], orders: [] });
+    await new FunnelEventsController(service).event(
+      {
+        event_type: 'r2_view',
+        entity_url: null,
+        payload: {
+          session_id: 's1',
+          referrer: 'diagnostic',
+          gamme_slug: null,
+          traffic_class: 'human',
+        },
+      },
+      'curl/8.5.0',
+    );
+    expect(
+      (inserted[0] as { payload: Record<string, unknown> }).payload
+        .traffic_class,
+    ).toBe('suspect');
+  });
+
+  it('r2_order_placed porte aussi la classe, avec les faits lus dans la commande', async () => {
+    const { service, inserted } = makeService(COMMANDE);
+    await new FunnelEventsController(service).event(BEACON, 'curl/8.5.0');
+    expect(
+      (inserted[0] as { payload: Record<string, unknown> }).payload,
+    ).toMatchObject({
+      item_count: 2,
+      revenue_cents: 5872,
+      traffic_class: 'suspect',
+    });
+  });
+
   it('ignore un corps malformé sans toucher à la base', async () => {
     const { service, inserted } = makeService(COMMANDE);
     await expect(
