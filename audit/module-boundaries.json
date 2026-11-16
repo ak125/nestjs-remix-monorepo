@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6375,
+      "loc_total": 6147,
       "has_barrel": true
     },
     "payments": {
@@ -516,7 +516,7 @@
         "backend/src/modules/payments/utils"
       ],
       "files_count": 29,
-      "loc_total": 5814,
+      "loc_total": 5740,
       "has_barrel": true
     },
     "pkg-cwv-taxonomy": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 379,
-      "loc_total": 78751,
+      "files_count": 380,
+      "loc_total": 79079,
       "has_barrel": true
     },
     "upload": {
