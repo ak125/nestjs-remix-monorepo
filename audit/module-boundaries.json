@@ -75,7 +75,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 46,
-      "loc_total": 6050,
+      "loc_total": 6055,
       "has_barrel": true
     },
     "backend-core": {
@@ -837,8 +837,8 @@
       "dirs": [
         "backend/src/shared/crypto"
       ],
-      "files_count": 3,
-      "loc_total": 270,
+      "files_count": 5,
+      "loc_total": 746,
       "has_barrel": true
     },
     "shipping": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 377,
-      "loc_total": 78192,
+      "files_count": 379,
+      "loc_total": 78751,
       "has_barrel": true
     },
     "upload": {
@@ -982,7 +982,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5427,
+      "loc_total": 5420,
       "has_barrel": true
     },
     "vehicle-context": {
@@ -1027,8 +1027,8 @@
         "backend/src/workers/services",
         "backend/src/workers/types"
       ],
-      "files_count": 21,
-      "loc_total": 5381,
+      "files_count": 23,
+      "loc_total": 5475,
       "has_barrel": false
     }
   },
@@ -2164,6 +2164,11 @@
       "count": 1
     },
     {
+      "from": "users",
+      "to": "shared",
+      "count": 1
+    },
+    {
       "from": "vehicle-context",
       "to": "config",
       "count": 2
@@ -2252,6 +2257,11 @@
       "from": "workers",
       "to": "seo-monitoring",
       "count": 2
+    },
+    {
+      "from": "workers",
+      "to": "shared",
+      "count": 3
     },
     {
       "from": "workers",
