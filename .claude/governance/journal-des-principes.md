@@ -3,6 +3,9 @@
 > Décision 72 de l'owner (2026-11-15) : le monorepo est la seule source de la gouvernance.
 > Décision 73 : le dépôt `ak125/governance-vault` passe en archive en lecture seule, une fois
 > déplacé ce qui vit encore.
+> Côté vault, ADR-138 transcrit ces deux décisions : il remplace ADR-015, amende 18 ADR et l'AEC
+> (version 1.3.0), et dit pour chacun ce qui reste valable (PR ak125/governance-vault#422,
+> **ouverte, non fusionnée au 2026-11-16** ; la signature et la fusion reviennent à l'owner).
 
 ## Règle de vigueur
 
@@ -95,4 +98,15 @@ corrigé par PR.
 - **P29.** Est normatif ce qui est fusionné sur `main` dans ce journal, dans les contrats de
   département (`.spec/00-canon/ai-registry/agent-operating-map.yaml`) et dans les réglages vérifiés
   par schéma en CI. Une ADR du vault n'est plus normative par elle-même. Source : décision 72
-  (remplace ADR-101 D1).
+  (remplace ADR-101 D1 ; côté vault, ADR-138 remplace ADR-015 et amende ADR-101).
+- **P30.** Le contrat de sortie des agents (AEC) a une seule source modifiable. Jusqu'à l'étape 1
+  du plan de sortie (`docs/audit/mandat-ar-20261116/inventaire-vault-et-plan.md`), c'est
+  `ledger/rules/rules-agent-exit-contract.md` du vault ; ensuite,
+  `.spec/00-canon/canon-distribution/rules-agent-exit-contract.md` du monorepo, avec son manifeste
+  de hash, et sa révision passe par une PR du monorepo et son circuit. Ses copies
+  (`.claude/canon-mirrors/`, WIKI, RAW) se génèrent depuis la source et ne s'éditent jamais à la
+  main ; une copie non déclarée ne fait pas foi. Source : décisions 72 et 73, ADR-138 D4 (AEC 1.3.0).
+- **P31.** Un agent IA propose, analyse et recommande ; il ne s'accorde jamais lui-même une
+  validation. La validation suit le contrat du domaine, toujours indépendante du producteur : P10
+  pour le WIKI, P20 et P22 pour le code, l'owner pour ce que son domaine lui réserve (par exemple
+  `content_approved` en marketing). Source : ADR-129, qui conserve AI2 et AI4 de `rules-ai-cos`.
