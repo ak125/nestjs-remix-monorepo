@@ -271,7 +271,7 @@ Contrôles faits sur le texte : ASCII seul, aucun `&&`, accolades, parenthèses 
 
 Ordre : (1) fermeture commentée de 39 PR du vault ; (2) pour #240, #345, #392, #413 et #414, dont la
 suite est à décider (section D), une question au clavier par PR : « non » la laisse ouverte ;
-(3) sortie du brouillon de la PR #PRNUM, attente de ses checks, accord au clavier, approbation, attente du check
+(3) sortie du brouillon de la PR #2116, attente de ses checks, accord au clavier, approbation, attente du check
 « 🚦 Circuit de fusion », fusion épinglée sur la tête lue ; (4) fermeture de #315 et #415, dont le
 commentaire cite P32 et P33 ; (5) compte des PR restées ouvertes dans le vault (0 si tout est accepté).
 
@@ -286,7 +286,7 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
   $OKS = @("SUCCESS", "SKIPPED", "NEUTRAL")
   $WAITS = @("QUEUED", "IN_PROGRESS", "PENDING", "WAITING", "REQUESTED", "EXPECTED")
   $CIRC = "*Circuit de fusion*"
-  $RAW = (gh pr checks PRNUM --repo $REPO --json name,state)
+  $RAW = (gh pr checks 2116 --repo $REPO --json name,state)
   if (-not $RAW) { Write-Host "ARRET : checks illisibles (gh 2.50 ou plus recent requis), rien n'est modifie"; return }
   $LOTA = @(
     @("13", "Fermeture sans fusion : note de session sans regle a reprendre. Le vault passe en archive en lecture seule (ADR-138) ; le texte reste lisible dans cette PR."),
@@ -365,14 +365,14 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
   }
   Write-Host "Suite : PR du journal."
 
-  $HEAD = (gh pr view PRNUM --repo $REPO --json headRefOid --jq .headRefOid)
+  $HEAD = (gh pr view 2116 --repo $REPO --json headRefOid --jq .headRefOid)
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : tete illisible"; return }
-  gh pr ready PRNUM --repo $REPO
+  gh pr ready 2116 --repo $REPO
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : passage en revue refuse"; return }
   Start-Sleep -Seconds 120
   $VERT = $false
   for ($i = 0; $i -lt 90; $i++) {
-    $RAW = (gh pr checks PRNUM --repo $REPO --json name,state)
+    $RAW = (gh pr checks 2116 --repo $REPO --json name,state)
     if (-not $RAW) { Write-Host "ARRET : checks illisibles, rien n'est fusionne"; return }
     $J = (($RAW -join "") | ConvertFrom-Json)
     $O = @($J | Where-Object { $_.name -notlike $CIRC })
@@ -387,16 +387,16 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
     Start-Sleep -Seconds 30
   }
   if (-not $VERT) { Write-Host "ARRET : checks non termines apres 45 minutes, rien n'est fusionne"; return }
-  $NOW = (gh pr view PRNUM --repo $REPO --json headRefOid --jq .headRefOid)
+  $NOW = (gh pr view 2116 --repo $REPO --json headRefOid --jq .headRefOid)
   if ($NOW -ne $HEAD) { Write-Host ("ARRET : la tete a change : " + $NOW); return }
-  $GO = Read-Host ("Approuver et fusionner la PR PRNUM (journal : P32, P33) sur la tete " + $HEAD + " ? (oui/non)")
+  $GO = Read-Host ("Approuver et fusionner la PR 2116 (journal : P32, P33) sur la tete " + $HEAD + " ? (oui/non)")
   if ($GO -ne "oui") { Write-Host "Arret demande : journal non fusionne, PR 315 et 415 du vault laissees ouvertes"; return }
-  gh pr review PRNUM --repo $REPO --approve
+  gh pr review 2116 --repo $REPO --approve
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : approbation refusee"; return }
   $CIRCOK = $false
   for ($i = 0; $i -lt 40; $i++) {
     Start-Sleep -Seconds 15
-    $RAW = (gh pr checks PRNUM --repo $REPO --json name,state)
+    $RAW = (gh pr checks 2116 --repo $REPO --json name,state)
     if (-not $RAW) { continue }
     $J = (($RAW -join "") | ConvertFrom-Json)
     $C = @($J | Where-Object { $_.name -like $CIRC })
@@ -404,7 +404,7 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
     if (($C.Count -gt 0) -and ($KO.Count -eq 0)) { $CIRCOK = $true; break }
   }
   if (-not $CIRCOK) { Write-Host "ARRET : le check du circuit n'est pas vert apres l'approbation, rien n'est fusionne"; return }
-  gh pr merge PRNUM --repo $REPO --squash --match-head-commit $HEAD
+  gh pr merge 2116 --repo $REPO --squash --match-head-commit $HEAD
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : fusion refusee, PR 315 et 415 du vault laissees ouvertes"; return }
 
   foreach ($x in $LOTB) {
