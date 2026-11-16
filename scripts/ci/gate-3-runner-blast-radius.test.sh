@@ -2,10 +2,12 @@
 # Tests de GATE-3, check 1 (pull_request_target + actions/checkout).
 # Chaque cas : un dépôt Git temporaire avec un seul workflow, la garde lancée dedans
 # (elle lit `git ls-files`), puis le code de sortie comparé à l'attendu.
-# Usage : bash tools/validator-gates/gate-3-runner-blast-radius.test.sh
+# Usage : bash scripts/ci/gate-3-runner-blast-radius.test.sh
+# Placé dans scripts/ci/ (glob ownership D13) ; la garde testée reste dans tools/validator-gates/.
 set -euo pipefail
 
-GATE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/gate-3-runner-blast-radius.sh"
+GATE="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/tools/validator-gates/gate-3-runner-blast-radius.sh"
+[[ -f "$GATE" ]] || { echo "garde introuvable : $GATE"; exit 1; }
 pass=0
 fail=0
 
@@ -19,7 +21,8 @@ expect() {
   git -C "$dir" add .github/workflows/wf.yml
   rc=0
   (cd "$dir" && bash "$GATE" >"$dir/out.txt" 2>&1) || rc=$?
-  if [[ "$rc" -eq 0 ]]; then got=green; else got=red; fi
+  # 126/127 = garde non exécutable ou introuvable : jamais un rouge valide.
+  if [[ "$rc" -eq 0 ]]; then got=green; elif [[ "$rc" -ge 126 ]]; then got="erreur($rc)"; else got=red; fi
   if [[ "$got" == "$want" ]]; then
     pass=$((pass+1)); echo "ok   $want  $name"
   else
