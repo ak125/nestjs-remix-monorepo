@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: aa6e1534cbcd4b7747590e8f8c7ccb4d65a658202704f1d64a871818a2614651
+source_sha256: 284b14d4c85b46f318008d22397198d1fecb02f6c23d0744a101675ffe995d1f
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3185 |
+| Files (Layer 1) | 3191 |
 | DB tables (Layer 1) | 315 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `7fedf2852ec1`.
+Source sotFingerprint: `bce2badc4fc7`.
 
 ## Comment l'utiliser
 
@@ -101,10 +101,10 @@ Source sotFingerprint: `7fedf2852ec1`.
 
 ### D9 — Import / ETL / Normalisation
 
-- **Files**: 19 (service=13, test=5, config=1)
+- **Files**: 21 (service=15, test=5, config=1)
 - **Runtime entrypoints**: 8
-- **Top owners**: @ak125 (19)
-- **Status**: LIVE=9, UNKNOWN=10
+- **Top owners**: @ak125 (21)
+- **Status**: LIVE=9, UNKNOWN=12
 
 ### D10 — Quality, Monitoring & Observabilité
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `7fedf2852ec1`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 302 (service=194, test=67, controller=40, config=1)
+- **Files**: 304 (service=196, test=67, controller=40, config=1)
 - **Runtime entrypoints**: 130
-- **Top owners**: @ak125 (130), @ak125/payments-team (84), @ak125/auth-team (76)
+- **Top owners**: @ak125 (130), @ak125/payments-team (84), @ak125/auth-team (78)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=181, UNKNOWN=121
+- **Status**: LIVE=181, UNKNOWN=123
 
 ### D12 — Marketing & Video
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `7fedf2852ec1`.
 
 ### D15 — Security & Governance
 
-- **Files**: 323 (test=212, script=62, service=46, config=2, controller=1)
+- **Files**: 325 (test=214, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (323)
+- **Top owners**: @ak125 (325)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=264
+- **Status**: LIVE=59, UNKNOWN=266
 
 ### D16 — Maintenance
 
