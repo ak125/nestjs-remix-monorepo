@@ -1,0 +1,37 @@
+diff --git a/.github/scripts/morning-health-digest.sh b/.github/scripts/morning-health-digest.sh
+index 0901639..d703224 100755
+--- a/.github/scripts/morning-health-digest.sh
++++ b/.github/scripts/morning-health-digest.sh
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env bash
+-# Morning health digest — collect 8 signals, classify, write digest body file,
++# Morning health digest — collect 9 signals, classify, write digest body file,
+ # emit GitHub Actions outputs.
+ #
+ # Called by .github/workflows/morning-health-digest.yml. Requires gh CLI with
+@@ -170,6 +170,25 @@ else
+ fi
+ echo "" >> "$OUT"
+ 
++# ---- Signal 9 — Parcours d'achat simulé (mandat AU, décision 52) ----
++# Synthèse 24 h de purchase-path-probe.yml (sonde toutes les 15 min, sans
++# paiement) : disponibilité, échecs et durées par étape, incident ouvert.
++# Niveau = code de sortie du script (0 ✅, 1 ⚠️, 2 ⛔) ; tout autre code = synthèse
++# illisible, comptée ⛔ (une sonde muette ne doit pas passer pour une sonde verte).
++echo "## Signal 9 — Parcours d'achat simulé (PROD, 24 h)" >> "$OUT"
++PROBE_RC=0
++PROBE_MD=$(bash scripts/ops/purchase-path-probe.sh summary 2>/dev/null) || PROBE_RC=$?
++case "$PROBE_RC" in
++  0|1|2) echo "$PROBE_MD" | tail -n +2 >> "$OUT" ;;
++  *) echo "⛔ Synthèse illisible (code $PROBE_RC) — \`scripts/ops/purchase-path-probe.sh summary\`." >> "$OUT" ;;
++esac
++case "$PROBE_RC" in
++  0) ;;
++  1) [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️" ;;
++  *) STATUS_OVERALL="⛔" ;;
++esac
++echo "" >> "$OUT"
++
+ echo "---" >> "$OUT"
+ echo "Run: ${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-$REPO}/actions/runs/${GITHUB_RUN_ID:-?}" >> "$OUT"
+ echo "Replaces Claude Desktop routine \`trig_017ywezN156yjiVW8BRVcYi6\` (disabled 2026-05-17)." >> "$OUT"
