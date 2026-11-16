@@ -1782,3 +1782,13 @@ entries:
     owner: '@ak125/auth-team'
     sourceConfidence: high
     risk: high
+  # Désactivation de 4 comptes administrateurs de test de ___config_admin
+  # (cnfa_activ = '0', mandat AZ, PR #2106). Migration de données : 4 lignes
+  # désignées par cnfa_id, aucune suppression, aucun schéma touché. Lecteurs :
+  # auth_resolve_user et backend/src/auth (D11). Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261116_disable_test_admin_accounts*.sql
+    domain: D11
+    owner: '@ak125/auth-team'
+    sourceConfidence: high
+    risk: high
