@@ -8,6 +8,9 @@
 ## En bref
 
 - **55 commandes depuis le 01/04 : 20 payées, 33 non payées (60 %), 2 annulées.**
+- **Mesure corrigée (complément du 16/11) : 40 %** des intentions d'achat restent non payées
+  (12 sur 30), une fois le compte de test et les doublons retirés, et 22 % depuis le 15/07.
+  Voir `RAPPORT-MANDAT-AN-COMPLEMENT.md` §4.
 - **Le chiffre de 60 % est trompeur.** Sur les 33 :
   - 8 viennent d'un compte servant aux tests ;
   - 7 sont des tentatives en double d'un achat payé quelques minutes plus tard.

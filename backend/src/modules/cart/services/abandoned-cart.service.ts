@@ -14,6 +14,28 @@ const UNSUBSCRIBED_PREFIX = 'cart:unsubscribed:';
 const UNSUBSCRIBED_TTL = 365 * 24 * 3600; // 1 year
 const CANDIDATE_TTL = 7 * 24 * 3600; // 7 days
 
+/** Délai sans activité au-delà duquel le panier est tenu pour abandonné. */
+const ABANDON_THRESHOLD_MS = 60 * 60 * 1000;
+
+/**
+ * Cadence de relance (décision 61 du 16-11-2026) : un e-mail une heure après
+ * l'abandon, un second vingt-quatre heures après, puis plus rien. Les délais
+ * courent depuis le constat d'abandon, posé à `ABANDON_THRESHOLD_MS`.
+ * La colonne `email_72h_sent_at` reste en base pour l'historique ; aucune
+ * étape `72h` n'est plus programmée ni envoyée.
+ */
+export const ABANDONED_CART_SEQUENCE = [
+  { step: '1h', delayMs: 0 },
+  { step: '24h', delayMs: 24 * 3600_000 - ABANDON_THRESHOLD_MS },
+] as const;
+
+export type AbandonedCartStep =
+  (typeof ABANDONED_CART_SEQUENCE)[number]['step'];
+
+function isSequenceStep(step: string): step is AbandonedCartStep {
+  return ABANDONED_CART_SEQUENCE.some((s) => s.step === step);
+}
+
 interface CandidateEntry {
   userId: number;
   sessionId: string;
@@ -105,7 +127,6 @@ export class AbandonedCartService implements OnModuleInit {
     if (!candidates.length) return { detected: 0, enqueued: 0 };
 
     const now = Date.now();
-    const abandonedThresholdMs = 60 * 60 * 1000; // 60 minutes
     let detected = 0;
     let enqueued = 0;
     const remaining: CandidateEntry[] = [];
@@ -114,7 +135,7 @@ export class AbandonedCartService implements OnModuleInit {
       const ageMs = now - candidate.timestamp;
 
       // Not old enough yet
-      if (ageMs < abandonedThresholdMs) {
+      if (ageMs < ABANDON_THRESHOLD_MS) {
         remaining.push(candidate);
         continue;
       }
@@ -164,34 +185,18 @@ export class AbandonedCartService implements OnModuleInit {
         if (!record) continue;
         detected++;
 
-        // Schedule 3 email jobs (delayed)
-        await this.emailQueue.add(
-          'abandoned-cart-email',
-          { id: record.id, step: '1h' },
-          {
-            delay: 0,
-            attempts: 3,
-            backoff: { type: 'exponential', delay: 30_000 },
-          },
-        );
-        await this.emailQueue.add(
-          'abandoned-cart-email',
-          { id: record.id, step: '24h' },
-          {
-            delay: 23 * 3600_000,
-            attempts: 3,
-            backoff: { type: 'exponential', delay: 30_000 },
-          },
-        );
-        await this.emailQueue.add(
-          'abandoned-cart-email',
-          { id: record.id, step: '72h' },
-          {
-            delay: 71 * 3600_000,
-            attempts: 3,
-            backoff: { type: 'exponential', delay: 30_000 },
-          },
-        );
+        // Programme la séquence, et elle seule (décision 61)
+        for (const { step, delayMs } of ABANDONED_CART_SEQUENCE) {
+          await this.emailQueue.add(
+            'abandoned-cart-email',
+            { id: record.id, step },
+            {
+              delay: delayMs,
+              attempts: 3,
+              backoff: { type: 'exponential', delay: 30_000 },
+            },
+          );
+        }
         enqueued++;
       } catch (error) {
         this.logger.error(
@@ -218,10 +223,25 @@ export class AbandonedCartService implements OnModuleInit {
    * Send the appropriate email in the sequence.
    * Called by EmailProcessor on 'abandoned-cart-email' job.
    */
-  async sendSequenceEmail(
-    recordId: string,
-    step: '1h' | '24h' | '72h',
-  ): Promise<boolean> {
+  async sendSequenceEmail(recordId: string, step: string): Promise<boolean> {
+    // Le drapeau est relu à l'envoi : l'éteindre arrête aussi les e-mails déjà
+    // programmés, pas seulement les nouvelles détections.
+    if (!this.featureFlags.abandonedCartEmailEnabled) {
+      this.logger.log(
+        `ABANDONED_CART_EMAIL_ENABLED off — ${step} email for ${recordId} not sent`,
+      );
+      return false;
+    }
+
+    // Une étape hors séquence (ex. un job `72h` programmé avant la décision 61)
+    // n'est jamais envoyée.
+    if (!isSequenceStep(step)) {
+      this.logger.warn(
+        `Step ${step} is not in the reminder sequence — ${recordId} skipped`,
+      );
+      return false;
+    }
+
     const record = await this.abandonedCartData.findById(recordId);
     if (!record) {
       this.logger.warn(`Record ${recordId} not found — skipping`);
@@ -289,10 +309,10 @@ export class AbandonedCartService implements OnModuleInit {
 
     const firstName = record.cst_fname || 'Client';
     const count = record.cart_item_count;
-    const subjects: Record<string, string> = {
-      '1h': `${firstName}, votre panier de ${count} article${count > 1 ? 's' : ''} vous attend`,
-      '24h': `${firstName}, vos pieces auto vous attendent`,
-      '72h': `Derniere chance, ${firstName} — votre panier expire bientot`,
+    // Objets sobres : aucune urgence ni rareté affirmée sans fondement.
+    const subjects: Record<AbandonedCartStep, string> = {
+      '1h': `${firstName}, votre panier de ${count} article${count > 1 ? 's' : ''} est enregistré`,
+      '24h': `${firstName}, votre panier est toujours enregistré`,
     };
 
     const recoveryUrl = `${SITE_ORIGIN}/panier/recover/${record.recovery_token}`;
