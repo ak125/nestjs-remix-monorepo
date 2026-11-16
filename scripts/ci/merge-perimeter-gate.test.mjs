@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
+  POLICY_PATH,
   evaluateFiles,
   evaluatePullRequest,
   evaluateReview,
@@ -25,7 +27,7 @@ const policy = {
   },
   classification_exempt_paths: ["docs/**", "backend/tests/**"],
   generated_projections: ["audit/registry/*.json"],
-  deny_paths: ["backend/supabase/migrations/**", "**/package.json"],
+  deny_paths: ["backend/supabase/migrations/**", "**/package.json", ".spec/**"],
   deny_diff_patterns: ["noindex", "@(UseGuards|Public)\\b"],
   deny_head_branch_prefixes: ["dependabot/"],
   deny_title_patterns: ["NE PAS FUSIONNER"],
@@ -242,4 +244,25 @@ test("une politique de forme invalide est signalée", () => {
   assert.ok(validatePolicy({}).length > 0);
   assert.ok(validatePolicy({ ...policy, repo: "autre/depot" }).includes("repo différent du monorepo"));
   assert.ok(validatePolicy({ ...policy, deny_paths: undefined }).includes("deny_paths absent"));
+});
+
+test("une politique qui n'interdit pas son propre chemin est invalide", () => {
+  const open = { ...policy, deny_paths: ["backend/supabase/migrations/**", "**/package.json"] };
+  assert.deepEqual(validatePolicy(open), ["deny_paths ne couvre pas la politique elle-même"]);
+  assert.deepEqual(validatePolicy({ ...open, deny_paths: [...open.deny_paths, POLICY_PATH] }), []);
+});
+
+test("une PR qui modifie la politique est refusée, renommage compris", () => {
+  assert.deepEqual(checkFiles(file(POLICY_PATH)), ["DENY_PATH"]);
+  assert.deepEqual(checkFiles(file("docs/politique.json", undefined, { previous_filename: POLICY_PATH })), [
+    "DENY_PATH",
+  ]);
+});
+
+test("la politique du dépôt est valide, nomme son chemin et refuse qu'une PR la modifie", () => {
+  const real = JSON.parse(readFileSync(new URL(`../../${POLICY_PATH}`, import.meta.url), "utf8"));
+  assert.deepEqual(validatePolicy(real), []);
+  assert.ok(real.deny_paths.includes(POLICY_PATH), "le chemin de la politique est nommé dans deny_paths");
+  assert.deepEqual(codes(evaluateFiles(real, [], [file(POLICY_PATH)])), ["DENY_PATH"]);
+  assert.deepEqual(codes(evaluateFiles(real, [], [file(real.classification.source_path)])), ["DENY_PATH"]);
 });

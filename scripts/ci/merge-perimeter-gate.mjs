@@ -1,12 +1,14 @@
 #!/usr/bin/env node
-// Porte de périmètre de fusion automatique (ADR-123, ADR-124 du vault).
+// Porte de périmètre de fusion automatique (ADR-123 et ADR-124, archivées avec le vault).
 //
 //   node scripts/ci/merge-perimeter-gate.mjs <PR>                     évalue puis fusionne
 //   node scripts/ci/merge-perimeter-gate.mjs <PR> --dry-run           évalue seulement
 //   node scripts/ci/merge-perimeter-gate.mjs <PR> --dry-run --policy-file <f>
 //
-// La politique est lue sur `main` du vault et la classification sur la base de la PR :
-// une PR ne peut donc ni s'autoriser ni se reclasser. Tout doute vaut refus. La fusion
+// La politique est lue sur `main` de ce dépôt, jamais sur la tête de la PR, et la
+// classification sur la base de la PR : une PR ne peut donc ni s'autoriser ni se reclasser.
+// La politique doit interdire son propre chemin (`deny_paths`), sinon elle est invalide :
+// la modifier reste un acte de l'owner. Tout doute vaut refus. La fusion
 // est épinglée à la tête nommée par l'enregistrement de revue (DoD2) : si `main` a bougé,
 // la PR est refusée, à resynchroniser puis à faire réenregistrer. Code de sortie : 0 admise
 // ou fusionnée, 1 refusée, 2 usage ou échec après l'acte.
@@ -21,8 +23,7 @@ const yaml = require("js-yaml");
 const { findOwnershipMatch } = require("../registry/check-new-files.js");
 
 const REPO = "ak125/nestjs-remix-monorepo";
-const VAULT_REPO = "ak125/governance-vault";
-const POLICY_PATH = "ledger/policies/merge-perimeter.v1.json";
+export const POLICY_PATH = ".spec/00-canon/repository-registry/merge-perimeter.v1.json";
 const PAUSE_FILE = "/home/deploy/resync/merge-perimeter.pause";
 const LOCK_FILE = "/home/deploy/resync/merge-perimeter.lock";
 
@@ -58,6 +59,9 @@ export function validatePolicy(policy) {
   if (policy?.schema_version !== 1) problems.push("schema_version différent de 1");
   if (policy?.repo !== REPO) problems.push("repo différent du monorepo");
   if (policy?.base !== "main") problems.push("base différente de main");
+  if (Array.isArray(policy?.deny_paths) && !matches(POLICY_PATH, policy.deny_paths)) {
+    problems.push("deny_paths ne couvre pas la politique elle-même");
+  }
   if (typeof c?.source_path !== "string") problems.push("classification.source_path absent");
   if (!Array.isArray(c?.allowed_domains)) problems.push("classification.allowed_domains absent");
   if (!(c?.max_risk in RISK_ORDER)) problems.push("classification.max_risk invalide");
@@ -225,8 +229,8 @@ function ghRaw(path) {
 
 function readPolicy(policyFile) {
   if (policyFile) return { commit: `fichier local ${policyFile}`, policy: JSON.parse(readFileSync(policyFile, "utf8")) };
-  const commit = gh("api", `repos/${VAULT_REPO}/commits/main`, "--jq", ".sha").trim();
-  return { commit, policy: JSON.parse(ghRaw(`repos/${VAULT_REPO}/contents/${POLICY_PATH}?ref=${commit}`)) };
+  const commit = gh("api", `repos/${REPO}/commits/main`, "--jq", ".sha").trim();
+  return { commit, policy: JSON.parse(ghRaw(`repos/${REPO}/contents/${POLICY_PATH}?ref=${commit}`)) };
 }
 
 function readFiles(number, expected) {
