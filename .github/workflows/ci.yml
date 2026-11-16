@@ -555,6 +555,27 @@ jobs:
           echo "📋 ADR-010: Checking governance references..."
           echo "✅ ADR compliance: PASS"
 
+      # Décision 72 : les contrats des 24 départements sont vérifiés par schéma en CI.
+      # Ce job est déjà requis sur `main` et n'a pas de filtre de chemins : un contrat
+      # incomplet (champ absent, producteur de KPI disparu, décision hors 1-90) bloque
+      # toute PR, y compris celle qui supprime le fichier producteur d'un KPI.
+      - name: Setup Node (contrats de département)
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install (sans scripts, ADR-030)
+        run: npm ci --ignore-scripts
+
+      - name: 🧾 Contrats de département (décision 72, bloquant)
+        run: |
+          node scripts/governance/validate-agent-operating-map.js --contracts
+          node scripts/governance/validate-agent-operating-map.js --self-test
+
+      - name: 🚦 Classeur des circuits de fusion (tests)
+        run: node --test scripts/ci/merge-circuit.test.mjs
+
   # ============================================
   # Security & Safety Gates (Phase 2)
   # ============================================

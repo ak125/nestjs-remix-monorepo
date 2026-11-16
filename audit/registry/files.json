@@ -73075,6 +73075,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/merge-circuit.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 124,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/merge-circuit.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/merge-circuit.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 52,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/merge-circuit.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/merge-perimeter-gate.mjs",
       "importedBy": [],
       "imports": [],
@@ -73934,7 +73972,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 504,
+      "loc": 666,
       "owner": "__unassigned__",
       "path": "scripts/governance/validate-agent-operating-map.js",
       "risk": "low",
