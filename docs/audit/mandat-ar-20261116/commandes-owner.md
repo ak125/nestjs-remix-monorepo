@@ -312,8 +312,17 @@ gh pr view 422 --repo ak125/governance-vault --json headRefOid --jq .headRefOid
 gh pr merge 422 --repo ak125/governance-vault --squash --match-head-commit <sha40 de la ligne précédente>
 ```
 
-Après la fusion, `canon-publish.yml` diffuse l'AEC 1.3.0 : une PR `canon-sync/auto` dans le monorepo
-et une PR de copie dans WIKI et dans RAW. Les verdicts proposés pour les ADR `deferred` et les PR
+> **Correction AR-7 (2026-11-16).** Le texte précédent annonçait une PR de copie automatique dans
+> WIKI et dans RAW. C'était inexact. `canon-publish.yml` du vault émet seulement l'événement
+> `canon-updated` (AEC, §« Distribution canonique », point 3). Dans le monorepo, `canon-sync.yml`
+> ouvre la PR `canon-sync/auto` (#2108). Dans WIKI et dans RAW, `agent-exit-contract-hash.yml`
+> vérifie seulement (point 5) et passe au rouge. Aucun automate n'y ouvre de PR. La procédure est
+> celle du point 4 : une PR ordinaire de copie, ouverte par un agent et fusionnée par l'owner, comme
+> pour la 1.2.0 (WIKI #133, RAW #77). Pour la 1.3.0, ce sont WIKI #138 et RAW #80, fusionnées par
+> l'owner le 2026-11-16 à 21:05 UTC.
+
+Après la fusion, `canon-publish.yml` émet `canon-updated`. Le monorepo reçoit la PR
+`canon-sync/auto` ; WIKI et RAW attendent chacun une PR de copie ouverte par un agent. Les verdicts proposés pour les ADR `deferred` et les PR
 ouvertes du vault, dans le corps de #422, restent à trancher. Aucune commande n'est donnée pour eux.
 
 ## 12. Patch 05 : `CLAUDE.md` (fichier réservé), puis fusion de #2107
@@ -328,8 +337,17 @@ ouvertes du vault, dans le corps de #422, restent à trancher. Aucune commande n
   `agents-md`, le fichier patché et l'original donnent le même BLOCK structurel (« section rôle
   absente ») : le patch n'ajoute rien.
 
+> **Correction AR-7 (2026-11-16).** Le jeton GitHub du DEV ne peut pas pousser un commit qui
+> modifie un fichier de `.github/workflows/`. Or les §14 et §15 demandaient d'ajouter 06a, 07a, 08
+> et 09 au même push : la suite de commandes ci-dessous échouait donc à la ligne `push`. Marwane a
+> appliqué et poussé 05, 06a, 07a, 08 et 09 depuis son PC ; #2107 a été fusionnée le 2026-11-16 à
+> 20:52:06 UTC (`32d1930f1`). Ces commandes sont gardées pour mémoire et ne sont plus à lancer.
+> Pour un futur patch qui touche `.github/workflows/`, appliquer, committer et pousser depuis le
+> poste, dans un clone local à jour ; le DEV ne sert qu'à préparer le patch.
+
 On l'applique sur la branche de la PR, dans un worktree détaché de DEV, car la branche est déjà prise
-par le worktree de l'agent :
+par le worktree de l'agent (texte d'origine, **non exécutable tel quel** : voir la correction
+ci-dessus) :
 
 ```powershell
 & $SSH $DEV "git -C /opt/automecanik/app fetch -q origin governance/mandat-ar4-sortie-adr-20261116"
@@ -355,63 +373,128 @@ gh pr merge 2107 --repo ak125/nestjs-remix-monorepo --squash --match-head-commit
 
 ## 13. Politique d'exécution `pull_request_target` (avant le 2 décembre 2026)
 
+> **Correction AR-8 (2026-11-16).** La version précédente de cette section ciblait
+> `merge-circuits.yml` avec la seule liste `allowed_events = [pull_request_target]`. Or une règle
+> d'événements est une **liste blanche** pour les workflows qu'elle cible. Elle aurait donc bloqué
+> les runs `pull_request_review` de `merge-circuits.yml`, et l'approbation de l'owner n'aurait plus
+> relancé le circuit. Elle laissait aussi de côté `dependabot-auto-merge.yml`. Rien n'avait été
+> appliqué. La section est réécrite ci-dessous. **Le pilotage ne fait pas faire ce réglage le
+> 16 novembre.**
+
 À partir du 2 décembre 2026, GitHub bloque par défaut `pull_request_target` dans les dépôts publics
 qui n'ont pas de politique d'événements Actions l'autorisant. La coupure d'essai du 16 novembre
 (16:00-18:00 UTC) l'a montré sur ce dépôt : le run `43922321880` (`🚦 Circuit de fusion`,
 `.github/workflows/merge-circuits.yml`, événement `pull_request_target`, créé à 17:49:03 UTC) est
 en `startup_failure`.
 
-Sources (doc lue le 2026-11-16) :
+### Ce que dit la doc (relue le 2026-11-16)
 
-- <https://github.blog/changelog/2026-11-02-pull_request_target-blocked-by-default-december-2>
-- <https://docs.github.com/actions/how-tos/administer/control-workflow-execution> (« Governing
-  execution of GitHub Actions workflows »)
-- <https://docs.github.com/en/rest/actions/policies>
+Sources :
 
-**Fichiers concernés.** Trois workflows du dépôt déclarent `pull_request_target` :
+- [A] <https://docs.github.com/actions/how-tos/administer/control-workflow-execution>
+  (« Governing execution of GitHub Actions workflows ») ;
+- [B] <https://docs.github.com/en/actions/concepts/about-actions-policies> (« About Actions
+  policies ») ;
+- [C] <https://docs.github.com/en/rest/actions/policies> (API REST) ;
+- [D] <https://github.blog/changelog/2026-11-02-pull_request_target-blocked-by-default-december-2> ;
+- [E] <https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target>.
 
-| Workflow | Rôle | Dans la politique ci-dessous |
+1. **Sémantique de la liste.** [B] : la politique définit « an allowlist that controls who can
+   trigger GitHub Actions workflows and which events are permitted to run them ». [B] : « When
+   enforced, disallowed workflow runs will fail with an error », avec l'exemple « Event
+   'workflow_dispatch' is not allowed to trigger Actions workflows. Workflow file: '…' ». Pour un
+   workflow ciblé, un événement absent de `allowed_events` est donc refusé, même s'il n'était
+   bloqué par rien auparavant. La doc ne traite pas nommément le cas d'un workflow à deux
+   événements. La liste blanche n'admet pas d'autre lecture, mais ce point reste une déduction, non
+   une phrase de la doc.
+2. **Schéma de l'API** [C], en-tête `X-GitHub-Api-Version: 2026-03-10` :
+   - `GET` et `POST` sur `/repos/{owner}/{repo}/actions/policies` ;
+   - `GET`, `PUT` et `DELETE` sur `/repos/{owner}/{repo}/actions/policies/{policy_id}` ;
+   - corps : `name` (requis), `enforcement` (requis : `disabled`, `active` ou `evaluate`),
+     `conditions` (au niveau d'un dépôt, seul `workflow_path` existe ; il a deux tableaux requis,
+     `include` et `exclude`), puis `rules` ;
+   - la règle d'événements s'écrit `{"type": "restrict_action_events", "parameters":
+     {"allowed_events": [...]}}`. `pull_request_target` et `pull_request_review` font partie des
+     valeurs admises.
+3. **Mode d'évaluation.** [C] : « evaluate is only available with GitHub Enterprise ». [A] :
+   « Evaluate (GitHub Enterprise Cloud only) ». Ce dépôt est public et appartient à un compte
+   personnel (`owner.type = User`) : **aucun mode d'essai sans blocage n'est disponible ici**. Les
+   « Policy insights » montrent les runs bloqués par une politique active. Le mode d'évaluation de
+   [D] est celui de la politique par défaut de GitHub, pas une option du dépôt.
+4. **Politique par défaut** [E] : « GitHub adds a default policy that blocks workflows triggered by
+   `pull_request_target` », et elle « does not replace an applicable event policy that you have
+   already configured ». [D] : aucun autre événement n'est bloqué par défaut.
+5. **Non documenté** : la syntaxe exacte des globs (d'où les chemins exacts ci-dessous), le rôle ou
+   les droits exigés du jeton, le cas d'un dépôt de compte personnel, l'intitulé du bouton de
+   création. Il faut un compte administrateur du dépôt. L'identité `gh` du DEV ne convient pas.
+
+### Les trois workflows ciblés et tous leurs événements
+
+Relevé sur `main` `32d1930f1`, bloc `on:` de chaque fichier. Aucun autre workflow du dépôt ne
+déclare `pull_request_target`.
+
+| Workflow | Événements déclarés | Rôle |
 |---|---|---|
-| `.github/workflows/merge-circuits.yml` | check `🚦 Circuit de fusion` | oui |
-| `.github/workflows/dependabot-claude-review.yml` | revue Claude des PR Dependabot | oui |
-| `.github/workflows/dependabot-auto-merge.yml` | check `auto-merge` des PR Dependabot | **non** : le pilotage n'a cité que les deux premiers |
+| `.github/workflows/merge-circuits.yml` | `pull_request_target` (`opened`, `synchronize`, `reopened`, `ready_for_review`) ; `pull_request_review` (`submitted`, `dismissed`) | check `🚦 Circuit de fusion` ; `pull_request_review` sert au circuit élevé et au désarmement |
+| `.github/workflows/dependabot-claude-review.yml` | `pull_request_target` (`opened`, `synchronize`, `reopened`) | revue Claude des PR Dependabot |
+| `.github/workflows/dependabot-auto-merge.yml` | `pull_request_target` (types par défaut) | arme `gh pr merge --auto --squash` sur les PR Dependabot de la liste blanche du fichier (patch, minor de développement, GitHub Actions, trois groupes) |
 
-Sans politique qui l'inclut, `dependabot-auto-merge.yml` ne démarrera plus à partir du 2 décembre.
-L'ajouter ou non à `include` est une décision de l'owner. La politique reste ciblée par fichier, et
-aucun autre workflow ne reçoit l'événement.
+**Proposition : une seule politique, trois chemins, deux événements**, `pull_request_target` et
+`pull_request_review`.
 
-**Par l'interface.** Settings du dépôt > Actions > Policies > nouvelle politique :
+- `pull_request_review` est indispensable à `merge-circuits.yml`. Les deux workflows Dependabot ne
+  le déclarent pas : l'autoriser pour eux ne déclenche rien.
+- Une politique unique évite une question que la doc laisse ouverte : comment deux politiques se
+  combinent sur un même dépôt. [A] dit seulement qu'elles « layer with other protections ».
+- **`dependabot-auto-merge.yml` est inclus pour conserver le comportement actuel.** Sans lui, ses
+  runs seraient bloqués à partir du 2 décembre et les PR Dependabot de sa liste blanche ne
+  s'armeraient plus en fusion automatique. L'inclure n'élargit rien : c'est le comportement de
+  `main` aujourd'hui. Pour l'arrêter, il suffit de retirer ce chemin de `include` : c'est une
+  décision de l'owner.
 
-- cible : chemins de workflow `.github/workflows/merge-circuits.yml` et
-  `.github/workflows/dependabot-claude-review.yml` ;
-- règle : événements autorisés, `pull_request_target` ;
-- statut : « Active ».
+### Par l'interface
 
-**Par l'API**, sur le poste, avec un fichier pour éviter l'échappement du JSON par PowerShell :
+Settings du dépôt > barre latérale, **Actions** > **Policies** (section distincte de *General*),
+puis créer une politique :
+
+1. nom : `allow-pull_request_target-specific-workflows` ;
+2. statut d'application : **Active** (*Evaluate* n'est pas proposé hors GitHub Enterprise) ;
+3. cible : chemins de workflow, les trois chemins exacts du tableau ;
+4. protections : **Restrict events** seulement, en cochant `pull_request_target` et
+   `pull_request_review`. Ni *Restrict actors*, ni *Require lockfile*.
+
+### Par l'API (poste, PowerShell 32 bits)
+
+Un fichier évite l'échappement du JSON par PowerShell :
 
 ```powershell
 $P = "$env:TEMP\policy-prt.json"
-Set-Content -Path $P -Encoding ascii -Value '{"name":"allow-pull_request_target-specific-workflows","enforcement":"active","conditions":{"workflow_path":{"include":[".github/workflows/merge-circuits.yml",".github/workflows/dependabot-claude-review.yml"],"exclude":[]}},"rules":[{"type":"restrict_action_events","parameters":{"allowed_events":["pull_request_target"]}}]}'
+Set-Content -Path $P -Encoding ascii -Value '{"name":"allow-pull_request_target-specific-workflows","enforcement":"active","conditions":{"workflow_path":{"include":[".github/workflows/merge-circuits.yml",".github/workflows/dependabot-claude-review.yml",".github/workflows/dependabot-auto-merge.yml"],"exclude":[]}},"rules":[{"type":"restrict_action_events","parameters":{"allowed_events":["pull_request_target","pull_request_review"]}}]}'
 gh api --method POST repos/ak125/nestjs-remix-monorepo/actions/policies -H "X-GitHub-Api-Version: 2026-03-10" --input $P
 gh api repos/ak125/nestjs-remix-monorepo/actions/policies -H "X-GitHub-Api-Version: 2026-03-10"
 ```
 
-**Vérification.**
+Si le `POST` répond 404 ou 422, passer par l'interface.
 
-1. Le `GET` (4ᵉ ligne) liste la politique, avec `enforcement: active` et les deux chemins.
-2. Settings > Actions > Policies > « Policy insights » : les deux workflows y sont autorisés.
-3. À la prochaine PR, `🚦 Circuit de fusion` démarre (pas de `startup_failure`) :
-   `gh run list --repo ak125/nestjs-remix-monorepo --workflow merge-circuits.yml --limit 3`.
+### Vérification
 
-**Réserves.** Cette doc ne précise pas :
+1. Le `GET` (4ᵉ ligne) liste la politique avec `enforcement: active`, les trois chemins et les deux
+   événements.
+2. Settings > Actions > Policies > **Policy insights** : aucun run bloqué pour ces trois fichiers.
+3. À la prochaine PR, `🚦 Circuit de fusion` démarre sur `pull_request_target`, sans
+   `startup_failure` :
+   `gh run list --repo ak125/nestjs-remix-monorepo --workflow merge-circuits.yml --event pull_request_target --limit 3`.
+4. À la prochaine revue de l'owner sur une PR, le même workflow démarre sur `pull_request_review` :
+   `gh run list --repo ak125/nestjs-remix-monorepo --workflow merge-circuits.yml --event pull_request_review --limit 3`.
+5. À la prochaine PR Dependabot :
+   `gh run list --repo ak125/nestjs-remix-monorepo --workflow dependabot-auto-merge.yml --limit 3` et
+   `gh run list --repo ak125/nestjs-remix-monorepo --workflow dependabot-claude-review.yml --limit 3`.
 
-- la syntaxe des globs (d'où les chemins exacts) ;
-- les droits exacts du jeton : il faut un compte administrateur du dépôt. L'identité `gh` de DEV ne
-  convient pas ;
-- le cas d'un dépôt de compte personnel ;
-- les intitulés exacts de l'interface.
+### Retour arrière
 
-Si le `POST` répond 404 ou 422, passer par l'interface et vérifier par « Policy insights ».
+Mettre la politique en `disabled` (`PUT …/actions/policies/<id>` avec `{"enforcement":"disabled"}`)
+ou la supprimer (`DELETE`). Avant le 2 décembre, cela revient à l'état actuel. Après le 2 décembre,
+la politique par défaut de GitHub bloque de nouveau `pull_request_target`.
 
 ## 14. Authentification de la revue Claude (complément AR-5)
 
@@ -450,6 +533,10 @@ Les deux passent `git apply --check` sur `origin/main` `f9e288348`. Le YAML rés
 erreur (`yaml.safe_load`). `actionlint` n'est pas installé sur DEV : il n'a pas tourné.
 
 ### Commandes (poste, PowerShell 32 bits)
+
+> **Correction AR-7 (2026-11-16).** Ces commandes supposaient un push depuis le DEV (§12), qui
+> échoue pour un fichier de `.github/workflows/`. 06a et 07a ont été appliqués et poussés par
+> Marwane depuis son PC, et sont sur `main` (`32d1930f1`). Texte gardé pour mémoire.
 
 À faire dans le même worktree et le même push que le §12, entre la ligne `commit` et la ligne
 `push`. Exemple pour 06a et 07a :
@@ -561,6 +648,15 @@ qui arrive par `pull_request_review`, ne sert qu'au circuit élevé, et celui-ci
 `pull_request_review` continue de désarmer quand il le faut.
 
 ### Gestes de l'owner, dans l'ordre (poste, PowerShell 32 bits)
+
+> **Correction et état AR-7 / AR-8 (2026-11-16).** L'étape 6 renvoyait au push depuis le DEV du §12,
+> qui échoue pour un fichier de `.github/workflows/` : 08 et 09 ont été appliqués et poussés par
+> Marwane depuis son PC, et sont sur `main` (`32d1930f1`). Faits, d'après le relevé du pilotage du
+> 2026-11-16 à 21:06 UTC : étape 1 (environnement `app-actions`, limité à `main`), étape 2 (App
+> `automecanik-actions` : métadonnées en lecture, code et pull requests en écriture) et étape 3
+> (installée sur `nestjs-remix-monorepo` seul). **Restent à Marwane : l'étape 4 (variable
+> `ACTIONS_APP_ID`) et l'étape 5 (clé privée).** Tant qu'elles manquent, le job `🔐 Armement`
+> n'arme rien (`ACTIONS_APP_ID` absent, voir `merge-circuits.yml`).
 
 L'environnement doit exister **avant** l'application de 09. Un job qui cite un environnement absent
 le crée sans aucune restriction.
