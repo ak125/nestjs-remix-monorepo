@@ -8361,7 +8361,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/services/mail.service.ts"
+        "runtime:backend/src/services/mail.service.ts",
+        "runtime:backend/src/shared/crypto/password-crypto.service.ts"
       ],
       "id": "runtime:backend/src/modules/users/services/password.service.ts",
       "kind": "nestjs-service",

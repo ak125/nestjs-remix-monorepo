@@ -1023,7 +1023,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 1145,
+      "loc": 1150,
       "owner": "__unassigned__",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "low",
@@ -38480,10 +38480,11 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/services/mail.service.ts",
+        "backend/src/shared/crypto/password-crypto.service.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 388,
+      "loc": 371,
       "owner": "__unassigned__",
       "path": "backend/src/modules/users/services/password.service.ts",
       "risk": "low",
@@ -38548,7 +38549,7 @@
         "backend/src/modules/users/dto/user.dto.ts"
       ],
       "kind": "service",
-      "loc": 741,
+      "loc": 751,
       "owner": "__unassigned__",
       "path": "backend/src/modules/users/services/user-data-consolidated.service.ts",
       "risk": "low",
@@ -40146,19 +40147,69 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+      "importedBy": [
+        "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+        "backend/src/workers/run-legacy-password-wrap.ts"
+      ],
+      "imports": [
+        "backend/src/shared/crypto/password-crypto.service.ts"
+      ],
+      "kind": "service",
+      "loc": 289,
+      "owner": "__unassigned__",
+      "path": "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+      "importedBy": [
+        "backend/src/workers/run-legacy-password-wrap.ts"
+      ],
+      "imports": [
+        "backend/src/shared/crypto/legacy-hash-wrap.runner.ts"
+      ],
+      "kind": "service",
+      "loc": 84,
+      "owner": "__unassigned__",
+      "path": "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/shared/crypto/password-crypto.service.ts",
       "importedBy": [
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
         "backend/src/auth/session-privilege.test.ts",
+        "backend/src/modules/users/services/password.service.ts",
         "backend/src/shared/crypto/crypto.module.ts",
-        "backend/src/shared/crypto/index.ts"
+        "backend/src/shared/crypto/index.ts",
+        "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+        "backend/src/workers/run-legacy-password-wrap.ts"
       ],
       "imports": [
         "crypto"
       ],
       "kind": "service",
-      "loc": 252,
+      "loc": 355,
       "owner": "__unassigned__",
       "path": "backend/src/shared/crypto/password-crypto.service.ts",
       "risk": "low",
@@ -40518,6 +40569,51 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/workers/run-legacy-password-wrap.guard.ts",
+      "importedBy": [
+        "backend/src/workers/run-legacy-password-wrap.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 29,
+      "owner": "__unassigned__",
+      "path": "backend/src/workers/run-legacy-password-wrap.guard.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/workers/run-legacy-password-wrap.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+        "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+        "backend/src/shared/crypto/password-crypto.service.ts",
+        "backend/src/workers/run-legacy-password-wrap.guard.ts"
+      ],
+      "kind": "service",
+      "loc": 65,
+      "owner": "__unassigned__",
+      "path": "backend/src/workers/run-legacy-password-wrap.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -41018,7 +41114,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 514,
+      "loc": 648,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/auth.service.test.ts",
       "risk": "low",
@@ -41698,6 +41794,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/legacy-hash-wrap.runner.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 234,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/legacy-hash-wrap.runner.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/legacy-orders-routes-authz.test.ts",
       "importedBy": [],
       "imports": [],
@@ -42066,6 +42181,25 @@
       "loc": 468,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/page-role-validator.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/password-crypto-wrapped.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 191,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/password-crypto-wrapped.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
