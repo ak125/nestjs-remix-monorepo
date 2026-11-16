@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/.github/scripts/report-issue-publish.sh
-@@ -0,0 +1,84 @@
+@@ -0,0 +1,103 @@
 +#!/usr/bin/env bash
 +# report-issue-publish.sh — one standing GitHub issue per report, updated in place.
 +#
@@ -11,6 +11,8 @@
 +# (creating a label is an owner act).
 +#
 +#   report_issue_publish <title> <body_file> <state_json> [assignee]
++#   report_marker_extract <tag>          (stdin: body)  → JSON of a marker line, or {}
++#   report_marker_set <issue> <tag> <json>              → rewrites that marker line only
 +#
 +# - <title>      exact title of the standing issue (open, authored by GitHub Actions).
 +# - <body_file>  new body (markdown). A one-line state marker is appended to it.
@@ -30,16 +32,33 @@
 +        | .number] | min // empty'
 +}
 +
-+report_state_extract() { # stdin: issue body → previous state JSON, or {}
++report_marker_extract() { # <tag>; stdin: issue body → JSON object of the last <!-- <tag> {…} --> line, or {}
 +  local line
-+  line=$(grep -o "<!-- ${REPORT_STATE_TAG} .* -->" | tail -n1 || true)
-+  line=${line#"<!-- ${REPORT_STATE_TAG} "}
++  line=$(grep -o "<!-- $1 .* -->" | tail -n1 || true)
++  line=${line#"<!-- $1 "}
 +  line=${line%" -->"}
 +  if [ -n "$line" ] && printf '%s' "$line" | jq -e 'type == "object"' >/dev/null 2>&1; then
 +    printf '%s' "$line"
 +  else
 +    printf '{}'
 +  fi
++}
++
++report_state_extract() { report_marker_extract "$REPORT_STATE_TAG"; }
++
++report_marker_line() { # <tag> <json> → one marker line; the JSON cannot close the comment early
++  local json
++  json=$(printf '%s' "$2" | jq -c .) || return 1
++  printf '<!-- %s %s -->\n' "$1" "${json//-->/—>}"
++}
++
++report_marker_set() { # <issue> <tag> <json> — replace (or append) one marker line in the body, nothing else
++  local body
++  body=$(mktemp)
++  gh issue view "$1" --repo "$REPO" --json body --jq '.body' | grep -v "^<!-- $2 " > "$body" || true
++  report_marker_line "$2" "$3" >> "$body"
++  gh issue edit "$1" --repo "$REPO" --body-file "$body" > /dev/null
++  rm -f "$body"
 +}
 +
 +report_state_changes() { # <prev_json> <cur_json> → one markdown line per colour change, empty if none
@@ -56,8 +75,8 @@
 +  state=$(printf '%s' "$state" | jq -c 'if type == "object" then . else error("état non objet") end') \
 +    || { echo "report-issue-publish : état invalide" >&2; return 1; }
 +  # One line, and it must not close the HTML comment early.
-+  state=${state//-->/—>}
-+  printf '\n<!-- %s %s -->\n' "$REPORT_STATE_TAG" "$state" >> "$body_file"
++  printf '\n' >> "$body_file"
++  report_marker_line "$REPORT_STATE_TAG" "$state" >> "$body_file"
 +
 +  number=$(report_issue_find "$title")
 +  if [ -z "$number" ]; then
@@ -85,64 +104,277 @@
 +  fi
 +  echo "$number"
 +}
+--- /dev/null
++++ b/.github/scripts/report-mail.py
+@@ -0,0 +1,94 @@
++#!/usr/bin/env python3
++"""report-mail.py — short plain-text mail through Gmail SMTP, OAuth2 XOAUTH2.
++
++Complément au mandat AM (décision 67, 2026-11-16). Same protocol and same variable
++names as the inline senders of scripts/monitoring/check-payment-tunnel.sh and
++check-error-logs-5xx.sh (refresh token → access token → SMTP STARTTLS + XOAUTH2,
++python3 stdlib only). This is the third user of that protocol; the two host scripts
++are NOT changed here (they are installed on the PROD host, ADR-130 D3.4).
++
++    REPORT_MAIL_SUBJECT="…" python3 report-mail.py <body_file>
++
++Environment (names only, never printed): GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET,
++GMAIL_REFRESH_TOKEN, GMAIL_USER_EMAIL, ALERT_EMAIL_TO, EMAIL_FROM, REPORT_MAIL_SUBJECT.
++
++Output, one line, safe for a PUBLIC run log (no address, no token, no server text):
++    OK                          mail accepted by the SMTP server     (exit 0)
++    INDISPONIBLE:<VAR,VAR>      variables missing                    (exit 2)
++    ERREUR:<étape>:<type>       OAuth or SMTP failure                (exit 1)
++"""
++import base64
++import json
++import os
++import smtplib
++import sys
++import urllib.error
++import urllib.parse
++import urllib.request
++from email.message import EmailMessage
++
++NEEDED = ("GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN",
++          "GMAIL_USER_EMAIL", "ALERT_EMAIL_TO", "EMAIL_FROM", "REPORT_MAIL_SUBJECT")
++
++
++def main() -> int:
++    missing = [n for n in NEEDED if not os.environ.get(n)]
++    if missing:
++        print("INDISPONIBLE:" + ",".join(missing))
++        return 2
++    if len(sys.argv) != 2 or not os.path.isfile(sys.argv[1]):
++        print("ERREUR:corps:fichier_absent")
++        return 1
++    with open(sys.argv[1], encoding="utf-8") as fh:
++        body = fh.read()
++
++    # 1. refresh token → access token
++    try:
++        req = urllib.request.Request(
++            "https://oauth2.googleapis.com/token",
++            data=urllib.parse.urlencode({
++                "client_id": os.environ["GMAIL_CLIENT_ID"],
++                "client_secret": os.environ["GMAIL_CLIENT_SECRET"],
++                "refresh_token": os.environ["GMAIL_REFRESH_TOKEN"],
++                "grant_type": "refresh_token",
++            }).encode(),
++            headers={"Content-Type": "application/x-www-form-urlencoded"},
++        )
++        with urllib.request.urlopen(req, timeout=10) as resp:
++            access_token = json.loads(resp.read())["access_token"]
++    except urllib.error.HTTPError as exc:
++        print(f"ERREUR:oauth:HTTP{exc.code}")
++        return 1
++    except Exception as exc:  # noqa: BLE001 — reported by type only
++        print(f"ERREUR:oauth:{type(exc).__name__}")
++        return 1
++
++    # 2. message
++    msg = EmailMessage()
++    msg["From"] = os.environ["EMAIL_FROM"]
++    msg["To"] = os.environ["ALERT_EMAIL_TO"]
++    msg["Subject"] = os.environ["REPORT_MAIL_SUBJECT"]
++    msg.set_content(body)
++
++    # 3. SMTP STARTTLS + XOAUTH2
++    try:
++        user = os.environ["GMAIL_USER_EMAIL"]
++        auth = base64.b64encode(f"user={user}\x01auth=Bearer {access_token}\x01\x01".encode()).decode()
++        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as smtp:
++            smtp.ehlo()
++            smtp.starttls()
++            smtp.ehlo()
++            code, _ = smtp.docmd("AUTH", f"XOAUTH2 {auth}")
++            if code != 235:
++                print(f"ERREUR:smtp_auth:{code}")
++                return 1
++            smtp.send_message(msg)
++    except Exception as exc:  # noqa: BLE001 — reported by type only
++        print(f"ERREUR:smtp:{type(exc).__name__}")
++        return 1
++    print("OK")
++    return 0
++
++
++if __name__ == "__main__":
++    sys.exit(main())
 --- a/.github/scripts/morning-health-digest.sh
 +++ b/.github/scripts/morning-health-digest.sh
-@@ -1,148 +1,331 @@
+@@ -1,180 +1,924 @@
  #!/usr/bin/env bash
 -# Morning health digest — collect 8 signals, classify, write digest body file,
 -# emit GitHub Actions outputs.
-+# Morning health digest — ONE standing issue, body replaced on every run (mandat AM,
-+# 2026-11-16). Each signal carries its colour, value, source, read time (UTC) and
-+# confidence level. A source that cannot be read is written « indisponible »,
-+# never zero.
++# Morning health digest — ONE standing issue, body replaced once a day (mandat AM and
++# its complement, decisions 67, 68 and 72 of 2026-11-16). Each signal carries its
++# colour, value, source, read time (UTC), the date of the data it shows and a
++# confidence level. A source that cannot be read is written « indisponible », never
++# zero; a source that has no producer yet is written « non branché ».
  #
 -# Called by .github/workflows/morning-health-digest.yml. Requires gh CLI with
 -# GH_TOKEN env var and REPO env var (owner/name).
-+#   bash .github/scripts/morning-health-digest.sh            legacy contract: writes the
-+#        body and emits `title` + `body_path` outputs (the unpatched workflow then creates
-+#        a dated issue, as before).
-+#   bash .github/scripts/morning-health-digest.sh --publish  updates the standing issue
-+#        through report-issue-publish.sh; a short comment only on a colour change.
++#   bash .github/scripts/morning-health-digest.sh
++#        legacy contract: full report, writes the body and emits `title` + `body_path`
++#        outputs (the unpatched workflow then creates a dated issue). No mail, no gate.
++#   bash .github/scripts/morning-health-digest.sh --publish [--force]
++#        scheduled every 15 min. Each run checks the URGENT signals (simulated purchase
++#        path, critical security alerts, price guard-rail) and mails a new incident
++#        once. The DAILY report (standing issue updated, short mail if a gesture of the
++#        owner is expected) runs once per Paris day, at or after the configured hour
++#        (7 h by default), or at once with --force (workflow_dispatch) or when the
++#        standing issue does not exist yet.
 +#
 +# Called by .github/workflows/morning-health-digest.yml. Requires gh (GH_TOKEN), jq,
-+# curl and REPO=<owner/name>. Optional: SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (the
-+# secrets already given to diag-canon-slugs-export.yml); without them every database
-+# signal is « indisponible ».
++# curl, python3 (+ yaml, as scripts/ops/pilote-file.sh) and REPO=<owner/name>.
++# Optional inputs, all documented in docs/plans/2026-11-16-mandat-am-patches/README.md:
++#   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY  database signals (else « indisponible »)
++#   REPORT_CONFIG        JSON file, schema report-config.v1: hour, thresholds, labels,
++#                        signal→department map, AU source. Hook for the department
++#                        contracts (mandat AR); absent → the script defaults, declared.
++#   PARCOURS_ACHAT_JSON  file, schema parcours-achat.v1 (mandat AU)
++#   GARDE_PRIX_JSON      file, schema garde-prix.v1 (no producer as of 2026-11-16)
++#   GMAIL_* , ALERT_EMAIL_TO, EMAIL_FROM  mail channel (report-mail.py); else declared
++#                        « indisponible » in the issue and the run log.
 +#
 +# PUBLIC REPOSITORY: this body lands verbatim in a public issue and the run log is
 +# public. Only aggregates go out: rule names, counts, URL paths without query string,
-+# day totals. Never a row, an order id, an e-mail, an IP or a user agent string other
-+# than the internal/external split. No credential is ever echoed.
++# day totals, PR and issue titles (already public). Never a row, an order id, an
++# e-mail, an IP, a security alert's rule or path, or a KPI value of a department.
++# No credential is ever echoed.
  set -euo pipefail
  
  : "${GH_TOKEN:?missing}"
  : "${REPO:?missing}"
  
-+MODE="${1:-}"
++MODE=""; FORCE=0
++for a in "$@"; do
++  case "$a" in
++    --publish) MODE=--publish ;;
++    --force) FORCE=1 ;;
++    *) echo "argument inconnu : $a" >&2; exit 64 ;;
++  esac
++done
 +HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 +ROOT=$(cd "$HERE/../.." && pwd)
 +TITLE="Rapport du matin — santé de la plateforme (morning-health-digest)"
++GH_URL="${GITHUB_SERVER_URL:-https://github.com}"
++RUN_URL="$GH_URL/${GITHUB_REPOSITORY:-$REPO}/actions/runs/${GITHUB_RUN_ID:-?}"
  NOW_UTC=$(date -u +%FT%TZ)
  TODAY=$(date -u +%F)
  YESTERDAY=$(date -u -d 'yesterday' +%F)
 -OUT=$(mktemp)
 -STATUS_OVERALL="✅"
++PARIS_DAY=$(TZ=Europe/Paris date +%F)
++PARIS_H=$((10#$(TZ=Europe/Paris date +%H)))
 +SIG=$(mktemp)   # one JSON object per signal
 +DET=$(mktemp)   # detail sections
++URG=$(mktemp)   # one JSON object per active urgent incident
 +OUT=$(mktemp)   # final body
 +
-+# signal <id> <libellé> <couleur> <valeur> <source> <confiance>
-+# couleur ∈ vert | orange | rouge | indisponible | info (info = no governed threshold)
++is_int() { case "${1:-}" in ''|*[!0-9]*) return 1 ;; *) return 0 ;; esac; }
++iso() { date -u -d "$1" +%FT%TZ 2>/dev/null || true; }   # any date → 2026-11-16T05:00:00Z, empty if unreadable
++
++# signal <id> <libellé> <couleur> <valeur> <source> <confiance> <donnée>
++# couleur ∈ vert | orange | rouge | indisponible | info (no governed threshold)
++#           | nonbranche (no producer yet: listed, never counted in the global colour)
++# donnée  = date of the data shown: ISO-8601 UTC, YYYY-MM-DD, "direct" (live read) or "".
 +signal() {
-+  jq -cn --arg id "$1" --arg l "$2" --arg c "$3" --arg v "$4" --arg s "$5" --arg q "$6" \
-+    --arg t "$(date -u +%FT%TZ)" '{id:$id, l:$l, c:$c, v:$v, s:$s, q:$q, t:$t}' >> "$SIG"
++  jq -cn --arg id "$1" --arg l "$2" --arg c "$3" --arg v "$4" --arg s "$5" --arg q "$6" --arg f "${7:-}" \
++    --arg t "$(date -u +%FT%TZ)" '{id:$id, l:$l, c:$c, v:$v, s:$s, q:$q, t:$t, f:$f}' >> "$SIG"
 +}
 +detail() { printf '%s\n' "$@" >> "$DET"; }
++# urgent <clé> <libellé public> <lien> [détail du mail] — an incident active right now
++# (mailed once, see below). The public label goes in the issue (public repo); the
++# detail and the link go in the mail only.
++urgent() { jq -cn --arg k "$1" --arg l "$2" --arg u "$3" --arg d "${4:-$2}" '{k:$k, l:$l, u:$u, d:$d}' >> "$URG"; }
++URG_UNREAD=""   # key prefixes whose source was unreadable this run: their incidents are carried over
 +
 +Q_QUAL="qualifié"
 +Q_COH="cohérent en interne"
 +Q_REQ="à requalifier"
 +Q_NON="non qualifié"
++
++# ======================================================================
++# Configuration — hook for the department contracts (mandat AR, decision 72)
++# ======================================================================
++# No department-contract configuration existed on main at 2026-11-16 07:38 UTC. The
++# script reads REPORT_CONFIG if given (schema report-config.v1, keys in the README);
++# every missing key falls back to the default written here, and the report says so.
++CFG='{}'
++CFG_NOTE="configuration des contrats de département (mandat AR) absente : seuils et heure par défaut du script"
++if [ -n "${REPORT_CONFIG:-}" ]; then
++  if [ -f "$REPORT_CONFIG" ] && jq -e 'type == "object" and .schema == "report-config.v1"' "$REPORT_CONFIG" >/dev/null 2>&1; then
++    CFG=$(jq -c . "$REPORT_CONFIG")
++    CFG_NOTE="configuration lue : \`${REPORT_CONFIG#"$ROOT"/}\` (report-config.v1) ; clé absente → valeur par défaut du script"
++  else
++    CFG_NOTE="REPORT_CONFIG illisible ou hors schéma report-config.v1 : seuils et heure par défaut du script"
++    echo "::warning::$CFG_NOTE"
++  fi
++fi
++cfg_int() { local v; v=$(jq -r "($1) // empty" <<< "$CFG" 2>/dev/null || true); if is_int "$v"; then echo "$v"; else echo "$2"; fi; }
++cfg_str() { local v; v=$(jq -r "($1) // empty | strings" <<< "$CFG" 2>/dev/null || true); echo "${v:-$2}"; }
+ 
+-# ---- Signal 1 — Sitemap freshness ----
+-echo "## Signal 1 — Sitemap freshness (PROD)" >> "$OUT"
+-LM=$(curl -fsS -m 10 -I https://www.automecanik.com/sitemap.xml 2>/dev/null \
+-  | grep -i '^last-modified:' \
+-  | sed 's/[Ll]ast-[Mm]odified:[[:space:]]*//I; s/\r$//' \
+-  || echo "")
+-if [ -n "$LM" ]; then
+-  AGE_SEC=$(( $(date -u +%s) - $(date -u -d "$LM" +%s) ))
+-  AGE_HRS=$(( AGE_SEC / 3600 ))
+-  if [ "$AGE_HRS" -lt 26 ]; then
+-    S="✅"
+-  elif [ "$AGE_HRS" -lt 30 ]; then
+-    S="⚠️"
+-    [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
++HOUR=$(cfg_int '.rapport.heure_paris' 7);            [ "$HOUR" -le 23 ] || HOUR=7
++FRESH_MAX_J=$(cfg_int '.fraicheur.max_jours' 3)
++SITEMAP_GREEN_H=$(cfg_int '.seuils.sitemap_vert_max_h' 26)
++SITEMAP_ORANGE_H=$(cfg_int '.seuils.sitemap_orange_max_h' 30)
++REGISTRY_MAX_H=$(cfg_int '.seuils.registre_max_h' 26)
++PA_MIN_PCT=$(cfg_int '.parcours_achat.disponibilite_min_pct' '')   # no default: no governed threshold
++LABEL_WAIT=$(cfg_str '.labels.attente' 'attend-marwane')
++LABEL_ARB=$(cfg_str '.labels.desaccord' 'needs-human')
++MIG_PATH=$(cfg_str '.migrations.chemin' 'backend/supabase/migrations/')
++# Signal → department (business_number). PROPOSAL to be arbitrated with mandat AR.
++DEPT_MAP_DEFAULT='{"tunnel":13,"unpaid":13,"parcours":13,"err5xx":21,"smoke":21,"ci":21,"prfail":21,"merged":21,"sitemap":7,"oidc":7,"gsc":7,"audit":2,"registry":2,"ledger":22,"secu":19,"prix":16,"owner":1}'
++# A configured table overrides the default key by key: a partial table cannot drop a signal.
++DEPT_MAP_CFG=$(jq -c '.departements.signaux // empty | objects | with_entries(select(.value | type == "number"))' <<< "$CFG" 2>/dev/null || true)
++if [ -n "$DEPT_MAP_CFG" ] && [ "$DEPT_MAP_CFG" != "{}" ]; then
++  DEPT_MAP=$(jq -cn --argjson d "$DEPT_MAP_DEFAULT" --argjson c "$DEPT_MAP_CFG" '$d + $c')
++  DEPT_MAP_NOTE="Table signal → département lue dans la configuration ($(jq 'length' <<< "$DEPT_MAP_CFG") clé(s)), complétée par la table par défaut du script"
++else
++  DEPT_MAP=$DEPT_MAP_DEFAULT
++  DEPT_MAP_NOTE="Table signal → département par défaut du script, **proposition à arbitrer (mandat AR)**"
++fi
++
++# ======================================================================
++# Standing issue, its markers and the daily gate (--publish only)
++# ======================================================================
++ISSUE=""; PREV_BODY=""; DAILY=1; DAILY_WHY="mode historique"
++if [ "$MODE" = "--publish" ]; then
++  # shellcheck source=report-issue-publish.sh
++  . "$HERE/report-issue-publish.sh"
++  ISSUE=$(report_issue_find "$TITLE")
++  if [ -n "$ISSUE" ]; then
++    # An unreadable body would reset the dedup state and re-send every mail: stop.
++    PREV_BODY=$(gh issue view "$ISSUE" --repo "$REPO" --json body --jq '.body') \
++      || { echo "::error::lecture du corps de l'issue #$ISSUE en échec : passage abandonné"; exit 1; }
++  fi
++  META_PREV=$(printf '%s' "$PREV_BODY" | report_marker_extract "report-meta:v1")
++  URG_PREV=$(printf '%s' "$PREV_BODY" | report_marker_extract "urgent-state:v1")
++  LAST_DAY=$(jq -r '.jour_paris // ""' <<< "$META_PREV")
++  if [ "$FORCE" = 1 ]; then DAILY_WHY="déclenchement manuel"
++  elif [ -z "$ISSUE" ]; then DAILY_WHY="issue absente, créée à ce passage"
++  elif [ "$PARIS_H" -ge "$HOUR" ] && [ "$LAST_DAY" != "$PARIS_DAY" ]; then DAILY_WHY="rapport quotidien de ${HOUR} h (heure de Paris)"
++  else DAILY=0
++  fi
++else
++  META_PREV='{}'; URG_PREV='{}'
++fi
 +
 +# ---- Database access (read only, PostgREST) ----
 +DB_WHY=""
@@ -162,7 +394,180 @@
 +  awk 'tolower($0) ~ /^content-range:/ { n=$0; sub(/.*\//,"",n); gsub(/[^0-9]/,"",n); print n }' "$hdr"
 +  rm -f "$hdr"
 +}
-+is_int() { case "${1:-}" in ''|*[!0-9]*) return 1 ;; *) return 0 ;; esac; }
++
++# ======================================================================
++# URGENT signals — checked on every run (decision 67)
++# ======================================================================
++
++# ---- Simulated purchase path (mandat AU) ----
++# Input: PARCOURS_ACHAT_JSON, or the artifact of the last completed run of the AU
++# workflow named in the configuration (parcours_achat.workflow + .artefact).
++# Schema parcours-achat.v1: generated_at, window_hours, availability_pct, runs_total,
++# runs_ok, steps[{name, p50_ms, p95_ms, last_ms, ok}], last_run{at, ok, failed_step}.
++PA_SRC="parcours d'achat simulé (mandat AU), format parcours-achat.v1"
++PA_FILE="${PARCOURS_ACHAT_JSON:-}"
++PA_WF=$(cfg_str '.parcours_achat.workflow' '')
++PA_ART=$(cfg_str '.parcours_achat.artefact' '')
++PA_WHY=""
++if [ -z "$PA_FILE" ] && [ -n "$PA_WF" ] && [ -n "$PA_ART" ]; then
++  PA_DIR=$(mktemp -d)
++  PA_RUN=$(gh run list --workflow="$PA_WF" --repo "$REPO" --status completed --limit 1 \
++    --json databaseId --jq '.[0].databaseId // empty' 2>/dev/null || true)
++  PA_FILE="$PA_DIR/$(cfg_str '.parcours_achat.fichier' 'parcours-achat.json')"
++  if [ -z "$PA_RUN" ]; then
++    PA_WHY="aucun run terminé de $PA_WF trouvé (ou liste des runs illisible)"
++  elif ! gh run download "$PA_RUN" --repo "$REPO" --name "$PA_ART" --dir "$PA_DIR" >/dev/null 2>&1; then
++    PA_WHY="artefact $PA_ART du dernier run de $PA_WF illisible"
++  fi
++fi
++PA_VALID='.schema == "parcours-achat.v1" and (.generated_at | type == "string")
++  and (.availability_pct | type == "number") and (.runs_total | type == "number") and (.runs_ok | type == "number")
++  and (.steps | type == "array") and all(.steps[]; (.name | type == "string") and (.ok | type == "boolean"))
++  and (.last_run | type == "object") and (.last_run.ok | type == "boolean")'
++if [ -z "$PA_FILE" ]; then
++  signal parcours "Parcours d'achat simulé" nonbranche "non branché : aucune entrée (PARCOURS_ACHAT_JSON, ou parcours_achat.workflow et .artefact de la configuration) ; producteur attendu du mandat AU" "$PA_SRC" "$Q_NON" ""
++elif [ -n "$PA_WHY" ] || [ ! -f "$PA_FILE" ]; then
++  [ -n "$PA_WHY" ] || PA_WHY="fichier d'entrée absent"
++  signal parcours "Parcours d'achat simulé" indisponible "$PA_WHY" "$PA_SRC" "$Q_NON" ""
++  URG_UNREAD="$URG_UNREAD parcours"
++elif ! jq -e "$PA_VALID" "$PA_FILE" >/dev/null 2>&1; then
++  signal parcours "Parcours d'achat simulé" indisponible "format invalide (attendu parcours-achat.v1)" "$PA_SRC" "$Q_NON" ""
++  URG_UNREAD="$URG_UNREAD parcours"
++else
++  PA=$(jq -c '{w: (.window_hours // 24), pct: .availability_pct, ok: .runs_ok, n: .runs_total,
++               last_ok: .last_run.ok, last_at: (.last_run.at // ""),
++               failed: ((.last_run.failed_step // "?") | tostring | gsub("[`|\n\r<>]"; "") | .[0:60]),
++               gen: .generated_at}' "$PA_FILE")
++  PA_GEN=$(iso "$(jq -r .gen <<< "$PA")")
++  PA_V="disponibilité $(jq -r '"\(.w) h : \(.pct) % (\(.ok)/\(.n) passages réussis)"' <<< "$PA")"
++  if [ "$(jq -r .last_ok <<< "$PA")" = "false" ]; then
++    PA_V="EN PANNE : étape « $(jq -r .failed <<< "$PA") » en échec au dernier passage ($(jq -r .last_at <<< "$PA")) ; $PA_V"
++    signal parcours "Parcours d'achat simulé" rouge "$PA_V" "$PA_SRC" "$Q_NON" "$PA_GEN"
++    urgent parcours "Parcours d'achat en panne (étape $(jq -r .failed <<< "$PA"))" "$RUN_URL"
++  elif [ -n "$PA_MIN_PCT" ] && jq -e --argjson m "$PA_MIN_PCT" '.pct < $m' <<< "$PA" >/dev/null; then
++    signal parcours "Parcours d'achat simulé" orange "$PA_V ; sous le seuil configuré de $PA_MIN_PCT %" "$PA_SRC" "$Q_NON" "$PA_GEN"
++  else
++    signal parcours "Parcours d'achat simulé" vert "$PA_V ; dernier passage réussi" "$PA_SRC" "$Q_NON" "$PA_GEN"
++  fi
++  PA_W=$(jq -r .w <<< "$PA")
++  PA_ROWS=$(jq -r '.steps[] | "| \(.name | gsub("[`|\n\r<>]"; "") | .[0:60]) | \(.last_ms // "—") | \(.p50_ms // "—") | \(.p95_ms // "—") | \(if .ok then "réussi" else "**en échec**" end) |"' "$PA_FILE")
++  detail "### Parcours d'achat simulé, temps par étape (fenêtre de $PA_W h)" "" \
++    "| Étape | Dernier passage (ms) | p50 (ms) | p95 (ms) | État |" "|---|---|---|---|---|" \
++    "$PA_ROWS" ""
++fi
++
++# ---- Critical security alerts (Dependabot, code scanning) ----
++# Counts only in the public body; rule, package and path go to the private mail link.
++SECU_SRC="API GitHub : alertes ouvertes de sévérité critique (Dependabot, code scanning)"
++secu_read() { # <kind> <endpoint> → sets SECU_<kind>_N (count) or SECU_<kind>_WHY
++  local err out
++  err=$(mktemp)
++  if out=$(gh api "repos/$REPO/$2?state=open&severity=critical&per_page=100" --jq '[.[].number] | map(tostring) | join(" ")' 2>"$err"); then
++    printf -v "SECU_${1}_LIST" '%s' "$out"
++    printf -v "SECU_${1}_WHY" '%s' ""
++  else
++    local why="lecture en échec"
++    grep -qi 'disabled' "$err" && why="désactivées sur le dépôt"
++    grep -q 'HTTP 403' "$err" && ! grep -qi 'disabled' "$err" && why="accès refusé (permission security-events: read du job ?)"
++    grep -q 'HTTP 404' "$err" && why="aucune analyse"
++    printf -v "SECU_${1}_WHY" '%s' "$why"
++    printf -v "SECU_${1}_LIST" '%s' ""
++  fi
++  rm -f "$err"
++}
++secu_read DEP dependabot/alerts
++secu_read CS code-scanning/alerts
++SECU_PARTS=(); SECU_N=0; SECU_READ=0
++for K in DEP CS; do
++  WHY_VAR="SECU_${K}_WHY"; LIST_VAR="SECU_${K}_LIST"
++  case "$K" in DEP) NAME="Dependabot"; PATHK="dependabot" ;; CS) NAME="code scanning"; PATHK="code-scanning" ;; esac
++  if [ -n "${!WHY_VAR}" ]; then
++    SECU_PARTS+=("$NAME : indisponible (${!WHY_VAR})")
++    URG_UNREAD="$URG_UNREAD secu:$PATHK:"
++  else
++    SECU_READ=$((SECU_READ + 1))
++    N=$(wc -w <<< "${!LIST_VAR}")
++    SECU_N=$((SECU_N + N))
++    SECU_PARTS+=("$NAME : $N")
++    for A in ${!LIST_VAR}; do
++      urgent "secu:$PATHK:$A" "Alerte de sécurité critique ($NAME)" "$GH_URL/$REPO/security/$PATHK/$A" "Alerte de sécurité critique ($NAME n° $A)"
++    done
++  fi
++done
++SECU_V=$(printf '%s ; ' "${SECU_PARTS[@]}"); SECU_V=${SECU_V% ; }
++if [ "$SECU_N" -gt 0 ]; then
++  signal secu "Alertes de sécurité critiques" rouge "$SECU_N ouverte(s) — $SECU_V (détail réservé aux mainteneurs, onglet Security)" "$SECU_SRC" "$Q_QUAL" direct
++elif [ "$SECU_READ" -eq 2 ]; then
++  signal secu "Alertes de sécurité critiques" vert "0 ouverte — $SECU_V" "$SECU_SRC" "$Q_QUAL" direct
++else
++  signal secu "Alertes de sécurité critiques" indisponible "$SECU_V" "$SECU_SRC" "$Q_QUAL" direct
++fi
++
++# ---- Price guard-rail triggered ----
++# No producer persists a trigger as of 2026-11-16: PricingInvariantError and
++# assertValidPriceChain have no consumer in backend/src, and the command-center
++# action `sell_at_loss` is a hard-coded 0. Hook: GARDE_PRIX_JSON, schema garde-prix.v1
++# {schema, generated_at, declenchements: [{cle, at}]}; each `cle` is one incident.
++PRIX_SRC="déclenchements du garde-fou des prix, format garde-prix.v1"
++if [ -z "${GARDE_PRIX_JSON:-}" ]; then
++  signal prix "Garde-fou des prix" nonbranche "non branché : aucun producteur ne persiste un déclenchement (PricingInvariantError sans consommateur dans backend/src ; sell_at_loss écrit 0 en dur dans command-center-actions.service.ts)" "$PRIX_SRC" "$Q_NON" ""
++elif ! jq -e '.schema == "garde-prix.v1" and (.generated_at | type == "string") and (.declenchements | type == "array") and all(.declenchements[]; .cle | type == "string")' "$GARDE_PRIX_JSON" >/dev/null 2>&1; then
++  signal prix "Garde-fou des prix" indisponible "entrée absente ou format invalide (attendu garde-prix.v1)" "$PRIX_SRC" "$Q_NON" ""
++  URG_UNREAD="$URG_UNREAD prix:"
++else
++  GP_GEN=$(iso "$(jq -r .generated_at "$GARDE_PRIX_JSON")")
++  GP_KEYS=$(jq -r '.declenchements[].cle | gsub("[^A-Za-z0-9_.:-]"; "_") | .[0:64]' "$GARDE_PRIX_JSON" | sort -u)
++  GP_N=$(grep -c . <<< "$GP_KEYS" || true)
++  if [ "$GP_N" -gt 0 ]; then
++    signal prix "Garde-fou des prix" rouge "$GP_N déclenchement(s) en cours" "$PRIX_SRC" "$Q_NON" "$GP_GEN"
++    # The producer's key may name a product: the public issue only keeps a fingerprint.
++    while read -r K; do
++      urgent "prix:$(printf '%s' "$K" | sha256sum | cut -c1-12)" "Garde-fou des prix déclenché" "$RUN_URL" "Garde-fou des prix déclenché ($K)"
++    done <<< "$GP_KEYS"
++  else
++    signal prix "Garde-fou des prix" vert "aucun déclenchement" "$PRIX_SRC" "$Q_NON" "$GP_GEN"
++  fi
++fi
++
++# ---- Urgent state: one mail per incident ----
++# urgent-state:v1 = {clé: {depuis, mail}} kept in the issue body. A key absent this run
++# is dropped (incident over), so a recurrence mails again; a key whose source was
++# unreadable is carried over untouched; a mail that failed is retried on the next run.
++URG_NOW=$(jq -cs 'map({(.k): {l: .l, u: .u, d: .d}}) | add // {}' "$URG")
++URG_MAIL_LINE=""
++URG_NEXT=$(jq -cn --argjson p "$URG_PREV" --argjson n "$URG_NOW" --arg now "$NOW_UTC" --arg unread "$URG_UNREAD" '
++  ($unread | split(" ") | map(select(length > 0))) as $u
++  | ($n | with_entries(.value = {depuis: ($p[.key].depuis // $now), mail: ($p[.key].mail // "à envoyer")}))
++    + ($p | with_entries(select(.key as $k | $u | any(. as $x | $k | startswith($x)))))')
++URG_TO_MAIL=$(jq -c --argjson n "$URG_NOW" '[to_entries[] | select(.value.mail != "envoyé" and $n[.key] != null) | .key]' <<< "$URG_NEXT")
++if [ "$MODE" = "--publish" ] && [ "$URG_TO_MAIL" != "[]" ]; then
++  MAIL_BODY=$(mktemp)
++  {
++    echo "Urgence AutoMecanik, lecture du $NOW_UTC (UTC) :"
++    echo ""
++    jq -r --argjson n "$URG_NOW" '.[] | "- \($n[.].d) : \($n[.].u)"' <<< "$URG_TO_MAIL"
++    echo ""
++    echo "Rapport : ${ISSUE:+$GH_URL/$REPO/issues/$ISSUE}${ISSUE:-$GH_URL/$REPO/issues?q=is%3Aissue+is%3Aopen+morning-health-digest+in%3Atitle}"
++    echo "Un seul mail par incident ; le suivant partira à la prochaine occurrence."
++  } > "$MAIL_BODY"
++  set +e
++  URG_MAIL_LINE=$(REPORT_MAIL_SUBJECT="[URGENCE] AutoMecanik — $(jq -r --argjson n "$URG_NOW" 'map($n[.].d) | join(" ; ") | .[0:150]' <<< "$URG_TO_MAIL")" \
++    python3 "$HERE/report-mail.py" "$MAIL_BODY" 2>/dev/null | tail -n1)
++  set -e
++  case "$URG_MAIL_LINE" in OK) ST="envoyé" ;; INDISPONIBLE:*) ST="canal indisponible" ;; *) ST="échec" ;; esac
++  [ "$ST" = "envoyé" ] || echo "::warning::mail d'urgence non envoyé : ${URG_MAIL_LINE:-aucune sortie}"
++  URG_NEXT=$(jq -c --argjson k "$URG_TO_MAIL" --arg st "$ST" 'reduce $k[] as $x (.; .[$x].mail = $st)' <<< "$URG_NEXT")
++  rm -f "$MAIL_BODY"
++fi
++
++if [ "$DAILY" = 0 ]; then
++  # Between two daily reports only the urgent marker moves, and only when it changed.
++  if [ "$(jq -cS . <<< "$URG_NEXT")" != "$(jq -cS . <<< "$URG_PREV")" ]; then
++    report_marker_set "$ISSUE" "urgent-state:v1" "$URG_NEXT"
++  fi
++  echo "Passage d'urgence seul (rapport du jour déjà publié ou avant ${HOUR} h, heure de Paris) ; incidents actifs : $(jq 'length' <<< "$URG_NOW") ; mail : ${URG_MAIL_LINE:-aucun}"
++  exit 0
++fi
 +
 +# ======================================================================
 +# Business and runtime signals (mandat AM)
@@ -174,9 +579,9 @@
 +TUNNEL_SCRIPT="$ROOT/scripts/monitoring/check-payment-tunnel.sh"
 +TUNNEL_SRC="check-payment-tunnel.sh en mode CHECK_ONLY (RPC check_payment_tunnel_health, order_idempotency, ___xtr_order)"
 +if [ -n "$DB_WHY" ]; then
-+  signal tunnel "Tunnel de paiement" indisponible "$DB_WHY" "$TUNNEL_SRC" "$Q_COH"
++  signal tunnel "Tunnel de paiement" indisponible "$DB_WHY" "$TUNNEL_SRC" "$Q_COH" ""
 +elif ! grep -q 'CHECK_ONLY_RESULT' "$TUNNEL_SCRIPT" 2>/dev/null; then
-+  signal tunnel "Tunnel de paiement" indisponible "mode CHECK_ONLY absent du script (patch non appliqué)" "$TUNNEL_SRC" "$Q_COH"
++  signal tunnel "Tunnel de paiement" indisponible "mode CHECK_ONLY absent du script (patch non appliqué)" "$TUNNEL_SRC" "$Q_COH" ""
 +else
 +  set +e
 +  T_OUT=$(CHECK_ONLY=1 bash "$TUNNEL_SCRIPT" 2>/dev/null)
@@ -193,49 +598,32 @@
 +    is_int "$(t_get "$k")" || T_FAILED="$T_FAILED $k"
 +  done
 +  if [ "$T_RC" = "0" ] && [ -n "$T_LINE" ] && [ -n "$T_FAILED" ]; then
-+    signal tunnel "Tunnel de paiement" indisponible "lecture partielle : aucune règle déclenchée, mais comptage illisible pour${T_FAILED}" "$TUNNEL_SRC" "$Q_COH"
++    signal tunnel "Tunnel de paiement" indisponible "lecture partielle : aucune règle déclenchée, mais comptage illisible pour${T_FAILED}" "$TUNNEL_SRC" "$Q_COH" direct
 +  elif [ "$T_RC" = "0" ] && [ -n "$T_LINE" ]; then
-+    signal tunnel "Tunnel de paiement" vert "aucune règle déclenchée (CREATION, SUSTAINED, BURST) ; $T_SINCE" "$TUNNEL_SRC" "$Q_COH"
++    signal tunnel "Tunnel de paiement" vert "aucune règle déclenchée (CREATION, SUSTAINED, BURST) ; $T_SINCE" "$TUNNEL_SRC" "$Q_COH" direct
 +  elif [ "$T_RC" = "3" ] && [ -n "$T_LINE" ]; then
-+    signal tunnel "Tunnel de paiement" rouge "règle ${T_RULE:-?} déclenchée ; $T_SINCE ; runbook .spec/runbooks/payments-tunnel-debug.md" "$TUNNEL_SRC" "$Q_COH"
++    signal tunnel "Tunnel de paiement" rouge "règle ${T_RULE:-?} déclenchée ; $T_SINCE ; runbook .spec/runbooks/payments-tunnel-debug.md" "$TUNNEL_SRC" "$Q_COH" direct
 +  else
-+    signal tunnel "Tunnel de paiement" indisponible "lecture en échec (code $T_RC)" "$TUNNEL_SRC" "$Q_COH"
++    signal tunnel "Tunnel de paiement" indisponible "lecture en échec (code $T_RC)" "$TUNNEL_SRC" "$Q_COH" ""
 +  fi
 +fi
- 
--# ---- Signal 1 — Sitemap freshness ----
--echo "## Signal 1 — Sitemap freshness (PROD)" >> "$OUT"
--LM=$(curl -fsS -m 10 -I https://www.automecanik.com/sitemap.xml 2>/dev/null \
--  | grep -i '^last-modified:' \
--  | sed 's/[Ll]ast-[Mm]odified:[[:space:]]*//I; s/\r$//' \
--  || echo "")
--if [ -n "$LM" ]; then
--  AGE_SEC=$(( $(date -u +%s) - $(date -u -d "$LM" +%s) ))
--  AGE_HRS=$(( AGE_SEC / 3600 ))
--  if [ "$AGE_HRS" -lt 26 ]; then
--    S="✅"
--  elif [ "$AGE_HRS" -lt 30 ]; then
--    S="⚠️"
--    [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
++
 +# ---- Orders still unpaid more than 24 h after creation (count only) ----
 +# Window J-30 → J-1: the table holds every unpaid order since 2020; the all-time total
 +# says nothing about this morning. `ord_date` is ISO-8601 TEXT, compared
 +# lexicographically, as in check-payment-tunnel.sh.
 +UNPAID_SRC="___xtr_order, ord_is_pay=0, ord_date entre J-30 et J-1"
 +if [ -n "$DB_WHY" ]; then
-+  signal unpaid "Commandes non payées > 24 h" indisponible "$DB_WHY" "$UNPAID_SRC" "$Q_NON"
++  signal unpaid "Commandes non payées > 24 h" indisponible "$DB_WHY" "$UNPAID_SRC" "$Q_NON" ""
 +else
 +  D1=$(date -u -d '24 hours ago' +%FT%T)
 +  D30=$(date -u -d '30 days ago' +%FT%T)
 +  N_UNPAID=$(pg_get "___xtr_order?select=ord_id&ord_is_pay=eq.0&and=(ord_date.lt.${D1},ord_date.gte.${D30})" /dev/null 0-0 || true)
 +  if is_int "$N_UNPAID"; then
-+    signal unpaid "Commandes non payées > 24 h" info "$N_UNPAID (créées entre J-30 et J-1, toujours non payées)" "$UNPAID_SRC" "$Q_NON"
-   else
--    S="⛔"
--    STATUS_OVERALL="⛔"
-+    signal unpaid "Commandes non payées > 24 h" indisponible "lecture PostgREST en échec" "$UNPAID_SRC" "$Q_NON"
-   fi
--  echo "$S last-modified=\`$LM\` (age=${AGE_HRS}h, threshold <26h)" >> "$OUT"
++    signal unpaid "Commandes non payées > 24 h" info "$N_UNPAID (créées entre J-30 et J-1, toujours non payées)" "$UNPAID_SRC" "$Q_NON" direct
++  else
++    signal unpaid "Commandes non payées > 24 h" indisponible "lecture PostgREST en échec" "$UNPAID_SRC" "$Q_NON" ""
++  fi
 +fi
 +
 +# ---- PROD 5xx over 24 h by path, internal (agent `node`) vs external ----
@@ -243,7 +631,7 @@
 +# (PREV-2), plus err_env=production. The RPC itself mixes environments and agents.
 +ERR_SRC="__error_logs, err_env=production, 24 h, critères de check_error_logs_5xx_threshold"
 +if [ -n "$DB_WHY" ]; then
-+  signal err5xx "Erreurs 5xx PROD (24 h)" indisponible "$DB_WHY" "$ERR_SRC" "$Q_REQ"
++  signal err5xx "Erreurs 5xx PROD (24 h)" indisponible "$DB_WHY" "$ERR_SRC" "$Q_REQ" ""
 +else
 +  SINCE=$(date -u -d '24 hours ago' +%FT%TZ)
 +  CODES='ServiceUnavailableException,InternalServerErrorException,OperationFailedException,GatewayTimeoutException,BadGatewayException,NotImplementedException'
@@ -265,7 +653,7 @@
 +    FETCHED=$(jq 'length' "$F_ERR")
 +    TRUNC=""
 +    [ "$N_ERR" -gt "$FETCHED" ] && TRUNC=" ; lecture tronquée à $FETCHED lignes sur $N_ERR"
-+    signal err5xx "Erreurs 5xx PROD (24 h)" info "externes : $EXT ; internes (agent node) : $INT$TRUNC" "$ERR_SRC" "$Q_REQ"
++    signal err5xx "Erreurs 5xx PROD (24 h)" info "externes : $EXT ; internes (agent node) : $INT$TRUNC" "$ERR_SRC" "$Q_REQ" direct
 +    detail "### Erreurs 5xx PROD sur 24 h, par chemin" ""
 +    for CLS in externe interne; do
 +      detail "**Appels ${CLS}s$( [ "$CLS" = interne ] && echo " (agent \`node\`, rendu serveur)" )** — 10 premiers chemins :" ""
@@ -276,9 +664,12 @@
 +        detail "_Aucun._" ""
 +      fi
 +    done
-+  else
-+    signal err5xx "Erreurs 5xx PROD (24 h)" indisponible "lecture PostgREST en échec" "$ERR_SRC" "$Q_REQ"
-+  fi
+   else
+-    S="⛔"
+-    STATUS_OVERALL="⛔"
++    signal err5xx "Erreurs 5xx PROD (24 h)" indisponible "lecture PostgREST en échec" "$ERR_SRC" "$Q_REQ" ""
+   fi
+-  echo "$S last-modified=\`$LM\` (age=${AGE_HRS}h, threshold <26h)" >> "$OUT"
 +  rm -f "$F_ERR"
 +fi
 +
@@ -288,8 +679,9 @@
 +# week incomplete: the trend is then « indisponible », never a partial sum.
 +GSC_SRC="__seo_gsc_daily_property_total (total propriété Search Console, jour confirmé)"
 +if [ -n "$DB_WHY" ]; then
-+  signal gsc "Clics Google, tendance hebdomadaire" indisponible "$DB_WHY" "$GSC_SRC" "$Q_COH"
-+else
++  signal gsc "Clics Google, tendance hebdomadaire" indisponible "$DB_WHY" "$GSC_SRC" "$Q_COH" ""
+ else
+-  echo "❓ Could not fetch \`last-modified\`" >> "$OUT"
 +  F_GSC=$(mktemp)
 +  N_GSC=$(pg_get "__seo_gsc_daily_property_total?select=date,clicks,commit_version&date=gte.$(date -u -d '35 days ago' +%F)&order=date.desc" "$F_GSC" 0-99 || true)
 +  if is_int "$N_GSC" && [ "$N_GSC" -gt 0 ] && jq -e 'type == "array"' "$F_GSC" >/dev/null 2>&1; then
@@ -306,50 +698,63 @@
 +    MISSING=$(jq -r '.missing | join(", ")' <<< "$TREND")
 +    LAST=$(jq -r '.last' <<< "$TREND")
 +    if [ -n "$MISSING" ]; then
-+      signal gsc "Clics Google, tendance hebdomadaire" indisponible "semaines incomplètes (jours absents ou non confirmés : $MISSING)" "$GSC_SRC" "$Q_COH"
++      signal gsc "Clics Google, tendance hebdomadaire" indisponible "semaines incomplètes (jours absents ou non confirmés : $MISSING)" "$GSC_SRC" "$Q_COH" "$LAST"
 +    else
 +      W1=$(jq '.w1' <<< "$TREND"); W0=$(jq '.w0' <<< "$TREND")
 +      PCT=$(jq -rn --argjson a "$W1" --argjson b "$W0" 'if $b == 0 then "n/a" else ((($a - $b) * 1000 / $b | round) / 10 | tostring) + " %" end')
-+      signal gsc "Clics Google, tendance hebdomadaire" info "$W1 clics du $(jq -r .w1_from <<< "$TREND") au $LAST contre $W0 la semaine précédente ($PCT) ; dernier jour publié : $LAST" "$GSC_SRC" "$Q_COH"
++      signal gsc "Clics Google, tendance hebdomadaire" info "$W1 clics du $(jq -r .w1_from <<< "$TREND") au $LAST contre $W0 la semaine précédente ($PCT) ; dernier jour publié : $LAST" "$GSC_SRC" "$Q_COH" "$LAST"
 +    fi
 +  else
-+    signal gsc "Clics Google, tendance hebdomadaire" indisponible "lecture PostgREST en échec ou table vide" "$GSC_SRC" "$Q_COH"
++    signal gsc "Clics Google, tendance hebdomadaire" indisponible "lecture PostgREST en échec ou table vide" "$GSC_SRC" "$Q_COH" ""
 +  fi
 +  rm -f "$F_GSC"
-+fi
-+
-+# ---- PROD smoke tests, last completed run ----
-+SMOKE_SRC="runs GitHub de prod-smoke-tests.yml (sans panier, commande ni paiement)"
-+SMOKE=$(gh run list --workflow=prod-smoke-tests.yml --repo "$REPO" --status completed --limit 1 \
-+  --json conclusion,createdAt,url --jq '.[0] // empty | "\(.conclusion) \(.createdAt) \(.url)"' 2>/dev/null || true)
-+if [ -z "$SMOKE" ]; then
-+  signal smoke "Tests de fumée PROD" indisponible "aucun run terminé lisible" "$SMOKE_SRC" "$Q_QUAL"
-+else
-+  read -r S_CONC S_AT S_URL <<< "$SMOKE"
-+  S_AGE=$(( ( $(date -u +%s) - $(date -u -d "$S_AT" +%s) ) / 3600 ))
-+  case "$S_CONC" in success) S_C=vert ;; failure) S_C=rouge ;; *) S_C=orange ;; esac
-+  signal smoke "Tests de fumée PROD" "$S_C" "$S_CONC il y a ${S_AGE} h — $S_URL" "$SMOKE_SRC" "$Q_QUAL"
-+fi
-+
-+# ---- Issues waiting for the owner (label attend-marwane, if it exists) ----
-+OWNER_SRC="issues ouvertes au label attend-marwane"
-+if ! LABELS=$(gh label list --repo "$REPO" --limit 500 --json name --jq '.[].name' 2>/dev/null); then
-+  signal owner "Issues en attente de Marwane" indisponible "lecture des labels en échec" "$OWNER_SRC" "$Q_QUAL"
-+elif ! grep -qx 'attend-marwane' <<< "$LABELS"; then
-+  signal owner "Issues en attente de Marwane" info "label attend-marwane inexistant (sa création revient à l'owner)" "$OWNER_SRC" "$Q_QUAL"
-+elif OWNER_LIST=$(gh issue list --repo "$REPO" --state open --label attend-marwane --limit 100 --json number --jq '[.[].number | "#\(.)"] | join(" ")' 2>/dev/null); then
-+  N_OWNER=$(wc -w <<< "$OWNER_LIST")
-+  signal owner "Issues en attente de Marwane" info "$N_OWNER ${OWNER_LIST:+: $OWNER_LIST}" "$OWNER_SRC" "$Q_QUAL"
- else
--  echo "❓ Could not fetch \`last-modified\`" >> "$OUT"
-+  signal owner "Issues en attente de Marwane" indisponible "lecture des issues en échec" "$OWNER_SRC" "$Q_QUAL"
  fi
 -echo "" >> "$OUT"
  
 -# ---- Signal 2 — OIDC daily sitemap cron ----
 -echo "## Signal 2 — OIDC daily sitemap cron" >> "$OUT"
++# ---- PROD smoke tests, last completed run ----
++SMOKE_SRC="runs GitHub de prod-smoke-tests.yml (sans panier, commande ni paiement)"
++SMOKE=$(gh run list --workflow=prod-smoke-tests.yml --repo "$REPO" --status completed --limit 1 \
++  --json conclusion,createdAt,url --jq '.[0] // empty | "\(.conclusion) \(.createdAt) \(.url)"' 2>/dev/null || true)
++if [ -z "$SMOKE" ]; then
++  signal smoke "Tests de fumée PROD" indisponible "aucun run terminé lisible" "$SMOKE_SRC" "$Q_QUAL" ""
++else
++  read -r S_CONC S_AT S_URL <<< "$SMOKE"
++  S_AGE=$(( ( $(date -u +%s) - $(date -u -d "$S_AT" +%s) ) / 3600 ))
++  case "$S_CONC" in success) S_C=vert ;; failure) S_C=rouge ;; *) S_C=orange ;; esac
++  signal smoke "Tests de fumée PROD" "$S_C" "$S_CONC il y a ${S_AGE} h — $S_URL" "$SMOKE_SRC" "$Q_QUAL" "$S_AT"
++fi
++
++# ---- Owner's gestures: open PRs, labelled issues (read once, used below) ----
++LABELS=$(gh label list --repo "$REPO" --limit 500 --json name --jq '.[].name' 2>/dev/null) || LABELS="__ILLISIBLE__"
++PRS=$(gh pr list --repo "$REPO" --state open --limit 100 \
++  --json number,title,url,isDraft,headRefName,labels,files,statusCheckRollup 2>/dev/null) || PRS=""
++jq -e 'type == "array"' <<< "${PRS:-null}" >/dev/null 2>&1 || PRS=""
++# label_issues <label> → JSON array [{n, t, u}] of open issues, "absent" if the label does not exist, "" if unreadable
++label_issues() {
++  [ "$LABELS" = "__ILLISIBLE__" ] && return 0
++  grep -qx -- "$1" <<< "$LABELS" || { echo absent; return 0; }
++  gh issue list --repo "$REPO" --state open --label "$1" --limit 200 --json number,title,url,labels 2>/dev/null \
++    | jq -c --arg l "$1" '[.[] | select(any(.labels[]?; .name == $l)) | {n: .number, t: .title, u: .url}]' 2>/dev/null || true
++}
++WAIT_ISSUES=$(label_issues "$LABEL_WAIT")
++ARB_ISSUES=$(label_issues "$LABEL_ARB")
++
++# ---- Issues waiting for the owner (label attend-marwane, if it exists) ----
++OWNER_SRC="issues ouvertes au label $LABEL_WAIT"
++if [ "$LABELS" = "__ILLISIBLE__" ]; then
++  signal owner "Issues en attente de Marwane" indisponible "lecture des labels en échec" "$OWNER_SRC" "$Q_QUAL" ""
++elif [ "$WAIT_ISSUES" = absent ]; then
++  signal owner "Issues en attente de Marwane" info "label $LABEL_WAIT inexistant (sa création revient à l'owner)" "$OWNER_SRC" "$Q_QUAL" direct
++elif [ -n "$WAIT_ISSUES" ]; then
++  signal owner "Issues en attente de Marwane" info "$(jq -r 'length as $n | "\($n)" + (if $n > 0 then " : " + (map("#\(.n)") | join(" ")) else "" end)' <<< "$WAIT_ISSUES")" "$OWNER_SRC" "$Q_QUAL" direct
++else
++  signal owner "Issues en attente de Marwane" indisponible "lecture des issues en échec" "$OWNER_SRC" "$Q_QUAL" ""
++fi
++
 +# ======================================================================
-+# Delivery-chain signals (unchanged logic, carried over from the dated digest)
++# Delivery-chain signals (logic carried over from the dated digest)
 +# ======================================================================
 +
 +# ---- Sitemap freshness ----
@@ -357,11 +762,14 @@
 +  | grep -i '^last-modified:' | sed 's/[Ll]ast-[Mm]odified:[[:space:]]*//I; s/\r$//' || echo "")
 +if [ -n "$LM" ]; then
 +  AGE_HRS=$(( ( $(date -u +%s) - $(date -u -d "$LM" +%s) ) / 3600 ))
-+  if [ "$AGE_HRS" -lt 26 ]; then S=vert; elif [ "$AGE_HRS" -lt 30 ]; then S=orange; else S=rouge; fi
-+  signal sitemap "Fraîcheur du sitemap PROD" "$S" "last-modified $LM (${AGE_HRS} h, seuil < 26 h)" "en-tête HTTP de https://www.automecanik.com/sitemap.xml" "$Q_QUAL"
++  if [ "$AGE_HRS" -lt "$SITEMAP_GREEN_H" ]; then S=vert; elif [ "$AGE_HRS" -lt "$SITEMAP_ORANGE_H" ]; then S=orange; else S=rouge; fi
++  signal sitemap "Fraîcheur du sitemap PROD" "$S" "last-modified $LM (${AGE_HRS} h, seuil < ${SITEMAP_GREEN_H} h)" "en-tête HTTP de https://www.automecanik.com/sitemap.xml" "$Q_QUAL" "$(iso "$LM")"
 +else
-+  signal sitemap "Fraîcheur du sitemap PROD" indisponible "en-tête last-modified illisible" "en-tête HTTP de https://www.automecanik.com/sitemap.xml" "$Q_QUAL"
++  signal sitemap "Fraîcheur du sitemap PROD" indisponible "en-tête last-modified illisible" "en-tête HTTP de https://www.automecanik.com/sitemap.xml" "$Q_QUAL" ""
 +fi
++
++# runs_line <lines "YYYY-MM-DDTHH:MM… concl"> → first run date as ISO, for the freshness column
++first_run_at() { head -n1 <<< "$1" | awk '{print substr($1,1,16) ":00Z"}'; }
 +
 +# ---- Daily sitemap regeneration (OIDC) ----
  OIDC=$(gh run list --workflow=sitemap-daily-regen.yml --limit 2 --repo "$REPO" \
@@ -371,14 +779,14 @@
  if [ -z "$OIDC" ]; then
 -  echo "⚠️ No runs yet" >> "$OUT"
 -  [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
-+  signal oidc "Régénération quotidienne du sitemap" orange "aucun run" "runs GitHub de sitemap-daily-regen.yml" "$Q_QUAL"
++  signal oidc "Régénération quotidienne du sitemap" orange "aucun run" "runs GitHub de sitemap-daily-regen.yml" "$Q_QUAL" ""
  else
 -  echo '```' >> "$OUT"
 -  echo "$OIDC" >> "$OUT"
 -  echo '```' >> "$OUT"
 -  if echo "$OIDC" | grep -q failure; then STATUS_OVERALL="⛔"; fi
 +  S=vert; grep -q failure <<< "$OIDC" && S=rouge
-+  signal oidc "Régénération quotidienne du sitemap" "$S" "$(tr '\n' ';' <<< "$OIDC" | sed 's/;$//; s/;/ ; /g')" "runs GitHub de sitemap-daily-regen.yml" "$Q_QUAL"
++  signal oidc "Régénération quotidienne du sitemap" "$S" "$(tr '\n' ';' <<< "$OIDC" | sed 's/;$//; s/;/ ; /g')" "runs GitHub de sitemap-daily-regen.yml" "$Q_QUAL" "$(first_run_at "$OIDC")"
  fi
 -echo "" >> "$OUT"
  
@@ -397,17 +805,7 @@
 -# ---- Signal 4 — Open PRs with failing checks ----
 -echo "## Signal 4 — Open PRs with failing checks" >> "$OUT"
 -FAILS=$(gh pr list --repo "$REPO" --state open --limit 60 \
-+  --json conclusion,createdAt,headSha --jq '.[] | "\(.createdAt[:16]) \(.headSha[:7]) \(.conclusion // "running")"' 2>/dev/null || echo "")
-+if [ -z "$CI" ]; then
-+  signal ci "CI sur main (3 derniers runs)" indisponible "aucun run lisible" "runs GitHub de ci.yml sur main" "$Q_QUAL"
-+else
-+  S=vert; grep -q failure <<< "$CI" && S=rouge
-+  signal ci "CI sur main (3 derniers runs)" "$S" "$(tr '\n' ';' <<< "$CI" | sed 's/;$//; s/;/ ; /g')" "runs GitHub de ci.yml sur main" "$Q_QUAL"
-+fi
-+
-+# ---- Open PRs with failing checks ----
-+if FAILS=$(gh pr list --repo "$REPO" --state open --limit 60 \
-   --json number,title,headRefName,statusCheckRollup \
+-  --json number,title,headRefName,statusCheckRollup \
 -  --jq '[.[] | {n: .number, t: (.title[:65]), head: .headRefName, failed: ([.statusCheckRollup[] | select(.conclusion=="FAILURE") | .name] | unique)} | select((.failed | length) > 0)]' 2>/dev/null || echo "[]")
 -DEPENDABOT=$(echo "$FAILS" | jq '[.[] | select(.head | startswith("dependabot/"))] | length')
 -OTHER=$(echo "$FAILS" | jq '[.[] | select(.head | startswith("dependabot/") | not)] | length')
@@ -418,17 +816,28 @@
 -  echo "" >> "$OUT"
 -  echo "**Actionable:**" >> "$OUT"
 -  echo "$FAILS" | jq -r '.[] | select(.head | startswith("dependabot/") | not) | "- #\(.n) \(.t) — failing: \(.failed | join(", "))"' >> "$OUT"
-+  --jq '[.[] | {n: .number, t: (.title[:65]), head: .headRefName, failed: ([.statusCheckRollup[] | select(.conclusion=="FAILURE") | .name] | unique)} | select((.failed | length) > 0)]' 2>/dev/null); then
++  --json conclusion,createdAt,headSha --jq '.[] | "\(.createdAt[:16]) \(.headSha[:7]) \(.conclusion // "running")"' 2>/dev/null || echo "")
++if [ -z "$CI" ]; then
++  signal ci "CI sur main (3 derniers runs)" indisponible "aucun run lisible" "runs GitHub de ci.yml sur main" "$Q_QUAL" ""
++else
++  S=vert; grep -q failure <<< "$CI" && S=rouge
++  signal ci "CI sur main (3 derniers runs)" "$S" "$(tr '\n' ';' <<< "$CI" | sed 's/;$//; s/;/ ; /g')" "runs GitHub de ci.yml sur main" "$Q_QUAL" "$(first_run_at "$CI")"
++fi
++
++# ---- Open PRs with failing checks (from the PR list read above) ----
++PRF_SRC="gh pr list, statusCheckRollup des PR ouvertes (100 au plus)"
++if [ -n "$PRS" ]; then
++  FAILS=$(jq -c '[.[] | {n: .number, t: (.title[:65]), head: .headRefName, failed: ([.statusCheckRollup[]? | select(.conclusion=="FAILURE") | .name] | unique)} | select((.failed | length) > 0)]' <<< "$PRS")
 +  DEPENDABOT=$(jq '[.[] | select(.head | startswith("dependabot/"))] | length' <<< "$FAILS")
 +  OTHER=$(jq '[.[] | select(.head | startswith("dependabot/") | not)] | length' <<< "$FAILS")
 +  S=vert; [ "$OTHER" -gt 0 ] && S=orange
-+  signal prfail "PR ouvertes en échec" "$S" "$OTHER hors Dependabot ; $DEPENDABOT Dependabot (attendu, PR-9a)" "gh pr list, statusCheckRollup des 60 dernières PR" "$Q_QUAL"
++  signal prfail "PR ouvertes en échec" "$S" "$OTHER hors Dependabot ; $DEPENDABOT Dependabot (attendu, PR-9a)" "$PRF_SRC" "$Q_QUAL" direct
 +  if [ "$OTHER" -gt 0 ]; then
 +    detail "### PR en échec hors Dependabot" ""
 +    detail "$(jq -r '.[] | select(.head | startswith("dependabot/") | not) | "- #\(.n) \(.t | gsub("[`|]"; "")) — en échec : \(.failed | join(", "))"' <<< "$FAILS")" ""
 +  fi
 +else
-+  signal prfail "PR ouvertes en échec" indisponible "lecture des PR en échec" "gh pr list, statusCheckRollup des 60 dernières PR" "$Q_QUAL"
++  signal prfail "PR ouvertes en échec" indisponible "lecture des PR en échec" "$PRF_SRC" "$Q_QUAL" ""
  fi
 -echo "" >> "$OUT"
  
@@ -436,9 +845,10 @@
 -echo "## Signal 5 — Audit & drift workflows on main" >> "$OUT"
 +# ---- Audit & drift on main ----
  AUD=$(gh run list --workflow=audit.yml --limit 3 --repo "$REPO" --branch main \
-   --json conclusion --jq '.[] | .conclusion // "running"' 2>/dev/null | tr '\n' ' ' || echo "")
+-  --json conclusion --jq '.[] | .conclusion // "running"' 2>/dev/null | tr '\n' ' ' || echo "")
++  --json conclusion,createdAt --jq '.[] | "\(.createdAt[:16]) \(.conclusion // "running")"' 2>/dev/null || echo "")
  DRF=$(gh run list --workflow=contract-drift-observatory.yml --limit 3 --repo "$REPO" --branch main \
-   --json conclusion --jq '.[] | .conclusion // "running"' 2>/dev/null | tr '\n' ' ' || echo "")
+-  --json conclusion --jq '.[] | .conclusion // "running"' 2>/dev/null | tr '\n' ' ' || echo "")
 -echo "- audit.yml (last 3): $AUD" >> "$OUT"
 -echo "- contract-drift-observatory.yml (last 3): $DRF" >> "$OUT"
 -if echo "$AUD $DRF" | grep -q failure; then STATUS_OVERALL="⛔"; fi
@@ -463,19 +873,23 @@
 -# repo is public and this body is pasted verbatim into a GitHub issue, so no
 -# database credential and no database content belongs in here.
 -echo "## Signal 7 — Migration ledger freshness" >> "$OUT"
++  --json conclusion,createdAt --jq '.[] | "\(.createdAt[:16]) \(.conclusion // "running")"' 2>/dev/null || echo "")
++AUD_C=$(awk '{print $2}' <<< "$AUD" | tr '\n' ' ' | sed 's/ *$//'); DRF_C=$(awk '{print $2}' <<< "$DRF" | tr '\n' ' ' | sed 's/ *$//')
 +if [ -z "$AUD$DRF" ]; then
-+  S=indisponible
++  S=indisponible; AUD_F=""
 +else
-+  S=vert; grep -q failure <<< "$AUD $DRF" && S=rouge
++  S=vert; grep -q failure <<< "$AUD_C $DRF_C" && S=rouge
++  # the older of the two latest runs dates the signal
++  AUD_F=$(printf '%s\n%s\n' "$(first_run_at "$AUD")" "$(first_run_at "$DRF")" | grep -v '^:00Z$' | sort | head -n1)
 +fi
-+signal audit "Audit et dérive de contrat sur main" "$S" "audit.yml : ${AUD:-aucun run sur main} ; contract-drift-observatory.yml : ${DRF:-aucun run sur main}" "runs GitHub (3 derniers de chaque)" "$Q_QUAL"
++signal audit "Audit et dérive de contrat sur main" "$S" "audit.yml : ${AUD_C:-aucun run sur main} ; contract-drift-observatory.yml : ${DRF_C:-aucun run sur main}" "runs GitHub (3 derniers de chaque)" "$Q_QUAL" "$AUD_F"
 +
 +# ---- Yesterday's merges (information) ----
 +if MERGED=$(gh pr list --repo "$REPO" --state merged --search "merged:>=$YESTERDAY merged:<$TODAY" \
 +  --json number --jq '[.[].number | "#\(.)"] | join(" ")' 2>/dev/null); then
-+  signal merged "PR fusionnées hier ($YESTERDAY)" info "$(wc -w <<< "$MERGED")${MERGED:+ : $MERGED}" "gh pr list --state merged" "$Q_QUAL"
++  signal merged "PR fusionnées hier ($YESTERDAY)" info "$(wc -w <<< "$MERGED")${MERGED:+ : $MERGED}" "gh pr list --state merged" "$Q_QUAL" direct
 +else
-+  signal merged "PR fusionnées hier ($YESTERDAY)" indisponible "lecture des PR fusionnées en échec" "gh pr list --state merged" "$Q_QUAL"
++  signal merged "PR fusionnées hier ($YESTERDAY)" indisponible "lecture des PR fusionnées en échec" "gh pr list --state merged" "$Q_QUAL" ""
 +fi
 +
 +# ---- Migration ledger freshness ----
@@ -488,7 +902,7 @@
  if [ -z "$LEDGER" ]; then
 -  echo "⚠️ No runs yet" >> "$OUT"
 -  [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
-+  signal ledger "Registre des migrations" orange "aucun run" "runs GitHub de migration-ledger-freshness.yml" "$Q_QUAL"
++  signal ledger "Registre des migrations" orange "aucun run" "runs GitHub de migration-ledger-freshness.yml" "$Q_QUAL" ""
  else
 -  echo '```' >> "$OUT"
 -  echo "$LEDGER" >> "$OUT"
@@ -511,7 +925,7 @@
 +  if grep -q failure <<< "$LEDGER"; then
 +    S=rouge; V="$V — infra.schema_migrations ne décrit plus la base ; le résumé du run liste la cause"
 +  fi
-+  signal ledger "Registre des migrations" "$S" "$V" "runs GitHub de migration-ledger-freshness.yml" "$Q_QUAL"
++  signal ledger "Registre des migrations" "$S" "$V" "runs GitHub de migration-ledger-freshness.yml" "$Q_QUAL" "$(first_run_at "$LEDGER")"
 +fi
 +
 +# ---- Automation registry freshness ----
@@ -524,21 +938,23 @@
  if [ -z "$FRESH" ]; then
 -  echo "⚠️ No completed run on main" >> "$OUT"
 -  [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
-+  signal registry "Fraîcheur du registre d'automatisation" orange "aucun run terminé sur main" "$FR_SRC" "$Q_QUAL"
++  signal registry "Fraîcheur du registre d'automatisation" orange "aucun run terminé sur main" "$FR_SRC" "$Q_QUAL" ""
  else
    read -r FRESH_ID FRESH_AT FRESH_CONCLUSION <<< "$FRESH"
-   FRESH_URL="${GITHUB_SERVER_URL:-https://github.com}/$REPO/actions/runs/$FRESH_ID"
-@@ -150,31 +333,77 @@
+-  FRESH_URL="${GITHUB_SERVER_URL:-https://github.com}/$REPO/actions/runs/$FRESH_ID"
++  FRESH_URL="$GH_URL/$REPO/actions/runs/$FRESH_ID"
+   FRESH_AGE_HRS=$(( ( $(date -u +%s) - $(date -u -d "$FRESH_AT" +%s) ) / 3600 ))
    FRESH_LOG=$(gh run view "$FRESH_ID" --repo "$REPO" --log 2>/dev/null || echo "")
    FRESH_VERDICT=$(grep -m1 -oE '\[freshness\] (OK|WARN) — [0-9]+/[0-9]+ entries stale \(threshold [0-9]+d\)' <<< "$FRESH_LOG" || true)
    if [ "$FRESH_CONCLUSION" != "success" ]; then
 -    echo "⛔ The check did not run (conclusion=\`$FRESH_CONCLUSION\`) — the registry was not evaluated. $FRESH_URL" >> "$OUT"
 -    STATUS_OVERALL="⛔"
-+    S=rouge; V="contrôle non exécuté (conclusion $FRESH_CONCLUSION) $FRESH_URL"
-   elif [ "$FRESH_AGE_HRS" -ge 26 ]; then
+-  elif [ "$FRESH_AGE_HRS" -ge 26 ]; then
 -    echo "⛔ Last completed run is ${FRESH_AGE_HRS}h old (threshold <26h) — the daily check is not running. $FRESH_URL" >> "$OUT"
 -    STATUS_OVERALL="⛔"
-+    S=rouge; V="dernier run terminé il y a ${FRESH_AGE_HRS} h (seuil < 26 h) $FRESH_URL"
++    S=rouge; V="contrôle non exécuté (conclusion $FRESH_CONCLUSION) $FRESH_URL"
++  elif [ "$FRESH_AGE_HRS" -ge "$REGISTRY_MAX_H" ]; then
++    S=rouge; V="dernier run terminé il y a ${FRESH_AGE_HRS} h (seuil < ${REGISTRY_MAX_H} h) $FRESH_URL"
    elif [ -z "$FRESH_LOG" ]; then
 -    echo "⚠️ Could not read the log of the last run — verdict unknown. $FRESH_URL" >> "$OUT"
 -    [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
@@ -551,11 +967,100 @@
 -    echo "⚠️ \`$FRESH_VERDICT\` — entries to re-verify against runtime ; the run summary lists them. $FRESH_URL" >> "$OUT"
 -    [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
 +    S=orange; V="$FRESH_VERDICT — entrées à revérifier, listées dans le résumé du run $FRESH_URL"
++  else
++    S=vert; V="$FRESH_VERDICT"
++  fi
++  signal registry "Fraîcheur du registre d'automatisation" "$S" "$V" "$FR_SRC" "$Q_QUAL" "$FRESH_AT"
++fi
++
++# ======================================================================
++# Freshness of every source (decision 68, mandat AT)
++# ======================================================================
++# A dated source older than FRESH_MAX_J days is « périmée »: its colour is raised to at
++# least orange (a colour change, hence one comment) and it is listed under the table.
++SIG2=$(mktemp)
++jq -c --argjson now "$(date -u +%s)" --argjson maxj "$FRESH_MAX_J" --arg today "$TODAY" '
++  (if (.f | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T")) then
++     ((try (.f | sub("\\.[0-9]+"; "") | fromdateiso8601) catch null) as $e
++      | if $e == null then {} else {age_h: ((($now - $e) / 3600) | floor)} | .st = (.age_h > $maxj * 24) end)
++   elif (.f | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}$")) then
++     ((((($today + "T00:00:00Z") | fromdateiso8601) - ((.f + "T00:00:00Z") | fromdateiso8601)) / 86400) | floor) as $d
++     | {age_j: $d, st: ($d > $maxj)}
++   else {} end) as $a
++  | . + $a + {st: ($a.st // false)}
++  | if .st and (.c == "vert" or .c == "info") then .c0 = .c | .c = "orange" else . end' "$SIG" > "$SIG2"
++mv "$SIG2" "$SIG"
++
++# ======================================================================
++# Departments: one line each (decision 67)
++# ======================================================================
++# Source: .spec/00-canon/ai-registry/agent-operating-map.yaml, parsed as in
++# scripts/ops/pilote-file.sh. Open issues are counted per dept:NN-<id> label. KPI values
++# are NOT published (public repository, project-state-report rule).
++MAP_FILE="$ROOT/.spec/00-canon/ai-registry/agent-operating-map.yaml"
++DEPTS=$(python3 - "$MAP_FILE" 2>/dev/null <<'PY' || true
++import json, sys, yaml
++carte = yaml.safe_load(open(sys.argv[1], encoding="utf-8"))
++rows = []
++for v in carte.values() if isinstance(carte, dict) else []:
++    if isinstance(v, list):
++        for d in v:
++            if isinstance(d, dict) and isinstance(d.get("business_number"), int) and d.get("id"):
++                rows.append({"n": d["business_number"], "label": "dept:%02d-%s" % (d["business_number"], d["id"]),
++                             "intitule": d.get("label", ""), "etat": d.get("state", "")})
++rows.sort(key=lambda r: r["n"])
++if len(rows) != 24 or len({r["label"] for r in rows}) != 24:
++    sys.exit(1)
++print(json.dumps(rows, ensure_ascii=False))
++PY
++)
++DEPT_ISSUES=$(gh issue list --repo "$REPO" --state open --limit 3000 --json labels 2>/dev/null \
++  | jq -c '[.[].labels[]?.name | select(startswith("dept:"))] | group_by(.) | map({(.[0]): length}) | add // {}' 2>/dev/null || true)
++
++# ======================================================================
++# Owner's gestures, then the daily mail (decision 67)
++# ======================================================================
++# Fusions: open PRs out of draft and out of Dependabot, migration PRs apart.
++# Migrations: open PRs out of draft touching $MIG_PATH (gh lists 100 files per PR).
++# Disagreements: issues and PRs labelled $LABEL_ARB. Waiting: issues labelled $LABEL_WAIT.
++if [ -n "$PRS" ]; then
++  GEST=$(jq -c --arg mig "$MIG_PATH" --arg arb "$LABEL_ARB" --arg wait "$LABEL_WAIT" '
++    map(. + {mig: any(.files[]?; .path | startswith($mig)), dep: (.headRefName | startswith("dependabot/")),
++             failed: ([.statusCheckRollup[]? | select(.conclusion == "FAILURE")] | length)})
++    | {fusions:   [.[] | select((.isDraft | not) and (.dep | not) and (.mig | not))],
++       migrations:[.[] | select((.isDraft | not) and .mig)],
++       mig_draft: ([.[] | select(.isDraft and .mig)] | length),
++       drafts:    ([.[] | select(.isDraft)] | length),
++       arb_pr:    [.[] | select(any(.labels[]?; .name == $arb))],
++       wait_pr:   [.[] | select(any(.labels[]?; .name == $wait))],
++       truncated: (length >= 100)}' <<< "$PRS")
++else
++  GEST=""
++fi
++g_count() { [ -n "$GEST" ] && jq "$1" <<< "$GEST" || echo 0; }
++N_FUS=$(g_count '.fusions | length'); N_MIG=$(g_count '.migrations | length')
++N_ARB=$(( $(g_count '.arb_pr | length') + $( [ -n "$ARB_ISSUES" ] && [ "$ARB_ISSUES" != absent ] && jq length <<< "$ARB_ISSUES" || echo 0 ) ))
++N_WAIT=$(( $(g_count '.wait_pr | length') + $( [ -n "$WAIT_ISSUES" ] && [ "$WAIT_ISSUES" != absent ] && jq length <<< "$WAIT_ISSUES" || echo 0 ) ))
++N_GEST=$((N_FUS + N_MIG + N_ARB + N_WAIT))
++GEST_READ=1; { [ -z "$GEST" ] || [ -z "$WAIT_ISSUES" ] || [ -z "$ARB_ISSUES" ]; } && GEST_READ=0
++
++MAIL_DAY=$(jq -r '.mail_jour // ""' <<< "$META_PREV"); MAIL_PREV=$(jq -r '.mail // ""' <<< "$META_PREV")
++DAY_MAIL="sans objet (mode historique)"; DAY_MAIL_DAY="$MAIL_DAY"; DAY_MAIL_SEND=0
++if [ "$MODE" = "--publish" ]; then
++  if [ "$PARIS_H" -lt "$HOUR" ]; then
++    DAY_MAIL="non envoyé : passage avant ${HOUR} h (heure de Paris)"
++  elif [ "$MAIL_DAY" = "$PARIS_DAY" ] && [ "$MAIL_PREV" = "envoyé" ]; then
++    DAY_MAIL="envoyé"   # already sent today: a forced rerun does not send it twice
++  elif [ "$N_GEST" -eq 0 ] && [ "$GEST_READ" = 1 ]; then
++    DAY_MAIL="aucun geste attendu, pas de mail"; DAY_MAIL_DAY="$PARIS_DAY"
++  elif [ "$N_GEST" -eq 0 ]; then
++    DAY_MAIL="non envoyé : liste des gestes illisible"
    else
 -    echo "✅ \`$FRESH_VERDICT\`" >> "$OUT"
-+    S=vert; V="$FRESH_VERDICT"
++    # Sent AFTER the body is published (link to the issue, no mail if publication fails);
++    # this line and the report-meta marker are then rewritten with the outcome.
++    DAY_MAIL="envoi après publication de ce corps"; DAY_MAIL_SEND=1
    fi
-+  signal registry "Fraîcheur du registre d'automatisation" "$S" "$V" "$FR_SRC" "$Q_QUAL"
  fi
 -echo "" >> "$OUT"
  
@@ -569,26 +1074,97 @@
 +  | if any($c[]; . == "rouge") then "rouge"
 +    elif any($c[]; . == "orange" or . == "indisponible") then "orange"
 +    else "vert" end' "$SIG")
-+badge() { case "$1" in vert) echo "🟢 vert" ;; orange) echo "🟠 orange" ;; rouge) echo "🔴 rouge" ;; indisponible) echo "⚪ indisponible" ;; *) echo "🔵 info" ;; esac; }
++badge() { case "$1" in vert) echo "🟢 vert" ;; orange) echo "🟠 orange" ;; rouge) echo "🔴 rouge" ;; indisponible) echo "⚪ indisponible" ;; nonbranche) echo "⚫ non branché" ;; *) echo "🔵 info" ;; esac; }
++# shellcheck disable=SC2016  # jq program: $s is a jq variable
++JQ_DEFS='
++  def esc: gsub("\\|"; "\\|") | gsub("[\n\r]"; " ");
++  def emoji: {"vert":"🟢","orange":"🟠","rouge":"🔴","indisponible":"⚪","nonbranche":"⚫"}[.] // "🔵";
++  def word: {"vert":"vert","orange":"orange","rouge":"rouge","indisponible":"indisponible","nonbranche":"non branché"}[.] // "info";
++  def rank: {"rouge":4,"orange":3,"indisponible":2,"vert":1,"info":0,"nonbranche":-1}[.] // 0;
++  def age: if .age_h != null then (if .age_h >= 48 then "\(.age_h / 24 | floor) j" else "\(.age_h) h" end)
++           elif .age_j != null then "\(.age_j) j" else "" end;
++  def donnee: . as $s | (if .f == "direct" then "lecture directe" elif .f == "" then "—"
++               elif (.f | length) == 10 then "\(.f) (\(age))" else "\(.f[0:10]) \(.f[11:16]) (\(age))" end)
++              | if $s.st then "⚠️ " + . else . end;'
++ORDER='["tunnel","parcours","unpaid","err5xx","gsc","smoke","owner","secu","prix","sitemap","oidc","ci","prfail","audit","merged","ledger","registry"]'
++gest_list() { # <jq path in GEST> → markdown list
++  jq -r "$1[] | \"- [#\\(.number)](\\(.url)) \\(.title | gsub(\"[\`|\\\\[\\\\]<>\\n\\r]\"; \"\") | .[0:90])\" + (if .failed > 0 then \" — \\(.failed) check(s) en échec\" else \"\" end)" <<< "$GEST"
++}
++issue_list() { jq -r '.[] | "- [#\(.n)](\(.u)) \(.t | gsub("[`|\\[\\]<>\n\r]"; "") | .[0:90])"' <<< "$1"; }
  
  {
 -  echo "title=$STATUS_OVERALL Morning health digest — $TODAY"
 -  echo "body_path=$OUT"
 -} >> "${GITHUB_OUTPUT:-/dev/stdout}"
++  echo "## Gestes attendus de Marwane : $( [ "$GEST_READ" = 1 ] && echo "$N_GEST" || echo "$N_GEST au moins (liste partielle)" )"
++  echo ""
++  if [ -z "$GEST" ]; then
++    echo "_Liste des PR ouvertes illisible : fusions et migrations **indisponibles**._"
++  else
++    echo "**Fusions à décider ($N_FUS)** — PR ouvertes hors brouillon et hors Dependabot ; la commande de fusion est dans chaque PR."
++    [ "$N_FUS" -gt 0 ] && gest_list '.fusions'
++    echo ""
++    echo "**Migrations à appliquer ($N_MIG)** — PR ouvertes hors brouillon qui touchent \`$MIG_PATH\`$( [ "$(jq .mig_draft <<< "$GEST")" -gt 0 ] && echo " ; $(jq .mig_draft <<< "$GEST") autre(s) en brouillon" )."
++    [ "$N_MIG" -gt 0 ] && gest_list '.migrations'
++    echo ""
++    echo "_$(jq .drafts <<< "$GEST") PR en brouillon, non listées$( [ "$(jq .truncated <<< "$GEST")" = true ] && echo " ; lecture limitée aux 100 dernières PR ouvertes" )._"
++  fi
++  echo ""
++  echo "**Désaccords à arbitrer ($N_ARB)** — label \`$LABEL_ARB\`."
++  case "$ARB_ISSUES" in absent) echo "_Label $LABEL_ARB inexistant._" ;; "") echo "_Issues **indisponibles** (lecture en échec)._" ;; *) issue_list "$ARB_ISSUES" ;; esac
++  [ -n "$GEST" ] && [ "$(jq '.arb_pr | length' <<< "$GEST")" -gt 0 ] && gest_list '.arb_pr'
++  echo ""
++  echo "**En attente de Marwane ($N_WAIT)** — label \`$LABEL_WAIT\`."
++  case "$WAIT_ISSUES" in absent) echo "_Label $LABEL_WAIT inexistant._" ;; "") echo "_Issues **indisponibles** (lecture en échec)._" ;; *) issue_list "$WAIT_ISSUES" ;; esac
++  [ -n "$GEST" ] && [ "$(jq '.wait_pr | length' <<< "$GEST")" -gt 0 ] && gest_list '.wait_pr'
++  echo ""
++  echo "Mail du jour : $DAY_MAIL."
++  echo ""
++  if [ "$(jq 'length' <<< "$URG_NOW")" -gt 0 ]; then
++    echo "## Urgences en cours"
++    echo ""
++    jq -r --argjson s "$URG_NEXT" 'to_entries[] | "- \(.value.l) — depuis \($s[.key].depuis // "?") ; mail : \($s[.key].mail // "?")"' <<< "$URG_NOW"
++    echo ""
++  fi
 +  echo "## État au $NOW_UTC — couleur globale : $(badge "$OVERALL")"
 +  echo ""
 +  if [ "$MODE" = "--publish" ]; then
-+    echo "Issue unique, corps remplacé à chaque exécution de \`morning-health-digest\` (jours ouvrés, 05:00 UTC)."
++    echo "Issue unique, corps remplacé une fois par jour à ${HOUR} h (heure de Paris) par \`morning-health-digest\` ; ce passage : $DAILY_WHY."
++    echo "Les urgences (parcours d'achat, alertes de sécurité critiques, garde-fou des prix) sont vérifiées toutes les 15 minutes et envoyées par mail une seule fois par incident."
 +    echo "Un commentaire n'est posté que lorsqu'un signal change de couleur."
 +  fi
-+  echo "Une source illisible est écrite « indisponible », jamais zéro."
++  echo "Une source illisible est écrite « indisponible », jamais zéro ; une source sans producteur est écrite « non branché »."
 +  echo ""
-+  echo "| Signal | Couleur | Valeur | Source | Lu à (UTC) | Confiance |"
-+  echo "|---|---|---|---|---|---|"
-+  jq -r '[.l, .c, .v, .s, .t, .q] | map(gsub("\\|"; "\\|") | gsub("[\n\r]"; " ")) | @tsv' "$SIG" \
-+    | while IFS=$'\t' read -r L C V S T Q; do
-+        echo "| $L | $(badge "$C") | $V | $S | ${T:11:8} | $Q |"
-+      done
++  echo "| Signal | Couleur | Valeur | Source | Donnée du (âge) | Lu à (UTC) | Confiance |"
++  echo "|---|---|---|---|---|---|---|"
++  jq -rs --argjson o "$ORDER" "$JQ_DEFS"'
++    sort_by(.id as $i | ($o | index($i)) // 99)[] | . as $s
++    | "| \(.l | esc) | \(.c | emoji) \(.c | word) | \(.v | esc) | \(.s | esc) | \(donnee | esc) | \(.t[11:19]) | \(.q) |"' "$SIG"
++  echo ""
++  STALE=$(jq -rs "$JQ_DEFS"'.[] | select(.st) | . as $s | "- \(.l) : donnée du \(donnee | ltrimstr("⚠️ "))" + (if .c0 then " ; couleur relevée de \(.c0 | word) à orange" else "" end)' "$SIG")
++  echo "### Sources périmées (plus de $FRESH_MAX_J j)"
++  echo ""
++  if [ -n "$STALE" ]; then echo "$STALE"; else echo "_Aucune parmi les sources datées._"; fi
++  echo ""
++  echo "## Départements"
++  echo ""
++  if [ -z "$DEPTS" ]; then
++    echo "_Carte des départements **indisponible** (\`.spec/00-canon/ai-registry/agent-operating-map.yaml\` illisible ou ≠ 24 départements)._"
++  else
++    echo "Une ligne par département de la carte d'exploitation. Les valeurs de KPI ne sont pas publiées (dépôt public). $DEPT_MAP_NOTE."
++    echo ""
++    echo "| N° | Département | État (carte) | Couleur | Signaux de ce rapport | Issues ouvertes |"
++    echo "|---|---|---|---|---|---|"
++    jq -rn --argjson d "$DEPTS" --argjson m "$DEPT_MAP" --argjson iss "${DEPT_ISSUES:-null}" --slurpfile sig "$SIG" \
++      --arg base "$GH_URL/$REPO/issues?q=is%3Aopen+label%3A" "$JQ_DEFS"'
++      $d[] | . as $dep
++      | [$sig[] | select(($m[.id] // null) == $dep.n)] as $ss
++      | ($ss | map(.c) | max_by(rank) // null) as $worst
++      | "| \(if $dep.n < 10 then "0" else "" end)\($dep.n) | \($dep.intitule | esc) | \($dep.etat) | "
++        + (if $worst == null then "—" else "\($worst | emoji) \($worst | word)" end) + " | "
++        + (if ($ss | length) == 0 then "aucun" else ($ss | map("\(.c | emoji) \(.l)") | join(" · ")) end) + " | "
++        + (if $iss == null then "indisponible" else "[\($iss[$dep.label] // 0)](\($base)\($dep.label | @uri))" end) + " |"'
++  fi
 +  echo ""
 +  if [ -s "$DET" ]; then
 +    echo "## Détail"
@@ -601,18 +1177,78 @@
 +  echo "- **cohérent en interne** : plusieurs lectures de nos propres données concordent (recoupement du 2026-11-15), sans rapprochement avec la source externe (Paybox, Google)."
 +  echo "- **à requalifier** : lecture connue pour mêler des causes ; ne pas conclure sans requalification (5xx : 319 sur \`/api/rm/alternatives\`, agent node, mandat dédié)."
 +  echo "- **non qualifié** : jamais recoupé."
-+  echo "- 🔵 **info** : aucun seuil gouverné pour ce signal ; il ne change pas de couleur."
++  echo "- 🔵 **info** : aucun seuil gouverné pour ce signal ; il ne change de couleur que si sa source est périmée."
++  echo "- ⚫ **non branché** : aucun producteur ; compté ni vert ni orange dans la couleur globale."
++  echo ""
++  echo "## Configuration"
++  echo ""
++  echo "- $CFG_NOTE."
++  echo "- Heure du rapport : ${HOUR} h (heure de Paris) ; fraîcheur maximale : ${FRESH_MAX_J} j ; sitemap : vert < ${SITEMAP_GREEN_H} h, orange < ${SITEMAP_ORANGE_H} h ; registre d'automatisation : < ${REGISTRY_MAX_H} h ; disponibilité minimale du parcours d'achat : ${PA_MIN_PCT:-aucune (pas de seuil gouverné)}."
 +  echo ""
 +  echo "---"
-+  echo "Run : ${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-$REPO}/actions/runs/${GITHUB_RUN_ID:-?}"
++  echo "Run : $RUN_URL"
 +} > "$OUT"
 +
 +if [ "$MODE" = "--publish" ]; then
-+  # shellcheck source=report-issue-publish.sh
-+  . "$HERE/report-issue-publish.sh"
++  meta_next() {
++    jq -cn --argjson p "$META_PREV" --arg day "$PARIS_DAY" --arg md "$DAY_MAIL_DAY" --arg m "$DAY_MAIL" \
++      --argjson past "$( [ "$PARIS_H" -ge "$HOUR" ] && echo true || echo false )" --arg at "$NOW_UTC" '
++      {jour_paris: (if $past then $day else ($p.jour_paris // "") end), mail_jour: $md, mail: $m, publie: $at}'
++  }
++  {
++    echo ""
++    report_marker_line "report-meta:v1" "$(meta_next)"
++    report_marker_line "urgent-state:v1" "$URG_NEXT"
++  } >> "$OUT"
 +  STATE=$(jq -cs 'map({(.id): {c: .c, l: .l}}) | add' "$SIG")
 +  N=$(report_issue_publish "$TITLE" "$OUT" "$STATE" ak125)
-+  echo "Issue de rapport : #$N (couleur globale : $OVERALL)"
++
++  if [ "$DAY_MAIL_SEND" = 1 ]; then
++    MAIL_BODY=$(mktemp)
++    {
++      if [ "$GEST_READ" = 1 ]; then
++        echo "Rapport du matin du $PARIS_DAY : $N_GEST geste(s) attendu(s)."
++      else
++        echo "Rapport du matin du $PARIS_DAY : $N_GEST geste(s) attendu(s) au moins (liste partielle)."
++      fi
++      echo ""
++      if [ -n "$GEST" ]; then
++        echo "- fusions à décider : $N_FUS"
++        echo "- migrations à appliquer : $N_MIG"
++      else
++        echo "- fusions à décider : indisponible (liste des PR illisible)"
++        echo "- migrations à appliquer : indisponible (liste des PR illisible)"
++      fi
++      echo "- désaccords à arbitrer ($LABEL_ARB) : $N_ARB"
++      echo "- en attente ($LABEL_WAIT) : $N_WAIT"
++      echo ""
++      echo "Liste et liens directs : $GH_URL/$REPO/issues/$N"
++    } > "$MAIL_BODY"
++    set +e
++    LINE=$(REPORT_MAIL_SUBJECT="AutoMecanik — $N_GEST geste(s) attendu(s)$( [ "$GEST_READ" = 1 ] || echo ' au moins'), rapport du $PARIS_DAY" \
++      python3 "$HERE/report-mail.py" "$MAIL_BODY" 2>/dev/null | tail -n1)
++    set -e
++    rm -f "$MAIL_BODY"
++    case "$LINE" in
++      OK) DAY_MAIL="envoyé"; DAY_MAIL_DAY="$PARIS_DAY" ;;
++      INDISPONIBLE:*) DAY_MAIL="canal mail indisponible : ${LINE#INDISPONIBLE:} non transmis au job" ;;
++      *) DAY_MAIL="échec de l'envoi (${LINE:-aucune sortie})" ;;
++    esac
++    [ "$DAY_MAIL" = "envoyé" ] || echo "::warning::mail du jour : $DAY_MAIL"
++    # One more edit: the outcome line and the report-meta marker, nothing else.
++    FIN=$(mktemp)
++    if gh issue view "$N" --repo "$REPO" --json body --jq '.body' > "$FIN.src"; then
++      STATUS_LINE="Mail du jour : $DAY_MAIL." META_LINE="$(report_marker_line "report-meta:v1" "$(meta_next)")" \
++        awk '/^Mail du jour : /{print ENVIRON["STATUS_LINE"]; next} /^<!-- report-meta:v1 /{print ENVIRON["META_LINE"]; next} {print}' \
++        "$FIN.src" > "$FIN"
++      gh issue edit "$N" --repo "$REPO" --body-file "$FIN" > /dev/null \
++        || echo "::warning::issue #$N : résultat du mail non écrit (pas de nouvel envoi avant demain, sauf relance manuelle)"
++    else
++      echo "::warning::issue #$N illisible après publication : résultat du mail non écrit"
++    fi
++    rm -f "$FIN" "$FIN.src"
++  fi
++  echo "Issue de rapport : #$N (couleur globale : $OVERALL ; gestes : $N_GEST ; mail du jour : $DAY_MAIL ; urgences actives : $(jq 'length' <<< "$URG_NOW"))"
 +  {
 +    echo "issue=$N"
 +    echo "overall=$OVERALL"

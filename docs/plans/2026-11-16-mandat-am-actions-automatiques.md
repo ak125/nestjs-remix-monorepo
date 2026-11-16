@@ -128,7 +128,7 @@ Les 76 fichiers de `.github/workflows/` ont été recherchés pour les motifs `g
 
 | Workflow | Ce qu'il crée | Déclencheur | Dernier run | Constat | Dép. | Reco. |
 |---|---|---|---|---|---|---|
-| `morning-health-digest.yml` | **une issue par jour ouvré** | cron `0 5 * * 1-5` | 2026-11-13 05:04, `success` | **132 issues ouvertes** « Morning health digest » au relevé | 21 | **fusionner** en une issue unique : correctif préparé, voir `2026-11-16-mandat-am-patches/` |
+| `morning-health-digest.yml` | **une issue par jour ouvré** | cron `0 5 * * 1-5` | 2026-11-13 05:04, `success` | **132 issues ouvertes** « Morning health digest » au relevé | 21 | **fusionner** en une issue unique : correctif préparé, voir `2026-11-16-mandat-am-patches/`. Avec le complément (décisions 67, 68, 72), le correctif passe le cron à `*/15 * * * *` : mise à jour quotidienne à 7 h (heure de Paris), **mail court** s'il y a un geste attendu, **mail d'urgence** une fois par incident. Ces mails sont une action automatique nouvelle, sortante, inactive tant que les secrets `GMAIL_*` manquent au job |
 | `weekly-pr-hygiene.yml` | **une issue par semaine** | cron `0 7 * * 1` | 2026-11-09 07:13, `success` | **26 issues ouvertes** « Weekly PR hygiene » | 21 | **fusionner**, même correctif |
 | `closure-t48h-slo-digest.yml` | une issue de suivi SLO | cron `30 17 * * *` | 2026-11-15 17:30, `success` | 1 issue ouverte | 21 | **garder** ; pourra reprendre `report-issue-publish.sh` |
 | `sitemap-daily-regen.yml` | régénère le sitemap (POST OIDC) ; **issue en cas d'échec** | cron `0 3 * * *` | 2026-11-15 03:07, `success` | 1 issue ouverte | 21 | **garder** |
