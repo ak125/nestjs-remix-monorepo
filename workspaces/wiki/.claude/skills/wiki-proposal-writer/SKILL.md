@@ -1,6 +1,6 @@
 ---
 name: wiki-proposal-writer
-description: Génère une fiche `automecanik-wiki/proposals/<slug>.md` au format frontmatter ADR-033 v2.0.0 strict. Mode propose-only (jamais d'écriture canon `wiki/<entity_type>/`, jamais de DB). Lit `automecanik-raw/{sources,recycled,normalized}/` comme source de vérité. Produit coverage manifest AEC v1.0.0 obligatoire. Use when user asks to "create a proposal", "draft a wiki gamme", "ajouter une proposal", etc. Pour migration legacy `entity_data.symptoms[]` → `diagnostic_relations[]`, utiliser plutôt le script `scripts/wiki/migrate-symptoms-to-relations.ts` (PR-E ADR-033) — pas ce skill.
+description: Génère une fiche `automecanik-wiki/proposals/<slug>.md` au format frontmatter ADR-033 v2.0.0 strict. Mode propose-only (jamais d'écriture canon `wiki/<entity_type>/`, jamais de DB). Lit `automecanik-raw/{sources,recycled,normalized}/` comme source de vérité. Produit coverage manifest AEC obligatoire (contrat en vigueur à la racine du monorepo). Use when user asks to "create a proposal", "draft a wiki gamme", "ajouter une proposal", etc. Pour migration legacy `entity_data.symptoms[]` → `diagnostic_relations[]`, utiliser plutôt le script `scripts/wiki/migrate-symptoms-to-relations.ts` (PR-E ADR-033) — pas ce skill.
 ---
 
 # Wiki Proposal Writer
@@ -114,7 +114,7 @@ evidence:
 
 Le skill **ne flip jamais** `evidence.diagnostic_safe: true`. Cette autorité est réservée à un commit signé reviewer ≠ auteur (audit ad hoc).
 
-## Output Coverage Manifest AEC v1.0.0 (obligatoire)
+## Output Coverage Manifest AEC (obligatoire)
 
 Tout output du skill inclut :
 
@@ -202,5 +202,5 @@ Le skill **ne fait jamais** ce mv. C'est une décision humaine.
 - mémoire `feedback_wiki_scope_discipline.md` (sas markdown ≠ sas DB)
 - mémoire `diag-symptom-db-convention.md` (slugs anglais snake_case `brake_*`)
 - mémoire `mvp-g6-adr033-handoff.md` (Phase 1 closed 2026-04-30)
-- contrat AEC : `./agent-exit-contract.md` (canon distribué)
+- contrat AEC : `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo (copie déclarée, contrôlée par hash)
 - workspace rules : `../wiki-batch.md`

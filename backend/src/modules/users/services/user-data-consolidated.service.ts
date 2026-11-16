@@ -689,8 +689,18 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
         { p_email: email },
       );
 
-      if (error || !data || data.length === 0) {
-        this.logger.debug(`resolveUserByEmail: no result for ${email}`);
+      // Les journaux ne citent pas l'adresse mail saisie.
+      if (error) {
+        this.logger.error(
+          'resolveUserByEmail: RPC auth_resolve_user failed',
+          error,
+        );
+        return null;
+      }
+      if (!data || data.length === 0) {
+        this.logger.debug(
+          'resolveUserByEmail: no account for the submitted email',
+        );
         return null;
       }
 
@@ -707,7 +717,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
         authSource: row.auth_source as 'admin' | 'customer',
       };
     } catch (error) {
-      this.logger.error(`resolveUserByEmail failed for ${email}:`, error);
+      this.logger.error('resolveUserByEmail failed:', error);
       return null;
     }
   }

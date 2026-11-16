@@ -27,8 +27,10 @@ name: Remise de mandat par issue (ADR-128 D4)
 #               (sauf refus de garde : aucune écriture) ; arrêts ADR-128 D6 : N3 retrait du label
 #               mandat-prêt (relu au début de chaque job), N2 gh workflow disable mandat-remise.yml,
 #               N1 arrêt du service du runner agents
-#   secret: CLAUDE_CODE_OAUTH_TOKEN (dépôt) ; MANDAT_APP_PRIVATE_KEY (environnement mandat-remise,
-#           restreint à main) ; variables MANDAT_OWNER et MANDAT_APP_ID
+#   secret: CLAUDE_CODE_OAUTH_TOKEN (dépôt) ; ACTIONS_APP_PRIVATE_KEY (environnement app-actions,
+#           restreint à main) ; variables MANDAT_OWNER et ACTIONS_APP_ID. App `automecanik-actions`,
+#           commune à merge-circuits.yml et registry-deps-self-heal.yml : une clé, un seul endroit,
+#           jamais sur le DEV (mandat AR-6, docs/audit/mandat-ar-20261116/commandes-owner.md §15)
 #
 # Concurrence (ADR-128 D3) : un groupe par issue, sans annulation ; deux issues différentes peuvent
 # tourner en parallèle, chacune dans son worktree, dans la limite d'un runner `agents`.
@@ -141,7 +143,7 @@ jobs:
     needs: session
     if: ${{ always() && needs.session.outputs.garde == 'ok' }}
     runs-on: ubuntu-latest
-    environment: mandat-remise
+    environment: app-actions
     timeout-minutes: 15
     permissions:
       contents: read
@@ -180,8 +182,8 @@ jobs:
         if: ${{ steps.verifier.outputs.pousser == 'true' }}
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ vars.MANDAT_APP_ID }}
-          private-key: ${{ secrets.MANDAT_APP_PRIVATE_KEY }}
+          app-id: ${{ vars.ACTIONS_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
           permission-contents: write

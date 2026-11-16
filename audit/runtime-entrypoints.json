@@ -2855,6 +2855,8 @@
       "backend/supabase/migrations/20261031_accents_protected_segments.sql",
       "backend/supabase/migrations/20261105_gamme_page_cached_volatile.down.sql",
       "backend/supabase/migrations/20261105_gamme_page_cached_volatile.sql",
+      "backend/supabase/migrations/20261116_disable_test_admin_accounts.down.sql",
+      "backend/supabase/migrations/20261116_disable_test_admin_accounts.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2891,6 +2893,7 @@
       ".github/workflows/governance-checks.yml",
       ".github/workflows/impeccable-ratchet.yml",
       ".github/workflows/marketing-voice-hash.yml",
+      ".github/workflows/merge-circuits.yml",
       ".github/workflows/migration-ledger-freshness.yml",
       ".github/workflows/monorepo-invariants.yml",
       ".github/workflows/morning-health-digest.yml",
@@ -3047,7 +3050,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1640,
+  "runtime_files_count": 1643,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3084,6 +3087,7 @@
     ".github/workflows/governance-checks.yml",
     ".github/workflows/impeccable-ratchet.yml",
     ".github/workflows/marketing-voice-hash.yml",
+    ".github/workflows/merge-circuits.yml",
     ".github/workflows/migration-ledger-freshness.yml",
     ".github/workflows/monorepo-invariants.yml",
     ".github/workflows/morning-health-digest.yml",
@@ -4346,6 +4350,8 @@
     "backend/supabase/migrations/20261031_accents_protected_segments.sql",
     "backend/supabase/migrations/20261105_gamme_page_cached_volatile.down.sql",
     "backend/supabase/migrations/20261105_gamme_page_cached_volatile.sql",
+    "backend/supabase/migrations/20261116_disable_test_admin_accounts.down.sql",
+    "backend/supabase/migrations/20261116_disable_test_admin_accounts.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
