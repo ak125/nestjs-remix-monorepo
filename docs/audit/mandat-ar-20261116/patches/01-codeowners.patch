@@ -1,0 +1,84 @@
+--- a/.github/CODEOWNERS
++++ b/.github/CODEOWNERS
+@@ -1,10 +1,12 @@
+-# CODEOWNERS — protection des fichiers de gouvernance & contrats d'agent
++# CODEOWNERS — zones à risque élevé et fichiers de gouvernance
+ #
+-# GitHub bloque le merge tant que les owners listés n'ont pas approuvé une PR
+-# qui touche les paths concernés. Aligné avec :
+-#   - feedback_no_hardcoded_infra_in_agentsmd.md (mémoire)
+-#   - feedback_no_hybrid_workarounds.md
+-#   - ADR-015 (vault single source of truth)
++# GitHub exige l'approbation des owners listés avant la fusion d'une PR qui touche
++# ces chemins, à condition que la protection de `main` porte
++# `require_code_owner_reviews: true` (réglage owner, voir
++# docs/audit/mandat-ar-20261116/commandes-owner.md).
++# Décision 72 de l'owner (2026-11-15) : le monorepo est la seule source de la
++# gouvernance ; une PR qui touche une zone ci-dessous suit le circuit « élevé »
++# (approbation de l'owner). scripts/ci/merge-circuit.mjs lit ce fichier.
+ #
+ # Référence : https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+ 
+@@ -13,6 +15,7 @@
+ 
+ # Claude Code — config monorepo (auto-loaded par Claude)
+ /CLAUDE.md              @ak125
++/AGENTS.md              @ak125
+ /.claude/rules/         @ak125
+ 
+ # Validateur AGENTS.md / CLAUDE.md (gate pre-commit + CI)
+@@ -38,3 +41,54 @@
+ /policies/                                        @ak125
+ /backend/src/modules/diagnostic-engine/ports/     @ak125
+ /backend/src/modules/maintenance/                 @ak125
++
++# ── Décision 72 — zones à risque élevé ─────────────────────────────────────
++
++# Paiements (zone STOP de CLAUDE.md)
++/backend/src/modules/payments/                    @ak125
++
++# Prix et stock (zone STOP de CLAUDE.md)
++/backend/src/modules/pricing/                                 @ak125
++/backend/src/modules/products/services/pricing.service.ts     @ak125
++/backend/src/modules/products/services/stock.service.ts       @ak125
++/backend/src/modules/admin/services/working-stock.service.ts  @ak125
++/backend/src/database/services/piece-price-data.service.ts    @ak125
++/backend/src/modules/suppliers/                               @ak125
++/backend/src/modules/supplier-truth/                          @ak125
++/backend/src/workers/supplier-availability-classify.ts        @ak125
++
++# Panier et commande (zone STOP de CLAUDE.md)
++/backend/src/modules/cart/                           @ak125
++/backend/src/modules/orders/                         @ak125
++/backend/src/database/services/cart-data.service.ts  @ak125
++
++# Migrations de base
++/backend/supabase/migrations/                     @ak125
++
++# Déploiement PROD et hôte PROD
++/.github/workflows/                               @ak125
++/scripts/ci/prod-*                                @ak125
++/scripts/monitoring/                              @ak125
++/docker-compose.prod.yml                          @ak125
++/docker-compose.caddy.yml                         @ak125
++/config/caddy/                                    @ak125
++/Dockerfile                                       @ak125
++
++# Sécurité : authentification, gardes d'accès, secrets, gardes d'agents
++/backend/src/auth/                                @ak125
++/backend/src/modules/auth/                        @ak125
++/backend/src/common/guards/                       @ak125
++/.sops.yaml                                       @ak125
++/secrets/                                         @ak125
++/.gitleaks.toml                                   @ak125
++/.gitleaksignore                                  @ak125
++/scripts/claude-hooks/                            @ak125
++/.husky/                                          @ak125
++/.ast-grep/rules/                                 @ak125
++
++# Gouvernance : classification des risques, contrats, circuits de fusion
++/.spec/00-canon/                                     @ak125
++/scripts/ci/merge-circuit.mjs                        @ak125
++/scripts/ci/merge-perimeter-gate.mjs                 @ak125
++/scripts/registry/check-new-files.js                 @ak125
++/scripts/governance/validate-agent-operating-map.js  @ak125

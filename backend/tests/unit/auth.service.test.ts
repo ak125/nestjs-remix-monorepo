@@ -7,6 +7,7 @@
  *
  * @see backend/src/auth/auth.service.ts
  */
+import { randomBytes } from 'crypto';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   BadRequestException,
@@ -451,6 +452,139 @@ describe('AuthService', () => {
   // ═══════════════════════════════════════════════════════════════
   // register — les logs ne contiennent jamais l'adresse email
   // ═══════════════════════════════════════════════════════════════
+  // Mandat AP : les journaux d'authentification citent le compte, pas l'email.
+  describe('authenticateUser() — journaux sans email', () => {
+    const loginEmail = mockResolved.email;
+
+    function logged(spies: jest.SpyInstance[]): string {
+      return spies
+        .flatMap((spy) => spy.mock.calls)
+        .map((args) => args.map((a: unknown) => String(a)).join(' '))
+        .join('\n')
+        .toLowerCase();
+    }
+
+    function spyAllLevels(): jest.SpyInstance[] {
+      return (['debug', 'log', 'warn', 'error'] as const).map((level) =>
+        jest.spyOn(Logger.prototype, level).mockImplementation(() => {}),
+      );
+    }
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('connexion réussie : compte cité, email absent', async () => {
+      const spies = spyAllLevels();
+      mockUserService.resolveUserByEmail.mockResolvedValue(mockResolved);
+      mockPasswordCrypto.validatePassword.mockResolvedValue({
+        isValid: true,
+        format: 'bcrypt',
+      });
+
+      await expect(
+        service.authenticateUser(loginEmail, 'correctPassword'),
+      ).resolves.not.toBeNull();
+
+      expect(logged(spies)).not.toContain(loginEmail);
+      expect(logged(spies)).toContain('user-123');
+    });
+
+    it('mauvais mot de passe : compte cité, email absent', async () => {
+      const spies = spyAllLevels();
+      mockUserService.resolveUserByEmail.mockResolvedValue(mockResolved);
+      mockPasswordCrypto.validatePassword.mockResolvedValue({
+        isValid: false,
+        format: 'bcrypt',
+      });
+
+      await expect(
+        service.authenticateUser(loginEmail, 'wrongPassword'),
+      ).resolves.toBeNull();
+
+      expect(logged(spies)).not.toContain(loginEmail);
+      expect(logged(spies)).toContain('user-123');
+    });
+
+    it('compte inconnu : email absent', async () => {
+      const spies = spyAllLevels();
+
+      await expect(
+        service.authenticateUser('inconnu@example.test', 'anyPassword'),
+      ).resolves.toBeNull();
+
+      expect(logged(spies)).not.toContain('inconnu@example.test');
+    });
+
+    it('empreinte enveloppée : conversion en bcrypt simple enregistrée sur le compte', async () => {
+      const spies = spyAllLevels();
+      const wrapped = '$akwrap$v1$sha1$$2b$10$' + 'a'.repeat(53);
+      mockUserService.resolveUserByEmail.mockResolvedValue({
+        ...mockResolved,
+        passwordHash: wrapped,
+      });
+      mockPasswordCrypto.validatePassword.mockResolvedValue({
+        isValid: true,
+        format: 'wrapped',
+        legacyFormat: 'sha1',
+      });
+      mockPasswordCrypto.needsRehash.mockReturnValue(true);
+      mockPasswordCrypto.upgradeHashIfNeeded.mockImplementation(
+        async (
+          uid: string,
+          _plain: string,
+          _current: string,
+          update: (uid: string, hash: string) => Promise<void>,
+        ) => {
+          await update(uid, '$2b$10$nouvelleEmpreinte');
+          return true;
+        },
+      );
+
+      const result = await service.authenticateUser(loginEmail, 'motdepasse');
+
+      expect(result?.id).toBe('user-123');
+      expect(mockPasswordCrypto.upgradeHashIfNeeded).toHaveBeenCalledWith(
+        'user-123',
+        'motdepasse',
+        wrapped,
+        expect.any(Function),
+      );
+      expect(mockUserService.setPasswordHash).toHaveBeenCalledWith(
+        'user-123',
+        '$2b$10$nouvelleEmpreinte',
+      );
+      expect(logged(spies)).not.toContain(loginEmail);
+      expect(logged(spies)).not.toContain(wrapped.toLowerCase());
+    });
+
+    it('conversion échouée : connexion maintenue, compte cité, email absent', async () => {
+      const spies = spyAllLevels();
+      mockUserService.resolveUserByEmail.mockResolvedValue({
+        ...mockResolved,
+        // Empreinte md5-crypt factice, générée à l'exécution (le service de
+        // chiffrement est simulé : seule la forme compte).
+        passwordHash: `im${randomBytes(9).toString('base64url').slice(0, 11)}`,
+      });
+      mockPasswordCrypto.validatePassword.mockResolvedValue({
+        isValid: true,
+        format: 'md5-crypt',
+      });
+      mockPasswordCrypto.needsRehash.mockReturnValue(true);
+      mockPasswordCrypto.upgradeHashIfNeeded.mockRejectedValue(
+        new Error('db down'),
+      );
+
+      await expect(
+        service.authenticateUser(loginEmail, 'test123'),
+      ).resolves.not.toBeNull();
+
+      const text = logged(spies);
+      expect(text).toContain('failed to upgrade password for account user-123');
+      expect(text).not.toContain(loginEmail);
+    });
+  });
+
   describe('register()', () => {
     const email = 'nouveau.client@example.test';
     const dto = {

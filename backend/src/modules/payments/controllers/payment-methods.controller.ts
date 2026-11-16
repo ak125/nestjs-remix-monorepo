@@ -15,6 +15,7 @@ import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { PaymentService } from '../services/payment.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
+import { CyberplusService } from '../services/cyberplus.service';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
 import { PaymentMethod } from '../entities/payment.entity';
 import { logPaymentError } from './payment-controller.utils';
@@ -36,6 +37,7 @@ export class PaymentMethodsController {
   constructor(
     private readonly paymentService: PaymentService,
     private readonly paymentDataService: PaymentDataService,
+    private readonly cyberplusService: CyberplusService,
   ) {}
 
   /**
@@ -53,7 +55,10 @@ export class PaymentMethodsController {
         {
           id: PaymentMethod.CYBERPLUS,
           name: 'Cyberplus (BNP Paribas)',
-          enabled: true,
+          // Mandat AY : propose au client seulement si SystemPay est rouvert
+          // (SYSTEMPAY_CALLBACK_ENABLED=true). Le passage en caisse envoie
+          // de toute facon vers /api/paybox/redirect.
+          enabled: this.cyberplusService.isCallbackEnabled(),
           description:
             'Paiement securise par carte bancaire via Cyberplus/BNP Paribas',
           logo: '/assets/cyberplus-logo.png',
