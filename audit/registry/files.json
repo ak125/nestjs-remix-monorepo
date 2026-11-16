@@ -40321,7 +40321,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 68,
+      "loc": 97,
       "owner": "__unassigned__",
       "path": "backend/src/utils/promise-helpers.ts",
       "risk": "low",
@@ -43352,6 +43352,25 @@
       "loc": 496,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/seo/sitemap-v10.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 253,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
