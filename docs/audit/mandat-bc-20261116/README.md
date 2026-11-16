@@ -117,6 +117,12 @@ Seule valeur à saisir : `$DEV`, le compte de déploiement de la machine DEV. So
   $S2 = "60e5e22f37b0099c659374331ce2e8349a8b9b0e6d0e4f09a3fda6c35278f1fe"
   $T = Join-Path $env:TEMP ("bc-etape1-" + (Get-Date -Format "yyyyMMddHHmmss"))
 
+  $OKS = @("SUCCESS", "SKIPPED", "NEUTRAL")
+  $WAITS = @("QUEUED", "IN_PROGRESS", "PENDING", "WAITING", "REQUESTED", "EXPECTED")
+  $CIRC = "*Circuit de fusion*"
+  $RAW = (gh pr checks 2112 --repo $REPO --json name,state)
+  if (-not $RAW) { Write-Host "ARRET : checks illisibles (gh 2.50 ou plus recent requis), rien n'est modifie"; return }
+
   gh repo clone $REPO $T -- --depth 1 --branch $BR
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : clone refuse"; return }
   $H1 = (Get-FileHash -Algorithm SHA256 (Join-Path $T $P1)).Hash.ToLower()
@@ -147,8 +153,23 @@ Seule valeur à saisir : `$DEV`, le compte de déploiement de la machine DEV. So
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : tete illisible"; return }
   Write-Host ("Tete a fusionner : " + $HEAD)
   Start-Sleep -Seconds 120
-  gh pr checks 2112 --repo $REPO --watch --interval 30
-  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : un check n'est pas vert, rien n'est fusionne"; return }
+  $VERT = $false
+  for ($i = 0; $i -lt 90; $i++) {
+    $RAW = (gh pr checks 2112 --repo $REPO --json name,state)
+    if (-not $RAW) { Write-Host "ARRET : checks illisibles, rien n'est fusionne"; return }
+    $J = (($RAW -join "") | ConvertFrom-Json)
+    $O = @($J | Where-Object { $_.name -notlike $CIRC })
+    $BAD = @($O | Where-Object { ($OKS -notcontains $_.state) -and ($WAITS -notcontains $_.state) })
+    $PEND = @($O | Where-Object { $WAITS -contains $_.state })
+    if ($BAD.Count -gt 0) {
+      $BAD | ForEach-Object { Write-Host ("  " + $_.state + " : " + $_.name) }
+      Write-Host "ARRET : un check est en echec, rien n'est fusionne"; return
+    }
+    if (($PEND.Count -eq 0) -and ($O.Count -ge 10)) { $VERT = $true; break }
+    Write-Host ("Checks en cours : " + $PEND.Count)
+    Start-Sleep -Seconds 30
+  }
+  if (-not $VERT) { Write-Host "ARRET : checks non termines apres 45 minutes, rien n'est fusionne"; return }
   $NOW = (gh pr view 2112 --repo $REPO --json headRefOid --jq .headRefOid)
   if ($NOW -ne $HEAD) { Write-Host ("ARRET : la tete a change : " + $NOW); return }
 
@@ -156,6 +177,17 @@ Seule valeur à saisir : `$DEV`, le compte de déploiement de la machine DEV. So
   if ($GO -ne "oui") { Write-Host "Arret demande : rien n'est fusionne"; return }
   gh pr review 2112 --repo $REPO --approve
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : approbation refusee"; return }
+  $CIRCOK = $false
+  for ($i = 0; $i -lt 40; $i++) {
+    Start-Sleep -Seconds 15
+    $RAW = (gh pr checks 2112 --repo $REPO --json name,state)
+    if (-not $RAW) { continue }
+    $J = (($RAW -join "") | ConvertFrom-Json)
+    $C = @($J | Where-Object { $_.name -like $CIRC })
+    $KO = @($C | Where-Object { $_.state -ne "SUCCESS" })
+    if (($C.Count -gt 0) -and ($KO.Count -eq 0)) { $CIRCOK = $true; break }
+  }
+  if (-not $CIRCOK) { Write-Host "ARRET : le check du circuit n'est pas vert apres l'approbation, rien n'est fusionne"; return }
   gh pr merge 2112 --repo $REPO --squash --match-head-commit $HEAD
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : fusion refusee"; return }
   Start-Sleep -Seconds 60
@@ -166,6 +198,10 @@ Seule valeur à saisir : `$DEV`, le compte de déploiement de la machine DEV. So
 
 Points d'attention :
 
+- En circuit élevé, le check « 🚦 Circuit de fusion » reste rouge tant que l'approbation de
+  l'owner manque sur la tête (relevé sur #2113, run 43976631766, 16 nov. 23:11 UTC). Le bloc
+  attend donc les autres checks, demande l'accord, approuve, attend que ce check passe au vert,
+  puis fusionne. Il lit les checks par `gh pr checks --json` : `gh` 2.50 ou plus récent.
 - `resync-pr.sh` pousse depuis le DEV, dont le jeton ne pousse pas de fichier de workflow. Ses commits
   (ownership, projections) n'en touchent aucun. Mais si `main` reçoit entre-temps un changement de
   `.github/workflows/`, la fusion de `main` dans la branche le porte, et le push du DEV est refusé.
