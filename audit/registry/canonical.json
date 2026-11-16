@@ -29511,7 +29511,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 1145,
+      "loc": 1150,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "high",
@@ -68244,10 +68244,11 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/services/mail.service.ts",
+        "backend/src/shared/crypto/password-crypto.service.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 388,
+      "loc": 371,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/services/password.service.ts",
       "risk": "high",
@@ -68314,7 +68315,7 @@
         "backend/src/modules/users/dto/user.dto.ts"
       ],
       "kind": "service",
-      "loc": 741,
+      "loc": 751,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/services/user-data-consolidated.service.ts",
       "risk": "high",
@@ -69955,6 +69956,55 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+      "importedBy": [
+        "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+        "backend/src/workers/run-legacy-password-wrap.ts"
+      ],
+      "imports": [
+        "backend/src/shared/crypto/password-crypto.service.ts"
+      ],
+      "kind": "service",
+      "loc": 289,
+      "owner": "@ak125/auth-team",
+      "path": "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+      "importedBy": [
+        "backend/src/workers/run-legacy-password-wrap.ts"
+      ],
+      "imports": [
+        "backend/src/shared/crypto/legacy-hash-wrap.runner.ts"
+      ],
+      "kind": "service",
+      "loc": 84,
+      "owner": "@ak125/auth-team",
+      "path": "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -69963,14 +70013,17 @@
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
         "backend/src/auth/session-privilege.test.ts",
+        "backend/src/modules/users/services/password.service.ts",
         "backend/src/shared/crypto/crypto.module.ts",
-        "backend/src/shared/crypto/index.ts"
+        "backend/src/shared/crypto/index.ts",
+        "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+        "backend/src/workers/run-legacy-password-wrap.ts"
       ],
       "imports": [
         "crypto"
       ],
       "kind": "service",
-      "loc": 252,
+      "loc": 355,
       "owner": "__unassigned__",
       "path": "backend/src/shared/crypto/password-crypto.service.ts",
       "risk": "low",
@@ -70341,6 +70394,53 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D9",
+      "id": "backend/src/workers/run-legacy-password-wrap.guard.ts",
+      "importedBy": [
+        "backend/src/workers/run-legacy-password-wrap.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 29,
+      "owner": "@ak125",
+      "path": "backend/src/workers/run-legacy-password-wrap.guard.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D9",
+      "id": "backend/src/workers/run-legacy-password-wrap.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+        "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+        "backend/src/shared/crypto/password-crypto.service.ts",
+        "backend/src/workers/run-legacy-password-wrap.guard.ts"
+      ],
+      "kind": "service",
+      "loc": 65,
+      "owner": "@ak125",
+      "path": "backend/src/workers/run-legacy-password-wrap.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -70861,7 +70961,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 514,
+      "loc": 648,
       "owner": "@ak125",
       "path": "backend/tests/unit/auth.service.test.ts",
       "risk": "medium",
@@ -71577,6 +71677,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/legacy-hash-wrap.runner.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 234,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/legacy-hash-wrap.runner.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/legacy-orders-routes-authz.test.ts",
       "importedBy": [],
       "imports": [],
@@ -71964,6 +72084,26 @@
       "loc": 468,
       "owner": "@ak125",
       "path": "backend/tests/unit/page-role-validator.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/password-crypto-wrapped.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 191,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/password-crypto-wrapped.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -107853,15 +107993,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "ea6feced416fa89922e8498e8d3c62ab550a17223afe01802cf96dd431c903c2",
+      ".spec/00-canon/repository-registry/ownership.yaml": "1b6441e1b174c1830ae88c3e154be98e62a9d3910d2bbfc1465517adc9480713",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "3f7824ebff4c665252aba6495aaaa7bd9478381a0d30abf8e49133e2ff942888",
+      "audit/registry/files.json": "42229d0fd0e1e4b2362f80cf9a8274b33a368381cd0c0d5a22c7e33c9dfcd537",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "2cf415d68c48e988f45a8bfbba96150311d919a905cda064c77e974c6712eccd"
+      "audit/registry/runtime.json": "edaf32b53f63a79c464860f5bd4b564e729f8c5c926e0044b1b7df292bd870be"
     },
-    "sotFingerprint": "c7fe4e1c4cbb"
+    "sotFingerprint": "9154dd743831"
   },
   "runtime": [
     {
@@ -116224,7 +116364,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/services/mail.service.ts"
+        "runtime:backend/src/services/mail.service.ts",
+        "runtime:backend/src/shared/crypto/password-crypto.service.ts"
       ],
       "id": "runtime:backend/src/modules/users/services/password.service.ts",
       "kind": "nestjs-service",
