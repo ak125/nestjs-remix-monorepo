@@ -104300,6 +104300,46 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/ci/merge-circuit.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 124,
+      "owner": "@ak125",
+      "path": "scripts/ci/merge-circuit.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/merge-circuit.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 52,
+      "owner": "@ak125",
+      "path": "scripts/ci/merge-circuit.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/ci/merge-perimeter-gate.mjs",
       "importedBy": [],
       "imports": [],
@@ -105204,7 +105244,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 504,
+      "loc": 666,
       "owner": "@ak125",
       "path": "scripts/governance/validate-agent-operating-map.js",
       "risk": "low",
@@ -108065,11 +108105,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "3161a32bceb188739c42540ba5c96ab5d40e14a8479e5a1c775adccd058a11d0",
+      "audit/registry/files.json": "29ff461f9dcbd3a0bce4afee94f0c623e98b59471d8e02dca1b52f8445390370",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "050c788fdf7bd3a1350974b04a682446077dca041f78a3f4d97a805624ed64ee"
     },
-    "sotFingerprint": "bce2badc4fc7"
+    "sotFingerprint": "17f70680ca2e"
   },
   "runtime": [
     {
