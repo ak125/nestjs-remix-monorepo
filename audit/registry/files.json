@@ -65067,6 +65067,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/purchase-probe/playwright.config.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "config",
+      "loc": 35,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/purchase-probe/playwright.config.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/purchase-probe/purchase-path.probe.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 295,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/purchase-probe/purchase-path.probe.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/qa-audit/config/pages.ts",
       "importedBy": [],
       "imports": [],

@@ -942,6 +942,7 @@
         "frontend",
         "frontend/frontend/tests/e2e",
         "frontend/tests/e2e",
+        "frontend/tests/purchase-probe",
         "frontend/tests/qa-audit",
         "frontend/tests/qa-audit/config",
         "frontend/tests/qa-audit/helpers",
@@ -959,8 +960,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 380,
-      "loc_total": 79079,
+      "files_count": 382,
+      "loc_total": 79409,
       "has_barrel": true
     },
     "upload": {
