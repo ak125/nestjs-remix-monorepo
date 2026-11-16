@@ -50,16 +50,16 @@ Garde-fous, dans `frontend/tests/purchase-probe/purchase-path.probe.ts` :
 - `frontend/tests/purchase-probe/purchase-path.probe.ts` et `playwright.config.ts` : la sonde. Elle n'est pas lancée par la CI existante, car `frontend/playwright.config.ts` ne lit pas ce dossier.
 - `scripts/ops/purchase-path-probe.sh` :
   - `alert` : issue d'incident au 2e échec consécutif, une seule par incident, fermée au premier succès ;
-  - `summary` : synthèse sur 24 h.
-- `scripts/ops/purchase-path-probe.test.sh` : 40 cas sur fixtures, avec un faux `gh` et sans réseau.
+  - `report` : agrégat des 24 h au format `parcours-achat.v1` (contrat d'entrée du rapport unique, mandat AM), avec `last_run.consecutive_failures`.
+- `scripts/ops/purchase-path-probe.test.sh` : 51 cas sur fixtures, avec un faux `gh` et sans réseau. L'agrégat est validé par le contrôle `PA_VALID` lu dans le digest.
 - Ce dossier : trois patches réservés à l'owner.
 
 ## Patches réservés à l'owner (non appliqués)
 
 | Patch | Fichier | Contenu |
 |---|---|---|
-| `01-purchase-path-probe-workflow.patch` | `.github/workflows/purchase-path-probe.yml` (nouveau) | Cron `7,22,37,52 * * * *` et `workflow_dispatch`. Playwright installé à la version de `frontend/package.json`, dans `$RUNNER_TEMP`, sans toucher au dépôt. Artefact `purchase-path-probe-result` (3 jours). Étape d'alerte. Permissions : `contents: read`, `issues: write`, `actions: read`. Aucun secret ajouté (seul `GITHUB_TOKEN`). |
-| `02-morning-digest-purchase-signal.patch` | `.github/scripts/morning-health-digest.sh` | Signal 9 : disponibilité sur 24 h, échecs et durées médiane/p95/max par étape, incident ouvert. Le niveau (✅/⚠️/⛔) remonte dans le titre du digest. |
+| `01-purchase-path-probe-workflow.patch` | `.github/workflows/purchase-path-probe.yml` (nouveau) | Cron `7,22,37,52 * * * *` et `workflow_dispatch`. Playwright installé à la version de `frontend/package.json`, dans `$RUNNER_TEMP`, sans toucher au dépôt. Étapes `alert` puis `report`. Artefact `purchase-path-probe-result` (3 jours) : `result.json` et `parcours-achat.json`. Permissions : `contents: read`, `issues: write`, `actions: read`. Aucun secret ajouté (seul `GITHUB_TOKEN`). |
+| `02-morning-digest-purchase-signal.patch` | `.github/scripts/morning-health-digest.sh` (bloc « parcours d'achat » du mandat AM, déjà fusionné) | Branche le producteur : `parcours_achat.workflow` et `.artefact` prennent par défaut `purchase-path-probe.yml` et `purchase-path-probe-result`, sans variable de dépôt. Applique la décision 67 : 1 échec = orange, rouge et mail urgent à partir de 2 échecs consécutifs. Un agrégat sans le compteur garde le comportement actuel (rouge). |
 | `03-automation-reality-entry.patch` | `.spec/00-canon/repository-registry/automation-reality.yaml` | Entrée `purchase-path-probe` en `SCRIPT_ONLY` (intention `ACTIVE`). Exigée par `automation-registry-coverage.yml` pour un nouveau workflow planifié. |
 
 Les patches 01 à 03 vont ensemble, dans une même PR. Ils s'appliquent sur `main` **après** la
@@ -87,10 +87,8 @@ validateur du registre refuse un chemin absent de l'arbre.
    gh pr create --repo ak125/nestjs-remix-monorepo --fill
    gh pr merge <n°> --repo ak125/nestjs-remix-monorepo --squash --match-head-commit <SHA40>
    ```
-   Si le mandat AM (#2089) a été fusionné avant, il restructure `morning-health-digest.sh` :
-   `git apply --check` refusera alors le patch 02. Reporter le bloc « Signal 9 » à la main, à
-   l'endroit où AM range ses signaux. Le bloc est autonome : un appel à `summary` et son code de
-   sortie.
+   Le patch 02 est fait sur `main` après la fusion du mandat AM (#2098). Si le bloc du digest
+   change encore, `git apply --check` le refusera : le régénérer plutôt que forcer.
 3. **Premier passage, à la main** (activation) :
    ```bash
    gh workflow run purchase-path-probe.yml --repo ak125/nestjs-remix-monorepo --ref main
@@ -98,9 +96,14 @@ validateur du registre refuse un chemin absent de l'arbre.
    gh run watch <id> --repo ak125/nestjs-remix-monorepo
    ```
    Le jeton `gh` de la machine DEV n'a pas `actions:write`. Ce lancement se fait depuis son compte.
-4. **E-mail.** L'alerte est une issue assignée à `ak125`. L'e-mail dépend des réglages GitHub du
-   compte : Settings → Notifications → « Participating, @mentions and custom », case **Email**
-   cochée. C'est le même canal que le digest du matin.
+4. **E-mail.** Deux canaux, tous deux une fois par incident à partir du 2e échec :
+   - l'issue assignée à `ak125` (étape `alert`), qui marche dès aujourd'hui si les notifications
+     e-mail du compte couvrent les issues assignées (Settings → Notifications → « Participating,
+     @mentions and custom », case **Email**) ;
+   - le mail urgent du digest AM, qui reste `INDISPONIBLE` tant que les secrets `GMAIL_CLIENT_ID`,
+     `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_USER_EMAIL`, `ALERT_EMAIL_TO` et
+     `EMAIL_FROM` n'existent pas (journal du digest, run 43973250450).
+   Quand le mail AM marchera, retirer l'étape `alert` du workflow évitera le double message.
 5. **Arrêt d'urgence, si la sonde gêne** : `gh workflow disable purchase-path-probe.yml --repo ak125/nestjs-remix-monorepo` (son compte).
 
 Aucune action PROD, aucun secret, aucune variable de dépôt, aucune migration.
@@ -108,16 +111,13 @@ Aucune action PROD, aucun secret, aucune variable de dépôt, aucune migration.
 ## Lecture du résultat
 
 - **Alerte.** Titre : `🔴 Parcours d'achat PROD en échec — étape « … »`. Le corps contient l'erreur, le lien des deux runs et le tableau des étapes. L'issue se ferme seule au premier passage réussi, avec un commentaire « Rétabli ».
-- **Rapport unique.** C'est le Signal 9 du digest, ou directement `GH_TOKEN=… REPO=ak125/nestjs-remix-monorepo bash scripts/ops/purchase-path-probe.sh summary`. Code de sortie : 0 ✅, 1 ⚠️, 2 ⛔.
-- **Seuils proposés, à valider** :
-  - ⛔ si un incident est ouvert ou si la disponibilité est sous 95 % ;
-  - ⚠️ dès un échec, ou si moins de 72 passages sur les 96 attendus ont abouti (planification GitHub en retard).
+- **Rapport unique.** Le digest AM lit `parcours-achat.json` du dernier run terminé : disponibilité sur 24 h, temps par étape (p50, p95, dernier), dernier passage. Un seuil de disponibilité (orange) n'existe que si `parcours_achat.disponibilite_min_pct` est posé dans la configuration du rapport ; aucun seuil n'est inventé ici.
 
 ## Limites connues
 
 - **Aucun passage en PROD n'a été fait.** La preuve porte sur DEV:3000 : 2 parcours complets le 2026-11-16, panier relu vide après le nettoyage.
 - **Les IP des runners GitHub sont des IP de datacenter.** Cloudflare, `BotGuard` ou le blocage géographique peuvent refuser la sonde. Le premier run le dira : l'étape `accueil` échouera en 403 ou sur un challenge. Le contournement par `PROD_SEO_CP_SYNTHETIC_PROBE_SECRET` n'est **pas** utilisé. Il réclamerait une décision de l'owner.
-- **GitHub ne garantit pas l'heure des crons.** Un passage peut être retardé ou sauté aux heures chargées. Le seuil des 72 passages en tient compte.
+- **GitHub ne garantit pas l'heure des crons.** Un passage peut être retardé ou sauté aux heures chargées. `runs_total` et `runs_expected` (96) dans l'agrégat le montrent.
 - **Si `POST /auth/logout` échoue**, la session anonyme du robot expire seule. Son panier Redis est vidé avant.
 - **L'e-mail dépend des réglages de notification du compte** (point 4).
 - **Le sélecteur de véhicule et la gamme sont fixes**, réglables par `PURCHASE_PROBE_VEHICLE` et `PURCHASE_PROBE_GAMME_PREFIX`. Si la motorisation ou la gamme disparaît du catalogue, la sonde échoue à `vehicule` ou `gamme` : c'est un vrai signal, pas un faux positif à masquer.

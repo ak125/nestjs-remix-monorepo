@@ -111,40 +111,57 @@ check "tout premier passage en échec : pas d'alerte" "0" "$(wc -l < "$FIX/a8/wr
 
 for d in a1 a2 a3 a4 a5 a6 a7 a8; do absent "$d : aucune commande gh interdite" "INTERDIT" "$FIX/$d/writes"; done
 
-echo "summary"
-summary() { # nom issues runs-json → stdout dans out.md, code
+echo "report (parcours-achat.v1, lu par le rapport unique)"
+# Contrôle d'entrée du rapport unique, lu dans le script du digest (mandat AM) pour que
+# ce test échoue si l'un des deux côtés change de format.
+DIGEST="$ICI/../../.github/scripts/morning-health-digest.sh"
+PA_VALID=$(sed -n "/^PA_VALID='/,/'\$/p" "$DIGEST" 2>/dev/null | sed "1s/^PA_VALID='//; \$s/'\$//")
+check "contrôle PA_VALID lu dans le digest" "1" "$([[ -n "$PA_VALID" ]] && echo 1 || echo 0)"
+report() { # nom runs-json résultat-courant|"" [id=artefact]... → out.json, code
   local dir="$FIX/$1"; mkdir -p "$dir/artifacts"
-  echo "$2" > "$dir/issues.json"; echo "$3" > "$dir/runs.json"; : > "$dir/writes"
+  echo '[]' > "$dir/issues.json"; echo "$2" > "$dir/runs.json"; : > "$dir/writes"
+  local res=""; if [[ -n "$3" ]]; then res="$dir/result.json"; echo "$3" > "$res"; fi
   shift 3
   local pair; for pair in "$@"; do echo "${pair#*=}" > "$dir/artifacts/${pair%%=*}.json"; done
-  FAKE_DIR="$dir" FAKE_WRITES="$dir/writes" bash "$SCRIPT" summary > "$dir/out.md" 2> "$dir/stderr"
+  FAKE_DIR="$dir" FAKE_WRITES="$dir/writes" bash "$SCRIPT" report "$res" "$dir/out.json" 2> "$dir/stderr"
   echo $? > "$dir/code"
 }
-summary s1 "$NO_ISSUE" "$(runs 1:success 2:success 3:failure 4:success 5:cancelled)" \
+val() { jq -r "$2" "$FIX/$1/out.json" 2>/dev/null; }
+valide() { jq -e "$PA_VALID" "$FIX/$1/out.json" >/dev/null 2>&1 && echo oui || echo non; }
+
+# r1 : passage courant réussi ; 4 décisifs avant (dont 1 échec), 1 annulé ignoré, 1 artefact absent.
+report r1 "$(runs 1:success 2:success 3:failure 4:success 5:cancelled)" "$(ok_result)" \
   "1=$(ok_result)" "2=$(ok_result)" "3=$(ko_result ajout_panier)"
-check "75 % : niveau ⛔ (code 2)" "2" "$(cat "$FIX/s1/code")"
-contient "disponibilité sur les passages décisifs" "Disponibilité **75 %** — 3/4 passages réussis" "$FIX/s1/out.md"
-contient "échec compté sur son étape" "| ajout_panier | 1 |" "$FIX/s1/out.md"
-contient "médiane des étapes réussies" "| accueil | 0 | 900 | 1000 | 1000 |" "$FIX/s1/out.md"
-contient "résultat manquant signalé" "1 passage(s) sans résultat détaillé" "$FIX/s1/out.md"
-absent "summary : aucune écriture" "issue" "$FIX/s1/writes"
+check "r1 : code 0" "0" "$(cat "$FIX/r1/code")"
+check "r1 : accepté par le contrôle du digest" "oui" "$(valide r1)"
+check "r1 : 4/5 passages, annulé ignoré" "4/5" "$(val r1 '"\(.runs_ok)/\(.runs_total)"')"
+check "r1 : disponibilité" "80" "$(val r1 .availability_pct)"
+check "r1 : artefact manquant compté" "1" "$(val r1 .runs_without_detail)"
+check "r1 : dernier passage réussi, 0 échec consécutif" "true 0" "$(val r1 '"\(.last_run.ok) \(.last_run.consecutive_failures)"')"
+check "r1 : p50 accueil sur les étapes réussies (900,900,1000,900)" "900" "$(val r1 '.steps[] | select(.name=="accueil") | .p50_ms')"
+check "r1 : max accueil" "1000" "$(val r1 '.steps[] | select(.name=="accueil") | .max_ms')"
+check "r1 : 9 étapes, dans l'ordre du parcours" "accueil,vehicule,gamme,produit,ajout_panier,panier,commande,paiement,nettoyage" "$(val r1 '[.steps[].name] | join(",")')"
+check "r1 : lien du passage courant" "https://github.com/exemple/depot/actions/runs/1000" "$(val r1 .last_run.url)"
+absent "r1 : aucune écriture" "issue" "$FIX/r1/writes"
+absent "r1 : aucun texte d'erreur publié" "contact" "$FIX/r1/out.json"
 
-all_ok=(); arts=()
-for i in $(seq 1 96); do all_ok+=("$i:success"); arts+=("$i=$(ok_result)"); done
-summary s2 "$NO_ISSUE" "$(runs "${all_ok[@]}")" "${arts[@]}"
-check "96/96 réussis : niveau ✅ (code 0)" "0" "$(cat "$FIX/s2/code")"
-contient "100 %" "Disponibilité **100 %** — 96/96" "$FIX/s2/out.md"
+# r2 : 3e échec de suite (le dernier succès est le 3e passage précédent).
+report r2 "$(runs 1:failure 2:timed_out 3:success)" "$(ko_result ajout_panier)"
+check "r2 : accepté par le contrôle du digest" "oui" "$(valide r2)"
+check "r2 : 3 échecs consécutifs, étape nommée" "false 3 ajout_panier" "$(val r2 '"\(.last_run.ok) \(.last_run.consecutive_failures) \(.last_run.failed_step)"')"
+check "r2 : étape en échec ok=false" "false" "$(val r2 '.steps[] | select(.name=="ajout_panier") | .ok')"
+check "r2 : étape non atteinte absente sans historique" "0" "$(val r2 '[.steps[] | select(.name=="paiement")] | length')"
 
-summary s3 "$OPEN_ISSUE" "$(runs "${all_ok[@]}")" "${arts[@]}"
-check "incident ouvert : niveau ⛔ même à 100 %" "2" "$(cat "$FIX/s3/code")"
-contient "lien de l'incident" "/exemple/depot/issues/42" "$FIX/s3/out.md"
+# r3 : 1er échec après un succès → 1 (le digest n'alerte qu'à 2, décision 67).
+report r3 "$(runs 1:success 2:failure)" "$(ko_result panier)"
+check "r3 : 1 échec consécutif" "1" "$(val r3 .last_run.consecutive_failures)"
 
-summary s4 "$NO_ISSUE" "$(runs 1:success 2:success)" "1=$(ok_result)" "2=$(ok_result)"
-check "2 passages sur 96 attendus : niveau ⚠️ (code 1)" "1" "$(cat "$FIX/s4/code")"
+# r4 : résultat absent → échec de la sonde ; tout premier passage.
+report r4 "[]" ""
+check "r4 : accepté par le contrôle du digest" "oui" "$(valide r4)"
+check "r4 : sonde en échec, 0/1" "false sonde 0/1 0" "$(val r4 '"\(.last_run.ok) \(.last_run.failed_step) \(.runs_ok)/\(.runs_total) \(.availability_pct)"')"
 
-summary s5 "$NO_ISSUE" "[]"
-check "aucun passage : niveau ⛔" "2" "$(cat "$FIX/s5/code")"
-contient "aucun passage : dit que la sonde ne tourne pas" "la sonde ne tourne pas" "$FIX/s5/out.md"
+for d in r1 r2 r3 r4; do absent "$d : aucune commande gh interdite" "INTERDIT" "$FIX/$d/writes"; done
 
 [[ $FAIL -eq 0 ]] && echo "OK — tous les cas passent" || echo "ÉCHEC"
 exit "$FAIL"

@@ -13,9 +13,11 @@
 #       un e-mail) quand ce passage ET le passage décisif précédent ont échoué, et
 #       qu'aucun incident n'est déjà ouvert ; la ferme au premier passage réussi.
 #       Fichier absent ou illisible = passage en échec (« sonde »).
-#   purchase-path-probe.sh summary
-#       Synthèse des dernières 24 h en Markdown sur stdout, pour le rapport unique.
-#       Code de sortie = niveau : 0 ✅, 1 ⚠️, 2 ⛔ ; autre = erreur du script.
+#   purchase-path-probe.sh report <résultat.json> <parcours-achat.json>
+#       Après chaque passage. Écrit l'agrégat des 24 h au format parcours-achat.v1
+#       (disponibilité, temps par étape p50/p95/max/dernier, dernier passage et nombre
+#       d'échecs consécutifs), lu par le rapport unique : .github/scripts/
+#       morning-health-digest.sh (mandat AM), qui télécharge l'artefact du dernier run.
 #
 # Environnement :
 #   GH_TOKEN, REPO (owner/nom)                        requis
@@ -138,75 +140,86 @@ cmd_alert() {
 }
 
 # ------------------------------------------------------------------------------
-cmd_summary() {
+# Étapes, dans l'ordre du parcours (frontend/tests/purchase-probe/purchase-path.probe.ts).
+STEPS_JSON='["accueil","vehicule","gamme","produit","ajout_panier","panier","commande","paiement","nettoyage"]'
+
+cmd_report() {
+  local current="${1:-}" out="${2:-}"
   require_env
-  local since tmp runs
+  [ -n "${GITHUB_RUN_ID:-}" ] || die "GITHUB_RUN_ID manquant"
+  [ -n "$out" ] || die "usage : report <résultat.json> <sortie.json>"
+  local now since tmp runs decisive
+  now=$(date -u +%FT%TZ)
   since=$(date -u -d '24 hours ago' +%FT%TZ)
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' RETURN
 
+  # Passages décisifs des 24 h, hors passage courant, du plus récent au plus ancien.
   runs=$(gh run list --repo "$REPO" --workflow "$PROBE_WORKFLOW" --branch "$PROBE_BRANCH" \
       --created ">=$since" --limit 200 --json databaseId,status,conclusion,createdAt)
-  local decisive total ok failed availability
-  decisive=$(jq -c "[.[] | $DECISIVE]" <<<"$runs")
-  total=$(jq 'length' <<<"$decisive")
-  ok=$(jq '[.[] | select(.conclusion == "success")] | length' <<<"$decisive")
-  failed=$((total - ok))
+  decisive=$(jq -c --argjson cur "$GITHUB_RUN_ID" \
+    "[.[] | select(.databaseId != \$cur) | $DECISIVE] | sort_by(.createdAt) | reverse" <<<"$runs")
 
-  echo "## Parcours d'achat simulé (PROD, 24 h)"
-  if [ "$total" -eq 0 ]; then
-    echo "⛔ Aucun passage décisif depuis $since — la sonde ne tourne pas ($PROBE_WORKFLOW)."
-    return 2
-  fi
-  availability=$(jq -n --argjson ok "$ok" --argjson t "$total" '($ok * 1000 / $t | floor) / 10')
-
-  # Résultats détaillés : un artefact par passage (rétention courte). Jusqu'à 96
-  # téléchargements : 8 en parallèle pour tenir dans le délai du digest (8 min).
-  local id missing=0
+  # Détail des passages précédents : un artefact par passage (rétention courte),
+  # 8 téléchargements en parallèle. Un artefact absent compte dans runs_without_detail.
   jq -r '.[].databaseId' <<<"$decisive" \
     | xargs -r -P 8 -I{} sh -c 'gh run download "$1" --repo "$2" -n "$3" -D "$4/$1" >/dev/null 2>&1 || true' \
         _ {} "$REPO" "$PROBE_ARTIFACT" "$tmp"
-  for id in $(jq -r '.[].databaseId' <<<"$decisive"); do
-    [ -f "$tmp/$id/result.json" ] || missing=$((missing + 1))
-  done
-  local results
-  results=$(find "$tmp" -name result.json -exec cat {} + | jq -s '[.[] | select(.schema == "purchase-path-probe/v1")]')
+  local prev
+  prev=$(find "$tmp" -name result.json -exec cat {} + | jq -s '[.[] | select(.schema == "purchase-path-probe/v1")]')
 
-  local incident level=0
-  incident=$(open_incident)
-  if [ -n "$incident" ] || [ "$(jq -n --argjson a "$availability" '$a < 95')" = "true" ]; then
-    level=2
-  elif [ "$failed" -gt 0 ] || [ "$total" -lt $((PROBE_EXPECTED_RUNS_24H * 3 / 4)) ]; then
-    level=1
+  # Passage courant : fichier absent ou illisible = échec de la sonde elle-même.
+  local cur
+  if [ -n "$current" ] && jq -e '.schema == "purchase-path-probe/v1"' "$current" >/dev/null 2>&1; then
+    cur=$(jq -c . "$current")
+  else
+    cur=$(jq -cn --arg now "$now" '{schema:"purchase-path-probe/v1", ok:false, failed_step:"sonde", finished_at:$now, steps:[]}')
   fi
-  local icon
-  icon=$(case $level in 0) echo "✅" ;; 1) echo "⚠️" ;; *) echo "⛔" ;; esac)
 
-  echo "$icon Disponibilité **${availability} %** — $ok/$total passages réussis ($total décisifs sur $PROBE_EXPECTED_RUNS_24H attendus)."
-  if [ -n "$incident" ]; then
-    echo "- Incident ouvert : $SERVER/$REPO/issues/$incident"
-  fi
-  [ "$missing" -eq 0 ] || echo "- $missing passage(s) sans résultat détaillé (artefact absent ou expiré)."
-  echo
-  echo "| Étape | Échecs | Médiane (ms) | p95 (ms) | Max (ms) |"
-  echo "|---|---|---|---|---|"
-  jq -r '
+  # Format parcours-achat.v1, lu par .github/scripts/morning-health-digest.sh (mandat AM).
+  # consecutive_failures : échecs décisifs consécutifs jusqu'au passage courant compris
+  # (0 s'il a réussi) ; l'alerte part à 2 (décision 67). Agrégats seulement : aucun texte
+  # d'erreur, aucune donnée client (le rapport est une issue publique).
+  jq -n --argjson cur "$cur" --argjson prev "$prev" --argjson runs "$decisive" \
+        --argjson steps "$STEPS_JSON" --argjson expected "$PROBE_EXPECTED_RUNS_24H" \
+        --arg now "$now" --arg url "$(run_url "$GITHUB_RUN_ID")" '
     def pct(p): sort | .[((length * p) | ceil) - 1];
-    [.[] | .steps[]] as $all
-    | ["accueil","vehicule","gamme","produit","ajout_panier","panier","commande","paiement","nettoyage"][] as $s
-    | ([$all[] | select(.step == $s)]) as $rows
-    | ([$rows[] | select(.ok) | .ms]) as $ms
-    | ([.[] | select(.failed_step == $s)] | length) as $fails
-    | select(($rows | length) > 0 or $fails > 0)
-    | "| \($s) | \($fails) | \(if ($ms|length) > 0 then ($ms | pct(0.5)) else "—" end) | \(if ($ms|length) > 0 then ($ms | pct(0.95)) else "—" end) | \(if ($ms|length) > 0 then ($ms | max) else "—" end) |"
-  ' <<<"$results"
-  echo
-  echo "Durées des étapes réussies seulement. Seuils : ⛔ incident ouvert ou disponibilité < 95 % ; ⚠️ un échec, ou moins de $((PROBE_EXPECTED_RUNS_24H * 3 / 4)) passages."
-  return "$level"
+    def stat(p): if length > 0 then pct(p) else null end;
+    ($runs | length + 1) as $total
+    | (([$runs[] | select(.conclusion == "success")] | length) + (if $cur.ok == true then 1 else 0 end)) as $ok
+    | ([$prev[], $cur] | [.[] | (.steps // [])[]]) as $all
+    | {
+        schema: "parcours-achat.v1",
+        generated_at: $now,
+        window_hours: 24,
+        availability_pct: (($ok * 1000 / $total | floor) / 10),
+        runs_total: $total,
+        runs_ok: $ok,
+        runs_expected: $expected,
+        runs_without_detail: (($runs | length) - ($prev | length) | if . < 0 then 0 else . end),
+        steps: [
+          $steps[] as $s
+          | ([($cur.steps // [])[] | select(.step == $s)] | first) as $c
+          | ([$all[] | select(.step == $s and .ok == true) | .ms]) as $ms
+          | select($c != null or ($ms | length) > 0)
+          | {name: $s, p50_ms: ($ms | stat(0.5)), p95_ms: ($ms | stat(0.95)),
+             max_ms: (if ($ms | length) > 0 then ($ms | max) else null end),
+             last_ms: ($c.ms // null), ok: ($c.ok == true)}
+        ],
+        last_run: {
+          at: ($cur.finished_at // $now),
+          ok: ($cur.ok == true),
+          failed_step: (if $cur.ok == true then null else ($cur.failed_step // "inconnue") end),
+          consecutive_failures: (if $cur.ok == true then 0
+            else 1 + ([$runs[] | .conclusion == "success"] | index(true) // length) end),
+          url: $url
+        }
+      }' >"$out"
+  log "rapport écrit : $(jq -c '{availability_pct, runs_ok, runs_total, last: .last_run.ok, cf: .last_run.consecutive_failures}' "$out")"
 }
 
 case "${1:-}" in
   alert) shift; cmd_alert "$@" ;;
-  summary) shift; cmd_summary "$@" ;;
-  *) echo "usage: $0 alert <résultat.json> | summary" >&2; exit 3 ;;
+  report) shift; cmd_report "$@" ;;
+  *) echo "usage: $0 alert <résultat.json> | report <résultat.json> <parcours-achat.json>" >&2; exit 3 ;;
 esac

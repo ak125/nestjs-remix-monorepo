@@ -1,37 +1,43 @@
 diff --git a/.github/scripts/morning-health-digest.sh b/.github/scripts/morning-health-digest.sh
-index 0901639..d703224 100755
+index 7146db5..bf866af 100755
 --- a/.github/scripts/morning-health-digest.sh
 +++ b/.github/scripts/morning-health-digest.sh
-@@ -1,5 +1,5 @@
- #!/usr/bin/env bash
--# Morning health digest — collect 8 signals, classify, write digest body file,
-+# Morning health digest — collect 9 signals, classify, write digest body file,
- # emit GitHub Actions outputs.
- #
- # Called by .github/workflows/morning-health-digest.yml. Requires gh CLI with
-@@ -170,6 +170,25 @@ else
- fi
- echo "" >> "$OUT"
+@@ -175,13 +175,16 @@ pg_get() {
  
-+# ---- Signal 9 — Parcours d'achat simulé (mandat AU, décision 52) ----
-+# Synthèse 24 h de purchase-path-probe.yml (sonde toutes les 15 min, sans
-+# paiement) : disponibilité, échecs et durées par étape, incident ouvert.
-+# Niveau = code de sortie du script (0 ✅, 1 ⚠️, 2 ⛔) ; tout autre code = synthèse
-+# illisible, comptée ⛔ (une sonde muette ne doit pas passer pour une sonde verte).
-+echo "## Signal 9 — Parcours d'achat simulé (PROD, 24 h)" >> "$OUT"
-+PROBE_RC=0
-+PROBE_MD=$(bash scripts/ops/purchase-path-probe.sh summary 2>/dev/null) || PROBE_RC=$?
-+case "$PROBE_RC" in
-+  0|1|2) echo "$PROBE_MD" | tail -n +2 >> "$OUT" ;;
-+  *) echo "⛔ Synthèse illisible (code $PROBE_RC) — \`scripts/ops/purchase-path-probe.sh summary\`." >> "$OUT" ;;
-+esac
-+case "$PROBE_RC" in
-+  0) ;;
-+  1) [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️" ;;
-+  *) STATUS_OVERALL="⛔" ;;
-+esac
-+echo "" >> "$OUT"
-+
- echo "---" >> "$OUT"
- echo "Run: ${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-$REPO}/actions/runs/${GITHUB_RUN_ID:-?}" >> "$OUT"
- echo "Replaces Claude Desktop routine \`trig_017ywezN156yjiVW8BRVcYi6\` (disabled 2026-05-17)." >> "$OUT"
+ # ---- Simulated purchase path (mandat AU) ----
+ # Input: PARCOURS_ACHAT_JSON, or the artifact of the last completed run of the AU
+-# workflow named in the configuration (parcours_achat.workflow + .artefact).
++# workflow (parcours_achat.workflow + .artefact of the configuration; defaults: the
++# producer delivered by mandat AU, .github/workflows/purchase-path-probe.yml).
++# Alert after 2 consecutive failures (decision 67): last_run.consecutive_failures,
++# written by scripts/ops/purchase-path-probe.sh report; a single failure is orange.
+ # Schema parcours-achat.v1: generated_at, window_hours, availability_pct, runs_total,
+ # runs_ok, steps[{name, p50_ms, p95_ms, last_ms, ok}], last_run{at, ok, failed_step}.
+ PA_SRC="parcours d'achat simulé (mandat AU), format parcours-achat.v1"
+ PA_FILE="${PARCOURS_ACHAT_JSON:-}"
+-PA_WF=$(cfg_str '.parcours_achat.workflow' '')
+-PA_ART=$(cfg_str '.parcours_achat.artefact' '')
++PA_WF=$(cfg_str '.parcours_achat.workflow' 'purchase-path-probe.yml')
++PA_ART=$(cfg_str '.parcours_achat.artefact' 'purchase-path-probe-result')
+ PA_WHY=""
+ if [ -z "$PA_FILE" ] && [ -n "$PA_WF" ] && [ -n "$PA_ART" ]; then
+   PA_DIR=$(mktemp -d)
+@@ -210,12 +213,16 @@ elif ! jq -e "$PA_VALID" "$PA_FILE" >/dev/null 2>&1; then
+ else
+   PA=$(jq -c '{w: (.window_hours // 24), pct: .availability_pct, ok: .runs_ok, n: .runs_total,
+                last_ok: .last_run.ok, last_at: (.last_run.at // ""),
++               cf: ((.last_run.consecutive_failures | numbers | floor) // null),
+                failed: ((.last_run.failed_step // "?") | tostring | gsub("[`|\n\r<>]"; "") | .[0:60]),
+                gen: .generated_at}' "$PA_FILE")
+   PA_GEN=$(iso "$(jq -r .gen <<< "$PA")")
+   PA_V="disponibilité $(jq -r '"\(.w) h : \(.pct) % (\(.ok)/\(.n) passages réussis)"' <<< "$PA")"
+-  if [ "$(jq -r .last_ok <<< "$PA")" = "false" ]; then
+-    PA_V="EN PANNE : étape « $(jq -r .failed <<< "$PA") » en échec au dernier passage ($(jq -r .last_at <<< "$PA")) ; $PA_V"
++  PA_CF=$(jq -r '.cf // empty' <<< "$PA")
++  if [ "$(jq -r .last_ok <<< "$PA")" = "false" ] && is_int "$PA_CF" && [ "$PA_CF" -lt 2 ]; then
++    signal parcours "Parcours d'achat simulé" orange "1er échec : étape « $(jq -r .failed <<< "$PA") » au dernier passage ($(jq -r .last_at <<< "$PA")), alerte au 2e échec consécutif (décision 67) ; $PA_V" "$PA_SRC" "$Q_NON" "$PA_GEN"
++  elif [ "$(jq -r .last_ok <<< "$PA")" = "false" ]; then
++    PA_V="EN PANNE : étape « $(jq -r .failed <<< "$PA") » en échec au dernier passage ($(jq -r .last_at <<< "$PA"))${PA_CF:+, $PA_CF échecs consécutifs} ; $PA_V"
+     signal parcours "Parcours d'achat simulé" rouge "$PA_V" "$PA_SRC" "$Q_NON" "$PA_GEN"
+     urgent parcours "Parcours d'achat en panne (étape $(jq -r .failed <<< "$PA"))" "$RUN_URL"
+   elif [ -n "$PA_MIN_PCT" ] && jq -e --argjson m "$PA_MIN_PCT" '.pct < $m' <<< "$PA" >/dev/null; then

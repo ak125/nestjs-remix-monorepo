@@ -1,9 +1,9 @@
 diff --git a/.github/workflows/purchase-path-probe.yml b/.github/workflows/purchase-path-probe.yml
 new file mode 100644
-index 0000000..11f748a
+index 0000000..e2bd86f
 --- /dev/null
 +++ b/.github/workflows/purchase-path-probe.yml
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,105 @@
 +name: 🛒 Parcours d'achat PROD (sonde 15 min)
 +
 +# Mandat AU (décision 52) : toutes les 15 minutes, un robot parcourt la PROD de
@@ -19,7 +19,9 @@ index 0000000..11f748a
 +# - Alerte (décision 67) : scripts/ops/purchase-path-probe.sh alert — une issue
 +#   assignée à l'owner (donc un e-mail) au 2e échec consécutif, une seule par
 +#   incident, fermée au premier passage réussi.
-+# - Rapport unique : purchase-path-probe.sh summary lit ces runs et leurs artefacts.
++# - Rapport unique (mandat AM) : purchase-path-probe.sh report écrit l'agrégat des 24 h
++#   (parcours-achat.json, format parcours-achat.v1) dans l'artefact de chaque passage ;
++#   .github/scripts/morning-health-digest.sh télécharge celui du dernier run terminé.
 +#
 +# Runner GitHub (ubuntu-latest) : passe par Internet, Cloudflare et Caddy comme un
 +# client ; aucune charge sur l'hôte PROD ni sur son runner self-hosted.
@@ -81,12 +83,23 @@ index 0000000..11f748a
 +        working-directory: ${{ runner.temp }}/purchase-probe
 +        run: npx playwright test -c playwright.config.ts
 +
-+      - name: Résultat (artefact pour le rapport unique)
++      - name: Agrégat 24 h pour le rapport unique (parcours-achat.v1)
++        if: ${{ !cancelled() }}
++        env:
++          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
++          REPO: ${{ github.repository }}
++        run: |
++          mkdir -p "$RUNNER_TEMP/purchase-probe-out"
++          bash scripts/ops/purchase-path-probe.sh report "$RUNNER_TEMP/purchase-probe-out/result.json" "$RUNNER_TEMP/purchase-probe-out/parcours-achat.json"
++
++      - name: Résultat et agrégat (artefact lu par le rapport unique)
 +        if: ${{ !cancelled() }}
 +        uses: actions/upload-artifact@v7
 +        with:
 +          name: purchase-path-probe-result
-+          path: ${{ runner.temp }}/purchase-probe-out/result.json
++          path: |
++            ${{ runner.temp }}/purchase-probe-out/result.json
++            ${{ runner.temp }}/purchase-probe-out/parcours-achat.json
 +          retention-days: 3
 +          if-no-files-found: warn
 +
