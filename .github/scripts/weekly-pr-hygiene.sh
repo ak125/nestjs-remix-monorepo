@@ -4,10 +4,20 @@
 #
 # Called by .github/workflows/weekly-pr-hygiene.yml. Requires gh CLI with
 # GH_TOKEN env var and REPO env var (owner/name).
+#
+#   bash .github/scripts/weekly-pr-hygiene.sh            legacy contract: emits `title` +
+#        `body_path` (the unpatched workflow then creates a dated issue, as before).
+#   bash .github/scripts/weekly-pr-hygiene.sh --publish  mandat AM (2026-11-16): updates ONE
+#        standing issue (fixed title) through report-issue-publish.sh; a short comment
+#        only when the weekly focus or a bucket colour changes.
 set -euo pipefail
 
 : "${GH_TOKEN:?missing}"
 : "${REPO:?missing}"
+
+MODE="${1:-}"
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+TITLE="Hygiène hebdomadaire des PR — rapport unique (weekly-pr-hygiene)"
 
 TODAY=$(date -u +%F)
 WEEKNUM=$(date -u +%V)
@@ -152,8 +162,35 @@ Run: ${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY:-$REPO}/action
 Replaces Claude Desktop routine \`trig_01N7BCAuPai8ZRwX88ytNU3i\` (disabled 2026-05-17).
 EOF
 
-# ---- Emit GitHub Actions outputs ----
-{
-  echo "title=📊 Weekly PR hygiene W$WEEKNUM — $TODAY ($FOCUS)"
-  echo "body_path=$OUT"
-} >> "${GITHUB_OUTPUT:-/dev/stdout}"
+# ---- Publish ----
+if [ "$MODE" = "--publish" ]; then
+  # Colours follow the decision tree above (its own thresholds, none added here).
+  c_ge() { if [ "$1" -ge "$2" ]; then echo orange; else echo vert; fi; }
+  STATE=$(jq -cn \
+    --arg focus "$FOCUS" \
+    --arg stale "$(c_ge "$STALE_COUNT" 10)" \
+    --arg conflict "$(c_ge "$CONFLICT_COUNT" 1)" \
+    --arg dependabot "$(c_ge "$DEPABOT_COUNT" 5)" \
+    --arg audit "$(if [ "$AUDIT_FAILS" -gt 0 ]; then echo rouge; else echo vert; fi)" \
+    '{focus: {c: $focus, l: "Focus de la semaine"},
+      stale: {c: $stale, l: "PR inactives depuis 7 j (seuil 10)"},
+      conflict: {c: $conflict, l: "PR en conflit"},
+      dependabot: {c: $dependabot, l: "PR Dependabot bloquées (seuil 5)"},
+      audit: {c: $audit, l: "audit.yml sur main (5 derniers runs)"}}')
+  BODY=$(mktemp)
+  {
+    echo "_Issue unique, corps remplacé chaque lundi par \`weekly-pr-hygiene\` ; un commentaire seulement quand le focus ou une couleur change. Lu le $(date -u +%FT%TZ)._"
+    echo ""
+    cat "$OUT"
+  } > "$BODY"
+  # shellcheck source=report-issue-publish.sh
+  . "$HERE/report-issue-publish.sh"
+  N=$(report_issue_publish "$TITLE" "$BODY" "$STATE" ak125)
+  echo "Issue de rapport : #$N (semaine $WEEKNUM, focus : $FOCUS)"
+  echo "issue=$N" >> "${GITHUB_OUTPUT:-/dev/null}"
+else
+  {
+    echo "title=📊 Weekly PR hygiene W$WEEKNUM — $TODAY ($FOCUS)"
+    echo "body_path=$OUT"
+  } >> "${GITHUB_OUTPUT:-/dev/stdout}"
+fi
