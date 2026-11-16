@@ -22,9 +22,14 @@ name: 🚦 Circuit de fusion
 # le circuit manquent sur la tête. Rendu requis sur `main` (réglage owner), il est le
 # verrou des circuits moyen et élevé ; la fusion automatique n'est armée que sur une
 # tête dont le check passe.
-# Jeton de fusion : GitHub App (secrets MERGE_CIRCUIT_APP_ID / MERGE_CIRCUIT_APP_PRIVATE_KEY),
-# car une fusion faite par GITHUB_TOKEN ne déclenche pas ci.yml (chaîne PREPROD).
-# Secrets absents : le circuit est calculé, étiqueté et vérifié, rien n'est armé
+# Jeton de fusion : App GitHub `automecanik-actions` (mandat AR-6), commune à ce workflow,
+# registry-deps-self-heal.yml et mandat-remise.yml : variable ACTIONS_APP_ID, secret
+# ACTIONS_APP_PRIVATE_KEY de l'environnement `app-actions`, restreint à `main`. Sa clé ne vit que
+# dans cet environnement, jamais sur le DEV : aucun agent ne peut armer une fusion.
+# Une fusion faite par GITHUB_TOKEN ne déclencherait pas ci.yml (chaîne PREPROD).
+# L'armement est un job séparé (« 🔐 Armement »), lancé seulement sur pull_request_target : un
+# événement pull_request_review porte la référence de la PR, que l'environnement refuserait.
+# App absente : le circuit est calculé, étiqueté et vérifié, rien n'est armé
 # (avis visible dans le run), jamais de repli silencieux sur GITHUB_TOKEN.
 
 on:
@@ -135,8 +140,9 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
-          # Les PR des agents sont ouvertes et poussées par l'App automecanik-agents.
-          allowed_bots: "automecanik-agents[bot]"
+          # PR des agents : App automecanik-agents (DEV) ; PR de mandat-remise et du self-heal :
+          # App automecanik-actions (mandat AR-6).
+          allowed_bots: "automecanik-agents[bot],automecanik-actions[bot]"
           claude_args: >-
             --model claude-opus-5-5
             --allowedTools "Read,Grep,Glob,Bash(gh pr view:*),Bash(gh pr diff:*)"
@@ -209,8 +215,9 @@ jobs:
       CIRCUIT: ${{ needs.classify.outputs.circuit }}
       CLAUDE_VERDICT: ${{ needs.claude-review.outputs.verdict }}
       CLAUDE_REASON: ${{ needs.claude-review.outputs.reason }}
-      # `secrets` n'est pas lisible dans un `if:` de step : on expose sa présence seule.
-      HAS_MERGE_APP: ${{ secrets.MERGE_CIRCUIT_APP_ID != '' }}
+      HAS_ACTIONS_APP: ${{ vars.ACTIONS_APP_ID != '' }}
+    outputs:
+      armer: ${{ steps.arm.outputs.armer }}
     steps:
       - name: Verdict de la revue Claude posté sur la PR
         if: needs.classify.outputs.circuit == 'moyen' && needs.claude-review.result != 'skipped'
@@ -259,34 +266,61 @@ jobs:
           esac
           echo "ok=$ok" >> "$GITHUB_OUTPUT"
 
-      - name: Jeton de fusion (GitHub App)
-        id: app
-        if: steps.approval.outputs.ok == 'true' && needs.classify.outputs.circuit != 'eleve' && env.IS_DRAFT != 'true' && env.HAS_MERGE_APP == 'true'
-        uses: actions/create-github-app-token@v3
-        with:
-          app-id: ${{ secrets.MERGE_CIRCUIT_APP_ID }}
-          private-key: ${{ secrets.MERGE_CIRCUIT_APP_PRIVATE_KEY }}
-
-      - name: Armer ou désarmer la fusion automatique
+      - name: Désarmer, ou admettre l'armement
+        id: arm
         env:
           GH_TOKEN: ${{ github.token }}
-          APP_TOKEN: ${{ steps.app.outputs.token }}
           OK: ${{ steps.approval.outputs.ok }}
         run: |
           set -euo pipefail
           if [ "$CIRCUIT" = "eleve" ] || [ "$OK" != "true" ] || [ "$IS_DRAFT" = "true" ]; then
             gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
             echo "Fusion automatique non armée (circuit $CIRCUIT, verdict/approbation=$OK, brouillon=$IS_DRAFT)."
+            echo "armer=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if [ -z "$APP_TOKEN" ]; then
-            echo "::notice::Circuit $CIRCUIT admis, mais MERGE_CIRCUIT_APP_ID absent : fusion automatique non armée."
+          if [ "$HAS_ACTIONS_APP" != "true" ]; then
+            echo "::notice::Circuit $CIRCUIT admis, mais ACTIONS_APP_ID absent : fusion automatique non armée."
+            echo "armer=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          GH_TOKEN="$APP_TOKEN" gh pr merge "$PR" --auto --squash --match-head-commit "$HEAD_SHA"
-          echo "Fusion automatique armée sur $HEAD_SHA (circuit $CIRCUIT)."
+          echo "armer=true" >> "$GITHUB_OUTPUT"
+          echo "Circuit $CIRCUIT admis sur $HEAD_SHA : armement confié au job « 🔐 Armement »."
 
       - name: Verdict du circuit
         env:
           OK: ${{ steps.approval.outputs.ok }}
         run: test "$OK" = "true"
+
+  arm:
+    name: 🔐 Armement de la fusion automatique (App)
+    needs: circuit
+    # Seulement sur pull_request_target : la référence est alors `main`, admise par l'environnement.
+    if: github.event_name == 'pull_request_target' && needs.circuit.outputs.armer == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: app-actions
+    permissions: {}
+    env:
+      GH_REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Jeton d'installation (App automecanik-actions, ce dépôt seul)
+        id: app
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.ACTIONS_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Armer la fusion automatique sur la tête
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          set -euo pipefail
+          gh pr merge "$PR" --auto --squash --match-head-commit "$HEAD_SHA"
+          echo "Fusion automatique armée sur $HEAD_SHA."
