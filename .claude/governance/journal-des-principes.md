@@ -5,7 +5,7 @@
 > déplacé ce qui vit encore.
 > Côté vault, ADR-138 transcrit ces deux décisions : il remplace ADR-015, amende 18 ADR et l'AEC
 > (version 1.3.0), et dit pour chacun ce qui reste valable (PR ak125/governance-vault#422,
-> **ouverte, non fusionnée au 2026-11-16** ; la signature et la fusion reviennent à l'owner).
+> fusionnée le 2026-11-16 à 20:52 UTC).
 
 ## Règle de vigueur
 
@@ -34,6 +34,9 @@ corrigé par PR.
 - **P6.** Toute migration passe squawk avant d'être appliquée. Source : ADR-065.
 - **P7.** `type_id` est une séquence globale monotone, jamais réutilisée. KTYPNR est une clé source,
   jamais un id. Source : ADR-085.
+- **P32.** Le tarif de `pieces_price` n'a qu'un chemin d'écriture : le module pricing gouverné.
+  Aucun prix de vente HT n'est inférieur au prix d'achat HT. Importer, activer et afficher sont
+  trois étapes distinctes. Source : ADR-084 « écriture du tarif » (PR vault #315, jamais fusionnée).
 
 ## Paiement et chaîne logicielle
 
@@ -99,6 +102,9 @@ corrigé par PR.
   Source : ADR-128.
 - **P25.** Chaque routine a un déclencheur unique et un contrat Trigger / Execution / Evidence.
   Aucun orchestrateur maison n'est ajouté. Source : ADR-034, ADR-129.
+- **P33.** Un test de la Definition of Done nomme une mesure qui existe et dit ce qu'elle compare.
+  Ce qui n'est pas mesuré est écrit comme tel dans la preuve, sans être retiré de l'exigence.
+  Source : ADR-134 (PR vault #415, jamais fusionnée).
 
 ## Méthode
 
