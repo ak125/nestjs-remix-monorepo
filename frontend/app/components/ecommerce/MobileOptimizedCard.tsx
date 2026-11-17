@@ -1,13 +1,13 @@
 /**
  * MobileOptimizedCard - Layout mobile-first pour conversion
- * 
+ *
  * Principes mobile-first:
  * - CTA grands et centrés (min 44px touch target)
  * - Espacement optimal (zones de pouce confortables)
  * - Progressive disclosure (infos essentielles d'abord)
  * - Thumb-friendly zones (boutons en bas)
  * - Images optimisées (chargement rapide)
- * 
+ *
  * @example
  * ```tsx
  * <MobileProductCard
@@ -19,8 +19,9 @@
  * ```
  */
 
-import { type ReactNode, useState } from 'react';
-import { type Vehicle } from './SmartHeader';
+import { type ReactNode, useState } from "react";
+import { useShippingPolicy } from "~/hooks/useRootData";
+import { type Vehicle } from "./SmartHeader";
 
 // ============================================================================
 // TYPES
@@ -35,77 +36,77 @@ export interface MobileProductCardProps {
     imageUrl: string;
     price: number;
     originalPrice?: number;
-    stockStatus: 'in-stock' | 'low-stock' | 'out-of-stock';
+    stockStatus: "in-stock" | "low-stock" | "out-of-stock";
     stockQuantity?: number;
     rating?: number;
     reviewCount?: number;
     oemRef?: string;
     isCompatible?: boolean;
   };
-  
+
   /** Véhicule pour compatibilité */
   vehicle?: Vehicle;
-  
+
   /** Callback ajout panier */
   onAddToCart: (productId: string) => void | Promise<void>;
-  
+
   /** Callback voir détails */
   onViewDetails?: (productId: string) => void;
-  
+
   /** Afficher badge compatibilité */
   showCompatibility?: boolean;
-  
+
   /** Layout thumb-friendly (CTA en bas) */
   thumbFriendly?: boolean;
-  
+
   /** Progressive disclosure (masquer détails secondaires) */
   progressive?: boolean;
-  
+
   /** Afficher preuve sociale */
   showSocialProof?: boolean;
-  
+
   /** Variant d'affichage */
-  variant?: 'compact' | 'standard' | 'hero';
+  variant?: "compact" | "standard" | "hero";
 }
 
 export interface MobileCartSummaryProps {
   /** Nombre d'articles */
   itemCount: number;
-  
+
   /** Total panier */
   total: number;
-  
+
   /** Frais de livraison */
   shipping?: number;
-  
+
   /** Callback validation */
   onCheckout: () => void;
-  
+
   /** Sticky en bas */
   sticky?: boolean;
-  
+
   /** Afficher économies */
   showSavings?: boolean;
-  
+
   /** Montant économisé */
   savings?: number;
 }
 
 export interface ThumbZoneProps {
   /** Position de la zone (bas par défaut) */
-  position?: 'bottom' | 'top' | 'both';
-  
+  position?: "bottom" | "top" | "both";
+
   /** Contenu de la zone */
   children: ReactNode;
-  
+
   /** Espacement padding */
-  padding?: 'compact' | 'comfortable' | 'spacious';
-  
+  padding?: "compact" | "comfortable" | "spacious";
+
   /** Sticky */
   sticky?: boolean;
-  
+
   /** Fond */
-  background?: 'white' | 'neutral' | 'transparent';
+  background?: "white" | "neutral" | "transparent";
 }
 
 // ============================================================================
@@ -121,7 +122,7 @@ export function MobileProductCard({
   thumbFriendly = true,
   progressive = true,
   showSocialProof = false,
-  variant = 'standard',
+  variant = "standard",
 }: MobileProductCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -148,23 +149,26 @@ export function MobileProductCard({
   // CALCULS
   // ========================================
   const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100,
+      )
     : 0;
 
-  const hasLowStock = product.stockQuantity !== undefined && product.stockQuantity <= 3;
+  const hasLowStock =
+    product.stockQuantity !== undefined && product.stockQuantity <= 3;
 
   // ========================================
   // CLASSES CSS (MOBILE-FIRST)
   // ========================================
   const cardClasses =
-    variant === 'hero'
-      ? 'flex flex-col bg-white rounded-xl shadow-xl overflow-hidden'
-      : variant === 'compact'
-        ? 'flex flex-col bg-white rounded-lg shadow-md overflow-hidden'
-        : 'flex flex-col bg-white rounded-xl shadow-lg overflow-hidden';
+    variant === "hero"
+      ? "flex flex-col bg-white rounded-xl shadow-xl overflow-hidden"
+      : variant === "compact"
+        ? "flex flex-col bg-white rounded-lg shadow-md overflow-hidden"
+        : "flex flex-col bg-white rounded-xl shadow-lg overflow-hidden";
 
   const imageHeight =
-    variant === 'hero' ? 'h-80' : variant === 'compact' ? 'h-48' : 'h-64';
+    variant === "hero" ? "h-80" : variant === "compact" ? "h-48" : "h-64";
 
   return (
     <article className={cardClasses}>
@@ -178,31 +182,35 @@ export function MobileProductCard({
           className="w-full h-full object-contain p-4"
           loading="lazy"
         />
-        
+
         {/* Badge réduction */}
         {discount > 0 && (
           <div className="absolute top-3 left-3 px-3 py-1.5 bg-red-700 text-white font-heading font-bold text-sm rounded-full shadow-lg">
             -{discount}%
           </div>
         )}
-        
+
         {/* Badge stock faible */}
         {hasLowStock && (
           <div className="absolute top-3 right-3 px-3 py-1.5 bg-amber-500 text-white font-sans font-semibold text-xs rounded-full shadow-lg animate-pulse-soft">
             🔥 Plus que {product.stockQuantity}!
           </div>
         )}
-        
+
         {/* Badge compatibilité */}
         {showCompatibility && product.isCompatible !== undefined && (
-          <div className={`
+          <div
+            className={`
             absolute bottom-3 left-3 right-3 px-4 py-2 rounded-lg shadow-lg
-            ${product.isCompatible
-              ? 'bg-green-600 text-white'
-              : 'bg-red-700 text-white'}
+            ${
+              product.isCompatible
+                ? "bg-green-600 text-white"
+                : "bg-red-700 text-white"
+            }
             font-sans font-semibold text-sm text-center
-          `}>
-            {product.isCompatible ? '✅ Compatible' : '⚠️ Non compatible'}
+          `}
+          >
+            {product.isCompatible ? "✅ Compatible" : "⚠️ Non compatible"}
             {vehicle && (
               <span className="block text-xs opacity-90 mt-0.5">
                 {vehicle.brand} {vehicle.model}
@@ -220,12 +228,12 @@ export function MobileProductCard({
         <p className="text-xs font-sans font-semibold text-gray-400 uppercase tracking-wide">
           {product.brand}
         </p>
-        
+
         {/* Nom produit */}
         <h3 className="text-lg font-heading font-bold text-gray-900 line-clamp-2">
           {product.name}
         </h3>
-        
+
         {/* Prix */}
         <div className="flex items-baseline gap-2">
           <span className="text-2xl font-heading font-bold text-red-500">
@@ -237,45 +245,52 @@ export function MobileProductCard({
             </span>
           )}
         </div>
-        
+
         {/* Rating + Reviews (progressive disclosure) */}
-        {!progressive || isExpanded ? (
-          showSocialProof && product.rating && (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <span
-                    key={i}
-                    className={i < Math.floor(product.rating!) ? 'text-amber-500' : 'text-gray-300'}
-                  >
-                    ⭐
-                  </span>
-                ))}
-              </div>
-              <span className="text-sm font-sans text-gray-500">
-                {product.rating.toFixed(1)}
-              </span>
-              {product.reviewCount && (
-                <span className="text-xs font-sans text-gray-400">
-                  ({product.reviewCount} avis)
+        {!progressive || isExpanded
+          ? showSocialProof &&
+            product.rating && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <span
+                      key={i}
+                      className={
+                        i < Math.floor(product.rating!)
+                          ? "text-amber-500"
+                          : "text-gray-300"
+                      }
+                    >
+                      ⭐
+                    </span>
+                  ))}
+                </div>
+                <span className="text-sm font-sans text-gray-500">
+                  {product.rating.toFixed(1)}
                 </span>
-              )}
-            </div>
-          )
-        ) : null}
-        
+                {product.reviewCount && (
+                  <span className="text-xs font-sans text-gray-400">
+                    ({product.reviewCount} avis)
+                  </span>
+                )}
+              </div>
+            )
+          : null}
+
         {/* Référence OEM (progressive disclosure) */}
-        {!progressive || isExpanded ? (
-          product.oemRef && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-md">
-              <span className="text-xs font-sans text-gray-400">Réf. OEM</span>
-              <span className="text-sm font-mono font-semibold text-blue-700">
-                {product.oemRef}
-              </span>
-            </div>
-          )
-        ) : null}
-        
+        {!progressive || isExpanded
+          ? product.oemRef && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-md">
+                <span className="text-xs font-sans text-gray-400">
+                  Réf. OEM
+                </span>
+                <span className="text-sm font-mono font-semibold text-blue-700">
+                  {product.oemRef}
+                </span>
+              </div>
+            )
+          : null}
+
         {/* Bouton "Voir plus" (progressive disclosure) */}
         {progressive && !isExpanded && (
           <button
@@ -296,7 +311,7 @@ export function MobileProductCard({
             {/* CTA Principal - GRAND (min 56px) */}
             <button
               onClick={handleAddToCart}
-              disabled={product.stockStatus === 'out-of-stock' || isAdding}
+              disabled={product.stockStatus === "out-of-stock" || isAdding}
               className={`
                 w-full min-h-[56px] px-6 py-4 rounded-lg
                 font-heading font-bold text-lg text-white
@@ -314,8 +329,8 @@ export function MobileProductCard({
                   <LoadingSpinner />
                   <span>Ajout...</span>
                 </>
-              ) : product.stockStatus === 'out-of-stock' ? (
-                'Rupture de stock'
+              ) : product.stockStatus === "out-of-stock" ? (
+                "Rupture de stock"
               ) : (
                 <>
                   <span>🛒</span>
@@ -323,7 +338,7 @@ export function MobileProductCard({
                 </>
               )}
             </button>
-            
+
             {/* CTA Secondaire - Détails */}
             {onViewDetails && (
               <button
@@ -347,10 +362,14 @@ export function MobileProductCard({
         <div className="p-4 border-t border-gray-200">
           <button
             onClick={handleAddToCart}
-            disabled={product.stockStatus === 'out-of-stock' || isAdding}
+            disabled={product.stockStatus === "out-of-stock" || isAdding}
             className="w-full px-6 py-3 bg-red-500 text-white font-heading font-bold rounded-lg hover:bg-red-600 active:bg-red-700 disabled:opacity-50 transition-colors"
           >
-            {isAdding ? 'Ajout...' : product.stockStatus === 'out-of-stock' ? 'Rupture' : 'Ajouter'}
+            {isAdding
+              ? "Ajout..."
+              : product.stockStatus === "out-of-stock"
+                ? "Rupture"
+                : "Ajouter"}
           </button>
         </div>
       )}
@@ -372,13 +391,16 @@ export function MobileCartSummary({
   savings = 0,
 }: MobileCartSummaryProps) {
   const grandTotal = total + shipping;
-  const freeShippingThreshold = 50;
-  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - total);
+  // Seuil servi par le backend ; inconnu = aucune promesse affichée.
+  const shippingPolicy = useShippingPolicy();
+  const remainingForFreeShipping = shippingPolicy
+    ? Math.max(0, shippingPolicy.freeShippingThresholdTTC - total)
+    : 0;
 
   return (
     <div
       className={`
-        ${sticky ? 'fixed bottom-0 left-0 right-0 z-40' : ''}
+        ${sticky ? "fixed bottom-0 left-0 right-0 z-40" : ""}
         bg-white border-t-2 border-gray-200 shadow-2xl
       `}
     >
@@ -387,16 +409,20 @@ export function MobileCartSummary({
         {remainingForFreeShipping > 0 && (
           <div className="bg-amber-50 px-3 py-2 rounded">
             <p className="text-sm font-sans text-gray-500">
-              Plus que <span className="font-bold text-amber-500">{remainingForFreeShipping.toFixed(2)} €</span> pour la livraison gratuite! 🚚
+              Plus que{" "}
+              <span className="font-bold text-amber-500">
+                {remainingForFreeShipping.toFixed(2)} €
+              </span>{" "}
+              pour la livraison gratuite! 🚚
             </p>
           </div>
         )}
-        
+
         {/* Totaux */}
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-0.5">
             <span className="text-sm font-sans text-gray-400">
-              {itemCount} article{itemCount > 1 ? 's' : ''}
+              {itemCount} article{itemCount > 1 ? "s" : ""}
             </span>
             {showSavings && savings > 0 && (
               <span className="text-xs font-sans font-semibold text-green-600">
@@ -404,7 +430,7 @@ export function MobileCartSummary({
               </span>
             )}
           </div>
-          
+
           <div className="text-right">
             <p className="text-2xl font-heading font-bold text-gray-900">
               {grandTotal.toFixed(2)} €
@@ -416,7 +442,7 @@ export function MobileCartSummary({
             )}
           </div>
         </div>
-        
+
         {/* CTA Checkout - TRÈS GRAND (min 64px) */}
         <button
           onClick={onCheckout}
@@ -445,34 +471,38 @@ export function MobileCartSummary({
 // ============================================================================
 
 export function ThumbZone({
-  position = 'bottom',
+  position = "bottom",
   children,
-  padding = 'comfortable',
+  padding = "comfortable",
   sticky = false,
-  background = 'white',
+  background = "white",
 }: ThumbZoneProps) {
   const paddingClasses = {
-    compact: 'p-3',
-    comfortable: 'p-4',
-    spacious: 'p-6',
+    compact: "p-3",
+    comfortable: "p-4",
+    spacious: "p-6",
   };
 
   const backgroundClasses = {
-    white: 'bg-white',
-    neutral: 'bg-slate-50',
-    transparent: 'bg-transparent',
+    white: "bg-white",
+    neutral: "bg-slate-50",
+    transparent: "bg-transparent",
   };
 
   const positionClasses = sticky
-    ? position === 'bottom'
-      ? 'fixed bottom-0 left-0 right-0 z-30'
-      : position === 'top'
-        ? 'fixed top-0 left-0 right-0 z-30'
-        : ''
-    : '';
+    ? position === "bottom"
+      ? "fixed bottom-0 left-0 right-0 z-30"
+      : position === "top"
+        ? "fixed top-0 left-0 right-0 z-30"
+        : ""
+    : "";
 
   const borderClasses =
-    position === 'bottom' ? 'border-t border-gray-200' : position === 'top' ? 'border-b border-gray-200' : '';
+    position === "bottom"
+      ? "border-t border-gray-200"
+      : position === "top"
+        ? "border-b border-gray-200"
+        : "";
 
   return (
     <div
@@ -481,7 +511,7 @@ export function ThumbZone({
         ${backgroundClasses[background]}
         ${positionClasses}
         ${borderClasses}
-        ${sticky ? 'shadow-2xl' : ''}
+        ${sticky ? "shadow-2xl" : ""}
       `}
     >
       {children}
@@ -494,10 +524,10 @@ export function ThumbZone({
 // ============================================================================
 
 interface MobileProductListProps {
-  products: MobileProductCardProps['product'][];
+  products: MobileProductCardProps["product"][];
   onAddToCart: (productId: string) => void;
   vehicle?: Vehicle;
-  spacing?: 'compact' | 'comfortable';
+  spacing?: "compact" | "comfortable";
   showCompatibility?: boolean;
 }
 
@@ -505,10 +535,10 @@ export function MobileProductList({
   products,
   onAddToCart,
   vehicle,
-  spacing = 'comfortable',
+  spacing = "comfortable",
   showCompatibility = true,
 }: MobileProductListProps) {
-  const gapClasses = spacing === 'compact' ? 'gap-4' : 'gap-6';
+  const gapClasses = spacing === "compact" ? "gap-4" : "gap-6";
 
   return (
     <div className={`flex flex-col ${gapClasses} pb-24`}>
@@ -533,8 +563,20 @@ export function MobileProductList({
 
 function LoadingSpinner() {
   return (
-    <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <svg
+      className="animate-spin w-5 h-5"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
       <path
         className="opacity-75"
         fill="currentColor"

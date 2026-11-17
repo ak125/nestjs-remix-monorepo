@@ -55,7 +55,7 @@ const location = {
 };
 
 describe("buildPiecesVehicleMeta — soft-404 branch", () => {
-  const meta = buildPiecesVehicleMeta(noProductsFixture, location);
+  const meta = buildPiecesVehicleMeta(noProductsFixture, location, null, null);
 
   it("inclut robots: noindex, follow", () => {
     const robotsEntry = meta.find((m: any) => m.name === "robots");
@@ -124,6 +124,8 @@ describe("buildPiecesVehicleMeta — og:image (canon image-matrix-v1, TRANSACTIO
     const meta = buildPiecesVehicleMeta(
       productPage("plaquette-de-frein.webp"),
       location,
+      null,
+      null,
     );
     expect(og(meta, "og:image")).toBe(
       `https://www.automecanik.com/imgproxy/rs:fit:1200:630/q:85/plain/${storage}/uploads/articles/gammes-produits/catalogue/plaquette-de-frein.webp@webp`,
@@ -136,14 +138,24 @@ describe("buildPiecesVehicleMeta — og:image (canon image-matrix-v1, TRANSACTIO
   });
 
   it("sans vignette : asset statique de la classe TRANSACTION", () => {
-    const meta = buildPiecesVehicleMeta(productPage(null), location);
+    const meta = buildPiecesVehicleMeta(
+      productPage(null),
+      location,
+      null,
+      null,
+    );
     expect(og(meta, "og:image")).toBe(
       "https://www.automecanik.com/images/og/transaction.webp",
     );
   });
 
   it("page alternatives (noindex) : pas d'og:image ajoutée", () => {
-    const meta = buildPiecesVehicleMeta(noProductsFixture, location);
+    const meta = buildPiecesVehicleMeta(
+      noProductsFixture,
+      location,
+      null,
+      null,
+    );
     expect(og(meta, "og:image")).toBeUndefined();
   });
 });

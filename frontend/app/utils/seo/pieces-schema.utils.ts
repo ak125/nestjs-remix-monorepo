@@ -13,11 +13,15 @@ import {
   isValidImagePath,
   resolvePartImagePath,
 } from "../image-optimizer";
+import {
+  type ReturnPolicyResult,
+  type ShippingPolicyResult,
+} from "../remix-application-port";
 import { isSellable } from "../stock.utils";
 import {
-  DEFAULT_RETURN_POLICY_FR,
   DEFAULT_SELLER,
-  DEFAULT_SHIPPING_DETAILS_FR,
+  buildMerchantReturnPolicy,
+  buildMetropolitanShippingDetails,
   computePriceValidUntil,
 } from "./pieces-schema-commerce.constants";
 
@@ -52,6 +56,17 @@ interface SchemaParams {
     PG_ID: number;
   }>;
   canonicalUrl: string;
+  /**
+   * Règle de port reçue du backend par le root loader. `null` si elle n'a pas
+   * pu être lue : l'offre ne déclare alors aucun port plutôt qu'un montant
+   * inventé.
+   */
+  shippingPolicy: ShippingPolicyResult | null;
+  /**
+   * Politique de retour reçue du backend par le root loader. `null` si elle n'a
+   * pas pu être lue : aucune offre ne déclare alors de politique de retour.
+   */
+  returnPolicy: ReturnPolicyResult | null;
 }
 
 /**
@@ -105,9 +120,11 @@ function buildProductSchema(
   oemRefsArray: string[],
   relatedProducts: Array<{ "@type": string; name: string; url: string }>,
 ) {
-  const { vehicle, gamme, seo, canonicalUrl } = params;
+  const { vehicle, gamme, seo, canonicalUrl, shippingPolicy, returnPolicy } =
+    params;
   const firstPiece = sellablePieces[0];
   const prices = sellablePieces.map((piece) => piece.price);
+  const lowPrice = Math.min(...prices);
 
   return {
     "@type": "Product",
@@ -134,13 +151,20 @@ function buildProductSchema(
     offers: {
       "@type": "AggregateOffer",
       priceCurrency: "EUR",
-      lowPrice: Math.min(...prices),
+      lowPrice,
       highPrice: Math.max(...prices),
       offerCount: sellablePieces.length,
       priceValidUntil: computePriceValidUntil(),
       seller: DEFAULT_SELLER,
-      shippingDetails: DEFAULT_SHIPPING_DETAILS_FR,
-      hasMerchantReturnPolicy: DEFAULT_RETURN_POLICY_FR,
+      ...(shippingPolicy && {
+        shippingDetails: buildMetropolitanShippingDetails(
+          shippingPolicy,
+          lowPrice,
+        ),
+      }),
+      ...(returnPolicy && {
+        hasMerchantReturnPolicy: buildMerchantReturnPolicy(returnPolicy),
+      }),
     },
     additionalProperty: [
       ...oemRefsArray.slice(0, 15).map((ref, i) => ({
@@ -154,7 +178,13 @@ function buildProductSchema(
 }
 
 /**
- * Génère le schéma ItemList pour les produits achetables
+ * Génère le schéma ItemList pour les produits achetables.
+ *
+ * Chaque article porte un `Offer` : ce sont ces Product/Offer que Google lit
+ * comme fiches de marchand (l'agrégat du Product principal, `AggregateOffer`,
+ * n'est qu'un extrait de produit). Chaque offre déclare donc son port, calculé
+ * sur son propre prix par la règle reçue du backend, et la politique de retour
+ * reçue du backend (mandat BJ).
  */
 function buildItemListSchema(
   sellablePieces: PieceData[],
@@ -162,6 +192,8 @@ function buildItemListSchema(
   vehicle: VehicleData,
   count: number,
   canonicalUrl: string,
+  shippingPolicy: ShippingPolicyResult | null,
+  returnPolicy: ReturnPolicyResult | null,
 ) {
   return {
     "@type": "ItemList",
@@ -193,6 +225,15 @@ function buildItemListSchema(
             "@type": "Offer",
             price: piece.price,
             priceCurrency: "EUR",
+            ...(shippingPolicy && {
+              shippingDetails: buildMetropolitanShippingDetails(
+                shippingPolicy,
+                piece.price,
+              ),
+            }),
+            ...(returnPolicy && {
+              hasMerchantReturnPolicy: buildMerchantReturnPolicy(returnPolicy),
+            }),
           },
           isAccessoryOrSparePartFor: { "@id": `${canonicalUrl}#vehicle` },
         },
@@ -323,6 +364,8 @@ export function buildPiecesProductSchema(params: SchemaParams) {
               vehicle,
               count,
               canonicalUrl,
+              params.shippingPolicy,
+              params.returnPolicy,
             ),
           ]
         : []),

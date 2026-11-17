@@ -10,6 +10,7 @@ import type {
   BrandRuleSeverity,
   SocialChannel,
 } from '../interfaces/marketing-hub.interfaces';
+import { freeShippingWording } from '../../cart';
 
 interface BrandRuleSeed {
   rule_type: BrandRuleType;
@@ -310,7 +311,7 @@ export const BRAND_RULES_SEED: BrandRuleSeed[] = [
     channel: null,
     rule_key: 'delivery_claims',
     rule_value: {
-      exact_wording: 'Livraison gratuite des 150\u20ac',
+      exact_wording: freeShippingWording(),
       forbidden_variations: [
         'Livraison offerte',
         'Livraison gratuite sans minimum',

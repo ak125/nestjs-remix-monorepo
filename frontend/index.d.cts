@@ -19,6 +19,10 @@ declare module '@fafa/frontend' {
 		import('./app/utils/remix-application-port').RemixApplicationPort;
 	export type PortActor =
 		import('./app/utils/remix-application-port').PortActor;
+	export type ShippingPolicyResult =
+		import('./app/utils/remix-application-port').ShippingPolicyResult;
+	export type ReturnPolicyResult =
+		import('./app/utils/remix-application-port').ReturnPolicyResult;
 	export type HomepageFamiliesResult =
 		import('./app/utils/remix-application-port').HomepageFamiliesResult;
 	export type HomepageBelowFoldResult =

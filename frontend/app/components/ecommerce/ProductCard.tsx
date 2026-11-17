@@ -23,6 +23,8 @@
  */
 
 import { useState, memo, useCallback } from "react";
+import { formatShippingAmount } from "~/components/cart/cart-utils";
+import { useShippingPolicy } from "~/hooks/useRootData";
 import { logger } from "~/utils/logger";
 
 // Types
@@ -87,6 +89,8 @@ export const ProductCard = memo(function ProductCard({
   showCompatibility = true,
   compactMode = false,
 }: ProductCardProps) {
+  // Seuil servi par le backend ; inconnu = aucune promesse affichée.
+  const shippingPolicy = useShippingPolicy();
   const [isImageZoomed, setIsImageZoomed] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
@@ -379,7 +383,9 @@ export const ProductCard = memo(function ProductCard({
 
           {/* TVA indication */}
           <p className="font-sans text-xs text-neutral-500 mt-1">
-            TTC • Livraison gratuite dès 50€
+            TTC
+            {shippingPolicy &&
+              ` • Livraison gratuite dès ${formatShippingAmount(shippingPolicy.freeShippingThresholdTTC)}`}
           </p>
         </div>
 

@@ -8,6 +8,8 @@ import { Navbar } from "~/components/Navbar";
 vi.mock("~/hooks/useRootData", () => ({
   useOptionalUser: () => null,
   useRootCart: () => null,
+  useShippingPolicy: () => null,
+  useReturnPolicy: () => null,
 }));
 vi.mock("~/components/navbar/CartSidebarSimple", () => ({
   CartSidebarSimple: () => null,

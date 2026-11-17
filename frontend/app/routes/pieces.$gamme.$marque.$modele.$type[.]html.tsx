@@ -24,6 +24,7 @@ import {
   type NoProductsData,
 } from "~/components/pieces/NoProductsAlternatives";
 import { PiecesVehicleContent } from "~/components/pieces/PiecesVehicleContent";
+import { type loader as rootLoader } from "~/root";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -61,8 +62,22 @@ export const headers = buildCacheHeaders(
 // META - SEO (Schema.org genere par composant Breadcrumbs)
 // ========================================
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) =>
-  buildPiecesVehicleMeta(data, location);
+// Le port et la politique de retour déclarés dans le JSON-LD viennent des règles
+// servies par le root loader (sources uniques backend, mandat BJ) ; `null` si
+// elles n'ont pas pu être lues.
+export const meta: MetaFunction<typeof loader, { root: typeof rootLoader }> = ({
+  loaderData: data,
+  location,
+  matches,
+}) => {
+  const root = matches.find((m) => m?.id === "root")?.loaderData;
+  return buildPiecesVehicleMeta(
+    data,
+    location,
+    root?.shippingPolicy ?? null,
+    root?.returnPolicy ?? null,
+  );
+};
 
 // ========================================
 // COMPOSANT PRINCIPAL

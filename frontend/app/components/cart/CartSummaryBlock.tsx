@@ -15,8 +15,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { useShippingPolicy } from "~/hooks/useRootData";
 import { type CartSummary as CartSummaryType } from "~/schemas/cart.schemas";
-import { formatPrice, FREE_SHIPPING_THRESHOLD } from "./cart-utils";
+import { formatPrice } from "./cart-utils";
 
 export function CartSummaryBlock({
   summary,
@@ -34,7 +35,10 @@ export function CartSummaryBlock({
       summary.tax_amount +
       summary.shipping_cost -
       (summary.discount_amount || 0);
-  const isEligibleFreeShipping = summary.subtotal >= FREE_SHIPPING_THRESHOLD;
+  const shippingPolicy = useShippingPolicy();
+  const isEligibleFreeShipping =
+    shippingPolicy !== null &&
+    summary.subtotal >= shippingPolicy.freeShippingThresholdTTC;
   const isLite =
     summary.total_items <= 3 &&
     !(summary.consigne_total > 0) &&
@@ -114,10 +118,14 @@ export function CartSummaryBlock({
             <span className="font-medium">
               {formatPrice(summary.shipping_cost)}
             </span>
+          ) : shippingPolicy ? (
+            <span className="text-sm text-slate-400 italic">
+              Offerte d{"\u00e8"}s{" "}
+              {formatPrice(shippingPolicy.freeShippingThresholdTTC)}
+            </span>
           ) : (
             <span className="text-sm text-slate-400 italic">
-              Offerte d{"\u00e8"}s 150{"\u00a0"}
-              {"\u20ac"}
+              Calcul{"\u00e9"}e avant le paiement
             </span>
           )}
         </div>

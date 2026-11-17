@@ -4,8 +4,19 @@
 
 import { safeLocalStorage } from "~/utils/safe-storage";
 
-export const FREE_SHIPPING_THRESHOLD = 150;
 export const MAX_CART_QUANTITY = 99;
+
+/**
+ * Montant d'un seuil ou d'un forfait de port, collé au symbole : 100 → « 100€ »,
+ * 9.9 → « 9,90€ ». La valeur vient de `useShippingPolicy()` (servie par le
+ * backend) : aucun seuil ni forfait n'est écrit dans le frontend.
+ */
+export function formatShippingAmount(amount: number): string {
+  const text = Number.isInteger(amount)
+    ? String(amount)
+    : amount.toFixed(2).replace(".", ",");
+  return `${text}\u20ac`;
+}
 
 export function formatPrice(price: number): string {
   return new Intl.NumberFormat("fr-FR", {

@@ -1,19 +1,31 @@
 /**
- * ShippingCalculatorService — Calcul frais de port basé sur le poids réel
+ * ShippingCalculatorService — Calcul des frais de port
  *
- * Grilles tarifaires Colissimo 2026 stockées en DB :
- *   - ___xtr_delivery_ape_france (France métro + Monaco + Andorre)
+ * France métropolitaine (zone `france`) : forfait et seuil de gratuité de la
+ * politique de port (`../config/shipping-policy.config.ts`, source unique), quel
+ * que soit le poids — décision de Marwane du 17 novembre 2026 (mandat BJ).
+ *
+ * Corse et DOM-TOM : grilles tarifaires Colissimo 2026 au poids, stockées en DB.
+ *   - ___xtr_delivery_ape_france (France métro + Monaco + Andorre) — ne fixe plus
+ *     le port de la métropole ; reste chargée parce qu'elle sert de repli aux
+ *     autres zones tant que leur propre grille n'est pas en mémoire
  *   - ___xtr_delivery_ape_corse (Corse — mêmes tarifs France métro)
  *   - ___xtr_delivery_ape_domtom1 (DOM-TOM zone OM1)
  *   - ___xtr_delivery_ape_domtom2 (DOM-TOM zone OM2)
  *
  * Poids réel des produits via PiecePriceDataService (autorité unique de la ligne
  * tarifaire et de la conversion GRM/KGM) — ce service ne requête plus pieces_price
- * Seuil livraison gratuite : 150€ TTC
+ * Seuils de gratuité et replis : politique de port, aucune valeur ici.
  */
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { PiecePriceDataService } from '@database/services/piece-price-data.service';
+import {
+  SHIPPING_POLICY,
+  metropolitanShippingFeeTTC,
+  type ShippingZone,
+  type WeightGridShippingRule,
+} from '../config/shipping-policy.config';
 
 interface ShippingTier {
   minWeightG: number;
@@ -27,7 +39,35 @@ export interface CartItemWeight {
   quantity: number;
 }
 
-export type ShippingZone = 'france' | 'corse' | 'domtom1' | 'domtom2';
+export type { ShippingZone };
+
+/** Taux de TVA du port, pour le montant HT du palier de repli (15,90 → 13,25). */
+const SHIPPING_VAT_RATE = 0.2;
+
+/** Palier unique appliqué à une zone dont la grille ne peut pas être lue. */
+function gridUnavailableTier(rule: WeightGridShippingRule): ShippingTier[] {
+  return [
+    {
+      minWeightG: 0,
+      maxWeightG: 999999,
+      feeTTC: rule.gridUnavailableFeeTTC,
+      feeHT:
+        Math.round(
+          (rule.gridUnavailableFeeTTC / (1 + SHIPPING_VAT_RATE)) * 100,
+        ) / 100,
+    },
+  ];
+}
+
+/**
+ * Règle « grille au poids » appliquée à une zone. La métropole est au forfait et
+ * ne passe par la grille que comme repli des autres zones : son palier de repli
+ * reprend alors la valeur commune aux zones à grille.
+ */
+function weightGridRule(zone: ShippingZone): WeightGridShippingRule {
+  const rule = SHIPPING_POLICY[zone];
+  return rule.mode === 'weight_grid' ? rule : SHIPPING_POLICY.corse;
+}
 
 const ZONE_TABLES: Record<ShippingZone, string> = {
   france: '___xtr_delivery_ape_france',
@@ -44,7 +84,6 @@ export class ShippingCalculatorService
   protected readonly logger = new Logger(ShippingCalculatorService.name);
 
   private zoneTiers = new Map<ShippingZone, ShippingTier[]>();
-  private readonly FREE_SHIPPING_THRESHOLD = 150;
   private readonly DEFAULT_ITEM_WEIGHT_G = 1000; // 1kg par défaut si poids inconnu
   private readonly MAX_SINGLE_PACKAGE_G = 30000; // Colissimo max 30kg
 
@@ -85,9 +124,8 @@ export class ShippingCalculatorService
    * Préfixes log distincts → Loki LogQL queries séparées, alerting differential.
    */
   private async loadAllZoneTiers(): Promise<void> {
-    const fallbackTier: ShippingTier[] = [
-      { minWeightG: 0, maxWeightG: 999999, feeTTC: 15.9, feeHT: 13.25 },
-    ];
+    const fallbackTier = (zone: string): ShippingTier[] =>
+      gridUnavailableTier(weightGridRule(zone as ShippingZone));
 
     // Fallback environnemental — décision READ_ONLY explicite, pas un drift
     if (this.isReadOnlyMode) {
@@ -99,7 +137,7 @@ export class ShippingCalculatorService
         '[READ_ONLY] Shipping tiers forced to hardcoded fallback — DB tables RLS service_role-only (ADR-021 + ADR-028 Option D)',
       );
       for (const zone of Object.keys(ZONE_TABLES)) {
-        this.zoneTiers.set(zone as ShippingZone, fallbackTier);
+        this.zoneTiers.set(zone as ShippingZone, fallbackTier(zone));
       }
       return;
     }
@@ -116,7 +154,7 @@ export class ShippingCalculatorService
           this.logger.warn(
             `[RLS BLOCKED] Zone ${zone}: impossible de charger (${error?.message || 'table vide'}). Fallback.`,
           );
-          this.zoneTiers.set(zone as ShippingZone, fallbackTier);
+          this.zoneTiers.set(zone as ShippingZone, fallbackTier(zone));
           continue;
         }
 
@@ -132,7 +170,7 @@ export class ShippingCalculatorService
         this.logger.error(
           `Zone ${zone}: erreur chargement: ${err instanceof Error ? err.message : String(err)}`,
         );
-        this.zoneTiers.set(zone as ShippingZone, fallbackTier);
+        this.zoneTiers.set(zone as ShippingZone, fallbackTier(zone));
       }
     }
 
@@ -172,15 +210,30 @@ export class ShippingCalculatorService
   }
 
   /**
-   * Calculer les frais de port selon le poids total, le subtotal et la zone
+   * Calculer les frais de port selon le poids total, le subtotal et la zone.
+   *
+   * Zone `france` : forfait sous le seuil, 0 à partir du seuil ; le poids ne
+   * change pas le montant (ni palier, ni multi-colis, ni repli de grille).
+   * Autres zones : gratuité au seuil de la zone, sinon grille au poids.
    */
   calculateByWeight(
     totalWeightG: number,
     subtotal: number,
     zone: ShippingZone = 'france',
   ): number {
-    // Livraison gratuite >= 150€
-    if (subtotal >= this.FREE_SHIPPING_THRESHOLD) {
+    const rule = SHIPPING_POLICY[zone];
+
+    if (rule.mode === 'flat') {
+      // Panier vide : ni article (poids nul) ni montant. Un panier dont le poids
+      // total vaut 0 mais qui a un montant paie le forfait.
+      if (totalWeightG <= 0 && subtotal <= 0) {
+        return 0;
+      }
+      return metropolitanShippingFeeTTC(subtotal);
+    }
+
+    // Livraison gratuite à partir du seuil de la zone
+    if (subtotal >= rule.freeFromSubtotalTTC) {
       return 0;
     }
 
@@ -214,7 +267,8 @@ export class ShippingCalculatorService
     const tiers = this.zoneTiers.get(zone) || this.zoneTiers.get('france');
 
     if (!tiers || tiers.length === 0) {
-      return 15.9; // Fallback absolu
+      // Aucune grille en mémoire (chargement pas encore terminé).
+      return weightGridRule(zone).gridUnavailableFeeTTC;
     }
 
     for (const tier of tiers) {

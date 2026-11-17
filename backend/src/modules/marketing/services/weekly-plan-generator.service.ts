@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MarketingHubDataService } from './marketing-hub-data.service';
 import { MarketingDataService } from './marketing-data.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
+import { SHIPPING_POLICY } from '../../cart';
 import type {
   WeeklyPlan,
   DaySlot,
@@ -188,7 +189,7 @@ export class WeeklyPlanGeneratorService {
       case 'confiance':
         return 'Chiffres cles + reviews clients verifiees';
       case 'promo':
-        return 'Offre en cours + livraison gratuite des 150EUR';
+        return `Offre en cours + livraison gratuite d\u00e8s ${SHIPPING_POLICY.france.freeFromSubtotalTTC}EUR`;
     }
   }
 

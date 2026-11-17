@@ -1,4 +1,5 @@
 import { ContentType, Tone } from '../dto/generate-content.dto';
+import { freeShippingWording } from '../../cart';
 
 export interface PromptTemplate {
   system: string;
@@ -435,7 +436,7 @@ REGLES STRICTES :
 - Francais uniquement, pas d'anglicismes
 - JAMAIS mentionner de concurrents ni de claims non prouves
 - Si prix : uniquement si source DB fournie
-- Livraison : "Livraison gratuite des 150€" (formulation exacte)
+- Livraison : "${freeShippingWording()}" (formulation exacte)
 SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"carrousel|post|reel|story","visual_brief":"..."}`,
     user: (ctx) => {
       const brief = ctx.brief || {};
@@ -471,7 +472,7 @@ REGLES STRICTES :
 - Francais uniquement
 - JAMAIS mentionner de concurrents ni de claims non prouves
 - Si prix : uniquement si source DB fournie
-- Livraison : "Livraison gratuite des 150€" (formulation exacte)
+- Livraison : "${freeShippingWording()}" (formulation exacte)
 SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"post|story|reel","link_preview":true}`,
     user: (ctx) => {
       const brief = ctx.brief || {};
@@ -505,7 +506,7 @@ REGLES STRICTES :
 - Video longue (5-15min) : Hook → Chapitres → Outro + CTA
 - Francais uniquement
 - JAMAIS mentionner de concurrents
-- Livraison : "Livraison gratuite des 150€" (formulation exacte)
+- Livraison : "${freeShippingWording()}" (formulation exacte)
 SORTIE : JSON {"title":"...","description":"...","tags":["automecanik","pieces auto",...],"format":"short|video_long","hook_script":"...","thumbnail_brief":"..."}`,
     user: (ctx) => {
       const brief = ctx.brief || {};

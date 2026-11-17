@@ -1,7 +1,8 @@
 import { HelpCircle, Search, Shield, Stethoscope, Truck } from "lucide-react";
 import { Suspense } from "react";
 import { Await } from "react-router";
-import { FAQ_DATA } from "~/components/home/constants";
+import { buildFaqFallback } from "~/components/home/constants";
+import { useShippingPolicy } from "~/hooks/useRootData";
 
 function getFaqIcon(question: string) {
   const q = question.toLowerCase();
@@ -48,6 +49,8 @@ export default function FaqSection({
 }: {
   faqsPromise: Promise<Array<{ id: string; question: string; answer: string }>>;
 }) {
+  const faqFallback = buildFaqFallback(useShippingPolicy());
+
   return (
     <section className="py-7 lg:py-10 bg-slate-50">
       <div className="px-5 lg:px-8 max-w-[1280px] mx-auto">
@@ -60,7 +63,7 @@ export default function FaqSection({
           </div>
         </div>
 
-        <Suspense fallback={<FaqCards items={FAQ_DATA} />}>
+        <Suspense fallback={<FaqCards items={faqFallback} />}>
           <Await resolve={faqsPromise} errorElement={null}>
             {(resolvedFaqs) => {
               const faqList =
@@ -69,7 +72,7 @@ export default function FaqSection({
                       q: f.question,
                       a: f.answer,
                     }))
-                  : FAQ_DATA;
+                  : faqFallback;
               return <FaqCards items={faqList} />;
             }}
           </Await>

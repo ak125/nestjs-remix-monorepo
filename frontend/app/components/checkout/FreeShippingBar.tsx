@@ -1,6 +1,5 @@
 import { Truck } from "lucide-react";
-
-const FREE_SHIPPING_THRESHOLD = 150;
+import { useShippingPolicy } from "~/hooks/useRootData";
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("fr-FR", {
@@ -11,13 +10,14 @@ function formatPrice(price: number): string {
 
 interface Props {
   subtotal: number;
-  threshold?: number;
 }
 
-export function FreeShippingBar({
-  subtotal,
-  threshold = FREE_SHIPPING_THRESHOLD,
-}: Props) {
+export function FreeShippingBar({ subtotal }: Props) {
+  const shippingPolicy = useShippingPolicy();
+  // Seuil inconnu : aucune promesse affichée.
+  if (!shippingPolicy) return null;
+
+  const threshold = shippingPolicy.freeShippingThresholdTTC;
   const progress = Math.min((subtotal / threshold) * 100, 100);
   const remaining = Math.max(threshold - subtotal, 0);
   const isEligible = subtotal >= threshold;

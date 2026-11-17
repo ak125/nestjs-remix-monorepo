@@ -19,6 +19,8 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { formatShippingAmount } from "~/components/cart/cart-utils";
+import { useShippingPolicy } from "~/hooks/useRootData";
 import {
   calculateDeliveryETA,
   formatDeliveryText,
@@ -78,21 +80,7 @@ export function QuickCartDrawer({
   onUpdateQuantity,
   onRemoveItem,
   onCheckout,
-  deliveryOptions = [
-    {
-      id: "standard",
-      name: "Standard",
-      price: 4.9,
-      estimatedDays: "3-5 jours",
-    },
-    { id: "express", name: "Express", price: 9.9, estimatedDays: "1-2 jours" },
-    {
-      id: "pickup",
-      name: "Retrait en magasin",
-      price: 0,
-      estimatedDays: "Immédiat",
-    },
-  ],
+  deliveryOptions: deliveryOptionsProp,
   selectedDeliveryId = "standard",
   onSelectDelivery,
   savedVehicle,
@@ -130,17 +118,34 @@ export function QuickCartDrawer({
     0,
   );
 
-  // 🚚 Seuil de livraison gratuite
-  const FREE_SHIPPING_THRESHOLD = 50;
-  const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
-  const amountUntilFreeShipping = Math.max(
-    0,
-    FREE_SHIPPING_THRESHOLD - subtotal,
-  );
-  const freeShippingProgress = Math.min(
-    100,
-    (subtotal / FREE_SHIPPING_THRESHOLD) * 100,
-  );
+  // 🚚 Règle de port servie par le backend (forfait et seuil de gratuité).
+  // Inconnue : ni seuil ni option de livraison par défaut ne sont affichés.
+  const shippingPolicy = useShippingPolicy();
+  const freeShippingThreshold = shippingPolicy?.freeShippingThresholdTTC;
+  const isFreeShipping =
+    freeShippingThreshold !== undefined && subtotal >= freeShippingThreshold;
+  const amountUntilFreeShipping =
+    freeShippingThreshold !== undefined
+      ? Math.max(0, freeShippingThreshold - subtotal)
+      : 0;
+  const freeShippingProgress =
+    freeShippingThreshold !== undefined
+      ? Math.min(100, (subtotal / freeShippingThreshold) * 100)
+      : 0;
+
+  // Sans options fournies par l'appelant : la seule offre réelle, le forfait.
+  const deliveryOptions: DeliveryOption[] =
+    deliveryOptionsProp ??
+    (shippingPolicy
+      ? [
+          {
+            id: "standard",
+            name: "Standard",
+            price: shippingPolicy.flatFeeTTC,
+            estimatedDays: "3-5 jours",
+          },
+        ]
+      : []);
 
   const selectedDelivery = deliveryOptions.find(
     (d) => d.id === selectedDeliveryId,
@@ -407,11 +412,12 @@ export function QuickCartDrawer({
         {items.length > 0 && (
           <div className="border-t border-neutral-200 bg-white px-4 py-4 space-y-4">
             {/* 🚚 Barre de progression livraison gratuite */}
-            {!isFreeShipping && (
+            {freeShippingThreshold !== undefined && !isFreeShipping && (
               <div className="bg-secondary-50 rounded-lg p-2 space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-heading font-bold text-secondary-700">
-                    🚚 Livraison gratuite dès 50€
+                    🚚 Livraison gratuite dès{" "}
+                    {formatShippingAmount(freeShippingThreshold)}
                   </span>
                   <span className="font-mono font-bold text-secondary-900">
                     Plus que {amountUntilFreeShipping.toFixed(2)} €
