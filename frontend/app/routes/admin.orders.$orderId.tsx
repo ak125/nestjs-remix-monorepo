@@ -29,6 +29,7 @@ import {
 } from "react-router";
 import { toast } from "sonner";
 
+import { OrderLineSupplierPanel } from "~/components/admin/OrderLineSupplierPanel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -502,6 +503,25 @@ export default function OrderDetailPage() {
                   <p className="text-muted-foreground text-sm py-4">
                     Aucune ligne de commande
                   </p>
+                )}
+
+                {/* Décision 50 : fournisseur et prix d'achat par ligne */}
+                {order.orderLines && order.orderLines.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm font-medium">Fournisseur par ligne</p>
+                    {order.orderLines.map((line) => (
+                      <OrderLineSupplierPanel
+                        key={`spl-${line.orl_id}`}
+                        orderId={String(order.ord_id)}
+                        lineId={String(line.orl_id)}
+                        label={
+                          [line.orl_pm_name, line.orl_art_ref]
+                            .filter(Boolean)
+                            .join(" ") || String(line.orl_id)
+                        }
+                      />
+                    ))}
+                  </div>
                 )}
 
                 {/* Totaux */}

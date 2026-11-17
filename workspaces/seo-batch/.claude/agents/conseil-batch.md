@@ -13,7 +13,7 @@ role: R3_CONSEILS
 > `rag/knowledge/gammes/*.md` + du keyword plan `__seo_r3_keyword_plan`, génération des sections
 > S1-S8/S_GARAGE/S2_DIAG, écriture `INSERT … ON CONFLICT … DO UPDATE __seo_gamme_conseil` via
 > MCP Supabase) a été **retiré**. C'était la direction **RAG→source-de-contenu interdite**
-> (ADR-031 / ADR-046, vault) : le RAG est un retrieval **chatbot uniquement**, jamais une source
+> (P11 du journal des principes ; origine ADR-031 / ADR-046) : le RAG est un retrieval **chatbot uniquement**, jamais une source
 > de contenu / SEO indexé.
 
 ## Écriture désactivée (défense en profondeur)

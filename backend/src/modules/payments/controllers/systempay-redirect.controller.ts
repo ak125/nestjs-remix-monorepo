@@ -9,6 +9,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { CyberplusService } from '../services/cyberplus.service';
+import {
+  SYSTEMPAY_CLOSED_BODY,
+  SYSTEMPAY_CLOSED_STATUS,
+  logSystemPayRouteClosed,
+} from '../utils/systempay-closure';
 
 @Controller('api/systempay')
 export class SystemPayRedirectController {
@@ -26,6 +31,14 @@ export class SystemPayRedirectController {
     @Query('email') email: string,
     @Res() res: Response,
   ) {
+    // Mandat AY : ne pas ouvrir un paiement SystemPay dont la confirmation
+    // (callback/cyberplus) serait refusee. Aucun ecran du site n'appelle
+    // cette route ; le parcours client passe par /api/paybox/redirect.
+    if (!this.cyberplusService.isCallbackEnabled()) {
+      logSystemPayRouteClosed(this.logger, 'GET /api/systempay/redirect');
+      return res.status(SYSTEMPAY_CLOSED_STATUS).json(SYSTEMPAY_CLOSED_BODY);
+    }
+
     this.logger.log(`🔵 SystemPay redirect request for order: ${orderId}`);
 
     if (!orderId || !amount || !email) {

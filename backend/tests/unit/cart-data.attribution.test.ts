@@ -47,6 +47,9 @@ const TARIF: SellablePriceRow = {
   pri_des: null,
   pri_poids: null,
   pri_udm_poids: null,
+  pricing_state: 'ACTIVE',
+  pri_frs: null,
+  pieces: { piece_display: true },
 };
 
 /** Client Supabase factice : seule la lecture de la pièce est atteinte ici. */

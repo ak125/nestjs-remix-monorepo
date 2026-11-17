@@ -30,8 +30,13 @@ on:
       - "scripts/governance/__tests__/build-command-center-snapshot.test.ts"
       - "scripts/governance/__fixtures__/agent-operating-map.invalid.yaml"
       - "scripts/governance/__fixtures__/agent-operating-map.dept-handoffs.invalid.yaml"
+      - "scripts/governance/__fixtures__/agent-operating-map.contract.invalid.yaml"
       - "audit/registry/command-center-snapshot.json"
       - ".github/workflows/skills-canon-gate.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   skills-canon-gate:
@@ -122,7 +127,7 @@ jobs:
               echo ""
               echo "**Fix** : edit \`.spec/00-canon/ai-registry/agent-operating-map.yaml\`. Schema : \`agent-operating-map.schema.json\`."
               echo ""
-              echo "_Reference projection — non-authoritative. Hard-fail enforcement = vault ADR required._"
+              echo "_Avertissement seul ici ; les contrats de département sont bloquants dans le job requis 🛡️ ADR-010 Governance (décision 72)._"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

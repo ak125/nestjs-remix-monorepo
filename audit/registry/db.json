@@ -226,6 +226,25 @@
       "columns": [],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",
+      "id": "___xtr_supplier",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "___xtr_supplier",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "FREE",
+      "domain": "UNKNOWN",
       "id": "___xtr_supplier_link_pm",
       "inMigrations": [],
       "indexes": [],
@@ -5170,6 +5189,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts"
       ]
@@ -5899,6 +5919,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"

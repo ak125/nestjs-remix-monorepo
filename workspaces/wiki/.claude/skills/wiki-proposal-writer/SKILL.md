@@ -1,6 +1,6 @@
 ---
 name: wiki-proposal-writer
-description: Génère une fiche `automecanik-wiki/proposals/<slug>.md` au format frontmatter ADR-033 v2.0.0 strict. Mode propose-only (jamais d'écriture canon `wiki/<entity_type>/`, jamais de DB). Lit `automecanik-raw/{sources,recycled,normalized}/` comme source de vérité. Produit coverage manifest AEC v1.0.0 obligatoire. Use when user asks to "create a proposal", "draft a wiki gamme", "ajouter une proposal", etc. Pour migration legacy `entity_data.symptoms[]` → `diagnostic_relations[]`, utiliser plutôt le script `scripts/wiki/migrate-symptoms-to-relations.ts` (PR-E ADR-033) — pas ce skill.
+description: Génère une fiche `automecanik-wiki/proposals/<slug>.md` au format frontmatter ADR-033 v2.0.0 strict. Mode propose-only (jamais d'écriture canon `wiki/<entity_type>/`, jamais de DB). Lit `automecanik-raw/{sources,recycled,normalized}/` comme source de vérité. Produit coverage manifest AEC obligatoire (contrat en vigueur à la racine du monorepo). Use when user asks to "create a proposal", "draft a wiki gamme", "ajouter une proposal", etc. Pour migration legacy `entity_data.symptoms[]` → `diagnostic_relations[]`, utiliser plutôt le script `scripts/wiki/migrate-symptoms-to-relations.ts` (PR-E ADR-033) — pas ce skill.
 ---
 
 # Wiki Proposal Writer
@@ -19,7 +19,7 @@ Le skill est **propose-only** : il n'écrit jamais dans `wiki/<entity_type>/` (c
 | ✅ `automecanik-wiki/_meta/` (canon templates, schemas, source-catalog) | ❌ `automecanik-wiki/wiki/<entity_type>/` (canon) |
 | ✅ `automecanik-wiki/exports/diag-canon-slugs.json` (FK `__diag_symptom`) | ❌ DB Supabase (toute table `__*`, `kg_*`) |
 | ✅ `automecanik-wiki/wiki/<entity_type>/` (lecture seule, anti-duplication slug) | ❌ `automecanik-rag/knowledge/` (RAG repo, géré par sync-from-wiki Partie 3) |
-| ✅ governance-vault canon ADR-031/032/033 (référence) | ❌ `automecanik-wiki/exports/` (auto-généré par PR-D cron) |
+| ✅ archive du vault, ADR-031/032/033 (référence historique ; règles en vigueur : P10, P19 du journal) | ❌ `automecanik-wiki/exports/` (auto-généré par PR-D cron) |
 | ✅ source-policy.md (règles `source_type → max_confidence`) | ❌ `_meta/source-catalog.yaml` (modification = PR séparée monorepo) |
 
 ## Anti-patterns figés (canon ADR-033 §D3)
@@ -114,7 +114,7 @@ evidence:
 
 Le skill **ne flip jamais** `evidence.diagnostic_safe: true`. Cette autorité est réservée à un commit signé reviewer ≠ auteur (audit ad hoc).
 
-## Output Coverage Manifest AEC v1.0.0 (obligatoire)
+## Output Coverage Manifest AEC (obligatoire)
 
 Tout output du skill inclut :
 
@@ -188,9 +188,9 @@ Le skill **ne fait jamais** ce mv. C'est une décision humaine.
 
 ## Références
 
-- ADR-031 vault — 4-layer architecture (raw / wiki / exports / consumers)
-- ADR-032 vault — `entity_data.maintenance{}` cohabite avec `diagnostic_relations[]`
-- ADR-033 vault PR #108 commit `77085ef` — `diagnostic_relations[]` canon
+- ADR-031 (archive du vault) — 4-layer architecture (raw / wiki / exports / consumers)
+- ADR-032 (archive du vault) — `entity_data.maintenance{}` cohabite avec `diagnostic_relations[]`
+- ADR-033 (archive du vault, PR #108 commit `77085ef`) — `diagnostic_relations[]` canon
 - canon frontmatter : `automecanik-wiki/_meta/schema/frontmatter.schema.json` v2.0.0
 - canon templates : `automecanik-wiki/_meta/templates/{gamme,vehicle,constructeur,support}.md`
 - canon source-catalog : `automecanik-wiki/_meta/source-catalog.yaml`
@@ -202,5 +202,5 @@ Le skill **ne fait jamais** ce mv. C'est une décision humaine.
 - mémoire `feedback_wiki_scope_discipline.md` (sas markdown ≠ sas DB)
 - mémoire `diag-symptom-db-convention.md` (slugs anglais snake_case `brake_*`)
 - mémoire `mvp-g6-adr033-handoff.md` (Phase 1 closed 2026-04-30)
-- contrat AEC : `./agent-exit-contract.md` (canon distribué)
+- contrat AEC : `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo (copie déclarée, contrôlée par hash)
 - workspace rules : `../wiki-batch.md`

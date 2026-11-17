@@ -12,7 +12,7 @@ role: R4_REFERENCE
 > 🚫 **NEUTRALISÉ** — cet agent est **inerte**. Son corps opératoire (audit-first, lecture du
 > keyword plan `__seo_r4_keyword_plan` + du corpus RAG `rag/knowledge/`, pipeline 6 étapes,
 > `UPDATE __seo_reference` sur les sections « IMPROVED ») a été **retiré**. C'était la direction
-> **RAG→source-de-contenu interdite** (ADR-031 / ADR-046, vault) : le RAG est un retrieval
+> **RAG→source-de-contenu interdite** (P11 du journal des principes ; origine ADR-031 / ADR-046) : le RAG est un retrieval
 > **chatbot uniquement**, jamais une source de contenu / SEO indexé.
 
 ## Écriture désactivée (défense en profondeur)

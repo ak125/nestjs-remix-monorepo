@@ -1,0 +1,72 @@
+# Mandat BB — option pour l'owner. EXTRAIT NON APPLIQUÉ.
+#
+# `.spec/00-canon/repository-registry/ownership.yaml` est réservé à l'owner : ces entrées sont une
+# proposition, à relire une par une avant de les y copier sous `entries:`. Voie habituelle :
+# `resync-pr.sh <PR> --ownership <extrait.yaml>` sur une PR de l'owner.
+#
+# Règle de résolution (scripts/registry/check-new-files.js, scripts/ci/merge-circuit.mjs) : le glob le
+# plus long gagne. Un glob de dossier sert donc de valeur par défaut ; une entrée plus précise, déjà
+# présente ou ajoutée plus tard, garde la main.
+#
+# Aucune de ces entrées ne retire une zone CODEOWNERS : un fichier d'une zone réservée reste en
+# circuit élevé quel que soit son risque ici.
+
+entries:
+  # --- Partie 1 : inventaires générés, aujourd'hui sans glob --------------------------------------
+  # Mesure du 2026-11-16T23:52:28Z sur les 49 PR fusionnées depuis le 13 novembre :
+  # audit/db-usage-map.json est modifié par 17 PR, audit/registry/db.json par 3,
+  # audit/registry/runtime.json par 2. Un fichier sans glob envoie la PR en circuit élevé.
+  # Valeurs reprises des voisins déjà classés : audit/registry/files.json,
+  # audit/module-boundaries.json, audit/runtime-entrypoints.json (D15, risque faible).
+  # Effet simulé : 3 PR sur 49 passent du circuit élevé au circuit moyen (#2044, #2052, #2065).
+  - glob: audit/db-usage-map.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/registry/db.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/registry/runtime.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/dead-code-candidates.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+
+  # --- Partie 2 : dossiers où des fichiers nouveaux ont été refusés --------------------------------
+  # 14 fichiers refusés sur 7 PR en brouillon (relevé du 2026-11-16). Le risque proposé est celui du
+  # voisin le plus exigeant ; à relever si le dossier doit rester en circuit élevé.
+  #
+  # 3 définitions d'agents (#2081). Voisins : .claude/skills/** et .claude/prompts/** (D15, moyen),
+  # .claude/rules/** et .claude/governance/** (D15, élevé).
+  - glob: .claude/agents/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
+  # 2 fichiers d'audit d'agents (#2081). Voisins : les globs audit/ existants (D15, faible).
+  - glob: audit/agents/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: low
+  # Refusé dans #2101 et #2104. Voisin : .claude/skills/** (D15, moyen).
+  - glob: skills-lock.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
+
+# Non proposé, et pourquoi :
+# - backend/supabase/migrations/** : les globs par motif de nom portent le domaine et le risque de
+#   chaque migration ; un glob de dossier les écraserait pour les noms nouveaux.
+# - backend/src/** (un fichier refusé, #2096) : du code se classe fichier par fichier ou par module.
+# - rapports à la racine ou sous audit/ (7 fichiers refusés) : la convention suffit, les placer
+#   sous docs/audit/mandat-xx/, déjà couvert par docs/audit/** (D15, risque faible).
