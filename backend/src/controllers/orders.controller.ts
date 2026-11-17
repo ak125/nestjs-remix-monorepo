@@ -9,7 +9,16 @@ import {
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import { PermissionsGuard } from '@auth/guards/permissions.guard';
-import { OperationFailedException, DomainException } from '@common/exceptions';
+import {
+  OperationFailedException,
+  DomainException,
+  DomainValidationException,
+} from '@common/exceptions';
+import {
+  ORDER_STATS_PERIODS,
+  type OrderStatsPeriod,
+  isOrderStatsPeriod,
+} from '../database/services/order-stats-tiles';
 import { OrdersService } from '../database/services/orders.service';
 
 /**
@@ -99,16 +108,31 @@ export class OrdersController {
   }
 
   /**
-   * GET /api/legacy-orders/stats
-   * Récupère les statistiques des commandes
+   * GET /api/legacy-orders/stats?period=all|year|month
+   * Statistiques sur toute la base ; `tiles` porte sur la période (défaut all).
    */
   @Get('stats')
   @RequirePermission('canSeeFinancials')
-  async getOrdersStats(@Query('userId') userId?: string) {
+  async getOrdersStats(
+    @Query('userId') userId?: string,
+    @Query('period') period?: string,
+  ) {
+    let statsPeriod: OrderStatsPeriod | undefined;
+    if (period !== undefined) {
+      if (!isOrderStatsPeriod(period)) {
+        throw new DomainValidationException({
+          message: `period invalide : valeurs admises ${ORDER_STATS_PERIODS.join(', ')}`,
+          field: 'period',
+        });
+      }
+      statsPeriod = period;
+    }
     try {
       this.logger.log('Calcul des statistiques des commandes...');
 
-      const stats = await this.ordersService.getOrdersStats(userId);
+      const stats = await this.ordersService.getOrdersStats(userId, {
+        period: statsPeriod,
+      });
 
       return {
         success: true,
