@@ -81,6 +81,8 @@ case "$1 $2" in
     esac ;;
   "pr view") [ "$GH_VIEW" = "ko" ] && exit 1; cat "$GH_ARMED" ;;
   "api --paginate") cat "$GH_REVIEWS" ;;
+  "api repos/o/r/commits/"*"/pulls") cat "$GH_COMMIT_PULLS" ;;
+  "api repos/o/r/pulls/7") cat "$GH_PULL" ;;
   *) echo "gh factice : appel inattendu : $*" >&2; exit 64 ;;
 esac
 `;
@@ -255,9 +257,176 @@ test("circuit élevé : la dernière revue de l'owner sur la tête exacte décid
   }
 });
 
-test("circuit élevé approuvé : le check passe, la fusion reste à l'owner (rien n'est armé)", () => {
+test("circuit élevé approuvé sur la tête : l'App arme, sur pull_request_target seulement", () => {
+  const reviews = [review("APPROVED")];
+  const cible = runCircuit({ circuit: "eleve", reviews });
+  assert.deepEqual([cible.result, cible.armer, cible.app, cible.armed], ["success", true, "success", true]);
+  // La revue arrive par pull_request_review : le check passe, rien n'est armé par cet événement.
+  const revue = runCircuit({ circuit: "eleve", reviews, event: "pull_request_review" });
+  assert.deepEqual([revue.result, revue.armer, revue.app, revue.armed], ["success", true, "skipped", false]);
+  assert.match(revue.log, /ne peut pas armer/);
+  // Brouillon ou App absente : check vert, rien d'armé.
+  const draft = runCircuit({ circuit: "eleve", reviews, draft: "true", armed: true });
+  assert.deepEqual([draft.result, draft.armer, draft.armed], ["success", false, false]);
+  const sansApp = runCircuit({ circuit: "eleve", reviews, app: "false" });
+  assert.deepEqual([sansApp.result, sansApp.armer, sansApp.armed], ["success", false, false]);
+});
+
+test("circuit élevé : une tête nouvelle invalide l'approbation et désarme", () => {
+  // La PR était armée sur la tête approuvée ; la tête de l'événement est une autre.
+  const reviews = [review("APPROVED", "b".repeat(40))];
   for (const event of ["pull_request_target", "pull_request_review"]) {
-    const r = runCircuit({ circuit: "eleve", reviews: [review("APPROVED")], event, armed: true });
-    assert.deepEqual([r.result, r.armer, r.app, r.armed], ["success", false, "skipped", false], event);
+    const r = runCircuit({ circuit: "eleve", reviews, event, armed: true });
+    assert.deepEqual([r.result, r.armer, r.armed], ["failure", false, false], event);
   }
+  // Désarmement non constaté avec le jeton du workflow : l'App désarme.
+  const r = runCircuit({ circuit: "eleve", reviews, armed: true, disable: "ko" });
+  assert.deepEqual([r.result, r.desarmer, r.app, r.armed], ["failure", true, "success", false]);
+});
+
+// ─── Relais merge-circuits-relais.yml (circuit élevé, après la revue de l'owner) ───
+const relais = yaml.load(readFileSync(join(ROOT, ".github/workflows/merge-circuits-relais.yml"), "utf8"));
+const pull = (over = {}) => ({
+  number: 7, state: "open", draft: false, auto_merge: null,
+  head: { sha: HEAD, repo: { full_name: "o/r" } },
+  base: { ref: "main", repo: { full_name: "o/r" } },
+  ...over,
+});
+
+// Rejoue les étapes `pr` et `decide` du job de décision, puis le job d'action si sa condition est vraie.
+function runRelais(options = {}) {
+  const c = { sha: HEAD, pulls: [pull()], pr: pull(), circuit: "eleve", reviews: [], app: "true", appDisable: "ok", ...options };
+  // Ce dossier sert aussi de RUNNER_TEMP : les fichiers donnés au gh factice (fixture-*) ne portent
+  // pas le nom de ceux qu'écrivent les étapes.
+  const dir = mkdtempSync(join(tmpdir(), "merge-circuit-relais-"));
+  try {
+    const f = (name) => join(dir, name);
+    writeFileSync(f("gh"), GH_FACTICE);
+    chmodSync(f("gh"), 0o755);
+    writeFileSync(f("armed"), `${c.pr.auto_merge !== null}\n`);
+    writeFileSync(f("fixture-reviews.json"), JSON.stringify(c.reviews));
+    writeFileSync(f("fixture-pulls.json"), JSON.stringify(c.pulls));
+    writeFileSync(f("fixture-pull.json"), JSON.stringify(c.pr));
+    writeFileSync(f("gh.log"), "");
+    const env = {
+      PATH: `${dir}:${process.env.PATH}`, RUNNER_TEMP: dir, GH_TOKEN: "x", GH_REPO: "o/r", RUN_HEAD_SHA: c.sha,
+      OWNER_LOGIN: relais.jobs.decide.env.OWNER_LOGIN, HAS_ACTIONS_APP: c.app,
+      GH_ARMED: f("armed"), GH_REVIEWS: f("fixture-reviews.json"), GH_COMMIT_PULLS: f("fixture-pulls.json"), GH_PULL: f("fixture-pull.json"),
+      GH_LOG: f("gh.log"), GH_DISABLE: c.appDisable, GH_VIEW: "ok",
+    };
+    const found = runStep(stepOf(relais.jobs.decide, "pr"), env, dir);
+    assert.equal(found.rc, 0, found.log);
+    let action = "";
+    if (found.outputs.number) {
+      const decide = runStep(stepOf(relais.jobs.decide, "decide"), { ...env, PR: found.outputs.number, CIRCUIT: c.circuit }, dir);
+      assert.equal(decide.rc, 0, decide.log);
+      action = decide.outputs.action;
+    }
+    let app = "skipped";
+    if (action === "armer" || action === "desarmer") {
+      const r = runStep(stepOf(relais.jobs.act, action), { ...env, PR: found.outputs.number, HEAD_SHA: found.outputs.head, ACTION: action }, dir);
+      app = r.rc === 0 ? "success" : "failure";
+    }
+    return { number: found.outputs.number ?? "", action, app, armed: readFileSync(f("armed"), "utf8").trim() === "true" };
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test("relais : part à la fin d'un run de revue, sur main, et garde la clé dans le seul job d'action", () => {
+  assert.equal(workflow.name, "🚦 Circuit de fusion");
+  assert.deepEqual(relais.on, { workflow_run: { workflows: [workflow.name], types: ["completed"] } });
+  assert.notEqual(relais.name, workflow.name);
+  const { decide, act } = relais.jobs;
+  assert.equal(decide.if, "${{ github.event.workflow_run.event == 'pull_request_review' }}");
+  assert.deepEqual(decide.permissions, { contents: "read", "pull-requests": "read" });
+  assert.equal(decide.environment, undefined);
+  assert.equal(decide.env.RUN_HEAD_SHA, "${{ github.event.workflow_run.head_sha }}");
+  // Le code exécuté est celui de main : checkout par défaut, sans référence ni dépôt choisis.
+  const checkouts = decide.steps.filter((s) => (s.uses ?? "").startsWith("actions/checkout@"));
+  assert.deepEqual(checkouts.map((s) => s.with), [{ "persist-credentials": false }]);
+  assert.equal(act.environment, "app-actions");
+  assert.deepEqual(act.permissions, {});
+  assert.equal(act.if, "${{ needs.decide.outputs.action == 'armer' || needs.decide.outputs.action == 'desarmer' }}");
+  assert.equal(stepOf(act, "armer").if, "env.ACTION == 'armer'");
+  assert.equal(stepOf(act, "desarmer").if, "env.ACTION == 'desarmer'");
+  // Aucun job du relais ne porte le nom du contrôle.
+  for (const job of Object.values(relais.jobs)) assert.notEqual(job.name, circuitJob.name);
+  // Rien d'autre que le SHA de tête n'est repris du run déclencheur.
+  const refs = readFileSync(join(ROOT, ".github/workflows/merge-circuits-relais.yml"), "utf8")
+    .split("\n").filter((l) => !l.trim().startsWith("#")).join("\n").match(/github\.event\.workflow_run\.[a-z_.]+/g);
+  assert.deepEqual([...new Set(refs)].sort(), ["github.event.workflow_run.event", "github.event.workflow_run.head_sha"]);
+});
+
+test("relais : la règle d'approbation est la même que dans le workflow du circuit", () => {
+  const regle = [
+    "add | map(select(.commit_id == $sha and .user.login == $who",
+    'and (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")))',
+    '| last | (.state // "") == "APPROVED"',
+  ];
+  for (const ligne of regle) {
+    assert.ok(stepOf(circuitJob, "approval").run.includes(ligne), `circuit : ${ligne}`);
+    assert.ok(stepOf(relais.jobs.decide, "decide").run.includes(ligne), `relais : ${ligne}`);
+  }
+  assert.equal(relais.jobs.decide.env.OWNER_LOGIN, OWNER);
+});
+
+test("relais : n'arme qu'une PR du dépôt, en circuit élevé, approuvée par l'owner sur la tête exacte", () => {
+  const ok = runRelais({ reviews: [review("APPROVED")] });
+  assert.deepEqual(ok, { number: "7", action: "armer", app: "success", armed: true });
+  const AUTRE = "b".repeat(40);
+  const rien = [
+    { reviews: [] },
+    { reviews: [review("APPROVED", AUTRE)] },
+    { reviews: [review("APPROVED", HEAD, "quelqu-un-d-autre")] },
+    { reviews: [review("APPROVED"), review("CHANGES_REQUESTED")] },
+    { reviews: [review("APPROVED"), review("DISMISSED")] },
+    { reviews: [review("APPROVED")], circuit: "faible" },
+    { reviews: [review("APPROVED")], circuit: "moyen" },
+    { reviews: [review("APPROVED")], circuit: "" },
+    { reviews: [review("APPROVED")], pr: pull({ draft: true }) },
+    { reviews: [review("APPROVED")], app: "false" },
+    // Entre la recherche et la décision : fermée, tête déplacée, autre base, branche hors du dépôt.
+    { reviews: [review("APPROVED")], pr: pull({ state: "closed" }) },
+    { reviews: [review("APPROVED")], pr: pull({ head: { sha: AUTRE, repo: { full_name: "o/r" } } }) },
+    { reviews: [review("APPROVED")], pr: pull({ base: { ref: "dev", repo: { full_name: "o/r" } } }) },
+    { reviews: [review("APPROVED")], pr: pull({ head: { sha: HEAD, repo: { full_name: "ailleurs/r" } } }) },
+    { reviews: [review("APPROVED")], pr: pull({ head: { sha: HEAD, repo: null } }) },
+  ];
+  for (const cas of rien) {
+    const r = runRelais(cas);
+    assert.deepEqual([r.action, r.app, r.armed], ["rien", "skipped", false], JSON.stringify(cas));
+  }
+});
+
+test("relais : sans PR unique du dépôt sur ce SHA, aucune décision n'est prise", () => {
+  const reviews = [review("APPROVED")];
+  const sans = [
+    { pulls: [] },
+    { pulls: [pull(), pull({ number: 8 })] },
+    { pulls: [pull({ state: "closed" })] },
+    { pulls: [pull({ base: { ref: "dev", repo: { full_name: "o/r" } } })] },
+    { pulls: [pull({ head: { sha: HEAD, repo: { full_name: "ailleurs/r" } } })] },
+    { pulls: [pull({ head: { sha: "b".repeat(40), repo: { full_name: "o/r" } } })] },
+    { sha: "main" },
+    { sha: `${HEAD}\nx` },
+    { sha: "" },
+  ];
+  for (const cas of sans) {
+    const r = runRelais({ reviews, ...cas });
+    assert.deepEqual(r, { number: "", action: "", app: "skipped", armed: false }, JSON.stringify(cas));
+  }
+});
+
+test("relais : approbation retirée sur une PR armée → l'App désarme et relit", () => {
+  const armee = pull({ auto_merge: { merge_method: "squash" } });
+  const r = runRelais({ pr: armee, reviews: [review("APPROVED"), review("DISMISSED")] });
+  assert.deepEqual([r.action, r.app, r.armed], ["desarmer", "success", false]);
+  const brouillon = runRelais({ pr: pull({ draft: true, auto_merge: {} }), reviews: [review("APPROVED")] });
+  assert.deepEqual([brouillon.action, brouillon.armed], ["desarmer", false]);
+  const ko = runRelais({ pr: armee, reviews: [], appDisable: "ko" });
+  assert.deepEqual([ko.action, ko.app, ko.armed], ["desarmer", "failure", true]);
+  // Déjà armée et toujours approuvée : rien.
+  const deja = runRelais({ pr: armee, reviews: [review("APPROVED")] });
+  assert.deepEqual([deja.action, deja.app, deja.armed], ["rien", "skipped", true]);
 });
