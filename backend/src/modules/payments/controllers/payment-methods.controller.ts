@@ -1,30 +1,18 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Param,
-  Body,
-  HttpCode,
-  HttpStatus,
-  Logger,
-  BadRequestException,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Param, Logger, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { PaymentService } from '../services/payment.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { CyberplusService } from '../services/cyberplus.service';
-import { CreatePaymentDto } from '../dto/create-payment.dto';
 import { PaymentMethod } from '../entities/payment.entity';
 import { logPaymentError } from './payment-controller.utils';
 
 /**
- * Routes utilitaires : methodes disponibles, transactions, test
+ * Routes utilitaires : methodes disponibles, transactions
  *
  * Frontiere d'acces : `methods/available` est publique (la page de commande la
- * lit sans cookie de session) ; les deux autres routes sont reservees aux
+ * lit sans cookie de session) ; `:id/transactions` est reservee aux
  * administrateurs.
  *
  * Classification exhaustive : backend/tests/unit/payment-core-routes-authz.test.ts
@@ -101,68 +89,6 @@ export class PaymentMethodsController {
     } catch (error) {
       logPaymentError(this.logger, 'get payment methods', error);
       throw error;
-    }
-  }
-
-  /**
-   * POST /api/payments/test/create-with-consignes
-   * Endpoint de test pour paiement avec consignes
-   */
-  @Post('test/create-with-consignes')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: '[TEST] Creer un paiement incluant des consignes' })
-  @HttpCode(HttpStatus.OK)
-  async testCreatePaymentWithConsignes(
-    @Body() testData?: { orderId?: string },
-  ) {
-    try {
-      this.logger.log('[TEST] Creating payment with consignes...');
-
-      const mockPaymentDto: CreatePaymentDto = {
-        amount: 487.17,
-        currency: 'EUR',
-        method: PaymentMethod.CYBERPLUS,
-        userId: 'test-user-123',
-        orderId: testData?.orderId || 'ORD-TEST-CONSIGNES',
-        description: 'Test paiement avec consignes - Phase 6',
-        consigne_total: 144,
-        consigne_details: [
-          {
-            productId: '3047339',
-            quantity: 2,
-            consigne_unit: 72,
-          },
-        ],
-      };
-
-      const payment = await this.paymentService.createPayment(mockPaymentDto);
-
-      return {
-        success: true,
-        message: 'Phase 6: Paiement avec consignes cree avec succes',
-        payment: {
-          id: payment.id,
-          reference: payment.paymentReference,
-          amount: payment.amount,
-          consigne_total: payment.metadata?.consigne_total || 0,
-          consigne_details: payment.metadata?.consigne_details || [],
-          status: payment.status,
-        },
-        breakdown: {
-          produits: 337.18,
-          consignes: 144,
-          port: 5.99,
-          total: 487.17,
-        },
-        note: 'Les consignes sont stockees dans ___xtr_order.ord_deposit_ttc (Phase 5). Le paiement contient le montant total (produits + consignes + port).',
-      };
-    } catch (error) {
-      this.logger.error('Error creating test payment:', error);
-      throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to create test payment',
-      );
     }
   }
 
