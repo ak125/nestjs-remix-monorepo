@@ -258,7 +258,7 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   automatique), avec le lien ? » : « oui ».
   Application, relevé du 2026-11-17 sur `main` `a9bd755d6` : L0. Rien ne porte encore la règle en
   service. `scripts/ci/incident-issue-gate.mjs` rend le verdict d'une fiche fermée (`evaluate`,
-  l. 187) et rédige le commentaire de réouverture (`renderComment`, l. 233), mais aucun workflow
+  l. 201) et rédige le commentaire de réouverture (`renderComment`, l. 247), mais aucun workflow
   ne le lance et son test n'est pas dans le dépôt. Le gabarit `.github/ISSUE_TEMPLATE/incident.yml`,
   le workflow `.github/workflows/incident-issue-gate.yml`, le test et son étape dans `audit.yml`
   sont dans un patch réservé à l'owner

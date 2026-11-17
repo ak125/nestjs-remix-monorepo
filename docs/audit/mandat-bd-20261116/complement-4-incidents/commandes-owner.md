@@ -18,7 +18,7 @@ Préalable : la PR du complément n° 4 est fusionnée. Le `.patch` et le script
   $B = 'feat/fiche-incident-gabarit-workflow-bd4'
   $M = 'feat(ci): fiche d incident, gabarit, workflow de fermeture controlee et test (mandat BD, complement 4)'
   $L = @(
-    @('01-fiche-incident-gabarit-workflow-test.patch', '42e31b35e6739f50b7a1a6eb52b0908b4777ff58324126cf88dfa6fcd3325632')
+    @('01-fiche-incident-gabarit-workflow-test.patch', 'aa43dfa4c402984e698824dc0923957e8b34d76dfbc0d59f74a590ffa67f5a94')
   )
   git -C $R fetch origin
   if ($LASTEXITCODE -ne 0) { Write-Host 'ARRET : fetch'; return }
@@ -66,7 +66,7 @@ La PR est en circuit élevé (`.github/workflows/**`). La fusion reste un geste 
 ## 2. Vérifications
 
 Sur la PR du patch, le job « 🛡️ Deterministic gates » de `audit.yml` doit lancer l'étape
-« 🧯 Incident issue gate » : 60 cas verts.
+« 🧯 Incident issue gate » : 64 cas verts.
 
 Après la fusion, un essai à blanc, qui ne rouvre et ne commente rien. Le lancement demande un
 compte autorisé à lancer un workflow ; le jeton du DEV ne l'est pas.

@@ -73,9 +73,23 @@ function normalizeTitle(s) {
 
 const KEY_BY_TITLE = new Map(Object.entries(SECTIONS).map(([key, title]) => [normalizeTitle(title), key]));
 
+// Drops HTML comments, and everything after a comment that is never closed: the
+// strict reading, since GitHub hides that text when the comment opens a line.
+function stripComments(text) {
+  let out = "";
+  let at = 0;
+  for (;;) {
+    const open = text.indexOf("<!--", at);
+    if (open === -1) return out + text.slice(at);
+    out += text.slice(at, open);
+    const close = text.indexOf("-->", open + 2);
+    if (close === -1) return out;
+    at = close + 3;
+  }
+}
+
 function stripNoise(text) {
-  return text
-    .replace(/<!--[^]*?-->/g, "")
+  return stripComments(text)
     .replace(/^\s*_No response_\s*$/gim, "")
     .trim();
 }
@@ -120,7 +134,7 @@ export function parseFiche(body) {
     what: text.what,
     why: text.why,
     prevention: text.prevention,
-    noControlDeclared: /^\s*[-*]\s*\[[xX]\]/m.test(text.noControl ?? ""),
+    noControlDeclared: /^\s*[-*]\s*\[[xX]\]/m.test(stripComments(text.noControl ?? "")),
   };
 }
 

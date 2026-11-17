@@ -106,6 +106,10 @@ issue, un commit, un run ou un lien vers un autre dépôt ne suffisent pas.
 « Vide » couvre `_No response_` (ce que GitHub écrit pour un champ laissé vide), un commentaire
 HTML seul et « à compléter », « todo », « tbd ».
 
+Un lien ou une case cochée placés dans un commentaire HTML sont ignorés : GitHub ne les affiche
+pas. Le contrôle ignore aussi tout ce qui suit un commentaire jamais fermé, jusqu'à la fin de la
+rubrique : c'est la lecture stricte.
+
 Le commentaire de réouverture est unique : il est retrouvé par son marqueur et mis à jour, jamais
 doublé. Il ne recopie rien du corps de l'issue.
 
@@ -131,18 +135,18 @@ Faits le 17 novembre 2026, Node v24.21.0, sur une copie de `a9bd755d6` hors du d
 
 | Essai | Résultat |
 |---|---|
-| Test du contrôle (`scripts/ci/incident-issue-gate.test.mjs`, dans le patch) | 60 cas, 60 verts |
-| Mutations du script (8 : PR non fusionnée admise, owner non exigé, pas de réouverture, écriture à blanc, sortie du dépôt par le chemin, auto-citation, ligne très longue, `_No response_` compté) | chacune fait échouer au moins un cas |
+| Test du contrôle (`scripts/ci/incident-issue-gate.test.mjs`, dans le patch) | 64 cas, 64 verts |
+| Mutations du script (11 : PR non fusionnée admise, owner non exigé, pas de réouverture, écriture à blanc, sortie du dépôt par le chemin, auto-citation, ligne très longue, `_No response_` compté, commentaire HTML non fermé lu, commentaires HTML non retirés, case cochée lue dans un commentaire) | chacune fait échouer au moins un cas |
 | Mutation du gabarit (un titre renommé) | 1 cas échoue |
 | Patch appliqué à blanc sur `main` seul (`git apply --index --check`) | accepté |
 | Test lancé sans le script de la PR | échec (`ERR_MODULE_NOT_FOUND`) : la PR se fusionne avant le patch |
 | `ci-test-wiring.test.mjs`, PR seule | 15/15 |
 | `ci-test-wiring.test.mjs`, PR et patch | 15/15 |
 | `ci-test-wiring.test.mjs`, test sans l'étape de `audit.yml` | 1 échec : l'étape du patch est nécessaire |
-| Six fiches factices, API simulée, 16:31:29Z | voir ci-dessous |
+| Sept fiches factices, API simulée, 16:46:23Z | voir ci-dessous |
 | Lecture seule des issues réelles, à blanc, 16:31:40Z | #264 : hors périmètre (ouverte). Fiches fermées au label `incident` : 0. #586 relue après l'essai : inchangée. |
 
-Les six fiches factices (numéros fictifs) :
+Les sept fiches factices (numéros fictifs) :
 
 | Fiche | Troisième rubrique | Fermée par | Verdict |
 |---|---|---|---|
@@ -152,9 +156,20 @@ Les six fiches factices (numéros fictifs) :
 | 9004 | case cochée, raison écrite | agent | rouverte : décision de l'owner attendue |
 | 9005 | case cochée, raison écrite | owner | reste fermée |
 | 9006 | cite une PR encore ouverte | agent | rouverte : aucun lien admis |
+| 9007 | PR fusionnée citée dans un commentaire HTML jamais fermé | agent | rouverte : rubrique vide |
 
-Actes sur l'API simulée : un commentaire puis une réouverture pour 9001, 9004 et 9006 ; aucun acte
-pour les trois autres.
+Actes sur l'API simulée : un commentaire puis une réouverture pour 9001, 9004, 9006 et 9007 ;
+aucun acte pour les trois autres.
+
+### Alerte CodeQL de la première tête, corrigée
+
+Sur la première tête de la PR (`ab64660ba`), le check `CodeQL` a relevé une alerte de niveau élevé
+dans le script, règle « Incomplete multi-character sanitization » : les commentaires HTML étaient
+retirés par une expression régulière, qui laissait passer un commentaire jamais fermé. Le texte
+n'était pas réécrit dans une page, mais le contrôle lisait alors un lien que GitHub n'affiche pas.
+Le retrait se fait désormais par une lecture linéaire (`stripComments`), sans expression
+régulière ; quatre cas et trois mutations le couvrent. Sur 60 000 caractères de `<!--` sans
+fermeture, le verdict tombe en moins de 10 ms.
 
 ## 5. Ce que deviennent les éléments anciens — proposition, rien n'est fait
 

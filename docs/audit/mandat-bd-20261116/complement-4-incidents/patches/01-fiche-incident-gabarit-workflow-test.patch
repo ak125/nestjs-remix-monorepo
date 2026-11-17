@@ -147,10 +147,10 @@ index 000000000..6f8d93c89
 +        run: node scripts/ci/incident-issue-gate.mjs
 diff --git a/scripts/ci/incident-issue-gate.test.mjs b/scripts/ci/incident-issue-gate.test.mjs
 new file mode 100644
-index 000000000..9fb9b9c22
+index 000000000..8062cf72c
 --- /dev/null
 +++ b/scripts/ci/incident-issue-gate.test.mjs
-@@ -0,0 +1,415 @@
+@@ -0,0 +1,436 @@
 +// =============================================================================
 +// Tests for incident-issue-gate.mjs — verdict, comment, API calls.
 +// Run: node --test scripts/ci/incident-issue-gate.test.mjs
@@ -232,6 +232,27 @@ index 000000000..9fb9b9c22
 +  });
 +  test("un commentaire HTML ne remplit pas une rubrique", () => {
 +    assert.match(verdict({ body: fiche({ prevention: "<!-- #12 -->" }) }).missing[0], /est vide/);
++  });
++  test("un commentaire HTML jamais fermé cache la suite : la rubrique est vide, son lien ne compte pas", () => {
++    const r = verdict({ body: fiche({ prevention: "<!-- corrigé par #12" }) }, { resolved: { 12: "merged" } });
++    assert.equal(r.action, "reopen");
++    assert.match(r.missing[0], /est vide/);
++  });
++  test("un lien dans un commentaire HTML ne compte pas, le texte visible reste lu", () => {
++    const r = verdict({ body: fiche({ prevention: "Un test a été ajouté. <!-- #12 --> Voir la suite." }) }, { resolved: { 12: "merged" } });
++    assert.equal(r.action, "reopen");
++    assert.match(r.missing[0], /ne porte aucun lien admis/);
++  });
++  test("deux commentaires : seul le texte entre eux et après eux est lu", () => {
++    const r = verdict({ body: fiche({ prevention: "<!-- a --> Corrigé par #12. <!---> <!-- #13 -->" }) }, { resolved: { 12: "merged", 13: "open" } });
++    assert.equal(r.action, "keep");
++    assert.deepEqual(r.rejected ?? [], []);
++  });
++  test("une case cochée dans un commentaire HTML ne déclare rien", () => {
++    const body = fiche({ prevention: "Rien à tester ici." }).replace("- [ ]", "<!--\n- [X] caché\n-->\n- [ ]");
++    const r = verdict({ body, closed_by: { login: OWNER } });
++    assert.equal(r.action, "reopen");
++    assert.match(r.missing[0], /ne porte aucun lien admis/);
 +  });
 +  test("rubrique remplie sans lien : rouverte", () => {
 +    const r = verdict({ body: fiche({ prevention: "Un test a été ajouté." }) });
