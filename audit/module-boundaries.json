@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6239,
+      "loc_total": 6242,
       "has_barrel": true
     },
     "blog": {
@@ -132,7 +132,7 @@
         "backend/src/modules/cart/services"
       ],
       "files_count": 22,
-      "loc_total": 4243,
+      "loc_total": 4263,
       "has_barrel": false
     },
     "catalog": {
@@ -960,8 +960,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 382,
-      "loc_total": 79409,
+      "files_count": 383,
+      "loc_total": 79624,
       "has_barrel": true
     },
     "upload": {
@@ -1029,7 +1029,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 23,
-      "loc_total": 5475,
+      "loc_total": 5477,
       "has_barrel": false
     }
   },
