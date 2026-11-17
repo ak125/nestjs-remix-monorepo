@@ -13258,6 +13258,51 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/config/return-policy.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/cart/config/return-policy.config.ts"
+      ],
+      "kind": "test",
+      "loc": 54,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/config/return-policy.config.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/config/return-policy.config.ts",
+      "importedBy": [
+        "backend/src/modules/cart/config/return-policy.config.test.ts",
+        "backend/src/remix/remix-api.service.test.ts",
+        "backend/src/remix/remix-api.service.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 78,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/config/return-policy.config.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/cart/config/shipping-policy.config.test.ts",
       "importedBy": [],
       "imports": [
@@ -67282,6 +67327,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/navbar-return-policy-banner.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 63,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/navbar-return-policy-banner.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/navbar-search-native-submit.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -67745,6 +67809,44 @@
       "loc": 315,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-schema-offers.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-schema-return-policy.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 180,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-schema-return-policy.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-schema-shipping.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 181,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-schema-shipping.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

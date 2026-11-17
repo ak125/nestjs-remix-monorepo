@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 17852bf61dddfa1138f5b064ae3c75dc6da3ffdc1bf3cbd5c97710a7e7d7f37a
+source_sha256: 5aa40b5618488e0bb5cc909d3fec177a89c80f2d2025ffcce38bf31f5aeb3896
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3221 |
+| Files (Layer 1) | 3226 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `681cd1333a3f`.
+Source sotFingerprint: `ec650040e201`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `681cd1333a3f`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 180 (test=164, service=11, config=4, controller=1)
+- **Files**: 183 (test=167, service=11, config=4, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (165), __unassigned__ (15)
+- **Top owners**: @ak125 (168), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=165
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=168
 
 ### D3 — SEO & Sitemap
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `681cd1333a3f`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 317 (service=201, test=74, controller=40, config=2)
+- **Files**: 319 (service=201, test=75, controller=40, config=3)
 - **Runtime entrypoints**: 131
-- **Top owners**: @ak125 (132), @ak125/payments-team (94), @ak125/auth-team (79)
+- **Top owners**: @ak125 (132), @ak125/payments-team (96), @ak125/auth-team (79)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=187, UNKNOWN=130
+- **Status**: LIVE=188, UNKNOWN=131
 
 ### D12 — Marketing & Video
 

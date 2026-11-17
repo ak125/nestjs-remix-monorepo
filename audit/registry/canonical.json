@@ -42190,6 +42190,53 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/modules/cart/config/return-policy.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/cart/config/return-policy.config.ts"
+      ],
+      "kind": "test",
+      "loc": 54,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/cart/config/return-policy.config.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/cart/config/return-policy.config.ts",
+      "importedBy": [
+        "backend/src/modules/cart/config/return-policy.config.test.ts",
+        "backend/src/remix/remix-api.service.test.ts",
+        "backend/src/remix/remix-api.service.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 78,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/cart/config/return-policy.config.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/modules/cart/config/shipping-policy.config.test.ts",
       "importedBy": [],
       "imports": [
@@ -98219,6 +98266,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/navbar-return-policy-banner.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 63,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/navbar-return-policy-banner.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/navbar-search-native-submit.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -98706,6 +98773,46 @@
       "loc": 315,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-schema-offers.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/pieces-schema-return-policy.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 180,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-schema-return-policy.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/pieces-schema-shipping.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 181,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-schema-shipping.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -108840,11 +108947,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4a6c9a565cec39045d2f64362399e6757cb85ac5af9843055d2be9b5a46c7e8e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "1be6247478279e2fa3194793fb4d0fa5eb58a2457b68e05d63702111efb0fca6",
+      "audit/registry/files.json": "1e8fd6196c03f69e17eb17fc5682fed04259f6795b07f69975b82a97ed82dd68",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "065849df18e7232c615cffca1056212136c1cef48d8ccebc88e868e1c23598a3"
     },
-    "sotFingerprint": "681cd1333a3f"
+    "sotFingerprint": "ec650040e201"
   },
   "runtime": [
     {
