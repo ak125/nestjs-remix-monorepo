@@ -147,10 +147,23 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       return null;
     });
 
+  // Politique de retour : même chemin, même règle d'indisponibilité (`null` ⇒
+  // ni délai de retour affiché ni hasMerchantReturnPolicy déclaré).
+  const returnPolicy = await Promise.resolve()
+    .then(() => getRemixApplicationPort(context).getReturnPolicy())
+    .catch((err) => {
+      logger.error(
+        "[root.loader] Politique de retour indisponible, délai de retour non affiché:",
+        err instanceof Error ? err.message : err,
+      );
+      return null;
+    });
+
   return {
     user,
     cart: cartPromise,
     shippingPolicy,
+    returnPolicy,
     isBot,
     cspNonce: context.get(cspNonceContext) || "",
     // Public runtime env exposed to the browser via `window.ENV` (see <script>

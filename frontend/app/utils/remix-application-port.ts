@@ -98,6 +98,26 @@ export interface ShippingPolicyResult {
   freeShippingThresholdTTC: number;
 }
 
+/* ── Politique de retour (PUBLIC) ──────────────────────────────────────────
+ * Servie par le backend depuis sa source unique, à côté de la politique de port
+ * (`backend/src/modules/cart/config/return-policy.config.ts`). Le frontend n'en
+ * porte aucune valeur.
+ */
+export interface ReturnPolicyResult {
+  /** Pays où la politique s'applique (ISO 3166-1 alpha-2). */
+  country: "FR";
+  /** Jours, comptés à partir de la réception, pour retourner un produit. */
+  returnWindowDays: number;
+  /** Comment le produit revient : envoi postal au service retour. */
+  returnMethod: "by_mail";
+  /** Qui paie le retour dans le cas général. */
+  returnFeesPaidBy: "customer";
+  /** Cas où le retour n'est pas à la charge du client. */
+  returnFeesWaivedFor: Array<"item_defect" | "seller_error">;
+  /** Moyen de remboursement. */
+  refundMethod: "original_payment_method";
+}
+
 /* ── Admin orders (ADMIN — re-authorized server-side) ──────────────────────── */
 export interface AdminOrdersQuery {
   page?: number;
@@ -158,6 +178,8 @@ export interface AdminStaffStatistics {
 export interface RemixApplicationPort {
   /** PUBLIC. */
   getShippingPolicy(): Promise<ShippingPolicyResult>;
+  /** PUBLIC. */
+  getReturnPolicy(): Promise<ReturnPolicyResult>;
   /** PUBLIC. */
   getHomepageFamilies(): Promise<HomepageFamiliesResult>;
   /** PUBLIC. */

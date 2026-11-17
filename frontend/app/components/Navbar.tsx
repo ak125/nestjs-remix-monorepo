@@ -20,6 +20,7 @@ import { useNativeDialog } from "~/hooks/useNativeDialog";
 import {
   useOptionalUser,
   useRootCart,
+  useReturnPolicy,
   useShippingPolicy,
 } from "~/hooks/useRootData";
 import { SITE_CONFIG } from "../config/site";
@@ -44,6 +45,7 @@ export const Navbar = memo(function Navbar() {
 
   const cartData = useRootCart();
   const shippingPolicy = useShippingPolicy();
+  const returnPolicy = useReturnPolicy();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const toggleCart = useCallback(() => setIsCartOpen((prev) => !prev), []);
   const closeCart = useCallback(() => setIsCartOpen(false), []);
@@ -523,8 +525,14 @@ export const Navbar = memo(function Navbar() {
               </span>
             </>
           )}
-          <span className="text-white/40 whitespace-nowrap">Retours 30j</span>
-          <span className="text-white/15 hidden lg:inline">·</span>
+          {returnPolicy && (
+            <>
+              <span className="text-white/40 whitespace-nowrap">
+                Retours {returnPolicy.returnWindowDays}j
+              </span>
+              <span className="text-white/15 hidden lg:inline">·</span>
+            </>
+          )}
           <a
             href={`tel:${SITE_CONFIG.contact.phone.raw}`}
             className="hidden lg:flex items-center gap-1.5 text-white/40 hover:text-white transition-colors whitespace-nowrap"

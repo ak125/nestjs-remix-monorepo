@@ -25,6 +25,15 @@ export const useShippingPolicy = () => {
 };
 
 /**
+ * Politique de retour (délai, frais, remboursement), servie par le backend dans
+ * le root loader. `null` si elle n'a pas pu être lue : aucun délai n'est affiché.
+ */
+export const useReturnPolicy = () => {
+  const data = useRouteLoaderData<typeof loader>("root");
+  return data?.returnPolicy ?? null;
+};
+
+/**
  * Hook pour accéder aux données du panier depuis le root loader.
  *
  * Le cart est chargé via defer() (P0 perf) : côté client c'est une Promise

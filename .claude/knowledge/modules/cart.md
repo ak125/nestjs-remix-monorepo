@@ -5,13 +5,13 @@ sources:
 last_scan: '2026-11-17'
 primary_files:
 - backend/src/modules/cart/cart.module.ts
+- backend/src/modules/cart/config/return-policy.config.test.ts
+- backend/src/modules/cart/config/return-policy.config.ts
 - backend/src/modules/cart/config/shipping-policy.config.test.ts
 - backend/src/modules/cart/config/shipping-policy.config.ts
 - backend/src/modules/cart/controllers/cart-analytics.controller.ts
 - backend/src/modules/cart/controllers/cart-controller.utils.ts
 - backend/src/modules/cart/controllers/cart-core.controller.ts
-- backend/src/modules/cart/controllers/cart-items.controller.test.ts
-- backend/src/modules/cart/controllers/cart-items.controller.ts
 depends_on:
 - DatabaseModule
 - ProductsModule
@@ -49,13 +49,13 @@ _Section à rédiger._
 
 ### Fichiers primaires
 - [backend/src/modules/cart/cart.module.ts](../../../backend/src/modules/cart/cart.module.ts)
+- [backend/src/modules/cart/config/return-policy.config.test.ts](../../../backend/src/modules/cart/config/return-policy.config.test.ts)
+- [backend/src/modules/cart/config/return-policy.config.ts](../../../backend/src/modules/cart/config/return-policy.config.ts)
 - [backend/src/modules/cart/config/shipping-policy.config.test.ts](../../../backend/src/modules/cart/config/shipping-policy.config.test.ts)
 - [backend/src/modules/cart/config/shipping-policy.config.ts](../../../backend/src/modules/cart/config/shipping-policy.config.ts)
 - [backend/src/modules/cart/controllers/cart-analytics.controller.ts](../../../backend/src/modules/cart/controllers/cart-analytics.controller.ts)
 - [backend/src/modules/cart/controllers/cart-controller.utils.ts](../../../backend/src/modules/cart/controllers/cart-controller.utils.ts)
 - [backend/src/modules/cart/controllers/cart-core.controller.ts](../../../backend/src/modules/cart/controllers/cart-core.controller.ts)
-- [backend/src/modules/cart/controllers/cart-items.controller.test.ts](../../../backend/src/modules/cart/controllers/cart-items.controller.test.ts)
-- [backend/src/modules/cart/controllers/cart-items.controller.ts](../../../backend/src/modules/cart/controllers/cart-items.controller.ts)
 
 <!-- END AUTO-GENERATED -->
 

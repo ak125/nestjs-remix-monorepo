@@ -20,6 +20,7 @@ import type {
   RemixApplicationPort,
   PortActor,
   ShippingPolicyResult,
+  ReturnPolicyResult,
   HomepageFamiliesResult,
   HomepageBelowFoldResult,
   AdminOrdersQuery,
@@ -32,6 +33,7 @@ import { OrdersService } from '../database/services/orders.service';
 import { HomepageRpcService } from '../modules/catalog/services/homepage-rpc.service';
 import { StaffService } from '../modules/staff/staff.service';
 import { publicShippingPolicy } from '../modules/cart/config/shipping-policy.config';
+import { publicReturnPolicy } from '../modules/cart/config/return-policy.config';
 
 /**
  * Canonical admin gate — mirrors `IsAdminGuard` / `AdminSessionGuard`
@@ -84,6 +86,8 @@ export class RemixApiService {
       // Lecture en mémoire de la source unique : ni base, ni réseau, ni cache.
       getShippingPolicy: async (): Promise<ShippingPolicyResult> =>
         publicShippingPolicy(),
+      getReturnPolicy: async (): Promise<ReturnPolicyResult> =>
+        publicReturnPolicy(),
       getHomepageFamilies: () => this.getHomepageFamilies(),
       getHomepageBelowFold: () => this.getHomepageBelowFold(),
       // ── ADMIN (re-authorized server-side, then direct DI) ──

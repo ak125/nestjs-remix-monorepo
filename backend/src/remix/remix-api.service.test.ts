@@ -19,6 +19,7 @@
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { RemixApiService } from './remix-api.service';
 import { SHIPPING_POLICY } from '../modules/cart/config/shipping-policy.config';
+import { RETURN_POLICY } from '../modules/cart/config/return-policy.config';
 
 jest.mock('../database/services/orders.service');
 jest.mock('../modules/catalog/services/homepage-rpc.service');
@@ -129,6 +130,20 @@ describe('RemixApiService.createRequestPort — actor-bound frozen port', () => 
     ).resolves.toEqual({
       flatFeeTTC: SHIPPING_POLICY.france.flatFeeTTC,
       freeShippingThresholdTTC: SHIPPING_POLICY.france.freeFromSubtotalTTC,
+    });
+  });
+
+  it('PUBLIC return policy is served from the single source, without an actor', async () => {
+    const { svc } = makeService();
+    await expect(
+      svc.createRequestPort(null).getReturnPolicy(),
+    ).resolves.toEqual({
+      country: RETURN_POLICY.country,
+      returnWindowDays: RETURN_POLICY.returnWindowDays,
+      returnMethod: RETURN_POLICY.returnMethod,
+      returnFeesPaidBy: RETURN_POLICY.returnFeesPaidBy,
+      returnFeesWaivedFor: [...RETURN_POLICY.returnFeesWaivedFor],
+      refundMethod: RETURN_POLICY.refundMethod,
     });
   });
 

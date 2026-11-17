@@ -70,6 +70,10 @@ const build = (pieces: PieceData[]) =>
     seo: { description: "Alternateur pour AUDI A4 III 2.5 TDI" },
     count: pieces.length,
     canonicalUrl: CANONICAL,
+    // Port et retours des offres : pieces-schema-shipping.test.ts et
+    // pieces-schema-return-policy.test.ts.
+    shippingPolicy: null,
+    returnPolicy: null,
   });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -265,7 +269,12 @@ describe("buildPiecesVehicleMeta — JSON-LD de la page pièces", () => {
   });
 
   const productOffers = (pieces: PieceData[]) => {
-    const meta = buildPiecesVehicleMeta(data(pieces), { pathname: "/x" });
+    const meta = buildPiecesVehicleMeta(
+      data(pieces),
+      { pathname: "/x" },
+      null,
+      null,
+    );
     const ld = meta.find(
       (m) => "script:ld+json" in m && "@graph" in (m["script:ld+json"] as Node),
     ) as Node | undefined;
@@ -289,6 +298,8 @@ describe("buildPiecesVehicleMeta — JSON-LD de la page pièces", () => {
     const meta = buildPiecesVehicleMeta(
       data([piece(1, 137, "IN_STOCK"), piece(2, 60, "PREORDER")]),
       { pathname: "/x" },
+      null,
+      null,
     );
     const json = JSON.stringify(meta);
     expect(json).not.toContain('"availability"');

@@ -10,6 +10,10 @@ import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives"
 import { resolvePartImagePath } from "~/utils/image-optimizer";
 import { getOgImageUrl } from "~/utils/og-image.utils";
 import {
+  type ReturnPolicyResult,
+  type ShippingPolicyResult,
+} from "~/utils/remix-application-port";
+import {
   buildHeroImagePreload,
   buildPiecesProductSchema,
 } from "~/utils/seo/pieces-schema.utils";
@@ -83,6 +87,8 @@ function buildSoft404Meta(data: NoProductsData): MetaDescriptor[] {
 export function buildPiecesVehicleMeta(
   data: any,
   location: { pathname: string },
+  shippingPolicy: ShippingPolicyResult | null,
+  returnPolicy: ReturnPolicyResult | null,
 ): MetaDescriptor[] {
   if (!data) {
     return [
@@ -117,6 +123,8 @@ export function buildPiecesVehicleMeta(
     oemRefsSeo: d.oemRefsSeo,
     crossSellingGammes: d.crossSellingGammes,
     canonicalUrl,
+    shippingPolicy,
+    returnPolicy,
   });
 
   return [
