@@ -55,7 +55,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   },
   "2": { label: "Annulée", color: "bg-red-100 text-red-800 border-red-200" },
   "3": {
-    label: "Attente frais de port",
+    label: "Payée, en préparation",
     color: "bg-orange-100 text-orange-800 border-orange-200",
   },
   "4": {

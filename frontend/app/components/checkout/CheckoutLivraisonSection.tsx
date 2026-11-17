@@ -3,8 +3,11 @@ import { Link } from "react-router";
 
 import {
   validateShippingAddress,
+  VEHICLE_REFERENCE_MAX_LENGTH,
+  vehicleReferenceSchema,
   type CheckoutFieldErrors,
 } from "~/schemas/checkout.schemas";
+import { COMPATIBILITY_NOTICE } from "./compatibility-notice";
 
 export interface ShippingAddress {
   civility: string;
@@ -37,6 +40,9 @@ interface Props {
   onShippingAddressChange: (addr: ShippingAddress) => void;
   guestEmail: string;
   onGuestEmailChange: (email: string) => void;
+  /** Immatriculation, VIN ou reference de la piece — facultatif (mandat BN) */
+  vehicleReference: string;
+  onVehicleReferenceChange: (value: string) => void;
   onValidated: () => void;
   fieldErrors?: Partial<Record<string, string[]>>;
   emailConflict?: boolean;
@@ -49,6 +55,8 @@ export function CheckoutLivraisonSection({
   onShippingAddressChange,
   guestEmail,
   onGuestEmailChange,
+  vehicleReference,
+  onVehicleReferenceChange,
   onValidated,
   fieldErrors,
   emailConflict,
@@ -175,10 +183,24 @@ export function CheckoutLivraisonSection({
   };
 
   const handleContinue = () => {
-    const errors = validateShippingAddress({
+    const addressErrors = validateShippingAddress({
       ...shippingAddress,
       phone: shippingAddress.phone || "",
     });
+    const referenceResult = vehicleReferenceSchema.safeParse(vehicleReference);
+    const errors: CheckoutFieldErrors | null =
+      addressErrors || !referenceResult.success
+        ? {
+            ...(addressErrors ?? {}),
+            ...(referenceResult.success
+              ? {}
+              : {
+                  vehicleReference: referenceResult.error.issues.map(
+                    (i) => i.message,
+                  ),
+                }),
+          }
+        : null;
     if (errors) {
       setIsEditingAddress(true); // ouvre le formulaire pour afficher les erreurs (mode récap sans champs)
       setLocalErrors(errors);
@@ -190,6 +212,7 @@ export function CheckoutLivraisonSection({
         "zipCode",
         "city",
         "phone",
+        "vehicleReference",
       ].find((f) => errors[f as keyof CheckoutFieldErrors]);
       if (firstField) {
         setTimeout(() => {
@@ -650,6 +673,45 @@ export function CheckoutLivraisonSection({
               )}
             </div>
           )}
+
+          {/* Immatriculation / VIN / reference — facultatif (mandat BN) */}
+          <div>
+            <label
+              htmlFor="vehicleReference"
+              className="block text-sm font-medium text-slate-700 mb-1"
+            >
+              Immatriculation, VIN ou référence de la pièce{" "}
+              <span className="font-normal text-slate-400">(facultatif)</span>
+            </label>
+            <input
+              type="text"
+              id="vehicleReference"
+              name="vehicleReference"
+              autoComplete="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              maxLength={VEHICLE_REFERENCE_MAX_LENGTH}
+              value={vehicleReference}
+              onChange={(e) => {
+                if (localErrors) setLocalErrors({});
+                onVehicleReferenceChange(e.target.value);
+              }}
+              aria-describedby="vehicleReference-help"
+              className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.vehicleReference ? "border-red-400" : "border-slate-300"}`}
+              placeholder="AB-123-CD, VF1… ou référence"
+            />
+            <p
+              id="vehicleReference-help"
+              className="text-xs text-slate-500 mt-1"
+            >
+              {COMPATIBILITY_NOTICE}.
+            </p>
+            {mergedErrors?.vehicleReference && (
+              <p className="text-xs text-red-600 mt-1">
+                {mergedErrors.vehicleReference[0]}
+              </p>
+            )}
+          </div>
 
           {/* Bouton continuer vers paiement */}
           <button

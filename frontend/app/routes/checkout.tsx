@@ -31,6 +31,7 @@ import {
 import { CheckoutOrderSummary } from "~/components/checkout/CheckoutOrderSummary";
 import { CheckoutPaiementSection } from "~/components/checkout/CheckoutPaiementSection";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
+import { COMPATIBILITY_NOTICE } from "~/components/checkout/compatibility-notice";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   MobileBottomBar,
@@ -59,6 +60,7 @@ import {
 import {
   buildOrderLines,
   buildPayboxRedirectUrl,
+  buildVehicleCheckPayload,
   createCheckoutOrder,
 } from "~/services/order.server";
 import { getUserProfile } from "~/services/profile.server";
@@ -175,6 +177,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         city: "Ville",
         country: "Pays",
         phone: "Telephone",
+        vehicleReference: "Immatriculation, VIN ou reference",
         guestEmail: "Email",
         paymentMethod: "Methode de paiement",
         acceptTerms: "Conditions generales",
@@ -205,6 +208,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       civility,
       country,
       phone,
+      vehicleReference,
       paymentMethod,
     } = parsed.data;
 
@@ -260,6 +264,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const idempotencyKey = formData.get("idempotencyKey") as string | null;
     const gaClientId = formData.get("gaClientId") as string | null;
 
+    // Verification vehicule (mandat BN) : reference facultative du client +
+    // vehicule du contexte, lu cote serveur dans le cookie vehicule.
+    const vehicleCheck = buildVehicleCheckPayload(
+      vehicleReference,
+      await getVehicleFromCookie(request.headers.get("Cookie")),
+    );
+
     const orderResult = await createCheckoutOrder(request, {
       customerId: cartData.metadata?.user_id || undefined,
       guestEmail: isGuest ? guestEmail : undefined,
@@ -271,6 +282,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       paymentMethod,
       idempotencyKey: idempotencyKey || undefined,
       gaClientId: gaClientId || undefined,
+      vehicleCheck,
     });
 
     logger.log("[Checkout] Order result:", {
@@ -503,6 +515,9 @@ export default function CheckoutPage() {
       "France",
   });
 
+  // Immatriculation / VIN / reference (facultatif — mandat BN)
+  const [vehicleReference, setVehicleReference] = useState("");
+
   // Payment
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [clientErrors, setClientErrors] = useState<CheckoutFieldErrors | null>(
@@ -664,6 +679,7 @@ export default function CheckoutPage() {
         "zipCode",
         "city",
         "phone",
+        "vehicleReference",
       ];
       const firstField = [...livFields, "paymentMethod", "acceptTerms"].find(
         (f) => errors[f as keyof CheckoutFieldErrors],
@@ -699,6 +715,7 @@ export default function CheckoutPage() {
       city: shippingAddress.city,
       country: shippingAddress.country,
       phone: shippingAddress.phone || "",
+      vehicleReference,
       paymentMethod: selectedPaymentMethod,
       acceptTerms: acceptedTerms ? "on" : "",
     };
@@ -723,6 +740,7 @@ export default function CheckoutPage() {
     fd.set("country", shippingAddress.country);
     fd.set("paymentMethod", selectedPaymentMethod);
     fd.set("phone", shippingAddress.phone);
+    fd.set("vehicleReference", vehicleReference);
     fd.set("acceptTerms", "on");
     fd.set("idempotencyKey", idempotencyKey);
     // GA4 client_id pour Measurement Protocol purchase côté serveur
@@ -866,21 +884,8 @@ export default function CheckoutPage() {
                   .filter(Boolean)
                   .join(" ")}
               </span>
-              <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
-                <svg
-                  className="h-3.5 w-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                Compatibilite verifiee
+              <span className="text-xs text-slate-600">
+                {COMPATIBILITY_NOTICE}.
               </span>
             </p>
           )}
@@ -1110,6 +1115,8 @@ export default function CheckoutPage() {
                     onShippingAddressChange={setShippingAddress}
                     guestEmail={guestEmail}
                     onGuestEmailChange={setGuestEmail}
+                    vehicleReference={vehicleReference}
+                    onVehicleReferenceChange={setVehicleReference}
                     onValidated={handleLivraisonValidated}
                     fieldErrors={fieldErrors}
                     emailConflict={actionError?.code === "EMAIL_CONFLICT"}

@@ -1,6 +1,5 @@
 import {
   Car,
-  CheckCircle,
   CreditCard,
   Package,
   RotateCcw,
@@ -15,6 +14,7 @@ import {
 } from "~/schemas/cart.schemas";
 import { calculateDeliveryETA, type StockStatus } from "~/utils/delivery-eta";
 import { type VehicleCookie } from "~/utils/vehicle-cookie";
+import { COMPATIBILITY_NOTICE } from "./compatibility-notice";
 import { FreeShippingBar } from "./FreeShippingBar";
 import { PromoCodeInput } from "./PromoCodeInput";
 
@@ -66,9 +66,8 @@ export function CheckoutOrderSummary({
             <p className="text-sm font-medium text-slate-800 truncate">
               {vehicleLabel}
             </p>
-            <span className="inline-flex items-center gap-1 text-xs text-emerald-700">
-              <CheckCircle className="h-3 w-3" />
-              Compatibilite verifiee
+            <span className="text-xs text-slate-600">
+              {COMPATIBILITY_NOTICE}.
             </span>
           </div>
         </div>
@@ -147,9 +146,9 @@ export function CheckoutOrderSummary({
               {cart.items.length > 1 ? "s" : ""}
             </p>
             {vehicleLabel && (
-              <p className="flex items-center gap-1.5 text-xs text-emerald-600">
-                <CheckCircle className="h-3 w-3 shrink-0" />
-                Pieces compatibles avec votre vehicule
+              <p className="flex items-center gap-1.5 text-xs text-slate-600">
+                <Car className="h-3 w-3 shrink-0" />
+                {COMPATIBILITY_NOTICE}.
               </p>
             )}
           </div>

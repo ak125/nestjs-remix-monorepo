@@ -25,7 +25,9 @@ export type OrderStatusCode = (typeof OrderStatus)[keyof typeof OrderStatus];
 export const ORDER_STATUS_LABEL: Record<OrderStatusCode, string> = {
   '1': 'Commande en cours de traitement',
   '2': 'Commande annulée',
-  '3': 'En attente de rajout de frais de port',
+  // Mandat BN (2026-11-17) : libellé aligné sur la migration
+  // 20261117_order_status_3_label.sql (préparée, appliquée par l'owner).
+  '3': 'Payée, en préparation',
   '4': 'Rajout de frais de port reçu',
   '5': 'Payée — En préparation',
 };

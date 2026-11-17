@@ -82,7 +82,7 @@ export const OrderEditForm = memo(function OrderEditForm({
               >
                 <option value="1">En cours de traitement</option>
                 <option value="2">Annulee</option>
-                <option value="3">Attente frais de port</option>
+                <option value="3">Payée, en préparation</option>
                 <option value="4">Frais de port recu</option>
                 <option value="5">Payee — En preparation</option>
               </select>

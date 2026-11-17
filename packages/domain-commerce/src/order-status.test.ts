@@ -31,6 +31,10 @@ describe('ORDER_STATUS_LABEL', () => {
     }
   });
 
+  it('exposes the status 3 label set by mandate BN (migration 20261117)', () => {
+    assert.equal(ORDER_STATUS_LABEL['3'], 'Payée, en préparation');
+  });
+
   it('exposes the cancellation label exactly as DB stores it', () => {
     assert.equal(ORDER_STATUS_LABEL['2'], 'Commande annulée');
   });

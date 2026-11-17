@@ -39,7 +39,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
   },
   {
     id: "3",
-    name: "Attente frais port",
+    name: "Payée, en préparation",
     icon: Package,
     bgColor: "bg-orange-100",
     textColor: "text-orange-700",
