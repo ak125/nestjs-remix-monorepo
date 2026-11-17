@@ -261,6 +261,35 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L2 (`automation-registry-validate.yml`, `cron-schedulemodule-guard.yml`). Trois
   décorateurs `@Cron(` subsistent dans `backend/src` alors que `ScheduleModule` est désactivé. Le
   module `command-center-orchestrator` existe sous drapeau éteint (ADR-087).
+- **P42.** Un incident a une fiche : une issue du monorepo, au label `incident`. Aucun autre
+  registre d'incidents n'est tenu. La fiche a trois rubriques obligatoires : ce qui s'est passé,
+  pourquoi, ce qui l'empêche de revenir. Elle ne se ferme que lorsque la troisième désigne, avec
+  son lien, le test ou le contrôle automatique qui empêche le retour de l'incident. Si aucun
+  contrôle n'est possible, la fiche le dit et reste ouverte jusqu'à la décision de l'owner. Le
+  dépôt est public : une fiche ne porte ni secret, ni détail qui aiderait une attaque, ni donnée
+  de client. Un compte rendu d'incident resté dans le vault y reste lisible, sans être recopié.
+  Source : décision 138 de l'owner, 17 nov. 2026. À 16:51, heure de Paris, sur la fiche par
+  incident : « oui mais il faut que cela sert de memoire pour ne plus avoir les meme incident ».
+  À 17:18, à la question « D'accord pour cette règle : une fiche d'incident ne peut être fermée
+  que lorsqu'elle indique ce qui empêche désormais son retour (un test ou un contrôle
+  automatique), avec le lien ? » : « oui ».
+  Application, relevé du 2026-11-17 sur `main` `a9bd755d6` : L0. Rien ne porte encore la règle en
+  service. `scripts/ci/incident-issue-gate.mjs` rend le verdict d'une fiche fermée (`evaluate`,
+  l. 201) et rédige le commentaire de réouverture (`renderComment`, l. 247), mais aucun workflow
+  ne le lance et son test n'est pas dans le dépôt. Le gabarit `.github/ISSUE_TEMPLATE/incident.yml`,
+  le workflow `.github/workflows/incident-issue-gate.yml`, le test et son étape dans `audit.yml`
+  sont dans un patch réservé à l'owner
+  (`docs/audit/mandat-bd-20261116/complement-4-incidents/`). Ce patch fusionné : L2. L3 à la
+  première réouverture observée. Limites du contrôle : un lien est admis s'il désigne une PR
+  fusionnée de ce dépôt ou un fichier présent sur `main` ; le contrôle ne juge pas si le test cité
+  couvre la cause. Retirer le label `incident` sort la fiche du contrôle. Écarts, relevé du
+  2026-11-17 à 20:47 UTC sur `main` `705dc2c1e` : deux issues portent le label `incident`, #264 et
+  #2144, toutes deux ouvertes. #264 n'a aucune des trois rubriques ; #2144 a les trois, mais la
+  première sous le titre « Ce qui se passe », qui n'est pas celui du gabarit. Deux comptes rendus
+  antérieurs sont des fichiers (`.spec/incidents/2026-02-configservice-crash.md`,
+  `.spec/reports/incident-2026-04-14-payments-sev1.md`). Une fiche ouverte figure dans la liste
+  que lit la routine de P24 (`scripts/ops/pilote-file.sh`, l. 58), qui liste toutes les issues
+  ouvertes. À relever à nouveau à la fusion.
 
 ## Méthode
 
