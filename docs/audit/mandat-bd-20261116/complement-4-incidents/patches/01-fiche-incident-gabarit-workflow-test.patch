@@ -1,0 +1,568 @@
+diff --git a/.github/ISSUE_TEMPLATE/incident.yml b/.github/ISSUE_TEMPLATE/incident.yml
+new file mode 100644
+index 000000000..479432fec
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/incident.yml
+@@ -0,0 +1,43 @@
++name: Incident
++description: Une fiche par incident. Elle ne se ferme que lorsqu'elle dit ce qui empêche son retour.
++title: "[Incident] "
++labels: ["incident"]
++body:
++  - type: markdown
++    attributes:
++      value: |
++        **Ce dépôt est public.** N'écrivez ici aucun secret, aucun détail qui aiderait une attaque et aucune donnée de client : ni clé, ni jeton, ni adresse de machine, ni nom, adresse e-mail ou numéro de commande d'un client. Un détail sensible se donne à l'owner, hors du dépôt.
++
++        Une fiche par incident. Les trois rubriques sont obligatoires pour fermer la fiche. À l'ouverture, seule la première l'est : la cause et la parade s'écrivent quand elles sont connues, en modifiant la fiche.
++
++        La fiche ne reste fermée que si la troisième rubrique porte un lien admis. Sinon elle est rouverte, avec un commentaire qui dit ce qui manque. Ne pas renommer les titres des rubriques : le contrôle les lit (`scripts/ci/incident-issue-gate.mjs`).
++  - type: textarea
++    id: ce-qui-s-est-passe
++    attributes:
++      label: Ce qui s'est passé
++      description: Les faits, datés (heure UTC), l'effet constaté et comment l'incident a été vu.
++    validations:
++      required: true
++  - type: textarea
++    id: pourquoi
++    attributes:
++      label: Pourquoi
++      description: La cause établie, avec sa preuve. Tant qu'elle n'est pas connue, laisser vide ; une hypothèse se signale comme telle.
++    validations:
++      required: false
++  - type: textarea
++    id: ce-qui-l-empeche-de-revenir
++    attributes:
++      label: Ce qui l'empêche de revenir
++      description: |
++        Le test ou le contrôle automatique qui échoue si la cause revient, avec son lien. Liens admis : une PR fusionnée de ce dépôt (#123 ou son adresse), ou l'adresse sur `main` d'un fichier de ce dépôt (test, règle, workflow). Une PR ouverte, une issue ou un commit ne suffisent pas.
++    validations:
++      required: false
++  - type: checkboxes
++    id: aucun-controle-possible
++    attributes:
++      label: Aucun contrôle possible
++      description: À cocher seulement si aucun test ni contrôle automatique ne peut empêcher le retour. La raison s'écrit dans la rubrique précédente. La fiche reste alors ouverte jusqu'à la décision de l'owner, qui est seul à la fermer.
++      options:
++        - label: Aucun test ni contrôle automatique ne peut empêcher le retour de cet incident.
++          required: false
+diff --git a/.github/workflows/audit.yml b/.github/workflows/audit.yml
+index 903d519a7..29577b212 100644
+--- a/.github/workflows/audit.yml
++++ b/.github/workflows/audit.yml
+@@ -152,6 +152,11 @@ jobs:
+         # no workflow ran it: the citation was a YAML comment.
+         run: node --test scripts/ci/pr-dod-gate.test.mjs
+ 
++      - name: 🧯 Incident issue gate — verdict, comment and API calls unit proof (BLOCKING)
++        # incident-issue-gate.yml reopens a closed incident issue that does not say what
++        # prevents its return. This runs the proof of the verdicts that workflow acts on.
++        run: node --test scripts/ci/incident-issue-gate.test.mjs
++
+       - name: 📦 Initial-load size verifier — fails on the states it exists to catch (BLOCKING)
+         # The npm script existed; no workflow called it.
+         run: npm run size:verify-paths:test
+diff --git a/.github/workflows/incident-issue-gate.yml b/.github/workflows/incident-issue-gate.yml
+new file mode 100644
+index 000000000..6f8d93c89
+--- /dev/null
++++ b/.github/workflows/incident-issue-gate.yml
+@@ -0,0 +1,76 @@
++name: 🧯 Fiche d'incident — fermeture contrôlée
++
++# Règle du journal des principes (décision 138 de l'owner) : une fiche par
++# incident, à trois rubriques ; elle ne reste fermée que si la rubrique « Ce qui
++# l'empêche de revenir » porte un lien admis. Sinon elle est rouverte, avec un
++# commentaire qui dit ce qui manque. Cas « aucun contrôle possible » : seul
++# l'owner ferme.
++#
++# Verdict et commentaire : scripts/ci/incident-issue-gate.mjs, prouvé par
++# scripts/ci/incident-issue-gate.test.mjs (lancé par audit.yml sur chaque PR).
++# Gabarit : .github/ISSUE_TEMPLATE/incident.yml.
++#
++# Un workflow déclenché par `issues` exécute le fichier de la branche par
++# défaut. Le corps de l'issue est un texte non sûr : il n'est jamais écrit dans
++# un `run:` ; le script le lit par l'API.
++#
++# La réouverture est faite avec le jeton du workflow : elle ne relance aucun
++# workflow. Une panne de l'API fait échouer le job sans rien rouvrir.
++#
++# Lancement manuel : balayage de toutes les fiches fermées, ou d'une seule ;
++# à blanc par défaut (verdicts dans le journal du job, rien n'est écrit).
++
++on:
++  issues:
++    types: [closed, edited, labeled]
++  workflow_dispatch:
++    inputs:
++      issue_number:
++        description: "Numéro d'une fiche (vide = toutes les fiches fermées)"
++        required: false
++        type: string
++      dry_run:
++        description: "Essai à blanc : ne rouvre rien, ne commente rien"
++        required: false
++        type: boolean
++        default: true
++
++concurrency:
++  group: incident-issue-gate-${{ github.event.issue.number || 'balayage' }}
++  cancel-in-progress: false
++
++permissions:
++  contents: read
++  issues: write
++
++jobs:
++  gate:
++    name: 🧯 Fiche d'incident
++    if: >-
++      github.event_name == 'workflow_dispatch' ||
++      (github.event.issue.state == 'closed' &&
++       !github.event.issue.pull_request &&
++       contains(github.event.issue.labels.*.name, 'incident'))
++    runs-on: ubuntu-latest
++    timeout-minutes: 5
++    steps:
++      - name: ⬇️ Checkout de la branche par défaut
++        uses: actions/checkout@v7
++        with:
++          ref: ${{ github.event.repository.default_branch }}
++          persist-credentials: false
++
++      - name: 🟢 Setup Node 24
++        uses: actions/setup-node@v7
++        with:
++          node-version: 24
++          package-manager-cache: false
++
++      - name: 🧯 Contrôler la fiche
++        env:
++          GH_TOKEN: ${{ github.token }}
++          OWNER_LOGIN: ak125
++          INCIDENT_LABEL: incident
++          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
++          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
++        run: node scripts/ci/incident-issue-gate.mjs
+diff --git a/scripts/ci/incident-issue-gate.test.mjs b/scripts/ci/incident-issue-gate.test.mjs
+new file mode 100644
+index 000000000..9fb9b9c22
+--- /dev/null
++++ b/scripts/ci/incident-issue-gate.test.mjs
+@@ -0,0 +1,415 @@
++// =============================================================================
++// Tests for incident-issue-gate.mjs — verdict, comment, API calls.
++// Run: node --test scripts/ci/incident-issue-gate.test.mjs
++// =============================================================================
++import { test, describe } from "node:test";
++import assert from "node:assert/strict";
++import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { join } from "node:path";
++
++import {
++  MARKER,
++  SECTIONS,
++  parseFiche,
++  extractRefs,
++  evaluate,
++  renderComment,
++  fileOnDefaultBranch,
++  checkIssue,
++  run,
++  githubApi,
++} from "./incident-issue-gate.mjs";
++
++const REPO = "acme/shop";
++const OWNER = "owner";
++const WEB = `https://github.com/${REPO}`;
++
++// Body as GitHub renders the issue form: `### <label>`, then the answer.
++function fiche({ what = "Le sitemap n'a pas été régénéré.", why = "Le déclencheur avait été retiré.", prevention = "_No response_", noControl = false } = {}) {
++  const parts = [];
++  if (what !== null) parts.push(`### ${SECTIONS.what}`, "", what, "");
++  if (why !== null) parts.push(`### ${SECTIONS.why}`, "", why, "");
++  if (prevention !== null) parts.push(`### ${SECTIONS.prevention}`, "", prevention, "");
++  parts.push(`### ${SECTIONS.noControl}`, "", `- [${noControl ? "X" : " "}] Aucun test ni contrôle automatique ne peut empêcher le retour.`, "");
++  return parts.join("\n");
++}
++
++function issue(overrides = {}) {
++  return {
++    number: 900,
++    state: "closed",
++    labels: [{ name: "incident" }],
++    closed_by: { login: "someone" },
++    body: fiche(),
++    ...overrides,
++  };
++}
++
++const verdict = (overrides, extra = {}) => evaluate({ issue: issue(overrides), repo: REPO, ownerLogin: OWNER, ...extra });
++
++describe("périmètre", () => {
++  test("une issue sans le label n'est pas une fiche", () => {
++    assert.equal(verdict({ labels: [{ name: "incident-sitemap-cron" }] }).action, "skip");
++  });
++  test("une PR labellisée n'est pas une fiche", () => {
++    assert.equal(verdict({ pull_request: {} }).action, "skip");
++  });
++  test("une fiche ouverte n'est pas jugée", () => {
++    assert.equal(verdict({ state: "open" }).action, "skip");
++  });
++  test("les labels en chaînes sont lus", () => {
++    assert.equal(verdict({ labels: ["incident"] }).action, "reopen");
++  });
++});
++
++describe("fiche fermée sans la troisième rubrique", () => {
++  test("rubrique absente : rouverte, le manque est nommé", () => {
++    const r = verdict({ body: fiche({ prevention: null }) });
++    assert.equal(r.action, "reopen");
++    assert.deepEqual(r.missing, [`la rubrique « ${SECTIONS.prevention} » est absente`]);
++  });
++  test("rubrique laissée vide par le formulaire : rouverte", () => {
++    const r = verdict({});
++    assert.equal(r.action, "reopen");
++    assert.deepEqual(r.missing, [`la rubrique « ${SECTIONS.prevention} » est vide`]);
++  });
++  test("« à compléter » ne remplit pas une rubrique", () => {
++    assert.match(verdict({ body: fiche({ prevention: "À compléter" }) }).missing[0], /est vide/);
++  });
++  test("un commentaire HTML ne remplit pas une rubrique", () => {
++    assert.match(verdict({ body: fiche({ prevention: "<!-- #12 -->" }) }).missing[0], /est vide/);
++  });
++  test("rubrique remplie sans lien : rouverte", () => {
++    const r = verdict({ body: fiche({ prevention: "Un test a été ajouté." }) });
++    assert.equal(r.action, "reopen");
++    assert.deepEqual(r.missing, [`la rubrique « ${SECTIONS.prevention} » ne porte aucun lien admis`]);
++  });
++  test("corps libre, sans aucune rubrique : les trois manques sont listés", () => {
++    const r = verdict({ body: "## Contexte\n\nUn texte libre, avec #12." }, { resolved: { 12: "merged" } });
++    assert.equal(r.action, "reopen");
++    assert.equal(r.missing.length, 3);
++  });
++  test("corps nul", () => {
++    assert.equal(verdict({ body: null }).missing.length, 3);
++  });
++  test("les deux premières rubriques sont exigées aussi", () => {
++    const r = verdict({ body: fiche({ why: "_No response_", prevention: "Corrigé par #12." }) }, { resolved: { 12: "merged" } });
++    assert.equal(r.action, "reopen");
++    assert.deepEqual(r.missing, [`la rubrique « ${SECTIONS.why} » est vide`]);
++  });
++});
++
++describe("fiche complète", () => {
++  test("PR fusionnée citée par son numéro : la fermeture tient", () => {
++    const r = verdict({ body: fiche({ prevention: "Le test ajouté par #12 échoue si le déclencheur disparaît." }) }, { resolved: { 12: "merged" } });
++    assert.deepEqual(r, { action: "keep", reason: "PR #12 fusionnée" });
++  });
++  test("PR fusionnée citée par son adresse", () => {
++    const r = verdict({ body: fiche({ prevention: `Voir ${WEB}/pull/12.` }) }, { resolved: { 12: "merged" } });
++    assert.equal(r.action, "keep");
++  });
++  test("fichier présent sur main", () => {
++    const r = verdict(
++      { body: fiche({ prevention: `Test : ${WEB}/blob/main/scripts/ci/x.test.mjs#L10` }) },
++      { fileExists: (ref) => ref.path === "scripts/ci/x.test.mjs" },
++    );
++    assert.equal(r.action, "keep");
++    assert.match(r.reason, /présent sur main/);
++  });
++  test("workflow du dépôt", () => {
++    const r = verdict(
++      { body: fiche({ prevention: `Sonde : ${WEB}/actions/workflows/probe.yml` }) },
++      { fileExists: (ref) => ref.kind === "workflow" && ref.file === "probe.yml" },
++    );
++    assert.equal(r.action, "keep");
++  });
++  test("un lien admis suffit, les autres sont ignorés", () => {
++    const r = verdict({ body: fiche({ prevention: "#12 puis #13 (en cours)." }) }, { resolved: { 12: "merged", 13: "open" } });
++    assert.equal(r.action, "keep");
++  });
++});
++
++describe("liens qui n'empêchent rien", () => {
++  const cases = [
++    ["PR ouverte", "Corrigé par #12.", { 12: "open" }, /PR non fusionnée/],
++    ["PR fermée sans fusion", "Corrigé par #12.", { 12: "closed" }, /fermée sans fusion/],
++    ["issue", "Suivi dans #12.", { 12: "issue" }, /issue, pas une PR/],
++    ["numéro inconnu", "Corrigé par #12.", {}, /introuvable/],
++    ["commit", `${WEB}/commit/abcdef1234567`, {}, /ni PR fusionnée ni fichier/],
++    ["run", `${WEB}/actions/runs/123456`, {}, /ni PR fusionnée ni fichier/],
++    ["fichier absent", `${WEB}/blob/main/absent.test.mjs`, {}, /absent de main/],
++    ["fichier cité sur une branche", `${WEB}/blob/feat-x/present.mjs`, {}, /absent de main/],
++  ];
++  for (const [name, prevention, resolved, why] of cases) {
++    test(name, () => {
++      const r = verdict({ body: fiche({ prevention }) }, { resolved });
++      assert.equal(r.action, "reopen");
++      assert.equal(r.rejected.length, 1);
++      assert.match(r.rejected[0], why);
++    });
++  }
++  test("la fiche ne se cite pas elle-même", () => {
++    const r = verdict({ body: fiche({ prevention: "Voir #900." }) }, { resolved: { 900: "merged" } });
++    assert.equal(r.action, "reopen");
++  });
++  test("un autre dépôt n'est pas lu", () => {
++    const r = verdict({ body: fiche({ prevention: "https://github.com/other/repo/pull/12" }) }, { resolved: { 12: "merged" } });
++    assert.equal(r.action, "reopen");
++    assert.deepEqual(r.rejected, []);
++  });
++  test("un lien posé dans une autre rubrique ne compte pas", () => {
++    const r = verdict({ body: fiche({ why: "Régression de #12.", prevention: "Rien pour l'instant." }) }, { resolved: { 12: "merged" } });
++    assert.equal(r.action, "reopen");
++  });
++});
++
++describe("aucun contrôle possible", () => {
++  const body = fiche({ prevention: "Panne du fournisseur : aucun test de ce dépôt ne peut la prévenir.", noControl: true });
++  test("fermée par un autre que l'owner : rouverte", () => {
++    const r = verdict({ body, closed_by: { login: "someone" } });
++    assert.equal(r.action, "reopen");
++    assert.match(r.missing[0], /reste ouverte jusqu'à la décision de l'owner/);
++  });
++  test("fermeture sans auteur connu : rouverte", () => {
++    assert.equal(verdict({ body, closed_by: null }).action, "reopen");
++  });
++  test("fermée par l'owner : la fermeture tient", () => {
++    const r = verdict({ body, closed_by: { login: OWNER } });
++    assert.equal(r.action, "keep");
++    assert.match(r.reason, /décidée par l'owner/);
++  });
++  test("l'owner ne ferme pas une fiche qui n'explique rien", () => {
++    const r = verdict({ body: fiche({ noControl: true }), closed_by: { login: OWNER } });
++    assert.equal(r.action, "reopen");
++    assert.deepEqual(r.missing, [`la rubrique « ${SECTIONS.prevention} » est vide`]);
++  });
++  test("case cochée et lien admis : le lien l'emporte, quel que soit l'auteur", () => {
++    const r = verdict({ body: fiche({ prevention: "Finalement #12.", noControl: true }) }, { resolved: { 12: "merged" } });
++    assert.equal(r.action, "keep");
++  });
++  test("une case cochée ailleurs ne déclare rien", () => {
++    const withBox = fiche({ prevention: "- [x] fait" });
++    assert.equal(parseFiche(withBox).noControlDeclared, false);
++  });
++});
++
++describe("lecture du corps", () => {
++  test("titres tapés à la main : niveau, casse, accents, apostrophe", () => {
++    const body = "## ce qui s’est passe\nA\n## POURQUOI\nB\n## Ce qui l’empeche de revenir :\nC #12\n";
++    const f = parseFiche(body);
++    assert.equal(f.what.trim(), "A");
++    assert.equal(f.why.trim(), "B");
++    assert.equal(f.prevention.trim(), "C #12");
++  });
++  test("un sous-titre reste dans sa rubrique, un titre de même niveau la ferme", () => {
++    const body = `## ${SECTIONS.prevention}\nA\n### Détail\nB\n## Références\n#12\n`;
++    const f = parseFiche(body);
++    assert.match(f.prevention, /Détail\nB/);
++    assert.doesNotMatch(f.prevention, /#12/);
++  });
++  test("un titre dans un bloc de code n'ouvre pas de rubrique", () => {
++    const body = "```\n### Pourquoi\nfaux\n```\n";
++    assert.equal(parseFiche(body).why, undefined);
++  });
++  test("la première occurrence d'une rubrique fait foi", () => {
++    const body = `### ${SECTIONS.prevention}\n\n_No response_\n\n### Autre\n\n### ${SECTIONS.prevention}\n\n#12\n`;
++    const r = verdict({ body: `${fiche({ prevention: null })}\n${body}` }, { resolved: { 12: "merged" } });
++    assert.equal(r.action, "reopen");
++  });
++  test("une ligne de 60 000 dièses est lue sans délai", () => {
++    const started = Date.now();
++    parseFiche(`# ${"#".repeat(60000)}x\n### Pourquoi\nB\n`);
++    assert.ok(Date.now() - started < 500);
++  });
++  test("références : dédoublonnées, bornées, sans ancre ni entité", () => {
++    const text = `#12 #12 ${WEB}/pull/12 &#39; abc#14 ${WEB}/issues/15#issuecomment-16 ` + Array.from({ length: 40 }, (_, i) => `#${100 + i}`).join(" ");
++    const refs = extractRefs(text, REPO, 900);
++    assert.equal(refs.filter((r) => r.number === 12).length, 1);
++    assert.equal(refs.some((r) => r.number === 39 || r.number === 14 || r.number === 16), false);
++    assert.ok(refs.length <= 20);
++  });
++});
++
++describe("fichiers de main", () => {
++  const root = mkdtempSync(join(tmpdir(), "incident-gate-"));
++  mkdirSync(join(root, "scripts"), { recursive: true });
++  mkdirSync(join(root, ".github", "workflows"), { recursive: true });
++  writeFileSync(join(root, "scripts", "a.test.mjs"), "");
++  writeFileSync(join(root, ".github", "workflows", "probe.yml"), "");
++  const exists = fileOnDefaultBranch(join(root, "scripts", ".."));
++  test("chemin présent, sur main ou sur un SHA", () => {
++    assert.equal(exists({ kind: "file", ref: "main", path: "scripts/a.test.mjs" }), true);
++    assert.equal(exists({ kind: "file", ref: "abcdef1", path: "scripts/a%2Etest.mjs" }), true);
++  });
++  test("branche, chemin absent, sortie du dépôt, encodage cassé", () => {
++    assert.equal(exists({ kind: "file", ref: "feat-x", path: "scripts/a.test.mjs" }), false);
++    assert.equal(exists({ kind: "file", ref: "main", path: "scripts/b.test.mjs" }), false);
++    assert.equal(exists({ kind: "file", ref: "main", path: "../../../../etc/passwd" }), false);
++    assert.equal(exists({ kind: "file", ref: "main", path: "scripts/..%2F..%2F..%2Fetc/passwd" }), false);
++    assert.equal(exists({ kind: "file", ref: "main", path: "%E0%A4%A" }), false);
++  });
++  test("workflow", () => {
++    assert.equal(exists({ kind: "workflow", file: "probe.yml" }), true);
++    assert.equal(exists({ kind: "workflow", file: "absent.yml" }), false);
++  });
++});
++
++describe("commentaire", () => {
++  const now = new Date("2026-11-17T12:00:00Z");
++  test("dit ce qui manque, rappelle la règle et le dépôt public", () => {
++    const r = verdict({ body: fiche({ prevention: "Corrigé par #12." }) }, { resolved: { 12: "open" } });
++    const text = renderComment(r, { ownerLogin: OWNER, now });
++    assert.ok(text.startsWith(MARKER));
++    assert.match(text, /rouverte le 2026-11-17/);
++    assert.match(text, /ne porte aucun lien admis/);
++    assert.match(text, /#12 \(PR non fusionnée\)/);
++    assert.match(text, /Seul l'owner \(`owner`\) la ferme/);
++    assert.match(text, /aucun secret, aucun détail qui aiderait une attaque, aucune donnée de client/);
++  });
++  test("ne recopie pas le corps de la fiche", () => {
++    const r = verdict({ body: fiche({ what: "SECRET-DANS-LE-CORPS", prevention: "texte libre @quelquun" }) });
++    const text = renderComment(r, { ownerLogin: OWNER, now });
++    assert.doesNotMatch(text, /SECRET-DANS-LE-CORPS|quelquun/);
++  });
++  test("un chemin cité ne sort pas de son bloc de code", () => {
++    const r = verdict({ body: fiche({ prevention: `${WEB}/blob/main/a\`@owner<b>` }) });
++    assert.doesNotMatch(r.rejected[0], /@|<|a`o/);
++  });
++});
++
++// The form, the workflow and the script are three files that must agree.
++describe("gabarit et workflow", () => {
++  const read = (path) => readFileSync(new URL(`../../.github/${path}`, import.meta.url), "utf8");
++  test("les titres du gabarit sont ceux que lit le script, dans l'ordre", () => {
++    const form = read("ISSUE_TEMPLATE/incident.yml");
++    const labels = [...form.matchAll(/^ {6}label: (.+)$/gm)].map((m) => m[1]);
++    assert.deepEqual(labels, Object.values(SECTIONS));
++  });
++  test("le gabarit pose le label lu par le contrôle et rappelle que le dépôt est public", () => {
++    const form = read("ISSUE_TEMPLATE/incident.yml");
++    assert.match(form, /^labels: \["incident"\]$/m);
++    assert.match(form, /aucun secret, aucun détail qui aiderait une attaque et aucune donnée de client/);
++  });
++  test("un corps rendu par le gabarit est lu en entier", () => {
++    const form = read("ISSUE_TEMPLATE/incident.yml");
++    const box = /^ {8}- label: (.+)$/m.exec(form)[1];
++    const [what, why, prevention, noControl] = Object.values(SECTIONS);
++    const body = `### ${what}\n\nA\n\n### ${why}\n\nB\n\n### ${prevention}\n\nC\n\n### ${noControl}\n\n- [X] ${box}\n`;
++    const f = parseFiche(body);
++    assert.deepEqual([f.what.trim(), f.why.trim(), f.prevention.trim(), f.noControlDeclared], ["A", "B", "C", true]);
++  });
++  test("le workflow filtre sur le même label et n'écrit aucune expression dans un run", () => {
++    const workflow = read("workflows/incident-issue-gate.yml");
++    assert.match(workflow, /contains\(github\.event\.issue\.labels\.\*\.name, 'incident'\)/);
++    assert.match(workflow, /^ {10}INCIDENT_LABEL: incident$/m);
++    const runs = [...workflow.matchAll(/^ {8}run: (.+)$/gm)].map((m) => m[1]);
++    assert.deepEqual(runs, ["node scripts/ci/incident-issue-gate.mjs"]);
++    assert.doesNotMatch(workflow, /^ {8}run: \|/m);
++  });
++});
++
++function fakeApi({ issues = {}, pulls = {}, comment = null } = {}) {
++  const calls = [];
++  return {
++    calls,
++    getIssue: async (n) => issues[n],
++    listClosedIncidents: async () => Object.keys(issues).map(Number),
++    pullState: async (n) => pulls[n] ?? "absent",
++    findComment: async () => comment,
++    createComment: async (n, body) => calls.push(["create", n, body]),
++    updateComment: async (id, body) => calls.push(["update", id, body]),
++    reopen: async (n) => calls.push(["reopen", n]),
++  };
++}
++
++describe("actes sur l'issue", () => {
++  const base = { repo: REPO, ownerLogin: OWNER, fileExists: () => false };
++  test("fiche incomplète : un commentaire, puis la réouverture", async () => {
++    const api = fakeApi();
++    const r = await checkIssue({ api, issue: issue(), ...base });
++    assert.equal(r.action, "reopen");
++    assert.deepEqual(api.calls.map((c) => c[0]), ["create", "reopen"]);
++    assert.ok(api.calls[0][2].startsWith(MARKER));
++  });
++  test("deuxième passage : le commentaire est mis à jour, pas doublé", async () => {
++    const api = fakeApi({ comment: { id: 77 } });
++    await checkIssue({ api, issue: issue(), ...base });
++    assert.deepEqual(api.calls.map((c) => [c[0], c[1]]), [["update", 77], ["reopen", 900]]);
++  });
++  test("fiche complète : aucun acte", async () => {
++    const api = fakeApi({ pulls: { 12: "merged" } });
++    const r = await checkIssue({ api, issue: issue({ body: fiche({ prevention: "#12" }) }), ...base });
++    assert.equal(r.action, "keep");
++    assert.deepEqual(api.calls, []);
++  });
++  test("fiche complétée après une réouverture : l'ancien commentaire est soldé", async () => {
++    const api = fakeApi({ pulls: { 12: "merged" }, comment: { id: 77 } });
++    await checkIssue({ api, issue: issue({ body: fiche({ prevention: "#12" }) }), ...base });
++    assert.equal(api.calls.length, 1);
++    assert.match(api.calls[0][2], /Fermeture admise/);
++  });
++  test("essai à blanc : verdict rendu, rien n'est écrit", async () => {
++    const api = fakeApi();
++    const r = await checkIssue({ api, issue: issue(), ...base, dryRun: true });
++    assert.equal(r.action, "reopen");
++    assert.deepEqual(api.calls, []);
++  });
++  test("hors périmètre : aucun acte", async () => {
++    const api = fakeApi();
++    await checkIssue({ api, issue: issue({ state: "open" }), ...base });
++    assert.deepEqual(api.calls, []);
++  });
++  test("balayage : chaque fiche fermée est relue une à une", async () => {
++    const api = fakeApi({
++      issues: { 1: issue({ number: 1 }), 2: issue({ number: 2, body: fiche({ prevention: "#12" }) }) },
++      pulls: { 12: "merged" },
++    });
++    const lines = [];
++    const results = await run({ api, ...base, log: (l) => lines.push(l) });
++    assert.deepEqual(results.map((r) => [r.number, r.action]), [[1, "reopen"], [2, "keep"]]);
++    assert.deepEqual(api.calls.map((c) => [c[0], c[1]]), [["create", 1], ["reopen", 1]]);
++    assert.equal(lines.length, 2);
++  });
++});
++
++describe("client de l'API", () => {
++  function fetchStub(routes) {
++    const seen = [];
++    const impl = async (url, init) => {
++      const path = url.replace(`https://api.github.com/repos/${REPO}`, "");
++      seen.push([init.method, path, init.body ? JSON.parse(init.body) : undefined]);
++      const hit = routes[`${init.method} ${path}`];
++      const status = hit === undefined ? 404 : (hit.status ?? 200);
++      return { status, ok: status >= 200 && status < 300, json: async () => hit?.json ?? hit };
++    };
++    return { impl, seen };
++  }
++  test("état d'une PR : fusionnée, ouverte, issue, absente", async () => {
++    const { impl } = fetchStub({
++      "GET /pulls/1": { merged: true, state: "closed" },
++      "GET /pulls/2": { merged: false, state: "open" },
++      "GET /issues/3": { number: 3 },
++    });
++    const api = githubApi({ token: "t", repo: REPO, fetchImpl: impl });
++    assert.deepEqual([await api.pullState(1), await api.pullState(2), await api.pullState(3), await api.pullState(4)], ["merged", "open", "issue", "absent"]);
++  });
++  test("une panne de l'API lève une erreur, elle ne vaut pas verdict", async () => {
++    const { impl } = fetchStub({ "GET /issues/9": { status: 502 } });
++    const api = githubApi({ token: "t", repo: REPO, fetchImpl: impl });
++    await assert.rejects(() => api.getIssue(9), /HTTP 502/);
++    await assert.rejects(() => api.getIssue(10), /introuvable/);
++  });
++  test("balayage : les PR labellisées sont écartées ; réouverture explicite", async () => {
++    const { impl, seen } = fetchStub({
++      "GET /issues?state=closed&labels=incident&per_page=100&page=1": { json: [{ number: 1 }, { number: 2, pull_request: {} }] },
++      "PATCH /issues/1": { json: {} },
++      "GET /issues/1/comments?per_page=100&page=1": { json: [{ id: 5, body: "autre" }, { id: 6, body: `${MARKER}\nancien` }] },
++    });
++    const api = githubApi({ token: "t", repo: REPO, fetchImpl: impl });
++    assert.deepEqual(await api.listClosedIncidents("incident"), [1]);
++    assert.equal((await api.findComment(1, MARKER)).id, 6);
++    await api.reopen(1);
++    assert.deepEqual(seen.at(-1), ["PATCH", "/issues/1", { state: "open", state_reason: "reopened" }]);
++  });
++});
