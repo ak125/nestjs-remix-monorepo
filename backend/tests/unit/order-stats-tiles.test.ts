@@ -3,7 +3,8 @@
  *
  * Toute la base (lecture paginée au-delà de 1 000 lignes), par période,
  * impayées < 30 jours, abandonnées ≥ 30 jours, annulation = `ord_cancel_date`
- * (jamais le statut), montants au-delà du seuil exclus et relevés.
+ * ou statut 2 (trace de l'ancien site, réponse de Marwane du 18/11 00:27 ;
+ * aucun autre statut n'est lu), montants au-delà du seuil exclus et relevés.
  */
 import {
   ABANDONED_AFTER_DAYS,
@@ -31,6 +32,7 @@ function row(
     ord_total_ttc,
     ord_is_pay: opts.paid ? '1' : '0',
     ord_cancel_date: opts.cancelled ? '2026-11-16 10:00:00+00' : null,
+    ord_ords_id: null,
   };
 }
 
@@ -107,16 +109,41 @@ describe('computeOrderTiles — toute la base', () => {
     expect(t.cancelled).toEqual({ orders: 1, paidOrders: 1, paidAmount: 60 });
   });
 
-  it('ne lit pas le statut : un statut « annulée » sans ord_cancel_date ne change rien', () => {
-    const withStatus = [
-      { ...row('S', '2026-11-15T10:00:00.000Z', '40.00'), ord_ords_id: '2' },
-    ] as unknown as OrderStatsRow[];
-    const t = computeOrderTiles(withStatus, {
+  it('statut 2 sans ord_cancel_date = annulée (ancien site) : une payée sort du CA', () => {
+    const legacy: OrderStatsRow[] = [
+      {
+        ...row('L', '2021-03-10T10:00:00.000Z', '80.00', { paid: true }),
+        ord_ords_id: '2',
+      },
+      { ...row('U', '2026-11-15T10:00:00.000Z', '40.00'), ord_ords_id: '2' },
+      {
+        ...row('P', '2021-03-11T10:00:00.000Z', '25.00', { paid: true }),
+        ord_ords_id: '1',
+      },
+    ];
+    const t = computeOrderTiles(legacy, {
       now: NOW,
       period: 'all',
       implausibleThresholdTtc: DEFAULT_IMPLAUSIBLE_TTC_EUR,
     });
-    expect(t.unpaid).toEqual({ orders: 1, amount: 40 });
+    expect(t.paid).toEqual({ orders: 1, revenue: 25, averageBasket: 25 });
+    expect(t.unpaid).toEqual({ orders: 0, amount: 0 });
+    expect(t.cancelled).toEqual({ orders: 2, paidOrders: 1, paidAmount: 80 });
+  });
+
+  it('ne lit aucun autre statut : 3, 4, 5, 6 ou vide ne rendent pas une commande annulée', () => {
+    const others: OrderStatsRow[] = ['3', '4', '5', '6', '', ' '].map(
+      (st, i) => ({
+        ...row(`O${i}`, '2026-11-15T10:00:00.000Z', '10.00', { paid: true }),
+        ord_ords_id: st,
+      }),
+    );
+    const t = computeOrderTiles(others, {
+      now: NOW,
+      period: 'all',
+      implausibleThresholdTtc: DEFAULT_IMPLAUSIBLE_TTC_EUR,
+    });
+    expect(t.paid.orders).toBe(6);
     expect(t.cancelled.orders).toBe(0);
   });
 

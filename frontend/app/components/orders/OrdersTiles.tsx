@@ -7,6 +7,8 @@
  * « abandonnées » ; un montant aberrant est exclu des sommes et relevé ;
  * une commande annulée n'est pas une vente (21:45) : une payée puis annulée
  * sort du chiffre d'affaires et apparaît dans la tuile « Annulées ».
+ * Annulée = `ord_cancel_date` renseignée ou statut 2 (réponse de Marwane
+ * du 18/11 00:27 : « Oui, 2 = annulée », trace de l'ancien site).
  * Une indisponibilité s'affiche comme telle, jamais comme des zéros.
  *
  * @see backend/src/database/services/order-stats-tiles.ts
@@ -166,9 +168,9 @@ export const OrdersTiles = memo(function OrdersTiles({
       <div className="flex flex-wrap items-center justify-between gap-2">
         {periodSelect}
         <p className="text-xs text-gray-500">
-          Calculé sur toute la base ({plural(t.rowsRead, "commande")} lues),
-          sans lire les statuts : paiement et annulation enregistrés par le
-          site.
+          Calculé sur toute la base ({plural(t.rowsRead, "commande")} lues), sur
+          le paiement et l'annulation enregistrés par le site (date
+          d'annulation, ou statut 2 pour l'historique de l'ancien site).
         </p>
       </div>
 

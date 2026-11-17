@@ -12,8 +12,10 @@
  *   dans la tuile « Annulées » avec son montant ;
  * - le département 13 ne s'appuie que sur ce que le site enregistre de
  *   lui-même : la commande (`ord_date`, `ord_total_ttc`), le paiement
- *   (`ord_is_pay`) et l'annulation (`ord_cancel_date`). Le statut
- *   (`ord_ords_id`) n'est PAS lu.
+ *   (`ord_is_pay`) et l'annulation. L'annulation se lit dans
+ *   `ord_cancel_date` ou, pour l'historique, dans le statut 2 : réponse de
+ *   Marwane du 18/11/2026 à 00:27 (« Oui, 2 = annulée »), l'ancien site ne
+ *   gardait d'une annulation que ce statut. Aucun autre statut n'est lu.
  *
  * Module pur : aucune lecture réseau ici, la lecture paginée vit dans
  * `fetchAllOrderStatsRows` et le service.
@@ -26,11 +28,16 @@ export interface OrderStatsRow {
   ord_is_pay: string | null;
   ord_total_ttc: string | null;
   ord_cancel_date: string | null;
+  /** Lu pour le seul statut 2 (« Commande annulée »), trace historique. */
+  ord_ords_id: string | null;
 }
 
 /** Colonnes lues, dans l'ordre de `OrderStatsRow`. */
 export const ORDER_STATS_COLUMNS =
-  'ord_id, ord_date, ord_is_pay, ord_total_ttc, ord_cancel_date';
+  'ord_id, ord_date, ord_is_pay, ord_total_ttc, ord_cancel_date, ord_ords_id';
+
+/** Statut 2 « Commande annulée » : seule trace d'annulation de l'ancien site. */
+const LEGACY_CANCELLED_STATUS = '2';
 
 export const ORDER_STATS_PERIODS = ['all', 'year', 'month'] as const;
 export type OrderStatsPeriod = (typeof ORDER_STATS_PERIODS)[number];
@@ -109,7 +116,7 @@ export interface OrderTiles {
   /** Non payées, non annulées, de 30 jours ou plus. */
   abandoned: { orders: number; amount: number; afterDays: number };
   /**
-   * Annulations enregistrées (`ord_cancel_date`). Aucune n'entre dans le CA,
+   * Annulations enregistrées (`ord_cancel_date` ou statut 2). Aucune n'entre dans le CA,
    * le panier ni les impayées ; les payées puis annulées sont chiffrées.
    */
   cancelled: { orders: number; paidOrders: number; paidAmount: number };
@@ -216,7 +223,8 @@ export function computeOrderTiles(
   for (const row of rows) {
     const isPaid = row.ord_is_pay === '1';
     const isCancelled =
-      row.ord_cancel_date !== null && row.ord_cancel_date !== '';
+      (row.ord_cancel_date !== null && row.ord_cancel_date !== '') ||
+      (row.ord_ords_id ?? '').trim() === LEGACY_CANCELLED_STATUS;
     const dateMs = row.ord_date ? Date.parse(row.ord_date) : NaN;
     const rawAmount = (row.ord_total_ttc ?? '').trim();
     const amount = AMOUNT_RE.test(rawAmount) ? Number(rawAmount) : NaN;
