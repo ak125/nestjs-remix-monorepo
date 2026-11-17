@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 5aa40b5618488e0bb5cc909d3fec177a89c80f2d2025ffcce38bf31f5aeb3896
+source_sha256: 1675adf0740e4bef524071d2f54a641b11c8fa5f9638c748dd51a6b61bdfda2d
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3226 |
+| Files (Layer 1) | 3229 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `ec650040e201`.
+Source sotFingerprint: `6dfaa1393785`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `ec650040e201`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 183 (test=167, service=11, config=4, controller=1)
+- **Files**: 184 (test=168, service=11, config=4, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (168), __unassigned__ (15)
+- **Top owners**: @ak125 (169), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=168
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=169
 
 ### D3 — SEO & Sitemap
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `ec650040e201`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 945 (config=456, route=246, service=179, controller=39, test=25)
+- **Files**: 946 (config=456, route=246, service=180, controller=39, test=25)
 - **Runtime entrypoints**: 346
-- **Top owners**: @ak125/frontend-team (676), @ak125/admin-team (269)
+- **Top owners**: @ak125/frontend-team (677), @ak125/admin-team (269)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=515, UNKNOWN=430
+- **Status**: LIVE=515, UNKNOWN=431
 
 ### D9 — Import / ETL / Normalisation
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `ec650040e201`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 319 (service=201, test=75, controller=40, config=3)
+- **Files**: 320 (service=201, test=76, controller=40, config=3)
 - **Runtime entrypoints**: 131
-- **Top owners**: @ak125 (132), @ak125/payments-team (96), @ak125/auth-team (79)
+- **Top owners**: @ak125 (132), @ak125/payments-team (97), @ak125/auth-team (79)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=188, UNKNOWN=131
+- **Status**: LIVE=188, UNKNOWN=132
 
 ### D12 — Marketing & Video
 

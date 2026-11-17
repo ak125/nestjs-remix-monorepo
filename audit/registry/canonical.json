@@ -42190,6 +42190,28 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/modules/cart/config/return-policy-wording.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/cart/index.ts"
+      ],
+      "kind": "test",
+      "loc": 22,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/cart/config/return-policy-wording.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/modules/cart/config/return-policy.config.test.ts",
       "importedBy": [],
       "imports": [
@@ -42216,12 +42238,13 @@
       "id": "backend/src/modules/cart/config/return-policy.config.ts",
       "importedBy": [
         "backend/src/modules/cart/config/return-policy.config.test.ts",
+        "backend/src/modules/cart/index.ts",
         "backend/src/remix/remix-api.service.test.ts",
         "backend/src/remix/remix-api.service.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 78,
+      "loc": 106,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/config/return-policy.config.ts",
       "risk": "high",
@@ -42612,16 +42635,20 @@
       "id": "backend/src/modules/cart/index.ts",
       "importedBy": [
         "backend/src/modules/ai-content/templates/content-templates.ts",
+        "backend/src/modules/cart/config/return-policy-wording.test.ts",
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
         "backend/src/modules/marketing/templates/brand-rules-seed.ts",
         "backend/src/modules/marketing/templates/social-post-templates.ts",
-        "backend/src/modules/shipping/shipping.service.ts"
+        "backend/src/modules/shipping/shipping.service.ts",
+        "backend/src/modules/support/services/faq.service.ts",
+        "backend/src/services/mail.service.ts"
       ],
       "imports": [
+        "backend/src/modules/cart/config/return-policy.config.ts",
         "backend/src/modules/cart/config/shipping-policy.config.ts"
       ],
       "kind": "service",
-      "loc": 10,
+      "loc": 11,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/index.ts",
       "risk": "high",
@@ -67235,10 +67262,11 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
-        "@common/exceptions"
+        "@common/exceptions",
+        "backend/src/modules/cart/index.ts"
       ],
       "kind": "service",
-      "loc": 531,
+      "loc": 532,
       "owner": "@ak125",
       "path": "backend/src/modules/support/services/faq.service.ts",
       "risk": "medium",
@@ -70431,10 +70459,11 @@
         "backend/src/workers/processors/email.processor.ts"
       ],
       "imports": [
-        "backend/src/config/app.config.ts"
+        "backend/src/config/app.config.ts",
+        "backend/src/modules/cart/index.ts"
       ],
       "kind": "service",
-      "loc": 1193,
+      "loc": 1194,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.ts",
       "risk": "low",
@@ -77244,10 +77273,11 @@
         "~/components/ui/badge",
         "~/components/ui/tooltip",
         "~/hooks/useRootData",
-        "~/schemas/cart.schemas"
+        "~/schemas/cart.schemas",
+        "~/utils/return-policy-wording"
       ],
       "kind": "config",
-      "loc": 196,
+      "loc": 200,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/cart/CartSummaryBlock.tsx",
       "risk": "low",
@@ -77479,12 +77509,14 @@
       "imports": [
         "frontend/app/components/checkout/FreeShippingBar.tsx",
         "frontend/app/components/checkout/PromoCodeInput.tsx",
+        "~/hooks/useRootData",
         "~/schemas/cart.schemas",
         "~/utils/delivery-eta",
+        "~/utils/return-policy-wording",
         "~/utils/vehicle-cookie"
       ],
       "kind": "config",
-      "loc": 279,
+      "loc": 284,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/checkout/CheckoutOrderSummary.tsx",
       "risk": "low",
@@ -78750,9 +78782,13 @@
       "domain": "D8",
       "id": "frontend/app/components/ecommerce/TrustPage.tsx",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "~/hooks/useRootData",
+        "~/utils/remix-application-port",
+        "~/utils/return-policy-wording"
+      ],
       "kind": "config",
-      "loc": 480,
+      "loc": 517,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/ecommerce/TrustPage.tsx",
       "risk": "low",
@@ -78993,10 +79029,12 @@
         "frontend/app/components/expert/index.ts"
       ],
       "imports": [
-        "~/lib/utils"
+        "~/hooks/useRootData",
+        "~/lib/utils",
+        "~/utils/return-policy-wording"
       ],
       "kind": "config",
-      "loc": 570,
+      "loc": 582,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/expert/TrustRowV2.tsx",
       "risk": "low",
@@ -80298,7 +80336,7 @@
         "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 71,
+      "loc": 72,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/home/HomepageJsonLd.tsx",
       "risk": "low",
@@ -80386,10 +80424,12 @@
         "frontend/app/components/home/index.ts"
       ],
       "imports": [
-        "~/components/layout"
+        "~/components/layout",
+        "~/hooks/useRootData",
+        "~/utils/return-policy-wording"
       ],
       "kind": "config",
-      "loc": 77,
+      "loc": 90,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/home/WhyAutomecanikSection.tsx",
       "risk": "low",
@@ -80412,10 +80452,11 @@
       "imports": [
         "@repo/database-types/family-registry",
         "~/components/cart/cart-utils",
-        "~/utils/remix-application-port"
+        "~/utils/remix-application-port",
+        "~/utils/return-policy-wording"
       ],
       "kind": "config",
-      "loc": 363,
+      "loc": 381,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/home/constants.ts",
       "risk": "low",
@@ -82536,9 +82577,12 @@
       "domain": "D8",
       "id": "frontend/app/components/pieces/R1TrustStrip.tsx",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "~/hooks/useRootData",
+        "~/utils/return-policy-wording"
+      ],
       "kind": "config",
-      "loc": 65,
+      "loc": 71,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/R1TrustStrip.tsx",
       "risk": "low",
@@ -82716,10 +82760,11 @@
         "frontend/app/components/pieces/hero/index.ts"
       ],
       "imports": [
-        "frontend/app/components/pieces/hero/site-trust-claims.ts"
+        "frontend/app/components/pieces/hero/site-trust-claims.ts",
+        "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 45,
+      "loc": 49,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/hero/PiecesHeroMetaStrip.tsx",
       "risk": "low",
@@ -82815,9 +82860,12 @@
       "importedBy": [
         "frontend/app/components/pieces/hero/PiecesHeroMetaStrip.tsx"
       ],
-      "imports": [],
+      "imports": [
+        "~/utils/remix-application-port",
+        "~/utils/return-policy-wording"
+      ],
       "kind": "config",
-      "loc": 55,
+      "loc": 65,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/hero/site-trust-claims.ts",
       "risk": "low",
@@ -83408,10 +83456,12 @@
       "id": "frontend/app/components/trust/FrictionReducer.tsx",
       "importedBy": [],
       "imports": [
-        "~/lib/utils"
+        "~/hooks/useRootData",
+        "~/lib/utils",
+        "~/utils/return-policy-wording"
       ],
       "kind": "config",
-      "loc": 117,
+      "loc": 132,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/trust/FrictionReducer.tsx",
       "risk": "low",
@@ -85269,9 +85319,12 @@
       "importedBy": [
         "frontend/app/components/vehicle/r8/index.ts"
       ],
-      "imports": [],
+      "imports": [
+        "~/hooks/useRootData",
+        "~/utils/return-policy-wording"
+      ],
       "kind": "config",
-      "loc": 42,
+      "loc": 50,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/vehicle/r8/sections/TrustSection.tsx",
       "risk": "low",
@@ -86517,10 +86570,12 @@
         "~/components/ui/checkbox",
         "~/components/ui/input",
         "~/components/ui/label",
-        "~/utils/page-role.types"
+        "~/hooks/useRootData",
+        "~/utils/page-role.types",
+        "~/utils/return-policy-wording"
       ],
       "kind": "route",
-      "loc": 1158,
+      "loc": 1163,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/register.tsx",
       "risk": "medium",
@@ -90829,6 +90884,7 @@
         "~/components/ui/accordion",
         "~/components/ui/button",
         "~/components/ui/spinner",
+        "~/hooks/useRootData",
         "~/schemas/cart.schemas",
         "~/schemas/checkout.schemas",
         "~/services/order.server",
@@ -90839,10 +90895,11 @@
         "~/utils/logger",
         "~/utils/observability.server",
         "~/utils/page-role.types",
+        "~/utils/return-policy-wording",
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 1343,
+      "loc": 1348,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/checkout.tsx",
       "risk": "medium",
@@ -91506,13 +91563,15 @@
         "frontend/app/utils/pieces-route.utils.ts",
         "frontend/app/utils/url-builder.utils.ts",
         "frontend/app/utils/vehicle-page-status.ts",
+        "~/hooks/useRootData",
         "~/styles/brand-colors.css?url",
         "~/utils/internal-api.server",
         "~/utils/logger",
-        "~/utils/page-role.types"
+        "~/utils/page-role.types",
+        "~/utils/return-policy-wording"
       ],
       "kind": "route",
-      "loc": 1326,
+      "loc": 1332,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
       "risk": "medium",
@@ -91894,7 +91953,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 500,
+      "loc": 502,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/legal.$pageKey.tsx",
       "risk": "medium",
@@ -92117,6 +92176,7 @@
         "~/components/pieces/MotorisationsSection",
         "~/components/pieces/R1RelatedBlocks",
         "~/components/pieces/R1SlotImage",
+        "~/hooks/useRootData",
         "~/services/api/gamme-api.service",
         "~/types/gamme-page-contract.types",
         "~/types/r1-images.types",
@@ -92131,10 +92191,11 @@
         "~/utils/r1-builders",
         "~/utils/r1-section-pack",
         "~/utils/r1-source-tracker",
+        "~/utils/return-policy-wording",
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1141,
+      "loc": 1146,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/pieces.$slug.tsx",
       "risk": "medium",
@@ -95627,6 +95688,28 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "frontend/app/utils/return-policy-wording.ts",
+      "importedBy": [],
+      "imports": [
+        "~/utils/remix-application-port"
+      ],
+      "kind": "service",
+      "loc": 45,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/utils/return-policy-wording.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "frontend/app/utils/rm-mapper.ts",
       "importedBy": [],
       "imports": [
@@ -98670,7 +98753,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 79,
+      "loc": 94,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-hero-meta-strip.test.tsx",
       "risk": "medium",
@@ -98710,7 +98793,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 142,
+      "loc": 157,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-hero-trust-strip.test.tsx",
       "risk": "medium",
@@ -99226,6 +99309,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/return-policy-texts.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 147,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/return-policy-texts.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/rm-logo-provenance.test.ts",
       "importedBy": [],
       "imports": [],
@@ -99410,7 +99513,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 57,
+      "loc": 88,
       "owner": "@ak125",
       "path": "frontend/tests/unit/site-trust-claims.test.ts",
       "risk": "medium",
@@ -108947,11 +109050,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4a6c9a565cec39045d2f64362399e6757cb85ac5af9843055d2be9b5a46c7e8e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "1e8fd6196c03f69e17eb17fc5682fed04259f6795b07f69975b82a97ed82dd68",
+      "audit/registry/files.json": "cbe3eab6298b067bb07e2e90eb703aeed2ef2fc335a9c208ac36407fb6ba8fbe",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "065849df18e7232c615cffca1056212136c1cef48d8ccebc88e868e1c23598a3"
     },
-    "sotFingerprint": "ec650040e201"
+    "sotFingerprint": "6dfaa1393785"
   },
   "runtime": [
     {
