@@ -1,7 +1,7 @@
 # Rules — Marketing Brand Voice (ECOMMERCE + LOCAL)
 
 > **Source de vérité canonique** — règles obligatoires de voix de marque pour
-> tous les agents marketing (ADR-036) et toute campagne produite par le module
+> tous les agents marketing (ADR-036) et toute campagne produiTe par le module
 > backend `marketing/`. Synchronisée vers monorepo via canon-publish.
 > **Version** : 1.0.0 | **Status** : `canon` (ratifié par ADR-038)
 

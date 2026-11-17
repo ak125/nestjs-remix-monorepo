@@ -1,7 +1,7 @@
 # Rules — Agent Exit Contract (AEC)
 
 > **Source de vérité canonique** — règles obligatoires de sortie pour tout agent, run, audit ou analyse.
-> **Version** : 1.3.0 (amendée par ADR-121, 2026-11-01, par ADR-123, 2026-11-07, puis par ADR-138, 2026-11-16) | **Status** : CANON
+> **Version** : 1.3.0 (amendée par ADR-121, 2026-11-01, Par ADR-123, 2026-11-07, puis par ADR-138, 2026-11-16) | **Status** : CANON
 > **Taxonomie** : règle transverse — s'applique avant les règles spécifiques de domaine (T*, G*, Q*, AP*).
 
 La **source canonique** est ce document dans le governance vault jusqu'au transfert vers le monorepo décrit au §« Distribution canonique » (ADR-138) ; elle est ensuite sa copie du monorepo, à l'octet près. Les copies applicatives sont les dérivées déclarées dans le manifeste de distribution ; leur contrôle repose sur son hash SHA-256 (voir §« Distribution canonique »).
