@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6306,
+      "loc_total": 6307,
       "has_barrel": true
     },
     "blog": {
@@ -132,8 +132,8 @@
         "backend/src/modules/cart/dto/__tests__",
         "backend/src/modules/cart/services"
       ],
-      "files_count": 28,
-      "loc_total": 4938,
+      "files_count": 29,
+      "loc_total": 4989,
       "has_barrel": true
     },
     "catalog": {
@@ -262,7 +262,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115176,
+      "loc_total": 115199,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,8 +342,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 586,
-      "loc_total": 111420,
+      "files_count": 587,
+      "loc_total": 111598,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -901,7 +901,7 @@
         "backend/src/modules/support/types"
       ],
       "files_count": 32,
-      "loc_total": 10487,
+      "loc_total": 10488,
       "has_barrel": true
     },
     "system": {
@@ -963,8 +963,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 394,
-      "loc_total": 81324,
+      "files_count": 395,
+      "loc_total": 81532,
       "has_barrel": true
     },
     "upload": {
@@ -1265,7 +1265,7 @@
     {
       "from": "backend-core",
       "to": "cart",
-      "count": 6
+      "count": 7
     },
     {
       "from": "backend-core",
@@ -2151,6 +2151,11 @@
       "from": "support",
       "to": "backend-core",
       "count": 2
+    },
+    {
+      "from": "support",
+      "to": "cart",
+      "count": 1
     },
     {
       "from": "support",

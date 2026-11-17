@@ -13,8 +13,8 @@
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `fccc735555cee9d6aae7b0ccf2353bfb08fe8845adf7da5eeb87da790663ae6e`
-- `canonical`: `5aa40b5618488e0bb5cc909d3fec177a89c80f2d2025ffcce38bf31f5aeb3896`
+- `deadCodeCandidates`: `406c9cc03f578bdc22438c4b6d4a944047c425fbe88ddb526feb68b5babe2b7f`
+- `canonical`: `1675adf0740e4bef524071d2f54a641b11c8fa5f9638c748dd51a6b61bdfda2d`
 - `ownershipYaml`: `3518a587ca8c11bbadb1bd5279e2a942518f0bea2f232e5794d958fbb416397b`
 - `contractHealth`: `<none>`
 - `validateScript`: `f89bd253b2e305831a01222da09bbef3b95fa51f461238886835fe4a0c2fa831`
@@ -22,11 +22,11 @@
 
 ## Counts
 
-- Total: **251**
-- By confidence: high=12 · medium=163 · low=76
-- By decision: candidate=175 · blocked=76 · excluded=0
+- Total: **248**
+- By confidence: high=12 · medium=161 · low=75
+- By decision: candidate=173 · blocked=75 · excluded=0
 
-## candidate (175)
+## candidate (173)
 
 ### candidate · high (12)
 
@@ -45,7 +45,7 @@
 | `frontend/app/utils/storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/utils/supabase-storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 
-### candidate · medium (163)
+### candidate · medium (161)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -135,7 +135,6 @@
 | `frontend/app/components/ecommerce/ProductCard.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/ecommerce/QuickCartDrawer.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/ecommerce/TechnicalReference.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `frontend/app/components/ecommerce/TrustPage.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/ecommerce/VehicleCompatibilityBanner.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/expert/index.ts` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/forms.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
@@ -160,7 +159,6 @@
 | `frontend/app/components/pieces/R1KpiCoverage.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/pieces/R1QuickNav.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/pieces/R1ReusableContent.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `frontend/app/components/pieces/R1TrustStrip.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/pieces/R2TransactionGuide.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/pieces/ReferenceEncartSection.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/pieces/SafeCompatTable.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
@@ -217,7 +215,7 @@
 
 _(empty)_
 
-## blocked (76)
+## blocked (75)
 
 ### blocked · high (0)
 
@@ -227,7 +225,7 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (76)
+### blocked · low (75)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -281,7 +279,6 @@ _(empty)_
 | `frontend/app/components/expert/CompatibilityResolverModal.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/expert/CompatibilitySheetV2.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/expert/ProductStickyCTAV2.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `frontend/app/components/expert/TrustRowV2.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/expert/design-system.ts` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/pieces/ConseilsSection.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/pieces/ErrorState.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |

@@ -1,6 +1,6 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
-  "count": 41,
+  "count": 42,
   "duplicates": [
     {
       "path": "backend/src/auth/dto/register.dto.ts",
@@ -69,6 +69,15 @@
       "path": "frontend/app/components/ecommerce/SmartHeader.tsx",
       "names": [
         "SmartHeader",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/ecommerce/TrustPage.tsx",
+      "names": [
+        "TrustPage",
         "default"
       ],
       "domain": "frontend-shared",

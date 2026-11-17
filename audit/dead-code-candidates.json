@@ -1,11 +1,11 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 251,
+  "count": 248,
   "by_confidence": {
     "high": 12,
-    "medium": 163,
-    "low": 76
+    "medium": 161,
+    "low": 75
   },
   "candidates": [
     {
@@ -2351,23 +2351,6 @@
       "reason": "knip unused"
     },
     {
-      "path": "frontend/app/components/ecommerce/TrustPage.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
       "path": "frontend/app/components/ecommerce/VehicleCompatibilityBanner.tsx",
       "domain": "frontend-shared",
       "kind": "component",
@@ -2434,22 +2417,6 @@
     },
     {
       "path": "frontend/app/components/expert/ProductStickyCTAV2.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/expert/TrustRowV2.tsx",
       "domain": "frontend-shared",
       "kind": "component",
       "confidence": "low",
@@ -2984,23 +2951,6 @@
     },
     {
       "path": "frontend/app/components/pieces/R1ReusableContent.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/pieces/R1TrustStrip.tsx",
       "domain": "frontend-shared",
       "kind": "component",
       "confidence": "medium",
