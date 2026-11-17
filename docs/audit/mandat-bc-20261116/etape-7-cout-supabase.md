@@ -1,6 +1,6 @@
 # Mandat BC — étape 7, suite : le contrôle de coût Supabase (patch 05)
 
-Suite de l'étape 7 (`etape-7.md`, PR #2120), séparée le 17 novembre 2026 à la demande du
+Suite de l'étape 7 (`etape-7.md`, PR #2120), PR #2136, séparée le 17 novembre 2026 à la demande du
 pilotage (complément BC-6). Le patch 05 lit le secret `SUPABASE_ACCESS_TOKEN`, qui n'existe
 pas dans le monorepo : le poser est un geste de l'owner. Cette PR l'attend seule ; les
 patches 04 et 06 sortent avec #2120 sans elle. Le contrôle est gardé (décision 129, D14).
@@ -123,4 +123,108 @@ les checks, demande l'accord et enregistre l'approbation. La fusion est faite pa
 (circuit élevé, P20) : le bloc l'attend, puis lance le contrôle une première fois depuis
 `main`. Il est rejouable.
 
-BLOC_ICI
+```powershell
+& {
+  $SSH = "C:\WINDOWS\Sysnative\OpenSSH\ssh.exe"
+  $DEV = "deploy@<hote DEV>"
+  $REPO = "ak125/nestjs-remix-monorepo"
+  $BR = "governance/mandat-bc-etape7-cout-supabase-20261117"
+  $PD = "docs/audit/mandat-bc-20261116/patches/"
+  $P5 = @("05-supabase-cost-surface-drift-workflow.patch", "5144d2f824b23cb1740765f1e196896d4460f1e99480383f37ae517ffedc829e")
+  $WF = "supabase-cost-surface-drift.yml"
+  $T = Join-Path $env:TEMP ("bc-etape7-cout-" + (Get-Date -Format "yyyyMMddHHmmss"))
+
+  $OKS = @("SUCCESS", "SKIPPED", "NEUTRAL")
+  $WAITS = @("QUEUED", "IN_PROGRESS", "PENDING", "WAITING", "REQUESTED", "EXPECTED")
+  $CIRC = "*Circuit de fusion*"
+  $RAW = (gh pr checks 2136 --repo $REPO --json name,state)
+  if (-not $RAW) { Write-Host "ARRET : checks illisibles (gh 2.50 ou plus recent requis), rien n'est modifie"; return }
+  $ST = (gh pr view 2136 --repo $REPO --json state --jq .state)
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : etat de la PR 2136 illisible, rien n'est modifie"; return }
+  if ($ST -ne "OPEN") { Write-Host ("PR 2136 : " + $ST + ", rien a faire"); return }
+
+  $SEC = @(gh secret list --repo $REPO --json name --jq '.[].name')
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : secrets illisibles, rien n'est modifie"; return }
+  if ($SEC -notcontains "SUPABASE_ACCESS_TOKEN") { Write-Host "ARRET : le secret SUPABASE_ACCESS_TOKEN manque dans le monorepo (geste de Marwane, voir le document), rien n'est modifie"; return }
+
+  gh label create ops --repo $REPO --color 5319e7 --description "Exploitation" --force
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : label ops"; return }
+  gh label create cost-surface-drift --repo $REPO --color d93f0b --description "Derive de la surface de cout Supabase" --force
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : label cost-surface-drift"; return }
+  gh label create P1 --repo $REPO --color b60205 --description "Priorite 1" --force
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : label P1"; return }
+  gh label create P2 --repo $REPO --color fbca04 --description "Priorite 2" --force
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : label P2"; return }
+
+  gh repo clone $REPO $T -- --depth 1 --branch $BR -c core.autocrlf=false
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : clone refuse"; return }
+  $H = (Get-FileHash -Algorithm SHA256 (Join-Path $T ($PD + $P5[0]))).Hash.ToLower()
+  if ($H -ne $P5[1]) { Write-Host ("ARRET : empreinte de " + $P5[0] + " = " + $H); return }
+  git -C $T apply --reverse --check ($PD + $P5[0]) 2>$null
+  if ($LASTEXITCODE -eq 0) {
+    Write-Host ("Deja applique : " + $P5[0])
+  } else {
+    git -C $T apply --check ($PD + $P5[0])
+    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : ne s'applique pas : " + $P5[0]); return }
+    git -C $T apply ($PD + $P5[0])
+    if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : application de " + $P5[0]); return }
+    git -C $T add -- .github/workflows
+    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : git add"; return }
+    git -C $T commit -m "ci: controle hebdomadaire de la surface de cout Supabase (mandat BC, etape 7, patch 05)"
+    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : commit"; return }
+    git -C $T push origin ("HEAD:refs/heads/" + $BR)
+    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : push refuse"; return }
+  }
+
+  & $SSH $DEV "bash /home/deploy/resync/resync-pr.sh 2136"
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : resync-pr.sh a echoue sur le DEV"; return }
+
+  gh pr ready 2136 --repo $REPO
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : sortie du brouillon"; return }
+  $HEAD = (gh pr view 2136 --repo $REPO --json headRefOid --jq .headRefOid)
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : lecture de la tete"; return }
+  Start-Sleep -Seconds 120
+  $VERT = $false
+  for ($i = 0; $i -lt 90; $i++) {
+    $RAW = (gh pr checks 2136 --repo $REPO --json name,state)
+    if (-not $RAW) { Write-Host "ARRET : checks illisibles, rien n'est fusionne"; return }
+    $J = (($RAW -join "") | ConvertFrom-Json)
+    $O = @($J | Where-Object { $_.name -notlike $CIRC })
+    $BAD = @($O | Where-Object { ($OKS -notcontains $_.state) -and ($WAITS -notcontains $_.state) })
+    $PEND = @($O | Where-Object { $WAITS -contains $_.state })
+    if ($BAD.Count -gt 0) {
+      $BAD | ForEach-Object { Write-Host ("  " + $_.state + " : " + $_.name) }
+      Write-Host "ARRET : un check est en echec, rien n'est fusionne"; return
+    }
+    if (($PEND.Count -eq 0) -and ($O.Count -ge 10)) { $VERT = $true; break }
+    Write-Host ("Checks en cours : " + $PEND.Count)
+    Start-Sleep -Seconds 30
+  }
+  if (-not $VERT) { Write-Host "ARRET : checks non termines apres 45 minutes, rien n'est fusionne"; return }
+  $NOW = (gh pr view 2136 --repo $REPO --json headRefOid --jq .headRefOid)
+  if ($NOW -ne $HEAD) { Write-Host ("ARRET : la tete a change : " + $NOW); return }
+
+  $GO = Read-Host ("Approuver la PR 2136 sur la tete " + $HEAD + " ? L'App fusionne ensuite. (oui/non)")
+  if ($GO -ne "oui") { Write-Host "ARRET : pas d'accord donne"; return }
+  gh pr review 2136 --repo $REPO --approve
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : approbation refusee"; return }
+  $FUS = $false
+  for ($i = 0; $i -lt 60; $i++) {
+    Start-Sleep -Seconds 20
+    $STN = (gh pr view 2136 --repo $REPO --json state --jq .state)
+    if ($LASTEXITCODE -ne 0) { continue }
+    if ($STN -eq "MERGED") { $FUS = $true; break }
+    if ($STN -eq "CLOSED") { Write-Host "ARRET : la PR 2136 a ete fermee sans fusion"; return }
+  }
+  if (-not $FUS) { Write-Host "ARRET : l'App n'a pas fusionne la PR 2136 en 20 minutes ; lire le run du workflow Circuit de fusion"; return }
+
+  gh workflow run $WF --repo $REPO
+  if ($LASTEXITCODE -ne 0) { Write-Host "A REFAIRE : lancement du controle de cout refuse"; return }
+  Start-Sleep -Seconds 90
+  Write-Host "Dernier run du controle de cout (attendu : completed success ; premier releve = base) :"
+  gh run list --workflow $WF --repo $REPO --limit 1
+  if ($LASTEXITCODE -ne 0) { Write-Host "A REFAIRE : lecture du run"; return }
+  Remove-Item -Recurse -Force $T
+  Write-Host "PR 2136 fusionnee par l'App, controle de cout lance."
+}
+```
