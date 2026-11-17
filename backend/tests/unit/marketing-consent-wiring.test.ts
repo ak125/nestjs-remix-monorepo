@@ -477,7 +477,7 @@ describe('AbandonedCartService — aucune relance sans consentement', () => {
       enqueued: 1,
     });
     expect(data.hasMarketingConsent).toHaveBeenCalledWith(42);
-    expect(emailQueue.add).toHaveBeenCalledTimes(3);
+    expect(emailQueue.add).toHaveBeenCalledTimes(2);
   });
 
   it('détection : sans consentement → rien capturé, rien programmé', async () => {
@@ -534,7 +534,7 @@ describe('AbandonedCartService — aucune relance sans consentement', () => {
       { get: jest.fn().mockResolvedValue(null), set: jest.fn() } as never,
       {} as never,
       data as never,
-      {} as never,
+      { abandonedCartEmailEnabled: true } as never,
       mail as never,
     );
     return { service, data, mail };
