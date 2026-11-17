@@ -45,11 +45,14 @@ export const ABANDONED_AFTER_DAYS = 30;
 /** Variable de configuration du seuil d'aberration (euros TTC). */
 export const IMPLAUSIBLE_TTC_ENV = 'ORDERS_STATS_IMPLAUSIBLE_TTC_EUR';
 /**
- * Valeur par défaut du seuil, à confirmer par l'owner. Relevé en lecture
- * seule du 17/11/2026 : plus grosse commande payée 1 212,13 € TTC, une seule
- * commande au-delà de 5 000 € (15114950, 99 999 999 999 999,99 €).
+ * Valeur par défaut du seuil : 1 000 € TTC, décision de Marwane du
+ * 17/11/2026 21:41 (10 000 puis 2 000 refusés). Relevé du même jour : 99 % des
+ * commandes payées sont sous 655 € ; la plus grosse payée (1 212,13 €) est
+ * donc exclue des sommes ET affichée dans la liste des exclusions, comme
+ * 15114950 (99 999 999 999 999,99 €). Aucune commande n'est écartée sans
+ * être signalée.
  */
-export const DEFAULT_IMPLAUSIBLE_TTC_EUR = 10000;
+export const DEFAULT_IMPLAUSIBLE_TTC_EUR = 1000;
 
 /** Fuseau des périodes « ce mois » / « cette année ». */
 const STATS_TIME_ZONE = 'Europe/Paris';
