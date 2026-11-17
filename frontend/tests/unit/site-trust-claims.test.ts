@@ -10,9 +10,20 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  SITE_TRUST_CLAIMS,
+  siteTrustClaims,
   type TrustClaim,
 } from '~/components/pieces/hero/site-trust-claims';
+import { type ReturnPolicyResult } from '~/utils/remix-application-port';
+
+const SERVED: ReturnPolicyResult = {
+  country: 'FR',
+  returnWindowDays: 30,
+  returnMethod: 'by_mail',
+  returnFeesPaidBy: 'customer',
+  returnFeesWaivedFor: ['item_defect', 'seller_error'],
+  refundMethod: 'original_payment_method',
+};
+const SITE_TRUST_CLAIMS = siteTrustClaims(SERVED);
 
 describe('SITE_TRUST_CLAIMS — SoT contract', () => {
   it('contient exactement 3 entries (anti-drift marketing)', () => {
@@ -52,5 +63,25 @@ describe('SITE_TRUST_CLAIMS — SoT contract', () => {
     for (const claim of SITE_TRUST_CLAIMS) {
       expect(typeof claim.icon).toBe('object'); // forwardRef
     }
+  });
+});
+
+describe('siteTrustClaims — délai de retour servi (mandat BJ)', () => {
+  it('écrit le délai de la politique servie, sans promesse de gratuité', () => {
+    const returns = siteTrustClaims(SERVED).find((c) => c.id === 'returns');
+    expect(returns?.label).toBe('Retours 30 jours');
+    expect(returns?.label).not.toMatch(/gratuit/i);
+    expect(
+      siteTrustClaims({ ...SERVED, returnWindowDays: 45 }).find(
+        (c) => c.id === 'returns',
+      )?.label,
+    ).toBe('Retours 45 jours');
+  });
+
+  it('omet la garantie « retours » quand la politique est inconnue', () => {
+    expect(siteTrustClaims(null).map((c) => c.id)).toEqual([
+      'shipping',
+      'payment',
+    ]);
   });
 });

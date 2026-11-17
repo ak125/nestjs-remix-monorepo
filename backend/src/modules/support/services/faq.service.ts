@@ -6,6 +6,7 @@ import {
   BusinessRuleException,
   ErrorCodes,
 } from '@common/exceptions';
+import { returnFaqAnswer } from '../../cart';
 
 export interface FAQ {
   id: string;
@@ -152,8 +153,8 @@ export class FaqService {
       {
         id: 'return-policy',
         question: 'Quelle est votre politique de retour ?',
-        answer:
-          "Vous disposez de 14 jours pour retourner un produit. Les produits doivent être dans leur emballage d'origine et en parfait état. Les frais de retour sont à votre charge sauf en cas de produit défectueux.",
+        // Politique de retour : source unique du module panier (mandat BJ).
+        answer: returnFaqAnswer(),
         category: 'returns',
         tags: ['retour', 'remboursement', 'échange'],
         order: 1,

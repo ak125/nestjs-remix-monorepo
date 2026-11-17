@@ -2,7 +2,7 @@
  * 🛡️ FrictionReducer - Réducteurs de friction pour rassurer
  *
  * Assurances:
- * - Retour 30 jours
+ * - Retours (délai et frais lus dans la politique servie, `useReturnPolicy()`)
  * - Paiement sécurisé
  * - Satisfaction garantie
  * - Support 7j/7
@@ -10,7 +10,12 @@
 
 import { RotateCcw, Lock, Shield, Headphones } from "lucide-react";
 import { memo } from "react";
+import { useReturnPolicy } from "~/hooks/useRootData";
 import { cn } from "~/lib/utils";
+import {
+  returnFeesWording,
+  returnWindowLabel,
+} from "~/utils/return-policy-wording";
 
 export type AssuranceType =
   | "return"
@@ -25,10 +30,11 @@ interface FrictionReducerProps {
 }
 
 const ASSURANCE_CONFIG = {
+  // Titre et description de « return » : lus dans la politique servie.
   return: {
     icon: RotateCcw,
-    title: "Retour 30 jours",
-    description: "Remboursement intégral sans question",
+    title: "",
+    description: "",
     color: "text-blue-600",
   },
   "secure-payment": {
@@ -56,7 +62,16 @@ export const FrictionReducer = memo(function FrictionReducer({
   variant = "default",
   className,
 }: FrictionReducerProps) {
-  const config = ASSURANCE_CONFIG[type];
+  const returnPolicy = useReturnPolicy();
+  if (type === "return" && !returnPolicy) return null;
+  const config =
+    type === "return" && returnPolicy
+      ? {
+          ...ASSURANCE_CONFIG.return,
+          title: returnWindowLabel(returnPolicy),
+          description: returnFeesWording(returnPolicy),
+        }
+      : ASSURANCE_CONFIG[type];
   const Icon = config.icon;
 
   if (variant === "compact") {

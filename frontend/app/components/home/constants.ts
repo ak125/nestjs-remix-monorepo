@@ -5,7 +5,11 @@ import {
 } from "@repo/database-types/family-registry";
 import { type LucideIcon, Car, Cog, Shield, Wrench, Zap } from "lucide-react";
 import { formatShippingAmount } from "~/components/cart/cart-utils";
-import { type ShippingPolicyResult } from "~/utils/remix-application-port";
+import {
+  type ReturnPolicyResult,
+  type ShippingPolicyResult,
+} from "~/utils/remix-application-port";
+import { returnFaqAnswer } from "~/utils/return-policy-wording";
 
 // ─── Image proxy paths ───────────────────────────────────
 export const IMG_PROXY_LOGOS =
@@ -291,7 +295,12 @@ export const BLOG = [
 ];
 
 // ─── FAQ fallback ────────────────────────────────────────
-const FAQ_FALLBACK: Array<{ q: string; a: string; shippingRule?: true }> = [
+const FAQ_FALLBACK: Array<{
+  q: string;
+  a: string;
+  shippingRule?: true;
+  returnRule?: true;
+}> = [
   {
     q: "Comment trouver la bonne pièce pour mon véhicule ?",
     a: "Utilisez notre sélecteur véhicule en haut de page : choisissez votre constructeur, modèle et motorisation, ou entrez votre numéro de Type Mine (repère D.2.1 sur la carte grise). Vous pouvez aussi rechercher par immatriculation ou référence OE. Toutes les pièces affichées seront 100% compatibles.",
@@ -307,7 +316,9 @@ const FAQ_FALLBACK: Array<{ q: string; a: string; shippingRule?: true }> = [
   },
   {
     q: "Comment retourner une pièce ?",
-    a: "Vous disposez de 30 jours après réception pour retourner une pièce. Elle doit être dans son emballage d'origine, non montée. Contactez le service client pour l'étiquette de retour. Remboursement sous 5 jours ouvrés.",
+    // Réponse écrite depuis la politique de retour servie (`returnFaqAnswer`).
+    a: "",
+    returnRule: true,
   },
   {
     q: "Proposez-vous des tarifs professionnels ?",
@@ -318,17 +329,24 @@ const FAQ_FALLBACK: Array<{ q: string; a: string; shippingRule?: true }> = [
 /**
  * FAQ de repli. Le seuil de gratuité n'est pas écrit ici : il vient de la règle
  * de port servie par le backend (`useShippingPolicy()`), et la phrase est omise
- * tant que cette règle n'est pas connue.
+ * tant que cette règle n'est pas connue. De même, la réponse sur les retours
+ * vient de la politique de retour servie (`useReturnPolicy()`) ; la question
+ * est omise tant que cette politique n'est pas connue.
  */
 export function buildFaqFallback(
   shippingPolicy: ShippingPolicyResult | null,
+  returnPolicy: ReturnPolicyResult | null,
 ): Array<{ q: string; a: string }> {
-  return FAQ_FALLBACK.map(({ q, a, shippingRule }) => ({
+  return FAQ_FALLBACK.filter(
+    ({ returnRule }) => !returnRule || returnPolicy,
+  ).map(({ q, a, shippingRule, returnRule }) => ({
     q,
     a:
-      shippingRule && shippingPolicy
-        ? `${a} Livraison gratuite dès ${formatShippingAmount(shippingPolicy.freeShippingThresholdTTC)} d'achat.`
-        : a,
+      returnRule && returnPolicy
+        ? returnFaqAnswer(returnPolicy)
+        : shippingRule && shippingPolicy
+          ? `${a} Livraison gratuite dès ${formatShippingAmount(shippingPolicy.freeShippingThresholdTTC)} d'achat.`
+          : a,
   }));
 }
 

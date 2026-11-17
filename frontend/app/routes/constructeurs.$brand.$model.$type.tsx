@@ -34,10 +34,12 @@ import {
 } from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { useReturnPolicy } from "~/hooks/useRootData";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { returnWindowLabel } from "~/utils/return-policy-wording";
 import { ErrorGeneric } from "../components/errors";
 import { ModelContentV1Display } from "../components/model";
 import { HtmlContent } from "../components/seo/HtmlContent";
@@ -460,6 +462,7 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: rawData }) => {
 // 🎨 Composant principal avec logique PHP intégrée
 export default function VehicleDetailPage() {
   const data = useLoaderData<LoaderData>();
+  const returnPolicy = useReturnPolicy();
 
   // ⚠️ Tous les hooks doivent être appelés avant tout return conditionnel
   const [expandedFamilies, setExpandedFamilies] = useState<Set<number>>(
@@ -569,9 +572,12 @@ export default function VehicleDetailPage() {
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted border border-indigo-200 rounded-lg text-sm font-medium text-foreground">
                 <Truck className="w-4 h-4" /> Livraison 24-48h
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700">
-                <RotateCcw className="w-4 h-4" /> Retour 30 jours
-              </span>
+              {returnPolicy && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700">
+                  <RotateCcw className="w-4 h-4" />{" "}
+                  {returnWindowLabel(returnPolicy)}
+                </span>
+              )}
             </div>
           </div>
         </div>

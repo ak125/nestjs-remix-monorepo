@@ -41,6 +41,7 @@ import EquipementiersSection from "~/components/pieces/EquipementiersSection";
 import MotorisationsSection from "~/components/pieces/MotorisationsSection";
 import { R1RelatedBlocks } from "~/components/pieces/R1RelatedBlocks";
 import { R1SlotImage } from "~/components/pieces/R1SlotImage";
+import { useReturnPolicy } from "~/hooks/useRootData";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
   type GammePageDataV1,
@@ -74,6 +75,7 @@ import {
   buildSourceMapFromPack,
   type R1SourceMap,
 } from "~/utils/r1-source-tracker";
+import { returnWindowLabel } from "~/utils/return-policy-wording";
 import { buildCanonicalUrl } from "~/utils/seo/canonical";
 import { normalizeAlias } from "../utils/url-builder.utils";
 import {
@@ -608,6 +610,7 @@ export default function PiecesDetailPage() {
   const data = useLoaderData<
     typeof loader
   >() as unknown as PiecesPageLoaderData;
+  const returnPolicy = useReturnPolicy();
   const navigation = useNavigation();
   const navigate = useNavigate();
   // ⚡ Defer the vehicle-select navigation so the browser can paint the tap
@@ -790,10 +793,12 @@ export default function PiecesDetailPage() {
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
               Livraison 24-48h
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              Retours 30 jours
-            </span>
+            {returnPolicy && (
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                {returnWindowLabel(returnPolicy)}
+              </span>
+            )}
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               Paiement sécurisé

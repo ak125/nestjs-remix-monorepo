@@ -15,8 +15,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
-import { useShippingPolicy } from "~/hooks/useRootData";
+import { useReturnPolicy, useShippingPolicy } from "~/hooks/useRootData";
 import { type CartSummary as CartSummaryType } from "~/schemas/cart.schemas";
+import { returnWindowLabel } from "~/utils/return-policy-wording";
 import { formatPrice } from "./cart-utils";
 
 export function CartSummaryBlock({
@@ -36,6 +37,7 @@ export function CartSummaryBlock({
       summary.shipping_cost -
       (summary.discount_amount || 0);
   const shippingPolicy = useShippingPolicy();
+  const returnPolicy = useReturnPolicy();
   const isEligibleFreeShipping =
     shippingPolicy !== null &&
     summary.subtotal >= shippingPolicy.freeShippingThresholdTTC;
@@ -184,10 +186,12 @@ export function CartSummaryBlock({
             <Truck className="h-4 w-4" />
             <span>Exp{"\u00e9"}dition 24-48h</span>
           </div>
-          <div className="flex flex-col items-center gap-1">
-            <RotateCcw className="h-4 w-4" />
-            <span>Retours 30 jours</span>
-          </div>
+          {returnPolicy && (
+            <div className="flex flex-col items-center gap-1">
+              <RotateCcw className="h-4 w-4" />
+              <span>{returnWindowLabel(returnPolicy)}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

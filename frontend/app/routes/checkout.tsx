@@ -45,6 +45,7 @@ import {
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Spinner } from "~/components/ui/spinner";
+import { useReturnPolicy } from "~/hooks/useRootData";
 import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
@@ -68,6 +69,7 @@ import { serverObservabilityContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 import { reportLoaderError } from "~/utils/observability.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { returnWindowLabel } from "~/utils/return-policy-wording";
 import {
   getVehicleFromCookie,
   type VehicleCookie,
@@ -420,6 +422,7 @@ function clearCheckoutState() {
 
 export default function CheckoutPage() {
   const data = useLoaderData<typeof loader>();
+  const returnPolicy = useReturnPolicy();
   const { cart, user, userProfile, paymentMethods, vehicle, googleClientId } =
     data as {
       cart: { items: CartItemType[]; summary: CartSummaryType } | null;
@@ -922,22 +925,24 @@ export default function CheckoutPage() {
               </svg>
               Paiement securise
             </span>
-            <span className="flex items-center gap-1.5">
-              <svg
-                className="h-4 w-4 text-orange-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              Retours 30 jours
-            </span>
+            {returnPolicy && (
+              <span className="flex items-center gap-1.5">
+                <svg
+                  className="h-4 w-4 text-orange-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                {returnWindowLabel(returnPolicy)}
+              </span>
+            )}
             <span className="flex items-center gap-1.5">
               <svg
                 className="h-4 w-4 text-slate-500"

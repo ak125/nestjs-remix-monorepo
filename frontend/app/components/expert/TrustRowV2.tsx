@@ -27,7 +27,12 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { forwardRef, useState, memo } from "react";
+import { useReturnPolicy } from "~/hooks/useRootData";
 import { cn } from "~/lib/utils";
+import {
+  returnFeesWording,
+  returnWindowLabel,
+} from "~/utils/return-policy-wording";
 
 // ============================================================================
 // Design System Tokens
@@ -538,6 +543,7 @@ export const FooterTrustRowV2 = memo(function FooterTrustRowV2({
 }: {
   className?: string;
 }) {
+  const returnPolicy = useReturnPolicy();
   const badges: TrustBadgeV2[] = [
     {
       type: "secure",
@@ -549,11 +555,17 @@ export const FooterTrustRowV2 = memo(function FooterTrustRowV2({
       label: "Livraison rapide",
       sublabel: "48h en France",
     },
-    {
-      type: "returns",
-      label: "Retour gratuit",
-      sublabel: "30 jours",
-    },
+    // Délai et frais lus dans la politique servie ; badge absent si elle
+    // n'a pas pu être lue.
+    ...(returnPolicy
+      ? [
+          {
+            type: "returns" as const,
+            label: returnWindowLabel(returnPolicy),
+            sublabel: returnFeesWording(returnPolicy),
+          },
+        ]
+      : []),
     {
       type: "warranty",
       label: "Garantie",

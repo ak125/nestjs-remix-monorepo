@@ -1,17 +1,24 @@
 /**
  * TrustPage - Page confiance e-commerce auto
- * 
+ *
  * Composant complet pour renforcer la confiance client avec:
  * - Logos équipementiers reconnus (Bosch, Valeo, etc.)
  * - Badges sécurité (paiement, garantie, retour)
  * - Avis clients avec véhicule affiché
- * 
+ *
  * Design System: Primary (CTA), Success (badges verts), Secondary (liens), Neutral (backgrounds)
  * Typographie: font-heading (titres), font-sans (body), font-mono (dates/refs)
  * Espacement: 8px grid (gap-4 sections, p-6 cards)
  */
 
-import React from 'react';
+import React from "react";
+
+import { useReturnPolicy } from "~/hooks/useRootData";
+import { type ReturnPolicyResult } from "~/utils/remix-application-port";
+import {
+  returnFeesWording,
+  returnWindowLabel,
+} from "~/utils/return-policy-wording";
 
 // ============================================================================
 // Types
@@ -38,7 +45,7 @@ export interface SecurityBadge {
   /** Identifiant unique */
   id: string;
   /** Type de badge */
-  type: 'payment' | 'warranty' | 'return' | 'delivery' | 'certified';
+  type: "payment" | "warranty" | "return" | "delivery" | "certified";
   /** Titre du badge */
   title: string;
   /** Description détaillée */
@@ -46,7 +53,7 @@ export interface SecurityBadge {
   /** Icône (emoji ou React element) */
   icon: string;
   /** Couleur du badge (success, primary, secondary) */
-  variant?: 'success' | 'primary' | 'secondary';
+  variant?: "success" | "primary" | "secondary";
 }
 
 /**
@@ -110,136 +117,144 @@ export interface TrustPageProps {
 
 const DEFAULT_PARTNER_BRANDS: PartnerBrand[] = [
   {
-    id: 'bosch',
-    name: 'Bosch',
-    logoUrl: '/images/brands/bosch.png',
-    description: 'Leader mondial équipements auto',
+    id: "bosch",
+    name: "Bosch",
+    logoUrl: "/images/brands/bosch.png",
+    description: "Leader mondial équipements auto",
   },
   {
-    id: 'valeo',
-    name: 'Valeo',
-    logoUrl: '/images/brands/valeo.png',
-    description: 'Expert systèmes automobiles',
+    id: "valeo",
+    name: "Valeo",
+    logoUrl: "/images/brands/valeo.png",
+    description: "Expert systèmes automobiles",
   },
   {
-    id: 'mann',
-    name: 'MANN-FILTER',
-    logoUrl: '/images/brands/mann.png',
-    description: 'Spécialiste filtration',
+    id: "mann",
+    name: "MANN-FILTER",
+    logoUrl: "/images/brands/mann.png",
+    description: "Spécialiste filtration",
   },
   {
-    id: 'sachs',
-    name: 'Sachs',
-    logoUrl: '/images/brands/sachs.png',
-    description: 'Expert embrayage et suspension',
+    id: "sachs",
+    name: "Sachs",
+    logoUrl: "/images/brands/sachs.png",
+    description: "Expert embrayage et suspension",
   },
   {
-    id: 'brembo',
-    name: 'Brembo',
-    logoUrl: '/images/brands/brembo.png',
-    description: 'Référence freinage haute performance',
+    id: "brembo",
+    name: "Brembo",
+    logoUrl: "/images/brands/brembo.png",
+    description: "Référence freinage haute performance",
   },
   {
-    id: 'ngk',
-    name: 'NGK',
-    logoUrl: '/images/brands/ngk.png',
-    description: 'N°1 mondial bougies allumage',
+    id: "ngk",
+    name: "NGK",
+    logoUrl: "/images/brands/ngk.png",
+    description: "N°1 mondial bougies allumage",
   },
 ];
 
 const DEFAULT_SECURITY_BADGES: SecurityBadge[] = [
   {
-    id: 'payment',
-    type: 'payment',
-    title: 'Paiement 100% sécurisé',
-    description: 'Transactions cryptées SSL. Carte bancaire, PayPal, virement.',
-    icon: '🔒',
-    variant: 'success',
+    id: "payment",
+    type: "payment",
+    title: "Paiement 100% sécurisé",
+    description: "Transactions cryptées SSL. Carte bancaire, PayPal, virement.",
+    icon: "🔒",
+    variant: "success",
   },
   {
-    id: 'warranty',
-    type: 'warranty',
-    title: 'Garantie 1 an',
-    description: 'Toutes nos pièces sont garanties constructeur 1 an.',
-    icon: '✓',
-    variant: 'success',
+    id: "warranty",
+    type: "warranty",
+    title: "Garantie 1 an",
+    description: "Toutes nos pièces sont garanties constructeur 1 an.",
+    icon: "✓",
+    variant: "success",
   },
   {
-    id: 'return',
-    type: 'return',
-    title: 'Retour sous 30 jours',
-    description: 'Satisfait ou remboursé. Retour gratuit sous 30 jours.',
-    icon: '↩',
-    variant: 'primary',
+    id: "delivery",
+    type: "delivery",
+    title: "Livraison Express",
+    description: "Expédition en 24h. Livraison en 1-2 jours ouvrés.",
+    icon: "🚚",
+    variant: "primary",
   },
   {
-    id: 'delivery',
-    type: 'delivery',
-    title: 'Livraison Express',
-    description: 'Expédition en 24h. Livraison en 1-2 jours ouvrés.',
-    icon: '🚚',
-    variant: 'primary',
-  },
-  {
-    id: 'certified',
-    type: 'certified',
-    title: 'Pièces certifiées',
-    description: 'Pièces d\'origine ou équivalentes qualité constructeur.',
-    icon: '⭐',
-    variant: 'secondary',
+    id: "certified",
+    type: "certified",
+    title: "Pièces certifiées",
+    description: "Pièces d'origine ou équivalentes qualité constructeur.",
+    icon: "⭐",
+    variant: "secondary",
   },
 ];
 
+/**
+ * Badge « retour » : délai et frais lus dans la politique servie par le backend
+ * (`useReturnPolicy()`). Inséré après la garantie ; absent si la politique n'a
+ * pas pu être lue.
+ */
+function returnBadge(policy: ReturnPolicyResult): SecurityBadge {
+  return {
+    id: "return",
+    type: "return",
+    title: returnWindowLabel(policy),
+    description: `${returnFeesWording(policy)}.`,
+    icon: "↩",
+    variant: "primary",
+  };
+}
+
 const DEFAULT_CUSTOMER_REVIEWS: CustomerReview[] = [
   {
-    id: 'review-1',
-    customerName: 'Marc D.',
-    customerPhoto: '/images/avatars/marc.jpg',
+    id: "review-1",
+    customerName: "Marc D.",
+    customerPhoto: "/images/avatars/marc.jpg",
     rating: 5,
     comment:
-      'Plaquettes de frein Bosch reçues en 24h. Montage facile, freinage nickel. Parfait pour ma 208 !',
-    date: '2025-10-15',
+      "Plaquettes de frein Bosch reçues en 24h. Montage facile, freinage nickel. Parfait pour ma 208 !",
+    date: "2025-10-15",
     vehicle: {
-      brand: 'Peugeot',
-      model: '208',
+      brand: "Peugeot",
+      model: "208",
       year: 2016,
-      engine: '1.6 HDi',
+      engine: "1.6 HDi",
     },
     isVerified: true,
-    productName: 'Plaquettes de frein avant Bosch',
+    productName: "Plaquettes de frein avant Bosch",
   },
   {
-    id: 'review-2',
-    customerName: 'Sophie L.',
-    customerPhoto: '/images/avatars/sophie.jpg',
+    id: "review-2",
+    customerName: "Sophie L.",
+    customerPhoto: "/images/avatars/sophie.jpg",
     rating: 5,
     comment:
-      'Filtre à air MANN parfaitement compatible. Prix imbattable, livraison rapide. Je recommande !',
-    date: '2025-10-12',
+      "Filtre à air MANN parfaitement compatible. Prix imbattable, livraison rapide. Je recommande !",
+    date: "2025-10-12",
     vehicle: {
-      brand: 'Renault',
-      model: 'Clio IV',
+      brand: "Renault",
+      model: "Clio IV",
       year: 2018,
     },
     isVerified: true,
-    productName: 'Filtre à air MANN C 25 114',
+    productName: "Filtre à air MANN C 25 114",
   },
   {
-    id: 'review-3',
-    customerName: 'Thomas B.',
-    customerPhoto: '/images/avatars/thomas.jpg',
+    id: "review-3",
+    customerName: "Thomas B.",
+    customerPhoto: "/images/avatars/thomas.jpg",
     rating: 4,
     comment:
-      'Kit embrayage Sachs de qualité. Notice de montage claire. Seul bémol : délai 3 jours au lieu de 2.',
-    date: '2025-10-08',
+      "Kit embrayage Sachs de qualité. Notice de montage claire. Seul bémol : délai 3 jours au lieu de 2.",
+    date: "2025-10-08",
     vehicle: {
-      brand: 'Volkswagen',
-      model: 'Golf VII',
+      brand: "Volkswagen",
+      model: "Golf VII",
       year: 2015,
-      engine: '1.6 TDI',
+      engine: "1.6 TDI",
     },
     isVerified: true,
-    productName: 'Kit embrayage Sachs',
+    productName: "Kit embrayage Sachs",
   },
 ];
 
@@ -249,11 +264,11 @@ const DEFAULT_CUSTOMER_REVIEWS: CustomerReview[] = [
 
 export const TrustPage: React.FC<TrustPageProps> = ({
   partnerBrands = DEFAULT_PARTNER_BRANDS,
-  securityBadges = DEFAULT_SECURITY_BADGES,
+  securityBadges,
   customerReviews = DEFAULT_CUSTOMER_REVIEWS,
-  partnersTitle = 'Nos marques partenaires',
-  securityTitle = 'Vos garanties',
-  reviewsTitle = 'Avis clients vérifiés',
+  partnersTitle = "Nos marques partenaires",
+  securityTitle = "Vos garanties",
+  reviewsTitle = "Avis clients vérifiés",
   showSections = {
     partners: true,
     security: true,
@@ -261,6 +276,12 @@ export const TrustPage: React.FC<TrustPageProps> = ({
   },
   onViewAllReviews,
 }) => {
+  const returnPolicy = useReturnPolicy();
+  const badges = securityBadges ?? [
+    ...DEFAULT_SECURITY_BADGES.slice(0, 2),
+    ...(returnPolicy ? [returnBadge(returnPolicy)] : []),
+    ...DEFAULT_SECURITY_BADGES.slice(2),
+  ];
   return (
     <div className="w-full space-y-10">
       {/* Section Logos Équipementiers */}
@@ -271,8 +292,8 @@ export const TrustPage: React.FC<TrustPageProps> = ({
               {partnersTitle}
             </h2>
             <p className="font-sans text-neutral-600 text-center mb-10 max-w-2xl mx-auto">
-              Nous travaillons avec les plus grands équipementiers automobiles pour vous garantir
-              des pièces de qualité d'origine constructeur.
+              Nous travaillons avec les plus grands équipementiers automobiles
+              pour vous garantir des pièces de qualité d'origine constructeur.
             </p>
 
             {/* Grid logos */}
@@ -310,20 +331,20 @@ export const TrustPage: React.FC<TrustPageProps> = ({
 
             {/* Grid badges */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-              {securityBadges.map((badge) => {
+              {badges.map((badge) => {
                 const bgColorClass =
-                  badge.variant === 'success'
-                    ? 'bg-success-50 border-success-500'
-                    : badge.variant === 'primary'
-                      ? 'bg-primary-50 border-primary-500'
-                      : 'bg-secondary-50 border-secondary-500';
+                  badge.variant === "success"
+                    ? "bg-success-50 border-success-500"
+                    : badge.variant === "primary"
+                      ? "bg-primary-50 border-primary-500"
+                      : "bg-secondary-50 border-secondary-500";
 
                 const iconColorClass =
-                  badge.variant === 'success'
-                    ? 'text-success-500'
-                    : badge.variant === 'primary'
-                      ? 'text-primary-500'
-                      : 'text-secondary-500';
+                  badge.variant === "success"
+                    ? "text-success-500"
+                    : badge.variant === "primary"
+                      ? "text-primary-500"
+                      : "text-secondary-500";
 
                 return (
                   <div
@@ -331,7 +352,9 @@ export const TrustPage: React.FC<TrustPageProps> = ({
                     className={`${bgColorClass} border-2 rounded-lg p-6 flex flex-col items-center text-center hover:shadow-lg transition-shadow duration-300`}
                   >
                     {/* Icône */}
-                    <div className={`text-4xl mb-2 ${iconColorClass}`}>{badge.icon}</div>
+                    <div className={`text-4xl mb-2 ${iconColorClass}`}>
+                      {badge.icon}
+                    </div>
 
                     {/* Titre */}
                     <h3 className="font-heading text-lg text-neutral-900 mb-1">
@@ -339,7 +362,9 @@ export const TrustPage: React.FC<TrustPageProps> = ({
                     </h3>
 
                     {/* Description */}
-                    <p className="font-sans text-sm text-neutral-600">{badge.description}</p>
+                    <p className="font-sans text-sm text-neutral-600">
+                      {badge.description}
+                    </p>
                   </div>
                 );
               })}
@@ -356,7 +381,8 @@ export const TrustPage: React.FC<TrustPageProps> = ({
               {reviewsTitle}
             </h2>
             <p className="font-sans text-neutral-600 text-center mb-10 max-w-2xl mx-auto">
-              Découvrez les retours d'expérience de nos clients sur leurs véhicules.
+              Découvrez les retours d'expérience de nos clients sur leurs
+              véhicules.
             </p>
 
             {/* Grid avis */}
@@ -391,7 +417,9 @@ export const TrustPage: React.FC<TrustPageProps> = ({
 /**
  * Carte avis client avec véhicule
  */
-const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) => {
+const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({
+  review,
+}) => {
   return (
     <div className="bg-white rounded-lg border border-neutral-200 p-6 hover:shadow-lg transition-shadow duration-300">
       {/* Header: Avatar + Nom + Date */}
@@ -414,7 +442,9 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
         {/* Nom + Date */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
-            <h4 className="font-heading text-neutral-900">{review.customerName}</h4>
+            <h4 className="font-heading text-neutral-900">
+              {review.customerName}
+            </h4>
             {review.isVerified && (
               <span className="bg-success-500 text-white text-xs px-1 py-0.5 rounded">
                 ✓ Vérifié
@@ -422,10 +452,10 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
             )}
           </div>
           <p className="font-mono text-xs text-neutral-500">
-            {new Date(review.date).toLocaleDateString('fr-FR', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
+            {new Date(review.date).toLocaleDateString("fr-FR", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
             })}
           </p>
         </div>
@@ -436,7 +466,9 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
         {[1, 2, 3, 4, 5].map((star) => (
           <span
             key={star}
-            className={star <= review.rating ? 'text-warning-500' : 'text-neutral-300'}
+            className={
+              star <= review.rating ? "text-warning-500" : "text-neutral-300"
+            }
           >
             ★
           </span>
@@ -444,13 +476,17 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
       </div>
 
       {/* Commentaire */}
-      <p className="font-sans text-neutral-700 mb-4 leading-relaxed">{review.comment}</p>
+      <p className="font-sans text-neutral-700 mb-4 leading-relaxed">
+        {review.comment}
+      </p>
 
       {/* Véhicule */}
       <div className="bg-secondary-50 border border-secondary-200 rounded-md p-2">
         <div className="flex items-center gap-1 mb-1">
           <span className="text-secondary-500">🚗</span>
-          <span className="font-heading text-sm text-secondary-700">Véhicule du client</span>
+          <span className="font-heading text-sm text-secondary-700">
+            Véhicule du client
+          </span>
         </div>
         <p className="font-sans text-sm text-neutral-900">
           {review.vehicle.brand} {review.vehicle.model} ({review.vehicle.year})
@@ -465,7 +501,8 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
       {/* Produit acheté (optionnel) */}
       {review.productName && (
         <p className="font-sans text-xs text-neutral-500 mt-2">
-          Produit : <span className="text-neutral-700">{review.productName}</span>
+          Produit :{" "}
+          <span className="text-neutral-700">{review.productName}</span>
         </p>
       )}
     </div>

@@ -4,7 +4,10 @@
  * Lecteurs :
  *   - le frontend, qui reçoit `publicReturnPolicy()` par le port applicatif
  *     (`RemixApplicationPort.getReturnPolicy`) — il ne porte aucune valeur :
- *     bandeau du site et données structurées (`hasMerchantReturnPolicy`) ;
+ *     bandeaux du site, FAQ de repli et données structurées
+ *     (`hasMerchantReturnPolicy`) ;
+ *   - la FAQ du support (`FaqService`) et l'e-mail de bienvenue (`MailService`),
+ *     par `returnFaqAnswer()` et `RETURN_POLICY` ;
  *   - la page légale « Garantie et Retour » (`___legal_pages`, alias `gcrg`)
  *     reprend le même texte par une migration relue par le département 18.
  *
@@ -63,6 +66,31 @@ export interface PublicReturnPolicy {
   returnFeesPaidBy: 'customer';
   returnFeesWaivedFor: Array<'item_defect' | 'seller_error'>;
   refundMethod: 'original_payment_method';
+}
+
+const WAIVER_WORDING: Record<
+  ReturnPolicy['returnFeesWaivedFor'][number],
+  string
+> = {
+  item_defect: 'pièce défectueuse',
+  seller_error: 'erreur de notre part',
+};
+
+/**
+ * Réponse publique à « Comment retourner un produit ? ». Même formulation que
+ * la FAQ de repli du frontend (`frontend/app/utils/return-policy-wording.ts`).
+ * Le retour n'est jamais présenté comme gratuit.
+ */
+export function returnFaqAnswer(): string {
+  const waivers = RETURN_POLICY.returnFeesWaivedFor.map(
+    (w) => WAIVER_WORDING[w],
+  );
+  return (
+    `Vous disposez de ${RETURN_POLICY.returnWindowDays} jours après réception pour retourner une pièce, ` +
+    `dans son emballage d'origine et non montée. ` +
+    `Frais de retour à votre charge, sauf ${waivers.join(' ou ')}. ` +
+    `Le remboursement est effectué par le moyen de paiement utilisé lors de la commande.`
+  );
 }
 
 export function publicReturnPolicy(): PublicReturnPolicy {

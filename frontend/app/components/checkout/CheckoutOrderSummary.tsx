@@ -9,11 +9,13 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 
+import { useReturnPolicy } from "~/hooks/useRootData";
 import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
 } from "~/schemas/cart.schemas";
 import { calculateDeliveryETA, type StockStatus } from "~/utils/delivery-eta";
+import { returnWindowLabel } from "~/utils/return-policy-wording";
 import { type VehicleCookie } from "~/utils/vehicle-cookie";
 import { FreeShippingBar } from "./FreeShippingBar";
 import { PromoCodeInput } from "./PromoCodeInput";
@@ -41,6 +43,7 @@ export function CheckoutOrderSummary({
   vehicle,
   onCartUpdated,
 }: Props) {
+  const returnPolicy = useReturnPolicy();
   const vehicleLabel = vehicle
     ? [vehicle.marque_name, vehicle.modele_name, vehicle.type_name]
         .filter(Boolean)
@@ -268,10 +271,12 @@ export function CheckoutOrderSummary({
           <CreditCard className="h-4 w-4 text-foreground shrink-0" />
           3D Secure
         </span>
-        <span className="flex items-center gap-1.5">
-          <RotateCcw className="h-4 w-4 text-orange-500 shrink-0" />
-          Retours 30 jours
-        </span>
+        {returnPolicy && (
+          <span className="flex items-center gap-1.5">
+            <RotateCcw className="h-4 w-4 text-orange-500 shrink-0" />
+            {returnWindowLabel(returnPolicy)}
+          </span>
+        )}
       </div>
     </div>
   );

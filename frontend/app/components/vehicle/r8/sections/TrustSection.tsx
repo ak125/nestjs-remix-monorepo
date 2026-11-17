@@ -2,8 +2,12 @@
 // Trust badges: warranty, shipping, support, returns.
 
 import { HeadphonesIcon, RotateCcw, Shield, Truck } from "lucide-react";
+import { useReturnPolicy } from "~/hooks/useRootData";
+import { returnWindowLabel } from "~/utils/return-policy-wording";
 
 export function TrustSection() {
+  // Délai de retour lu dans la politique servie ; carte absente sans politique.
+  const returnPolicy = useReturnPolicy();
   return (
     <div className="mb-12" data-section="S_TRUST">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -28,13 +32,17 @@ export function TrustSection() {
           <h3 className="font-bold text-gray-900">Conseil expert</h3>
           <p className="text-sm text-gray-500 mt-1">Service client dédié</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-          <div className="inline-flex p-3 rounded-full bg-orange-100 mb-3">
-            <RotateCcw size={28} className="text-orange-600" />
+        {returnPolicy && (
+          <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
+            <div className="inline-flex p-3 rounded-full bg-orange-100 mb-3">
+              <RotateCcw size={28} className="text-orange-600" />
+            </div>
+            <h3 className="font-bold text-gray-900">
+              {returnWindowLabel(returnPolicy)}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">Satisfait ou remboursé</p>
           </div>
-          <h3 className="font-bold text-gray-900">Retour 30 jours</h3>
-          <p className="text-sm text-gray-500 mt-1">Satisfait ou remboursé</p>
-        </div>
+        )}
       </div>
     </div>
   );

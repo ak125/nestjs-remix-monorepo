@@ -1,11 +1,15 @@
 /**
- * R1 Trust Strip — 4 items de réassurance purs (statiques).
- * Aucune donnée dynamique — KPI séparé dans R1KpiCoverage.
+ * R1 Trust Strip — 4 items de réassurance.
+ * Seul le délai de retour est dynamique : il vient de la politique de retour
+ * servie par le backend. KPI séparé dans R1KpiCoverage.
  */
 import { Lock, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { memo } from "react";
+import { useReturnPolicy } from "~/hooks/useRootData";
+import { returnWindowLabel } from "~/utils/return-policy-wording";
 
 export const R1TrustStrip = memo(function R1TrustStrip() {
+  const returnPolicy = useReturnPolicy();
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {/* 1. Compatibilité vérifiée */}
@@ -34,18 +38,20 @@ export const R1TrustStrip = memo(function R1TrustStrip() {
         </div>
       </div>
 
-      {/* 3. Retours */}
-      <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-amber-50 p-3 sm:p-4">
-        <RotateCcw className="w-6 h-6 text-amber-600 shrink-0" />
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900 leading-tight">
-            Retours 30 jours
-          </p>
-          <p className="text-xs text-gray-500 leading-tight mt-0.5">
-            Satisfait ou remboursé
-          </p>
+      {/* 3. Retours — absent si la politique n'a pas pu être lue */}
+      {returnPolicy && (
+        <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-amber-50 p-3 sm:p-4">
+          <RotateCcw className="w-6 h-6 text-amber-600 shrink-0" />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-900 leading-tight">
+              {returnWindowLabel(returnPolicy)}
+            </p>
+            <p className="text-xs text-gray-500 leading-tight mt-0.5">
+              Satisfait ou remboursé
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 4. Paiement sécurisé */}
       <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-muted p-3 sm:p-4">

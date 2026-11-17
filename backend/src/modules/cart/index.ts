@@ -1,9 +1,10 @@
 // Surface publique du module panier pour les autres modules
 // (règle dependency-cruiser `no-deep-module-access`).
-// Seule la politique des frais de port est exposée ici : source unique du
-// forfait et du seuil de gratuité (mandat BJ).
+// Sont exposées ici les politiques de port (forfait, seuil de gratuité) et de
+// retour (délai, frais, remboursement) : sources uniques (mandat BJ).
 export {
   SHIPPING_POLICY,
   freeShippingWording,
   metropolitanShippingFeeTTC,
 } from './config/shipping-policy.config';
+export { RETURN_POLICY, returnFaqAnswer } from './config/return-policy.config';

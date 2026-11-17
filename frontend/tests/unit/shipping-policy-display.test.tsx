@@ -41,14 +41,14 @@ describe("formatShippingAmount", () => {
 
 describe("buildFaqFallback", () => {
   it("écrit le seuil servi dans la réponse sur la livraison", () => {
-    const delivery = buildFaqFallback(SERVED).find((f) =>
+    const delivery = buildFaqFallback(SERVED, null).find((f) =>
       f.q.includes("délais de livraison"),
     );
     expect(delivery?.a).toContain("Livraison gratuite dès 100€ d'achat.");
   });
 
   it("n'écrit aucune promesse de seuil quand la règle est inconnue", () => {
-    const text = buildFaqFallback(null)
+    const text = buildFaqFallback(null, null)
       .map((f) => f.a)
       .join(" ");
     expect(text).not.toMatch(/gratuite/i);

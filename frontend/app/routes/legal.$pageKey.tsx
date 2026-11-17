@@ -82,7 +82,9 @@ const staticPages: Record<string, LegalPageStatic> = {
 <h2>3. Garantie</h2>
 <p>Nos produits bénéficient de la garantie légale de conformité (2 ans).</p>
 <h2>4. Droit de rétractation</h2>
-<p>Vous disposez d'un délai de 14 jours pour exercer votre droit de rétractation.</p>
+<p>Vous disposez de 30 jours à compter de la réception pour nous retourner un produit et exercer votre droit de rétractation.</p>
+<p>Les frais de retour sont à votre charge, sauf si la pièce est défectueuse ou en cas d'erreur de notre part : ils sont alors à notre charge.</p>
+<p>Le remboursement est effectué par le moyen de paiement utilisé lors de la commande.</p>
 <h2>5. Contact</h2>
 <p>Pour toute question, contactez-nous à contact@automecanik.com</p>`,
   },

@@ -2,7 +2,7 @@ import { HelpCircle, Search, Shield, Stethoscope, Truck } from "lucide-react";
 import { Suspense } from "react";
 import { Await } from "react-router";
 import { buildFaqFallback } from "~/components/home/constants";
-import { useShippingPolicy } from "~/hooks/useRootData";
+import { useReturnPolicy, useShippingPolicy } from "~/hooks/useRootData";
 
 function getFaqIcon(question: string) {
   const q = question.toLowerCase();
@@ -49,7 +49,7 @@ export default function FaqSection({
 }: {
   faqsPromise: Promise<Array<{ id: string; question: string; answer: string }>>;
 }) {
-  const faqFallback = buildFaqFallback(useShippingPolicy());
+  const faqFallback = buildFaqFallback(useShippingPolicy(), useReturnPolicy());
 
   return (
     <section className="py-7 lg:py-10 bg-slate-50">

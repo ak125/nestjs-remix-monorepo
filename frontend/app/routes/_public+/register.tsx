@@ -25,7 +25,9 @@ import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { useReturnPolicy } from "~/hooks/useRootData";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { returnWindowLabel } from "~/utils/return-policy-wording";
 import { getOptionalUser } from "../../auth/unified.server";
 
 export const handle = {
@@ -167,6 +169,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 // --- Composants internes ---
 
 function BenefitsPanel() {
+  const returnPolicy = useReturnPolicy();
   const benefits = [
     {
       icon: ClipboardList,
@@ -215,10 +218,12 @@ function BenefitsPanel() {
             <Shield className="w-4 h-4 mt-0.5 shrink-0 text-cta" />
             <span>Paiement 100% sécurisé</span>
           </li>
-          <li className="flex items-start gap-2 text-sm text-slate-700">
-            <RefreshCw className="w-4 h-4 mt-0.5 shrink-0 text-cta" />
-            <span>Retours sous 30 jours</span>
-          </li>
+          {returnPolicy && (
+            <li className="flex items-start gap-2 text-sm text-slate-700">
+              <RefreshCw className="w-4 h-4 mt-0.5 shrink-0 text-cta" />
+              <span>{returnWindowLabel(returnPolicy)}</span>
+            </li>
+          )}
           <li className="flex items-start gap-2 text-sm text-slate-700">
             <Headphones className="w-4 h-4 mt-0.5 shrink-0 text-cta" />
             <span>

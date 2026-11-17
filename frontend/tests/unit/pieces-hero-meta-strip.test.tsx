@@ -7,11 +7,26 @@
  * `<span aria-hidden="true">•</span>`).
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 import { PiecesHeroMetaStrip } from '~/components/pieces/hero/PiecesHeroMetaStrip';
-import { SITE_TRUST_CLAIMS } from '~/components/pieces/hero/site-trust-claims';
+import { siteTrustClaims } from '~/components/pieces/hero/site-trust-claims';
+import { type ReturnPolicyResult } from '~/utils/remix-application-port';
+
+vi.mock('~/hooks/useRootData', () => ({
+  useReturnPolicy: () => SERVED,
+}));
+
+const SERVED: ReturnPolicyResult = {
+  country: 'FR',
+  returnWindowDays: 30,
+  returnMethod: 'by_mail',
+  returnFeesPaidBy: 'customer',
+  returnFeesWaivedFor: ['item_defect', 'seller_error'],
+  refundMethod: 'original_payment_method',
+};
+const SITE_TRUST_CLAIMS = siteTrustClaims(SERVED);
 
 describe('PiecesHeroMetaStrip', () => {
   it('rend exactement 3 items (un par claim SoT)', () => {

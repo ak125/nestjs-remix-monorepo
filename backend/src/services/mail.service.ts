@@ -12,6 +12,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { SITE_ORIGIN } from '../config/app.config';
+import { RETURN_POLICY } from '../modules/cart';
 
 /**
  * Issue réelle d'un envoi. `dry-run` = transport non configuré : rien n'est
@@ -1173,7 +1174,7 @@ export class MailService {
         <a href="${this.appUrl}">Acc&eacute;der &agrave; mon compte</a>
       </div>
       <div class="guarantee">
-        <strong>Satisfait ou rembours&eacute; sous 14 jours</strong>
+        <strong>Retours ${RETURN_POLICY.returnWindowDays} jours</strong>
         <span>Toutes nos pi&egrave;ces sont garanties compatibles avec votre v&eacute;hicule.</span>
       </div>
     </div>

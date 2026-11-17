@@ -6,6 +6,10 @@
  * passer par ce fichier (un test vitest vérifie la longueur === 3 et
  * l'ordre canon shipping → returns → payment).
  *
+ * Le libellé « retours » n'est pas écrit ici : il vient de la politique de
+ * retour servie par le backend (`useReturnPolicy()`, mandat BJ). Sans
+ * politique lue, la garantie « retours » est omise.
+ *
  * Chaque claim a un champ `source` qui pointe la politique business
  * justifiant l'affichage public (audit trail légal).
  *
@@ -14,16 +18,14 @@
  * toute string littérale dupliquée dans le rendu.
  */
 
-import {
-  BadgeCheck,
-  ShieldCheck,
-  Truck,
-  type LucideIcon,
-} from 'lucide-react';
+import { BadgeCheck, ShieldCheck, Truck, type LucideIcon } from "lucide-react";
+
+import { type ReturnPolicyResult } from "~/utils/remix-application-port";
+import { returnWindowLabel } from "~/utils/return-policy-wording";
 
 export interface TrustClaim {
   /** Identifiant stable (ne pas changer, ordre figé). */
-  readonly id: 'shipping' | 'returns' | 'payment';
+  readonly id: "shipping" | "returns" | "payment";
   /** Icône Lucide affichée à gauche du label. */
   readonly icon: LucideIcon;
   /** Libellé public (FR). */
@@ -32,23 +34,31 @@ export interface TrustClaim {
   readonly source: string;
 }
 
-export const SITE_TRUST_CLAIMS: readonly TrustClaim[] = [
-  {
-    id: 'shipping',
-    icon: Truck,
-    label: 'Expédition 24h',
-    source: 'policy-2026-Q2',
-  },
-  {
-    id: 'returns',
-    icon: BadgeCheck,
-    label: 'Retour 30 jours',
-    source: 'policy-2026-Q2',
-  },
-  {
-    id: 'payment',
-    icon: ShieldCheck,
-    label: 'Paiement sécurisé',
-    source: 'paybox-systempay',
-  },
-] as const;
+export function siteTrustClaims(
+  returnPolicy: ReturnPolicyResult | null,
+): readonly TrustClaim[] {
+  return [
+    {
+      id: "shipping",
+      icon: Truck,
+      label: "Expédition 24h",
+      source: "policy-2026-Q2",
+    },
+    ...(returnPolicy
+      ? [
+          {
+            id: "returns" as const,
+            icon: BadgeCheck,
+            label: returnWindowLabel(returnPolicy),
+            source: "return-policy.config",
+          },
+        ]
+      : []),
+    {
+      id: "payment",
+      icon: ShieldCheck,
+      label: "Paiement sécurisé",
+      source: "paybox-systempay",
+    },
+  ];
+}
