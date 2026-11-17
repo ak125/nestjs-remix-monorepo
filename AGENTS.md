@@ -41,8 +41,10 @@ imports ou le chargement des `.claude/rules/` de Claude Code.
 
 ### Tiers (amont, `skills-lock.json`)
 
-Régis par ADR-137 : dossier amont jamais modifié, commit épinglé dans
-`skills-lock.json`, entrée et retrait par PR, décision de l'owner à T+30.
+Régis par P40 du journal des principes (`.claude/governance/journal-des-principes.md`) :
+dossier amont jamais modifié, commit et empreinte épinglés dans `skills-lock.json`,
+wrapper local `amk-<nom>`. Entrée et retrait par PR ; pilote en cours, décision de
+l'owner après 30 jours d'observation.
 
 - `supabase-postgres-best-practices` — dépôt `supabase/agent-skills`, MIT ;
   wrapper `amk-supabase-postgres-best-practices`, qui prime sur l'amont.

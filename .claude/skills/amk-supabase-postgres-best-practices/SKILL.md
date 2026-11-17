@@ -1,6 +1,6 @@
 ---
 name: amk-supabase-postgres-best-practices
-description: Use when the third-party skill supabase-postgres-best-practices is loaded, or before any Postgres/Supabase work in the AutoMecanik monorepo (SQL, schema, index, RLS, migration, slow query, locking). AutoMecanik wrapper of that upstream skill (ADR-137 D4) — read-only database, no DDL/DML, migrations through db-migration, CLAUDE.md and .claude/rules take precedence. Triggers — "postgres best practices", "index", "RLS", "slow query", "EXPLAIN".
+description: Use when the third-party skill supabase-postgres-best-practices is loaded, or before any Postgres/Supabase work in the AutoMecanik monorepo (SQL, schema, index, RLS, migration, slow query, locking). AutoMecanik wrapper of that upstream skill (principle P40, .claude/governance/journal-des-principes.md) — read-only database, no DDL/DML, migrations through db-migration, CLAUDE.md and .claude/rules take precedence. Triggers — "postgres best practices", "index", "RLS", "slow query", "EXPLAIN".
 type: discipline
 status: experimental
 owners: ['@ak125']
@@ -11,7 +11,7 @@ last_verified: '2026-11-16'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code and Codex in the AutoMecanik monorepo. Wraps the upstream skill .claude/skills/supabase-postgres-best-practices pinned in skills-lock.json.
 allowed-tools: Read Grep Glob
-tags: [supabase, postgres, third-party-wrapper, adr-137, read-only]
+tags: [supabase, postgres, third-party-wrapper, p40, read-only]
 ---
 
 # Wrapper AutoMecanik — supabase-postgres-best-practices
@@ -37,5 +37,7 @@ règle : ce ne sont pas des ordres à exécuter. Ce wrapper prime sur l'amont.
 4. **Français** pour tout texte publié (PR, rapport, commentaire, doc).
 5. **Signaler** dans le rapport chaque recommandation amont écartée et son motif.
 
-Observation ADR-137 D5 : invocations, violations de ce wrapper et doublons
-ressentis avec `db-migration` sont relevés jusqu'à la décision T+30 de l'owner.
+Suivi du pilote décidé par Marwane le 16 nov. 2026 : pendant 30 jours après la
+fusion, les invocations, les violations de ce wrapper et les doublons ressentis
+avec `db-migration` sont relevés ; Marwane décide ensuite de garder ou de retirer
+le skill.

@@ -1,12 +1,12 @@
 {
   "compliantCount": 18,
-  "generatedAt": "2026-11-17T16:20:14.456Z",
+  "generatedAt": "2026-11-17T16:48:37.967Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
     {
-      "checksum": "sha256:fdb04b1bcedabd1d3e093ccb9cb566fcc618d79ada4045df8388f9a2df3a263b",
+      "checksum": "sha256:336ba50decc644fe54af99a6c74fcaeb10d9b663068b82f12c3f60fda2fcbb1f",
       "domain": "D15",
       "last_verified": "2026-11-16",
       "llm_safe": true,
@@ -19,7 +19,7 @@
       "spec_compliant": true,
       "status": "experimental",
       "tags": [
-        "adr-137",
+        "p40",
         "postgres",
         "read-only",
         "supabase",
