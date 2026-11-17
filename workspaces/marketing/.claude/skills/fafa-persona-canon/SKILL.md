@@ -85,10 +85,12 @@ Claims `procedure` / `safety` → **validation humaine obligatoire** (G2 `safety
   d'AutoMecanik », qui ajoute la violation `ancienne_signature` (FAIL).
 - `identity_disclosed` vaut vrai seulement si la surimpression `ai_generated_notice` couvre toute la vidéo
   (`position: overlay_continuous` dans `disclaimer.json`) et si l'étiquette IA de la plateforme est posée à la
-  publication. La revue de publication du département 08 le vérifie tant qu'aucune gate ne le calcule ; avant la
-  publication, l'étiquette n'est pas observable et `identity_disclosed` ne peut pas valoir vrai.
-- Ces deux champs sont rendus par la relecture de ce skill : aucun code ne les calcule (ni `brand-compliance-gate`,
-  ni les gates G1-G7).
+  publication. La revue de publication du département 08 vérifie l'étiquette ; avant la publication, elle n'est pas
+  observable et `identity_disclosed` ne peut pas valoir vrai.
+- Ces deux champs sont rendus par la relecture de ce skill. Depuis la décision 147, la gate G3 `brand` en calcule
+  la part mesurable avant publication et rend FAIL : « mécano IA » dans la voix (`ancienne_signature`),
+  surimpression `ai_generated_notice` absente, vide ou non continue (`ai_notice_absent`, `ai_notice_not_continuous`).
+  Source : `personas/fafa.md`, § « Amendement du 17 nov. 2026 ».
 
 ## Évolution
 

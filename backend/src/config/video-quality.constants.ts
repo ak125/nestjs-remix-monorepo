@@ -246,6 +246,23 @@ export const FORBIDDEN_PATTERNS_SHORT: readonly RegExp[] = [
 ] as const;
 
 // ─────────────────────────────────────────────────────────────
+// Fafa signature (brand gate G3) — canon `workspaces/marketing/fafa-media-factory/personas/fafa.md`,
+// § « Amendement du 17 nov. 2026 » ; décisions 145 et 147
+// ─────────────────────────────────────────────────────────────
+
+/** Ancienne phrase dite : « mécano IA » est refusé dans le texte de voix. */
+export const FAFA_OLD_SIGNATURE_PATTERN = /\bm[ée]cano\s+i\.?a\b/i;
+
+/**
+ * Indication de l'IA exigée sur tout média Fafa, dans le vocabulaire du dossier
+ * (`governance/disclaimer-plan.schema.json`) : surimpression continue non vide.
+ */
+export const FAFA_AI_NOTICE = {
+  type: 'ai_generated_notice',
+  position: 'overlay_continuous',
+} as const;
+
+// ─────────────────────────────────────────────────────────────
 // Render engine timeout (P4.0)
 // ─────────────────────────────────────────────────────────────
 

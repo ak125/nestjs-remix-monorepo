@@ -47,10 +47,16 @@ Ce qui en découle :
   Marwane ; la publication reste un acte de Marwane.
 - `identity_disclosed` (skill `fafa-persona-canon`) suit la condition de Q2 ; la revue de publication du département 08
   la vérifie.
-- Le contrôle « marque » de la décision 45 (`brand-compliance-gate.service.ts`, 22 règles de
-  `__marketing_brand_rules`, semées par `backend/src/modules/marketing/templates/brand-rules-seed.ts`) ne contient,
-  au 17 nov. 2026, aucune règle sur la signature Fafa ; la gate vidéo G3 `brand` non plus. Le refus de l'ancienne
-  phrase tient à ce canon et à sa relecture (`fafa-persona-canon`, `fafa-brand-safety-reviewer`), pas à un code.
+- Décision 147 (17 nov. 2026 à 21:39 Paris), « oui » à : « J'ajoute au contrôle « marque » une vérification
+  automatique de la signature Fafa ? […] La vérification refuse l'ancienne phrase « mécano IA » dans ce que Fafa dit ;
+  elle refuse aussi une vidéo dont la mention « générée par IA » aurait disparu. » La gate vidéo G3 `brand`
+  (`backend/src/modules/media-factory/services/video-gates.service.ts`, `fafaSignatureViolations`) rend FAIL dès un
+  écart : « mécano IA » dans le texte de voix (`ancienne_signature`), et, pour un média déclaré Fafa, aucune
+  surimpression `ai_generated_notice` non vide (`ai_notice_absent`) ou aucune en `overlay_continuous`
+  (`ai_notice_not_continuous`). Le validateur de dossier `scripts/marketing/fafa-pilot-governance.cjs` la rejoue sur
+  `script.json` et `disclaimer.json`. L'étiquette IA de la plateforme reste vérifiée par la revue de publication
+  du 08. Le contrôle des publications sociales (`brand-compliance-gate.service.ts`, 22 règles de
+  `__marketing_brand_rules`) ne contient toujours aucune règle sur la signature Fafa.
 
 ## Voix vs Brand Voice ECOMMERCE/LOCAL/HYBRID
 
