@@ -39,6 +39,8 @@ function brokenSupabase() {
     'lte',
     'lt',
     'in',
+    'not',
+    'range',
   ]) {
     chain[m] = jest.fn().mockReturnValue(chain);
   }
@@ -648,5 +650,205 @@ describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback'
     const queue = await service.computeActionQueue([], [], 'full');
     expect(queue.find((a) => a.id === 'unavailable:seo')).toBeDefined();
     expect(queue.some((a) => a.id.startsWith('seo:opportunity:'))).toBe(false);
+  });
+});
+
+describe('CommandCenterActionsService — fraîcheur des collectes Search Console / GA4 (mandat AT)', () => {
+  const DAY = 86_400_000;
+  /** Date YYYY-MM-DD d'il y a n jours (UTC), relative à l'horloge du test. */
+  const day = (n: number) =>
+    new Date(Date.now() - n * DAY).toISOString().slice(0, 10);
+
+  interface Ga4Row {
+    date: string;
+    sessions: number;
+  }
+
+  /**
+   * Supabase simulé par table : property_total renvoie les jours confirmés
+   * fournis (le filtre commit_version est vérifié), __seo_ga4_daily le dernier
+   * jour puis, pour la lecture paginée, les lignes organiques des dates demandées.
+   */
+  function collectionsSupabase({
+    gsc,
+    ga4Last,
+    organic,
+    failOn,
+  }: {
+    gsc: Array<{ date: string; clicks: number }>;
+    ga4Last: string | null;
+    organic: Ga4Row[];
+    failOn?: string;
+  }) {
+    const ranges: Array<[number, number]> = [];
+    const notCalls: unknown[][] = [];
+    const channels: unknown[] = [];
+    const from = jest.fn((table: string) => {
+      const q: Record<string, unknown[]> = {};
+      const chain: Record<string, unknown> = {};
+      for (const m of [
+        'select',
+        'eq',
+        'in',
+        'not',
+        'order',
+        'limit',
+        'range',
+        'gt',
+        'or',
+        'gte',
+        'lte',
+        'lt',
+      ]) {
+        chain[m] = (...args: unknown[]) => {
+          q[m] = args;
+          if (m === 'range') ranges.push(args as [number, number]);
+          if (m === 'not') notCalls.push(args);
+          if (m === 'eq' && args[0] === 'channel') channels.push(args[1]);
+          return chain;
+        };
+      }
+      chain.then = (resolve: (v: unknown) => unknown) => {
+        if (failOn === table)
+          return resolve({ data: null, count: null, error: { message: 'x' } });
+        if (table === '__seo_gsc_daily_property_total')
+          return resolve({ data: gsc, error: null });
+        if (table === '__seo_ga4_daily' && q.range) {
+          const [lo, hi] = q.range as [number, number];
+          const dates = (q.in?.[1] ?? []) as string[];
+          const rows = organic.filter((r) => dates.includes(r.date));
+          return resolve({
+            data: rows.slice(lo, hi + 1),
+            count: rows.length,
+            error: null,
+          });
+        }
+        if (table === '__seo_ga4_daily')
+          return resolve({
+            data: ga4Last ? [{ date: ga4Last }] : [],
+            error: null,
+          });
+        return resolve({ data: null, count: null, error: { message: 'x' } });
+      };
+      return chain;
+    });
+    return {
+      supabase: {
+        from,
+        rpc: jest
+          .fn()
+          .mockResolvedValue({ data: null, error: { message: 'boom' } }),
+      },
+      ranges,
+      notCalls,
+      channels,
+    };
+  }
+
+  const gscDays = (from: number, to: number, clicks: number) =>
+    Array.from({ length: to - from + 1 }, (_, i) => ({
+      date: day(from + i),
+      clicks,
+    }));
+  const organicDays = (from: number, to: number, perPage: number[]) =>
+    Array.from({ length: to - from + 1 }, (_, i) =>
+      perPage.map((sessions) => ({ date: day(from + i), sessions })),
+    ).flat();
+
+  async function collectionActions(
+    fake: ReturnType<typeof collectionsSupabase>,
+  ) {
+    const service = makeService(fake.supabase as never, {
+      evaluate: jest.fn().mockRejectedValue(new Error('hors sujet')),
+    });
+    const queue = await service.computeActionQueue([], [], 'full');
+    return queue.filter((a) => a.id.startsWith('data:collection'));
+  }
+
+  it('sources fraîches et écart dans le seuil : aucune action', async () => {
+    const fake = collectionsSupabase({
+      gsc: gscDays(3, 16, 50),
+      ga4Last: day(3),
+      organic: organicDays(3, 9, [27, 28]),
+    });
+    expect(await collectionActions(fake)).toEqual([]);
+    // jours Search Console confirmés seulement, canal organique seulement
+    expect(fake.notCalls).toEqual([['commit_version', 'is', null]]);
+    expect(fake.channels).toEqual(['organic search']);
+  });
+
+  it('Search Console à 4 j de retard : réparation Data, fraîcheur des deux sources en preuve', async () => {
+    const fake = collectionsSupabase({
+      gsc: gscDays(5, 18, 50),
+      ga4Last: day(3),
+      organic: organicDays(5, 11, [27, 28]),
+    });
+    const actions = await collectionActions(fake);
+    expect(actions.map((a) => a.id)).toEqual(['data:collection-freshness:gsc']);
+    expect(actions[0]).toMatchObject({
+      department: 'data',
+      source: 'data',
+      action_type: 'repair',
+      owner_go_required: false,
+    });
+    expect(actions[0].evidence[0]).toBe(
+      `Search Console : dernier jour ${day(5)}, retard 4 j (alerte au-delà de 3 j)`,
+    );
+    expect(actions[0].evidence[1]).toMatch(/^GA4 : dernier jour .*retard 2 j/);
+  });
+
+  it('GA4 sans aucune ligne : certification (fraîcheur inconnue), pas de recoupement', async () => {
+    const actions = await collectionActions(
+      collectionsSupabase({
+        gsc: gscDays(3, 16, 50),
+        ga4Last: null,
+        organic: [],
+      }),
+    );
+    expect(actions.map((a) => [a.id, a.action_type])).toEqual([
+      ['data:collection-freshness:ga4', 'certification'],
+    ]);
+    expect(actions[0].evidence[2]).toBe(
+      'Recoupement GA4 / Search Console : aucun jour commun',
+    );
+  });
+
+  it('écart GA4 / Search Console au-delà de 20 % : signalé en certification, lecture GA4 paginée', async () => {
+    // 7 jours × 180 pages = 1260 lignes : deux pages de lecture
+    const perPage = Array.from({ length: 180 }, (_, i) => (i < 80 ? 1 : 0));
+    const fake = collectionsSupabase({
+      gsc: gscDays(3, 16, 50),
+      ga4Last: day(3),
+      organic: organicDays(3, 9, perPage),
+    });
+    const actions = await collectionActions(fake);
+    expect(fake.ranges).toEqual([
+      [0, 999],
+      [1000, 1999],
+    ]);
+    expect(actions.map((a) => a.id)).toEqual([
+      'data:collection-crosscheck:ga4-gsc',
+    ]);
+    expect(actions[0]).toMatchObject({
+      action_type: 'certification',
+      title: 'Écart GA4 / Search Console de 60 % (seuil 20 %)',
+    });
+    expect(actions[0].evidence[2]).toBe(
+      `Recoupement ${day(9)} → ${day(3)} (7 j) : GA4 560 sessions « organic search » / Search Console 350 clics — écart 60 % (seuil 20 %)`,
+    );
+  });
+
+  it('lecture en échec : certification « non vérifiable », jamais « à jour »', async () => {
+    const actions = await collectionActions(
+      collectionsSupabase({
+        gsc: [],
+        ga4Last: null,
+        organic: [],
+        failOn: '__seo_gsc_daily_property_total',
+      }),
+    );
+    expect(actions.map((a) => [a.id, a.action_type])).toEqual([
+      ['data:collection-freshness', 'certification'],
+    ]);
   });
 });
