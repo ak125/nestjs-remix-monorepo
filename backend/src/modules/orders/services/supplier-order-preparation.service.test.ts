@@ -10,7 +10,7 @@ import type { ConfigService } from '@nestjs/config';
 import type {
   LectureLive,
   SupplierLiveQuoteService,
-} from '../../supplier-truth/supplier-live-quote.service';
+} from '../../supplier-truth';
 import type {
   OrderLineSupplierService,
   PropositionLigne,

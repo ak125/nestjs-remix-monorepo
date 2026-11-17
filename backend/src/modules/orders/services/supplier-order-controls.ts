@@ -8,7 +8,7 @@
  * `PREPAREE`, c'est-à-dire une commande préparée, tracée et NON envoyée.
  */
 import { OrderLineStatus, OrderStatus } from '@repo/domain-commerce';
-import type { ResultatLecture } from '../../supplier-truth/supplier-live-quote.service';
+import type { ResultatLecture } from '../../supplier-truth';
 import {
   PROCEDURE_RUPTURE,
   type PropositionFournisseur,

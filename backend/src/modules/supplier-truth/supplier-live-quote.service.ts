@@ -67,7 +67,7 @@ export type FabriqueConnecteur = (
   marque: string,
 ) => CalConnector | InoshopConnector;
 
-export const fabriqueParDefaut: FabriqueConnecteur = (cfg, marque) =>
+const fabriqueParDefaut: FabriqueConnecteur = (cfg, marque) =>
   cfg.platform === 'cal'
     ? new CalConnector({
         supplierId: cfg.supplierId,
@@ -82,7 +82,7 @@ export const fabriqueParDefaut: FabriqueConnecteur = (cfg, marque) =>
 const compacte = (ref: string): string => normalizeCalRef(ref);
 
 /** Ligne inoshop → lecture (prix et dispo de la ligne de la marque). */
-export function lectureInoshop(
+function lectureInoshop(
   cfg: SupplierConnectorConfig,
   refDemandee: string,
   marque: string,

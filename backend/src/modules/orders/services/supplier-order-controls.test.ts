@@ -1,4 +1,4 @@
-import type { LectureLive } from '../../supplier-truth/supplier-live-quote.service';
+import type { LectureLive } from '../../supplier-truth';
 import type { PropositionFournisseur } from './order-line-supplier-proposal';
 import {
   evaluerControles,

@@ -16,7 +16,7 @@ import {
 import {
   SupplierLiveQuoteService,
   type ResultatLecture,
-} from '../../supplier-truth/supplier-live-quote.service';
+} from '../../supplier-truth';
 import { OrderLineSupplierService } from './order-line-supplier.service';
 import {
   evaluerControles,

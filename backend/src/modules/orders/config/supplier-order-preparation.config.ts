@@ -35,7 +35,7 @@ export const NOMBRE_COMMANDES_ESSAI = 10;
  * `'true'`, la préparation reste en mode essai et le signale. Le flag n'existe
  * que pour que le second mandat (envoi réel) ait un interrupteur déjà gouverné.
  */
-export const SUPPLIER_ORDER_SEND_ENABLED = 'SUPPLIER_ORDER_SEND_ENABLED';
+const SUPPLIER_ORDER_SEND_ENABLED = 'SUPPLIER_ORDER_SEND_ENABLED';
 
 export function isSupplierOrderSendEnabled(config: ConfigService): boolean {
   return config.get<string>(SUPPLIER_ORDER_SEND_ENABLED) === 'true';

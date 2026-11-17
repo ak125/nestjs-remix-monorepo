@@ -24,7 +24,7 @@ import { TicketsService } from './services/tickets.service';
 import { OrderActionsService } from './services/order-actions.service';
 import { OrderLineSupplierService } from './services/order-line-supplier.service';
 import { SupplierOrderPreparationService } from './services/supplier-order-preparation.service';
-import { SupplierLiveQuoteService } from '../supplier-truth/supplier-live-quote.service';
+import { SupplierLiveQuoteService } from '../supplier-truth';
 import { OrderCleanupService } from './services/order-cleanup.service';
 
 // Event listeners
