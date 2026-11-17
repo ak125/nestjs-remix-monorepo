@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS public.__order_payment_adjustment (
   opa_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   opa_ord_id text NOT NULL,
   opa_kind text NOT NULL CHECK (opa_kind IN ('reduction', 'supplement')),
-  opa_amount_ttc_cents integer NOT NULL CHECK (opa_amount_ttc_cents > 0),
+  opa_amount_ttc_cents bigint NOT NULL CHECK (opa_amount_ttc_cents > 0),
   opa_reason text NOT NULL CHECK (char_length(btrim(opa_reason)) BETWEEN 3 AND 500),
   opa_supplement_ord_id text NULL,
   opa_created_by text NULL,
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS public.__order_capture_state (
   ocs_ord_id text PRIMARY KEY,
   ocs_state text NOT NULL
     CHECK (ocs_state IN ('authorized', 'captured', 'cancelled', 'refunded')),
-  ocs_captured_amount_cents integer NULL CHECK (ocs_captured_amount_cents >= 0),
+  ocs_captured_amount_cents bigint NULL CHECK (ocs_captured_amount_cents >= 0),
   ocs_source text NOT NULL CHECK (ocs_source IN ('manual', 'paybox_direct')),
   ocs_checked_at timestamptz NOT NULL DEFAULT now(),
   ocs_updated_by text NULL,
@@ -84,8 +84,8 @@ COMMENT ON TABLE public.__order_capture_state IS
 
 -- 3. Compteur de numérotation des factures ----------------------------------
 CREATE TABLE IF NOT EXISTS public.__invoice_number_counter (
-  inc_year integer PRIMARY KEY CHECK (inc_year BETWEEN 2026 AND 2999),
-  inc_last_number integer NOT NULL CHECK (inc_last_number >= 0)
+  inc_year bigint PRIMARY KEY CHECK (inc_year BETWEEN 2026 AND 2999),
+  inc_last_number bigint NOT NULL CHECK (inc_last_number >= 0)
 );
 ALTER TABLE public.__invoice_number_counter ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.__invoice_number_counter FROM anon, authenticated;
@@ -107,8 +107,8 @@ AS $$
 DECLARE
   v_ord_id text := p_invoice->>'inv_ord_id';
   v_now timestamp := now() AT TIME ZONE 'Europe/Paris';
-  v_year integer := extract(year FROM v_now)::integer;
-  v_last integer;
+  v_year bigint := extract(year FROM v_now)::bigint;
+  v_last bigint;
   v_inv_id text;
   v_line jsonb;
   v_index integer := 0;
