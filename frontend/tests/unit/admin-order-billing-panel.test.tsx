@@ -116,6 +116,24 @@ describe("OrderBillingPanel", () => {
     ]);
   });
 
+  it("mandat BT : origine de l'état affichée (saisi / lu dans les mails Paybox)", async () => {
+    fetchMock.mockResolvedValueOnce(
+      json(
+        state({
+          capture: {
+            ocs_state: "captured",
+            ocs_captured_amount_cents: 4220,
+            ocs_source: "paybox_mail",
+          },
+        }),
+      ),
+    );
+    render(<OrderBillingPanel orderId={ID} />);
+    expect((await screen.findByTestId("capture-state")).textContent).toBe(
+      "Encaissée — 42,20 € (lu dans les mails Paybox)",
+    );
+  });
+
   it("réduction : POST du montant et du motif, montant à encaisser affiché", async () => {
     fetchMock
       .mockResolvedValueOnce(json(state()))

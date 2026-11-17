@@ -1,4 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../../database/database.module';
 import { ShippingModule } from '../shipping/shipping.module';
@@ -28,6 +29,13 @@ import { TicketsService } from './services/tickets.service';
 import { OrderActionsService } from './services/order-actions.service';
 import { OrderLineSupplierService } from './services/order-line-supplier.service';
 import { OrderCleanupService } from './services/order-cleanup.service';
+import { PayboxMailAdminController } from './controllers/paybox-mail-admin.controller';
+import { PayboxMailImportService } from './paybox-mail/paybox-mail-import.service';
+import {
+  PAYBOX_MAIL_QUEUE,
+  PayboxMailImportProcessor,
+  PayboxMailImportScheduler,
+} from './paybox-mail/paybox-mail-import.scheduler';
 import { OrderBillingService } from './services/order-billing.service';
 
 // Event listeners
@@ -69,6 +77,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     AuthModule, // Pour guest checkout (AuthService)
     ConfigModule,
     SupplierTruthReadModule, // Décision 50 : annuaire fournisseurs (lecture seule)
+    BullModule.registerQueue({ name: PAYBOX_MAIL_QUEUE }), // Mandat BT : passage quotidien des mails Paybox
   ],
   controllers: [
     // 🆕 Phase 3: Contrôleur unifié principal
@@ -80,6 +89,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrderActionsController, // /api/admin/orders/* (ACTIONS BACKOFFICE)
     OrderBillingAdminController, // Mandat BM : /api/admin/orders/:id/billing/*
     OrderInvoiceCustomerController, // Mandat BM : /api/orders/:id/invoice.pdf
+    PayboxMailAdminController, // Mandat BT : /api/admin/paybox-mail/dry-run
   ],
   providers: [
     // Services consolidés Phase 2
@@ -94,6 +104,9 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrderAuditListener, // Event: audit trail → __admin_audit_log
     OrderEmailListener, // Event: emails shipped/cancelled/refunded
     OrderBillingService, // Mandat BM : facture à l'expédition (ORDER_BILLING_ENABLED)
+    PayboxMailImportService, // Mandat BT : mails Paybox → encaissement (PAYBOX_MAIL_IMPORT_MODE, défaut off)
+    PayboxMailImportScheduler,
+    PayboxMailImportProcessor,
   ],
   exports: [
     // Export des services consolidés
