@@ -1,0 +1,29 @@
+diff --git a/.github/PULL_REQUEST_TEMPLATE.md b/.github/PULL_REQUEST_TEMPLATE.md
+index 3e8cac9..1786aa5 100644
+--- a/.github/PULL_REQUEST_TEMPLATE.md
++++ b/.github/PULL_REQUEST_TEMPLATE.md
+@@ -56,7 +56,8 @@
+ 
+ ## Definition of Done — auto-évaluation
+ 
+-<!-- Règle vault rules-engineering-definition-of-done ; lue par scripts/ci/pr-dod-gate.mjs.
++<!-- Règle : .spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md ;
++     section contrôlée par scripts/ci/pr-dod-gate.mjs.
+      Une ligne par item, cochée [x] ou marquée N/A avec la raison. DoD2 est lu sur l'état GitHub
+      (assignee + ≥ 1 approbation humaine), jamais sur la case. DoD1 : cocher après lecture de la CI. -->
+ 
+diff --git a/.github/workflows/pr-dod-gate.yml b/.github/workflows/pr-dod-gate.yml
+index 5cb0826..92d2805 100644
+--- a/.github/workflows/pr-dod-gate.yml
++++ b/.github/workflows/pr-dod-gate.yml
+@@ -1,7 +1,8 @@
+ name: 🧾 PR Definition-of-Done gate
+ 
+-# Enforces the canonical Engineering Definition of Done (vault rule
+-# rules-engineering-definition-of-done, PR #299) at the PR boundary: a PR must
++# Enforces the canonical Engineering Definition of Done
++# (.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md) at the
++# PR boundary: a PR must
+ # carry the DoD self-evaluation section with all 9 invariants (DoD1..DoD9)
+ # checked `[x]` or marked `N/A`. Escape hatch: label `dod-skip-justified` with
+ # >= 2 approvals (Patch 6 of the Repository Control Plane Operational plan).
