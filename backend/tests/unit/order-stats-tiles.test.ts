@@ -101,7 +101,7 @@ describe('computeOrderTiles — toute la base', () => {
   });
 
   it('exclut et relève le montant aberrant et les lignes illisibles', () => {
-    expect(tiles.excluded.thresholdTtc).toBe(1000);
+    expect(tiles.excluded.thresholdTtc).toBe(1500);
     expect(tiles.excluded.orders).toEqual([
       {
         ordId: '15114950',
@@ -141,12 +141,13 @@ describe('computeOrderTiles — toute la base', () => {
     expect(t.excluded.orders.map((o) => o.ordId)).toEqual(['Y']);
   });
 
-  it('seuil par défaut (1 000 €) : une commande PAYÉE au-delà sort du CA mais reste signalée', () => {
+  it('seuil par défaut (1 500 €) : la payée de 1 212,13 € est comptée ; une payée au-delà sort du CA mais reste signalée', () => {
     const t = computeOrderTiles(
       [
-        row('P1', '2026-11-10T10:00:00.000Z', '1000.00', { paid: true }),
-        row('P2', '2026-11-10T10:00:00.000Z', '1212.13', { paid: true }),
-        row('U1', '2026-11-10T10:00:00.000Z', '1500.00'),
+        row('P1', '2026-11-10T10:00:00.000Z', '1212.13', { paid: true }),
+        row('P2', '2026-11-10T10:00:00.000Z', '1500.00', { paid: true }),
+        row('P3', '2026-11-10T10:00:00.000Z', '1500.01', { paid: true }),
+        row('U1', '2026-11-10T10:00:00.000Z', '1600.00'),
       ],
       {
         now: NOW,
@@ -154,21 +155,25 @@ describe('computeOrderTiles — toute la base', () => {
         implausibleThresholdTtc: resolveImplausibleThreshold(undefined),
       },
     );
-    expect(t.paid).toEqual({ orders: 1, revenue: 1000, averageBasket: 1000 });
+    expect(t.paid).toEqual({
+      orders: 2,
+      revenue: 2712.13,
+      averageBasket: 1356.07,
+    });
     expect(t.unpaid).toEqual({ orders: 0, amount: 0 });
-    expect(t.excluded.thresholdTtc).toBe(1000);
+    expect(t.excluded.thresholdTtc).toBe(1500);
     expect(t.excluded.orders).toEqual([
       {
-        ordId: 'P2',
+        ordId: 'P3',
         ordDate: '2026-11-10T10:00:00.000Z',
-        totalTtc: '1212.13',
+        totalTtc: '1500.01',
         isPaid: true,
         reason: 'amount_above_threshold',
       },
       {
         ordId: 'U1',
         ordDate: '2026-11-10T10:00:00.000Z',
-        totalTtc: '1500.00',
+        totalTtc: '1600.00',
         isPaid: false,
         reason: 'amount_above_threshold',
       },
@@ -208,7 +213,7 @@ describe('computeOrderTiles — par période (Europe/Paris)', () => {
         row('in', '2026-10-31T23:30:00.000Z', '10.00', { paid: true }),
         row('out', '2026-10-31T22:30:00.000Z', '20.00', { paid: true }),
       ],
-      { now: NOW, period: 'month', implausibleThresholdTtc: 1000 },
+      { now: NOW, period: 'month', implausibleThresholdTtc: 1500 },
     );
     expect(t.paid).toEqual({ orders: 1, revenue: 10, averageBasket: 10 });
   });
@@ -223,9 +228,9 @@ describe('computeOrderTiles — par période (Europe/Paris)', () => {
 
 describe('resolveImplausibleThreshold', () => {
   it('absent → défaut documenté', () => {
-    expect(DEFAULT_IMPLAUSIBLE_TTC_EUR).toBe(1000);
-    expect(resolveImplausibleThreshold(undefined)).toBe(1000);
-    expect(resolveImplausibleThreshold('')).toBe(1000);
+    expect(DEFAULT_IMPLAUSIBLE_TTC_EUR).toBe(1500);
+    expect(resolveImplausibleThreshold(undefined)).toBe(1500);
+    expect(resolveImplausibleThreshold('')).toBe(1500);
   });
   it('valeur lisible → appliquée', () => {
     expect(resolveImplausibleThreshold('5000')).toBe(5000);

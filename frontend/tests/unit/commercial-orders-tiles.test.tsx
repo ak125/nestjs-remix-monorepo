@@ -37,12 +37,12 @@ const TILES: OrderTilesData = {
   abandoned: { orders: 1045, amount: 243523.2, afterDays: 30 },
   cancelled: { orders: 8, paidOrders: 6, paidAmount: 500 },
   excluded: {
-    thresholdTtc: 1000,
+    thresholdTtc: 1500,
     orders: [
       {
         ordId: "900001",
         ordDate: "2026-03-02T09:00:00.000Z",
-        totalTtc: "1212.13",
+        totalTtc: "1600.00",
         isPaid: true,
         reason: "amount_above_threshold",
       },
@@ -182,10 +182,10 @@ describe("<OrdersTiles />", () => {
     expect(excluded).toContain("15114950");
     expect(excluded).toContain("2025-07-20");
     expect(excluded).toContain("rien n'est corrigé en base");
-    // Seuil 1 000 € : une commande payée exclue reste listée, marquée payée.
+    // Seuil 1 500 € : une commande payée exclue reste listée, marquée payée.
     expect(excluded).toContain("2 commandes exclues");
-    expect(excluded).toMatch(/1\s?000,00\s?€ TTC/);
-    expect(excluded).toContain("n° 900001 du 2026-03-02 : 1212.13 € TTC");
+    expect(excluded).toMatch(/1\s?500,00\s?€ TTC/);
+    expect(excluded).toContain("n° 900001 du 2026-03-02 : 1600.00 € TTC");
     expect(excluded).toContain("(payée)");
     // Le montant aberrant n'entre dans aucune tuile.
     for (const id of ["tile-revenue", "tile-unpaid", "tile-abandoned"]) {
