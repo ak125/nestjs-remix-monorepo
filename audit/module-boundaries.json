@@ -132,8 +132,8 @@
         "backend/src/modules/cart/dto/__tests__",
         "backend/src/modules/cart/services"
       ],
-      "files_count": 26,
-      "loc_total": 4806,
+      "files_count": 28,
+      "loc_total": 4938,
       "has_barrel": true
     },
     "catalog": {
@@ -963,8 +963,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 391,
-      "loc_total": 80900,
+      "files_count": 394,
+      "loc_total": 81324,
       "has_barrel": true
     },
     "upload": {
@@ -1265,7 +1265,7 @@
     {
       "from": "backend-core",
       "to": "cart",
-      "count": 4
+      "count": 6
     },
     {
       "from": "backend-core",
