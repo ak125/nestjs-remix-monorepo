@@ -28,8 +28,9 @@ name: ♻️ Registry deps self-heal (main)
 #
 # BOT IDENTITY — explicit preference chain (never silent)
 # --------------------------------------------------------
-# 1. GitHub App (secrets SELF_HEAL_APP_ID + SELF_HEAL_APP_PRIVATE_KEY) — target
-#    state: short-lived installation tokens, fine-grained, revocable.
+# 1. GitHub App `automecanik-actions` (variable ACTIONS_APP_ID + secret ACTIONS_APP_PRIVATE_KEY
+#    of the `app-actions` environment, restricted to main; shared with merge-circuits.yml and
+#    mandat-remise.yml, mandat AR-6) — short-lived installation tokens, fine-grained, revocable.
 # 2. User token (secret SELF_HEAL_TOKEN, owner-provisioned) — PRs it opens DO
 #    trigger CI (unlike GITHUB_TOKEN). Active fallback until the App exists;
 #    delete the secret once the App is configured (App takes precedence anyway).
@@ -38,13 +39,9 @@ name: ♻️ Registry deps self-heal (main)
 #    command. Observable, never silent.
 # The resolved identity mode is printed in every run's job summary.
 #
-# OWNER SETUP for the App (one time) — see PR #1244 for the full guide:
-#   1. Create a GitHub App (owner-only): permissions Contents: Read & write,
-#      Pull requests: Read & write. Install it on this repo only.
-#   2. Generate a private key; add repo secrets (Settings -> Secrets -> Actions):
-#        SELF_HEAL_APP_ID          = the App's numeric App ID
-#        SELF_HEAL_APP_PRIVATE_KEY = the generated .pem contents
-#   3. Ensure "Allow auto-merge" is enabled in repo settings (already used here).
+# OWNER SETUP for the App (one time): docs/audit/mandat-ar-20261116/commandes-owner.md §15
+# (one App for the three workflows, one key, one place: the `app-actions` environment).
+# "Allow auto-merge" must stay enabled in repo settings (already used here).
 #
 # SCOPE: the two L1 projections + the L3 reprojection they invalidate (4 files).
 #
@@ -107,6 +104,8 @@ jobs:
     name: Regenerate deps.json + modernization inventory, open auto-merge PR
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # App key lives only in this environment (deployment branch: main).
+    environment: app-actions
     steps:
       - name: Checkout main
         uses: actions/checkout@v7
@@ -170,7 +169,7 @@ jobs:
       - name: Resolve bot identity (App preferred, user token fallback)
         id: identity
         env:
-          APP_ID: ${{ secrets.SELF_HEAL_APP_ID }}
+          APP_ID: ${{ vars.ACTIONS_APP_ID }}
           USER_TOKEN: ${{ secrets.SELF_HEAL_TOKEN }}
         run: |
           if [ -n "${APP_ID}" ]; then
@@ -187,8 +186,12 @@ jobs:
         if: steps.stage.outputs.status == 'changed' && steps.identity.outputs.mode == 'app'
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.SELF_HEAL_APP_ID }}
-          private-key: ${{ secrets.SELF_HEAL_APP_PRIVATE_KEY }}
+          app-id: ${{ vars.ACTIONS_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
 
       - name: Open/update self-heal PR
         id: cpr
@@ -242,7 +245,7 @@ jobs:
             echo "## ⚠️ Registry drift on main — no self-heal identity configured"
             echo ""
             echo "Regeneration found drift in the registry projections, but neither the"
-            echo "App secrets (\`SELF_HEAL_APP_ID\` / \`SELF_HEAL_APP_PRIVATE_KEY\`) nor"
+            echo "App (\`ACTIONS_APP_ID\` / \`ACTIONS_APP_PRIVATE_KEY\`, environment \`app-actions\`) nor"
             echo "\`SELF_HEAL_TOKEN\` are set, so no auto-heal PR was opened."
             echo ""
             echo "**Manual heal:** run"

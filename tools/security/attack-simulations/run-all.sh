@@ -9,7 +9,6 @@
 # Attack Vectors Tested:
 #   1. RPC Injection (P0 Critical)
 #   3. Bundle Tampering (HIGH)
-#   5. Escalation Hijacking (MEDIUM)
 #
 # Exit codes:
 #   0 - All tests passed
@@ -73,7 +72,6 @@ run_test() {
 # Run all simulations
 run_test "RPC Injection (P0 Critical)" "$SCRIPT_DIR/simulate-rpc-injection.sh"
 run_test "Bundle Tampering (HIGH)" "$SCRIPT_DIR/simulate-bundle-tampering.sh"
-run_test "Escalation Hijacking (MEDIUM)" "$SCRIPT_DIR/simulate-escalation-hijack.sh"
 
 # Summary
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
@@ -95,7 +93,6 @@ echo "  ├───────────────────────
 if [ $FAILED_TESTS -eq 0 ]; then
     echo "  │ RPC Injection               │ P0 CRIT    │ PROTECTED  │"
     echo "  │ Bundle Tampering            │ HIGH       │ PROTECTED  │"
-    echo "  │ Escalation Hijacking        │ MEDIUM     │ PROTECTED  │"
 else
     echo "  │ (Run individual tests for details)                    │"
 fi
@@ -105,6 +102,7 @@ echo ""
 
 # Remaining vectors (not yet implemented)
 echo "Vectors Not Yet Tested:"
+echo "  - Escalation Hijacking (MEDIUM) - Simulation removed: it read governance-vault files"
 echo "  - Prompt Injection (HIGH) - Requires LLM integration"
 echo "  - Side-Effect Escaping (MEDIUM) - Requires runtime monitoring"
 echo "  - RAG Hallucination (MEDIUM) - Requires RAG integration"

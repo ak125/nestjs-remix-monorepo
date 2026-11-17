@@ -1,0 +1,187 @@
+name: 🚦 Circuit de fusion — relais
+
+# Mandat BH (décision 127), circuit élevé : « revue approuvante de l'owner enregistrée sur la
+# tête, puis fusion par l'App » (décision 120).
+#
+# La revue arrive par un événement de revue. Le run de merge-circuits.yml porte alors la
+# référence de la PR : l'environnement `app-actions`, restreint à `main`, le refuse, et c'est
+# voulu. Ce relais part quand ce run-là se termine. Il s'exécute sur `main`, avec le code de
+# `main`, et entre dans l'environnement par la même porte que les autres workflows de `main`.
+#
+# Il ne reprend rien du run qui le déclenche, sauf le SHA de tête, qui sert de clé de recherche.
+# Tout est relu ou recalculé ici : la PR (ouverte, base `main`, branche du dépôt, tête égale au
+# SHA), le circuit (classeur de `main`) et la dernière revue de l'owner sur cette tête exacte.
+# Il n'agit que pour le circuit élevé :
+#   approuvée sur la tête, non brouillon  → l'App arme (squash, tête épinglée) ;
+#   plus approuvée et encore armée        → l'App désarme, puis relit l'état ;
+#   tout autre cas                        → rien.
+# Aucun code de la PR n'est extrait ni exécuté. Le job de décision n'a qu'un jeton en lecture ;
+# la clé de l'App ne vit que dans le job d'action, qui ne fait qu'armer ou désarmer.
+# Une tête nouvelle n'est pas traitée ici : merge-circuits.yml la voit, échoue et désarme.
+
+on:
+  workflow_run:
+    workflows: ["🚦 Circuit de fusion"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: merge-circuit-relais-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  decide:
+    name: Décision du relais (code de main)
+    # Seuls les runs nés d'une revue : les autres événements arment déjà dans merge-circuits.yml.
+    if: ${{ github.event.workflow_run.event == 'pull_request_review' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      OWNER_LOGIN: ak125
+      HAS_ACTIONS_APP: ${{ vars.ACTIONS_APP_ID != '' }}
+    outputs:
+      action: ${{ steps.decide.outputs.action }}
+      pr: ${{ steps.pr.outputs.number }}
+      head: ${{ steps.pr.outputs.head }}
+    steps:
+      - name: Checkout de main (jamais la tête de PR)
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install (sans scripts, ADR-030)
+        run: npm ci --ignore-scripts
+
+      - name: PR ouverte du dépôt dont la tête est ce SHA
+        id: pr
+        run: |
+          set -euo pipefail
+          if ! [[ "$RUN_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "SHA de tête inattendu : rien à faire."
+            exit 0
+          fi
+          gh api "repos/$GH_REPO/commits/$RUN_HEAD_SHA/pulls" > "$RUNNER_TEMP/pulls.json"
+          numbers=$(jq -r --arg sha "$RUN_HEAD_SHA" --arg repo "$GH_REPO" '
+            map(select(.state == "open" and .head.sha == $sha and .base.ref == "main"
+                       and .base.repo.full_name == $repo and .head.repo.full_name == $repo))
+            | map(.number) | join(" ")' "$RUNNER_TEMP/pulls.json")
+          case "$numbers" in
+            "" | *" "*) echo "PR ouverte du dépôt sur $RUN_HEAD_SHA : « ${numbers:-aucune} » (il en faut exactement une) — rien à faire." ;;
+            *)
+              echo "number=$numbers" >> "$GITHUB_OUTPUT"
+              echo "head=$RUN_HEAD_SHA" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Circuit de la PR (classeur de main)
+        id: circuit
+        if: steps.pr.outputs.number != ''
+        env:
+          PR: ${{ steps.pr.outputs.number }}
+        run: |
+          set -euo pipefail
+          node scripts/ci/merge-circuit.mjs --pr "$PR" > "$RUNNER_TEMP/verdict.json"
+          echo "circuit=$(jq -r .circuit "$RUNNER_TEMP/verdict.json")" >> "$GITHUB_OUTPUT"
+
+      - name: Armer, désarmer ou ne rien faire
+        id: decide
+        if: steps.pr.outputs.number != ''
+        env:
+          PR: ${{ steps.pr.outputs.number }}
+          CIRCUIT: ${{ steps.circuit.outputs.circuit }}
+        run: |
+          set -euo pipefail
+          agir() { echo "action=$1" >> "$GITHUB_OUTPUT"; echo "$2"; exit 0; }
+          gh api "repos/$GH_REPO/pulls/$PR" > "$RUNNER_TEMP/pr.json"
+          actuelle=$(jq -r --arg sha "$RUN_HEAD_SHA" --arg repo "$GH_REPO" '
+            .state == "open" and .head.sha == $sha and .base.ref == "main"
+            and .base.repo.full_name == $repo and .head.repo.full_name == $repo' "$RUNNER_TEMP/pr.json")
+          if [ "$actuelle" != "true" ]; then
+            agir rien "PR #$PR : fermée, tête déplacée ou branche hors du dépôt — rien à faire."
+          fi
+          if [ "$CIRCUIT" != "eleve" ]; then
+            agir rien "Circuit ${CIRCUIT:-non calculé} : le relais n'agit que pour le circuit élevé."
+          fi
+          gh api --paginate "repos/$GH_REPO/pulls/$PR/reviews" > "$RUNNER_TEMP/reviews.json"
+          approved=$(jq -s --arg sha "$RUN_HEAD_SHA" --arg who "$OWNER_LOGIN" '
+            add | map(select(.commit_id == $sha and .user.login == $who
+                             and (.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")))
+            | last | (.state // "") == "APPROVED"' "$RUNNER_TEMP/reviews.json")
+          draft=$(jq -r '.draft == true' "$RUNNER_TEMP/pr.json")
+          arme=$(jq -r '.auto_merge != null' "$RUNNER_TEMP/pr.json")
+          if [ "$approved" = "true" ] && [ "$draft" = "false" ]; then
+            if [ "$arme" = "true" ]; then
+              agir rien "PR #$PR déjà armée, approbation en place sur $RUN_HEAD_SHA — rien à faire."
+            fi
+            if [ "$HAS_ACTIONS_APP" != "true" ]; then
+              agir rien "::notice::Circuit élevé admis sur $RUN_HEAD_SHA, mais ACTIONS_APP_ID absent : fusion automatique non armée."
+            fi
+            agir armer "Circuit élevé : revue approuvante de $OWNER_LOGIN sur $RUN_HEAD_SHA — armement confié à l'App."
+          fi
+          if [ "$arme" = "true" ]; then
+            agir desarmer "Circuit élevé : PR #$PR armée sans approbation valable sur $RUN_HEAD_SHA (approuvée=$approved, brouillon=$draft) — désarmement confié à l'App."
+          fi
+          agir rien "Circuit élevé : pas d'approbation valable sur $RUN_HEAD_SHA, rien d'armé — rien à faire."
+
+  act:
+    name: 🔐 Relais — fusion automatique (App)
+    needs: decide
+    if: ${{ needs.decide.outputs.action == 'armer' || needs.decide.outputs.action == 'desarmer' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: app-actions
+    permissions: {}
+    env:
+      GH_REPO: ${{ github.repository }}
+      PR: ${{ needs.decide.outputs.pr }}
+      HEAD_SHA: ${{ needs.decide.outputs.head }}
+      ACTION: ${{ needs.decide.outputs.action }}
+    steps:
+      - name: Jeton d'installation (App automecanik-actions, ce dépôt seul)
+        id: app
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.ACTIONS_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Armer la fusion automatique sur la tête
+        id: armer
+        if: env.ACTION == 'armer'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          set -euo pipefail
+          gh pr merge "$PR" --auto --squash --match-head-commit "$HEAD_SHA"
+          echo "Fusion automatique armée sur $HEAD_SHA."
+
+      - name: Désarmer la fusion automatique (approbation retirée)
+        id: desarmer
+        if: env.ACTION == 'desarmer'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          set -euo pipefail
+          gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
+          arme=$(gh pr view "$PR" --json autoMergeRequest --jq '.autoMergeRequest != null')
+          if [ "$arme" != "false" ]; then
+            echo "::error::Fusion automatique encore armée après le désarmement par l'App : désarmer à la main (gh pr merge $PR --disable-auto)."
+            exit 1
+          fi
+          echo "Fusion automatique désarmée : approbation absente sur $HEAD_SHA."

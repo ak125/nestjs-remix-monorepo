@@ -1008,6 +1008,7 @@
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/cookie-serializer.ts",
         "backend/src/auth/local.strategy.ts",
         "backend/src/auth/profile.controller.ts",
@@ -1023,7 +1024,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 1145,
+      "loc": 1170,
       "owner": "__unassigned__",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "low",
@@ -1276,9 +1277,36 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/auth/cookie-serializer.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/auth/auth.service.ts",
+        "backend/src/auth/cookie-serializer.ts",
+        "backend/src/auth/session-privilege.ts",
+        "backend/src/modules/users/services/user-data-consolidated.service.ts",
+        "backend/src/shared/crypto/password-crypto.service.ts"
+      ],
+      "kind": "test",
+      "loc": 286,
+      "owner": "__unassigned__",
+      "path": "backend/src/auth/cookie-serializer.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/auth/cookie-serializer.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
       "imports": [
@@ -1611,7 +1639,6 @@
       "importedBy": [
         "backend/src/modules/blog/controllers/advice.controller.ts",
         "backend/src/modules/blog/controllers/blog.controller.ts",
-        "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
@@ -1973,6 +2000,7 @@
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-permissions.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/permissions.service.ts",
         "backend/src/auth/session-privilege.test.ts"
       ],
@@ -3087,6 +3115,32 @@
       "loc": 153,
       "owner": "__unassigned__",
       "path": "backend/src/common/utils/url-builder.utils.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/common/utils/user-agent-class.util.ts",
+      "importedBy": [
+        "backend/src/modules/bot-guard/bot-guard.service.ts",
+        "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
+        "backend/src/modules/seo/services/googlebot-detector.classify.test.ts",
+        "backend/src/modules/seo/services/googlebot-detector.service.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 112,
+      "owner": "__unassigned__",
+      "path": "backend/src/common/utils/user-agent-class.util.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -4636,7 +4690,7 @@
         "backend/src/config/env-validation.ts"
       ],
       "kind": "config",
-      "loc": 138,
+      "loc": 150,
       "owner": "__unassigned__",
       "path": "backend/src/config/payment.config.ts",
       "risk": "low",
@@ -5860,7 +5914,7 @@
         "backend/src/database/services/piece-price-data.service.ts"
       ],
       "kind": "test",
-      "loc": 204,
+      "loc": 207,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.sellable-guard.test.ts",
       "risk": "low",
@@ -6077,7 +6131,7 @@
         "backend/src/database/services/piece-price-data.service.ts"
       ],
       "kind": "test",
-      "loc": 276,
+      "loc": 339,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/piece-price-data.service.test.ts",
       "risk": "low",
@@ -6101,10 +6155,11 @@
       ],
       "imports": [
         "@repo/database-types",
-        "backend/src/database/services/supabase-base.service.ts"
+        "backend/src/database/services/supabase-base.service.ts",
+        "backend/src/database/services/vendable.ts"
       ],
       "kind": "service",
-      "loc": 265,
+      "loc": 289,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/piece-price-data.service.ts",
       "risk": "low",
@@ -6221,6 +6276,50 @@
       "loc": 572,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/supabase-base.service.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/database/services/vendable.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/database/services/vendable.ts"
+      ],
+      "kind": "test",
+      "loc": 60,
+      "owner": "__unassigned__",
+      "path": "backend/src/database/services/vendable.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/database/services/vendable.ts",
+      "importedBy": [
+        "backend/src/database/services/piece-price-data.service.ts",
+        "backend/src/database/services/vendable.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 50,
+      "owner": "__unassigned__",
+      "path": "backend/src/database/services/vendable.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -8249,6 +8348,30 @@
         "reachability"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/command-center-action-rules/collection-freshness-action.rules.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
+      ],
+      "kind": "service",
+      "loc": 174,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/command-center-action-rules/collection-freshness-action.rules.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
       "importedBy": [
         "backend/src/modules/admin/services/command-center-kpi.service.ts"
@@ -8259,7 +8382,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 189,
+      "loc": 212,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
       "risk": "low",
@@ -8377,6 +8500,7 @@
       "id": "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
       "importedBy": [
         "backend/src/modules/admin/services/command-center-action-rules/certification-action.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/collection-freshness-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/pricing-action.rules.ts",
@@ -8462,6 +8586,7 @@
         "@repo/seo-types",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/certification-action.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/collection-freshness-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/pricing-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
@@ -8474,7 +8599,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 484,
+      "loc": 605,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-actions.service.ts",
       "risk": "low",
@@ -8503,7 +8628,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 530,
+      "loc": 602,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "risk": "low",
@@ -13066,11 +13191,12 @@
       ],
       "imports": [
         "@cache/cache.service",
+        "backend/src/common/utils/user-agent-class.util.ts",
         "backend/src/config/cache-ttl.config.ts",
         "dns"
       ],
       "kind": "service",
-      "loc": 639,
+      "loc": 620,
       "owner": "__unassigned__",
       "path": "backend/src/modules/bot-guard/bot-guard.service.ts",
       "risk": "low",
@@ -13135,12 +13261,13 @@
         "backend/src/modules/cart/cart.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
-        "backend/src/auth/guards/optional-auth.guard.ts",
         "backend/src/modules/cart/services/cart-analytics.service.ts"
       ],
       "kind": "controller",
-      "loc": 99,
+      "loc": 104,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "risk": "low",
@@ -13476,7 +13603,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 345,
+      "loc": 365,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/services/abandoned-cart.service.ts",
       "risk": "low",
@@ -20772,7 +20899,7 @@
         "backend/src/modules/metadata/services/optimized-breadcrumb.service.ts"
       ],
       "kind": "controller",
-      "loc": 230,
+      "loc": 201,
       "owner": "__unassigned__",
       "path": "backend/src/modules/metadata/controllers/optimized-breadcrumb.controller.ts",
       "risk": "low",
@@ -21350,11 +21477,12 @@
         "@auth/decorators/require-permission.decorator",
         "@auth/guards/permissions.guard",
         "backend/src/modules/orders/services/order-actions.service.ts",
+        "backend/src/modules/orders/services/order-line-supplier.service.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 363,
+      "loc": 457,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "low",
@@ -21411,7 +21539,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1233,
+      "loc": 1005,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "low",
@@ -21532,6 +21660,7 @@
       "importedBy": [
         "backend/src/modules/orders/listeners/order-audit.listener.ts",
         "backend/src/modules/orders/listeners/order-email.listener.ts",
+        "backend/src/modules/orders/services/order-actions.line-supplier.test.ts",
         "backend/src/modules/orders/services/order-actions.service.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
@@ -21541,7 +21670,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 91,
+      "loc": 106,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/events/order.events.ts",
       "risk": "low",
@@ -21565,7 +21694,7 @@
         "backend/src/modules/orders/events/order.events.ts"
       ],
       "kind": "service",
-      "loc": 154,
+      "loc": 175,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/listeners/order-audit.listener.ts",
       "risk": "low",
@@ -21627,13 +21756,15 @@
         "backend/src/modules/orders/services/order-archive.service.ts",
         "backend/src/modules/orders/services/order-calculation.service.ts",
         "backend/src/modules/orders/services/order-cleanup.service.ts",
+        "backend/src/modules/orders/services/order-line-supplier.service.ts",
         "backend/src/modules/orders/services/order-status.service.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/modules/orders/services/tickets.service.ts",
-        "backend/src/modules/shipping/shipping.module.ts"
+        "backend/src/modules/shipping/shipping.module.ts",
+        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "kind": "service",
-      "loc": 97,
+      "loc": 101,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/orders.module.ts",
       "risk": "low",
@@ -21667,21 +21798,48 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/orders/services/order-actions.line-supplier.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/orders/events/order.events.ts",
+        "backend/src/modules/orders/services/order-actions.service.ts",
+        "backend/src/modules/orders/services/order-line-supplier.service.ts",
+        "backend/src/modules/orders/services/orders.service.ts"
+      ],
+      "kind": "test",
+      "loc": 240,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/orders/services/order-actions.line-supplier.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/orders/services/order-actions.service.ts",
       "importedBy": [
         "backend/src/modules/orders/controllers/order-actions.controller.ts",
-        "backend/src/modules/orders/orders.module.ts"
+        "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/order-actions.line-supplier.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/orders/events/order.events.ts",
+        "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
+        "backend/src/modules/orders/services/order-line-supplier.service.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/modules/orders/types/order.types.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 569,
+      "loc": 766,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
       "risk": "low",
@@ -21769,6 +21927,81 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/orders/services/order-line-supplier-proposal.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/orders/services/order-line-supplier-proposal.ts"
+      ],
+      "kind": "test",
+      "loc": 167,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/orders/services/order-line-supplier-proposal.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
+      "importedBy": [
+        "backend/src/modules/orders/services/order-actions.service.ts",
+        "backend/src/modules/orders/services/order-line-supplier-proposal.test.ts",
+        "backend/src/modules/orders/services/order-line-supplier.service.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 207,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/orders/services/order-line-supplier.service.ts",
+      "importedBy": [
+        "backend/src/modules/orders/controllers/order-actions.controller.ts",
+        "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/order-actions.line-supplier.test.ts",
+        "backend/src/modules/orders/services/order-actions.service.ts"
+      ],
+      "imports": [
+        "@database/services/piece-price-data.service",
+        "@database/services/supabase-base.service",
+        "@repo/database-types",
+        "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ],
+      "kind": "service",
+      "loc": 147,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/orders/services/order-line-supplier.service.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/orders/services/order-status.service.ts",
       "importedBy": [
         "backend/src/modules/orders/orders.module.ts",
@@ -21800,6 +22033,7 @@
         "backend/src/modules/orders/controllers/order-actions.controller.ts",
         "backend/src/modules/orders/controllers/orders.controller.ts",
         "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/order-actions.line-supplier.test.ts",
         "backend/src/modules/orders/services/order-actions.service.ts"
       ],
       "imports": [
@@ -22006,10 +22240,11 @@
         "backend/src/modules/payments/entities/payment.entity.ts",
         "backend/src/modules/payments/repositories/payment-data.service.ts",
         "backend/src/modules/payments/services/cyberplus.service.ts",
-        "backend/src/modules/payments/services/payment.service.ts"
+        "backend/src/modules/payments/services/payment.service.ts",
+        "backend/src/modules/payments/utils/systempay-closure.ts"
       ],
       "kind": "controller",
-      "loc": 279,
+      "loc": 267,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/controllers/payment-callback.controller.ts",
       "risk": "low",
@@ -22091,13 +22326,13 @@
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "backend/src/modules/payments/controllers/payment-controller.utils.ts",
-        "backend/src/modules/payments/dto/create-payment.dto.ts",
         "backend/src/modules/payments/entities/payment.entity.ts",
         "backend/src/modules/payments/repositories/payment-data.service.ts",
+        "backend/src/modules/payments/services/cyberplus.service.ts",
         "backend/src/modules/payments/services/payment.service.ts"
       ],
       "kind": "controller",
-      "loc": 191,
+      "loc": 122,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/controllers/payment-methods.controller.ts",
       "risk": "low",
@@ -22117,10 +22352,11 @@
         "backend/src/modules/payments/payments.module.ts"
       ],
       "imports": [
-        "backend/src/modules/payments/services/cyberplus.service.ts"
+        "backend/src/modules/payments/services/cyberplus.service.ts",
+        "backend/src/modules/payments/utils/systempay-closure.ts"
       ],
       "kind": "controller",
-      "loc": 58,
+      "loc": 71,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/controllers/systempay-redirect.controller.ts",
       "risk": "low",
@@ -22139,7 +22375,6 @@
       "id": "backend/src/modules/payments/dto/create-payment.dto.ts",
       "importedBy": [
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
-        "backend/src/modules/payments/controllers/payment-methods.controller.ts",
         "backend/src/modules/payments/index.ts",
         "backend/src/modules/payments/services/payment-validation.service.ts",
         "backend/src/modules/payments/services/payment.service.ts"
@@ -22170,7 +22405,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 100,
+      "loc": 83,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/dto/cyberplus-callback.dto.ts",
       "risk": "low",
@@ -22453,6 +22688,7 @@
       "importedBy": [
         "backend/src/modules/payments/controllers/payment-callback.controller.ts",
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
+        "backend/src/modules/payments/controllers/payment-methods.controller.ts",
         "backend/src/modules/payments/controllers/systempay-redirect.controller.ts",
         "backend/src/modules/payments/index.ts",
         "backend/src/modules/payments/payments.module.ts",
@@ -22463,7 +22699,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 387,
+      "loc": 400,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/services/cyberplus.service.ts",
       "risk": "low",
@@ -22628,6 +22864,74 @@
       "loc": 51,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/utils/normalize-order-id.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/payments/utils/systempay-closure.ts",
+      "importedBy": [
+        "backend/src/modules/payments/controllers/payment-callback.controller.ts",
+        "backend/src/modules/payments/controllers/systempay-redirect.controller.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 35,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/payments/utils/systempay-closure.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/pricing/config/supplier-sale-rules.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/config/supplier-sale-rules.ts"
+      ],
+      "kind": "test",
+      "loc": 33,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/pricing/config/supplier-sale-rules.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/pricing/config/supplier-sale-rules.ts",
+      "importedBy": [
+        "backend/src/modules/pricing/config/supplier-sale-rules.test.ts",
+        "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
+        "backend/src/modules/pricing/services/price-deactivation.service.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 98,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/pricing/config/supplier-sale-rules.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -22814,11 +23118,12 @@
       "id": "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/pricing/config/supplier-sale-rules.ts",
         "backend/src/modules/pricing/services/price-deactivation.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
       "kind": "test",
-      "loc": 407,
+      "loc": 670,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
       "risk": "low",
@@ -23227,10 +23532,12 @@
         "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts"
       ],
       "imports": [
+        "@database/services/vendable",
+        "backend/src/modules/pricing/config/supplier-sale-rules.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
       "kind": "service",
-      "loc": 372,
+      "loc": 545,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/price-deactivation.service.ts",
       "risk": "low",
@@ -23479,6 +23786,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@database/services/vendable",
         "backend/src/modules/pricing/services/price-import.dry-run.ts",
         "backend/src/modules/pricing/services/pricing-formula.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.core.ts",
@@ -23487,7 +23795,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 834,
+      "loc": 907,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "low",
@@ -27407,10 +27715,11 @@
       ],
       "imports": [
         "@repo/seo-types",
+        "backend/src/common/utils/user-agent-class.util.ts",
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "controller",
-      "loc": 43,
+      "loc": 58,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
       "risk": "low",
@@ -27915,7 +28224,7 @@
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "test",
-      "loc": 212,
+      "loc": 280,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts",
       "risk": "low",
@@ -27939,10 +28248,11 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "@repo/seo-types"
+        "@repo/seo-types",
+        "backend/src/common/utils/user-agent-class.util.ts"
       ],
       "kind": "service",
-      "loc": 159,
+      "loc": 179,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
       "risk": "low",
@@ -32719,18 +33029,42 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/services/googlebot-detector.classify.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/utils/user-agent-class.util.ts",
+        "backend/src/modules/seo/services/googlebot-detector.service.ts"
+      ],
+      "kind": "test",
+      "loc": 76,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/services/googlebot-detector.classify.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/googlebot-detector.service.ts",
       "importedBy": [
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/seo/controllers/seo-dashboard.controller.ts",
         "backend/src/modules/seo/interceptors/crawl-logger.interceptor.ts",
-        "backend/src/modules/seo/seo.module.ts"
+        "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/googlebot-detector.classify.test.ts"
       ],
       "imports": [
-        "@common/utils"
+        "@common/utils",
+        "backend/src/common/utils/user-agent-class.util.ts"
       ],
       "kind": "service",
-      "loc": 382,
+      "loc": 348,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/googlebot-detector.service.ts",
       "risk": "low",
@@ -36055,6 +36389,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "importedBy": [
+        "backend/src/modules/orders/orders.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -36063,7 +36398,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
       "kind": "service",
-      "loc": 34,
+      "loc": 38,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "risk": "low",
@@ -36173,6 +36508,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "importedBy": [
+        "backend/src/modules/orders/services/order-line-supplier.service.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.test.ts",
@@ -36187,7 +36523,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 274,
+      "loc": 312,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "risk": "low",
@@ -38453,10 +38789,11 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/services/mail.service.ts",
+        "backend/src/shared/crypto/password-crypto.service.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 388,
+      "loc": 371,
       "owner": "__unassigned__",
       "path": "backend/src/modules/users/services/password.service.ts",
       "risk": "low",
@@ -38507,6 +38844,7 @@
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/modules/users/services/profile.service.ts",
@@ -38521,7 +38859,7 @@
         "backend/src/modules/users/dto/user.dto.ts"
       ],
       "kind": "service",
-      "loc": 741,
+      "loc": 751,
       "owner": "__unassigned__",
       "path": "backend/src/modules/users/services/user-data-consolidated.service.ts",
       "risk": "low",
@@ -40058,7 +40396,7 @@
         "backend/src/config/app.config.ts"
       ],
       "kind": "service",
-      "loc": 1190,
+      "loc": 1193,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.ts",
       "risk": "low",
@@ -40119,19 +40457,70 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+      "importedBy": [
+        "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+        "backend/src/workers/run-legacy-password-wrap.ts"
+      ],
+      "imports": [
+        "backend/src/shared/crypto/password-crypto.service.ts"
+      ],
+      "kind": "service",
+      "loc": 289,
+      "owner": "__unassigned__",
+      "path": "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+      "importedBy": [
+        "backend/src/workers/run-legacy-password-wrap.ts"
+      ],
+      "imports": [
+        "backend/src/shared/crypto/legacy-hash-wrap.runner.ts"
+      ],
+      "kind": "service",
+      "loc": 84,
+      "owner": "__unassigned__",
+      "path": "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/shared/crypto/password-crypto.service.ts",
       "importedBy": [
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
+        "backend/src/auth/cookie-serializer.test.ts",
         "backend/src/auth/session-privilege.test.ts",
+        "backend/src/modules/users/services/password.service.ts",
         "backend/src/shared/crypto/crypto.module.ts",
-        "backend/src/shared/crypto/index.ts"
+        "backend/src/shared/crypto/index.ts",
+        "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+        "backend/src/workers/run-legacy-password-wrap.ts"
       ],
       "imports": [
         "crypto"
       ],
       "kind": "service",
-      "loc": 252,
+      "loc": 355,
       "owner": "__unassigned__",
       "path": "backend/src/shared/crypto/password-crypto.service.ts",
       "risk": "low",
@@ -40212,7 +40601,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 68,
+      "loc": 97,
       "owner": "__unassigned__",
       "path": "backend/src/utils/promise-helpers.ts",
       "risk": "low",
@@ -40397,7 +40786,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 221,
+      "loc": 223,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/email.processor.ts",
       "risk": "low",
@@ -40491,6 +40880,51 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/workers/run-legacy-password-wrap.guard.ts",
+      "importedBy": [
+        "backend/src/workers/run-legacy-password-wrap.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 29,
+      "owner": "__unassigned__",
+      "path": "backend/src/workers/run-legacy-password-wrap.guard.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/workers/run-legacy-password-wrap.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/shared/crypto/legacy-hash-wrap.runner.ts",
+        "backend/src/shared/crypto/legacy-hash-wrap.supabase-store.ts",
+        "backend/src/shared/crypto/password-crypto.service.ts",
+        "backend/src/workers/run-legacy-password-wrap.guard.ts"
+      ],
+      "kind": "service",
+      "loc": 65,
+      "owner": "__unassigned__",
+      "path": "backend/src/workers/run-legacy-password-wrap.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -40854,6 +41288,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/abandoned-cart-cadence.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 215,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/abandoned-cart-cadence.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/abandoned-cart-delivery-truth.test.ts",
       "importedBy": [],
       "imports": [],
@@ -40991,7 +41444,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 514,
+      "loc": 648,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/auth.service.test.ts",
       "risk": "low",
@@ -41048,7 +41501,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 215,
+      "loc": 218,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/cart-data.attribution.test.ts",
       "risk": "low",
@@ -41105,9 +41558,28 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 653,
+      "loc": 855,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-actions.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/command-center-collection-freshness.rules.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 97,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/command-center-collection-freshness.rules.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -41124,7 +41596,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 221,
+      "loc": 244,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-department-kpi.rules.test.ts",
       "risk": "low",
@@ -41200,7 +41672,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1106,
+      "loc": 1209,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "low",
@@ -41637,7 +42109,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 209,
+      "loc": 243,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
       "risk": "low",
@@ -41659,6 +42131,25 @@
       "loc": 186,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/invoices-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/legacy-hash-wrap.runner.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 234,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/legacy-hash-wrap.runner.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -41827,7 +42318,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 148,
+      "loc": 150,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/order-actions.cancel-order.test.ts",
       "risk": "low",
@@ -41846,7 +42337,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 114,
+      "loc": 115,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/order-actions.create-supplement.test.ts",
       "risk": "low",
@@ -41906,6 +42397,25 @@
       "loc": 148,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/order-status.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/orders-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 328,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/orders-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -42051,6 +42561,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/password-crypto-wrapped.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 191,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/password-crypto-wrapped.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/password-crypto.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -42131,7 +42660,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 308,
+      "loc": 436,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/payment-core-routes-authz.test.ts",
       "risk": "low",
@@ -42739,7 +43268,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 144,
+      "loc": 164,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/seo-metadata-authz.test.ts",
       "risk": "low",
@@ -43172,6 +43701,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 253,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/site-maintenance-routes-authz.test.ts",
       "importedBy": [],
       "imports": [],
@@ -43350,6 +43898,25 @@
       "loc": 917,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/support-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/systempay-callback-closure.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 320,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/systempay-callback-closure.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -43730,6 +44297,63 @@
       "loc": 26,
       "owner": "__unassigned__",
       "path": "commitlint.config.js",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/ownership-coverage.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 33,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/ownership-coverage.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/refused.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 21,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/refused.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/zones.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 13,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/zones.cjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -44288,6 +44912,28 @@
       "loc": 332,
       "owner": "__unassigned__",
       "path": "frontend/app/components/admin/OrderLineActions.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/app/components/admin/OrderLineSupplierPanel.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/badge",
+        "~/components/ui/button"
+      ],
+      "kind": "config",
+      "loc": 268,
+      "owner": "__unassigned__",
+      "path": "frontend/app/components/admin/OrderLineSupplierPanel.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -56568,6 +57214,7 @@
       "imports": [
         "frontend/app/auth/unified.server.ts",
         "frontend/app/utils/orders.utils.ts",
+        "~/components/admin/OrderLineSupplierPanel",
         "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
@@ -56575,7 +57222,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 1136,
+      "loc": 1156,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.orders.$orderId.tsx",
       "risk": "low",
@@ -62216,7 +62863,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 279,
+      "loc": 247,
       "owner": "__unassigned__",
       "path": "frontend/app/services/payment.server.ts",
       "risk": "low",
@@ -64839,6 +65486,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/purchase-probe/playwright.config.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "config",
+      "loc": 35,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/purchase-probe/playwright.config.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/purchase-probe/purchase-path.probe.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 295,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/purchase-probe/purchase-path.probe.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/qa-audit/config/pages.ts",
       "importedBy": [],
       "imports": [],
@@ -66556,6 +67241,25 @@
       "loc": 121,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/page-role-normalization.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/payment-server-systempay-closed.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 50,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/payment-server-systempay-closed.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -72876,13 +73580,13 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "scripts/ci/merge-perimeter-gate.mjs",
+      "id": "scripts/ci/merge-circuit.mjs",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 324,
+      "loc": 124,
       "owner": "__unassigned__",
-      "path": "scripts/ci/merge-perimeter-gate.mjs",
+      "path": "scripts/ci/merge-circuit.mjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -72895,13 +73599,13 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "scripts/ci/merge-perimeter-gate.test.mjs",
+      "id": "scripts/ci/merge-circuit.test.mjs",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 246,
+      "loc": 433,
       "owner": "__unassigned__",
-      "path": "scripts/ci/merge-perimeter-gate.test.mjs",
+      "path": "scripts/ci/merge-circuit.test.mjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -73674,6 +74378,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/governance/__tests__/skills-third-party-lock.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 260,
+      "owner": "__unassigned__",
+      "path": "scripts/governance/__tests__/skills-third-party-lock.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/governance/build-command-center-snapshot.js",
       "importedBy": [],
       "imports": [],
@@ -73697,7 +74420,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 175,
+      "loc": 195,
       "owner": "__unassigned__",
       "path": "scripts/governance/build-skills-registry.js",
       "risk": "low",
@@ -73735,7 +74458,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 504,
+      "loc": 666,
       "owner": "__unassigned__",
       "path": "scripts/governance/validate-agent-operating-map.js",
       "risk": "low",
@@ -73792,7 +74515,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 285,
+      "loc": 509,
       "owner": "__unassigned__",
       "path": "scripts/governance/validate-skills-frontmatter.js",
       "risk": "low",
@@ -74058,7 +74781,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 492,
+      "loc": 497,
       "owner": "__unassigned__",
       "path": "scripts/marketing/reactivation-runtime.test.mjs",
       "risk": "low",

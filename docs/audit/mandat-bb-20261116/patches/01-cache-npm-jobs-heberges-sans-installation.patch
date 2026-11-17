@@ -1,0 +1,40 @@
+--- a/.github/workflows/dependency-registry-freshness.yml
++++ b/.github/workflows/dependency-registry-freshness.yml
+@@ -93,6 +93,7 @@
+         uses: actions/setup-node@v7
+         with:
+           node-version: "24"
++          package-manager-cache: false
+ 
+       # The deps builder is pure Node (fs/path/crypto) and reads the
+       # package.json manifests directly, so no `npm ci` is required — this
+--- a/.github/workflows/pilote-file.yml
++++ b/.github/workflows/pilote-file.yml
+@@ -54,6 +54,7 @@
+         uses: actions/setup-node@v7
+         with:
+           node-version: "24"
++          package-manager-cache: false
+ 
+       - name: Contrôle déterministe (lecture seule)
+         id: controle
+--- a/.github/workflows/pr-dod-gate.yml
++++ b/.github/workflows/pr-dod-gate.yml
+@@ -49,6 +49,7 @@
+         uses: actions/setup-node@v7
+         with:
+           node-version: 24
++          package-manager-cache: false
+ 
+       - name: 🔢 Count APPROVED reviews
+         id: approvals
+--- a/.github/workflows/rag-proposals-validate.yml
++++ b/.github/workflows/rag-proposals-validate.yml
+@@ -52,6 +52,7 @@
+         uses: actions/setup-node@v7
+         with:
+           node-version: '24'
++          package-manager-cache: false
+ 
+       - name: Print Stage 0 skeleton notice
+         run: |

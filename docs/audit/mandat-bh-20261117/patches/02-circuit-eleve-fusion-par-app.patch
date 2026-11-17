@@ -1,0 +1,82 @@
+diff --git a/.github/workflows/merge-circuits.yml b/.github/workflows/merge-circuits.yml
+index 379d480c9..4349c9251 100644
+--- a/.github/workflows/merge-circuits.yml
++++ b/.github/workflows/merge-circuits.yml
+@@ -5,7 +5,9 @@ name: 🚦 Circuit de fusion
+ #   moyen  : CI verte + verdict GO de la revue Claude sur la tête → fusion automatique
+ #            (décision 91, 2026-11-16 : la revue Claude, anthropics/claude-code-action, remplace la
+ #            revue Codex ; authentification par le secret CLAUDE_CODE_OAUTH_TOKEN, mandat AR-5) ;
+-#   élevé  : approbation de l'owner sur la tête ; l'owner fusionne.
++#   élevé  : revue approuvante de l'owner enregistrée sur la tête exacte → fusion par l'App
++#            (décision 120 ; mandat BH). Une nouvelle tête invalide l'approbation : le check
++#            échoue et la fusion est désarmée.
+ #
+ # Le circuit est calculé par scripts/ci/merge-circuit.mjs, lu sur le commit de BASE :
+ # une PR ne peut pas abaisser son propre circuit en modifiant le classeur,
+@@ -34,6 +36,9 @@ name: 🚦 Circuit de fusion
+ # Une fusion faite par GITHUB_TOKEN ne déclencherait pas ci.yml (chaîne PREPROD).
+ # L'armement est un job séparé (« 🔐 Armement »), lancé seulement sur pull_request_target : un
+ # événement pull_request_review porte la référence de la PR, que l'environnement refuserait.
++# Circuit élevé : la revue de l'owner arrive par cet événement-là. Le check passe aussitôt ;
++# l'armement suit au prochain événement pull_request_target de la PR sur la même tête
++# (brouillon puis prête, ou fermée puis rouverte), où l'approbation est relue.
+ # App absente : le circuit est calculé, étiqueté et vérifié, rien n'est armé
+ # (avis visible dans le run), jamais de repli silencieux sur GITHUB_TOKEN.
+ 
+@@ -293,7 +298,7 @@ jobs:
+           OK: ${{ steps.approval.outputs.ok }}
+         run: |
+           set -euo pipefail
+-          if [ "$CIRCUIT" = "eleve" ] || [ "$OK" != "true" ] || [ "$IS_DRAFT" = "true" ]; then
++          if [ "$OK" != "true" ] || [ "$IS_DRAFT" = "true" ]; then
+             echo "armer=false" >> "$GITHUB_OUTPUT"
+             gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
+             # Désarmement vérifié : l'état est relu. Lecture impossible = encore armée (échec fermé).
+@@ -319,6 +324,10 @@ jobs:
+           fi
+           echo "armer=true" >> "$GITHUB_OUTPUT"
+           echo "desarmer=false" >> "$GITHUB_OUTPUT"
++          if [ "$EVENT_NAME" != "pull_request_target" ]; then
++            echo "::notice::Circuit $CIRCUIT admis sur $HEAD_SHA. L'événement $EVENT_NAME ne peut pas armer : l'armement suit au prochain événement pull_request_target de la PR sur cette tête."
++            exit 0
++          fi
+           echo "Circuit $CIRCUIT admis sur $HEAD_SHA : armement confié au job « 🔐 Armement »."
+ 
+       - name: Verdict du circuit
+diff --git a/scripts/ci/merge-circuit.test.mjs b/scripts/ci/merge-circuit.test.mjs
+index 671fbc927..4880fd0a7 100644
+--- a/scripts/ci/merge-circuit.test.mjs
++++ b/scripts/ci/merge-circuit.test.mjs
+@@ -255,9 +255,29 @@ test("circuit élevé : la dernière revue de l'owner sur la tête exacte décid
+   }
+ });
+ 
+-test("circuit élevé approuvé : le check passe, la fusion reste à l'owner (rien n'est armé)", () => {
++test("circuit élevé approuvé sur la tête : l'App arme, sur pull_request_target seulement", () => {
++  const reviews = [review("APPROVED")];
++  const cible = runCircuit({ circuit: "eleve", reviews });
++  assert.deepEqual([cible.result, cible.armer, cible.app, cible.armed], ["success", true, "success", true]);
++  // La revue arrive par pull_request_review : le check passe, rien n'est armé par cet événement.
++  const revue = runCircuit({ circuit: "eleve", reviews, event: "pull_request_review" });
++  assert.deepEqual([revue.result, revue.armer, revue.app, revue.armed], ["success", true, "skipped", false]);
++  assert.match(revue.log, /ne peut pas armer/);
++  // Brouillon ou App absente : check vert, rien d'armé.
++  const draft = runCircuit({ circuit: "eleve", reviews, draft: "true", armed: true });
++  assert.deepEqual([draft.result, draft.armer, draft.armed], ["success", false, false]);
++  const sansApp = runCircuit({ circuit: "eleve", reviews, app: "false" });
++  assert.deepEqual([sansApp.result, sansApp.armer, sansApp.armed], ["success", false, false]);
++});
++
++test("circuit élevé : une tête nouvelle invalide l'approbation et désarme", () => {
++  // La PR était armée sur la tête approuvée ; la tête de l'événement est une autre.
++  const reviews = [review("APPROVED", "b".repeat(40))];
+   for (const event of ["pull_request_target", "pull_request_review"]) {
+-    const r = runCircuit({ circuit: "eleve", reviews: [review("APPROVED")], event, armed: true });
+-    assert.deepEqual([r.result, r.armer, r.app, r.armed], ["success", false, "skipped", false], event);
++    const r = runCircuit({ circuit: "eleve", reviews, event, armed: true });
++    assert.deepEqual([r.result, r.armer, r.armed], ["failure", false, false], event);
+   }
++  // Désarmement non constaté avec le jeton du workflow : l'App désarme.
++  const r = runCircuit({ circuit: "eleve", reviews, armed: true, disable: "ko" });
++  assert.deepEqual([r.result, r.desarmer, r.app, r.armed], ["failure", true, "success", false]);
+ });

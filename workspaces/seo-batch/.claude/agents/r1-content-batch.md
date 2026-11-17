@@ -12,7 +12,7 @@ role: R1_ROUTER
 > 🚫 **NEUTRALISÉ** — cet agent est **inerte**. Son corps opératoire (lecture du keyword plan
 > `__seo_r1_keyword_plan` + du corpus RAG `rag/knowledge/gammes/*.md`, génération des 5 colonnes
 > R1, `INSERT … ON CONFLICT (r1s_pg_id) DO UPDATE __seo_r1_gamme_slots`) a été **retiré**. C'était
-> la direction **RAG→source-de-contenu interdite** (ADR-031 / ADR-046, vault) : le RAG est un
+> la direction **RAG→source-de-contenu interdite** (P11 du journal des principes ; origine ADR-031 / ADR-046) : le RAG est un
 > retrieval **chatbot uniquement**, jamais une source de contenu / SEO indexé.
 
 ## Écriture désactivée (défense en profondeur)
