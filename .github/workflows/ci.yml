@@ -243,7 +243,7 @@ jobs:
         run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
 
       - name: 🧪 Run backend tests
-        run: cd backend && npx jest --ci --verbose --maxWorkers=1 --forceExit --coverage --coverageReporters=text-summary --coverageReporters=json-summary
+        run: cd backend && npx jest --ci --verbose --maxWorkers=2 --forceExit --coverage --coverageReporters=text-summary --coverageReporters=json-summary
         env:
           SUPABASE_URL: "https://mock.supabase.co"
           SUPABASE_SERVICE_ROLE_KEY: "mock-key-for-ci"
