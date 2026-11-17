@@ -9,7 +9,7 @@ et de `ak125/automecanik-raw` (`b097ca48`). Deux PR : monorepo #2120, RAW #81.
 
 | Lecteur du vault | Avant | Après |
 |---|---|---|
-| Défaut de `R2_OPA_BUNDLE_PATH` (`r2-opa-evaluator.service.ts`) | `/opt/automecanik/governance-vault/policies/dist` | `policies/dist` du dépôt ; politiques, bundles et script relogés |
+| Défaut de `R2_OPA_BUNDLE_PATH` (`r2-opa-evaluator.service.ts`) | `/opt/automecanik/governance-vault/dist/policies` | `policies/dist` du dépôt ; politiques, bundles et script relogés |
 | Workflow `opa-policy-build.yml` du vault | teste et reconstruit les bundles dans le vault | patch 04 : même contrôle dans le monorepo |
 | Workflow `vault-supabase-cost-check.yml` du vault | relève chaque lundi la surface de coût Supabase | patch 05 : repris dans le monorepo, si l'owner le garde (question D14) |
 | Workflow `vault-canon-exists.yml` du monorepo | clone le vault et y cherche chaque ADR citée | patch 06 : cherche l'ADR dans le journal des principes et les contrats ; ne lit plus le vault |
@@ -144,6 +144,12 @@ Vecteur JCS gelé dans RAW (`_scripts/jcs-parity-vector.json`) : sha256
   workflows (étapes 2 à 5, qui attendent #2112) ; `merge-perimeter-gate.mjs` (étape 6,
   #2113) ; `.husky/pre-commit` (étapes 2 et 8, #2118). Dans RAW : `check-aec-hash.sh`
   (étape 3). Les autres mentions du vault dans le code sont des commentaires de provenance.
+- **Comptage rejoué** (17 nov. 00:15 UTC), preuve de fin du plan :
+  `git grep -n "/opt/automecanik/governance-vault" -- scripts .husky backend/src tools` rend
+  8 lignes sur `main` (`aff214ebb`) et 6 sur cette branche. Les 6 qui restent :
+  `.husky/pre-commit:32,73`, `scripts/governance/check-verdict-expirations.sh:5,25` et
+  `tools/security/attack-simulations/simulate-escalation-hijack.sh:35,136`. Les deux lignes
+  retirées sont celles de l'évaluateur OPA.
 
 ## Questions à l'owner
 
