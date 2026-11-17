@@ -264,8 +264,8 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
 
   Source : ADR-081 (G9, G10) ; ADR-138, qui place leur lecture dans ce journal.
   Application : G10, L2 (`scripts/governance/validate-exploration-probe.sh`, branché dans
-  `governance-checks.yml`). G9, L1 (`scripts/governance/check-verdict-expirations.sh`, rapport
-  seul, non branché). « Toute dérogation » : intention seulement.
+  `governance-checks.yml`). G9 : intention seulement ; son script de rapport, jamais branché,
+  est retiré (décision 129). « Toute dérogation » : intention seulement.
 - **P29.** Voir la règle de vigueur, en tête de ce fichier : c'est le même principe. Le numéro est
   gardé pour les renvois.
   Application : L2 (`ci.yml`, `scripts/governance/validate-agent-operating-map.js --contracts`).
