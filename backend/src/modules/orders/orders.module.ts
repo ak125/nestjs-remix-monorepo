@@ -43,7 +43,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
  * - Architecture finale propre
  *
  * Contrôleurs actifs:
- * 1. OrdersController: Routes principales (client + admin + legacy)
+ * 1. OrdersController: Routes principales (client + admin)
  * 2. OrderArchiveController: Archivage
  * 3. TicketsController: SAV
  * (statut ligne = OrderActionsController/OrderActionsService — SoT unique, F3 audit 2026-05-22)
@@ -67,7 +67,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
   ],
   controllers: [
     // 🆕 Phase 3: Contrôleur unifié principal
-    OrdersController, // /api/orders/* (client + admin + legacy)
+    OrdersController, // /api/orders/* (client + admin)
 
     // ✅ Contrôleurs spécialisés (gardés)
     OrderArchiveController, // /order-archive/* (archivage)

@@ -26,7 +26,7 @@ points d'entrée et les limites de découverte ; ce dossier ne constitue pas une
 - `.claude/skills/wiki-proposal-writer/` : skill principal — produit un fichier `automecanik-wiki/proposals/<slug>.md` avec frontmatter ADR-033 v2.0.0 strict (mode propose-only, 0-LLM pour structure, Anthropic seul pour rédactionnel).
 - `.claude/agents/` : définitions locales ; consulter [AGENTS.md](AGENTS.md) pour les rôles et restrictions. Le `pipeline-orchestrator` SEO reste un détecteur de couverture en lecture seule, pas un générateur de contenu.
 - `.claude/rules/wiki-batch.md` : règles spécifiques wiki (sas markdown vs sas DB, schema strict, 9 quality gates, 3 anti-patterns figés ADR-033 §D3, convention slug DB).
-- `.claude/canon-mirrors/agent-exit-contract.md` : copie canon distribuée depuis vault (hash SHA-256 vérifié CI).
+- Contrat de sortie (AEC) : `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo (copie déclarée, hash SHA-256 vérifié en CI) ; la copie locale du workspace (v1.0.0) est périmée et ne fait pas foi (contradiction D16).
 - `.claude/settings.json` : hooks PreToolUse / PostToolUse / Stop (mêmes scripts que monorepo, paths absolus).
 - `CLAUDE.md` : pointer vers gouvernance + règles wiki spécifiques.
 

@@ -1772,3 +1772,32 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # PR #2100 (mandat AP) : enveloppe bcrypt des anciennes empreintes de mot de
+  # passe. Cœur du script d'enveloppe (runner) et accès PostgREST (store),
+  # appelés par backend/src/workers/run-legacy-password-wrap.ts. Domaine et
+  # owner de l'authentification (backend/src/auth/**, D11) : ces fichiers
+  # écrivent cst_pswd / cnfa_pswd. Glob exact, limité à ces deux fichiers.
+  - glob: backend/src/shared/crypto/legacy-hash-wrap.*.ts
+    domain: D11
+    owner: '@ak125/auth-team'
+    sourceConfidence: high
+    risk: high
+  # Désactivation de 4 comptes administrateurs de test de ___config_admin
+  # (cnfa_activ = '0', mandat AZ, PR #2106). Migration de données : 4 lignes
+  # désignées par cnfa_id, aucune suppression, aucun schéma touché. Lecteurs :
+  # auth_resolve_user et backend/src/auth (D11). Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261116_disable_test_admin_accounts*.sql
+    domain: D11
+    owner: '@ak125/auth-team'
+    sourceConfidence: high
+    risk: high
+  # Rapports du mandat AN (commandes non payées, relance de panier, frais de port),
+  # PR #2088, décisions 5, 44, 61, 75, 110 et 111 du 16/11/2026. Documents de constat,
+  # aucun lecteur applicatif. Domaine Commerce & Users comme les modules panier et
+  # commande qu'ils décrivent. Glob exact : la racine du dépôt n'est pas couverte.
+  - glob: RAPPORT-MANDAT-AN*.md
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low

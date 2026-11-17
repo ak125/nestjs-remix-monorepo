@@ -31,12 +31,11 @@ Criteria (each is independent, returns PASS/FAIL with evidence) :
 
   C4 — fiches gamme migrées :
        - 0 hits for `entity_data.symptoms:` or `^symptoms:` in
-         automecanik-wiki/wiki/gammes/*.md
-       - if wiki/gammes/ is empty, C4 is N/A (returns PASS — no legacy
-         to migrate ; activates in real terms when sync-from-rag arrives
-         in Partie 3)
+         automecanik-wiki/wiki/gamme/*.md (singular path, ADR-125)
+       - wiki/gamme/ missing or without any fiche = FAIL : an absence is
+         never reported as a success (CLAUDE.md invariant 3)
 
-  C5 — quality gates green sur tout wiki/gammes/ :
+  C5 — quality gates green sur tout wiki/gamme/ :
        - python3 _scripts/quality-gates.py --all (côté wiki repo) exit 0
        - if running from monorepo, shells out to wiki repo's script
 
@@ -271,14 +270,18 @@ def c3_export_diag_canon_slugs_fresh(
 
 
 def c4_fiches_migrated(wiki_path: Path) -> tuple[bool, str]:
-    """C4 — no entity_data.symptoms[] or top-level symptoms[] in wiki/gammes/."""
-    gammes_dir = wiki_path / "wiki" / "gammes"
-    if not gammes_dir.exists():
-        return True, "wiki/gammes/ does not exist yet (N/A — Partie 3 sync-from-rag pending) ✓"
+    """C4 — no entity_data.symptoms[] or top-level symptoms[] in wiki/gamme/.
 
-    md_files = list(gammes_dir.glob("*.md"))
+    Singular path (ADR-125). A missing or empty directory is a FAIL, never a
+    PASS: the criterion cannot be evaluated, so it is not met.
+    """
+    gamme_dir = wiki_path / "wiki" / "gamme"
+    if not gamme_dir.is_dir():
+        return False, "FAIL: wiki/gamme/ missing (no fiche to evaluate)"
+
+    md_files = sorted(gamme_dir.glob("*.md"))
     if not md_files:
-        return True, "wiki/gammes/ is empty (N/A — no legacy to migrate) ✓"
+        return False, "FAIL: wiki/gamme/ has no fiche (nothing to evaluate)"
 
     legacy_pattern = re.compile(r"^([\s]*)symptoms:|entity_data:\s*\n[\s\S]*?[\s]+symptoms:", re.MULTILINE)
     legacy_hits = []
@@ -297,7 +300,7 @@ def c4_fiches_migrated(wiki_path: Path) -> tuple[bool, str]:
 
     if legacy_hits:
         return False, f"FAIL: {len(legacy_hits)} fiches still legacy (e.g. {legacy_hits[:3]})"
-    return True, f"all {len(md_files)} wiki/gammes/ fiches migrated ✓"
+    return True, f"all {len(md_files)} wiki/gamme/ fiches migrated ✓"
 
 
 def c5_quality_gates_green(wiki_path: Path) -> tuple[bool, str]:

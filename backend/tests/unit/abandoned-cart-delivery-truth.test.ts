@@ -116,7 +116,7 @@ function sequence(delivery: 'sent' | 'dry-run') {
     { get: jest.fn().mockResolvedValue(null), set: jest.fn() } as never,
     {} as never, // cartDataService — unused by sendSequenceEmail
     data as never,
-    {} as never, // featureFlags — unused by sendSequenceEmail
+    { abandonedCartEmailEnabled: true } as never, // relu à l'envoi
     mail as never,
   );
   return { service, data, mail };

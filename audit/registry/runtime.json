@@ -4560,6 +4560,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/payments/repositories/payment-data.service.ts",
+        "runtime:backend/src/modules/payments/services/cyberplus.service.ts",
         "runtime:backend/src/modules/payments/services/payment.service.ts"
       ],
       "id": "runtime:backend/src/modules/payments/controllers/payment-methods.controller.ts",
@@ -8360,7 +8361,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/services/mail.service.ts"
+        "runtime:backend/src/services/mail.service.ts",
+        "runtime:backend/src/shared/crypto/password-crypto.service.ts"
       ],
       "id": "runtime:backend/src/modules/users/services/password.service.ts",
       "kind": "nestjs-service",

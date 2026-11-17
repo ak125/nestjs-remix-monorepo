@@ -61,6 +61,19 @@ export class CyberplusService {
       `SystemPay initialized in ${this.paymentConfig.systempay.mode} mode`,
     );
     this.logger.log(`Site ID: ${this.paymentConfig.systempay.siteId}`);
+    this.logger.log(
+      this.isCallbackEnabled()
+        ? 'SystemPay routes OPEN (SYSTEMPAY_CALLBACK_ENABLED=true)'
+        : 'SystemPay routes CLOSED (SYSTEMPAY_CALLBACK_ENABLED absent or not "true") — callback/cyberplus, callback/error and api/systempay/redirect answer 410',
+    );
+  }
+
+  /**
+   * Mandat AY : vrai seulement si SYSTEMPAY_CALLBACK_ENABLED vaut `true`.
+   * Toute autre valeur, ou une config sans le champ, ferme SystemPay.
+   */
+  isCallbackEnabled(): boolean {
+    return this.paymentConfig.systempay.callbackEnabled === true;
   }
 
   async createPayment(
