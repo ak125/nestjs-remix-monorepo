@@ -19,6 +19,11 @@ export {
   isOrderStatusCode,
   isValidTransition,
   getOrderStatusLabel,
+  ORDER_FULFILMENT_STATUS,
+  type OrderFulfilmentStep,
+  type OrderFulfilment,
+  fulfilmentStatusToWrite,
+  orderFulfilment,
 } from './order-status';
 
 export {

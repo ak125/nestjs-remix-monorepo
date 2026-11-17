@@ -25,6 +25,33 @@ export function getOrderStatusLabel(status: number): string {
 export { formatPrice } from "./format";
 
 /**
+ * Mandat BM — étape d'expédition rendue par le backend (`fulfilment`), lue
+ * sur les statuts « Expédiée » et « Livrée » (ORDER_FULFILMENT_STATUS de
+ * @repo/domain-commerce, décision du 2026-11-17). Le compte client l'affiche
+ * avant tout code de statut.
+ */
+type OrderFulfilment = "shipped" | "delivered";
+export const ORDER_FULFILMENT_LABEL: Record<OrderFulfilment, string> = {
+  shipped: "Expédiée",
+  delivered: "Livrée",
+};
+
+/** « Expédiée le … » / « Livrée le … » ; `null` avant l'expédition. */
+export function getOrderFulfilmentText(order: {
+  fulfilment?: OrderFulfilment | null;
+  shippedAt?: string | null;
+  deliveredAt?: string | null;
+}): string | null {
+  if (!order.fulfilment) return null;
+  const label = ORDER_FULFILMENT_LABEL[order.fulfilment];
+  const date =
+    order.fulfilment === "delivered" ? order.deliveredAt : order.shippedAt;
+  return date
+    ? `${label} le ${new Date(date).toLocaleDateString("fr-FR")}`
+    : label;
+}
+
+/**
  * Types d'interfaces partagées
  */
 export interface OrderLine {
@@ -49,6 +76,10 @@ export interface Order {
   trackingUrl?: string;
   /** Mandat BM : date d'expédition (ord_date_ship), posée avec le n° de suivi. */
   shippedAt?: string | null;
+  /** Mandat BM : date de livraison (ord_date_deliv). */
+  deliveredAt?: string | null;
+  /** Mandat BM : étape lue par le backend, `null` avant l'expédition. */
+  fulfilment?: OrderFulfilment | null;
   paymentStatus?: string;
   paymentMethod?: string;
   transactionId?: string;

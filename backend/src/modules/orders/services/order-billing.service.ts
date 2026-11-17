@@ -33,7 +33,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { TABLES } from '@repo/database-types';
-import { OrderStatus } from '@repo/domain-commerce';
+import { OrderStatus, orderFulfilment } from '@repo/domain-commerce';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { MailService, type MailDelivery } from '../../../services/mail.service';
 import { ORDER_EVENTS, type OrderShippedEvent } from '../events/order.events';
@@ -73,7 +73,7 @@ export type IssueOutcome =
   | { issued: false; reason: string };
 
 const ORDER_COLUMNS =
-  'ord_id, ord_cst_id, ord_cba_id, ord_cda_id, ord_is_pay, ord_date_pay, ord_date, ord_date_ship, ord_ords_id, ord_parent, ord_amount_ttc, ord_deposit_ttc, ord_shipping_fee_ttc, ord_total_ttc, ord_billing_snapshot';
+  'ord_id, ord_cst_id, ord_cba_id, ord_cda_id, ord_is_pay, ord_date_pay, ord_date, ord_date_ship, ord_date_deliv, ord_ords_id, ord_parent, ord_amount_ttc, ord_deposit_ttc, ord_shipping_fee_ttc, ord_total_ttc, ord_billing_snapshot';
 const LINE_COLUMNS =
   'orl_id, orl_ord_id, orl_pg_id, orl_pg_name, orl_pm_name, orl_art_ref, orl_art_quantity, orl_art_price_sell_unit_ttc, orl_art_price_sell_ttc, orl_art_deposit_unit_ttc, orl_art_deposit_ttc';
 
@@ -82,6 +82,7 @@ type OrderRow = BillingOrderRow & {
   ord_date_pay: string | null;
   ord_date: string | null;
   ord_date_ship: string | null;
+  ord_date_deliv: string | null;
   ord_ords_id: string | null;
   ord_parent: string | null;
   ord_billing_snapshot: Record<string, unknown> | null;
@@ -429,7 +430,9 @@ export class OrderBillingService extends SupabaseBaseService {
     const order = await this.loadOrder(orderId);
     if (order.ord_is_pay !== '1')
       return { issued: false, reason: 'commande non payée' };
-    if (!order.ord_date_ship)
+    // Statut « Expédiée » ou « Livrée » (ORDER_FULFILMENT_STATUS), sinon la
+    // date d'expédition posée par le même bouton (commandes antérieures).
+    if (orderFulfilment(order) === null)
       return { issued: false, reason: 'commande non expédiée' };
     const existing = await this.loadInvoice(orderId);
     if (existing)

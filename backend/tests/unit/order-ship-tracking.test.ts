@@ -137,7 +137,7 @@ describe('Mandat BM — expédition par numéro de suivi', () => {
     it('normalise le numéro (espaces, majuscules) et ne demande que lui', async () => {
       const shipOrder = jest.fn().mockResolvedValue({
         success: true,
-        newStatus: '4',
+        newStatus: '7',
         trackingNumber: TRACKING,
         trackingUrl: 'https://www.laposte.fr/outils/suivre-vos-envois?code=X',
       });
@@ -182,12 +182,12 @@ describe('Mandat BM — expédition par numéro de suivi', () => {
   });
 
   describe('OrderActionsService.shipOrder', () => {
-    it('écrit statut 4, date, numéro et lien, sous condition « pas encore expédiée »', async () => {
+    it('écrit « Expédiée » (7), date, numéro et lien, sous condition « pas encore expédiée »', async () => {
       const { service, emitted, db } = makeService({});
       const res = await service.shipOrder(ORDER_ID, TRACKING, '7');
       expect(res).toEqual({
         success: true,
-        newStatus: '4',
+        newStatus: '7',
         trackingNumber: TRACKING,
         trackingUrl: `https://www.laposte.fr/outils/suivre-vos-envois?code=${TRACKING}`,
       });
@@ -196,7 +196,7 @@ describe('Mandat BM — expédition par numéro de suivi', () => {
       )!;
       const patch = update.ops[0].args[0] as Record<string, unknown>;
       expect(patch).toMatchObject({
-        ord_ords_id: '4',
+        ord_ords_id: '7',
         ord_tracking: TRACKING,
         ord_tracking_url: res.trackingUrl,
       });
@@ -244,6 +244,56 @@ describe('Mandat BM — expédition par numéro de suivi', () => {
         service.shipOrder(ORDER_ID, TRACKING),
       ).rejects.toBeInstanceOf(ConflictException);
       expect(emitted).toHaveLength(0);
+    });
+  });
+
+  // Décision du 2026-11-17 : Livrer écrit « Livrée » = 8 (identifiant donné
+  // par BN #2147, ORDER_FULFILMENT_STATUS).
+  describe('OrderActionsService.markAsDelivered', () => {
+    const shipped = (o: Record<string, unknown> = {}) =>
+      paidOrder({
+        ord_ords_id: '4',
+        ord_date_ship: '2026-11-17T17:00:00Z',
+        ...o,
+      });
+
+    it.each([
+      ['« Expédiée » (7)', shipped({ ord_ords_id: '7' })],
+      ['expédiée avant les statuts nouveaux (4 + date)', shipped()],
+    ])(
+      'livre une commande %s : écrit « Livrée » (8) et la date',
+      async (_l, order) => {
+        const { service, db } = makeService({ order });
+        const res = await service.markAsDelivered(ORDER_ID, 7);
+        expect(res).toEqual({ success: true, newStatus: '8' });
+        const update = db.calls.find(
+          (c) => c.table === TABLES.xtr_order && c.ops[0].method === 'update',
+        )!;
+        const patch = update.ops[0].args[0] as Record<string, unknown>;
+        expect(patch.ord_ords_id).toBe('8');
+        expect(typeof patch.ord_date_deliv).toBe('string');
+      },
+    );
+
+    it.each([
+      ['non expédiée', paidOrder({ ord_ords_id: '3' })],
+      [
+        'déjà livrée',
+        shipped({ ord_ords_id: '8', ord_date_deliv: '2026-11-19T10:00:00Z' }),
+      ],
+      [
+        'livrée avant les statuts nouveaux',
+        shipped({ ord_ords_id: '5', ord_date_deliv: '2026-11-19T10:00:00Z' }),
+      ],
+      ['annulée', shipped({ ord_ords_id: '2' })],
+    ])('refuse une commande %s, sans écrire', async (_l, order) => {
+      const { service, db } = makeService({ order });
+      await expect(service.markAsDelivered(ORDER_ID, 7)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(
+        db.calls.filter((c) => c.ops[0]?.method === 'update'),
+      ).toHaveLength(0);
     });
   });
 

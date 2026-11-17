@@ -39,6 +39,7 @@ import {
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { getOrderFulfilmentText } from "~/utils/orders";
 import { getStatusBadgeColor, getStatusLabel } from "~/utils/orders.utils";
 import { getProxyHeaders } from "~/utils/proxy-headers.server";
 import { requireAuth } from "../auth/unified.server";
@@ -158,6 +159,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 export default function OrderDetailPage() {
   const { order, user, invoice } = useLoaderData<typeof loader>();
+  // Mandat BM : statuts « Expédiée » / « Livrée » lus par le backend.
+  const fulfilmentText = getOrderFulfilmentText(order);
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const navigate = useNavigate();
@@ -205,13 +208,11 @@ export default function OrderDetailPage() {
           <div className="flex items-center gap-3">
             {/* Pas de <Badge> : sa variante par défaut (bg-primary) écrase les
                 couleurs de statut, faute de fusion des classes. */}
-            {/* Mandat BM : une commande expédiée affiche « Expédiée le … »
-                quel que soit son code de statut legacy (4 = « frais de port
-                reçu » dans ___xtr_order_status). */}
-            {order.shippedAt ? (
+            {/* Mandat BM : statuts « Expédiée » / « Livrée » lus par le
+                backend (`fulfilment`), avant le code de statut historique. */}
+            {fulfilmentText ? (
               <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-3 py-1 text-sm font-medium text-green-800">
-                Expédiée le{" "}
-                {new Date(order.shippedAt).toLocaleDateString("fr-FR")}
+                {fulfilmentText}
               </span>
             ) : (
               <span

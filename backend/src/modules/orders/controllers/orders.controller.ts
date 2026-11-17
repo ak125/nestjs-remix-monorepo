@@ -58,7 +58,7 @@ import {
   computeOrderFingerprint,
   getCustomerCancelRefusal,
 } from '../services/orders.service';
-import type { OrderStatusCode } from '@repo/domain-commerce';
+import { orderFulfilment, type OrderStatusCode } from '@repo/domain-commerce';
 
 /** Query parameters for order listing */
 interface OrderListQuery {
@@ -263,7 +263,17 @@ export class OrdersController {
         limit: query.limit ? parseInt(query.limit) : 10,
       };
 
-      return await this.ordersService.listOrders(filters);
+      const result = await this.ordersService.listOrders(filters);
+      // Mandat BM : « Expédiée » / « Livrée » lus par ORDER_FULFILMENT_STATUS.
+      return {
+        ...result,
+        data: result.data.map((o) => ({
+          ...o,
+          fulfilment: orderFulfilment(
+            o as Parameters<typeof orderFulfilment>[0],
+          ),
+        })),
+      };
     } catch (error) {
       this.logger.error('Error listing user orders:', error);
       throw error;
@@ -317,6 +327,8 @@ export class OrdersController {
         data: {
           ...order,
           customer_can_cancel: getCustomerCancelRefusal(order) === null,
+          // Mandat BM : « Expédiée » / « Livrée » lus par ORDER_FULFILMENT_STATUS.
+          fulfilment: orderFulfilment(order),
         },
         timestamp: new Date().toISOString(),
       };

@@ -4,12 +4,14 @@
  * getOrderInvoice lit GET /api/orders/:id/invoice avec le cookie du client et
  * rend le numéro de facture, ou null (pas encore émise, drapeau éteint,
  * erreur journalisée) : la page n'affiche le lien que si la facture existe.
- * getOrderDetails expose `shippedAt` (badge « Expédiée le … »).
+ * getOrderDetails expose `shippedAt`, `deliveredAt` et `fulfilment` (statuts
+ * « Expédiée » / « Livrée » lus par le backend, décision du 2026-11-17).
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getOrderDetails, getOrderInvoice } from "~/services/orders.server";
 import { logger } from "~/utils/logger";
+import { getOrderFulfilmentText } from "~/utils/orders";
 
 vi.mock("~/utils/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), log: vi.fn(), debug: vi.fn() },
@@ -88,6 +90,7 @@ describe("getOrderDetails — date d'expédition", () => {
           ord_is_pay: "1",
           ord_date_ship: "2026-11-17T17:00:00Z",
           ord_tracking: "6A12345678901",
+          fulfilment: "shipped",
           lines: [],
         },
       }),
@@ -99,7 +102,28 @@ describe("getOrderDetails — date d'expédition", () => {
     });
     expect(order).toMatchObject({
       shippedAt: "2026-11-17T17:00:00Z",
+      deliveredAt: null,
+      fulfilment: "shipped",
       trackingNumber: "6A12345678901",
     });
+  });
+});
+
+describe("getOrderFulfilmentText — badge du compte client", () => {
+  it("« Expédiée le … » puis « Livrée le … », rien avant l'expédition", () => {
+    const shippedAt = "2026-11-17T17:00:00Z";
+    const deliveredAt = "2026-11-19T10:00:00Z";
+    expect(getOrderFulfilmentText({ fulfilment: null, shippedAt })).toBeNull();
+    expect(getOrderFulfilmentText({ fulfilment: "shipped", shippedAt })).toBe(
+      `Expédiée le ${new Date(shippedAt).toLocaleDateString("fr-FR")}`,
+    );
+    expect(
+      getOrderFulfilmentText({
+        fulfilment: "delivered",
+        shippedAt,
+        deliveredAt,
+      }),
+    ).toBe(`Livrée le ${new Date(deliveredAt).toLocaleDateString("fr-FR")}`);
+    expect(getOrderFulfilmentText({ fulfilment: "delivered" })).toBe("Livrée");
   });
 });

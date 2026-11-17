@@ -1,6 +1,10 @@
 import { randomUUID } from 'crypto';
 import { TABLES } from '@repo/database-types';
 import {
+  fulfilmentStatusToWrite,
+  orderFulfilment,
+} from '@repo/domain-commerce';
+import {
   Injectable,
   BadRequestException,
   ConflictException,
@@ -583,11 +587,18 @@ export class OrderActionsService extends SupabaseBaseService {
 
       const trackingUrl = this.buildTrackingUrl(trackingNumber);
       const now = new Date().toISOString();
+      // Statut « Expédiée » (décision du 2026-11-17) : identifiant donné par
+      // BN dans ORDER_FULFILMENT_STATUS ; code antérieur 4 tant qu'il manque.
+      const shipped = fulfilmentStatusToWrite('SHIPPED');
+      if (shipped.legacy)
+        this.logger.warn(
+          `Statut « Expédiée » pas encore créé (mandat BN) : code ${shipped.code} écrit pour ${orderId}`,
+        );
 
       const { data: updated, error } = await this.supabase
         .from(TABLES.xtr_order)
         .update({
-          ord_ords_id: '4',
+          ord_ords_id: shipped.code,
           ord_date_ship: now,
           ord_tracking: trackingNumber,
           ord_tracking_url: trackingUrl,
@@ -606,7 +617,7 @@ export class OrderActionsService extends SupabaseBaseService {
 
       await this.createOrderStatusHistory(
         orderId,
-        '4',
+        shipped.code,
         `Commande expédiée - Suivi: ${trackingNumber}`,
         userId,
       );
@@ -621,7 +632,12 @@ export class OrderActionsService extends SupabaseBaseService {
       } satisfies OrderShippedEvent);
 
       this.logger.log(`✅ Commande ${orderId} expédiée`);
-      return { success: true, newStatus: '4', trackingNumber, trackingUrl };
+      return {
+        success: true,
+        newStatus: shipped.code,
+        trackingNumber,
+        trackingUrl,
+      };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`❌ Erreur expédition commande:`, message);
@@ -630,7 +646,8 @@ export class OrderActionsService extends SupabaseBaseService {
   }
 
   /**
-   * 🚚 Marquer comme livrée (statut 4 → 5)
+   * 🚚 Marquer comme livrée : commande expédiée → statut « Livrée »
+   * (ORDER_FULFILMENT_STATUS ; code antérieur 5 tant que BN ne l'a pas donné).
    */
   async markAsDelivered(
     orderId: string,
@@ -641,18 +658,23 @@ export class OrderActionsService extends SupabaseBaseService {
 
       const order = await this.getOrder(orderId);
 
-      // Vérifier statut actuel = 4 (Expédiée)
-      if (order.ord_ords_id !== '4') {
+      // Livrable seulement si expédiée et pas encore livrée.
+      if (orderFulfilment(order) !== 'shipped') {
         throw new BadRequestException(
-          `Statut invalide: ${order.ord_ords_id}, attendu: 4 (Expédiée)`,
+          `Statut invalide: ${order.ord_ords_id}, attendu: commande expédiée non livrée`,
         );
       }
+      const delivered = fulfilmentStatusToWrite('DELIVERED');
+      if (delivered.legacy)
+        this.logger.warn(
+          `Statut « Livrée » pas encore créé (mandat BN) : code ${delivered.code} écrit pour ${orderId}`,
+        );
 
       // Mettre à jour
       const { error } = await this.supabase
         .from(TABLES.xtr_order)
         .update({
-          ord_ords_id: '5', // Livrée
+          ord_ords_id: delivered.code,
           ord_date_deliv: new Date().toISOString(),
           ord_updated_at: new Date().toISOString(),
         })
@@ -663,7 +685,7 @@ export class OrderActionsService extends SupabaseBaseService {
       // Historique
       await this.createOrderStatusHistory(
         orderId,
-        '5',
+        delivered.code,
         'Commande livrée',
         userId,
       );
@@ -676,7 +698,7 @@ export class OrderActionsService extends SupabaseBaseService {
       } satisfies OrderDeliveredEvent);
 
       this.logger.log(`✅ Commande ${orderId} livrée`);
-      return { success: true, newStatus: '5' };
+      return { success: true, newStatus: delivered.code };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`❌ Erreur livraison commande:`, message);

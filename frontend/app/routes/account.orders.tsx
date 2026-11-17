@@ -32,7 +32,11 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getUserOrders } from "../services/orders.server";
-import { getOrderStatusLabel, formatPrice } from "../utils/orders";
+import {
+  getOrderStatusLabel,
+  formatPrice,
+  ORDER_FULFILMENT_LABEL,
+} from "../utils/orders";
 
 export const meta: MetaFunction = () => [
   { title: "Mes commandes | AutoMecanik" },
@@ -75,10 +79,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Calcul des statistiques pour le widget de résumé
     const stats = {
       totalOrders: pagination.totalCount,
-      pendingOrders: orders.filter((order) =>
-        [1, 2, 3, 4, 5].includes(order.status),
+      pendingOrders: orders.filter(
+        (order) =>
+          order.fulfilment !== "delivered" &&
+          [1, 2, 3, 4, 5].includes(order.status),
       ).length,
-      completedOrders: orders.filter((order) => order.status === 6).length,
+      // Mandat BM : « Livrée » lue par le backend (statut nouveau ou date).
+      completedOrders: orders.filter(
+        (order) => order.fulfilment === "delivered",
+      ).length,
       totalSpent: orders.reduce((sum, order) => sum + order.totalTTC, 0),
     };
 
@@ -221,12 +230,13 @@ export default function OrdersListPage() {
                 >
                   <option value="all">Tous les statuts</option>
                   <option value="1">En attente</option>
-                  <option value="2">Confirmée</option>
                   <option value="3">En préparation</option>
-                  <option value="4">Expédiée</option>
                   <option value="5">En livraison</option>
-                  <option value="6">Livrée</option>
-                  <option value="7">Annulée</option>
+                  {/* Mandat BM : « Expédiée » = 7, « Livrée » = 8, annulée = 2
+                      (___xtr_order_status) ; le filtre lit ord_ords_id. */}
+                  <option value="7">Expédiée</option>
+                  <option value="8">Livrée</option>
+                  <option value="2">Annulée</option>
                 </select>
               </div>
 
@@ -279,13 +289,33 @@ export default function OrdersListPage() {
                         })}
                       </p>
                     </div>
-                    <Badge
-                      variant={getStatusVariant(order.status)}
-                      className="flex items-center gap-2"
-                    >
-                      {getStatusIcon(order.status)}
-                      {getOrderStatusLabel(order.status)}
-                    </Badge>
+                    {/* Mandat BM : « Expédiée » / « Livrée » avant le code
+                        de statut historique. */}
+                    {order.fulfilment ? (
+                      <Badge
+                        variant={
+                          order.fulfilment === "delivered"
+                            ? "default"
+                            : "secondary"
+                        }
+                        className="flex items-center gap-2"
+                      >
+                        {order.fulfilment === "delivered" ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <Truck className="h-4 w-4" />
+                        )}
+                        {ORDER_FULFILMENT_LABEL[order.fulfilment]}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant={getStatusVariant(order.status)}
+                        className="flex items-center gap-2"
+                      >
+                        {getStatusIcon(order.status)}
+                        {getOrderStatusLabel(order.status)}
+                      </Badge>
+                    )}
                   </div>
                 </CardHeader>
 

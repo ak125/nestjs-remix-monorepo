@@ -85,6 +85,8 @@ export async function getUserOrders(params: {
         id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
         orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
         status: parseInt(order.ord_ords_id || order.status || 1),
+        // Mandat BM : « Expédiée » / « Livrée » lus par le backend.
+        fulfilment: order.fulfilment ?? null,
         totalTTC: parseFloat(
           order.ord_total_ttc || order.totalTTC || order.total_ttc || 0,
         ),
@@ -165,7 +167,10 @@ export async function getOrderInvoice(params: {
       `${baseUrl}/api/orders/${encodeURIComponent(params.orderId)}/invoice`,
       {
         method: "GET",
-        headers: { Accept: "application/json", ...(cookie ? { Cookie: cookie } : {}) },
+        headers: {
+          Accept: "application/json",
+          ...(cookie ? { Cookie: cookie } : {}),
+        },
       },
     );
     if (!response.ok) {
@@ -177,7 +182,10 @@ export async function getOrderInvoice(params: {
     const body = await response.json();
     const invoice = body?.invoice;
     return invoice && typeof invoice.invoiceNumber === "string"
-      ? { invoiceNumber: invoice.invoiceNumber, issuedAt: invoice.issuedAt ?? null }
+      ? {
+          invoiceNumber: invoice.invoiceNumber,
+          issuedAt: invoice.issuedAt ?? null,
+        }
       : null;
   } catch (error) {
     logger.error(`[getOrderInvoice] ${params.orderId} :`, error);
@@ -309,6 +317,9 @@ export async function getOrderDetails(params: {
         order.ord_tracking_url || order.trackingUrl || order.tracking_url,
       // Mandat BM : date d'expédition posée par l'admin avec le n° de suivi.
       shippedAt: order.ord_date_ship || null,
+      deliveredAt: order.ord_date_deliv || null,
+      // Statuts « Expédiée » / « Livrée » lus par le backend (orderFulfilment).
+      fulfilment: order.fulfilment ?? null,
       deliveryMethod: order.deliveryMethod || order.delivery_method,
       deliveryDate: order.deliveryDate || order.delivery_date,
       hasReview: order.hasReview || false,
