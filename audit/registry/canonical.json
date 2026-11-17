@@ -70039,11 +70039,12 @@
       "id": "backend/src/remix/remix-api.service.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/cart/config/return-policy.config.ts",
         "backend/src/modules/cart/config/shipping-policy.config.ts",
         "backend/src/remix/remix-api.service.ts"
       ],
       "kind": "test",
-      "loc": 233,
+      "loc": 248,
       "owner": "@ak125/frontend-team",
       "path": "backend/src/remix/remix-api.service.test.ts",
       "risk": "high",
@@ -70067,13 +70068,14 @@
       ],
       "imports": [
         "backend/src/database/services/orders.service.ts",
+        "backend/src/modules/cart/config/return-policy.config.ts",
         "backend/src/modules/cart/config/shipping-policy.config.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/staff/staff.service.ts",
         "frontend/index.cjs"
       ],
       "kind": "service",
-      "loc": 214,
+      "loc": 218,
       "owner": "@ak125/frontend-team",
       "path": "backend/src/remix/remix-api.service.ts",
       "risk": "high",
@@ -74869,7 +74871,7 @@
         "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 550,
+      "loc": 558,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/Navbar.tsx",
       "risk": "low",
@@ -85912,7 +85914,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 58,
+      "loc": 67,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/hooks/useRootData.ts",
       "risk": "low",
@@ -86205,7 +86207,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 611,
+      "loc": 624,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -92031,6 +92033,7 @@
         "~/components/errors/ErrorGeneric",
         "~/components/pieces/NoProductsAlternatives",
         "~/components/pieces/PiecesVehicleContent",
+        "~/root",
         "~/utils/cache-control",
         "~/utils/logger",
         "~/utils/page-role.types",
@@ -92038,7 +92041,7 @@
         "~/utils/pieces-vehicle.meta"
       ],
       "kind": "route",
-      "loc": 110,
+      "loc": 125,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/pieces.$gamme.$marque.$modele.$type[.]html.tsx",
       "risk": "medium",
@@ -95313,10 +95316,11 @@
         "~/components/pieces/NoProductsAlternatives",
         "~/utils/image-optimizer",
         "~/utils/og-image.utils",
+        "~/utils/remix-application-port",
         "~/utils/seo/pieces-schema.utils"
       ],
       "kind": "service",
-      "loc": 191,
+      "loc": 199,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.meta.ts",
       "risk": "medium",
@@ -95532,11 +95536,13 @@
       "domain": "D8",
       "id": "frontend/app/utils/remix-application-port.ts",
       "importedBy": [
-        "frontend/app/utils/pieces-loader.utils.ts"
+        "frontend/app/utils/pieces-loader.utils.ts",
+        "frontend/app/utils/seo/pieces-schema-commerce.constants.ts",
+        "frontend/app/utils/seo/pieces-schema.utils.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 172,
+      "loc": 194,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/remix-application-port.ts",
       "risk": "medium",
@@ -95827,9 +95833,11 @@
       "importedBy": [
         "frontend/app/utils/seo/pieces-schema.utils.ts"
       ],
-      "imports": [],
+      "imports": [
+        "frontend/app/utils/remix-application-port.ts"
+      ],
       "kind": "config",
-      "loc": 92,
+      "loc": 140,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/seo/pieces-schema-commerce.constants.ts",
       "risk": "medium",
@@ -95850,11 +95858,12 @@
       "imports": [
         "frontend/app/types/pieces-route.types.ts",
         "frontend/app/utils/image-optimizer.ts",
+        "frontend/app/utils/remix-application-port.ts",
         "frontend/app/utils/seo/pieces-schema-commerce.constants.ts",
         "frontend/app/utils/stock.utils.ts"
       ],
       "kind": "service",
-      "loc": 345,
+      "loc": 388,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/seo/pieces-schema.utils.ts",
       "risk": "medium",
@@ -98214,7 +98223,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 108,
+      "loc": 109,
       "owner": "@ak125",
       "path": "frontend/tests/unit/navbar-search-native-submit.test.tsx",
       "risk": "medium",
@@ -98694,7 +98703,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 304,
+      "loc": 315,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-schema-offers.test.ts",
       "risk": "medium",
@@ -98834,7 +98843,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 197,
+      "loc": 209,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-vehicle-meta.test.ts",
       "risk": "medium",
@@ -108831,11 +108840,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4a6c9a565cec39045d2f64362399e6757cb85ac5af9843055d2be9b5a46c7e8e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "e0daa9b46c880c3b0a6c880c0c820d5ffe5aad0601cfdefc91d1cd91173b2bee",
+      "audit/registry/files.json": "1be6247478279e2fa3194793fb4d0fa5eb58a2457b68e05d63702111efb0fca6",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "065849df18e7232c615cffca1056212136c1cef48d8ccebc88e868e1c23598a3"
     },
-    "sotFingerprint": "8a4dd066015e"
+    "sotFingerprint": "681cd1333a3f"
   },
   "runtime": [
     {

@@ -40168,11 +40168,12 @@
       "id": "backend/src/remix/remix-api.service.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/cart/config/return-policy.config.ts",
         "backend/src/modules/cart/config/shipping-policy.config.ts",
         "backend/src/remix/remix-api.service.ts"
       ],
       "kind": "test",
-      "loc": 233,
+      "loc": 248,
       "owner": "__unassigned__",
       "path": "backend/src/remix/remix-api.service.test.ts",
       "risk": "low",
@@ -40195,13 +40196,14 @@
       ],
       "imports": [
         "backend/src/database/services/orders.service.ts",
+        "backend/src/modules/cart/config/return-policy.config.ts",
         "backend/src/modules/cart/config/shipping-policy.config.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/staff/staff.service.ts",
         "frontend/index.cjs"
       ],
       "kind": "service",
-      "loc": 214,
+      "loc": 218,
       "owner": "__unassigned__",
       "path": "backend/src/remix/remix-api.service.ts",
       "risk": "low",
@@ -44794,7 +44796,7 @@
         "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 550,
+      "loc": 558,
       "owner": "__unassigned__",
       "path": "frontend/app/components/Navbar.tsx",
       "risk": "low",
@@ -55409,7 +55411,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 58,
+      "loc": 67,
       "owner": "__unassigned__",
       "path": "frontend/app/hooks/useRootData.ts",
       "risk": "low",
@@ -55696,7 +55698,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 611,
+      "loc": 624,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -61309,6 +61311,7 @@
         "~/components/errors/ErrorGeneric",
         "~/components/pieces/NoProductsAlternatives",
         "~/components/pieces/PiecesVehicleContent",
+        "~/root",
         "~/utils/cache-control",
         "~/utils/logger",
         "~/utils/page-role.types",
@@ -61316,7 +61319,7 @@
         "~/utils/pieces-vehicle.meta"
       ],
       "kind": "route",
-      "loc": 110,
+      "loc": 125,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/pieces.$gamme.$marque.$modele.$type[.]html.tsx",
       "risk": "low",
@@ -64512,10 +64515,11 @@
         "~/components/pieces/NoProductsAlternatives",
         "~/utils/image-optimizer",
         "~/utils/og-image.utils",
+        "~/utils/remix-application-port",
         "~/utils/seo/pieces-schema.utils"
       ],
       "kind": "service",
-      "loc": 191,
+      "loc": 199,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.meta.ts",
       "risk": "low",
@@ -64721,11 +64725,13 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/utils/remix-application-port.ts",
       "importedBy": [
-        "frontend/app/utils/pieces-loader.utils.ts"
+        "frontend/app/utils/pieces-loader.utils.ts",
+        "frontend/app/utils/seo/pieces-schema-commerce.constants.ts",
+        "frontend/app/utils/seo/pieces-schema.utils.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 172,
+      "loc": 194,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/remix-application-port.ts",
       "risk": "low",
@@ -65003,9 +65009,11 @@
       "importedBy": [
         "frontend/app/utils/seo/pieces-schema.utils.ts"
       ],
-      "imports": [],
+      "imports": [
+        "frontend/app/utils/remix-application-port.ts"
+      ],
       "kind": "config",
-      "loc": 92,
+      "loc": 140,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/seo/pieces-schema-commerce.constants.ts",
       "risk": "low",
@@ -65025,11 +65033,12 @@
       "imports": [
         "frontend/app/types/pieces-route.types.ts",
         "frontend/app/utils/image-optimizer.ts",
+        "frontend/app/utils/remix-application-port.ts",
         "frontend/app/utils/seo/pieces-schema-commerce.constants.ts",
         "frontend/app/utils/stock.utils.ts"
       ],
       "kind": "service",
-      "loc": 345,
+      "loc": 388,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/seo/pieces-schema.utils.ts",
       "risk": "low",
@@ -67277,7 +67286,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 108,
+      "loc": 109,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/navbar-search-native-submit.test.tsx",
       "risk": "low",
@@ -67733,7 +67742,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 304,
+      "loc": 315,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-schema-offers.test.ts",
       "risk": "low",
@@ -67866,7 +67875,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 197,
+      "loc": 209,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-vehicle-meta.test.ts",
       "risk": "low",
