@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6239,
+      "loc_total": 6242,
       "has_barrel": true
     },
     "blog": {
@@ -132,7 +132,7 @@
         "backend/src/modules/cart/services"
       ],
       "files_count": 22,
-      "loc_total": 4243,
+      "loc_total": 4263,
       "has_barrel": false
     },
     "catalog": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6375,
+      "loc_total": 6147,
       "has_barrel": true
     },
     "payments": {
@@ -516,7 +516,7 @@
         "backend/src/modules/payments/utils"
       ],
       "files_count": 29,
-      "loc_total": 5814,
+      "loc_total": 5740,
       "has_barrel": true
     },
     "pkg-cwv-taxonomy": {
@@ -942,6 +942,7 @@
         "frontend",
         "frontend/frontend/tests/e2e",
         "frontend/tests/e2e",
+        "frontend/tests/purchase-probe",
         "frontend/tests/qa-audit",
         "frontend/tests/qa-audit/config",
         "frontend/tests/qa-audit/helpers",
@@ -959,8 +960,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 379,
-      "loc_total": 78751,
+      "files_count": 383,
+      "loc_total": 79624,
       "has_barrel": true
     },
     "upload": {
@@ -1028,7 +1029,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 23,
-      "loc_total": 5475,
+      "loc_total": 5477,
       "has_barrel": false
     }
   },

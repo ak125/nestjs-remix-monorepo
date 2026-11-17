@@ -13505,7 +13505,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 345,
+      "loc": 365,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/services/abandoned-cart.service.ts",
       "risk": "low",
@@ -21440,7 +21440,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1233,
+      "loc": 1005,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "low",
@@ -22121,14 +22121,13 @@
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "backend/src/modules/payments/controllers/payment-controller.utils.ts",
-        "backend/src/modules/payments/dto/create-payment.dto.ts",
         "backend/src/modules/payments/entities/payment.entity.ts",
         "backend/src/modules/payments/repositories/payment-data.service.ts",
         "backend/src/modules/payments/services/cyberplus.service.ts",
         "backend/src/modules/payments/services/payment.service.ts"
       ],
       "kind": "controller",
-      "loc": 196,
+      "loc": 122,
       "owner": "__unassigned__",
       "path": "backend/src/modules/payments/controllers/payment-methods.controller.ts",
       "risk": "low",
@@ -22171,7 +22170,6 @@
       "id": "backend/src/modules/payments/dto/create-payment.dto.ts",
       "importedBy": [
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
-        "backend/src/modules/payments/controllers/payment-methods.controller.ts",
         "backend/src/modules/payments/index.ts",
         "backend/src/modules/payments/services/payment-validation.service.ts",
         "backend/src/modules/payments/services/payment.service.ts"
@@ -40116,7 +40114,7 @@
         "backend/src/config/app.config.ts"
       ],
       "kind": "service",
-      "loc": 1190,
+      "loc": 1193,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.ts",
       "risk": "low",
@@ -40506,7 +40504,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 221,
+      "loc": 223,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/email.processor.ts",
       "risk": "low",
@@ -40996,6 +40994,25 @@
       "loc": 19,
       "owner": "__unassigned__",
       "path": "backend/tests/setup.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/abandoned-cart-cadence.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 215,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/abandoned-cart-cadence.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -42079,6 +42096,25 @@
       "loc": 148,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/order-status.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/orders-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 328,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/orders-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -65038,6 +65074,44 @@
       "loc": 250,
       "owner": "__unassigned__",
       "path": "frontend/tests/e2e/url-validation.spec.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/purchase-probe/playwright.config.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "config",
+      "loc": 35,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/purchase-probe/playwright.config.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/purchase-probe/purchase-path.probe.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 295,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/purchase-probe/purchase-path.probe.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
