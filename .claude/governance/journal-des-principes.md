@@ -248,8 +248,11 @@ constate, elle ne règle pas. Un principe est en vigueur quel que soit son nivea
   de hash, et sa révision passe par une PR du monorepo et son circuit. Ses copies
   (`.claude/canon-mirrors/`, WIKI, RAW) se génèrent depuis la source et ne s'éditent jamais à la
   main ; une copie non déclarée ne fait pas foi. Source : décisions 72 et 73, ADR-138 D4 (AEC 1.3.0).
-  Application : L2 (`agent-exit-contract-hash.yml`, `canon-sync.yml`). Au 2026-11-16, l'étape 1
-  n'est pas fusionnée (PR #2112 ouverte) : la source modifiable est celle du vault.
+  Application : L2. Contrôle local, sans réseau : `scripts/canon/compute-canon-hashes.py --check`
+  et ses tests, lancés par `canon-distribution.yml`, `agent-exit-contract-hash.yml`,
+  `marketing-voice-hash.yml` et `.husky/pre-commit`. L'étape 1 est fusionnée (PR #2112,
+  2026-11-17) : la source modifiable est celle du monorepo. Les dépôts WIKI et RAW comparent
+  encore leurs copies au manifeste figé du vault, jusqu'à l'étape 4 du plan.
 - **P31.** Un agent IA propose, analyse et recommande ; il ne s'accorde jamais lui-même une
   validation. La validation suit le contrat du domaine, toujours indépendante du producteur : P10
   et P19 pour le WIKI et le diagnostic, P20 et P22 pour le code, l'approbation de l'owner pour une
