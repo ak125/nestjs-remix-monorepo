@@ -4,6 +4,7 @@
 décisions 72 et 73 de l'owner). Constats relevés les 16 et 17 novembre 2026 sur
 `main` du monorepo (`3832abfc2`), de l'archive `ak125/governance-vault` (`b2e712791bee`)
 et de `ak125/automecanik-raw` (`b097ca48`). Deux PR : monorepo #2120, RAW #81.
+Mis à jour le 17 novembre après les décisions 129 et 132 de l'owner (D10 à D14, D9).
 
 ## Ce que fait l'étape
 
@@ -11,7 +12,7 @@ et de `ak125/automecanik-raw` (`b097ca48`). Deux PR : monorepo #2120, RAW #81.
 |---|---|---|
 | Défaut de `R2_OPA_BUNDLE_PATH` (`r2-opa-evaluator.service.ts`) | `/opt/automecanik/governance-vault/dist/policies` | `policies/dist` du dépôt ; politiques, bundles et script relogés |
 | Workflow `opa-policy-build.yml` du vault | teste et reconstruit les bundles dans le vault | patch 04 : même contrôle dans le monorepo |
-| Workflow `vault-supabase-cost-check.yml` du vault | relève chaque lundi la surface de coût Supabase | patch 05 : repris dans le monorepo, si l'owner le garde (question D14) |
+| Workflow `vault-supabase-cost-check.yml` du vault | relève chaque lundi la surface de coût Supabase | patch 05 : repris dans le monorepo (D14 : oui, décision 129) |
 | Workflow `vault-canon-exists.yml` du monorepo | clone le vault et y cherche chaque ADR citée | patch 06 : cherche l'ADR dans le journal des principes et les contrats ; ne lit plus le vault |
 | `check-jcs-parity.py` de RAW | lit le vecteur sur `main` du vault | RAW #81 : vecteur gelé en copie locale ; patch 07 pour son workflow |
 
@@ -121,10 +122,19 @@ Vecteur JCS gelé dans RAW (`_scripts/jcs-parity-vector.json`) : sha256
 
 ## Limites
 
-- **`opa test` et la reconstruction des bundles ne sont pas joués.** Le téléchargement du
-  binaire opa sur le DEV a été refusé par le contrôle des permissions de la session ; il
-  n'a pas été contourné. La preuve sera le run du workflow sur la PR, une fois le patch 04
-  poussé. Le bloc refuse de fusionner si ce check n'est pas vert sur la tête.
+- **`opa test` et la reconstruction des bundles ne sont pas joués sur le DEV.** Le
+  téléchargement du binaire opa a été refusé par le contrôle des permissions de la session ;
+  il n'a pas été contourné. Ce qui prouve OPA sans le binaire local :
+  1. les 16 fichiers relogés (4 politiques, 4 tests, 4 `.wasm`, 4 bundles) ont le même
+     blob git que dans l'archive (`b2e712791bee`), relevé rejoué le 17 nov. : 16 sur 16 ;
+  2. le dernier commit de l'archive qui les touche est `8ad4bf8` (16 mai 2026) ; sur ce
+     commit, le run 25961925593 de « OPA Policy Build & Test » (`push`, `main`,
+     12:28:20 UTC) est vert, toutes étapes comprises : `opa test`, reconstruction, et
+     comparaison des empreintes entre bundles commités et bundles reconstruits. Ces octets
+     ont donc passé les tests et la reconstruction ;
+  3. ce que cette preuve ne couvre pas : `policies/build-opa-bundles.sh` (son `DIST_DIR`
+     change) et le workflow du patch 04. Leur preuve est le run du workflow sur la PR, une
+     fois le patch 04 poussé. Le bloc refuse de fusionner si ce check n'est pas vert.
 - **Rien n'est servi.** L'évaluateur n'a pas d'appelant. Reloger les bundles retire une
   lecture du vault ; cela n'active aucune garde d'écriture SEO.
 - **Contrôle de coût** : le secret `SUPABASE_ACCESS_TOKEN` du monorepo n'est pas lisible
@@ -139,27 +149,29 @@ Vecteur JCS gelé dans RAW (`_scripts/jcs-parity-vector.json`) : sha256
   aussi le lundi. Sans dommage ; une dérive ouvrirait une issue dans chaque dépôt.
 - **Patch 07** : il décrit le workflow d'un dépôt privé dans un dépôt public. Il ne contient
   ni secret ni donnée : des commentaires, des chemins déclencheurs et des noms d'étapes.
-- **Lecteurs du vault qui restent** après cette étape, hors de son périmètre :
-  `check-aec-hash.sh`, `check-marketing-voice-hash.sh`, `sync-canon-from-vault.sh` et leurs
-  workflows (étapes 2 à 5, qui attendent #2112) ; `merge-perimeter-gate.mjs` (étape 6,
-  #2113) ; `.husky/pre-commit` (étapes 2 et 8, #2118). Dans RAW : `check-aec-hash.sh`
-  (étape 3). Les autres mentions du vault dans le code sont des commentaires de provenance.
-- **Comptage rejoué** (17 nov. 00:15 UTC), preuve de fin du plan :
+- **Lecteurs du vault qui restent** après cette étape : aucun dans le code du monorepo une
+  fois #2132 fusionnée (voir le comptage). Les contrôles AEC et voix de marque sont locaux
+  depuis #2125 ; le script de la porte ADR-124 est retiré par #2131 (décision 132). Dans
+  RAW et WIKI : le contrôle AEC, que traitent les étapes 3 et 4 (#2126, #2127). Les autres
+  mentions du vault dans le code sont des commentaires de provenance.
+- **Comptage rejoué** (17 nov., `main` `4a4d43bb6`), preuve de fin du plan :
   `git grep -n "/opt/automecanik/governance-vault" -- scripts .husky backend/src tools` rend
-  8 lignes sur `main` (`aff214ebb`) et 6 sur cette branche. Les 6 qui restent :
-  `.husky/pre-commit:32,73`, `scripts/governance/check-verdict-expirations.sh:5,25` et
-  `tools/security/attack-simulations/simulate-escalation-hijack.sh:35,136`. Les deux lignes
-  retirées sont celles de l'évaluateur OPA.
+  6 lignes sur `main` : 2 de l'évaluateur OPA, que cette PR retire ; 2 de
+  `scripts/governance/check-verdict-expirations.sh` et 2 de
+  `tools/security/attack-simulations/simulate-escalation-hijack.sh`, que retire #2132
+  (D10 et D11). `.husky/pre-commit` n'en a plus depuis #2125. Les deux PR fusionnées : 0.
 
-## Questions à l'owner
+## Questions à l'owner : tranchées (décision 129, 17 nov.)
 
-- **D13 — Le score des sources d'ADR-096 §D3 sera-t-il activé ?** Réponse proposée : pas
-  maintenant. Le vecteur JCS reste gelé dans RAW. S'il est activé, le contrat de poids, le
-  mode `json_jcs` du générateur et le vecteur entrent dans le monorepo dans une même PR,
-  puis RAW est repointé.
-- **D14 — Le contrôle hebdomadaire de la surface de coût Supabase est-il gardé ?** Réponse
-  proposée : oui. Il est en service et a signalé trois ajouts d'add-ons. Le bloc pose la
-  question ; « non » laisse le patch 05 de côté, et le contrôle s'éteint avec l'archivage.
+- **D13 — score des sources d'ADR-096 §D3** : pas maintenant. Le vecteur JCS reste gelé
+  dans RAW (#81). S'il est activé un jour, le contrat de poids, le mode `json_jcs` du
+  générateur et le vecteur entrent dans le monorepo dans une même PR, puis RAW est repointé.
+- **D14 — contrôle hebdomadaire de la surface de coût Supabase** : gardé. Le patch 05 est
+  poussé avec les patches 04 et 06.
+- **D10, D11, D12** (posées dans `etape-8.md`) : oui aux trois. Elles sortent dans une PR à
+  part, #2132, parce que cette branche est antérieure à #2118 et #2122, qui ont réécrit les
+  lignes concernées. #2132 porte son patch réservé 13 (`ownership.yaml`, un commentaire de
+  `governance-checks.yml`).
 
 ## État
 
@@ -167,8 +179,8 @@ Vecteur JCS gelé dans RAW (`_scripts/jcs-parity-vector.json`) : sha256
 |---|---|
 | Implémenté | oui : politiques, bundles, script, défaut de l'évaluateur, test, patches 04 à 07 ; vecteur gelé dans RAW |
 | Intégré | non : monorepo #2120 et RAW #81 en brouillon |
-| Vérifié | JCS : run réel vert. OPA : comparaison à blanc seulement, `opa test` non joué. Coût et canon : logique jouée à blanc, aucun run dans le monorepo |
-| Opérationnel | non : `main` lit encore le vault pour ces quatre lecteurs |
+| Vérifié | JCS : run réel vert. OPA : octets identiques à l'archive, verts dans son dernier run ; script et workflow relogés non joués. Coût et canon : logique jouée à blanc, aucun run dans le monorepo |
+| Opérationnel | non : `main` lit encore le vault pour ces lecteurs |
 | Bloqué | par les gestes de l'owner ci-dessous |
 
 ## Gestes de Marwane
@@ -177,18 +189,24 @@ Un seul bloc, Windows PowerShell 32 bits. Il n'a pas été exécuté par l'agent
 n'a pas de PowerShell. `<hote DEV>` est à remplacer par l'adresse du DEV, qui ne s'écrit
 pas dans ce dépôt public.
 
-Le bloc demande si le contrôle de coût est gardé (D14) ; si oui, il vérifie le secret et
-crée les labels. Il vérifie l'empreinte des quatre patches, pousse les patches 04 à 06
-depuis le poste, régénère les projections sur le DEV, attend les checks, exige que le
+À lancer depuis le clone `am-patches` du poste. Le bloc vérifie le secret
+`SUPABASE_ACCESS_TOKEN` et crée les labels du contrôle de coût (D14 : gardé). Il vérifie
+l'empreinte des quatre patches, pousse les patches 04, 05 et 06 dans le monorepo, régénère les projections sur le DEV, attend les checks, exige que le
 check OPA soit vert, demande l'accord, approuve, fusionne sur la tête relevée, puis lance
-le contrôle de coût. Il applique ensuite le patch 07 à RAW, attend ses checks, demande
-l'accord et fusionne. Il est rejouable : il saute un patch déjà appliqué et une PR déjà
+le contrôle de coût. Il applique ensuite le patch 07 à RAW, dans un commit signé avec
+l'identité et la clé du clone `am-patches`, vérifie que GitHub reconnaît la signature,
+attend les checks, demande l'accord et fusionne. Il est rejouable : il saute un patch déjà appliqué et une PR déjà
 fusionnée.
 
 ```powershell
 & {
   $SSH = "C:\WINDOWS\Sysnative\OpenSSH\ssh.exe"
   $DEV = "deploy@<hote DEV>"
+  $AM = (git rev-parse --show-toplevel)
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : lancer ce bloc depuis le clone am-patches du poste"; return }
+  $ORI = (git -C $AM remote get-url origin)
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : remote origin illisible"; return }
+  if ($ORI -notmatch "nestjs-remix-monorepo") { Write-Host "ARRET : ce dossier n'est pas le clone du monorepo qui signe"; return }
   $REPO = "ak125/nestjs-remix-monorepo"
   $RAWREPO = "ak125/automecanik-raw"
   $BR = "governance/mandat-bc-etape7-artefacts-vault-20261116"
@@ -214,10 +232,8 @@ fusionnée.
   $SRC = $BR
   if ($ST -eq "MERGED") { $SRC = "main"; Write-Host "PR 2120 deja fusionnee : partie monorepo sautee" }
 
-  $COUT = Read-Host "Reprendre le controle de cout Supabase dans le monorepo ? (oui/non)"
-  $LISTE = @($P4, $P6)
-  if ($COUT -eq "oui") {
-    $LISTE = @($P4, $P5, $P6)
+  $LISTE = @($P4, $P5, $P6)
+  if ($ST -eq "OPEN") {
     $SEC = @(gh secret list --repo $REPO --json name --jq '.[].name')
     if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : secrets illisibles, rien n'est modifie"; return }
     if ($SEC -notcontains "SUPABASE_ACCESS_TOKEN") {
@@ -312,7 +328,7 @@ fusionnée.
     Start-Sleep -Seconds 45
   }
 
-  if ($COUT -eq "oui") {
+  if ($ST -eq "OPEN") {
     gh workflow run $WF --repo $REPO
     if ($LASTEXITCODE -ne 0) {
       Write-Host "A REFAIRE : lancement du controle de cout refuse (la suite continue)"
@@ -332,6 +348,15 @@ fusionnée.
   Remove-Item Env:GIT_LFS_SKIP_SMUDGE
   if ($RC -ne 0) { Write-Host "ARRET : clone de RAW refuse"; return }
   $F7 = (Join-Path $T ($PD + $P7[0]))
+  $UN = (git -C $AM config --get user.name)
+  $UE = (git -C $AM config --get user.email)
+  $SK = (git -C $AM config --get user.signingkey)
+  if ((-not $UN) -or (-not $UE) -or (-not $SK)) { Write-Host "ARRET : identite ou cle de signature absente du clone am-patches, rien n'est pousse dans RAW"; return }
+  $CFG = @("-c", ("user.name=" + $UN), "-c", ("user.email=" + $UE), "-c", ("user.signingkey=" + $SK))
+  foreach ($KEY in @("gpg.format", "gpg.program", "gpg.ssh.program")) {
+    $VAL = (git -C $AM config --get $KEY)
+    if ($VAL) { $CFG += @("-c", ($KEY + "=" + $VAL)) }
+  }
   git -C $TR apply --reverse --check $F7 2>$null
   if ($LASTEXITCODE -ne 0) {
     git -C $TR apply --check $F7
@@ -340,8 +365,8 @@ fusionnée.
     if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : application du patch 07"; return }
     git -C $TR add -- .github/workflows/jcs-parity.yml
     if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : git add (RAW)"; return }
-    git -C $TR commit -m "ci(jcs): workflow de parite sur le vecteur gele, sans cron ni jeton du vault (mandat BC, etape 7, patch 07)"
-    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : commit (RAW)"; return }
+    git -C $TR @CFG commit -S -m "ci(jcs): workflow de parite sur le vecteur gele, sans cron ni jeton du vault (mandat BC, etape 7, patch 07)"
+    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : commit signe refuse (RAW), rien n'est pousse"; return }
     git -C $TR push origin ("HEAD:refs/heads/" + $RAWBR)
     if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : push refuse (RAW)"; return }
   }
@@ -349,6 +374,9 @@ fusionnée.
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : sortie du brouillon (RAW)"; return }
   $RHEAD = (gh pr view 81 --repo $RAWREPO --json headRefOid --jq .headRefOid)
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : lecture de la tete (RAW)"; return }
+  $SIG = (gh api ("repos/" + $RAWREPO + "/commits/" + $RHEAD) --jq .commit.verification.verified)
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : signature de la tete de RAW illisible"; return }
+  if ($SIG -ne "true") { Write-Host ("ARRET : la tete " + $RHEAD + " de RAW n'est pas verifiee par GitHub, rien n'est fusionne"); return }
   Start-Sleep -Seconds 60
   $RVERT = $false
   for ($i = 0; $i -lt 40; $i++) {
