@@ -509,6 +509,28 @@ assert_contains "sonde : service en échec → warn" '"warn".*en échec' "$(sync
 unit_state activating auto-restart "$OWN_CG"
 run_sync
 assert_contains "sonde : service en attente de redémarrage → warn" '"warn".*attente de redémarrage' "$(sync_state '[.status,.summary]')"
+# Incident #2158 : earlyoom tue `npm run dev` par SIGTERM → unit inactive, sans état failed.
+unit_state inactive dead ""
+printf 'UnitFileState=enabled\nExecMainCode=2\nExecMainStatus=15\n' >> "$SB/unit-state"
+run_sync
+assert_contains "sonde : service activé mais arrêté par un signal → warn, signal nommé" \
+  '"warn".*activé mais arrêté (processus principal tué par le signal 15)' "$(sync_state '[.status,.summary]')"
+unit_state inactive dead ""
+printf 'UnitFileState=disabled\n' >> "$SB/unit-state"
+run_sync
+assert_not_contains "sonde : service désactivé et arrêté → pas d'alerte « activé mais arrêté »" "activé mais arrêté" "$(sync_state '.summary')"
+# Unit installée différente de celle du dépôt : un correctif fusionné n'est pas encore actif.
+printf '[Service]\nRestart=on-failure\n' > "$SB/installed.service"
+cp "$REPO_ROOT/scripts/ops/automecanik-dev.service" "$SB/app/scripts/ops/"
+unit_state active running "$OWN_CG"
+printf 'FragmentPath=%s\n' "$SB/installed.service" >> "$SB/unit-state"
+run_sync
+assert_contains "sonde : unit installée ≠ unit du dépôt → warn avec la commande d'installation" \
+  '"warn".*unit installée .* différente.*install-dev-service.sh install' "$(sync_state '[.status,.summary]')"
+cp "$REPO_ROOT/scripts/ops/automecanik-dev.service" "$SB/installed.service"
+run_sync
+assert_contains "sonde : unit installée = unit du dépôt → ok" '"ok"' "$(sync_state '.status')"
+rm -f "$SB/app/scripts/ops/automecanik-dev.service" "$SB/installed.service"
 unit_state active running "$OWN_CG"
 printf 'DEV_APP_CRASH count=1 exit=1 restart_in=2s\nautomecanik-dev.service: Scheduled restart job, restart counter is at 1.\n' > "$SB/unit-journal"
 run_sync
@@ -818,6 +840,13 @@ assert_contains "install-dev-service : refus sans écriture d'unit" "absente" "$
 XDG_CONFIG_HOME="$IS/config" bash "$IS/scripts/ops/install-dev-service.sh" status >"$IS/out" 2>&1
 assert_exit "install-dev-service status : lecture seule, exit 0" 0 "$?"
 rm -rf "$IS"
+
+# Unit automecanik-dev.service (incident #2158, 2026-11-17) : earlyoom tue le stack par
+# SIGTERM. Restart=on-failure le laissait arrêté (sortie propre pour systemd) ; sans
+# OOMScoreAdjust, le défaut 200 du gestionnaire utilisateur en faisait la première cible.
+UNIT_FILE="$REPO_ROOT/scripts/ops/automecanik-dev.service"
+assert_contains "unit DEV : relancée après une mort par signal (Restart=always)" "^Restart=always$" "$(grep -E '^Restart=' "$UNIT_FILE")"
+assert_contains "unit DEV : OOMScoreAdjust=100, pas le défaut 200 du gestionnaire utilisateur" "^OOMScoreAdjust=100$" "$(grep -E '^OOMScoreAdjust=' "$UNIT_FILE")"
 
 # scripts/ops/dev-compile-watch.js (dev:compile du stack DEV) : UN seul processus compile et
 # réécrit les @alias en chemins relatifs. Bac à sable : mini-projet TypeScript avec un alias,
