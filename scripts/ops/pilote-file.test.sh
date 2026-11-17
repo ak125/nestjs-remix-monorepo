@@ -17,7 +17,7 @@ cat > "$FIX/bin/gh" <<'SH'
 if [[ "$1 $2" == "issue view" ]]; then cat "$FAKE_BODY"; exit 0; fi
 if [[ "$1 $2" == "issue list" ]]; then cat "$FAKE_ISSUES"; exit 0; fi
 if [[ "$1 $2" == "pr list" ]]; then cat "$FAKE_PRS"; exit 0; fi
-if [[ "$1" == "api" && "$2" == repos/*/contents/* ]]; then cat "$FAKE_SOURCE_KPI"; exit 0; fi
+if [[ "$1" == "api" && "$2" == repos/*/contents/* ]]; then cat "$FAKE_SOURCE_KPI"; exit $?; fi
 echo "faux gh : commande interdite dans le test : $*" >&2; echo "$*" >> "$FAKE_LOG"; exit 99
 SH
 chmod +x "$FIX/bin/gh"
@@ -160,10 +160,85 @@ check "pas d'erreur" "null" "$(jq -r .erreur "$D5/cout.json")"
 bash "$ICI/pilote-file.sh" publier --sortie "$D5" --a-blanc > /dev/null
 check "suspension affichée dans le corps" "1" "$(grep -c 'session Claude : suspendue' "$D5/corps.md")"
 check "suspendue ⇒ nouvelle empreinte non inscrite" "0" "$(grep -c "pilote-file:empreinte:$(jq -r .empreinte "$D5/etat.json")" "$D5/corps.md")"
-echo 'const k = { useful_capabilities_not_complexity: 3 };' > "$FAKE_SOURCE_KPI"
+echo "const k = { id: 'useful_capabilities_not_complexity', value: 3 };" > "$FAKE_SOURCE_KPI"
 bash "$ICI/pilote-file.sh" controle --sortie "$D5" > /dev/null
 check "producteur présent" "présent" "$(jq -r .kpi.producteur "$D5/etat.json")"
 check "contrôle en lecture seule" "0" "$(wc -l < "$FAKE_LOG")"
+
+echo "== controle : une définition réelle, pas une simple mention (mandat BP) =="
+# evaluer <fichier source> [département] → présent | absent | arrêt (code, message)
+evaluer() {
+  local d; d="$(mktemp -d "$FIX/eval.XXXXXX")"; local rc=0
+  FAKE_SOURCE_KPI="$1" PILOTE_DEPARTEMENT="${2:-23}" \
+    bash "$ICI/pilote-file.sh" controle --sortie "$d" > /dev/null 2> "$d/stderr" || rc=$?
+  if [[ "$rc" -ne 0 ]]; then echo "arrêt $rc : $(tail -n1 "$d/stderr")"
+  elif [[ -f "$d/etat.json" ]]; then jq -r .kpi.producteur "$d/etat.json"
+  else echo "sans état"; fi
+}
+K=useful_capabilities_not_complexity
+S="$FIX/sources"; mkdir -p "$S"
+cat > "$S/commentaire.ts" <<TS
+// $K : KPI du rôle 23, cité en commentaire.
+/* Bloc : id: '$K' */
+/**
+ *   - \`$K\` : id: "$K"
+ */
+export const autre = { id: 'payments_kept' };
+TS
+cat > "$S/liste.ts" <<TS
+export const KPI_IDS = ['payments_kept', '$K'];
+export function lire(id: string) { return [id, "$K"]; }
+TS
+cat > "$S/chaine.ts" <<TS
+const s = "id: '$K'";
+const t = 'id: "$K"';
+const g = \`{ id: '$K' }\`;
+const h = \`\${s} id: '$K'\`;
+TS
+cat > "$S/autres-formes.ts" <<TS
+const a = { $K: 3 };
+const b = { kpi: '$K', kpiId: '$K', label: '$K' };
+const c = (x: boolean, id: string) => (x ? id : '$K');
+const d = { id: '${K}_v2' };
+const e = { id: 'x', note: '$K' };
+TS
+cat > "$S/definition.ts" <<TS
+export const PROPRE = /^[\p{L}'’ -]{1,60}\$/u;   // apostrophe dans une expression régulière
+const titre = \`fenêtre \${PROPRE.source} \${\`imbriqué\`} j\`;
+// id: '$K' en commentaire avant la vraie définition
+export function toKpi(): unknown {
+  const base = {
+    id: '$K',
+    label: titre,
+  };
+  return base;
+}
+TS
+printf "const k = { label: 'x', id: \"%s\" };\n" "$K" > "$S/guillemets-doubles.ts"
+: > "$S/vide.ts"
+printf 'const k = { id: \x27%s\x27 }; // \xff\xfe\n' "$K" > "$S/non-utf8.ts"
+printf "const k = { id: '%s' }; /* commentaire non fermé\n" "$K" > "$S/non-ferme.ts"
+check "seulement en commentaire ⇒ absent" "absent" "$(evaluer "$S/commentaire.ts")"
+check "seulement dans une liste ⇒ absent" "absent" "$(evaluer "$S/liste.ts")"
+check "seulement dans une chaîne ou un gabarit ⇒ absent" "absent" "$(evaluer "$S/chaine.ts")"
+check "clé, autre clé, ternaire, préfixe ⇒ absent" "absent" "$(evaluer "$S/autres-formes.ts")"
+check "définition id: '<kpi>' ⇒ présent" "présent" "$(evaluer "$S/definition.ts")"
+check "définition id: \"<kpi>\" ⇒ présent" "présent" "$(evaluer "$S/guillemets-doubles.ts")"
+check "source vide ⇒ arrêt" "arrêt 1 : pilote-file : backend/src/modules/admin/services/command-center-kpi.service.ts vide" \
+  "$(evaluer "$S/vide.ts")"
+check "source illisible (lecture refusée) ⇒ arrêt" \
+  "arrêt 1 : pilote-file : lecture de backend/src/modules/admin/services/command-center-kpi.service.ts impossible" \
+  "$(evaluer "$S/inexistant.ts")"
+check "source non UTF-8 ⇒ arrêt" "arrêt 1" "$(evaluer "$S/non-utf8.ts" | cut -d' ' -f1-2)"
+check "commentaire non fermé ⇒ arrêt, pas « absent »" "arrêt 1" "$(evaluer "$S/non-ferme.ts" | cut -d' ' -f1-2)"
+check "contrôle en lecture seule" "0" "$(wc -l < "$FAKE_LOG")"
+
+echo "== controle : cas réel, service de la version testée =="
+REEL="$ICI/../../backend/src/modules/admin/services/command-center-kpi.service.ts"
+check "rôle 13 : payments_kept présent (nouvelle règle)" "présent" "$(evaluer "$REEL" 13)"
+check "rôle 13 : ancienne règle (grep -F) donnait présent" "0" "$(grep -qF payments_kept "$REEL"; echo $?)"
+check "rôle 23 : $K absent (nouvelle règle)" "absent" "$(evaluer "$REEL" 23)"
+check "rôle 23 : ancienne règle (grep -F) donnait absent" "1" "$(grep -qF "$K" "$REEL"; echo $?)"
 
 [[ "$FAIL" -eq 0 ]] && echo "RÉSULTAT : tous les contrôles passent" || echo "RÉSULTAT : ÉCHEC"
 exit "$FAIL"

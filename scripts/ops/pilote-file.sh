@@ -3,7 +3,9 @@
 #
 #   pilote-file.sh controle --sortie DIR            lecture seule : constats + empreinte → DIR/etat.json
 #   pilote-file.sh session  --sortie DIR            session Claude seulement si l'empreinte a changé
-#                                                   et si le producteur du KPI du rôle est présent (D2)
+#                                                   et si le producteur du KPI du rôle est présent (D2) :
+#                                                   le code définit ce KPI (`id: '<kpi>'`), une simple
+#                                                   mention ne suffit pas
 #   pilote-file.sh publier  --sortie DIR [--a-blanc]
 #                                                   issue de pilotage + commentaires bornés ;
 #                                                   --a-blanc : n'écrit rien sur GitHub
@@ -20,7 +22,9 @@ set -euo pipefail
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RACINE="$(cd "$ICI/../.." && pwd)"
 CARTE="$RACINE/.spec/00-canon/ai-registry/agent-operating-map.yaml"
-# ADR-128 D2 : producteur « présent » = l'identifiant du KPI figure dans ce fichier du code.
+# ADR-128 D2 : producteur « présent » = ce fichier du code définit le KPI, c'est-à-dire porte
+# `id: '<kpi>'` (ou `id: "<kpi>"`) comme clé d'un objet, hors commentaires et hors chaînes.
+# L'identifiant cité en commentaire, dans une liste ou dans une chaîne ne compte pas.
 SOURCE_KPI="backend/src/modules/admin/services/command-center-kpi.service.ts"
 
 : "${REPO:?REPO (owner/nom) manquant}"
@@ -96,7 +100,86 @@ PY
   gh api "repos/$REPO/contents/$SOURCE_KPI?ref=$REF" -H 'Accept: application/vnd.github.raw' \
     > "$SORTIE/brut/source-kpi.txt" || die "lecture de $SOURCE_KPI impossible"
   [[ -s "$SORTIE/brut/source-kpi.txt" ]] || die "$SOURCE_KPI vide"
-  grep -qF "$kpi" "$SORTIE/brut/source-kpi.txt" && producteur=présent
+  # Découpage en jetons : commentaires, chaînes, gabarits et expressions régulières sont sautés ou
+  # lus comme un seul jeton. Définition = `{` ou `,`, puis `id`, `:`, chaîne égale au KPI.
+  # Code 0 : définition trouvée ; 3 : absente ; tout autre code : source illisible, arrêt.
+  local rc_def=0
+  python3 - "$kpi" "$SORTIE/brut/source-kpi.txt" <<'PY' || rc_def=$?
+import re, sys
+kpi, src = sys.argv[1], open(sys.argv[2], encoding="utf-8").read()
+n, jetons = len(src), []          # jetons : (genre, valeur), genre = id | ponct | chaine
+AVANT_REGEX = set("(,=:[!&|?{};+-*%<>~^") | {"return", "typeof", "case", "do", "else", "in",
+                                             "of", "new", "delete", "void", "throw", "yield", "await"}
+
+def fin_chaine(i, q):             # i sur le guillemet ouvrant ; rend (fin, contenu)
+    j, val = i + 1, []
+    while j < n and src[j] != q:
+        if src[j] == "\\": val.append(src[j:j + 2]); j += 2; continue
+        if src[j] == "\n": sys.exit("chaîne non fermée ligne %d" % (src.count("\n", 0, i) + 1))
+        val.append(src[j]); j += 1
+    if j >= n: sys.exit("chaîne non fermée")
+    return j + 1, "".join(val)
+
+def fin_gabarit(i):               # i sur l'accent grave ouvrant ; ${…} imbriqués compris
+    j = i + 1
+    while j < n:
+        if src[j] == "\\": j += 2; continue
+        if src[j] == "`": return j + 1
+        if src.startswith("${", j): j = fin_code(j + 2, "}"); continue
+        j += 1
+    sys.exit("gabarit non fermé")
+
+def fin_code(i, fermant=None):    # découpe le code jusqu'au fermant (non compris) ou la fin
+    prof = 0
+    while i < n:
+        c = src[i]
+        if c.isspace(): i += 1
+        elif src.startswith("//", i):
+            j = src.find("\n", i); i = n if j < 0 else j
+        elif src.startswith("/*", i):
+            j = src.find("*/", i + 2)
+            if j < 0: sys.exit("commentaire non fermé")
+            i = j + 2
+        elif c in "'\"":
+            i, val = fin_chaine(i, c); jetons.append(("chaine", val))
+        elif c == "`":
+            i = fin_gabarit(i); jetons.append(("chaine", None))
+        elif c == "/" and (not jetons or jetons[-1][1] in AVANT_REGEX):
+            j, classe = i + 1, False
+            while j < n and (classe or src[j] != "/"):
+                if src[j] == "\\": j += 1
+                elif src[j] == "[": classe = True
+                elif src[j] == "]": classe = False
+                elif src[j] == "\n": sys.exit("expression régulière non fermée")
+                j += 1
+            if j >= n: sys.exit("expression régulière non fermée")
+            i = j + 1
+            while i < n and (src[i].isalnum() or src[i] == "_"): i += 1
+            jetons.append(("chaine", None))
+        elif re.match(r"[A-Za-z_$0-9]", c):
+            m = re.compile(r"[A-Za-z_$0-9]+").match(src, i)
+            jetons.append(("id", m.group())); i = m.end()
+        else:
+            if fermant and c == fermant and prof == 0: return i + 1
+            if c == "{": prof += 1
+            elif c == "}": prof -= 1
+            jetons.append(("ponct", c)); i += 1
+    if fermant: sys.exit("accolade de gabarit non fermée")
+    return i
+
+fin_code(0)
+for k in range(1, len(jetons) - 2):
+    if (jetons[k - 1] in (("ponct", "{"), ("ponct", ","))
+            and jetons[k] == ("id", "id") and jetons[k + 1] == ("ponct", ":")
+            and jetons[k + 2] == ("chaine", kpi)):
+        sys.exit(0)
+sys.exit(3)
+PY
+  case "$rc_def" in
+    0) producteur=présent ;;
+    3) ;;
+    *) die "analyse de $SOURCE_KPI impossible (code $rc_def) : producteur non évalué" ;;
+  esac
 
   jq -n --slurpfile i "$SORTIE/brut/issues.json" --slurpfile p "$SORTIE/brut/prs.json" \
     --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson jours "$JOURS" --arg titre "$TITRE" \
