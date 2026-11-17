@@ -43,7 +43,8 @@ Hors AEC, relevés par le même comptage et traités ailleurs : `merge-perimeter
 (étape 6, #2113), `vault-canon-exists.yml`, `.husky/pre-commit:28,32` et le service OPA de R2
 (étape 7, #2120), `jcs-parity` de raw (étape 7, raw #81).
 
-Après toutes ces PR, `VAULT_READ_TOKEN` n'apparaît plus dans aucun des trois dépôts.
+Après toutes ces PR, aucun workflow ni script des trois dépôts ne lit `VAULT_READ_TOKEN` : il
+ne reste que dans des documents d'audit et dans les lignes retirées des patches.
 
 ## Ce qui lit encore le vault après les étapes 1 à 8
 
@@ -61,7 +62,7 @@ Après toutes ces PR, `VAULT_READ_TOKEN` n'apparaît plus dans aucun des trois d
 | Implémenté | sans objet : aucune écriture |
 | Intégré | non : la preuve dépend de #2125, wiki #140 et raw #82, en brouillon |
 | Vérifié | comptage rejoué sur `main` et sur la fusion simulée |
-| Opérationnel | non : sur `main`, cinq fichiers du monorepo, deux du wiki et deux de raw lisent encore le manifeste du vault |
+| Opérationnel | non : sur `main`, trois scripts du monorepo, un du wiki et un de raw lisent encore le vault |
 | Bloqué | par les fusions des étapes 2 et 4 (gestes de l'owner) |
 
 Preuve de fin du plan : « les greps ne renvoient plus de lecteur de l'AEC, seulement des
