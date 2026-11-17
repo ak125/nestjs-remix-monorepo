@@ -104972,7 +104972,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 258,
+      "loc": 287,
       "owner": "@ak125",
       "path": "scripts/ci/pr-dod-gate.test.mjs",
       "risk": "medium",
@@ -108673,11 +108673,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4a6c9a565cec39045d2f64362399e6757cb85ac5af9843055d2be9b5a46c7e8e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "868074b4148dd44fbd7ab9f7df2719b2f390356cd2e43df25b5449162e8cf883",
+      "audit/registry/files.json": "f9e46fd1f98fa9ad75cca718f7700db15391d66a21a93f2a9a2dbc2baaf5d70e",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "065849df18e7232c615cffca1056212136c1cef48d8ccebc88e868e1c23598a3"
     },
-    "sotFingerprint": "987d7f597153"
+    "sotFingerprint": "63c070f7271a"
   },
   "runtime": [
     {

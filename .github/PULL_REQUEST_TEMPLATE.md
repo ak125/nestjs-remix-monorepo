@@ -56,7 +56,8 @@
 
 ## Definition of Done — auto-évaluation
 
-<!-- Règle vault rules-engineering-definition-of-done ; lue par scripts/ci/pr-dod-gate.mjs.
+<!-- Règle : .spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md ;
+     section contrôlée par scripts/ci/pr-dod-gate.mjs.
      Une ligne par item, cochée [x] ou marquée N/A avec la raison. DoD2 est lu sur l'état GitHub
      (assignee + ≥ 1 approbation humaine), jamais sur la case. DoD1 : cocher après lecture de la CI. -->
 
