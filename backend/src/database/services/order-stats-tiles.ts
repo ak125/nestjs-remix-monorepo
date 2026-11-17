@@ -52,7 +52,7 @@ export const IMPLAUSIBLE_TTC_ENV = 'ORDERS_STATS_IMPLAUSIBLE_TTC_EUR';
 export const DEFAULT_IMPLAUSIBLE_TTC_EUR = 10000;
 
 /** Fuseau des périodes « ce mois » / « cette année ». */
-export const STATS_TIME_ZONE = 'Europe/Paris';
+const STATS_TIME_ZONE = 'Europe/Paris';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const AMOUNT_RE = /^-?\d+(\.\d+)?$/;
@@ -74,12 +74,12 @@ export function resolveImplausibleThreshold(raw: unknown): number {
   return value;
 }
 
-export type ExcludedReason =
+type ExcludedReason =
   | 'amount_above_threshold'
   | 'amount_unreadable'
   | 'date_unreadable';
 
-export interface ExcludedOrder {
+interface ExcludedOrder {
   ordId: string;
   ordDate: string | null;
   totalTtc: string | null;
@@ -286,7 +286,7 @@ export function computeOrderTiles(
 }
 
 /** Taille de page : supabase-js plafonne une lecture à 1 000 lignes. */
-export const STATS_PAGE_SIZE = 1000;
+const STATS_PAGE_SIZE = 1000;
 
 /**
  * Lit toutes les lignes page par page (ordre stable fourni par l'appelant).

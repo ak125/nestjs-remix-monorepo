@@ -22,10 +22,10 @@ import { memo, type ReactNode } from "react";
 
 import { formatPrice } from "../../utils/orders.utils";
 
-export const ORDER_TILES_PERIODS = ["all", "year", "month"] as const;
+const ORDER_TILES_PERIODS = ["all", "year", "month"] as const;
 export type OrderTilesPeriod = (typeof ORDER_TILES_PERIODS)[number];
 
-export const ORDER_TILES_PERIOD_LABEL: Record<OrderTilesPeriod, string> = {
+const ORDER_TILES_PERIOD_LABEL: Record<OrderTilesPeriod, string> = {
   all: "Toute la période",
   year: "Cette année",
   month: "Ce mois",
