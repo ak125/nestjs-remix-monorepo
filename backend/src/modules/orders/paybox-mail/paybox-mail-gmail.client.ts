@@ -1,5 +1,9 @@
 /**
- * Mandat BT (2026-11-17) — lecteur Gmail de contact@, lecture seule.
+ * Mandat BT (2026-11-17) — lecteur Gmail de la boîte automecanik.seo@gmail.com, lecture seule.
+ *
+ * Boîte lue = celle du compte qui porte le jeton (`userId: 'me'`) : aucune
+ * adresse n'est écrite dans le code. Les mails Paybox y arrivent sans
+ * transfert (complément n° 1, décision de l'owner du 18 nov. 2026).
  *
  * Jeton dédié `PAYBOX_MAIL_GMAIL_REFRESH_TOKEN`, jamais `GMAIL_REFRESH_TOKEN`
  * (jeton d'envoi de MailService). Client OAuth : `GMAIL_CLIENT_ID` /

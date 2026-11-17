@@ -1,5 +1,5 @@
 -- =============================================================================
--- Migration : lecture des mails Paybox de contact@ vers l'état d'encaissement
+-- Migration : lecture des mails Paybox de automecanik.seo@gmail.com vers l'état d'encaissement
 --             (mandat BT, 2026-11-17, suite du mandat BM)
 -- Scope     : 1 table nouvelle ; contrainte CHECK de
 --             __order_capture_state.ocs_source élargie à 'paybox_mail'.
@@ -83,7 +83,7 @@ CREATE INDEX IF NOT EXISTS __paybox_mail_message_collected_idx
 ALTER TABLE public.__paybox_mail_message ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.__paybox_mail_message FROM anon, authenticated;
 COMMENT ON TABLE public.__paybox_mail_message IS
-  'Mandat BT : messages Paybox lus sur contact@ (ticket, télécollecte, non reconnu). Ni corps, ni adresse client, ni carte.';
+  'Mandat BT : messages Paybox lus sur automecanik.seo@gmail.com (ticket, télécollecte, non reconnu). Ni corps, ni adresse client, ni carte.';
 
 -- 2. Source 'paybox_mail' de l'état d'encaissement ---------------------------
 ALTER TABLE public.__order_capture_state
@@ -92,4 +92,4 @@ ALTER TABLE public.__order_capture_state
   ADD CONSTRAINT __order_capture_state_ocs_source_check
   CHECK (ocs_source IN ('manual', 'paybox_direct', 'paybox_mail')) NOT VALID;
 COMMENT ON COLUMN public.__order_capture_state.ocs_source IS
-  'manual : saisi par l''owner ; paybox_direct : réservé (non branché) ; paybox_mail : lu dans les mails Paybox de contact@ (mandat BT).';
+  'manual : saisi par l''owner ; paybox_direct : réservé (non branché) ; paybox_mail : lu dans les mails Paybox de automecanik.seo@gmail.com (mandat BT).';

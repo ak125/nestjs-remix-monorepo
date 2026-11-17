@@ -1,5 +1,5 @@
 /**
- * Mandat BT (2026-11-17) — analyse stricte des mails Paybox reçus sur contact@.
+ * Mandat BT (2026-11-17) — analyse stricte des mails Paybox reçus sur automecanik.seo@gmail.com.
  *
  * Fonctions pures, sans I/O. Un format non reconnu n'est jamais deviné :
  * l'analyse rend `{ ok: false, reason }` et l'appelant ignore, compte et

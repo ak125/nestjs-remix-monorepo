@@ -378,7 +378,7 @@ export class MailService {
     const html = this.wrapLayout(
       'Encaissements Paybox : écarts',
       '#dc2626',
-      `<p>Passage du ${escapeHtml(day)} : ${items.length} écart(s) entre les mails Paybox de contact@ et les commandes.</p>
+      `<p>Passage du ${escapeHtml(day)} : ${items.length} écart(s) entre les mails Paybox et les commandes.</p>
       <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;">
         <tr><th style="${cell}text-align:left;">Écart</th><th style="${cell}text-align:left;">Commande</th><th style="${cell}text-align:left;">Montant</th><th style="${cell}text-align:left;">Détail</th></tr>
         ${rows}

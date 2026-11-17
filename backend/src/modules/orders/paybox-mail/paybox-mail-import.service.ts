@@ -1,5 +1,5 @@
 /**
- * Mandat BT (2026-11-17) — lecture quotidienne des mails Paybox de contact@
+ * Mandat BT (2026-11-17) — lecture quotidienne des mails Paybox de automecanik.seo@gmail.com
  * vers `__order_capture_state` (source `paybox_mail`).
  *
  * Mode `PAYBOX_MAIL_IMPORT_MODE` :

@@ -53,11 +53,11 @@ dépôt contient. La saisie manuelle de l'état lu est livrée à la place.
 - **Non livré par BM** : lecture quotidienne automatique et alerte de capture
   en retard. Le mandat BT ci-dessous les prépare à partir des mails Paybox.
 
-## Mandat BT — lecture des mails Paybox sur contact@ (17 novembre 2026)
+## Mandat BT — lecture des mails Paybox sur automecanik.seo@gmail.com (17 novembre 2026)
 
 Réponse retenue (D25, D97) : Paybox n'est pas touché ; le site lit, en lecture
-seule, les mails que Paybox envoie déjà. Rien n'est actif tant que les cinq
-actes ci-dessous ne sont pas faits ; sans jeton, le code ne fait rien.
+seule, les mails que Paybox envoie déjà. Rien n'est actif tant que les étapes
+ci-dessous ne sont pas faites ; sans jeton, le code ne fait rien.
 
 ### Ce que le code lit, et ce qu'il ne lit jamais
 
@@ -111,7 +111,7 @@ commande, des montants et la nature de l'écart.
 | Variable | Rôle |
 |---|---|
 | `PAYBOX_MAIL_IMPORT_MODE` | `off` (défaut), `dry-run` ou `write` |
-| `PAYBOX_MAIL_GMAIL_REFRESH_TOKEN` | jeton de lecture de contact@, distinct de `GMAIL_REFRESH_TOKEN` (jeton d'envoi) |
+| `PAYBOX_MAIL_GMAIL_REFRESH_TOKEN` | jeton `gmail.readonly` du compte `automecanik.seo@gmail.com`, distinct de `GMAIL_REFRESH_TOKEN` (jeton d'envoi de contact@) |
 | `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET` | client OAuth déjà posé, réutilisé : il n'accorde rien seul, la portée est portée par le jeton |
 | `ADMIN_ORDER_EMAIL` | déjà posé, destinataire du mail d'écarts |
 
@@ -120,29 +120,31 @@ Sans `PAYBOX_MAIL_GMAIL_REFRESH_TOKEN` (ou sans le client OAuth), le mode est
 
 ### Procédure pour Marwane
 
-1. **Acheminer les mails Paybox vers contact@.** Dans le back-office
-   Verifone, l'adresse de réception des tickets et des comptes rendus de
-   télécollecte doit être contact@ (ou un transfert automatique vers contact@
-   qui garde l'expéditeur d'origine : un transfert réécrit souvent `From` et
-   casse la signature, et le mail serait refusé).
-2. **Créer le jeton de lecture, en DEV d'abord.** Avec le client OAuth déjà
-   utilisé pour l'envoi, autoriser **le compte contact@** avec la seule portée
-   `https://www.googleapis.com/auth/gmail.readonly` (OAuth Playground ou
-   équivalent, « offline access »). Poser le jeton obtenu sous
-   `PAYBOX_MAIL_GMAIL_REFRESH_TOKEN` ; ne pas toucher `GMAIL_REFRESH_TOKEN`.
-   Si l'écran de consentement est en mode « test », ajouter contact@ comme
-   utilisateur de test.
-3. **Relevé à blanc.** Poser `PAYBOX_MAIL_IMPORT_MODE=dry-run`, redémarrer.
+Les mails Paybox restent dans `automecanik.seo@gmail.com`, où ils arrivent aujourd'hui :
+pas de transfert, pas de changement d'adresse dans le back-office Paybox
+(complément n° 1, décision du 18 novembre 2026). Le serveur lit la boîte du
+compte qui porte le jeton (`userId: 'me'`) ; aucune adresse n'est écrite dans
+le code. Sans transfert, l'expéditeur d'origine et sa signature sont
+conservés, et le contrôle exact de `From` reste valable.
+
+1. **Créer le jeton de lecture, en DEV d'abord.** Avec le client OAuth déjà
+   utilisé pour l'envoi, autoriser **le compte `automecanik.seo@gmail.com`** avec la seule
+   portée `https://www.googleapis.com/auth/gmail.readonly` (OAuth Playground
+   ou équivalent, « offline access »). Poser le jeton obtenu sous
+   `PAYBOX_MAIL_GMAIL_REFRESH_TOKEN` ; ne pas toucher `GMAIL_REFRESH_TOKEN`
+   (jeton d'envoi de contact@). Si l'écran de consentement est en mode
+   « test », ajouter `automecanik.seo@gmail.com` comme utilisateur de test.
+2. **Relevé à blanc.** Poser `PAYBOX_MAIL_IMPORT_MODE=dry-run`, redémarrer.
    Au démarrage, le journal dit « portée gmail.readonly seule, accepté » ou
    « jeton refusé ». Puis, connecté en admin :
    `POST /api/admin/paybox-mail/dry-run`. La réponse liste les mails lus, les
    écritures prévues et les écarts ; rien n'est écrit ni envoyé. Le passage
    quotidien de 06:30 (heure de Paris) tourne aussi en dry-run et ne fait que
    journaliser.
-4. **Passer en écriture.** Seulement après un relevé à blanc qui couvre une
+3. **Passer en écriture.** Seulement après un relevé à blanc qui couvre une
    vraie télécollecte (attendues le 23 ou le 24 novembre) et dont les écarts
    sont compris : `PAYBOX_MAIL_IMPORT_MODE=write`, redémarrer.
-5. **Retour arrière.** `PAYBOX_MAIL_IMPORT_MODE=off` (ou retirer le jeton),
+4. **Retour arrière.** `PAYBOX_MAIL_IMPORT_MODE=off` (ou retirer le jeton),
    redémarrer : le passage quotidien est désarmé au démarrage, rien n'est plus
    lu. Les lignes déjà écrites restent ; elles portent la source `paybox_mail`
    et l'id du mail (`ocs_updated_by = paybox_mail:<id>`) et se corrigent par la
