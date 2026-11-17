@@ -20,6 +20,12 @@ surfaces:
       agents: []
 nodes: []
 handoffs: []
+department_contract_common:      # fixture : forme minimale valide des règles communes
+  rapport: { regle: "Rapport unique, fixture.", decisions: [7] }
+  entree_kpi: { regle: "Fiche de fiabilité, fixture.", decisions: [8] }
+  seuil_franchi: { regle: "Issue dept:NN, fixture.", decisions: [9] }
+  donnee_absente: { regle: "Pas de mesure, fixture.", decisions: [24] }
+  sources: { regle: "Sources de mesure, fixture.", decisions: [36] }
 departments:
   - id: a
     business_number: 1
@@ -30,6 +36,13 @@ departments:
     lead: a-lead
     repo_domains: [D1]
     state: partial
+    contract:
+      surveillance: "fixture surveillance"
+      kpi: { pending_owner_decision: "fixture: no KPI decided" }
+      source: "fixture source"
+      seuil_action: { pending_owner_decision: "fixture: no threshold decided" }
+      ligne_rapport: "fixture report"
+      decisions: [72]
   - id: b
     business_number: 2
     accountable_owner: null
@@ -39,6 +52,13 @@ departments:
     lead: b-lead
     repo_domains: [D1]
     state: partial
+    contract:
+      surveillance: "fixture surveillance"
+      kpi: { pending_owner_decision: "fixture: no KPI decided" }
+      source: "fixture source"
+      seuil_action: { pending_owner_decision: "fixture: no threshold decided" }
+      ligne_rapport: "fixture report"
+      decisions: [72]
 department_handoffs:
   - id: a-to-b
     from: a

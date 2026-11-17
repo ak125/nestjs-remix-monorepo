@@ -188,6 +188,48 @@ def test_c3_missing_files_fail(tmp_path):
     assert "missing" in evidence
 
 
+# ── C4: singular path wiki/gamme/ (ADR-125), an absence is never a PASS ──────
+
+
+def _write_fiche(gamme_dir: Path, name: str, frontmatter: str) -> None:
+    gamme_dir.mkdir(parents=True, exist_ok=True)
+    (gamme_dir / name).write_text(f"---\n{frontmatter}\n---\n\nCorps.\n", encoding="utf-8")
+
+
+def test_c4_missing_dir_fails(tmp_path):
+    ok, evidence = wr.c4_fiches_migrated(tmp_path)
+    assert ok is False
+    assert "wiki/gamme/ missing" in evidence
+
+
+def test_c4_empty_dir_fails(tmp_path):
+    (tmp_path / "wiki" / "gamme").mkdir(parents=True)
+    ok, evidence = wr.c4_fiches_migrated(tmp_path)
+    assert ok is False
+    assert "no fiche" in evidence
+
+
+def test_c4_plural_path_is_not_read(tmp_path):
+    _write_fiche(tmp_path / "wiki" / "gammes", "x.md", "schema_version: 2.0.0")
+    ok, evidence = wr.c4_fiches_migrated(tmp_path)
+    assert ok is False
+    assert "wiki/gamme/ missing" in evidence
+
+
+def test_c4_legacy_symptoms_fail(tmp_path):
+    _write_fiche(tmp_path / "wiki" / "gamme", "legacy.md", "entity_data:\n  symptoms:\n    - bruit")
+    ok, evidence = wr.c4_fiches_migrated(tmp_path)
+    assert ok is False
+    assert "legacy.md" in evidence
+
+
+def test_c4_migrated_fiches_pass(tmp_path):
+    _write_fiche(tmp_path / "wiki" / "gamme", "ok.md", "schema_version: 2.0.0\ndiagnostic_relations: []")
+    ok, evidence = wr.c4_fiches_migrated(tmp_path)
+    assert ok is True
+    assert "all 1 wiki/gamme/ fiches migrated" in evidence
+
+
 # ── wiki evaluated: origin/main snapshot by default, --wiki-path as is ───────
 
 

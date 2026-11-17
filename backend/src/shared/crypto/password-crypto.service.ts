@@ -12,10 +12,36 @@ import * as crypto from 'crypto';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import crypt = require('unix-crypt-td-js');
 
+/** Anciens formats d'empreinte, tous faibles (calcul rapide, sel fixe ou absent). */
+export type LegacyHashFormat = 'md5' | 'sha1' | 'md5-crypt';
+
 export interface PasswordValidationResult {
   isValid: boolean;
-  format: 'bcrypt' | 'md5' | 'md5-crypt' | 'sha1' | 'plain' | 'unknown';
+  format:
+    | 'bcrypt'
+    | 'wrapped'
+    | 'md5'
+    | 'md5-crypt'
+    | 'sha1'
+    | 'plain'
+    | 'unknown';
+  /** Pour `wrapped` : l'ancien calcul enveloppé. */
+  legacyFormat?: LegacyHashFormat;
 }
+
+/**
+ * Empreinte « enveloppée » : bcrypt appliqué à une ancienne empreinte.
+ *
+ *   $akwrap$v1$<format>$<bcrypt(ancienne_empreinte)>
+ *
+ * Le préfixe ne commence pas par `$2` (bcrypt) et contient des `$`, absents des
+ * empreintes hex (md5, sha1) et de l'alphabet DES (`[./0-9A-Za-z]`) : aucun
+ * format existant ne peut être lu comme une enveloppe, ni l'inverse.
+ * Validation : bcrypt.compare(ancien_calcul(mot_de_passe), partie bcrypt).
+ */
+export const WRAPPED_HASH_PREFIX = '$akwrap$v1$';
+const WRAPPED_HASH_RE =
+  /^\$akwrap\$v1\$(md5|sha1|md5-crypt)\$(\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53})$/;
 
 @Injectable()
 export class PasswordCryptoService {
@@ -49,10 +75,6 @@ export class PasswordCryptoService {
     hashedPassword: string,
   ): Promise<PasswordValidationResult> {
     try {
-      this.logger.debug(
-        `🔐 Validating password - Hash format: ${hashedPassword.substring(0, 10)}...`,
-      );
-
       // Format bcrypt moderne ($2a$, $2b$, $2y$)
       if (hashedPassword.startsWith('$2')) {
         this.logger.debug('🔐 Using bcrypt validation');
@@ -61,15 +83,33 @@ export class PasswordCryptoService {
         return { isValid, format: 'bcrypt' };
       }
 
+      // Ancienne empreinte enveloppée dans bcrypt. Ne retombe jamais sur les
+      // branches suivantes (texte en clair compris) : une enveloppe mal formée
+      // est refusée.
+      if (this.isWrappedHash(hashedPassword)) {
+        const parsed = this.parseWrappedHash(hashedPassword);
+        if (!parsed) {
+          this.logger.warn('Malformed wrapped password hash');
+          return { isValid: false, format: 'wrapped' };
+        }
+        const legacyDigest = this.computeLegacyDigest(
+          parsed.legacyFormat,
+          plainPassword,
+        );
+        const isValid = await bcrypt.compare(legacyDigest, parsed.inner);
+        return {
+          isValid,
+          format: 'wrapped',
+          legacyFormat: parsed.legacyFormat,
+        };
+      }
+
       // Format MD5 simple (32 caractères hex) - utilisé dans ___config_admin
       if (
         hashedPassword.length === 32 &&
         /^[a-f0-9]{32}$/i.test(hashedPassword)
       ) {
-        const md5Hash = crypto
-          .createHash('md5')
-          .update(plainPassword)
-          .digest('hex');
+        const md5Hash = this.computeLegacyDigest('md5', plainPassword);
         const isValid = this.secureCompare(md5Hash, hashedPassword);
         return { isValid, format: 'md5' };
       }
@@ -79,10 +119,7 @@ export class PasswordCryptoService {
         hashedPassword.length === 40 &&
         /^[a-f0-9]{40}$/i.test(hashedPassword)
       ) {
-        const sha1Hash = crypto
-          .createHash('sha1')
-          .update(plainPassword)
-          .digest('hex');
+        const sha1Hash = this.computeLegacyDigest('sha1', plainPassword);
         const isValid = this.secureCompare(sha1Hash, hashedPassword);
         return { isValid, format: 'sha1' };
       }
@@ -114,6 +151,76 @@ export class PasswordCryptoService {
   }
 
   /**
+   * Format d'une ancienne empreinte, selon les mêmes règles que validatePassword.
+   * `null` pour bcrypt, une enveloppe, une valeur vide ou un format inconnu.
+   */
+  detectLegacyFormat(hash: string | null | undefined): LegacyHashFormat | null {
+    if (!hash || hash.startsWith('$')) return null;
+    if (/^[a-f0-9]{32}$/i.test(hash)) return 'md5';
+    if (/^[a-f0-9]{40}$/i.test(hash)) return 'sha1';
+    if (hash.length === 13) return 'md5-crypt';
+    return null;
+  }
+
+  /**
+   * SEUL point de calcul des anciennes empreintes faibles (md5, sha1,
+   * crypt(md5) à sel fixe). Volontaire (mandat AP, décisions 88 et 89) : il ne
+   * sert qu'à VÉRIFIER un mot de passe contre une empreinte existante, nue ou
+   * enveloppée dans bcrypt (`$akwrap$v1$`). Aucune nouvelle empreinte n'est
+   * stockée sous ces formats : après connexion, le compte passe en bcrypt
+   * simple (`upgradeHashIfNeeded`). À retirer avec le sel fixe quand il ne
+   * reste plus d'ancienne empreinte en base (voir PR #2100).
+   */
+  computeLegacyDigest(format: LegacyHashFormat, plainPassword: string): string {
+    if (format === 'sha1') {
+      return crypto.createHash('sha1').update(plainPassword).digest('hex');
+    }
+    const md5Hex = crypto.createHash('md5').update(plainPassword).digest('hex');
+    return format === 'md5' ? md5Hex : this.phpCrypt(md5Hex, this.LEGACY_SALT);
+  }
+
+  /**
+   * Envelopper une ancienne empreinte dans bcrypt, sans connaître le mot de
+   * passe. Refuse tout ce qui n'est pas une ancienne empreinte reconnue.
+   */
+  async wrapLegacyHash(legacyHash: string): Promise<string> {
+    const format = this.detectLegacyFormat(legacyHash);
+    if (!format) {
+      throw new Error('wrapLegacyHash: not a recognised legacy hash');
+    }
+    const inner = await bcrypt.hash(legacyHash, this.BCRYPT_ROUNDS);
+    return `${WRAPPED_HASH_PREFIX}${format}$${inner}`;
+  }
+
+  /**
+   * Vérifier qu'une enveloppe correspond exactement à l'ancienne empreinte
+   * (même format déclaré, même valeur), avant de remplacer l'une par l'autre.
+   */
+  async wrappedMatchesLegacy(
+    wrapped: string,
+    legacyHash: string,
+  ): Promise<boolean> {
+    const parsed = this.parseWrappedHash(wrapped);
+    if (!parsed) return false;
+    if (parsed.legacyFormat !== this.detectLegacyFormat(legacyHash)) {
+      return false;
+    }
+    return bcrypt.compare(legacyHash, parsed.inner);
+  }
+
+  isWrappedHash(hash: string): boolean {
+    return hash.startsWith(WRAPPED_HASH_PREFIX);
+  }
+
+  private parseWrappedHash(
+    hash: string,
+  ): { legacyFormat: LegacyHashFormat; inner: string } | null {
+    const m = WRAPPED_HASH_RE.exec(hash);
+    if (!m) return null;
+    return { legacyFormat: m[1] as LegacyHashFormat, inner: m[2] };
+  }
+
+  /**
    * Vérifier le mot de passe legacy (MD5 + crypt avec sel "im10tech7")
    */
   private verifyLegacyPassword(
@@ -122,11 +229,7 @@ export class PasswordCryptoService {
   ): boolean {
     try {
       // Reproduire l'ancien système : crypt(md5($password), "im10tech7")
-      const md5Hash = crypto
-        .createHash('md5')
-        .update(plainPassword)
-        .digest('hex');
-      const legacyHash = this.phpCrypt(md5Hash, this.LEGACY_SALT);
+      const legacyHash = this.computeLegacyDigest('md5-crypt', plainPassword);
       return legacyHash === hashedPassword;
     } catch (error) {
       this.logger.error('Error verifying legacy password:', error);
