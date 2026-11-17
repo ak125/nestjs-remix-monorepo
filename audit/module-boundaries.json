@@ -212,8 +212,8 @@
         "backend/src/database/services",
         "backend/src/database/types"
       ],
-      "files_count": 15,
-      "loc_total": 21407,
+      "files_count": 17,
+      "loc_total": 21579,
       "has_barrel": true
     },
     "dev-only": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115141,
+      "loc_total": 115161,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 585,
-      "loc_total": 110881,
+      "files_count": 586,
+      "loc_total": 111149,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -501,8 +501,8 @@
         "backend/src/modules/orders/services",
         "backend/src/modules/orders/types"
       ],
-      "files_count": 21,
-      "loc_total": 6147,
+      "files_count": 25,
+      "loc_total": 7239,
       "has_barrel": true
     },
     "payments": {
@@ -615,14 +615,15 @@
     "pricing": {
       "dirs": [
         "backend/src/modules/pricing",
+        "backend/src/modules/pricing/config",
         "backend/src/modules/pricing/controllers",
         "backend/src/modules/pricing/services",
         "backend/src/modules/pricing/services/__tests__",
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 39,
-      "loc_total": 10478,
+      "files_count": 41,
+      "loc_total": 11102,
       "has_barrel": false
     },
     "products": {
@@ -877,7 +878,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 51,
-      "loc_total": 6906,
+      "loc_total": 6948,
       "has_barrel": false
     },
     "suppliers": {
@@ -961,7 +962,7 @@
         "tests/registry"
       ],
       "files_count": 384,
-      "loc_total": 80049,
+      "loc_total": 80055,
       "has_barrel": true
     },
     "upload": {
@@ -1910,6 +1911,11 @@
       "count": 2
     },
     {
+      "from": "orders",
+      "to": "supplier-truth",
+      "count": 2
+    },
+    {
       "from": "payments",
       "to": "backend-core",
       "count": 1
@@ -2689,6 +2695,11 @@
     {
       "from": "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
       "to": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/orders/services/order-line-supplier.service.ts",
+      "to": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "rule": "no-deep-module-access"
     },
     {
