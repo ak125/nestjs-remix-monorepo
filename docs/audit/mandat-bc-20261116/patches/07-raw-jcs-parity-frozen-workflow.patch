@@ -1,0 +1,75 @@
+diff --git a/.github/workflows/jcs-parity.yml b/.github/workflows/jcs-parity.yml
+index 899c857..07ae84d 100644
+--- a/.github/workflows/jcs-parity.yml
++++ b/.github/workflows/jcs-parity.yml
+@@ -1,38 +1,36 @@
+ name: jcs-parity
+ 
+-# Prouve que RAW calcule EXACTEMENT le meme json_jcs que le publisher du vault
+-# (ADR-096 F2c), contre le vecteur publie par ak125/governance-vault dans
+-# 99-meta/jcs-parity-vector.json.
++# Prouve que RAW calcule EXACTEMENT le json_jcs du vecteur de parite GELE
++# (`_scripts/jcs-parity-vector.json`), copie a l'octet pres du dernier vecteur publie
++# par ak125/governance-vault (99-meta/jcs-parity-vector.json, commit b2e712791bee).
+ #
+-# Ce que ce workflow prouve : « RAW sait calculer le meme json_jcs que le vault. »
+-# Ce qu'il ne pretend PAS prouver : « source-score-weights est autorise et distribue. »
+-# Ce contrat est encore `proposed` — aucun schema, aucune entree CANONS, aucune
+-# projection n'existe cote RAW.
++# Le vault est une archive en lecture seule (decisions 72 et 73 de l'owner) : ce
++# workflow ne lit plus aucun autre depot. Plus de cron ni de repository_dispatch :
++# le vecteur ne change plus, seule une modification de ce depot peut rompre la parite,
++# et les chemins ci-dessous la declenchent.
+ #
+-# Topologie reprise de agent-exit-contract-hash.yml, y compris repository_dispatch :
+-# quand source-score-weights sera accepte puis enregistre dans CANONS, RAW possede
+-# deja le mecanisme de reveil.
++# Ce que ce workflow prouve : « RAW calcule le meme json_jcs que le vecteur gele. »
++# Ce qu'il ne pretend PAS prouver : « source-score-weights est autorise et distribue. »
++# Ce contrat n'a jamais ete distribue. S'il l'est un jour (par le monorepo), ce
++# workflow est repointe sur le vecteur de son publisher, dans la meme PR.
+ #
+ # NON-REQUIRED volontairement : rendre ce check obligatoire dans la branch protection
+-# serait un acte de gouvernance distinct. Cette PR livre et eprouve le verificateur,
+-# elle ne modifie pas la politique de merge.
++# serait un acte de gouvernance distinct.
+ 
+ on:
+   pull_request:
+     paths:
+       - "_scripts/check-jcs-parity.py"
++      - "_scripts/jcs-parity-vector.json"
+       - "_scripts/tests/test_jcs_parity.py"
+       - ".github/workflows/jcs-parity.yml"
+   push:
+     branches: [main]
+     paths:
+       - "_scripts/check-jcs-parity.py"
++      - "_scripts/jcs-parity-vector.json"
+       - "_scripts/tests/test_jcs_parity.py"
+       - ".github/workflows/jcs-parity.yml"
+-  schedule:
+-    - cron: "45 3 * * *"
+-  repository_dispatch:
+-    types: [canon-updated]
+   workflow_dispatch:
+ 
+ permissions:
+@@ -53,13 +51,11 @@ jobs:
+         run: python -m pip install --quiet pytest
+ 
+       # Les tests d'abord : ils exercent les frontieres du sous-ensemble sur des cas
+-      # construits localement, sans reseau. Un guard casse doit se voir sur ses
+-      # fixtures, pas sur le vecteur distant.
++      # construits localement. Un guard casse doit se voir sur ses fixtures, pas sur
++      # le vecteur gele.
+       - name: Subset boundary tests (offline)
+         run: python -m pytest _scripts/tests/test_jcs_parity.py -q
+ 
+-      # Puis la parite reelle contre le vecteur publie par le vault.
+-      - name: Parity vs vault jcs-parity-vector.json
+-        env:
+-          GH_TOKEN: ${{ secrets.VAULT_READ_TOKEN || secrets.GITHUB_TOKEN }}
++      # Puis la parite contre le vecteur gele (aucun reseau, aucun jeton).
++      - name: Parity vs frozen jcs-parity-vector.json
+         run: python3 _scripts/check-jcs-parity.py

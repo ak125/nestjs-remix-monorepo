@@ -1,0 +1,195 @@
+diff --git a/.github/workflows/vault-canon-exists.yml b/.github/workflows/vault-canon-exists.yml
+index d17e4c9..e411db5 100644
+--- a/.github/workflows/vault-canon-exists.yml
++++ b/.github/workflows/vault-canon-exists.yml
+@@ -1,28 +1,23 @@
+-name: Vault Canon Exists
+-# Gate mécanique ADR-060 : tout fichier monorepo référençant "canon ADR-XXX"
+-# doit avoir governance-vault/ledger/decisions/adr/ADR-XXX-*.md présent en main.
++name: ADR Canon In Force
++# Tout fichier du monorepo qui cite « canon ADR-XXX » (ou doctrine, source of
++# truth, conforme) doit citer une règle en vigueur : une ADR reprise par un
++# principe de .claude/governance/journal-des-principes.md ou par un contrat de
++# .spec/00-canon/ai-registry/agent-operating-map.yaml (décisions 72 et 73).
+ #
+-# V1 = WARN-ONLY (continue-on-error + $GITHUB_STEP_SUMMARY only). Pas de sticky
+-# PR comment. V2 séparée : ast-grep rule + sticky comment après preuve V1
+-# fonctionne.
++# Avant la sortie du vault, ce contrôle cherchait le fichier de l'ADR sur `main`
++# de ak125/governance-vault. Le vault est une archive : une ADR qui y figure
++# explique une décision, elle ne fait plus règle par elle-même. Le contrôle ne lit
++# donc plus le vault et ne dit plus « manquante » : il dit « pas en vigueur ».
++# Le nom du fichier est conservé (historique des runs, références existantes).
+ #
+-# Promotion vers blocking (continue-on-error: false) = PR 2 lignes après vault
+-# ratifie le premier ADR via ce mécanisme (preuve qu'il accepte la résolution).
++# WARN-ONLY (continue-on-error + $GITHUB_STEP_SUMMARY). Pas de commentaire de PR.
+ #
+-# V1.1 (2026-05-28) — scope extension additive : ajout audit/** + docs/**
+-# pour couvrir les artefacts dérivés du repo (verdicts, audits, rapports,
+-# proposals), conformément au canon lexical fresh 2026-05-28
+-# feedback_canon_vs_reference_post_inc_2026_016 : "Artefacts dérivés
+-# (audit/docs/rapports/verdicts) éviter 'Schema canon'/'Skill canon',
+-# préférer 'de référence'". Reste warn-only, aucune logique de scan modifiée.
++# Périmètre : .claude/**, .spec/**, .github/**, CLAUDE.md, audit/**, docs/**.
+ #
+-# Limitation V1 connue (résolue en V2 ast-grep) : pattern regex `canon` peut
+-# faussement matcher des chemins comme `.spec/00-canon/...` (folder name
+-# canonique du projet, non doctrinal). V2 utilisera ast-grep markdown-aware.
++# Limite connue : le motif `canon` peut matcher à tort un chemin comme
++# `.spec/00-canon/...` (nom de dossier, non doctrinal).
+ #
+-# Refs : ADR-060 (repository roles), INC-2026-016 (authority drift PR #765),
+-# feedback_no_canon_claim_without_vault_adr (mémoire Layer 0),
+-# feedback_canon_vs_reference_post_inc_2026_016 (mémoire Layer 0 fresh 05-28).
++# Historique : ADR-060 (rôles des dépôts), INC-2026-016 (PR #765).
+ 
+ on:
+   pull_request:
+@@ -31,7 +26,6 @@ on:
+       - '.spec/**'
+       - '.github/**'
+       - 'CLAUDE.md'
+-      # V1.1 — extension scope artefacts dérivés (2026-05-28)
+       - 'audit/**'
+       - 'docs/**'
+ 
+@@ -40,9 +34,9 @@ permissions:
+ 
+ jobs:
+   vault-canon-exists:
+-    name: Verify ADR canon references have vault backing
++    name: Verify ADR canon references are in force
+     runs-on: ubuntu-latest
+-    continue-on-error: true   # WARN-ONLY V1. Flip to false after vault ratifies ADR-082.
++    continue-on-error: true   # WARN-ONLY.
+ 
+     steps:
+       - name: Checkout monorepo (full history for reliable base_ref diff)
+@@ -53,19 +47,6 @@ jobs:
+           # gouvernance peu fréquent.
+           fetch-depth: 0
+ 
+-      - name: Checkout vault (sparse — ADR ledger only)
+-        uses: actions/checkout@v7
+-        with:
+-          # Vault est public (confirmé via gh api repos/ak125/governance-vault
+-          # --jq .private → false, 2026-05-27). Pas de PAT requis. Si le vault
+-          # devient privé : ajouter token: ${{ secrets.VAULT_READ_TOKEN }}.
+-          repository: ak125/governance-vault
+-          path: .vault-canon-check
+-          ref: main
+-          sparse-checkout: |
+-            ledger/decisions/adr
+-          sparse-checkout-cone-mode: false
+-
+       - name: Detect ADR canon references in changed files
+         id: extract
+         shell: bash
+@@ -89,19 +70,22 @@ jobs:
+           #   "ADR-NNN ... draft"       → mention explicite draft sur même ligne
+           #   "experimental"            → status frontmatter ou banner
+           #   "advisory only"           → phrase explicite
++          #   "historique" / "historical" → référence à l'archive, pas une règle
+           # Ce qui RESTE détecté (intentionnellement) :
+           #   "Doctrine canon = ADR-099, pending ratification"
+           #   "canon ADR-099 (vault PR open)"
+           PATTERN_FORWARD='(canon|canonique|doctrine|source of truth|SoT|conforme)[^[:space:]]*[[:space:]:=]+[^[:space:]]*(ADR-[0-9]{2,3})'
+           PATTERN_REVERSE='(ADR-[0-9]{2,3})[^[:space:]]*[[:space:]]+[^[:space:]]*(canon|canonique|doctrine|source of truth|SoT|conforme)'
+-          EXCLUDE='(proposed ADR-[0-9]{2,3}|ADR-[0-9]{2,3}.*draft|experimental|advisory only)'
++          EXCLUDE='(proposed ADR-[0-9]{2,3}|ADR-[0-9]{2,3}.*draft|experimental|advisory only|historique|historical)'
+ 
+           : > .canon-refs.txt
+           for f in $changed; do
+             [ -f "$f" ] || continue
+-            # Auto-exclude this workflow file and the ADR-060 self-reference itself
++            # Exclus : ce workflow, et les deux fichiers qui font foi (ils se citent eux-mêmes).
+             case "$f" in
+               .github/workflows/vault-canon-exists.yml) continue ;;
++              .claude/governance/journal-des-principes.md) continue ;;
++              .spec/00-canon/ai-registry/agent-operating-map.yaml) continue ;;
+             esac
+             grep -EHn -e "$PATTERN_FORWARD" -e "$PATTERN_REVERSE" "$f" 2>/dev/null \
+               | grep -vEi "$EXCLUDE" >> .canon-refs.txt || true
+@@ -114,49 +98,59 @@ jobs:
+             echo "found_refs=false" >> "$GITHUB_OUTPUT"
+           fi
+ 
+-      - name: Verify each ADR reference exists in vault main
++      - name: Verify each ADR reference is in force (journal or contract)
+         if: steps.extract.outputs.found_refs == 'true'
+         id: verify
+         shell: bash
++        env:
++          JOURNAL: .claude/governance/journal-des-principes.md
++          CONTRACTS: .spec/00-canon/ai-registry/agent-operating-map.yaml
+         run: |
+           set -euo pipefail
+-          : > .vault-canon-warnings.md
+-          missing_count=0
++          # Les deux fichiers qui font foi doivent être là : sans eux, toute ADR
++          # paraîtrait « pas en vigueur » et l'avertissement ne voudrait rien dire.
++          for src in "$JOURNAL" "$CONTRACTS"; do
++            if [ ! -s "$src" ]; then
++              echo "::error::Fichier de référence absent ou vide : $src"
++              exit 1
++            fi
++          done
++
++          : > .adr-not-in-force.md
++          not_in_force=0
+ 
+           while IFS= read -r line; do
+             adr=$(echo "$line" | grep -oE "ADR-[0-9]{2,3}" | sort -u | head -1)
+             [ -z "$adr" ] && continue
+-            if ! ls .vault-canon-check/ledger/decisions/adr/${adr}-*.md >/dev/null 2>&1; then
+-              echo "- \`$adr\` ← $line" >> .vault-canon-warnings.md
+-              missing_count=$((missing_count + 1))
++            # Numéro entier : ADR-13 ne doit pas être satisfait par ADR-138.
++            if ! grep -qE "${adr}([^0-9]|\$)" "$JOURNAL" "$CONTRACTS"; then
++              echo "- \`$adr\` ← $line" >> .adr-not-in-force.md
++              not_in_force=$((not_in_force + 1))
+             fi
+           done < .canon-refs.txt
+ 
+-          if [ "$missing_count" -gt 0 ]; then
++          if [ "$not_in_force" -gt 0 ]; then
+             {
+-              echo "## ⚠️ Vault Canon Exists — ADR references without vault backing"
+-              echo ""
+-              echo "Per **[ADR-060](https://github.com/ak125/governance-vault/blob/main/ledger/decisions/adr/ADR-060-repository-roles-doctrine.md)** (vault décide → monorepo exécute) + Invariant G3, the monorepo cannot declare \`canon ADR-XXX\` without the ADR being ratified in \`governance-vault/ledger/decisions/adr/\` main (status: accepted, G3-signed)."
++              echo "## ⚠️ ADR citée comme canon, mais reprise par aucune règle en vigueur"
+               echo ""
+-              echo "### Missing vault ADRs referenced as canon by this PR"
++              echo "Une règle est en vigueur si elle est fusionnée sur \`main\` de ce dépôt : un principe de \`$JOURNAL\` ou un contrat de \`$CONTRACTS\`. Une ADR de l'archive \`ak125/governance-vault\` explique une décision ; elle ne fait plus règle par elle-même."
+               echo ""
+-              cat .vault-canon-warnings.md
++              echo "### Références de cette PR sans principe ni contrat"
+               echo ""
+-              echo "### Resolution options"
++              cat .adr-not-in-force.md
+               echo ""
+-              echo "1. **Ratify** the ADR(s) in vault first (G3-signed PR), then re-run this check."
+-              echo "2. **Downgrade** the references to \`proposed ADR-XXX (draft, vault pending)\` + \`status: experimental\` frontmatter."
+-              echo "3. **Remove** the normative claim entirely."
++              echo "### Que faire"
+               echo ""
+-              echo "Refs : vault incident **INC-2026-016** (lien \`main\` ajouté une fois l'incident mergé côté vault)."
++              echo "1. **Citer le principe** (\`P<n>\` du journal) ou le contrat qui porte la règle, s'il existe sous un autre numéro d'ADR."
++              echo "2. **Reformuler** en référence historique (« historique : ADR-XXX ») : la ligne n'est alors plus relevée."
++              echo "3. **Ajouter le principe au journal** par une PR (circuit élevé), si la règle est voulue et son mécanisme en service."
+               echo ""
+-              echo "_(V1 warn-only — ce job ne bloque pas le merge. Promotion vers blocking après preuve de fonctionnement du mécanisme.)_"
++              echo "_(Avertissement seulement — ce job ne bloque pas la fusion.)_"
+             } >> "$GITHUB_STEP_SUMMARY"
+             echo "violation=true" >> "$GITHUB_OUTPUT"
+-            echo "Found $missing_count missing vault ADR(s) referenced as canon."
+-            # WARN-ONLY V1 : exit 0 (continue-on-error: true le garantit aussi)
++            echo "Found $not_in_force ADR reference(s) cited as canon but not in force."
+             exit 0
+           else
+-            echo "✅ All ADR canon references in this PR are backed by vault main." >> "$GITHUB_STEP_SUMMARY"
+-            echo "✅ All ADR canon references backed by vault main."
++            echo "✅ Every ADR cited as canon by this PR is carried by a principle or a contract." >> "$GITHUB_STEP_SUMMARY"
++            echo "✅ Every ADR cited as canon is in force."
+           fi

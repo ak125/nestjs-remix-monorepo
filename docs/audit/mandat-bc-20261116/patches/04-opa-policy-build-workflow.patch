@@ -1,0 +1,137 @@
+diff --git a/.github/workflows/opa-policy-build.yml b/.github/workflows/opa-policy-build.yml
+new file mode 100644
+index 0000000..4fac662
+--- /dev/null
++++ b/.github/workflows/opa-policy-build.yml
+@@ -0,0 +1,131 @@
++name: OPA Policy Build & Test
++
++# Politiques d'écriture SEO (OPA WASM) : policies/seo-content/ et policies/dist/.
++# Relogé depuis l'archive ak125/governance-vault (.github/workflows/opa-policy-build.yml,
++# commit b2e712791bee) à la sortie du vault (décision 73, étape 7).
++#
++# Trois contrôles :
++#   1. opa test policies/seo-content/ -v   → les tests unitaires Rego passent
++#   2. policies/build-opa-bundles.sh       → les bundles se construisent
++#   3. comparaison sha256                  → les policies/dist/*.wasm committés sont
++#                                            ceux d'une reconstruction
++#
++# Version d'OPA épinglée : les octets du WASM en dépendent. Le script compile avec
++# le chemin relatif policies/seo-content/<fichier>, qui entre aussi dans les octets.
++# policies/maintenance/ (conftest) n'est pas joué ici : voir policies/README.md.
++
++on:
++  pull_request:
++    branches: [main]
++    paths:
++      - 'policies/seo-content/**'
++      - 'policies/dist/**'
++      - 'policies/build-opa-bundles.sh'
++      - '.github/workflows/opa-policy-build.yml'
++  push:
++    branches: [main]
++    paths:
++      - 'policies/seo-content/**'
++      - 'policies/dist/**'
++      - 'policies/build-opa-bundles.sh'
++      - '.github/workflows/opa-policy-build.yml'
++
++permissions:
++  contents: read
++
++env:
++  OPA_VERSION: 0.69.0
++  # Politiques dont la dérive bloque : la liste du workflow de l'archive, inchangée.
++  POLICY_NAMES: 'h1-write r2-content-write r2-cluster-health'
++  # Politique construite par le script mais jamais comparée dans l'archive : sa
++  # reproductibilité n'a pas de preuve. Comparée ici en avertissement seulement ;
++  # à passer dans POLICY_NAMES quand un run aura montré deux empreintes égales.
++  POLICY_NAMES_REPORT_ONLY: 'r2-runtime-read'
++
++jobs:
++  opa-test-build:
++    name: 'OPA Policy: test + build'
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v7
++
++      - name: Install OPA ${{ env.OPA_VERSION }}
++        run: |
++          curl -sSfL -o /usr/local/bin/opa \
++            "https://openpolicyagent.org/downloads/v${OPA_VERSION}/opa_linux_amd64_static"
++          chmod +x /usr/local/bin/opa
++          opa version
++
++      - name: opa test (Rego unit tests)
++        run: opa test policies/seo-content/ -v
++
++      - name: opa build (WASM bundles via script)
++        run: |
++          if [ ! -x policies/build-opa-bundles.sh ]; then
++            echo "::error::policies/build-opa-bundles.sh missing or not executable"
++            exit 1
++          fi
++          # Le script réécrit policies/dist/ : relever d'abord les empreintes committées.
++          mkdir -p /tmp/committed-shas
++          for name in $POLICY_NAMES $POLICY_NAMES_REPORT_ONLY; do
++            if [ -f "policies/dist/${name}.wasm" ]; then
++              sha256sum "policies/dist/${name}.wasm" | cut -d' ' -f1 > "/tmp/committed-shas/${name}.sha"
++            else
++              echo "" > "/tmp/committed-shas/${name}.sha"
++            fi
++          done
++          ./policies/build-opa-bundles.sh
++          echo ""
++          echo "━━━ Built artefacts ━━━"
++          ls -la policies/dist/
++
++      - name: SHA-256 drift check (committed vs freshly-built)
++        run: |
++          drift=0
++          compare() {
++            # compare NAME LEVEL  (LEVEL = error | warning)
++            local name="$1" level="$2"
++            local committed_file="/tmp/committed-shas/${name}.sha"
++            local fresh_file="policies/dist/${name}.wasm"
++            if [ ! -s "$committed_file" ]; then
++              echo "::${level}::Committed SHA for ${name} is missing — commit policies/dist/${name}.wasm first."
++              return 1
++            fi
++            if [ ! -f "$fresh_file" ]; then
++              echo "::${level}::Fresh artefact policies/dist/${name}.wasm not built."
++              return 1
++            fi
++            local committed fresh
++            committed=$(cat "$committed_file")
++            fresh=$(sha256sum "$fresh_file" | cut -d' ' -f1)
++            echo "${name}:"
++            echo "  Committed : ${committed}"
++            echo "  Fresh     : ${fresh}"
++            if [ "$committed" != "$fresh" ]; then
++              echo "::${level}::WASM drift detected for ${name}. Rebuild via:"
++              echo "  ./policies/build-opa-bundles.sh ${name}"
++              echo "  git add policies/dist/${name}.wasm policies/dist/${name}.bundle.tar.gz"
++              return 1
++            fi
++            return 0
++          }
++          for name in $POLICY_NAMES; do
++            compare "$name" error || drift=1
++          done
++          for name in $POLICY_NAMES_REPORT_ONLY; do
++            compare "$name" warning || echo "(report-only : ${name} ne bloque pas)"
++          done
++          if [ "$drift" -ne 0 ]; then
++            exit 1
++          fi
++          echo "OK : all blocking committed WASM artefacts match freshly-built (SHA-256 reproducible)."
++
++      - name: Upload artefacts
++        uses: actions/upload-artifact@v7
++        if: always()
++        with:
++          name: opa-policy-build-${{ github.run_id }}
++          path: |
++            policies/dist/*.bundle.tar.gz
++            policies/dist/*.wasm
++          retention-days: 30
