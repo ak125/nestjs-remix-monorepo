@@ -2,6 +2,10 @@
 "permissions": {
     "allow": []
   },
+  "enabledPlugins": {
+    "remember@claude-plugins-official": false,
+    "goodmem@claude-plugins-official": false
+  },
   "hooks": {
     "PreToolUse": [
       {
