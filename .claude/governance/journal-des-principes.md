@@ -333,6 +333,28 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   (l. 72-74). Écarts : le job reste en avertissement seul (`continue-on-error: true`, l. 49).
   Seul `.claude/skills/` de la racine est contrôlé. Aucun skill tiers n'est installé : rien n'est
   servi. À relever à nouveau à la fusion.
+- **P43.** Aucun plugin Claude Code qui injecte au démarrage d'une session un contexte tiré
+  d'autres sessions, sans relecture (hook `SessionStart`), n'est actif dans une session du dépôt.
+  Les plugins exclus se déclarent dans `.claude/settings.json` (`enabledPlugins`, à `false`).
+  Source : demandes de l'owner dans le chat de pilotage. Le 15 nov. 2026 vers 15:13, heure de
+  Tunis : « Fait le » (désactiver `remember` dans les réglages utilisateur du DEV, fait à
+  14:13:55 UTC). Le 17 nov. 2026 à 21:50, heure de Paris : « utilise meilleure approche » (pour
+  faire durer cette désactivation). Origine : note
+  `ledger/knowledge/claude-code-plugin-enablement-policy-20260504.md` du vault, PR
+  ak125/governance-vault#419, fusionnée le 2026-11-15, en archive.
+  Application, relevé du 2026-11-17 sur la branche de cette PR (base `main` `705dc2c1e`) : L1.
+  `.claude/settings.json` met `remember@claude-plugins-official` et
+  `goodmem@claude-plugins-official` à `false`. Le réglage du projet prime sur celui de
+  l'utilisateur : essai du 2026-11-17 à 20:55 UTC, Claude Code 2.1.326, dossier de configuration
+  isolé où l'utilisateur active les deux plugins ; `claude plugin list --json` les donne activés
+  hors du dépôt et désactivés dans le dépôt. La documentation de Claude Code pose la règle
+  générale (une clé posée à un niveau plus haut l'emporte) sans traiter ce cas. `remember`
+  (0.43.1) porte un hook `SessionStart` qui injecte ses fichiers de mémoire ; `goodmem` (0.1.0)
+  n'en porte pas : il est exclu par la demande de l'owner, non par ce critère. Écarts :
+  `.claude/settings.local.json`, l'option `--settings` et les réglages gérés priment sur ce
+  fichier, et rien ne refuse un `true` qui y serait posé ; aucun contrôle ne lit
+  `.claude/settings.json` ; un autre plugin du même type n'est exclu que s'il y est déclaré.
+  Aucune session du dépôt n'a été observée sous ce réglage : à relever après la fusion.
 
 ## Règles en service entrées au journal
 
