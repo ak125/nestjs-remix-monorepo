@@ -31,8 +31,8 @@
 -- (md5(prosrc) 6c0d8e09318f059651920b8a2a214644, mesuré en base le 2026-10-01 par
 -- 20261001_pin_order_functions_search_path.sql), plus une colonne dans
 -- l'INSERT de l'en-tête. Lignes, événement ORDER_CREATED, signature, valeur de
--- retour : inchangés. CREATE OR REPLACE conserve propriétaire et droits
--- EXECUTE (postgres, service_role) ; SECURITY DEFINER et
+-- retour : inchangés. CREATE OR REPLACE conserve le propriétaire ; les droits
+-- EXECUTE (postgres, service_role) sont redéclarés après le corps ; SECURITY DEFINER et
 -- search_path = public, pg_temp sont redéclarés à l'identique.
 -- NULLIF(… , 'null'::jsonb) : un JSON null envoyé par le backend devient un
 -- NULL SQL.
@@ -187,6 +187,12 @@ $function$;
 COMMENT ON FUNCTION public.create_order_atomic(JSONB, JSONB, UUID) IS
   'Composite RPC extended from PR #695: INSERT ___xtr_order + ___xtr_order_line + append ORDER_CREATED event, all in same transaction. p_correlation_id is optional (DEFAULT gen_random_uuid()) for back-compat. Writes ord_vehicle_check (mandat BN, 2026-11-17). Owner: OrdersService.createOrder per authority-graph.yaml#rpc_authority.rpcs.create_order_atomic.';
 
+-- Droits EXECUTE redéclarés explicitement (check-definer-anon-surface) :
+-- identiques à l'état mesuré le 2026-11-17 (postgres propriétaire,
+-- service_role) ; jamais PUBLIC, anon ni authenticated, même en rejeu.
+REVOKE ALL ON FUNCTION public.create_order_atomic(JSONB, JSONB, UUID) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_order_atomic(JSONB, JSONB, UUID) TO service_role;
+
 -- §3 — POST-CONDITION FAIL-CLOSED : corps cible exact, colonne présente.
 DO $postcheck$
 DECLARE
@@ -217,6 +223,11 @@ BEGIN
   END IF;
   IF v_config IS DISTINCT FROM ARRAY['search_path=public, pg_temp'] THEN
     RAISE EXCEPTION 'ABORT: proconfig inattendu : %', v_config;
+  END IF;
+  IF has_function_privilege('anon', v_oid, 'EXECUTE')
+     OR has_function_privilege('authenticated', v_oid, 'EXECUTE')
+     OR NOT has_function_privilege('service_role', v_oid, 'EXECUTE') THEN
+    RAISE EXCEPTION 'ABORT: droits EXECUTE inattendus sur create_order_atomic';
   END IF;
 END
 $postcheck$;

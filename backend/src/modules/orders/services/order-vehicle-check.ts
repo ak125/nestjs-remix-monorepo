@@ -14,7 +14,7 @@
  */
 import { z } from 'zod';
 
-export const CUSTOMER_REFERENCE_MAX_LENGTH = 40;
+const CUSTOMER_REFERENCE_MAX_LENGTH = 40;
 
 /** Lettres, chiffres, espace, point, tiret, barre oblique ; commence par un alphanumérique. */
 const CUSTOMER_REFERENCE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 ./-]*$/;
@@ -26,7 +26,7 @@ const shortLabel = z
   .optional()
   .transform((v) => (v ? v : null));
 
-export const customerReferenceSchema = z
+const customerReferenceSchema = z
   .string()
   .optional()
   .nullable()
@@ -47,14 +47,14 @@ export const customerReferenceSchema = z
     ]),
   );
 
-export const purchaseVehicleSchema = z.object({
+const purchaseVehicleSchema = z.object({
   typeId: z.coerce.number().int().positive(),
   brand: shortLabel,
   model: shortLabel,
   engine: shortLabel,
 });
 
-export const orderVehicleCheckInputSchema = z.object({
+const orderVehicleCheckInputSchema = z.object({
   customerReference: customerReferenceSchema,
   purchaseVehicle: purchaseVehicleSchema.nullable().optional(),
 });

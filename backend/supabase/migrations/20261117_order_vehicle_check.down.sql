@@ -135,6 +135,12 @@ $function$;
 COMMENT ON FUNCTION public.create_order_atomic(JSONB, JSONB, UUID) IS
   'Composite RPC extended from PR #695: INSERT ___xtr_order + ___xtr_order_line + append ORDER_CREATED event, all in same transaction. p_correlation_id is optional (DEFAULT gen_random_uuid()) for back-compat. Owner: OrdersService.createOrder per authority-graph.yaml#rpc_authority.rpcs.create_order_atomic.';
 
+-- Droits EXECUTE redéclarés explicitement (check-definer-anon-surface) :
+-- identiques à l'état mesuré le 2026-11-17 (postgres propriétaire,
+-- service_role) ; jamais PUBLIC, anon ni authenticated, même en rejeu.
+REVOKE ALL ON FUNCTION public.create_order_atomic(JSONB, JSONB, UUID) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_order_atomic(JSONB, JSONB, UUID) TO service_role;
+
 DO $postcheck$
 DECLARE
   v_oid    oid := to_regprocedure('public.create_order_atomic(jsonb, jsonb, uuid)');
