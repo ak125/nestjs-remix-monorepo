@@ -2875,7 +2875,6 @@
       ".github/workflows/build.yml",
       ".github/workflows/canon-distribution.yml",
       ".github/workflows/canon-registries-validate.yml",
-      ".github/workflows/canon-sync.yml",
       ".github/workflows/ci.yml",
       ".github/workflows/closure-t48h-slo-digest.yml",
       ".github/workflows/codeql.yml",
@@ -3055,7 +3054,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1647,
+  "runtime_files_count": 1646,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3070,7 +3069,6 @@
     ".github/workflows/build.yml",
     ".github/workflows/canon-distribution.yml",
     ".github/workflows/canon-registries-validate.yml",
-    ".github/workflows/canon-sync.yml",
     ".github/workflows/ci.yml",
     ".github/workflows/closure-t48h-slo-digest.yml",
     ".github/workflows/codeql.yml",
