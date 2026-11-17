@@ -1550,6 +1550,6 @@ cd /opt/automecanik/app/workspaces/marketing && claude
 ## Références
 
 - ADR-036 : archive `ak125/governance-vault`, `ledger/decisions/adr/ADR-036-marketing-operating-layer.md`
-- Brand voice : `.claude/canon-mirrors/marketing-voice.md` (canon distribué depuis vault)
+- Brand voice : `.claude/canon-mirrors/marketing-voice.md` (copie générée depuis `.spec/00-canon/canon-distribution/rules-marketing-voice.md` du monorepo)
 - Runbook rollback : `workspaces/marketing/runbook-marketing-pilot-rollback.md` (relogé de l'archive du vault ; jamais joué, deux écarts à lever avant usage)
 - Plan détaillé : `/home/deploy/.claude/plans/verifier-la-strategie-une-piped-hummingbird.md`
