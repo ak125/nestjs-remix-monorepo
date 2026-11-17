@@ -2869,6 +2869,7 @@
       ".github/workflows/automation-registry-no-auto-bump.yml",
       ".github/workflows/automation-registry-validate.yml",
       ".github/workflows/build.yml",
+      ".github/workflows/canon-distribution.yml",
       ".github/workflows/canon-registries-validate.yml",
       ".github/workflows/canon-sync.yml",
       ".github/workflows/ci.yml",
@@ -3050,7 +3051,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1643,
+  "runtime_files_count": 1644,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3063,6 +3064,7 @@
     ".github/workflows/automation-registry-no-auto-bump.yml",
     ".github/workflows/automation-registry-validate.yml",
     ".github/workflows/build.yml",
+    ".github/workflows/canon-distribution.yml",
     ".github/workflows/canon-registries-validate.yml",
     ".github/workflows/canon-sync.yml",
     ".github/workflows/ci.yml",
