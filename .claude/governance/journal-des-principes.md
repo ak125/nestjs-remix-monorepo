@@ -212,8 +212,8 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
     check `🚦 Circuit de fusion` ait rendu son résultat. Rendre la règle vraie demande une
     modification du workflow, réservée à l'owner.
   - `🚦 Circuit de fusion` n'est pas un check requis de `main` au relevé ; l'ajouter est un acte
-    de l'owner. Le script de la porte ADR-124 (`scripts/ci/merge-perimeter-gate.mjs`) n'est
-    appelé par aucun workflow ; seul son test tourne (`audit.yml`).
+    de l'owner. Le script de la porte ADR-124 et son test sont retirés du dépôt
+    (décision 132).
 - **P21.** Mandat, revue, décision et fusion sont des actes distincts : chacun a son auteur et sa
   preuve, aucun n'en emporte un autre. Le mandat explicite couvre son exécution et sa vérification,
   dans ses limites : il ne lève aucune permission technique, aucune validation propre à un domaine,

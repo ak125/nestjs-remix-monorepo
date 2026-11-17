@@ -89,6 +89,5 @@
 # Gouvernance : classification des risques, contrats, circuits de fusion
 /.spec/00-canon/                                     @ak125
 /scripts/ci/merge-circuit.mjs                        @ak125
-/scripts/ci/merge-perimeter-gate.mjs                 @ak125
 /scripts/registry/check-new-files.js                 @ak125
 /scripts/governance/validate-agent-operating-map.js  @ak125

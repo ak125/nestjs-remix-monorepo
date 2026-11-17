@@ -107,8 +107,8 @@ devient une archive.
   par schéma en CI. Un principe nouveau s'écrit au journal par PR ; pas de
   nouvelle ADR.
 - Fusion : trois circuits (`scripts/ci/merge-circuit.mjs`, workflow
-  `🚦 Circuit de fusion`). Tant que l'owner ne les a pas activés, la porte
-  ADR-124 s'applique. Un agent ne fusionne jamais et n'arme jamais l'auto-fusion.
+  `🚦 Circuit de fusion`) ; leur état d'application est dans P20 du journal.
+  Un agent ne fusionne jamais et n'arme jamais l'auto-fusion.
 - `ak125/governance-vault` : archive en lecture seule après déplacement (décision
   73, plan `docs/audit/mandat-ar-20261116/inventaire-vault-et-plan.md`). Une ADR
   du vault explique une décision ; elle n'est plus normative par elle-même. Jusqu'à
