@@ -537,7 +537,7 @@ export class CartDataService extends SupabaseBaseService {
         // doit pouvoir distinguer les deux.
         if (!priceRow) {
           this.logger.warn(
-            `Article ${piece.piece_id} sans tarif vendable (aucune ligne pri_dispo='1' à prix positif) — affiché non vendable`,
+            `Article ${piece.piece_id} sans tarif vendable (aucune ligne vendable : pri_dispo 1, 2 ou 3, ni FROZEN ni masquée, prix positif) — affiché non vendable`,
           );
         }
         const priceTTC = Number(priceRow?.pri_vente_ttc_n) || 0;
@@ -679,7 +679,7 @@ export class CartDataService extends SupabaseBaseService {
 
       if (!tarif) {
         this.logger.warn(
-          `Pièce ${productId} sans tarif vendable (aucune ligne pri_dispo='1' à prix positif)`,
+          `Pièce ${productId} sans tarif vendable (aucune ligne vendable : pri_dispo 1, 2 ou 3, ni FROZEN ni masquée, prix positif)`,
         );
       }
 

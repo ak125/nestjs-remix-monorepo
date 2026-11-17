@@ -8,7 +8,6 @@
  * ✅ POST /api/breadcrumb/:path           → Mettre à jour breadcrumb
  * ✅ GET  /api/breadcrumb/schema/:path    → Schema.org SEO
  * ✅ GET  /api/breadcrumb/config          → Configuration
- * ✅ POST /api/breadcrumb/cache/clear     → Nettoyage cache
  */
 
 import {
@@ -89,30 +88,6 @@ export class OptimizedBreadcrumbController {
   }
 
   /**
-   * Nettoyage cache breadcrumb
-   * POST /api/breadcrumb/cache/clear
-   * NOTE: Doit être AVANT @Get('{*path}') pour éviter la capture
-   */
-  @Post('cache/clear')
-  async clearCache(@Body() body?: { path?: string }) {
-    try {
-      await this.breadcrumbService.clearCache(body?.path);
-
-      return {
-        success: true,
-        message: body?.path
-          ? `Cache invalidé pour: ${body.path}`
-          : 'Cache breadcrumb nettoyé',
-      };
-    } catch (error) {
-      this.logger.error(`❌ Erreur nettoyage cache:`, error);
-      throw new OperationFailedException({
-        message: 'Erreur lors du nettoyage du cache',
-      });
-    }
-  }
-
-  /**
    * Récupérer le breadcrumb pour un chemin
    * GET /api/breadcrumb/:path
    * NOTE: Route générique - DOIT être après les routes spécifiques
@@ -185,10 +160,6 @@ export class OptimizedBreadcrumbController {
 
   /**
    * SUPPRIMÉ: Fonction dupliquée @Get('config') déjà définie ligne 72
-   */
-
-  /**
-   * SUPPRIMÉ: Fonction dupliquée clearCache() déjà définie ligne 96
    */
 
   /**

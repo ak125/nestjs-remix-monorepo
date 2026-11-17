@@ -3,6 +3,7 @@ import {
   Controller,
   Post,
   Patch,
+  Get,
   Param,
   Body,
   ParseIntPipe,
@@ -21,6 +22,35 @@ import {
   type CreateSupplementOrderInput,
 } from '../services/orders.service';
 import { MailService } from '../../../services/mail.service';
+import { z } from 'zod';
+import { OrderLineSupplierService } from '../services/order-line-supplier.service';
+
+/** `orl_id` / `ord_id` sont du texte en base : numérique, « <ord>-L001 », « ORD-… ». */
+const IDENTIFIANT_TEXTE = /^[A-Za-z0-9_-]{1,64}$/;
+const ConfirmSupplierSchema = z
+  .object({
+    splId: z.string().regex(/^[0-9]{1,9}$/),
+    prixAchatUnitHt: z.number().positive(),
+  })
+  .strict();
+const MarkRuptureSchema = z
+  .object({ comment: z.string().max(500).optional() })
+  .strict();
+
+function identifiant(valeur: string, nom: string): string {
+  if (!IDENTIFIANT_TEXTE.test(valeur)) {
+    throw new BadRequestException(`${nom} invalide`);
+  }
+  return valeur;
+}
+
+function valider<T>(schema: z.ZodType<T>, body: unknown): T {
+  const r = schema.safeParse(body ?? {});
+  if (!r.success) {
+    throw new BadRequestException(r.error.issues);
+  }
+  return r.data;
+}
 
 /**
  * 🎮 Controller Actions Commandes
@@ -38,7 +68,71 @@ export class OrderActionsController {
     private readonly orderActionsService: OrderActionsService,
     private readonly mailService: MailService,
     private readonly ordersService: OrdersService,
+    private readonly lineSupplierService: OrderLineSupplierService,
   ) {}
+
+  /**
+   * GET /api/admin/orders/:orderId/lines/:lineId/supplier-proposal
+   * Décision 50 : fournisseur proposé (pièce vendable au meilleur prix d'achat),
+   * ou RUPTURE, ou A_COMPLETER avec les motifs. Lecture seule.
+   */
+  @Get(':orderId/lines/:lineId/supplier-proposal')
+  @RequirePermission('canValidate')
+  async getSupplierProposal(
+    @Param('orderId') orderId: string,
+    @Param('lineId') lineId: string,
+  ) {
+    return this.lineSupplierService.getProposal(
+      identifiant(orderId, 'orderId'),
+      identifiant(lineId, 'lineId'),
+    );
+  }
+
+  /**
+   * POST /api/admin/orders/:orderId/lines/:lineId/confirm-supplier
+   * Décision 50 : confirmation en un geste. Le corps reprend le fournisseur et le
+   * prix affichés ; s'ils ne correspondent plus à la proposition recalculée → 409.
+   */
+  @Post(':orderId/lines/:lineId/confirm-supplier')
+  @RequirePermission('canValidate')
+  async confirmSupplier(
+    @Param('orderId') orderId: string,
+    @Param('lineId') lineId: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    const attendu = valider(ConfirmSupplierSchema, body);
+    const userId = (req.user as { id?: unknown } | undefined)?.id;
+    return this.orderActionsService.confirmLineSupplier(
+      identifiant(orderId, 'orderId'),
+      identifiant(lineId, 'lineId'),
+      attendu,
+      userId != null ? String(userId) : undefined,
+    );
+  }
+
+  /**
+   * POST /api/admin/orders/:orderId/lines/:lineId/mark-rupture
+   * Décision 50 : statut de ligne 4 « Pièce non disponible ». La suite suit le
+   * skill order-rupture-equivalence (rien n'est envoyé ni annulé ici).
+   */
+  @Post(':orderId/lines/:lineId/mark-rupture')
+  @RequirePermission('canValidate')
+  async markRupture(
+    @Param('orderId') orderId: string,
+    @Param('lineId') lineId: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    const { comment } = valider(MarkRuptureSchema, body);
+    const userId = (req.user as { id?: unknown } | undefined)?.id;
+    return this.orderActionsService.markLineRupture(
+      identifiant(orderId, 'orderId'),
+      identifiant(lineId, 'lineId'),
+      userId != null ? String(userId) : undefined,
+      comment,
+    );
+  }
 
   /**
    * PATCH /api/admin/orders/:orderId/lines/:lineId/status/:newStatus

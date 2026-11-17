@@ -195,41 +195,6 @@ export async function getPaymentStatus(paymentId: string) {
 }
 
 /**
- * Gère le retour de paiement depuis la gateway
- */
-export async function handlePaymentReturn(
-  paymentId: string,
-  returnData: Record<string, string>,
-) {
-  try {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
-    const response = await fetch(
-      `${backendUrl}/api/payments/callback/success`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Internal-Call": "true",
-        },
-        body: JSON.stringify({
-          payment_id: paymentId,
-          ...returnData,
-        }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Payment return handling failed: ${response.statusText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    logger.error("❌ Payment return handling failed:", error);
-    throw error;
-  }
-}
-
-/**
  * Traite le retour de paiement depuis Cyberplus
  * Utilise le webhook /api/payments/callback/cyberplus
  */
