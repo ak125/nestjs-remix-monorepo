@@ -1,0 +1,21 @@
+diff --git a/.spec/00-canon/ai-registry/agent-operating-map.yaml b/.spec/00-canon/ai-registry/agent-operating-map.yaml
+index 10e44e5ab..69e05f88f 100644
+--- a/.spec/00-canon/ai-registry/agent-operating-map.yaml
++++ b/.spec/00-canon/ai-registry/agent-operating-map.yaml
+@@ -383,7 +383,7 @@ departments:
+     priority: P3                     # D12 = P3
+     kpi_primary: qualified_demands
+     repo_domains: [D12]
+-    capabilities: [marketing, marketing-backlinks]
++    capabilities: [marketing, marketing-backlinks, marketing-workbench, amk-marketing-operations, amk-marketing-preparation, amk-marketing-validation, amk-reactivation]  # amk-* : workspaces/marketing skills via skills.registry (décision 70, mandat BR)
+     state: partial                   # ADR-036 Phase 1-2 (G1 agents)
+     contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+       surveillance: "Sessions humaines et commandes par canal ; ouvertures et clics des envois ; Shopping : produits approuvés et refusés, clics, commandes et coût par commande."
+@@ -742,6 +742,7 @@ declared_capabilities:
+   - { id: knowledge-graph,          type: module,  owner: diagnostic, status: partial, evidence: { scripts: [backend/src/modules/knowledge-graph] } }  # kg_* vides
+   - { id: marketing,                type: module,  owner: marketing,  status: partial, evidence: { scripts: [backend/src/modules/marketing] } }
+   - { id: marketing-backlinks,      type: service, owner: marketing,  status: partial, evidence: { scripts: [backend/src/modules/marketing/services/marketing-backlinks.service.ts], tables: [__marketing_backlinks] } }  # GSC-links only, no premium crawl
++  - { id: marketing-workbench,      type: pipeline, owner: marketing, status: partial, evidence: { scripts: [scripts/marketing/workbench-cli.ts, backend/src/modules/marketing/services/marketing-preparation.ts] } }  # moteur de préparation + recettes, ex-Hermes (décision 70) ; scripts/marketing/hermes = adaptateurs du profil Hermes, sans exécutant après l'arrêt
+   - { id: brand-compliance-gate,    type: service, owner: brand,      status: live,    evidence: { scripts: [backend/src/modules/marketing/services/brand-compliance-gate.service.ts] } }
+   - { id: fafa-brand-safety-reviewer, type: skill, owner: brand,      status: partial }  # workspaces/marketing skill via skills.registry
+   - { id: blog,                     type: module,  owner: content,    status: live,    evidence: { scripts: [backend/src/modules/blog] } }

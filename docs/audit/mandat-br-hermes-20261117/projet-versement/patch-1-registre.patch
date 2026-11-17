@@ -1,0 +1,93 @@
+diff --git a/scripts/governance/build-skills-registry.js b/scripts/governance/build-skills-registry.js
+index 513e42105..ccd537e51 100644
+--- a/scripts/governance/build-skills-registry.js
++++ b/scripts/governance/build-skills-registry.js
+@@ -3,7 +3,10 @@
+  * scripts/governance/build-skills-registry.js
+  *
+  * Builds `.spec/00-canon/ai-registry/skills.registry.json` from the
+- * frontmatters of every `.claude/skills/<name>/SKILL.md`.
++ * frontmatters of every `.claude/skills/<name>/SKILL.md` and of every
++ * workspace skill `workspaces/<ws>/.claude/skills/<name>/SKILL.md` (field
++ * `workspace`). The department map annotates workspace skills « via
++ * skills.registry » ; build-command-center-snapshot.js resolves them here.
+  *
+  * AI Governance Control Plane — projection layer (PR-V2 Layer 4). Mirrors
+  * the pattern used by `scripts/registry/build-canonical-registry.js` for the
+@@ -38,6 +41,7 @@ const {
+ 
+ const MONOREPO_ROOT = path.resolve(__dirname, "..", "..");
+ const SKILLS_DIR = path.join(MONOREPO_ROOT, ".claude", "skills");
++const WORKSPACES_DIR = path.join(MONOREPO_ROOT, "workspaces");
+ const OUTPUT_PATH = path.join(
+   MONOREPO_ROOT,
+   ".spec",
+@@ -55,8 +59,7 @@ function sha256(content) {
+   return "sha256:" + crypto.createHash("sha256").update(content).digest("hex");
+ }
+ 
+-function buildEntry(name) {
+-  const skillFile = path.join(SKILLS_DIR, name, "SKILL.md");
++function buildEntry({ name, skillFile, workspace }) {
+   const content = fs.readFileSync(skillFile, "utf8");
+   let fm;
+   try {
+@@ -71,6 +74,7 @@ function buildEntry(name) {
+     checksum: sha256(content),
+     spec_compliant: false,
+   };
++  if (workspace) entry.workspace = workspace;
+ 
+   if (fm) {
+     entry.spec_compliant =
+@@ -99,13 +103,35 @@ function buildEntry(name) {
+   return entry;
+ }
+ 
+-function listSkills() {
+-  if (!fs.existsSync(SKILLS_DIR)) return [];
++function listSkillDirs(dir, workspace) {
++  if (!fs.existsSync(dir)) return [];
+   return fs
+-    .readdirSync(SKILLS_DIR, { withFileTypes: true })
++    .readdirSync(dir, { withFileTypes: true })
+     .filter((d) => d.isDirectory())
+     .map((d) => d.name)
+-    .sort();
++    .sort()
++    .map((name) => ({ name, skillFile: path.join(dir, name, "SKILL.md"), workspace }))
++    .filter((s) => fs.existsSync(s.skillFile));
++}
++
++// Racine d'abord (ordre inchangé), puis chaque workspace par ordre alphabétique.
++// Un nom présent deux fois est une erreur : le snapshot résout les skills par nom.
++function listSkills() {
++  const workspaces = fs.existsSync(WORKSPACES_DIR)
++    ? fs.readdirSync(WORKSPACES_DIR, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort()
++    : [];
++  const all = [
++    ...listSkillDirs(SKILLS_DIR, null),
++    ...workspaces.flatMap((ws) => listSkillDirs(path.join(WORKSPACES_DIR, ws, ".claude", "skills"), ws)),
++  ];
++  const seen = new Map();
++  for (const s of all) {
++    if (seen.has(s.name)) {
++      throw new Error(`skill name '${s.name}' defined twice : ${path.relative(MONOREPO_ROOT, seen.get(s.name))} and ${path.relative(MONOREPO_ROOT, s.skillFile)}`);
++    }
++    seen.set(s.name, s.skillFile);
++  }
++  return all;
+ }
+ 
+ function markThirdParty(entry, lockSkills) {
+@@ -117,9 +143,8 @@ function markThirdParty(entry, lockSkills) {
+ }
+ 
+ function buildRegistry() {
+-  const names = listSkills();
+   const lockSkills = loadSkillsLock().skills;
+-  const skills = names
++  const skills = listSkills()
+     .map(buildEntry)
+     .map((entry) => markThirdParty(entry, lockSkills));
+   const issues = skills
