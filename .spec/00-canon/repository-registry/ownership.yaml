@@ -1818,3 +1818,15 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # PR #2096, complément : test de la définition unique de « vendable ».
+  # Corrige le commentaire de l'entrée vendable.ts ci-dessus : son test n'est
+  # PAS un chemin d'exception pour le ratchet « Block new contract-drift
+  # findings » (job 133739517184 : 1 ownership_gap nouveau sur ce fichier).
+  # Même forme que les tests de piece-price-data (PR #1499, entrées ci-dessus) :
+  # chemin exact, domaine / owner du sujet, sourceConfidence medium (dérivation,
+  # pas de signal CODEOWNERS direct), risk medium (valeur des entrées de test).
+  - glob: backend/src/database/services/vendable.test.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: medium
+    risk: medium
