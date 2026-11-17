@@ -61,7 +61,7 @@ export interface CustomerEmailData {
 }
 
 /** Échappement HTML des valeurs insérées dans les gabarits (mandat BM). */
-export function escapeHtml(value: unknown): string {
+function escapeHtml(value: unknown): string {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

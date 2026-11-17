@@ -10,7 +10,7 @@
  * département 18 et le comptable. Rien n'est inventé ici.
  */
 import type { InvoiceLineDraft } from './order-billing.calc';
-import { DEFAULT_TVA_RATE } from '../../pricing/services/pricing-formula.service';
+import { DEFAULT_TVA_RATE } from '../../pricing';
 
 /**
  * Identité du vendeur, recopiée mot pour mot du pied de facture déjà publié

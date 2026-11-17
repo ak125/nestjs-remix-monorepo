@@ -9,11 +9,11 @@
  * Ce mode d'arrondi et la TVA sur la consigne sont des questions ouvertes pour
  * le comptable (docs/facturation/mentions-facture-a-valider.md).
  */
-import { DEFAULT_TVA_RATE } from '../../pricing/services/pricing-formula.service';
+import { DEFAULT_TVA_RATE } from '../../pricing';
 import { centimesDuTexte, texteDesCentimes } from './orders.service';
 
 /** Lecture « 12.3 » → 1230 (vide → 0, illisible → null) : helper existant. */
-export const centsFromText = centimesDuTexte;
+const centsFromText = centimesDuTexte;
 
 /** 1230 → « 12.30 », -500 → « -5.00 » (lignes de réduction). */
 export function textFromCents(cents: number): string {

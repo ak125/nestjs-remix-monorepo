@@ -51,7 +51,7 @@ import {
 } from './order-billing.calc';
 import { renderInvoicePdf } from './invoice-pdf';
 
-export const ORDER_BILLING_FLAG = 'ORDER_BILLING_ENABLED';
+const ORDER_BILLING_FLAG = 'ORDER_BILLING_ENABLED';
 
 const T_ADJUSTMENT = '__order_payment_adjustment';
 const T_CAPTURE = '__order_capture_state';
