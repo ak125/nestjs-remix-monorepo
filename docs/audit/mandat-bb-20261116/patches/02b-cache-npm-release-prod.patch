@@ -1,0 +1,10 @@
+--- a/.github/workflows/release-prod.yml
++++ b/.github/workflows/release-prod.yml
+@@ -70,6 +70,7 @@
+         uses: actions/setup-node@v7
+         with:
+           node-version: 24
++          package-manager-cache: false
+ 
+       - name: Verify deployment probes before any PROD mutation
+         run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
