@@ -43,7 +43,7 @@
         "backend/src/modules/ai-content/templates"
       ],
       "files_count": 12,
-      "loc_total": 3273,
+      "loc_total": 3274,
       "has_barrel": false
     },
     "analytics": {
@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6271,
+      "loc_total": 6287,
       "has_barrel": true
     },
     "blog": {
@@ -126,14 +126,15 @@
     "cart": {
       "dirs": [
         "backend/src/modules/cart",
+        "backend/src/modules/cart/config",
         "backend/src/modules/cart/controllers",
         "backend/src/modules/cart/dto",
         "backend/src/modules/cart/dto/__tests__",
         "backend/src/modules/cart/services"
       ],
-      "files_count": 22,
-      "loc_total": 4268,
-      "has_barrel": false
+      "files_count": 26,
+      "loc_total": 4806,
+      "has_barrel": true
     },
     "catalog": {
       "dirs": [
@@ -213,7 +214,7 @@
         "backend/src/database/types"
       ],
       "files_count": 17,
-      "loc_total": 21607,
+      "loc_total": 21609,
       "has_barrel": true
     },
     "dev-only": {
@@ -342,7 +343,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 586,
-      "loc_total": 111114,
+      "loc_total": 111269,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -411,7 +412,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 30,
-      "loc_total": 7355,
+      "loc_total": 7358,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -847,7 +848,7 @@
         "backend/src/modules/shipping"
       ],
       "files_count": 3,
-      "loc_total": 517,
+      "loc_total": 519,
       "has_barrel": false
     },
     "staff": {
@@ -962,8 +963,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 388,
-      "loc_total": 80557,
+      "files_count": 391,
+      "loc_total": 80876,
       "has_barrel": true
     },
     "upload": {
@@ -1138,6 +1139,11 @@
     },
     {
       "from": "ai-content",
+      "to": "cart",
+      "count": 1
+    },
+    {
+      "from": "ai-content",
       "to": "common",
       "count": 1
     },
@@ -1259,7 +1265,7 @@
     {
       "from": "backend-core",
       "to": "cart",
-      "count": 2
+      "count": 4
     },
     {
       "from": "backend-core",
@@ -1693,6 +1699,11 @@
     },
     {
       "from": "database",
+      "to": "cart",
+      "count": 1
+    },
+    {
+      "from": "database",
       "to": "catalog",
       "count": 1
     },
@@ -1805,6 +1816,11 @@
       "from": "marketing",
       "to": "ai-content",
       "count": 2
+    },
+    {
+      "from": "marketing",
+      "to": "cart",
+      "count": 3
     },
     {
       "from": "marketing",
@@ -2109,7 +2125,7 @@
     {
       "from": "shipping",
       "to": "cart",
-      "count": 2
+      "count": 3
     },
     {
       "from": "supplier-truth",

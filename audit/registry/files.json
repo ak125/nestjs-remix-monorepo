@@ -5957,10 +5957,11 @@
         "@repo/database-types",
         "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
+        "backend/src/modules/cart/config/shipping-policy.config.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1046,
+      "loc": 1048,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -11443,10 +11444,11 @@
         "backend/src/modules/ai-content/ai-content.service.ts"
       ],
       "imports": [
-        "backend/src/modules/ai-content/dto/generate-content.dto.ts"
+        "backend/src/modules/ai-content/dto/generate-content.dto.ts",
+        "backend/src/modules/cart/index.ts"
       ],
       "kind": "service",
-      "loc": 1153,
+      "loc": 1154,
       "owner": "__unassigned__",
       "path": "backend/src/modules/ai-content/templates/content-templates.ts",
       "risk": "low",
@@ -13256,6 +13258,55 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/config/shipping-policy.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/cart/config/shipping-policy.config.ts"
+      ],
+      "kind": "test",
+      "loc": 118,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/config/shipping-policy.config.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/config/shipping-policy.config.ts",
+      "importedBy": [
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/modules/cart/config/shipping-policy.config.test.ts",
+        "backend/src/modules/cart/controllers/cart-shipping.controller.ts",
+        "backend/src/modules/cart/index.ts",
+        "backend/src/modules/cart/services/shipping-calculator.service.ts",
+        "backend/src/remix/remix-api.service.test.ts",
+        "backend/src/remix/remix-api.service.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 120,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/config/shipping-policy.config.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "importedBy": [
         "backend/src/modules/cart/cart.module.ts"
@@ -13289,7 +13340,8 @@
         "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
-        "backend/src/modules/cart/controllers/cart-shipping.controller.ts"
+        "backend/src/modules/cart/controllers/cart-shipping.controller.ts",
+        "backend/src/modules/cart/services/shipping-flat-rate.test.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -13455,11 +13507,12 @@
         "@common/exceptions",
         "backend/src/auth/guards/optional-auth.guard.ts",
         "backend/src/database/services/cart-data.service.ts",
+        "backend/src/modules/cart/config/shipping-policy.config.ts",
         "backend/src/modules/cart/controllers/cart-controller.utils.ts",
         "backend/src/modules/cart/services/shipping-calculator.service.ts"
       ],
       "kind": "controller",
-      "loc": 207,
+      "loc": 211,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/controllers/cart-shipping.controller.ts",
       "risk": "low",
@@ -13550,6 +13603,34 @@
       "loc": 22,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/dto/update-item.dto.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/index.ts",
+      "importedBy": [
+        "backend/src/modules/ai-content/templates/content-templates.ts",
+        "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
+        "backend/src/modules/marketing/templates/brand-rules-seed.ts",
+        "backend/src/modules/marketing/templates/social-post-templates.ts",
+        "backend/src/modules/shipping/shipping.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/cart/config/shipping-policy.config.ts"
+      ],
+      "kind": "service",
+      "loc": 10,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/index.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -13723,16 +13804,18 @@
         "backend/src/modules/cart/cart.module.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-shipping.controller.ts",
+        "backend/src/modules/cart/services/shipping-flat-rate.test.ts",
         "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/modules/shipping/shipping.service.ts"
       ],
       "imports": [
         "@database/services/piece-price-data.service",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "backend/src/modules/cart/config/shipping-policy.config.ts"
       ],
       "kind": "service",
-      "loc": 282,
+      "loc": 336,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/services/shipping-calculator.service.ts",
       "risk": "low",
@@ -13740,6 +13823,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/services/shipping-flat-rate.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@database/services/piece-price-data.service",
+        "backend/src/modules/cart/controllers/cart-controller.utils.ts",
+        "backend/src/modules/cart/services/shipping-calculator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 232,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/services/shipping-flat-rate.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -19330,12 +19436,13 @@
       ],
       "imports": [
         "backend/src/config/app.config.ts",
+        "backend/src/modules/cart/index.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
       ],
       "kind": "service",
-      "loc": 224,
+      "loc": 225,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
       "risk": "low",
@@ -19353,10 +19460,11 @@
       "id": "backend/src/modules/marketing/templates/brand-rules-seed.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/cart/index.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts"
       ],
       "kind": "service",
-      "loc": 369,
+      "loc": 370,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/templates/brand-rules-seed.ts",
       "risk": "low",
@@ -19378,10 +19486,11 @@
         "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts"
       ],
       "imports": [
+        "backend/src/modules/cart/index.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts"
       ],
       "kind": "service",
-      "loc": 275,
+      "loc": 276,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/templates/social-post-templates.ts",
       "risk": "low",
@@ -34990,10 +35099,11 @@
         "@common/exceptions",
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "backend/src/modules/cart/index.ts",
         "backend/src/modules/cart/services/shipping-calculator.service.ts"
       ],
       "kind": "service",
-      "loc": 375,
+      "loc": 377,
       "owner": "__unassigned__",
       "path": "backend/src/modules/shipping/shipping.service.ts",
       "risk": "low",
@@ -40058,10 +40168,11 @@
       "id": "backend/src/remix/remix-api.service.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/cart/config/shipping-policy.config.ts",
         "backend/src/remix/remix-api.service.ts"
       ],
       "kind": "test",
-      "loc": 222,
+      "loc": 233,
       "owner": "__unassigned__",
       "path": "backend/src/remix/remix-api.service.test.ts",
       "risk": "low",
@@ -40084,12 +40195,13 @@
       ],
       "imports": [
         "backend/src/database/services/orders.service.ts",
+        "backend/src/modules/cart/config/shipping-policy.config.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/staff/staff.service.ts",
         "frontend/index.cjs"
       ],
       "kind": "service",
-      "loc": 209,
+      "loc": 214,
       "owner": "__unassigned__",
       "path": "backend/src/remix/remix-api.service.ts",
       "risk": "low",
@@ -42504,6 +42616,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/orders.service.create-order-shipping-total.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 175,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/orders.service.create-order-shipping-total.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/orders.service.create-supplement-order.test.ts",
       "importedBy": [],
       "imports": [],
@@ -43720,6 +43851,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/shipping-policy-single-source.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 66,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/shipping-policy-single-source.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/site-maintenance-routes-authz.test.ts",
       "importedBy": [],
       "imports": [],
@@ -44634,6 +44784,7 @@
         "frontend/app/root.tsx"
       ],
       "imports": [
+        "frontend/app/components/cart/cart-utils.ts",
         "frontend/app/components/navbar/CartSidebarSimple.tsx",
         "frontend/app/components/navbar/UserDropdownMenu.tsx",
         "frontend/app/components/ui/badge.tsx",
@@ -44643,7 +44794,7 @@
         "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 539,
+      "loc": 550,
       "owner": "__unassigned__",
       "path": "frontend/app/components/Navbar.tsx",
       "risk": "low",
@@ -46874,10 +47025,11 @@
         "frontend/app/components/cart/cart-utils.ts",
         "~/components/ui/badge",
         "~/components/ui/tooltip",
+        "~/hooks/useRootData",
         "~/schemas/cart.schemas"
       ],
       "kind": "config",
-      "loc": 188,
+      "loc": 196,
       "owner": "__unassigned__",
       "path": "frontend/app/components/cart/CartSummaryBlock.tsx",
       "risk": "low",
@@ -46939,10 +47091,11 @@
       "id": "frontend/app/components/cart/FreeShippingProgress.tsx",
       "importedBy": [],
       "imports": [
-        "frontend/app/components/cart/cart-utils.ts"
+        "frontend/app/components/cart/cart-utils.ts",
+        "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 82,
+      "loc": 88,
       "owner": "__unassigned__",
       "path": "frontend/app/components/cart/FreeShippingProgress.tsx",
       "risk": "low",
@@ -46954,27 +47107,30 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "frontend/app/components/cart/cart-utils.ts",
       "importedBy": [
+        "frontend/app/components/Navbar.tsx",
         "frontend/app/components/cart/CartItemRow.tsx",
         "frontend/app/components/cart/CartSummaryBlock.tsx",
-        "frontend/app/components/cart/FreeShippingProgress.tsx"
+        "frontend/app/components/cart/FreeShippingProgress.tsx",
+        "frontend/app/components/navbar/CartSidebarSimple.tsx"
       ],
       "imports": [
         "~/utils/safe-storage"
       ],
       "kind": "config",
-      "loc": 75,
+      "loc": 86,
       "owner": "__unassigned__",
       "path": "frontend/app/components/cart/cart-utils.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -47162,7 +47318,9 @@
       "importedBy": [
         "frontend/app/components/checkout/CheckoutOrderSummary.tsx"
       ],
-      "imports": [],
+      "imports": [
+        "~/hooks/useRootData"
+      ],
       "kind": "config",
       "loc": 67,
       "owner": "__unassigned__",
@@ -48201,10 +48359,11 @@
       "id": "frontend/app/components/ecommerce/MobileOptimizedCard.tsx",
       "importedBy": [],
       "imports": [
-        "frontend/app/components/ecommerce/SmartHeader.tsx"
+        "frontend/app/components/ecommerce/SmartHeader.tsx",
+        "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 546,
+      "loc": 588,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ecommerce/MobileOptimizedCard.tsx",
       "risk": "low",
@@ -48222,10 +48381,12 @@
       "id": "frontend/app/components/ecommerce/ProductCard.tsx",
       "importedBy": [],
       "imports": [
+        "~/components/cart/cart-utils",
+        "~/hooks/useRootData",
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 491,
+      "loc": 497,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ecommerce/ProductCard.tsx",
       "risk": "low",
@@ -48243,10 +48404,12 @@
       "id": "frontend/app/components/ecommerce/QuickCartDrawer.tsx",
       "importedBy": [],
       "imports": [
-        "frontend/app/utils/delivery-eta.ts"
+        "frontend/app/utils/delivery-eta.ts",
+        "~/components/cart/cart-utils",
+        "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 575,
+      "loc": 581,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ecommerce/QuickCartDrawer.tsx",
       "risk": "low",
@@ -49699,10 +49862,11 @@
         "frontend/app/components/home/index.ts"
       ],
       "imports": [
-        "~/components/home/constants"
+        "~/components/home/constants",
+        "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 81,
+      "loc": 84,
       "owner": "__unassigned__",
       "path": "frontend/app/components/home/FaqSection.tsx",
       "risk": "low",
@@ -49791,10 +49955,11 @@
         "frontend/app/components/home/index.ts"
       ],
       "imports": [
-        "frontend/app/components/home/constants.ts"
+        "frontend/app/components/home/constants.ts",
+        "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 69,
+      "loc": 71,
       "owner": "__unassigned__",
       "path": "frontend/app/components/home/HomepageJsonLd.tsx",
       "risk": "low",
@@ -49901,10 +50066,12 @@
         "frontend/app/components/home/HomepageJsonLd.tsx"
       ],
       "imports": [
-        "@repo/database-types/family-registry"
+        "@repo/database-types/family-registry",
+        "~/components/cart/cart-utils",
+        "~/utils/remix-application-port"
       ],
       "kind": "config",
-      "loc": 343,
+      "loc": 363,
       "owner": "__unassigned__",
       "path": "frontend/app/components/home/constants.ts",
       "risk": "low",
@@ -50448,13 +50615,14 @@
         "frontend/app/components/Navbar.tsx"
       ],
       "imports": [
+        "frontend/app/components/cart/cart-utils.ts",
         "frontend/app/lib/utils.ts",
         "~/components/ui/badge",
         "~/hooks/useNativeDialog",
         "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 213,
+      "loc": 222,
       "owner": "__unassigned__",
       "path": "frontend/app/components/navbar/CartSidebarSimple.tsx",
       "risk": "low",
@@ -54707,7 +54875,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 52,
+      "loc": 43,
       "owner": "__unassigned__",
       "path": "frontend/app/config/site.ts",
       "risk": "low",
@@ -55241,7 +55409,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 48,
+      "loc": 58,
       "owner": "__unassigned__",
       "path": "frontend/app/hooks/useRootData.ts",
       "risk": "low",
@@ -55518,6 +55686,7 @@
         "frontend/app/hooks/usePageRole.ts",
         "frontend/app/hooks/useRootData.ts",
         "frontend/app/hooks/useScrollBehavior.ts",
+        "frontend/app/server/remix-api.server.ts",
         "frontend/app/services/cart.server.ts",
         "frontend/app/styles/animations.css",
         "~/components/LazyBoundary",
@@ -55527,7 +55696,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 595,
+      "loc": 611,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -62147,11 +62316,14 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "frontend/app/server/remix-api.server.ts",
-      "importedBy": [],
+      "importedBy": [
+        "frontend/app/root.tsx"
+      ],
       "imports": [
         "~/utils/load-context",
         "~/utils/remix-application-port"
@@ -62164,7 +62336,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -64553,7 +64725,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 158,
+      "loc": 172,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/remix-application-port.ts",
       "risk": "low",
@@ -67105,7 +67277,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 107,
+      "loc": 108,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/navbar-search-native-submit.test.tsx",
       "risk": "low",
@@ -68096,6 +68268,25 @@
       "loc": 413,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/seo-hub-observability-sources.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/shipping-policy-display.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 77,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/shipping-policy-display.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

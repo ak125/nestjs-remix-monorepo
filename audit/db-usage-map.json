@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 444,
-    "backend_files_scanned": 1538
+    "backend_files_scanned": 1542
   },
   "tables": {
     "___config": {
@@ -11000,42 +11000,42 @@
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 464,
+      "line": 465,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 477,
+      "line": 478,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 517,
+      "line": 518,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 596,
+      "line": 597,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 633,
+      "line": 634,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 689,
+      "line": 690,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -12379,7 +12379,7 @@
     },
     {
       "file": "backend/src/modules/cart/services/shipping-calculator.service.ts",
-      "line": 110,
+      "line": 148,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
@@ -14801,21 +14801,21 @@
     },
     {
       "file": "backend/src/modules/shipping/shipping.service.ts",
-      "line": 265,
+      "line": 267,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/shipping/shipping.service.ts",
-      "line": 311,
+      "line": 313,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/shipping/shipping.service.ts",
-      "line": 323,
+      "line": 325,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
