@@ -21,7 +21,7 @@ Voir `.claude/rules/wiki-batch.md` pour :
 - Convention slug DB `__diag_symptom.slug` (anglais snake_case `brake_*`)
 - Workflow `wiki-protected-paths.yml` (4 markers `metadata-backfill: | template-migration: | promotion-from-proposals: | rollback:`)
 
-Voir `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo pour le contrat de sortie obligatoire (AEC : coverage manifest, 5 états séparés, statuts autorisés ; version dans son en-tête). C'est la copie déclarée, générée depuis sa source et contrôlée par hash. La copie locale `.claude/canon-mirrors/agent-exit-contract.md` du workspace (v1.0.0) est périmée et ne fait pas foi ; son retrait attend l'étape 2 du plan de sortie du vault (contradiction D16, mandat AR-4).
+Voir `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo pour le contrat de sortie obligatoire (AEC : coverage manifest, 5 états séparés, statuts autorisés ; version dans son en-tête). C'est la copie déclarée, générée depuis sa source et contrôlée par hash. La copie locale `.claude/canon-mirrors/agent-exit-contract.md` du workspace (v1.0.0) est périmée et ne fait pas foi ; son retrait attend la décision de l'owner (question D16, `docs/audit/mandat-bc-20261116/etape-2.md`).
 
 ## Validation des consommateurs
 
