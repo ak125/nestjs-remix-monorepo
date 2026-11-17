@@ -12,6 +12,10 @@
  * The handler → access maps below are EXHAUSTIVE: a handler added later
  * without a classification fails the test.
  *
+ * `api/cart` serves no `analytics/*` route: cart aggregates have no page
+ * behind them and no caller. The check reads the controllers registered in
+ * `CartModule`, so a route added under that path fails the test.
+ *
  * The guard chain is evaluated for real, with the real handler in the
  * execution context (same shape as `seo-dynamic-v4-authz.test.ts`).
  *
@@ -27,6 +31,7 @@ import {
   isAdminSession,
   sessionPrivilegeLevel,
 } from '../../src/auth/session-privilege';
+import { CartModule } from '../../src/modules/cart/cart.module';
 import { CartRecoveryController } from '../../src/modules/cart/controllers/cart-recovery.controller';
 import { ProductsInventoryController } from '../../src/modules/products/controllers/products-inventory.controller';
 
@@ -149,6 +154,18 @@ const CONTROLLERS: Array<[string, Type<any>, Access]> = [
 ];
 
 describe('Inventory and abandoned-cart statistics routes — access boundary', () => {
+  it('CartModule serves no analytics route', () => {
+    const controllers: Array<Type<any>> =
+      Reflect.getMetadata('controllers', CartModule) || [];
+    expect(controllers.length).toBeGreaterThan(0);
+    const paths = controllers.flatMap((controller) =>
+      routeHandlers(controller).map((name) =>
+        String(Reflect.getMetadata('path', controller.prototype[name])),
+      ),
+    );
+    expect(paths.filter((path) => path.startsWith('analytics'))).toEqual([]);
+  });
+
   describe.each(CONTROLLERS)('%s', (_name, controller, access) => {
     it('classifies every route handler', () => {
       expect([...routeHandlers(controller)].sort()).toEqual(

@@ -10,7 +10,6 @@ import { CartCoreController } from './controllers/cart-core.controller';
 import { CartItemsController } from './controllers/cart-items.controller';
 import { CartPromoController } from './controllers/cart-promo.controller';
 import { CartShippingController } from './controllers/cart-shipping.controller';
-import { CartAnalyticsController } from './controllers/cart-analytics.controller';
 import { CartRecoveryController } from './controllers/cart-recovery.controller';
 
 // Services
@@ -37,7 +36,6 @@ import { ShippingDataService } from '../../database/services/shipping-data.servi
     CartItemsController,
     CartPromoController,
     CartShippingController,
-    CartAnalyticsController,
     CartRecoveryController,
   ],
   providers: [
