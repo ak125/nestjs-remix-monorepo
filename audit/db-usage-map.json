@@ -2,27 +2,27 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "767 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "764 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
     "8 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
     "0 call-site(s) non résolu(s) : récepteur ni prouvé DB ni rejeté — voir unresolved_callsites[]. Un nom non résolu ne peut pas être déclaré orphelin."
   ],
   "summary": {
-    "tables_seen": 316,
-    "tables_with_callsites": 214,
+    "tables_seen": 315,
+    "tables_with_callsites": 213,
     "candidate_orphan_tables": 75,
     "partitions": 27,
     "rpc_seen": 259,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
     "candidate_orphan_rpc": 215,
-    "dynamic_from_callsites": 767,
+    "dynamic_from_callsites": 764,
     "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 444,
-    "backend_files_scanned": 1535
+    "migrations_scanned": 442,
+    "backend_files_scanned": 1530
   },
   "tables": {
     "___config": {
@@ -111,16 +111,6 @@
       "used_by_count": 1,
       "in_migrations": [],
       "rls_present": false,
-      "in_knowledge_db": false,
-      "partition_of": null
-    },
-    "___xtr_supplier": {
-      "used_by": [
-        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
-      ],
-      "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -1159,10 +1149,11 @@
     },
     "__seo_ga4_daily": {
       "used_by": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 3,
       "in_migrations": [
         "20260425_seo_observability_timeseries.sql"
       ],
@@ -1363,11 +1354,12 @@
     },
     "__seo_gsc_daily_property_total": {
       "used_by": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 4,
       "in_migrations": [
         "20260613_seo_gsc_multilevel_grains.sql"
       ],
@@ -11271,7 +11263,7 @@
     },
     {
       "file": "backend/src/database/services/piece-price-data.service.ts",
-      "line": 208,
+      "line": 188,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -11299,7 +11291,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/command-center-kpi.service.ts",
-      "line": 356,
+      "line": 362,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13140,7 +13132,42 @@
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 113,
+      "line": 61,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/order-actions.service.ts",
+      "line": 89,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/order-actions.service.ts",
+      "line": 105,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/order-actions.service.ts",
+      "line": 150,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/order-actions.service.ts",
+      "line": 174,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/order-actions.service.ts",
+      "line": 186,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13154,91 +13181,42 @@
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 258,
+      "line": 247,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 286,
+      "line": 264,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 302,
+      "line": 304,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 347,
+      "line": 365,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 371,
+      "line": 422,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 383,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 392,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 444,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 461,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 501,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 562,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 619,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 667,
+      "line": 470,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13351,13 +13329,6 @@
     {
       "file": "backend/src/modules/orders/services/order-archive.service.ts",
       "line": 476,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-line-supplier.service.ts",
-      "line": 90,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -14918,7 +14889,7 @@
     },
     {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
-      "line": 301,
+      "line": 263,
       "form": "IDENT",
       "resolved_table": "supplier_runtime_profile",
       "refusal": null
