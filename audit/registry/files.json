@@ -21785,7 +21785,7 @@
         "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "backend/src/modules/orders/services/tickets.service.ts",
         "backend/src/modules/shipping/shipping.module.ts",
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "kind": "service",
@@ -22100,7 +22100,7 @@
       "imports": [
         "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
         "backend/src/modules/orders/services/supplier-order-controls.ts",
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+        "backend/src/modules/supplier-truth/index.ts"
       ],
       "kind": "test",
       "loc": 260,
@@ -22127,7 +22127,7 @@
       "imports": [
         "@repo/domain-commerce",
         "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+        "backend/src/modules/supplier-truth/index.ts"
       ],
       "kind": "service",
       "loc": 338,
@@ -22150,7 +22150,7 @@
       "imports": [
         "backend/src/modules/orders/services/order-line-supplier.service.ts",
         "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+        "backend/src/modules/supplier-truth/index.ts"
       ],
       "kind": "test",
       "loc": 326,
@@ -22180,7 +22180,7 @@
         "backend/src/modules/orders/config/supplier-order-preparation.config.ts",
         "backend/src/modules/orders/services/order-line-supplier.service.ts",
         "backend/src/modules/orders/services/supplier-order-controls.ts",
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+        "backend/src/modules/supplier-truth/index.ts"
       ],
       "kind": "service",
       "loc": 383,
@@ -36267,6 +36267,34 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/supplier-truth/index.ts",
+      "importedBy": [
+        "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/supplier-order-controls.test.ts",
+        "backend/src/modules/orders/services/supplier-order-controls.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+      ],
+      "kind": "service",
+      "loc": 13,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/supplier-truth/index.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -36348,11 +36376,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
       "importedBy": [
-        "backend/src/modules/orders/orders.module.ts",
-        "backend/src/modules/orders/services/supplier-order-controls.test.ts",
-        "backend/src/modules/orders/services/supplier-order-controls.ts",
-        "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
-        "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts"
       ],
       "imports": [
@@ -42566,7 +42590,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 150,
+      "loc": 151,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/order-actions.cancel-order.test.ts",
       "risk": "low",
@@ -42585,7 +42609,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 115,
+      "loc": 116,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/order-actions.create-supplement.test.ts",
       "risk": "low",
