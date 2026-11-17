@@ -3,6 +3,8 @@
 # bornage et dédoublonnage des commentaires, reprise de la section, cumul du coût, mode à blanc.
 # `gh` est remplacé par un faux qui ne sait que lire (corps d'issue, listes, contenu d'un fichier) ;
 # toute autre commande gh fait échouer le test (preuve que --a-blanc n'écrit rien).
+# Le contrôle du producteur demande ast-grep à la version épinglée de package.json dans PATH
+# (en local : PATH="<racine>/node_modules/.bin:$PATH" bash scripts/ops/pilote-file.test.sh).
 set -uo pipefail
 
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -17,7 +19,8 @@ cat > "$FIX/bin/gh" <<'SH'
 if [[ "$1 $2" == "issue view" ]]; then cat "$FAKE_BODY"; exit 0; fi
 if [[ "$1 $2" == "issue list" ]]; then cat "$FAKE_ISSUES"; exit 0; fi
 if [[ "$1 $2" == "pr list" ]]; then cat "$FAKE_PRS"; exit 0; fi
-if [[ "$1" == "api" && "$2" == repos/*/contents/* ]]; then cat "$FAKE_SOURCE_KPI"; exit 0; fi
+if [[ "$1" == "api" && "$2" == repos/*/contents/*/department-kpi.rules.ts\?* ]]; then cat "$FAKE_SOURCE_REGLES"; exit $?; fi
+if [[ "$1" == "api" && "$2" == repos/*/contents/*/command-center-kpi.service.ts\?* ]]; then cat "$FAKE_SOURCE_KPI"; exit $?; fi
 echo "faux gh : commande interdite dans le test : $*" >&2; echo "$*" >> "$FAKE_LOG"; exit 99
 SH
 chmod +x "$FIX/bin/gh"
@@ -144,7 +147,9 @@ check "mode tracé dans cout.json" "cle-api" "$(jq -r .authentification "$D4/cou
 check "aucune valeur de secret dans la sortie" "0" "$(grep -rlE 'jeton-factice|cle-factice' "$D4" | wc -l)"
 
 echo "== controle : producteur du KPI du rôle 23 (ADR-128 D2) =="
-export FAKE_ISSUES="$FIX/issues.json" FAKE_PRS="$FIX/prs.json" FAKE_SOURCE_KPI="$FIX/source-kpi.ts"
+export FAKE_ISSUES="$FIX/issues.json" FAKE_PRS="$FIX/prs.json" FAKE_SOURCE_KPI="$FIX/source-kpi.ts" \
+       FAKE_SOURCE_REGLES="$FIX/regles-neutres.ts"
+echo 'export const neutre = 1;' > "$FAKE_SOURCE_REGLES"
 D5="$FIX/run5"; mkdir -p "$D5"; : > "$FAKE_BODY"; : > "$FAKE_LOG"
 echo 'const k = { pages_generating_atc: 1, metric_reliability: 2 };' > "$FAKE_SOURCE_KPI"
 bash "$ICI/pilote-file.sh" controle --sortie "$D5" > /dev/null
@@ -160,10 +165,122 @@ check "pas d'erreur" "null" "$(jq -r .erreur "$D5/cout.json")"
 bash "$ICI/pilote-file.sh" publier --sortie "$D5" --a-blanc > /dev/null
 check "suspension affichée dans le corps" "1" "$(grep -c 'session Claude : suspendue' "$D5/corps.md")"
 check "suspendue ⇒ nouvelle empreinte non inscrite" "0" "$(grep -c "pilote-file:empreinte:$(jq -r .empreinte "$D5/etat.json")" "$D5/corps.md")"
-echo 'const k = { useful_capabilities_not_complexity: 3 };' > "$FAKE_SOURCE_KPI"
+echo "const k = { id: 'useful_capabilities_not_complexity', value: 3 };" > "$FAKE_SOURCE_KPI"
 bash "$ICI/pilote-file.sh" controle --sortie "$D5" > /dev/null
 check "producteur présent" "présent" "$(jq -r .kpi.producteur "$D5/etat.json")"
 check "contrôle en lecture seule" "0" "$(wc -l < "$FAKE_LOG")"
+
+echo "== controle : une définition réelle, pas une simple mention (mandat BP, complément 1) =="
+# evaluer <service> [département] [règles] → présent | absent | arrêt (code, message)
+evaluer() {
+  local d; d="$(mktemp -d "$FIX/eval.XXXXXX")"; local rc=0
+  FAKE_SOURCE_KPI="$1" PILOTE_DEPARTEMENT="${2:-23}" FAKE_SOURCE_REGLES="${3:-$FAKE_SOURCE_REGLES}" \
+    bash "$ICI/pilote-file.sh" controle --sortie "$d" > /dev/null 2> "$d/stderr" || rc=$?
+  if [[ "$rc" -ne 0 ]]; then echo "arrêt $rc : $(tail -n1 "$d/stderr")"
+  elif [[ -f "$d/etat.json" ]]; then jq -r .kpi.producteur "$d/etat.json"
+  else echo "sans état"; fi
+}
+SERVICE=backend/src/modules/admin/services/command-center-kpi.service.ts
+REGLES=backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts
+K=useful_capabilities_not_complexity
+S="$FIX/sources"; mkdir -p "$S"
+cat > "$S/commentaire.ts" <<TS
+// $K : KPI du rôle 23, cité en commentaire.
+/* Bloc : id: '$K' ; const id = '$K'; */
+/**
+ *   - \`$K\` : id: "$K"
+ */
+export const autre = { id: 'payments_kept' };
+TS
+cat > "$S/liste.ts" <<TS
+export const KPI_IDS = ['payments_kept', '$K'];
+export function lire(id: string) { return [id, "$K"]; }
+TS
+cat > "$S/chaine.ts" <<TS
+const s = "id: '$K'";
+const t = 'const id = "$K"';
+const g = \`{ id: '$K' }\`;
+const h = \`\${s} id: '$K'\`;
+TS
+cat > "$S/autres-formes.ts" <<TS
+const a = { $K: 3 };
+const b = { kpi: '$K', kpiId: '$K', label: '$K' };
+const c = (x: boolean, id: string) => (x ? id : '$K');
+const d = { id: '${K}_v2' };
+const e = { id: 'x', note: '$K' };
+const f = { id: \`$K\` };
+let id = '$K';
+TS
+cat > "$S/definition.ts" <<TS
+export const PROPRE = /^[\p{L}'’ -]{1,60}\$/u;   // apostrophe dans une expression régulière
+const titre = \`fenêtre \${PROPRE.source} \${\`imbriqué\`} j\`;
+// id: '$K' en commentaire avant la vraie définition
+export function toKpi(): unknown {
+  const base = {
+    id: '$K',
+    label: titre,
+  };
+  return base;
+}
+TS
+printf "const k = { label: 'x', id: \"%s\" };\n" "$K" > "$S/guillemets-doubles.ts"
+cat > "$S/regle.ts" <<TS
+export function toKpi(n: number): unknown {
+  const id = '$K';
+  return { id, value: n };
+}
+TS
+: > "$S/vide.ts"
+printf 'const k = { id: \x27%s\x27 }; // \xff\xfe\n' "$K" > "$S/non-utf8.ts"
+printf "const k = { id: '%s' }; /* commentaire non fermé\n" "$K" > "$S/non-ferme.ts"
+check "seulement en commentaire ⇒ absent" "absent" "$(evaluer "$S/commentaire.ts")"
+check "seulement dans une liste ⇒ absent" "absent" "$(evaluer "$S/liste.ts")"
+check "seulement dans une chaîne ou un gabarit ⇒ absent" "absent" "$(evaluer "$S/chaine.ts")"
+check "clé, autre clé, ternaire, préfixe, gabarit, let ⇒ absent" "absent" "$(evaluer "$S/autres-formes.ts")"
+for m in commentaire liste chaine autres-formes; do
+  check "$m.ts lu comme fichier des règles ⇒ absent" "absent" "$(evaluer "$FAKE_SOURCE_REGLES" 23 "$S/$m.ts")"
+done
+check "définition id: '<kpi>' dans le service ⇒ présent" "présent" "$(evaluer "$S/definition.ts")"
+check "définition id: \"<kpi>\" dans le service ⇒ présent" "présent" "$(evaluer "$S/guillemets-doubles.ts")"
+check "définition const id = '<kpi>' dans les règles ⇒ présent" "présent" "$(evaluer "$FAKE_SOURCE_REGLES" 23 "$S/regle.ts")"
+check "service vide ⇒ arrêt" "arrêt 1 : pilote-file : $SERVICE vide" "$(evaluer "$S/vide.ts")"
+check "règles vides ⇒ arrêt" "arrêt 1 : pilote-file : $REGLES vide" "$(evaluer "$S/definition.ts" 23 "$S/vide.ts")"
+check "service illisible (lecture refusée) ⇒ arrêt" "arrêt 1 : pilote-file : lecture de $SERVICE impossible" \
+  "$(evaluer "$S/inexistant.ts")"
+check "règles illisibles (lecture refusée) ⇒ arrêt" "arrêt 1 : pilote-file : lecture de $REGLES impossible" \
+  "$(evaluer "$S/definition.ts" 23 "$S/inexistant.ts")"
+check "source non UTF-8 ⇒ arrêt" \
+  "arrêt 1 : pilote-file : $SERVICE non analysé par ast-grep (encodage ?) : producteur non évalué" "$(evaluer "$S/non-utf8.ts")"
+check "commentaire non fermé ⇒ arrêt, pas « absent »" \
+  "arrêt 1 : pilote-file : $REGLES : erreur de syntaxe ligne 1 : producteur non évalué" \
+  "$(evaluer "$S/definition.ts" 23 "$S/non-ferme.ts")"
+rc=0; (cd "$FIX" && FAKE_SOURCE_KPI="$S/definition.ts" bash "$ICI/pilote-file.sh" controle --sortie ./relatif \
+  > /dev/null 2>&1) || rc=$?
+check "--sortie relative ⇒ présent, sans arrêt" "0 présent" "$rc $(jq -r .kpi.producteur "$FIX/relatif/etat.json" 2>/dev/null)"
+check "contrôle en lecture seule" "0" "$(wc -l < "$FAKE_LOG")"
+
+echo "== controle : ast-grep absent ou d'une autre version ⇒ arrêt, jamais « absent » =="
+SANS_AG=""; IFS=: read -ra _parts <<< "$PATH"
+for p in "${_parts[@]}"; do [[ -x "$p/ast-grep" ]] || SANS_AG="${SANS_AG:+$SANS_AG:}$p"; done
+V_AG="$(jq -r '.devDependencies["@ast-grep/cli"]' "$ICI/../../package.json")"
+check "ast-grep absent du PATH ⇒ arrêt" \
+  "arrêt 1 : pilote-file : ast-grep absent du PATH (version épinglée $V_AG, package.json) : producteur non évalué" \
+  "$(PATH="$SANS_AG" evaluer "$S/definition.ts")"
+mkdir -p "$FIX/ag-autre"; printf '#!/usr/bin/env bash\necho "ast-grep 0.0.1"\n' > "$FIX/ag-autre/ast-grep"
+chmod +x "$FIX/ag-autre/ast-grep"
+check "ast-grep d'une autre version ⇒ arrêt" \
+  "arrêt 1 : pilote-file : ast-grep trouvé « ast-grep 0.0.1 », version épinglée $V_AG : producteur non évalué" \
+  "$(PATH="$FIX/ag-autre:$PATH" evaluer "$S/definition.ts")"
+
+echo "== controle : cas réels, les deux fichiers de la version testée =="
+R_SERVICE="$ICI/../../$SERVICE" R_REGLES="$ICI/../../$REGLES"
+ancienne() { grep -qF "$1" "$R_SERVICE" && echo présent || echo absent; }   # règle d'origine (grep -F)
+for cas in "13 payments_kept présent" "07 pages_generating_atc présent" "20 diagnostic_to_product présent" \
+           "22 metric_reliability présent" "23 $K absent"; do
+  read -r dep kpi attendu <<< "$cas"
+  check "rôle $dep : $kpi $attendu" "$attendu" "$(evaluer "$R_SERVICE" "$((10#$dep))" "$R_REGLES")"
+  check "rôle $dep : même état qu'avec l'ancienne règle (grep -F sur le service)" "$attendu" "$(ancienne "$kpi")"
+done
 
 [[ "$FAIL" -eq 0 ]] && echo "RÉSULTAT : tous les contrôles passent" || echo "RÉSULTAT : ÉCHEC"
 exit "$FAIL"
