@@ -1801,6 +1801,27 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # Canons distribués (AEC, voix de marque) : sources et manifeste généré, transférés
+  # du vault à l'étape 1 de sa sortie (décisions 72 et 73, mandat BC). Zone CODEOWNERS
+  # `/.spec/00-canon/` : circuit élevé.
+  - glob: .spec/00-canon/canon-distribution/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # Générateur du manifeste et des copies, et ses tests : ils portent le gate de statut
+  # et le contrôle des copies. Sans ces deux entrées, `scripts/**` (risk low) les place
+  # en circuit faible.
+  - glob: scripts/canon/compute-canon-hashes.py
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: scripts/canon/test_compute_canon_hashes.py
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   # PR #2096 (mandat AS, décision 51) : définition unique de « vendable »
   # (pri_dispo '1', ni FROZEN ni masquée, vente TTC > 0). Lue par l'autorité
   # du tarif piece-price-data.service.ts (même domaine / owner, ci-dessus) et

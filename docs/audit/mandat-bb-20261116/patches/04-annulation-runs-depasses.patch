@@ -1,0 +1,104 @@
+--- a/.github/workflows/dependency-graph-validate.yml
++++ b/.github/workflows/dependency-graph-validate.yml
+@@ -23,6 +23,10 @@
+   contents: read
+   pull-requests: write
+ 
++concurrency:
++  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
++  cancel-in-progress: true
++
+ jobs:
+   dependency-graph-ratchet:
+     name: 🕸️ No new deep PR-stacks
+--- a/.github/workflows/governance-checks.yml
++++ b/.github/workflows/governance-checks.yml
+@@ -36,6 +36,10 @@
+ permissions:
+   contents: read
+ 
++concurrency:
++  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
++  cancel-in-progress: true
++
+ jobs:
+   validate-top-priorities:
+     name: validate-top-priorities.sh (ADR-081)
+--- a/.github/workflows/perf-gates.yml
++++ b/.github/workflows/perf-gates.yml
+@@ -32,6 +32,10 @@
+   contents: read
+   pull-requests: write
+ 
++concurrency:
++  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
++  cancel-in-progress: true
++
+ jobs:
+   bundle-stats:
+     # Nom du check identique à l'ancien job lighthouse — préserve la branch
+--- a/.github/workflows/registry-build.yml
++++ b/.github/workflows/registry-build.yml
+@@ -43,6 +43,10 @@
+       - ".github/workflows/registry-build.yml"
+       - "package.json"
+ 
++concurrency:
++  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
++  cancel-in-progress: true
++
+ jobs:
+   registry-build:
+     name: Registry Layer 1 builders (warn-only)
+--- a/.github/workflows/registry-fresh.yml
++++ b/.github/workflows/registry-fresh.yml
+@@ -109,6 +109,10 @@
+   # en dispose déjà ; ce workflow-ci, non (constaté le 2026-08-14).
+   workflow_dispatch:
+ 
++concurrency:
++  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
++  cancel-in-progress: true
++
+ jobs:
+   registry-fresh:
+     name: Registry freshness (warn-only, Phase 1)
+--- a/.github/workflows/registry-new-file-gate.yml
++++ b/.github/workflows/registry-new-file-gate.yml
+@@ -19,6 +19,10 @@
+   pull_request:
+     branches: [main]
+ 
++concurrency:
++  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
++  cancel-in-progress: true
++
+ jobs:
+   registry-block-new:
+     name: Block-new (owner + domain required)
+--- a/.github/workflows/skills-canon-gate.yml
++++ b/.github/workflows/skills-canon-gate.yml
+@@ -34,6 +34,10 @@
+       - "audit/registry/command-center-snapshot.json"
+       - ".github/workflows/skills-canon-gate.yml"
+ 
++concurrency:
++  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
++  cancel-in-progress: true
++
+ jobs:
+   skills-canon-gate:
+     name: Skills canon (frontmatter + schema, warn-only Phase 0)
+--- a/.github/workflows/spec-validation.yml
++++ b/.github/workflows/spec-validation.yml
+@@ -20,6 +20,10 @@
+   contents: read
+   pull-requests: write
+ 
++concurrency:
++  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
++  cancel-in-progress: true
++
+ jobs:
+   validate-specs:
+     name: Validate Specifications

@@ -25,17 +25,18 @@ import {
 import {
   CyberplusCallbackSchema,
   type CyberplusCallbackDto,
-  PaymentSuccessReturnSchema,
   PaymentErrorReturnSchema,
 } from '../dto/cyberplus-callback.dto';
 
 /**
- * Callbacks bancaires Cyberplus/BNP + pages de retour success/error
+ * Callbacks bancaires Cyberplus/BNP + page de retour error
  *
  * Mandat AY : `callback/cyberplus` et `callback/error` modifient un paiement
  * (et, via handlePaymentCallback, la commande) ; ils répondent 410 tant que
- * SYSTEMPAY_CALLBACK_ENABLED ne vaut pas `true`. `callback/success` ne fait
- * qu'une lecture et reste inchangé. Voir utils/systempay-closure.ts.
+ * SYSTEMPAY_CALLBACK_ENABLED ne vaut pas `true`. Voir utils/systempay-closure.ts.
+ *
+ * Mandat BG : `callback/success` est retirée, faute d'appelant. Le paiement
+ * d'une commande se lit par les routes sous session de PaymentCoreController.
  */
 @ApiTags('payments')
 @Controller('api/payments')
@@ -160,61 +161,6 @@ export class PaymentCallbackController {
       throw new OperationFailedException({
         message: 'Payment callback processing failed',
       });
-    }
-  }
-
-  /**
-   * POST /api/payments/callback/success
-   * Page de retour pour paiement reussi
-   */
-  @Post('callback/success')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Page de retour apres paiement reussi' })
-  @ApiResponse({ status: 200, description: 'Paiement valide' })
-  async handleSuccessReturn(@Body() body: Record<string, string | undefined>) {
-    const parsed = PaymentSuccessReturnSchema.safeParse(body);
-    if (!parsed.success) {
-      this.logger.warn('Payment success return - Zod validation failed', {
-        errors: parsed.error.issues.map((i) => i.message),
-      });
-      throw new BadRequestException('Order ID missing');
-    }
-
-    const validBody = parsed.data;
-    try {
-      this.logger.log('Payment success return', {
-        orderId: validBody.order_id || validBody.orderid,
-      });
-
-      const orderId = validBody.order_id || validBody.orderid;
-      if (!orderId) {
-        throw new BadRequestException('Order ID missing');
-      }
-
-      const payment = await this.paymentService.getPaymentByOrderId(orderId);
-
-      if (!payment) {
-        this.logger.warn(`Payment not found for order: ${orderId}`);
-        return {
-          success: false,
-          data: null,
-          message: 'Payment not found',
-        };
-      }
-
-      return {
-        success: true,
-        data: {
-          paymentId: payment.id,
-          status: payment.status,
-          amount: payment.amount,
-          orderId: payment.orderId,
-        },
-        message: 'Payment completed successfully',
-      };
-    } catch (error) {
-      logPaymentError(this.logger, 'handle success return', error);
-      throw error;
     }
   }
 
