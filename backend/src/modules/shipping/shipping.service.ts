@@ -7,7 +7,7 @@ import {
 } from '@common/exceptions';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ShippingCalculatorService } from '../cart/services/shipping-calculator.service';
-import { metropolitanShippingFeeTTC } from '../cart/config/shipping-policy.config';
+import { metropolitanShippingFeeTTC } from '../cart';
 
 /**
  * Service de gestion des expéditions post-commande

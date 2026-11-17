@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MarketingHubDataService } from './marketing-hub-data.service';
 import { MarketingDataService } from './marketing-data.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
-import { SHIPPING_POLICY } from '../../cart/config/shipping-policy.config';
+import { SHIPPING_POLICY } from '../../cart';
 import type {
   WeeklyPlan,
   DaySlot,

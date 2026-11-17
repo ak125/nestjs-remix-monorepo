@@ -11,7 +11,7 @@ import type {
   ContentPillar,
   SocialChannel,
 } from '../interfaces/marketing-hub.interfaces';
-import { freeShippingWording } from '../../cart/config/shipping-policy.config';
+import { freeShippingWording } from '../../cart';
 
 // Re-use sanitization from ai-content (anti-injection)
 function sanitizeBriefField(value: string): string {

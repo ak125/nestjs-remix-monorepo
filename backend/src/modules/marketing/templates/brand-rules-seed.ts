@@ -10,7 +10,7 @@ import type {
   BrandRuleSeverity,
   SocialChannel,
 } from '../interfaces/marketing-hub.interfaces';
-import { freeShippingWording } from '../../cart/config/shipping-policy.config';
+import { freeShippingWording } from '../../cart';
 
 interface BrandRuleSeed {
   rule_type: BrandRuleType;

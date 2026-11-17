@@ -1,5 +1,5 @@
 import { ContentType, Tone } from '../dto/generate-content.dto';
-import { freeShippingWording } from '../../cart/config/shipping-policy.config';
+import { freeShippingWording } from '../../cart';
 
 export interface PromptTemplate {
   system: string;
