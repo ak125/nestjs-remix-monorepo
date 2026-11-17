@@ -4,7 +4,7 @@ S'applique aux runs depuis `workspaces/marketing/`. Complète (sans les remplace
 
 ## Sources de vérité
 
-- **Canon brand voice** : `.claude/canon-mirrors/marketing-voice.md` (copie distribuée via canon-publish, hash vérifié CI). Source unique = `governance-vault/ledger/rules/rules-marketing-voice.md`.
+- **Canon brand voice** : `.claude/canon-mirrors/marketing-voice.md` (copie générée par `scripts/canon/compute-canon-hashes.py`, hash vérifié en CI). Source unique = `.spec/00-canon/canon-distribution/rules-marketing-voice.md`, dans le monorepo.
 - **ADR-036** (origine du Marketing Operating Layer) : archive `ak125/governance-vault`, `ledger/decisions/adr/ADR-036-marketing-operating-layer.md`. Elle explique la décision ; elle n'est plus normative par elle-même (CLAUDE.md §Gouvernance).
 - **Backend marketing** : `backend/src/modules/marketing/` (9 services existants, à NE JAMAIS dupliquer).
 - **DB Supabase** via MCP : tables Phase 1 = `__marketing_brief` + `__marketing_feedback` + `__retention_trigger_rules` + `users.marketing_consent_at`.

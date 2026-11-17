@@ -2874,6 +2874,7 @@
       ".github/workflows/automation-registry-validate.yml",
       ".github/workflows/build.yml",
       ".github/workflows/canon-distribution.yml",
+      ".github/workflows/canon-publish.yml",
       ".github/workflows/canon-registries-validate.yml",
       ".github/workflows/ci.yml",
       ".github/workflows/closure-t48h-slo-digest.yml",
@@ -2897,6 +2898,7 @@
       ".github/workflows/governance-checks.yml",
       ".github/workflows/impeccable-ratchet.yml",
       ".github/workflows/marketing-voice-hash.yml",
+      ".github/workflows/merge-circuits-relais.yml",
       ".github/workflows/merge-circuits.yml",
       ".github/workflows/migration-ledger-freshness.yml",
       ".github/workflows/monorepo-invariants.yml",
@@ -3054,7 +3056,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1646,
+  "runtime_files_count": 1648,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3068,6 +3070,7 @@
     ".github/workflows/automation-registry-validate.yml",
     ".github/workflows/build.yml",
     ".github/workflows/canon-distribution.yml",
+    ".github/workflows/canon-publish.yml",
     ".github/workflows/canon-registries-validate.yml",
     ".github/workflows/ci.yml",
     ".github/workflows/closure-t48h-slo-digest.yml",
@@ -3091,6 +3094,7 @@
     ".github/workflows/governance-checks.yml",
     ".github/workflows/impeccable-ratchet.yml",
     ".github/workflows/marketing-voice-hash.yml",
+    ".github/workflows/merge-circuits-relais.yml",
     ".github/workflows/merge-circuits.yml",
     ".github/workflows/migration-ledger-freshness.yml",
     ".github/workflows/monorepo-invariants.yml",

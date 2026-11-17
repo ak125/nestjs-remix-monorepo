@@ -104872,49 +104872,9 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 52,
+      "loc": 433,
       "owner": "@ak125",
       "path": "scripts/ci/merge-circuit.test.mjs",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D13",
-      "id": "scripts/ci/merge-perimeter-gate.mjs",
-      "importedBy": [],
-      "imports": [],
-      "kind": "script",
-      "loc": 324,
-      "owner": "@ak125",
-      "path": "scripts/ci/merge-perimeter-gate.mjs",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D13",
-      "id": "scripts/ci/merge-perimeter-gate.test.mjs",
-      "importedBy": [],
-      "imports": [],
-      "kind": "script",
-      "loc": 246,
-      "owner": "@ak125",
-      "path": "scripts/ci/merge-perimeter-gate.test.mjs",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -108653,11 +108613,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4a6c9a565cec39045d2f64362399e6757cb85ac5af9843055d2be9b5a46c7e8e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "f4c5c7afef16bd276cc79cf25ddf916d6f1e00102c53a95f2a7a7467b013cfca",
+      "audit/registry/files.json": "c04392cd70168c9144b2db299525fd64cd32693508696d2faea464bb978c69b8",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "065849df18e7232c615cffca1056212136c1cef48d8ccebc88e868e1c23598a3"
     },
-    "sotFingerprint": "d0f0ced83a71"
+    "sotFingerprint": "e0a7cb3619e8"
   },
   "runtime": [
     {
