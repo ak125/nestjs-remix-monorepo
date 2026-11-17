@@ -12,6 +12,7 @@ export const ORDER_EVENTS = {
   CANCELLED: 'order.cancelled',
   REFUNDED: 'order.refunded',
   LINE_STATUS_CHANGED: 'order.line.status_changed',
+  LINE_SUPPLIER_CONFIRMED: 'order.line.supplier_confirmed',
 } as const;
 
 /** Base event with optional correlation ID for request tracing */
@@ -81,10 +82,24 @@ export interface OrderRefundedEvent extends OrderEventBase {
 }
 
 export interface OrderLineStatusChangedEvent extends OrderEventBase {
-  orderId: number;
-  lineId: number;
-  previousStatus: number;
+  /** Identifiants texte en base (`orl_id` mixte : numérique ou « <ord>-L001 »). */
+  orderId: number | string;
+  lineId: number | string;
+  previousStatus: number | string | null;
   newStatus: number;
-  changedBy?: number;
+  changedBy?: number | string;
   comment?: string;
+}
+
+/** Décision 50 : fournisseur et prix d'achat confirmés sur une ligne. */
+export interface OrderLineSupplierConfirmedEvent extends OrderEventBase {
+  orderId: string;
+  lineId: string;
+  pieceId: number;
+  splId: string;
+  supplierName: string;
+  unitPurchaseHt: number;
+  quantity: number;
+  purchaseHt: number;
+  confirmedBy?: string;
 }

@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 1c4e1782ae214309454abd67dfc59b19859a4b8c2d6b166ae913d9252089adf0
+source_sha256: ed1d315b7d3174fa4441fa9edbfd851a6b4b4e682dd8b8c3c78c026d974e7539
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3206 |
-| DB tables (Layer 1) | 315 |
+| Files (Layer 1) | 3215 |
+| DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1015 |
+| Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `e1d101cc76c3`.
+Source sotFingerprint: `d0f0ced83a71`.
 
 ## Comment l'utiliser
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `e1d101cc76c3`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 944 (config=455, route=246, service=179, controller=39, test=25)
+- **Files**: 945 (config=456, route=246, service=179, controller=39, test=25)
 - **Runtime entrypoints**: 346
-- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (269)
+- **Top owners**: @ak125/frontend-team (676), @ak125/admin-team (269)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=514, UNKNOWN=430
+- **Status**: LIVE=514, UNKNOWN=431
 
 ### D9 — Import / ETL / Normalisation
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `e1d101cc76c3`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 305 (service=196, test=68, controller=40, config=1)
-- **Runtime entrypoints**: 130
-- **Top owners**: @ak125 (130), @ak125/payments-team (84), @ak125/auth-team (79)
+- **Files**: 313 (service=200, test=72, controller=40, config=1)
+- **Runtime entrypoints**: 131
+- **Top owners**: @ak125 (132), @ak125/payments-team (90), @ak125/auth-team (79)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=181, UNKNOWN=124
+- **Status**: LIVE=185, UNKNOWN=128
 
 ### D12 — Marketing & Video
 
@@ -164,7 +164,7 @@ Source sotFingerprint: `e1d101cc76c3`.
 ### UNKNOWN — Unknown (overlay non résolu)
 
 - **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
-- **DB tables**: 315
+- **DB tables**: 316
 - **DB RPC**: 265
 - **Runtime entrypoints**: 83
 - **Top owners**: __unassigned__ (243)

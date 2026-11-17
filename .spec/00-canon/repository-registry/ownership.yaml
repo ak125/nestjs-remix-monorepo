@@ -1822,3 +1822,32 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  # PR #2096 (mandat AS, décision 51) : définition unique de « vendable »
+  # (pri_dispo '1', ni FROZEN ni masquée, vente TTC > 0). Lue par l'autorité
+  # du tarif piece-price-data.service.ts (même domaine / owner, ci-dessus) et
+  # par le module pricing. Glob exact : couvre vendable.ts (son test est un
+  # chemin d'exception). database/services/** reste non assigné.
+  - glob: backend/src/database/services/vendable.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # Préparation du premier lot de tarif SEIM (mandat AS, périmètre 6) : note
+  # en lecture seule, aucune écriture. Même owner que le module pricing.
+  - glob: audit/supplier-tariff-lot1-seim-preparation-20261116.md
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # PR #2096, complément : test de la définition unique de « vendable ».
+  # Corrige le commentaire de l'entrée vendable.ts ci-dessus : son test n'est
+  # PAS un chemin d'exception pour le ratchet « Block new contract-drift
+  # findings » (job 133739517184 : 1 ownership_gap nouveau sur ce fichier).
+  # Même forme que les tests de piece-price-data (PR #1499, entrées ci-dessus) :
+  # chemin exact, domaine / owner du sujet, sourceConfidence medium (dérivation,
+  # pas de signal CODEOWNERS direct), risk medium (valeur des entrées de test).
+  - glob: backend/src/database/services/vendable.test.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: medium
+    risk: medium

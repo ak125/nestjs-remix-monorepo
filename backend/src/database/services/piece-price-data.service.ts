@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from './supabase-base.service';
+import { estVendable } from './vendable';
 
 /**
  * 💶 LIGNES TARIFAIRES D'UNE PIÈCE — autorité unique
@@ -23,10 +24,10 @@ import { SupabaseBaseService } from './supabase-base.service';
  *
  * DEUX questions, DEUX règles — ne pas les confondre
  * --------------------------------------------------
- * **Le prix** est une décision commerciale : seule une ligne vendable compte
- * (`pri_dispo = '1'`, prix strictement positif). La règle retenue est celle
- * réellement servie au client sur la page catalogue — c'est le prix qu'il a vu
- * avant de cliquer, donc c'est lui qui fait foi.
+ * **Le prix** est une décision commerciale : seule une ligne vendable compte,
+ * au sens de la définition unique des décisions 51 et 118 (`./vendable.ts` :
+ * `pri_dispo` '1', '2' ou '3', ligne non gelée, pièce affichée, prix
+ * strictement positif).
  *
  * **Le poids** est une propriété physique. Une pièce pèse le même poids que son
  * tarif soit vendable ou non. Le filtrer sur la disponibilité jetterait un poids
@@ -37,10 +38,6 @@ import { SupabaseBaseService } from './supabase-base.service';
  * Ce service ne calcule pas de prix : il choisit une ligne et convertit un poids.
  * Les calculs (quantités, TVA, paliers de port) restent chez l'appelant.
  */
-
-/** Seule valeur de `pri_dispo` qui autorise la vente. Les autres ('0', '2', '3')
- * et l'absence de valeur désignent une ligne non vendable. */
-const DISPO_VENDABLE = '1';
 
 /**
  * Découpage des lots. La borne implicite de PostgREST est de 1000 lignes.
@@ -75,6 +72,12 @@ const COLONNES_TARIF = [
   'pri_des',
   'pri_poids',
   'pri_udm_poids',
+  // Décision 51 : l'état de gel et l'affichage de la pièce entrent dans la
+  // définition de « vendable » ; le fournisseur sert la proposition d'achat
+  // d'une ligne de commande (décision 50).
+  'pricing_state',
+  'pri_frs',
+  'pieces!fk_pieces_price_piece_i(piece_display)',
 ].join(', ');
 
 /** Ligne de tarif de `pieces_price`. */
@@ -94,12 +97,20 @@ export interface SellablePriceRow {
   pri_des: string | null;
   pri_poids: string | null;
   pri_udm_poids: string | null;
+  pricing_state: string | null;
+  /** Libellé fournisseur de la ligne (`ACR`, `DCA`…), cf. `___xtr_supplier`. */
+  pri_frs: string | null;
+  /** Jointure `pieces` (clé `fk_pieces_price_piece_i`) : seul `piece_display`. */
+  pieces: { piece_display: boolean | null } | null;
 }
 
 /** Ce qu'une lecture de tarifs rend, en une seule requête. */
 export interface TarifsParPiece {
   /** Ligne vendable retenue. Une pièce sans tarif vendable est ABSENTE. */
   vendables: Map<number, SellablePriceRow>;
+  /** Toutes les lignes vendables de chaque pièce (une par fournisseur au plus
+   * souvent) : base de la proposition fournisseur d'une ligne de commande. */
+  offresVendables: Map<number, SellablePriceRow[]>;
   /** Poids en grammes, disponibilité non requise. Absent si aucun poids exploitable. */
   poidsEnGrammes: Map<number, number>;
 }
@@ -163,6 +174,15 @@ export class PiecePriceDataService extends SupabaseBaseService {
   }
 
   /**
+   * Toutes les lignes vendables d'une pièce (décision 50 : proposer le
+   * fournisseur de la ligne de commande). Liste vide = aucune offre vendable.
+   */
+  async findSellableOffers(pieceId: number): Promise<SellablePriceRow[]> {
+    const { offresVendables } = await this.findTariffs([pieceId]);
+    return offresVendables.get(pieceId) ?? [];
+  }
+
+  /**
    * Lecture unique : une seule requête sert le prix ET le poids.
    *
    * La requête ne filtre pas sur `pri_dispo` ni sur le prix. Les deux règles sont
@@ -172,6 +192,7 @@ export class PiecePriceDataService extends SupabaseBaseService {
    */
   async findTariffs(pieceIds: number[]): Promise<TarifsParPiece> {
     const vendables = new Map<number, SellablePriceRow>();
+    const offresVendables = new Map<number, SellablePriceRow[]>();
     const poids = new Map<number, number>();
     const meilleureLignePoids = new Map<number, SellablePriceRow>();
 
@@ -179,7 +200,7 @@ export class PiecePriceDataService extends SupabaseBaseService {
       (id) => Number.isInteger(id) && id > 0,
     );
     if (identifiants.length === 0) {
-      return { vendables, poidsEnGrammes: poids };
+      return { vendables, offresVendables, poidsEnGrammes: poids };
     }
 
     for (let i = 0; i < identifiants.length; i += CHUNK_IDS) {
@@ -204,7 +225,10 @@ export class PiecePriceDataService extends SupabaseBaseService {
         const pieceId = Number(ligne.pri_piece_id_i);
         if (!Number.isFinite(pieceId)) continue;
 
-        if (this.estVendable(ligne)) {
+        if (PiecePriceDataService.estVendable(ligne)) {
+          const offres = offresVendables.get(pieceId) ?? [];
+          offres.push(ligne);
+          offresVendables.set(pieceId, offres);
           const enPlace = vendables.get(pieceId);
           if (!enPlace || this.supplante(ligne, enPlace)) {
             vendables.set(pieceId, ligne);
@@ -225,17 +249,17 @@ export class PiecePriceDataService extends SupabaseBaseService {
       if (grammes !== null) poids.set(pieceId, grammes);
     }
 
-    return { vendables, poidsEnGrammes: poids };
+    return { vendables, offresVendables, poidsEnGrammes: poids };
   }
 
-  /** Une ligne est vendable si elle est disponible et porte un prix strictement
-   * positif. La borne à zéro protège d'une vente à 0 € : aucune ligne disponible
-   * n'est dans ce cas aujourd'hui. */
-  private estVendable(ligne: SellablePriceRow): boolean {
-    const prix = Number(ligne.pri_vente_ttc_n);
-    return (
-      ligne.pri_dispo === DISPO_VENDABLE && Number.isFinite(prix) && prix > 0
-    );
+  /** Décisions 51 et 118 appliquées à une ligne lue par {@link findTariffs}. */
+  static estVendable(ligne: SellablePriceRow): boolean {
+    return estVendable({
+      dispo: ligne.pri_dispo,
+      etatTarif: ligne.pricing_state,
+      venteTtc: ligne.pri_vente_ttc_n,
+      pieceAffichee: ligne.pieces?.piece_display,
+    });
   }
 
   /**
