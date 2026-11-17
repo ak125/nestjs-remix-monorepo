@@ -7,7 +7,7 @@ owners: ['@ak125']
 domain: D15
 runtime_class: privileged
 llm_safe: false
-last_verified: '2026-11-16'
+last_verified: '2026-11-17'
 license: Internal - Automecanik
 compatibility: Claude Code on the DEV machine. Reads the vault clone ($GOVERNANCE_VAULT_PATH, default /opt/automecanik/governance-vault) with `git -C`, or the GitHub API through an authenticated gh, without ever writing to the vault.
 tags: [governance, vault, archive, read-only, adr-138, audit]
@@ -90,21 +90,21 @@ gh api repos/ak125/governance-vault/contents/ledger/decisions/adr/<fichier>.md -
 | Une ADR n'existe-t-elle qu'en PR jamais fusionnée ? | `gh pr list --repo ak125/governance-vault --state all --search 'ADR-0XX'` |
 | PR du vault encore ouvertes | `gh pr list --repo ak125/governance-vault --state open --limit 100` |
 | Signature d'un commit de `main` du vault | `gh api repos/ak125/governance-vault/commits/<sha> --jq .commit.verification` |
-| Miroirs canon à jour ? | voir « Miroirs canon » ci-dessous |
+| Miroirs canon à jour ? | `python3 scripts/canon/compute-canon-hashes.py --check` (voir « Miroirs canon ») |
 
 Un `git verify-commit` local échoue sur un commit squash de `main` : la clé de GitHub n'est pas dans
 `allowed_signers`. La preuve est `verification.verified` dans l'API.
 
 ---
 
-## Miroirs canon (transitoire)
+## Miroirs canon
 
-Tant que l'étape 2 du plan de sortie n'est pas fusionnée
-(`docs/audit/mandat-ar-20261116/inventaire-vault-et-plan.md`), `.claude/canon-mirrors/` se compare
-encore au clone du vault : `python3 "$V/_scripts/sync_canon_mirrors.py" --check --monorepo <checkout
-monorepo>`, et le pre-commit husky refuse une édition à la main. Ensuite, la source et le
-générateur sont dans le monorepo. Dans les deux cas, un miroir ne s'édite jamais à la main : on
-corrige sa source.
+Les canons distribués (AEC, voix de marque) ne se lisent plus dans le vault. Leur source, le
+manifeste et le générateur sont dans le monorepo (journal des principes, P30) :
+`.spec/00-canon/canon-distribution/` et `scripts/canon/compute-canon-hashes.py`. Contrôle, local et
+sans réseau : `python3 scripts/canon/compute-canon-hashes.py --check` ; c'est celui du pre-commit
+husky et de `canon-distribution.yml`. Une copie de `.claude/canon-mirrors/` ne s'édite jamais à la
+main : on corrige sa source, puis `--write` régénère les copies dans la même PR.
 
 ---
 

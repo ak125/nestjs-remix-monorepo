@@ -35,7 +35,7 @@ Fichier source : `.claude/skills/wiki-proposal-writer/`.
 
 ## Canon mirrors (read-only)
 
-`.claude/canon-mirrors/` contient encore `agent-exit-contract.md` (AEC v1.0.0, du 2026-05-04). Cette copie n'est déclarée dans aucun manifeste ni contrôlée par hash, et l'AEC en vigueur est plus récent : **elle ne fait pas foi** (contradiction D16, mandat AR-4). Son retrait ou sa déclaration est une décision de l'owner, à l'étape 2 du plan de sortie du vault (`docs/audit/mandat-ar-20261116/inventaire-vault-et-plan.md`).
+`.claude/canon-mirrors/` contient encore `agent-exit-contract.md` (AEC v1.0.0, du 2026-05-04). Cette copie n'est déclarée dans aucun manifeste ni contrôlée par hash, et l'AEC en vigueur est plus récent : **elle ne fait pas foi** (contradiction D16, mandat AR-4). L'étape 2 du plan de sortie du vault est fusionnée sans y toucher : son retrait ou sa déclaration reste une décision de l'owner (question D16, `docs/audit/mandat-bc-20261116/etape-2.md`).
 
 Le contrat en vigueur est `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo. C'est une copie déclarée, générée depuis sa source et contrôlée par hash (`agent-exit-contract-hash.yml`). **Toute modification manuelle est interdite** : on corrige la source, jamais la copie.
 
