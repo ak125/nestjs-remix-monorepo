@@ -6,7 +6,9 @@ commande qui rend `🚦 Circuit de fusion` requis. Rien n'est poussé dans `.git
 fusionné, rien n'est armé, la protection de `main` n'est pas modifiée.
 
 Base des correctifs : `main` = `aa922af2a4c17ded1b312d528d8de4de5b6ccdff` (17 novembre, après #2122).
-Les trois fichiers visés sont identiques à ceux de `abcfc30c3`, tête citée par le mandat.
+Les trois fichiers visés sont identiques à ceux de `abcfc30c3`, tête citée par le mandat. `main` a
+avancé pendant la session (`81817b5aa`, #2125) sans toucher ces fichiers : les trois correctifs
+s'y appliquent aussi à blanc, dans l'ordre.
 
 | Fichier | Contenu |
 |---|---|
