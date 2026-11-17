@@ -311,11 +311,11 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   (l. 289-295) et signale une entrée sans dossier (l. 396-421).
   `scripts/governance/build-skills-registry.js` marque l'entrée `origin: third_party`, hors des
   écarts (l. 111-126). Test `scripts/governance/__tests__/skills-third-party-lock.test.ts` :
-  16 cas, verts. Écarts : le validateur tourne dans `skills-canon-gate.yml` en avertissement
-  (`continue-on-error: true`) ; ce workflow ne lance pas le test et ne se déclenche pas sur
-  `skills-lock.json` tant que le patch réservé à l'owner n'est pas appliqué. Seul `.claude/skills/`
-  de la racine est contrôlé. Aucun skill tiers n'est installé : rien n'est servi. À relever à
-  nouveau à la fusion.
+  16 cas, verts. `.github/workflows/skills-canon-gate.yml` se déclenche aussi sur
+  `skills-lock.json` et sur ce test (l. 36-37), lance le validateur (l. 65-70) puis le test
+  (l. 72-74). Écarts : le job reste en avertissement seul (`continue-on-error: true`, l. 49).
+  Seul `.claude/skills/` de la racine est contrôlé. Aucun skill tiers n'est installé : rien n'est
+  servi. À relever à nouveau à la fusion.
 
 ## Règles en service entrées au journal
 

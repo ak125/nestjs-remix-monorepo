@@ -1,5 +1,5 @@
 /**
- * Unit tests — third-party skills pinned in skills-lock.json (ADR-137 D3/D4).
+ * Unit tests — third-party skills pinned in skills-lock.json (P40, journal des principes).
  *
  * Covers scripts/governance/validate-skills-frontmatter.js and the registry
  * marking of scripts/governance/build-skills-registry.js :

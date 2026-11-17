@@ -378,7 +378,7 @@ test("workspace skill frontmatter uses the repository schema, names are unique a
       names.add(fm.name);
       // The amk-* marketing skills live in the marketing workspace only ; the
       // root .claude/skills also hosts amk-* wrappers of third-party skills
-      // (ADR-137 D4), which carry no marketing version.
+      // (P40, journal des principes), which carry no marketing version.
       if (dir !== marketingSkillsDir || !entry.name.startsWith("amk-"))
         continue;
       assert.equal(validate(fm), true, JSON.stringify(validate.errors));
