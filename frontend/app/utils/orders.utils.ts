@@ -55,7 +55,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   },
   "2": { label: "Annulée", color: "bg-red-100 text-red-800 border-red-200" },
   "3": {
-    label: "Payée, en préparation",
+    label: "Payée, à traiter",
     color: "bg-orange-100 text-orange-800 border-orange-200",
   },
   "4": {
@@ -65,6 +65,15 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   "5": {
     label: "Payée — En préparation",
     color: "bg-green-100 text-green-800 border-green-200",
+  },
+  // Mandat BN : migration 20261117_order_status_3_label.sql
+  "7": {
+    label: "Expédiée",
+    color: "bg-indigo-100 text-indigo-800 border-indigo-200",
+  },
+  "8": {
+    label: "Livrée",
+    color: "bg-emerald-100 text-emerald-800 border-emerald-200",
   },
 };
 

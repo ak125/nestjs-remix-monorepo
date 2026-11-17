@@ -39,7 +39,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
   },
   {
     id: "3",
-    name: "Payée, en préparation",
+    name: "Payée, à traiter",
     icon: Package,
     bgColor: "bg-orange-100",
     textColor: "text-orange-700",
@@ -57,6 +57,20 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
     icon: CreditCard,
     bgColor: "bg-green-100",
     textColor: "text-green-700",
+  },
+  {
+    id: "7",
+    name: "Expédiée",
+    icon: Truck,
+    bgColor: "bg-indigo-100",
+    textColor: "text-indigo-700",
+  },
+  {
+    id: "8",
+    name: "Livrée",
+    icon: Check,
+    bgColor: "bg-emerald-100",
+    textColor: "text-emerald-700",
   },
 ];
 
