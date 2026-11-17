@@ -4,7 +4,9 @@
 décisions 72 et 73 de l'owner). Constats relevés les 16 et 17 novembre 2026 sur
 `main` du monorepo (`3832abfc2`), de l'archive `ak125/governance-vault` (`b2e712791bee`)
 et de `ak125/automecanik-raw` (`b097ca48`). Deux PR : monorepo #2120, RAW #81.
-Mis à jour le 17 novembre après les décisions 129 et 132 de l'owner (D10 à D14, D9).
+Mis à jour le 17 novembre après les décisions 129 et 132 de l'owner (D10 à D14, D9), puis
+après le complément BC-6 : le patch 04 contrôle l'empreinte du binaire opa, et le patch 05
+passe dans une PR à part, #2136.
 
 ## Ce que fait l'étape
 
@@ -12,7 +14,7 @@ Mis à jour le 17 novembre après les décisions 129 et 132 de l'owner (D10 à D
 |---|---|---|
 | Défaut de `R2_OPA_BUNDLE_PATH` (`r2-opa-evaluator.service.ts`) | `/opt/automecanik/governance-vault/dist/policies` | `policies/dist` du dépôt ; politiques, bundles et script relogés |
 | Workflow `opa-policy-build.yml` du vault | teste et reconstruit les bundles dans le vault | patch 04 : même contrôle dans le monorepo |
-| Workflow `vault-supabase-cost-check.yml` du vault | relève chaque lundi la surface de coût Supabase | patch 05 : repris dans le monorepo (D14 : oui, décision 129) |
+| Workflow `vault-supabase-cost-check.yml` du vault | relève chaque lundi la surface de coût Supabase | patch 05, sorti dans la PR #2136 (D14 : oui, décision 129) : il attend un secret |
 | Workflow `vault-canon-exists.yml` du monorepo | clone le vault et y cherche chaque ADR citée | patch 06 : cherche l'ADR dans le journal des principes et les contrats ; ne lit plus le vault |
 | `check-jcs-parity.py` de RAW | lit le vecteur sur `main` du vault | RAW #81 : vecteur gelé en copie locale ; patch 07 pour son workflow |
 
@@ -47,12 +49,8 @@ pousse pas. Le bloc en fin de document les applique depuis le poste de l'owner.
    Le faux « manquant » que craignait le plan disparaît sans lecture du vault. Le nom du
    fichier est conservé (`vault-canon-exists.yml`) : un renommage changerait une projection
    (`audit/runtime-entrypoints.json`) sans rien apporter au contrôle.
-2. **Recherche du relevé précédent réécrite (patch 05).** Le workflow du vault lisait les
-   100 derniers artefacts du dépôt. Le monorepo en produit 5546 ; les 100 derniers couvrent
-   6 heures. La copie telle quelle n'aurait jamais retrouvé le relevé de la semaine
-   précédente : chaque run aurait été une « base », sans comparaison. La recherche passe
-   par les runs du workflow lui-même. L'étape n'a plus de `continue-on-error` : une API en
-   échec arrête le run au lieu de le faire passer pour un premier relevé.
+2. **Recherche du relevé précédent réécrite (patch 05).** Décrit dans
+   `etape-7-cout-supabase.md`, avec le patch (PR #2136).
 3. **`r2-runtime-read` en rapport seul (patch 04).** Le workflow du vault ne comparait que
    trois politiques ; la quatrième n'a jamais été reconstruite en CI. Sa comparaison émet
    un avertissement, sans bloquer, jusqu'à ce qu'un run montre deux empreintes égales.
@@ -89,10 +87,23 @@ Patches :
 
 | Patch | Cible | sha256 |
 |---|---|---|
-| `patches/04-opa-policy-build-workflow.patch` | monorepo, nouveau `.github/workflows/opa-policy-build.yml` | `da6dbd65728794fc8551e6001955e561c9e3efaa633e26bd75a17a9a99ebf406` |
-| `patches/05-supabase-cost-surface-drift-workflow.patch` | monorepo, nouveau `.github/workflows/supabase-cost-surface-drift.yml` | `5144d2f824b23cb1740765f1e196896d4460f1e99480383f37ae517ffedc829e` |
+| `patches/04-opa-policy-build-workflow.patch` | monorepo, nouveau `.github/workflows/opa-policy-build.yml` | `721ad1e5f156efb1470370b930032ab8b76063a8a9b58192d63b0eeb14bf7602` |
 | `patches/06-adr-canon-in-force-workflow.patch` | monorepo, `.github/workflows/vault-canon-exists.yml` | `647dff391b71e31d4191ff38d60f1b635fa051a69c4ec2e1e38f7270c60827fb` |
 | `patches/07-raw-jcs-parity-frozen-workflow.patch` | RAW, `.github/workflows/jcs-parity.yml` | `3c81f1aae6a7e18ddb0fdae6333bcf377eccb9d23293c84cff09d0e26ab17ec6` |
+
+Le patch 05 n'est plus dans cette PR : il est dans #2136, aux mêmes octets (sha256
+`5144d2f824b23cb1740765f1e196896d4460f1e99480383f37ae517ffedc829e`).
+
+**Binaire opa (patch 04).** Le workflow télécharge `opa_linux_amd64_static` en version
+0.69.0 et contrôle son sha256 avant de le rendre exécutable ; un écart arrête le job.
+L'empreinte attendue, `c81aa9c1da779d0a8646c837a96d52e1a7040ff562318d9743b8ef51c93b49d6`,
+est celle que publie le projet : fichier `opa_linux_amd64_static.sha256` de la release
+`v0.69.0` du dépôt `open-policy-agent/opa`
+(`https://github.com/open-policy-agent/opa/releases/download/v0.69.0/opa_linux_amd64_static.sha256`),
+même valeur sur `https://openpolicyagent.org/downloads/v0.69.0/opa_linux_amd64_static.sha256`.
+Les deux ont été lues le 17 novembre. Elle se change avec `OPA_VERSION`, jamais seule.
+C'est la seule modification du patch 04 depuis l'empreinte `da6dbd65…` : 7 lignes ajoutées,
+aucune retirée.
 
 Vecteur JCS gelé dans RAW (`_scripts/jcs-parity-vector.json`) : sha256
 `be12b0c676e1d8bd055abe6f9d9de3e166c57959edc12ac84781911097120dc4`, identique à
@@ -103,18 +114,17 @@ Vecteur JCS gelé dans RAW (`_scripts/jcs-parity-vector.json`) : sha256
 - **Défaut de l'évaluateur** : `jest r2-opa-evaluator.test.ts`, 3 tests verts en local (le
   défaut se résout vers `policies/dist`, `r2-content-write.wasm` y est, la variable
   d'environnement reste prioritaire).
-- **Patches 04, 05, 06** : `git apply --check` sur un export de `origin/main` ; YAML relu par
+- **Patches 04 et 06** : `git apply --check` sur un export de `origin/main` ; YAML relu par
   un parseur. **Patch 07** : `git apply --check` sur un export de `origin/main` de RAW.
-- **Patch 05, recherche du relevé précédent** : jouée sur le DEV contre les runs réels du
-  workflow du vault. À partir du run 43828729889, elle retrouve le run 42582980292
-  (9 nov. 08:01 UTC) et son artefact ; l'empreinte recalculée commence par `e383bd7eab50`,
-  celle du journal du run. Sans relevé : avertissement et rc=0. API en échec : rc=1.
 - **Patch 06** : logique jouée contre le journal réel. ADR-031 et ADR-138 : en vigueur.
   ADR-096 : relevée. Un « ADR-13 » fictif n'est pas satisfait par ADR-138. Fichier de
   référence absent ou vide : rc=1. Une ligne qui dit « historique » est exclue.
 - **Patch 04** : étape de comparaison jouée à blanc, sans reconstruction. 4 empreintes
   égales ; dérive d'une politique bloquante : rc=1 ; dérive de `r2-runtime-read` : rc=0 et
-  un avertissement.
+  un avertissement. Contrôle d'empreinte du binaire : la commande `sha256sum --check
+  --strict` jouée sur un fichier factice rend 0 avec la bonne empreinte et 1 avec une
+  autre. Le binaire n'a pas été téléchargé sur le DEV : que l'empreinte publiée soit celle
+  du fichier servi se prouve au premier run du workflow.
 - **JCS** : run 43984017374 de RAW (PR #81, tête `9cfaf8e8`, 17 nov. 00:00:29 UTC), vert.
   Son journal : « OK — parite JCS prouvee contre vecteur gele jcs-parity-vector.json »,
   `expected_sha256 4f20bb60…d818b1`. Suite de tests de RAW : 761 verts en local. C'est la
@@ -137,37 +147,27 @@ Vecteur JCS gelé dans RAW (`_scripts/jcs-parity-vector.json`) : sha256
      fois le patch 04 poussé. Le bloc refuse de fusionner si ce check n'est pas vert.
 - **Rien n'est servi.** L'évaluateur n'a pas d'appelant. Reloger les bundles retire une
   lecture du vault ; cela n'active aucune garde d'écriture SEO.
-- **Contrôle de coût** : le secret `SUPABASE_ACCESS_TOKEN` du monorepo n'est pas lisible
-  depuis le DEV (403) ; le bloc le vérifie et le demande s'il manque. Les labels `ops`,
-  `cost-surface-drift`, `P1`, `P2` n'existent pas dans le monorepo ; le bloc les crée. Le
-  premier run y sera une base, sans comparaison ; la continuité avec le vault se lit sur
-  son empreinte (`e383bd7eab50…` si rien n'a changé). L'identifiant de l'organisation
-  Supabase reste en clair dans le workflow, comme dans le vault (public). Les artefacts
-  d'un dépôt public sont téléchargeables : le relevé publié est la version expurgée, la
-  même que dans le vault.
-- **Double exécution** : tant que le vault n'est pas archivé, son workflow de coût tourne
-  aussi le lundi. Sans dommage ; une dérive ouvrirait une issue dans chaque dépôt.
+- **Contrôle de coût** : sorti de cette PR. Limites et preuves dans
+  `etape-7-cout-supabase.md` (#2136).
 - **Patch 07** : il décrit le workflow d'un dépôt privé dans un dépôt public. Il ne contient
   ni secret ni donnée : des commentaires, des chemins déclencheurs et des noms d'étapes.
-- **Lecteurs du vault qui restent** après cette étape : aucun dans le code du monorepo une
-  fois #2132 fusionnée (voir le comptage). Les contrôles AEC et voix de marque sont locaux
+- **Lecteurs du vault qui restent** après cette étape : aucun dans le code du monorepo (voir le
+  comptage) ; #2132 est fusionnée (17 nov. 13:08:30 UTC). Les contrôles AEC et voix de marque sont locaux
   depuis #2125 ; le script de la porte ADR-124 est retiré par #2131 (décision 132). Dans
   RAW et WIKI : le contrôle AEC, que traitent les étapes 3 et 4 (#2126, #2127). Les autres
   mentions du vault dans le code sont des commentaires de provenance.
-- **Comptage rejoué** (17 nov., `main` `4a4d43bb6`), preuve de fin du plan :
+- **Comptage rejoué** (17 nov., `main` `fc470e41a`, après #2132), preuve de fin du plan :
   `git grep -n "/opt/automecanik/governance-vault" -- scripts .husky backend/src tools` rend
-  6 lignes sur `main` : 2 de l'évaluateur OPA, que cette PR retire ; 2 de
-  `scripts/governance/check-verdict-expirations.sh` et 2 de
-  `tools/security/attack-simulations/simulate-escalation-hijack.sh`, que retire #2132
-  (D10 et D11). `.husky/pre-commit` n'en a plus depuis #2125. Les deux PR fusionnées : 0.
+  2 lignes sur `main`, toutes deux de l'évaluateur OPA, que cette PR retire. Après sa
+  fusion : 0.
 
 ## Questions à l'owner : tranchées (décision 129, 17 nov.)
 
 - **D13 — score des sources d'ADR-096 §D3** : pas maintenant. Le vecteur JCS reste gelé
   dans RAW (#81). S'il est activé un jour, le contrat de poids, le mode `json_jcs` du
   générateur et le vecteur entrent dans le monorepo dans une même PR, puis RAW est repointé.
-- **D14 — contrôle hebdomadaire de la surface de coût Supabase** : gardé. Le patch 05 est
-  poussé avec les patches 04 et 06.
+- **D14 — contrôle hebdomadaire de la surface de coût Supabase** : gardé. Le patch 05 sort à
+  part, dans #2136 : il attend un secret que le monorepo n'a pas (BC-6).
 - **D10, D11, D12** (posées dans `etape-8.md`) : oui aux trois. Elles sortent dans une PR à
   part, #2132, parce que cette branche est antérieure à #2118 et #2122, qui ont réécrit les
   lignes concernées. #2132 porte son patch réservé 13 (`ownership.yaml`, un commentaire de
@@ -177,9 +177,9 @@ Vecteur JCS gelé dans RAW (`_scripts/jcs-parity-vector.json`) : sha256
 
 | État | Constat |
 |---|---|
-| Implémenté | oui : politiques, bundles, script, défaut de l'évaluateur, test, patches 04 à 07 ; vecteur gelé dans RAW |
+| Implémenté | oui : politiques, bundles, script, défaut de l'évaluateur, test, patches 04, 06 et 07 (05 dans #2136) ; vecteur gelé dans RAW |
 | Intégré | non : monorepo #2120 et RAW #81 en brouillon |
-| Vérifié | JCS : run réel vert. OPA : octets identiques à l'archive, verts dans son dernier run ; script et workflow relogés non joués. Coût et canon : logique jouée à blanc, aucun run dans le monorepo |
+| Vérifié | JCS : run réel vert. OPA : octets identiques à l'archive, verts dans son dernier run ; script et workflow relogés non joués. Canon : logique jouée à blanc, aucun run dans le monorepo |
 | Opérationnel | non : `main` lit encore le vault pour ces lecteurs |
 | Bloqué | par les gestes de l'owner ci-dessous |
 
@@ -189,14 +189,15 @@ Un seul bloc, Windows PowerShell 32 bits. Il n'a pas été exécuté par l'agent
 n'a pas de PowerShell. `<hote DEV>` est à remplacer par l'adresse du DEV, qui ne s'écrit
 pas dans ce dépôt public.
 
-À lancer depuis le clone `am-patches` du poste. Le bloc vérifie le secret
-`SUPABASE_ACCESS_TOKEN` et crée les labels du contrôle de coût (D14 : gardé). Il vérifie
-l'empreinte des quatre patches, pousse les patches 04, 05 et 06 dans le monorepo, régénère les projections sur le DEV, attend les checks, exige que le
-check OPA soit vert, demande l'accord, approuve, fusionne sur la tête relevée, puis lance
-le contrôle de coût. Il applique ensuite le patch 07 à RAW, dans un commit signé avec
-l'identité et la clé du clone `am-patches`, vérifie que GitHub reconnaît la signature,
-attend les checks, demande l'accord et fusionne. Il est rejouable : il saute un patch déjà appliqué et une PR déjà
-fusionnée.
+À lancer depuis le clone `am-patches` du poste. Le bloc vérifie l'empreinte des trois
+patches, pousse les patches 04 et 06 dans le monorepo, régénère les projections sur le DEV,
+sort la PR du brouillon, attend les checks, exige que le check OPA soit vert, demande
+l'accord et enregistre l'approbation. La fusion du monorepo est faite par l'App (circuit
+élevé, P20) : le bloc l'attend et ne fusionne pas lui-même. Il applique ensuite le patch 07
+à RAW, dans un commit signé avec l'identité et la clé du clone `am-patches`, vérifie que
+GitHub reconnaît la signature, attend les checks, demande l'accord et fusionne RAW. Il est
+rejouable : il saute un patch déjà appliqué et une PR déjà fusionnée. Il ne touche ni au
+secret Supabase ni aux labels du contrôle de coût : c'est le bloc de #2136.
 
 ```powershell
 & {
@@ -212,11 +213,9 @@ fusionnée.
   $BR = "governance/mandat-bc-etape7-artefacts-vault-20261116"
   $RAWBR = "governance/mandat-bc-etape7-jcs-gel-20261116"
   $PD = "docs/audit/mandat-bc-20261116/patches/"
-  $P4 = @("04-opa-policy-build-workflow.patch", "da6dbd65728794fc8551e6001955e561c9e3efaa633e26bd75a17a9a99ebf406")
-  $P5 = @("05-supabase-cost-surface-drift-workflow.patch", "5144d2f824b23cb1740765f1e196896d4460f1e99480383f37ae517ffedc829e")
+  $P4 = @("04-opa-policy-build-workflow.patch", "721ad1e5f156efb1470370b930032ab8b76063a8a9b58192d63b0eeb14bf7602")
   $P6 = @("06-adr-canon-in-force-workflow.patch", "647dff391b71e31d4191ff38d60f1b635fa051a69c4ec2e1e38f7270c60827fb")
   $P7 = @("07-raw-jcs-parity-frozen-workflow.patch", "3c81f1aae6a7e18ddb0fdae6333bcf377eccb9d23293c84cff09d0e26ab17ec6")
-  $WF = "supabase-cost-surface-drift.yml"
   $STAMP = (Get-Date -Format "yyyyMMddHHmmss")
   $T = Join-Path $env:TEMP ("bc-etape7-" + $STAMP)
   $TR = Join-Path $env:TEMP ("bc-etape7-raw-" + $STAMP)
@@ -232,29 +231,11 @@ fusionnée.
   $SRC = $BR
   if ($ST -eq "MERGED") { $SRC = "main"; Write-Host "PR 2120 deja fusionnee : partie monorepo sautee" }
 
-  $LISTE = @($P4, $P5, $P6)
-  if ($ST -eq "OPEN") {
-    $SEC = @(gh secret list --repo $REPO --json name --jq '.[].name')
-    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : secrets illisibles, rien n'est modifie"; return }
-    if ($SEC -notcontains "SUPABASE_ACCESS_TOKEN") {
-      Write-Host "Le secret SUPABASE_ACCESS_TOKEN manque dans le monorepo."
-      Write-Host "Coller un jeton Supabase en lecture seule (organisations et projets)."
-      gh secret set SUPABASE_ACCESS_TOKEN --repo $REPO
-      if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : secret non cree, rien d'autre n'est modifie"; return }
-    }
-    gh label create ops --repo $REPO --color 5319e7 --description "Exploitation" --force
-    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : label ops"; return }
-    gh label create cost-surface-drift --repo $REPO --color d93f0b --description "Derive de la surface de cout Supabase" --force
-    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : label cost-surface-drift"; return }
-    gh label create P1 --repo $REPO --color b60205 --description "Priorite 1" --force
-    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : label P1"; return }
-    gh label create P2 --repo $REPO --color fbca04 --description "Priorite 2" --force
-    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : label P2"; return }
-  }
+  $LISTE = @($P4, $P6)
 
   gh repo clone $REPO $T -- --depth 1 --branch $SRC -c core.autocrlf=false
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : clone refuse"; return }
-  foreach ($P in @($P4, $P5, $P6, $P7)) {
+  foreach ($P in @($P4, $P6, $P7)) {
     $H = (Get-FileHash -Algorithm SHA256 (Join-Path $T ($PD + $P[0]))).Hash.ToLower()
     if ($H -ne $P[1]) { Write-Host ("ARRET : empreinte de " + $P[0] + " = " + $H); return }
   }
@@ -272,7 +253,7 @@ fusionnée.
     if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : git add"; return }
     git -C $T diff --cached --quiet
     if ($LASTEXITCODE -ne 0) {
-      git -C $T commit -m "ci: workflows de l'etape 7 de la sortie du vault (mandat BC, patches 04 a 06)"
+      git -C $T commit -m "ci: workflows de l'etape 7 de la sortie du vault (mandat BC, patches 04 et 06)"
       if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : commit"; return }
       git -C $T push origin ("HEAD:refs/heads/" + $BR)
       if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : push refuse"; return }
@@ -308,35 +289,20 @@ fusionnée.
     $OPA = @($J | Where-Object { ($_.name -like "*OPA Policy*") -and ($_.state -eq "SUCCESS") })
     if ($OPA.Count -eq 0) { Write-Host "ARRET : le check OPA Policy n'est pas vert sur la tete, rien n'est fusionne"; return }
 
-    $GO = Read-Host ("Approuver et fusionner la PR 2120 sur la tete " + $HEAD + " ? (oui/non)")
+    $GO = Read-Host ("Approuver la PR 2120 sur la tete " + $HEAD + " ? L'App fusionne ensuite. (oui/non)")
     if ($GO -ne "oui") { Write-Host "ARRET : pas d'accord donne"; return }
     gh pr review 2120 --repo $REPO --approve
     if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : approbation refusee"; return }
-    $CIRCOK = $false
-    for ($i = 0; $i -lt 40; $i++) {
-      Start-Sleep -Seconds 15
-      $RAW = (gh pr checks 2120 --repo $REPO --json name,state)
-      if (-not $RAW) { continue }
-      $J = (($RAW -join "") | ConvertFrom-Json)
-      $C = @($J | Where-Object { $_.name -like $CIRC })
-      $KO = @($C | Where-Object { $_.state -ne "SUCCESS" })
-      if (($C.Count -gt 0) -and ($KO.Count -eq 0)) { $CIRCOK = $true; break }
+    $FUS = $false
+    for ($i = 0; $i -lt 60; $i++) {
+      Start-Sleep -Seconds 20
+      $STN = (gh pr view 2120 --repo $REPO --json state --jq .state)
+      if ($LASTEXITCODE -ne 0) { continue }
+      if ($STN -eq "MERGED") { $FUS = $true; break }
+      if ($STN -eq "CLOSED") { Write-Host "ARRET : la PR 2120 a ete fermee sans fusion"; return }
     }
-    if (-not $CIRCOK) { Write-Host "ARRET : le check du circuit n'est pas vert apres l'approbation, rien n'est fusionne"; return }
-    gh pr merge 2120 --repo $REPO --squash --match-head-commit $HEAD
-    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : fusion refusee"; return }
+    if (-not $FUS) { Write-Host "ARRET : l'App n'a pas fusionne la PR 2120 en 20 minutes ; lire le run du workflow Circuit de fusion"; return }
     Start-Sleep -Seconds 45
-  }
-
-  if ($ST -eq "OPEN") {
-    gh workflow run $WF --repo $REPO
-    if ($LASTEXITCODE -ne 0) {
-      Write-Host "A REFAIRE : lancement du controle de cout refuse (la suite continue)"
-    } else {
-      Start-Sleep -Seconds 90
-      Write-Host "Dernier run du controle de cout (attendu : completed success ; premier releve = base) :"
-      gh run list --workflow $WF --repo $REPO --limit 1
-    }
   }
 
   $RST = (gh pr view 81 --repo $RAWREPO --json state --jq .state)
@@ -409,15 +375,13 @@ fusionnée.
 
 ## Points d'attention
 
-- En circuit élevé, le check « 🚦 Circuit de fusion » reste rouge tant que l'approbation de
-  l'owner manque sur la tête. Le bloc attend les autres checks, demande l'accord, approuve,
-  attend que ce check passe au vert, puis fusionne. Il lit les checks par
-  `gh pr checks --json` : `gh` 2.50 ou plus récent.
-- Si le check « OPA Policy: test + build » échoue, rien n'est fusionné. Deux causes
-  possibles : un test Rego rouge, ou un bundle reconstruit qui diffère du bundle committé.
-  Dans les deux cas, la correction se fait sur la branche avant de rejouer le bloc.
-- `gh secret set` demande la valeur au clavier : elle n'entre ni dans le bloc ni dans
-  l'historique. Le jeton attendu est un jeton personnel Supabase en lecture seule.
+- En circuit élevé, l'App fusionne après la revue approuvante de l'owner (P20, correctifs
+  des circuits sur `main` depuis le 17 nov. 11:47 UTC). Le bloc attend les checks, demande
+  l'accord, enregistre l'approbation, puis attend vingt minutes au plus que la PR soit
+  fusionnée. Il lit les checks par `gh pr checks --json` : `gh` 2.50 ou plus récent.
+- Si le check « OPA Policy: test + build » échoue, rien n'est fusionné. Trois causes
+  possibles : un test Rego rouge, un bundle reconstruit qui diffère du bundle committé, ou
+  une empreinte du binaire opa qui ne correspond pas. Dans tous les cas, la correction se
+  fait sur la branche avant de rejouer le bloc.
 - Preuve de fin après le bloc : un run vert de `opa-policy-build.yml` et de
-  `vault-canon-exists.yml` sur la PR, un run vert de `supabase-cost-surface-drift.yml`
-  lancé depuis `main`, et le run `jcs-parity` de RAW. L'agent les relève ensuite.
+  `vault-canon-exists.yml` sur la PR, et le run `jcs-parity` de RAW. L'agent les relève ensuite.

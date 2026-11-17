@@ -1,9 +1,9 @@
 diff --git a/.github/workflows/opa-policy-build.yml b/.github/workflows/opa-policy-build.yml
 new file mode 100644
-index 0000000..4fac662
+index 0000000..b33ce8d
 --- /dev/null
 +++ b/.github/workflows/opa-policy-build.yml
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,138 @@
 +name: OPA Policy Build & Test
 +
 +# Politiques d'écriture SEO (OPA WASM) : policies/seo-content/ et policies/dist/.
@@ -41,6 +41,11 @@ index 0000000..4fac662
 +
 +env:
 +  OPA_VERSION: 0.69.0
++  # sha256 de opa_linux_amd64_static pour cette version, publié par le projet :
++  # https://github.com/open-policy-agent/opa/releases/download/v0.69.0/opa_linux_amd64_static.sha256
++  # (même valeur sur https://openpolicyagent.org/downloads/v0.69.0/opa_linux_amd64_static.sha256).
++  # À changer avec OPA_VERSION, jamais seul.
++  OPA_SHA256: c81aa9c1da779d0a8646c837a96d52e1a7040ff562318d9743b8ef51c93b49d6
 +  # Politiques dont la dérive bloque : la liste du workflow de l'archive, inchangée.
 +  POLICY_NAMES: 'h1-write r2-content-write r2-cluster-health'
 +  # Politique construite par le script mais jamais comparée dans l'archive : sa
@@ -59,6 +64,8 @@ index 0000000..4fac662
 +        run: |
 +          curl -sSfL -o /usr/local/bin/opa \
 +            "https://openpolicyagent.org/downloads/v${OPA_VERSION}/opa_linux_amd64_static"
++          # Empreinte contrôlée avant de rendre le binaire exécutable : un écart arrête le job.
++          echo "${OPA_SHA256}  /usr/local/bin/opa" | sha256sum --check --strict -
 +          chmod +x /usr/local/bin/opa
 +          opa version
 +
