@@ -164,3 +164,27 @@ Aucun principe n'est retiré ni renuméroté. Chaque principe reçoit une ligne 
 - Les décisions 72, 73, 91, 98, 105 et 109 n'ont pas d'enregistrement primaire dans le dépôt :
   elles n'y existent que par citation.
 - WIKI, `_meta/quality-gates.md` : l.68 garde des seuils 0.70/0.85/0.95, contre 0.85 l.152.
+
+## 8. Suite : décision 120 (2026-11-17)
+
+L'owner retient les douze réponses proposées au §5. Les sections 1 à 7 restent le relevé du
+2026-11-16 et ne sont pas réécrites. La décision 120, comme les précédentes, n'a pas
+d'enregistrement primaire dans le dépôt : elle y entre par le journal.
+
+| Question | Où la réponse est portée |
+|---|---|
+| Q1 | Journal, P20 : transition close, circuit faible déclaré activé, porte ADR-124 close. |
+| Q2 | Journal, P20, circuit élevé. L'ajout de `🚦 Circuit de fusion` aux checks requis de `main` est un acte de l'owner, préparé hors dépôt. |
+| Q3 | Retrait fait par #2117 (mandat BF). Extension de la règle ast-grep : `projets-de-mandats.md`, M4. |
+| Q4 | `projets-de-mandats.md`, M1. |
+| Q5 | Journal, P16. |
+| Q6 | Journal, P24. |
+| Q7 | Journal, P31. |
+| Q8 | Journal, P25 et P27. |
+| Q9 | Journal, P34 à P39. |
+| Q10 | Journal, P13. |
+| Q11 | `projets-de-mandats.md`, M2. |
+| Q12 | `projets-de-mandats.md`, M3. |
+
+Les six principes entrés par Q9 portent les numéros P34 à P39. Leur preuve est dans leur ligne
+« Application » ; le tableau du 2026-11-16 ne les contient pas.
