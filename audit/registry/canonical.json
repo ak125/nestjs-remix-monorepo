@@ -65108,7 +65108,7 @@
         "backend/src/modules/supplier-truth/connectors/cal.connector.ts"
       ],
       "kind": "test",
-      "loc": 284,
+      "loc": 298,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
       "risk": "high",
@@ -65135,10 +65135,11 @@
       "imports": [
         "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 351,
+      "loc": 392,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
       "risk": "high",
@@ -65209,7 +65210,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "kind": "test",
-      "loc": 810,
+      "loc": 836,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
       "risk": "high",
@@ -65240,7 +65241,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 624,
+      "loc": 640,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "risk": "high",
@@ -65289,10 +65290,11 @@
       "imports": [
         "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 314,
+      "loc": 326,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
       "risk": "high",
@@ -65345,6 +65347,53 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts"
+      ],
+      "kind": "test",
+      "loc": 125,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts",
+      "importedBy": [
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
+        "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 110,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -108673,11 +108722,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4a6c9a565cec39045d2f64362399e6757cb85ac5af9843055d2be9b5a46c7e8e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "f9e46fd1f98fa9ad75cca718f7700db15391d66a21a93f2a9a2dbc2baaf5d70e",
+      "audit/registry/files.json": "fa57f3235228708d53ec9392041041e07811849bf35046e0088b2faf5ad720a2",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "065849df18e7232c615cffca1056212136c1cef48d8ccebc88e868e1c23598a3"
     },
-    "sotFingerprint": "63c070f7271a"
+    "sotFingerprint": "cac4fbc810b4"
   },
   "runtime": [
     {
