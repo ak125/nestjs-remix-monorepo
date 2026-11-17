@@ -2,9 +2,9 @@
  * `api/payments` client and utility routes — access boundary.
  *
  * Three classes:
- * - `admin`   : `AuthenticatedGuard + IsAdminGuard`. Direct payment creation,
- *   reads by order / reference / transactions and the test route: the site
- *   does not call them and their handlers do not check the account holder.
+ * - `admin`   : `AuthenticatedGuard + IsAdminGuard`. Direct payment creation
+ *   and reads by order / reference / transactions: the site does not call
+ *   them and their handlers do not check the account holder.
  * - `session` : `AuthenticatedGuard`. The handler then applies "own account or
  *   administrator" (`user/:userId`, `:id`, `:id/cancel`) or order ownership
  *   (`proceed-supplement`).
@@ -150,7 +150,7 @@ const CONTROLLERS: Array<[string, Type<any>, Access]> = [
     'PaymentMethodsController',
     PaymentMethodsController,
     {
-      admin: ['testCreatePaymentWithConsignes', 'getPaymentTransactions'],
+      admin: ['getPaymentTransactions'],
       session: [],
       public: ['getAvailablePaymentMethods'],
     },
