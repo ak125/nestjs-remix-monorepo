@@ -1846,3 +1846,9 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: medium
     risk: medium
+  # Complément n° 1 AW (ADR-137 D3/D7) : verrou des skills tiers à la racine. Même domaine et owner que .claude/skills/**. Glob exact.
+  - glob: skills-lock.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
