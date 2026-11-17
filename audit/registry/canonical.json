@@ -42090,6 +42090,7 @@
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/promo-data.service.ts",
         "backend/src/database/services/shipping-data.service.ts",
+        "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
@@ -42105,9 +42106,36 @@
         "backend/src/modules/promo/promo.module.ts"
       ],
       "kind": "service",
-      "loc": 62,
+      "loc": 64,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/cart.module.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
+      "importedBy": [
+        "backend/src/modules/cart/cart.module.ts"
+      ],
+      "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "@common/exceptions",
+        "backend/src/modules/cart/services/cart-analytics.service.ts"
+      ],
+      "kind": "controller",
+      "loc": 104,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -42472,7 +42500,8 @@
       "domain": "D11",
       "id": "backend/src/modules/cart/services/cart-analytics.service.ts",
       "importedBy": [
-        "backend/src/modules/cart/cart.module.ts"
+        "backend/src/modules/cart/cart.module.ts",
+        "backend/src/modules/cart/controllers/cart-analytics.controller.ts"
       ],
       "imports": [
         "@cache/cache.service"
@@ -71794,7 +71823,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 226,
+      "loc": 243,
       "owner": "@ak125",
       "path": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
       "risk": "medium",
@@ -108370,11 +108399,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "aff26df8e35ef6ea579c8ab99457a9a7959aad1f8cd132e4812463aa68b81168",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "54ba075f5a94152c590bae9d0f94b9a97602421cc9f557aad62032266063f58e",
+      "audit/registry/files.json": "f412e9fb385edc8a329f04b02e26be2ec3017c2247653b2fd5cddd53f2308fc5",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "8422a16bfb4dc47ec78e980ead21f727965aaa3ba7e4eb569af93c1f35646529"
+      "audit/registry/runtime.json": "050c788fdf7bd3a1350974b04a682446077dca041f78a3f4d97a805624ed64ee"
     },
-    "sotFingerprint": "0922db28d2da"
+    "sotFingerprint": "e575bde5f37a"
   },
   "runtime": [
     {
@@ -110732,6 +110761,7 @@
         "runtime:backend/src/database/services/cart-data.service.ts",
         "runtime:backend/src/database/services/promo-data.service.ts",
         "runtime:backend/src/database/services/shipping-data.service.ts",
+        "runtime:backend/src/modules/cart/controllers/cart-analytics.controller.ts",
         "runtime:backend/src/modules/cart/controllers/cart-core.controller.ts",
         "runtime:backend/src/modules/cart/controllers/cart-items.controller.ts",
         "runtime:backend/src/modules/cart/controllers/cart-promo.controller.ts",
@@ -110749,6 +110779,17 @@
       "id": "runtime:backend/src/modules/cart/cart.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/cart/cart.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/cart/services/cart-analytics.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/cart/controllers/cart-analytics.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

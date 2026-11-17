@@ -13180,6 +13180,7 @@
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/promo-data.service.ts",
         "backend/src/database/services/shipping-data.service.ts",
+        "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
@@ -13195,9 +13196,35 @@
         "backend/src/modules/promo/promo.module.ts"
       ],
       "kind": "service",
-      "loc": 62,
+      "loc": 64,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/cart.module.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
+      "importedBy": [
+        "backend/src/modules/cart/cart.module.ts"
+      ],
+      "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "@common/exceptions",
+        "backend/src/modules/cart/services/cart-analytics.service.ts"
+      ],
+      "kind": "controller",
+      "loc": 104,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -13548,7 +13575,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/cart/services/cart-analytics.service.ts",
       "importedBy": [
-        "backend/src/modules/cart/cart.module.ts"
+        "backend/src/modules/cart/cart.module.ts",
+        "backend/src/modules/cart/controllers/cart-analytics.controller.ts"
       ],
       "imports": [
         "@cache/cache.service"
@@ -41878,7 +41906,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 226,
+      "loc": 243,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
       "risk": "low",
