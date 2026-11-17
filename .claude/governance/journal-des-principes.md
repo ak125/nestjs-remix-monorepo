@@ -165,6 +165,24 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L2 pour R2 (migration `20260516_seo_r2_v2_cqrs_snapshot.sql`,
   `pr-2e-readiness-gate.yml`). Pour les autres rôles, la lecture des projections est sous drapeau
   `SEO_PROJECTION_READ_V1`, éteint par défaut. État servi non vérifié.
+- **P40.** Une fiche WIKI n'est promue que sur une qualification technique valable du
+  département 11 (`technical_qualification_pass`). Il faut un artefact versionné pour la clé du
+  texte publié, contesté par un modèle d'une autre famille que son producteur, frais, et sans
+  FAIL. Un seul décideur tranche (`promotion_decision.py`) et aucun PASS ne remplace un FAIL. Le
+  RAG n'alimente ni RAW ni WIKI : il n'est ni une source ni une preuve de cette qualification
+  (P11). La condition reste en report-only tant que l'étalonnage n'est pas consigné. La rendre
+  bloquante demande une PR WIKI dédiée. Source : ADR-131 D3 à D8, proposé et non fusionné
+  (ak125/governance-vault#413) ; décision de l'owner du 2026-11-17 : « fais le branchement tout
+  de suite parcontre le rag n'a pas le droit d'alimenter raw wiki et consumer c'est lui meme un
+  consumer ».
+  Application, relevée le 2026-11-17 : L2 en report-only, une fois fusionnées les PR WIKI #134
+  et #142. Le dépôt WIKI calcule alors la condition et l'inscrit dans chaque décision
+  (`_scripts/technical_qualification.py`, `_scripts/promotion_decision.py`). Les tests passent
+  en local ; la CI tournera après le reciblage de #142 sur `main`. Le blocage n'est pas activé :
+  la constante `TECHNICAL_QUALIFICATION_ADR` est vide, et ce blocage reste une intention
+  seulement. Relevé à blanc sur `main` du WIKI : 0 fiche sur 24 en PASS, aucune décision ni aucun
+  export changé. Écart : trois fiches servies citent `recycled/rag-knowledge/**` comme source
+  RAW (`_audit/technical-qualification/releve-a-blanc-cablage-20261117.md`, §5).
 
 ## Diagnostic
 
