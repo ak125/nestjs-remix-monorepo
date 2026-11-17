@@ -275,3 +275,79 @@ def test_registered_canons_compute_without_error():
 def test_repository_is_in_sync():
     """Le contrôle de CI : manifeste et copies du dépôt conformes aux sources."""
     assert cch.check() == 0
+
+
+# --------------------------------------------------------------------------- #
+# 5. Plan d'annonce aux dépôts consommateurs (canon-publish.yml)
+# --------------------------------------------------------------------------- #
+def _manifest(**digests):
+    """Manifeste réduit : deux dépôts consommateurs et une copie du monorepo par canon."""
+    return {
+        "canons": {
+            key: {
+                "distribution_sha256": digest,
+                "consumers": [
+                    {"repo": "ak125/automecanik-wiki", "path": f"_meta/{key}.md"},
+                    {"repo": "ak125/automecanik-raw", "path": f"{key}.md"},
+                    {"repo": cch.MONOREPO, "path": f"copies/{key}.md"},
+                ],
+            }
+            for key, digest in digests.items()
+        }
+    }
+
+
+def test_dispatch_plan_is_empty_when_no_distributed_body_changed():
+    assert cch.dispatch_plan(_manifest(a="1", b="2"), before=_manifest(a="1", b="2")) == []
+
+
+def test_dispatch_plan_names_only_the_changed_canon_and_never_the_monorepo():
+    plan = cch.dispatch_plan(_manifest(a="1", b="9"), before=_manifest(a="1", b="2"))
+    assert plan == [
+        {"canon": "b", "repo": "ak125/automecanik-wiki"},
+        {"canon": "b", "repo": "ak125/automecanik-raw"},
+    ]
+
+
+def test_dispatch_plan_announces_a_canon_absent_from_the_old_manifest():
+    plan = cch.dispatch_plan(_manifest(a="1", b="2"), before=_manifest(a="1"))
+    assert {p["canon"] for p in plan} == {"b"}
+    assert len(plan) == 2
+
+
+def test_dispatch_plan_announces_a_new_consumer_repo_of_an_unchanged_canon():
+    before = _manifest(a="1")
+    before["canons"]["a"]["consumers"].pop(1)  # l'ancien manifeste ne déclarait pas raw
+    assert cch.dispatch_plan(_manifest(a="1"), before=before) == [
+        {"canon": "a", "repo": "ak125/automecanik-raw"}
+    ]
+
+
+def test_dispatch_plan_forced_canon_lists_all_its_external_repos():
+    plan = cch.dispatch_plan(_manifest(a="1", b="2"), canon="a")
+    assert plan == [
+        {"canon": "a", "repo": "ak125/automecanik-wiki"},
+        {"canon": "a", "repo": "ak125/automecanik-raw"},
+    ]
+
+
+def test_dispatch_plan_refuses_an_unknown_canon():
+    with pytest.raises(SystemExit) as exc:
+        cch.dispatch_plan(_manifest(a="1"), canon="inconnu")
+    assert "canon inconnu" in str(exc.value)
+
+
+@pytest.mark.parametrize("kwargs", [{}, {"before": {"canons": {}}, "canon": "a"}])
+def test_dispatch_plan_refuses_neither_or_both_selectors(kwargs):
+    with pytest.raises(SystemExit):
+        cch.dispatch_plan(_manifest(a="1"), **kwargs)
+
+
+def test_registered_canons_plan_matches_the_declared_external_consumers():
+    """Sur le dépôt réel : l'AEC s'annonce au wiki et à raw, la voix de marque à personne."""
+    manifest = cch.load_manifest(cch.REPO_ROOT)
+    assert cch.dispatch_plan(manifest, canon="aec") == [
+        {"canon": "aec", "repo": "ak125/automecanik-wiki"},
+        {"canon": "aec", "repo": "ak125/automecanik-raw"},
+    ]
+    assert cch.dispatch_plan(manifest, canon="marketing_voice") == []
