@@ -1,9 +1,9 @@
 diff --git a/.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md b/.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md
 new file mode 100644
-index 0000000..acb7adc
+index 0000000..fa658d3
 --- /dev/null
 +++ b/.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md
-@@ -0,0 +1,424 @@
+@@ -0,0 +1,428 @@
 +---
 +type: rules-document
 +status: canon
@@ -205,18 +205,22 @@ index 0000000..acb7adc
 +- **Audit d'usage avant un `DROP COLUMN`** : squawk lit le SQL de la migration, pas le code applicatif.
 +
 +### Anti-patterns bloquants
++
 +- Migration appliquée en prod via console Supabase sans fichier git.
 +- `DROP COLUMN` sans audit usage applicatif préalable (Q3 violation rétro).
 +- Type `any` dans `@repo/database-types` au lieu de regénérer.
 +- 2 migrations même timestamp (collision).
 +
 +### Evidence requise
++
++```text
 +- [x] Registry freshness (job) : green, ou N/A (workflow non déclenché)
 +- [x] Migrations: <list of files added> ou "none" ; Migration Safety : green
 +- [x] Migration ledger --status : <run>, 0 pending, 0 drift, 0 orphan, 0 applying, 0 failed
 +- [x] Ledger ↔ catalogue --verify : <run>, <ligne de résultat>
 +- [x] Types regenerated: yes / no / N/A (déclaratif, non mesuré)
 +- [x] comparaison db.json / base live : non mesurée
++```
 +
 +**Raison** : chaque drift L1 ↔ live = un crash futur sur deploy frais ou rebuild canonical. Le drift se compose silencieusement. Cf. ADR-058 V4 invariant : `live = canonical = git`. De cet invariant, la CI mesure `canonical = git` (test 1) et, côté base, le registre des migrations et l'existence des objets déclarés (tests 3 et 4).
 +
