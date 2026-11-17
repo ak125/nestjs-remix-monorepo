@@ -40398,7 +40398,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 68,
+      "loc": 97,
       "owner": "__unassigned__",
       "path": "backend/src/utils/promise-helpers.ts",
       "risk": "low",
@@ -43498,6 +43498,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 253,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/site-maintenance-routes-authz.test.ts",
       "importedBy": [],
       "imports": [],
@@ -44075,6 +44094,63 @@
       "loc": 26,
       "owner": "__unassigned__",
       "path": "commitlint.config.js",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/ownership-coverage.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 33,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/ownership-coverage.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/refused.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 21,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/refused.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/zones.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 13,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/zones.cjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
