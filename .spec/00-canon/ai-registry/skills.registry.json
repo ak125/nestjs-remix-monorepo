@@ -1,10 +1,32 @@
 {
-  "compliantCount": 17,
-  "generatedAt": "2026-11-17T15:56:58.526Z",
+  "compliantCount": 18,
+  "generatedAt": "2026-11-17T16:48:37.967Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
+    {
+      "checksum": "sha256:336ba50decc644fe54af99a6c74fcaeb10d9b663068b82f12c3f60fda2fcbb1f",
+      "domain": "D15",
+      "last_verified": "2026-11-16",
+      "llm_safe": true,
+      "name": "amk-supabase-postgres-best-practices",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/amk-supabase-postgres-best-practices/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "tags": [
+        "p40",
+        "postgres",
+        "read-only",
+        "supabase",
+        "third-party-wrapper"
+      ],
+      "type": "discipline"
+    },
     {
       "checksum": "sha256:728c2f3a0d94380c3ef6bb628c3a20b702a0010dd53e04e12567ddb11cbdd8a9",
       "domain": "D15",
@@ -320,6 +342,24 @@
       "type": "technique"
     },
     {
+      "checksum": "sha256:ad65e776f45e761bafc609d3f506c77c1032225aa65e0c4c02f241b8071e5855",
+      "lock": {
+        "ref": "c9be0e931b7930f7d02126d04774d904c381e7d7",
+        "source": "supabase/agent-skills"
+      },
+      "metadata": {
+        "abstract": "Comprehensive Postgres performance optimization guide for developers using Supabase and Postgres. Contains performance rules across 8 categories, prioritized by impact from critical (query performance, connection management) to incremental (advanced features). Each rule includes detailed explanations, incorrect vs. correct SQL examples, query plan analysis, and specific performance metrics to guide automated optimization and code generation.",
+        "author": "supabase",
+        "date": "January 2026",
+        "organization": "Supabase",
+        "version": "1.1.1"
+      },
+      "name": "supabase-postgres-best-practices",
+      "origin": "third_party",
+      "path": ".claude/skills/supabase-postgres-best-practices/SKILL.md",
+      "spec_compliant": false
+    },
+    {
       "checksum": "sha256:50ede647a720871c38e83483d4241789694523022e11f7880d9d91c8eac09fbf",
       "domain": "D15",
       "last_verified": "2026-06-10",
@@ -433,5 +473,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 17
+  "totalSkills": 19
 }
