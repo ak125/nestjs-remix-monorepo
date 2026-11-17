@@ -28,6 +28,27 @@ imports ou le chargement des `.claude/rules/` de Claude Code.
 - Relecture française : `.claude/prompts/_shared/editorial-review.md`.
 - Chargement et limites par agent : `.claude/knowledge/workspaces.md`.
 
+## Skills de la racine (`.claude/skills/`)
+
+### Locaux
+
+`amk-supabase-postgres-best-practices` (wrapper du skill tiers ci-dessous),
+`capability-acceptance`, `code-auto-review`, `code-review`,
+`continuous-improvement-global`, `db-migration`, `diagnostic-orientation`,
+`frontend-design`, `governance-vault-ops`, `order-rupture-equivalence`,
+`project-state-report`, `responsive-audit`, `runtime-truth-audit`, `session-log`,
+`supplier-price-load`, `ui-ux-pro-max`, `vehicle-ops`, `web-vitals-audit`.
+
+### Tiers (amont, `skills-lock.json`)
+
+Régis par P40 du journal des principes (`.claude/governance/journal-des-principes.md`) :
+dossier amont jamais modifié, commit et empreinte épinglés dans `skills-lock.json`,
+wrapper local `amk-<nom>`. Entrée et retrait par PR ; pilote en cours, décision de
+l'owner après 30 jours d'observation.
+
+- `supabase-postgres-best-practices` — dépôt `supabase/agent-skills`, MIT ;
+  wrapper `amk-supabase-postgres-best-practices`, qui prime sur l'amont.
+
 ## Format de sortie
 
 **CONTRAT DE SORTIE** : `.claude/canon-mirrors/agent-exit-contract.md`.
