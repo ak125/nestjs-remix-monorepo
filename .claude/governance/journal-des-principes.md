@@ -294,6 +294,28 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : intention seulement dans le monorepo. Le WIKI refuse une autorité de relecture
   auto-déclarée (`promotion_decision.py`, motif `REVIEW_AUTHORITY_CLAIMED`). Pour le code de
   risque faible, la validation est celle des checks requis de `main` (P20, circuit faible).
+- **P40.** Un skill tiers se déclare dans `skills-lock.json`, à la racine du dépôt. Pour chaque
+  dossier de `.claude/skills/` qu'il liste, le verrou épingle un dépôt GitHub, un commit de
+  40 caractères, le chemin du `SKILL.md` amont et l'empreinte du dossier. Le dossier commité doit
+  redonner cette empreinte : un fichier amont modifié est refusé. Un skill tiers a un wrapper
+  local `amk-<nom>`, soumis au schéma des skills locaux. Un skill absent du verrou suit ce schéma,
+  d'où que vienne son texte. Source : décision de l'owner du 17 nov. 2026, à 14:36, heure de
+  Paris : « oui. Sans cette transcription, fusionner le socle et le skill reviendrait à appliquer
+  une règle qui n'est pas en vigueur. » ; à 14:46 : « Justement, consolider le principe qu'il nous
+  faut, il est interdit de recopier les ADR. Tous les nouveaux contrats ont été effectués après
+  preuve du code. Et vérifier encore. » Raison archivée dans ADR-137.
+  Application, relevé du 2026-11-17 sur la branche de #2104 : L2.
+  `scripts/governance/validate-skills-frontmatter.js` lit le verrou (l. 63-64, 135-156), envoie
+  un skill listé à son contrôle (l. 316-317), vérifie l'entrée (l. 236-261), recalcule
+  l'empreinte (l. 175-225, 262-268), lit le frontmatter amont (l. 271-287), exige le wrapper
+  (l. 289-295) et signale une entrée sans dossier (l. 396-421).
+  `scripts/governance/build-skills-registry.js` marque l'entrée `origin: third_party`, hors des
+  écarts (l. 111-126). Test `scripts/governance/__tests__/skills-third-party-lock.test.ts` :
+  16 cas, verts. Écarts : le validateur tourne dans `skills-canon-gate.yml` en avertissement
+  (`continue-on-error: true`) ; ce workflow ne lance pas le test et ne se déclenche pas sur
+  `skills-lock.json` tant que le patch réservé à l'owner n'est pas appliqué. Seul `.claude/skills/`
+  de la racine est contrôlé. Aucun skill tiers n'est installé : rien n'est servi. À relever à
+  nouveau à la fusion.
 
 ## Règles en service entrées au journal
 
