@@ -46,18 +46,52 @@ Décisions 129, 130 et 132 de Marwane (17 nov., 11:52 Tunis), reportées en sect
 - La section F (bloc) n'est pas modifiée : elle ne ferme aucune PR du monorepo et ne nomme pas la
   porte.
 
+## Mise à jour du 2026-11-17 (complément BC-7)
+
+Verdicts rendus par Marwane le 17 nov. (feuille des décisions, n° 133 à 139), reportés en section D
+et dans le tableau ci-dessous. **Aucune PR du Vault n'est fermée à cette heure** (46 ouvertes).
+
+- **D1, décision 133 : oui.** Les trois textes d'ADR-122 s'appliquent dans le monorepo. Textes 2 et
+  3 : PR #1958 (brouillon, tête `933a512ec`). Texte 1 : il suit le déplacement de la voix
+  marketing ; la source est sur `main` depuis l'étape 2
+  (`.spec/00-canon/canon-distribution/rules-marketing-voice.md`, fichier réservé) et le patch du
+  texte 1 n'est pas encore préparé.
+- **D2, décision 134 : « oui, j'attends. mais  fais  le  branchement  tout  de  suite ».** La règle
+  d'ADR-131 entre au journal avec le câblage, pas avant. Câblage livré en brouillon par le mandat
+  S ; relevé : PR #142 du dépôt WIKI, brouillon, tête `3e65fb379` (« le décideur lit
+  technical_qualification_pass »). D'ici sa fusion, P10 reste la règle.
+- **D3a, décision 136 : la mention du blog reste telle quelle** (« je verifie tout »). L'option B
+  n'est pas retenue.
+- **D3b, décision 137 : texte décidé.** « Aucune signature publique ne nomme une IA comme auteur.
+  L'auteur affiché est AutoMecanik. » PR #2140 du mandat BD (brouillon, tête `2301c1e4a`), à
+  renuméroter : P40 est pris sur `main` par #2104.
+- **D5, décision 138 :** une issue du monorepo par incident, qui ne se ferme que si elle dit ce qui
+  empêche son retour. Mandat BD, complément n° 4.
+- **D6 : réglée par les faits.** #2104 est fusionnée (2026-11-17T16:10:46Z) : `skills-lock.json` et
+  P40 sont sur `main`.
+- **D8, décision 139 : oui.** La Definition of Done passe dans le monorepo, DoD5 corrigée :
+  PR #2142 (brouillon), patches réservés 14 et 15, document `etape-5-dod.md` de cette PR.
+- Les commentaires de fermeture de #345, #392, #413, #414 et #415 (section C et bloc) sont réécrits
+  pour citer ces décisions. Le bloc ne ferme #415 qu'après la fusion de #2116 **et** de #2142 : son
+  commentaire cite P33 et le fichier déplacé.
+- P32 et P33 sont libres sur `main` (qui porte P30, P31, P34 à P40) ; `gh` rend #2116 `MERGEABLE`.
+  Aucune resynchronisation n'est faite (décision 122).
+- Question nouvelle, **D19** (PR #2142, `etape-5-dod.md`, section 7) : les passages de la DoD qui
+  décrivent des workflows du Vault (« Enforcement automatique », « Escape hatch ») sont repris mot
+  pour mot ; les corrige-t-on comme DoD5, en 1.4.1 ? Réponse proposée : oui, après ce lot.
+
 ### Les neuf verdicts, une ligne chacun
 
 | N° | Question | Réponse proposée | État | PR du Vault à fermer |
 |---|---|---|---|---|
-| D1 | Appliquer dans le monorepo les trois textes approuvés d'ADR-122 ? | Oui, par PR du monorepo | à décider | #392 (1) |
-| D2 | ADR-131 entre-t-elle au journal maintenant ? | Non, avec la PR qui la câble | à décider | #413 (1) |
-| D3 | ADR-132 : mention « mécaniciens certifiés » et règle de signature ? | Retirer ou réécrire la mention ; une ligne au journal pour la signature | à décider | #414 (1) |
+| D1 | Appliquer dans le monorepo les trois textes approuvés d'ADR-122 ? | Oui, par PR du monorepo | tranchée, décision 133 : oui ; textes 2 et 3 dans #1958 (brouillon), texte 1 à préparer | #392 (1) |
+| D2 | ADR-131 entre-t-elle au journal maintenant ? | Non, avec la PR qui la câble | tranchée, décision 134 : elle entre au journal avec le câblage (WIKI #142, brouillon) | #413 (1) |
+| D3 | ADR-132 : mention « mécaniciens certifiés » et règle de signature ? | Retirer ou réécrire la mention ; une ligne au journal pour la signature | tranchée : D3a, décision 136, la mention reste ; D3b, décision 137, ligne au journal par #2140 (brouillon, à renuméroter) | #414 (1) |
 | D4 | Une ligne du journal sur les URL immuables ? | Oui | réglée : P37, #2122 fusionnée | #240 (1) |
-| D5 | Où vit le registre des incidents ? | Une issue du monorepo par incident (P24) | à décider | #345 (1) |
-| D6 | ADR-137 (skills tiers) entre-t-elle au journal maintenant ? | Non, avec la PR du pilote | à décider | aucune (0) |
+| D5 | Où vit le registre des incidents ? | Une issue du monorepo par incident (P24) | tranchée, décision 138 : une issue par incident ; mandat BD | #345 (1) |
+| D6 | ADR-137 (skills tiers) entre-t-elle au journal maintenant ? | Non, avec la PR du pilote | réglée par les faits : #2104 fusionnée, P40 sur `main` | aucune (0) |
 | D7 | Fermer la PR #2079 du monorepo (niveau B, ADR-133) ? | Oui | tranchée, décision 132 : fermée | #416, sans attendre : conflit avec P20 (1) |
-| D8 | Où vit la Definition of Done après l'archivage ? | Dans `.spec/00-canon/canon-distribution/` du monorepo | à décider | #415, après la fusion de #2116, quelle que soit la réponse (1) |
+| D8 | Où vit la Definition of Done après l'archivage ? | Dans `.spec/00-canon/canon-distribution/` du monorepo | tranchée, décision 139 : oui ; PR #2142 (brouillon) | #415, après la fusion de #2116 et de #2142 (1) |
 | D9 | Que devient la porte ADR-124 ? | La retirer | tranchée, décision 132 : #2131 | aucune (0) |
 
 Sept PR du Vault sont liées à un verdict (#240, #345, #392, #413, #414, #415, #416) ; le bloc de la
@@ -113,11 +147,11 @@ du vault (`git ls-tree origin/main -- <fichier>`) et citations dans le monorepo
 | ADR-084, PR #315, écriture du tarif `pieces_price` | Un seul chemin d'écriture du tarif (module pricing), jamais de vente à perte, import puis activation puis affichage. | Garde CI : `.ast-grep/rules/commerce-no-direct-pieces-price-write.yml:1,6` (`severity: error`), exécutée par `.github/workflows/audit.yml:60`, run 43969954636 vert le 2026-11-16. Runtime : `backend/src/modules/pricing/services/pricing-invariants.service.ts:42,99` (`VENTE_BELOW_ACHAT`), `backend/src/modules/pricing/services/pricing.repository.ts:226`, `price-activation.service.ts:31` ; tests `__tests__/pricing-invariants.test.ts:50`, `__tests__/price-activation.service.test.ts:7` ; affichage `backend/src/modules/catalog/catalog.service.ts:515`. Trois étapes (relevé du 17 nov.) : `price-import.service.ts:44` (par défaut, disponibilité inchangée), `price-activation.service.ts` (ne change que `pri_dispo`), `catalog-display-activation.service.ts` (ne change que `piece_display`) ; leurs tests passent dans le check requis `🧪 Backend Tests`, run 44034187038 vert sur `main` (`187f46ef5`, 06:54 UTC). | L4 pour la garde CI (chemin d'écriture) ; L3 pour les tests des trois étapes (check requis vert) ; usage en service non observé | journal | 1. PR du monorepo qui ajoute P32, réduit aux trois étapes (section B), circuit élevé. 2. Chemin d'écriture unique et vente à perte : P35 et P36 de la PR #2122 (mandat BD), pas de redite ici. 3. Fermer #315 avec C#315 après la fusion de #2116 et de #2122. |
 | « ADR-085 » bis, PR #315, trois surfaces fournisseur | Garder trois surfaces fournisseur distinctes sur des briques communes, sans système parallèle. | Présent : `.claude/knowledge/modules/suppliers.md:59,68,89` ; `backend/src/modules/supplier-truth/supplier-sync.flag.ts:13,16` (surface dormante). Déjà porté par le contrat du département 12 (champ `source`, « supplier-truth inerte tant que SUPPLIER_TRUTH_SYNC_ENABLED ne vaut pas true »). Le numéro 085 est pris sur `main` par un autre texte (P7). | L1 | fermer sans règle | Même PR #315, même commentaire. Voisins : P23 et contrat 12. |
 | ADR-097, PR #344, tests soumis à la gate d'ownership | Retirer les fichiers de test des exceptions de la gate `block-new`. | Non construit : `scripts/registry/check-new-files.js:70-75` exempte toujours `**/*.test.ts`, `**/*.spec.ts`, `**/__tests__/**`. | L0 | fermer sans règle | Fermer #344 avec C#344. |
-| ADR-122, PR #392, voix marketing | Appliquer trois textes approuvés par Marwane le 2026-11-04 (sourcing factuel, préparations éditoriales, polices de secours). | Aucun des trois n'est appliqué : `.claude/canon-mirrors/marketing-voice.md:6,41-42` (version 1.0.0, ancienne clause) ; `workspaces/marketing/.claude/rules/marketing-batch.md:45` ; `design-system/UX-CONSTITUTION.md:24,26`. | L0 | à décider par Marwane | Fermer #392 avec C#392. Suite dans le monorepo : question D1. |
-| ADR-131, PR #413, qualification technique avant promotion WIKI | Ajouter une condition `technical_qualification_pass` : qualification par fiche et contestation par une autre famille de modèles. | Non câblé : `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md:149` (« aucune pièce câblée ») ; rien sur `main` du WIKI (`technical_qualification`, `qualification-technique` = aucun fichier) ; PR WIKI #134 en brouillon. Le texte de la PR dit « Je ratifie ADR-131 » (2026-11-15). | L0 | à décider par Marwane | Fermer #413 avec C#413. Suite dans le monorepo : question D2. |
-| ADR-132, PR #414, auteur éditorial et signature | Cinq rôles pour tout contenu publié ; aucune signature ne nomme un LLM comme auteur. | Signature en service : `frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx:386` (`Automecanik - Experts Automobile`). Mention en cause : `frontend/app/components/blog/EditorialTrust.tsx:11`. Question Q4 du texte ouverte, réservée à Marwane. | L1 pour la signature ; L0 pour les cinq rôles | à décider par Marwane | Fermer #414 avec C#414. Suite dans le monorepo : questions D3a et D3b. |
+| ADR-122, PR #392, voix marketing | Appliquer trois textes approuvés par Marwane le 2026-11-04 (sourcing factuel, préparations éditoriales, polices de secours). | Aucun des trois n'est appliqué : `.claude/canon-mirrors/marketing-voice.md:6,41-42` (version 1.0.0, ancienne clause) ; `workspaces/marketing/.claude/rules/marketing-batch.md:45` ; `design-system/UX-CONSTITUTION.md:24,26`. | L0 | à décider par Marwane | Fermer #392 avec C#392. Suite dans le monorepo : question D1. **BC-7 : tranchée, décision 133 (PR #1958).** |
+| ADR-131, PR #413, qualification technique avant promotion WIKI | Ajouter une condition `technical_qualification_pass` : qualification par fiche et contestation par une autre famille de modèles. | Non câblé : `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md:149` (« aucune pièce câblée ») ; rien sur `main` du WIKI (`technical_qualification`, `qualification-technique` = aucun fichier) ; PR WIKI #134 en brouillon. Le texte de la PR dit « Je ratifie ADR-131 » (2026-11-15). | L0 | à décider par Marwane | Fermer #413 avec C#413. Suite dans le monorepo : question D2. **BC-7 : tranchée, décision 134 (journal avec le câblage).** |
+| ADR-132, PR #414, auteur éditorial et signature | Cinq rôles pour tout contenu publié ; aucune signature ne nomme un LLM comme auteur. | Signature en service : `frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx:386` (`Automecanik - Experts Automobile`). Mention en cause : `frontend/app/components/blog/EditorialTrust.tsx:11`. Question Q4 du texte ouverte, réservée à Marwane. | L1 pour la signature ; L0 pour les cinq rôles | à décider par Marwane | Fermer #414 avec C#414. Suite dans le monorepo : questions D3a et D3b. **BC-7 : tranchées, décisions 136 et 137 (PR #2140).** |
 | ADR-133, PR #416, niveau B de la fusion automatique | Créer une seconde GitHub App de revue, clé sur le DEV, revue de préférence par Codex. | Non construit : `level_b` dans `scripts/ci/merge-perimeter-gate.mjs scripts/ci/merge-circuit.mjs .github/workflows` = aucune occurrence ; PR monorepo #2079 ouverte, non fusionnée. | L0 | fermer : conflit avec P20 (décisions 72 et 91, constat AR-6) | Fermer #416 avec C#416. Le sort de la PR monorepo #2079 suit. |
-| ADR-134, PR #415, DoD5 nomme des mesures qui existent | Chaque test de la DoD nomme une mesure existante ; ce qui n'est pas mesuré est écrit comme tel. | Mesures en service : `.github/workflows/migration-ledger-freshness.yml`, runs 43677471198 et 43805923442 verts sur `main` (15 et 16 nov.) ; `.github/workflows/registry-fresh.yml`, run 43971112459 vert sur `main` (`0e2d0e7ed`) ; `scripts/ci/apply-supabase-migration.py` ; `scripts/audit/check-ledger-catalog-ratchet.py`. | L4 pour les mesures ; L0 pour le texte de DoD5 | journal | 1. PR du monorepo qui ajoute P33 (section B). 2. Fermer #415 avec C#415. 3. Le texte de DoD5 se corrige au déplacement de la DoD (voir « Non vérifié »). |
+| ADR-134, PR #415, DoD5 nomme des mesures qui existent | Chaque test de la DoD nomme une mesure existante ; ce qui n'est pas mesuré est écrit comme tel. | Mesures en service : `.github/workflows/migration-ledger-freshness.yml`, runs 43677471198 et 43805923442 verts sur `main` (15 et 16 nov.) ; `.github/workflows/registry-fresh.yml`, run 43971112459 vert sur `main` (`0e2d0e7ed`) ; `scripts/ci/apply-supabase-migration.py` ; `scripts/audit/check-ledger-catalog-ratchet.py`. | L4 pour les mesures ; L0 pour le texte de DoD5 | journal | 1. PR du monorepo qui ajoute P33 (section B). 2. Fermer #415 avec C#415. 3. Le texte de DoD5 est corrigé au déplacement de la DoD : PR #2142 (décision 139) ; #415 ne se ferme qu'après la fusion de #2116 et de #2142. |
 | ADR-135, PR #417, sous-agents de mandat | Rattacher trois sous-agents en lecture seule au rôle 23, au titre de `rules-ai-cos`. | Non construit : `.claude/agents/mandat/` absent de `main` ; PR monorepo #2081 en brouillon. P31 ne garde que AI2 et AI4. | L0 | fermer sans règle | Fermer #417 avec C#417. |
 | ADR-136, PR #418, point d'entrée unique de la boucle contenu | Toute exécution de la boucle contenu part d'une issue de la file, exécutée par `mandat-remise`. | Présent, non activé : `scripts/ops/mandat-remise.yml` existe sur `main`, hors de `.github/workflows/` (`commandes-owner.md:589`, « inactif ») ; PR monorepo #2080 fermée sans fusion le 2026-11-15. Seul `pilote-file.yml` tourne (run 43935848060). | L1 | fermer sans règle | Fermer #418 avec C#418. Corriger `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md:157`, qui cite encore l'ADR comme décision en cours. Voisins : P24, P25. |
 
@@ -154,7 +188,7 @@ du vault (`git ls-tree origin/main -- <fichier>`) et citations dans le monorepo
 | #240, règle R-SEO-URL-IMMUTABLE | Aucune URL ne change sans demande explicite. | Règle absente de `main` du vault et du journal ; portée par `CLAUDE.md` (invariant 6). Les deux gardes prévues ne sont pas construites (`seo-url-immutable` = aucune occurrence). Tests présents : `backend/src/modules/seo/services/policies/__tests__/seo-canonical.service.test.ts`, `packages/seo-url-contract/src/url-rules.test.ts`. | L2 (tests présents, non rejoués) | à décider par Marwane | Fermer avec C#240. Suite dans le monorepo : question D4. |
 | #255 | Refactor d'un script du vault. | Interne au vault. | L0 | fermer sans règle | Fermer avec C#255. |
 | #335, « ADR-096 » | Dérogation de schéma pour `DepEntry`. | Jamais utilisée : `packages/registry/src/entries/dep-entry.ts:23` porte toujours `declaredIn` ; PR monorepo #1225 en brouillon. Numéro 096 pris sur `main`. | L0 | fermer sans règle | Fermer avec C#335. |
-| #345, INC-2026-017 | Compte rendu d'incident : secrets réels dans `backend/.env.test.template`. | Compte rendu absent de `main`. Le fichier est **toujours suivi** sur `origin/main` du monorepo public (`git ls-tree`, contenu non lu). | sans objet | à décider par Marwane | Fermer avec C#345. Suite dans le monorepo : question D5. |
+| #345, INC-2026-017 | Compte rendu d'incident : secrets réels dans `backend/.env.test.template`. | Compte rendu absent de `main`. Le fichier est **toujours suivi** sur `origin/main` du monorepo public (`git ls-tree`, contenu non lu). | sans objet | à décider par Marwane | Fermer avec C#345. Suite dans le monorepo : question D5. **BC-7 : tranchée, décision 138.** |
 | #351 | Dossier de preuves du pipeline éditorial (520 fichiers), « ne pas fusionner ». | Preuves seules, aucune règle. | L0 | fermer sans règle | Fermer avec C#351. Ne pas supprimer la branche. |
 | #390 | Script de détection des collisions de numéros d'ADR. | Outil du vault. | L0 | fermer sans règle | Fermer avec C#390. |
 | #420 | Une ligne de sommaire du vault (politique des plugins). | `plugin-enablement-policy` dans `.claude workspaces AGENTS.md CLAUDE.md` = aucune occurrence. | L0 | fermer sans règle | Fermer avec C#420. |
@@ -163,7 +197,7 @@ du vault (`git ls-tree origin/main -- <fichier>`) et citations dans le monorepo
 
 | Objet | Ce que le texte demande | Preuve | Niveau | Verdict | Action exacte |
 |---|---|---|---|---|---|
-| ADR-137 (PR #421, **fusionnée** le 2026-11-16T10:08:18Z) | Skills tiers : au niveau du dépôt, par PR, un seul à la fois, `skills-lock.json`, wrapper `amk-<nom>`. | Rien trouvé : aucun `skills-lock.json` ; `supabase-postgres-best-practices` dans `.claude .agents .spec/00-canon/ai-registry package.json` = aucune occurrence. Aucune ligne du journal. | L0 | à décider par Marwane | Question D6. Rien à fermer. |
+| ADR-137 (PR #421, **fusionnée** le 2026-11-16T10:08:18Z) | Skills tiers : au niveau du dépôt, par PR, un seul à la fois, `skills-lock.json`, wrapper `amk-<nom>`. | Rien trouvé : aucun `skills-lock.json` ; `supabase-postgres-best-practices` dans `.claude .agents .spec/00-canon/ai-registry package.json` = aucune occurrence. Aucune ligne du journal. | L0 | à décider par Marwane | Question D6. Rien à fermer. **BC-7 : réglée, #2104 fusionnée (P40).** |
 
 ### Compte par verdict (51 lignes)
 
@@ -173,7 +207,7 @@ du vault (`git ls-tree origin/main -- <fichier>`) et citations dans le monorepo
 | contrat | 0 |
 | fermer sans règle | 42 |
 | fermer : conflit | 1 (ADR-133) |
-| à décider par Marwane | 6 (ADR-122, ADR-131, ADR-132, #240, #345, ADR-137)  : la suite dans le monorepo. Le bloc demande au clavier la fermeture de chacune des 5 PR du vault |
+| à décider par Marwane | 6 au tri (ADR-122, ADR-131, ADR-132, #240, #345, ADR-137), toutes tranchées ou réglées au 17 nov. (mise à jour BC-7)  : la suite dans le monorepo. Le bloc demande au clavier la fermeture de chacune des 5 PR du vault |
 
 ## B. Textes exacts
 
@@ -227,8 +261,8 @@ de la PR #422 pour 122, 132 et 136 n'ont donc pas de champ d'accueil.
 ## C. Commentaires de fermeture
 
 ASCII seul, sans guillemet double, apostrophe, accent grave ni signe dollar. Les commentaires de
-#315 et #415 citent le journal : le bloc ne ferme #415 qu'après la fusion de #2116, et #315
-qu'après la fusion de #2116 et de #2122 (P35, P36).
+#315 et #415 citent le journal : le bloc ne ferme #415 qu'après la fusion de #2116 et de #2142
+(Definition of Done déplacée), et #315 qu'après la fusion de #2116 et de #2122 (P35, P36).
 Les 44 autres sont vrais quelle que soit la réponse aux questions de la section D. Pour les cinq PR
 de cette section, la fermeture découle de la règle 6 du tri, mais le bloc la demande au clavier.
 
@@ -268,13 +302,13 @@ C#255: Fermeture sans fusion : refactor des scripts du vault, sans objet une foi
 C#315: Fermeture sans fusion : les regles du tarif (ADR-084) sont reprises au journal du monorepo, .claude/governance/journal-des-principes.md : P32 (import, activation et affichage sont trois etapes), P35 (chemin d ecriture unique) et P36 (jamais de vente a perte). Le second texte, sur les trois surfaces fournisseur, est couvert par P23 et par le contrat du departement 12.
 C#335: Fermeture sans fusion : derogation jamais utilisee, la PR monorepo 1225 est encore en brouillon, et le numero ADR-096 est deja pris sur main.
 C#344: Fermeture sans fusion : mecanisme jamais construit, scripts/registry/check-new-files.js exempte toujours les fichiers de test. Aucune regle sans mecanisme.
-C#345: Fermeture sans fusion : le vault ne recoit plus de PR de registre (ADR-138). Le compte rendu INC-2026-017 reste lisible dans cette PR ; la rotation des secrets reste suivie par le proprietaire.
+C#345: Fermeture sans fusion : le vault ne recoit plus de PR de registre (ADR-138). Un incident se suit par une issue du monorepo, qui ne se ferme que si elle dit ce qui empeche son retour (decision 138). Le compte rendu INC-2026-017 reste lisible dans cette PR ; la rotation des secrets reste suivie par le proprietaire.
 C#351: Fermeture sans fusion : dossier de preuves sans regle a reprendre. Il reste lisible par cette PR ; ne pas supprimer la branche codex/editorial-pipeline-audit-20260912.
 C#390: Fermeture sans fusion : outil de numerotation des ADR, sans objet car aucune ADR ne sera plus ecrite dans le vault (ADR-138).
-C#392: Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). Les trois textes approuves le 2026-11-04 restent lisibles dans cette PR ; leur application passe par une PR du monorepo.
-C#413: Fermeture sans fusion : la qualification technique reste non cablee (PR WIKI 134 en brouillon). Aucune regle sans mecanisme ; le principe P10 du journal du monorepo reste en vigueur.
-C#414: Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). La question Q4 et la regle de signature reviennent au proprietaire, dans le monorepo.
-C#415: Fermeture sans fusion : le principe est repris au journal du monorepo (P33), .claude/governance/journal-des-principes.md. Le texte de DoD5 sera corrige au deplacement de la Definition of Done dans le monorepo.
+C#392: Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). Les trois textes approuves le 2026-11-04 restent lisibles dans cette PR ; leur application est decidee dans le monorepo (decision 133) : textes 2 et 3 par la PR 1958, texte 1 dans .spec/00-canon/canon-distribution/rules-marketing-voice.md.
+C#413: Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). La regle entre au journal du monorepo avec la PR qui cable la qualification technique (decision 134) ; en attendant, le principe P10 du journal reste en vigueur.
+C#414: Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). La mention du blog reste telle quelle (decision 136). La regle de signature entre au journal du monorepo par la PR 2140 (decision 137) : aucune signature publique ne nomme une IA comme auteur.
+C#415: Fermeture sans fusion : le principe est repris au journal du monorepo (P33), .claude/governance/journal-des-principes.md. Le texte de DoD5 est corrige dans la Definition of Done deplacee dans le monorepo (decision 139, PR 2142) : .spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md.
 C#416: Fermeture : conflit avec le principe P20 du journal du monorepo (decisions 72 et 91 : trois circuits, revue Claude, une seule App dont la cle reste hors du DEV). Le bloc level_b est absent de main.
 C#417: Fermeture sans fusion : mecanisme jamais construit, la PR monorepo 2081 est en brouillon et .claude/agents/mandat est absent de main. Le principe P31 du journal ne garde que AI2 et AI4.
 C#418: Fermeture sans fusion : la routine mandat-remise existe dans le monorepo mais reste inactive, hors de .github/workflows. Aucune regle sans mecanisme en service ; les principes voisins sont P24 et P25 du journal du monorepo.
@@ -283,19 +317,19 @@ C#420: Fermeture sans fusion : entree de sommaire interne au vault, sans objet u
 
 ## D. À décider par Marwane
 
-État au 17 nov. : D1, D2, D3a, D3b, D5, D6 et D8 restent à décider ; D4 est réglée par #2122 ; D7, D9, D10 à D14 et D18 sont tranchées. Les questions D10 à D18 viennent des documents d'étape ; D15, D16 et D17 ne sont pas dans ce tableau (voir la mise à jour BC-5).
+État au 17 nov. après le complément BC-7 : D1, D2, D3a, D3b, D5 et D8 sont tranchées (décisions 133 à 139) ; D4 et D6 sont réglées par #2122 et #2104 ; D7, D9, D10 à D14 et D18 sont tranchées. Restent ouvertes : D16, D17 et D19. Les questions D10 à D18 viennent des documents d'étape ; D15, D16 et D17 ne sont pas dans ce tableau (voir la mise à jour BC-5).
 
 | N° | Objet | Question | Réponse proposée |
 |---|---|---|---|
-| D1 | ADR-122, PR #392 | Les trois textes approuvés le 4 nov. n'ont jamais été appliqués : les applique-t-on directement dans le monorepo ? | Oui, par PR du monorepo : `marketing-batch.md` et `UX-CONSTITUTION.md` tout de suite, la voix marketing à son déplacement (`.spec/00-canon/canon-distribution/rules-marketing-voice.md`). Aucune ligne au journal : ce sont des règles de workspace, et P11 couvre déjà la phrase sur le RAG. |
-| D2 | ADR-131, PR #413 | ADR-131 est ratifiée (texte de la PR) mais rien n'est câblé : la règle entre-t-elle au journal maintenant ? | Non. Elle y entre avec la PR qui câble `technical_qualification_pass` dans le décideur du WIKI. D'ici là, P10 reste la règle. |
-| D3a | ADR-132, PR #414, question Q4 | Que devient la mention « rédigés et validés par des mécaniciens et techniciens automobile certifiés » ? | Option B du texte : retirer ou réécrire la mention. C'est la seule qui ne suppose pas une validation humaine par article, que P10 exclut et qu'aucun mécanisme ne produit. Page servie : accord nominatif. |
-| D3b | ADR-132, PR #414, règle R2 | La règle de signature entre-t-elle au journal ? | Oui, une ligne, une fois Q4 tranchée : « Aucune signature publique ne nomme un LLM ou un outil d'IA comme auteur ; l'auteur déclaré est l'organisation AutoMecanik. Source : ADR-132 R2. » Les cinq rôles (R1) n'y entrent pas : aucun mécanisme. |
+| D1 | ADR-122, PR #392 | Les trois textes approuvés le 4 nov. n'ont jamais été appliqués : les applique-t-on directement dans le monorepo ? | **Tranchée (décision 133) : oui.** Textes 2 et 3 : PR #1958 (brouillon) ; texte 1 : patch réservé à préparer sur `rules-marketing-voice.md`. Proposition d'origine : Oui, par PR du monorepo : `marketing-batch.md` et `UX-CONSTITUTION.md` tout de suite, la voix marketing à son déplacement (`.spec/00-canon/canon-distribution/rules-marketing-voice.md`). Aucune ligne au journal : ce sont des règles de workspace, et P11 couvre déjà la phrase sur le RAG. |
+| D2 | ADR-131, PR #413 | ADR-131 est ratifiée (texte de la PR) mais rien n'est câblé : la règle entre-t-elle au journal maintenant ? | **Tranchée (décision 134) : la règle entre au journal avec le câblage, à livrer tout de suite.** Câblage en brouillon : PR #142 du dépôt WIKI (mandat S). Proposition d'origine : Non. Elle y entre avec la PR qui câble `technical_qualification_pass` dans le décideur du WIKI. D'ici là, P10 reste la règle. |
+| D3a | ADR-132, PR #414, question Q4 | Que devient la mention « rédigés et validés par des mécaniciens et techniciens automobile certifiés » ? | **Tranchée (décision 136) : la mention reste telle quelle ; l'option B n'est pas retenue.** Proposition d'origine : Option B du texte : retirer ou réécrire la mention. C'est la seule qui ne suppose pas une validation humaine par article, que P10 exclut et qu'aucun mécanisme ne produit. Page servie : accord nominatif. |
+| D3b | ADR-132, PR #414, règle R2 | La règle de signature entre-t-elle au journal ? | **Tranchée (décision 137) : oui, avec le texte « Aucune signature publique ne nomme une IA comme auteur. L'auteur affiché est AutoMecanik. »** PR #2140 (mandat BD, brouillon), à renuméroter : P40 est pris par #2104. Proposition d'origine : Oui, une ligne, une fois Q4 tranchée : « Aucune signature publique ne nomme un LLM ou un outil d'IA comme auteur ; l'auteur déclaré est l'organisation AutoMecanik. Source : ADR-132 R2. » Les cinq rôles (R1) n'y entrent pas : aucun mécanisme. |
 | D4 | #240, URL immuables | Le journal n'a aucun principe sur les URL, alors que `CLAUDE.md` (invariant 6) l'interdit : ajoute-t-on une ligne ? | **Mise à jour du 17 nov. : la PR #2122 (mandat BD) pose cette ligne en P37 ; rien à ajouter ici, la réponse est la fusion de #2122.** Proposition d'origine : « Aucune URL servie ne change (chemin, slug, suffixe, route, sitemap, redirection) sans demande explicite de l'owner. Source : `CLAUDE.md` invariant 6. » Sans la clause « 410 Gone » du texte, contraire à P14. |
-| D5 | #345, INC-2026-017 | Où vit le registre des incidents une fois le vault archivé, et ce compte rendu y entre-t-il ? | Pas de nouveau registre : un incident est une issue du monorepo (P24). Fermer #345 sans fusion, le texte reste lisible dans la PR. La rotation des secrets reste un geste de l'owner. |
-| D6 | ADR-137 (fusionnée) | ADR-137 est acceptée dans le vault depuis ce matin, sans ligne au journal ni mécanisme : la règle des skills tiers entre-t-elle au journal maintenant ? | Non. Elle y entre avec la PR du pilote, celle qui crée `skills-lock.json`. D'ici là, P26 s'applique. |
+| D5 | #345, INC-2026-017 | Où vit le registre des incidents une fois le vault archivé, et ce compte rendu y entre-t-il ? | **Tranchée (décision 138) : une issue du monorepo par incident, qui ne se ferme que si elle dit ce qui empêche son retour.** Mandat BD, complément n° 4. Proposition d'origine : Pas de nouveau registre : un incident est une issue du monorepo (P24). Fermer #345 sans fusion, le texte reste lisible dans la PR. La rotation des secrets reste un geste de l'owner. |
+| D6 | ADR-137 (fusionnée) | ADR-137 est acceptée dans le vault depuis ce matin, sans ligne au journal ni mécanisme : la règle des skills tiers entre-t-elle au journal maintenant ? | **Réglée par les faits : #2104 est fusionnée (17 nov., 16:10:46 UTC), `skills-lock.json` et P40 sont sur `main`.** Proposition d'origine : Non. Elle y entre avec la PR du pilote, celle qui crée `skills-lock.json`. D'ici là, P26 s'applique. |
 | D7 | PR monorepo #2079 (niveau B de la porte, ADR-133) | ADR-133 est en conflit avec P20 : ferme-t-on aussi la PR #2079 du monorepo ? | **Tranchée (décision 132) : oui, #2079 est fermée (17 nov., 10:53:59 UTC).** Proposition d'origine : oui. Elle ajoute une seconde identité de revue que les décisions 72 et 91 remplacent, et elle modifie les deux fichiers de la porte touchés par #2113. |
-| D8 | Definition of Done (ADR-134, ADR-138 D6) | La DoD vit dans le vault (`ledger/rules/rules-engineering-definition-of-done.md`, 1.3.0) et le plan de sortie ne la nomme dans aucune étape : où vit-elle après l'archivage ? | Dans le monorepo, à l'étape 5 du plan (`.spec/00-canon/canon-distribution/`), avec le texte de DoD5 corrigé selon P33. Sans ce déplacement, DoD5 reste figée dans l'archive. |
+| D8 | Definition of Done (ADR-134, ADR-138 D6) | La DoD vit dans le vault (`ledger/rules/rules-engineering-definition-of-done.md`, 1.3.0) et le plan de sortie ne la nomme dans aucune étape : où vit-elle après l'archivage ? | **Tranchée (décision 139) : oui.** PR #2142 (brouillon), patches réservés 14 et 15. Proposition d'origine : Dans le monorepo, à l'étape 5 du plan (`.spec/00-canon/canon-distribution/`), avec le texte de DoD5 corrigé selon P33. Sans ce déplacement, DoD5 reste figée dans l'archive. |
 | D9 | Porte ADR-124 | La décision 120 (P20, #2122) dit la porte close : son script `scripts/ci/merge-perimeter-gate.mjs` n'est appelé par aucun workflow, seul son test tourne (`audit.yml`). Que devient-il, et avec lui la PR #2113 (étape 6) ? | **Tranchée (décision 132) : option B. #2113 est fermée (17 nov., 10:53:55 UTC) ; le retrait est la PR #2131 et son patch réservé 12.** Texte d'origine : deux options. **A, garder en réserve** : fusionner #2113 (patch 03 poussé du poste, nouveau fichier réservé `.spec/00-canon/repository-registry/merge-perimeter.v1.json`, question D15) ; 568 lignes et une politique restent à entretenir pour une porte que P20 dit close, et #2079 (D7) reste à décider. **B, retirer** : fermer #2113 et #2079, une PR retire le script, son test et corrige `.claude/rules/deployment.md` ; un patch réservé retire l'étape de `audit.yml`, la ligne de `CODEOWNERS` et la phrase de `CLAUDE.md` ; l'outil `merge-perimeter.sh` du DEV est supprimé par l'owner. Dans les deux cas plus rien ne lit le vault pour ce script. Proposition : B, cohérente avec « aucune règle sans mécanisme ». |
 | D10 | `scripts/governance/check-verdict-expirations.sh` (`etape-8.md`) | Le retire-t-on ? | **Tranchée (décision 129) : oui.** PR #2132, patch réservé 13. |
 | D11 | `tools/security/attack-simulations/simulate-escalation-hijack.sh` (`etape-8.md`) | Le retire-t-on ? | **Tranchée (décision 129) : oui.** PR #2132. |
@@ -340,8 +374,8 @@ Contrôles faits sur le texte : ASCII seul, aucun `&&`, accolades, parenthèses 
 Ordre : (1) fermeture commentée de 39 PR du vault ; (2) pour #240, #345, #392, #413 et #414, dont la
 suite est à décider (section D), une question au clavier par PR : « non » la laisse ouverte ;
 (3) sortie du brouillon de la PR #2116, attente de ses checks, accord au clavier, approbation, attente du check
-« 🚦 Circuit de fusion », fusion épinglée sur la tête lue ; (4) fermeture de #415, puis de #315 si
-la PR #2122 est fusionnée (sinon #315 reste ouverte et le bloc se relance plus tard) ; (5) compte des
+« 🚦 Circuit de fusion », fusion épinglée sur la tête lue ; (4) fermeture de #415 si la PR #2142 est fusionnée, puis de #315 si
+la PR #2122 est fusionnée (sinon la PR reste ouverte et le bloc se relance plus tard) ; (5) compte des
 PR restées ouvertes dans le vault (0 si tout est accepté).
 
 Le bloc se relance sans risque : une PR déjà fermée est sautée. Il ne supprime aucune branche (`gh pr
@@ -400,14 +434,14 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
   )
   $LOTC = @(
     @("240", "Fermeture sans fusion : aucune regle ne sera plus fusionnee dans le vault (ADR-138). La regle des URL immuables se lit dans le monorepo : CLAUDE.md, invariant 6.", "D4"),
-    @("345", "Fermeture sans fusion : le vault ne recoit plus de PR de registre (ADR-138). Le compte rendu INC-2026-017 reste lisible dans cette PR ; la rotation des secrets reste suivie par le proprietaire.", "D5"),
-    @("392", "Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). Les trois textes approuves le 2026-11-04 restent lisibles dans cette PR ; leur application passe par une PR du monorepo.", "D1"),
-    @("413", "Fermeture sans fusion : la qualification technique reste non cablee (PR WIKI 134 en brouillon). Aucune regle sans mecanisme ; le principe P10 du journal du monorepo reste en vigueur.", "D2"),
-    @("414", "Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). La question Q4 et la regle de signature reviennent au proprietaire, dans le monorepo.", "D3a et D3b")
+    @("345", "Fermeture sans fusion : le vault ne recoit plus de PR de registre (ADR-138). Un incident se suit par une issue du monorepo, qui ne se ferme que si elle dit ce qui empeche son retour (decision 138). Le compte rendu INC-2026-017 reste lisible dans cette PR ; la rotation des secrets reste suivie par le proprietaire.", "D5"),
+    @("392", "Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). Les trois textes approuves le 2026-11-04 restent lisibles dans cette PR ; leur application est decidee dans le monorepo (decision 133) : textes 2 et 3 par la PR 1958, texte 1 dans .spec/00-canon/canon-distribution/rules-marketing-voice.md.", "D1"),
+    @("413", "Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). La regle entre au journal du monorepo avec la PR qui cable la qualification technique (decision 134) ; en attendant, le principe P10 du journal reste en vigueur.", "D2"),
+    @("414", "Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). La mention du blog reste telle quelle (decision 136). La regle de signature entre au journal du monorepo par la PR 2140 (decision 137) : aucune signature publique ne nomme une IA comme auteur.", "D3a et D3b")
   )
   $LOTB = @(
     @("315", "Fermeture sans fusion : les regles du tarif (ADR-084) sont reprises au journal du monorepo, .claude/governance/journal-des-principes.md : P32 (import, activation et affichage sont trois etapes), P35 (chemin d ecriture unique) et P36 (jamais de vente a perte). Le second texte, sur les trois surfaces fournisseur, est couvert par P23 et par le contrat du departement 12."),
-    @("415", "Fermeture sans fusion : le principe est repris au journal du monorepo (P33), .claude/governance/journal-des-principes.md. Le texte de DoD5 sera corrige au deplacement de la Definition of Done dans le monorepo.")
+    @("415", "Fermeture sans fusion : le principe est repris au journal du monorepo (P33), .claude/governance/journal-des-principes.md. Le texte de DoD5 est corrige dans la Definition of Done deplacee dans le monorepo (decision 139, PR 2142) : .spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md.")
   )
 
   foreach ($x in $LOTA) {
@@ -488,6 +522,11 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
     $ST = (gh pr view $N --repo $VAULT --json state --jq .state)
     if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : etat illisible, PR " + $N); return }
     if ($ST -ne "OPEN") { Write-Host ("Deja fermee : " + $N); continue }
+    if ($N -eq "415") {
+      $DD = (gh pr view 2142 --repo $REPO --json state --jq .state)
+      if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : etat de la PR 2142 illisible"; return }
+      if ($DD -ne "MERGED") { Write-Host "PR 415 laissee ouverte : la PR 2142 du monorepo (Definition of Done) n'est pas fusionnee ; relancer le bloc ensuite"; continue }
+    }
     if ($N -eq "315") {
       $BD = (gh pr view 2122 --repo $REPO --json state --jq .state)
       if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : etat de la PR 2122 illisible"; return }
@@ -501,8 +540,8 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
 }
 ```
 
-Après le bloc : les questions de la section D restent ouvertes. Une réponse « oui » à D3b ou D4 ajoute
-une ligne au journal par une nouvelle PR en circuit élevé.
+Après le bloc : les suites des verdicts (mise à jour BC-7) se jouent dans le monorepo, hors de ce
+bloc : #1958, #2140, #2142, le câblage de la qualification et les issues d'incident.
 
 ## G. Vérification rejouée par l'agent du mandat
 
@@ -559,6 +598,7 @@ n'a pas été rejoué ligne à ligne : voir « Non vérifié ».
 - Le déplacement de la Definition of Done : ADR-138 (D6, ligne ADR-120) dit qu'elle « devient une
   source du monorepo à son déplacement », mais `inventaire-vault-et-plan.md` ne la nomme dans aucune
   étape (`definition-of-done` = aucune occurrence). Sans ce déplacement, DoD5 reste figée en 1.3.0.
+  **Mise à jour BC-7 : déplacement livré par la PR #2142 (décision 139).**
 - L'état fusionnable des 33 autres PR : l'API rend `UNKNOWN`.
 - Le dernier run `ci.yml` sur `main` était en cours à la lecture.
 
