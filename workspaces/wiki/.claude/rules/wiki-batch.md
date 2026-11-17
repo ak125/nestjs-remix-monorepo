@@ -1,14 +1,14 @@
 # Règles Wiki Batch
 
-S'applique aux runs depuis `workspaces/wiki/`. Complète (sans les remplacer) les règles génériques monorepo (`/opt/automecanik/app/CLAUDE.md`) + le canon ADR-033 (`automecanik-wiki/_meta/schema/frontmatter.schema.json`) + le contrat AEC (`agent-exit-contract.md`).
+S'applique aux runs depuis `workspaces/wiki/`. Complète (sans les remplacer) les règles génériques monorepo (`/opt/automecanik/app/CLAUDE.md`) + le canon ADR-033 (`automecanik-wiki/_meta/schema/frontmatter.schema.json`) + le contrat AEC (`.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo).
 
 ## Sources de vérité
 
 - **Canon frontmatter wiki** : `automecanik-wiki/_meta/schema/frontmatter.schema.json` v2.0.0 (Draft 2020-12). Source unique pour la structure des fiches `proposals/<slug>.md` et `wiki/<entity_type>/<slug>.md`.
 - **Canon contract data downstream** : `automecanik-rag/docs/GAMME_PAGE_CONTRACT.md` v2.0 (PR-A.rag mergée 2026-04-30 commit `224e4c63`). Décrit le shape `GammeContentContract.v2.0` produit par le pipeline RAG.
-- **ADR-031** : 4-layer raw/wiki/exports/consumers (`governance-vault/ledger/decisions/adr/ADR-031-four-layer-content-architecture.md`)
+- **ADR-031** : 4-layer raw/wiki/exports/consumers. Règle en vigueur : P10 du journal des principes ; origine dans l'archive `ak125/governance-vault`, `ledger/decisions/adr/ADR-031-four-layer-content-architecture.md`
 - **ADR-032** : diagnostic & maintenance unification (cohabitation `entity_data.maintenance{}` avec `diagnostic_relations[]`)
-- **ADR-033** : wiki gamme `diagnostic_relations[]` contract — `governance-vault/ledger/decisions/adr/ADR-033-wiki-gamme-diagnostic-relations-contract.md` (status `accepted` 2026-04-29, PR vault #108 commit `77085ef`)
+- **ADR-033** : wiki gamme `diagnostic_relations[]` contract — archive `ak125/governance-vault`, `ledger/decisions/adr/ADR-033-wiki-gamme-diagnostic-relations-contract.md` (status `accepted` 2026-04-29, PR vault #108 commit `77085ef`)
 - **Templates canoniques** : `automecanik-wiki/_meta/templates/{gamme,vehicle,constructeur,support}.md` v2.0.0
 - **Source catalog** : `automecanik-wiki/_meta/source-catalog.yaml` (registre slugs sources stables, PR wiki #9)
 - **DB convention** : mémoire `diag-symptom-db-convention.md` — slugs `__diag_symptom.slug` en anglais snake_case `brake_*`, JOIN via `system_id`
@@ -19,7 +19,7 @@ S'applique aux runs depuis `workspaces/wiki/`. Complète (sans les remplacer) le
 
 | Sas | Localisation | Schema | Promotion |
 |---|---|---|---|
-| **Wiki proposals** (markdown) | `automecanik-wiki/proposals/<slug>.md` | frontmatter v2.0.0 ADR-033 | manuelle reviewer humain → `wiki/<entity_type>/<slug>.md` (commit message `promotion-from-proposals: <slug>`) |
+| **Wiki proposals** (markdown) | `automecanik-wiki/proposals/<slug>.md` | frontmatter v2.0.0 ADR-033 | par son décideur, sur preuve, auto-review de sens comprise, sans relecture humaine obligatoire (ADR-119 ; journal des principes, P10) → `wiki/<entity_type>/<slug>.md` (commit message `promotion-from-proposals: <slug>`) |
 | **RAG proposals** (DB) | table Supabase `__rag_proposals` | colonnes typées | gérée par `RagProposalService` (ADR-022 L1) côté backend NestJS, **distinct du sas markdown** |
 
 Le skill `wiki-proposal-writer` écrit **uniquement** dans le sas markdown wiki. **Jamais** d'écriture DB depuis ce workspace. Si une fiche markdown doit être promue en DB RAG, c'est via le pipeline `sync-from-wiki` côté Partie 3 (différée).
@@ -90,9 +90,9 @@ Tout commit qui touche `wiki/<entity_type>/*.md` doit inclure dans son message u
 
 Sans marker → CI fail. Le sas `proposals/` n'est **pas** couvert par ce workflow (proposals = WIP par construction).
 
-## Output AEC v1.0.0 obligatoire
+## Output AEC obligatoire
 
-Tout run depuis ce workspace produit un coverage manifest (cf. `agent-exit-contract.md`) :
+Tout run depuis ce workspace produit un coverage manifest (cf. `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo) :
 
 ```yaml
 final_status: PARTIAL_COVERAGE | SCOPE_SCANNED | REVIEW_REQUIRED
@@ -119,13 +119,13 @@ Statuts interdits : `COMPLETE`, `DONE`, `ALL_FIXED`, `NO_ISSUES`, `PATCH_APPLIED
 
 ## Contrat de sortie agents
 
-`./agent-exit-contract.md` — règle non-négociable applicable à tout skill ou agent du workspace wiki.
+`.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo — règle non-négociable applicable à tout skill ou agent du workspace wiki.
 
 ## Référence
 
-- ADR-031 — 4-layer architecture (vault)
-- ADR-032 — diagnostic & maintenance unification (vault)
-- ADR-033 — wiki gamme `diagnostic_relations[]` (vault)
+- ADR-031 — 4-layer architecture (archive du vault ; règle en vigueur : P10 du journal)
+- ADR-032 — diagnostic & maintenance unification (archive du vault)
+- ADR-033 — wiki gamme `diagnostic_relations[]` (archive du vault)
 - Plan rev 3 — `/home/deploy/.claude/plans/mvp-et-raw-et-wobbly-brooks.md`
 - Mémoire `mvp-g6-adr033-handoff.md` — état Phase 1 closed 2026-04-30
 - Mémoire `diag-symptom-db-convention.md` — convention slug DB

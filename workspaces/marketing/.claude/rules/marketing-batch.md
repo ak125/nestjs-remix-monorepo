@@ -4,12 +4,12 @@ S'applique aux runs depuis `workspaces/marketing/`. Complète (sans les remplace
 
 ## Sources de vérité
 
-- **Canon brand voice** : `.claude/canon-mirrors/marketing-voice.md` (copie distribuée via canon-publish, hash vérifié CI). Source unique = `governance-vault/ledger/rules/rules-marketing-voice.md`.
-- **ADR-036** : `governance-vault/ledger/decisions/adr/ADR-036-marketing-operating-layer.md`.
+- **Canon brand voice** : `.claude/canon-mirrors/marketing-voice.md` (copie générée par `scripts/canon/compute-canon-hashes.py`, hash vérifié en CI). Source unique = `.spec/00-canon/canon-distribution/rules-marketing-voice.md`, dans le monorepo.
+- **ADR-036** (origine du Marketing Operating Layer) : archive `ak125/governance-vault`, `ledger/decisions/adr/ADR-036-marketing-operating-layer.md`. Elle explique la décision ; elle n'est plus normative par elle-même (CLAUDE.md §Gouvernance).
 - **Backend marketing** : `backend/src/modules/marketing/` (9 services existants, à NE JAMAIS dupliquer).
 - **DB Supabase** via MCP : tables Phase 1 = `__marketing_brief` + `__marketing_feedback` + `__retention_trigger_rules` + `users.marketing_consent_at`.
 - **Wiki/RAG** : `automecanik-wiki/wiki/{vehicle,gamme}/` + `rag/knowledge/gammes/`.
-- **Vault gouvernance** : `governance-vault/ledger/` pour les recettes canon (runbook rollback, AEC).
+- **Archive du vault** : `ak125/governance-vault`, `ledger/knowledge/`, pour le runbook de rollback du pilote (lecture seule). L'AEC se lit dans sa copie déclarée, `.claude/canon-mirrors/agent-exit-contract.md`.
 
 ## Scope par agent (verrou DTO Zod)
 
@@ -61,8 +61,8 @@ Tout brief = ligne dans `__marketing_brief` (JSONB structuré). **Jamais** de `.
 
 ## Référence
 
-- ADR-036 — Marketing Operating Layer (vault)
-- ADR-013 — Agent lifecycle G1/G2/G3 (vault)
+- ADR-036 — Marketing Operating Layer (archive du vault)
+- ADR-013 — Agent lifecycle G1/G2/G3 (archive du vault)
 - ADR-025 — SEO Department (référence pattern OperatingMatrix)
 - Plan rev 6 — `/home/deploy/.claude/plans/verifier-la-strategie-une-piped-hummingbird.md`
-- Runbook rollback — `governance-vault/ledger/knowledge/runbook-marketing-pilot-rollback.md`
+- Runbook rollback — `workspaces/marketing/runbook-marketing-pilot-rollback.md` (relogé de l'archive du vault ; jamais joué, deux écarts à lever avant usage)

@@ -11,7 +11,9 @@ import {
 import {
   countDiagnosticToProduct,
   countPagesGeneratingAtc,
+  diagnosticQualificationNote,
   firstVisitBySession,
+  HUMAN_TRAFFIC_CLASS,
   toDiagnosticToProductKpi,
   toMetricReliabilityKpi,
   toPagesGeneratingAtcKpi,
@@ -335,10 +337,14 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       {
         ...measure(
           toDiagnosticToProductKpi(diagnostic.data, days),
-          diagnosticBefore.data && diagnosticBefore.data.sessions > 0
+          // Période précédente non qualifiée : pas de comparaison.
+          diagnosticBefore.data &&
+            diagnosticBefore.data.sessions > 0 &&
+            diagnosticQualificationNote(diagnosticBefore.data) == null
             ? diagnosticBefore.data.reachedProduct
             : null,
           days,
+          diagnosticQualificationNote(diagnostic.data),
         ),
         ...(diagnostic.data ? { sample_size: diagnostic.data.sessions } : {}),
         ...readFailures(diagnostic, diagnosticBefore),
@@ -405,16 +411,31 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       : { data: countPagesGeneratingAtc(rows.data) };
   }
 
+  /**
+   * Sessions humaines seulement (`traffic_class = 'human'`, posé à la réception
+   * par FunnelEventsController). Les visites sans classe de la période sont
+   * comptées à part : elles rendent la période « non qualifiée ».
+   */
   private async readDiagnosticToProduct(
     from: string,
     to?: string,
   ): Promise<ReadOutcome<DiagnosticToProductCounts>> {
+    const unclassified = await this.countUnclassified(
+      'diagnostic_to_product',
+      'diag_hub_view',
+      from,
+      to,
+    );
+    if (unclassified.data === null)
+      return { data: null, failure: unclassified.failure };
     const visits = await this.readEvents<SessionEventRow>(
       'diagnostic_to_product',
       'diag_hub_view',
       CommandCenterKpiService.SESSION_COLUMNS,
       from,
       to,
+      undefined,
+      true,
     );
     if (visits.data === null) return { data: null, failure: visits.failure };
     const { firstVisit, malformedSessions } = firstVisitBySession(visits.data);
@@ -441,16 +462,64 @@ export class CommandCenterKpiService extends SupabaseBaseService {
           sessions: sessions.slice(i, i + chunk),
           budget: CommandCenterKpiService.MAX_ROWS - views.length,
         },
+        true,
       );
       if (rows.data === null) return { data: null, failure: rows.failure };
       views.push(...rows.data);
     }
-    return { data: countDiagnosticToProduct(firstVisit, views) };
+    return {
+      data: {
+        ...countDiagnosticToProduct(firstVisit, views),
+        unclassifiedVisits: unclassified.data,
+      },
+    };
+  }
+
+  /** Nombre exact d'événements `eventType` de [from, to) sans classe de trafic. */
+  private async countUnclassified(
+    kpi: string,
+    eventType: string,
+    from: string,
+    to?: string,
+  ): Promise<ReadOutcome<number>> {
+    const source = `__seo_event_log (${eventType}, sans classe)`;
+    let query = this.supabase
+      .from('__seo_event_log')
+      .select('id', { count: 'exact', head: true })
+      .eq('event_type', eventType)
+      .gte('created_at', from)
+      .is('payload->>traffic_class', null);
+    if (to) query = query.lt('created_at', to);
+    try {
+      const { error, count } = await query;
+      if (error) {
+        this.logger.warn(
+          `[command-center-kpi] ${kpi} indisponible — lecture ${source} en échec (${error.code ?? 'sans code'} : ${error.message})`,
+        );
+        return {
+          data: null,
+          failure: error.code === '42501' ? 'access_denied' : 'read_failed',
+        };
+      }
+      if (count == null || !Number.isSafeInteger(count)) {
+        this.logger.warn(
+          `[command-center-kpi] ${kpi} indisponible — lecture ${source} sans compte exact`,
+        );
+        return { data: null, failure: 'completeness_unverified' };
+      }
+      return { data: count };
+    } catch {
+      this.logger.warn(
+        `[command-center-kpi] ${kpi} indisponible — lecture ${source} rejetée (read_failed)`,
+      );
+      return { data: null, failure: 'read_failed' };
+    }
   }
 
   /**
    * Événements `eventType` créés dans [from, to). `bySession` restreint aux
-   * sessions données, dans la limite du budget de lignes restant.
+   * sessions données, dans la limite du budget de lignes restant ; `humanOnly`
+   * aux événements classés humains à la réception.
    */
   private readEvents<T>(
     kpi: string,
@@ -459,6 +528,7 @@ export class CommandCenterKpiService extends SupabaseBaseService {
     from: string,
     to?: string,
     bySession?: { sessions: string[]; budget: number },
+    humanOnly = false,
   ): Promise<ReadOutcome<T[]>> {
     let query = this.supabase
       // Nom littéral : l'inventaire db-usage (build-db-usage-map.js) le rattache à ce service.
@@ -468,6 +538,8 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       .gte('created_at', from);
     if (to) query = query.lt('created_at', to);
     if (bySession) query = query.in('payload->>session_id', bySession.sessions);
+    if (humanOnly)
+      query = query.eq('payload->>traffic_class', HUMAN_TRAFFIC_CLASS);
     return this.readAll<T>(
       kpi,
       `__seo_event_log (${eventType})`,

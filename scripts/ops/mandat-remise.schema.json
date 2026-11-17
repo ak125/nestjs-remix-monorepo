@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["statut", "titre_pr", "resume", "controles", "preuves", "limites", "inconnues"],
+  "properties": {
+    "statut": { "type": "string", "enum": ["implémenté", "intégré", "vérifié", "bloqué"] },
+    "titre_pr": { "type": "string", "minLength": 10, "maxLength": 120 },
+    "resume": { "type": "string", "minLength": 1, "maxLength": 3000 },
+    "controles": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["commande", "resultat", "extrait"],
+        "properties": {
+          "commande": { "type": "string", "minLength": 1, "maxLength": 300 },
+          "resultat": { "type": "string", "enum": ["vert", "rouge", "non lancé"] },
+          "extrait": { "type": "string", "maxLength": 600 }
+        }
+      }
+    },
+    "preuves": { "type": "array", "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 400 } },
+    "limites": { "type": "array", "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 400 } },
+    "inconnues": { "type": "array", "maxItems": 20, "items": { "type": "string", "minLength": 1, "maxLength": 400 } },
+    "raison_blocage": { "type": "string", "maxLength": 600 }
+  }
+}

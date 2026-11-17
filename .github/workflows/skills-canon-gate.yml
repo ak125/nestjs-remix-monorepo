@@ -30,8 +30,15 @@ on:
       - "scripts/governance/__tests__/build-command-center-snapshot.test.ts"
       - "scripts/governance/__fixtures__/agent-operating-map.invalid.yaml"
       - "scripts/governance/__fixtures__/agent-operating-map.dept-handoffs.invalid.yaml"
+      - "scripts/governance/__fixtures__/agent-operating-map.contract.invalid.yaml"
       - "audit/registry/command-center-snapshot.json"
       - ".github/workflows/skills-canon-gate.yml"
+      - "skills-lock.json"
+      - "scripts/governance/__tests__/skills-third-party-lock.test.ts"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   skills-canon-gate:
@@ -61,6 +68,10 @@ jobs:
           set -e
           node scripts/governance/validate-skills-frontmatter.js --json > /tmp/skills-report.json
           cat /tmp/skills-report.json | jq -c '{ok, totalSkills, failureCount}'
+
+      - name: 🔐 Third-party skills lock — unit tests (P40, journal des principes)
+        if: always()
+        run: npx tsx --test scripts/governance/__tests__/skills-third-party-lock.test.ts
 
       # skills.registry.json porte un sha256 de chaque SKILL.md ; sans ce step, rien ne
       # signale qu'une édition de skill l'a rendu faux. Lecture seule (--check ne réécrit rien).
@@ -122,7 +133,7 @@ jobs:
               echo ""
               echo "**Fix** : edit \`.spec/00-canon/ai-registry/agent-operating-map.yaml\`. Schema : \`agent-operating-map.schema.json\`."
               echo ""
-              echo "_Reference projection — non-authoritative. Hard-fail enforcement = vault ADR required._"
+              echo "_Avertissement seul ici ; les contrats de département sont bloquants dans le job requis 🛡️ ADR-010 Governance (décision 72)._"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

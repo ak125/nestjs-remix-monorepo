@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://automecanik.com/canon/agent-operating-map.schema.json",
   "title": "AI Agent Operating Map (reference projection)",
-  "description": "Non-authoritative reference projection of the monorepo's AI surfaces, nodes (skills/agents), and inter-workspace handoffs. Hard-fail enforcement requires a vault ADR.",
+  "description": "Non-authoritative reference projection of the monorepo's AI surfaces, nodes (skills/agents), and inter-workspace handoffs. Department contracts (field `contract`) are hard-failed in CI (owner decision 72, 2026-11-15); other findings stay warn-only.",
   "type": "object",
   "required": ["version", "last_verified", "surfaces", "nodes", "handoffs"],
   "additionalProperties": false,
@@ -14,8 +14,10 @@
     "handoffs": { "type": "array", "items": { "$ref": "#/$defs/handoff" } },
     "departments":           { "type": "array", "items": { "$ref": "#/$defs/department" } },
     "declared_capabilities": { "type": "array", "items": { "$ref": "#/$defs/declaredCapability" } },
-    "department_handoffs":   { "type": "array", "items": { "$ref": "#/$defs/departmentHandoff" } }
+    "department_handoffs":   { "type": "array", "items": { "$ref": "#/$defs/departmentHandoff" } },
+    "department_contract_common": { "$ref": "#/$defs/departmentContractCommon" }
   },
+  "dependentRequired": { "departments": ["department_contract_common"] },
   "$defs": {
     "surfaceId":   { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
     "nodeId":      { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$" },
@@ -124,7 +126,8 @@
         "business_number",
         "accountable_owner",
         "operating_mode",
-        "profile_ref"
+        "profile_ref",
+        "contract"
       ],
       "additionalProperties": false,
       "properties": {
@@ -194,6 +197,9 @@
         "profile_ref": {
           "type": "string",
           "pattern": "^audit/automecanik-departments-map\\.md#department-[a-z0-9-]+$"
+        },
+        "contract": {
+          "$ref": "#/$defs/departmentContract"
         }
       },
       "if": {
@@ -211,6 +217,100 @@
           "repo_domains": {
             "minItems": 1
           }
+        }
+      }
+    },
+    "pendingOwnerDecision": {
+      "description": "Explicit gap: the field is not filled because the owner has not decided it yet. The reason says what is missing; it is surfaced by the validator, never treated as a value.",
+      "type": "object",
+      "required": ["pending_owner_decision"],
+      "additionalProperties": false,
+      "properties": {
+        "pending_owner_decision": { "type": "string", "minLength": 10 }
+      }
+    },
+    "contractText": {
+      "oneOf": [
+        { "type": "string", "minLength": 3 },
+        { "$ref": "#/$defs/pendingOwnerDecision" }
+      ]
+    },
+    "departmentContract": {
+      "description": "Department contract (decision 72 of the owner, 2026-11-15/16): what the department watches, its KPI, the source read, the action threshold and its line in the department report, with the owner decisions it applies, cited by number. A field may be an explicit pending_owner_decision; it may not be absent or empty.",
+      "type": "object",
+      "required": ["surveillance", "kpi", "source", "seuil_action", "ligne_rapport", "decisions"],
+      "additionalProperties": false,
+      "properties": {
+        "surveillance": { "$ref": "#/$defs/contractText" },
+        "kpi": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": ["producer"],
+              "additionalProperties": false,
+              "properties": {
+                "producer": { "type": "string", "pattern": "^[A-Za-z0-9_./-]+\\.(ts|js|mjs|cjs|sql|py|sh)$" },
+                "rule": { "type": "string", "minLength": 3 },
+                "definition": { "type": "string", "minLength": 10 }
+              }
+            },
+            {
+              "description": "KPI defined by an owner decision but not produced yet: `definition` is what the decision measures, `producer_pending` says what is missing (producer, reliability sheet of decision 8). Listed by the validator, never treated as a measure.",
+              "type": "object",
+              "required": ["definition", "producer_pending"],
+              "additionalProperties": false,
+              "properties": {
+                "definition": { "type": "string", "minLength": 10 },
+                "producer_pending": { "type": "string", "minLength": 10 }
+              }
+            },
+            {
+              "description": "The department carries no KPI of its own, by a documented organisation decision.",
+              "type": "object",
+              "required": ["none"],
+              "additionalProperties": false,
+              "properties": {
+                "none": { "type": "string", "minLength": 10 }
+              }
+            },
+            { "$ref": "#/$defs/pendingOwnerDecision" }
+          ]
+        },
+        "source":{ "$ref": "#/$defs/contractText" },
+        "seuil_action": { "$ref": "#/$defs/contractText" },
+        "ligne_rapport": { "$ref": "#/$defs/contractText" },
+        "decisions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 1, "maximum": 90 }
+        }
+      }
+    },
+    "departmentContractCommon": {
+      "description": "Rules shared by every department contract (owner decisions cited by number): the single report, the KPI entry condition, what a crossed threshold opens, the missing-data wording and the measurement sources.",
+      "type": "object",
+      "required": ["rapport", "entree_kpi", "seuil_franchi", "donnee_absente", "sources"],
+      "additionalProperties": false,
+      "properties": {
+        "rapport":        { "$ref": "#/$defs/contractCommonRule" },
+        "entree_kpi":     { "$ref": "#/$defs/contractCommonRule" },
+        "seuil_franchi":  { "$ref": "#/$defs/contractCommonRule" },
+        "donnee_absente": { "$ref": "#/$defs/contractCommonRule" },
+        "sources":        { "$ref": "#/$defs/contractCommonRule" }
+      }
+    },
+    "contractCommonRule": {
+      "type": "object",
+      "required": ["regle", "decisions"],
+      "additionalProperties": false,
+      "properties": {
+        "regle": { "type": "string", "minLength": 10 },
+        "decisions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 1, "maximum": 90 }
         }
       }
     },

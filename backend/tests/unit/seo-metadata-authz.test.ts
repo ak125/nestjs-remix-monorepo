@@ -24,7 +24,7 @@
  * @see backend/src/auth/is-admin.guard.ts
  * @see backend/src/auth/authenticated.guard.ts
  */
-import { ExecutionContext, Type } from '@nestjs/common';
+import { ExecutionContext, RequestMethod, Type } from '@nestjs/common';
 
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
@@ -121,6 +121,26 @@ const WRITE_ENDPOINTS: Array<{
 ];
 
 describe('served-metadata write endpoints enforce the admin boundary (P0 broken access control)', () => {
+  // Any route of the breadcrumb controller that is not a GET writes or
+  // invalidates served data: it must be listed above, hence admin-only.
+  it('OptimizedBreadcrumbController declares no write route outside this list', () => {
+    const proto = OptimizedBreadcrumbController.prototype as Record<
+      string,
+      any
+    >;
+    const writeHandlers = Object.getOwnPropertyNames(proto).filter((name) => {
+      if (name === 'constructor' || typeof proto[name] !== 'function')
+        return false;
+      const verb = Reflect.getMetadata('method', proto[name]);
+      return verb !== undefined && verb !== RequestMethod.GET;
+    });
+    expect(writeHandlers).toEqual(
+      WRITE_ENDPOINTS.filter(
+        ({ controller }) => controller === OptimizedBreadcrumbController,
+      ).map(({ method }) => method),
+    );
+  });
+
   describe.each(WRITE_ENDPOINTS)('$label', ({ controller, method }) => {
     it('wires the canonical AuthenticatedGuard + IsAdminGuard', () => {
       const guards = effectiveGuards(controller, method);

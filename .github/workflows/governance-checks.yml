@@ -7,8 +7,6 @@ name: governance-checks
 #   (R8 ≠ cart-capable, canon .spec/00-canon/role-matrix.md)
 # - check-role-purity.ts : detecte contamination vocab role dans commentaires .ts/.tsx
 #   (consomme @repo/seo-roles forbidden-overlap.ts SoT)
-#
-# check-verdict-expirations.sh = cron weekly, pas wired ici (follow-up dédié).
 
 on:
   pull_request:
@@ -35,6 +33,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   validate-top-priorities:

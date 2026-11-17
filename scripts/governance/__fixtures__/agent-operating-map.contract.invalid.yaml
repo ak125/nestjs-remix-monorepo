@@ -1,0 +1,49 @@
+# Intentionally invalid — used by --self-test (department contracts, decision 72).
+# Schema-VALID on purpose: the schema cannot say that a KPI producer exists on
+# disk, that a produced KPI needs a kpi_primary, nor count the 24 departments.
+#   - department "a" names a producer file that does not exist → DEPT_CONTRACT_INCOMPLETE
+#   - department "a" names a producer but has no kpi_primary   → DEPT_CONTRACT_INCOMPLETE
+#   - only 1 department instead of 24                           → DEPT_CONTRACT_INCOMPLETE
+# The schema half (a missing contract) is covered by a variant built in memory
+# by runSchemaSelfTest from this same fixture.
+version: 1
+last_verified: "2026-11-16"
+surfaces:
+  - id: root
+    cwd: .
+    role: dev
+    purpose: "self-test fixture surface"
+    capabilities:
+      can_mutate: false
+      can_open_pr: false
+      can_trigger_pipeline: false
+    loads:
+      skills: []
+      agents: []
+nodes: []
+handoffs: []
+department_contract_common:      # fixture : forme minimale valide des règles communes
+  rapport: { regle: "Rapport unique, fixture.", decisions: [7] }
+  entree_kpi: { regle: "Fiche de fiabilité, fixture.", decisions: [8] }
+  seuil_franchi: { regle: "Issue dept:NN, fixture.", decisions: [9] }
+  donnee_absente: { regle: "Pas de mesure, fixture.", decisions: [24] }
+  sources: { regle: "Sources de mesure, fixture.", decisions: [36] }
+departments:
+  - id: a
+    business_number: 1
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-a
+    label: "Fixture A"
+    lead: a-lead
+    repo_domains: [D1]
+    state: partial
+    contract:
+      surveillance: "fixture surveillance"
+      kpi:
+        producer: scripts/governance/__fixtures__/does-not-exist.ts
+        rule: fixtureRule
+      source: "fixture source"
+      seuil_action: "fixture threshold"
+      ligne_rapport: "fixture report"
+      decisions: [72]

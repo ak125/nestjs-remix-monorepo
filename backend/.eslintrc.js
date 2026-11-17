@@ -120,7 +120,7 @@ module.exports = {
     // `v` + `iat` JWS housekeeping). Canon memory: `vehicle-context-option-a-locked`.
     // Extension = nouveau domaine UserVehicleProfile, jamais bump du cap ici.
     // Maximum raised to 9 for this single file with ADR-pending reference. Any
-    // future widening requires an L4 ADR vault entry (see guard-hierarchy.yaml).
+    // future widening requires an L4 decision (see guard-hierarchy.yaml).
     {
       files: ['src/**/ports/vehicle-context.port.ts'],
       rules: {

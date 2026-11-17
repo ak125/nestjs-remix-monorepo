@@ -1,0 +1,22 @@
+--- a/.github/workflows/merge-circuits.yml
++++ b/.github/workflows/merge-circuits.yml
+@@ -3,8 +3,8 @@
+ # Décision 72 de l'owner (2026-11-15) : trois circuits de fusion.
+ #   faible : CI verte → fusion automatique ;
+ #   moyen  : CI verte + verdict GO de la revue Claude sur la tête → fusion automatique
+-#            (décision 91, 2026-11-16 : la revue Claude déjà en place, anthropics/claude-code-action
+-#            et le secret ANTHROPIC_API_KEY de dependabot-claude-review.yml, remplace la revue Codex) ;
++#            (décision 91, 2026-11-16 : la revue Claude, anthropics/claude-code-action, remplace la
++#            revue Codex ; authentification par le secret CLAUDE_CODE_OAUTH_TOKEN, mandat AR-5) ;
+ #   élevé  : approbation de l'owner sur la tête ; l'owner fusionne.
+ #
+ # Le circuit est calculé par scripts/ci/merge-circuit.mjs, lu sur le commit de BASE :
+@@ -133,7 +133,7 @@
+         continue-on-error: true # une panne donne HOLD à l'étape suivante, jamais GO
+         uses: anthropics/claude-code-action@v1
+         with:
+-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
++          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+           github_token: ${{ github.token }}
+           # Les PR des agents sont ouvertes et poussées par l'App automecanik-agents.
+           allowed_bots: "automecanik-agents[bot]"

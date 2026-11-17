@@ -12,7 +12,7 @@ last_scan: 2026-04-24
 
 | Table | Rôle | Remarques |
 |---|---|---|
-| `__seo_gamme_conseil` | Contenu sections conseils (S1–S8) par gamme | RLS active. Pollution OEM scannée par `pollution-scanner`. Jamais caster `sgc_id` → timestamptz. `sg_updated_at` = horodatage. |
+| `__seo_gamme_conseil` | Contenu sections conseils (S1–S8) par gamme | RLS active. Pollution OEM scannée par `v5-guardian` (module 1). Jamais caster `sgc_id` → timestamptz. `sg_updated_at` = horodatage. |
 | `__seo_keyword_plan_r1` à `r8` | Keyword plans par rôle R1–R8 | 1 plan par `pg_id` et par rôle. Format JSONB. |
 | `__seo_keyword_results` | Résultats classification Google Ads | Écrit par `/kw-classify`, contient `vol_percentile`. |
 | `__seo_keywords` | Keywords bruts Google Ads KP | Import via `import-gads-kp.py`. |

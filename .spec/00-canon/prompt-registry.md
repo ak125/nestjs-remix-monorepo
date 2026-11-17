@@ -3,6 +3,8 @@
 > **Date** : 2026-03-14
 > **Version** : 1.0.0
 > **Statut** : ACTIVE
+>
+> **Carte du circuit (2026-11-15, mandat AD)** : les pièces qui exécutent le circuit du contenu sont nommées dans `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md` §« Carte du circuit ». Les prompts marqués « retiré » n’avaient aucun lecteur (preuves : `audit/seo-content-circuit-2026-11-15.md`). R3_CONSEILS, R5_DIAGNOSTIC et leurs fichiers `_shared` restent listés jusqu’à la livraison du mandat AB.
 
 Ce registre est la table de vérité reliant chaque rôle canonique à son triplet (planner/generator/validator), ses agents, services, tables et routes réels.
 
@@ -31,9 +33,9 @@ Ce registre est la table de vérité reliant chaque rôle canonique à son tripl
 
 | Couche | Artefact |
 |--------|----------|
-| Planner | `.claude/prompts/R1_ROUTER/planner.md` (maximum, 191 lignes) |
-| Generator | `.claude/prompts/R1_ROUTER/generator.md` (hardened) |
-| Validator prompt | `.claude/prompts/R1_ROUTER/validator.md` |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) |
 | Execution agent | — (inline via R1ContentPipelineService) |
 | Validator agent | `.claude/agents/r1-router-validator.md` (maximum, 231 lignes) |
 | Content batch | `.claude/agents/r1-content-batch.md` |
@@ -90,9 +92,9 @@ Ce registre est la table de vérité reliant chaque rôle canonique à son tripl
 
 | Couche | Artefact |
 |--------|----------|
-| Planner | `.claude/prompts/R4_REFERENCE/planner.md` |
-| Generator | `.claude/prompts/R4_REFERENCE/generator.md` (hardened) |
-| Validator prompt | `.claude/prompts/R4_REFERENCE/validator.md` |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) |
 | Execution agent | `.claude/agents/r4-reference-execution.md` |
 | Validator agent | `.claude/agents/r4-reference-validator.md` |
 | Content batch | `.claude/agents/r4-content-batch.md` |
@@ -130,9 +132,9 @@ Ce registre est la table de vérité reliant chaque rôle canonique à son tripl
 
 | Couche | Artefact |
 |--------|----------|
-| Planner | `.claude/prompts/R6_GUIDE_ACHAT/planner.md` (maximum, 198 lignes) |
-| Generator | `.claude/prompts/R6_GUIDE_ACHAT/generator.md` (hardened, price gate) |
-| Validator prompt | `.claude/prompts/R6_GUIDE_ACHAT/validator.md` |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) |
 | Execution agent | — (inline via buying-guide-enricher) |
 | Validator agent | `.claude/agents/r6-guide-achat-validator.md` (maximum, 254 lignes) |
 | Support validator | `.claude/agents/r6-support-validator.md` (hors matrice cœur) |
@@ -152,9 +154,9 @@ Ce registre est la table de vérité reliant chaque rôle canonique à son tripl
 
 | Couche | Artefact |
 |--------|----------|
-| Planner | `.claude/prompts/R7_BRAND/planner.md` |
-| Generator | `.claude/prompts/R7_BRAND/generator.md` (hardened) |
-| Validator prompt | `.claude/prompts/R7_BRAND/validator.md` |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) |
 | Execution agent | `.claude/agents/r7-brand-execution.md` |
 | Validator agent | `.claude/agents/r7-brand-validator.md` |
 | RAG generator | `.claude/agents/r7-brand-rag-generator.md` |
@@ -173,9 +175,9 @@ Ce registre est la table de vérité reliant chaque rôle canonique à son tripl
 
 | Couche | Artefact |
 |--------|----------|
-| Planner | `.claude/prompts/R8_VEHICLE/planner.md` |
-| Generator | `.claude/prompts/R8_VEHICLE/generator.md` (hardened) |
-| Validator prompt | `.claude/prompts/R8_VEHICLE/validator.md` |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) |
 | Execution agent | `.claude/agents/r8-vehicle-execution.md` |
 | Validator agent | `.claude/agents/r8-vehicle-validator.md` |
 | Keyword planner | `.claude/agents/r8-keyword-planner.md` |
@@ -198,7 +200,7 @@ Ce registre est la table de vérité reliant chaque rôle canonique à son tripl
 | Stop conditions partagées | `.claude/prompts/_shared/stop-conditions.md` |
 | Quality constraints partagées | `.claude/prompts/_shared/quality-constraints.md` |
 | Upstream required partagé | `.claude/prompts/_shared/upstream-required.md` |
-| Write/publish boundary partagé | `.claude/prompts/_shared/write-publish-boundary.md` |
+| Write/publish boundary partagé | — retiré 2026-11-15 (mandat AD, sans lecteur) |
 
 ---
 
@@ -206,7 +208,7 @@ Ce registre est la table de vérité reliant chaque rôle canonique à son tripl
 
 | Type | Nombre |
 |------|--------|
-| Prompts (planner+generator+validator) | 7 × 3 = 21 |
+| Prompts (planner+generator+validator) | 2 × 3 = 6 (R3, R5 ; 15 retirés le 2026-11-15) |
 | Agents exécution | 5 (R0, R4, R5, R7, R8) |
 | Agents validator | 10 (R0-R8 + R6_SUPPORT) |
 | Agents keyword planner | 6 (R2, R4, R6, R7, R8 + orchestrateur) |

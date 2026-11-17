@@ -5,6 +5,7 @@ import { ShippingModule } from '../shipping/shipping.module';
 import { CartModule } from '../cart/cart.module';
 import { ApiModule } from '../api.module';
 import { AuthModule } from '../../auth/auth.module';
+import { SupplierTruthReadModule } from '../supplier-truth/supplier-truth-read.module';
 
 // 🆕 Contrôleur unifié Phase 3
 import { OrdersController } from './controllers/orders.controller';
@@ -21,6 +22,7 @@ import { OrderStatusService } from './services/order-status.service';
 import { OrderArchiveService } from './services/order-archive.service';
 import { TicketsService } from './services/tickets.service';
 import { OrderActionsService } from './services/order-actions.service';
+import { OrderLineSupplierService } from './services/order-line-supplier.service';
 import { OrderCleanupService } from './services/order-cleanup.service';
 
 // Event listeners
@@ -41,7 +43,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
  * - Architecture finale propre
  *
  * Contrôleurs actifs:
- * 1. OrdersController: Routes principales (client + admin + legacy)
+ * 1. OrdersController: Routes principales (client + admin)
  * 2. OrderArchiveController: Archivage
  * 3. TicketsController: SAV
  * (statut ligne = OrderActionsController/OrderActionsService — SoT unique, F3 audit 2026-05-22)
@@ -61,10 +63,11 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     ApiModule, // Pour accéder au LegacyOrderService si besoin
     AuthModule, // Pour guest checkout (AuthService)
     ConfigModule,
+    SupplierTruthReadModule, // Décision 50 : annuaire fournisseurs (lecture seule)
   ],
   controllers: [
     // 🆕 Phase 3: Contrôleur unifié principal
-    OrdersController, // /api/orders/* (client + admin + legacy)
+    OrdersController, // /api/orders/* (client + admin)
 
     // ✅ Contrôleurs spécialisés (gardés)
     OrderArchiveController, // /order-archive/* (archivage)
@@ -79,6 +82,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrderArchiveService, // Archivage
     TicketsService, // SAV
     OrderActionsService, // Actions backoffice
+    OrderLineSupplierService, // Décision 50 : proposition fournisseur (lecture)
     OrderCleanupService, // Cron: cleanup orphelins idempotency + resume tokens
     OrderAuditListener, // Event: audit trail → __admin_audit_log
     OrderEmailListener, // Event: emails shipped/cancelled/refunded

@@ -1,0 +1,18 @@
+--- a/.github/workflows/registry-new-file-gate.yml
++++ b/.github/workflows/registry-new-file-gate.yml
+@@ -54,7 +54,14 @@
+         # which pollutes JSON output and breaks downstream jq parse.
+         run: |
+           set -e
+-          node scripts/registry/check-new-files.js --base origin/main --json > /tmp/gate-report.json
++          rc=0
++          node scripts/registry/check-new-files.js --base origin/main --json > /tmp/gate-report.json || rc=$?
++          if [ "$rc" -ne 0 ]; then
++            # Verdict inchangé : le code de sortie du script est repris tel quel. Les fichiers refusés
++            # sont écrits dans le journal du job (ils n'étaient lisibles que dans le résumé du run).
++            jq -r '.results[] | select(.verdict != "ok") | "::error file=\(.path)::\(.verdict) : \(.path) (aucun glob de ownership.yaml ne donne owner et domaine)"' /tmp/gate-report.json || true
++            exit "$rc"
++          fi
+           cat /tmp/gate-report.json | jq -c '{ok, missing_owner, missing_domain, missing_both, totalNew}'
+ 
+       - name: Surface failures (if any)

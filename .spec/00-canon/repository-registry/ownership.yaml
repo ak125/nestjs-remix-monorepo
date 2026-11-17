@@ -236,11 +236,6 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
-  - glob: scripts/governance/check-verdict-expirations.sh
-    domain: D15
-    owner: '@ak125'
-    sourceConfidence: high
-    risk: medium
   - glob: .claude/canon-mirrors/exploration-budget.md
     domain: D15
     owner: '@ak125'
@@ -1768,6 +1763,91 @@ entries:
   # (isolatedModules) ; npm run typecheck lance ce fichier pour tests/.
   # Même domaine et même owner que backend/tests/**. Glob exact.
   - glob: backend/tsconfig.spec.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # PR #2100 (mandat AP) : enveloppe bcrypt des anciennes empreintes de mot de
+  # passe. Cœur du script d'enveloppe (runner) et accès PostgREST (store),
+  # appelés par backend/src/workers/run-legacy-password-wrap.ts. Domaine et
+  # owner de l'authentification (backend/src/auth/**, D11) : ces fichiers
+  # écrivent cst_pswd / cnfa_pswd. Glob exact, limité à ces deux fichiers.
+  - glob: backend/src/shared/crypto/legacy-hash-wrap.*.ts
+    domain: D11
+    owner: '@ak125/auth-team'
+    sourceConfidence: high
+    risk: high
+  # Désactivation de 4 comptes administrateurs de test de ___config_admin
+  # (cnfa_activ = '0', mandat AZ, PR #2106). Migration de données : 4 lignes
+  # désignées par cnfa_id, aucune suppression, aucun schéma touché. Lecteurs :
+  # auth_resolve_user et backend/src/auth (D11). Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261116_disable_test_admin_accounts*.sql
+    domain: D11
+    owner: '@ak125/auth-team'
+    sourceConfidence: high
+    risk: high
+  # Rapports du mandat AN (commandes non payées, relance de panier, frais de port),
+  # PR #2088, décisions 5, 44, 61, 75, 110 et 111 du 16/11/2026. Documents de constat,
+  # aucun lecteur applicatif. Domaine Commerce & Users comme les modules panier et
+  # commande qu'ils décrivent. Glob exact : la racine du dépôt n'est pas couverte.
+  - glob: RAPPORT-MANDAT-AN*.md
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Canons distribués (AEC, voix de marque) : sources et manifeste généré, transférés
+  # du vault à l'étape 1 de sa sortie (décisions 72 et 73, mandat BC). Zone CODEOWNERS
+  # `/.spec/00-canon/` : circuit élevé.
+  - glob: .spec/00-canon/canon-distribution/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # Générateur du manifeste et des copies, et ses tests : ils portent le gate de statut
+  # et le contrôle des copies. Sans ces deux entrées, `scripts/**` (risk low) les place
+  # en circuit faible.
+  - glob: scripts/canon/compute-canon-hashes.py
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: scripts/canon/test_compute_canon_hashes.py
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # PR #2096 (mandat AS, décision 51) : définition unique de « vendable »
+  # (pri_dispo '1', ni FROZEN ni masquée, vente TTC > 0). Lue par l'autorité
+  # du tarif piece-price-data.service.ts (même domaine / owner, ci-dessus) et
+  # par le module pricing. Glob exact : couvre vendable.ts (son test est un
+  # chemin d'exception). database/services/** reste non assigné.
+  - glob: backend/src/database/services/vendable.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # Préparation du premier lot de tarif SEIM (mandat AS, périmètre 6) : note
+  # en lecture seule, aucune écriture. Même owner que le module pricing.
+  - glob: audit/supplier-tariff-lot1-seim-preparation-20261116.md
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # PR #2096, complément : test de la définition unique de « vendable ».
+  # Corrige le commentaire de l'entrée vendable.ts ci-dessus : son test n'est
+  # PAS un chemin d'exception pour le ratchet « Block new contract-drift
+  # findings » (job 133739517184 : 1 ownership_gap nouveau sur ce fichier).
+  # Même forme que les tests de piece-price-data (PR #1499, entrées ci-dessus) :
+  # chemin exact, domaine / owner du sujet, sourceConfidence medium (dérivation,
+  # pas de signal CODEOWNERS direct), risk medium (valeur des entrées de test).
+  - glob: backend/src/database/services/vendable.test.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: medium
+    risk: medium
+  # Complément n° 1 AW (ADR-137 D3/D7) : verrou des skills tiers à la racine. Même domaine et owner que .claude/skills/**. Glob exact.
+  - glob: skills-lock.json
     domain: D15
     owner: '@ak125'
     sourceConfidence: high

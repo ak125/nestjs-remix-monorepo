@@ -38,7 +38,7 @@ frontend-design.
 
 ## Out of scope (anti-invention guard)
 
-- Do **not** read `.claude/prompts/R2_PRODUCT/*`. Those are SEO
-  content-GENERATION contracts (meta_title/description, keyword plans, block copy)
-  for the SEO batch pipeline. This skill builds UI structure; it never generates
+- Do **not** read `.claude/prompts/R*/` (most were retired on 2026-11-15,
+  `R2_PRODUCT` among them). Those are SEO content-GENERATION contracts
+  (meta_title/description, keyword plans, block copy) for the SEO batch pipeline. This skill builds UI structure; it never generates
   meta, keywords, slugs, URLs, or block copy.

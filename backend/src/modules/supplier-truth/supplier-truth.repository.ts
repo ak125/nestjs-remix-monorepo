@@ -211,6 +211,44 @@ export class SupplierTruthRepository extends SupabaseBaseService {
    * The connector is queried ONLY for working-set pieces whose brand is carried —
    * DistriCash does not sell every brand/family/piece (sourcing fallback, no PRI_FRS).
    */
+  /**
+   * Supplier directory for the order-line supplier proposal (decision 50):
+   * every ___xtr_supplier row, keyed by its name AND its alias (trimmed,
+   * upper-cased) so a `pieces_price.pri_frs` label resolves to `spl_id`.
+   * Read-only; the only allowed reader of ___xtr_supplier is this module.
+   */
+  async getSupplierDirectory(): Promise<
+    Map<string, { splId: string; nom: string }>
+  > {
+    const { data, error } = await this.supabase
+      .from('___xtr_supplier')
+      .select('spl_id, spl_name, spl_alias')
+      .limit(1000);
+    if (error) {
+      throw new Error(`getSupplierDirectory failed: ${error.message}`);
+    }
+    const rows = (data ?? []) as {
+      spl_id: unknown;
+      spl_name: unknown;
+      spl_alias: unknown;
+    }[];
+    if (rows.length >= 1000) {
+      throw new Error('getSupplierDirectory: 1000-row cap reached');
+    }
+    const out = new Map<string, { splId: string; nom: string }>();
+    for (const r of rows) {
+      const splId = String(r.spl_id ?? '').trim();
+      const nom = String(r.spl_name ?? '').trim();
+      if (!splId || !nom) continue;
+      for (const key of [r.spl_name, r.spl_alias]) {
+        const k = typeof key === 'string' ? key.trim().toUpperCase() : '';
+        // first row wins: a label shared by two suppliers stays on the first
+        if (k && !out.has(k)) out.set(k, { splId, nom });
+      }
+    }
+    return out;
+  }
+
   async getSupplierLinkedBrands(supplierId: string): Promise<number[]> {
     const { data, error } = await this.supabase
       .from('___xtr_supplier_link_pm')

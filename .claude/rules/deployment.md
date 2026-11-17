@@ -21,10 +21,11 @@ paths:
 # Deployment — vocabulaire strict et procédure
 
 > **Charger ce fichier AVANT toute action sur l'infra de déploiement.**
-> Le vocabulaire DEV / PREPROD / PROD est strict. Il est décidé au vault : ADR-075 (accepté le
-> 2026-11-10) et règle `rules-deployment-workflow` 2.0.0. Ce fichier le transmet aux agents du
-> monorepo ; il ne fonde pas la décision. Un écart avec la règle ou avec le code est un constat à
-> signaler (ADR-101 D3), jamais à arbitrer en silence.
+> Le vocabulaire DEV / PREPROD / PROD est strict. Sa règle en vigueur est le principe P1 de
+> `.claude/governance/journal-des-principes.md` (décision 72 : le monorepo est la seule source),
+> tiré d'ADR-075 et de la règle `rules-deployment-workflow` 2.0.0 du vault, qui en gardent la
+> raison. Ce fichier la détaille pour les agents. Un écart avec le journal ou avec le code est un
+> constat à signaler, jamais à arbitrer en silence.
 > Le lint CI `scripts/lint/check-preprod-vocabulary.sh` en est la garde : il bloque les
 > formulations interdites (voir plus bas).
 
@@ -139,7 +140,7 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 **Règles mnémoniques** :
 
 - Fusion sur `main` = **build + push tag `:preprod` + redéploiement de la pile PREPROD**. **Pas de redéploiement PROD.** `main` est protégée : jamais de push direct.
-- `ci.yml` ne filtre pas les chemins : **toute** fusion sur `main` lance le cycle PREPROD, y compris celle d'une PR de documentation et celle qu'exécute une porte de fusion automatique (ADR-124 D7). Un run encore en attente est remplacé par celui de la fusion suivante.
+- `ci.yml` ne filtre pas les chemins : **toute** fusion sur `main` lance le cycle PREPROD, y compris celle d'une PR de documentation et celle que fusionne l'App dans un circuit de fusion (P20). Un run encore en attente est remplacé par celui de la fusion suivante.
 - Fusion sur `main` qui modifie `scripts/monitoring/*.sh` = `deploy-monitoring-scripts.yml` installe aussi ces scripts dans `/usr/local/bin` de l'hôte PROD, hors des conteneurs : la fusion modifie alors l'hôte PROD. Ce workflow se lance aussi à la main (`workflow_dispatch`).
 - `git tag v… && git push --tags` = **promotion de l'image du commit → `:production` + redéploiement container PROD**.
 - Jamais annoncer "déployé en PROD" après un simple merge sur `main`.
@@ -180,13 +181,13 @@ ou si la passerelle accepte une écriture.
 
 ## Workflow nominal — Promote DEV (code) → PROD
 
-1. **La PR est fusionnée** sur `main`, sous sa protection, selon T6 de `rules-technical` (vault) :
-   par l'owner, sur une tête épinglée, ou automatiquement dans un périmètre adopté puis activé selon
-   ADR-123 (au 2026-11-10, le seul périmètre actif est celui d'ADR-124 : documentation Markdown du
-   monorepo). Hors d'un tel périmètre, un agent ne lance jamais de fusion et n'active jamais
-   d'auto-fusion (ADR-121 D4) : il remet le numéro de PR, le SHA de tête (40 caractères) et la
-   commande de fusion épinglée. Dans les deux cas la fusion est un push `main` : `ci.yml` déploie
-   la pile PREPROD.
+1. **La PR est fusionnée** sur `main`, sous sa protection, selon le principe P20 du journal des
+   principes : l'un des trois circuits que calcule `scripts/ci/merge-circuit.mjs`. Seul le circuit
+   faible est déclaré activé (décision 120) : l'App `automecanik-actions` y fusionne. La porte
+   d'ADR-124 est retirée (décision 132). Hors de ce circuit, l'owner fusionne sur une tête
+   épinglée. Un agent ne lance jamais de fusion et n'arme jamais d'auto-fusion (P20, P21) : il
+   remet le numéro de PR, le SHA de tête (40 caractères) et la commande de fusion épinglée. Dans
+   tous les cas la fusion est un push `main` : `ci.yml` déploie la pile PREPROD.
 2. Vérifier sur le run `ci.yml` du commit que `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et
    `🔦 Lighthouse Performance Audit` sont en `success` :
    `gh run list --repo ak125/nestjs-remix-monorepo --workflow ci.yml --branch main --limit 5`.

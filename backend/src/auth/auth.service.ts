@@ -104,26 +104,27 @@ export class AuthService {
     const attempts = await this.cacheService.getLoginAttempts(lockoutKey);
     if (attempts >= this.maxLoginAttempts) {
       this.logger.warn(
-        `Login lockout active for ${lockoutKey} (${attempts}/${this.maxLoginAttempts} attempts) — rejecting`,
+        `Login lockout active (${attempts}/${this.maxLoginAttempts} attempts) — rejecting`,
       );
       throw new UnauthorizedException(
         'Trop de tentatives. Compte temporairement verrouillé. Réessayez dans 15 minutes.',
       );
     }
 
+    // Les journaux citent l'identifiant du compte, jamais l'adresse mail.
+    let accountId: string | null = null;
     try {
-      this.logger.debug(`Authenticating user: ${email}`);
-
       // Lookup unifié via RPC : admin prioritaire, puis customer
       const resolved = await this.userDataService.resolveUserByEmail(email);
 
       if (!resolved) {
-        this.logger.warn(`User not found in any table: ${email}`);
+        this.logger.warn('Login refused: no account for the submitted email');
         await this.cacheService.incrementLoginAttempts(lockoutKey);
         return null;
       }
 
       const { userId, passwordHash, authSource } = resolved;
+      accountId = userId;
       const isAdmin = authSource === 'admin';
 
       // Vérifier le mot de passe
@@ -132,23 +133,22 @@ export class AuthService {
         passwordHash,
       );
       if (!isPasswordValid) {
-        this.logger.warn(`Invalid password for user: ${email}`);
+        this.logger.warn(`Invalid password for account ${userId}`);
         await this.cacheService.incrementLoginAttempts(lockoutKey);
         return null;
       }
 
-      // UPGRADE AUTOMATIQUE: Migrer les mots de passe legacy vers bcrypt
+      // UPGRADE AUTOMATIQUE: ancienne empreinte (enveloppée ou non) → bcrypt
       if (this.passwordCrypto.needsRehash(passwordHash)) {
-        this.logger.log(`Upgrading password for user: ${email}`);
         try {
-          await this.passwordCrypto.upgradeHashIfNeeded(
+          const upgraded = await this.passwordCrypto.upgradeHashIfNeeded(
             userId,
             password,
             passwordHash,
             async (uid, newHash) => {
               if (isAdmin) {
                 const url = `${process.env.SUPABASE_URL}/rest/v1/___config_admin?cnfa_id=eq.${uid}`;
-                await fetch(url, {
+                const res = await fetch(url, {
                   method: 'PATCH',
                   headers: {
                     'Content-Type': 'application/json',
@@ -158,15 +158,22 @@ export class AuthService {
                   } as HeadersInit,
                   body: JSON.stringify({ cnfa_pswd: newHash }),
                 });
+                if (!res.ok) {
+                  throw new Error(`admin hash update HTTP ${res.status}`);
+                }
               } else {
                 await this.userDataService.setPasswordHash(uid, newHash);
               }
             },
           );
-          this.logger.log(`Password upgraded successfully for: ${email}`);
+          if (!upgraded) {
+            this.logger.warn(
+              `Password hash not upgraded for account ${userId} (kept as is)`,
+            );
+          }
         } catch (upgradeError) {
           this.logger.error(
-            `Failed to upgrade password for ${email}:`,
+            `Failed to upgrade password for account ${userId}:`,
             upgradeError,
           );
         }
@@ -188,7 +195,7 @@ export class AuthService {
 
       // Vérifier que l'utilisateur est actif
       if (!authUser.isActive) {
-        this.logger.warn(`Inactive user tried to login: ${email}`);
+        this.logger.warn(`Inactive account tried to login: ${userId}`);
         // Inactive account is a real existing identity — count it as a
         // failed attempt so attackers can't pivot to brute force the rest
         // of the username space without consequence.
@@ -200,11 +207,14 @@ export class AuthService {
       await this.cacheService.clearLoginAttempts(lockoutKey);
 
       this.logger.log(
-        `Authentication successful for ${email} (source: ${authSource}, admin: ${authUser.isAdmin})`,
+        `Authentication successful for account ${userId} (source: ${authSource}, admin: ${authUser.isAdmin})`,
       );
       return authUser;
     } catch (error) {
-      this.logger.error(`Authentication failed for ${email}:`, error);
+      this.logger.error(
+        `Authentication failed for account ${accountId ?? 'unresolved'}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -300,12 +310,10 @@ export class AuthService {
     const firstName = payload.given_name || '';
     const lastName = payload.family_name || '';
 
-    this.logger.debug(`Google auth for: ${email} (sub: ${googleId})`);
-
     // 2. Chercher par google_id
     let user = await this.userDataService.findByGoogleId(googleId);
     if (user) {
-      this.logger.log(`Google login: existing user ${email}`);
+      this.logger.log(`Google login: existing account ${user.id}`);
       return this.mapUserToAuthUser(user);
     }
 
@@ -313,7 +321,7 @@ export class AuthService {
     user = await this.userDataService.findByEmail(email);
     if (user) {
       await this.userDataService.linkGoogleId(user.id, googleId);
-      this.logger.log(`Google login: linked existing account ${email}`);
+      this.logger.log(`Google login: linked existing account ${user.id}`);
       return this.mapUserToAuthUser(user);
     }
 
@@ -330,7 +338,7 @@ export class AuthService {
     // Lier le Google ID au nouveau compte
     await this.userDataService.linkGoogleId(newUser.id, googleId);
 
-    this.logger.log(`Google login: new account created for ${email}`);
+    this.logger.log(`Google login: new account created ${newUser.id}`);
     return this.mapUserToAuthUser(newUser);
   }
 
@@ -456,7 +464,7 @@ export class AuthService {
       // Enregistrer dans l'historique
       await this.logLoginHistory(user.id, clientIp, 'SUCCESS');
 
-      this.logger.log(`User logged in successfully: ${email}`);
+      this.logger.log(`User logged in successfully: account ${user.id}`);
 
       return {
         user,
@@ -464,7 +472,7 @@ export class AuthService {
         expires_in,
       };
     } catch (error) {
-      this.logger.error(`Login failed for ${email}:`, error);
+      this.logger.error('Login failed:', error);
       throw error;
     }
   }
@@ -538,7 +546,7 @@ export class AuthService {
     try {
       if (authSource === 'admin') {
         const admin = await this.userDataService.findAdminById(userId);
-        if (admin) return this.mapAdminToAuthUser(admin);
+        if (admin) return this.activeAdminOrNull(admin);
         return null;
       }
 
@@ -560,9 +568,11 @@ export class AuthService {
    */
   async getUserById(userId: string): Promise<AuthUser | null> {
     try {
-      // 1. Chercher dans les admins d'abord (évite collision ID admin/customer)
+      // 1. Chercher dans les admins d'abord (évite collision ID admin/customer).
+      //    Un compte du personnel désactivé arrête la recherche : pas de repli
+      //    sur un compte client de même identifiant.
       const admin = await this.userDataService.findAdminById(userId);
-      if (admin) return this.mapAdminToAuthUser(admin);
+      if (admin) return this.activeAdminOrNull(admin);
 
       // 2. Fallback: chercher dans les customers
       const user = await this.userDataService.findById(userId);
@@ -573,6 +583,24 @@ export class AuthService {
       this.logger.error(`Error getting user by ID ${userId}:`, error);
       return null;
     }
+  }
+
+  /**
+   * Compte du personnel relu par identifiant (session, jeton). Un compte
+   * désactivé (`cnfa_activ` ≠ '1') ne donne aucune identité : la relecture de
+   * session le refuse comme un compte introuvable, ce qui ferme les sessions
+   * ouvertes avant la désactivation. La connexion applique déjà la même règle.
+   */
+  private activeAdminOrNull(
+    admin: NonNullable<
+      Awaited<ReturnType<UserDataConsolidatedService['findAdminById']>>
+    >,
+  ): AuthUser | null {
+    if (!admin.isActive) {
+      this.logger.warn(`Inactive admin account refused: ${admin.id}`);
+      return null;
+    }
+    return this.mapAdminToAuthUser(admin);
   }
 
   private mapAdminToAuthUser(admin: {
@@ -605,9 +633,6 @@ export class AuthService {
     hashedPassword: string,
   ): Promise<boolean> {
     try {
-      this.logger.debug(
-        `🔐 validatePassword called with hash: ${hashedPassword.substring(0, 20)}...`,
-      );
       const result = await this.passwordCrypto.validatePassword(
         plainPassword,
         hashedPassword,
@@ -770,7 +795,7 @@ export class AuthService {
         JSON.stringify(historyData),
         86400,
       ); // 24h
-      this.logger.debug(`Login history logged: ${status} for ${userIdOrEmail}`);
+      this.logger.debug(`Login history logged: ${status}`);
     } catch (error) {
       this.logger.error('Error logging login history:', error);
     }

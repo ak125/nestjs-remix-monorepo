@@ -16,7 +16,7 @@ allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
 - Pour la **RELECTURE DE STYLE** d'un brouillon (proposition motivée, jamais d'écriture) → lire `.claude/prompts/_shared/editorial-review.md` (racine monorepo ; depuis ce workspace : `../../.claude/prompts/_shared/editorial-review.md`). Le texte relu repasse par ce skill comme un texte neuf
 - Pour l'**AUDIT SEO GLOBAL** (métriques R1-R8, maillage) → utiliser `seo-gamme-audit`
 - Pour la **MIGRATION** v4→v5 → utiliser `md-v5-migrator`
-- **Fusionne** : `pollution-scanner` (détection) + `content-quality-gate` (scoring) + guard pipeline-v5 (protection)
+- **Fusionne** : `pollution-scanner` (détection, skill retiré le 2026-11-15) + `content-quality-gate` (scoring) + guard pipeline-v5 (protection)
 
 ## Usage
 
@@ -210,9 +210,8 @@ dans le rapport. Ne jamais inventer ni « corriger » une valeur — signaler un
 Pour du contenu destiné à une page **R1** (routage gamme) : scanner contre les listes
 **FORBIDDEN VOCABULARY** (anglicismes interdits + vocabulaire cross-rôle R3/R4/R5/R6 +
 jargon accepté à ne pas flagger) définies dans
-`.claude/prompts/R1_ROUTER/editorial.md` §FORBIDDEN VOCABULARY (racine monorepo ;
-depuis ce workspace : `../../.claude/prompts/R1_ROUTER/editorial.md`). Ne PAS recopier
-la liste ici — la lire à chaque run (SoT unique).
+`references/r1-forbidden-vocabulary.md` (déplacée le 2026-11-15 depuis le prompt retiré
+`R1_ROUTER/editorial.md`). Ne PAS recopier la liste ici — la lire à chaque run (SoT unique).
 
 **Règle** : tout terme interdit détecté ⇒ **verdict plafonné à REVIEW**, avec les termes
 trouvés et leur rôle d'origine (R3 how-to, R5 diagnostic, R4 référence, R6 guide d'achat)

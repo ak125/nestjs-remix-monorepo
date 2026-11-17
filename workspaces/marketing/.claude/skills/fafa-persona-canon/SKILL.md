@@ -5,7 +5,7 @@ description: Use when generating any Fafa-voiced content (video script, voiceove
 
 # Fafa Persona Canon — Skill
 
-> Pointer : `workspaces/marketing/fafa-media-factory/personas/fafa.md` (V1 figée, de référence) ; règle vault `rules-fafa-persona-canon-v1.md` annoncée (« PR vault A »), absente de `main` du vault au 18/10 (C18-14).
+> Pointer : `workspaces/marketing/fafa-media-factory/personas/fafa.md` (V1 figée, de référence). La règle vault `rules-fafa-persona-canon-v1.md` annoncée (« PR vault A ») n'a jamais été créée (C18-14) ; le vault devient une archive, elle ne le sera pas.
 > Anti-régression : ne jamais inventer une autre persona vidéo. Une seule SoT.
 
 ## Quand invoquer ce skill
@@ -78,7 +78,7 @@ Claims `procedure` / `safety` → **validation humaine obligatoire** (G2 `safety
 ## Évolution
 
 - V1 = figée jusqu'à clôture des 10 pilotes
-- V2+ = PR vault dédiée + ADR addendum, jamais ad-hoc
+- V2+ = PR dédiée dans le monorepo, sur décision de l'owner, jamais ad-hoc
 
 ## Voir aussi
 

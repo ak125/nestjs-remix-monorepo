@@ -1,7 +1,13 @@
 # Canon Registry — Artefacts par rôle R0-R8
 
-> Dernière mise à jour : 2026-03-14
+> Dernière mise à jour : 2026-11-15
 > Source de vérité pour la complétude canonique par rôle.
+>
+> **Carte du circuit (2026-11-15, mandat AD)** : le circuit du contenu (une pièce canon par
+> étape) est décrit dans `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md`
+> §« Carte du circuit ». Les prompts marqués « retiré » n'avaient aucun lecteur ; preuves dans
+> `audit/seo-content-circuit-2026-11-15.md`. Les lignes R3 et R5 restent en l'état
+> jusqu'à la livraison du mandat AB (agents).
 
 ---
 
@@ -23,9 +29,9 @@
 
 | Layer | Path | Status |
 |-------|------|--------|
-| Planner | `.claude/prompts/R1_ROUTER/planner.md` | ✅ |
-| Generator | `.claude/prompts/R1_ROUTER/generator.md` | ✅ |
-| Validator prompt | `.claude/prompts/R1_ROUTER/validator.md` | ✅ |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
 | Validator agent | `.claude/agents/r1-router-validator.md` | ✅ |
 | Execution | `.claude/agents/r1-content-batch.md` | ✅ |
 | Skill ref | `.claude/skills/.../references/r1-router-role.md` | ✅ |
@@ -67,9 +73,9 @@
 
 | Layer | Path | Status |
 |-------|------|--------|
-| Planner | `.claude/prompts/R4_REFERENCE/planner.md` | ✅ |
-| Generator | `.claude/prompts/R4_REFERENCE/generator.md` | ✅ |
-| Validator prompt | `.claude/prompts/R4_REFERENCE/validator.md` | ✅ |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
 | Validator agent | `.claude/agents/r4-reference-validator.md` | ✅ |
 | Execution | `.claude/agents/r4-reference-execution.md` + `r4-content-batch.md` | ✅ |
 | Skill ref | `.claude/skills/.../references/r4-reference-role.md` | ✅ |
@@ -97,9 +103,9 @@
 
 | Layer | Path | Status |
 |-------|------|--------|
-| Planner | `.claude/prompts/R6_GUIDE_ACHAT/planner.md` | ✅ |
-| Generator | `.claude/prompts/R6_GUIDE_ACHAT/generator.md` | ✅ |
-| Validator prompt | `.claude/prompts/R6_GUIDE_ACHAT/validator.md` | ✅ |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
 | Validator agent | `.claude/agents/r6-guide-achat-validator.md` | ✅ |
 | Support validator | `.claude/agents/r6-support-validator.md` | ✅ |
 | Execution | `.claude/agents/r6-content-batch.md` + `r6-keyword-planner.md` | ✅ |
@@ -113,9 +119,9 @@
 
 | Layer | Path | Status |
 |-------|------|--------|
-| Planner | `.claude/prompts/R7_BRAND/planner.md` | ✅ |
-| Generator | `.claude/prompts/R7_BRAND/generator.md` | ✅ |
-| Validator prompt | `.claude/prompts/R7_BRAND/validator.md` | ✅ |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
 | Validator agent | `.claude/agents/r7-brand-validator.md` | ✅ |
 | Execution | `.claude/agents/r7-brand-execution.md` + `r7-brand-rag-generator.md` | ✅ |
 | Skill ref | `.claude/skills/.../references/r7-brand-role.md` | ✅ |
@@ -128,9 +134,9 @@
 
 | Layer | Path | Status |
 |-------|------|--------|
-| Planner | `.claude/prompts/R8_VEHICLE/planner.md` | ✅ |
-| Generator | `.claude/prompts/R8_VEHICLE/generator.md` | ✅ |
-| Validator prompt | `.claude/prompts/R8_VEHICLE/validator.md` | ✅ |
+| Planner | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Generator | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
+| Validator prompt | — retiré 2026-11-15 (mandat AD, sans lecteur) | ❌ |
 | Validator agent | `.claude/agents/r8-vehicle-validator.md` | ✅ |
 | Execution | `.claude/agents/r8-vehicle-execution.md` + `r8-keyword-planner.md` | ✅ |
 | Skill ref | `.claude/skills/.../references/r8-vehicle-role.md` | ✅ |
@@ -148,7 +154,7 @@
 | Stop conditions | `.claude/prompts/_shared/stop-conditions.md` |
 | Quality constraints | `.claude/prompts/_shared/quality-constraints.md` |
 | Upstream required | `.claude/prompts/_shared/upstream-required.md` |
-| Write/publish boundary | `.claude/prompts/_shared/write-publish-boundary.md` |
+| Write/publish boundary | — retiré 2026-11-15 (mandat AD, sans lecteur) |
 | Editorial review | `.claude/prompts/_shared/editorial-review.md` |
 | Page roles canon | `.claude/skills/.../references/page-roles.md` |
 | Keyword planner orchestrator | `.claude/agents/keyword-planner.md` |
