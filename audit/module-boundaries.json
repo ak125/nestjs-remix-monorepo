@@ -132,7 +132,7 @@
         "backend/src/modules/cart/services"
       ],
       "files_count": 22,
-      "loc_total": 4263,
+      "loc_total": 4268,
       "has_barrel": false
     },
     "catalog": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110881,
+      "loc_total": 110846,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -470,7 +470,7 @@
         "backend/src/modules/metadata/services"
       ],
       "files_count": 6,
-      "loc_total": 1918,
+      "loc_total": 1889,
       "has_barrel": false
     },
     "navigation": {
@@ -516,7 +516,7 @@
         "backend/src/modules/payments/utils"
       ],
       "files_count": 29,
-      "loc_total": 5740,
+      "loc_total": 5669,
       "has_barrel": true
     },
     "pkg-cwv-taxonomy": {
@@ -962,7 +962,7 @@
         "tests/registry"
       ],
       "files_count": 388,
-      "loc_total": 80369,
+      "loc_total": 80551,
       "has_barrel": true
     },
     "upload": {
@@ -1558,7 +1558,7 @@
     {
       "from": "cart",
       "to": "auth",
-      "count": 5
+      "count": 4
     },
     {
       "from": "cart",

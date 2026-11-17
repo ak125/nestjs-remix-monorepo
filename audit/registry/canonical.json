@@ -30154,7 +30154,6 @@
       "importedBy": [
         "backend/src/modules/blog/controllers/advice.controller.ts",
         "backend/src/modules/blog/controllers/blog.controller.ts",
-        "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
@@ -42128,12 +42127,13 @@
         "backend/src/modules/cart/cart.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
-        "backend/src/auth/guards/optional-auth.guard.ts",
         "backend/src/modules/cart/services/cart-analytics.service.ts"
       ],
       "kind": "controller",
-      "loc": 99,
+      "loc": 104,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "risk": "high",
@@ -50015,7 +50015,7 @@
         "backend/src/modules/metadata/services/optimized-breadcrumb.service.ts"
       ],
       "kind": "controller",
-      "loc": 230,
+      "loc": 201,
       "owner": "__unassigned__",
       "path": "backend/src/modules/metadata/controllers/optimized-breadcrumb.controller.ts",
       "risk": "low",
@@ -51291,7 +51291,7 @@
         "backend/src/modules/payments/utils/systempay-closure.ts"
       ],
       "kind": "controller",
-      "loc": 321,
+      "loc": 267,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/payments/controllers/payment-callback.controller.ts",
       "risk": "critical",
@@ -51458,7 +51458,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 100,
+      "loc": 83,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/payments/dto/cyberplus-callback.dto.ts",
       "risk": "critical",
@@ -71823,7 +71823,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 209,
+      "loc": 243,
       "owner": "@ak125",
       "path": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
       "risk": "medium",
@@ -72403,7 +72403,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 308,
+      "loc": 436,
       "owner": "@ak125",
       "path": "backend/tests/unit/payment-core-routes-authz.test.ts",
       "risk": "medium",
@@ -73043,7 +73043,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 144,
+      "loc": 164,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo-metadata-authz.test.ts",
       "risk": "medium",
@@ -93360,7 +93360,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 282,
+      "loc": 247,
       "owner": "__unassigned__",
       "path": "frontend/app/services/payment.server.ts",
       "risk": "low",
@@ -108399,11 +108399,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "aff26df8e35ef6ea579c8ab99457a9a7959aad1f8cd132e4812463aa68b81168",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "829333bbf74213062cfe4db6d2cbf6c5c7835c6bc8ca9815473d0113f33c4e0c",
+      "audit/registry/files.json": "f412e9fb385edc8a329f04b02e26be2ec3017c2247653b2fd5cddd53f2308fc5",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "050c788fdf7bd3a1350974b04a682446077dca041f78a3f4d97a805624ed64ee"
     },
-    "sotFingerprint": "e1d101cc76c3"
+    "sotFingerprint": "fc4b2282ffbc"
   },
   "runtime": [
     {
