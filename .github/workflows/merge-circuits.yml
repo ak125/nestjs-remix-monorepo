@@ -5,7 +5,9 @@ name: 🚦 Circuit de fusion
 #   moyen  : CI verte + verdict GO de la revue Claude sur la tête → fusion automatique
 #            (décision 91, 2026-11-16 : la revue Claude, anthropics/claude-code-action, remplace la
 #            revue Codex ; authentification par le secret CLAUDE_CODE_OAUTH_TOKEN, mandat AR-5) ;
-#   élevé  : approbation de l'owner sur la tête ; l'owner fusionne.
+#   élevé  : revue approuvante de l'owner enregistrée sur la tête exacte → fusion par l'App
+#            (décision 120 ; mandat BH). Une nouvelle tête invalide l'approbation : le check
+#            échoue et la fusion est désarmée.
 #
 # Le circuit est calculé par scripts/ci/merge-circuit.mjs, lu sur le commit de BASE :
 # une PR ne peut pas abaisser son propre circuit en modifiant le classeur,
@@ -34,6 +36,10 @@ name: 🚦 Circuit de fusion
 # Une fusion faite par GITHUB_TOKEN ne déclencherait pas ci.yml (chaîne PREPROD).
 # L'armement est un job séparé (« 🔐 Armement »), lancé seulement sur pull_request_target : un
 # événement pull_request_review porte la référence de la PR, que l'environnement refuserait.
+# Circuit élevé : la revue de l'owner arrive par cet événement-là. Le check passe aussitôt ;
+# l'armement est fait par merge-circuits-relais.yml, qui part à la fin de ce run, s'exécute sur
+# `main` et relit tout. À défaut, il suit au prochain événement pull_request_target de la PR sur
+# la même tête (brouillon puis prête, ou fermée puis rouverte), où l'approbation est relue.
 # App absente : le circuit est calculé, étiqueté et vérifié, rien n'est armé
 # (avis visible dans le run), jamais de repli silencieux sur GITHUB_TOKEN.
 
@@ -293,7 +299,7 @@ jobs:
           OK: ${{ steps.approval.outputs.ok }}
         run: |
           set -euo pipefail
-          if [ "$CIRCUIT" = "eleve" ] || [ "$OK" != "true" ] || [ "$IS_DRAFT" = "true" ]; then
+          if [ "$OK" != "true" ] || [ "$IS_DRAFT" = "true" ]; then
             echo "armer=false" >> "$GITHUB_OUTPUT"
             gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
             # Désarmement vérifié : l'état est relu. Lecture impossible = encore armée (échec fermé).
@@ -319,6 +325,10 @@ jobs:
           fi
           echo "armer=true" >> "$GITHUB_OUTPUT"
           echo "desarmer=false" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" != "pull_request_target" ]; then
+            echo "::notice::Circuit $CIRCUIT admis sur $HEAD_SHA. L'événement $EVENT_NAME ne peut pas armer : circuit élevé, le relais s'en charge à la fin de ce run ; sinon l'armement suit au prochain événement pull_request_target de la PR sur cette tête."
+            exit 0
+          fi
           echo "Circuit $CIRCUIT admis sur $HEAD_SHA : armement confié au job « 🔐 Armement »."
 
       - name: Verdict du circuit
