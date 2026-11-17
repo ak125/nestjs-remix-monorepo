@@ -9,8 +9,8 @@
 //   node scripts/ci/merge-circuit.mjs --pr <n>              classe une PR (gh, lecture seule)
 //
 // Sources réutilisées, sans copie : le risque par chemin vient de
-// `.spec/00-canon/repository-registry/ownership.yaml` (même résolution que la porte
-// ADR-124, `findOwnershipMatch`), les zones réservées viennent de `.github/CODEOWNERS`.
+// `.spec/00-canon/repository-registry/ownership.yaml` (résolution par `findOwnershipMatch`
+// de `scripts/registry/check-new-files.js`), les zones réservées viennent de `.github/CODEOWNERS`.
 // Tout doute vaut le circuit élevé : chemin non classé, domaine inconnu, risque illisible.
 // Ce script ne fusionne rien et n'arme aucune fusion : il imprime un verdict JSON.
 // Le workflow qui le lit est préparé à part et appliqué par l'owner.
