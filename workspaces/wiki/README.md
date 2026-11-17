@@ -50,9 +50,9 @@ Revalider les réalisations et les preuves du lot demandé avant une reprise.
 
 ## Références
 
-- ADR-031 vault (4-layer raw/wiki/exports/consumers)
-- ADR-032 vault (`entity_data.maintenance{}` cohabite avec `diagnostic_relations[]`)
-- ADR-033 vault (`diagnostic_relations[]` canon, anti-patterns §D3)
+- ADR-031, archive du vault (4-layer raw/wiki/exports/consumers)
+- ADR-032, archive du vault (`entity_data.maintenance{}` cohabite avec `diagnostic_relations[]`)
+- ADR-033, archive du vault (`diagnostic_relations[]` canon, anti-patterns §D3)
 - Plan rev 3 : `/home/deploy/.claude/plans/mvp-et-raw-et-wobbly-brooks.md`
 - canon frontmatter : `automecanik-wiki/_meta/schema/frontmatter.schema.json`
 - canon source registry : `automecanik-wiki/_meta/source-catalog.yaml`

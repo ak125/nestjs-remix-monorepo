@@ -19,7 +19,7 @@ Le skill est **propose-only** : il n'écrit jamais dans `wiki/<entity_type>/` (c
 | ✅ `automecanik-wiki/_meta/` (canon templates, schemas, source-catalog) | ❌ `automecanik-wiki/wiki/<entity_type>/` (canon) |
 | ✅ `automecanik-wiki/exports/diag-canon-slugs.json` (FK `__diag_symptom`) | ❌ DB Supabase (toute table `__*`, `kg_*`) |
 | ✅ `automecanik-wiki/wiki/<entity_type>/` (lecture seule, anti-duplication slug) | ❌ `automecanik-rag/knowledge/` (RAG repo, géré par sync-from-wiki Partie 3) |
-| ✅ governance-vault canon ADR-031/032/033 (référence) | ❌ `automecanik-wiki/exports/` (auto-généré par PR-D cron) |
+| ✅ archive du vault, ADR-031/032/033 (référence historique ; règles en vigueur : P10, P19 du journal) | ❌ `automecanik-wiki/exports/` (auto-généré par PR-D cron) |
 | ✅ source-policy.md (règles `source_type → max_confidence`) | ❌ `_meta/source-catalog.yaml` (modification = PR séparée monorepo) |
 
 ## Anti-patterns figés (canon ADR-033 §D3)
@@ -188,9 +188,9 @@ Le skill **ne fait jamais** ce mv. C'est une décision humaine.
 
 ## Références
 
-- ADR-031 vault — 4-layer architecture (raw / wiki / exports / consumers)
-- ADR-032 vault — `entity_data.maintenance{}` cohabite avec `diagnostic_relations[]`
-- ADR-033 vault PR #108 commit `77085ef` — `diagnostic_relations[]` canon
+- ADR-031 (archive du vault) — 4-layer architecture (raw / wiki / exports / consumers)
+- ADR-032 (archive du vault) — `entity_data.maintenance{}` cohabite avec `diagnostic_relations[]`
+- ADR-033 (archive du vault, PR #108 commit `77085ef`) — `diagnostic_relations[]` canon
 - canon frontmatter : `automecanik-wiki/_meta/schema/frontmatter.schema.json` v2.0.0
 - canon templates : `automecanik-wiki/_meta/templates/{gamme,vehicle,constructeur,support}.md`
 - canon source-catalog : `automecanik-wiki/_meta/source-catalog.yaml`

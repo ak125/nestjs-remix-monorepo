@@ -32,7 +32,9 @@ Si la question n'est pas couverte ici, lire `.claude/rules/*` puis grepper.
 - [`/log.md`](../../log.md) — **timeline append-only des sessions Claude** (date, branche, décision, PRs/commits). Lecture conseillée en début de session pour contexte récent.
 - `~/.claude/projects/.../memory/MEMORY.md` — **apprentissages persistants** (règles, gotchas, feedback). Auto-loadé chaque session, USER-only.
 - PR descriptions sur GitHub — **détails techniques** d'un changement.
-- `governance-vault/` — **décisions canon** (ADRs, incidents, retros).
+- `.claude/governance/journal-des-principes.md` — **principes en vigueur**.
+- `ak125/governance-vault` — **archive** (ADR, incidents, rétros) : elle explique une décision,
+  sans être normative par elle-même.
 
 Distinction : `knowledge/` = STRUCTURE du codebase (où vit quoi) ; `log.md` = TIMELINE des sessions (quand quoi a été fait) ; `MEMORY.md` = APPRIS (règles persistantes) ; PRs = POURQUOI (détails) ; vault = CANON (décisions).
 
@@ -125,9 +127,10 @@ Ces règles vivent dans `.claude/rules/*` — `knowledge/` les référence, jama
 
 ## Gouvernance
 
-La gouvernance (ADRs, incidents, policies) vit dans
-`/opt/automecanik/governance-vault/` — voir [CLAUDE.md](../../CLAUDE.md).
-Ce dossier `knowledge/` est le miroir *code applicatif*, pas le vault.
+La gouvernance vit dans ce dépôt : `.claude/governance/journal-des-principes.md` et les contrats de
+département de `.spec/00-canon/ai-registry/agent-operating-map.yaml` — voir
+[CLAUDE.md](../../CLAUDE.md) §Gouvernance. `ak125/governance-vault` est une archive.
+Ce dossier `knowledge/` est le miroir *code applicatif*, pas la gouvernance.
 
 ## Maintenance
 

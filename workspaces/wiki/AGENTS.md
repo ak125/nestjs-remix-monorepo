@@ -29,7 +29,7 @@ Fichier source : `.claude/skills/wiki-proposal-writer/`.
 | `automecanik-wiki/proposals/_index.md` + `_manifest.json` | ✅ Oui | ADR-031 D19 |
 | Documentation interne workspace (ce fichier, README, CLAUDE.md) | ✅ Oui | Standard workspace |
 | `automecanik-wiki/wiki/<entity_type>/*` direct (sans passer par proposals) | ❌ Non | ADR-031 D20 (sync-from-wiki lit `wiki/exports/rag/` uniquement, jamais `wiki/<entity_type>/`) |
-| `governance-vault/` | ❌ Non | ADR-060 invariant 5 |
+| `governance-vault/` | ❌ Non | Archive en lecture seule (décision 73) ; interdit d'écriture d'ADR-060 invariant 5 |
 | `automecanik-raw/` | ❌ Non | ADR-060 invariant 3 |
 | `automecanik-rag/knowledge/` | ❌ Non | ADR-060 invariant 4 + ADR-031 D22 |
 

@@ -34,7 +34,7 @@ Relecture éditoriale française : `../../.claude/prompts/_shared/editorial-revi
 | Briefs structurés en DB (table `__marketing_brief`) | ✅ Oui | ADR-036 (pas de `.md` flottants wiki) |
 | Documentation interne workspace (ce fichier, README, CLAUDE.md) | ✅ Oui | Standard workspace |
 | `automecanik-wiki/` (direct ou via proposals) | ❌ Non | ADR-031 + ADR-036 (wiki = connaissance validée, briefs ne sont pas connaissance) |
-| `governance-vault/` | ❌ Non | ADR-060 invariant 5 (vault décide, pas d'écriture métier) |
+| `governance-vault/` | ❌ Non | Archive en lecture seule (décision 73) ; l'interdit d'écriture d'ADR-060 invariant 5 demeure |
 | `automecanik-raw/` | ❌ Non | ADR-060 invariant 3 (monorepo n'écrit pas dans raw) |
 | `automecanik-rag/knowledge/` | ❌ Non | ADR-060 invariant 4 (rag mirror jamais source) |
 

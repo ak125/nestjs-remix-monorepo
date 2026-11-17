@@ -6,7 +6,7 @@ S'applique aux runs depuis `workspaces/seo-batch/`. Complète (sans les remplace
 
 - **Contenu SEO** : sources WIKI validées et leurs projections autorisées (ADR-031/046). RAG est consommateur chatbot, jamais source de génération SEO. Ne jamais inventer du contenu métier depuis le LLM.
 - **DB Supabase** via MCP (`mcp__supabase__execute_sql` ou `mcp__claude_ai_Supabase__execute_sql`). Tables : `__seo_*`, `__rag_*`, `__pg_*`, `__diag_*`, `__blog_*`. Pas de DROP/TRUNCATE sans validation humaine.
-- **Vault gouvernance** : `/opt/automecanik/governance-vault/ledger/knowledge/` pour les recettes canon (V-Level, KW pipeline, gamme audit).
+- **Recettes historiques** (V-Level, KW pipeline, gamme audit) : archive `ak125/governance-vault` (`ledger/knowledge/`, `ledger/rules/rules-seo-*.md`), en lecture seule. Elles expliquent ; ce qui fait foi est le code et le journal des principes (`.claude/governance/journal-des-principes.md`, racine du monorepo).
 
 ## Pièges DB connus
 
@@ -19,7 +19,7 @@ S'applique aux runs depuis `workspaces/seo-batch/`. Complète (sans les remplace
 ## V-Level / KW pipeline
 
 - Imports KW (`insert-missing-keywords.ts`) : utiliser **les RPC SQL** `match_keyword_text_to_vehicle(p_text)` et `_batch(text[])` (PR monorepo #132, 2026-04-23). **Ne plus** ajouter de regex hardcodées pour les véhicules anciens (2cv, 4l, c15, espace, xantia, saxo, etc.).
-- `--suggest-aliases` obligatoire pour les rejets >5 % volume (rule R-SEO-KW-01-05 vault canon).
+- `--suggest-aliases` obligatoire pour les rejets >5 % volume (règles R-SEO-KW-01 à 05 : option portée par `scripts/seo/import-gads-kp.py` ; texte d'origine dans l'archive du vault, `ledger/rules/rules-seo-kw-import.md`).
 - Rejets ≥ 50 % d'un volume = check **cross-gamme scope** obligatoire (R-SEO-KW-06).
 - `RAG_ONLY_ENRICHED` est un statut **PASS** (pas un BLOCK). Vue `v_kw_pipeline_status` distingue FULLY / RAG_ONLY / NO_CSV (147/232 gammes G1/G2 sont RAG_ONLY, 19 FULLY, 66 NO_CSV — chiffres 2026-04-25).
 

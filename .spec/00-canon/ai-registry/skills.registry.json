@@ -1,6 +1,6 @@
 {
   "compliantCount": 17,
-  "generatedAt": "2026-11-14T23:02:51.903Z",
+  "generatedAt": "2026-11-16T23:32:23.570Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -166,14 +166,14 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:fe58fcff72bf8acd08bed086cd390aff7506eb694e935a70de04192828869956",
+      "checksum": "sha256:da7b98ca0efcb3fcea5e10ee87765e192da512f450245bec3ce7f90f79632832",
       "domain": "D15",
-      "last_verified": "2026-10-01",
+      "last_verified": "2026-11-16",
       "llm_safe": false,
       "metadata": {
-        "adr_references": "ADR-015, ADR-061, ADR-101, ADR-102",
+        "adr_references": "ADR-015, ADR-101, ADR-102, ADR-138",
         "spec": "agentskills.io/specification v1",
-        "version": "2.0"
+        "version": "3.0"
       },
       "name": "governance-vault-ops",
       "owners": [
@@ -184,12 +184,11 @@
       "spec_compliant": true,
       "status": "stable",
       "tags": [
-        "adr-101",
-        "adr-102",
+        "adr-138",
+        "archive",
         "audit",
         "governance",
-        "ledger",
-        "ssh-signing",
+        "read-only",
         "vault"
       ],
       "type": "discipline"
