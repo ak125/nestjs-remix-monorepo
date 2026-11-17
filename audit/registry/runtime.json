@@ -4327,6 +4327,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/orders/services/order-actions.service.ts",
+        "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
         "runtime:backend/src/modules/orders/services/orders.service.ts",
         "runtime:backend/src/services/mail.service.ts"
       ],
@@ -4408,10 +4409,12 @@
         "runtime:backend/src/modules/orders/services/order-archive.service.ts",
         "runtime:backend/src/modules/orders/services/order-calculation.service.ts",
         "runtime:backend/src/modules/orders/services/order-cleanup.service.ts",
+        "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
         "runtime:backend/src/modules/orders/services/order-status.service.ts",
         "runtime:backend/src/modules/orders/services/orders.service.ts",
         "runtime:backend/src/modules/orders/services/tickets.service.ts",
-        "runtime:backend/src/modules/shipping/shipping.module.ts"
+        "runtime:backend/src/modules/shipping/shipping.module.ts",
+        "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "id": "runtime:backend/src/modules/orders/orders.module.ts",
       "kind": "nestjs-module",
@@ -4422,6 +4425,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
         "runtime:backend/src/modules/orders/services/orders.service.ts"
       ],
       "id": "runtime:backend/src/modules/orders/services/order-actions.service.ts",
@@ -4454,6 +4458,17 @@
       "id": "runtime:backend/src/modules/orders/services/order-cleanup.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/orders/services/order-cleanup.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ],
+      "id": "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/orders/services/order-line-supplier.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
