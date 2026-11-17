@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115161,
+      "loc_total": 115188,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 586,
-      "loc_total": 111114,
+      "files_count": 587,
+      "loc_total": 111395,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -493,6 +493,7 @@
     "orders": {
       "dirs": [
         "backend/src/modules/orders",
+        "backend/src/modules/orders/config",
         "backend/src/modules/orders/controllers",
         "backend/src/modules/orders/dto",
         "backend/src/modules/orders/events",
@@ -501,8 +502,8 @@
         "backend/src/modules/orders/services",
         "backend/src/modules/orders/types"
       ],
-      "files_count": 25,
-      "loc_total": 7239,
+      "files_count": 30,
+      "loc_total": 8650,
       "has_barrel": true
     },
     "payments": {
@@ -877,8 +878,8 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 53,
-      "loc_total": 7292,
+      "files_count": 55,
+      "loc_total": 7726,
       "has_barrel": false
     },
     "suppliers": {
@@ -1914,7 +1915,7 @@
     {
       "from": "orders",
       "to": "supplier-truth",
-      "count": 2
+      "count": 7
     },
     {
       "from": "payments",
@@ -2699,6 +2700,11 @@
       "rule": "no-deep-module-access"
     },
     {
+      "from": "backend/src/modules/orders/orders.module.ts",
+      "to": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
       "from": "backend/src/modules/orders/services/order-line-supplier.service.ts",
       "to": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "rule": "no-deep-module-access"
@@ -2711,6 +2717,26 @@
     {
       "from": "backend/src/modules/orders/services/orders.service.ts",
       "to": "backend/src/modules/shipping/shipping.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/orders/services/supplier-order-controls.test.ts",
+      "to": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/orders/services/supplier-order-controls.ts",
+      "to": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
+      "to": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+      "to": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
       "rule": "no-deep-module-access"
     },
     {
