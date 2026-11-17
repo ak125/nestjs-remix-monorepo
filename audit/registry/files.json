@@ -73603,7 +73603,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 52,
+      "loc": 264,
       "owner": "__unassigned__",
       "path": "scripts/ci/merge-circuit.test.mjs",
       "risk": "low",
