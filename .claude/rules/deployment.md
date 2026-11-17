@@ -140,7 +140,7 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 **Règles mnémoniques** :
 
 - Fusion sur `main` = **build + push tag `:preprod` + redéploiement de la pile PREPROD**. **Pas de redéploiement PROD.** `main` est protégée : jamais de push direct.
-- `ci.yml` ne filtre pas les chemins : **toute** fusion sur `main` lance le cycle PREPROD, y compris celle d'une PR de documentation et celle qu'exécute une porte de fusion automatique (ADR-124 D7). Un run encore en attente est remplacé par celui de la fusion suivante.
+- `ci.yml` ne filtre pas les chemins : **toute** fusion sur `main` lance le cycle PREPROD, y compris celle d'une PR de documentation et celle que fusionne l'App dans un circuit de fusion (P20). Un run encore en attente est remplacé par celui de la fusion suivante.
 - Fusion sur `main` qui modifie `scripts/monitoring/*.sh` = `deploy-monitoring-scripts.yml` installe aussi ces scripts dans `/usr/local/bin` de l'hôte PROD, hors des conteneurs : la fusion modifie alors l'hôte PROD. Ce workflow se lance aussi à la main (`workflow_dispatch`).
 - `git tag v… && git push --tags` = **promotion de l'image du commit → `:production` + redéploiement container PROD**.
 - Jamais annoncer "déployé en PROD" après un simple merge sur `main`.
@@ -182,12 +182,12 @@ ou si la passerelle accepte une écriture.
 ## Workflow nominal — Promote DEV (code) → PROD
 
 1. **La PR est fusionnée** sur `main`, sous sa protection, selon le principe P20 du journal des
-   principes : l'un des trois circuits que calcule `scripts/ci/merge-circuit.mjs`. Tant que l'owner
-   ne les a pas activés, la seule fusion automatique reste la porte d'ADR-124 (documentation
-   Markdown du monorepo) ; hors d'elle, l'owner fusionne sur une tête épinglée. Un agent ne lance
-   jamais de fusion et n'arme jamais d'auto-fusion (P20, P21) : il remet le numéro de PR, le SHA de
-   tête (40 caractères) et la commande de fusion épinglée. Dans tous les cas la fusion est un push
-   `main` : `ci.yml` déploie la pile PREPROD.
+   principes : l'un des trois circuits que calcule `scripts/ci/merge-circuit.mjs`. Seul le circuit
+   faible est déclaré activé (décision 120) : l'App `automecanik-actions` y fusionne. La porte
+   d'ADR-124 est retirée (décision 132). Hors de ce circuit, l'owner fusionne sur une tête
+   épinglée. Un agent ne lance jamais de fusion et n'arme jamais d'auto-fusion (P20, P21) : il
+   remet le numéro de PR, le SHA de tête (40 caractères) et la commande de fusion épinglée. Dans
+   tous les cas la fusion est un push `main` : `ci.yml` déploie la pile PREPROD.
 2. Vérifier sur le run `ci.yml` du commit que `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et
    `🔦 Lighthouse Performance Audit` sont en `success` :
    `gh run list --repo ak125/nestjs-remix-monorepo --workflow ci.yml --branch main --limit 5`.
