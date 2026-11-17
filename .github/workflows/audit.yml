@@ -152,6 +152,11 @@ jobs:
         # no workflow ran it: the citation was a YAML comment.
         run: node --test scripts/ci/pr-dod-gate.test.mjs
 
+      - name: 🧯 Incident issue gate — verdict, comment and API calls unit proof (BLOCKING)
+        # incident-issue-gate.yml reopens a closed incident issue that does not say what
+        # prevents its return. This runs the proof of the verdicts that workflow acts on.
+        run: node --test scripts/ci/incident-issue-gate.test.mjs
+
       - name: 📦 Initial-load size verifier — fails on the states it exists to catch (BLOCKING)
         # The npm script existed; no workflow called it.
         run: npm run size:verify-paths:test
