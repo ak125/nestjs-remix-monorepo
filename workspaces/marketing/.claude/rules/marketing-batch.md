@@ -65,4 +65,4 @@ Tout brief = ligne dans `__marketing_brief` (JSONB structuré). **Jamais** de `.
 - ADR-013 — Agent lifecycle G1/G2/G3 (archive du vault)
 - ADR-025 — SEO Department (référence pattern OperatingMatrix)
 - Plan rev 6 — `/home/deploy/.claude/plans/verifier-la-strategie-une-piped-hummingbird.md`
-- Runbook rollback — archive `ak125/governance-vault`, `ledger/knowledge/runbook-marketing-pilot-rollback.md` (lecture seule ; son étape 5 et sa clause « nouvel ADR » écrivent dans le vault : à remplacer avant usage)
+- Runbook rollback — `workspaces/marketing/runbook-marketing-pilot-rollback.md` (relogé de l'archive du vault ; jamais joué, deux écarts à lever avant usage)
