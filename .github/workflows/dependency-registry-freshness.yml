@@ -93,6 +93,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "24"
+          package-manager-cache: false
 
       # The deps builder is pure Node (fs/path/crypto) and reads the
       # package.json manifests directly, so no `npm ci` is required — this

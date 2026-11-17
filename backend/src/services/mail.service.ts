@@ -275,7 +275,7 @@ export class MailService {
     recoveryUrl: string;
     unsubscribeUrl: string;
     trackingPixelUrl: string;
-    step: '1h' | '24h' | '72h';
+    step: '1h' | '24h';
   }): Promise<MailDelivery> {
     const {
       to,
@@ -311,32 +311,35 @@ export class MailService {
 
     const formattedSubtotal = subtotal.toFixed(2).replace('.', ',');
 
-    const urgencyText: Record<string, string> = {
-      '1h': 'Votre panier vous attend ! Finalisez votre commande en quelques clics.',
-      '24h': 'Les stocks sont limites. Ne manquez pas vos pieces auto.',
-      '72h': 'Dernier rappel : votre panier sera bientot supprime.',
+    // Texte sobre (décision 61) : aucune urgence, rareté ou échéance affirmée
+    // sans fondement. Deux e-mails au plus ; le second l'annonce.
+    const introText: Record<'1h' | '24h', string> = {
+      '1h': 'Vous avez laissé des articles dans votre panier. Il reste enregistré : vous pouvez reprendre votre commande quand vous le souhaitez.',
+      '24h':
+        'Votre panier est toujours enregistré. Ce message est le dernier que nous vous envoyons à son sujet.',
     };
 
     const body = `
       <p>Bonjour <strong>${firstName}</strong>,</p>
-      <p>${urgencyText[step]}</p>
+      <p>${introText[step]}</p>
       <table style="width:100%;border-collapse:collapse;margin:16px 0;">
         <thead>
           <tr style="background:#f9fafb;">
             <th style="padding:8px;text-align:left;border-bottom:2px solid #e5e7eb;width:60px;"></th>
             <th style="padding:8px;text-align:left;border-bottom:2px solid #e5e7eb;">Article</th>
-            <th style="padding:8px;text-align:center;border-bottom:2px solid #e5e7eb;">Qte</th>
+            <th style="padding:8px;text-align:center;border-bottom:2px solid #e5e7eb;">Qté</th>
             <th style="padding:8px;text-align:right;border-bottom:2px solid #e5e7eb;">Prix</th>
           </tr>
         </thead>
         <tbody>${itemRows}</tbody>
         <tfoot>
           <tr>
-            <td colspan="3" style="padding:12px 8px;text-align:right;font-weight:600;">Sous-total :</td>
+            <td colspan="3" style="padding:12px 8px;text-align:right;font-weight:600;">Sous-total (hors livraison) :</td>
             <td style="padding:12px 8px;text-align:right;font-weight:600;font-size:16px;">${formattedSubtotal} EUR</td>
           </tr>
         </tfoot>
       </table>
+      <p style="color:#6b7280;font-size:13px;">Prix relevés au moment de l'ajout au panier ; les frais de livraison sont calculés et affichés avant le paiement.</p>
       <p style="text-align:center;margin:24px 0;">
         <a href="${recoveryUrl}"
            style="display:inline-block;background:#f59e0b;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:16px;">
@@ -344,12 +347,12 @@ export class MailService {
         </a>
       </p>
       <p style="color:#9ca3af;font-size:12px;text-align:center;margin-top:24px;">
-        Vous recevez cet email car vous avez un panier en attente sur Automecanik.<br/>
+        Vous recevez cet e-mail car vous avez accepté de recevoir nos messages et un panier est enregistré sur votre compte Automecanik.<br/>
         <a href="${unsubscribeUrl}" style="color:#9ca3af;">Ne plus recevoir ces rappels</a>
       </p>
       <img src="${trackingPixelUrl}" width="1" height="1" alt="" style="display:none;" />`;
 
-    const html = this.wrapLayout('Votre panier vous attend', '#f59e0b', body);
+    const html = this.wrapLayout('Votre panier', '#f59e0b', body);
     return this.doSendWithHeaders(to, subject, html, {
       'List-Unsubscribe': `<${unsubscribeUrl}>`,
       'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',

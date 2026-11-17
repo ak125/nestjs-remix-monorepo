@@ -2,11 +2,16 @@ import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
 import { OperationFailedException } from '@common/exceptions';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CartAnalyticsService } from '../services/cart-analytics.service';
-import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 
+/**
+ * Agrégats du panier : outil d'administration, sans page derrière lui.
+ * Chaque route exige une session d'administration.
+ */
 @ApiTags('Cart Analytics')
 @Controller('api/cart')
-@UseGuards(OptionalAuthGuard)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 @ApiBearerAuth()
 export class CartAnalyticsController {
   private readonly logger = new Logger(CartAnalyticsController.name);

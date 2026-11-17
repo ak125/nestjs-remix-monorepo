@@ -2,14 +2,20 @@
  * `api/payments` client and utility routes — access boundary.
  *
  * Three classes:
- * - `admin`   : `AuthenticatedGuard + IsAdminGuard`. Direct payment creation,
- *   reads by order / reference / transactions and the test route: the site
- *   does not call them and their handlers do not check the account holder.
+ * - `admin`   : `AuthenticatedGuard + IsAdminGuard`. Direct payment creation
+ *   and reads by order / reference / transactions: the site does not call
+ *   them and their handlers do not check the account holder.
  * - `session` : `AuthenticatedGuard`. The handler then applies "own account or
  *   administrator" (`user/:userId`, `:id`, `:id/cancel`) or order ownership
  *   (`proceed-supplement`).
  * - `public`  : `methods/available`, read by the checkout page without a
  *   session cookie.
+ *
+ * - `gateway` : `PaymentCallbackController`, called by the payment gateway
+ *   without a session. Each entry of `GATEWAY_ROUTES` carries the guard chain
+ *   it declares and what protects it. No route of that controller reads a
+ *   payment for a caller: the payment of an order is read through the
+ *   `admin` and `session` routes only.
  *
  * The handler → access map below is EXHAUSTIVE: a handler added later without
  * a classification fails the test.
@@ -29,12 +35,14 @@ import {
   isAdminSession,
   sessionPrivilegeLevel,
 } from '../../src/auth/session-privilege';
+import { PaymentCallbackController } from '../../src/modules/payments/controllers/payment-callback.controller';
 import { PaymentCoreController } from '../../src/modules/payments/controllers/payment-core.controller';
 import { PaymentMethodsController } from '../../src/modules/payments/controllers/payment-methods.controller';
 
 // NestJS reflection keys (`@nestjs/common/constants` — stable literals).
 const GUARDS_METADATA = '__guards__';
 const METHOD_METADATA = 'method';
+const PATH_METADATA = 'path';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -47,6 +55,18 @@ function routeHandlers(controller: Type<any>): string[] {
       Reflect.getMetadata(METHOD_METADATA, controller.prototype[name]) !==
         undefined,
   );
+}
+
+/** `<controller path>/<handler path>` of every route handler of a controller. */
+function routePaths(controller: Type<any>): string[] {
+  const prefix: string = Reflect.getMetadata(PATH_METADATA, controller);
+  return routeHandlers(controller).map((name) => {
+    const path: string = Reflect.getMetadata(
+      PATH_METADATA,
+      controller.prototype[name],
+    );
+    return path === '/' ? prefix : `${prefix}/${path}`;
+  });
 }
 
 /** Class-level guards ++ method-level guards (both must pass in NestJS). */
@@ -150,12 +170,36 @@ const CONTROLLERS: Array<[string, Type<any>, Access]> = [
     'PaymentMethodsController',
     PaymentMethodsController,
     {
-      admin: ['testCreatePaymentWithConsignes', 'getPaymentTransactions'],
+      admin: ['getPaymentTransactions'],
       session: [],
       public: ['getAvailablePaymentMethods'],
     },
   ],
 ];
+
+/**
+ * Routes of `PaymentCallbackController`, reachable without a session on
+ * purpose: the caller is the payment gateway. Adding an entry is a decision:
+ * state the guard chain the route declares and what protects it. A route that
+ * answers with the payment of an order does not belong here.
+ */
+const GATEWAY_ROUTES: Record<
+  string,
+  { guards: Array<Type<any>>; reason: string }
+> = {
+  // POST callback/cyberplus — refused unless SYSTEMPAY_CALLBACK_ENABLED, then
+  // the handler checks the gateway signature before any payment change.
+  handleCyberplusCallback: {
+    guards: [],
+    reason:
+      'gateway notification: flag then signature (systempay-callback-closure.test.ts)',
+  },
+  // POST callback/error — refused unless SYSTEMPAY_CALLBACK_ENABLED.
+  handleErrorReturn: {
+    guards: [],
+    reason: 'gateway return: flag (systempay-callback-closure.test.ts)',
+  },
+};
 
 describe('api/payments client and utility routes — access boundary', () => {
   describe.each(CONTROLLERS)('%s', (_name, controller, access) => {
@@ -235,6 +279,90 @@ describe('api/payments client and utility routes — access boundary', () => {
         });
       });
     }
+  });
+
+  // ─── Gateway routes ───────────────────────────────────────────────────────
+
+  describe('PaymentCallbackController (gateway)', () => {
+    it('classifies every route handler', () => {
+      expect([...routeHandlers(PaymentCallbackController)].sort()).toEqual(
+        Object.keys(GATEWAY_ROUTES).sort(),
+      );
+    });
+
+    it.each(Object.entries(GATEWAY_ROUTES))(
+      '%s declares the stated guard chain',
+      (method, { guards, reason }) => {
+        expect(reason).not.toBe('');
+        expect(effectiveGuards(PaymentCallbackController, method)).toEqual(
+          guards,
+        );
+      },
+    );
+  });
+
+  // ─── Payment of an order: who reads it ────────────────────────────────────
+  //
+  // An order number is not a proof of ownership. No route answers with the
+  // payment of an order to a caller that only knows the number.
+
+  describe('payment of an order — read access', () => {
+    it('serves no route that returns a payment on an order number alone', () => {
+      const served = [
+        ...CONTROLLERS.map(([, controller]) => controller),
+        PaymentCallbackController,
+      ].flatMap(routePaths);
+      expect(served).not.toContain('api/payments/callback/success');
+      // The read by order number that remains is the administration route.
+      expect(served.filter((path) => path.includes(':orderId'))).toEqual([
+        'api/payments/order/:orderId',
+      ]);
+      expect(CONTROLLERS[0][2].admin).toContain('getOrderPayments');
+    });
+
+    it('refuses a caller without right: no session, or a customer session', async () => {
+      const callers = [
+        principal(null),
+        accountSession('customer', 1),
+        ...HIGH_CUSTOMER_TIERS.map((tier) => accountSession('customer', tier)),
+      ];
+      for (const caller of callers) {
+        expect(
+          await isAllowed(PaymentCoreController, 'getOrderPayments', caller),
+        ).toBe(false);
+      }
+      // Without a session, the holder routes are closed as well.
+      for (const method of ['getPayment', 'getUserPayments']) {
+        expect(
+          await isAllowed(PaymentCoreController, method, principal(null)),
+        ).toBe(false);
+      }
+    });
+
+    it('serves the holder: session guard passed, then the handler answers with the payment', async () => {
+      const payment = { id: 'pay_1', userId: 'u1', orderId: 'ORD-1' };
+      const controller = new PaymentCoreController(
+        { getPaymentStatus: jest.fn(async () => payment) } as any,
+        {} as any,
+        {} as any,
+        {} as any,
+        {} as any,
+      );
+      const holder = accountSession('customer', 1);
+
+      expect(await isAllowed(PaymentCoreController, 'getPayment', holder)).toBe(
+        true,
+      );
+      await expect(
+        controller.getPayment('pay_1', holder as any),
+      ).resolves.toEqual({ success: true, data: payment });
+
+      // Same session guard passed by another account: the handler refuses.
+      const other = { ...holder, user: { ...holder.user, id: 'u2' } };
+      await expect(
+        controller.getPayment('pay_1', other as any),
+      ).rejects.toThrow(BadRequestException);
+    });
   });
 
   // ─── Handler rule behind the session guard ────────────────────────────────
