@@ -19,6 +19,15 @@ import {
   R2OrderPlacedPayloadSchema,
   type FunnelEventInput,
 } from '@repo/seo-types';
+import type { TrafficClass } from '../../../common/utils/user-agent-class.util';
+
+/**
+ * Clé du payload qui porte la classe de trafic. Posée par le serveur après la
+ * validation Zod : `z.object` retire les clés inconnues, un client ne peut donc
+ * pas la fournir lui-même. Absente = événement non qualifié (antérieur au
+ * classement, ou émis côté serveur sans agent utilisateur).
+ */
+export const TRAFFIC_CLASS_KEY = 'traffic_class';
 
 @Injectable()
 export class FunnelEventsService extends SupabaseBaseService {
@@ -43,12 +52,22 @@ export class FunnelEventsService extends SupabaseBaseService {
    * `error` for what is by design a benign duplicate, mis-classifying the
    * signal. The dedup verdict is returned (`deduped: true`) rather than
    * swallowed: observable, never silent (CLAUDE.md no-silent-fallback).
+   *
+   * `trafficClass` : classe calculée par le contrôleur depuis l'agent
+   * utilisateur, ajoutée au payload (`traffic_class`).
    */
   async record(
     input: FunnelEventInput,
+    trafficClass?: TrafficClass,
   ): Promise<{ ok: boolean; deduped: boolean }> {
+    const classified = trafficClass
+      ? { [TRAFFIC_CLASS_KEY]: trafficClass }
+      : {};
     if (input.event_type !== 'r2_order_placed') {
-      return this.recordOnce(input);
+      return this.recordOnce({
+        ...input,
+        payload: { ...input.payload, ...classified },
+      } as FunnelEventInput);
     }
 
     // item_count et revenue_cents viennent de la commande, pas du client :
@@ -73,6 +92,7 @@ export class FunnelEventsService extends SupabaseBaseService {
         ...placed.data,
         item_count: facts.itemCount,
         revenue_cents: facts.revenueCents,
+        ...classified,
       },
     });
   }

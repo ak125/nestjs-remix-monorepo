@@ -14481,6 +14481,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/command-center-actions.service.ts",
           "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
           "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts"
         ]
@@ -15210,6 +15211,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/command-center-actions.service.ts",
           "backend/src/modules/admin/services/seo-control.service.ts",
           "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
           "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
@@ -30152,7 +30154,6 @@
       "importedBy": [
         "backend/src/modules/blog/controllers/advice.controller.ts",
         "backend/src/modules/blog/controllers/blog.controller.ts",
-        "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
@@ -31673,6 +31674,33 @@
       "loc": 153,
       "owner": "@ak125",
       "path": "backend/src/common/utils/url-builder.utils.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D13",
+      "id": "backend/src/common/utils/user-agent-class.util.ts",
+      "importedBy": [
+        "backend/src/modules/bot-guard/bot-guard.service.ts",
+        "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
+        "backend/src/modules/seo/services/googlebot-detector.classify.test.ts",
+        "backend/src/modules/seo/services/googlebot-detector.service.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 112,
+      "owner": "@ak125",
+      "path": "backend/src/common/utils/user-agent-class.util.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -37006,6 +37034,31 @@
         "reachability"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/services/command-center-action-rules/collection-freshness-action.rules.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
+      ],
+      "kind": "service",
+      "loc": 174,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/command-center-action-rules/collection-freshness-action.rules.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
       "importedBy": [
         "backend/src/modules/admin/services/command-center-kpi.service.ts"
@@ -37016,7 +37069,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 189,
+      "loc": 212,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
       "risk": "medium",
@@ -37139,6 +37192,7 @@
       "id": "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
       "importedBy": [
         "backend/src/modules/admin/services/command-center-action-rules/certification-action.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/collection-freshness-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/pricing-action.rules.ts",
@@ -37227,6 +37281,7 @@
         "@repo/seo-types",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/certification-action.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/collection-freshness-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/pricing-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
@@ -37239,7 +37294,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 484,
+      "loc": 605,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-actions.service.ts",
       "risk": "medium",
@@ -37269,7 +37324,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 530,
+      "loc": 602,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "risk": "medium",
@@ -42000,11 +42055,12 @@
       ],
       "imports": [
         "@cache/cache.service",
+        "backend/src/common/utils/user-agent-class.util.ts",
         "backend/src/config/cache-ttl.config.ts",
         "dns"
       ],
       "kind": "service",
-      "loc": 639,
+      "loc": 620,
       "owner": "@ak125",
       "path": "backend/src/modules/bot-guard/bot-guard.service.ts",
       "risk": "high",
@@ -42071,12 +42127,13 @@
         "backend/src/modules/cart/cart.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
-        "backend/src/auth/guards/optional-auth.guard.ts",
         "backend/src/modules/cart/services/cart-analytics.service.ts"
       ],
       "kind": "controller",
-      "loc": 99,
+      "loc": 104,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "risk": "high",
@@ -42425,7 +42482,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 345,
+      "loc": 365,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/abandoned-cart.service.ts",
       "risk": "high",
@@ -49958,7 +50015,7 @@
         "backend/src/modules/metadata/services/optimized-breadcrumb.service.ts"
       ],
       "kind": "controller",
-      "loc": 230,
+      "loc": 201,
       "owner": "__unassigned__",
       "path": "backend/src/modules/metadata/controllers/optimized-breadcrumb.controller.ts",
       "risk": "low",
@@ -50612,7 +50669,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1233,
+      "loc": 1005,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "high",
@@ -51234,7 +51291,7 @@
         "backend/src/modules/payments/utils/systempay-closure.ts"
       ],
       "kind": "controller",
-      "loc": 321,
+      "loc": 267,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/payments/controllers/payment-callback.controller.ts",
       "risk": "critical",
@@ -51319,14 +51376,13 @@
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "backend/src/modules/payments/controllers/payment-controller.utils.ts",
-        "backend/src/modules/payments/dto/create-payment.dto.ts",
         "backend/src/modules/payments/entities/payment.entity.ts",
         "backend/src/modules/payments/repositories/payment-data.service.ts",
         "backend/src/modules/payments/services/cyberplus.service.ts",
         "backend/src/modules/payments/services/payment.service.ts"
       ],
       "kind": "controller",
-      "loc": 196,
+      "loc": 122,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/payments/controllers/payment-methods.controller.ts",
       "risk": "critical",
@@ -51371,7 +51427,6 @@
       "id": "backend/src/modules/payments/dto/create-payment.dto.ts",
       "importedBy": [
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
-        "backend/src/modules/payments/controllers/payment-methods.controller.ts",
         "backend/src/modules/payments/index.ts",
         "backend/src/modules/payments/services/payment-validation.service.ts",
         "backend/src/modules/payments/services/payment.service.ts"
@@ -51403,7 +51458,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 100,
+      "loc": 83,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/payments/dto/cyberplus-callback.dto.ts",
       "risk": "critical",
@@ -56848,10 +56903,11 @@
       ],
       "imports": [
         "@repo/seo-types",
+        "backend/src/common/utils/user-agent-class.util.ts",
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "controller",
-      "loc": 43,
+      "loc": 58,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
       "risk": "medium",
@@ -57375,7 +57431,7 @@
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "test",
-      "loc": 212,
+      "loc": 280,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/funnel-events.record.test.ts",
       "risk": "medium",
@@ -57400,10 +57456,11 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "@repo/seo-types"
+        "@repo/seo-types",
+        "backend/src/common/utils/user-agent-class.util.ts"
       ],
       "kind": "service",
-      "loc": 159,
+      "loc": 179,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
       "risk": "medium",
@@ -62367,18 +62424,43 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo/services/googlebot-detector.classify.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/utils/user-agent-class.util.ts",
+        "backend/src/modules/seo/services/googlebot-detector.service.ts"
+      ],
+      "kind": "test",
+      "loc": 76,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo/services/googlebot-detector.classify.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo/services/googlebot-detector.service.ts",
       "importedBy": [
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/seo/controllers/seo-dashboard.controller.ts",
         "backend/src/modules/seo/interceptors/crawl-logger.interceptor.ts",
-        "backend/src/modules/seo/seo.module.ts"
+        "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/googlebot-detector.classify.test.ts"
       ],
       "imports": [
-        "@common/utils"
+        "@common/utils",
+        "backend/src/common/utils/user-agent-class.util.ts"
       ],
       "kind": "service",
-      "loc": 382,
+      "loc": 348,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/googlebot-detector.service.ts",
       "risk": "high",
@@ -69957,7 +70039,7 @@
         "backend/src/config/app.config.ts"
       ],
       "kind": "service",
-      "loc": 1190,
+      "loc": 1193,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.ts",
       "risk": "low",
@@ -70164,7 +70246,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 68,
+      "loc": 97,
       "owner": "__unassigned__",
       "path": "backend/src/utils/promise-helpers.ts",
       "risk": "low",
@@ -70357,7 +70439,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 221,
+      "loc": 223,
       "owner": "@ak125",
       "path": "backend/src/workers/processors/email.processor.ts",
       "risk": "medium",
@@ -70877,6 +70959,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/abandoned-cart-cadence.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 215,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/abandoned-cart-cadence.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/abandoned-cart-delivery-truth.test.ts",
       "importedBy": [],
       "imports": [],
@@ -71141,9 +71243,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 653,
+      "loc": 855,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-actions.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/command-center-collection-freshness.rules.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 97,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/command-center-collection-freshness.rules.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -71161,7 +71283,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 221,
+      "loc": 244,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-department-kpi.rules.test.ts",
       "risk": "medium",
@@ -71241,7 +71363,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1106,
+      "loc": 1209,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "medium",
@@ -71701,7 +71823,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 209,
+      "loc": 243,
       "owner": "@ak125",
       "path": "backend/tests/unit/inventory-cart-stats-routes-authz.test.ts",
       "risk": "medium",
@@ -72017,6 +72139,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/orders-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 328,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/orders.controller.customer-cancel.test.ts",
       "importedBy": [],
       "imports": [],
@@ -72261,7 +72403,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 308,
+      "loc": 436,
       "owner": "@ak125",
       "path": "backend/tests/unit/payment-core-routes-authz.test.ts",
       "risk": "medium",
@@ -72901,7 +73043,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 144,
+      "loc": 164,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo-metadata-authz.test.ts",
       "risk": "medium",
@@ -73344,6 +73486,26 @@
       "loc": 496,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo/sitemap-v10.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 253,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -73966,6 +74128,66 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/ownership-coverage.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 33,
+      "owner": "@ak125",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/ownership-coverage.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/refused.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 21,
+      "owner": "@ak125",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/refused.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/zones.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 13,
+      "owner": "@ak125",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/zones.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
@@ -93138,7 +93360,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 282,
+      "loc": 247,
       "owner": "__unassigned__",
       "path": "frontend/app/services/payment.server.ts",
       "risk": "low",
@@ -95843,6 +96065,46 @@
       "loc": 250,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/url-validation.spec.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/purchase-probe/playwright.config.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "config",
+      "loc": 35,
+      "owner": "@ak125",
+      "path": "frontend/tests/purchase-probe/playwright.config.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/purchase-probe/purchase-path.probe.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 295,
+      "owner": "@ak125",
+      "path": "frontend/tests/purchase-probe/purchase-path.probe.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -108133,15 +108395,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "be5e08b33a1e827785938f956abf85432123a1c6ef831b238c9a7e62af73dfc3",
+      ".spec/00-canon/repository-registry/ownership.yaml": "3d349e47238d4c8541d31ccae0fb69a6a4db4cbe092176c389721f5daa8e1b36",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "681d8cb7b8d58b58e44ce4a6d125c215fa5506b43b33b5aa8956a5ec30ec35f5",
+      "audit/registry/db.json": "aff26df8e35ef6ea579c8ab99457a9a7959aad1f8cd132e4812463aa68b81168",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "e838777fa779dc37817a4d550908d4c4b559b1b2cbdf8050d3e73c173e3ea00f",
+      "audit/registry/files.json": "f412e9fb385edc8a329f04b02e26be2ec3017c2247653b2fd5cddd53f2308fc5",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "050c788fdf7bd3a1350974b04a682446077dca041f78a3f4d97a805624ed64ee"
     },
-    "sotFingerprint": "5e1f3b990493"
+    "sotFingerprint": "fc4b2282ffbc"
   },
   "runtime": [
     {

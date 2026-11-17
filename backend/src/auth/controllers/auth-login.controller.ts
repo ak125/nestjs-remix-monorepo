@@ -104,7 +104,7 @@ export class AuthLoginController {
       );
 
       // Passport 0.7 + connect-redis 5.x compat
-      await promisifySessionRegenerate(request.session);
+      await promisifySessionRegenerate(request);
       await promisifyLoginNoRegenerate(request, loginResult.user);
       await promisifySessionSave(request.session);
 
@@ -275,7 +275,7 @@ export class AuthLoginController {
 
     // Session: regenerate → login → save
     try {
-      await promisifySessionRegenerate(request.session);
+      await promisifySessionRegenerate(request);
       await promisifyLoginNoRegenerate(request, loginResult.user);
       await promisifySessionSave(request.session);
     } catch (sessionErr: unknown) {
@@ -377,7 +377,7 @@ export class AuthLoginController {
 
     // Créer la session directement (pas de login() car pas de password)
     try {
-      await promisifySessionRegenerate(request.session);
+      await promisifySessionRegenerate(request);
       await promisifyLoginNoRegenerate(request, authUser);
       await promisifySessionSave(request.session);
     } catch (sessionErr: unknown) {
@@ -563,7 +563,7 @@ export class AuthLoginController {
       const guestSessionId = extractGuestSessionId(cookieHeader);
 
       // 4. Create session
-      await promisifySessionRegenerate(request.session);
+      await promisifySessionRegenerate(request);
       await promisifyLoginNoRegenerate(request, authUser);
       await promisifySessionSave(request.session);
 
@@ -705,7 +705,7 @@ export class AuthLoginController {
 
     // Passport 0.7 + connect-redis 5.x: regenerate explicite, login patché, save explicite
     try {
-      await promisifySessionRegenerate(request.session);
+      await promisifySessionRegenerate(request);
     } catch (regenerateErr) {
       this.logger.error(
         'Erreur régénération session lors du login inline:',
@@ -819,7 +819,7 @@ export class AuthLoginController {
 
     // Passport 0.7 + connect-redis 5.x: regenerate explicite, login patché, save explicite
     try {
-      await promisifySessionRegenerate(request.session);
+      await promisifySessionRegenerate(request);
     } catch (regenerateErr) {
       this.logger.error(
         'Session regenerate failed during login:',

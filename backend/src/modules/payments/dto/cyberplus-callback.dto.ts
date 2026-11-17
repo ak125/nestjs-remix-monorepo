@@ -68,23 +68,6 @@ export const CyberplusCallbackSchema = z
 export type CyberplusCallbackDto = z.infer<typeof CyberplusCallbackSchema>;
 
 /**
- * Schema Zod pour la page de retour succes (POST form-urlencoded).
- */
-export const PaymentSuccessReturnSchema = z
-  .object({
-    order_id: z.string().optional(),
-    orderid: z.string().optional(),
-  })
-  .catchall(z.string())
-  .refine((data) => !!(data.order_id || data.orderid), {
-    message: 'Order ID requis (order_id | orderid)',
-  });
-
-export type PaymentSuccessReturnDto = z.infer<
-  typeof PaymentSuccessReturnSchema
->;
-
-/**
  * Schema Zod pour la page de retour erreur (POST form-urlencoded).
  */
 export const PaymentErrorReturnSchema = z

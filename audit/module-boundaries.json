@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 158,
-      "loc_total": 44687,
+      "files_count": 159,
+      "loc_total": 45077,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6239,
+      "loc_total": 6271,
       "has_barrel": true
     },
     "blog": {
@@ -112,7 +112,7 @@
         "backend/src/modules/bot-guard"
       ],
       "files_count": 7,
-      "loc_total": 1895,
+      "loc_total": 1876,
       "has_barrel": false
     },
     "cache": {
@@ -132,7 +132,7 @@
         "backend/src/modules/cart/services"
       ],
       "files_count": 22,
-      "loc_total": 4243,
+      "loc_total": 4268,
       "has_barrel": false
     },
     "catalog": {
@@ -171,8 +171,8 @@
         "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 42,
-      "loc_total": 1819,
+      "files_count": 43,
+      "loc_total": 1931,
       "has_barrel": true
     },
     "config": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110881,
+      "loc_total": 110846,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -470,7 +470,7 @@
         "backend/src/modules/metadata/services"
       ],
       "files_count": 6,
-      "loc_total": 1918,
+      "loc_total": 1889,
       "has_barrel": false
     },
     "navigation": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6375,
+      "loc_total": 6147,
       "has_barrel": true
     },
     "payments": {
@@ -516,7 +516,7 @@
         "backend/src/modules/payments/utils"
       ],
       "files_count": 29,
-      "loc_total": 5814,
+      "loc_total": 5669,
       "has_barrel": true
     },
     "pkg-cwv-taxonomy": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 288,
-      "loc_total": 62411,
+      "files_count": 289,
+      "loc_total": 62453,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -806,7 +806,7 @@
         "backend/src/modules/seo-monitoring/services"
       ],
       "files_count": 52,
-      "loc_total": 11477,
+      "loc_total": 11580,
       "has_barrel": false
     },
     "seo-projection": {
@@ -938,10 +938,12 @@
         "backend/tests/unit/seo-control",
         "backend/tests/unit/seo-monitoring",
         "backend/tests/unit/trend-signals",
+        "docs/audit/mandat-bb-20261116/scripts/mesure",
         "docs/audits/editorial-filtre-huile-20261030/tools",
         "frontend",
         "frontend/frontend/tests/e2e",
         "frontend/tests/e2e",
+        "frontend/tests/purchase-probe",
         "frontend/tests/qa-audit",
         "frontend/tests/qa-audit/config",
         "frontend/tests/qa-audit/helpers",
@@ -959,8 +961,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 379,
-      "loc_total": 78751,
+      "files_count": 388,
+      "loc_total": 80551,
       "has_barrel": true
     },
     "upload": {
@@ -1028,7 +1030,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 23,
-      "loc_total": 5475,
+      "loc_total": 5477,
       "has_barrel": false
     }
   },
@@ -1535,6 +1537,11 @@
     },
     {
       "from": "bot-guard",
+      "to": "common",
+      "count": 1
+    },
+    {
+      "from": "bot-guard",
       "to": "config",
       "count": 1
     },
@@ -1551,7 +1558,7 @@
     {
       "from": "cart",
       "to": "auth",
-      "count": 5
+      "count": 4
     },
     {
       "from": "cart",
@@ -2011,7 +2018,7 @@
     {
       "from": "seo",
       "to": "common",
-      "count": 10
+      "count": 12
     },
     {
       "from": "seo",
@@ -2066,7 +2073,7 @@
     {
       "from": "seo-monitoring",
       "to": "common",
-      "count": 1
+      "count": 3
     },
     {
       "from": "seo-monitoring",

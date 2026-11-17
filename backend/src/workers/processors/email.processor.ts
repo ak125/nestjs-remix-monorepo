@@ -196,7 +196,9 @@ export class EmailProcessor {
    */
   @Process('abandoned-cart-email')
   async handleAbandonedCartEmail(
-    job: Job<{ id: string; step: '1h' | '24h' | '72h' }>,
+    // Un job déjà en file peut porter une étape retirée (`72h`) :
+    // sendSequenceEmail la refuse.
+    job: Job<{ id: string; step: string }>,
   ) {
     const { id, step } = job.data;
     this.logger.log(

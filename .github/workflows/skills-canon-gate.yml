@@ -34,6 +34,10 @@ on:
       - "audit/registry/command-center-snapshot.json"
       - ".github/workflows/skills-canon-gate.yml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   skills-canon-gate:
     name: Skills canon (frontmatter + schema, warn-only Phase 0)

@@ -9,6 +9,22 @@ règle est encore voulue donne une ligne du journal ou un champ de contrat ; un 
 construit ne donne aucune règle ; une décision de Marwane prime ; un doute réel n'est pas tranché ;
 plus aucune ADR n'est fusionnée dans le vault.
 
+## Mise à jour du 2026-11-17 (complément BC-3)
+
+- `main` a reçu #2114 (une ligne « Application » par principe) : la branche était en conflit sur le
+  journal. Conflit résolu par une fusion de `main` ; P32 et P33 portent chacun leur ligne
+  « Application ».
+- **P32 est réduit.** Deux de ses trois phrases redisaient ce que la PR #2122 (mandat BD) pose en
+  P35 (chemin d'écriture unique de `pieces_price`) et P36 (jamais de vente à perte). Elles sont
+  retirées. P32 garde la troisième : import, activation et affichage sont trois étapes distinctes.
+- P33 est inchangé dans sa règle.
+- Le changement d'en-tête du journal porté par cette PR est abandonné : `main` l'a déjà.
+- Le commentaire de fermeture de #315 cite P32, P35 et P36 : le bloc ne ferme #315 qu'après la
+  fusion de #2116 **et** de #2122. Essai à blanc (`git merge-tree`) : #2122 se fusionne sans
+  conflit par-dessus cette branche.
+- La question D4 (ligne sur les URL) est reprise par P37 de #2122 : voir section D.
+- Le relevé des PR du vault (46) n'a pas été rejoué le 17 nov. dans ce fichier.
+
 ## Relevé
 
 - **PR ouvertes de `ak125/governance-vault` : 46**, relevé du **2026-11-16T22:44:14Z**, rejoué à
@@ -55,7 +71,7 @@ du vault (`git ls-tree origin/main -- <fichier>`) et citations dans le monorepo
 | ADR-052, PR #241, graphe de handoff des rôles | Créer `packages/seo-roles/src/handoff-graph.ts`, ajouter R1 aux cibles de R6, supprimer `ALLOWED_LINKS`. | Non construit : `ROLE_HANDOFF_GRAPH` = aucune occurrence ; `ALLOWED_LINKS` toujours en service (`backend/src/modules/seo/types/page-role.types.ts:109`, `internal-linking.service.ts:299`). PR monorepo #405 fermée sans fusion le 2026-05-17. | L0 | fermer sans règle | Fermer #241 avec C#241. |
 | ADR-052, PR #214, canon SQL des rôles | Déclarer dépréciée la migration `20260124_add_page_role.sql`, sans changer de code. | ADR documentaire, aucun mécanisme à construire. L'en-tête de la migration dit déjà l'état (`backend/supabase/migrations/20260124_add_page_role.sql:20,23`). | L0 | fermer sans règle | Fermer #214 avec C#214. Voisin : P12. |
 | ADR-054, PR #242, audit-trail par défaut | Toute session qui produit une ADR livre un audit-trail dans le vault. | Convention interne au vault : aucun mécanisme dans le monorepo. Les « ADR-054 » cités dans le monorepo désignent un autre sujet (`.github/workflows/seo-shadow-flag-guard.yml:7`). | L0 | fermer sans règle | Fermer #242 avec C#242. |
-| ADR-084, PR #315, écriture du tarif `pieces_price` | Un seul chemin d'écriture du tarif (module pricing), jamais de vente à perte, import puis activation puis affichage. | Garde CI : `.ast-grep/rules/commerce-no-direct-pieces-price-write.yml:1,6` (`severity: error`), exécutée par `.github/workflows/audit.yml:60`, run 43969954636 vert le 2026-11-16. Runtime : `backend/src/modules/pricing/services/pricing-invariants.service.ts:42,99` (`VENTE_BELOW_ACHAT`), `backend/src/modules/pricing/services/pricing.repository.ts:226`, `price-activation.service.ts:31` ; tests `__tests__/pricing-invariants.test.ts:50`, `__tests__/price-activation.service.test.ts:7` ; affichage `backend/src/modules/catalog/catalog.service.ts:515`. | L4 pour la garde CI ; L2 pour le runtime (tests présents, non rejoués ; L3 non observé) | journal | 1. PR du monorepo qui ajoute P32 (section B), circuit élevé. 2. Fermer #315 avec C#315. |
+| ADR-084, PR #315, écriture du tarif `pieces_price` | Un seul chemin d'écriture du tarif (module pricing), jamais de vente à perte, import puis activation puis affichage. | Garde CI : `.ast-grep/rules/commerce-no-direct-pieces-price-write.yml:1,6` (`severity: error`), exécutée par `.github/workflows/audit.yml:60`, run 43969954636 vert le 2026-11-16. Runtime : `backend/src/modules/pricing/services/pricing-invariants.service.ts:42,99` (`VENTE_BELOW_ACHAT`), `backend/src/modules/pricing/services/pricing.repository.ts:226`, `price-activation.service.ts:31` ; tests `__tests__/pricing-invariants.test.ts:50`, `__tests__/price-activation.service.test.ts:7` ; affichage `backend/src/modules/catalog/catalog.service.ts:515`. Trois étapes (relevé du 17 nov.) : `price-import.service.ts:44` (par défaut, disponibilité inchangée), `price-activation.service.ts` (ne change que `pri_dispo`), `catalog-display-activation.service.ts` (ne change que `piece_display`) ; leurs tests passent dans le check requis `🧪 Backend Tests`, run 44034187038 vert sur `main` (`187f46ef5`, 06:54 UTC). | L4 pour la garde CI (chemin d'écriture) ; L3 pour les tests des trois étapes (check requis vert) ; usage en service non observé | journal | 1. PR du monorepo qui ajoute P32, réduit aux trois étapes (section B), circuit élevé. 2. Chemin d'écriture unique et vente à perte : P35 et P36 de la PR #2122 (mandat BD), pas de redite ici. 3. Fermer #315 avec C#315 après la fusion de #2116 et de #2122. |
 | « ADR-085 » bis, PR #315, trois surfaces fournisseur | Garder trois surfaces fournisseur distinctes sur des briques communes, sans système parallèle. | Présent : `.claude/knowledge/modules/suppliers.md:59,68,89` ; `backend/src/modules/supplier-truth/supplier-sync.flag.ts:13,16` (surface dormante). Déjà porté par le contrat du département 12 (champ `source`, « supplier-truth inerte tant que SUPPLIER_TRUTH_SYNC_ENABLED ne vaut pas true »). Le numéro 085 est pris sur `main` par un autre texte (P7). | L1 | fermer sans règle | Même PR #315, même commentaire. Voisins : P23 et contrat 12. |
 | ADR-097, PR #344, tests soumis à la gate d'ownership | Retirer les fichiers de test des exceptions de la gate `block-new`. | Non construit : `scripts/registry/check-new-files.js:70-75` exempte toujours `**/*.test.ts`, `**/*.spec.ts`, `**/__tests__/**`. | L0 | fermer sans règle | Fermer #344 avec C#344. |
 | ADR-122, PR #392, voix marketing | Appliquer trois textes approuvés par Marwane le 2026-11-04 (sourcing factuel, préparations éditoriales, polices de secours). | Aucun des trois n'est appliqué : `.claude/canon-mirrors/marketing-voice.md:6,41-42` (version 1.0.0, ancienne clause) ; `workspaces/marketing/.claude/rules/marketing-batch.md:45` ; `design-system/UX-CONSTITUTION.md:24,26`. | L0 | à décider par Marwane | Fermer #392 avec C#392. Suite dans le monorepo : question D1. |
@@ -124,15 +140,15 @@ du vault (`git ls-tree origin/main -- <fichier>`) et citations dans le monorepo
 
 ### Lignes à ajouter au journal
 
-Ajoutées au journal par la PR qui porte ce fichier. Forme des lignes existantes, numéros suivants
-libres (le journal s'arrêtait à P31).
+Ajoutées au journal par la PR qui porte ce fichier, chacune suivie de sa ligne « Application »
+(forme de `main` depuis #2114). Numéros P32 et P33 : la PR #2122 prend P34 à P39.
 
 À placer dans « Données et base » :
 
 ```
-- **P32.** Le tarif de `pieces_price` n'a qu'un chemin d'écriture : le module pricing gouverné.
-  Aucun prix de vente HT n'est inférieur au prix d'achat HT. Importer, activer et afficher sont
-  trois étapes distinctes. Source : ADR-084 « écriture du tarif » (PR vault #315, jamais fusionnée).
+- **P32.** Importer un tarif, activer une pièce (la rendre vendable) et l'afficher au catalogue
+  sont trois étapes distinctes. Source : ADR-084 « écriture du tarif » (PR vault #315, jamais
+  fusionnée).
 ```
 
 À placer dans « Changements, revue et fusion » :
@@ -145,8 +161,12 @@ libres (le journal s'arrêtait à P31).
 
 Remarques :
 
-- P32 précise P4 pour le tarif, sans le répéter. Le quatrième invariant du texte (« une référence
-  non vendable ne s'affiche pas sur R2 ») n'est pas repris : le filtre sur R2 n'est pas prouvé.
+- P32 ne garde d'ADR-084 que ce que la PR #2122 ne pose pas. Les deux autres invariants du texte
+  sont en P35 et P36 de #2122 ; si #2122 n'est pas fusionnée, ils ne sont pas au journal. Le
+  quatrième (« une référence non vendable ne s'affiche pas sur R2 ») n'est pas repris : le filtre
+  sur R2 n'est pas prouvé.
+- Écart écrit dans la ligne « Application » de P32 : l'option `activate` de l'import, fermée par
+  défaut, rend vendable dans le même commit.
 - « ADR-084 » désigne deux sujets dans le monorepo (voir « Incohérences »). D'où le titre entre
   guillemets dans la source de P32.
 - P33 reprend mot pour mot le principe directeur d'ADR-134.
@@ -168,7 +188,8 @@ de la PR #422 pour 122, 132 et 136 n'ont donc pas de champ d'accueil.
 ## C. Commentaires de fermeture
 
 ASCII seul, sans guillemet double, apostrophe, accent grave ni signe dollar. Les commentaires de
-#315 et #415 citent P32 et P33 : le bloc ne ferme ces deux PR qu'après la fusion de la PR du journal.
+#315 et #415 citent le journal : le bloc ne ferme #415 qu'après la fusion de #2116, et #315
+qu'après la fusion de #2116 et de #2122 (P35, P36).
 Les 44 autres sont vrais quelle que soit la réponse aux questions de la section D. Pour les cinq PR
 de cette section, la fermeture découle de la règle 6 du tri, mais le bloc la demande au clavier.
 
@@ -205,7 +226,7 @@ C#240: Fermeture sans fusion : aucune regle ne sera plus fusionnee dans le vault
 C#241: Fermeture sans fusion : mecanisme jamais construit, la PR monorepo 405 est fermee sans fusion et ALLOWED_LINKS reste en service. Aucune regle sans mecanisme.
 C#242: Fermeture sans fusion : convention interne au vault, sans objet une fois le vault en archive (ADR-138).
 C#255: Fermeture sans fusion : refactor des scripts du vault, sans objet une fois le vault en archive (ADR-138).
-C#315: Fermeture sans fusion : la regle du tarif (ADR-084) est reprise au principe P32 du journal du monorepo, .claude/governance/journal-des-principes.md. Le second texte, sur les trois surfaces fournisseur, est couvert par P23 et par le contrat du departement 12.
+C#315: Fermeture sans fusion : les regles du tarif (ADR-084) sont reprises au journal du monorepo, .claude/governance/journal-des-principes.md : P32 (import, activation et affichage sont trois etapes), P35 (chemin d ecriture unique) et P36 (jamais de vente a perte). Le second texte, sur les trois surfaces fournisseur, est couvert par P23 et par le contrat du departement 12.
 C#335: Fermeture sans fusion : derogation jamais utilisee, la PR monorepo 1225 est encore en brouillon, et le numero ADR-096 est deja pris sur main.
 C#344: Fermeture sans fusion : mecanisme jamais construit, scripts/registry/check-new-files.js exempte toujours les fichiers de test. Aucune regle sans mecanisme.
 C#345: Fermeture sans fusion : le vault ne recoit plus de PR de registre (ADR-138). Le compte rendu INC-2026-017 reste lisible dans cette PR ; la rotation des secrets reste suivie par le proprietaire.
@@ -229,7 +250,7 @@ C#420: Fermeture sans fusion : entree de sommaire interne au vault, sans objet u
 | D2 | ADR-131, PR #413 | ADR-131 est ratifiée (texte de la PR) mais rien n'est câblé : la règle entre-t-elle au journal maintenant ? | Non. Elle y entre avec la PR qui câble `technical_qualification_pass` dans le décideur du WIKI. D'ici là, P10 reste la règle. |
 | D3a | ADR-132, PR #414, question Q4 | Que devient la mention « rédigés et validés par des mécaniciens et techniciens automobile certifiés » ? | Option B du texte : retirer ou réécrire la mention. C'est la seule qui ne suppose pas une validation humaine par article, que P10 exclut et qu'aucun mécanisme ne produit. Page servie : accord nominatif. |
 | D3b | ADR-132, PR #414, règle R2 | La règle de signature entre-t-elle au journal ? | Oui, une ligne, une fois Q4 tranchée : « Aucune signature publique ne nomme un LLM ou un outil d'IA comme auteur ; l'auteur déclaré est l'organisation AutoMecanik. Source : ADR-132 R2. » Les cinq rôles (R1) n'y entrent pas : aucun mécanisme. |
-| D4 | #240, URL immuables | Le journal n'a aucun principe sur les URL, alors que `CLAUDE.md` (invariant 6) l'interdit : ajoute-t-on une ligne ? | Oui : « Aucune URL servie ne change (chemin, slug, suffixe, route, sitemap, redirection) sans demande explicite de l'owner. Source : `CLAUDE.md` invariant 6. » Sans la clause « 410 Gone » du texte, contraire à P14. |
+| D4 | #240, URL immuables | Le journal n'a aucun principe sur les URL, alors que `CLAUDE.md` (invariant 6) l'interdit : ajoute-t-on une ligne ? | **Mise à jour du 17 nov. : la PR #2122 (mandat BD) pose cette ligne en P37 ; rien à ajouter ici, la réponse est la fusion de #2122.** Proposition d'origine : « Aucune URL servie ne change (chemin, slug, suffixe, route, sitemap, redirection) sans demande explicite de l'owner. Source : `CLAUDE.md` invariant 6. » Sans la clause « 410 Gone » du texte, contraire à P14. |
 | D5 | #345, INC-2026-017 | Où vit le registre des incidents une fois le vault archivé, et ce compte rendu y entre-t-il ? | Pas de nouveau registre : un incident est une issue du monorepo (P24). Fermer #345 sans fusion, le texte reste lisible dans la PR. La rotation des secrets reste un geste de l'owner. |
 | D6 | ADR-137 (fusionnée) | ADR-137 est acceptée dans le vault depuis ce matin, sans ligne au journal ni mécanisme : la règle des skills tiers entre-t-elle au journal maintenant ? | Non. Elle y entre avec la PR du pilote, celle qui crée `skills-lock.json`. D'ici là, P26 s'applique. |
 | D7 | PR monorepo #2079 (niveau B de la porte, ADR-133) | ADR-133 est en conflit avec P20 : ferme-t-on aussi la PR #2079 du monorepo ? | Oui. Elle ajoute une seconde identité de revue que les décisions 72 et 91 remplacent, et elle modifie les deux fichiers de la porte touchés par #2113. |
@@ -272,8 +293,9 @@ Contrôles faits sur le texte : ASCII seul, aucun `&&`, accolades, parenthèses 
 Ordre : (1) fermeture commentée de 39 PR du vault ; (2) pour #240, #345, #392, #413 et #414, dont la
 suite est à décider (section D), une question au clavier par PR : « non » la laisse ouverte ;
 (3) sortie du brouillon de la PR #2116, attente de ses checks, accord au clavier, approbation, attente du check
-« 🚦 Circuit de fusion », fusion épinglée sur la tête lue ; (4) fermeture de #315 et #415, dont le
-commentaire cite P32 et P33 ; (5) compte des PR restées ouvertes dans le vault (0 si tout est accepté).
+« 🚦 Circuit de fusion », fusion épinglée sur la tête lue ; (4) fermeture de #415, puis de #315 si
+la PR #2122 est fusionnée (sinon #315 reste ouverte et le bloc se relance plus tard) ; (5) compte des
+PR restées ouvertes dans le vault (0 si tout est accepté).
 
 Le bloc se relance sans risque : une PR déjà fermée est sautée. Il ne supprime aucune branche (`gh pr
 close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit les checks par
@@ -337,7 +359,7 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
     @("414", "Fermeture sans fusion : aucune ADR ne sera plus fusionnee dans le vault (ADR-138). La question Q4 et la regle de signature reviennent au proprietaire, dans le monorepo.", "D3a et D3b")
   )
   $LOTB = @(
-    @("315", "Fermeture sans fusion : la regle du tarif (ADR-084) est reprise au principe P32 du journal du monorepo, .claude/governance/journal-des-principes.md. Le second texte, sur les trois surfaces fournisseur, est couvert par P23 et par le contrat du departement 12."),
+    @("315", "Fermeture sans fusion : les regles du tarif (ADR-084) sont reprises au journal du monorepo, .claude/governance/journal-des-principes.md : P32 (import, activation et affichage sont trois etapes), P35 (chemin d ecriture unique) et P36 (jamais de vente a perte). Le second texte, sur les trois surfaces fournisseur, est couvert par P23 et par le contrat du departement 12."),
     @("415", "Fermeture sans fusion : le principe est repris au journal du monorepo (P33), .claude/governance/journal-des-principes.md. Le texte de DoD5 sera corrige au deplacement de la Definition of Done dans le monorepo.")
   )
 
@@ -365,6 +387,11 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
   }
   Write-Host "Suite : PR du journal."
 
+  $PST = (gh pr view 2116 --repo $REPO --json state --jq .state)
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : etat de la PR 2116 illisible"; return }
+  if ($PST -eq "CLOSED") { Write-Host "ARRET : la PR 2116 est fermee sans fusion, PR 315 et 415 du vault laissees ouvertes"; return }
+  if ($PST -eq "MERGED") { Write-Host "PR 2116 deja fusionnee : partie journal sautee" }
+  if ($PST -eq "OPEN") {
   $HEAD = (gh pr view 2116 --repo $REPO --json headRefOid --jq .headRefOid)
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : tete illisible"; return }
   gh pr ready 2116 --repo $REPO
@@ -406,6 +433,7 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
   if (-not $CIRCOK) { Write-Host "ARRET : le check du circuit n'est pas vert apres l'approbation, rien n'est fusionne"; return }
   gh pr merge 2116 --repo $REPO --squash --match-head-commit $HEAD
   if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : fusion refusee, PR 315 et 415 du vault laissees ouvertes"; return }
+  }
 
   foreach ($x in $LOTB) {
     $N = $x[0]
@@ -413,6 +441,11 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
     $ST = (gh pr view $N --repo $VAULT --json state --jq .state)
     if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : etat illisible, PR " + $N); return }
     if ($ST -ne "OPEN") { Write-Host ("Deja fermee : " + $N); continue }
+    if ($N -eq "315") {
+      $BD = (gh pr view 2122 --repo $REPO --json state --jq .state)
+      if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : etat de la PR 2122 illisible"; return }
+      if ($BD -ne "MERGED") { Write-Host "PR 315 laissee ouverte : la PR 2122 du monorepo (P35, P36) n'est pas fusionnee ; relancer le bloc ensuite"; continue }
+    }
     gh pr close $N --repo $VAULT --comment $MSG
     if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : fermeture refusee, PR " + $N); return }
   }

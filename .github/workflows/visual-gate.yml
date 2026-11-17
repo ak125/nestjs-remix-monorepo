@@ -82,7 +82,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: "npm"
+          package-manager-cache: false
 
       - name: 📦 Install deps (node_modules monté dans le container Docker)
         # REQUIS : le config/spec Playwright importent `@playwright/test`, résolu depuis le
