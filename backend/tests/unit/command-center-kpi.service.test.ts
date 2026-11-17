@@ -59,7 +59,7 @@ type ReadResult = {
 };
 
 const EMPTY: ReadResult = { data: [], count: 0, error: null };
-const METHODS = ['select', 'eq', 'gte', 'lt', 'in', 'limit'] as const;
+const METHODS = ['select', 'eq', 'gte', 'lt', 'in', 'limit', 'is'] as const;
 type Method = (typeof METHODS)[number];
 
 /** Ce qu'une lecture de __seo_event_log a demandé. */
@@ -69,20 +69,28 @@ interface EventQuery {
   lt?: unknown;
   sessions?: string[];
   limit?: number;
+  /** Filtre `payload->>traffic_class = …` (lecture des sessions humaines). */
+  trafficClass?: unknown;
+  /** Compte des événements sans classe (`payload->>traffic_class IS NULL`). */
+  unclassified?: boolean;
 }
 
 /**
  * Supabase simulé, une chaîne thenable par `from()`. ___xtr_order : chaque
  * lecture consomme le résultat suivant de `orders` (fenêtre courante puis
  * précédente), le dernier est rejoué. __seo_event_log : `events(query)` répond,
- * vide par défaut. Les méthodes sont des espions partagés par toutes les chaînes.
+ * vide par défaut. Le compte des événements sans classe de trafic passe par
+ * `unclassified(query)`, zéro par défaut (période qualifiée). Les méthodes sont
+ * des espions partagés par toutes les chaînes.
  */
 function fakeDb({
   orders = [EMPTY],
   events = () => EMPTY,
+  unclassified = () => ({ data: null, count: 0, error: null }),
 }: {
   orders?: ReadResult[];
   events?: (q: EventQuery) => ReadResult;
+  unclassified?: (q: EventQuery) => ReadResult;
 }) {
   const spies = Object.fromEntries(
     METHODS.map((m) => [m, jest.fn()]),
@@ -95,13 +103,19 @@ function fakeDb({
         resolve(
           table === TABLES.xtr_order
             ? orders[Math.min(orderReads++, orders.length - 1)]
-            : events(q),
+            : q.unclassified
+              ? unclassified(q)
+              : events(q),
         ),
     };
     for (const m of METHODS) {
       chain[m] = (...args: unknown[]) => {
         spies[m](...args);
         if (m === 'eq' && args[0] === 'event_type') q.eventType = args[1];
+        if (m === 'eq' && args[0] === 'payload->>traffic_class')
+          q.trafficClass = args[1];
+        if (m === 'is' && args[0] === 'payload->>traffic_class')
+          q.unclassified = args[1] === null;
         if (m === 'gte') q.gte = args[1];
         if (m === 'lt') q.lt = args[1];
         if (m === 'in') q.sessions = args[1] as string[];
@@ -878,6 +892,95 @@ describe('CommandCenterKpiService — Data, Pages & SEO, Diagnostic', () => {
       );
       expect(m.kpi).toMatchObject({ value: 0, unit: '/1', status: 'CRITICAL' });
       expect(m).toMatchObject({ sample_size: 1, previous_value: 0 });
+    });
+
+    describe('sessions humaines seulement (mandat AT)', () => {
+      const visit = (q: EventQuery) =>
+        q.eventType === 'diag_hub_view'
+          ? ok([{ session_id: 's1', created_at: q.gte }])
+          : EMPTY;
+
+      it('lit diag_hub_view et r2_view filtrés sur traffic_class = human', async () => {
+        const queries: EventQuery[] = [];
+        await makeService(
+          fakeDb({
+            events: (q) => {
+              queries.push({ ...q });
+              return visit(q);
+            },
+          }),
+        ).computeLiveKpis('full', NOW);
+        const funnel = queries.filter(
+          (q) => q.eventType === 'diag_hub_view' || q.eventType === 'r2_view',
+        );
+        expect(funnel.map((q) => q.eventType)).toEqual(
+          expect.arrayContaining(['diag_hub_view', 'r2_view']),
+        );
+        expect(funnel.every((q) => q.trafficClass === 'human')).toBe(true);
+      });
+
+      it('période courante avec visites sans classe : non qualifiée, ni alerte ni certification', async () => {
+        const m = byId(
+          await makeService(
+            fakeDb({
+              events: visit,
+              unclassified: (q) => ({
+                data: null,
+                count: q.gte === SINCE ? 12 : 0,
+                error: null,
+              }),
+            }),
+          ).computeLiveKpis('full', NOW),
+          'diagnostic_to_product',
+        );
+        // sans classement, 1 session et 0 conversion donnerait CRITICAL
+        expect(m.kpi).toMatchObject({
+          value: 0,
+          unit: '/1',
+          status: 'UNKNOWN',
+          certified: false,
+        });
+        expect(m.observed_cause).toMatch(/^Non qualifié : 12 visite\(s\)/);
+        expect(m.previous_value).toBe(0);
+      });
+
+      it('période précédente non qualifiée : pas de comparaison, période courante intacte', async () => {
+        const m = byId(
+          await makeService(
+            fakeDb({
+              events: visit,
+              unclassified: (q) => ({
+                data: null,
+                count: q.gte === SINCE ? 0 : 5,
+                error: null,
+              }),
+            }),
+          ).computeLiveKpis('full', NOW),
+          'diagnostic_to_product',
+        );
+        expect(m.kpi).toMatchObject({ status: 'CRITICAL', certified: true });
+        expect(m).not.toHaveProperty('observed_cause');
+        expect(m.previous_value).toBeNull();
+      });
+
+      it('compte des visites sans classe illisible : KPI illisible, jamais qualifié par défaut', async () => {
+        const m = byId(
+          await makeService(
+            fakeDb({
+              events: visit,
+              unclassified: (q) =>
+                q.gte === SINCE
+                  ? { data: null, count: null, error: { message: 'timeout' } }
+                  : { data: null, count: 0, error: null },
+            }),
+          ).computeLiveKpis('full', NOW),
+          'diagnostic_to_product',
+        );
+        expect(m).toMatchObject({
+          read_failure: 'read_failed',
+          kpi: { value: null, status: 'UNKNOWN' },
+        });
+      });
     });
   });
 });
