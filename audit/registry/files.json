@@ -13505,7 +13505,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 345,
+      "loc": 365,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/services/abandoned-cart.service.ts",
       "risk": "low",
@@ -40114,7 +40114,7 @@
         "backend/src/config/app.config.ts"
       ],
       "kind": "service",
-      "loc": 1190,
+      "loc": 1193,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.ts",
       "risk": "low",
@@ -40504,7 +40504,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 221,
+      "loc": 223,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/email.processor.ts",
       "risk": "low",
@@ -40994,6 +40994,25 @@
       "loc": 19,
       "owner": "__unassigned__",
       "path": "backend/tests/setup.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/abandoned-cart-cadence.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 215,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/abandoned-cart-cadence.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

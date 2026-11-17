@@ -1792,3 +1792,12 @@ entries:
     owner: '@ak125/auth-team'
     sourceConfidence: high
     risk: high
+  # Rapports du mandat AN (commandes non payées, relance de panier, frais de port),
+  # PR #2088, décisions 5, 44, 61, 75, 110 et 111 du 16/11/2026. Documents de constat,
+  # aucun lecteur applicatif. Domaine Commerce & Users comme les modules panier et
+  # commande qu'ils décrivent. Glob exact : la racine du dépôt n'est pas couverte.
+  - glob: RAPPORT-MANDAT-AN*.md
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
