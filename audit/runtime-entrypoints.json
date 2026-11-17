@@ -2897,6 +2897,7 @@
       ".github/workflows/governance-capture-tests.yml",
       ".github/workflows/governance-checks.yml",
       ".github/workflows/impeccable-ratchet.yml",
+      ".github/workflows/incident-issue-gate.yml",
       ".github/workflows/marketing-voice-hash.yml",
       ".github/workflows/merge-circuits-relais.yml",
       ".github/workflows/merge-circuits.yml",
@@ -3056,7 +3057,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1648,
+  "runtime_files_count": 1649,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3093,6 +3094,7 @@
     ".github/workflows/governance-capture-tests.yml",
     ".github/workflows/governance-checks.yml",
     ".github/workflows/impeccable-ratchet.yml",
+    ".github/workflows/incident-issue-gate.yml",
     ".github/workflows/marketing-voice-hash.yml",
     ".github/workflows/merge-circuits-relais.yml",
     ".github/workflows/merge-circuits.yml",
