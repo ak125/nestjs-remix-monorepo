@@ -44106,6 +44106,63 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/ownership-coverage.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 33,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/ownership-coverage.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/refused.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 21,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/refused.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-bb-20261116/scripts/mesure/zones.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 13,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-bb-20261116/scripts/mesure/zones.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-assets.cjs",
       "importedBy": [],
       "imports": [],
