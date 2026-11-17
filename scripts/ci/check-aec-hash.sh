@@ -1,43 +1,39 @@
 #!/usr/bin/env bash
-# check-aec-hash.sh — verify an AEC copy matches the canon distribution_sha256
-# published by ak125/governance-vault in 99-meta/canon-hashes.json (key `aec`).
+# check-aec-hash.sh — contrôle d'une copie de l'AEC dans le monorepo, local et sans réseau.
 #
-# Usage:
-#   scripts/ci/check-aec-hash.sh <path-to-AEC-copy>
+# Usage :
+#   scripts/ci/check-aec-hash.sh <chemin-de-la-copie>
 #
-# The monorepo distributes AEC twice (.claude/rules/ + workspaces/seo-batch/.claude/rules/),
-# so the workflow calls this script for each path.
+# Deux contrôles, tous deux contre les fichiers du checkout :
+#   1. scripts/canon/compute-canon-hashes.py --check : le manifeste
+#      .spec/00-canon/canon-distribution/canon-hashes.json et toutes les copies du
+#      monorepo sont conformes aux sources du même dossier ;
+#   2. la copie nommée est déclarée au manifeste (clé `aec`, ce dépôt). Une copie non
+#      déclarée ne fait pas foi (journal des principes, P30) : la déclarer dans CANONS
+#      du générateur, ou la retirer du workflow.
 #
-# Source: rules-agent-exit-contract.md §"Distribution canonique" in the vault.
+# Appelé par .github/workflows/agent-exit-contract-hash.yml, une fois par copie.
+# Source de la règle : AEC §« Distribution canonique ».
 
 set -euo pipefail
 
 if [[ $# -ne 1 ]]; then
-  echo "usage: $0 <path-to-AEC-copy>" >&2
+  echo "usage: $0 <chemin-de-la-copie>" >&2
   exit 2
 fi
 
-local_copy="$1"
-canon_url="https://raw.githubusercontent.com/ak125/governance-vault/main/99-meta/canon-hashes.json"
+copy="$1"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+manifest="${root}/.spec/00-canon/canon-distribution/canon-hashes.json"
+canon_key="aec"
 
-if [[ ! -f "${local_copy}" ]]; then
-  echo "ERROR: ${local_copy} missing" >&2
+python3 "${root}/scripts/canon/compute-canon-hashes.py" --check
+
+if ! jq -e --arg path "${copy}" --arg key "${canon_key}" \
+  '.canons[$key].consumers | any(.repo == "ak125/nestjs-remix-monorepo" and .path == $path)' \
+  "${manifest}" >/dev/null; then
+  echo "::error::${copy} n'est pas une copie déclarée du canon '${canon_key}' dans ${manifest#"${root}/"}" >&2
   exit 1
 fi
 
-local_sha=$(sha256sum "${local_copy}" | awk '{print $1}')
-
-# Vault is public — the raw URL works without auth. `gh api` would also work but
-# adds a token requirement to local runs; curl keeps the script standalone.
-canon_json=$(curl -fsSL "${canon_url}")
-vault_sha=$(printf '%s' "${canon_json}" | jq -r '.canons.aec.distribution_sha256')
-
-if [[ "${local_sha}" != "${vault_sha}" ]]; then
-  echo "::error::AEC distribution drift on ${local_copy}" >&2
-  echo "  local: ${local_sha}" >&2
-  echo "  vault: ${vault_sha}" >&2
-  echo "Resync: copy ledger/rules/rules-agent-exit-contract.md from the vault, strip the YAML frontmatter, write to ${local_copy}." >&2
-  exit 1
-fi
-
-echo "OK — ${local_copy} matches vault canon-hashes.json aec.distribution_sha256 (${vault_sha})"
+echo "OK — ${copy} : copie déclarée du canon '${canon_key}', conforme à sa source"

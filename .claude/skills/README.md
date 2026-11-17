@@ -107,7 +107,7 @@ node scripts/governance/build-skills-registry.js --check
 |---|---|---|---|
 | **Phase 0** | PR-V2 (this) | warn-only (`continue-on-error: true`), summary visible | observation 7 jours sans régression |
 | **Phase 1** | PR-V2.5 | hard-fail sur **new skills** uniquement | 7+ jours stable |
-| **Phase 2** | PR-V3 | hard-fail sur **tous skills** + required check branch protection | promote ADR vault |
+| **Phase 2** | PR-V3 | hard-fail sur **tous skills** + required check branch protection | principe inscrit au journal (PR, circuit élevé) |
 
 Modèle de séquençage : ADR-058 PR-G (Repository Control Plane). Validé empiriquement, non spéculatif.
 

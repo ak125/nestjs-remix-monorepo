@@ -1222,6 +1222,7 @@
       "OrderCleanupService",
       "OrderEmailListener",
       "OrderFunnelListener",
+      "OrderLineSupplierService",
       "OrderStatusService",
       "OrdersController",
       "OrdersModule",
@@ -1998,6 +1999,7 @@
       "backend/src/modules/orders/services/order-archive.service.ts",
       "backend/src/modules/orders/services/order-calculation.service.ts",
       "backend/src/modules/orders/services/order-cleanup.service.ts",
+      "backend/src/modules/orders/services/order-line-supplier.service.ts",
       "backend/src/modules/orders/services/order-status.service.ts",
       "backend/src/modules/orders/services/orders.service.ts",
       "backend/src/modules/orders/services/tickets.service.ts",
@@ -2857,6 +2859,8 @@
       "backend/supabase/migrations/20261105_gamme_page_cached_volatile.sql",
       "backend/supabase/migrations/20261116_disable_test_admin_accounts.down.sql",
       "backend/supabase/migrations/20261116_disable_test_admin_accounts.sql",
+      "backend/supabase/migrations/20261116_pricing_frozen_masked_dispo_zero.down.sql",
+      "backend/supabase/migrations/20261116_pricing_frozen_masked_dispo_zero.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2871,7 +2875,6 @@
       ".github/workflows/build.yml",
       ".github/workflows/canon-distribution.yml",
       ".github/workflows/canon-registries-validate.yml",
-      ".github/workflows/canon-sync.yml",
       ".github/workflows/ci.yml",
       ".github/workflows/closure-t48h-slo-digest.yml",
       ".github/workflows/codeql.yml",
@@ -3051,7 +3054,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1644,
+  "runtime_files_count": 1646,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3066,7 +3069,6 @@
     ".github/workflows/build.yml",
     ".github/workflows/canon-distribution.yml",
     ".github/workflows/canon-registries-validate.yml",
-    ".github/workflows/canon-sync.yml",
     ".github/workflows/ci.yml",
     ".github/workflows/closure-t48h-slo-digest.yml",
     ".github/workflows/codeql.yml",
@@ -3518,6 +3520,7 @@
     "backend/src/modules/orders/services/order-archive.service.ts",
     "backend/src/modules/orders/services/order-calculation.service.ts",
     "backend/src/modules/orders/services/order-cleanup.service.ts",
+    "backend/src/modules/orders/services/order-line-supplier.service.ts",
     "backend/src/modules/orders/services/order-status.service.ts",
     "backend/src/modules/orders/services/orders.service.ts",
     "backend/src/modules/orders/services/tickets.service.ts",
@@ -4354,6 +4357,8 @@
     "backend/supabase/migrations/20261105_gamme_page_cached_volatile.sql",
     "backend/supabase/migrations/20261116_disable_test_admin_accounts.down.sql",
     "backend/supabase/migrations/20261116_disable_test_admin_accounts.sql",
+    "backend/supabase/migrations/20261116_pricing_frozen_masked_dispo_zero.down.sql",
+    "backend/supabase/migrations/20261116_pricing_frozen_masked_dispo_zero.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",

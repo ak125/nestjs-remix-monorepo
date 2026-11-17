@@ -6,7 +6,7 @@
   puis consulter `.claude/knowledge/REPO_MAP.md` et les notices pertinentes.
   L1 + L2 sont les sources ; le registre canonical est une projection à vérifier.
 - Ne pas lire le registre en entier, ajouter un wrapper de recherche ou créer
-  un index/RAG parallèle. `.claude/knowledge/` référence le vault sans le dupliquer.
+  un index/RAG parallèle. `.claude/knowledge/` référence l'archive du vault sans la dupliquer.
 - Une recherche Markdown ne prouve ni une vérité métier ni un état servi :
   confronter le constat au contrat, au code ou au runtime concerné.
 - Agents sans filesystem : utiliser leurs API/MCP de lecture réellement

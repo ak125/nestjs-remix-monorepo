@@ -390,9 +390,11 @@ Si >20% du lot en v5_blocked ou v5_pending_review → suspendre. Stratifier les 
 ## Recherche documentaire (avant analyse)
 
 Avant toute analyse, **consulter le canon — ne jamais réinventer ni contredire l'existant** :
-vault `governance-vault/` (ADRs, règles, evidence-packs), `MEMORY.md`, et les sources listées
-en « Services disponibles » (APIs + MCP + `refs/`, lecture seule). Runtime AI-COS HTTP-only : pas
-de `grep` local du repo — l'accès au canon passe par le vault et ces APIs/MCP. Cette recherche
-aide à comprendre ; elle ne tranche aucun fait canonique. Vérité documentaire :
-`RAW → WIKI → exports → consommateurs`. Protocole des sessions Claude Code :
+journal des principes du monorepo (`.claude/governance/journal-des-principes.md`), contrats de
+département (`.spec/00-canon/ai-registry/agent-operating-map.yaml`), `MEMORY.md`, et les sources
+listées en « Services disponibles » (APIs + MCP + `refs/`, lecture seule). Runtime AI-COS
+HTTP-only : pas de `grep` local du repo — l'accès au canon passe par ces APIs/MCP. Le vault
+`ak125/governance-vault` est une archive : une ADR y explique une décision, sans être normative par
+elle-même. Cette recherche aide à comprendre ; elle ne tranche aucun fait canonique. Vérité
+documentaire : `RAW → WIKI → exports → consommateurs`. Protocole des sessions Claude Code :
 `.claude/rules/agent-doc-search.md`.
