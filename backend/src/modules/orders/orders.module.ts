@@ -23,6 +23,8 @@ import { OrderArchiveService } from './services/order-archive.service';
 import { TicketsService } from './services/tickets.service';
 import { OrderActionsService } from './services/order-actions.service';
 import { OrderLineSupplierService } from './services/order-line-supplier.service';
+import { SupplierOrderPreparationService } from './services/supplier-order-preparation.service';
+import { SupplierLiveQuoteService } from '../supplier-truth/supplier-live-quote.service';
 import { OrderCleanupService } from './services/order-cleanup.service';
 
 // Event listeners
@@ -83,6 +85,13 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     TicketsService, // SAV
     OrderActionsService, // Actions backoffice
     OrderLineSupplierService, // Décision 50 : proposition fournisseur (lecture)
+    SupplierOrderPreparationService, // Mandat BK : commande fournisseur préparée (essai, sans envoi)
+    {
+      // Mandat BK : relecture live d'un portail (lecture seule). Fabrique :
+      // ses dépendances (connecteurs, identifiants) sont des fonctions.
+      provide: SupplierLiveQuoteService,
+      useFactory: () => new SupplierLiveQuoteService(),
+    },
     OrderCleanupService, // Cron: cleanup orphelins idempotency + resume tokens
     OrderAuditListener, // Event: audit trail → __admin_audit_log
     OrderEmailListener, // Event: emails shipped/cancelled/refunded
