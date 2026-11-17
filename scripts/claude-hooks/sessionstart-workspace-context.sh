@@ -106,6 +106,13 @@ extract_section() {
 }
 
 # Assemblage compact
+# Tampon propre à l'invocation (jamais un fichier partagé : deux sessions qui démarrent
+# ensemble tronquaient ou échangeaient leur manifeste). Supprimé en sortie.
+if ! OUT=$(mktemp "${TMPDIR:-/tmp}/sessionstart-output.XXXXXX" 2>/dev/null); then
+  echo "WARN: SessionStart mktemp impossible — manifest non émis" >&2
+  exit 0
+fi
+trap 'rm -f "$OUT"' EXIT
 {
   echo "## Workspace en cours"
   echo "$WORKSPACE_LABEL"
@@ -125,7 +132,7 @@ extract_section() {
   extract_section "STRUCTURAL_CONSTRAINTS"
   echo ""
   echo "_Source : .claude/top-priorities.md — mise à jour max 1×/sem_"
-} > /tmp/sessionstart-output.txt
+} > "$OUT"
 
 # Garde-taille MEMORY.md (Layer 0) — alerte ALERT-ONLY si re-gonflement >20KiB.
 # Émise hors du manifest borné (ligne courte, rare, jamais bloquante). Sœur de
@@ -179,14 +186,14 @@ emit_cron_alerts || true
 
 # Borne taille : sortie ≤ 2000 bytes (~500 tokens). Si dépasse → fail silencieux (exit 0)
 # avec message stderr ; ne JAMAIS bloquer la session sur ce défaut.
-SIZE=$(wc -c < /tmp/sessionstart-output.txt)
+SIZE=$(wc -c < "$OUT")
 if [ "$SIZE" -gt 2000 ]; then
   echo "WARN: SessionStart output $SIZE > 2000 bytes — manifest dépasse la borne" >&2
   echo "→ vérifier les bornes top-priorities.md (TOP≤5, DO_NOT_START≤7, ...)" >&2
   # On émet quand même mais tronqué pour ne pas saturer le contexte
-  head -c 2000 /tmp/sessionstart-output.txt
+  head -c 2000 "$OUT"
   exit 0
 fi
 
-cat /tmp/sessionstart-output.txt
+cat "$OUT"
 exit 0
