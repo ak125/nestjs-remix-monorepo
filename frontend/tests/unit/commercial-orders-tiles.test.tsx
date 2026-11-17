@@ -7,7 +7,8 @@
  * - la période est transmise ; une valeur inconnue retombe sur « all » ;
  * - sans `canSeeFinancials`, aucun appel n'est fait ;
  * - un échec s'affiche « indisponible », jamais en zéros ;
- * - impayées (< 30 j), abandonnées (≥ 30 j) et montants exclus sont affichés.
+ * - impayées (< 30 j), abandonnées (≥ 30 j), annulées et montants exclus
+ *   sont affichés ; une payée puis annulée est hors chiffre d'affaires.
  *
  * Identifiants fictifs, sauf 15114950 (montant aberrant relevé, sans donnée client).
  */
@@ -31,11 +32,11 @@ const TILES: OrderTilesData = {
   periodStart: null,
   computedAt: "2026-11-17T18:00:00.000Z",
   rowsRead: 1707,
-  paid: { orders: 659, revenue: 85286.87, averageBasket: 129.42 },
+  paid: { orders: 653, revenue: 84137.78, averageBasket: 128.85 },
   monthRevenue: 176.32,
   unpaid: { orders: 0, amount: 0 },
   abandoned: { orders: 1045, amount: 243523.2, afterDays: 30 },
-  cancelled: { orders: 8, paidOrders: 6, paidAmount: 500 },
+  cancelled: { orders: 8, paidOrders: 6, paidAmount: 1149.09 },
   excluded: {
     thresholdTtc: 1500,
     orders: [
@@ -161,23 +162,31 @@ describe("loader /commercial/orders — tuiles serveur", () => {
 });
 
 describe("<OrdersTiles />", () => {
-  it("affiche impayées, abandonnées, payées annulées et le montant exclu", () => {
+  it("affiche impayées, abandonnées, annulées et le montant exclu", () => {
     render(
       <OrdersTiles
         tiles={{ status: "ok", period: "all", data: TILES }}
         onPeriodChange={() => {}}
       />,
     );
-    expect(screen.getByTestId("tile-orders").textContent).toContain("659");
+    expect(screen.getByTestId("tile-orders").textContent).toContain("653");
     expect(screen.getByTestId("tile-unpaid").textContent).toContain(
       "0 commande de moins de 30 jours",
     );
     expect(screen.getByTestId("tile-abandoned").textContent).toContain(
       "1045 commandes non payées depuis 30 jours ou plus",
     );
-    expect(screen.getByTestId("tiles-paid-cancelled").textContent).toContain(
-      "6 commandes payées puis annulées",
+    // Tuile « Annulées » : montant des payées puis annulées, hors CA.
+    const cancelled = screen.getByTestId("tile-cancelled").textContent ?? "";
+    expect(cancelled).toContain("Annulées");
+    expect(cancelled).toMatch(/1\s?149,09\s?€/);
+    expect(cancelled).toContain(
+      "6 commandes payées puis annulées, hors chiffre d'affaires (8 annulations au total)",
     );
+    expect(screen.getByTestId("tile-revenue").textContent).not.toMatch(
+      /1\s?149,09/,
+    );
+    expect(screen.queryByTestId("tiles-paid-cancelled")).toBeNull();
     const excluded = screen.getByTestId("tiles-excluded").textContent ?? "";
     expect(excluded).toContain("15114950");
     expect(excluded).toContain("2025-07-20");

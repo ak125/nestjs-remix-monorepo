@@ -62,12 +62,13 @@ describe('computeOrderTiles — toute la base', () => {
 
   it('compte le CA payé sur toutes les lignes, pas sur une page', () => {
     expect(tiles.rowsRead).toBe(ROWS.length);
+    // A + B + C ; H (payée puis annulée) n'est pas une vente.
     expect(tiles.paid).toEqual({
-      orders: 4,
-      revenue: 690,
-      averageBasket: 172.5,
+      orders: 3,
+      revenue: 600,
+      averageBasket: 200,
     });
-    expect(tiles.monthRevenue).toBe(190);
+    expect(tiles.monthRevenue).toBe(100);
   });
 
   it('impayées = non payées, non annulées, de moins de 30 jours', () => {
@@ -79,12 +80,31 @@ describe('computeOrderTiles — toute la base', () => {
     expect(tiles.abandoned).toEqual({ orders: 1, amount: 60, afterDays: 30 });
   });
 
-  it("l'annulation vient de ord_cancel_date ; une payée annulée reste dans le CA et est relevée", () => {
+  it("l'annulation vient de ord_cancel_date ; une payée puis annulée sort du CA et est chiffrée à part", () => {
     expect(tiles.cancelled).toEqual({
       orders: 2,
       paidOrders: 1,
       paidAmount: 90,
     });
+    // Ni dans le CA, ni dans le panier, ni dans les impayées ou abandonnées.
+    expect(tiles.paid.revenue).toBe(600);
+    expect(tiles.unpaid.amount + tiles.abandoned.amount).toBe(180);
+  });
+
+  it('payée puis annulée ce mois : hors CA du mois, montant dans « Annulées »', () => {
+    const t = computeOrderTiles(
+      [
+        row('V', '2026-11-03T10:00:00.000Z', '40.00', { paid: true }),
+        row('W', '2026-11-04T10:00:00.000Z', '60.00', {
+          paid: true,
+          cancelled: true,
+        }),
+      ],
+      { now: NOW, period: 'month', implausibleThresholdTtc: 1500 },
+    );
+    expect(t.paid).toEqual({ orders: 1, revenue: 40, averageBasket: 40 });
+    expect(t.monthRevenue).toBe(40);
+    expect(t.cancelled).toEqual({ orders: 1, paidOrders: 1, paidAmount: 60 });
   });
 
   it('ne lit pas le statut : un statut « annulée » sans ord_cancel_date ne change rien', () => {
@@ -189,7 +209,7 @@ describe('computeOrderTiles — par période (Europe/Paris)', () => {
       implausibleThresholdTtc: DEFAULT_IMPLAUSIBLE_TTC_EUR,
     });
     expect(t.periodStart).toBe('2026-10-31T23:00:00.000Z');
-    expect(t.paid).toEqual({ orders: 2, revenue: 190, averageBasket: 95 });
+    expect(t.paid).toEqual({ orders: 1, revenue: 100, averageBasket: 100 });
     expect(t.unpaid).toEqual({ orders: 1, amount: 50 });
     expect(t.abandoned.orders).toBe(0);
     // 15114950 (2025) est hors période ; J et K restent relevés.
@@ -203,8 +223,8 @@ describe('computeOrderTiles — par période (Europe/Paris)', () => {
       implausibleThresholdTtc: DEFAULT_IMPLAUSIBLE_TTC_EUR,
     });
     expect(t.periodStart).toBe('2025-12-31T23:00:00.000Z');
-    expect(t.paid.orders).toBe(3);
-    expect(t.paid.revenue).toBe(390);
+    expect(t.paid.orders).toBe(2);
+    expect(t.paid.revenue).toBe(300);
   });
 
   it('limite du mois : 00:30 à Paris le 1er compte, 23:30 la veille non', () => {
@@ -359,8 +379,9 @@ describe('OrdersService.getOrdersStats — lecture paginée réelle du service',
     });
     expect(stats.tiles.period).toBe('month');
     expect(stats.tiles.excluded.thresholdTtc).toBe(150);
-    // B (200) et C (300) dépassent 150 → exclus du total historique aussi
-    expect(stats.totalRevenue).toBe(190);
+    // B (200) et C (300) dépassent 150 → exclus du total historique aussi ;
+    // H (payée puis annulée) n'est pas une vente.
+    expect(stats.totalRevenue).toBe(100);
   });
 
   it('filtre client conservé (userId)', async () => {

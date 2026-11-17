@@ -7,6 +7,9 @@
  *   « impayée » mais « abandonnée » ;
  * - un montant aberrant (au-delà du seuil de configuration) est exclu de
  *   toutes les sommes et relevé, sans correction en base ;
+ * - une commande annulée n'est pas une vente (décision du 17/11 21:45) :
+ *   une commande payée puis annulée sort du chiffre d'affaires et apparaît
+ *   dans la tuile « Annulées » avec son montant ;
  * - le département 13 ne s'appuie que sur ce que le site enregistre de
  *   lui-même : la commande (`ord_date`, `ord_total_ttc`), le paiement
  *   (`ord_is_pay`) et l'annulation (`ord_cancel_date`). Le statut
@@ -105,7 +108,10 @@ export interface OrderTiles {
   unpaid: { orders: number; amount: number };
   /** Non payées, non annulées, de 30 jours ou plus. */
   abandoned: { orders: number; amount: number; afterDays: number };
-  /** Annulations enregistrées (`ord_cancel_date`) ; les payées restent dans le CA. */
+  /**
+   * Annulations enregistrées (`ord_cancel_date`). Aucune n'entre dans le CA,
+   * le panier ni les impayées ; les payées puis annulées sont chiffrées.
+   */
   cancelled: { orders: number; paidOrders: number; paidAmount: number };
   /** Lignes exclues de toutes les sommes, relevées sans correction. */
   excluded: { thresholdTtc: number; orders: ExcludedOrder[] };
@@ -238,12 +244,14 @@ export function computeOrderTiles(
       continue;
     }
 
+    // Une commande annulée n'est pas une vente, même payée : hors CA.
     if (isCancelled) {
       cancelledOrders += 1;
       if (isPaid) {
         cancelledPaidOrders += 1;
         cancelledPaidAmount += amount;
       }
+      continue;
     }
 
     if (isPaid) {
@@ -252,7 +260,6 @@ export function computeOrderTiles(
       if (dateMs >= monthStart.getTime()) monthRevenue += amount;
       continue;
     }
-    if (isCancelled) continue;
 
     if (dateMs >= abandonBefore) {
       unpaidOrders += 1;

@@ -4,7 +4,9 @@
  *
  * Décisions de Marwane du 17/11/2026 (complément n° 1 au mandat BN) :
  * impayées = non payées, non annulées, de moins de 30 jours ; au-delà,
- * « abandonnées » ; un montant aberrant est exclu des sommes et relevé.
+ * « abandonnées » ; un montant aberrant est exclu des sommes et relevé ;
+ * une commande annulée n'est pas une vente (21:45) : une payée puis annulée
+ * sort du chiffre d'affaires et apparaît dans la tuile « Annulées ».
  * Une indisponibilité s'affiche comme telle, jamais comme des zéros.
  *
  * @see backend/src/database/services/order-stats-tiles.ts
@@ -17,6 +19,7 @@ import {
   Clock,
   DollarSign,
   Package,
+  XCircle,
 } from "lucide-react";
 import { memo, type ReactNode } from "react";
 
@@ -169,7 +172,7 @@ export const OrdersTiles = memo(function OrdersTiles({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <Tile
           testId="tile-orders"
           icon={<Package className="w-5 h-5 text-blue-600" />}
@@ -215,17 +218,18 @@ export const OrdersTiles = memo(function OrdersTiles({
           }
           sub={`${plural(t.abandoned.orders, "commande")} non payée${t.abandoned.orders > 1 ? "s" : ""} depuis ${t.abandoned.afterDays} jours ou plus`}
         />
+        <Tile
+          testId="tile-cancelled"
+          icon={<XCircle className="w-5 h-5 text-gray-500" />}
+          title="Annulées"
+          value={
+            <span className="text-gray-700">
+              {formatPrice(t.cancelled.paidAmount)}
+            </span>
+          }
+          sub={`${plural(t.cancelled.paidOrders, "commande")} payée${t.cancelled.paidOrders > 1 ? "s" : ""} puis annulée${t.cancelled.paidOrders > 1 ? "s" : ""}, hors chiffre d'affaires (${plural(t.cancelled.orders, "annulation")} au total)`}
+        />
       </div>
-
-      {t.cancelled.paidOrders > 0 && (
-        <p className="text-xs text-gray-600" data-testid="tiles-paid-cancelled">
-          Dont {plural(t.cancelled.paidOrders, "commande")} payée
-          {t.cancelled.paidOrders > 1 ? "s" : ""} puis annulée
-          {t.cancelled.paidOrders > 1 ? "s" : ""} (
-          {formatPrice(t.cancelled.paidAmount)}), comptée
-          {t.cancelled.paidOrders > 1 ? "s" : ""} dans le chiffre d'affaires.
-        </p>
-      )}
 
       {excluded.length > 0 && (
         <div
