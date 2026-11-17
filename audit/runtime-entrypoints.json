@@ -716,7 +716,6 @@
       "backend/src/modules/blog/controllers/r3-guide.controller.ts",
       "backend/src/modules/blog/controllers/r6-guide.controller.ts",
       "backend/src/modules/bot-guard/bot-guard.controller.ts",
-      "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "backend/src/modules/cart/controllers/cart-core.controller.ts",
       "backend/src/modules/cart/controllers/cart-items.controller.ts",
       "backend/src/modules/cart/controllers/cart-promo.controller.ts",
@@ -944,7 +943,6 @@
       "CacheService",
       "CacheWarmingService",
       "CanonObservabilityService",
-      "CartAnalyticsController",
       "CartAnalyticsService",
       "CartCoreController",
       "CartDataService",
@@ -1820,7 +1818,6 @@
       "backend/src/modules/bot-guard/bot-guard.module.ts",
       "backend/src/modules/bot-guard/bot-guard.service.ts",
       "backend/src/modules/cart/cart.module.ts",
-      "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "backend/src/modules/cart/controllers/cart-core.controller.ts",
       "backend/src/modules/cart/controllers/cart-items.controller.ts",
       "backend/src/modules/cart/controllers/cart-promo.controller.ts",
@@ -3050,7 +3047,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1643,
+  "runtime_files_count": 1642,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3338,7 +3335,6 @@
     "backend/src/modules/bot-guard/bot-guard.module.ts",
     "backend/src/modules/bot-guard/bot-guard.service.ts",
     "backend/src/modules/cart/cart.module.ts",
-    "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
     "backend/src/modules/cart/controllers/cart-core.controller.ts",
     "backend/src/modules/cart/controllers/cart-items.controller.ts",
     "backend/src/modules/cart/controllers/cart-promo.controller.ts",

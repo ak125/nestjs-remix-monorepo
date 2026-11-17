@@ -2355,7 +2355,6 @@
         "runtime:backend/src/database/services/cart-data.service.ts",
         "runtime:backend/src/database/services/promo-data.service.ts",
         "runtime:backend/src/database/services/shipping-data.service.ts",
-        "runtime:backend/src/modules/cart/controllers/cart-analytics.controller.ts",
         "runtime:backend/src/modules/cart/controllers/cart-core.controller.ts",
         "runtime:backend/src/modules/cart/controllers/cart-items.controller.ts",
         "runtime:backend/src/modules/cart/controllers/cart-promo.controller.ts",
@@ -2373,17 +2372,6 @@
       "id": "runtime:backend/src/modules/cart/cart.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/cart/cart.module.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/modules/cart/services/cart-analytics.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/cart/controllers/cart-analytics.controller.ts",
-      "kind": "nestjs-controller",
-      "path": "backend/src/modules/cart/controllers/cart-analytics.controller.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

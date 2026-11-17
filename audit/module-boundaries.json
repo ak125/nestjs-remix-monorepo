@@ -131,8 +131,8 @@
         "backend/src/modules/cart/dto/__tests__",
         "backend/src/modules/cart/services"
       ],
-      "files_count": 22,
-      "loc_total": 4263,
+      "files_count": 21,
+      "loc_total": 4162,
       "has_barrel": false
     },
     "catalog": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110881,
+      "loc_total": 110846,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -470,7 +470,7 @@
         "backend/src/modules/metadata/services"
       ],
       "files_count": 6,
-      "loc_total": 1918,
+      "loc_total": 1889,
       "has_barrel": false
     },
     "navigation": {
@@ -516,7 +516,7 @@
         "backend/src/modules/payments/utils"
       ],
       "files_count": 29,
-      "loc_total": 5740,
+      "loc_total": 5669,
       "has_barrel": true
     },
     "pkg-cwv-taxonomy": {
@@ -938,6 +938,7 @@
         "backend/tests/unit/seo-control",
         "backend/tests/unit/seo-monitoring",
         "backend/tests/unit/trend-signals",
+        "docs/audit/mandat-bb-20261116/scripts/mesure",
         "docs/audits/editorial-filtre-huile-20261030/tools",
         "frontend",
         "frontend/frontend/tests/e2e",
@@ -960,8 +961,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 384,
-      "loc_total": 80049,
+      "files_count": 387,
+      "loc_total": 80281,
       "has_barrel": true
     },
     "upload": {
@@ -1557,7 +1558,7 @@
     {
       "from": "cart",
       "to": "auth",
-      "count": 5
+      "count": 4
     },
     {
       "from": "cart",

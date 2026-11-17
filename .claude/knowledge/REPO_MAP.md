@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: ec76786f2ba77909e0ea1cb42d936dc7184eb3894a50d00d1751fd8f772c6708
+source_sha256: c4b05dc871791bae4bfd34cac49a8f010b156afa88ee5b5e9eeed8c3e28a3479
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3202 |
+| Files (Layer 1) | 3204 |
 | DB tables (Layer 1) | 315 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1015 |
+| Runtime entrypoints (Layer 1) | 1014 |
 
-Source sotFingerprint: `0a2098a5c2ad`.
+Source sotFingerprint: `8dd8f063dfd9`.
 
 ## Comment l'utiliser
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `0a2098a5c2ad`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 305 (service=196, test=68, controller=40, config=1)
-- **Runtime entrypoints**: 130
-- **Top owners**: @ak125 (130), @ak125/payments-team (84), @ak125/auth-team (79)
+- **Files**: 304 (service=196, test=68, controller=39, config=1)
+- **Runtime entrypoints**: 129
+- **Top owners**: @ak125 (130), @ak125/payments-team (83), @ak125/auth-team (79)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=181, UNKNOWN=124
+- **Status**: LIVE=180, UNKNOWN=124
 
 ### D12 — Marketing & Video
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `0a2098a5c2ad`.
 
 ### D15 — Security & Governance
 
-- **Files**: 328 (test=217, script=62, service=46, config=2, controller=1)
+- **Files**: 331 (test=217, script=62, service=49, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (328)
+- **Top owners**: @ak125 (331)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=269
+- **Status**: LIVE=59, UNKNOWN=272
 
 ### D16 — Maintenance
 
