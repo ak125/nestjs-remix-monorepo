@@ -1,6 +1,6 @@
 import { promisify } from 'util';
 import { gzip } from 'zlib';
-import type { Session } from 'express-session';
+import type { Session, SessionData } from 'express-session';
 
 /** Promisified gzip — replaces manual callback wrapping */
 export const gzipAsync = promisify(gzip);
@@ -45,10 +45,39 @@ export function promisifySessionSave(session: Session): Promise<void> {
   });
 }
 
-/** Promisify express session.regenerate() */
-export function promisifySessionRegenerate(session: Session): Promise<void> {
+/**
+ * Clés de session recopiées à travers une régénération. Liste fermée : la
+ * régénération existe pour qu'une session posée avant la connexion ne donne
+ * aucun droit après (fixation de session). Seule la provenance first-touch y
+ * figure : `{ source, path, firstSeenAt }`, écrite par le serveur
+ * (LandingAttributionController), sans identité ni privilège, relue par
+ * orders.controller pour `___xtr_order.landing_*`. Sans cette recopie, une
+ * connexion ou une inscription avant l'achat effaçait la provenance de la
+ * commande, et le beacon ne la renvoie pas (une fois par onglet).
+ */
+const SESSION_KEYS_KEPT_ON_REGENERATE = ['landing'] as const;
+
+/**
+ * Promisify express session.regenerate().
+ *
+ * Prend la requête, pas la session : express-session remplace `req.session`
+ * par un nouvel objet, l'ancienne référence ne permet pas d'y réécrire. La
+ * valeur recopiée n'est persistée qu'au `session.save()` qui suit chez
+ * l'appelant (tous les appelants sauvegardent après la connexion).
+ */
+export function promisifySessionRegenerate(req: {
+  session: Session & Partial<SessionData>;
+}): Promise<void> {
+  const kept: Partial<SessionData> = {};
+  for (const key of SESSION_KEYS_KEPT_ON_REGENERATE) {
+    if (req.session[key] !== undefined) kept[key] = req.session[key];
+  }
   return new Promise((resolve, reject) => {
-    session.regenerate((err?: Error | null) => (err ? reject(err) : resolve()));
+    req.session.regenerate((err?: Error | null) => {
+      if (err) return reject(err);
+      Object.assign(req.session, kept);
+      resolve();
+    });
   });
 }
 

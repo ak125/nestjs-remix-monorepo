@@ -70217,7 +70217,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 68,
+      "loc": 97,
       "owner": "__unassigned__",
       "path": "backend/src/utils/promise-helpers.ts",
       "risk": "low",
@@ -73457,6 +73457,26 @@
       "loc": 496,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo/sitemap-v10.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 253,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/session-regenerate-keeps-landing.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -108350,11 +108370,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "aff26df8e35ef6ea579c8ab99457a9a7959aad1f8cd132e4812463aa68b81168",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "e32e9e038514c3c7570f932d140fbb543185329e5ab2d95f1e643050a55f18b8",
+      "audit/registry/files.json": "54ba075f5a94152c590bae9d0f94b9a97602421cc9f557aad62032266063f58e",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "8422a16bfb4dc47ec78e980ead21f727965aaa3ba7e4eb569af93c1f35646529"
     },
-    "sotFingerprint": "8dd8f063dfd9"
+    "sotFingerprint": "0922db28d2da"
   },
   "runtime": [
     {
