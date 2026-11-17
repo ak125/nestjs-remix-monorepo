@@ -165,6 +165,23 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L2 pour R2 (migration `20260516_seo_r2_v2_cqrs_snapshot.sql`,
   `pr-2e-readiness-gate.yml`). Pour les autres rôles, la lecture des projections est sous drapeau
   `SEO_PROJECTION_READ_V1`, éteint par défaut. État servi non vérifié.
+- **P40.** Aucune signature publique ne nomme une IA comme auteur. L'auteur affiché est
+  AutoMecanik. Source : décision 137 de l'owner (2026-11-17), qui retient ce texte mot pour mot ;
+  position de l'owner du 2026-11-14, visant toute signature (article, vidéo, publication sociale).
+  Origine du texte : ADR-132 R2, PR ak125/governance-vault#414, ouverte et non fusionnée.
+  Application (relevé du 2026-11-17, `main` `fc470e41a`) : L1 pour les pages du site, sans test ni
+  contrôle. Le code écrit l'organisation comme auteur : balise `meta author` dans neuf fichiers
+  de `frontend/app` et `frontend/public`, champ `author` de type `Organization` des données
+  structurées dans cinq fichiers de `frontend/app` et dans
+  `backend/src/modules/layout/services/meta-tags.service.ts`. Aucun test, aucune règle ast-grep,
+  aucun contrôle CI ne refuse une autre valeur ; deux chemins prennent une valeur variable (ce
+  service, et `frontend/app/utils/seo.server.ts`, sans appelant). Observé en PROD le 2026-11-17 à
+  14:21 UTC sur deux pages du blog : l'auteur déclaré est l'organisation, sous les graphies
+  « Automecanik » et « Automecanik - Experts Automobile ». Vidéo et publication sociale :
+  intention seulement, aucune publication vérifiée. Signalé, non tranché ici : le canon de la
+  persona Fafa admet la signature « Moi c'est Fafa, le mécano IA d'AutoMecanik. »
+  (`workspaces/marketing/.claude/skills/fafa-persona-canon/SKILL.md`), et le gabarit
+  `design-system/roles/R3-blog.md` donne un auteur de type `Person`.
 
 ## Diagnostic
 
