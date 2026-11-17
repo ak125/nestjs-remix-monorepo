@@ -105,10 +105,43 @@ la PR du brouillon, attend les checks, exige `verify` vert, demande l'accord, fu
 tête lue, puis affiche le dernier run du contrôle sur `main`. Il finit par #2127 : projections
 régénérées sur le DEV, checks, accord, circuit, fusion. Il se rejoue : ce qui est fait est sauté.
 
+### Identité et signature des deux pushes (complément BC-4, point 4)
+
+Relevé du 2026-11-17 : le ruleset « main — intégrité » du wiki n'interdit que la suppression et
+le push forcé, « main — contrôles requis » ne liste que sept checks ; `main` de raw n'est pas
+protégée. Aucun des deux dépôts n'exige donc une signature sur la branche d'une PR, et le commit
+de fusion (squash) est signé par GitHub. Les commits déjà poussés du DEV sur #140 et #82 ne sont
+pas vérifiés (`unverified_email`, `no_user`), comme les deux commits de workflow du wiki du
+2026-10-21.
+
+Chemin prévu, sans commit non signé venant du poste :
+
+- **Identité** : celle du clone `am-patches` (nom, e-mail, clé de signature), dont la clé est
+  déjà reconnue par GitHub : le commit du patch 08 sur #2125 (`77bbce652`) est `verified`.
+- **Chemin** : le bloc se lance depuis `am-patches`. Il y lit l'identité, la clé et le format de
+  signature, puis les passe par `git -c …` au seul `git commit -S` fait dans un clone temporaire
+  de la branche de la PR. Rien n'est écrit dans une configuration ; le clone `am-patches` n'est
+  pas modifié.
+- **Arrêts** : clé absente, commit signé refusé, ou tête que l'API de GitHub ne rend pas
+  `verified` : rien n'est poussé ou rien n'est fusionné, selon le cas.
+
+Limite : l'agent ne connaît pas la configuration de signature du poste (GPG ou SSH, agent de
+clés) ; ce chemin n'est pas testé. S'il échoue, l'autre chemin est d'écrire le fichier par l'API
+(`gh api -X PUT …/contents/.github/workflows/agent-exit-contract-hash.yml`) avec le jeton du
+poste : le commit est alors signé par GitHub et attribué au compte, sans clé locale. Ce second
+chemin n'est pas dans le bloc ; il est à demander.
+
+
+
 ```powershell
 & {
   $SSH = "C:\WINDOWS\Sysnative\OpenSSH\ssh.exe"
   $DEV = "deploy@<hote DEV>"
+  $AM = (git rev-parse --show-toplevel)
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : lancer ce bloc depuis le clone am-patches du poste"; return }
+  $ORI = (git -C $AM remote get-url origin)
+  if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : remote origin illisible"; return }
+  if ($ORI -notmatch "nestjs-remix-monorepo") { Write-Host "ARRET : ce dossier n'est pas le clone du monorepo qui signe"; return }
   $REPO = "ak125/nestjs-remix-monorepo"
   $BR = "governance/mandat-bc-etapes4-5-aec-wiki-raw-20261117"
   $PD = "docs/audit/mandat-bc-20261116/patches/"
@@ -138,6 +171,16 @@ régénérées sur le DEV, checks, accord, circuit, fusion. Il se rejoue : ce qu
     if ($H -ne $L[4]) { Write-Host ("ARRET : empreinte de " + $L[3] + " = " + $H); return }
   }
 
+  $UN = (git -C $AM config --get user.name)
+  $UE = (git -C $AM config --get user.email)
+  $SK = (git -C $AM config --get user.signingkey)
+  if ((-not $UN) -or (-not $UE) -or (-not $SK)) { Write-Host "ARRET : identite ou cle de signature absente du clone am-patches, rien n'est pousse"; return }
+  $CFG = @("-c", ("user.name=" + $UN), "-c", ("user.email=" + $UE), "-c", ("user.signingkey=" + $SK))
+  foreach ($KEY in @("gpg.format", "gpg.program", "gpg.ssh.program")) {
+    $VAL = (git -C $AM config --get $KEY)
+    if ($VAL) { $CFG += @("-c", ($KEY + "=" + $VAL)) }
+  }
+
   foreach ($L in $LOTS) {
     $R = $L[0]
     $P = $L[1]
@@ -159,8 +202,8 @@ régénérées sur le DEV, checks, accord, circuit, fusion. Il se rejoue : ce qu
       if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : application de " + $L[3]); return }
       git -C $TR add -- (".github/workflows/" + $WF)
       if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : git add"; return }
-      git -C $TR commit -m "ci(aec): le workflow lit le manifeste du monorepo, sans jeton du vault (mandat BC, etape 4)"
-      if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : commit"; return }
+      git -C $TR @CFG commit -S -m "ci(aec): le workflow lit le manifeste du monorepo, sans jeton du vault (mandat BC, etape 4)"
+      if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : commit signe refuse, rien n'est pousse"; return }
       git -C $TR push origin ("HEAD:refs/heads/" + $L[2])
       if ($LASTEXITCODE -ne 0) { Write-Host ("ARRET : push refuse sur " + $R); return }
     }
@@ -168,6 +211,9 @@ régénérées sur le DEV, checks, accord, circuit, fusion. Il se rejoue : ce qu
     if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : sortie du brouillon"; return }
     $LHEAD = (gh pr view $P --repo $R --json headRefOid --jq .headRefOid)
     if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : lecture de la tete"; return }
+    $SIG = (gh api ("repos/" + $R + "/commits/" + $LHEAD) --jq .commit.verification.verified)
+    if ($LASTEXITCODE -ne 0) { Write-Host "ARRET : signature de la tete illisible"; return }
+    if ($SIG -ne "true") { Write-Host ("ARRET : la tete " + $LHEAD + " n'est pas verifiee par GitHub, rien n'est fusionne"); return }
     Start-Sleep -Seconds 60
     $LVERT = $false
     for ($i = 0; $i -lt 40; $i++) {
