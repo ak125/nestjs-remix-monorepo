@@ -17,7 +17,11 @@
  *     l'organisation du 2026-11-04 ; l'Expertise technique automobile n'a pas de
  *     KPI propre) : sessions passées par le diagnostic
  *     (`diag_hub_view`) qui voient ensuite une page produit (`r2_view`, même
- *     `session_id`, après la première visite du diagnostic).
+ *     `session_id`, après la première visite du diagnostic). Sessions humaines
+ *     seulement (`payload.traffic_class = 'human'`, posé à la réception depuis
+ *     le mandat AT, décisions 36 et 68) : une période qui contient des visites
+ *     sans classe (historique antérieur au classement) n'est pas recalculée,
+ *     elle est marquée « non qualifiée » (UNKNOWN, non certifiée).
  *
  * Statut : `pages_generating_atc` et `diagnostic_to_product` n'ont aucune cible
  * déclarée. Une mesure positive reste UNKNOWN avec sa valeur ; zéro conserve
@@ -40,6 +44,23 @@ export interface SessionEventRow {
 export interface DiagnosticToProductCounts {
   sessions: number;
   reachedProduct: number;
+  /**
+   * Visites du diagnostic de la période sans classe de trafic (antérieures au
+   * classement humain/robot) : >0 ⇒ période non qualifiée. Absent = 0.
+   */
+  unclassifiedVisits?: number;
+}
+
+/** Classe de trafic retenue par les KPI du parcours (payload.traffic_class). */
+export const HUMAN_TRAFFIC_CLASS = 'human';
+
+/** Constat d'une période non qualifiée ; null si toutes les visites sont classées. */
+export function diagnosticQualificationNote(
+  counts: DiagnosticToProductCounts | null,
+): string | null {
+  const n = counts?.unclassifiedVisits ?? 0;
+  if (n <= 0) return null;
+  return `Non qualifié : ${n} visite(s) du diagnostic de la période sont antérieures au classement humain/robot ; historique non recalculé, seules les sessions humaines classées sont comptées.`;
 }
 
 export interface DiagnosticVisits {
@@ -173,16 +194,18 @@ export function toDiagnosticToProductKpi(
   const id = 'diagnostic_to_product';
   const label = `Produit — sessions du diagnostic qui voient ensuite un produit (${windowDays} j)`;
   if (!counts) return unknownKpi(id, label);
+  const qualified = (counts.unclassifiedVisits ?? 0) === 0;
   return {
     id,
     label,
     value: counts.reachedProduct,
     unit: `/${counts.sessions}`,
+    // Période non qualifiée : aucune alerte tirée d'une mesure partielle.
     status:
-      counts.sessions > 0 && counts.reachedProduct === 0
+      qualified && counts.sessions > 0 && counts.reachedProduct === 0
         ? 'CRITICAL'
         : 'UNKNOWN',
     source: 'db',
-    certified: true,
+    certified: qualified,
   };
 }

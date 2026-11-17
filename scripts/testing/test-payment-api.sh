@@ -70,7 +70,6 @@ extract_id() {
 
 # Variables globales pour stocker les IDs crÃ©Ã©s
 PAYMENT_ID=""
-PAYMENT_ID_CONSIGNES=""
 
 echo "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”"
 echo "ðŸ“‹ SECTION 1 : ENDPOINTS DE BASE"
@@ -117,27 +116,6 @@ if [ "$status_code" = "201" ]; then
   ((TESTS_PASSED++))
 else
   echo -e "${RED}âŒ FAIL${NC} (Expected 201, got $status_code)"
-  ((TESTS_FAILED++))
-fi
-
-# Test 3: CrÃ©er un paiement avec consignes
-response=$(curl -s -w "\n%{http_code}" -X POST "${API_URL}/test/create-with-consignes" \
-  -H "Content-Type: application/json" \
-  -d '{"orderId": "ORD-AUTOTEST-CONSIGNES"}')
-
-status_code=$(echo "$response" | tail -n 1)
-body=$(echo "$response" | head -n -1)
-
-((TESTS_RUN++))
-echo -ne "${YELLOW}â³${NC} Test $TESTS_RUN: POST /test/create-with-consignes... "
-
-if [ "$status_code" = "200" ]; then
-  PAYMENT_ID_CONSIGNES=$(echo "$body" | jq -r '.payment.id' 2>/dev/null || echo "")
-  echo -e "${GREEN}âœ… PASS${NC} (HTTP $status_code)"
-  echo -e "   ${BLUE}â†’${NC} Payment ID: $PAYMENT_ID_CONSIGNES"
-  ((TESTS_PASSED++))
-else
-  echo -e "${RED}âŒ FAIL${NC} (Expected 200, got $status_code)"
   ((TESTS_FAILED++))
 fi
 

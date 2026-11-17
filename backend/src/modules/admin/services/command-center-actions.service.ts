@@ -23,6 +23,11 @@ import {
 import { buildPricingRiskActions } from './command-center-action-rules/pricing-action.rules';
 import { buildTrackingIntegrityActions } from './command-center-action-rules/tracking-integrity-action.rules';
 import {
+  buildCollectionFreshnessActions,
+  collectionFreshnessUnavailable,
+  type CollectionCrossCheck,
+} from './command-center-action-rules/collection-freshness-action.rules';
+import {
   buildImprovementCandidateActions,
   type SizeBudgetMeasure,
 } from './command-center-action-rules/improvement-candidate.rules';
@@ -101,6 +106,7 @@ export class CommandCenterActionsService extends SupabaseBaseService {
       ...(await this.seoOpportunities()),
       ...(await this.pricingRisks()),
       ...(await this.trackingIntegrityActions()),
+      ...(await this.collectionFreshnessActions()),
       ...this.improvementCandidates(),
     ];
     return sortActions(raws.map(finalizeAction));
@@ -341,6 +347,121 @@ export class CommandCenterActionsService extends SupabaseBaseService {
         ),
       ];
     }
+  }
+
+  /** Jours retenus pour le recoupement GA4 / Search Console. */
+  private static readonly CROSSCHECK_DAYS = 7;
+  /** Borne de lecture GA4 du recoupement (pages de 1000 lignes). */
+  private static readonly CROSSCHECK_MAX_PAGES = 10;
+
+  /**
+   * Fraîcheur des collectes Search Console et GA4 + recoupement (mandat AT).
+   * Toute lecture en échec ⇒ action de certification, jamais « à jour ».
+   */
+  private async collectionFreshnessActions(): Promise<RawAction[]> {
+    try {
+      const { data: gscRows, error: gscError } = await this.supabase
+        .from('__seo_gsc_daily_property_total')
+        .select('date, clicks')
+        .not('commit_version', 'is', null)
+        .order('date', { ascending: false })
+        .limit(2 * CommandCenterActionsService.CROSSCHECK_DAYS);
+      if (gscError) throw gscError;
+      const { data: ga4Last, error: ga4Error } = await this.supabase
+        .from('__seo_ga4_daily')
+        .select('date')
+        .order('date', { ascending: false })
+        .limit(1);
+      if (ga4Error) throw ga4Error;
+
+      const gsc = ((gscRows ?? []) as Array<{ date: string; clicks: unknown }>)
+        .map((r) => ({ date: String(r.date), clicks: Number(r.clicks) }))
+        .filter((r) => Number.isFinite(r.clicks));
+      const gscLast = gsc[0]?.date ?? null;
+      const ga4LastDate =
+        ((ga4Last ?? []) as Array<{ date: string }>)[0]?.date ?? null;
+
+      let crossCheck: CollectionCrossCheck | null = null;
+      const candidates = ga4LastDate
+        ? gsc
+            .filter((r) => r.date <= String(ga4LastDate))
+            .slice(0, CommandCenterActionsService.CROSSCHECK_DAYS)
+        : [];
+      if (candidates.length > 0) {
+        const organic = await this.readGa4OrganicSessions(
+          candidates.map((r) => r.date),
+        );
+        // Jours communs = jours Search Console confirmés présents dans GA4.
+        const common = candidates
+          .filter((r) => organic.has(r.date))
+          .sort((a, b) => a.date.localeCompare(b.date));
+        crossCheck = {
+          days: common.map((r) => r.date),
+          gscClicks: common.reduce((sum, r) => sum + r.clicks, 0),
+          ga4OrganicSessions: common.reduce(
+            (sum, r) => sum + (organic.get(r.date) ?? 0),
+            0,
+          ),
+        };
+      }
+
+      return buildCollectionFreshnessActions({
+        now: new Date(),
+        lastDate: {
+          gsc: gscLast,
+          ga4: ga4LastDate ? String(ga4LastDate) : null,
+        },
+        crossCheck,
+      });
+    } catch (e) {
+      this.logger.warn(
+        `[command-center-actions] fraîcheur des collectes indisponible: ${e instanceof Error ? e.message : String(e)}`,
+      );
+      return [
+        collectionFreshnessUnavailable(
+          'Lecture de __seo_gsc_daily_property_total ou __seo_ga4_daily en échec',
+        ),
+      ];
+    }
+  }
+
+  /**
+   * Sessions GA4 du canal « organic search » par jour (ligne par page dans la
+   * table : lecture paginée, exhaustive ou en échec).
+   */
+  private async readGa4OrganicSessions(
+    dates: string[],
+  ): Promise<Map<string, number>> {
+    const byDate = new Map<string, number>();
+    const pageSize = 1000;
+    let read = 0;
+    for (
+      let page = 0;
+      page < CommandCenterActionsService.CROSSCHECK_MAX_PAGES;
+      page++
+    ) {
+      const { data, error, count } = await this.supabase
+        .from('__seo_ga4_daily')
+        .select('date, sessions', { count: 'exact' })
+        .eq('channel', 'organic search')
+        .in('date', dates)
+        .order('date', { ascending: true })
+        .order('page', { ascending: true })
+        .range(page * pageSize, page * pageSize + pageSize - 1);
+      if (error) throw error;
+      if (count == null) throw new Error('GA4 : compte exact absent');
+      const rows = (data ?? []) as Array<{ date: string; sessions: unknown }>;
+      for (const r of rows) {
+        const sessions = Number(r.sessions);
+        if (!Number.isFinite(sessions)) continue;
+        const d = String(r.date);
+        byDate.set(d, (byDate.get(d) ?? 0) + sessions);
+      }
+      read += rows.length;
+      if (read >= count) return byDate;
+      if (rows.length === 0) break;
+    }
+    throw new Error('GA4 : lecture du recoupement incomplète');
   }
 
   /** In-memory memo so an admin request doesn't re-gzip the build every time. */
