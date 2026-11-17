@@ -13,7 +13,7 @@
  * tags sorted, fields ordered), and includes a sha256 content checksum
  * per skill for change detection.
  *
- * Third-party skills (ADR-137) : an entry whose name is a key of
+ * Third-party skills, P40 (journal des principes) : an entry whose name is a key of
  * `skills-lock.json` is marked `origin: "third_party"` with its lock pin
  * (`source`, `ref`). Its upstream frontmatter is not expected to follow the
  * local schema, so it stays `spec_compliant: false` but is not reported in

@@ -16,7 +16,7 @@
  *   7. (Soft) `last_verified` is not in the future and not older than
  *      365 days for stable skills.
  *
- * Third-party skills (ADR-137) : a directory whose name is a key of
+ * Third-party skills, P40 (journal des principes) : a directory whose name is a key of
  * `skills-lock.json` (repo root) is an upstream skill. Its SKILL.md follows
  * the upstream Agent Skills format, so it is checked against the lock instead
  * of the local schema : `source`, 40-char `ref`, `skillPath`, `computedHash`
@@ -59,7 +59,7 @@ const OWNERSHIP_PATH = path.join(
   "repository-registry",
   "ownership.yaml"
 );
-// ADR-137 D3/D7 — lock of the third-party skills, written by the `skills` CLI.
+// P40 (journal des principes) — lock of the third-party skills, written by the `skills` CLI.
 const LOCK_PATH = path.join(MONOREPO_ROOT, "skills-lock.json");
 const LOCK_VERSION = 2;
 const WRAPPER_PREFIX = "amk-";
@@ -242,7 +242,7 @@ function validateThirdPartySkill(name, entry, result, ctx) {
   if (typeof e.ref !== "string" || !/^[0-9a-f]{40}$/.test(e.ref)) {
     fail(
       "third_party_lock_invalid",
-      "lock entry `ref` must pin a full 40-char commit SHA (ADR-137 D3)"
+      "lock entry `ref` must pin a full 40-char commit SHA (P40, journal des principes)"
     );
   }
   if (
@@ -263,7 +263,7 @@ function validateThirdPartySkill(name, entry, result, ctx) {
     if (actual !== e.computedHash) {
       fail(
         "third_party_hash_mismatch",
-        `folder hash ${actual} differs from lock computedHash ${e.computedHash} — the upstream folder must not be modified (ADR-137 D3.3)`
+        `folder hash ${actual} differs from lock computedHash ${e.computedHash} — the upstream folder must not be modified (P40, journal des principes)`
       );
     }
   }
@@ -290,7 +290,7 @@ function validateThirdPartySkill(name, entry, result, ctx) {
   if (!fs.existsSync(wrapper)) {
     fail(
       "third_party_unwrapped",
-      `third-party skill has no local wrapper ${WRAPPER_PREFIX}${name}/SKILL.md (ADR-137 D4)`
+      `third-party skill has no local wrapper ${WRAPPER_PREFIX}${name}/SKILL.md (P40, journal des principes)`
     );
   }
   return result;
