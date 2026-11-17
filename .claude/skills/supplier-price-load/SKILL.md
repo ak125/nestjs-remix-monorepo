@@ -42,17 +42,19 @@ PR #707/#709), de façon vérifiée et réversible. Doctrine = runbook
 > visible = `display/commit` (gate gamme `pg_display` #915). Chaque étape =
 > **GO owner** + rollback batch.
 
-> **Définition unique de vendable — décision 51 (owner, 2026-11-15/16)
-> `[CRITICAL]`** : une ligne est vendable si et seulement si **`pri_dispo = '1'`**,
-> `pricing_state <> 'FROZEN'`, pièce non masquée (`piece_display = true`) et
-> `pri_vente_ttc_n > 0`. Code : `backend/src/database/services/vendable.ts`
-> (`estVendable`), lu par le panier (`PiecePriceDataService`) et le module
-> tarifaire (impact et garde-fou du retrait). `'2'`, `'3'`, `'0'` et `null` **ne
-> vendent pas** : une activation GRP→`'2'` ne rend donc plus vendable (point à
-> trancher par l'owner avant le prochain lot). **Écart encore servi** : la RPC
-> R2 `get_listing_products_extended_filtered`, la quarantaine SQL et le
-> `isSellable` frontend (`frontend/app/utils/stock.utils.ts`) acceptent encore
-> `'1'|'2'|'3'` — alignement SEO à mandater séparément.
+> **Définition unique de vendable — décision 51 (owner, 2026-11-15/16), amendée
+> par la décision 118 (2026-11-17) `[CRITICAL]`** : une ligne est vendable si et
+> seulement si **`pri_dispo` vaut `'1'` (en stock), `'2'` (stock faible) ou `'3'`
+> (sur commande, délai affiché)**, `pricing_state <> 'FROZEN'`, pièce non masquée
+> (`piece_display = true`) et `pri_vente_ttc_n > 0`. Même définition pour les
+> pages et le panier. Code : `backend/src/database/services/vendable.ts`
+> (`estVendable`, `DISPOS_VENDABLES`), lu par le panier (`PiecePriceDataService`)
+> et le module tarifaire (impact, dénominateur et garde-fou du retrait). `'0'` et
+> `null` ne vendent pas ; une activation AG→`'1'` ou GRP→`'2'` rend vendable.
+> **Écart encore servi** : la RPC catalogue `get_pieces_for_type_gamme_v3` ne
+> retient que `'1'` (les RPC R2 et la quarantaine SQL, et le `isSellable`
+> frontend, acceptent `'1'|'2'|'3'`) ; fonction SQL unique `est_vendable` à
+> mandater séparément (zone SEO).
 >
 > **Fraîcheur par fournisseur** (`backend/src/modules/pricing/config/supplier-sale-rules.ts`,
 > `FRAICHEUR_PAR_FOURNISSEUR`, clé = `pri_frs`) : tant que la première mise à

@@ -25,8 +25,9 @@ import { estVendable } from './vendable';
  * DEUX questions, DEUX règles — ne pas les confondre
  * --------------------------------------------------
  * **Le prix** est une décision commerciale : seule une ligne vendable compte,
- * au sens de la définition unique de la décision 51 (`./vendable.ts` :
- * `pri_dispo = '1'`, ligne non gelée, pièce affichée, prix strictement positif).
+ * au sens de la définition unique des décisions 51 et 118 (`./vendable.ts` :
+ * `pri_dispo` '1', '2' ou '3', ligne non gelée, pièce affichée, prix
+ * strictement positif).
  *
  * **Le poids** est une propriété physique. Une pièce pèse le même poids que son
  * tarif soit vendable ou non. Le filtrer sur la disponibilité jetterait un poids
@@ -251,7 +252,7 @@ export class PiecePriceDataService extends SupabaseBaseService {
     return { vendables, offresVendables, poidsEnGrammes: poids };
   }
 
-  /** Décision 51 appliquée à une ligne lue par {@link findTariffs}. */
+  /** Décisions 51 et 118 appliquées à une ligne lue par {@link findTariffs}. */
   static estVendable(ligne: SellablePriceRow): boolean {
     return estVendable({
       dispo: ligne.pri_dispo,

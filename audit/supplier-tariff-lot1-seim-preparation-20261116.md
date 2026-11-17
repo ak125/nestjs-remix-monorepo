@@ -1,6 +1,7 @@
 # Premier lot de mise à jour de tarif : SEIM (préparé, non lancé)
 
-Mandat AS, périmètre 6 (décision 51). Relevé du 2026-11-16, base DEV partagée,
+Mandat AS, périmètre 6 (décision 51, amendée par la décision 118). Relevé du
+2026-11-16, simulation rejouée le 2026-11-17 sous la décision 118, base DEV partagée,
 **lecture seule** : aucune écriture en base, aucun appel aux routes d'import
 (le dry-run d'import persiste un lot RAW, il revient donc à Marwane).
 
@@ -28,19 +29,23 @@ précédent. SASIC n'a ni précédent ni comparaison.
 ## 3. Simulation (rapprochement fichier ↔ `pieces_price`, SELECT seul)
 
 Clé : référence en majuscules sans espace (`pri_ref`, sinon `piece_ref`) ;
-vendable = définition unique (décision 51). Sortie projetée = vendable absente
-du tarif ou `SUP`.
+vendable = définition unique (décision 118 : `pri_dispo` '1', '2' ou '3', ni
+FROZEN ni masquée, prix > 0). Sortie projetée = vendable absente du tarif ou `SUP`.
 
 | `pri_frs` | lignes | vendables | dans le tarif | vendables absentes | vendables SUP | vendables fin de vie | sorties projetées |
 |---|---|---|---|---|---|---|---|
-| CAL | 5 522 | 5 417 | 5 510 | 12 | 98 | 134 | 2,03 % |
+| CAL | 5 522 | 5 422 | 5 510 | 12 | 98 | 134 | 2,03 % |
 | NED | 2 314 | 2 236 | 2 305 | 7 | 28 | 187 | 1,57 % |
-| (vide) | 28 | 10 | 25 | 2 | 0 | 0 | 20 % |
-| **Marque 4200** | 7 864 | **7 663** | 7 840 | 21 | 126 | 321 | **147 = 1,92 %** |
+| (vide) | 28 | 20 | 25 | 3 | 0 | 0 | 15 % |
+| **Marque 4200** | 7 864 | **7 678** | 7 840 | 22 | 126 | 321 | **148 = 1,93 %** |
+
+Sous l'ancienne règle (dispo '1' seul, décision 51 initiale) : 7 663 vendables,
+147 sorties = 1,92 %. La décision 118 ajoute 15 lignes vendables (dispo '2' ou
+'3') et une sortie projetée.
 
 - 1 161 références actives du tarif n'ont aucune ligne en base : candidates à
   création, hors de ce lot (création de pièce = autre chantier).
-- Garde-fou 5 % (par marque) : **ne s'arrêterait pas** (1,92 %).
+- Garde-fou 5 % (par marque) : **ne s'arrêterait pas** (1,93 %).
 - Fraîcheur : CAL et NED sont à `null` dans `FRAICHEUR_PAR_FOURNISSEUR` ; un
   retrait motif `DISCONTINUED_TARIFF` est donc aujourd'hui **alerte seulement**,
   aucune ligne ne sort. Les 126 `SUP` relèvent de `CONFIRMED_OUT` seulement si

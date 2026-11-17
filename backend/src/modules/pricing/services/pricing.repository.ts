@@ -6,6 +6,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DISPOS_VENDABLES } from '@database/services/vendable';
 import { eurToCents } from './pricing-formula.service';
 import { normalizeSupplierReference } from '../utils/normalize-supplier-reference';
 import type { CatalogPiece, ExistingPriceRow } from './price-import.dry-run';
@@ -429,9 +430,10 @@ export class PricingRepository extends SupabaseBaseService {
 
   /**
    * Denominator of the 5 % guard (decision 51): sellable rows of a brand —
-   * pri_dispo '1', not FROZEN, priced, piece displayed. Head count (no rows
-   * transferred). Counts ROWS: on 2026-11-16, 414 977 sellable rows for 414 887
-   * pieces (0.02 % apart), so the ratio is read as a share of pieces.
+   * pri_dispo '1', '2' or '3' (decision 118, same set as estVendable), not
+   * FROZEN, priced, piece displayed. Head count (no rows transferred). Counts
+   * ROWS: on 2026-11-17, 417 470 sellable pieces and 68 pieces with more than
+   * one sellable row, so the ratio is read as a share of pieces.
    */
   async countSellablePieces(supplier: string): Promise<number> {
     const { count, error } = await this.supabase
@@ -444,7 +446,7 @@ export class PricingRepository extends SupabaseBaseService {
         },
       )
       .eq('pri_pm_id', supplier)
-      .eq('pri_dispo', '1')
+      .in('pri_dispo', [...DISPOS_VENDABLES])
       .or('pricing_state.is.null,pricing_state.neq.FROZEN')
       .gt('pri_vente_ttc_n', 0)
       .eq('pieces.piece_display', true)

@@ -55,14 +55,17 @@ passe **uniquement** par `POST /api/admin/pricing/import/commit`.
 ## Garde-fou storefront `[CRITICAL]` — 3 couches : coût ≠ dispo ≠ vendable
 
 > **Remplacé sur la définition de « vendable » par la décision 51 (owner,
-> 2026-11-15/16).** Vendable = **`pri_dispo = '1'`**, ligne non `FROZEN`, pièce
-> non masquée (`piece_display = true`), `pri_vente_ttc_n > 0` — rien d'autre.
-> `'2'` (stock faible) et `'3'` (sur commande) **ne vendent plus**. Source unique
-> côté serveur : `backend/src/database/services/vendable.ts` (`estVendable`),
-> utilisée par le panier et par le retrait de dispo du module tarifaire.
-> Le texte ci-dessous reste l'historique de la règle `IN ('1','2','3')` ; il
-> décrit encore ce que servent la RPC R2, la quarantaine SQL et le `isSellable`
-> frontend, dont l'alignement est à mandater séparément (effet SEO / JSON-LD).
+> 2026-11-15/16), amendée par la décision 118 (2026-11-17).** Vendable =
+> **`pri_dispo` IN (`'1'`, `'2'`, `'3'`)** (en stock, stock faible, sur commande
+> avec délai affiché), ligne non `FROZEN`, pièce non masquée
+> (`piece_display = true`), `pri_vente_ttc_n > 0` — rien d'autre, et la même
+> définition pour les pages et le panier. Source unique côté serveur :
+> `backend/src/database/services/vendable.ts` (`estVendable`), utilisée par le
+> panier et par le retrait de dispo du module tarifaire. Le texte ci-dessous
+> garde l'historique de la règle `IN ('1','2','3')`, qui reste la bonne liste de
+> valeurs. **Écart servi** : `get_pieces_for_type_gamme_v3` (pages gamme) ne
+> retient que `'1'` ; la quarantaine SQL ignore FROZEN et `piece_display`.
+> Alignement par une fonction SQL `est_vendable` à mandater séparément (SEO).
 >
 > Ajouts de la décision 51 :
 > - **Fraîcheur par fournisseur** (`backend/src/modules/pricing/config/supplier-sale-rules.ts`,

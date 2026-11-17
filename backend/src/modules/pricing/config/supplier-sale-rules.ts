@@ -74,7 +74,7 @@ export function fraicheurActive(
 }
 
 export interface GardeFouSortie {
-  /** Pièces vendables (décision 51) du périmètre du lot avant retrait. */
+  /** Pièces vendables (décisions 51 et 118) du périmètre du lot avant retrait. */
   vendablesAvant: number;
   /** Pièces que le lot ferait sortir de la vente. */
   sortantes: number;

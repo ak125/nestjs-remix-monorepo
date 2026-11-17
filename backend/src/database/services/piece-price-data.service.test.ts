@@ -136,11 +136,25 @@ describe('PiecePriceDataService — choix de la ligne de prix', () => {
     expect(await sujet.findSellablePrice(42)).toBeNull();
   });
 
-  it("décision 51 : écarte une ligne '2' ou '3' (stock faible, sur commande)", async () => {
+  it("décision 118 : vend une ligne '2' ou '3' (stock faible, sur commande)", async () => {
     const { sujet } = service([
       [
-        ligne({ pri_type: '1', pri_dispo: '2' }),
-        ligne({ pri_type: '2', pri_dispo: '3' }),
+        ligne({ pri_piece_id_i: 1, pri_dispo: '2', pri_vente_ttc_n: 20 }),
+        ligne({ pri_piece_id_i: 2, pri_dispo: '3', pri_vente_ttc_n: 30 }),
+      ],
+    ]);
+
+    const vendables = await sujet.findSellablePrices([1, 2]);
+
+    expect(vendables.get(1)?.pri_dispo).toBe('2');
+    expect(vendables.get(2)?.pri_dispo).toBe('3');
+  });
+
+  it("décision 118 : écarte une ligne '2' ou '3' gelée", async () => {
+    const { sujet } = service([
+      [
+        ligne({ pri_type: '1', pri_dispo: '2', pricing_state: 'FROZEN' }),
+        ligne({ pri_type: '2', pri_dispo: '3', pricing_state: 'FROZEN' }),
       ],
     ]);
 

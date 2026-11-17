@@ -1,22 +1,27 @@
 -- =============================================================================
 -- Migration : aligner sur pri_dispo '0' les 9 lignes tarif gelées (FROZEN) de
 --             pièces déjà masquées qui portent encore pri_dispo '1'
--- Date      : 2026-11-16 (mandat AS, décision 51 « définition unique de vendable »)
+-- Date      : 2026-11-16 (mandat AS, décision 51 « définition unique de vendable »,
+--             amendée par la décision 118 du 2026-11-17)
 -- Scope     : public.pieces_price, 9 lignes (une par pièce) : pri_dispo,
 --             pricing_state_reason, pricing_updated_by, pricing_updated_source.
 --             Rien d'autre : ni piece_display, ni pricing_state, ni prix.
 -- Forward-only. Ne réécrit AUCUNE migration historique.
 -- =============================================================================
 --
--- POURQUOI — décision 51 : une ligne tarif est vendable si et seulement si
--- pri_dispo = '1', qu'elle n'est pas FROZEN et que la pièce n'est pas masquée.
+-- POURQUOI — décisions 51 et 118 : une ligne tarif est vendable si et seulement
+-- si pri_dispo vaut '1', '2' ou '3', qu'elle n'est pas FROZEN et que la pièce
+-- n'est pas masquée.
 -- Ces 9 pièces sont hors vente (masquées + FROZEN) mais leur ligne garde
 -- pri_dispo '1' : tout lecteur qui ne regarde que pri_dispo (recherche, RPC
 -- catalogue, rapports de dispo, futur flux marchand) les compte encore comme
 -- disponibles. On aligne la donnée sur la définition : pri_dispo '0'.
 --
 -- PÉRIMÈTRE (relevé en lecture seule le 2026-11-16, DEV = base partagée) :
--- toutes les lignes pricing_state = 'FROZEN' AND pri_dispo = '1', soit 9 :
+-- toutes les lignes pricing_state = 'FROZEN' AND pri_dispo = '1', soit 9.
+-- Revu le 2026-11-17 sous la décision 118 : aucune ligne FROZEN ne porte
+-- pri_dispo '2' ou '3' (FROZEN = 9 lignes à '1', 2 lignes à '0') ; le
+-- périmètre reste donc ces 9 lignes :
 --   quarantaine du 2026-10-18 (20261018_pricing_quarantine_rupture_sphere_c00282) :
 --     5660748 SNRA C00282  (SOREA)       9613328 SNRA XA230RZ (SOREA)
 --     1008195 RCA  1202    (RCA France)  1011020 RCA  1204    (RCA France)
@@ -139,7 +144,7 @@ BEGIN
   UPDATE public.pieces_price
      SET pri_dispo              = '0',
          pricing_state_reason   = pricing_state_reason
-                                  || ' | 2026-11-16 : pri_dispo aligné sur 0 (décision 51, vendable = dispo 1, '
+                                  || ' | 2026-11-16 : pri_dispo aligné sur 0 (décisions 51 et 118, vendable = dispo 1, 2 ou 3, '
                                   || 'ni FROZEN ni masquée). Réversible par 20261116_pricing_frozen_masked_dispo_zero.down.sql.',
          pricing_updated_by     = c_by,
          pricing_updated_source = c_source

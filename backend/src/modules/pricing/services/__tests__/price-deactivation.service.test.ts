@@ -136,15 +136,26 @@ describe('projectQuarantineImpact', () => {
     expect(after).toEqual({ piecesLosingSale: 0, newlyQuarantinable: 1 });
   });
 
-  it("décision 51 : a '2'/'3' row no longer keeps a piece on sale", () => {
+  it("décision 118 : a remaining '2' or '3' row keeps the piece on sale", () => {
+    for (const d of ['2', '3'] as const) {
+      const impact = projectQuarantineImpact(
+        new Map([[1, [r('0', '1', 25), r('1', d, 30)]]]),
+        new Map([[1, true]]),
+        new Set(['1:0']),
+        shown,
+      );
+      expect(impact).toEqual({ piecesLosingSale: 0, newlyQuarantinable: 0 });
+    }
+  });
+
+  it("décision 118 : withdrawing the only '3' row takes the piece out of sale", () => {
     const impact = projectQuarantineImpact(
-      new Map([[1, [r('0', '1', 25), r('1', '2', 30)]]]),
+      new Map([[1, [r('0', '3', 25)]]]),
       new Map([[1, true]]),
       new Set(['1:0']),
       shown,
     );
-    // the '2' row still blocks the served quarantine, but the piece leaves sale
-    expect(impact).toEqual({ piecesLosingSale: 1, newlyQuarantinable: 0 });
+    expect(impact).toEqual({ piecesLosingSale: 1, newlyQuarantinable: 1 });
   });
 
   it('décision 51 : a masked piece or a FROZEN row was never on sale', () => {

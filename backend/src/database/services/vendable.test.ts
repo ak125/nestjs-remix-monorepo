@@ -1,6 +1,6 @@
 import { estVendable, type EntreeVendabilite } from './vendable';
 
-/** Décision 51 : pri_dispo '1', ni FROZEN ni masquée, prix strictement positif. */
+/** Décisions 51 et 118 : pri_dispo '1', '2' ou '3', ni FROZEN ni masquée, prix > 0. */
 const base: EntreeVendabilite = {
   dispo: '1',
   etatTarif: 'ACTIVE',
@@ -8,21 +8,31 @@ const base: EntreeVendabilite = {
   pieceAffichee: true,
 };
 
-describe('estVendable — définition unique (décision 51)', () => {
+describe('estVendable — définition unique (décisions 51 et 118)', () => {
   it('vend une ligne dispo 1, active, affichée, au prix positif', () => {
     expect(estVendable(base)).toBe(true);
   });
 
-  it.each(['0', '2', '3', null, undefined, ''])(
+  it.each(['1', '2', '3'])(
+    'vend pri_dispo %p (en stock, stock faible, sur commande — décision 118)',
+    (dispo) => {
+      expect(estVendable({ ...base, dispo })).toBe(true);
+    },
+  );
+
+  it.each(['0', '4', ' 1', '01', null, undefined, ''])(
     'ne vend pas pri_dispo %p',
     (dispo) => {
       expect(estVendable({ ...base, dispo })).toBe(false);
     },
   );
 
-  it('ne vend pas une ligne gelée', () => {
-    expect(estVendable({ ...base, etatTarif: 'FROZEN' })).toBe(false);
-  });
+  it.each(['1', '2', '3'])(
+    'ne vend pas une ligne gelée, même à pri_dispo %p',
+    (dispo) => {
+      expect(estVendable({ ...base, dispo, etatTarif: 'FROZEN' })).toBe(false);
+    },
+  );
 
   it('vend une ligne MANUAL_OVERRIDE ou sans état (aligné sur la RPC servie)', () => {
     expect(estVendable({ ...base, etatTarif: 'MANUAL_OVERRIDE' })).toBe(true);

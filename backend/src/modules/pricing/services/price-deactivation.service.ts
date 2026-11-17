@@ -21,10 +21,12 @@
  * the impact projection (projectQuarantineImpact) mirrors the quarantine predicate;
  * both are pure, unit-tested functions (no DB).
  *
- * Decision 51 (owner, 2026-11-15/16), on top of the SQL guards:
+ * Decision 51 (owner, 2026-11-15/16), amended by decision 118 (2026-11-17),
+ * on top of the SQL guards:
  *  - « losing sale » is measured with the single definition of sellable
- *    (`@database/services/vendable`: dispo '1', not FROZEN, piece displayed,
- *    priced) — the 5 % guard and the reports count the same thing as the cart;
+ *    (`@database/services/vendable`: dispo '1', '2' or '3', not FROZEN, piece
+ *    displayed, priced) — the 5 % guard and the reports count the same thing
+ *    as the cart;
  *  - freshness: a DISCONTINUED_TARIFF row whose supplier (pri_frs) has not had
  *    its first complete update only ALERTS (never committed), see
  *    `../config/supplier-sale-rules.ts`;
@@ -113,8 +115,9 @@ const rowKey = (pieceId: number, priType: string) => `${pieceId}:${priType}`;
 
 /**
  * Served quarantine/storefront predicate for one row: priced AND pri_dispo IN
- * ('1','2','3'). Kept ONLY to mirror catalog_display_quarantine (SQL, unchanged);
- * « losing sale » uses the decision-51 definition (estVendable).
+ * ('1','2','3'), whatever the FROZEN state or piece_display. Kept ONLY to mirror
+ * catalog_display_quarantine (SQL, unchanged); « losing sale » uses the single
+ * definition (estVendable, decisions 51 and 118).
  */
 function isSellableRow(r: SellabilityRow): boolean {
   return (

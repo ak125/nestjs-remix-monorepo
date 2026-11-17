@@ -1,13 +1,14 @@
 -- scripts/audit/supplier-sale-report.sql
--- Rapport décision 51 (owner, 2026-11-15/16) — vente par fournisseur et par lot.
+-- Rapport décisions 51 et 118 (owner, 2026-11-15/16 et 2026-11-17) — vente par
+-- fournisseur et par lot.
 --
 -- LECTURE SEULE : uniquement des SELECT. Aucune donnée client (ni commande, ni
 -- client) : pieces_price, pieces, price_import_batches, pieces_price_history.
 --
--- Définition de « vendable » (unique, décision 51 ; code :
--- backend/src/database/services/vendable.ts) :
---   pri_dispo = '1' AND pricing_state <> 'FROZEN' AND piece_display = true
---   AND pri_vente_ttc_n > 0
+-- Définition de « vendable » (unique, décision 51 amendée par la décision 118 ;
+-- code : backend/src/database/services/vendable.ts) :
+--   pri_dispo IN ('1', '2', '3') AND pricing_state <> 'FROZEN'
+--   AND piece_display = true AND pri_vente_ttc_n > 0
 --
 -- Sections :
 --   1. pièces vendables en attente de mise à jour, par fournisseur (pri_frs) ;
@@ -20,9 +21,11 @@
 --     COMMITTED (pieces_price_history). Une ligne mise à jour avant le module
 --     tarifaire (2026-05-22) compte comme en attente : c'est voulu, sa
 --     provenance n'est pas prouvée.
---   - entrées/sorties = transitions de pri_dispo vers / depuis '1' enregistrées
---     par lot. L'historique ne garde ni pricing_state ni piece_display : un
---     masquage (display/quarantine) ou un gel n'y apparaissent pas.
+--   - entrées/sorties = transitions de pri_dispo vers / depuis l'ensemble
+--     ('1', '2', '3') enregistrées par lot ; un passage de '1' à '3' n'est ni
+--     une entrée ni une sortie. L'historique ne garde ni pricing_state ni
+--     piece_display : un masquage (display/quarantine) ou un gel n'y
+--     apparaissent pas.
 --   - la date de fraîcheur par fournisseur vit dans le code
 --     (backend/src/modules/pricing/config/supplier-sale-rules.ts) ; elle n'est
 --     pas lisible ici.
@@ -36,7 +39,7 @@ WITH vendable AS (
   SELECT pp.pri_piece_id_i, pp.pri_type, coalesce(pp.pri_frs, '(sans libellé)') AS frs
     FROM pieces_price pp
     JOIN pieces p ON p.piece_id = pp.pri_piece_id_i
-   WHERE pp.pri_dispo = '1'
+   WHERE pp.pri_dispo IN ('1', '2', '3')
      AND coalesce(pp.pricing_state, '') <> 'FROZEN'
      AND p.piece_display = true
      AND pp.pri_vente_ttc_n > 0
@@ -61,17 +64,17 @@ SELECT v.frs                                             AS fournisseur,
  GROUP BY v.frs
  ORDER BY vendables DESC;
 
-\echo '== 2. Entrées et sorties de vente par lot (transitions de pri_dispo)'
+\echo '== 2. Entrées et sorties de vente par lot (transitions de pri_dispo vers / depuis 1, 2, 3)'
 SELECT b.batch_id,
        b.started_at::date                                AS jour,
        b.supplier_id                                     AS marque_pm_id,
        coalesce(b.operation, 'IMPORT')                   AS operation,
        b.status,
        count(h.id)                                       AS lignes_tracees,
-       count(h.id) FILTER (WHERE coalesce(h.old_dispo, '') <> '1'
-                              AND h.new_dispo = '1')     AS entrees_vente,
-       count(h.id) FILTER (WHERE h.old_dispo = '1'
-                              AND coalesce(h.new_dispo, '') <> '1') AS sorties_vente
+       count(h.id) FILTER (WHERE coalesce(h.old_dispo, '') NOT IN ('1', '2', '3')
+                              AND h.new_dispo IN ('1', '2', '3')) AS entrees_vente,
+       count(h.id) FILTER (WHERE h.old_dispo IN ('1', '2', '3')
+                              AND coalesce(h.new_dispo, '') NOT IN ('1', '2', '3')) AS sorties_vente
   FROM price_import_batches b
   LEFT JOIN pieces_price_history h ON h.batch_id = b.batch_id
  GROUP BY b.batch_id, b.started_at, b.supplier_id, b.operation, b.status
@@ -103,8 +106,10 @@ SELECT h.pri_piece_id_i                                  AS piece_id,
        h.old_achat_ht, h.new_achat_ht,
        h.old_vente_ttc, h.new_vente_ttc,
        CASE
-         WHEN coalesce(h.old_dispo, '') <> '1' AND h.new_dispo = '1' THEN 'ENTREE'
-         WHEN h.old_dispo = '1' AND coalesce(h.new_dispo, '') <> '1' THEN 'SORTIE'
+         WHEN coalesce(h.old_dispo, '') NOT IN ('1', '2', '3')
+              AND h.new_dispo IN ('1', '2', '3') THEN 'ENTREE'
+         WHEN h.old_dispo IN ('1', '2', '3')
+              AND coalesce(h.new_dispo, '') NOT IN ('1', '2', '3') THEN 'SORTIE'
          ELSE ''
        END                                               AS mouvement_vente
   FROM pieces_price_history h

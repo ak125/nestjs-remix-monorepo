@@ -18,7 +18,7 @@ SET LOCAL search_path = public, pg_temp;
 DO $unalign$
 DECLARE
   c_source CONSTANT text := 'backend/supabase/migrations/20261116_pricing_frozen_masked_dispo_zero.sql';
-  c_suffix CONSTANT text := ' | 2026-11-16 : pri_dispo aligné sur 0 (décision 51, vendable = dispo 1, '
+  c_suffix CONSTANT text := ' | 2026-11-16 : pri_dispo aligné sur 0 (décisions 51 et 118, vendable = dispo 1, 2 ou 3, '
                          || 'ni FROZEN ni masquée). Réversible par 20261116_pricing_frozen_masked_dispo_zero.down.sql.';
   c_rows   CONSTANT jsonb := $json$
     [{"piece_id":5660748,"by":"quarantine-owner-go-2026-10-18","origin":"backend/supabase/migrations/20261018_pricing_quarantine_rupture_sphere_c00282.sql"}
