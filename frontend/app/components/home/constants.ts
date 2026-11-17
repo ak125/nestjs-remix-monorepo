@@ -4,6 +4,8 @@ import {
   FAMILY_DOMAIN_GROUPS,
 } from "@repo/database-types/family-registry";
 import { type LucideIcon, Car, Cog, Shield, Wrench, Zap } from "lucide-react";
+import { formatShippingAmount } from "~/components/cart/cart-utils";
+import { type ShippingPolicyResult } from "~/utils/remix-application-port";
 
 // ─── Image proxy paths ───────────────────────────────────
 export const IMG_PROXY_LOGOS =
@@ -289,14 +291,15 @@ export const BLOG = [
 ];
 
 // ─── FAQ fallback ────────────────────────────────────────
-export const FAQ_DATA = [
+const FAQ_FALLBACK: Array<{ q: string; a: string; shippingRule?: true }> = [
   {
     q: "Comment trouver la bonne pièce pour mon véhicule ?",
     a: "Utilisez notre sélecteur véhicule en haut de page : choisissez votre constructeur, modèle et motorisation, ou entrez votre numéro de Type Mine (repère D.2.1 sur la carte grise). Vous pouvez aussi rechercher par immatriculation ou référence OE. Toutes les pièces affichées seront 100% compatibles.",
   },
   {
     q: "Quels sont les délais de livraison ?",
-    a: "Les commandes passées avant 15h sont expédiées le jour même. Livraison en 24-48h ouvrées via Colissimo, DHL ou GLS. Point relais disponible. Livraison gratuite dès 50€ d'achat.",
+    a: "Les commandes passées avant 15h sont expédiées le jour même. Livraison en 24-48h ouvrées via Colissimo, DHL ou GLS. Point relais disponible.",
+    shippingRule: true,
   },
   {
     q: "Les pièces sont-elles garanties ?",
@@ -311,6 +314,23 @@ export const FAQ_DATA = [
     a: "Oui, nous proposons des conditions spéciales pour les garages, carrosseries et mécaniciens indépendants. Contactez notre service commercial pour obtenir un devis personnalisé et un accès pro avec remises sur volume.",
   },
 ];
+
+/**
+ * FAQ de repli. Le seuil de gratuité n'est pas écrit ici : il vient de la règle
+ * de port servie par le backend (`useShippingPolicy()`), et la phrase est omise
+ * tant que cette règle n'est pas connue.
+ */
+export function buildFaqFallback(
+  shippingPolicy: ShippingPolicyResult | null,
+): Array<{ q: string; a: string }> {
+  return FAQ_FALLBACK.map(({ q, a, shippingRule }) => ({
+    q,
+    a:
+      shippingRule && shippingPolicy
+        ? `${a} Livraison gratuite dès ${formatShippingAmount(shippingPolicy.freeShippingThresholdTTC)} d'achat.`
+        : a,
+  }));
+}
 
 // ─── Shared types ────────────────────────────────────────
 export interface CatalogFamily {

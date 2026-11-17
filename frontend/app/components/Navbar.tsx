@@ -17,8 +17,13 @@ import { Link, useNavigate } from "react-router";
 
 import { registerCartSidebarSetter } from "~/hooks/useCartSidebar";
 import { useNativeDialog } from "~/hooks/useNativeDialog";
-import { useOptionalUser, useRootCart } from "~/hooks/useRootData";
+import {
+  useOptionalUser,
+  useRootCart,
+  useShippingPolicy,
+} from "~/hooks/useRootData";
 import { SITE_CONFIG } from "../config/site";
+import { formatShippingAmount } from "./cart/cart-utils";
 import { CartSidebarSimple } from "./navbar/CartSidebarSimple";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
 import { Badge } from "./ui/badge";
@@ -38,6 +43,7 @@ export const Navbar = memo(function Navbar() {
   const navigate = useNavigate();
 
   const cartData = useRootCart();
+  const shippingPolicy = useShippingPolicy();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const toggleCart = useCallback(() => setIsCartOpen((prev) => !prev), []);
   const closeCart = useCallback(() => setIsCartOpen(false), []);
@@ -505,13 +511,18 @@ export const Navbar = memo(function Navbar() {
       {/* ===== TRUST STRIP (all viewports) ===== */}
       <div className="bg-gradient-to-b from-navy to-navy-light border-b border-white/[0.06]">
         <div className="flex items-center justify-center gap-3 lg:gap-6 py-2.5 lg:py-2 px-4 lg:px-8 text-xs font-semibold overflow-x-auto scrollbar-hide">
-          <span className="flex items-center gap-1.5 text-emerald-300 whitespace-nowrap">
-            <Truck className="w-3 h-3" />
-            Livraison gratuite dès 150€
-          </span>
-          <span className="text-white/15" aria-hidden="true">
-            ·
-          </span>
+          {shippingPolicy && (
+            <>
+              <span className="flex items-center gap-1.5 text-emerald-300 whitespace-nowrap">
+                <Truck className="w-3 h-3" />
+                Livraison gratuite dès{" "}
+                {formatShippingAmount(shippingPolicy.freeShippingThresholdTTC)}
+              </span>
+              <span className="text-white/15" aria-hidden="true">
+                ·
+              </span>
+            </>
+          )}
           <span className="text-white/40 whitespace-nowrap">Retours 30j</span>
           <span className="text-white/15 hidden lg:inline">·</span>
           <a

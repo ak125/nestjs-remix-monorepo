@@ -11,6 +11,7 @@ import type {
   ContentPillar,
   SocialChannel,
 } from '../interfaces/marketing-hub.interfaces';
+import { freeShippingWording } from '../../cart/config/shipping-policy.config';
 
 // Re-use sanitization from ai-content (anti-injection)
 function sanitizeBriefField(value: string): string {
@@ -44,7 +45,7 @@ Typo : Outfit Bold (titres) + DM Sans Regular (corps).`;
 
 const CLAIMS_RULES = `CLAIMS POLICY (STRICTE) :
 - Prix : UNIQUEMENT si price_source fourni (valeur + table + date < 24h)
-- Livraison : formulation exacte "Livraison gratuite des 150\u20ac" (aucune variation)
+- Livraison : formulation exacte "${freeShippingWording()}" (aucune variation)
 - Compatibilite : "Trouvez votre piece compatible sur automecanik.com"
 - JAMAIS : "le moins cher", "garanti a vie", "meilleur prix", noms concurrents`;
 

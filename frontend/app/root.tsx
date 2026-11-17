@@ -39,6 +39,7 @@ import stylesheet from "./global.css?url";
 import { useHydrated } from "./hooks/useHydrated";
 import { usePageRoleDataAttrs } from "./hooks/usePageRole";
 import { useScrollBehavior } from "./hooks/useScrollBehavior";
+import { getRemixApplicationPort } from "./server/remix-api.server";
 import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
 
@@ -132,9 +133,24 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     return null;
   });
 
+  // Règle de port (forfait et seuil de gratuité) : lue du backend par le port
+  // applicatif, en mémoire. Le frontend n'en porte aucune valeur ; si elle ne
+  // peut pas être lue, l'erreur est journalisée et les composants n'affichent
+  // aucune promesse de seuil (`null`) plutôt qu'un montant inventé.
+  const shippingPolicy = await Promise.resolve()
+    .then(() => getRemixApplicationPort(context).getShippingPolicy())
+    .catch((err) => {
+      logger.error(
+        "[root.loader] Politique de port indisponible, seuil de gratuité non affiché:",
+        err instanceof Error ? err.message : err,
+      );
+      return null;
+    });
+
   return {
     user,
     cart: cartPromise,
+    shippingPolicy,
     isBot,
     cspNonce: context.get(cspNonceContext) || "",
     // Public runtime env exposed to the browser via `window.ENV` (see <script>

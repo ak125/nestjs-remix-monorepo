@@ -197,7 +197,8 @@ d'origine), créée avant l'envoi du mail de §7, qui porte son lien.
 - **Montant** = prix TTC unitaire de l'équivalent × quantité − (`orl_art_price_sell_ttc` +
   `orl_art_deposit_ttc` de la ligne en rupture). La consigne de la réf initiale disparaît si
   l'équivalent n'en a pas. Le port payé reste acquis (choix owner) : port 0 sur l'enfant, même si le
-  nouveau sous-total franchit 150 € (`FREE_SHIPPING_THRESHOLD`).
+  nouveau sous-total franchit le seuil de gratuité (source unique :
+  `backend/src/modules/cart/config/shipping-policy.config.ts`).
 - Montant ≤ 0, ou équivalent à consigne : hors procédure, owner.
 - **Outil = ce que PROD sert**, jamais ce que contient `main`. Sonde sans session, refusée avant
   toute écriture :

@@ -17,10 +17,9 @@ import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { useNativeDialog } from "~/hooks/useNativeDialog";
-import { useRootCart } from "~/hooks/useRootData";
+import { useRootCart, useShippingPolicy } from "~/hooks/useRootData";
 import { cn } from "../../lib/utils";
-
-const FREE_SHIPPING_THRESHOLD = 150;
+import { formatShippingAmount } from "../cart/cart-utils";
 
 interface CartSidebarSimpleProps {
   isOpen: boolean;
@@ -42,7 +41,9 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
 }: CartSidebarSimpleProps) {
   // Données du root loader (SSR) - pas besoin de fetch supplémentaire
   const rootCart = useRootCart();
-
+  // Règle de port servie par le backend ; `null` = aucune promesse affichée.
+  const shippingPolicy = useShippingPolicy();
+  const freeShippingThreshold = shippingPolicy?.freeShippingThresholdTTC;
   // Drawer <dialog> natif, piloté par la prop contrôlée `isOpen`.
   const { open, close, dialogProps } = useNativeDialog({ onClose });
   useEffect(() => {
@@ -55,6 +56,8 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
   const subtotal = rootCart?.summary?.subtotal || 0;
   const consigneTotal = rootCart?.summary?.consigne_total || 0;
   const total = subtotal + consigneTotal;
+  const freeShippingUnlocked =
+    freeShippingThreshold !== undefined && subtotal >= freeShippingThreshold;
 
   return (
     <dialog
@@ -83,53 +86,59 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
         </button>
       </div>
 
-      {/* Livraison gratuite - toujours visible */}
-      <div
-        className={cn(
-          "px-4 py-4 border-b",
-          subtotal >= FREE_SHIPPING_THRESHOLD
-            ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-            : "bg-gradient-to-r from-blue-50",
-        )}
-      >
-        {subtotal >= FREE_SHIPPING_THRESHOLD ? (
-          <div className="flex items-center gap-3">
-            <span className="text-2xl animate-pulse">🎉</span>
+      {/* Livraison gratuite - visible dès que la règle de port est connue */}
+      {shippingPolicy && freeShippingThreshold !== undefined && (
+        <div
+          className={cn(
+            "px-4 py-4 border-b",
+            freeShippingUnlocked
+              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+              : "bg-gradient-to-r from-blue-50",
+          )}
+        >
+          {freeShippingUnlocked ? (
+            <div className="flex items-center gap-3">
+              <span className="text-2xl animate-pulse">🎉</span>
+              <div>
+                <p className="font-bold text-lg">Livraison OFFERTE !</p>
+                <p className="text-xs opacity-90">
+                  Vous économisez{" "}
+                  {formatShippingAmount(shippingPolicy.flatFeeTTC)}
+                </p>
+              </div>
+            </div>
+          ) : (
             <div>
-              <p className="font-bold text-lg">Livraison OFFERTE !</p>
-              <p className="text-xs opacity-90">Vous économisez 9,90€</p>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold text-gray-800">
+                  🚚 Livraison gratuite dès{" "}
+                  {formatShippingAmount(freeShippingThreshold)}
+                </span>
+                <span className="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
+                  {Math.round((subtotal / freeShippingThreshold) * 100)}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-blue-500 to-green-500 h-2.5 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min((subtotal / freeShippingThreshold) * 100, 100)}%`,
+                  }}
+                />
+              </div>
+              <div className="mt-2 text-center bg-amber-50 border border-amber-200 rounded-lg py-1.5 px-2">
+                <p className="text-xs text-gray-700">
+                  💡 Plus que{" "}
+                  <span className="font-bold text-blue-600">
+                    {formatPrice(Math.max(freeShippingThreshold - subtotal, 0))}
+                  </span>{" "}
+                  pour débloquer !
+                </p>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-800">
-                🚚 Livraison gratuite dès {FREE_SHIPPING_THRESHOLD}€
-              </span>
-              <span className="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
-                {Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100)}%
-              </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-blue-500 to-green-500 h-2.5 rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)}%`,
-                }}
-              />
-            </div>
-            <div className="mt-2 text-center bg-amber-50 border border-amber-200 rounded-lg py-1.5 px-2">
-              <p className="text-xs text-gray-700">
-                💡 Plus que{" "}
-                <span className="font-bold text-blue-600">
-                  {formatPrice(Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0))}
-                </span>{" "}
-                pour débloquer !
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Contenu principal - Résumé ou panier vide */}
       <div className="p-4 flex-1 overflow-y-auto">
@@ -165,7 +174,7 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
               )}
 
               {/* Livraison - Affichée uniquement si gratuite */}
-              {subtotal >= FREE_SHIPPING_THRESHOLD && (
+              {freeShippingUnlocked && (
                 <div className="flex justify-between items-center bg-green-50 -mx-4 px-4 py-2 rounded border border-green-200">
                   <span className="text-green-700">🚚 Livraison</span>
                   <span className="text-green-600 font-bold">✓ OFFERTE</span>

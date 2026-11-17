@@ -86,6 +86,18 @@ export interface HomepageBelowFoldResult {
   blog_articles: ReadonlyArray<Record<string, unknown>>;
 }
 
+/* ── Frais de port (PUBLIC) ────────────────────────────────────────────────
+ * Règle de la France métropolitaine, servie par le backend depuis sa source
+ * unique (`backend/src/modules/cart/config/shipping-policy.config.ts`). Le
+ * frontend n'en porte aucune valeur : il affiche ce qu'il reçoit.
+ */
+export interface ShippingPolicyResult {
+  /** Port facturé sous le seuil, en euros TTC. */
+  flatFeeTTC: number;
+  /** Sous-total TTC à partir duquel le port est offert (borne incluse). */
+  freeShippingThresholdTTC: number;
+}
+
 /* ── Admin orders (ADMIN — re-authorized server-side) ──────────────────────── */
 export interface AdminOrdersQuery {
   page?: number;
@@ -144,6 +156,8 @@ export interface AdminStaffStatistics {
  * No `[key: string]: unknown` escape hatch, no `any`, no optional-everything.
  */
 export interface RemixApplicationPort {
+  /** PUBLIC. */
+  getShippingPolicy(): Promise<ShippingPolicyResult>;
   /** PUBLIC. */
   getHomepageFamilies(): Promise<HomepageFamiliesResult>;
   /** PUBLIC. */

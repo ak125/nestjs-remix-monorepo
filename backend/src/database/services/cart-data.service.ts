@@ -9,6 +9,7 @@ import {
   ErrorCodes,
 } from '@common/exceptions';
 import { buildRackImageUrl } from '../../modules/catalog/utils/image-urls.utils';
+import { metropolitanShippingFeeTTC } from '../../modules/cart/config/shipping-policy.config';
 import { PiecePriceDataService } from './piece-price-data.service';
 
 /**
@@ -780,7 +781,8 @@ export class CartDataService extends SupabaseBaseService {
       );
 
       const tax = subtotal * 0.2; // TVA 20%
-      const shipping = subtotal >= 50 ? 0 : 6.9; // Gratuit > 50€
+      // Politique de port (source unique) : forfait métropole sous le seuil.
+      const shipping = subtotal > 0 ? metropolitanShippingFeeTTC(subtotal) : 0;
       const total = subtotal + tax + shipping;
 
       return {

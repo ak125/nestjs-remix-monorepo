@@ -7,6 +7,7 @@ import {
 } from '@common/exceptions';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ShippingCalculatorService } from '../cart/services/shipping-calculator.service';
+import { metropolitanShippingFeeTTC } from '../cart/config/shipping-policy.config';
 
 /**
  * Service de gestion des expéditions post-commande
@@ -100,8 +101,9 @@ export class ShippingService extends SupabaseBaseService {
           zone,
         );
       } else {
-        // Fallback si ShippingCalculatorService non injecté
-        fee = subtotal >= 150 ? 0 : 15.9;
+        // ShippingCalculatorService non injecté : la zone ne peut pas être
+        // déterminée, la règle de la France métropolitaine s'applique.
+        fee = metropolitanShippingFeeTTC(subtotal);
       }
 
       this.logger.log(
@@ -236,10 +238,10 @@ export class ShippingService extends SupabaseBaseService {
         ? this.shippingCalculator.determineZone(zipCode)
         : 'france';
 
-      // Calculer le tarif pour 1kg dans la zone
+      // Tarif d'un colis de 1 kg dans la zone (métropole : le forfait)
       const baseCost = this.shippingCalculator
         ? this.shippingCalculator.calculateByWeight(1000, 0, zone)
-        : 9.59;
+        : metropolitanShippingFeeTTC(0);
 
       return [
         {

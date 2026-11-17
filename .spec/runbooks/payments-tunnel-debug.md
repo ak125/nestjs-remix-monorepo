@@ -99,7 +99,8 @@ Les logs Caddy ne conservent qu'environ 5 heures de trafic — au-delà, cette p
   est documenté comme *lossy*, et il double-compte (15 lignes pour 7 transactions historiques).
   Son absence ne prouve pas qu'un client n'a pas payé.
 - **Les frais de port ne cassent pas Paybox.** Des paiements ont abouti avec 5,49 € et 7,59 € de
-  port. Un port à 0,00 € est simplement l'effet du franco à 150 €.
+  port. Un port à 0,00 € est simplement l'effet du franco : 150 € pour les commandes passées
+  avant le mandat BJ, ensuite le seuil de `backend/src/modules/cart/config/shipping-policy.config.ts`.
 - **Un `transactionid` alphanumérique long** (ex. `9S6209586J404615P`) est un paiement **PayPal**,
   pas Paybox. Ne pas le compter comme preuve que Paybox fonctionne.
 - **`ord_amount_ttc` ≠ `ord_total_ttc`** : le premier est la marchandise, le second le montant

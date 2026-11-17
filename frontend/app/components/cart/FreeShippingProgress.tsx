@@ -1,5 +1,6 @@
 import { Sparkles, Truck } from "lucide-react";
-import { formatPrice, FREE_SHIPPING_THRESHOLD } from "./cart-utils";
+import { useShippingPolicy } from "~/hooks/useRootData";
+import { formatPrice } from "./cart-utils";
 
 export function FreeShippingProgress({
   subtotal,
@@ -8,9 +9,14 @@ export function FreeShippingProgress({
   subtotal: number;
   className?: string;
 }) {
-  const remaining = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
-  const progress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
-  const unlocked = subtotal >= FREE_SHIPPING_THRESHOLD;
+  const shippingPolicy = useShippingPolicy();
+  // Seuil inconnu : aucune promesse affichée.
+  if (!shippingPolicy) return null;
+
+  const threshold = shippingPolicy.freeShippingThresholdTTC;
+  const remaining = Math.max(threshold - subtotal, 0);
+  const progress = Math.min((subtotal / threshold) * 100, 100);
+  const unlocked = subtotal >= threshold;
 
   if (unlocked) {
     return (
@@ -49,7 +55,7 @@ export function FreeShippingProgress({
       <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 px-4 py-1.5 text-center">
         <Sparkles className="h-4 w-4 text-orange-700" />
         <h2 className="text-sm font-bold tracking-tight text-slate-900">
-          Livraison offerte d{"\u00e8"}s {formatPrice(FREE_SHIPPING_THRESHOLD)}
+          Livraison offerte d{"\u00e8"}s {formatPrice(threshold)}
         </h2>
       </div>
 

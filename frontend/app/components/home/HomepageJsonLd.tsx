@@ -1,14 +1,16 @@
-import { FAQ_DATA } from "./constants";
+import { useShippingPolicy } from "~/hooks/useRootData";
+import { buildFaqFallback } from "./constants";
 
 interface HomepageJsonLdProps {
   faqs?: Array<{ question: string; answer: string }>;
 }
 
 export default function HomepageJsonLd({ faqs }: HomepageJsonLdProps) {
+  const shippingPolicy = useShippingPolicy();
   const faqItems =
     faqs && faqs.length > 0
       ? faqs.map((f) => ({ q: f.question, a: f.answer }))
-      : FAQ_DATA;
+      : buildFaqFallback(shippingPolicy);
   return (
     <script
       type="application/ld+json"

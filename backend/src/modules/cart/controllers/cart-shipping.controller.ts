@@ -20,6 +20,7 @@ import {
 } from '@nestjs/swagger';
 import { CartDataService } from '../../../database/services/cart-data.service';
 import { ShippingCalculatorService } from '../services/shipping-calculator.service';
+import { SHIPPING_POLICY } from '../config/shipping-policy.config';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 import { RequestWithUser, getCartUserId } from './cart-controller.utils';
 
@@ -89,7 +90,10 @@ export class CartShippingController {
         },
         remainingForFreeShipping: isFree
           ? 0
-          : Math.max(0, 150 - cart.stats.subtotal),
+          : Math.max(
+              0,
+              SHIPPING_POLICY[zone].freeFromSubtotalTTC - cart.stats.subtotal,
+            ),
       };
     } catch (error) {
       this.logger.error('Erreur calcul shipping:', error);

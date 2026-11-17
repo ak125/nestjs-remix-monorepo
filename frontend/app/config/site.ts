@@ -18,15 +18,6 @@ export const SITE_CONFIG = {
     email: "contact@automecanik.com", // Vérifier si domaine actif
   },
 
-  promo: {
-    enabled: true,
-    icon: "🚚",
-    text: "Livraison gratuite dès 150€",
-    color: "green" as const,
-    // Permet de changer facilement la promo
-    // icon: "🎉", text: "-15% sur tout le site", color: "orange"
-  },
-
   social: {
     facebook: "https://www.facebook.com/Automecanik63",
     instagram: "https://www.instagram.com/automecanik.co",
