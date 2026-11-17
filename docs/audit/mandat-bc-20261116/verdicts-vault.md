@@ -25,6 +25,45 @@ plus aucune ADR n'est fusionnée dans le vault.
 - La question D4 (ligne sur les URL) est reprise par P37 de #2122 : voir section D.
 - Le relevé des PR du vault (46) n'a pas été rejoué le 17 nov. dans ce fichier.
 
+## Mise à jour du 2026-11-17 (complément BC-5)
+
+Décisions 129, 130 et 132 de Marwane (17 nov., 11:52 Tunis), reportées en section D.
+
+- **D7 et D9 : tranchées, option B (décision 132).** La porte ADR-124 est retirée. Les PR du
+  monorepo #2113 et #2079 sont fermées sans fusion (relevé `gh` : 10:53:55 et 10:53:59 UTC). Le
+  retrait est porté par la PR #2131 et son patch réservé 12 (`etape-6.md`).
+- **D10 à D14 : tranchées (décision 129).** D10, D11, D12 : oui, PR #2132 et patch réservé 13
+  (`d10-d12.md`). D13 : pas maintenant. D14 : oui, patch 05 de #2120.
+- **D18 : tranchée (décision 130).** Environnement `canon-publish` du monorepo, restreint à `main`
+  (relevé `gh api` : créé à 10:53:32 UTC, politique de branches personnalisée, une branche :
+  `main`). Le contenu de l'environnement n'est pas lisible par le jeton du DEV : la présence de
+  `CANON_APP_ID` et `CANON_APP_PRIVATE_KEY` n'est pas vérifiée. Le patch 09 de #2126 lit déjà ses
+  secrets dans cet environnement : rien à y changer.
+- **D4 : réglée.** #2122 est fusionnée (P37). #315 n'attend donc plus que la fusion de #2116.
+- D15 (fichier réservé `merge-perimeter.v1.json`) tombe avec l'option B. D16 et D17 (deux copies
+  canon non déclarées au manifeste, `etape-2.md`) restent ouvertes.
+- Relevé des PR du vault rejoué le 17 nov. après 11:00 UTC : 46 ouvertes, mêmes numéros.
+- La section F (bloc) n'est pas modifiée : elle ne ferme aucune PR du monorepo et ne nomme pas la
+  porte.
+
+### Les neuf verdicts, une ligne chacun
+
+| N° | Question | Réponse proposée | État | PR du Vault à fermer |
+|---|---|---|---|---|
+| D1 | Appliquer dans le monorepo les trois textes approuvés d'ADR-122 ? | Oui, par PR du monorepo | à décider | #392 (1) |
+| D2 | ADR-131 entre-t-elle au journal maintenant ? | Non, avec la PR qui la câble | à décider | #413 (1) |
+| D3 | ADR-132 : mention « mécaniciens certifiés » et règle de signature ? | Retirer ou réécrire la mention ; une ligne au journal pour la signature | à décider | #414 (1) |
+| D4 | Une ligne du journal sur les URL immuables ? | Oui | réglée : P37, #2122 fusionnée | #240 (1) |
+| D5 | Où vit le registre des incidents ? | Une issue du monorepo par incident (P24) | à décider | #345 (1) |
+| D6 | ADR-137 (skills tiers) entre-t-elle au journal maintenant ? | Non, avec la PR du pilote | à décider | aucune (0) |
+| D7 | Fermer la PR #2079 du monorepo (niveau B, ADR-133) ? | Oui | tranchée, décision 132 : fermée | #416, sans attendre : conflit avec P20 (1) |
+| D8 | Où vit la Definition of Done après l'archivage ? | Dans `.spec/00-canon/canon-distribution/` du monorepo | à décider | #415, après la fusion de #2116, quelle que soit la réponse (1) |
+| D9 | Que devient la porte ADR-124 ? | La retirer | tranchée, décision 132 : #2131 | aucune (0) |
+
+Sept PR du Vault sont liées à un verdict (#240, #345, #392, #413, #414, #415, #416) ; le bloc de la
+section F ne pose de question au clavier que pour les cinq premières ; #315 attend
+la fusion de #2116 ; les 38 autres se ferment sans question (section A). Total : 46.
+
 ## Relevé
 
 - **PR ouvertes de `ak125/governance-vault` : 46**, relevé du **2026-11-16T22:44:14Z**, rejoué à
@@ -244,6 +283,8 @@ C#420: Fermeture sans fusion : entree de sommaire interne au vault, sans objet u
 
 ## D. À décider par Marwane
 
+État au 17 nov. : D1, D2, D3a, D3b, D5, D6 et D8 restent à décider ; D4 est réglée par #2122 ; D7, D9, D10 à D14 et D18 sont tranchées. Les questions D10 à D18 viennent des documents d'étape ; D15, D16 et D17 ne sont pas dans ce tableau (voir la mise à jour BC-5).
+
 | N° | Objet | Question | Réponse proposée |
 |---|---|---|---|
 | D1 | ADR-122, PR #392 | Les trois textes approuvés le 4 nov. n'ont jamais été appliqués : les applique-t-on directement dans le monorepo ? | Oui, par PR du monorepo : `marketing-batch.md` et `UX-CONSTITUTION.md` tout de suite, la voix marketing à son déplacement (`.spec/00-canon/canon-distribution/rules-marketing-voice.md`). Aucune ligne au journal : ce sont des règles de workspace, et P11 couvre déjà la phrase sur le RAG. |
@@ -253,9 +294,15 @@ C#420: Fermeture sans fusion : entree de sommaire interne au vault, sans objet u
 | D4 | #240, URL immuables | Le journal n'a aucun principe sur les URL, alors que `CLAUDE.md` (invariant 6) l'interdit : ajoute-t-on une ligne ? | **Mise à jour du 17 nov. : la PR #2122 (mandat BD) pose cette ligne en P37 ; rien à ajouter ici, la réponse est la fusion de #2122.** Proposition d'origine : « Aucune URL servie ne change (chemin, slug, suffixe, route, sitemap, redirection) sans demande explicite de l'owner. Source : `CLAUDE.md` invariant 6. » Sans la clause « 410 Gone » du texte, contraire à P14. |
 | D5 | #345, INC-2026-017 | Où vit le registre des incidents une fois le vault archivé, et ce compte rendu y entre-t-il ? | Pas de nouveau registre : un incident est une issue du monorepo (P24). Fermer #345 sans fusion, le texte reste lisible dans la PR. La rotation des secrets reste un geste de l'owner. |
 | D6 | ADR-137 (fusionnée) | ADR-137 est acceptée dans le vault depuis ce matin, sans ligne au journal ni mécanisme : la règle des skills tiers entre-t-elle au journal maintenant ? | Non. Elle y entre avec la PR du pilote, celle qui crée `skills-lock.json`. D'ici là, P26 s'applique. |
-| D7 | PR monorepo #2079 (niveau B de la porte, ADR-133) | ADR-133 est en conflit avec P20 : ferme-t-on aussi la PR #2079 du monorepo ? | Oui. Elle ajoute une seconde identité de revue que les décisions 72 et 91 remplacent, et elle modifie les deux fichiers de la porte touchés par #2113. |
+| D7 | PR monorepo #2079 (niveau B de la porte, ADR-133) | ADR-133 est en conflit avec P20 : ferme-t-on aussi la PR #2079 du monorepo ? | **Tranchée (décision 132) : oui, #2079 est fermée (17 nov., 10:53:59 UTC).** Proposition d'origine : oui. Elle ajoute une seconde identité de revue que les décisions 72 et 91 remplacent, et elle modifie les deux fichiers de la porte touchés par #2113. |
 | D8 | Definition of Done (ADR-134, ADR-138 D6) | La DoD vit dans le vault (`ledger/rules/rules-engineering-definition-of-done.md`, 1.3.0) et le plan de sortie ne la nomme dans aucune étape : où vit-elle après l'archivage ? | Dans le monorepo, à l'étape 5 du plan (`.spec/00-canon/canon-distribution/`), avec le texte de DoD5 corrigé selon P33. Sans ce déplacement, DoD5 reste figée dans l'archive. |
-| D9 | Porte ADR-124 | La décision 120 (P20, #2122) dit la porte close : son script `scripts/ci/merge-perimeter-gate.mjs` n'est appelé par aucun workflow, seul son test tourne (`audit.yml`). Que devient-il, et avec lui la PR #2113 (étape 6) ? | Deux options, à trancher par Marwane. **A, garder en réserve** : fusionner #2113 (patch 03 poussé du poste, nouveau fichier réservé `.spec/00-canon/repository-registry/merge-perimeter.v1.json`, question D15) ; 568 lignes et une politique restent à entretenir pour une porte que P20 dit close, et #2079 (D7) reste à décider. **B, retirer** : fermer #2113 et #2079, une PR retire le script, son test et corrige `.claude/rules/deployment.md` ; un patch réservé retire l'étape de `audit.yml`, la ligne de `CODEOWNERS` et la phrase de `CLAUDE.md` ; l'outil `merge-perimeter.sh` du DEV est supprimé par l'owner. Dans les deux cas plus rien ne lit le vault pour ce script. Proposition : B, cohérente avec « aucune règle sans mécanisme ». |
+| D9 | Porte ADR-124 | La décision 120 (P20, #2122) dit la porte close : son script `scripts/ci/merge-perimeter-gate.mjs` n'est appelé par aucun workflow, seul son test tourne (`audit.yml`). Que devient-il, et avec lui la PR #2113 (étape 6) ? | **Tranchée (décision 132) : option B. #2113 est fermée (17 nov., 10:53:55 UTC) ; le retrait est la PR #2131 et son patch réservé 12.** Texte d'origine : deux options. **A, garder en réserve** : fusionner #2113 (patch 03 poussé du poste, nouveau fichier réservé `.spec/00-canon/repository-registry/merge-perimeter.v1.json`, question D15) ; 568 lignes et une politique restent à entretenir pour une porte que P20 dit close, et #2079 (D7) reste à décider. **B, retirer** : fermer #2113 et #2079, une PR retire le script, son test et corrige `.claude/rules/deployment.md` ; un patch réservé retire l'étape de `audit.yml`, la ligne de `CODEOWNERS` et la phrase de `CLAUDE.md` ; l'outil `merge-perimeter.sh` du DEV est supprimé par l'owner. Dans les deux cas plus rien ne lit le vault pour ce script. Proposition : B, cohérente avec « aucune règle sans mécanisme ». |
+| D10 | `scripts/governance/check-verdict-expirations.sh` (`etape-8.md`) | Le retire-t-on ? | **Tranchée (décision 129) : oui.** PR #2132, patch réservé 13. |
+| D11 | `tools/security/attack-simulations/simulate-escalation-hijack.sh` (`etape-8.md`) | Le retire-t-on ? | **Tranchée (décision 129) : oui.** PR #2132. |
+| D12 | Runbook de rollback du pilote marketing (`etape-8.md`) | Le reloge-t-on ? | **Tranchée (décision 129) : oui**, dans `workspaces/marketing/`. PR #2132. |
+| D13 | Score des sources d'ADR-096 §D3 (`etape-7.md`) | Le reprend-on ? | **Tranchée (décision 129) : pas maintenant.** |
+| D14 | Contrôle hebdomadaire du coût Supabase (`etape-7.md`) | Le garde-t-on ? | **Tranchée (décision 129) : oui.** Patch 05 de #2120. |
+| D18 | Secrets `CANON_APP_ID` et `CANON_APP_PRIVATE_KEY` (`etape-3.md`) | Où les poser ? | **Tranchée (décision 130) : environnement `canon-publish` restreint à `main`**, créé le 17 nov. à 10:53:32 UTC ; Marwane y pose les deux secrets. |
 
 ## E. Faut-il écrire le statut des trois ADR différées dans le vault ?
 
