@@ -14,6 +14,10 @@ import { OrdersController } from './controllers/orders.controller';
 import { OrderArchiveController } from './controllers/order-archive.controller';
 import { TicketsController } from './controllers/tickets.controller';
 import { OrderActionsController } from './controllers/order-actions.controller';
+import {
+  OrderBillingAdminController,
+  OrderInvoiceCustomerController,
+} from './controllers/order-billing.controller';
 
 // Services consolidés - Phase 2
 import { OrderCalculationService } from './services/order-calculation.service';
@@ -24,6 +28,7 @@ import { TicketsService } from './services/tickets.service';
 import { OrderActionsService } from './services/order-actions.service';
 import { OrderLineSupplierService } from './services/order-line-supplier.service';
 import { OrderCleanupService } from './services/order-cleanup.service';
+import { OrderBillingService } from './services/order-billing.service';
 
 // Event listeners
 import { OrderAuditListener } from './listeners/order-audit.listener';
@@ -73,6 +78,8 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrderArchiveController, // /order-archive/* (archivage)
     TicketsController, // /api/tickets/* (SAV)
     OrderActionsController, // /api/admin/orders/* (ACTIONS BACKOFFICE)
+    OrderBillingAdminController, // Mandat BM : /api/admin/orders/:id/billing/*
+    OrderInvoiceCustomerController, // Mandat BM : /api/orders/:id/invoice.pdf
   ],
   providers: [
     // Services consolidés Phase 2
@@ -86,6 +93,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrderCleanupService, // Cron: cleanup orphelins idempotency + resume tokens
     OrderAuditListener, // Event: audit trail → __admin_audit_log
     OrderEmailListener, // Event: emails shipped/cancelled/refunded
+    OrderBillingService, // Mandat BM : facture à l'expédition (ORDER_BILLING_ENABLED)
   ],
   exports: [
     // Export des services consolidés

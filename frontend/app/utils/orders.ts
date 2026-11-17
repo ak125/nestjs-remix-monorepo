@@ -47,6 +47,8 @@ export interface Order {
   lines: OrderLine[];
   trackingNumber?: string;
   trackingUrl?: string;
+  /** Mandat BM : date d'expédition (ord_date_ship), posée avec le n° de suivi. */
+  shippedAt?: string | null;
   paymentStatus?: string;
   paymentMethod?: string;
   transactionId?: string;

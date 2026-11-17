@@ -42,6 +42,9 @@ const STATUTS_CONFIRMABLES = new Set(['', '0', '1', '5']);
 /** + commandée chez le fournisseur (6) : la rupture peut être annoncée après. */
 const STATUTS_RUPTURE_POSSIBLE = new Set(['', '0', '1', '5', '6']);
 
+/** Statuts où une commande payée attend l'expédition (mesuré en base 2026-11-17). */
+const SHIPPABLE_STATUSES: readonly string[] = ['3', '5'];
+
 @Injectable()
 export class OrderActionsService extends SupabaseBaseService {
   protected readonly logger = new Logger(OrderActionsService.name);
@@ -535,13 +538,26 @@ export class OrderActionsService extends SupabaseBaseService {
   }
 
   /**
-   * 📦 Expédier commande (statut 3 → 4)
+   * 📦 Expédier une commande payée : l'admin ne saisit que le numéro de suivi.
+   *
+   * Mandat BM (2026-11-17) : la commande doit être payée (`ord_is_pay = '1'`),
+   * au statut 3 ou 5 (les deux statuts où les commandes payées attendent en
+   * base) et pas encore expédiée. Statut posé : 4, comme avant — la sémantique
+   * des codes 4/5 de `___xtr_order_status` reste une décision de l'owner.
+   * La mise à jour est conditionnelle (`ord_date_ship IS NULL`) : deux
+   * expéditions concurrentes ne produisent qu'un seul envoi.
+   * Le mail client part du listener `ORDER_EVENTS.SHIPPED`, une seule fois.
    */
   async shipOrder(
     orderId: string,
     trackingNumber: string,
-    userId?: number,
-  ): Promise<{ success: boolean; newStatus: string; trackingNumber: string }> {
+    userId?: string | number,
+  ): Promise<{
+    success: boolean;
+    newStatus: string;
+    trackingNumber: string;
+    trackingUrl: string;
+  }> {
     try {
       this.logger.log(
         `📦 Expédition commande ${orderId} - Suivi: ${trackingNumber}`,
@@ -549,28 +565,44 @@ export class OrderActionsService extends SupabaseBaseService {
 
       const order = await this.getOrder(orderId);
 
-      // Vérifier statut actuel = 3 (En cours)
-      if (order.ord_ords_id !== '3') {
-        throw new BadRequestException(
-          `Statut invalide: ${order.ord_ords_id}, attendu: 3 (En cours)`,
+      if (order.ord_is_pay !== '1') {
+        throw new ConflictException(
+          `Commande ${orderId} non payée : expédition refusée`,
+        );
+      }
+      if (order.ord_date_ship) {
+        throw new ConflictException(
+          `Commande ${orderId} déjà expédiée (suivi ${order.ord_tracking ?? 'inconnu'})`,
+        );
+      }
+      if (!SHIPPABLE_STATUSES.includes(order.ord_ords_id)) {
+        throw new ConflictException(
+          `Statut ${order.ord_ords_id} : expédition possible depuis 3 ou 5 seulement`,
         );
       }
 
-      // Generer URL tracking automatique
       const trackingUrl = this.buildTrackingUrl(trackingNumber);
+      const now = new Date().toISOString();
 
-      const { error } = await this.supabase
+      const { data: updated, error } = await this.supabase
         .from(TABLES.xtr_order)
         .update({
           ord_ords_id: '4',
-          ord_date_ship: new Date().toISOString(),
+          ord_date_ship: now,
           ord_tracking: trackingNumber,
           ord_tracking_url: trackingUrl,
-          ord_updated_at: new Date().toISOString(),
+          ord_updated_at: now,
         })
-        .eq('ord_id', orderId);
+        .eq('ord_id', orderId)
+        .is('ord_date_ship', null)
+        .select('ord_id');
 
       if (error) throw error;
+      if (!updated || updated.length === 0) {
+        throw new ConflictException(
+          `Commande ${orderId} expédiée entre-temps : aucun second envoi`,
+        );
+      }
 
       await this.createOrderStatusHistory(
         orderId,
@@ -583,12 +615,13 @@ export class OrderActionsService extends SupabaseBaseService {
         orderId,
         customerId: order.ord_cst_id,
         trackingNumber,
-        changedBy: userId ? String(userId) : undefined,
-        timestamp: new Date().toISOString(),
+        trackingUrl,
+        changedBy: userId != null ? String(userId) : undefined,
+        timestamp: now,
       } satisfies OrderShippedEvent);
 
       this.logger.log(`✅ Commande ${orderId} expédiée`);
-      return { success: true, newStatus: '4', trackingNumber };
+      return { success: true, newStatus: '4', trackingNumber, trackingUrl };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`❌ Erreur expédition commande:`, message);
@@ -748,7 +781,7 @@ export class OrderActionsService extends SupabaseBaseService {
     orderId: string,
     newStatus: string,
     comment: string,
-    userId?: number,
+    userId?: string | number,
   ): Promise<void> {
     try {
       await this.supabase.from('___xtr_order_status_history').insert({

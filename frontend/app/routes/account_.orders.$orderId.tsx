@@ -7,6 +7,7 @@ import {
   Truck,
   MessageSquare,
   RotateCcw,
+  Download,
 } from "lucide-react";
 import {
   type ActionFunctionArgs,
@@ -51,7 +52,7 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
-import { getOrderDetails } from "../services/orders.server";
+import { getOrderDetails, getOrderInvoice } from "../services/orders.server";
 
 export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
@@ -76,17 +77,20 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   }
 
   try {
-    const order = await getOrderDetails({
-      orderId,
-      userId,
-      request,
-    });
+    const [order, invoice] = await Promise.all([
+      getOrderDetails({
+        orderId,
+        userId,
+        request,
+      }),
+      getOrderInvoice({ orderId, request }),
+    ]);
 
     if (!order) {
       throw new Response("Commande introuvable", { status: 404 });
     }
 
-    return { order, user };
+    return { order, user, invoice };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
@@ -153,7 +157,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 export default function OrderDetailPage() {
-  const { order, user } = useLoaderData<typeof loader>();
+  const { order, user, invoice } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const navigate = useNavigate();
@@ -201,11 +205,21 @@ export default function OrderDetailPage() {
           <div className="flex items-center gap-3">
             {/* Pas de <Badge> : sa variante par défaut (bg-primary) écrase les
                 couleurs de statut, faute de fusion des classes. */}
-            <span
-              className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${getStatusBadgeColor(String(order.status))}`}
-            >
-              {getStatusLabel(String(order.status))}
-            </span>
+            {/* Mandat BM : une commande expédiée affiche « Expédiée le … »
+                quel que soit son code de statut legacy (4 = « frais de port
+                reçu » dans ___xtr_order_status). */}
+            {order.shippedAt ? (
+              <span className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-3 py-1 text-sm font-medium text-green-800">
+                Expédiée le{" "}
+                {new Date(order.shippedAt).toLocaleDateString("fr-FR")}
+              </span>
+            ) : (
+              <span
+                className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${getStatusBadgeColor(String(order.status))}`}
+              >
+                {getStatusLabel(String(order.status))}
+              </span>
+            )}
           </div>
         </div>
 
@@ -230,6 +244,21 @@ export default function OrderDetailPage() {
               >
                 <Truck className="h-4 w-4" />
                 Suivre le colis ({order.trackingNumber})
+              </a>
+            </Button>
+          )}
+
+          {/* Mandat BM : facture émise à l'expédition, une fois l'encaissement
+              confirmé ; le lien n'existe que si elle existe. */}
+          {invoice && (
+            <Button asChild variant="outline">
+              <a
+                href={`/api/orders/${encodeURIComponent(order.id)}/invoice.pdf`}
+                download
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Télécharger la facture {invoice.invoiceNumber} (PDF)
               </a>
             </Button>
           )}

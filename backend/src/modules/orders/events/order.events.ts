@@ -57,6 +57,8 @@ export interface OrderShippedEvent extends OrderEventBase {
   orderId: string;
   customerId: string;
   trackingNumber: string;
+  /** Lien de suivi enregistré sur la commande (`ord_tracking_url`). */
+  trackingUrl?: string;
   changedBy?: string;
 }
 

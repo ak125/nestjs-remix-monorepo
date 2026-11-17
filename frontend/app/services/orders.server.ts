@@ -149,6 +149,43 @@ export interface GetOrderDetailParams {
 }
 
 /**
+ * Mandat BM — facture émise pour la commande du client connecté, pour le lien
+ * « Télécharger la facture (PDF) ». `null` tant qu'elle n'existe pas (drapeau
+ * ORDER_BILLING_ENABLED éteint, commande non expédiée ou non encaissée).
+ * Une erreur du backend est journalisée et n'affiche pas de lien.
+ */
+export async function getOrderInvoice(params: {
+  orderId: string;
+  request: Request;
+}): Promise<{ invoiceNumber: string; issuedAt: string | null } | null> {
+  const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
+  const cookie = params.request.headers.get("Cookie");
+  try {
+    const response = await fetch(
+      `${baseUrl}/api/orders/${encodeURIComponent(params.orderId)}/invoice`,
+      {
+        method: "GET",
+        headers: { Accept: "application/json", ...(cookie ? { Cookie: cookie } : {}) },
+      },
+    );
+    if (!response.ok) {
+      logger.error(
+        `[getOrderInvoice] ${params.orderId} : réponse ${response.status}`,
+      );
+      return null;
+    }
+    const body = await response.json();
+    const invoice = body?.invoice;
+    return invoice && typeof invoice.invoiceNumber === "string"
+      ? { invoiceNumber: invoice.invoiceNumber, issuedAt: invoice.issuedAt ?? null }
+      : null;
+  } catch (error) {
+    logger.error(`[getOrderInvoice] ${params.orderId} :`, error);
+    return null;
+  }
+}
+
+/**
  * Récupère le détail d'une commande spécifique
  */
 export async function getOrderDetails(params: {
@@ -270,6 +307,8 @@ export async function getOrderDetails(params: {
         order.ord_tracking || order.trackingNumber || order.tracking_number,
       trackingUrl:
         order.ord_tracking_url || order.trackingUrl || order.tracking_url,
+      // Mandat BM : date d'expédition posée par l'admin avec le n° de suivi.
+      shippedAt: order.ord_date_ship || null,
       deliveryMethod: order.deliveryMethod || order.delivery_method,
       deliveryDate: order.deliveryDate || order.delivery_date,
       hasReview: order.hasReview || false,

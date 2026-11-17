@@ -248,7 +248,7 @@ const MONTANT_TEXTE = /^\d+(?:\.\d{1,2})?$/;
 
 /** Montant texte en centimes ; vide = 0 (même lecture que `coalesce(nullif(x,''),'0')`),
  * `null` si la valeur n'est pas un montant. */
-function centimesDuTexte(valeur: unknown): number | null {
+export function centimesDuTexte(valeur: unknown): number | null {
   const texte = valeur == null ? '' : String(valeur).trim();
   if (texte === '') return 0;
   if (!MONTANT_TEXTE.test(texte)) return null;
@@ -257,7 +257,7 @@ function centimesDuTexte(valeur: unknown): number | null {
 }
 
 /** Centimes → « 12.34 », sans passer par un flottant. */
-function texteDesCentimes(centimes: number): string {
+export function texteDesCentimes(centimes: number): string {
   return `${Math.floor(centimes / 100)}.${String(centimes % 100).padStart(2, '0')}`;
 }
 
@@ -1025,19 +1025,7 @@ export class OrdersService extends SupabaseBaseService {
     }
 
     // Un seul supplément vivant par commande ; un supplément annulé ne compte pas.
-    const { data: enfants, error: enfantsError } = await this.supabase
-      .from(TABLES.xtr_order)
-      .select('ord_id, ord_ords_id')
-      .eq('ord_parent', parentOrderId);
-    if (enfantsError) throw echecLecture('des suppléments', enfantsError);
-    const enCours = (enfants ?? []).find(
-      (e) => e.ord_ords_id !== OrderStatus.CANCELLED,
-    );
-    if (enCours) {
-      throw new ConflictException(
-        `La commande ${parentOrderId} a déjà un supplément non annulé (${enCours.ord_id}).`,
-      );
-    }
+    await this.verifierAucunSupplementVivant(parentOrderId);
 
     // Équivalent : affiché, autre que la pièce en rupture, avec sa marque.
     if (String(pieceId) === String(ligne.orl_pg_id)) {
@@ -1106,12 +1094,157 @@ export class OrdersService extends SupabaseBaseService {
     }
     const unitCentimes = totalCentimes / quantity;
 
+    const email = await this.emailClientPourLien(
+      String(parent.ord_cst_id),
+      parentOrderId,
+    );
+
+    // Création atomique : commande + ligne + ORDER_CREATED.
+    const enRupture =
+      `${ligne.orl_pm_name ?? ''} ${ligne.orl_art_ref ?? ''}`.trim();
+    const { orderId, paymentUrl } = await this.creerCommandeEnfant(
+      parent,
+      {
+        totalCentimes,
+        email,
+        info: `Supplément de la commande ${parentOrderId} : ${quantity} × ${marque.pm_name} ${piece.piece_ref} (${texteDesCentimes(venteTtcCentimes)} € TTC) au lieu de ${enRupture} en rupture fournisseur, moins ${texteDesCentimes(payeCentimes)} € déjà payés ; port déjà payé sur la commande d'origine.`,
+        line: {
+          orl_pg_id: String(pieceId),
+          orl_pg_name: `${piece.piece_name} — supplément échange (remplace ${enRupture})`,
+          orl_pm_name: marque.pm_name,
+          orl_art_ref: piece.piece_ref,
+          orl_art_quantity: String(quantity),
+          orl_art_price_sell_unit_ttc: texteDesCentimes(unitCentimes),
+        },
+        logDetail: `${quantity} × pièce ${pieceId}`,
+      },
+      ctx,
+    );
+
+    return {
+      orderId,
+      parentOrderId,
+      totalTtc: totalCentimes / 100,
+      unitTtc: unitCentimes / 100,
+      quantity,
+      paymentUrl,
+    };
+  }
+
+  /**
+   * Mandat BM : supplément motivé (pièce plus chère, port plus cher…).
+   * Commande ENFANT non payée d'une ligne « Supplément : <motif> », créée par
+   * `create_order_atomic` ; `paymentUrl` mène au paiement Paybox, qui relit le
+   * montant en base. Mêmes garde-fous que `createSupplementOrder` : commande
+   * d'origine payée et non annulée, un seul supplément vivant, client avec
+   * e-mail. En plus : commande pas encore expédiée (la facture part à
+   * l'expédition). N'envoie aucun mail : `OrderBillingService` s'en charge.
+   */
+  async createReasonedSupplementOrder(
+    parentOrderId: string,
+    input: { amountTtcCents: number; reason: string },
+    ctx: { userId?: string } = {},
+  ): Promise<{ orderId: string; totalTtc: number; paymentUrl: string }> {
+    const { amountTtcCents, reason } = input;
+    if (!Number.isInteger(amountTtcCents) || amountTtcCents <= 0) {
+      throw new BadRequestException('Montant du supplément invalide.');
+    }
+    const motif = typeof reason === 'string' ? reason.trim() : '';
+    if (motif.length < 3 || motif.length > 500) {
+      throw new BadRequestException('Motif du supplément requis (3 à 500).');
+    }
+    const { data: parent, error: parentError } = await this.supabase
+      .from(TABLES.xtr_order)
+      .select(
+        'ord_id, ord_cst_id, ord_is_pay, ord_date_pay, ord_ords_id, ord_date_ship, ord_cba_id, ord_cda_id, ord_billing_snapshot, ord_shipping_snapshot',
+      )
+      .eq('ord_id', parentOrderId)
+      .maybeSingle();
+    if (parentError) {
+      throw new Error(
+        `Lecture de la commande impossible : ${parentError.message}`,
+      );
+    }
+    if (!parent) {
+      throw new NotFoundException(`Commande ${parentOrderId} introuvable.`);
+    }
+    const payee =
+      String(parent.ord_is_pay) === '1' &&
+      parent.ord_date_pay != null &&
+      String(parent.ord_date_pay).trim() !== '';
+    if (!payee || parent.ord_ords_id === OrderStatus.CANCELLED) {
+      throw new ConflictException(
+        `La commande ${parentOrderId} n'est pas payée, ou est annulée : pas de supplément possible.`,
+      );
+    }
+    if (parent.ord_date_ship) {
+      throw new ConflictException(
+        `La commande ${parentOrderId} est déjà expédiée : supplément à traiter à la main.`,
+      );
+    }
+    await this.verifierAucunSupplementVivant(parentOrderId);
+    const email = await this.emailClientPourLien(
+      String(parent.ord_cst_id),
+      parentOrderId,
+    );
+    const total = texteDesCentimes(amountTtcCents);
+    const { orderId, paymentUrl } = await this.creerCommandeEnfant(
+      parent,
+      {
+        totalCentimes: amountTtcCents,
+        email,
+        info: `Supplément de la commande ${parentOrderId} : ${total} € TTC — ${motif}`,
+        line: {
+          orl_pg_id: null,
+          orl_pg_name: `Supplément : ${motif}`,
+          orl_pm_name: null,
+          orl_art_ref: null,
+          orl_art_quantity: '1',
+          orl_art_price_sell_unit_ttc: total,
+        },
+        logDetail: motif,
+      },
+      ctx,
+    );
+    return { orderId, totalTtc: amountTtcCents / 100, paymentUrl };
+  }
+
+  /** Un supplément non annulé existe déjà ⇒ 409. */
+  private async verifierAucunSupplementVivant(
+    parentOrderId: string,
+  ): Promise<void> {
+    const { data: enfants, error: enfantsError } = await this.supabase
+      .from(TABLES.xtr_order)
+      .select('ord_id, ord_ords_id')
+      .eq('ord_parent', parentOrderId);
+    if (enfantsError) {
+      throw new Error(
+        `Lecture des suppléments impossible : ${enfantsError.message}`,
+      );
+    }
+    const enCours = (enfants ?? []).find(
+      (e) => e.ord_ords_id !== OrderStatus.CANCELLED,
+    );
+    if (enCours) {
+      throw new ConflictException(
+        `La commande ${parentOrderId} a déjà un supplément non annulé (${enCours.ord_id}).`,
+      );
+    }
+  }
+
+  /** Adresse e-mail du client, sans laquelle le lien de paiement est refusé. */
+  private async emailClientPourLien(
+    customerId: string,
+    parentOrderId: string,
+  ): Promise<string> {
     const { data: client, error: clientError } = await this.supabase
       .from(TABLES.xtr_customer)
       .select('cst_mail')
-      .eq('cst_id', String(parent.ord_cst_id))
+      .eq('cst_id', customerId)
       .maybeSingle();
-    if (clientError) throw echecLecture('du client', clientError);
+    if (clientError) {
+      throw new Error(`Lecture du client impossible : ${clientError.message}`);
+    }
     const email =
       typeof client?.cst_mail === 'string' ? client.cst_mail.trim() : '';
     if (!email) {
@@ -1119,12 +1252,41 @@ export class OrdersService extends SupabaseBaseService {
         `Le client de la commande ${parentOrderId} n'a pas d'adresse e-mail : le lien de paiement serait refusé.`,
       );
     }
+    return email;
+  }
 
-    // Création atomique : commande + ligne + ORDER_CREATED.
+  /**
+   * Commande enfant (`ord_parent`) non payée d'une ligne, port et consigne à 0,
+   * par `create_order_atomic`, puis ORDER_CREATED. Rend le lien de paiement.
+   */
+  private async creerCommandeEnfant(
+    parent: {
+      ord_id: string;
+      ord_cst_id: unknown;
+      ord_cba_id?: unknown;
+      ord_cda_id?: unknown;
+      ord_billing_snapshot?: unknown;
+      ord_shipping_snapshot?: unknown;
+    },
+    spec: {
+      totalCentimes: number;
+      email: string;
+      info: string;
+      line: {
+        orl_pg_id: string | null;
+        orl_pg_name: string;
+        orl_pm_name: string | null;
+        orl_art_ref: string | null;
+        orl_art_quantity: string;
+        orl_art_price_sell_unit_ttc: string;
+      };
+      logDetail: string;
+    },
+    ctx: { userId?: string },
+  ): Promise<{ orderId: string; paymentUrl: string }> {
+    const parentOrderId = String(parent.ord_id);
     const orderId = await this.generateOrderNumber();
-    const total = texteDesCentimes(totalCentimes);
-    const enRupture =
-      `${ligne.orl_pm_name ?? ''} ${ligne.orl_art_ref ?? ''}`.trim();
+    const total = texteDesCentimes(spec.totalCentimes);
     const order = {
       ord_id: orderId,
       ord_cst_id: String(parent.ord_cst_id),
@@ -1136,7 +1298,7 @@ export class OrdersService extends SupabaseBaseService {
       ord_deposit_ttc: '0.00',
       ord_shipping_fee_ttc: '0.00',
       ord_total_ttc: total,
-      ord_info: `Supplément de la commande ${parentOrderId} : ${quantity} × ${marque.pm_name} ${piece.piece_ref} (${texteDesCentimes(venteTtcCentimes)} € TTC) au lieu de ${enRupture} en rupture fournisseur, moins ${texteDesCentimes(payeCentimes)} € déjà payés ; port déjà payé sur la commande d'origine.`,
+      ord_info: spec.info,
       ord_ords_id: OrderStatus.PROCESSING,
       ord_cba_id: parent.ord_cba_id ?? null,
       ord_cda_id: parent.ord_cda_id ?? null,
@@ -1146,12 +1308,7 @@ export class OrdersService extends SupabaseBaseService {
     const line = {
       orl_id: `${orderId}-L001`,
       orl_ord_id: orderId,
-      orl_pg_id: String(pieceId),
-      orl_pg_name: `${piece.piece_name} — supplément échange (remplace ${enRupture})`,
-      orl_pm_name: marque.pm_name,
-      orl_art_ref: piece.piece_ref,
-      orl_art_quantity: String(quantity),
-      orl_art_price_sell_unit_ttc: texteDesCentimes(unitCentimes),
+      ...spec.line,
       orl_art_price_sell_ttc: total,
       orl_art_deposit_unit_ttc: null,
       orl_art_deposit_ttc: null,
@@ -1175,7 +1332,7 @@ export class OrdersService extends SupabaseBaseService {
     this.eventEmitter.emit(ORDER_EVENTS.CREATED, {
       orderId,
       customerId: String(parent.ord_cst_id),
-      totalTtc: totalCentimes / 100,
+      totalTtc: spec.totalCentimes / 100,
       linesCount: 1,
       lines: [
         { lineId: line.orl_id, productId: line.orl_pg_id, websiteUrl: null },
@@ -1184,16 +1341,12 @@ export class OrdersService extends SupabaseBaseService {
       correlationId,
     } satisfies OrderCreatedEvent);
     this.logger.log(
-      `Supplément ${orderId} créé pour ${parentOrderId} : ${total} € TTC (${quantity} × pièce ${pieceId}), utilisateur ${ctx.userId ?? 'inconnu'}`,
+      `Supplément ${orderId} créé pour ${parentOrderId} : ${total} € TTC (${spec.logDetail}), utilisateur ${ctx.userId ?? 'inconnu'}`,
     );
 
     return {
       orderId,
-      parentOrderId,
-      totalTtc: totalCentimes / 100,
-      unitTtc: unitCentimes / 100,
-      quantity,
-      paymentUrl: `${SITE_ORIGIN}/api/paybox/redirect?${new URLSearchParams({ orderId, amount: total, email })}`,
+      paymentUrl: `${SITE_ORIGIN}/api/paybox/redirect?${new URLSearchParams({ orderId, amount: total, email: spec.email })}`,
     };
   }
 

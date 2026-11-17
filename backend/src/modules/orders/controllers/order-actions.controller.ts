@@ -33,18 +33,38 @@ const ConfirmSupplierSchema = z
     prixAchatUnitHt: z.number().positive(),
   })
   .strict();
+/**
+ * Numéro de suivi Colissimo saisi à la main : espaces retirés, majuscules.
+ * Borne large (8 à 30 lettres ou chiffres) : le numéro est recopié tel quel,
+ * aucun format de transporteur n'est inventé.
+ */
+const ShipOrderSchema = z
+  .object({
+    trackingNumber: z
+      .string()
+      .transform((v) => v.replace(/\s+/g, '').toUpperCase())
+      .pipe(
+        z
+          .string()
+          .regex(
+            /^[A-Z0-9]{8,30}$/,
+            'Numéro de suivi : 8 à 30 lettres ou chiffres',
+          ),
+      ),
+  })
+  .strict();
 const MarkRuptureSchema = z
   .object({ comment: z.string().max(500).optional() })
   .strict();
 
-function identifiant(valeur: string, nom: string): string {
+export function identifiant(valeur: string, nom: string): string {
   if (!IDENTIFIANT_TEXTE.test(valeur)) {
     throw new BadRequestException(`${nom} invalide`);
   }
   return valeur;
 }
 
-function valider<T>(schema: z.ZodType<T>, body: unknown): T {
+export function valider<T>(schema: z.ZodType<T>, body: unknown): T {
   const r = schema.safeParse(body ?? {});
   if (!r.success) {
     throw new BadRequestException(r.error.issues);
@@ -256,51 +276,32 @@ export class OrderActionsController {
 
   /**
    * POST /api/admin/orders/:orderId/ship
-   * Expédier commande (statut 3 → 4)
+   * Mandat BM : l'admin ne saisit que le numéro de suivi. Le service pose le
+   * statut, la date, le lien de suivi et l'historique ; le mail client part
+   * une seule fois, du listener `ORDER_EVENTS.SHIPPED` (plus d'envoi ici, il
+   * doublait le mail).
    */
   @Post(':orderId/ship')
   @RequirePermission('canShip')
   async shipOrder(
     @Param('orderId') orderId: string,
-    @Body() body: { trackingNumber: string },
+    @Body() body: unknown,
+    @Req() req: Request,
   ) {
-    try {
-      if (!body.trackingNumber) {
-        throw new BadRequestException('Numéro de suivi requis');
-      }
-
-      this.logger.log(
-        `📦 Expédition commande ${orderId} - Suivi: ${body.trackingNumber}`,
-      );
-
-      // 1. Expédier commande
-      await this.orderActionsService.shipOrder(orderId, body.trackingNumber);
-
-      // 2. Récupérer données pour email
-      const order = await this.orderActionsService.getOrder(orderId);
-      const customer = await this.orderActionsService.getCustomer(
-        order.ord_cst_id,
-      );
-
-      // 3. Envoyer email avec suivi
-      await this.mailService.sendShippingNotification(
-        order,
-        customer,
-        body.trackingNumber,
-      );
-
-      this.logger.log(`✅ Commande ${orderId} expédiée avec succès`);
-
-      return {
-        success: true,
-        message: 'Commande expédiée et client notifié',
-        trackingNumber: body.trackingNumber,
-      };
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`❌ Échec expédition ${orderId}:`, message);
-      throw error;
-    }
+    const { trackingNumber } = valider(ShipOrderSchema, body);
+    const userId = (req.user as { id?: unknown } | undefined)?.id;
+    const result = await this.orderActionsService.shipOrder(
+      identifiant(orderId, 'orderId'),
+      trackingNumber,
+      userId != null ? String(userId) : undefined,
+    );
+    this.logger.log(`✅ Commande ${orderId} expédiée (suivi ${trackingNumber})`);
+    return {
+      success: true,
+      message: 'Commande expédiée ; le client est notifié par mail',
+      trackingNumber: result.trackingNumber,
+      trackingUrl: result.trackingUrl,
+    };
   }
 
   /**

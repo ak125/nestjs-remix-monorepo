@@ -18,7 +18,14 @@ import { SITE_ORIGIN } from '../config/app.config';
  * parti, seule une ligne de log a été écrite. Un appelant qui persiste un état
  * « envoyé » doit exiger `sent`.
  */
-export type MailDelivery = 'sent' | 'dry-run';
+export type MailDelivery = 'sent' | 'dry-run' | 'test-transport';
+
+/** Pièce jointe (facture PDF du mandat BM). */
+export interface MailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
+}
 
 export interface MailOptions {
   to: string;
@@ -53,6 +60,16 @@ export interface CustomerEmailData {
   cst_name: string;
 }
 
+/** Échappement HTML des valeurs insérées dans les gabarits (mandat BM). */
+export function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
@@ -60,6 +77,7 @@ export class MailService {
   private fromEmail: string;
   private appUrl: string;
   private isConfigured = false;
+  private testTransport = false;
 
   constructor(private readonly configService: ConfigService) {
     const clientId = this.configService.get<string>('GMAIL_CLIENT_ID');
@@ -73,7 +91,18 @@ export class MailService {
 
     const appPassword = this.configService.get<string>('GMAIL_APP_PASSWORD');
 
-    if (clientId && clientSecret && refreshToken) {
+    // Mandat BM : transport d'essai. Prioritaire sur Gmail : aucun message ne
+    // quitte le serveur (nodemailer jsonTransport sérialise le message et le
+    // rend à l'appelant). Le DEV porte des identifiants Gmail réels : sans ce
+    // drapeau, un essai d'expédition y enverrait un vrai mail au client.
+    if (this.configService.get<string>('MAIL_TEST_TRANSPORT') === 'true') {
+      this.transporter = nodemailer.createTransport({ jsonTransport: true });
+      this.isConfigured = true;
+      this.testTransport = true;
+      this.logger.warn(
+        'Mail transport = TEST (jsonTransport) — aucun mail réel ne part',
+      );
+    } else if (clientId && clientSecret && refreshToken) {
       this.transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 587,
@@ -133,12 +162,80 @@ export class MailService {
     order: OrderEmailData,
     customer: CustomerEmailData,
     trackingNumber: string,
+    trackingUrl?: string,
   ): Promise<void> {
-    const html = this.getShippingTemplate(order, customer, trackingNumber);
+    const html = this.getShippingTemplate(
+      order,
+      customer,
+      trackingNumber,
+      trackingUrl,
+    );
     await this.doSend(
       customer.cst_mail,
       `Commande ${order.ord_id} expediee - Automecanik`,
       html,
+    );
+  }
+
+  /**
+   * Mandat BM : la commande coûte plus cher que payé. Le client reçoit le
+   * motif et le lien de paiement du supplément ; sans son accord, la commande
+   * est annulée avant encaissement (action admin existante).
+   */
+  async sendSupplementPaymentRequest(
+    customer: CustomerEmailData,
+    data: {
+      parentOrderId: string;
+      supplementOrderId: string;
+      amountTtc: string;
+      reason: string;
+      paymentUrl: string;
+    },
+  ): Promise<MailDelivery> {
+    const amount = escapeHtml(data.amountTtc.replace('.', ','));
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
+  <p>Bonjour ${escapeHtml(customer.cst_fname)} ${escapeHtml(customer.cst_name)},</p>
+  <p>Pour préparer votre commande <strong>#${escapeHtml(data.parentOrderId)}</strong>, un supplément de <strong>${amount} € TTC</strong> est nécessaire.</p>
+  <p><strong>Motif :</strong> ${escapeHtml(data.reason)}</p>
+  <p>Si vous êtes d'accord, réglez ce supplément ici :</p>
+  <p><a href="${escapeHtml(data.paymentUrl)}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">Payer le supplément (${amount} €)</a></p>
+  <p>Sans votre accord, votre commande sera annulée avant tout encaissement : rien ne vous sera prélevé.</p>
+  <p>Référence du supplément : ${escapeHtml(data.supplementOrderId)}</p>
+</body></html>`;
+    return this.doSend(
+      customer.cst_mail,
+      `Commande ${data.parentOrderId} : supplément à valider - Automecanik`,
+      html,
+    );
+  }
+
+  /** Mandat BM : facture émise à l'expédition, PDF joint. */
+  async sendInvoice(
+    customer: CustomerEmailData,
+    data: { orderId: string; invoiceNumber: string; totalTtc: string },
+    pdf: Buffer,
+  ): Promise<MailDelivery> {
+    const accountUrl = escapeHtml(
+      `${this.appUrl}/account/orders/${encodeURIComponent(data.orderId)}`,
+    );
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; color: #1f2937; line-height: 1.6;">
+  <p>Bonjour ${escapeHtml(customer.cst_fname)} ${escapeHtml(customer.cst_name)},</p>
+  <p>Veuillez trouver ci-joint la facture <strong>${escapeHtml(data.invoiceNumber)}</strong> de votre commande <strong>#${escapeHtml(data.orderId)}</strong>, d'un montant de <strong>${escapeHtml(data.totalTtc.replace('.', ','))} € TTC</strong>.</p>
+  <p>Elle reste téléchargeable dans votre espace client : <a href="${accountUrl}">${accountUrl}</a></p>
+</body></html>`;
+    return this.doSend(
+      customer.cst_mail,
+      `Facture ${data.invoiceNumber} - commande ${data.orderId} - Automecanik`,
+      html,
+      [
+        {
+          filename: `facture-${data.invoiceNumber}.pdf`,
+          content: pdf,
+          contentType: 'application/pdf',
+        },
+      ],
     );
   }
 
@@ -388,10 +485,11 @@ export class MailService {
     to: string,
     subject: string,
     html: string,
-  ): Promise<void> {
+    attachments?: MailAttachment[],
+  ): Promise<MailDelivery> {
     if (!this.isConfigured || !this.transporter) {
       this.logger.warn(`[DRY-RUN] Email to ${to}: ${subject}`);
-      return;
+      return 'dry-run';
     }
 
     try {
@@ -400,8 +498,16 @@ export class MailService {
         to,
         subject,
         html,
+        ...(attachments?.length ? { attachments } : {}),
       });
+      if (this.testTransport) {
+        this.logger.warn(
+          `[TEST-TRANSPORT] Email NOT sent to ${to}: ${subject} (pièces jointes : ${attachments?.length ?? 0})`,
+        );
+        return 'test-transport';
+      }
       this.logger.log(`Email sent to ${to}: ${subject}`);
+      return 'sent';
     } catch (error) {
       this.logger.error(`Failed to send email to ${to}:`, error);
       throw error;
@@ -427,6 +533,12 @@ export class MailService {
         html,
         headers,
       });
+      if (this.testTransport) {
+        this.logger.warn(
+          `[TEST-TRANSPORT] Email NOT sent to ${to}: ${subject}`,
+        );
+        return 'test-transport';
+      }
       this.logger.log(`Email sent to ${to}: ${subject}`);
       return 'sent';
     } catch (error) {
@@ -666,7 +778,17 @@ export class MailService {
     order: OrderEmailData,
     customer: CustomerEmailData,
     trackingNumber: string,
+    trackingUrl?: string,
   ): string {
+    const number = escapeHtml(trackingNumber);
+    const followUrl = escapeHtml(
+      trackingUrl && /^https:\/\//.test(trackingUrl)
+        ? trackingUrl
+        : `https://www.laposte.fr/outils/suivre-vos-envois?code=${encodeURIComponent(trackingNumber)}`,
+    );
+    const accountUrl = escapeHtml(
+      `${this.appUrl}/account/orders/${encodeURIComponent(String(order.ord_id))}`,
+    );
     return `
 <!DOCTYPE html>
 <html>
@@ -748,16 +870,17 @@ export class MailService {
     </div>
 
     <div class="content">
-      <p>Bonjour <strong>${customer.cst_fname} ${customer.cst_name}</strong>,</p>
-      <p>Bonne nouvelle ! Votre commande <strong>#${order.ord_id}</strong> a été expédiée. 🚚</p>
+      <p>Bonjour <strong>${escapeHtml(customer.cst_fname)} ${escapeHtml(customer.cst_name)}</strong>,</p>
+      <p>Bonne nouvelle ! Votre commande <strong>#${escapeHtml(String(order.ord_id))}</strong> a été expédiée. 🚚</p>
 
       <div class="tracking-box">
         <p style="margin: 0 0 8px 0; font-weight: 600; color: #059669;">Numéro de suivi</p>
-        <div class="tracking-number">${trackingNumber}</div>
-        <a href="https://www.laposte.fr/outils/suivre-vos-envois?code=${trackingNumber}" class="button">
+        <div class="tracking-number">${number}</div>
+        <a href="${followUrl}" class="button">
           Suivre mon colis
         </a>
       </div>
+      <p>Le suivi est aussi dans votre espace client : <a href="${accountUrl}">${accountUrl}</a></p>
 
       <p>💡 <strong>Délai de livraison estimé :</strong> 2 à 5 jours ouvrés</p>
       <p>📱 Vous pouvez suivre votre colis en temps réel avec le numéro ci-dessus.</p>

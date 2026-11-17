@@ -24,7 +24,12 @@ export class OrderEmailListener extends SupabaseBaseService {
       const { order, customer } = await this.loadOrderAndCustomer(
         event.orderId,
       );
-      if (!order || !customer) return;
+      if (!order || !customer?.cst_mail) {
+        this.logger.warn(
+          `Shipping email NOT sent for order ${event.orderId}: commande ou mail client introuvable`,
+        );
+        return;
+      }
 
       await this.mailService.sendShippingNotification(
         {
@@ -34,10 +39,11 @@ export class OrderEmailListener extends SupabaseBaseService {
         },
         {
           cst_mail: customer.cst_mail,
-          cst_fname: customer.cst_prenom || customer.cst_fname || '',
-          cst_name: customer.cst_nom || customer.cst_name || '',
+          cst_fname: customer.cst_fname || '',
+          cst_name: customer.cst_name || '',
         },
         event.trackingNumber,
+        event.trackingUrl || order.ord_tracking_url || undefined,
       );
       this.logger.log(`Shipping email sent for order ${event.orderId}`);
     } catch (error) {
@@ -61,8 +67,8 @@ export class OrderEmailListener extends SupabaseBaseService {
         },
         {
           cst_mail: customer.cst_mail,
-          cst_fname: customer.cst_prenom || customer.cst_fname || '',
-          cst_name: customer.cst_nom || customer.cst_name || '',
+          cst_fname: customer.cst_fname || '',
+          cst_name: customer.cst_name || '',
         },
         event.reason,
       );
@@ -88,8 +94,8 @@ export class OrderEmailListener extends SupabaseBaseService {
         },
         {
           cst_mail: customer.cst_mail,
-          cst_fname: customer.cst_prenom || customer.cst_fname || '',
-          cst_name: customer.cst_nom || customer.cst_name || '',
+          cst_fname: customer.cst_fname || '',
+          cst_name: customer.cst_name || '',
         },
         event.amount,
         event.reason,
@@ -103,17 +109,25 @@ export class OrderEmailListener extends SupabaseBaseService {
   private async loadOrderAndCustomer(orderId: string) {
     const { data: order } = await this.supabase
       .from(TABLES.xtr_order)
-      .select('ord_id, ord_cst_id, ord_total_ttc, ord_date')
+      .select('ord_id, ord_cst_id, ord_total_ttc, ord_date, ord_tracking_url')
       .eq('ord_id', orderId)
       .single();
 
     if (!order) return { order: null, customer: null };
 
-    const { data: customer } = await this.supabase
+    // Mandat BM : `cst_prenom` / `cst_nom` n'existent pas dans
+    // ___xtr_customer (mesuré 2026-11-17) ; les demander faisait échouer la
+    // requête, le client restait null et AUCUN mail n'était envoyé.
+    const { data: customer, error } = await this.supabase
       .from(TABLES.xtr_customer)
-      .select('cst_mail, cst_prenom, cst_nom, cst_fname, cst_name')
+      .select('cst_mail, cst_fname, cst_name')
       .eq('cst_id', order.ord_cst_id)
       .single();
+    if (error) {
+      this.logger.warn(
+        `Client de la commande ${orderId} illisible : ${error.message}`,
+      );
+    }
 
     return { order, customer: customer || null };
   }
