@@ -27,9 +27,6 @@ jest.mock(
     BuyingGuideEnricherService: class {},
   }),
 );
-jest.mock('../../../modules/admin/services/r2-enricher.service', () => ({
-  R2EnricherService: class {},
-}));
 jest.mock(
   '../../../modules/admin/services/r8-vehicle-enricher.service',
   () => ({
