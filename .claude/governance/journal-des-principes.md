@@ -261,7 +261,7 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L2 (`automation-registry-validate.yml`, `cron-schedulemodule-guard.yml`). Trois
   décorateurs `@Cron(` subsistent dans `backend/src` alors que `ScheduleModule` est désactivé. Le
   module `command-center-orchestrator` existe sous drapeau éteint (ADR-087).
-- **P41.** Un incident a une fiche : une issue du monorepo, au label `incident`. Aucun autre
+- **P42.** Un incident a une fiche : une issue du monorepo, au label `incident`. Aucun autre
   registre d'incidents n'est tenu. La fiche a trois rubriques obligatoires : ce qui s'est passé,
   pourquoi, ce qui l'empêche de revenir. Elle ne se ferme que lorsque la troisième désigne, avec
   son lien, le test ou le contrôle automatique qui empêche le retour de l'incident. Si aucun
@@ -282,8 +282,10 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   (`docs/audit/mandat-bd-20261116/complement-4-incidents/`). Ce patch fusionné : L2. L3 à la
   première réouverture observée. Limites du contrôle : un lien est admis s'il désigne une PR
   fusionnée de ce dépôt ou un fichier présent sur `main` ; le contrôle ne juge pas si le test cité
-  couvre la cause. Retirer le label `incident` sort la fiche du contrôle. Écarts : l'issue #264,
-  seule fiche au label `incident`, ouverte, n'a aucune des trois rubriques ; deux comptes rendus
+  couvre la cause. Retirer le label `incident` sort la fiche du contrôle. Écarts, relevé du
+  2026-11-17 à 20:47 UTC sur `main` `705dc2c1e` : deux issues portent le label `incident`, #264 et
+  #2144, toutes deux ouvertes. #264 n'a aucune des trois rubriques ; #2144 a les trois, mais la
+  première sous le titre « Ce qui se passe », qui n'est pas celui du gabarit. Deux comptes rendus
   antérieurs sont des fichiers (`.spec/incidents/2026-02-configservice-crash.md`,
   `.spec/reports/incident-2026-04-14-payments-sev1.md`). Une fiche ouverte figure dans la liste
   que lit la routine de P24 (`scripts/ops/pilote-file.sh`, l. 58), qui liste toutes les issues
