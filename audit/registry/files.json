@@ -6131,7 +6131,7 @@
         "backend/src/database/services/piece-price-data.service.ts"
       ],
       "kind": "test",
-      "loc": 325,
+      "loc": 339,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/piece-price-data.service.test.ts",
       "risk": "low",
@@ -6159,7 +6159,7 @@
         "backend/src/database/services/vendable.ts"
       ],
       "kind": "service",
-      "loc": 288,
+      "loc": 289,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/piece-price-data.service.ts",
       "risk": "low",
@@ -6294,7 +6294,7 @@
         "backend/src/database/services/vendable.ts"
       ],
       "kind": "test",
-      "loc": 50,
+      "loc": 60,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/vendable.test.ts",
       "risk": "low",
@@ -6317,7 +6317,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 47,
+      "loc": 50,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/vendable.ts",
       "risk": "low",
@@ -23123,7 +23123,7 @@
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
       "kind": "test",
-      "loc": 659,
+      "loc": 670,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
       "risk": "low",
@@ -23537,7 +23537,7 @@
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
       "kind": "service",
-      "loc": 542,
+      "loc": 545,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/price-deactivation.service.ts",
       "risk": "low",
@@ -23786,6 +23786,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@database/services/vendable",
         "backend/src/modules/pricing/services/price-import.dry-run.ts",
         "backend/src/modules/pricing/services/pricing-formula.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.core.ts",
@@ -23794,7 +23795,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 905,
+      "loc": 907,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "low",
