@@ -877,8 +877,8 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 51,
-      "loc_total": 6948,
+      "files_count": 53,
+      "loc_total": 7292,
       "has_barrel": false
     },
     "suppliers": {

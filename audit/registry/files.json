@@ -35330,7 +35330,7 @@
         "backend/src/modules/supplier-truth/connectors/cal.connector.ts"
       ],
       "kind": "test",
-      "loc": 284,
+      "loc": 298,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
       "risk": "low",
@@ -35356,10 +35356,11 @@
       "imports": [
         "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 351,
+      "loc": 392,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
       "risk": "low",
@@ -35427,7 +35428,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "kind": "test",
-      "loc": 810,
+      "loc": 836,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
       "risk": "low",
@@ -35457,7 +35458,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 624,
+      "loc": 640,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "risk": "low",
@@ -35504,10 +35505,11 @@
       "imports": [
         "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 314,
+      "loc": 326,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
       "risk": "low",
@@ -35558,6 +35560,51 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts"
+      ],
+      "kind": "test",
+      "loc": 125,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts",
+      "importedBy": [
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
+        "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 110,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/supplier-truth/connectors/portal-read-only-guard.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
