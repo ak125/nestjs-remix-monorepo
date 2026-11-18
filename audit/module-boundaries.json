@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 105,
-      "loc_total": 25201,
+      "loc_total": 25250,
       "has_barrel": true
     },
     "customers": {
@@ -212,8 +212,8 @@
         "backend/src/database/services",
         "backend/src/database/types"
       ],
-      "files_count": 17,
-      "loc_total": 21607,
+      "files_count": 18,
+      "loc_total": 21689,
       "has_barrel": true
     },
     "dev-only": {
@@ -769,8 +769,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 289,
-      "loc_total": 62457,
+      "files_count": 291,
+      "loc_total": 63995,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -2035,12 +2035,17 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 40
+      "count": 41
     },
     {
       "from": "seo",
       "to": "database",
       "count": 11
+    },
+    {
+      "from": "seo",
+      "to": "pricing",
+      "count": 1
     },
     {
       "from": "seo",
@@ -2797,6 +2802,11 @@
     {
       "from": "backend/src/modules/seo/services/product-image.service.ts",
       "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/seo/services/sitemap-v10-pieces-vendable.service.ts",
+      "to": "backend/src/modules/pricing/config/supplier-sale-rules.ts",
       "rule": "no-deep-module-access"
     },
     {

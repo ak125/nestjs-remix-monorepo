@@ -78,7 +78,7 @@ Limites connues :
 - le mode `vendable` exige la migration appliquée ; sans elle il s'arrête sans publier ;
 - sans sitemap précédent sur le disque, le garde-fou est sans objet (journalisé) ;
 - la fenêtre de 28 jours finit à la dernière date présente en base ; aucune limite d'ancienneté n'a été inventée ;
-- après un retour à `legacy`, les fichiers `sitemap-pieces-4.xml` à `-28.xml` restent sur le disque, hors de l'index ; leur retrait est proposé au §8 ;
+- après un retour à `legacy`, les fichiers `sitemap-pieces-4.xml` à `-28.xml` restent sur le disque, hors de l'index ; leur retrait est proposé au §9 ;
 - durée réelle de bout en bout non mesurée, la fonction n'existant pas en base (voir §6).
 
 ## 6. Performance
@@ -175,9 +175,24 @@ Autres vérifications : jest sur les 8 suites touchées, 173 tests verts ; typec
 - Un worktree neuf n'a pas les paquets internes construits : jest échoue sur `@repo/seo-roles` tant que le paquet n'est pas construit.
 - La cohérence entre `pieces_relation_type.rtp_pg_id` et `pieces.piece_pg_id` n'a pas été mesurée.
 
-## 11. Actes réservés à Marwane
+## 11. Deux patchs préparés, non appliqués
 
-1. Appliquer `ci-miroir-vendable.patch` sur cette branche, ou le refuser.
+Deux fichiers sont réservés à l'owner ; leurs changements sont livrés en patch, sans contournement.
+
+| Patch | Fichier visé | Effet tant qu'il n'est pas appliqué |
+|---|---|---|
+| `ci-miroir-vendable.patch` | `.github/workflows/ci.yml` | le miroir côté SQL n'est pas joué par la CI (§4) |
+| `ownership-ct.patch` | `.spec/00-canon/repository-registry/ownership.yaml` | deux contrôles de la PR sont rouges : « Registry block-new gate » (les deux fichiers de migration et `vendable.echantillon.json`) et le ratchet de dérive de contrat (`vendable.miroir.test.ts`) |
+
+`ownership-ct.patch` propose le domaine D11, celui de `vendable.ts` : `@ak125` pour la migration, `@ak125/payments-team` pour l'échantillon et son test. Les deux contrôles ont été joués en local sans le patch (3 échecs et 1 nouveau constat, ceux du tableau). Avec le fichier patché, lu hors du dépôt, les quatre chemins trouvent leur entrée ; les deux contrôles eux-mêmes n'ont pas été rejoués avec le patch.
+
+Les projections (`audit/registry/*.json`, `REPO_MAP.md`, `audit/db-usage-map.json`, `audit/module-boundaries.json`, `audit/runtime-entrypoints.json`, `audit/cleanup/pr-8-*`) sont régénérées par leurs générateurs, pas éditées à la main. Elles seront à régénérer après application de `ownership-ct.patch`.
+
+La régénération signale un avertissement d'hygiène nouveau, non bloquant (`no-deep-module-access`, une violation de plus) : le générateur importe `evaluerGardeFou` depuis `modules/pricing/config/supplier-sale-rules.ts`, pour ne pas écrire une seconde fois la règle « arrêt strictement au-delà du seuil ». Le module pricing n'a pas de point d'entrée public et n'est pas modifié ici. Si l'owner préfère zéro dépendance du sitemap vers le module des prix, la comparaison tient en une ligne à recopier.
+
+## 12. Actes réservés à Marwane
+
+1. Appliquer `ownership-ct.patch` et `ci-miroir-vendable.patch` sur cette branche, ou les refuser.
 2. Fusionner la PR.
 3. Appliquer la migration par le workflow « Apply Supabase migrations (manual) ».
 4. Trancher le §1, puis basculer `SITEMAP_R2_SOURCE` à `vendable`.
