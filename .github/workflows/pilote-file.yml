@@ -56,6 +56,12 @@ jobs:
           node-version: "24"
           package-manager-cache: false
 
+      # Le contrôle reconnaît le producteur du KPI avec ast-grep (scripts/ops/pilote-file.producteur-kpi.yml) ;
+      # le script s'arrête si ast-grep manque ou n'est pas à la version épinglée de package.json
+      # (fichier de la racine, présent dans le checkout partiel en mode cône).
+      - name: ast-grep (version épinglée de package.json)
+        run: npm install --global --no-fund --no-audit "@ast-grep/cli@$(jq -r '.devDependencies["@ast-grep/cli"]' package.json)"
+
       - name: Contrôle déterministe (lecture seule)
         id: controle
         env:

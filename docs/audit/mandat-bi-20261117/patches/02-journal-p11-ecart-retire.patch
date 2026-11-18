@@ -1,0 +1,20 @@
+diff --git a/.claude/governance/journal-des-principes.md b/.claude/governance/journal-des-principes.md
+index dbfeec638..d7494f53c 100644
+--- a/.claude/governance/journal-des-principes.md
++++ b/.claude/governance/journal-des-principes.md
+@@ -120,11 +120,10 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
+   de promotion automatique. « Aucun consommateur ne lit RAW » : aucune garde dans le monorepo.
+ - **P11.** Le RAG est un consommateur en lecture seule, sans autorité de production de contenu.
+   Source : ADR-031, ADR-046.
+-  Application : L2 pour le neuf (`.ast-grep/rules/no-direct-rag-knowledge-write.yml`,
+-  `scripts/audit/check-rag-authority-read-ratchet.ts`). Écart : 12 fichiers hors module RAG lisent
+-  encore la base RAG pour produire du contenu ; la règle de lecture
+-  (`seo-no-rag-as-content-source.yml`) est en avertissement. Ces producteurs sont à retirer
+-  (`CLAUDE.md`, invariant 4).
++  Application : L2 (`.ast-grep/rules/no-direct-rag-knowledge-write.yml` pour l'écriture,
++  `.ast-grep/rules/seo-no-rag-as-content-source.yml` en erreur pour la lecture, référence
++  `scripts/audit/check-rag-authority-read-ratchet.ts` à 0). Les scripts et instructions d'agents
++  hors `backend/src` ne sont couverts par aucune garde.
+ - **P12.** Chaque rôle SEO a un seul générateur. Les règles métier d'un rôle vivent dans les paquets
+   canoniques, pas dans les services : l'identité des rôles dans `packages/seo-roles/`, leurs
+   contrats dans `packages/seo-role-contracts/`. Source : ADR-040, ADR-046, ADR-047.
