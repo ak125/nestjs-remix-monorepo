@@ -88,6 +88,27 @@ const DEFAULTS = {
 const USER_AGENT =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
+/**
+ * Name of the environment variable holding the `privatepwd` parameter the CAL
+ * autocomplete web service requires (mandat CB, 2026-11-18). Like `CAL_USER` /
+ * `CAL_PASSWORD`, only the NAME lives in the code — never a value, never a
+ * default. Missing → `login()` throws before any browser or network call.
+ */
+export const CAL_PRIVATE_PWD_ENV = 'CAL_PRIVATE_PWD';
+
+/** The configured `privatepwd`, or an explicit error naming the variable. */
+export function readCalPrivatePwd(
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  const value = env[CAL_PRIVATE_PWD_ENV]?.trim();
+  if (!value) {
+    throw new Error(
+      `CAL : variable ${CAL_PRIVATE_PWD_ENV} absente de la configuration — connexion refusée, aucun appel réseau`,
+    );
+  }
+  return value;
+}
+
 export class CalConnector implements SupplierConnector {
   readonly platform = 'cal';
   readonly supplierId: string;
@@ -98,6 +119,7 @@ export class CalConnector implements SupplierConnector {
   private context?: BrowserContext;
   private catalogPage?: Page;
   private loggedIn = false;
+  private privatePwd?: string;
   private readonly brandTokens: Set<string>;
 
   constructor(options: CalConnectorOptions) {
@@ -108,8 +130,11 @@ export class CalConnector implements SupplierConnector {
   }
 
   async login(creds: SupplierCredentials): Promise<void> {
+    // Checked first: a missing variable must fail before any browser or network call.
+    const privatePwd = readCalPrivatePwd();
     // A re-login (classifier session recovery) must not leak the previous browser.
     await this.close();
+    this.privatePwd = privatePwd;
     const { chromium } = await import('playwright');
     this.browser = await chromium.launch({ headless: true });
     this.context = await this.browser.newContext({
@@ -311,7 +336,7 @@ export class CalConnector implements SupplierConnector {
       name_startsWith: query,
       idsession,
       succ: '01',
-      privatepwd: 'wz7yH5STyWM=',
+      privatepwd: this.privatePwd!,
       interface: 'CYB',
       mode: 'RefWithCat',
       cattag: '',
@@ -326,7 +351,12 @@ export class CalConnector implements SupplierConnector {
   }
 
   private assertLoggedIn(): void {
-    if (!this.loggedIn || !this.catalogPage || !this.context) {
+    if (
+      !this.loggedIn ||
+      !this.catalogPage ||
+      !this.context ||
+      !this.privatePwd
+    ) {
       throw new Error('CAL fetchAvailability called before login');
     }
   }
@@ -366,6 +396,7 @@ export class CalConnector implements SupplierConnector {
       this.context = undefined;
       this.catalogPage = undefined;
       this.loggedIn = false;
+      this.privatePwd = undefined;
     }
   }
 
