@@ -284,3 +284,46 @@ export function buildInvoiceDraft(input: {
     totalTtcCents: totalTtc,
   };
 }
+
+// ── Paiement annulé ou remboursé (complément BM n° 2, 2026-11-18) ───────────
+// Décision de Marwane (« occupez-vous du process ») : une commande dont
+// l'encaissement est annulé ou remboursé dans Paybox n'est ni expédiée ni
+// facturée, et l'admin le dit. Seule source des libellés : le serveur les
+// rend, l'interface les affiche tels quels.
+
+type PaymentVoidState = 'cancelled' | 'refunded';
+
+const PAYMENT_VOID_LABEL: Readonly<Record<PaymentVoidState, string>> =
+  Object.freeze({
+    cancelled: 'Paiement annulé',
+    refunded: 'Remboursée — ne pas expédier',
+  });
+
+export interface PaymentVoid {
+  state: PaymentVoidState;
+  label: string;
+  checkedAt: string | null;
+  source: string | null;
+}
+
+/** État d'encaissement → marque « ne pas expédier », ou null. */
+export function paymentVoidOf(
+  row:
+    | {
+        ocs_state: string;
+        ocs_checked_at?: string | null;
+        ocs_source?: string | null;
+      }
+    | null
+    | undefined,
+): PaymentVoid | null {
+  if (!row) return null;
+  const state = row.ocs_state;
+  if (state !== 'cancelled' && state !== 'refunded') return null;
+  return {
+    state,
+    label: PAYMENT_VOID_LABEL[state],
+    checkedAt: row.ocs_checked_at ?? null,
+    source: row.ocs_source ?? null,
+  };
+}

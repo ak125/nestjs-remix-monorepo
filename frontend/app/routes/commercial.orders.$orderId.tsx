@@ -28,6 +28,11 @@ import {
 } from "react-router";
 import { toast } from "sonner";
 
+import {
+  paymentVoidUnavailableText,
+  readPaymentVoid,
+  type PaymentVoidRead,
+} from "~/components/orders/payment-void";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -90,7 +95,21 @@ export const loader = async ({
     if (!result.success || !result.data)
       throw new Response("Commande introuvable", { status: 404 });
 
-    return { order: result.data };
+    // Complément BM n° 2 : paiement annulé ou remboursé dans Paybox.
+    let paymentVoid: PaymentVoidRead;
+    try {
+      paymentVoid = await readPaymentVoid(
+        await fetch(
+          `http://127.0.0.1:3000/api/admin/orders/${encodeURIComponent(orderId)}/billing/payment-void`,
+          { headers: { Cookie: cookie } },
+        ),
+      );
+    } catch (e) {
+      logger.error("Lecture de l'état d'encaissement impossible:", e);
+      paymentVoid = { status: "unavailable", httpStatus: null };
+    }
+
+    return { order: result.data, paymentVoid };
   } catch (error) {
     if (error instanceof Response) throw error;
     logger.error("Erreur chargement commande:", error);
@@ -189,7 +208,7 @@ function AddressBlock({
 
 // PAGE
 export default function CommercialOrderDetailPage() {
-  const { order } = useLoaderData<typeof loader>();
+  const { order, paymentVoid } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<{
     success?: boolean;
     message?: string;
@@ -209,6 +228,7 @@ export default function CommercialOrderDetailPage() {
   const postback = order.postback;
   const isPaid = order.ord_is_pay === "1";
   const isCancelled = order.ord_ords_id === "2";
+  const voided = paymentVoid.status === "ok" ? paymentVoid.mark : null;
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -254,6 +274,14 @@ export default function CommercialOrderDetailPage() {
             <Badge className={getPaymentBadgeColor(order.ord_is_pay)}>
               {getPaymentLabel(order.ord_is_pay)}
             </Badge>
+            {voided && (
+              <Badge
+                data-testid="payment-void-badge"
+                className="bg-red-100 text-red-800 border-red-300"
+              >
+                {voided.label}
+              </Badge>
+            )}
             {postback?.status === "completed" && (
               <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">
                 Paybox OK
@@ -261,6 +289,15 @@ export default function CommercialOrderDetailPage() {
             )}
           </div>
         </div>
+
+        {paymentVoid.status === "unavailable" && (
+          <div
+            role="alert"
+            className="mb-4 p-3 bg-amber-50 text-amber-900 rounded-lg text-sm"
+          >
+            {paymentVoidUnavailableText(paymentVoid.httpStatus)}
+          </div>
+        )}
 
         {/* Feedback */}
         {fetcher.data?.error && (
@@ -407,7 +444,25 @@ export default function CommercialOrderDetailPage() {
                     Marquer payee
                   </Button>
                 )}
-                {!showShipForm ? (
+                {voided ? (
+                  <div className="space-y-1">
+                    <Button
+                      className="w-full justify-start"
+                      variant="outline"
+                      disabled
+                      title={voided.label}
+                    >
+                      <Truck className="w-4 h-4 mr-2" />
+                      Expedier
+                    </Button>
+                    <p
+                      data-testid="ship-disabled-reason"
+                      className="text-xs text-red-700"
+                    >
+                      {voided.label} : expédition et facture désactivées.
+                    </p>
+                  </div>
+                ) : !showShipForm ? (
                   <Button
                     className="w-full justify-start"
                     variant="outline"

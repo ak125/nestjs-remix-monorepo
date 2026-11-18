@@ -7,12 +7,14 @@
  * `ORDER_BILLING_ENABLED` n'est pas « true » (403 admin, 404 client).
  */
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   NotFoundException,
   Param,
   Post,
+  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -75,6 +77,31 @@ function sendPdf(res: Response, file: { filename: string; content: Buffer }) {
 @UseGuards(AuthenticatedGuard, PermissionsGuard)
 export class OrderBillingAdminController {
   constructor(private readonly billing: OrderBillingService) {}
+
+  /**
+   * Complément BM n° 2 : commandes d'une page dont le paiement est annulé ou
+   * remboursé. `?ids=a,b,c` (100 au plus). Drapeau absent : `enabled: false`.
+   */
+  @Get('billing/payment-voids')
+  @RequirePermission('canValidate')
+  listPaymentVoids(@Query('ids') ids?: string) {
+    const list = (ids ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (list.length > 100)
+      throw new BadRequestException('100 commandes au plus');
+    return this.billing.listPaymentVoids(
+      list.map((id) => identifiant(id, 'ids')),
+    );
+  }
+
+  /** Même marque pour la fiche commande. Drapeau absent : `enabled: false`. */
+  @Get(':orderId/billing/payment-void')
+  @RequirePermission('canValidate')
+  getPaymentVoid(@Param('orderId') orderId: string) {
+    return this.billing.paymentVoid(identifiant(orderId, 'orderId'));
+  }
 
   @Get(':orderId/billing')
   @RequirePermission('canMarkPaid')

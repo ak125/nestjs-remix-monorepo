@@ -69,6 +69,7 @@ function sujet(
     { emit } as unknown as EventEmitter2,
     {} as OrdersService,
     lineSupplier,
+    {} as never, // billing — hors du chemin de la confirmation fournisseur
   );
   const { client, appels } = requeteFactice(resultat);
   Object.defineProperty(service, 'supabase', { value: client });

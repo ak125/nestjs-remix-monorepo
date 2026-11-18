@@ -13,6 +13,7 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { OrdersService } from './orders.service';
+import { OrderBillingService } from './order-billing.service';
 import {
   OrderLineSupplierService,
   type PropositionLigne,
@@ -57,6 +58,7 @@ export class OrderActionsService extends SupabaseBaseService {
     private readonly eventEmitter: EventEmitter2,
     private readonly ordersService: OrdersService,
     private readonly lineSupplier: OrderLineSupplierService,
+    private readonly billing: OrderBillingService,
   ) {
     super();
   }
@@ -582,6 +584,14 @@ export class OrderActionsService extends SupabaseBaseService {
       if (!SHIPPABLE_STATUSES.includes(order.ord_ords_id)) {
         throw new ConflictException(
           `Statut ${order.ord_ords_id} : expédition possible depuis 3 ou 5 seulement`,
+        );
+      }
+      // Complément BM n° 2 : paiement annulé ou remboursé dans Paybox =
+      // aucune expédition (drapeau ORDER_BILLING_ENABLED absent : non lu).
+      const { paymentVoid } = await this.billing.paymentVoid(orderId);
+      if (paymentVoid) {
+        throw new ConflictException(
+          `Commande ${orderId} : ${paymentVoid.label}, expédition refusée`,
         );
       }
 

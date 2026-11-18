@@ -13,7 +13,7 @@ import {
   Truck,
   XCircle,
 } from "lucide-react";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { useNavigate } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
@@ -35,6 +35,7 @@ import {
   getStatusBadgeColor,
   getStatusLabel,
 } from "../../utils/orders.utils";
+import { paymentVoidUnavailableText, usePaymentVoids } from "./payment-void";
 
 export const OrdersTable = memo(function OrdersTable({
   orders,
@@ -50,6 +51,10 @@ export const OrdersTable = memo(function OrdersTable({
   basePath = "/admin/orders",
 }: OrdersTableProps & { basePath?: string }) {
   const navigate = useNavigate();
+  // Complément BM n° 2 : paiement annulé ou remboursé dans Paybox, lu côté
+  // navigateur (le loader de la liste appartient à BN, #2149).
+  const orderIds = useMemo(() => orders.map((o) => o.ord_id), [orders]);
+  const voids = usePaymentVoids(orderIds);
 
   if (orders.length === 0) {
     return (
@@ -61,6 +66,14 @@ export const OrdersTable = memo(function OrdersTable({
 
   return (
     <div>
+      {voids.status === "unavailable" && (
+        <div
+          role="alert"
+          className="m-4 p-3 bg-amber-50 text-amber-900 rounded-lg text-sm"
+        >
+          {paymentVoidUnavailableText(voids.httpStatus)}
+        </div>
+      )}
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -91,6 +104,8 @@ export const OrdersTable = memo(function OrdersTable({
           </thead>
           <tbody className="divide-y">
             {orders.map((order) => {
+              const voided =
+                voids.status === "ok" ? voids.byOrder[order.ord_id] : undefined;
               const customerName =
                 order.customerName ||
                 (order.customer
@@ -151,6 +166,15 @@ export const OrdersTable = memo(function OrdersTable({
                       >
                         {getPaymentLabel(order.ord_is_pay)}
                       </Badge>
+                      {voided && (
+                        <Badge
+                          variant="outline"
+                          data-testid="payment-void-badge"
+                          className="text-xs bg-red-100 text-red-800 border-red-300"
+                        >
+                          {voided.label}
+                        </Badge>
+                      )}
                       {order.postback?.paymentmethod && (
                         <span
                           className={`text-[10px] px-1.5 py-0.5 rounded-full border ${getPaymentMethodInfo(order.postback.paymentmethod).color}`}

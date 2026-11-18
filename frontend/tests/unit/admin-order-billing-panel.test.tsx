@@ -31,6 +31,7 @@ const state = (over: Partial<OrderBilling> = {}): OrderBilling => ({
   totalTtc: "109.90",
   expectedCaptureTtc: "109.90",
   capture: null,
+  paymentVoid: null,
   adjustments: [],
   supplements: [],
   invoice: null,
@@ -247,6 +248,44 @@ describe("OrderBillingPanel", () => {
     );
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
+
+  // Complément BM n° 2 : paiement annulé ou remboursé dans Paybox.
+  it.each([
+    ["cancelled", "Paiement annulé"],
+    ["refunded", "Remboursée — ne pas expédier"],
+  ])(
+    "paiement %s : motif affiché, facture, réduction et supplément désactivés",
+    async (st, label) => {
+      fetchMock.mockResolvedValueOnce(
+        json(
+          state({
+            shippedAt: "2026-11-17T17:00:00Z",
+            paymentVoid: { state: st, label },
+          }),
+        ),
+      );
+      render(<OrderBillingPanel orderId={ID} />);
+      expect((await screen.findByTestId("payment-void")).textContent).toContain(
+        label,
+      );
+      for (const name of [
+        "Réessayer l'émission de la facture",
+        "Enregistrer la réduction",
+        "Envoyer le lien de supplément",
+      ]) {
+        const b = screen.getByRole("button", { name }) as HTMLButtonElement;
+        expect(b.disabled).toBe(true);
+        expect(b.title).toBe(label);
+      }
+      expect(
+        (
+          screen.getByRole("button", {
+            name: "Enregistrer l'état",
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(false);
+    },
+  );
 
   it("drapeau éteint (403) : « facturation non activée »", async () => {
     fetchMock.mockResolvedValueOnce(json({ message: "Forbidden" }, 403));

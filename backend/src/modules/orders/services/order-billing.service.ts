@@ -42,7 +42,9 @@ import {
   BillingCalcError,
   buildInvoiceDraft,
   expectedCaptureCents,
+  paymentVoidOf,
   textFromCents,
+  type PaymentVoid,
   type BillingAdjustmentRow,
   type BillingLineRow,
   type BillingOrderRow,
@@ -201,6 +203,7 @@ export class OrderBillingService extends SupabaseBaseService {
         expectedCaptureCents(order, adjustments),
       ),
       capture,
+      paymentVoid: paymentVoidOf(capture),
       adjustments,
       supplements: children.map((c) => ({
         orderId: c.ord_id,
@@ -215,6 +218,52 @@ export class OrderBillingService extends SupabaseBaseService {
             totalTtc: invoice.inv_total_ttc,
           }
         : null,
+    };
+  }
+
+  // ── Paiement annulé ou remboursé (complément BM n° 2) ─────────────────────
+
+  /**
+   * Marque « ne pas expédier » d'une commande. `enabled: false` = drapeau
+   * absent : la table n'est pas lue (migration non appliquée) et rien n'est
+   * marqué, comme toute la facturation. Une erreur de lecture est levée,
+   * jamais rendue comme « aucune marque ». Aucun mail n'est envoyé ici.
+   */
+  async paymentVoid(
+    orderId: string,
+  ): Promise<{ enabled: boolean; paymentVoid: PaymentVoid | null }> {
+    if (!this.isEnabled()) return { enabled: false, paymentVoid: null };
+    return {
+      enabled: true,
+      paymentVoid: paymentVoidOf(await this.loadCapture(orderId)),
+    };
+  }
+
+  /** Mêmes marques pour les commandes d'une page de liste (100 au plus). */
+  async listPaymentVoids(orderIds: string[]): Promise<{
+    enabled: boolean;
+    voids: Array<PaymentVoid & { orderId: string }>;
+  }> {
+    if (!this.isEnabled()) return { enabled: false, voids: [] };
+    if (orderIds.length === 0) return { enabled: true, voids: [] };
+    const { data, error } = await this.supabase
+      .from(T_CAPTURE)
+      .select('ocs_ord_id, ocs_state, ocs_checked_at, ocs_source')
+      .in('ocs_ord_id', orderIds)
+      .in('ocs_state', ['cancelled', 'refunded']);
+    if (error) throw readError("des états d'encaissement", error);
+    const rows = (data ?? []) as Array<
+      Pick<
+        CaptureStateRow,
+        'ocs_ord_id' | 'ocs_state' | 'ocs_checked_at' | 'ocs_source'
+      >
+    >;
+    return {
+      enabled: true,
+      voids: rows.flatMap((r) => {
+        const v = paymentVoidOf(r);
+        return v ? [{ orderId: r.ocs_ord_id, ...v }] : [];
+      }),
     };
   }
 
@@ -444,6 +493,8 @@ export class OrderBillingService extends SupabaseBaseService {
       this.loadCapture(orderId),
       this.loadChildren(orderId),
     ]);
+    const voided = paymentVoidOf(capture);
+    if (voided) return { issued: false, reason: voided.label };
     if (
       capture?.ocs_state !== 'captured' ||
       capture.ocs_captured_amount_cents == null

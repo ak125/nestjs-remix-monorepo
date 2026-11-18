@@ -17,6 +17,7 @@ import {
   textFromCents,
   type BillingLineRow,
   type BillingOrderRow,
+  paymentVoidOf,
 } from '../../src/modules/orders/services/order-billing.calc';
 import {
   SELLER_IDENTITY_LINES,
@@ -337,5 +338,35 @@ describe('invoice-pdf', () => {
     expect(Number(/\/Count (\d+)/.exec(long)![1])).toBeGreaterThan(1);
     expect(long).toContain('(REF0)');
     expect(long).toContain('(REF79)');
+  });
+});
+
+// Complément BM n° 2 (2026-11-18) : paiement annulé ou remboursé dans Paybox.
+describe('paymentVoidOf', () => {
+  it.each([
+    [null],
+    [undefined],
+    [{ ocs_state: 'authorized' }],
+    [{ ocs_state: 'captured' }],
+  ])('aucune marque : %p', (row) => {
+    expect(paymentVoidOf(row)).toBeNull();
+  });
+
+  it.each([
+    ['cancelled', 'Paiement annulé'],
+    ['refunded', 'Remboursée — ne pas expédier'],
+  ])('%s ⇒ « %s », relevé et source rendus', (state, label) => {
+    expect(
+      paymentVoidOf({
+        ocs_state: state,
+        ocs_checked_at: '2026-11-18T12:00:00Z',
+        ocs_source: 'manual',
+      }),
+    ).toEqual({
+      state,
+      label,
+      checkedAt: '2026-11-18T12:00:00Z',
+      source: 'manual',
+    });
   });
 });

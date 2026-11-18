@@ -65,6 +65,14 @@ describe('routes de facturation (mandat BM)', () => {
       ],
     );
     expect(table).toEqual([
+      // Complément BM n° 2 : marques « paiement annulé / remboursé ».
+      [RequestMethod.GET, 'billing/payment-voids', 'canValidate', undefined],
+      [
+        RequestMethod.GET,
+        ':orderId/billing/payment-void',
+        'canValidate',
+        undefined,
+      ],
       [RequestMethod.GET, ':orderId/billing', 'canMarkPaid', undefined],
       [
         RequestMethod.POST,

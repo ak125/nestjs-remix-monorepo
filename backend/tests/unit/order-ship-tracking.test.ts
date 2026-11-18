@@ -88,11 +88,25 @@ function paidOrder(overrides: Record<string, unknown> = {}) {
 function makeService(opts: {
   order?: Record<string, unknown>;
   updatedRows?: unknown[];
+  paymentVoid?: { state: string; label: string } | null;
 }) {
   const emitter = new EventEmitter2();
   const emitted: unknown[] = [];
   emitter.on(ORDER_EVENTS.SHIPPED, (e) => emitted.push(e));
-  const service = new OrderActionsService(emitter, {} as never, {} as never);
+  const billing = {
+    paymentVoid: jest
+      .fn()
+      .mockResolvedValue({
+        enabled: true,
+        paymentVoid: opts.paymentVoid ?? null,
+      }),
+  };
+  const service = new OrderActionsService(
+    emitter,
+    {} as never,
+    {} as never,
+    billing as never,
+  );
   const db = fakeSupabase((table, ops) => {
     if (table === TABLES.xtr_order && ops[0]?.method === 'update') {
       return { data: opts.updatedRows ?? [{ ord_id: ORDER_ID }], error: null };
@@ -229,6 +243,24 @@ describe('Mandat BM — expédition par numéro de suivi', () => {
       expect(db.calls).toHaveLength(0);
       expect(emitted).toHaveLength(0);
     });
+
+    // Complément BM n° 2 : paiement annulé ou remboursé dans Paybox.
+    it.each([
+      ['cancelled', 'Paiement annulé'],
+      ['refunded', 'Remboursée — ne pas expédier'],
+    ])(
+      'refuse une commande payée dont l’encaissement est %s, sans écrire ni notifier',
+      async (state, label) => {
+        const { service, emitted, db } = makeService({
+          paymentVoid: { state, label },
+        });
+        await expect(
+          service.shipOrder(ORDER_ID, TRACKING, '7'),
+        ).rejects.toThrow(`${label}, expédition refusée`);
+        expect(db.calls).toHaveLength(0);
+        expect(emitted).toHaveLength(0);
+      },
+    );
 
     it('accepte le statut 5', async () => {
       const { service, emitted } = makeService({

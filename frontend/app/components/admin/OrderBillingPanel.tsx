@@ -35,6 +35,8 @@ export interface OrderBilling {
     ocs_source: string;
     ocs_checked_at?: string | null;
   } | null;
+  /** Complément BM n° 2 : paiement annulé ou remboursé ⇒ ne pas expédier. */
+  paymentVoid: { state: string; label: string } | null;
   adjustments: Array<{
     opa_kind: "reduction" | "supplement";
     opa_amount_ttc_cents: number;
@@ -128,6 +130,11 @@ export function OrderBillingPanel({ orderId }: { orderId: string }) {
     >;
   }
 
+  // Paiement annulé ou remboursé : facture, réduction et supplément fermés,
+  // motif affiché. La saisie de l'état reste ouverte pour le corriger.
+  const voided = billing?.paymentVoid ?? null;
+  const locked = busy || voided !== null;
+
   const invoiceIssue = (r: any): string => {
     const inv = r?.invoice ?? r;
     if (inv?.issued) {
@@ -156,6 +163,16 @@ export function OrderBillingPanel({ orderId }: { orderId: string }) {
 
       {billing && (
         <>
+          {voided && (
+            <p
+              role="alert"
+              data-testid="payment-void"
+              className="rounded border border-red-300 bg-red-50 p-2 text-sm font-semibold text-red-800"
+            >
+              {voided.label} : expédition, facture, réduction et supplément
+              désactivés.
+            </p>
+          )}
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
             <dt>Total payé</dt>
             <dd>{euros(billing.totalTtc)}</dd>
@@ -255,7 +272,12 @@ export function OrderBillingPanel({ orderId }: { orderId: string }) {
                   maxLength={500}
                   className="w-full rounded border px-2 py-1"
                 />
-                <Button type="submit" size="sm" disabled={busy}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={locked}
+                  title={voided?.label}
+                >
                   Enregistrer la réduction
                 </Button>
               </form>
@@ -288,7 +310,12 @@ export function OrderBillingPanel({ orderId }: { orderId: string }) {
                   maxLength={500}
                   className="w-full rounded border px-2 py-1"
                 />
-                <Button type="submit" size="sm" disabled={busy}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={locked}
+                  title={voided?.label}
+                >
                   Envoyer le lien de supplément
                 </Button>
               </form>
@@ -340,7 +367,8 @@ export function OrderBillingPanel({ orderId }: { orderId: string }) {
               type="button"
               size="sm"
               variant="outline"
-              disabled={busy}
+              disabled={locked}
+              title={voided?.label}
               onClick={() => void post("issue-invoice", {}, invoiceIssue)}
             >
               Réessayer l'émission de la facture

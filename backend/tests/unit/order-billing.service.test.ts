@@ -109,7 +109,7 @@ function fakeDb(w: World) {
   const from = jest.fn((table: string) => {
     const ops: Op[] = [];
     const chain: Record<string, unknown> = {};
-    for (const m of ['select', 'eq', 'order', 'is']) {
+    for (const m of ['select', 'eq', 'in', 'order', 'is']) {
       chain[m] = (...args: unknown[]) => {
         ops.push({ method: m, args });
         return chain;
@@ -126,9 +126,15 @@ function fakeDb(w: World) {
     chain.upsert = write('upsert');
     const rows = () =>
       (tables[table] ?? []).filter((r) =>
-        ops
-          .filter((o) => o.method === 'eq')
-          .every((o) => String(r[o.args[0] as string]) === String(o.args[1])),
+        ops.every((o) =>
+          o.method === 'eq'
+            ? String(r[o.args[0] as string]) === String(o.args[1])
+            : o.method === 'in'
+              ? (o.args[1] as unknown[])
+                  .map(String)
+                  .includes(String(r[o.args[0] as string]))
+              : true,
+        ),
       );
     chain.maybeSingle = () =>
       Promise.resolve({ data: rows()[0] ?? null, error: null });
@@ -571,6 +577,124 @@ describe('OrderBillingService (mandat BM)', () => {
         service.onOrderShipped({ orderId: ORDER_ID } as never),
       ).resolves.toBeUndefined();
       expect(callRpc).not.toHaveBeenCalled();
+    });
+  });
+
+  // Complément BM n° 2 (2026-11-18) : paiement annulé ou remboursé dans
+  // Paybox ⇒ marque « ne pas expédier », aucune facture, aucun mail.
+  describe('paiement annulé ou remboursé', () => {
+    const voided = (state: string, ord = ORDER_ID) => ({
+      ocs_ord_id: ord,
+      ocs_state: state,
+      ocs_captured_amount_cents: null,
+      ocs_source: 'manual',
+      ocs_checked_at: '2026-11-18T12:33:00Z',
+    });
+
+    it.each([
+      ['cancelled', 'Paiement annulé'],
+      ['refunded', 'Remboursée — ne pas expédier'],
+    ])(
+      '%s : marque rendue, facture refusée avec ce motif, aucun mail',
+      async (state, label) => {
+        const w = world();
+        w.captures.push(voided(state));
+        const { service, callRpc, mail } = makeService(w);
+        await expect(service.paymentVoid(ORDER_ID)).resolves.toEqual({
+          enabled: true,
+          paymentVoid: {
+            state,
+            label,
+            checkedAt: '2026-11-18T12:33:00Z',
+            source: 'manual',
+          },
+        });
+        await expect(service.tryIssueInvoice(ORDER_ID)).resolves.toEqual({
+          issued: false,
+          reason: label,
+        });
+        expect((await service.getBilling(ORDER_ID)).paymentVoid?.label).toBe(
+          label,
+        );
+        expect(callRpc).not.toHaveBeenCalled();
+        expect(mail.sendInvoice).not.toHaveBeenCalled();
+      },
+    );
+
+    it('saisie « cancelled » : enregistrée, aucun mail au client', async () => {
+      const { service, db, mail } = makeService(world());
+      const res = await service.recordCaptureState(ORDER_ID, {
+        state: 'cancelled',
+      });
+      expect(res.invoice).toEqual({
+        issued: false,
+        reason: 'encaissement non confirmé',
+      });
+      expect(db.writes).toEqual([
+        expect.objectContaining({
+          table: '__order_capture_state',
+          method: 'upsert',
+        }),
+      ]);
+      expect(mail.sendInvoice).not.toHaveBeenCalled();
+      expect(mail.sendSupplementPaymentRequest).not.toHaveBeenCalled();
+    });
+
+    it('autorisé ou encaissé : aucune marque', async () => {
+      const w = world();
+      w.captures.push(captured(10990));
+      const { service } = makeService(w);
+      await expect(service.paymentVoid(ORDER_ID)).resolves.toEqual({
+        enabled: true,
+        paymentVoid: null,
+      });
+    });
+
+    it('liste : seules les commandes de la page annulées ou remboursées', async () => {
+      const w = world();
+      w.captures.push(
+        voided('cancelled', 'ORD-A'),
+        voided('refunded', 'ORD-B'),
+        captured(1000, 'ORD-C'),
+        voided('cancelled', 'ORD-HORS-PAGE'),
+      );
+      const { service } = makeService(w);
+      const res = await service.listPaymentVoids(['ORD-A', 'ORD-B', 'ORD-C']);
+      expect(res.enabled).toBe(true);
+      expect(res.voids.map((v) => [v.orderId, v.label])).toEqual([
+        ['ORD-A', 'Paiement annulé'],
+        ['ORD-B', 'Remboursée — ne pas expédier'],
+      ]);
+    });
+
+    it('drapeau absent : enabled false, la table n’est pas lue', async () => {
+      const w = world();
+      w.captures.push(voided('cancelled'));
+      const { service, db } = makeService(w, false);
+      await expect(service.paymentVoid(ORDER_ID)).resolves.toEqual({
+        enabled: false,
+        paymentVoid: null,
+      });
+      await expect(service.listPaymentVoids([ORDER_ID])).resolves.toEqual({
+        enabled: false,
+        voids: [],
+      });
+      expect(db.from).not.toHaveBeenCalled();
+    });
+
+    it('erreur de lecture : levée, jamais « aucune marque »', async () => {
+      const { service, db } = makeService(world());
+      db.from.mockImplementationOnce(() => ({
+        select: () => ({
+          eq: () => ({
+            maybeSingle: () =>
+              Promise.resolve({ data: null, error: { message: 'absente' } }),
+          }),
+        }),
+      }));
+      await expect(service.paymentVoid(ORDER_ID)).rejects.toThrow(
+        "Lecture de l'état d'encaissement impossible",
+      );
     });
   });
 
