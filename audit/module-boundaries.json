@@ -260,8 +260,8 @@
         "frontend/app/routes",
         "frontend/app/routes/_public+"
       ],
-      "files_count": 247,
-      "loc_total": 115451,
+      "files_count": 246,
+      "loc_total": 115188,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -274,7 +274,6 @@
         "frontend/app/components/admin/gamme-seo",
         "frontend/app/components/admin/patterns",
         "frontend/app/components/admin/seo",
-        "frontend/app/components/admin/suppliers",
         "frontend/app/components/ai",
         "frontend/app/components/auth",
         "frontend/app/components/blog",
@@ -342,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 590,
-      "loc_total": 112129,
+      "files_count": 587,
+      "loc_total": 111389,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -356,8 +355,8 @@
         "backend/src/modules/gamme-rest/utils",
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
-      "files_count": 20,
-      "loc_total": 6589,
+      "files_count": 21,
+      "loc_total": 6747,
       "has_barrel": true
     },
     "health": {
@@ -625,7 +624,7 @@
         "backend/src/modules/pricing/utils/__tests__"
       ],
       "files_count": 42,
-      "loc_total": 11409,
+      "loc_total": 11405,
       "has_barrel": false
     },
     "products": {
@@ -770,8 +769,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 289,
-      "loc_total": 62457,
+      "files_count": 290,
+      "loc_total": 62777,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -879,8 +878,8 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 59,
-      "loc_total": 8487,
+      "files_count": 56,
+      "loc_total": 7830,
       "has_barrel": true
     },
     "suppliers": {
@@ -888,8 +887,8 @@
         "backend/src/modules/suppliers",
         "backend/src/modules/suppliers/dto"
       ],
-      "files_count": 14,
-      "loc_total": 3440,
+      "files_count": 7,
+      "loc_total": 1300,
       "has_barrel": true
     },
     "support": {
@@ -964,8 +963,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 391,
-      "loc_total": 81361,
+      "files_count": 389,
+      "loc_total": 80809,
       "has_barrel": true
     },
     "upload": {
@@ -1751,7 +1750,7 @@
     {
       "from": "frontend-routes",
       "to": "frontend-shared",
-      "count": 348
+      "count": 349
     },
     {
       "from": "frontend-shared",
@@ -1786,7 +1785,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 12
+      "count": 13
     },
     {
       "from": "health",
@@ -2126,17 +2125,12 @@
     {
       "from": "supplier-truth",
       "to": "database",
-      "count": 2
+      "count": 1
     },
     {
       "from": "suppliers",
       "to": "database",
       "count": 1
-    },
-    {
-      "from": "suppliers",
-      "to": "supplier-truth",
-      "count": 4
     },
     {
       "from": "support",
