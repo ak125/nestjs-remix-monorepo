@@ -21989,6 +21989,28 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/orders/services/orders-sans-portail.test.ts",
+      "importedBy": [],
+      "imports": [
+        "fs",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 45,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/orders/services/orders-sans-portail.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/orders/services/orders.service.ts",
       "importedBy": [
         "backend/src/modules/orders/controllers/order-actions.controller.ts",
@@ -36346,6 +36368,118 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/supplier-truth/supplier-offer-releve.runner.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+        "fs",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 367,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/supplier-truth/supplier-offer-releve.runner.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+      "importedBy": [
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.test.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
+        "backend/src/workers/worker.module.ts"
+      ],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+        "crypto"
+      ],
+      "kind": "service",
+      "loc": 139,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/supplier-truth/supplier-offer-releve.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ],
+      "kind": "test",
+      "loc": 204,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/supplier-truth/supplier-offer-releve.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
+      "importedBy": [
+        "backend/src/modules/supplier-truth/index.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.test.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
+      ],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ],
+      "kind": "service",
+      "loc": 168,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -36757,7 +36891,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 471,
+      "loc": 510,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "risk": "low",

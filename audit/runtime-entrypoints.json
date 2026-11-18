@@ -2863,6 +2863,8 @@
       "backend/supabase/migrations/20261116_pricing_frozen_masked_dispo_zero.sql",
       "backend/supabase/migrations/20261117_admin_audit_log_supplier_order_prepared_unique.down.sql",
       "backend/supabase/migrations/20261117_admin_audit_log_supplier_order_prepared_unique.sql",
+      "backend/supabase/migrations/20261118_supplier_link_pm_dca_cal_seim_luk.down.sql",
+      "backend/supabase/migrations/20261118_supplier_link_pm_dca_cal_seim_luk.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3059,7 +3061,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1651,
+  "runtime_files_count": 1653,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4369,6 +4371,8 @@
     "backend/supabase/migrations/20261116_pricing_frozen_masked_dispo_zero.sql",
     "backend/supabase/migrations/20261117_admin_audit_log_supplier_order_prepared_unique.down.sql",
     "backend/supabase/migrations/20261117_admin_audit_log_supplier_order_prepared_unique.sql",
+    "backend/supabase/migrations/20261118_supplier_link_pm_dca_cal_seim_luk.down.sql",
+    "backend/supabase/migrations/20261118_supplier_link_pm_dca_cal_seim_luk.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",

@@ -22277,7 +22277,8 @@
           "backend/src/modules/products/controllers/products-admin.controller.ts",
           "backend/src/modules/search/controllers/search-debug.controller.ts",
           "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
-          "backend/src/modules/seo/services/reference.service.ts"
+          "backend/src/modules/seo/services/reference.service.ts",
+          "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
         ]
       },
       {
@@ -51207,6 +51208,29 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/modules/orders/services/orders-sans-portail.test.ts",
+      "importedBy": [],
+      "imports": [
+        "fs",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 45,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/orders/services/orders-sans-portail.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/modules/orders/services/orders.service.ts",
       "importedBy": [
         "backend/src/modules/orders/controllers/order-actions.controller.ts",
@@ -66097,6 +66121,122 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/supplier-offer-releve.runner.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+        "fs",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 367,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/supplier-offer-releve.runner.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+      "importedBy": [
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.test.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
+        "backend/src/workers/worker.module.ts"
+      ],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+        "crypto"
+      ],
+      "kind": "service",
+      "loc": 139,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/supplier-offer-releve.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ],
+      "kind": "test",
+      "loc": 204,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/supplier-offer-releve.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
+      "importedBy": [
+        "backend/src/modules/supplier-truth/index.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.test.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
+      ],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ],
+      "kind": "service",
+      "loc": 168,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -66523,7 +66663,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 471,
+      "loc": 510,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "risk": "high",
@@ -108934,13 +109074,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "941d0ec7efa522e1ef04301cd8770dd2a8603f30da73ff8369e6473ddf8d4837",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "b2bf9b3fdf8d056d8c24e9785d60d1a63afe051aaf034e7b5cf6b8c917131830",
+      "audit/registry/db.json": "69e0cddf605b25fe29c69b7c8373047c07eb46b00677598b9e39076f260b954f",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "8b3ab5e4d3acedffefb146606ba0bd3d7b9ffc6281f2d770107e73d2b8ec7aed",
+      "audit/registry/files.json": "2e1dbd99222520c6fe4dcf5a2a7a67c0cf0cd74e2a559c2ba10440622fc895e0",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "f2a5000ce3dc86d7afdc718757390e60e73567c5665b69640aa50801ca494a21"
     },
-    "sotFingerprint": "f3030ceb59ed"
+    "sotFingerprint": "146ba724a0cd"
   },
   "runtime": [
     {

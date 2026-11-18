@@ -12966,7 +12966,8 @@
         "backend/src/modules/products/controllers/products-admin.controller.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
-        "backend/src/modules/seo/services/reference.service.ts"
+        "backend/src/modules/seo/services/reference.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ]
     },
     {

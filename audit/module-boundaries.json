@@ -502,8 +502,8 @@
         "backend/src/modules/orders/services",
         "backend/src/modules/orders/types"
       ],
-      "files_count": 30,
-      "loc_total": 8952,
+      "files_count": 31,
+      "loc_total": 8997,
       "has_barrel": true
     },
     "payments": {
@@ -878,8 +878,8 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 56,
-      "loc_total": 8324,
+      "files_count": 60,
+      "loc_total": 9241,
       "has_barrel": true
     },
     "suppliers": {
@@ -2275,7 +2275,7 @@
     {
       "from": "workers",
       "to": "supplier-truth",
-      "count": 20
+      "count": 21
     }
   ],
   "deep_access_violations": [

@@ -21,8 +21,8 @@
     "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 446,
-    "backend_files_scanned": 1546
+    "migrations_scanned": 448,
+    "backend_files_scanned": 1551
   },
   "tables": {
     "___config": {
@@ -2927,9 +2927,10 @@
         "backend/src/modules/products/controllers/products-admin.controller.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
-        "backend/src/modules/seo/services/reference.service.ts"
+        "backend/src/modules/seo/services/reference.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 8,
+      "used_by_count": 9,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": true,
@@ -14936,14 +14937,14 @@
     },
     {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
-      "line": 381,
+      "line": 420,
       "form": "IDENT",
       "resolved_table": "supplier_offer_snapshot",
       "refusal": null
     },
     {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
-      "line": 460,
+      "line": 499,
       "form": "IDENT",
       "resolved_table": "supplier_runtime_profile",
       "refusal": null
