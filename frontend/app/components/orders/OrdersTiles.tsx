@@ -11,6 +11,11 @@
  * du 18/11 00:27 : « Oui, 2 = annulée », trace de l'ancien site).
  * Une indisponibilité s'affiche comme telle, jamais comme des zéros.
  *
+ * Tuile et filtre « Payées non traitées depuis plus de 24 h » (complément
+ * du 18/11/2026) : payée, non annulée, paiement ni annulé ni remboursé, et
+ * une ligne sans fournisseur posé ou sans commande fournisseur (statut de
+ * ligne 6). Pas de nouveau canal d'alerte (décision 4) : la file vit ici.
+ *
  * @see backend/src/database/services/order-stats-tiles.ts
  */
 
@@ -20,10 +25,12 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
+  Hourglass,
   Package,
   XCircle,
 } from "lucide-react";
 import { memo, type ReactNode } from "react";
+import { Link } from "react-router";
 
 import { formatPrice } from "../../utils/orders.utils";
 
@@ -66,7 +73,41 @@ export interface OrderTilesData {
         | "date_unreadable";
     }>;
   };
+  paidUnprocessed: PaidUnprocessedData;
 }
+
+/** Valeur du paramètre `queue` qui active le filtre de la file. */
+export const PAID_UNPROCESSED_QUEUE = "payees-non-traitees";
+
+export type PaidUnprocessedReason =
+  | "no_active_line"
+  | "supplier_missing"
+  | "supplier_order_missing";
+
+/** Miroir de `tiles.paidUnprocessed` (backend). */
+export interface PaidUnprocessedData {
+  afterHours: number;
+  captureStateRead: boolean;
+  orders: number;
+  list: Array<{
+    ordId: string;
+    ordDate: string;
+    paidAt: string;
+    paidAtSource: "ord_date_pay" | "ord_date";
+    totalTtc: string | null;
+    ageDays: number;
+    linesActive: number;
+    linesWithSupplier: number;
+    linesOrderedFromSupplier: number;
+    reason: PaidUnprocessedReason;
+  }>;
+}
+
+const PAID_UNPROCESSED_REASON: Record<PaidUnprocessedReason, string> = {
+  no_active_line: "aucune ligne active",
+  supplier_missing: "fournisseur non confirmé",
+  supplier_order_missing: "pas de commande fournisseur",
+};
 
 export type OrderTilesState =
   | { status: "ok"; period: OrderTilesPeriod; data: OrderTilesData }
@@ -92,16 +133,18 @@ function Tile({
   value,
   sub,
   testId,
+  className = "border-gray-200",
 }: {
   icon: ReactNode;
   title: string;
   value: ReactNode;
   sub: ReactNode;
   testId: string;
+  className?: string;
 }) {
   return (
     <div
-      className="bg-white rounded-lg shadow-sm p-5 border border-gray-200"
+      className={`bg-white rounded-lg shadow-sm p-5 border h-full ${className}`}
       data-testid={testId}
     >
       <div className="flex items-center justify-between mb-3">
@@ -117,9 +160,14 @@ function Tile({
 export const OrdersTiles = memo(function OrdersTiles({
   tiles,
   onPeriodChange,
+  queueHref,
+  queueActive = false,
 }: {
   tiles: OrderTilesState;
   onPeriodChange: (period: OrderTilesPeriod) => void;
+  /** Lien qui active (ou retire) le filtre de la file. */
+  queueHref?: string;
+  queueActive?: boolean;
 }) {
   const periodSelect = (
     <label className="flex items-center gap-2 text-sm text-gray-600">
@@ -162,6 +210,32 @@ export const OrdersTiles = memo(function OrdersTiles({
 
   const t = tiles.data;
   const excluded = t.excluded.orders;
+  const queue = t.paidUnprocessed;
+  const oldest = queue.list[0];
+  const queueTile = (
+    <Tile
+      testId="tile-paid-unprocessed"
+      className={
+        queueActive
+          ? "border-amber-500 ring-2 ring-amber-300"
+          : queue.orders > 0
+            ? "border-amber-300"
+            : "border-gray-200"
+      }
+      icon={<Hourglass className="w-5 h-5 text-amber-600" />}
+      title={`Payées non traitées depuis plus de ${queue.afterHours} h`}
+      value={
+        <span className={queue.orders > 0 ? "text-amber-700" : undefined}>
+          {queue.orders}
+        </span>
+      }
+      sub={
+        oldest
+          ? `La plus ancienne attend depuis ${plural(oldest.ageDays, "jour")}${queueActive ? " — filtre actif" : ""}`
+          : "Aucune commande en attente"
+      }
+    />
+  );
 
   return (
     <section className="py-4 space-y-4" aria-label="Indicateurs commandes">
@@ -174,7 +248,24 @@ export const OrdersTiles = memo(function OrdersTiles({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {queueHref ? (
+          <Link
+            to={queueHref}
+            aria-pressed={queueActive}
+            aria-label={
+              queueActive
+                ? "Retirer le filtre des commandes payées non traitées"
+                : "Filtrer les commandes payées non traitées"
+            }
+            className="block rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            data-testid="tile-paid-unprocessed-link"
+          >
+            {queueTile}
+          </Link>
+        ) : (
+          queueTile
+        )}
         <Tile
           testId="tile-orders"
           icon={<Package className="w-5 h-5 text-blue-600" />}
@@ -263,3 +354,106 @@ export const OrdersTiles = memo(function OrdersTiles({
     </section>
   );
 });
+
+/**
+ * Vue filtrée « Payées non traitées depuis plus de 24 h », de la plus
+ * ancienne à la plus récente, avec l'âge en jours depuis le paiement.
+ */
+export function PaidUnprocessedList({
+  queue,
+  basePath,
+  clearHref,
+}: {
+  queue: PaidUnprocessedData;
+  basePath: string;
+  clearHref: string;
+}) {
+  return (
+    <section
+      className="bg-white rounded-lg shadow overflow-hidden"
+      aria-label="Commandes payées non traitées"
+      data-testid="paid-unprocessed-list"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2 p-4 border-b">
+        <h2 className="font-semibold text-gray-900">
+          {plural(queue.orders, "commande")} payée{queue.orders > 1 ? "s" : ""}{" "}
+          non traitée{queue.orders > 1 ? "s" : ""} depuis plus de{" "}
+          {queue.afterHours} h
+        </h2>
+        <Link
+          to={clearHref}
+          className="text-sm text-blue-700 underline"
+          data-testid="paid-unprocessed-clear"
+        >
+          Retirer le filtre
+        </Link>
+      </div>
+      <p className="px-4 pt-3 text-xs text-gray-500">
+        Traitée = chaque ligne active a un fournisseur confirmé et le statut «
+        Pièce commandée chez fournisseur ».
+        {!queue.captureStateRead &&
+          " L'état d'encaissement (paiement annulé ou remboursé) n'est pas encore enregistré par le site : il n'est pas pris en compte."}
+      </p>
+      {queue.list.length === 0 ? (
+        <p className="p-4 text-sm text-gray-600">
+          Aucune commande payée en attente de traitement.
+        </p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50 text-left text-gray-600">
+              <tr>
+                <th className="px-4 py-2 font-medium">Commande</th>
+                <th className="px-4 py-2 font-medium">Payée le</th>
+                <th className="px-4 py-2 font-medium text-right">Âge</th>
+                <th className="px-4 py-2 font-medium text-right">
+                  Montant TTC
+                </th>
+                <th className="px-4 py-2 font-medium">Lignes</th>
+                <th className="px-4 py-2 font-medium">À faire</th>
+              </tr>
+            </thead>
+            <tbody>
+              {queue.list.map((o) => (
+                <tr
+                  key={o.ordId}
+                  className="border-t"
+                  data-testid="paid-unprocessed-row"
+                >
+                  <td className="px-4 py-2">
+                    <Link
+                      to={`${basePath}/${encodeURIComponent(o.ordId)}`}
+                      className="text-blue-700 underline"
+                    >
+                      {o.ordId}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-2">
+                    {o.paidAt.slice(0, 10)}
+                    {o.paidAtSource === "ord_date" && (
+                      <span className="text-gray-500"> (date de commande)</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2 text-right font-medium">
+                    {plural(o.ageDays, "jour")}
+                  </td>
+                  <td className="px-4 py-2 text-right">
+                    {o.totalTtc ?? "—"} €
+                  </td>
+                  <td className="px-4 py-2 text-gray-600">
+                    {o.linesActive === 0
+                      ? "—"
+                      : `${o.linesWithSupplier}/${o.linesActive} fournisseur, ${o.linesOrderedFromSupplier}/${o.linesActive} commandée${o.linesOrderedFromSupplier > 1 ? "s" : ""}`}
+                  </td>
+                  <td className="px-4 py-2">
+                    {PAID_UNPROCESSED_REASON[o.reason]}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}

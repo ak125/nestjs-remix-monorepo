@@ -30,11 +30,13 @@ export interface OrderStatsRow {
   ord_cancel_date: string | null;
   /** Lu pour le seul statut 2 (« Commande annulée »), trace historique. */
   ord_ords_id: string | null;
+  /** Date du paiement : âge de la file « payées non traitées ». */
+  ord_date_pay: string | null;
 }
 
 /** Colonnes lues, dans l'ordre de `OrderStatsRow`. */
 export const ORDER_STATS_COLUMNS =
-  'ord_id, ord_date, ord_is_pay, ord_total_ttc, ord_cancel_date, ord_ords_id';
+  'ord_id, ord_date, ord_is_pay, ord_total_ttc, ord_cancel_date, ord_ords_id, ord_date_pay';
 
 /** Statut 2 « Commande annulée » : seule trace d'annulation de l'ancien site. */
 const LEGACY_CANCELLED_STATUS = '2';
@@ -193,6 +195,14 @@ export function periodStart(
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/** Annulée = `ord_cancel_date` renseignée ou statut 2 (historique). */
+function isOrderCancelled(row: OrderStatsRow): boolean {
+  return (
+    (row.ord_cancel_date !== null && row.ord_cancel_date !== '') ||
+    (row.ord_ords_id ?? '').trim() === LEGACY_CANCELLED_STATUS
+  );
+}
+
 export function computeOrderTiles(
   rows: readonly OrderStatsRow[],
   options: {
@@ -222,9 +232,7 @@ export function computeOrderTiles(
 
   for (const row of rows) {
     const isPaid = row.ord_is_pay === '1';
-    const isCancelled =
-      (row.ord_cancel_date !== null && row.ord_cancel_date !== '') ||
-      (row.ord_ords_id ?? '').trim() === LEGACY_CANCELLED_STATUS;
+    const isCancelled = isOrderCancelled(row);
     const dateMs = row.ord_date ? Date.parse(row.ord_date) : NaN;
     const rawAmount = (row.ord_total_ttc ?? '').trim();
     const amount = AMOUNT_RE.test(rawAmount) ? Number(rawAmount) : NaN;
@@ -311,14 +319,14 @@ const STATS_PAGE_SIZE = 1000;
  * Lit toutes les lignes page par page (ordre stable fourni par l'appelant).
  * Une erreur sur une page fait échouer le tout : jamais de total partiel.
  */
-export async function fetchAllOrderStatsRows(
+export async function fetchAllOrderStatsRows<T = OrderStatsRow>(
   fetchPage: (
     from: number,
     to: number,
-  ) => Promise<{ data: OrderStatsRow[] | null; error: unknown }>,
+  ) => Promise<{ data: T[] | null; error: unknown }>,
   pageSize: number = STATS_PAGE_SIZE,
-): Promise<OrderStatsRow[]> {
-  const rows: OrderStatsRow[] = [];
+): Promise<T[]> {
+  const rows: T[] = [];
   for (let from = 0; ; from += pageSize) {
     const { data, error } = await fetchPage(from, from + pageSize - 1);
     if (error) throw error;
@@ -326,4 +334,185 @@ export async function fetchAllOrderStatsRows(
     rows.push(...page);
     if (page.length < pageSize) return rows;
   }
+}
+
+// ---------------------------------------------------------------------------
+// File « Payées non traitées depuis plus de 24 h » (complément au mandat BN,
+// 18/11/2026). Cas réel : une commande payée le 7/11, télécollectée le 14/11,
+// traitée le 18/11. Pas de nouveau canal d'alerte (décision 4) : la file vit
+// sur /commercial/orders.
+//
+// Payée (`ord_is_pay='1'`), non annulée (mêmes règles que les tuiles), dont
+// le paiement n'est ni annulé ni remboursé selon l'état d'encaissement de BM
+// quand il est fourni, et non traitée : une ligne active (hors ligne annulée,
+// statut 2) sans fournisseur posé, ou sans commande fournisseur (statut de
+// ligne 6 « Pièce commandée chez fournisseur »), ou aucune ligne active.
+// Une préparation de commande fournisseur de BK (mode essai, jamais envoyée)
+// n'est pas une commande fournisseur et n'est pas lue.
+// ---------------------------------------------------------------------------
+
+/** Seuil de la file, en heures depuis le paiement. */
+export const PAID_UNPROCESSED_AFTER_HOURS = 24;
+
+/** Ligne de commande lue pour la file : aucune donnée client ni prix. */
+export interface OrderLineQueueRow {
+  orl_id: string;
+  orl_ord_id: string;
+  orl_orls_id: string | null;
+  orl_spl_id: string | null;
+}
+
+export const ORDER_LINE_QUEUE_COLUMNS =
+  'orl_id, orl_ord_id, orl_orls_id, orl_spl_id';
+
+/** Statut de ligne 2 « annulée » : la ligne n'attend plus de fournisseur. */
+const LINE_CANCELLED_STATUS = '2';
+/** Statut de ligne 6 « Pièce commandée chez fournisseur ». */
+const LINE_ORDERED_FROM_SUPPLIER_STATUS = '6';
+
+/** États d'encaissement de BM (`__order_capture_state.ocs_state`). */
+export type CaptureState = 'authorized' | 'captured' | 'cancelled' | 'refunded';
+const CAPTURE_STATES_OUT_OF_QUEUE: ReadonlySet<CaptureState> = new Set([
+  'cancelled',
+  'refunded',
+]);
+
+export type PaidUnprocessedReason =
+  | 'no_active_line'
+  | 'supplier_missing'
+  | 'supplier_order_missing';
+
+export interface PaidUnprocessedCandidate {
+  ordId: string;
+  ordDate: string;
+  /** Date du paiement retenue pour l'âge (ISO). */
+  paidAt: string;
+  /**
+   * `ord_date_pay` quand elle est lisible et ne précède pas la commande ;
+   * sinon `ord_date` (l'ancien site a écrit 2000-01-01 ou 0202-…).
+   */
+  paidAtSource: 'ord_date_pay' | 'ord_date';
+  totalTtc: string | null;
+}
+
+export interface PaidUnprocessedOrder extends PaidUnprocessedCandidate {
+  /** Jours entiers écoulés depuis le paiement. */
+  ageDays: number;
+  linesActive: number;
+  linesWithSupplier: number;
+  linesOrderedFromSupplier: number;
+  reason: PaidUnprocessedReason;
+}
+
+export interface PaidUnprocessed {
+  afterHours: number;
+  /** false tant que l'état d'encaissement de BM n'existe pas en base. */
+  captureStateRead: boolean;
+  orders: number;
+  /** De la plus ancienne à la plus récente. */
+  list: PaidUnprocessedOrder[];
+}
+
+/**
+ * Commandes payées, non annulées, dans la période (date de commande, comme
+ * les tuiles), payées depuis plus de 24 h et dont le paiement n'est ni annulé
+ * ni remboursé. Les lignes ne sont pas lues ici.
+ */
+export function selectPaidUnprocessedCandidates(
+  rows: readonly OrderStatsRow[],
+  options: {
+    now: Date;
+    period: OrderStatsPeriod;
+    timeZone?: string;
+    captureStates?: ReadonlyMap<string, CaptureState>;
+  },
+): PaidUnprocessedCandidate[] {
+  const { now, period, captureStates } = options;
+  const start = periodStart(period, now, options.timeZone ?? STATS_TIME_ZONE);
+  const limitMs = now.getTime() - PAID_UNPROCESSED_AFTER_HOURS * 60 * 60 * 1000;
+  const candidates: PaidUnprocessedCandidate[] = [];
+
+  for (const row of rows) {
+    if (row.ord_is_pay !== '1' || isOrderCancelled(row)) continue;
+    const orderMs = row.ord_date ? Date.parse(row.ord_date) : NaN;
+    // Date illisible : déjà relevée dans `excluded` des tuiles.
+    if (Number.isNaN(orderMs)) continue;
+    if (start && orderMs < start.getTime()) continue;
+    const state = captureStates?.get(row.ord_id);
+    if (state && CAPTURE_STATES_OUT_OF_QUEUE.has(state)) continue;
+
+    const payMs = row.ord_date_pay ? Date.parse(row.ord_date_pay) : NaN;
+    const payUsable = !Number.isNaN(payMs) && payMs >= orderMs;
+    const paidMs = payUsable ? payMs : orderMs;
+    if (paidMs > limitMs) continue;
+
+    candidates.push({
+      ordId: row.ord_id,
+      ordDate: row.ord_date as string,
+      paidAt: new Date(paidMs).toISOString(),
+      paidAtSource: payUsable ? 'ord_date_pay' : 'ord_date',
+      totalTtc: row.ord_total_ttc,
+    });
+  }
+  return candidates;
+}
+
+/** `orl_spl_id` vide, NULL ou '0' = aucun fournisseur (même règle que `fournisseurPose`). */
+export function computePaidUnprocessed(
+  candidates: readonly PaidUnprocessedCandidate[],
+  lines: readonly OrderLineQueueRow[],
+  options: {
+    now: Date;
+    captureStateRead: boolean;
+    supplierSet: (splId: string | null | undefined) => boolean;
+  },
+): PaidUnprocessed {
+  const byOrder = new Map<string, OrderLineQueueRow[]>();
+  for (const line of lines) {
+    const list = byOrder.get(line.orl_ord_id);
+    if (list) list.push(line);
+    else byOrder.set(line.orl_ord_id, [line]);
+  }
+
+  const list: PaidUnprocessedOrder[] = [];
+  for (const c of candidates) {
+    const active = (byOrder.get(c.ordId) ?? []).filter(
+      (l) => (l.orl_orls_id ?? '').trim() !== LINE_CANCELLED_STATUS,
+    );
+    const withSupplier = active.filter((l) =>
+      options.supplierSet(l.orl_spl_id),
+    ).length;
+    const ordered = active.filter(
+      (l) => (l.orl_orls_id ?? '').trim() === LINE_ORDERED_FROM_SUPPLIER_STATUS,
+    ).length;
+
+    let reason: PaidUnprocessedReason | null = null;
+    if (active.length === 0) reason = 'no_active_line';
+    else if (withSupplier < active.length) reason = 'supplier_missing';
+    else if (ordered < active.length) reason = 'supplier_order_missing';
+    if (!reason) continue;
+
+    list.push({
+      ...c,
+      ageDays: Math.floor(
+        (options.now.getTime() - Date.parse(c.paidAt)) / DAY_MS,
+      ),
+      linesActive: active.length,
+      linesWithSupplier: withSupplier,
+      linesOrderedFromSupplier: ordered,
+      reason,
+    });
+  }
+
+  list.sort(
+    (a, b) =>
+      Date.parse(a.paidAt) - Date.parse(b.paidAt) ||
+      a.ordId.localeCompare(b.ordId),
+  );
+  return {
+    afterHours: PAID_UNPROCESSED_AFTER_HOURS,
+    captureStateRead: options.captureStateRead,
+    orders: list.length,
+    list,
+  };
 }

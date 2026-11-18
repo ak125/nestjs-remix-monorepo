@@ -5,16 +5,24 @@
  * impayées < 30 jours, abandonnées ≥ 30 jours, annulation = `ord_cancel_date`
  * ou statut 2 (trace de l'ancien site, réponse de Marwane du 18/11 00:27 ;
  * aucun autre statut n'est lu), montants au-delà du seuil exclus et relevés.
+ * File « Payées non traitées depuis plus de 24 h » (complément du 18/11) :
+ * données inventées.
  */
 import {
   ABANDONED_AFTER_DAYS,
   DEFAULT_IMPLAUSIBLE_TTC_EUR,
   type OrderStatsRow,
+  type OrderLineQueueRow,
+  PAID_UNPROCESSED_AFTER_HOURS,
   computeOrderTiles,
+  computePaidUnprocessed,
   fetchAllOrderStatsRows,
   periodStart,
   resolveImplausibleThreshold,
+  selectPaidUnprocessedCandidates,
 } from '../../src/database/services/order-stats-tiles';
+import { fournisseurPose } from '../../src/modules/orders/services/order-line-supplier.service';
+import { TABLES } from '@repo/database-types';
 import { OrdersController } from '../../src/controllers/orders.controller';
 import { OrdersService } from '../../src/database/services/orders.service';
 
@@ -24,7 +32,12 @@ function row(
   ord_id: string,
   ord_date: string | null,
   ord_total_ttc: string | null,
-  opts: { paid?: boolean; cancelled?: boolean } = {},
+  opts: {
+    paid?: boolean;
+    cancelled?: boolean;
+    status?: string;
+    paidAt?: string | null;
+  } = {},
 ): OrderStatsRow {
   return {
     ord_id,
@@ -32,7 +45,8 @@ function row(
     ord_total_ttc,
     ord_is_pay: opts.paid ? '1' : '0',
     ord_cancel_date: opts.cancelled ? '2026-11-16 10:00:00+00' : null,
-    ord_ords_id: null,
+    ord_ords_id: opts.status ?? null,
+    ord_date_pay: opts.paidAt ?? null,
   };
 }
 
@@ -333,36 +347,56 @@ describe('fetchAllOrderStatsRows — au-delà du plafond de 1 000 lignes', () =>
 });
 
 describe('OrdersService.getOrdersStats — lecture paginée réelle du service', () => {
-  function fakeSupabase(rows: OrderStatsRow[]) {
+  function fakeSupabase(
+    rows: OrderStatsRow[],
+    lines: OrderLineQueueRow[] = [],
+  ) {
     const ranges: Array<[number, number]> = [];
     const eqs: Array<[string, unknown]> = [];
-    const from = () => {
+    const lineReads: Array<{ ids: string[]; range: [number, number] }> = [];
+    const from = (table: string) => {
       let range: [number, number] = [0, 999];
+      let ids: string[] | null = null;
+      const isLines = table === TABLES.xtr_order_line;
       const builder: any = {
         select: () => builder,
         order: () => builder,
         range: (f: number, t: number) => {
           range = [f, t];
-          ranges.push(range);
+          if (isLines) lineReads.push({ ids: ids ?? [], range });
+          else ranges.push(range);
           return builder;
         },
         eq: (c: string, v: unknown) => {
           eqs.push([c, v]);
           return builder;
         },
-        then: (res: any, rej: any) =>
-          Promise.resolve({
-            data: rows.slice(range[0], range[1] + 1),
+        in: (c: string, v: string[]) => {
+          expect(c).toBe('orl_ord_id');
+          ids = v;
+          return builder;
+        },
+        then: (res: any, rej: any) => {
+          const source = isLines
+            ? lines.filter((l) => (ids ?? []).includes(l.orl_ord_id))
+            : rows;
+          return Promise.resolve({
+            data: source.slice(range[0], range[1] + 1),
             error: null,
-          }).then(res, rej),
+          }).then(res, rej);
+        },
       };
       return builder;
     };
-    return { client: { from }, ranges, eqs };
+    return { client: { from }, ranges, eqs, lineReads };
   }
 
-  function makeService(rows: OrderStatsRow[], threshold?: string) {
-    const fake = fakeSupabase(rows);
+  function makeService(
+    rows: OrderStatsRow[],
+    threshold?: string,
+    lines: OrderLineQueueRow[] = [],
+  ) {
+    const fake = fakeSupabase(rows, lines);
     const svc = Object.create(OrdersService.prototype);
     Object.assign(svc, {
       supabase: fake.client,
@@ -415,6 +449,253 @@ describe('OrdersService.getOrdersStats — lecture paginée réelle du service',
     const { svc, fake } = makeService(ROWS);
     await svc.getOrdersStats('42', { now: NOW });
     expect(fake.eqs).toEqual([['ord_cst_id', '42']]);
+  });
+
+  it('file « payées non traitées » : lignes des seules candidates, par lots de 200', async () => {
+    const rows = [
+      ...Array.from({ length: 450 }, (_, i) =>
+        row(
+          `P${String(i).padStart(3, '0')}`,
+          '2026-11-10T10:00:00.000Z',
+          '2.00',
+          {
+            paid: true,
+          },
+        ),
+      ),
+      // Payée il y a 2 h : pas encore dans la file, ses lignes ne sont pas lues.
+      row('RECENTE', '2026-11-17T10:00:00.000Z', '5.00', { paid: true }),
+      row('NONPAYEE', '2026-11-10T10:00:00.000Z', '5.00'),
+    ];
+    const lines: OrderLineQueueRow[] = [
+      {
+        orl_id: 'P000-L1',
+        orl_ord_id: 'P000',
+        orl_orls_id: '6',
+        orl_spl_id: '12',
+      },
+      {
+        orl_id: 'P001-L1',
+        orl_ord_id: 'P001',
+        orl_orls_id: '5',
+        orl_spl_id: '12',
+      },
+    ];
+    const { svc, fake } = makeService(rows, undefined, lines);
+    const stats = await svc.getOrdersStats(undefined, { now: NOW });
+    expect(fake.lineReads.map((r) => r.ids.length)).toEqual([200, 200, 50]);
+    expect(fake.lineReads.flatMap((r) => r.ids)).not.toContain('RECENTE');
+    expect(fake.lineReads.flatMap((r) => r.ids)).not.toContain('NONPAYEE');
+    const q = stats.tiles.paidUnprocessed;
+    expect(q.captureStateRead).toBe(false);
+    // P000 traitée (fournisseur posé + commandée) ; les 449 autres restent.
+    expect(q.orders).toBe(449);
+    expect(q.list.find((o) => o.ordId === 'P001')?.reason).toBe(
+      'supplier_order_missing',
+    );
+    expect(q.list.find((o) => o.ordId === 'P002')?.reason).toBe(
+      'no_active_line',
+    );
+  });
+
+  it('une erreur de lecture des lignes fait échouer le calcul entier', async () => {
+    const { svc } = makeService([
+      row('P', '2026-11-10T10:00:00.000Z', '2.00', { paid: true }),
+    ]);
+    const client = (svc as any).supabase;
+    const from = client.from;
+    client.from = (table: string) => {
+      const b = from(table);
+      if (table !== TABLES.xtr_order_line) return b;
+      b.then = (res: any, rej: any) =>
+        Promise.resolve({ data: null, error: new Error('lignes') }).then(
+          res,
+          rej,
+        );
+      return b;
+    };
+    await expect(svc.getOrdersStats(undefined, { now: NOW })).rejects.toThrow(
+      'lignes',
+    );
+  });
+});
+
+describe('File « Payées non traitées depuis plus de 24 h »', () => {
+  const line = (
+    ordId: string,
+    n: number,
+    status: string | null,
+    spl: string | null,
+  ): OrderLineQueueRow => ({
+    orl_id: `${ordId}-L${n}`,
+    orl_ord_id: ordId,
+    orl_orls_id: status,
+    orl_spl_id: spl,
+  });
+  const compute = (
+    rows: OrderStatsRow[],
+    lines: OrderLineQueueRow[],
+    opts: Partial<Parameters<typeof selectPaidUnprocessedCandidates>[1]> = {},
+  ) =>
+    computePaidUnprocessed(
+      selectPaidUnprocessedCandidates(rows, {
+        now: NOW,
+        period: 'all',
+        ...opts,
+      }),
+      lines,
+      {
+        now: NOW,
+        captureStateRead: Boolean(opts.captureStates),
+        supplierSet: fournisseurPose,
+      },
+    );
+
+  it('seuil de 24 h compté depuis le paiement, à la minute près', () => {
+    const q = compute(
+      [
+        row('AVANT', '2026-11-16T11:00:00.000Z', '10.00', {
+          paid: true,
+          paidAt: '2026-11-16T11:59:00.000Z',
+        }),
+        row('APRES', '2026-11-16T11:00:00.000Z', '10.00', {
+          paid: true,
+          paidAt: '2026-11-16T12:01:00.000Z',
+        }),
+      ],
+      [],
+    );
+    expect(PAID_UNPROCESSED_AFTER_HOURS).toBe(24);
+    expect(q.list.map((o) => o.ordId)).toEqual(['AVANT']);
+    expect(q.list[0]).toMatchObject({
+      paidAt: '2026-11-16T11:59:00.000Z',
+      paidAtSource: 'ord_date_pay',
+      ageDays: 1,
+    });
+  });
+
+  it('exclut non payées, annulées (date ou statut 2) et paiement annulé ou remboursé', () => {
+    const rows = [
+      row('NP', '2026-11-01T10:00:00.000Z', '10.00'),
+      row('AD', '2026-11-01T10:00:00.000Z', '10.00', {
+        paid: true,
+        cancelled: true,
+      }),
+      row('S2', '2026-11-01T10:00:00.000Z', '10.00', {
+        paid: true,
+        status: '2',
+      }),
+      row('ANN', '2026-11-01T10:00:00.000Z', '10.00', { paid: true }),
+      row('REM', '2026-11-01T10:00:00.000Z', '10.00', { paid: true }),
+      row('AUT', '2026-11-01T10:00:00.000Z', '10.00', { paid: true }),
+      row('CAP', '2026-11-01T10:00:00.000Z', '10.00', { paid: true }),
+    ];
+    const captureStates = new Map([
+      ['ANN', 'cancelled'],
+      ['REM', 'refunded'],
+      ['AUT', 'authorized'],
+      ['CAP', 'captured'],
+    ] as const);
+    const q = compute(rows, [], { captureStates });
+    expect(q.list.map((o) => o.ordId)).toEqual(['AUT', 'CAP']);
+    expect(q.captureStateRead).toBe(true);
+  });
+
+  it('traitée seulement si chaque ligne active a un fournisseur posé ET est commandée (statut 6)', () => {
+    const rows = [
+      'OK',
+      'SANSFRS',
+      'ZERO',
+      'NONCMD',
+      'VIDE',
+      'TOUTEANN',
+      'MIXTE',
+    ].map((id) => row(id, '2026-11-01T10:00:00.000Z', '10.00', { paid: true }));
+    const lines = [
+      line('OK', 1, '6', '12'),
+      line('OK', 2, '2', null), // ligne annulée : ignorée
+      line('SANSFRS', 1, '6', '12'),
+      line('SANSFRS', 2, '1', null),
+      line('ZERO', 1, '6', '0'), // '0' = aucun fournisseur (ancien site)
+      line('NONCMD', 1, '5', '12'),
+      line('TOUTEANN', 1, '2', '12'),
+      line('MIXTE', 1, '6', ' 7 '),
+      line('MIXTE', 2, '4', '7'),
+    ];
+    const q = compute(rows, lines);
+    const reasons = Object.fromEntries(q.list.map((o) => [o.ordId, o.reason]));
+    expect(reasons).toEqual({
+      SANSFRS: 'supplier_missing',
+      ZERO: 'supplier_missing',
+      NONCMD: 'supplier_order_missing',
+      VIDE: 'no_active_line',
+      TOUTEANN: 'no_active_line',
+      MIXTE: 'supplier_order_missing',
+    });
+    expect(q.list.find((o) => o.ordId === 'SANSFRS')).toMatchObject({
+      linesActive: 2,
+      linesWithSupplier: 1,
+      linesOrderedFromSupplier: 1,
+    });
+  });
+
+  it('triée de la plus ancienne à la plus récente, âge en jours entiers', () => {
+    const q = compute(
+      [
+        row('R', '2026-11-15T09:00:00.000Z', '10.00', {
+          paid: true,
+          paidAt: '2026-11-15T09:05:00.000Z',
+        }),
+        // Cas réel inventé à l'identique : payée le 7, rien sur la ligne.
+        row('ORD-X-186', '2026-11-07T14:42:18.587Z', '42.20', {
+          paid: true,
+          paidAt: '2026-11-07T14:47:02.847Z',
+        }),
+        row('M', '2026-11-10T09:00:00.000Z', '10.00', { paid: true }),
+      ],
+      [line('ORD-X-186', 1, null, null)],
+    );
+    expect(q.list.map((o) => [o.ordId, o.ageDays])).toEqual([
+      ['ORD-X-186', 9],
+      ['M', 7],
+      ['R', 2],
+    ]);
+    expect(q.orders).toBe(3);
+    expect(q.list[0].reason).toBe('supplier_missing');
+  });
+
+  it('date de paiement illisible ou antérieure à la commande : âge compté depuis la commande', () => {
+    const q = compute(
+      [
+        row('AN2000', '2026-11-10T10:00:00.000Z', '10.00', {
+          paid: true,
+          paidAt: '2000-01-01T00:00:00.000Z',
+        }),
+        row('ILL', '2026-11-11T10:00:00.000Z', '10.00', {
+          paid: true,
+          paidAt: 'n/a',
+        }),
+      ],
+      [],
+    );
+    expect(q.list.map((o) => [o.ordId, o.paidAtSource, o.paidAt])).toEqual([
+      ['AN2000', 'ord_date', '2026-11-10T10:00:00.000Z'],
+      ['ILL', 'ord_date', '2026-11-11T10:00:00.000Z'],
+    ]);
+  });
+
+  it('suit la période des tuiles (date de commande, Europe/Paris)', () => {
+    const rows = [
+      row('2025', '2025-12-31T22:59:00.000Z', '10.00', { paid: true }),
+      row('2026', '2026-01-02T10:00:00.000Z', '10.00', { paid: true }),
+      row('NOV', '2026-11-03T10:00:00.000Z', '10.00', { paid: true }),
+    ];
+    expect(
+      compute(rows, [], { period: 'year' }).list.map((o) => o.ordId),
+    ).toEqual(['2026', 'NOV']);
+    expect(
+      compute(rows, [], { period: 'month' }).list.map((o) => o.ordId),
+    ).toEqual(['NOV']);
   });
 });
 

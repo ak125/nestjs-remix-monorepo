@@ -25,6 +25,8 @@ import { OrdersFilters } from "../components/orders/OrdersFilters";
 import { OrdersTable } from "../components/orders/OrdersTable";
 import {
   OrdersTiles,
+  PAID_UNPROCESSED_QUEUE,
+  PaidUnprocessedList,
   parseTilesPeriod,
   type OrderTilesPeriod,
   type OrderTilesState,
@@ -314,6 +316,17 @@ export default function CommercialOrdersPage() {
     navigate(`?${params.toString()}`, { replace: true });
   };
 
+  // Filtre « Payées non traitées depuis plus de 24 h » : `?queue=…`.
+  const queueActive = searchParams.get("queue") === PAID_UNPROCESSED_QUEUE;
+  const queueHref = (() => {
+    const params = new URLSearchParams(searchParams);
+    params.delete("page");
+    if (queueActive) params.delete("queue");
+    else params.set("queue", PAID_UNPROCESSED_QUEUE);
+    const qs = params.toString();
+    return qs ? `?${qs}` : "/commercial/orders";
+  })();
+
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams);
     params.set("page", page.toString());
@@ -444,43 +457,55 @@ export default function CommercialOrdersPage() {
         <OrdersTiles
           tiles={data.tiles}
           onPeriodChange={handleTilesPeriodChange}
+          queueHref={queueHref}
+          queueActive={queueActive}
         />
 
         <Separator className="my-6" />
 
-        {/* Filtres */}
-        <OrdersFilters
-          filters={activeFilters}
-          onFilterChange={setActiveFilters}
-          onReset={resetAllFilters}
-        />
-
-        {/* Export */}
-        <div className="mt-4">
-          <OrderExportButtons
-            filters={activeFilters}
-            selectedOrders={[]}
-            allOrders={data.orders}
-          />
-        </div>
-
-        <Separator className="my-6" />
-
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <OrdersTable
-            orders={data.orders}
-            permissions={data.permissions}
-            currentPage={data.currentPage}
-            totalPages={data.totalPages}
-            onPageChange={handlePageChange}
-            onEditOrder={handleEditOrder}
-            onMarkPaid={handleMarkPaid}
-            onShip={handleShip}
-            onCancel={handleCancel}
+        {queueActive && data.tiles.status === "ok" ? (
+          <PaidUnprocessedList
+            queue={data.tiles.data.paidUnprocessed}
             basePath="/commercial/orders"
+            clearHref={queueHref}
           />
-        </div>
+        ) : (
+          <>
+            {/* Filtres */}
+            <OrdersFilters
+              filters={activeFilters}
+              onFilterChange={setActiveFilters}
+              onReset={resetAllFilters}
+            />
+
+            {/* Export */}
+            <div className="mt-4">
+              <OrderExportButtons
+                filters={activeFilters}
+                selectedOrders={[]}
+                allOrders={data.orders}
+              />
+            </div>
+
+            <Separator className="my-6" />
+
+            {/* Table */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <OrdersTable
+                orders={data.orders}
+                permissions={data.permissions}
+                currentPage={data.currentPage}
+                totalPages={data.totalPages}
+                onPageChange={handlePageChange}
+                onEditOrder={handleEditOrder}
+                onMarkPaid={handleMarkPaid}
+                onShip={handleShip}
+                onCancel={handleCancel}
+                basePath="/commercial/orders"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Edit Form Modal */}

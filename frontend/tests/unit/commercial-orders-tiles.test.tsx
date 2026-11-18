@@ -8,17 +8,24 @@
  * - sans `canSeeFinancials`, aucun appel n'est fait ;
  * - un échec s'affiche « indisponible », jamais en zéros ;
  * - impayées (< 30 j), abandonnées (≥ 30 j), annulées et montants exclus
- *   sont affichés ; une payée puis annulée est hors chiffre d'affaires.
+ *   sont affichés ; une payée puis annulée est hors chiffre d'affaires ;
+ * - tuile et filtre « Payées non traitées depuis plus de 24 h » (complément
+ *   du 18/11) : nombre, âge de la plus ancienne, liste de la plus ancienne à
+ *   la plus récente avec l'âge en jours. Données inventées.
  *
  * Identifiants fictifs, sauf 15114950 (montant aberrant relevé, sans donnée client).
  */
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   OrdersTiles,
+  PAID_UNPROCESSED_QUEUE,
+  PaidUnprocessedList,
   parseTilesPeriod,
   type OrderTilesData,
+  type PaidUnprocessedData,
 } from "~/components/orders/OrdersTiles";
 import { loader } from "~/routes/commercial.orders._index";
 
@@ -56,6 +63,56 @@ const TILES: OrderTilesData = {
       },
     ],
   },
+  paidUnprocessed: {
+    afterHours: 24,
+    captureStateRead: false,
+    orders: 0,
+    list: [],
+  },
+};
+
+const QUEUE: PaidUnprocessedData = {
+  afterHours: 24,
+  captureStateRead: false,
+  orders: 3,
+  list: [
+    {
+      ordId: "ORD-TEST-0001",
+      ordDate: "2026-11-07T14:42:18.587Z",
+      paidAt: "2026-11-07T14:47:02.847Z",
+      paidAtSource: "ord_date_pay",
+      totalTtc: "42.20",
+      ageDays: 10,
+      linesActive: 1,
+      linesWithSupplier: 0,
+      linesOrderedFromSupplier: 0,
+      reason: "supplier_missing",
+    },
+    {
+      ordId: "ORD-TEST-0002",
+      ordDate: "2026-11-12T09:00:00.000Z",
+      paidAt: "2026-11-12T09:00:00.000Z",
+      paidAtSource: "ord_date",
+      totalTtc: "18.90",
+      ageDays: 5,
+      linesActive: 2,
+      linesWithSupplier: 2,
+      linesOrderedFromSupplier: 1,
+      reason: "supplier_order_missing",
+    },
+    {
+      ordId: "ORD-TEST-0003",
+      ordDate: "2026-11-15T09:00:00.000Z",
+      paidAt: "2026-11-15T09:10:00.000Z",
+      paidAtSource: "ord_date_pay",
+      totalTtc: "75.00",
+      ageDays: 2,
+      linesActive: 0,
+      linesWithSupplier: 0,
+      linesOrderedFromSupplier: 0,
+      reason: "no_active_line",
+    },
+  ],
 };
 
 function json(body: unknown, status = 200) {
@@ -213,5 +270,97 @@ describe("<OrdersTiles />", () => {
       "Indicateurs indisponibles",
     );
     expect(screen.queryByTestId("tile-revenue")).toBeNull();
+  });
+});
+
+describe("Payées non traitées depuis plus de 24 h", () => {
+  it("tuile : nombre et âge de la plus ancienne ; lien qui active le filtre", () => {
+    render(
+      <MemoryRouter>
+        <OrdersTiles
+          tiles={{
+            status: "ok",
+            period: "all",
+            data: { ...TILES, paidUnprocessed: QUEUE },
+          }}
+          onPeriodChange={() => {}}
+          queueHref={`?queue=${PAID_UNPROCESSED_QUEUE}`}
+        />
+      </MemoryRouter>,
+    );
+    const tile = screen.getByTestId("tile-paid-unprocessed").textContent ?? "";
+    expect(tile).toContain("Payées non traitées depuis plus de 24 h");
+    expect(tile).toContain("3");
+    expect(tile).toContain("La plus ancienne attend depuis 10 jours");
+    const link = screen.getByTestId("tile-paid-unprocessed-link");
+    expect(link.getAttribute("href")).toBe("/?queue=payees-non-traitees");
+    expect(link.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("tuile à zéro : aucune commande en attente", () => {
+    render(
+      <OrdersTiles
+        tiles={{ status: "ok", period: "all", data: TILES }}
+        onPeriodChange={() => {}}
+      />,
+    );
+    expect(screen.getByTestId("tile-paid-unprocessed").textContent).toContain(
+      "Aucune commande en attente",
+    );
+  });
+
+  it("filtre : de la plus ancienne à la plus récente, âge en jours, lien vers la commande", () => {
+    render(
+      <MemoryRouter>
+        <PaidUnprocessedList
+          queue={QUEUE}
+          basePath="/commercial/orders"
+          clearHref="/commercial/orders"
+        />
+      </MemoryRouter>,
+    );
+    const list = screen.getByTestId("paid-unprocessed-list");
+    expect(list.textContent).toContain(
+      "3 commandes payées non traitées depuis plus de 24 h",
+    );
+    const rows = screen.getAllByTestId("paid-unprocessed-row");
+    expect(rows.map((r) => within(r).getByRole("link").textContent)).toEqual([
+      "ORD-TEST-0001",
+      "ORD-TEST-0002",
+      "ORD-TEST-0003",
+    ]);
+    expect(rows[0].textContent).toContain("2026-11-07");
+    expect(rows[0].textContent).toContain("10 jours");
+    expect(rows[0].textContent).toContain("fournisseur non confirmé");
+    expect(rows[0].textContent).toContain("0/1 fournisseur, 0/1 commandée");
+    expect(rows[1].textContent).toContain("(date de commande)");
+    expect(rows[1].textContent).toContain("pas de commande fournisseur");
+    expect(rows[2].textContent).toContain("2 jours");
+    expect(rows[2].textContent).toContain("aucune ligne active");
+    expect(within(rows[0]).getByRole("link").getAttribute("href")).toBe(
+      "/commercial/orders/ORD-TEST-0001",
+    );
+    expect(
+      screen.getByTestId("paid-unprocessed-clear").getAttribute("href"),
+    ).toBe("/commercial/orders");
+    // L'état d'encaissement de BM n'existe pas encore : c'est dit.
+    expect(list.textContent).toContain(
+      "n'est pas encore enregistré par le site",
+    );
+  });
+
+  it("filtre vide : message explicite", () => {
+    render(
+      <MemoryRouter>
+        <PaidUnprocessedList
+          queue={{ ...QUEUE, orders: 0, list: [], captureStateRead: true }}
+          basePath="/commercial/orders"
+          clearHref="/commercial/orders"
+        />
+      </MemoryRouter>,
+    );
+    const list = screen.getByTestId("paid-unprocessed-list").textContent ?? "";
+    expect(list).toContain("Aucune commande payée en attente de traitement.");
+    expect(list).not.toContain("n'est pas encore enregistré");
   });
 });

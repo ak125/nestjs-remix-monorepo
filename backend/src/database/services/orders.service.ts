@@ -5,14 +5,23 @@ import { ConfigService } from '@nestjs/config';
 import { CacheService } from '@cache/cache.service';
 import {
   IMPLAUSIBLE_TTC_ENV,
+  ORDER_LINE_QUEUE_COLUMNS,
   ORDER_STATS_COLUMNS,
+  type OrderLineQueueRow,
   type OrderStatsPeriod,
   type OrderStatsRow,
   type OrderTiles,
+  type PaidUnprocessed,
   computeOrderTiles,
+  computePaidUnprocessed,
   fetchAllOrderStatsRows,
   resolveImplausibleThreshold,
+  selectPaidUnprocessedCandidates,
 } from './order-stats-tiles';
+import { fournisseurPose } from '../../modules/orders/services/order-line-supplier.service';
+
+/** Taille des lots d'identifiants de commande lus par `.in()`. */
+const QUEUE_ORDER_ID_CHUNK = 200;
 // Services de délégation (optionnels pour compatibilité)
 // import { OrderCalculationService } from '../../modules/orders/services/order-calculation.service';
 // import { OrderStatusService } from '../../modules/orders/services/order-status.service';
@@ -385,7 +394,7 @@ export class OrdersService extends SupabaseBaseService {
     pendingOrders: number;
     totalRevenue: number;
     averageOrderValue: number;
-    tiles: OrderTiles;
+    tiles: OrderTiles & { paidUnprocessed: PaidUnprocessed };
   }> {
     try {
       const period = options.period ?? 'all';
@@ -419,6 +428,12 @@ export class OrdersService extends SupabaseBaseService {
           ? allTiles
           : computeOrderTiles(orders, { now, period, implausibleThresholdTtc });
 
+      const paidUnprocessed = await this.computePaidUnprocessedQueue(
+        orders,
+        period,
+        now,
+      );
+
       if (allTiles.excluded.orders.length > 0) {
         this.logger.warn(
           `Statistiques commandes : ${allTiles.excluded.orders.length} commande(s) exclue(s) des sommes (seuil ${implausibleThresholdTtc} € TTC) : ${allTiles.excluded.orders
@@ -433,12 +448,55 @@ export class OrdersService extends SupabaseBaseService {
         pendingOrders: orders.filter((o) => o.ord_is_pay === '0').length,
         totalRevenue: allTiles.paid.revenue,
         averageOrderValue: allTiles.paid.averageBasket,
-        tiles,
+        tiles: { ...tiles, paidUnprocessed },
       };
     } catch (error) {
       this.logger.error('Failed to calculate order stats:', error);
       throw error;
     }
+  }
+
+  /**
+   * File « Payées non traitées depuis plus de 24 h » (complément au mandat
+   * BN, 18/11/2026), sur la période des tuiles. Lit les seules lignes des
+   * commandes candidates, par lots et page par page ; une erreur fait échouer
+   * le calcul entier, jamais de file partielle. L'état d'encaissement de BM
+   * (`__order_capture_state`, PR #2150) n'existe pas encore en base : il
+   * n'est pas lu, ce que signale `captureStateRead: false`.
+   */
+  private async computePaidUnprocessedQueue(
+    orders: readonly OrderStatsRow[],
+    period: OrderStatsPeriod,
+    now: Date,
+  ): Promise<PaidUnprocessed> {
+    const candidates = selectPaidUnprocessedCandidates(orders, {
+      now,
+      period,
+    });
+    const lines: OrderLineQueueRow[] = [];
+    for (let i = 0; i < candidates.length; i += QUEUE_ORDER_ID_CHUNK) {
+      const ids = candidates
+        .slice(i, i + QUEUE_ORDER_ID_CHUNK)
+        .map((c) => c.ordId);
+      const chunk = await fetchAllOrderStatsRows<OrderLineQueueRow>(
+        (from, to) =>
+          this.supabase
+            .from(TABLES.xtr_order_line)
+            .select(ORDER_LINE_QUEUE_COLUMNS)
+            .in('orl_ord_id', ids)
+            .order('orl_id', { ascending: true })
+            .range(from, to) as unknown as Promise<{
+            data: OrderLineQueueRow[] | null;
+            error: unknown;
+          }>,
+      );
+      lines.push(...chunk);
+    }
+    return computePaidUnprocessed(candidates, lines, {
+      now,
+      captureStateRead: false,
+      supplierSet: fournisseurPose,
+    });
   }
 
   /**
