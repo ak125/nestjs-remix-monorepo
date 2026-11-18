@@ -70,6 +70,18 @@ test("une table pieces_media_img* ajoutée aux candidats est refusée", () => {
   assert.ok(codes(validate(rules, inv, compileSchema())).has("PROTECTED_CANDIDATE"));
 });
 
+test("une table prévue par une décision, ou à retirer après tarissement, remise en candidate est refusée", () => {
+  const rules = loadRules(RULES_PATH);
+  const inv = loadInventory(path.join(REPO_ROOT, rules.inventory));
+  for (const name of ["support_tickets", "__seo_gamme_conseil"]) {
+    const row = inv.tables.find((t) => t.name === name);
+    assert.ok(row?.decisions?.numbers?.length, `${name} : décision citée absente`);
+    const copy = structuredClone(inv);
+    copy.archive_candidates.push({ name });
+    assert.ok(codes(validate(rules, copy, compileSchema())).has("CANDIDATE_CLASS"), name);
+  }
+});
+
 test("une tranche comptée en plus comme table est refusée", () => {
   const rules = loadRules(RULES_PATH);
   const inv = loadInventory(path.join(REPO_ROOT, rules.inventory));

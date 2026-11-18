@@ -16,8 +16,10 @@ Source : `audit/massdoc-db-hygiene-candidates-2026-09-15.md` (worktree `db-hygie
 
 Le présent lot se nomme donc **F** (proposé). Il se découpe en deux :
 
-- **F1** : 20 tables sans règle de suppression particulière.
+- **F1** : 19 tables sans règle de suppression particulière.
 - **F2** : 20 tables `__seo_*`, `__diag_*`, `kg_*` : `deletePolicy = ADR_REQUIRED` dans `.spec/00-canon/repository-registry/delete-policy.yaml`. Un archivage n’est pas une suppression, mais une décision écrite de Marwane est demandée avant ce lot.
+
+Retirée de la liste par le complément CA-2 (décision de Marwane citée par le pilotage) : `support_tickets` (décision 25, désormais « prévue »). Une table prévue par une décision n’est jamais candidate, même vide et sans code.
 
 ## En-tête proposé (même plan que le lot D)
 
@@ -42,7 +44,6 @@ Le présent lot se nomme donc **F** (proposé). Il se découpe en deux :
 --   public.rm_listing_content                             0 lignes
 --   public.rm_oem_top                                     0 lignes
 --   public.stg_compatibility                              0 lignes
---   public.support_tickets                                0 lignes
 --   public.audit_vlevel_pg424_snapshot_20260608        1616 lignes
 --   [F2]
 --   public.__diag_safe_phrases                           17 lignes
@@ -127,7 +128,6 @@ Le présent lot se nomme donc **F** (proposé). Il se découpe en deux :
 | `rm_listing_content` | F1 | 0 | 0.0 | 0 | 0 / 3 | 0 · 0 · 0 · 0 · 0 | rm_listing | — | 0/0/0 | 1/1 | 0 | 10 catalog |
 | `rm_oem_top` | F1 | 0 | 0.0 | 0 | 0 / 3 | 0 · 0 · 0 · 0 · 0 | — | — | 0/0/0 | 1/0 | 0 | 10 catalog |
 | `stg_compatibility` | F1 | 0 | 0.0 | 0 | 0 / 4 | 0 · 0 · 0 · 0 · 0 | import_batch | — | 0/0/0 | 3/0 | 0 | 10 catalog |
-| `support_tickets` | F1 | 0 | 0.1 | 0 | 0 / 5 | 0 · 0 · 0 · 0 · 0 | — | trigger_tickets_updated_at | 0/0/0 | 19/0 | 0 | 14 support |
 | `audit_vlevel_pg424_snapshot_20260608` | F1 | 1616 | 0.2 | 0 | 1 / 1 | 0 · 0 · 0 · 0 · 0 | — | — | 0/0/0 | 0/0 | 0 | 10 catalog |
 
 Règles et vues : 0 objet `pg_rewrite` ne dépend d’un candidat (mesuré, `q15_candidates`).

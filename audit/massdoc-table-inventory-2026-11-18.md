@@ -7,20 +7,22 @@ Légende des preuves : **mesuré** = relevé en base ou `git grep` ; **déduit**
 ## 1. Réponse simple
 
 - Le schéma public compte **718 objets de table** (mesuré). **355** ne sont que des tranches de 17 tables partitionnées : on les compte une fois, au parent. Il reste **363 tables**.
-- **211 sont utiles** aujourd’hui (écrites, lues par l’application ou par une fonction appelée) — déduit. Parmi elles, 30 sont branchées mais vides et jamais écrites depuis le 2026-09-17 (une file vide, un journal sans incident…).
-- **40 peuvent être archivées** (déplacées dans `_archive`, pas supprimées) : 39 tables mortes et 1 copie datée — déduit. Les 8 autres copies datées sont des `pieces_media_img_*` : zone interdite, gardées.
-- **104 sont à trancher** : chaque ligne porte la question à poser. Aucune n’est archivée par ce relevé.
-- **0 table prévue** (créée après le 2026-09-01 et jamais écrite) — déduit.
+- **210 sont utiles** aujourd’hui (écrites, lues par l’application ou par une fonction appelée) — déduit. Parmi elles, 30 sont branchées mais vides et jamais écrites depuis le 2026-09-17 (une file vide, un journal sans incident…).
+- **39 peuvent être archivées** (déplacées dans `_archive`, pas supprimées) : 38 tables mortes et 1 copie datée — déduit. Les 8 autres copies datées sont des `pieces_media_img_*` : zone interdite, gardées.
+- **101 sont à trancher** : chaque ligne porte la question à poser. Aucune n’est archivée par ce relevé.
+- **4 tables prévues** : une décision de Marwane les prévoit (citée par le pilotage, §7 bis) ; aucune n’est archivée.
+- **1 table à retirer après tarissement** (`__seo_gamme_conseil`, décision 32) : plus alimentée, retirée quand plus aucune page ne la lit ; pas morte tant qu’une page la lit.
 
 ## 2. Synthèse par classe
 
 | Classe | Tables | Taille (Mo) |
 |---|---:|---:|
-| vivante | 211 | 130 838.4 |
-| prévue | 0 | 0.0 |
+| vivante | 210 | 130 830.4 |
+| prévue | 4 | 0.5 |
+| à retirer après tarissement | 1 | 8.0 |
 | copie datée | 9 | 178.8 |
-| morte | 39 | 4.0 |
-| à trancher | 104 | 1 038.0 |
+| morte | 38 | 4.0 |
+| à trancher | 101 | 1 037.6 |
 | **Total** | **363** | 132 059.3 |
 
 Contrôle : somme des classes = 363 = 346 tables simples + 17 parents partitionnés (mesuré, `q1_counts`).
@@ -29,26 +31,26 @@ Contrôle : somme des classes = 363 = 346 tables simples + 17 parents partitionn
 
 Département = module qui écrit la table (mesuré), sinon module qui la lit, sinon préfixe du nom (déduit). Le module `admin` (01) est trop large et n’est pas utilisé pour attribuer.
 
-| Département | vivante | prévue | copie datée | morte | à trancher | Total |
-|---|---:|---:|---:|---:|---:|---:|
-| 04 marketing | 9 | 0 | 0 | 3 | 2 | 14 |
-| 06 content | 10 | 0 | 0 | 0 | 0 | 10 |
-| 07 seo | 79 | 0 | 0 | 15 | 26 | 120 |
-| 08 media | 5 | 0 | 8 | 0 | 1 | 14 |
-| 09 wiki | 3 | 0 | 0 | 3 | 0 | 6 |
-| 10 catalog | 30 | 0 | 1 | 9 | 43 | 83 |
-| 11 diagnostic | 17 | 0 | 0 | 6 | 13 | 36 |
-| 12 supplier | 2 | 0 | 0 | 0 | 2 | 4 |
-| 13 sales | 16 | 0 | 0 | 0 | 3 | 19 |
-| 14 support | 12 | 0 | 0 | 1 | 1 | 14 |
-| 15 logistics | 2 | 0 | 0 | 0 | 1 | 3 |
-| 16 pricing | 6 | 0 | 0 | 0 | 4 | 10 |
-| 17 finance | 0 | 0 | 0 | 0 | 2 | 2 |
-| 20 product | 1 | 0 | 0 | 0 | 4 | 5 |
-| 21 runtime | 3 | 0 | 0 | 0 | 0 | 3 |
-| 22 data | 0 | 0 | 0 | 1 | 0 | 1 |
-| 23 ia-agents | 15 | 0 | 0 | 1 | 2 | 18 |
-| 24 people | 1 | 0 | 0 | 0 | 0 | 1 |
+| Département | vivante | prévue | à retirer après tarissement | copie datée | morte | à trancher | Total |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 04 marketing | 9 | 0 | 0 | 0 | 3 | 2 | 14 |
+| 06 content | 10 | 0 | 0 | 0 | 0 | 0 | 10 |
+| 07 seo | 78 | 0 | 1 | 0 | 15 | 26 | 120 |
+| 08 media | 5 | 0 | 0 | 8 | 0 | 1 | 14 |
+| 09 wiki | 3 | 0 | 0 | 0 | 3 | 0 | 6 |
+| 10 catalog | 30 | 0 | 0 | 1 | 9 | 43 | 83 |
+| 11 diagnostic | 17 | 0 | 0 | 0 | 6 | 13 | 36 |
+| 12 supplier | 2 | 0 | 0 | 0 | 0 | 2 | 4 |
+| 13 sales | 16 | 1 | 0 | 0 | 0 | 2 | 19 |
+| 14 support | 12 | 2 | 0 | 0 | 0 | 0 | 14 |
+| 15 logistics | 2 | 0 | 0 | 0 | 0 | 1 | 3 |
+| 16 pricing | 6 | 0 | 0 | 0 | 0 | 4 | 10 |
+| 17 finance | 0 | 1 | 0 | 0 | 0 | 1 | 2 |
+| 20 product | 1 | 0 | 0 | 0 | 0 | 4 | 5 |
+| 21 runtime | 3 | 0 | 0 | 0 | 0 | 0 | 3 |
+| 22 data | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
+| 23 ia-agents | 15 | 0 | 0 | 0 | 1 | 2 | 18 |
+| 24 people | 1 | 0 | 0 | 0 | 0 | 0 | 1 |
 
 ## 4. Tables partitionnées (comptées une fois)
 
@@ -107,7 +109,7 @@ Ces écarts sont signalés, pas corrigés (hors mandat).
 
 ## 6. Tables à archiver (candidats)
 
-40 tables. Détail des preuves et format du lot : `docs/audit/mandat-ca-20261118/candidats-archivage.md`.
+39 tables. Détail des preuves et format du lot : `docs/audit/mandat-ca-20261118/candidats-archivage.md`.
 
 ## 7. Tables à trancher, avec leur question
 
@@ -116,10 +118,8 @@ Ces écarts sont signalés, pas corrigés (hors mandat).
 | `___config_ip` | 20 product | 0.1 | 3 | Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ? |
 | `___footer_menu` | 20 product | 0.1 | 13 | Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ? |
 | `___header_menu` | 20 product | 0.1 | 6 | Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ? |
-| `___xtr_invoice` | 17 finance | 0.3 | 1 | Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ? (19 appels du rôle de l’API mesurés) |
 | `___xtr_invoice_line` | 17 finance | 0.3 | 1 | Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ? |
 | `___xtr_order_line_equiv_ticket` | 13 sales | 0.1 | 13 | Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ? (2 appels du rôle de l’API mesurés) |
-| `__abandoned_cart_emails` | 13 sales | 0.0 | 0 | Code présent mais table vide et jamais écrite depuis le 2026-09-17 : fonctionnalité non activée (laquelle, quand ?) ou abandonnée ? |
 | `__catalog_id_mapping` | 10 catalog | 0.5 | 950 | Seules des fonctions SQL jamais appelées la citent (get_automecanik_id, get_catalog_mapping_stats, get_external_id, merge_staging_brands) : chantier abandonné à archiver avec ses fonctions, ou à reprendre ? |
 | `__cnit_raw` | 10 catalog | 16.8 | 55060 | Aucun lecteur dans le dépôt mais 8376 parcours d’index et 7866 parcours séquentiels depuis le 2026-09-17 : quel lecteur extérieur ? Le relevé du 2026-09-15 la garde : source RAW du chantier R8 levier A. |
 | `__diag_context_questions` | 11 diagnostic | 0.0 | 5 | Seules des fonctions SQL jamais appelées la citent (get_context_questions) : chantier abandonné à archiver avec ses fonctions, ou à reprendre ? |
@@ -156,7 +156,7 @@ Ces écarts sont signalés, pas corrigés (hors mandat).
 | `__seo_r7_regeneration_queue` | 07 seo | 0.0 | 0 | Code présent mais table vide et jamais écrite depuis le 2026-09-17 : fonctionnalité non activée (laquelle, quand ?) ou abandonnée ? |
 | `__seo_r8_engine_family_stats` | 07 seo | 0.0 | 0 | Code présent mais table vide et jamais écrite depuis le 2026-09-17 : fonctionnalité non activée (laquelle, quand ?) ou abandonnée ? |
 | `__seo_snapshot_cf_rum` | 07 seo | 4.3 | 0 | Seul un cron d’entretien la touche (cron#15 snapshot-partition-rotation) ; vide et jamais écrite depuis le 2026-09-17. L’écrivain existe (cf-rum.service.ts) mais n’a rien écrit : l’activer, ou abandonner la table (et son entretien) ? |
-| `__seo_type_vlevel` | 07 seo | 1.8 | 6476 | Seulement citée par des scripts manuels (scripts/seo/rebuild-type-vlevel.py) : ces scripts servent-ils encore ? |
+| `__seo_type_vlevel` | 07 seo | 1.8 | 6476 | Seulement citée par des scripts manuels (scripts/seo/rebuild-type-vlevel.py) : ces scripts servent-ils encore ? Décision 46 citée par le pilotage, contenu non lisible ici : ce script manuel est-il l’écrivain retenu ? |
 | `__sitemap_marque` | 07 seo | 0.1 | 35 | Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ? |
 | `__sitemap_motorisation` | 07 seo | 2.8 | 12756 | Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ? |
 | `__sitemap_p_xml` | 07 seo | 0.7 | 1960 | Seulement citée par des scripts manuels (backend/scripts/seo/audit/r2-volume-sample.ts, scripts/analyze_full_database.py) : ces scripts servent-ils encore ? |
@@ -205,7 +205,6 @@ Ces écarts sont signalés, pas corrigés (hors mandat).
 | `pricing_decision_snapshot` | 16 pricing | 0.6 | 0 | Seul un cron d’entretien la touche (cron#25 pricing-decision-snapshot-partition-rotation) ; vide et jamais écrite depuis le 2026-09-17. Aucun écrivain dans le code : chantier à reprendre ou à archiver ? |
 | `promo_usage` | 13 sales | 0.0 | 0 | Code présent mais table vide et jamais écrite depuis le 2026-09-17 : fonctionnalité non activée (laquelle, quand ?) ou abandonnée ? |
 | `quantity_discounts` | 16 pricing | 0.1 | 6 | Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ? |
-| `reviews` | 14 support | 0.1 | 0 | Code présent mais table vide et jamais écrite depuis le 2026-09-17 : fonctionnalité non activée (laquelle, quand ?) ou abandonnée ? |
 | `rm_build_log` | 10 catalog | 0.0 | 0 | Seules des fonctions SQL jamais appelées la citent (complete_rebuild_job) : chantier abandonné à archiver avec ses fonctions, ou à reprendre ? |
 | `rm_listing_products` | 10 catalog | 0.5 | 0 | Seules des fonctions SQL jamais appelées la citent (check_rm_products_integrity, create_rm_listing_products_partition) : chantier abandonné à archiver avec ses fonctions, ou à reprendre ? |
 | `rm_product` | 10 catalog | 0.0 | 0 | Seules des fonctions SQL jamais appelées la citent (check_rm_products_integrity) : chantier abandonné à archiver avec ses fonctions, ou à reprendre ? |
@@ -217,6 +216,29 @@ Ces écarts sont signalés, pas corrigés (hors mandat).
 | `xref_article` | 10 catalog | 0.0 | 0 | Seules des fonctions SQL jamais appelées la citent (build_article_decisions, get_batch_report) : chantier abandonné à archiver avec ses fonctions, ou à reprendre ? |
 | `xref_brand` | 10 catalog | 0.0 | 0 | Seules des fonctions SQL jamais appelées la citent (build_brand_decisions, get_batch_report, resolve_batch_brands, resolve_brand_multilevel) : chantier abandonné à archiver avec ses fonctions, ou à reprendre ? |
 | `xref_vehicle` | 10 catalog | 0.0 | 0 | Seules des fonctions SQL jamais appelées la citent (get_batch_report) : chantier abandonné à archiver avec ses fonctions, ou à reprendre ? |
+
+## 7 bis. Tables prévues par une décision de Marwane
+
+Source : feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent. Le numéro et le texte cités sont ceux du pilotage ; le constat du code est mesuré au commit du relevé. Une décision prévoit une table : elle sort des candidats à l’archivage, quelle que soit son activité.
+
+| Table | Décision(s) | Texte cité | Classe retenue | Constat du code (mesuré) |
+|---|---|---|---|---|
+| `support_tickets` | 25 | « faire passer les demandes dans support_tickets (vide aujourd’hui, comme __claims) » | prévue | Aucun code ne lit ni n’écrit la table ; aucune migration du dépôt ne la crée (git grep vide). Rien ne contredit la décision : le branchement reste à faire. |
+| `reviews` | 78 | « avis dans la table reviews, affiché « achat vérifié » » | prévue | Le code dit autre chose : `support/services/review.service.ts` range aujourd’hui les avis dans `___xtr_msg` ; `reviews` n’est citée que par un type (`support/types/index.ts`). Table vide, 0 écriture depuis le 2026-09-17. |
+| `__abandoned_cart_emails` | 5, 61 | relance des commandes non payées, à 1 h puis à 24 h | prévue | L’écrivain existe (`cart/services/abandoned-cart-data.service.ts`, insert) mais n’a rien écrit depuis le 2026-09-17 ; table vide. |
+| `__claims` | 77 | retours et remboursements | vivante | Écrite par le code (`support/services/claim.service.ts`, insert) et lue 8 467 fois par le rôle de l’API ; vide, 0 écriture depuis le 2026-09-17. Reste vivante. |
+| `__refunds` | 77 | retours et remboursements | vivante | Écrite par le code (`payments/services/payment.service.ts`, insert dans `processRefund`) ; vide, 0 écriture depuis le 2026-09-17. Reste vivante. Zone paiement : classement seul. |
+| `___xtr_invoice` | 26, 64 | le site génère la facture au paiement | prévue | Aucun écrivain dans l’application : seul `scripts/analyze_full_database.py` la cite ; 1 ligne, 0 écriture depuis le 2026-09-17, 19 appels du rôle de l’API (lecteur hors dépôt non identifié). |
+| `__seo_gamme_conseil` | 32 | « n’est plus alimenté, puis retiré quand plus aucune page ne le lit » | à retirer après tarissement | Encore lue : fonctions appelées `get_gamme_page_data` et `get_gamme_page_data_optimized`, 3 vues, cron#1 `refresh_gamme_aggregates()`. 0 écriture depuis le 2026-09-17, conforme à la décision ; un écrivain reste dans le code (`admin/services/conseil-quality-scorer.service.ts`). Pas morte tant qu’une page la lit. |
+| `__seo_entity_facts` | 32 | (numéro seul) | vivante | Écrite par `seo-projection/seo-projection-writer.service.ts` (4 insertions, 180 mises à jour depuis le 2026-09-17). Reste vivante. |
+| `__seo_keywords` | 46 | (numéro seul) | vivante | Écrite par `admin/services/gamme-vlevel.service.ts`, lue par l’application (6 050 parcours d’index). Reste vivante. |
+| `__seo_type_vlevel` | 46 | (numéro seul) | à trancher | Seul le script manuel `scripts/seo/rebuild-type-vlevel.py` l’écrit (depuis `__seo_keywords`) ; 0 écriture et 12 parcours d’index depuis le 2026-09-17, aucun lecteur dans l’application. Le contenu de la décision 46 n’est pas lisible ici : la question reste posée. |
+| `___legal_pages` | 38 | (numéro seul) | vivante | Lue par `support/services/legal-page.service.ts` (1 135 parcours d’index). Reste vivante. |
+| `___xtr_customer` | 44 | (numéro seul) | vivante | Écrite par `users/services/profile.service.ts` et lue par l’application (60 417 parcours d’index). Reste vivante. |
+| `__quality_gamme_scores` | 39 | (numéro seul) | vivante | Écrivain `admin/services/gamme-aggregator.service.ts` ; 232 lignes, 0 écriture depuis le 2026-09-17. Reste vivante. |
+| `ic_postback` | — | paiement (zone STOP, sans numéro de décision cité) | vivante | Écrite par le retour de paiement (`payments/controllers/payment-callback.controller.ts`, 10 insertions depuis le 2026-09-17). Reste vivante. Zone paiement : classement seul. |
+
+Reclassées par ce complément : `support_tickets` (morte → prévue), `reviews` (à trancher → prévue), `__abandoned_cart_emails` (à trancher → prévue), `___xtr_invoice` (à trancher → prévue), `__seo_gamme_conseil` (vivante → à retirer après tarissement). Retirée des candidats à l’archivage : `support_tickets`.
 
 ## 8. Inventaire complet (une ligne par table)
 
@@ -239,7 +261,7 @@ Colonnes : classe (déduit), département, taille et lignes estimées (mesuré),
 | `___xtr_delivery_ape_domtom1` | vivante | 13 sales | 0.1 | 7 | 0/0/0 | 636/0 | — | mod/cart/services/shipping-calculator.service.ts | — | tables de l’ancien site |
 | `___xtr_delivery_ape_domtom2` | vivante | 13 sales | 0.1 | 7 | 0/0/0 | 635/0 | — | mod/cart/services/shipping-calculator.service.ts | — | tables de l’ancien site |
 | `___xtr_delivery_ape_france` | vivante | 13 sales | 0.1 | 9 | 0/0/0 | 658/0 | — | mod/cart/services/shipping-calculator.service.ts | — | tables de l’ancien site |
-| `___xtr_invoice` | à trancher | 17 finance | 0.3 | 1 | 0/0/0 | 86/0 | — | — | — | tables de l’ancien site |
+| `___xtr_invoice` | prévue | 17 finance | 0.3 | 1 | 0/0/0 | 86/0 | — | — | — | tables de l’ancien site |
 | `___xtr_invoice_line` | à trancher | 17 finance | 0.3 | 1 | 0/0/0 | 43/0 | — | — | — | tables de l’ancien site |
 | `___xtr_msg` | vivante | 14 support | 10306.5 | 15342444 | 77/0/0 | 473/47592 | — | mod/errors/services/redirect.service.ts, mod/messages/messages.controller.ts +3 | — | tables de l’ancien site |
 | `___xtr_order` | vivante | 13 sales | 2.3 | 1690 | 17/37/0 | 5313/131638 | mod/orders/controllers/orders.controller.ts, mod/payments/controllers/paybox-callback.controller.ts | backend/src/database/services/orders.service.ts, mod/admin/services/reporting.service.ts +15 | fn 5; FK← 3 | tables de l’ancien site |
@@ -250,7 +272,7 @@ Colonnes : classe (déduit), département, taille et lignes estimées (mesuré),
 | `___xtr_order_status` | vivante | 13 sales | 0.1 | 5 | 0/0/0 | 105/4 | — | mod/orders/services/order-status.service.ts | FK← 1 | tables de l’ancien site |
 | `___xtr_supplier` | vivante | 12 supplier | 0.1 | 70 | 0/0/0 | 52/4 | — | backend/src/database/services/piece-price-data.service.ts, mod/orders/services/order-line-supplier-proposal.ts +5 | — | tables de l’ancien site |
 | `___xtr_supplier_link_pm` | vivante | 12 supplier | 0.1 | 108 | 0/0/0 | 27/20 | — | mod/supplier-truth/connectors/supplier-registry.ts, mod/supplier-truth/supplier-truth.repository.ts +1 | — | tables de l’ancien site |
-| `__abandoned_cart_emails` | à trancher | 13 sales | 0.0 | 0 | 0/0/0 | 52/0 | — | mod/cart/services/abandoned-cart-data.service.ts | — | référentiel ou donnée métier |
+| `__abandoned_cart_emails` | prévue | 13 sales | 0.0 | 0 | 0/0/0 | 52/0 | — | mod/cart/services/abandoned-cart-data.service.ts | — | référentiel ou donnée métier |
 | `__admin_audit_log` | vivante | 13 sales | 0.1 | 78 | 20/0/0 | 59/16 | mod/admin/services/command-center-orchestrator/execution-ledger.service.ts, mod/orders/listeners/order-audit.listener.ts +1 | mod/admin/services/command-center-orchestrator/execution-ledger.service.ts, mod/orders/listeners/order-audit.listener.ts +1 | fn morte 1 | journal |
 | `__admin_job_health` | vivante | 21 runtime | 0.1 | 3 | 0/6001/0 | 12292/0 | mod/admin/services/admin-job-health.service.ts | mod/admin/services/admin-job-health.service.ts | — | référentiel ou donnée métier |
 | `__agent_runs` | morte | 23 ia-agents | 0.1 | 7 | 0/0/0 | 11/0 | — | — | — | journal |
@@ -354,7 +376,7 @@ Colonnes : classe (déduit), département, taille et lignes estimées (mesuré),
 | `__seo_gamme` | vivante | 07 seo | 1.2 | 177 | 0/0/0 | 6075/2010 | — | backend/check-tables-columns.py, backend/find_explanation_column.py +12 | cron 1; fn 6; fn morte 2; vues 1 | référentiel ou donnée métier |
 | `__seo_gamme_car` | vivante | 10 catalog | 1.2 | 118 | 0/0/0 | 2916630/4300 | backend/sql/012-update-seo-templates-add-motor-code.sql | backend/sql/004-create-rpc-get-pieces-for-type-gamme-v2.sql, backend/sql/005-create-indexes-oem-performance.sql +6 | fn 3; fn morte 1 | référentiel ou donnée métier |
 | `__seo_gamme_car_switch` | vivante | 10 catalog | 1.9 | 6542 | 0/0/0 | 3673/220530 | — | backend/sql/006-create-rpc-get-pieces-for-type-gamme-v3.sql, mod/catalog/services/seo-template.service.ts +2 | fn 2 | référentiel ou donnée métier |
-| `__seo_gamme_conseil` | vivante | 07 seo | 8.0 | 2790 | 0/0/0 | 6063/5924 | mod/admin/services/conseil-quality-scorer.service.ts | backend/check-tables-columns.py, backend/src/config/feature-flags.service.ts +16 | cron 1; fn 5; fn morte 2; vues 6 | référentiel ou donnée métier |
+| `__seo_gamme_conseil` | à retirer après tarissement | 07 seo | 8.0 | 2790 | 0/0/0 | 6063/5924 | mod/admin/services/conseil-quality-scorer.service.ts | backend/check-tables-columns.py, backend/src/config/feature-flags.service.ts +16 | cron 1; fn 5; fn morte 2; vues 6 | référentiel ou donnée métier |
 | `__seo_gamme_gsc_baseline` | morte | 07 seo | 0.0 | 0 | 0/0/0 | 17/0 | — | — | — | cache ou projection recalculable |
 | `__seo_gamme_info` | vivante | 07 seo | 0.8 | 986 | 0/0/0 | 15/860 | — | backend/check-tables-columns.py, backend/find_explanation_column.py | fn 2 | référentiel ou donnée métier |
 | `__seo_gamme_links` | vivante | 07 seo | 0.5 | 1199 | 0/0/0 | 13/0 | — | mod/admin/controllers/admin-keyword-planner.controller.ts | — | référentiel ou donnée métier |
@@ -559,7 +581,7 @@ Colonnes : classe (déduit), département, taille et lignes estimées (mesuré),
 | `promo_codes` | vivante | 13 sales | 0.1 | 8 | 0/0/0 | 23/0 | — | backend/src/database/services/promo-data.service.ts | FK← 1 | référentiel ou donnée métier |
 | `promo_usage` | à trancher | 13 sales | 0.0 | 0 | 0/0/0 | 7/0 | — | backend/src/database/services/promo-data.service.ts | — | référentiel ou donnée métier |
 | `quantity_discounts` | à trancher | 16 pricing | 0.1 | 6 | 0/0/0 | 5/0 | — | — | — | référentiel ou donnée métier |
-| `reviews` | à trancher | 14 support | 0.1 | 0 | 0/0/0 | 13/0 | — | mod/support/types/index.ts | — | référentiel ou donnée métier |
+| `reviews` | prévue | 14 support | 0.1 | 0 | 0/0/0 | 13/0 | — | mod/support/types/index.ts | — | référentiel ou donnée métier |
 | `rm_build_log` | à trancher | 10 catalog | 0.0 | 0 | 0/0/0 | 8/0 | — | — | fn morte 1 | journal |
 | `rm_data_version` | morte | 10 catalog | 0.1 | 24 | 0/0/0 | 6/0 | — | — | — | référentiel ou donnée métier |
 | `rm_facet_config` | vivante | 10 catalog | 0.1 | 1 | 0/0/0 | 3/0 | — | — | fn 2; fn morte 1 | référentiel ou donnée métier |
@@ -581,7 +603,7 @@ Colonnes : classe (déduit), département, taille et lignes estimées (mesuré),
 | `supplier_import_raw` | vivante | 16 pricing | 0.1 | 4 | 0/0/0 | 18/0 | mod/pricing/services/pricing.repository.ts | mod/pricing/services/pricing.repository.ts | FK← 1 | référentiel ou donnée métier |
 | `supplier_offer_snapshot` (P) | à trancher | 12 supplier | 0.4 | 0 | 0/0/0 | 229/9 | — | mod/supplier-truth/supplier-sync.processor.ts, mod/supplier-truth/supplier-sync.runner.ts +3 | cron 1; fn 2 | partitions d’instantanés |
 | `supplier_price_profiles` | vivante | 16 pricing | 0.0 | 1 | 0/0/0 | 18/0 | — | mod/pricing/services/pricing.repository.ts | — | référentiel ou donnée métier |
-| `support_tickets` | morte | 14 support | 0.1 | 0 | 0/0/0 | 19/0 | — | — | — | référentiel ou donnée métier |
+| `support_tickets` | prévue | 14 support | 0.1 | 0 | 0/0/0 | 19/0 | — | — | — | référentiel ou donnée métier |
 | `users` | vivante | 20 product | 0.0 | 2 | 0/0/0 | 6/0 | — | mod/admin/services/reporting.service.ts, mod/layout/services/layout.service.ts +1 | — | référentiel ou donnée métier |
 | `write_scope_violations` | vivante | 23 ia-agents | 0.0 | 0 | 0/0/0 | 5/0 | — | — | fn 1 | journal |
 | `xref_article` | à trancher | 10 catalog | 0.0 | 0 | 0/0/0 | 10/0 | — | — | fn morte 2 | import et préparation |

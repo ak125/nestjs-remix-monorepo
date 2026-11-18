@@ -12,11 +12,12 @@
   "partitioned_parents": 17,
   "partition_slices_not_counted": 355,
   "by_class": {
-   "vivante": 211,
-   "prevue": 0,
+   "vivante": 210,
+   "prevue": 4,
+   "a_retirer_apres_tarissement": 1,
    "copie_datee": 9,
-   "morte": 39,
-   "a_trancher": 104
+   "morte": 38,
+   "a_trancher": 101
   }
  },
  "by_department": {
@@ -29,9 +30,10 @@
    "vivante": 10
   },
   "07 seo": {
-   "vivante": 79,
+   "vivante": 78,
    "morte": 15,
-   "a_trancher": 26
+   "a_trancher": 26,
+   "a_retirer_apres_tarissement": 1
   },
   "08 media": {
    "vivante": 5,
@@ -59,12 +61,12 @@
   },
   "13 sales": {
    "vivante": 16,
-   "a_trancher": 3
+   "a_trancher": 2,
+   "prevue": 1
   },
   "14 support": {
    "vivante": 12,
-   "a_trancher": 1,
-   "morte": 1
+   "prevue": 2
   },
   "15 logistics": {
    "vivante": 2,
@@ -75,7 +77,8 @@
    "vivante": 6
   },
   "17 finance": {
-   "a_trancher": 2
+   "prevue": 1,
+   "a_trancher": 1
   },
   "20 product": {
    "a_trancher": 4,
@@ -356,7 +359,15 @@
     "triggers": [],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [],
+   "decisions": {
+    "numbers": [
+     38
+    ],
+    "cited_text": null,
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Lue par `support/services/legal-page.service.ts` (1 135 parcours d’index). Reste vivante."
+   }
   },
   {
    "name": "___meta_tags_ariane",
@@ -478,7 +489,15 @@
     ],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [],
+   "decisions": {
+    "numbers": [
+     44
+    ],
+    "cited_text": null,
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Écrite par `users/services/profile.service.ts` et lue par l’application (60 417 parcours d’index). Reste vivante."
+   }
   },
   {
    "name": "___xtr_customer_billing_address",
@@ -782,8 +801,8 @@
   {
    "name": "___xtr_invoice",
    "kind": "table",
-   "class": "a_trancher",
-   "question": "Seulement citée par des scripts manuels (scripts/analyze_full_database.py) : ces scripts servent-ils encore ?",
+   "class": "prevue",
+   "question": null,
    "family": "ancien_site",
    "department": "17 finance",
    "department_evidence": "déduit (préfixe)",
@@ -817,7 +836,18 @@
     "triggers": [],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [
+    "reclassée « prévue » (était « à trancher ») sur décision citée : 26, 64"
+   ],
+   "decisions": {
+    "numbers": [
+     26,
+     64
+    ],
+    "cited_text": "le site génère la facture au paiement",
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Aucun écrivain dans l’application : seul `scripts/analyze_full_database.py` la cite ; 1 ligne, 0 écriture depuis le 2026-09-17, 19 appels du rôle de l’API (lecteur hors dépôt non identifié)."
+   }
   },
   {
    "name": "___xtr_invoice_line",
@@ -1327,8 +1357,8 @@
   {
    "name": "__abandoned_cart_emails",
    "kind": "table",
-   "class": "a_trancher",
-   "question": "Code présent mais table vide et jamais écrite depuis le 2026-09-17 : fonctionnalité non activée (laquelle, quand ?) ou abandonnée ?",
+   "class": "prevue",
+   "question": null,
    "family": "referentiel_metier",
    "department": "13 sales",
    "department_evidence": "mesuré (module lecteur)",
@@ -1362,7 +1392,18 @@
     "triggers": [],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [
+    "reclassée « prévue » (était « à trancher ») sur décision citée : 5, 61"
+   ],
+   "decisions": {
+    "numbers": [
+     5,
+     61
+    ],
+    "cited_text": "relance des commandes non payées, à 1 h puis à 24 h",
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "L’écrivain existe (`cart/services/abandoned-cart-data.service.ts`, insert) mais n’a rien écrit depuis le 2026-09-17 ; table vide."
+   }
   },
   {
    "name": "__admin_audit_log",
@@ -2109,7 +2150,15 @@
    "reasons": [
     "lue par le rôle de l’API : 8467 appels mesurés (pg_stat_statements depuis le 2026-09-17)",
     "branchée mais vide et jamais écrite depuis le 2026-09-17"
-   ]
+   ],
+   "decisions": {
+    "numbers": [
+     77
+    ],
+    "cited_text": "retours et remboursements",
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Écrite par le code (`support/services/claim.service.ts`, insert) et lue 8 467 fois par le rôle de l’API ; vide, 0 écriture depuis le 2026-09-17. Reste vivante."
+   }
   },
   {
    "name": "__cnit_raw",
@@ -4036,7 +4085,15 @@
     "triggers": [],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [],
+   "decisions": {
+    "numbers": [
+     39
+    ],
+    "cited_text": null,
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Écrivain `admin/services/gamme-aggregator.service.ts` ; 232 lignes, 0 écriture depuis le 2026-09-17. Reste vivante."
+   }
   },
   {
    "name": "__quality_page_scores",
@@ -4776,7 +4833,15 @@
    },
    "reasons": [
     "branchée mais vide et jamais écrite depuis le 2026-09-17"
-   ]
+   ],
+   "decisions": {
+    "numbers": [
+     77
+    ],
+    "cited_text": "retours et remboursements",
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Écrite par le code (`payments/services/payment.service.ts`, insert dans `processRefund`) ; vide, 0 écriture depuis le 2026-09-17. Reste vivante. Zone paiement : classement seul."
+   }
   },
   {
    "name": "__seo_action_outcome",
@@ -5873,7 +5938,15 @@
     "triggers": [],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [],
+   "decisions": {
+    "numbers": [
+     32
+    ],
+    "cited_text": null,
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Écrite par `seo-projection/seo-projection-writer.service.ts` (4 insertions, 180 mises à jour depuis le 2026-09-17). Reste vivante."
+   }
   },
   {
    "name": "__seo_entity_sources",
@@ -6426,7 +6499,7 @@
   {
    "name": "__seo_gamme_conseil",
    "kind": "table",
-   "class": "vivante",
+   "class": "a_retirer_apres_tarissement",
    "question": null,
    "family": "referentiel_metier",
    "department": "07 seo",
@@ -6520,7 +6593,17 @@
     ],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [
+    "reclassée « à retirer après tarissement » (était « vivante ») sur décision citée : 32"
+   ],
+   "decisions": {
+    "numbers": [
+     32
+    ],
+    "cited_text": "« n’est plus alimenté, puis retiré quand plus aucune page ne le lit »",
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Encore lue : fonctions appelées `get_gamme_page_data` et `get_gamme_page_data_optimized`, 3 vues, cron#1 `refresh_gamme_aggregates()`. 0 écriture depuis le 2026-09-17, conforme à la décision ; un écrivain reste dans le code (`admin/services/conseil-quality-scorer.service.ts`). Pas morte tant qu’une page la lit."
+   }
   },
   {
    "name": "__seo_gamme_gsc_baseline",
@@ -7584,7 +7667,15 @@
     ],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [],
+   "decisions": {
+    "numbers": [
+     46
+    ],
+    "cited_text": null,
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Écrite par `admin/services/gamme-vlevel.service.ts`, lue par l’application (6 050 parcours d’index). Reste vivante."
+   }
   },
   {
    "name": "__seo_marque",
@@ -10401,7 +10492,7 @@
    "name": "__seo_type_vlevel",
    "kind": "table",
    "class": "a_trancher",
-   "question": "Seulement citée par des scripts manuels (scripts/seo/rebuild-type-vlevel.py) : ces scripts servent-ils encore ?",
+   "question": "Seulement citée par des scripts manuels (scripts/seo/rebuild-type-vlevel.py) : ces scripts servent-ils encore ? Décision 46 citée par le pilotage, contenu non lisible ici : ce script manuel est-il l’écrivain retenu ?",
    "family": "referentiel_metier",
    "department": "07 seo",
    "department_evidence": "déduit (préfixe)",
@@ -10437,7 +10528,15 @@
     ],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [],
+   "decisions": {
+    "numbers": [
+     46
+    ],
+    "cited_text": null,
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Seul le script manuel `scripts/seo/rebuild-type-vlevel.py` l’écrit (depuis `__seo_keywords`) ; 0 écriture et 12 parcours d’index depuis le 2026-09-17, aucun lecteur dans l’application. Le contenu de la décision 46 n’est pas lisible ici : la question reste posée."
+   }
   },
   {
    "name": "__sitemap_blog",
@@ -13249,7 +13348,13 @@
     "triggers": [],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [],
+   "decisions": {
+    "numbers": [],
+    "cited_text": "paiement (zone STOP, sans numéro de décision cité)",
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Écrite par le retour de paiement (`payments/controllers/payment-callback.controller.ts`, 10 insertions depuis le 2026-09-17). Reste vivante. Zone paiement : classement seul."
+   }
   },
   {
    "name": "import_batch",
@@ -17057,8 +17162,8 @@
   {
    "name": "reviews",
    "kind": "table",
-   "class": "a_trancher",
-   "question": "Code présent mais table vide et jamais écrite depuis le 2026-09-17 : fonctionnalité non activée (laquelle, quand ?) ou abandonnée ?",
+   "class": "prevue",
+   "question": null,
    "family": "referentiel_metier",
    "department": "14 support",
    "department_evidence": "mesuré (module lecteur)",
@@ -17094,7 +17199,17 @@
     ],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [
+    "reclassée « prévue » (était « à trancher ») sur décision citée : 78"
+   ],
+   "decisions": {
+    "numbers": [
+     78
+    ],
+    "cited_text": "« avis dans la table reviews, affiché « achat vérifié » »",
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Le code dit autre chose : `support/services/review.service.ts` range aujourd’hui les avis dans `___xtr_msg` ; `reviews` n’est citée que par un type (`support/types/index.ts`). Table vide, 0 écriture depuis le 2026-09-17."
+   }
   },
   {
    "name": "rm_build_log",
@@ -18025,7 +18140,7 @@
   {
    "name": "support_tickets",
    "kind": "table",
-   "class": "morte",
+   "class": "prevue",
    "question": null,
    "family": "referentiel_metier",
    "department": "14 support",
@@ -18060,7 +18175,17 @@
     ],
     "policies": 1
    },
-   "reasons": []
+   "reasons": [
+    "reclassée « prévue » (était « morte ») sur décision citée : 25"
+   ],
+   "decisions": {
+    "numbers": [
+     25
+    ],
+    "cited_text": "« faire passer les demandes dans support_tickets (vide aujourd’hui, comme __claims) »",
+    "source": "feuille des décisions de Marwane, citée par le pilotage (complément CA-2) ; non lue à la source par l’agent",
+    "code_check": "Aucun code ne lit ni n’écrit la table ; aucune migration du dépôt ne la crée (git grep vide). Rien ne contredit la décision : le branchement reste à faire."
+   }
   },
   {
    "name": "users",
@@ -18788,10 +18913,6 @@
   },
   {
    "name": "stg_compatibility",
-   "delete_policy": "aucune règle"
-  },
-  {
-   "name": "support_tickets",
    "delete_policy": "aucune règle"
   },
   {

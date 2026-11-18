@@ -23,6 +23,7 @@
  *   [FAMILY_UNKNOWN]       une table rangée dans une famille non déclarée
  *   [PROTECTED_CANDIDATE]  une table protégée parmi les candidats à l'archivage
  *   [CANDIDATE_CLASS]      un candidat qui n'est ni « morte » ni « copie datée »
+ *                          (une table « prévue » par une décision n'est jamais candidate)
  *
  * Options :
  *   --rules <fichier>      autre fichier de règles (tests)
@@ -54,7 +55,9 @@ const EXIT_VALIDATION = 1;
 const EXIT_OP_ERROR = 2;
 
 const REQUIRED_PROTECTION = "^pieces_media_img";
-const CLASSES = ["vivante", "prevue", "copie_datee", "morte", "a_trancher"];
+// « a_retirer_apres_tarissement » : table plus alimentée, retirée quand plus
+// rien ne la lit (décision 32 pour __seo_gamme_conseil) ; jamais archivable.
+const CLASSES = ["vivante", "prevue", "a_retirer_apres_tarissement", "copie_datee", "morte", "a_trancher"];
 const ARCHIVABLE_CLASSES = new Set(["morte", "copie_datee"]);
 
 class OpError extends Error {}
