@@ -2,7 +2,11 @@ import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
-import { isSupplierSyncEnabled } from './supplier-sync.flag';
+import { RELEVE_CRON } from './supplier-offer-releve';
+import {
+  isSupplierOfferReleveEnabled,
+  isSupplierSyncEnabled,
+} from './supplier-sync.flag';
 
 /**
  * Schedules the recurring supplier sync (Task 12) via Bull.
@@ -18,6 +22,12 @@ export const SUPPLIER_SYNC_QUEUE = 'supplier-sync';
 export const SUPPLIER_SYNC_JOB = 'sync';
 const REPEATABLE_CRON = '0 */4 * * *';
 const REPEATABLE_JOB_ID = 'supplier-sync-repeatable';
+/**
+ * Relevé des offres des lignes de commande (complément BK n° 4) : même file,
+ * job distinct, drapeau distinct (`SUPPLIER_OFFER_RELEVE_ENABLED`, DEV seulement).
+ */
+export const SUPPLIER_OFFER_RELEVE_JOB = 'releve-offres';
+const RELEVE_JOB_ID = 'supplier-offer-releve-repeatable';
 
 @Injectable()
 export class SupplierSyncScheduler implements OnModuleInit {
@@ -39,18 +49,52 @@ export class SupplierSyncScheduler implements OnModuleInit {
     return isSupplierSyncEnabled(this.config);
   }
 
+  /** Relevé des offres : `SUPPLIER_OFFER_RELEVE_ENABLED` strict, DEV seulement. */
+  isReleveEnabled(): boolean {
+    return isSupplierOfferReleveEnabled((k) => this.config.get<string>(k));
+  }
+
   onModuleInit(): void {
     if (!this.isSyncEnabled()) {
       this.logger.log(
         '⏸️ supplier-sync INERT — SUPPLIER_TRUTH_SYNC_ENABLED!=true: scheduler present, NO repeatable job armed, no portal hit',
       );
       void this.disarmRepeatable();
-      return;
+    } else {
+      this.logger.log(
+        '🚀 init — deferring repeatable supplier-sync setup (non-blocking)',
+      );
+      void this.configureRepeatable();
     }
-    this.logger.log(
-      '🚀 init — deferring repeatable supplier-sync setup (non-blocking)',
-    );
-    void this.configureRepeatable();
+    if (!this.isReleveEnabled()) {
+      this.logger.log(
+        '⏸️ relevé des offres INERT — SUPPLIER_OFFER_RELEVE_ENABLED!=true: aucun relevé armé, aucun portail lu',
+      );
+      void this.disarmRepeatable(SUPPLIER_OFFER_RELEVE_JOB);
+    } else {
+      void this.configureReleve();
+    }
+  }
+
+  /** Idempotent (jobId fixe) : relevé toutes les 15 min, sous la fraîcheur de 30 min. */
+  async configureReleve(): Promise<void> {
+    try {
+      await this.queue.add(
+        SUPPLIER_OFFER_RELEVE_JOB,
+        {},
+        {
+          repeat: { cron: RELEVE_CRON },
+          jobId: RELEVE_JOB_ID,
+          removeOnComplete: 20,
+          removeOnFail: 50,
+        },
+      );
+      this.logger.log(`📅 relevé des offres planifié (${RELEVE_CRON})`);
+    } catch (e) {
+      this.logger.error(
+        `échec de la planification du relevé des offres : ${(e as Error).message}`,
+      );
+    }
   }
 
   /** Idempotent: a fixed jobId prevents duplicate repeatables across restarts. */
@@ -80,25 +124,27 @@ export class SupplierSyncScheduler implements OnModuleInit {
    * keeps firing. Same idiom as the seo-projection feeder's OFF path. Deferred
    * with `void` from init; both outcomes are logged, failure is never thrown.
    */
-  async disarmRepeatable(): Promise<void> {
+  async disarmRepeatable(jobName: string = SUPPLIER_SYNC_JOB): Promise<void> {
     try {
       let removed = 0;
       const jobs = await this.queue.getRepeatableJobs();
       for (const job of jobs) {
-        if (job.name === SUPPLIER_SYNC_JOB) {
+        if (job.name === jobName) {
           await this.queue.removeRepeatableByKey(job.key);
           removed += 1;
           this.logger.warn(
-            `🗑️ supplier-sync repeatable disarmed (flag off): ${job.key}`,
+            `🗑️ supplier-sync ${jobName} repeatable disarmed (flag off): ${job.key}`,
           );
         }
       }
       if (removed === 0) {
-        this.logger.log('✅ supplier-sync OFF — no residual repeatable');
+        this.logger.log(
+          `✅ supplier-sync ${jobName} OFF — no residual repeatable`,
+        );
       }
     } catch (e) {
       this.logger.error(
-        `failed to disarm supplier-sync repeatable: ${(e as Error).message}`,
+        `failed to disarm supplier-sync ${jobName} repeatable: ${(e as Error).message}`,
       );
     }
   }

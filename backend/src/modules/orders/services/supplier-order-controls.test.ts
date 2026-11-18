@@ -1,4 +1,8 @@
-import type { LectureLive } from '../../supplier-truth';
+import {
+  FRAICHEUR_RELEVE_MAX_MINUTES,
+  lectureDepuisReleve,
+  type LectureLive,
+} from '../../supplier-truth';
 import type { PropositionFournisseur } from './order-line-supplier-proposal';
 import {
   evaluerControles,
@@ -17,10 +21,12 @@ const PROPOSE: PropositionFournisseur = {
   tauxTva: 0.2,
   offresVendables: 1,
   offresEcartees: [],
+  origine: { type: 'RELEVE', observeA: '2026-11-17T17:59:57.000Z' },
 };
 
 const LIVE: LectureLive = {
   ok: true,
+  source: 'RELEVE',
   splId: '71',
   plateforme: 'inoshop',
   refDemandee: '500 0728 10',
@@ -63,7 +69,7 @@ describe('evaluerControles — cas nominal', () => {
   });
 });
 
-describe('contrôle 1 — relecture live', () => {
+describe('contrôle 1 — dernier relevé du fournisseur', () => {
   it('bloque au-delà de 5 % au-dessus du prix en base', () => {
     const s = evaluerControles(
       entree({ lecture: { ...LIVE, prixNetHt: 24.6 } }), // +5,1 %
@@ -110,7 +116,7 @@ describe('contrôle 1 — relecture live', () => {
     expect(c(s.controles, 1).detail).toMatch(/602726/);
     expect(s.decision).toBe('BLOQUEE');
   });
-  it('bloque si la relecture est impossible (rien ne part sans relecture)', () => {
+  it('bloque si la lecture est impossible (rien ne part sans relevé frais)', () => {
     const s = evaluerControles(
       entree({
         lecture: {
@@ -138,6 +144,59 @@ describe('contrôle 1 — relecture live', () => {
     );
     expect(c(s.controles, 1).detail).toMatch(/rupture/);
     expect(s.decision).toBe('BLOQUEE');
+  });
+});
+
+describe('relevé absent ou de plus de 30 min (complément BK n° 4)', () => {
+  // Relevé synthétique : aucune donnée réelle.
+  const MAINTENANT = new Date('2026-11-18T10:00:00.000Z');
+  const releve = (observedAt: string) => ({
+    supplier_id: '71',
+    supplier_ref: '500072810',
+    public_ht_cents: 6323,
+    remise_pct: 63,
+    achat_ht_cents: 2340,
+    available: true,
+    delay_days: null,
+    parse_confidence: 'HIGH_CONFIDENCE' as const,
+    observed_at: observedAt,
+  });
+
+  it.each([
+    ['relevé absent', null],
+    ['relevé de plus de 30 min', releve('2026-11-18T09:29:59.000Z')],
+  ])('%s : contrôles 1, 2 et 6 BLOQUÉS avec ce motif exact', (motif, r) => {
+    const s = evaluerControles(
+      entree({
+        lecture: lectureDepuisReleve(r, '71', '500 0728 10', MAINTENANT),
+      }),
+    );
+    for (const id of [1, 2, 6]) {
+      expect(c(s.controles, id).statut).toBe('BLOQUE');
+      expect(c(s.controles, id).detail).toBe(motif);
+    }
+    expect(s.decision).toBe('BLOQUEE');
+  });
+
+  it('relevé de 29 min 59 s : utilisé, les contrôles passent', () => {
+    const s = evaluerControles(
+      entree({
+        lecture: lectureDepuisReleve(
+          releve('2026-11-18T09:30:01.000Z'),
+          '71',
+          '500 0728 10',
+          MAINTENANT,
+        ),
+      }),
+    );
+    expect(s.decision).toBe('PREPAREE');
+    expect(c(s.controles, 1).detail).toMatch(
+      /net relevé 23\.40 € HT le 2026-11-18T09:30:01/,
+    );
+  });
+
+  it('la fraîcheur maximale est de 30 min', () => {
+    expect(FRAICHEUR_RELEVE_MAX_MINUTES).toBe(30);
   });
 });
 

@@ -6,6 +6,13 @@ import {
   SupplierLiveQuoteService,
   type FabriqueConnecteur,
 } from './supplier-live-quote.service';
+import { defaultConnectorFactory } from './supplier-sync.runner';
+import {
+  SUPPLIER_OFFER_RELEVE_ENABLED,
+  assertLecturePortailsAutorisee,
+  isSupplierOfferReleveEnabled,
+} from './supplier-sync.flag';
+import { getSupplierConnectorConfig } from './connectors/supplier-registry';
 
 /**
  * Preuve « rien ne peut partir » : le connecteur factice est un Proxy qui LÈVE
@@ -43,6 +50,8 @@ function connecteurLectureSeule<T extends object>(
 
 const CREDS = () => ({ user: 'u', password: 'p' });
 const FIXE = () => new Date('2026-11-17T18:00:00.000Z');
+/** Processus autorisé à lire (DEV, `SUPPLIER_OFFER_RELEVE_ENABLED=true`). */
+const AUTORISE = () => true;
 
 const LIGNE_LUK: SearchRow = {
   refFournisseur: '500072810',
@@ -69,7 +78,7 @@ describe('SupplierLiveQuoteService — lecture seule', () => {
         },
         appels,
       );
-    const s = new SupplierLiveQuoteService(fabrique, CREDS, FIXE);
+    const s = new SupplierLiveQuoteService(fabrique, CREDS, FIXE, AUTORISE);
     const r = await s.lire('71', '500 0728 10', 'LUK');
     expect(r).toMatchObject({
       ok: true,
@@ -98,11 +107,12 @@ describe('SupplierLiveQuoteService — lecture seule', () => {
         },
         [],
       );
-    const r = await new SupplierLiveQuoteService(fabrique, CREDS, FIXE).lire(
-      '71',
-      '13.0460-2726.2',
-      'ATE',
-    );
+    const r = await new SupplierLiveQuoteService(
+      fabrique,
+      CREDS,
+      FIXE,
+      AUTORISE,
+    ).lire('71', '13.0460-2726.2', 'ATE');
     expect(r).toMatchObject({
       ok: true,
       correspondance: 'NON_EXACTE',
@@ -128,11 +138,12 @@ describe('SupplierLiveQuoteService — lecture seule', () => {
         { fetchAvailability: () => [obs] },
         appels,
       );
-    const r = await new SupplierLiveQuoteService(fabrique, CREDS, FIXE).lire(
-      '19',
-      '500 0728 10',
-      'LUK',
-    );
+    const r = await new SupplierLiveQuoteService(
+      fabrique,
+      CREDS,
+      FIXE,
+      AUTORISE,
+    ).lire('19', '500 0728 10', 'LUK');
     expect(r).toMatchObject({
       ok: true,
       prixNetHt: 24.66,
@@ -156,18 +167,24 @@ describe('SupplierLiveQuoteService — lecture seule', () => {
         },
         appels,
       );
-    const r = await new SupplierLiveQuoteService(fabrique, CREDS, FIXE).lire(
-      '19',
-      'X',
-      'LUK',
-    );
+    const r = await new SupplierLiveQuoteService(
+      fabrique,
+      CREDS,
+      FIXE,
+      AUTORISE,
+    ).lire('19', 'X', 'LUK');
     expect(r).toMatchObject({ ok: false, motif: 'PORTAIL_EN_ERREUR' });
     expect(appels).toContain('close');
   });
 
   it('sans connecteur ni identifiants : aucun portail ouvert', async () => {
     const fabrique = jest.fn();
-    const sansCreds = new SupplierLiveQuoteService(fabrique, () => null, FIXE);
+    const sansCreds = new SupplierLiveQuoteService(
+      fabrique,
+      () => null,
+      FIXE,
+      AUTORISE,
+    );
     expect(await sansCreds.lire('999', 'X', 'Y')).toMatchObject({
       ok: false,
       motif: 'SANS_CONNECTEUR',
@@ -187,6 +204,103 @@ describe('SupplierLiveQuoteService — lecture seule', () => {
     ) as unknown as Record<string, unknown>;
     expect(() => c.addToCart).toThrow(/appel interdit.*addToCart/);
     expect(() => c.submitOrder).toThrow(/appel interdit/);
+  });
+});
+
+describe('lireLot : une connexion par marque (anti-bannissement)', () => {
+  it('deux réf. LUK + une réf. ATE ⇒ deux connexions, trois lectures dans l’ordre', async () => {
+    const appels: string[] = [];
+    const marques: string[] = [];
+    const fabrique: FabriqueConnecteur = (_cfg, marque) => {
+      marques.push(marque);
+      return connecteurLectureSeule(
+        CalConnector.prototype,
+        {
+          fetchAvailability: (refs: unknown) => [
+            {
+              ref: (refs as string[])[0],
+              priceBuyHt: 10,
+              priceBaseHt: 20,
+              remisePct: 50,
+              available: true,
+              delayDays: null,
+              parseError: null,
+            },
+          ],
+        },
+        appels,
+      );
+    };
+    const r = await new SupplierLiveQuoteService(
+      fabrique,
+      CREDS,
+      FIXE,
+      AUTORISE,
+    ).lireLot('19', [
+      { ref: 'A1', marque: 'LUK' },
+      { ref: 'B1', marque: 'ATE' },
+      { ref: 'A2', marque: 'LUK' },
+    ]);
+    expect(marques).toEqual(['LUK', 'ATE']);
+    expect(appels.filter((a) => a === 'login')).toHaveLength(2);
+    expect(appels.filter((a) => a === 'close')).toHaveLength(2);
+    expect(r.map((x) => (x.ok ? x.refDemandee : null))).toEqual([
+      'A1',
+      'B1',
+      'A2',
+    ]);
+  });
+});
+
+describe('garde PROD : aucune lecture de portail sans SUPPLIER_OFFER_RELEVE_ENABLED=true', () => {
+  const avant = process.env[SUPPLIER_OFFER_RELEVE_ENABLED];
+  beforeEach(() => {
+    delete process.env[SUPPLIER_OFFER_RELEVE_ENABLED];
+  });
+  afterAll(() => {
+    if (avant === undefined) delete process.env[SUPPLIER_OFFER_RELEVE_ENABLED];
+    else process.env[SUPPLIER_OFFER_RELEVE_ENABLED] = avant;
+  });
+
+  it('drapeau strict : seul « true » autorise', () => {
+    for (const v of [undefined, '', 'false', 'TRUE', '1', 'yes']) {
+      expect(isSupplierOfferReleveEnabled(() => v)).toBe(false);
+    }
+    expect(isSupplierOfferReleveEnabled(() => 'true')).toBe(true);
+  });
+
+  it('identifiants présents mais drapeau absent : aucun connecteur construit', async () => {
+    const fabrique = jest.fn();
+    const r = await new SupplierLiveQuoteService(
+      fabrique,
+      CREDS, // identifiants factices « présents »
+      FIXE,
+      () => isSupplierOfferReleveEnabled(),
+    ).lire('19', '500 0728 10', 'LUK');
+    expect(r).toMatchObject({ ok: false, motif: 'LECTURE_PORTAIL_INTERDITE' });
+    expect(fabrique).not.toHaveBeenCalled();
+  });
+
+  it('seconde barrière : la fabrique réelle refuse aussi, sans réseau', async () => {
+    // Même si l'autorisation du service était contournée, la fabrique par
+    // défaut lève avant de construire le connecteur.
+    const r = await new SupplierLiveQuoteService(
+      undefined,
+      CREDS,
+      FIXE,
+      AUTORISE,
+    ).lire('19', '500 0728 10', 'LUK');
+    expect(r).toMatchObject({ ok: false, motif: 'PORTAIL_EN_ERREUR' });
+    expect(r.ok === false && r.detail).toMatch(/interdite/);
+  });
+
+  it('la fabrique de la synchro catalogue refuse aussi', () => {
+    const cfg = getSupplierConnectorConfig('19');
+    expect(cfg).toBeDefined();
+    expect(() => defaultConnectorFactory(cfg!)).toThrow(
+      /SUPPLIER_OFFER_RELEVE_ENABLED/,
+    );
+    expect(() => assertLecturePortailsAutorisee(() => 'true')).not.toThrow();
   });
 });
 

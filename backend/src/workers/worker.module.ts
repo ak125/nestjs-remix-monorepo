@@ -34,6 +34,8 @@ import { SupplierSyncRunner } from '../modules/supplier-truth/supplier-sync.runn
 import { SupplierSyncScheduler } from '../modules/supplier-truth/supplier-sync.scheduler';
 import { SupplierSyncJobProcessor } from '../modules/supplier-truth/supplier-sync.job.processor';
 import { SupplierTruthEventSink } from '../modules/supplier-truth/supplier-truth-event-sink';
+import { SupplierLiveQuoteService } from '../modules/supplier-truth/supplier-live-quote.service';
+import { SupplierOfferReleveRunner } from '../modules/supplier-truth/supplier-offer-releve.runner';
 
 // Dependencies for AgenticProcessor
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
@@ -177,6 +179,25 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
       inject: [
         SupplierTruthRepository,
         SupplierSyncProcessor,
+        SupplierTruthEventSink,
+      ],
+    },
+    // Relevé des offres (complément BK n° 4) : lit les portails SEULEMENT si
+    // SUPPLIER_OFFER_RELEVE_ENABLED=true (DEV) ; garde dans la fabrique de connecteurs.
+    {
+      provide: SupplierLiveQuoteService,
+      useFactory: () => new SupplierLiveQuoteService(),
+    },
+    {
+      provide: SupplierOfferReleveRunner,
+      useFactory: (
+        repo: SupplierTruthRepository,
+        liveQuote: SupplierLiveQuoteService,
+        sink: SupplierTruthEventSink,
+      ) => new SupplierOfferReleveRunner(repo, liveQuote, sink.emit),
+      inject: [
+        SupplierTruthRepository,
+        SupplierLiveQuoteService,
         SupplierTruthEventSink,
       ],
     },

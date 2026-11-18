@@ -3,15 +3,24 @@ import { ConfigService } from '@nestjs/config';
 import { OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import type { Job } from 'bull';
 import {
+  SUPPLIER_OFFER_RELEVE_JOB,
   SUPPLIER_SYNC_QUEUE,
   SUPPLIER_SYNC_JOB,
 } from './supplier-sync.scheduler';
 import { SupplierSyncRunner, type RunSummary } from './supplier-sync.runner';
-import { isSupplierSyncEnabled } from './supplier-sync.flag';
+import {
+  SupplierOfferReleveRunner,
+  type ReleveSummary,
+} from './supplier-offer-releve.runner';
+import {
+  isSupplierOfferReleveEnabled,
+  isSupplierSyncEnabled,
+} from './supplier-sync.flag';
 
 export type SupplierSyncSkipped = {
   skipped: 'SUPPLIER_TRUTH_SYNC_ENABLED!=true';
 };
+type ReleveSkipped = { skipped: 'SUPPLIER_OFFER_RELEVE_ENABLED!=true' };
 
 /**
  * Consumes the scheduled supplier-sync job → one full sync cycle.
@@ -27,7 +36,23 @@ export class SupplierSyncJobProcessor {
   constructor(
     private readonly runner: SupplierSyncRunner,
     private readonly config: ConfigService,
+    private readonly releve: SupplierOfferReleveRunner,
   ) {}
+
+  /**
+   * Relevé des offres (complément BK n° 4). Drapeau re-vérifié à l'exécution :
+   * un job resté en Redis après extinction ne lit aucun portail.
+   */
+  @Process(SUPPLIER_OFFER_RELEVE_JOB)
+  async handleReleve(): Promise<ReleveSummary | ReleveSkipped> {
+    if (!isSupplierOfferReleveEnabled((k) => this.config.get<string>(k))) {
+      this.logger.warn(
+        '⏸️ relevé des offres ignoré — SUPPLIER_OFFER_RELEVE_ENABLED!=true (aucun portail lu, aucune écriture)',
+      );
+      return { skipped: 'SUPPLIER_OFFER_RELEVE_ENABLED!=true' };
+    }
+    return this.releve.runReleve();
+  }
 
   @Process(SUPPLIER_SYNC_JOB)
   async handle(): Promise<RunSummary | SupplierSyncSkipped> {

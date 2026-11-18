@@ -13,10 +13,7 @@ import {
   SEUIL_ECART_ACHAT_LIVE,
   isSupplierOrderSendEnabled,
 } from '../config/supplier-order-preparation.config';
-import {
-  SupplierLiveQuoteService,
-  type ResultatLecture,
-} from '../../supplier-truth';
+import type { ResultatLecture } from '../../supplier-truth';
 import { OrderLineSupplierService } from './order-line-supplier.service';
 import {
   evaluerControles,
@@ -27,8 +24,9 @@ import {
 /**
  * Commande fournisseur PRÉPARÉE, jamais envoyée (mandat BK, mode essai).
  *
- * Au clic de Marwane : relecture live du portail du fournisseur proposé, les
- * 8 contrôles, puis une trace dans `__admin_audit_log` (journal d'audit
+ * Au clic de Marwane : lecture du dernier relevé du fournisseur proposé
+ * (`supplier_offer_snapshot`, écrit par le relevé planifié de DEV — complément
+ * n° 4 : la PROD ne se connecte à aucun portail), les 8 contrôles, puis une trace dans `__admin_audit_log` (journal d'audit
  * existant), sur l'entité `order_line`. Ce service n'appelle aucune méthode de
  * mise au panier ni de commande : il n'en existe pas. Il ne modifie ni la ligne
  * ni la commande ; le statut de ligne reste l'affaire d'`OrderActionsService`.
@@ -109,7 +107,6 @@ export class SupplierOrderPreparationService extends SupabaseBaseService {
 
   constructor(
     private readonly lineSupplier: OrderLineSupplierService,
-    private readonly liveQuote: SupplierLiveQuoteService,
     private readonly config: ConfigService,
   ) {
     super();
@@ -194,16 +191,14 @@ export class SupplierOrderPreparationService extends SupabaseBaseService {
       this.lireLigne(orderId, lineId),
     ]);
     const existante = await this.derniereTrace(lineId, ACTION_PREPAREE);
-    const proposition = (await this.lineSupplier.getProposal(orderId, lineId))
-      .proposition;
+    const { proposition, releveFournisseurPropose } =
+      await this.lineSupplier.getProposal(orderId, lineId);
     const marque = (ligne.orl_pm_name ?? '').trim();
     const ref = (ligne.orl_art_ref ?? '').trim();
 
-    // Déjà préparée : aucune relecture, aucun appel au portail.
-    const lecture =
-      !existante && proposition.statut === 'PROPOSE' && ref
-        ? await this.liveQuote.lire(proposition.splId, ref, marque)
-        : null;
+    // Dernier relevé du fournisseur proposé ; aucun appel de portail, jamais.
+    // Déjà préparée : la trace existante fait foi.
+    const lecture = existante ? null : releveFournisseurPropose;
 
     const sortie = evaluerControles({
       commande: {

@@ -22,6 +22,14 @@
  *    chaque offre écartée (jamais de fournisseur ni de prix inventé) ;
  *  - quantité de la ligne illisible, nulle ou fractionnaire → A_COMPLETER
  *    (`motifLigne`), jamais de quantité devinée.
+ *
+ * Complément BK n° 4 (18/11/2026) : un relevé fournisseur FRAIS
+ * (`supplier_offer_snapshot`, ≤ 30 min, écrit par DEV) prime sur le tarif. Parmi
+ * les relevés frais, disponibles, à correspondance exacte, de prix d'achat > 0,
+ * d'un fournisseur de l'annuaire et qui ne font pas vendre à perte au prix payé
+ * par le client (TVA du tarif de la pièce, unique) : le moins cher, puis l'id
+ * fournisseur. Sans relevé retenu, la proposition vient du tarif et porte la
+ * date de ce tarif (`origine.dateTarif`) : jamais présentée comme actuelle.
  */
 
 export interface OffreTarif {
@@ -35,7 +43,27 @@ export interface OffreTarif {
   tauxTva: number | string | null;
   /** `pri_type` */
   type: string;
+  /** `pri_date_from` — date du tarif ; null si inconnue. */
+  dateTarif?: string | null;
 }
+
+/** Relevé fournisseur d'une pièce, fraîcheur déjà évaluée par l'appelant. */
+export interface ReleveCandidat {
+  splId: string;
+  /** Prix d'achat net HT relevé (euros) ; null si non lu. */
+  achatHt: number | null;
+  disponible: boolean;
+  /** Correspondance exacte de la référence sur le portail. */
+  exacte: boolean;
+  /** Relevé ≤ `FRAICHEUR_RELEVE_MAX_MINUTES`. */
+  frais: boolean;
+  observeA: string;
+}
+
+/** D'où vient le prix d'achat proposé. */
+type OrigineProposition =
+  | { type: 'RELEVE'; observeA: string }
+  | { type: 'TARIF'; dateTarif: string | null };
 
 export interface FournisseurAnnuaire {
   splId: string;
@@ -75,6 +103,7 @@ export type PropositionFournisseur =
       tauxTva: number | null;
       offresVendables: number;
       offresEcartees: OffreEcartee[];
+      origine: OrigineProposition;
     }
   | {
       statut: 'RUPTURE';
@@ -105,10 +134,65 @@ const centimes = (v: number): number => Math.round(v * 100) / 100;
 export const cleFournisseur = (libelle: string): string =>
   libelle.trim().toUpperCase();
 
+/** Taux de TVA du tarif de la pièce s'il est unique parmi les offres ; sinon null. */
+function tvaUnique(offres: OffreTarif[]): number | null {
+  const taux = new Set<number>();
+  for (const o of offres) {
+    const t = nombre(o.tauxTva);
+    if (t != null && t >= 0) taux.add(t);
+  }
+  return taux.size === 1 ? [...taux][0] : null;
+}
+
+/** Meilleur relevé frais retenu (voir l'en-tête) ; null si aucun. */
+function meilleurReleve(
+  releves: ReleveCandidat[],
+  annuaire: Map<string, FournisseurAnnuaire>,
+  offres: OffreTarif[],
+  venteUnitTtc: number | null,
+): {
+  four: FournisseurAnnuaire;
+  achat: number;
+  tva: number;
+  observeA: string;
+} | null {
+  const tva = tvaUnique(offres);
+  if (tva == null || venteUnitTtc == null || venteUnitTtc <= 0) return null;
+  const venteHt = venteUnitTtc / (1 + tva);
+  const parId = new Map<string, FournisseurAnnuaire>();
+  for (const f of annuaire.values()) parId.set(f.splId, f);
+  const retenus = releves
+    .filter(
+      (r) =>
+        r.frais &&
+        r.disponible &&
+        r.exacte &&
+        r.achatHt != null &&
+        r.achatHt > 0 &&
+        r.achatHt <= venteHt &&
+        parId.has(r.splId),
+    )
+    .sort(
+      (a, b) =>
+        (a.achatHt as number) - (b.achatHt as number) ||
+        a.splId.localeCompare(b.splId),
+    );
+  const r = retenus[0];
+  return r
+    ? {
+        four: parId.get(r.splId) as FournisseurAnnuaire,
+        achat: r.achatHt as number,
+        tva,
+        observeA: r.observeA,
+      }
+    : null;
+}
+
 export function proposerFournisseur(
   offres: OffreTarif[],
   annuaire: Map<string, FournisseurAnnuaire>,
   ligne: LigneCommandee,
+  releves: ReleveCandidat[] = [],
 ): PropositionFournisseur {
   if (offres.length === 0) {
     return {
@@ -129,12 +213,30 @@ export function proposerFournisseur(
   }
   const venteUnitTtc = nombre(ligne.venteUnitTtc);
 
+  const releve = meilleurReleve(releves, annuaire, offres, venteUnitTtc);
+  if (releve) {
+    return {
+      statut: 'PROPOSE',
+      splId: releve.four.splId,
+      nomFournisseur: releve.four.nom,
+      libelleFournisseur: releve.four.nom,
+      prixAchatUnitHt: centimes(releve.achat),
+      quantite,
+      prixAchatHt: centimes(releve.achat * quantite),
+      tauxTva: releve.tva,
+      offresVendables: offres.length,
+      offresEcartees: [],
+      origine: { type: 'RELEVE', observeA: releve.observeA },
+    };
+  }
+
   const ecartees: OffreEcartee[] = [];
   const retenues: {
     four: FournisseurAnnuaire;
     libelle: string;
     achat: number;
     tva: number | null;
+    dateTarif: string | null;
   }[] = [];
   for (const o of offres) {
     const ecarter = (motif: MotifEcart) =>
@@ -177,6 +279,7 @@ export function proposerFournisseur(
       libelle: o.libelleFournisseur,
       achat,
       tva: tva != null && tva >= 0 ? tva : null,
+      dateTarif: o.dateTarif ?? null,
     });
   }
 
@@ -202,5 +305,6 @@ export function proposerFournisseur(
     tauxTva: choix.tva,
     offresVendables: offres.length,
     offresEcartees: ecartees,
+    origine: { type: 'TARIF', dateTarif: choix.dateTarif },
   };
 }

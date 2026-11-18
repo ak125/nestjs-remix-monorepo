@@ -14,10 +14,21 @@ import {
   type SupplierConnectorConfig,
 } from './connectors/supplier-registry';
 import { envCredResolver, type CredResolver } from './supplier-sync.runner';
+import {
+  assertLecturePortailsAutorisee,
+  isSupplierOfferReleveEnabled,
+} from './supplier-sync.flag';
 
 /**
- * Relecture en direct, sur le portail du fournisseur, d'UNE référence : prix
- * public, remise, prix net et disponibilité (mandat BK, contrôle 1).
+ * Lecture, sur le portail d'un fournisseur, de références : prix public, remise,
+ * prix net et disponibilité (mandat BK ; complément n° 4 du 18/11/2026).
+ *
+ * Depuis le complément n° 4, ce service ne sert plus qu'au relevé planifié du
+ * processus DEV (`SupplierOfferReleveRunner`), qui écrit ses lectures dans
+ * `supplier_offer_snapshot`. La PROD ne l'instancie pas : la préparation de
+ * commande lit le dernier relevé (`lectureDepuisReleve`). Garde PROD : sans
+ * `SUPPLIER_OFFER_RELEVE_ENABLED=true` dans le processus, aucune lecture n'est
+ * tentée et aucun connecteur ne se construit, même avec des identifiants.
  *
  * Lecture seule : la seule surface utilisée est celle des connecteurs de
  * supplier-truth (login, recherche, fermeture), protégés par la garde réseau
@@ -29,8 +40,11 @@ export type Correspondance = 'EXACTE' | 'NON_EXACTE' | 'ABSENTE';
 
 export interface LectureLive {
   ok: true;
+  /** PORTAIL : lue à l'instant ; RELEVE : dernier relevé de `supplier_offer_snapshot`. */
+  source: 'PORTAIL' | 'RELEVE';
   splId: string;
-  plateforme: SupplierConnectorConfig['platform'];
+  /** null : relevé d'un fournisseur sans connecteur déclaré dans ce code. */
+  plateforme: SupplierConnectorConfig['platform'] | null;
   refDemandee: string;
   /** Référence telle que le portail la porte (inoshop) ; null pour CAL. */
   refFournisseur: string | null;
@@ -50,7 +64,18 @@ export interface LectureLive {
 export type MotifLectureImpossible =
   | 'SANS_CONNECTEUR'
   | 'IDENTIFIANTS_ABSENTS'
-  | 'PORTAIL_EN_ERREUR';
+  | 'PORTAIL_EN_ERREUR'
+  /** Processus non autorisé à lire les portails (PROD). */
+  | 'LECTURE_PORTAIL_INTERDITE'
+  /** Aucun relevé du fournisseur pour la pièce de la ligne. */
+  | 'RELEVE_ABSENT'
+  /** Dernier relevé plus vieux que `FRAICHEUR_RELEVE_MAX_MINUTES`. */
+  | 'RELEVE_PERIME';
+
+export interface DemandeLecture {
+  ref: string;
+  marque: string;
+}
 
 export interface LectureImpossible {
   ok: false;
@@ -67,8 +92,10 @@ export type FabriqueConnecteur = (
   marque: string,
 ) => CalConnector | InoshopConnector;
 
-const fabriqueParDefaut: FabriqueConnecteur = (cfg, marque) =>
-  cfg.platform === 'cal'
+const fabriqueParDefaut: FabriqueConnecteur = (cfg, marque) => {
+  // Garde PROD, au plus près de la construction du connecteur réel.
+  assertLecturePortailsAutorisee();
+  return cfg.platform === 'cal'
     ? new CalConnector({
         supplierId: cfg.supplierId,
         baseUrl: cfg.baseUrl,
@@ -78,6 +105,7 @@ const fabriqueParDefaut: FabriqueConnecteur = (cfg, marque) =>
         supplierId: cfg.supplierId,
         baseUrl: cfg.baseUrl,
       });
+};
 
 const compacte = (ref: string): string => normalizeCalRef(ref);
 
@@ -93,6 +121,7 @@ function lectureInoshop(
   const { row } = matchBrandRow(rows, compacte(refDemandee), null, tokens);
   const base = {
     ok: true as const,
+    source: 'PORTAIL' as const,
     splId: cfg.supplierId,
     plateforme: cfg.platform,
     refDemandee,
@@ -131,7 +160,7 @@ function lectureInoshop(
 }
 
 /**
- * Enregistré par fabrique (`useFactory`) dans OrdersModule : les dépendances du
+ * Enregistré par fabrique (`useFactory`) dans WorkerModule : les dépendances du
  * constructeur sont des fonctions, injectées explicitement par les tests.
  */
 @Injectable()
@@ -142,6 +171,9 @@ export class SupplierLiveQuoteService {
     private readonly fabrique: FabriqueConnecteur = fabriqueParDefaut,
     private readonly identifiants: CredResolver = envCredResolver,
     private readonly maintenant: () => Date = () => new Date(),
+    /** Garde PROD : ce processus peut-il lire un portail ? */
+    private readonly autorise: () => boolean = () =>
+      isSupplierOfferReleveEnabled(),
   ) {}
 
   /** Vrai si un connecteur de lecture existe pour ce fournisseur. */
@@ -154,71 +186,142 @@ export class SupplierLiveQuoteService {
     ref: string,
     marque: string,
   ): Promise<ResultatLecture> {
-    const lueA = this.maintenant().toISOString();
-    const cfg = getSupplierConnectorConfig(splId);
-    if (!cfg) {
-      return {
+    const [resultat] = await this.lireLot(splId, [{ ref, marque }]);
+    return resultat;
+  }
+
+  /**
+   * Lit plusieurs références chez un fournisseur, un résultat par demande, dans
+   * l'ordre. Une connexion par marque (CAL filtre la marque à la construction
+   * du connecteur), et non une par référence : anti-bannissement.
+   */
+  async lireLot(
+    splId: string,
+    demandes: DemandeLecture[],
+  ): Promise<ResultatLecture[]> {
+    const impossible = (
+      motif: MotifLectureImpossible,
+      detail: string,
+    ): ResultatLecture[] =>
+      demandes.map(() => ({
         ok: false,
         splId,
-        motif: 'SANS_CONNECTEUR',
-        detail: 'aucun connecteur de lecture pour ce fournisseur',
-        lueA,
-      };
+        motif,
+        detail,
+        lueA: this.maintenant().toISOString(),
+      }));
+    if (demandes.length === 0) return [];
+    if (!this.autorise()) {
+      return impossible(
+        'LECTURE_PORTAIL_INTERDITE',
+        'lecture des portails interdite dans ce processus : seul DEV relève',
+      );
+    }
+    const cfg = getSupplierConnectorConfig(splId);
+    if (!cfg) {
+      return impossible(
+        'SANS_CONNECTEUR',
+        'aucun connecteur de lecture pour ce fournisseur',
+      );
     }
     const creds = this.identifiants(cfg);
     if (!creds) {
-      return {
-        ok: false,
-        splId,
-        motif: 'IDENTIFIANTS_ABSENTS',
-        detail: `identifiants ${cfg.credEnv.userKey}/${cfg.credEnv.passKey} absents`,
-        lueA,
-      };
+      return impossible(
+        'IDENTIFIANTS_ABSENTS',
+        `identifiants ${cfg.credEnv.userKey}/${cfg.credEnv.passKey} absents`,
+      );
     }
-    const connecteur = this.fabrique(cfg, marque);
-    try {
-      await connecteur.login(creds);
-      if (connecteur instanceof InoshopConnector) {
-        const token = await connecteur.getCsrfToken();
-        const rows = await connecteur.fetchSearchRows([ref], token);
-        return lectureInoshop(cfg, ref, marque, rows, lueA);
+
+    const parMarque = new Map<string, number[]>();
+    demandes.forEach((d, i) => {
+      const indices = parMarque.get(d.marque) ?? [];
+      indices.push(i);
+      parMarque.set(d.marque, indices);
+    });
+
+    const resultats: ResultatLecture[] = new Array(demandes.length);
+    for (const [marque, indices] of parMarque) {
+      let connecteur: CalConnector | InoshopConnector | null = null;
+      try {
+        connecteur = this.fabrique(cfg, marque);
+        await connecteur.login(creds);
+        const jeton =
+          connecteur instanceof InoshopConnector
+            ? await connecteur.getCsrfToken()
+            : null;
+        for (const i of indices) {
+          try {
+            resultats[i] = await this.lireUne(
+              cfg,
+              connecteur,
+              jeton,
+              demandes[i].ref,
+              marque,
+            );
+          } catch (e) {
+            resultats[i] = this.enErreur(cfg, e);
+          }
+        }
+      } catch (e) {
+        for (const i of indices) resultats[i] ??= this.enErreur(cfg, e);
+      } finally {
+        await connecteur?.close().catch(() => undefined);
       }
-      const [obs] = await connecteur.fetchAvailability([ref]);
-      const trouve = obs != null && !(obs.parseError && obs.priceBuyHt == null);
-      return {
-        ok: true,
-        splId: cfg.supplierId,
-        plateforme: cfg.platform,
-        refDemandee: ref,
-        refFournisseur: null,
-        correspondance: trouve ? 'EXACTE' : 'ABSENTE',
-        prixPublicHt: obs?.priceBaseHt ?? null,
-        remisePct: obs?.remisePct ?? null,
-        remise2Pct: null,
-        prixNetHt: obs?.priceBuyHt ?? null,
-        disponible: trouve && obs.available,
-        delaiJours: obs?.delayDays ?? null,
-        detailDispo: trouve
-          ? obs.available
-            ? 'disponible'
-            : obs.delayDays != null
-              ? `sur commande, délai ${obs.delayDays} j`
-              : 'indisponible'
-          : 'introuvable',
-        lueA,
-      };
-    } catch (e) {
-      const message = (e as Error).message.replace(/\s+/g, ' ').slice(0, 200);
-      this.logger.warn(`lecture portail ${cfg.supplierName} : ${message}`);
-      return {
-        ok: false,
-        splId,
-        motif: 'PORTAIL_EN_ERREUR',
-        detail: message,
-        lueA,
-      };
-    } finally {
-      await connecteur.close().catch(() => undefined);
     }
+    return resultats;
+  }
+
+  private async lireUne(
+    cfg: SupplierConnectorConfig,
+    connecteur: CalConnector | InoshopConnector,
+    jeton: string | null,
+    ref: string,
+    marque: string,
+  ): Promise<LectureLive> {
+    const lueA = this.maintenant().toISOString();
+    if (connecteur instanceof InoshopConnector) {
+      const rows = await connecteur.fetchSearchRows([ref], jeton ?? '');
+      return lectureInoshop(cfg, ref, marque, rows, lueA);
+    }
+    const [obs] = await connecteur.fetchAvailability([ref]);
+    const trouve = obs != null && !(obs.parseError && obs.priceBuyHt == null);
+    return {
+      ok: true,
+      source: 'PORTAIL',
+      splId: cfg.supplierId,
+      plateforme: cfg.platform,
+      refDemandee: ref,
+      refFournisseur: null,
+      correspondance: trouve ? 'EXACTE' : 'ABSENTE',
+      prixPublicHt: obs?.priceBaseHt ?? null,
+      remisePct: obs?.remisePct ?? null,
+      remise2Pct: null,
+      prixNetHt: obs?.priceBuyHt ?? null,
+      disponible: trouve && obs.available,
+      delaiJours: obs?.delayDays ?? null,
+      detailDispo: trouve
+        ? obs.available
+          ? 'disponible'
+          : obs.delayDays != null
+            ? `sur commande, délai ${obs.delayDays} j`
+            : 'indisponible'
+        : 'introuvable',
+      lueA,
+    };
+  }
+
+  private enErreur(
+    cfg: SupplierConnectorConfig,
+    e: unknown,
+  ): LectureImpossible {
+    const message = (e as Error).message.replace(/\s+/g, ' ').slice(0, 200);
+    this.logger.warn(`lecture portail ${cfg.supplierName} : ${message}`);
+    return {
+      ok: false,
+      splId: cfg.supplierId,
+      motif: 'PORTAIL_EN_ERREUR',
+      detail: message,
+      lueA: this.maintenant().toISOString(),
+    };
   }
 }

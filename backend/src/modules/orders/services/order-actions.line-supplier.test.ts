@@ -50,7 +50,9 @@ const propose = (o: Partial<PropositionLigne> = {}): PropositionLigne => ({
     tauxTva: 0.2,
     offresVendables: 1,
     offresEcartees: [],
+    origine: { type: 'TARIF', dateTarif: null },
   },
+  releveFournisseurPropose: null,
   ...o,
 });
 

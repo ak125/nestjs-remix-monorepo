@@ -1,6 +1,15 @@
-import { SupplierSyncScheduler } from './supplier-sync.scheduler';
+import {
+  SUPPLIER_OFFER_RELEVE_JOB,
+  SupplierSyncScheduler,
+} from './supplier-sync.scheduler';
 import { SupplierSyncJobProcessor } from './supplier-sync.job.processor';
 import type { SupplierSyncRunner } from './supplier-sync.runner';
+import type { SupplierOfferReleveRunner } from './supplier-offer-releve.runner';
+import {
+  FRAICHEUR_RELEVE_MAX_MINUTES,
+  RELEVE_CRON,
+  RELEVE_INTERVALLE_MINUTES,
+} from './supplier-offer-releve';
 import type { ConfigService } from '@nestjs/config';
 
 const PERSISTED_REPEATABLE_KEY = 'sync:supplier-sync-repeatable:::0 */4 * * *';
@@ -14,15 +23,19 @@ function mockQueue(persisted: Array<{ name: string; key: string }> = []) {
   } as unknown as import('bull').Queue;
 }
 
-/** ConfigService stub returning a fixed SUPPLIER_TRUTH_SYNC_ENABLED value. */
-function mockConfig(enabled: boolean): ConfigService {
+/** ConfigService stub: SUPPLIER_TRUTH_SYNC_ENABLED, puis SUPPLIER_OFFER_RELEVE_ENABLED. */
+function mockConfig(enabled: boolean, releve = false): ConfigService {
   return {
     get: jest.fn((key: string) =>
       key === 'SUPPLIER_TRUTH_SYNC_ENABLED'
         ? enabled
           ? 'true'
           : 'false'
-        : undefined,
+        : key === 'SUPPLIER_OFFER_RELEVE_ENABLED'
+          ? releve
+            ? 'true'
+            : undefined
+          : undefined,
     ),
   } as unknown as ConfigService;
 }
@@ -126,11 +139,18 @@ describe('SupplierSyncJobProcessor', () => {
     } as unknown as SupplierSyncRunner;
   }
 
+  function mockReleve() {
+    return {
+      runReleve: jest.fn(async () => ({ lignes: 1, relevesEcrits: 1 })),
+    } as unknown as SupplierOfferReleveRunner;
+  }
+
   it('runs one sync cycle via the runner', async () => {
     const runner = mockRunner();
     const summary = await new SupplierSyncJobProcessor(
       runner,
       mockConfig(true),
+      mockReleve(),
     ).handle();
     expect(runner.runSync).toHaveBeenCalled();
     expect(summary).toMatchObject({ offersInserted: 2 });
@@ -141,8 +161,70 @@ describe('SupplierSyncJobProcessor', () => {
     const result = await new SupplierSyncJobProcessor(
       runner,
       mockConfig(false),
+      mockReleve(),
     ).handle();
     expect(runner.runSync).not.toHaveBeenCalled();
     expect(result).toEqual({ skipped: 'SUPPLIER_TRUTH_SYNC_ENABLED!=true' });
+  });
+
+  it('relevé : drapeau absent ⇒ job résiduel ignoré, aucun portail lu', async () => {
+    const releve = mockReleve();
+    const result = await new SupplierSyncJobProcessor(
+      mockRunner(),
+      mockConfig(true, false),
+      releve,
+    ).handleReleve();
+    expect(releve.runReleve).not.toHaveBeenCalled();
+    expect(result).toEqual({ skipped: 'SUPPLIER_OFFER_RELEVE_ENABLED!=true' });
+  });
+
+  it('relevé : drapeau « true » ⇒ un passage du relevé', async () => {
+    const releve = mockReleve();
+    await new SupplierSyncJobProcessor(
+      mockRunner(),
+      mockConfig(false, true),
+      releve,
+    ).handleReleve();
+    expect(releve.runReleve).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Relevé des offres planifié (complément BK n° 4)', () => {
+  it('cadence plus courte que la fraîcheur exigée : un relevé reste frais entre deux passages', () => {
+    expect(RELEVE_CRON).toBe(`*/${RELEVE_INTERVALLE_MINUTES} * * * *`);
+    expect(RELEVE_INTERVALLE_MINUTES).toBeLessThan(
+      FRAICHEUR_RELEVE_MAX_MINUTES,
+    );
+  });
+
+  it('drapeau absent (défaut) ⇒ aucun relevé armé, même si la synchro catalogue l’est', async () => {
+    const q = mockQueue();
+    new SupplierSyncScheduler(q, mockConfig(true, false)).onModuleInit();
+    await flushMicrotasks();
+    const noms = (q.add as jest.Mock).mock.calls.map((c) => c[0]);
+    expect(noms).not.toContain(SUPPLIER_OFFER_RELEVE_JOB);
+  });
+
+  it('drapeau absent ⇒ désarme le relevé qu’un démarrage précédent a laissé', async () => {
+    const cle = `${SUPPLIER_OFFER_RELEVE_JOB}:supplier-offer-releve-repeatable:::${RELEVE_CRON}`;
+    const q = mockQueue([{ name: SUPPLIER_OFFER_RELEVE_JOB, key: cle }]);
+    new SupplierSyncScheduler(q, mockConfig(false, false)).onModuleInit();
+    await flushMicrotasks();
+    expect(q.removeRepeatableByKey).toHaveBeenCalledWith(cle);
+  });
+
+  it('drapeau « true » ⇒ arme le relevé toutes les 15 min, jobId fixe', async () => {
+    const q = mockQueue();
+    new SupplierSyncScheduler(q, mockConfig(false, true)).onModuleInit();
+    await flushMicrotasks();
+    expect(q.add).toHaveBeenCalledWith(
+      SUPPLIER_OFFER_RELEVE_JOB,
+      {},
+      expect.objectContaining({
+        repeat: { cron: RELEVE_CRON },
+        jobId: 'supplier-offer-releve-repeatable',
+      }),
+    );
+    expect(q.add).not.toHaveBeenCalledWith('sync', {}, expect.anything());
   });
 });

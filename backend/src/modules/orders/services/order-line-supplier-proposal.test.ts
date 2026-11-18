@@ -3,6 +3,7 @@ import {
   PROCEDURE_RUPTURE,
   type FournisseurAnnuaire,
   type OffreTarif,
+  type ReleveCandidat,
 } from './order-line-supplier-proposal';
 
 const annuaire = new Map<string, FournisseurAnnuaire>([
@@ -162,5 +163,80 @@ describe('proposerFournisseur (décision 50)', () => {
       proposerFournisseur([], annuaire, { quantite: null, venteUnitTtc: null })
         .statut,
     ).toBe('RUPTURE');
+  });
+});
+
+describe('proposerFournisseur — relevé frais ou date du tarif (complément BK n° 4)', () => {
+  // Données synthétiques : aucune pièce, aucun prix réel.
+  const releve = (r: Partial<ReleveCandidat> = {}): ReleveCandidat => ({
+    splId: '71',
+    achatHt: 8,
+    disponible: true,
+    exacte: true,
+    frais: true,
+    observeA: '2026-11-18T09:50:00.000Z',
+    ...r,
+  });
+  const tarif = [offre({ achatHt: 10, dateTarif: '2022-07-01T00:00:00.000Z' })];
+
+  it('retient la meilleure offre disponible du relevé frais', () => {
+    const p = proposerFournisseur(tarif, annuaire, ligne, [
+      releve({ splId: '3', achatHt: 9.5 }),
+      releve({ splId: '71', achatHt: 8 }),
+    ]);
+    expect(p).toMatchObject({
+      statut: 'PROPOSE',
+      splId: '71',
+      nomFournisseur: 'DCA',
+      prixAchatUnitHt: 8,
+      prixAchatHt: 16,
+      tauxTva: 0.2,
+      origine: { type: 'RELEVE', observeA: '2026-11-18T09:50:00.000Z' },
+    });
+  });
+
+  it.each([
+    ['périmé', { frais: false }],
+    ['indisponible', { disponible: false }],
+    ['référence non exacte', { exacte: false }],
+    ['prix non lu', { achatHt: null }],
+    ['fournisseur hors annuaire', { splId: '999' }],
+    ['vente à perte au prix payé', { achatHt: 15.01 }], // 18 TTC → 15 HT
+  ] as [string, Partial<ReleveCandidat>][])(
+    'relevé %s : ignoré, proposition au tarif datée',
+    (_cas, over) => {
+      const p = proposerFournisseur(tarif, annuaire, ligne, [releve(over)]);
+      expect(p).toMatchObject({
+        statut: 'PROPOSE',
+        splId: '3',
+        prixAchatUnitHt: 10,
+        origine: { type: 'TARIF', dateTarif: '2022-07-01T00:00:00.000Z' },
+      });
+    },
+  );
+
+  it('sans relevé : tarif avec sa date, jamais présenté comme actuel', () => {
+    expect(proposerFournisseur(tarif, annuaire, ligne)).toMatchObject({
+      origine: { type: 'TARIF', dateTarif: '2022-07-01T00:00:00.000Z' },
+    });
+    expect(proposerFournisseur([offre()], annuaire, ligne)).toMatchObject({
+      origine: { type: 'TARIF', dateTarif: null },
+    });
+  });
+
+  it('TVA du tarif ambiguë : relevé non retenu (marge non vérifiable)', () => {
+    const p = proposerFournisseur(
+      [...tarif, offre({ libelleFournisseur: 'SASIC', tauxTva: 0.055 })],
+      annuaire,
+      ligne,
+      [releve()],
+    );
+    expect(p).toMatchObject({ origine: { type: 'TARIF' } });
+  });
+
+  it('aucune offre au tarif : RUPTURE reste, même avec un relevé', () => {
+    expect(proposerFournisseur([], annuaire, ligne, [releve()]).statut).toBe(
+      'RUPTURE',
+    );
   });
 });
