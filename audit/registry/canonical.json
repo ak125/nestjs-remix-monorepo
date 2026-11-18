@@ -103801,7 +103801,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 414,
+      "loc": 520,
       "owner": "@ak125",
       "path": "scripts/audit/check-revoked-secrets-ratchet.test.ts",
       "risk": "medium",
@@ -103821,7 +103821,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 533,
+      "loc": 643,
       "owner": "@ak125",
       "path": "scripts/audit/check-revoked-secrets-ratchet.ts",
       "risk": "medium",
@@ -108602,11 +108602,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "23203f9d6c6cbdfc32fa5ccdb6dab7d0365fc39bb8a9aacd423e722fc4fb9dfa",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "d2ef8413b5c76a74447eec1a55e7d38c875433f8ff5e9255b53e415102d578e0",
+      "audit/registry/files.json": "ae85c29c0566d88005215e4343ebf04d3dbf0328af7b606e91f4150234010d09",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
       "audit/registry/runtime.json": "176095c5055e90ca2c990a1457d6321db1879f5464619c4842ae91308ef86e95"
     },
-    "sotFingerprint": "54497d8e4758"
+    "sotFingerprint": "5839421f97cf"
   },
   "runtime": [
     {
