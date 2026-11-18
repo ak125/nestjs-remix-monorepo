@@ -15,3 +15,19 @@ export type {
 // d'import tarifaire (PricingModule, via SupplierTruthReadModule). Seul lecteur
 // autorisé de `___xtr_supplier` (ast-grep `commerce-no-direct-supplier-read`).
 export { SupplierTruthRepository } from './supplier-truth.repository';
+
+// Fiche fournisseur, lecture et écriture de ___xtr_supplier (mandat CH)
+export {
+  SupplierCardRepository,
+  SupplierIdConflictError,
+  SUPPLIER_CARD_COLUMNS,
+} from './supplier-card.repository';
+export type {
+  SupplierCardColumn,
+  SupplierCardRow,
+  SupplierCardWritableColumn,
+  SupplierCardPatch,
+  SupplierIdentity,
+  SupplierLinkedBrand,
+  SupplierPriceProfileRow,
+} from './supplier-card.repository';
