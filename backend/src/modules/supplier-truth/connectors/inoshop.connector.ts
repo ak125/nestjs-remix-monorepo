@@ -26,6 +26,10 @@ import {
 } from './supplier-connector.interface';
 import { articleToObservation, type InoshopArticle } from './inoshop-parse';
 import { parseSearchHtml, type SearchRow } from './inoshop-search-parse';
+import {
+  assertReadOnlyRequest,
+  installReadOnlyGuard,
+} from './portal-read-only-guard';
 
 export interface InoshopConnectorOptions {
   supplierId: string;
@@ -66,6 +70,12 @@ export class InoshopConnector implements SupplierConnector {
       userAgent:
         'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
     });
+    // Lecture seule : toute écriture panier/commande de la page est avortée.
+    await installReadOnlyGuard(this.context, (method, path) =>
+      this.logger.warn(
+        `inoshop : écriture panier/commande avortée (${method} ${path})`,
+      ),
+    );
     const page = await this.context.newPage();
     page.setDefaultNavigationTimeout(this.opts.navigationTimeoutMs);
 
@@ -254,6 +264,8 @@ export class InoshopConnector implements SupplierConnector {
     timeoutMs = 60000,
   ): Promise<{ html: string; rows: SearchRow[] }> {
     if (!this.context) throw new Error('fetchSearchRaw before login');
+    // Appel direct hors navigateur : la garde de route ne le voit pas.
+    assertReadOnlyRequest('POST', `${this.baseUrl}/search`);
     const res = await this.context.request.post(`${this.baseUrl}/search`, {
       // the portal can be slow generating large multi-ref result sets — give it room
       // (default Playwright request timeout is 30s, which 504/timeouts the big batches)

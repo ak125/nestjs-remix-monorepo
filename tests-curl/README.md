@@ -37,6 +37,8 @@ bash tests-curl/roles/01-r1-router-health.sh
 ## Pré-requis
 
 ```bash
-# Login admin (crée le cookie)
+# Login admin (crée le cookie). Identifiants lus dans l'environnement,
+# jamais écrits dans le dépôt : le script s'arrête si l'un manque.
+export ADMIN_EMAIL=... ADMIN_PASSWORD=...   # depuis un gestionnaire de secrets
 bash tests-curl/00-auth.sh
 ```

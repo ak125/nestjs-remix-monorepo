@@ -286,6 +286,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: .github/ISSUE_TEMPLATE/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: .github/workflows/**
     domain: D13
     owner: '@ak125'
@@ -1852,3 +1857,25 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Mandat BK (décision de Marwane du 17/11/2026, contrôle 4) : une seule commande
+  # fournisseur préparée par ligne — index unique partiel CONCURRENTLY sur
+  # __admin_audit_log (aal_action = 'supplier_order_prepared'), aucune donnée écrite.
+  # Table lue et écrite par backend/src/modules/orders (D11, SupplierOrderPreparationService).
+  # Domaine et owner de backend/src/modules/orders/** et des migrations de commande
+  # voisines (*order_history*, *cancel_order_atomic*). Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261117_admin_audit_log_supplier_order_prepared_unique*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: medium
+  # Mandat CA (PR #2167, 18/11/2026) : règles de conservation des tables de massdoc,
+  # toutes au statut « proposé » (durées fixées par Marwane), et leur schéma.
+  # Validées par scripts/governance/validate-db-retention.js (déjà couvert par scripts/**).
+  # Même domaine que l'inventaire qu'elles lisent (audit/massdoc-*.json, D13).
+  # config/** n'est pas couvert (seul config/caddy/** l'est) : glob explicite.
+  - glob: config/db-retention/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low

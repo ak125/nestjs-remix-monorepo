@@ -4,7 +4,7 @@
 // =============================================================================
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -79,7 +79,7 @@ describe("evaluateDoD — checklist mode", () => {
 });
 
 describe("evaluateDoD — checklist lines only", () => {
-  test("accepts the vault template format and other list markers", () => {
+  test("accepts the rule template format and other list markers", () => {
     const body = fullBody()
       .replace("- [x] **DoD1** Tests verts", "- [x] DoD1 — Tests verts: CI green")
       .replace("- [x] **DoD8** No TODO", "* [X] DoD8 — No TODO unresolved: 0");
@@ -99,7 +99,7 @@ describe("evaluateDoD — checklist lines only", () => {
     assert.ok(r.reasons.some((x) => x.includes("DoD4: present but unchecked")));
   });
 
-  test("the vault template pasted unchanged satisfies nothing", () => {
+  test("the rule template pasted unchanged satisfies nothing", () => {
     const template = [
       "- [ ] DoD1 — Tests verts: CI green, no flaky, no .only/.skip added",
       "- [ ] DoD2 — Ownership: assignee + ≥1 human approval",
@@ -253,5 +253,34 @@ describe("evaluateDoD — escape hatch", () => {
   test("skip label with 0 approvals fails", () => {
     const r = evaluateDoD("", ["dod-skip-justified"], 0);
     assert.equal(r.pass, false);
+  });
+});
+
+// The rule file is the single text of the nine items; the gate hard-codes their
+// ids and the PR template repeats the checklist. Reading the three here is what
+// keeps them from drifting apart without a red test.
+describe("rule file, gate and PR template name the same nine items", () => {
+  const read = (rel) =>
+    readFileSync(new URL(`../../${rel}`, import.meta.url), "utf8");
+  const RULE = ".spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md";
+  const checklistIds = (text) =>
+    [...text.matchAll(/^- \[ \] (DoD\d+) — /gm)].map((m) => m[1]);
+
+  test("the rule has one section per id the gate enforces", () => {
+    const sections = [...read(RULE).matchAll(/^## (DoD\d+) — /gm)].map(
+      (m) => m[1],
+    );
+    assert.deepEqual(sections, DOD_IDS);
+  });
+
+  test("the rule's self-evaluation template lists the same ids", () => {
+    assert.deepEqual(checklistIds(read(RULE)), DOD_IDS);
+  });
+
+  test("the PR template lists the same ids", () => {
+    assert.deepEqual(
+      checklistIds(read(".github/PULL_REQUEST_TEMPLATE.md")),
+      DOD_IDS,
+    );
   });
 });

@@ -1,0 +1,20 @@
+diff --git a/.ast-grep/rules/seo-no-rag-as-content-source.yml b/.ast-grep/rules/seo-no-rag-as-content-source.yml
+index ca9e87907f..fdc52440a9 100644
+--- a/.ast-grep/rules/seo-no-rag-as-content-source.yml
++++ b/.ast-grep/rules/seo-no-rag-as-content-source.yml
+@@ -1,6 +1,6 @@
+ id: seo-no-rag-as-content-source
+ language: typescript
+-severity: warning
++severity: error
+ message: |
+   ⚠️ LEGACY RAG-comme-source-de-CONTENU — interdit comme source contenu/SEO.
+   Le RAG = retrieval CHATBOT uniquement (ADR-031 / ADR-046, vault). La vérité
+@@ -28,6 +28,7 @@ message: |
+ files:
+   - backend/src/modules/admin/services/**/*.ts
+   - backend/src/modules/seo/services/**/*.ts
++  - backend/src/modules/admin/controllers/**/*.ts
+ ignores:
+   - "**/*.spec.ts"
+   - "**/*.e2e-spec.ts"

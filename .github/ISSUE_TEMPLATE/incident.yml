@@ -1,0 +1,43 @@
+name: Incident
+description: Une fiche par incident. Elle ne se ferme que lorsqu'elle dit ce qui empêche son retour.
+title: "[Incident] "
+labels: ["incident"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Ce dépôt est public.** N'écrivez ici aucun secret, aucun détail qui aiderait une attaque et aucune donnée de client : ni clé, ni jeton, ni adresse de machine, ni nom, adresse e-mail ou numéro de commande d'un client. Un détail sensible se donne à l'owner, hors du dépôt.
+
+        Une fiche par incident. Les trois rubriques sont obligatoires pour fermer la fiche. À l'ouverture, seule la première l'est : la cause et la parade s'écrivent quand elles sont connues, en modifiant la fiche.
+
+        La fiche ne reste fermée que si la troisième rubrique porte un lien admis. Sinon elle est rouverte, avec un commentaire qui dit ce qui manque. Ne pas renommer les titres des rubriques : le contrôle les lit (`scripts/ci/incident-issue-gate.mjs`).
+  - type: textarea
+    id: ce-qui-s-est-passe
+    attributes:
+      label: Ce qui s'est passé
+      description: Les faits, datés (heure UTC), l'effet constaté et comment l'incident a été vu.
+    validations:
+      required: true
+  - type: textarea
+    id: pourquoi
+    attributes:
+      label: Pourquoi
+      description: La cause établie, avec sa preuve. Tant qu'elle n'est pas connue, laisser vide ; une hypothèse se signale comme telle.
+    validations:
+      required: false
+  - type: textarea
+    id: ce-qui-l-empeche-de-revenir
+    attributes:
+      label: Ce qui l'empêche de revenir
+      description: |
+        Le test ou le contrôle automatique qui échoue si la cause revient, avec son lien. Liens admis : une PR fusionnée de ce dépôt (#123 ou son adresse), ou l'adresse sur `main` d'un fichier de ce dépôt (test, règle, workflow). Une PR ouverte, une issue ou un commit ne suffisent pas.
+    validations:
+      required: false
+  - type: checkboxes
+    id: aucun-controle-possible
+    attributes:
+      label: Aucun contrôle possible
+      description: À cocher seulement si aucun test ni contrôle automatique ne peut empêcher le retour. La raison s'écrit dans la rubrique précédente. La fiche reste alors ouverte jusqu'à la décision de l'owner, qui est seul à la fermer.
+      options:
+        - label: Aucun test ni contrôle automatique ne peut empêcher le retour de cet incident.
+          required: false
