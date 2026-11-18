@@ -27,7 +27,7 @@ import {
   type PricingRule,
 } from './pricing-strategy.service';
 import { PricingRepository, type CommitRowPayload } from './pricing.repository';
-import { SupplierTruthRepository } from '../../supplier-truth/supplier-truth.repository';
+import { SupplierTruthRepository } from '../../supplier-truth';
 
 const CHUNK_SIZE = 5000;
 

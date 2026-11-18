@@ -16,7 +16,7 @@ import {
 } from './price-import.service';
 import type { DryRunReport, ImportLine } from './price-import.dry-run';
 import type { PricingRepository } from './pricing.repository';
-import type { SupplierTruthRepository } from '../../supplier-truth/supplier-truth.repository';
+import type { SupplierTruthRepository } from '../../supplier-truth';
 
 const line = (key: string, achatHtCents: number): ImportLine => ({
   key,
