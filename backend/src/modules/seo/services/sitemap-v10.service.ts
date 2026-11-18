@@ -35,7 +35,12 @@ import {
   SitemapV10PiecesService,
   PRODUCT_FAMILY_KEYS,
 } from './sitemap-v10-pieces.service';
+import {
+  SitemapR2NonPublieError,
+  SitemapV10PiecesVendableService,
+} from './sitemap-v10-pieces-vendable.service';
 import { SitemapV10HubsService } from './sitemap-v10-hubs.service';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import {
   type TemperatureBucket,
   type SitemapUrl,
@@ -65,6 +70,8 @@ export class SitemapV10Service extends SupabaseBaseService {
     private readonly staticService: SitemapV10StaticService,
     private readonly piecesService: SitemapV10PiecesService,
     private readonly hubsService: SitemapV10HubsService,
+    private readonly piecesVendableService: SitemapV10PiecesVendableService,
+    private readonly featureFlags: FeatureFlagsService,
   ) {
     super(configService);
     this.rpcGate = rpcGate;
@@ -176,6 +183,9 @@ export class SitemapV10Service extends SupabaseBaseService {
       // 9. Pièces par température (714k URLs via source V9)
       this.logger.log('📦 [9/10] Generating sitemap-{bucket}-pieces-*.xml...');
       const buckets: TemperatureBucket[] = ['hot', 'stable', 'cold'];
+      // Réglage SITEMAP_R2_SOURCE, lu une fois par génération (défaut legacy).
+      const sourceR2 = this.featureFlags.sitemapR2Source;
+      this.logger.log(`   Source gamme × véhicule : ${sourceR2}`);
 
       for (const bucket of buckets) {
         const bucketStart = Date.now();
@@ -183,7 +193,13 @@ export class SitemapV10Service extends SupabaseBaseService {
 
         try {
           const { filePaths, totalCount } =
-            await this.piecesService.generatePiecesSitemapsFromV9Source(bucket);
+            sourceR2 === 'vendable'
+              ? await this.piecesVendableService.generatePiecesSitemapsFromVendable(
+                  bucket,
+                )
+              : await this.piecesService.generatePiecesSitemapsFromV9Source(
+                  bucket,
+                );
 
           if (totalCount === 0) {
             results.push({
@@ -221,6 +237,12 @@ export class SitemapV10Service extends SupabaseBaseService {
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error';
           this.logger.error(`❌ Failed to generate ${bucket}: ${errorMessage}`);
+          // Source vendable arrêtée sans publier (garde-fou ou lecture en
+          // erreur) : les fichiers précédents restent sur disque et dans
+          // l'index ; la génération reste comptée en échec.
+          if (error instanceof SitemapR2NonPublieError) {
+            allFilePaths.push(...error.keptFilePaths);
+          }
           await this.dataService.logGeneration(
             runId,
             bucket,

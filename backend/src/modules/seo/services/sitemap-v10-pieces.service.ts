@@ -126,6 +126,48 @@ function computePiecePriority(
   return Math.min(p, 0.9).toFixed(1);
 }
 
+/**
+ * Construit l'URL relative d'une pièce-véhicule pour le sitemap. L'alias type
+ * passe par le SoT normalizeTypeAlias (null/"type"/alias==id -> "type") puis
+ * normalizeAlias : sortie identique à l'ancien code pour les lignes valides.
+ */
+export function buildPieceUrl(p: PieceV9): string {
+  const typeSeg = normalizeAlias(
+    normalizeTypeAlias(p.map_type_alias, null, p.map_type_id),
+  );
+  return `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${typeSeg}-${p.map_type_id}.html`;
+}
+
+/**
+ * Mappe des pièces en SitemapUrl en écartant (et comptant) toute URL mal
+ * formée — défense en profondeur (ADR-062). Fonction de module, comme
+ * buildPieceUrl : les deux sources du sitemap gamme × véhicule (table figée et
+ * règle « vendable ») passent par la même construction d'URL.
+ */
+export function pieceShardUrls(
+  pieces: PieceV9[],
+  pageType: string,
+  changefreq: string,
+): { urls: SitemapUrl[]; skipped: number } {
+  const urls: SitemapUrl[] = [];
+  let skipped = 0;
+  for (const p of pieces) {
+    const url = buildPieceUrl(p);
+    if (isMalformedSeoUrl(url)) {
+      skipped++;
+      continue;
+    }
+    urls.push({
+      url,
+      page_type: pageType,
+      changefreq,
+      priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
+      last_modified_at: null,
+    });
+  }
+  return { urls, skipped };
+}
+
 @Injectable()
 export class SitemapV10PiecesService extends SupabaseBaseService {
   protected override readonly logger = new Logger(SitemapV10PiecesService.name);
@@ -272,7 +314,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
           const shardPieces = currentBatch.slice(0, SHARD_SIZE);
           currentBatch = currentBatch.slice(SHARD_SIZE);
 
-          const { urls: shardUrls, skipped } = this.pieceShardUrls(
+          const { urls: shardUrls, skipped } = pieceShardUrls(
             shardPieces,
             'piece',
             config.changefreq,
@@ -306,7 +348,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
 
     // Ecrire le dernier shard partiel
     if (currentBatch.length > 0) {
-      const { urls: shardUrls, skipped } = this.pieceShardUrls(
+      const { urls: shardUrls, skipped } = pieceShardUrls(
         currentBatch,
         'piece',
         config.changefreq,
@@ -350,46 +392,6 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
     }
 
     return { filePaths, totalCount };
-  }
-
-  /**
-   * Construit l'URL relative d'une pièce-véhicule pour le sitemap. L'alias type
-   * passe par le SoT normalizeTypeAlias (null/"type"/alias==id -> "type") puis
-   * normalizeAlias : sortie identique à l'ancien code pour les lignes valides.
-   */
-  private buildPieceUrl(p: PieceV9): string {
-    const typeSeg = normalizeAlias(
-      normalizeTypeAlias(p.map_type_alias, null, p.map_type_id),
-    );
-    return `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${typeSeg}-${p.map_type_id}.html`;
-  }
-
-  /**
-   * Mappe des pièces en SitemapUrl en écartant (et comptant) toute URL mal
-   * formée — défense en profondeur (ADR-062).
-   */
-  private pieceShardUrls(
-    pieces: PieceV9[],
-    pageType: string,
-    changefreq: string,
-  ): { urls: SitemapUrl[]; skipped: number } {
-    const urls: SitemapUrl[] = [];
-    let skipped = 0;
-    for (const p of pieces) {
-      const url = this.buildPieceUrl(p);
-      if (isMalformedSeoUrl(url)) {
-        skipped++;
-        continue;
-      }
-      urls.push({
-        url,
-        page_type: pageType,
-        changefreq,
-        priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
-        last_modified_at: null,
-      });
-    }
-    return { urls, skipped };
   }
 
   /**
@@ -507,11 +509,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       }
 
       // 4. Construire les SitemapUrl
-      const { urls, skipped } = this.pieceShardUrls(
-        allPieces,
-        'product',
-        'weekly',
-      );
+      const { urls, skipped } = pieceShardUrls(allPieces, 'product', 'weekly');
       skippedMalformed += skipped;
       if (skippedMalformed > 0) {
         this.logger.warn(

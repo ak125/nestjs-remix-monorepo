@@ -1,0 +1,27 @@
+NOTICE:  database "ct_vendable_miroir" does not exist, skipping
+                                                       version                                                        
+----------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+(1 row)
+
+== migration (1re application)
+== migration (2e application : rejouable)
+WARNING:  MIROIR : « dispo 3 (sur commande) » — est_vendable rend f, attendu t
+WARNING:  MIROIR : « prix élevé » — est_vendable rend f, attendu t
+ERROR:  MIROIR ROMPU : 2 cas sur 29 en écart entre public.est_vendable et vendable.echantillon.json
+CONTEXT:  PL/pgSQL function inline_code_block line 14 at RAISE
+                                                       version                                                        
+----------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+(1 row)
+
+== migration (1re application)
+== migration (2e application : rejouable)
+miroir : 29 cas identiques a l echantillon
+jeu d essai : piece_est_vendable et get_sitemap_r2_types_vendables conformes
+catalogue : STABLE, sans SECURITY DEFINER, service_role seul, est_vendable remplacee par son expression
+== retour arriere
+== migration apres retour arriere
+catalogue : STABLE, sans SECURITY DEFINER, service_role seul, est_vendable remplacee par son expression
+== retour arriere final
+MIROIR VENDABLE OK : 29 cas, migration rejouee, retour arriere verifie

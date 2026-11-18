@@ -1,0 +1,82 @@
+SET
+SET
+UTC
+       to_char        
+----------------------
+ 2026-11-18T19:31:07Z
+(1 row)
+
+PREPARE
+SET
+== plan generique, gamme 4, fenetre 57403-60669 (celle qui depassait 40 s en plan sur mesure)
+                                                                                                                                     QUERY PLAN                                                         
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate (actual rows=1 loops=1)
+   Buffers: shared hit=653940 read=7172
+   ->  Sort (actual rows=1015 loops=1)
+         Sort Key: t.type_id_i
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=653940 read=7172
+         ->  Gather (actual rows=1015 loops=1)
+               Workers Planned: 1
+               Workers Launched: 1
+               Buffers: shared hit=653940 read=7172
+               ->  Nested Loop Semi Join (actual rows=508 loops=2)
+                     Buffers: shared hit=653940 read=7172
+                     ->  Parallel Seq Scan on auto_type t (actual rows=750 loops=2)
+                           Filter: ((type_id_i >= $2) AND (type_id_i <= $3) AND (type_display = '1'::text))
+                           Rows Removed by Filter: 26230
+                           Buffers: shared hit=1838
+                     ->  Nested Loop (actual rows=1 loops=1500)
+                           Buffers: shared hit=652102 read=7172
+                           ->  Nested Loop (actual rows=4 loops=1500)
+                                 Buffers: shared hit=633660 read=7163
+                                 ->  Index Scan using idx_pieces_relation_type_type_id_composite on pieces_relation_type r (actual rows=86 loops=1500)
+                                       Index Cond: ((rtp_type_id = t.type_id_i) AND (rtp_pg_id = $1))
+                                       Buffers: shared hit=117804 read=4446
+                                 ->  Index Scan using pieces_pkey on pieces pc (actual rows=0 loops=129643)
+                                       Index Cond: (piece_id = r.rtp_piece_id)
+                                       Filter: (piece_display IS TRUE)
+                                       Rows Removed by Filter: 1
+                                       Buffers: shared hit=515856 read=2717
+                           ->  Index Scan using idx_pieces_price_piece_id_i on pieces_price pp (actual rows=0 loops=5777)
+                                 Index Cond: (pri_piece_id_i = pc.piece_id)
+                                 Filter: ((pri_dispo IS NOT NULL) AND (pri_vente_ttc_n IS NOT NULL) AND (pricing_state IS DISTINCT FROM 'FROZEN'::text) AND (pri_vente_ttc_n > '0'::numeric) AND (pri_ve
+                                 Rows Removed by Filter: 0
+                                 Buffers: shared hit=18442 read=9
+ Planning:
+   Buffers: shared hit=79
+ Planning Time: 1.232 ms
+ Execution Time: 2284.032 ms
+(37 rows)
+
+== plan generique, gamme 4, tous les types
+                                                                                                                                     QUERY PLAN                                                         
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate (actual rows=1 loops=1)
+   ->  Sort (actual rows=16863 loops=1)
+         Sort Key: t.type_id_i
+         Sort Method: quicksort  Memory: 769kB
+         ->  Gather (actual rows=16863 loops=1)
+               Workers Planned: 1
+               Workers Launched: 1
+               ->  Nested Loop Semi Join (actual rows=8432 loops=2)
+                     ->  Parallel Seq Scan on auto_type t (actual rows=14252 loops=2)
+                           Filter: ((type_id_i >= $2) AND (type_id_i <= $3) AND (type_display = '1'::text))
+                           Rows Removed by Filter: 12727
+                     ->  Nested Loop (actual rows=1 loops=28505)
+                           ->  Nested Loop (actual rows=6 loops=28505)
+                                 ->  Index Scan using idx_pieces_relation_type_type_id_composite on pieces_relation_type r (actual rows=96 loops=28505)
+                                       Index Cond: ((rtp_type_id = t.type_id_i) AND (rtp_pg_id = $1))
+                                 ->  Index Scan using pieces_pkey on pieces pc (actual rows=0 loops=2744685)
+                                       Index Cond: (piece_id = r.rtp_piece_id)
+                                       Filter: (piece_display IS TRUE)
+                                       Rows Removed by Filter: 1
+                           ->  Index Scan using idx_pieces_price_piece_id_i on pieces_price pp (actual rows=0 loops=172630)
+                                 Index Cond: (pri_piece_id_i = pc.piece_id)
+                                 Filter: ((pri_dispo IS NOT NULL) AND (pri_vente_ttc_n IS NOT NULL) AND (pricing_state IS DISTINCT FROM 'FROZEN'::text) AND (pri_vente_ttc_n > '0'::numeric) AND (pri_ve
+                                 Rows Removed by Filter: 0
+ Planning Time: 0.012 ms
+ Execution Time: 25519.130 ms
+(25 rows)
+

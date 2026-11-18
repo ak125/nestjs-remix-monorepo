@@ -428,6 +428,8 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
           summary: { totalUrls: 0, totalFiles: 0 },
         }),
       },
+      // Réglage SITEMAP_R2_SOURCE à sa valeur par défaut.
+      featureFlags: { sitemapR2Source: 'legacy' },
     });
     return { orchestrator: orchestrator as SitemapV10Service, logger };
   }

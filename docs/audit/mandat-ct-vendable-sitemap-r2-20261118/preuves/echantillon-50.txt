@@ -1,0 +1,117 @@
+# 50 URL de la génération à blanc, contrôlées sur DEV (app locale, port 3000)
+# colonnes : code HTTP et durée (s) | robots | canonique | chemin
+debut 2026-11-18T19:51:25Z
+200 1.005120|index, follow|canon=identique|/pieces/demarreur-2/ford-60/transit-ix-v363-platforme-chassis-60348/2-2-tdci-4x4-67295.html
+200 0.771131|index, follow|canon=identique|/pieces/filtre-a-huile-7/audi-22/a4-iii-break-22043/rs4-4-2-quattro-19490.html
+200 0.835992|index, follow|canon=identique|/pieces/filtre-a-air-8/bmw-33/serie-2-gran-tourer-f46-33092/218-i-62018.html
+200 0.495479|index, follow|canon=identique|/pieces/courroie-d-accessoire-10/peugeot-128/406-break-128055/3-0-v6-14764.html
+200 0.794971|index, follow|canon=identique|/pieces/cardan-13/audi-22/tt-i-roadster-22077/1-8-t-quattro-11343.html
+200 0.773159|index, follow|canon=identique|/pieces/joint-de-collecteur-40/hyundai-76/i30-cw-iii-76127/1-4-t-gdi-69010.html
+200 0.741990|index, follow|canon=identique|/pieces/machoires-de-frein-70/porsche-133/boxster-987-133033/3-4-s-31364.html
+200 0.987588|index, follow|canon=identique|/pieces/disque-de-frein-82/hyundai-76/elantra-i-76011/2-0-phase-2-15128.html
+200 0.766961|index, follow|canon=identique|/pieces/flexible-de-frein-83/opel-123/insignia-123059/2-8-v6-turbo-opc-4x4-32069.html
+200 0.776846|index, follow|canon=identique|/pieces/cable-de-frein-a-main-124/renault-140/trafic-iii-140167/2-0-dci-77660.html
+200 1.011584|index, follow|canon=identique|/pieces/ressort-de-suspension-188/peugeot-128/partner-ii-128095/1-6-24534.html
+200 0.510390|index, follow|canon=identique|/pieces/soufflet-de-cardan-193/audi-22/a6-i-break-22052/2-4-21317.html
+200 0.683914|index, follow|canon=identique|/pieces/bougie-de-prechauffage-243/ford-60/focus-iii-60081/electrique-66742.html
+200 0.979120|index, follow|canon=identique|/pieces/maitre-cylindre-de-frein-258/mercedes-benz-108/sprinter-906-108174/213-cdi-2-1-57306.html
+200 0.585607|index, follow|canon=identique|/pieces/barre-stabilisatrice-274/ford-60/transit-v-60215/2-5-td-5285.html
+200 0.468149|index, follow|canon=identique|/pieces/barre-de-direction-285/mercedes-benz-108/classe-gl-x164-108063/gl-350-cdi-bluetec-3-0-33063.html
+200 0.677838|index, follow|canon=identique|/pieces/balais-d-essuie-glace-298/fiat-58/panda-van-ii-58185/1-2-27950.html
+200 0.849017|index, follow|canon=identique|/pieces/kit-de-distribution-307/volkswagen-173/passat-vi-break-173093/2-0-fsi-18727.html
+200 0.682515|index, follow|canon=identique|/pieces/galet-enrouleur-de-courroie-d-accessoire-312/seat-147/altea-xl-147012/2-0-tdi-16v-22503.html
+200 0.787576|index, follow|canon=identique|/pieces/joint-de-culasse-318/renault-140/master-iii-autobus-140188/2-3-dci-125-fwd-11038.html
+200 0.815469|index, follow|canon=identique|/pieces/joint-de-cache-culbuteurs-321/audi-22/a3-limousine-22033/2-0-tdi-53263.html
+200 0.883677|index, follow|canon=identique|/pieces/plaquette-de-frein-402/mini-113/mini-r50-r53-113001/1-6-works-17793.html
+200 0.796414|index, follow|canon=identique|/pieces/capteur-abs-412/audi-22/allroad-22063/2-5-tdi-quattro-14772.html
+200 0.839642|index, follow|canon=identique|/pieces/filtre-d-habitacle-424/audi-22/a4-v-22102/2-0-tfsi-60826.html
+200 0.653846|index, follow|canon=identique|/pieces/compresseur-de-climatisation-447/renault-140/megane-ii-berline-140118/1-6-16v-28385.html
+200 0.419007|index, follow|canon=identique|/pieces/joint-de-carter-d-huile-455/opel-123/zafira-a-123134/1-8-16v-10917.html
+200 0.719941|index, follow|canon=identique|/pieces/radiateur-de-chauffage-467/kia-88/picanto-i-88041/1-1-crdi-19214.html
+200 0.465108|index, follow|canon=identique|/pieces/radiateur-d-huile-469/bmw-33/serie-3-touring-f31-33044/335-i-xdrive-61687.html
+200 0.751669|index, follow|canon=identique|/pieces/evaporateur-de-climatisation-471/bmw-33/serie-7-f01-f02-f03-f04-33069/750-i-57271.html
+200 0.706364|index, follow|canon=identique|/pieces/kit-d-embrayage-479/volkswagen-173/golf-vii-break-173050/1-6-tdi-4motion-82382.html
+200 0.497455|index, follow|canon=identique|/pieces/volant-moteur-577/nissan-119/primera-iii-break-119191/1-9-dci-23202.html
+200 0.409622|index, follow|canon=identique|/pieces/bouchon-de-vidange-593/abarth-339/124-spider-339000/1-4-83138.html
+200 0.421244|index, follow|canon=identique|/pieces/moyeu-de-roue-653/renault-140/clio-ii-140003/1-9-d-9044.html
+200 0.661490|index, follow|canon=identique|/pieces/faisceau-d-allumage-685/renault-140/clio-i-140002/1-8-16v-2130.html
+200 0.413899|index, follow|canon=identique|/pieces/pressostat-d-huile-805/saab-145/9-5-i-break-145009/2-3-t-15821.html
+200 0.632068|index, follow|canon=identique|/pieces/contacteur-de-feu-de-recul-807/audi-22/a8-i-22060/s8-4-2-quattro-5604.html
+200 0.649263|index, follow|canon=identique|/pieces/sonde-de-refroidissement-830/toyota-164/hiace-v-commuter-164216/2-5-d4-d-4wd-12168.html
+200 0.413309|index, follow|canon=identique|/pieces/bouteille-deshydratante-851/mercedes-benz-108/vito-tourer-w447-108276/110-cdi-73641.html
+200 0.399774|index, follow|canon=identique|/pieces/poulie-d-alternateur-1108/volvo-172/v70-ii-172110/2-3-awd-20768.html
+200 0.436579|index, follow|canon=identique|/pieces/poussoir-de-soupape-1216/seat-147/ibiza-ii-147024/1-9-tdi-7892.html
+200 0.471998|index, follow|canon=identique|/pieces/pompe-a-eau-1260/peugeot-128/3008-128022/1-6-bluehdi-76391.html
+200 0.611994|index, follow|canon=identique|/pieces/kit-de-chaine-de-distribution-1389/kia-88/pro-ceed-cd-88124/1-4-t-gdi-70878.html
+200 0.671695|index, follow|canon=identique|/pieces/leve-vitre-1561/skoda-150/fabia-ii-break-150005/1-2-tsi-33312.html
+200 0.574460|index, follow|canon=identique|/pieces/boitier-de-prechauffage-1750/mercedes-benz-108/classe-c-w204-108039/c-180-cgi-1-8-32798.html
+200 0.642200|index, follow|canon=identique|/pieces/turbo-2234/hyundai-76/sonata-v-76075/2-0-crdi-31217.html
+200 0.640416|index, follow|canon=identique|/pieces/pulseur-d-air-d-habitacle-2669/volkswagen-173/multivan-173073/2-0-bitdi-32270.html
+200 0.604609|index, follow|canon=identique|/pieces/bagues-d-etancheite-moteur-3874/hyundai-76/coupe-i-76009/2-0-16v-5854.html
+200 0.468831|index, follow|canon=identique|/pieces/joint-d-injecteur-3894/mercedes-benz-108/classe-e-decapotable-a207-108056/e-200-2-0-59030.html
+200 0.701958|index, follow|canon=identique|/pieces/sonde-lambda-3922/volkswagen-173/polo-iii-173109/1-4-5277.html
+200 0.367259|index, follow|canon=identique|/pieces/capteur-temperature-d-air-admission-3939/volkswagen-173/passat-vi-break-173093/2-0-tdi-18731.html
+fin 2026-11-18T19:52:01Z
+
+# pièces vendables par couple (SELECT, base massdoc)
+SET
+SET
+         utc          
+----------------------
+ 2026-11-18T19:51:21Z
+(1 row)
+
+  pg  |  ty   | pieces_vendables 
+------+-------+------------------
+    2 | 67295 |                6
+    7 | 19490 |                9
+    8 | 62018 |               15
+   10 | 14764 |               18
+   13 | 11343 |               26
+   40 | 69010 |                5
+   70 | 31364 |                9
+   82 | 15128 |               37
+   83 | 32069 |               12
+  124 | 77660 |                5
+  188 | 24534 |                5
+  193 | 21317 |                5
+  243 | 66742 |                1
+  258 | 57306 |               13
+  274 |  5285 |               12
+  285 | 33063 |                2
+  298 | 27950 |               22
+  307 | 18727 |               17
+  312 | 22503 |                1
+  318 | 11038 |                3
+  321 | 53263 |               12
+  402 | 17793 |               46
+  412 | 14772 |                2
+  424 | 60826 |               26
+  447 | 28385 |                1
+  455 | 10917 |                1
+  467 | 19214 |                9
+  469 | 61687 |                1
+  471 | 57271 |                3
+  479 | 82382 |                2
+  577 | 23202 |                3
+  593 | 83138 |                2
+  653 |  9044 |                1
+  685 |  2130 |                2
+  805 | 15821 |                2
+  807 |  5604 |                5
+  830 | 12168 |                1
+  851 | 73641 |                3
+ 1108 | 20768 |                1
+ 1216 |  7892 |                4
+ 1260 | 76391 |               10
+ 1389 | 70878 |                2
+ 1561 | 33312 |                6
+ 1750 | 32798 |                3
+ 2234 | 31217 |                3
+ 2669 | 32270 |               15
+ 3874 |  5854 |                9
+ 3894 | 59030 |                1
+ 3922 |  5277 |               19
+ 3939 | 18731 |                2
+(50 rows)
+
