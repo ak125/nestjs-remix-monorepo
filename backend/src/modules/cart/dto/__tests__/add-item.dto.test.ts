@@ -54,3 +54,26 @@ describe('AddItemDto — autorité de prix (F5, anti price-tampering)', () => {
     expect(dto.quantity).toBe(2);
   });
 });
+
+describe('AddItemDto — provenance du véhicule de la ligne (mandat CK)', () => {
+  const base = { product_id: 12345, quantity: 1 };
+
+  it('accepte la provenance du véhicule (mandat CK)', () => {
+    expect(
+      validateAddItem({
+        ...base,
+        type_id: 9045,
+        vehicle_source: 'selected_vehicle',
+      }).vehicle_source,
+    ).toBe('selected_vehicle');
+    expect(
+      validateAddItem({ ...base, type_id: 9045 }).vehicle_source,
+    ).toBeUndefined();
+  });
+
+  it('refuse une provenance inconnue (mandat CK)', () => {
+    expect(() =>
+      validateAddItem({ ...base, vehicle_source: 'devine' }),
+    ).toThrow();
+  });
+});

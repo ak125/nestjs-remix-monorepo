@@ -104,6 +104,7 @@ export class CartItemsController {
         isReplace,
         addItemDto.type_id,
         addItemDto.website_url, // F1 attribution : source d'ajout par-ligne
+        addItemDto.vehicle_source, // Mandat CK : provenance du type_id
       );
 
       this.logger.log(

@@ -32,6 +32,7 @@ export const CartItemSchema = z.object({
   weight: z.number().min(0).optional(),
   type_id: z.number().int().positive().optional(), // Vehicle type_id (contexte vehicule a l'ajout)
   website_url: z.string().optional(), // F1 attribution : source d'ajout (URL/chemin de la page) → orl_website_url
+  vehicle_source: z.enum(['page', 'selected_vehicle']).optional(), // Mandat CK : provenance de type_id
 });
 
 export const CartMetadataSchema = z.object({
@@ -314,6 +315,7 @@ export class CartDataService extends SupabaseBaseService {
     replace: boolean = false,
     typeId?: number,
     sourceUrl?: string, // F1 attribution : page d'où l'article a été ajouté → orl_website_url
+    vehicleSource?: 'page' | 'selected_vehicle', // Mandat CK : provenance de typeId
   ): Promise<CartItem> {
     try {
       // 1. Récupérer le produit avec TOUTES les vraies données
@@ -370,7 +372,10 @@ export class CartDataService extends SupabaseBaseService {
         product_description: product.piece_des,
         product_image: product.piece_image || undefined,
         weight: product.piece_weight_kgm,
-        ...(typeId && { type_id: typeId }),
+        ...(typeId && {
+          type_id: typeId,
+          vehicle_source: vehicleSource ?? 'page',
+        }),
         ...(sourceUrl && { website_url: sourceUrl }),
       };
 
@@ -393,7 +398,13 @@ export class CartDataService extends SupabaseBaseService {
         }
 
         updatedItems[existingItemIndex].updated_at = new Date().toISOString();
-        if (typeId) updatedItems[existingItemIndex].type_id = typeId;
+        // Mandat CK : le véhicule de la ligne suit la même règle que sa page
+        // d'ajout (premier ajout conservé) ; un ré-ajout ne comble qu'un manque.
+        if (typeId && !updatedItems[existingItemIndex].type_id) {
+          updatedItems[existingItemIndex].type_id = typeId;
+          updatedItems[existingItemIndex].vehicle_source =
+            vehicleSource ?? 'page';
+        }
         // F1 attribution : la page du premier ajout est conservée ; elle n'est
         // renseignée ici que si la ligne n'en porte pas encore.
         if (sourceUrl && !updatedItems[existingItemIndex].website_url) {
@@ -974,7 +985,12 @@ export class CartDataService extends SupabaseBaseService {
           existingItem.updated_at = new Date().toISOString();
           // Garder le prix le plus récent (celui du panier source)
           existingItem.price = sourceItem.price;
-          existingItem.type_id = sourceItem.type_id || existingItem.type_id;
+          // Mandat CK : véhicule de la ligne, même règle que la page d'ajout
+          // (le panier cible prime, le panier source ne comble qu'un manque).
+          if (!existingItem.type_id && sourceItem.type_id) {
+            existingItem.type_id = sourceItem.type_id;
+            existingItem.vehicle_source = sourceItem.vehicle_source;
+          }
           // F1 attribution : la page d'ajout déjà portée par le panier cible
           // prime ; celle du panier source ne comble qu'un manque.
           existingItem.website_url =

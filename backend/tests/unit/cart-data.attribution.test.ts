@@ -215,3 +215,129 @@ describe('CartDataService.mergeCart — page d’ajout à la fusion', () => {
     expect(ligne.website_url).toBe('/pieces/invite');
   });
 });
+
+/**
+ * Mandat CK (2026-11-18) : la ligne garde aussi le véhicule de sa page d'ajout
+ * (`type_id`) et sa provenance (`vehicle_source`), avec la même règle
+ * « premier ajout » que la page : type_id et URL restent appariés.
+ */
+describe('CartDataService — véhicule de la ligne (mandat CK)', () => {
+  it('ajout depuis une page véhicule : type_id et provenance « page »', async () => {
+    const service = sujet();
+    await service.addCartItem(
+      's1',
+      PIECE_ID,
+      1,
+      undefined,
+      false,
+      18376,
+      '/pieces/disque-de-frein-82/renault-140/clio-iii-140004/1-5-dci-18376.html',
+    );
+
+    const [ligne] = await lire(service, 's1');
+    expect(ligne.type_id).toBe(18376);
+    expect(ligne.vehicle_source).toBe('page');
+  });
+
+  it('ajout depuis la recherche avec le véhicule choisi : provenance « selected_vehicle »', async () => {
+    const service = sujet();
+    await service.addCartItem(
+      's1',
+      PIECE_ID,
+      1,
+      undefined,
+      false,
+      9045,
+      '/recherche?q=disque',
+      'selected_vehicle',
+    );
+
+    const [ligne] = await lire(service, 's1');
+    expect(ligne.type_id).toBe(9045);
+    expect(ligne.vehicle_source).toBe('selected_vehicle');
+    expect(ligne.website_url).toBe('/recherche?q=disque');
+  });
+
+  it('ajout sans aucun véhicule : ni type_id ni provenance', async () => {
+    const service = sujet();
+    await service.addCartItem(
+      's1',
+      PIECE_ID,
+      1,
+      undefined,
+      false,
+      undefined,
+      '/recherche?q=disque',
+    );
+
+    const [ligne] = await lire(service, 's1');
+    expect(ligne.type_id).toBeUndefined();
+    expect(ligne.vehicle_source).toBeUndefined();
+  });
+
+  it('ré-ajout depuis un autre véhicule : le premier véhicule est conservé', async () => {
+    const service = sujet();
+    await service.addCartItem(
+      's1',
+      PIECE_ID,
+      1,
+      undefined,
+      false,
+      18376,
+      '/pieces/a',
+    );
+    await service.addCartItem(
+      's1',
+      PIECE_ID,
+      1,
+      undefined,
+      false,
+      9045,
+      '/pieces/b',
+    );
+
+    const [ligne] = await lire(service, 's1');
+    expect(ligne.quantity).toBe(2);
+    expect(ligne.type_id).toBe(18376);
+    expect(ligne.vehicle_source).toBe('page');
+    expect(ligne.website_url).toBe('/pieces/a');
+  });
+
+  it('ré-ajout avec véhicule sur une ligne qui n’en avait pas : le manque est comblé', async () => {
+    const service = sujet();
+    await semer(service, 's1', [lignePanier('s1', '/recherche?q=disque')]);
+
+    await service.addCartItem(
+      's1',
+      PIECE_ID,
+      1,
+      undefined,
+      false,
+      9045,
+      '/recherche?q=disque',
+      'selected_vehicle',
+    );
+
+    const [ligne] = await lire(service, 's1');
+    expect(ligne.type_id).toBe(9045);
+    expect(ligne.vehicle_source).toBe('selected_vehicle');
+  });
+
+  it('fusion : le véhicule du panier cible prime, le source comble un manque', async () => {
+    const service = sujet();
+    await semer(service, 'invite', [
+      {
+        ...lignePanier('invite', '/pieces/b'),
+        type_id: 9045,
+        vehicle_source: 'page',
+      },
+    ]);
+    await semer(service, 'compte', [lignePanier('compte')]);
+
+    await service.mergeCart('invite', 'compte');
+
+    const [ligne] = await lire(service, 'compte');
+    expect(ligne.type_id).toBe(9045);
+    expect(ligne.vehicle_source).toBe('page');
+  });
+});

@@ -14,7 +14,7 @@ import {
 } from "~/schemas/cart.schemas";
 import { calculateDeliveryETA, type StockStatus } from "~/utils/delivery-eta";
 import { type VehicleCookie } from "~/utils/vehicle-cookie";
-import { COMPATIBILITY_NOTICE } from "./compatibility-notice";
+import { compatibilityNotice } from "./compatibility-notice";
 import { FreeShippingBar } from "./FreeShippingBar";
 import { PromoCodeInput } from "./PromoCodeInput";
 
@@ -46,6 +46,12 @@ export function CheckoutOrderSummary({
         .filter(Boolean)
         .join(" ")
     : null;
+  // Mandat CK : « selon le catalogue » seulement si chaque article vient de la
+  // page catalogue du véhicule choisi ; sinon mention prudente.
+  const noticeBesideLabel = compatibilityNotice(vehicle, cart.items, {
+    withVehicle: false,
+  });
+  const noticeWithVehicle = compatibilityNotice(vehicle, cart.items);
 
   // Delivery ETA — map stock_available to StockStatus
   const stockStatuses: StockStatus[] = cart.items.map((item) => {
@@ -66,9 +72,7 @@ export function CheckoutOrderSummary({
             <p className="text-sm font-medium text-slate-800 truncate">
               {vehicleLabel}
             </p>
-            <span className="text-xs text-slate-600">
-              {COMPATIBILITY_NOTICE}.
-            </span>
+            <span className="text-xs text-slate-600">{noticeBesideLabel}.</span>
           </div>
         </div>
       )}
@@ -148,7 +152,7 @@ export function CheckoutOrderSummary({
             {vehicleLabel && (
               <p className="flex items-center gap-1.5 text-xs text-slate-600">
                 <Car className="h-3 w-3 shrink-0" />
-                {COMPATIBILITY_NOTICE}.
+                {noticeWithVehicle}.
               </p>
             )}
           </div>

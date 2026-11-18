@@ -680,7 +680,7 @@ export function CheckoutLivraisonSection({
               htmlFor="vehicleReference"
               className="block text-sm font-medium text-slate-700 mb-1"
             >
-              Immatriculation, VIN ou référence de la pièce{" "}
+              Immatriculation ou référence de votre pièce actuelle{" "}
               <span className="font-normal text-slate-400">(facultatif)</span>
             </label>
             <input

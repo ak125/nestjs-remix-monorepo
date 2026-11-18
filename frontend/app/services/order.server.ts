@@ -35,6 +35,7 @@ export interface CreateCheckoutOrderPayload {
     has_consigne: boolean;
     website_url?: string; // F1 attribution : source d'ajout par-ligne → orl_website_url
     type_id?: number; // vehicule de la page d'achat (contexte panier) — mandat BN
+    vehicle_source?: "page" | "selected_vehicle"; // provenance du type_id — mandat CK
   }>;
   billingAddress: AddressData;
   shippingAddress: AddressData;
@@ -93,6 +94,7 @@ export function buildOrderLines(items: CartItem[]) {
     has_consigne: item.has_consigne || false,
     website_url: item.website_url, // F1 attribution : source d'ajout par-ligne
     type_id: item.type_id, // vehicule de la page d'achat — mandat BN
+    vehicle_source: item.vehicle_source, // provenance du type_id — mandat CK
   }));
 }
 

@@ -62,6 +62,7 @@ export interface CreateOrderData {
     has_consigne?: boolean;
     website_url?: string; // F1 attribution : source d'ajout par-ligne → orl_website_url
     type_id?: number | string; // véhicule de la page d'achat (contexte panier) — mandat BN
+    vehicle_source?: string; // provenance du type_id : 'page' | 'selected_vehicle' — mandat CK
   }>;
   billingAddress: OrderAddress;
   shippingAddress: OrderAddress;
@@ -347,7 +348,7 @@ export class OrdersService extends SupabaseBaseService {
       try {
         vehicleCheck = buildOrderVehicleCheck(
           orderData.vehicleCheck,
-          orderData.orderLines.map((line) => line.type_id),
+          orderData.orderLines,
         );
       } catch (error) {
         if (error instanceof OrderVehicleCheckValidationError) {

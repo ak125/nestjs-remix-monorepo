@@ -17,6 +17,8 @@ interface Props {
   itemCount: number;
   orderNumber?: string;
   vehicleLabel?: string | null;
+  /** Mandat CK : mention exacte calculée par le tunnel (sans le véhicule). */
+  compatibilityText?: string;
   fieldErrors?: CheckoutFieldErrors;
 }
 
@@ -39,6 +41,7 @@ export function CheckoutPaiementSection({
   itemCount,
   orderNumber,
   vehicleLabel,
+  compatibilityText = COMPATIBILITY_NOTICE,
   fieldErrors,
 }: Props) {
   return (
@@ -189,7 +192,7 @@ export function CheckoutPaiementSection({
             />
           </svg>
           <span className="text-xs text-emerald-700">
-            <strong>{vehicleLabel}</strong> — {COMPATIBILITY_NOTICE}.
+            <strong>{vehicleLabel}</strong> — {compatibilityText}.
           </span>
         </div>
       )}

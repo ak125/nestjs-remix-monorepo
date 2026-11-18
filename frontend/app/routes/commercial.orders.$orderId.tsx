@@ -28,6 +28,10 @@ import {
 } from "react-router";
 import { toast } from "sonner";
 
+import {
+  OrderLineVehicle,
+  OrderVehicleCheckCard,
+} from "~/components/orders/OrderVehicleCheckCard";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -311,6 +315,12 @@ export default function CommercialOrderDetailPage() {
                           >
                             <td className="py-3 pr-4 font-medium">
                               {line.orl_pg_name || "—"}
+                              {/* Mandat CK : véhicule et page d'ajout de la ligne */}
+                              <OrderLineVehicle
+                                vehicleCheck={order.ord_vehicle_check}
+                                lineId={line.orl_id}
+                                websiteUrl={line.orl_website_url}
+                              />
                             </td>
                             <td className="py-3 pr-4">
                               <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
@@ -360,6 +370,9 @@ export default function CommercialOrderDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Mandat BN + CK : immatriculation ou référence, véhicule */}
+            <OrderVehicleCheckCard vehicleCheck={order.ord_vehicle_check} />
 
             {/* Adresses */}
             {(order.ord_billing_snapshot || order.ord_shipping_snapshot) && (

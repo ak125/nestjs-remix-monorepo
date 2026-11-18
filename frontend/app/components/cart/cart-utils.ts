@@ -26,6 +26,32 @@ export interface CartBackupItem {
   // Contexte d'ajout rejoué à la restauration (même contrat que POST /api/cart/items)
   type_id?: number;
   website_url?: string; // F1 attribution → orl_website_url
+  vehicle_source?: CartVehicleSource; // Mandat CK : provenance de type_id
+}
+
+/** Provenance du véhicule d'une ligne (mandat CK). */
+export type CartVehicleSource = "page" | "selected_vehicle";
+
+/**
+ * Véhicule rattaché à un ajout au panier (mandat CK).
+ * - la page porte un véhicule (page pièces du véhicule) : il prime, `page` ;
+ * - sinon (recherche, fiche produit), le véhicule choisi par le client
+ *   (cookie `selected_vehicle`) est rattaché, `selected_vehicle` ;
+ * - sinon aucun véhicule : la ligne le dira à la commande.
+ */
+export function resolveAddToCartVehicle(
+  pageTypeId: number | null | undefined,
+  selectedVehicle: { type_id?: number | string | null } | null | undefined,
+): { typeId?: number; vehicleSource?: CartVehicleSource } {
+  const fromPage = Number(pageTypeId);
+  if (Number.isInteger(fromPage) && fromPage > 0) {
+    return { typeId: fromPage, vehicleSource: "page" };
+  }
+  const fromCookie = Number(selectedVehicle?.type_id);
+  if (Number.isInteger(fromCookie) && fromCookie > 0) {
+    return { typeId: fromCookie, vehicleSource: "selected_vehicle" };
+  }
+  return {};
 }
 
 /**
@@ -38,6 +64,8 @@ export function buildRestoreAddItemBody(item: CartBackupItem) {
     quantity: item.quantity,
     ...(item.type_id && { type_id: item.type_id }),
     ...(item.website_url && { website_url: item.website_url }),
+    ...(item.type_id &&
+      item.vehicle_source && { vehicle_source: item.vehicle_source }),
   };
 }
 

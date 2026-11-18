@@ -449,6 +449,8 @@ class CartServerService {
         type_id: item.type_id || undefined,
         // Attribution F1 : page d'ajout → buildOrderLines → orl_website_url
         website_url: item.website_url || undefined,
+        // Mandat CK : provenance du véhicule de la ligne → ord_vehicle_check.lines
+        vehicle_source: item.vehicle_source || undefined,
       })),
       summary: {
         total_items: (totals?.total_items as number) || 0,

@@ -31,7 +31,7 @@ import {
 import { CheckoutOrderSummary } from "~/components/checkout/CheckoutOrderSummary";
 import { CheckoutPaiementSection } from "~/components/checkout/CheckoutPaiementSection";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
-import { COMPATIBILITY_NOTICE } from "~/components/checkout/compatibility-notice";
+import { compatibilityNotice } from "~/components/checkout/compatibility-notice";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   MobileBottomBar,
@@ -177,7 +177,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         city: "Ville",
         country: "Pays",
         phone: "Telephone",
-        vehicleReference: "Immatriculation, VIN ou reference",
+        vehicleReference: "Immatriculation ou reference de la piece actuelle",
         guestEmail: "Email",
         paymentMethod: "Methode de paiement",
         acceptTerms: "Conditions generales",
@@ -885,7 +885,10 @@ export default function CheckoutPage() {
                   .join(" ")}
               </span>
               <span className="text-xs text-slate-600">
-                {COMPATIBILITY_NOTICE}.
+                {compatibilityNotice(vehicle, cart.items, {
+                  withVehicle: false,
+                })}
+                .
               </span>
             </p>
           )}
@@ -1176,6 +1179,11 @@ export default function CheckoutPage() {
                               .join(" ")
                           : null
                       }
+                      compatibilityText={compatibilityNotice(
+                        vehicle,
+                        cart.items,
+                        { withVehicle: false },
+                      )}
                     />
                   </AccordionContent>
                 </AccordionItem>

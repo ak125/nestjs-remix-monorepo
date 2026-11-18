@@ -62,6 +62,8 @@ export const cartItemSchema = z
 
     // F1 attribution : source d'ajout par-ligne (page d'où l'article a été ajouté) → orl_website_url
     website_url: z.string().optional(),
+    // Mandat CK : provenance de type_id ('page' | 'selected_vehicle')
+    vehicle_source: z.enum(["page", "selected_vehicle"]).optional(),
 
     // Metadata flexible
     options: z.record(z.string(), z.any()).optional(),

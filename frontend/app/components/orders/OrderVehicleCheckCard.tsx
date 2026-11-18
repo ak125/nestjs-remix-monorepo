@@ -9,10 +9,14 @@
  * Branchement (après fusion de BK, hors de ce mandat) :
  *   <OrderVehicleCheckCard vehicleCheck={order.ord_vehicle_check} />
  *
+ * Mandat CK (2026-11-18) : `lines` porte le véhicule de chaque ligne (type_id
+ * et provenance) ; `OrderLineVehicle` l'affiche sous chaque produit, avec la
+ * page d'ajout (`orl_website_url`). Sans véhicule, la ligne le dit.
+ *
  * Lecture défensive : la valeur vient d'une colonne jsonb ; une forme inconnue
  * est affichée comme « non lisible », jamais devinée.
  */
-import { Car, ClipboardCheck } from "lucide-react";
+import { Car, ClipboardCheck, ExternalLink } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
@@ -23,7 +27,47 @@ export interface OrderVehicleCheckView {
     label: string | null;
   } | null;
   lineTypeIds: number[];
+  lines: OrderLineVehicleView[];
   capturedAt: string | null;
+}
+
+export type LineVehicleSource = "page" | "selected_vehicle";
+
+/** Véhicule d'une ligne (mandat CK). `position` = rang Lnnn de orl_id. */
+export interface OrderLineVehicleView {
+  position: number;
+  typeId: number | null;
+  source: LineVehicleSource | null;
+}
+
+const LINE_SOURCE_LABEL: Record<LineVehicleSource, string> = {
+  page: "véhicule de la page d'ajout",
+  selected_vehicle: "véhicule choisi par le client (ajout hors page véhicule)",
+};
+
+function readLines(raw: unknown): OrderLineVehicleView[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((entry) => {
+    if (!entry || typeof entry !== "object") return [];
+    const e = entry as Record<string, unknown>;
+    const position = asPositiveInt(e.position);
+    if (!position) return [];
+    const typeId = asPositiveInt(e.type_id);
+    const source =
+      typeId && (e.source === "page" || e.source === "selected_vehicle")
+        ? e.source
+        : null;
+    return [{ position, typeId, source }];
+  });
+}
+
+/**
+ * Rang d'une ligne de commande depuis son orl_id (`<commande>-L001` → 1).
+ * Renvoie null si l'identifiant ne suit pas ce format.
+ */
+export function orderLinePosition(orlId: unknown): number | null {
+  const m = /-L(\d+)$/.exec(String(orlId ?? ""));
+  return m ? asPositiveInt(m[1]) : null;
 }
 
 function asText(v: unknown): string | null {
@@ -73,6 +117,7 @@ export function readOrderVehicleCheck(
           .map(asPositiveInt)
           .filter((n): n is number => n !== null)
       : [],
+    lines: readLines(v.lines),
     capturedAt: asText(v.captured_at),
   };
 }
@@ -118,7 +163,9 @@ export function OrderVehicleCheckCard({ vehicleCheck }: Props) {
               )}
             </dd>
 
-            <dt className="text-slate-500">Véhicule de la page d&apos;achat</dt>
+            <dt className="text-slate-500">
+              Véhicule choisi au moment de la commande
+            </dt>
             <dd className="text-slate-900">
               {view.purchaseVehicle ? (
                 <span className="inline-flex items-center gap-1.5">
@@ -149,5 +196,98 @@ export function OrderVehicleCheckCard({ vehicleCheck }: Props) {
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+const LINK_BASE = "https://page-ajout.invalid";
+
+/**
+ * La page d'ajout est fournie par le navigateur du client : elle ne devient un
+ * lien que si elle reste sur le site une fois analysée comme une URL (ce qui
+ * écarte `javascript:`, `//hôte`, `/\hôte`, `/.//hôte`). Le lien rendu est le chemin
+ * normalisé ; sinon null et la valeur est affichée en texte brut.
+ */
+export function internalPathHref(raw: string | null): string | null {
+  // eslint-disable-next-line no-control-regex -- refus voulu des caractères de contrôle
+  if (!raw || !raw.startsWith("/") || /[\\\u0000-\u001f]/.test(raw)) {
+    return null;
+  }
+  try {
+    const parsed = new URL(raw, LINK_BASE);
+    if (parsed.origin !== LINK_BASE) return null;
+    // La normalisation peut produire « //hôte » (« /.//hôte », « /a/..//hôte ») :
+    // le chemin rendu doit commencer par une seule barre.
+    const href = parsed.pathname + parsed.search + parsed.hash;
+    return href.startsWith("/") && !/^\/[/\\]/.test(href) ? href : null;
+  } catch {
+    return null;
+  }
+}
+
+interface LineProps {
+  /** `order.ord_vehicle_check` tel que renvoyé par l'API. */
+  vehicleCheck: unknown;
+  /** `orl_id` de la ligne (rang Lnnn). */
+  lineId: unknown;
+  /** `orl_website_url` : page d'où la pièce a été ajoutée. */
+  websiteUrl?: string | null;
+}
+
+/**
+ * Véhicule d'une ligne de commande (mandat CK) : type_id et provenance, avec
+ * le lien de la page d'ajout. Sans véhicule enregistré, la ligne le dit.
+ */
+export function OrderLineVehicle({
+  vehicleCheck,
+  lineId,
+  websiteUrl,
+}: LineProps) {
+  const view = readOrderVehicleCheck(vehicleCheck);
+  const position = orderLinePosition(lineId);
+  const entry =
+    view && view !== "invalid" && position
+      ? view.lines.find((l) => l.position === position)
+      : undefined;
+  const label =
+    entry?.typeId &&
+    view &&
+    view !== "invalid" &&
+    view.purchaseVehicle?.typeId === entry.typeId
+      ? view.purchaseVehicle.label
+      : null;
+  const url = asText(websiteUrl);
+  const internalHref = internalPathHref(url);
+
+  return (
+    <div className="mt-1 space-y-0.5 text-xs font-normal">
+      {entry?.typeId ? (
+        <p className="inline-flex flex-wrap items-center gap-1 text-slate-700">
+          <Car className="h-3 w-3" aria-hidden="true" />
+          {label ? `${label} ` : "Véhicule "}
+          <span className="text-slate-500">(type_id {entry.typeId})</span>
+          {entry.source && (
+            <span className="text-slate-500">
+              — {LINE_SOURCE_LABEL[entry.source]}
+            </span>
+          )}
+        </p>
+      ) : (
+        <p className="text-amber-700">Aucun véhicule connu pour cette ligne</p>
+      )}
+      {url && !internalHref && (
+        <p className="break-all text-slate-500">Page d&apos;ajout : {url}</p>
+      )}
+      {url && internalHref && (
+        <a
+          href={internalHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 break-all text-slate-500 underline hover:text-slate-700"
+        >
+          <ExternalLink className="h-3 w-3 shrink-0" aria-hidden="true" />
+          Page d&apos;ajout : {url}
+        </a>
+      )}
+    </div>
   );
 }
