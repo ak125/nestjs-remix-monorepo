@@ -2,8 +2,10 @@
  * Règles de remise fournisseur × marque × famille / sous-famille
  * (complément CH-2, décision de Marwane du 18/11 17:01).
  *
- * Une règle = une ligne de `supplier_price_profiles` qui porte une remise
- * et/ou une marge (`default_remise_pct`, `default_marge_pct`) pour une portée :
+ * Une règle = une ligne 'condition' de `supplier_price_profiles`
+ * (complément CH-3 : profile_kind = 'condition', aucun paramètre d'import)
+ * qui porte une remise et/ou une marge (`default_remise_pct`,
+ * `default_marge_pct`) pour une portée :
  *
  *   scope_level | scope_code                    | brand_pm_id
  *   SUPPLIER    | NULL                          | NULL
@@ -158,38 +160,4 @@ export function priceRuleStatus(
   return winner === null || winner.id === rule.id
     ? { status: 'en_vigueur', supersededBy: null }
     : { status: 'remplacee', supersededBy: winner.id };
-}
-
-/** Même clé d'unicité (index supplier_price_profiles_active_rule_uniq). */
-export function samePriceRuleKey(a: PriceRule, b: PriceRule): boolean {
-  return (
-    a.supplierId === b.supplierId &&
-    a.brandPmId === b.brandPmId &&
-    a.scopeLevel === b.scopeLevel &&
-    a.scopeCode === b.scopeCode &&
-    time(a.effectiveFrom) === time(b.effectiveFrom) &&
-    time(a.effectiveTo) === time(b.effectiveTo)
-  );
-}
-
-/**
- * Profil d'import de base : portée fournisseur, sans marque ni date. C'est la
- * ligne que l'import tarifaire (`resolveProfile`) retient aujourd'hui.
- */
-export function isBaseImportProfile(rule: PriceRule): boolean {
-  return (
-    rule.active &&
-    rule.scopeLevel === 'SUPPLIER' &&
-    rule.brandPmId === null &&
-    !isDatedRule(rule)
-  );
-}
-
-/**
- * Niveaux que `resolveProfile` (PricingModule, non modifié) retient à l'import,
- * qui ne lui passe que le fournisseur : SUPPLIER et BRAND. Une telle ligne doit
- * donc reprendre les paramètres d'import du profil de base.
- */
-export function selectedByImport(level: PriceRuleLevel): boolean {
-  return level === 'SUPPLIER' || level === 'BRAND';
 }

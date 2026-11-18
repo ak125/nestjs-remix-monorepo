@@ -59,6 +59,7 @@ function profile(
   return {
     id: 4,
     supplier_id: '71',
+    profile_kind: 'import',
     scope_level: 'SUPPLIER',
     scope_code: null,
     brand_pm_id: null,
@@ -75,13 +76,30 @@ function profile(
     created_at: '2026-11-01T00:00:00Z',
     default_remise_pct: null,
     default_marge_pct: null,
+    retired_at: null,
+    retired_by: null,
     ...overrides,
   };
 }
 
-/** Promo BOSCH de décembre (id 5) puis profil d'import de base (id 4). */
+/** Condition sans paramètre d'import (complément CH-3). */
+function condition(
+  overrides: Partial<SupplierPriceProfileRow> = {},
+): SupplierPriceProfileRow {
+  return profile({
+    profile_kind: 'condition',
+    price_basis: null,
+    derivation: null,
+    key_field: null,
+    column_mapping: null,
+    created_by: 'u-admin',
+    ...overrides,
+  });
+}
+
+/** Promo BOSCH de décembre (id 5, condition) puis profil d'import (id 4). */
 const PROFILES: SupplierPriceProfileRow[] = [
-  profile({
+  condition({
     id: 5,
     scope_level: 'BRAND',
     brand_pm_id: '10',
@@ -108,10 +126,10 @@ function setup(
         { linkId: '1', pmId: 10, brandName: 'BOSCH', linkDisplayed: true },
       ]),
     getPriceProfiles: jest.fn().mockResolvedValue(profiles),
-    insertPriceProfile: jest.fn(
-      async (r: Omit<SupplierPriceProfileRow, 'id'>) => ({ ...r, id: 99 }),
-    ),
-    setPriceProfileActive: jest.fn().mockResolvedValue(true),
+    putPriceCondition: jest
+      .fn()
+      .mockResolvedValue({ id: 99, version: 1, replacedId: null }),
+    retirePriceCondition: jest.fn().mockResolvedValue(true),
     insertCard: jest.fn().mockResolvedValue(undefined),
     updateCard: jest.fn().mockResolvedValue(true),
     archive: jest.fn().mockResolvedValue(true),
@@ -155,16 +173,22 @@ describe('SupplierCardService.getCard', () => {
     expect(card.priceProfiles[0]).toMatchObject({
       scopeLevel: 'BRAND',
       brandPmId: '10',
+      profileKind: 'condition',
+      priceBasis: null,
       isPromo: true,
-      isImportBase: false,
       ruleStatus: 'a_venir',
       defaultRemisePct: 12.5,
       defaultMargePct: null,
+      retiredAt: null,
+      retiredBy: null,
     });
+    // Profil d'import : lecture seule, aucun état de règle.
     expect(card.priceProfiles[1]).toMatchObject({
+      profileKind: 'import',
+      priceBasis: 'BRUT',
       isPromo: false,
-      isImportBase: true,
-      ruleStatus: 'sans_taux',
+      ruleStatus: null,
+      supersededBy: null,
     });
     expect(card.possibleDuplicates.map((d) => [d.splId, d.kind])).toEqual([
       ['26', 'exact'],
@@ -303,27 +327,22 @@ describe('SupplierCardService.createPriceRule', () => {
     remisePct: 30,
   };
 
-  it('marque × famille : reprend les paramètres d’import du profil de base', async () => {
+  it('marque × famille : une condition, sans aucun paramètre d’import', async () => {
     const { service, repo } = setup();
     const res = await service.createPriceRule('71', boschCables, 'u-42');
     expect(res).toEqual({ id: 99, version: 1 });
-    expect(repo.setPriceProfileActive).not.toHaveBeenCalled();
-    expect(repo.insertPriceProfile).toHaveBeenCalledWith({
-      supplier_id: '71',
-      scope_level: 'FAMILY',
-      scope_code: 'NU17',
-      brand_pm_id: '10',
-      price_basis: 'BRUT',
-      derivation: 'REMISE_ON_BRUT',
-      key_field: 'REF',
-      column_mapping: { ref: 'A', brut: 'C' },
-      version: 1,
-      effective_from: null,
-      effective_to: null,
-      created_by: 'u-42',
-      change_reason: null,
-      default_remise_pct: 30,
-      default_marge_pct: null,
+    expect(repo.putPriceCondition).toHaveBeenCalledTimes(1);
+    expect(repo.putPriceCondition).toHaveBeenCalledWith({
+      supplierId: '71',
+      brandPmId: '10',
+      scopeLevel: 'FAMILY',
+      scopeCode: 'NU17',
+      effectiveFrom: null,
+      effectiveTo: null,
+      remisePct: 30,
+      margePct: null,
+      changeReason: null,
+      by: 'u-42',
     });
   });
 
@@ -339,17 +358,22 @@ describe('SupplierCardService.createPriceRule', () => {
       },
       'u-42',
     );
-    expect(repo.insertPriceProfile).toHaveBeenCalledWith(
+    expect(repo.putPriceCondition).toHaveBeenCalledWith(
       expect.objectContaining({
-        effective_from: '2026-12-01T00:00:00.000Z',
-        effective_to: '2027-01-01T00:00:00.000Z',
-        change_reason: 'PROMO câbles',
+        effectiveFrom: '2026-12-01T00:00:00.000Z',
+        effectiveTo: '2027-01-01T00:00:00.000Z',
+        changeReason: 'PROMO câbles',
       }),
     );
   });
 
-  it('même clé active : nouvelle version, l’ancienne désactivée d’abord', async () => {
+  it('remplacement : un seul appel atomique, version rendue par la base', async () => {
     const { service, repo } = setup();
+    repo.putPriceCondition.mockResolvedValueOnce({
+      id: 100,
+      version: 3,
+      replacedId: 5,
+    });
     const res = await service.createPriceRule(
       '71',
       {
@@ -361,33 +385,18 @@ describe('SupplierCardService.createPriceRule', () => {
       },
       'u-42',
     );
-    expect(res.version).toBe(3);
-    expect(repo.setPriceProfileActive).toHaveBeenCalledWith('71', 5, false);
-    expect(repo.setPriceProfileActive.mock.invocationCallOrder[0]).toBeLessThan(
-      repo.insertPriceProfile.mock.invocationCallOrder[0],
-    );
+    expect(res).toEqual({ id: 100, version: 3 });
+    expect(repo.putPriceCondition).toHaveBeenCalledTimes(1);
+    expect(repo.retirePriceCondition).not.toHaveBeenCalled();
   });
 
-  it('échec d’insertion : l’ancienne version est réactivée, 409', async () => {
+  it('conflit en base : 409, aucune autre écriture', async () => {
     const { service, repo } = setup();
-    repo.insertPriceProfile.mockRejectedValueOnce(new PriceRuleConflictError());
+    repo.putPriceCondition.mockRejectedValueOnce(new PriceRuleConflictError());
     await expect(
-      service.createPriceRule(
-        '71',
-        {
-          scopeLevel: 'BRAND',
-          brandPmId: '10',
-          remisePct: 15,
-          effectiveFrom: '2026-12-01',
-          effectiveTo: '2026-12-31',
-        },
-        'u-42',
-      ),
+      service.createPriceRule('71', boschCables, 'u-42'),
     ).rejects.toBeInstanceOf(ConflictException);
-    expect(repo.setPriceProfileActive.mock.calls).toEqual([
-      ['71', 5, false],
-      ['71', 5, true],
-    ]);
+    expect(repo.retirePriceCondition).not.toHaveBeenCalled();
   });
 
   it('marque non liée au fournisseur : 400, rien écrit', async () => {
@@ -395,14 +404,15 @@ describe('SupplierCardService.createPriceRule', () => {
     await expect(
       service.createPriceRule('71', { ...boschCables, brandPmId: '11' }, 'u'),
     ).rejects.toBeInstanceOf(BadRequestException);
-    expect(repo.insertPriceProfile).not.toHaveBeenCalled();
+    expect(repo.putPriceCondition).not.toHaveBeenCalled();
   });
 
   it('fournisseur absent : 404', async () => {
-    const { service } = setup(null);
+    const { service, repo } = setup(null);
     await expect(
       service.createPriceRule('999', boschCables, 'u'),
     ).rejects.toBeInstanceOf(NotFoundException);
+    expect(repo.putPriceCondition).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -412,64 +422,44 @@ describe('SupplierCardService.createPriceRule', () => {
       { scopeLevel: 'BRAND' as const, brandPmId: '10', remisePct: 10 },
     ],
   ])(
-    'sans profil d’import de base, une règle %s est refusée (garde d’import)',
+    'sans profil d’import, une condition %s est acceptée (plus de recopie)',
     async (_l, dto) => {
       const { service, repo } = setup(row(), []);
-      await expect(
-        service.createPriceRule('71', dto, 'u'),
-      ).rejects.toBeInstanceOf(ConflictException);
-      expect(repo.insertPriceProfile).not.toHaveBeenCalled();
+      await service.createPriceRule('71', dto, 'u');
+      expect(repo.getPriceProfiles).not.toHaveBeenCalled();
+      expect(repo.putPriceCondition).toHaveBeenCalledWith(
+        expect.objectContaining({ scopeLevel: dto.scopeLevel, by: 'u' }),
+      );
     },
   );
-
-  it('sans profil de base, une règle de famille reste possible (jamais retenue par l’import)', async () => {
-    const { service, repo } = setup(row(), []);
-    await service.createPriceRule('71', boschCables, 'u');
-    expect(repo.insertPriceProfile).toHaveBeenCalledWith(
-      expect.objectContaining({
-        price_basis: 'BRUT',
-        derivation: 'REMISE_ON_BRUT',
-        key_field: 'REF',
-        column_mapping: {},
-      }),
-    );
-  });
 });
 
 describe('SupplierCardService.retirePriceRule', () => {
-  it('règle ordinaire : active = false, sans suppression', async () => {
+  it('condition : retirée avec son auteur, sans suppression', async () => {
     const { service, repo } = setup();
     await service.retirePriceRule('71', 5, 'u-42');
-    expect(repo.setPriceProfileActive).toHaveBeenCalledWith('71', 5, false);
-    expect(repo.insertPriceProfile).not.toHaveBeenCalled();
+    expect(repo.retirePriceCondition).toHaveBeenCalledWith('71', 5, 'u-42');
+    expect(repo.putPriceCondition).not.toHaveBeenCalled();
   });
 
-  it('profil de base avec remise : nouvelle version sans remise, jamais désactivé sans remplaçant', async () => {
-    const base = profile({ default_remise_pct: '8' });
-    const { service, repo } = setup(row(), [base]);
-    await service.retirePriceRule('71', 4, 'u-42');
-    expect(repo.setPriceProfileActive).toHaveBeenCalledWith('71', 4, false);
-    expect(repo.insertPriceProfile).toHaveBeenCalledWith(
-      expect.objectContaining({
-        scope_level: 'SUPPLIER',
-        version: 4,
-        column_mapping: { ref: 'A', brut: 'C' },
-        default_remise_pct: null,
-        default_marge_pct: null,
-      }),
-    );
-  });
-
-  it('ligne sans remise ni marge (profil d’import) : 409', async () => {
+  it('profil d’import : 409, jamais retiré depuis la fiche', async () => {
     const { service, repo } = setup();
     await expect(service.retirePriceRule('71', 4, 'u')).rejects.toBeInstanceOf(
       ConflictException,
     );
-    expect(repo.setPriceProfileActive).not.toHaveBeenCalled();
+    expect(repo.retirePriceCondition).not.toHaveBeenCalled();
+  });
+
+  it('condition retirée entre-temps : 409', async () => {
+    const { service, repo } = setup();
+    repo.retirePriceCondition.mockResolvedValueOnce(false);
+    await expect(service.retirePriceRule('71', 5, 'u')).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 
   it('règle inconnue, inactive ou d’un autre fournisseur : 404', async () => {
-    const { service } = setup(row(), [profile({ id: 7, active: false })]);
+    const { service } = setup(row(), [condition({ id: 7, active: false })]);
     await expect(service.retirePriceRule('71', 7, 'u')).rejects.toBeInstanceOf(
       NotFoundException,
     );

@@ -73,22 +73,30 @@ interface SupplierPriceProfile {
   scopeCode: string | null;
   /** Marque de la règle (pm_id), ou null. */
   brandPmId: string | null;
-  priceBasis: string;
-  derivation: string;
+  /**
+   * "import" : profil lu par l'import tarifaire, en lecture seule ;
+   * "condition" : remise / marge saisie sur la fiche (complément CH-3).
+   */
+  profileKind: "import" | "condition";
+  /** Paramètres d'import : ligne "import" seulement. */
+  priceBasis: string | null;
+  derivation: string | null;
   version: number;
   effectiveFrom: string | null;
   effectiveTo: string | null;
   active: boolean;
   isPromo: boolean;
-  /** Profil d'import de base (fournisseur, sans marque ni date). */
-  isImportBase: boolean;
-  ruleStatus: string;
+  /** État d'une condition ; null pour un profil d'import. */
+  ruleStatus: string | null;
   supersededBy: number | null;
   createdBy: string | null;
   changeReason: string | null;
   createdAt: string;
   defaultRemisePct: number | null;
   defaultMargePct: number | null;
+  /** Retrait d'une condition : date et auteur. */
+  retiredAt: string | null;
+  retiredBy: string | null;
 }
 
 export interface SupplierDuplicate {

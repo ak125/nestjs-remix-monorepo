@@ -86,8 +86,9 @@ export class SuppliersController {
 
   /**
    * Règle de remise / marge fournisseur × marque × famille ou sous-famille
-   * (complément CH-2). Écrite dans supplier_price_profiles, non lue par le
-   * calcul des prix (branchement : mandat séparé).
+   * (complément CH-2). Écrite dans supplier_price_profiles comme ligne
+   * 'condition' (complément CH-3), non lue par le calcul des prix
+   * (branchement : mandat séparé).
    */
   @Post(':id/price-rules')
   createPriceRule(

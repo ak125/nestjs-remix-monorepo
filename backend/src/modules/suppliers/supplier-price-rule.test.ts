@@ -6,11 +6,8 @@
  * période (début inclus, fin exclue).
  */
 import {
-  isBaseImportProfile,
   priceRuleStatus,
   resolvePriceRule,
-  samePriceRuleKey,
-  selectedByImport,
   type PriceRule,
 } from './supplier-price-rule';
 
@@ -239,39 +236,5 @@ describe('priceRuleStatus', () => {
     expect(
       priceRuleStatus({ ...supplier, remisePct: null }, rules, AT).status,
     ).toBe('sans_taux');
-  });
-});
-
-describe('clé de règle et garde d’import', () => {
-  it('même clé : dates comparées en instant, pas en texte', () => {
-    const a = rule({
-      scopeLevel: 'FAMILY',
-      brandPmId: SEIM,
-      scopeCode: CABLES,
-      effectiveFrom: '2026-12-01T00:00:00.000Z',
-    });
-    const b = { ...a, id: 999, effectiveFrom: '2026-12-01T00:00:00+00:00' };
-    expect(samePriceRuleKey(a, b)).toBe(true);
-    expect(samePriceRuleKey(a, { ...b, brandPmId: OTHER })).toBe(false);
-    expect(
-      samePriceRuleKey(a, { ...b, effectiveTo: '2027-01-01T00:00:00Z' }),
-    ).toBe(false);
-  });
-
-  it('profil de base = fournisseur, sans marque ni date, actif', () => {
-    expect(isBaseImportProfile(supplier)).toBe(true);
-    expect(
-      isBaseImportProfile({ ...supplier, effectiveTo: '2027-01-01T00:00:00Z' }),
-    ).toBe(false);
-    expect(isBaseImportProfile(brand)).toBe(false);
-    expect(isBaseImportProfile({ ...supplier, active: false })).toBe(false);
-  });
-
-  it('niveaux retenus par l’import actuel : fournisseur et marque', () => {
-    expect(
-      ['SUPPLIER', 'BRAND', 'FAMILY', 'SUBFAMILY'].filter((l) =>
-        selectedByImport(l as PriceRule['scopeLevel']),
-      ),
-    ).toEqual(['SUPPLIER', 'BRAND']);
   });
 });

@@ -29,5 +29,5 @@ export type {
   SupplierIdentity,
   SupplierLinkedBrand,
   SupplierPriceProfileRow,
-  SupplierPriceProfileInsert,
+  SupplierPriceConditionPut,
 } from './supplier-card.repository';

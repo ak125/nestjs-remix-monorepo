@@ -6,10 +6,12 @@
  * Actions : validation de localisation (POST :id/location-validation, auteur
  * = utilisateur connecté, jamais automatique) et archivage (POST :id/deactivate,
  * spl_status='archive' + spl_display='0', sans suppression).
- * Règles de remise (complément CH-2) : saisie (POST :id/price-rules) et
- * retrait (POST :id/price-rules/:ruleId/retire, active = false) de règles
- * fournisseur × marque × famille / sous-famille. Non lues par le calcul des
- * prix tant que le branchement (mandat séparé) n'est pas fait.
+ * Règles de remise (compléments CH-2 et CH-3) : saisie (POST :id/price-rules,
+ * remplacement atomique) et retrait (POST :id/price-rules/:ruleId/retire,
+ * active = false, auteur et date) de conditions fournisseur × marque ×
+ * famille / sous-famille. Les profils d'import sont affichés en lecture
+ * seule. Conditions non lues par le calcul des prix tant que le branchement
+ * (mandat séparé) n'est pas fait.
  * Accès : nom du secret et état seulement, aucune valeur.
  */
 import { type ReactNode } from "react";
@@ -465,7 +467,7 @@ export default function AdminSupplierCard() {
                             Promo
                           </Badge>
                         ) : null}
-                        {p.isImportBase ? (
+                        {p.profileKind === "import" ? (
                           <Badge className="ml-2" variant="outline">
                             Profil d’import
                           </Badge>
@@ -482,25 +484,35 @@ export default function AdminSupplierCard() {
                       </TableCell>
                       <TableCell>v{p.version}</TableCell>
                       <TableCell>
-                        <Badge
-                          variant={
-                            p.ruleStatus === "en_vigueur"
-                              ? "success"
-                              : "outline"
-                          }
-                        >
-                          {labelOf(RULE_STATUS_LABELS, p.ruleStatus)}
-                        </Badge>
+                        {p.ruleStatus === null ? (
+                          <Badge variant="outline">
+                            {p.active ? "Lu par l’import" : "Inactif"}
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant={
+                              p.ruleStatus === "en_vigueur"
+                                ? "success"
+                                : "outline"
+                            }
+                          >
+                            {labelOf(RULE_STATUS_LABELS, p.ruleStatus)}
+                          </Badge>
+                        )}
                         {p.supersededBy !== null ? (
                           <span className="ml-1 text-xs text-muted-foreground">
                             par #{p.supersededBy}
                           </span>
                         ) : null}
+                        {p.retiredAt !== null ? (
+                          <span className="block text-xs text-muted-foreground">
+                            Retirée le {formatDate(p.retiredAt)}
+                            {p.retiredBy ? ` par ${p.retiredBy}` : ""}
+                          </span>
+                        ) : null}
                       </TableCell>
                       <TableCell>
-                        {p.active &&
-                        (p.defaultRemisePct !== null ||
-                          p.defaultMargePct !== null) ? (
+                        {p.active && p.profileKind === "condition" ? (
                           <Form
                             method="post"
                             onSubmit={(e) => {

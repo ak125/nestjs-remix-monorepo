@@ -7,6 +7,10 @@ CREATE ROLE anon NOLOGIN;
 CREATE ROLE authenticated NOLOGIN;
 CREATE ROLE service_role NOLOGIN BYPASSRLS;
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+-- Comme Supabase : toute fonction nouvelle du schéma est exécutable par les
+-- trois rôles tant que sa migration ne le révoque pas.
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT EXECUTE ON FUNCTIONS TO anon, authenticated, service_role;
 
 CREATE TABLE public.___xtr_supplier (
   spl_id      text PRIMARY KEY,

@@ -98,9 +98,15 @@ export interface SupplierPriceProfileRow {
   scope_code: string | null;
   /** pieces_marque.pm_id en texte (complément CH-2), ou null. */
   brand_pm_id: string | null;
-  price_basis: string;
-  derivation: string;
-  key_field: string;
+  /**
+   * 'import' : profil lu par l'import tarifaire (paramètres de fichier) ;
+   * 'condition' : remise / marge de la fiche (complément CH-3).
+   */
+  profile_kind: 'import' | 'condition';
+  /** Paramètres d'import : renseignés sur une ligne 'import', null sinon. */
+  price_basis: string | null;
+  derivation: string | null;
+  key_field: string | null;
   /** Correspondance de colonnes du fichier tarif (noms de colonnes seulement). */
   column_mapping: unknown;
   version: number;
@@ -112,6 +118,9 @@ export interface SupplierPriceProfileRow {
   created_at: string;
   default_remise_pct: number | string | null;
   default_marge_pct: number | string | null;
+  /** Retrait d'une condition : date et auteur (complément CH-3). */
+  retired_at: string | null;
+  retired_by: string | null;
 }
 
 /** Collision de clé primaire à la création (création concurrente). */
@@ -128,16 +137,24 @@ const T_PROFILES = 'supplier_price_profiles';
 const ROW_CAP = 1000;
 
 const PROFILE_COLUMNS =
-  'id, supplier_id, scope_level, scope_code, brand_pm_id, price_basis, ' +
-  'derivation, key_field, column_mapping, version, effective_from, ' +
-  'effective_to, active, created_by, change_reason, created_at, ' +
-  'default_remise_pct, default_marge_pct';
+  'id, supplier_id, profile_kind, scope_level, scope_code, brand_pm_id, ' +
+  'price_basis, derivation, key_field, column_mapping, version, ' +
+  'effective_from, effective_to, active, created_by, change_reason, ' +
+  'created_at, default_remise_pct, default_marge_pct, retired_at, retired_by';
 
-/** Ligne de règle à insérer (complément CH-2) ; id et created_at par la base. */
-export type SupplierPriceProfileInsert = Omit<
-  SupplierPriceProfileRow,
-  'id' | 'created_at' | 'active'
->;
+/** Condition à écrire (complément CH-3) : portée, période, taux, auteur. */
+export interface SupplierPriceConditionPut {
+  supplierId: string;
+  brandPmId: string | null;
+  scopeLevel: string;
+  scopeCode: string | null;
+  effectiveFrom: string | null;
+  effectiveTo: string | null;
+  remisePct: number | null;
+  margePct: number | null;
+  changeReason: string | null;
+  by: string;
+}
 
 /** Une règle active de même clé existe déjà (index unique, écriture concurrente). */
 export class PriceRuleConflictError extends Error {
@@ -242,9 +259,9 @@ export class SupplierCardRepository extends SupabaseBaseService {
   }
 
   /**
-   * Profils de prix du fournisseur, toutes versions. Un profil est immuable :
-   * une condition nouvelle = nouvelle version (insertPriceProfile), l'ancienne
-   * passe active = false (setPriceProfileActive).
+   * Profils de prix du fournisseur, toutes versions et les deux natures
+   * ('import', 'condition'). Une ligne est immuable : une condition nouvelle
+   * = nouvelle version (putPriceCondition), un retrait = active false.
    */
   async getPriceProfiles(splId: string): Promise<SupplierPriceProfileRow[]> {
     const { data, error } = await this.supabase
@@ -258,41 +275,70 @@ export class SupplierCardRepository extends SupabaseBaseService {
     return (data ?? []) as unknown as SupplierPriceProfileRow[];
   }
 
-  /** Nouvelle version de règle ; 409 métier si la clé active est déjà prise. */
-  async insertPriceProfile(
-    row: SupplierPriceProfileInsert,
-  ): Promise<SupplierPriceProfileRow> {
-    const { data, error } = await this.supabase
-      .from(T_PROFILES)
-      .insert({ ...row, active: true })
-      .select(PROFILE_COLUMNS)
-      .single();
+  /**
+   * Écrit une condition (complément CH-3) par `supplier_price_condition_put` :
+   * retrait de la version active de même clé et insertion de la nouvelle dans
+   * une seule transaction, sous verrou par fournisseur. Jamais d'instant sans
+   * condition active ; en cas d'erreur, rien n'est écrit.
+   */
+  async putPriceCondition(
+    c: SupplierPriceConditionPut,
+  ): Promise<{ id: number; version: number; replacedId: number | null }> {
+    const { data, error } = await this.callRpc<
+      Array<{
+        rule_id: number;
+        rule_version: number;
+        replaced_id: number | null;
+      }>
+    >('supplier_price_condition_put', {
+      p_supplier_id: c.supplierId,
+      p_brand_pm_id: c.brandPmId,
+      p_scope_level: c.scopeLevel,
+      p_scope_code: c.scopeCode,
+      p_effective_from: c.effectiveFrom,
+      p_effective_to: c.effectiveTo,
+      p_remise_pct: c.remisePct,
+      p_marge_pct: c.margePct,
+      p_change_reason: c.changeReason,
+      p_by: c.by,
+    });
     if (error) {
-      if (error.code === '23505') throw new PriceRuleConflictError();
-      throw new Error(`insertPriceProfile failed: ${error.message}`);
+      if ('code' in error && error.code === '23505')
+        throw new PriceRuleConflictError();
+      throw new Error(`putPriceCondition failed: ${error.message}`);
     }
-    return data as unknown as SupplierPriceProfileRow;
+    const row = Array.isArray(data) ? data[0] : null;
+    if (!row) throw new Error('putPriceCondition: aucune ligne retournée');
+    return {
+      id: Number(row.rule_id),
+      version: Number(row.rule_version),
+      replacedId: row.replaced_id === null ? null : Number(row.replaced_id),
+    };
   }
 
   /**
-   * Active ou désactive une ligne du fournisseur, sans DELETE.
-   * @returns false si la ligne n'existe pas pour ce fournisseur.
+   * Retire une condition active du fournisseur : active = false, date et
+   * auteur du retrait, sans DELETE. Un profil d'import n'est jamais touché.
+   * @returns false si aucune condition active ne porte cet id.
    */
-  async setPriceProfileActive(
+  async retirePriceCondition(
     splId: string,
     id: number,
-    active: boolean,
+    by: string,
   ): Promise<boolean> {
     const { data, error } = await this.supabase
       .from(T_PROFILES)
-      .update({ active })
+      .update({
+        active: false,
+        retired_at: new Date().toISOString(),
+        retired_by: by,
+      })
       .eq('id', id)
       .eq('supplier_id', splId)
+      .eq('profile_kind', 'condition')
+      .eq('active', true)
       .select('id');
-    if (error) {
-      if (error.code === '23505') throw new PriceRuleConflictError();
-      throw new Error(`setPriceProfileActive failed: ${error.message}`);
-    }
+    if (error) throw new Error(`retirePriceCondition failed: ${error.message}`);
     return (data ?? []).length > 0;
   }
 
