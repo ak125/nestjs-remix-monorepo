@@ -155,6 +155,26 @@ registre applique ces propriétaires ; un autre département passe par `uses`.
 
 Rien n'est inventé : un champ non lisible directement dans le dépôt est omis.
 
+### Seuil évaluable (`threshold.eval`, mandat BZ)
+
+La phrase `threshold.rule` reste la forme lisible. Une règle évaluable par machine
+s'ajoute dans `threshold.eval` : `indicator` (l'`id` d'un `kpi_input` `present` de
+la fonction), `field` (`status`, verdict du producteur, ou `value`), `operator`
+(`eq`, `ne`, `lt`, `le`, `gt`, `ge`, `in`), `value` (liste pour `in`, sinon une
+valeur) et `window_days` (fenêtre du producteur, en jours). Un seuil sans `eval`
+est affiché « non évaluable » par le rapport du matin et n'ouvre rien.
+`wired: true` signifie que le rapport du matin évalue la règle
+(`scripts/governance/registry-thresholds.sh`) ; il exige `eval`.
+
+Le rapport du matin écrit une ligne par département (fonctions par statut, puis
+seuils mesurés, ou « pas de mesure »). Une valeur que le producteur ne rend pas est
+« non mesuré », jamais zéro. Un seuil franchi ouvre ou met à jour une issue par
+fonction : titre fixe « Seuil de fonction — `<id>` », label `issue_label` existant
+(jamais créé), corps remplacé, commentaire au changement de couleur ; au retour
+sous le seuil, un commentaire, jamais de fermeture. `THRESHOLD_ISSUES_MODE`
+(`off`, `dry-run`, `write`) vaut `dry-run` par défaut : les issues sont listées,
+rien n'est écrit.
+
 ### Correspondance des routes
 
 Une clé de route est le chemin du fichier sous `frontend/app/routes`, sans
@@ -190,7 +210,11 @@ vérifier, le rapport liste seulement les lignes citées.
    contient pas la `rule` citée ;
 8. **id** : un identifiant en double, ou non préfixé par son département ;
 9. **reference** : un owner, un sous-agent, un skill ou une capacité consommée
-   qui n'existe pas, ou consommée depuis un département qui ne la possède pas.
+   qui n'existe pas, ou consommée depuis un département qui ne la possède pas ;
+10. **threshold** : un seuil `wired: true` sans `threshold.eval`, un
+    `eval.indicator` qui n'est pas un `kpi_input` `present` de la fonction, un
+    `status` comparé par ordre (`lt`, `le`, `gt`, `ge`) ou à autre chose que `OK`,
+    `WARNING`, `CRITICAL`, une `value` comparée à autre chose qu'un nombre.
 
 ### Rapport de couverture (non bloquant)
 

@@ -201,6 +201,10 @@ function checkDepartmentContracts(departments, fileExists) {
  *                 cited line range stays inside the file;
  *   kpi         — a kpi_input "present" names a producer on disk, which contains
  *                 the cited rule when one is given;
+ *   threshold   — a wired threshold carries an evaluable rule (threshold.eval,
+ *                 mandate BZ), which reads a present kpi_input of the function
+ *                 and compares a status with eq/ne/in (OK, WARNING, CRITICAL) or
+ *                 a value with numbers;
  *   id          — function ids are unique across departments and prefixed by
  *                 their department id;
  *   reference   — owner, subagents, skills and consumed capabilities resolve
@@ -308,6 +312,29 @@ function checkDepartmentFunctions(departments, deps) {
           err(fid, "kpi", `function ${fid} kpi_input ${k.id} is present but its producer is not on disk: ${k.producer || "none"}`);
         } else if (k.rule && !text.includes(k.rule)) {
           err(fid, "kpi", `function ${fid} kpi_input ${k.id}: rule "${k.rule}" not found in ${k.producer}`);
+        }
+      }
+      // threshold
+      const t = f.threshold;
+      if (t && t.wired === true && !t.eval) {
+        err(fid, "threshold", `function ${fid} threshold is wired without an evaluable rule (threshold.eval)`);
+      }
+      if (t && t.eval) {
+        const e = t.eval;
+        const input = (Array.isArray(f.kpi_input) ? f.kpi_input : []).find((k) => k.id === e.indicator);
+        if (!input || input.state !== "present") {
+          err(fid, "threshold", `function ${fid} threshold.eval reads indicator "${e.indicator}", which is not a present kpi_input of the function`);
+        }
+        const ordered = ["lt", "le", "gt", "ge"].includes(e.operator);
+        const values = Array.isArray(e.value) ? e.value : [e.value];
+        if (e.field === "status" && ordered) {
+          err(fid, "threshold", `function ${fid} threshold.eval compares a status with "${e.operator}": a status is only eq, ne or in`);
+        }
+        if (e.field === "status" && !values.every((v) => ["OK", "WARNING", "CRITICAL"].includes(v))) {
+          err(fid, "threshold", `function ${fid} threshold.eval compares a status with ${JSON.stringify(e.value)}: OK, WARNING or CRITICAL expected`);
+        }
+        if (e.field === "value" && !values.every((v) => typeof v === "number")) {
+          err(fid, "threshold", `function ${fid} threshold.eval compares a value with ${JSON.stringify(e.value)}: a number expected`);
         }
       }
       // reference
@@ -910,6 +937,12 @@ function runFunctionsSelfTest(ajvValidate) {
     ["path", "evidence workflow absent", (m, f) => { f.evidence[2].workflow = ".github/workflows/absent.yml"; }],
     ["kpi", "present kpi_input whose producer is absent", (m, f) => { f.kpi_input[0].producer = "scripts/governance/__fixtures__/absent.ts"; }],
     ["kpi", "present kpi_input whose rule is not in the producer", (m, f) => { f.kpi_input[0].producer = ".github/workflows/ci.yml"; }],
+    ["threshold", "wired threshold without an evaluable rule", (m, f, g) => { g.threshold.wired = true; }],
+    ["threshold", "evaluable threshold reading an absent kpi_input", (m, f, g) => { g.threshold.eval = structuredClone(f.threshold.eval); g.threshold.eval.indicator = "fixture_absent"; }],
+    ["threshold", "evaluable threshold reading an undeclared indicator", (m, f) => { f.threshold.eval.indicator = "no_such_input"; }],
+    ["threshold", "status compared with an ordering operator", (m, f) => { f.threshold.eval.operator = "gt"; f.threshold.eval.value = "WARNING"; }],
+    ["threshold", "status compared with an unknown verdict", (m, f) => { f.threshold.eval.value = ["WARNING", "ROUGE"]; }],
+    ["threshold", "value compared with a word", (m, f) => { f.threshold.eval.field = "value"; f.threshold.eval.operator = "lt"; f.threshold.eval.value = "dix"; }],
     ["id", "duplicate function id", (m, f, g) => { g.id = f.id; }],
     ["id", "function id not prefixed by its department", (m, f) => { f.id = "b.operational"; }],
     ["reference", "subagent absent", (m, f) => { f.agents = ["no-such-subagent"]; }],
@@ -940,6 +973,11 @@ function runFunctionsSelfTest(ajvValidate) {
     ["absent kpi_input without note", (f, g) => { delete g.kpi_input[0].note; }],
     ["unknown level", (f) => { f.level = "L5"; }],
     ["threshold label outside dept:NN-<id>", (f) => { f.threshold.issue_label = "sales"; }],
+    ["wired threshold without eval", (f) => { delete f.threshold.eval; }],
+    ["threshold eval without window", (f) => { delete f.threshold.eval.window_days; }],
+    ["threshold eval with an unknown operator", (f) => { f.threshold.eval.operator = "above"; }],
+    ["threshold eval `in` with a single value", (f) => { f.threshold.eval.value = "WARNING"; }],
+    ["threshold eval `eq` with a list", (f) => { f.threshold.eval.operator = "eq"; }],
     ["absolute path", (f) => { f.trigger.ref = "/etc/passwd"; }],
     ["parent path", (f) => { f.check.ref = "../outside.js"; }],
     ["unknown field", (f) => { f.extra = true; }],
