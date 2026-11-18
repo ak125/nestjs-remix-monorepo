@@ -1,0 +1,183 @@
+source_pg_id	type	lien	resultat	nouvelle_adresse	libelle
+17	sans-id	/pieces/joint-d-echappement	retiré		joints d'échappement
+258	sans-id	/pieces/servo-frein	retiré		servo-frein
+258	sans-id	/pieces/flexible-de-frein	réécrit	/pieces/flexible-de-frein-83.html	flexibles
+2	canonique	/pieces/courroie-d-accessoire-10.html	intact	/pieces/courroie-d-accessoire-10.html	courroie d'accessoire
+2	canonique	/pieces/alternateur-4.html	intact	/pieces/alternateur-4.html	alternateur
+2	canonique	/pieces/contacteur-demarreur-682.html	retiré		contacteur démarreur
+4	canonique	/pieces/courroie-d-accessoire-10.html	intact	/pieces/courroie-d-accessoire-10.html	courroie d'accessoire
+4	canonique	/pieces/poulie-d-alternateur-1108.html	intact	/pieces/poulie-d-alternateur-1108.html	poulie d'alternateur
+4	canonique	/pieces/demarreur-2.html	intact	/pieces/demarreur-2.html	démarreur
+10	sans-id	/pieces/galet-tendeur-de-courroie-d-accessoire	réécrit	/pieces/galet-tendeur-de-courroie-d-accessoire-310.html	Galet tendeur de courroie d'accessoire
+10	sans-id	/pieces/galet-enrouleur-de-courroie-d-accessoire	réécrit	/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html	Galet enrouleur
+78	canonique	/pieces/plaquette-de-frein-402.html	intact	/pieces/plaquette-de-frein-402.html	plaquettes de frein
+78	canonique	/pieces/disque-de-frein-82.html	intact	/pieces/disque-de-frein-82.html	disques de frein
+78	canonique	/pieces/flexible-de-frein-83.html	intact	/pieces/flexible-de-frein-83.html	flexibles de frein
+78	canonique	/pieces/maitre-cylindre-de-frein-258.html	intact	/pieces/maitre-cylindre-de-frein-258.html	maître-cylindre
+78	canonique	/pieces/cylindre-de-roue-277.html	intact	/pieces/cylindre-de-roue-277.html	cylindre de roue
+78	canonique	/pieces/flexible-de-frein-83.html	intact	/pieces/flexible-de-frein-83.html	flexible de frein
+508	sans-id	/pieces/radiateur-de-refroidissement	réécrit	/pieces/radiateur-de-refroidissement-470.html	Radiateur
+508	sans-id	/pieces/sonde-de-refroidissement	réécrit	/pieces/sonde-de-refroidissement-830.html	Sonde de température
+9	sans-id	/pieces/filtre-a-air	réécrit	/pieces/filtre-a-air-8.html	Filtre à air
+9	sans-id	/pieces/filtre-a-huile	réécrit	/pieces/filtre-a-huile-7.html	Filtre à huile
+26	sans-id	/pieces/tube-d-echappement	retiré		Tube d'échappement
+26	sans-id	/pieces/catalyseur	réécrit	/pieces/catalyseur-429.html	Catalyseur
+1108	sans-id	/pieces/alternateur	réécrit	/pieces/alternateur-4.html	alternateur
+1108	sans-id	/pieces/courroie-d-accessoire	réécrit	/pieces/courroie-d-accessoire-10.html	courroie
+123	sans-id	/pieces/machoires-de-frein	réécrit	/pieces/machoires-de-frein-70.html	mâchoires
+123	sans-id	/pieces/cylindre-de-roue	réécrit	/pieces/cylindre-de-roue-277.html	cylindres de roue
+123	sans-id	/pieces/cable-de-frein-a-main	réécrit	/pieces/cable-de-frein-a-main-124.html	câble de frein à main
+277	sans-id	/pieces/machoires-de-frein	réécrit	/pieces/machoires-de-frein-70.html	mâchoires
+277	sans-id	/pieces/tambour-de-frein	réécrit	/pieces/tambour-de-frein-123.html	tambour
+397	sans-id	/pieces/durite-de-refroidissement	réécrit	/pieces/durite-de-refroidissement-475.html	Durite
+397	sans-id	/pieces/thermostat	réécrit	/pieces/thermostat-316.html	Thermostat
+458	sans-id	/pieces/filtre-a-carburant	réécrit	/pieces/filtre-a-carburant-9.html	Filtre à carburant
+1	sans-id	/pieces/alternateur	réécrit	/pieces/alternateur-4.html	Alternateur
+74	sans-id	/pieces/pompe-a-vide-de-freinage	réécrit	/pieces/pompe-a-vide-de-freinage-387.html	pompe à vide
+74	sans-id	/pieces/maitre-cylindre-de-frein	réécrit	/pieces/maitre-cylindre-de-frein-258.html	Maître-cylindre
+1123	sans-id	/pieces/kit-de-chaine-de-distribution	réécrit	/pieces/kit-de-chaine-de-distribution-1389.html	kit complet
+249	sans-id	/pieces/support-moteur	réécrit	/pieces/support-moteur-247.html	support moteur
+249	sans-id	/pieces/support-moteur	réécrit	/pieces/support-moteur-247.html	Support moteur
+70	canonique	/pieces/tambour-de-frein-123.html	intact	/pieces/tambour-de-frein-123.html	tambour de frein
+70	canonique	/pieces/cylindre-de-roue-277.html	intact	/pieces/cylindre-de-roue-277.html	cylindre de roue
+70	canonique	/pieces/plaquette-de-frein-402.html	intact	/pieces/plaquette-de-frein-402.html	plaquettes
+243	sans-id	/pieces/bobine-d-allumage	réécrit	/pieces/bobine-d-allumage-689.html	Bobine d'allumage
+407	sans-id	/pieces/plaquette-de-frein	réécrit	/pieces/plaquette-de-frein-402.html	plaquettes
+577	sans-id	/pieces/kit-d-embrayage	réécrit	/pieces/kit-d-embrayage-479.html	kit d'embrayage
+577	sans-id	/pieces/kit-d-embrayage	réécrit	/pieces/kit-d-embrayage-479.html	Kit d'embrayage
+191	sans-id	/pieces/rotule-de-direction	réécrit	/pieces/rotule-de-direction-2066.html	rotules
+191	sans-id	/pieces/barre-de-direction	réécrit	/pieces/barre-de-direction-285.html	barres de direction
+318	sans-id	/pieces/pochette-joints-moteur	retiré		Pochette joints moteur
+321	sans-id	/pieces/joint-de-culasse	réécrit	/pieces/joint-de-culasse-318.html	Joint de culasse
+467	sans-id	/pieces/thermostat	réécrit	/pieces/thermostat-316.html	thermostat
+851	sans-id	/pieces/compresseur-de-climatisation	réécrit	/pieces/compresseur-de-climatisation-447.html	compresseur
+851	sans-id	/pieces/condenseur-de-climatisation	réécrit	/pieces/condenseur-de-climatisation-448.html	condenseur
+8	canonique	/pieces/filtre-a-huile-7.html	intact	/pieces/filtre-a-huile-7.html	filtre à huile
+8	canonique	/pieces/filtre-a-carburant-9.html	intact	/pieces/filtre-a-carburant-9.html	filtre à carburant
+12	sans-id	/pieces/soufflet-de-direction	réécrit	/pieces/soufflet-de-direction-191.html	soufflets
+12	sans-id	/pieces/cremailliere-de-direction	réécrit	/pieces/cremailliere-de-direction-286.html	crémaillère
+12	sans-id	/pieces/cremailliere-de-direction	réécrit	/pieces/cremailliere-de-direction-286.html	Crémaillère de direction
+274	sans-id	/pieces/biellette-de-barre-stabilisatrice	retiré		biellettes
+274	sans-id	/pieces/biellette-de-barre-stabilisatrice	retiré		Biellettes
+124	canonique	/pieces/machoires-de-frein-70.html	intact	/pieces/machoires-de-frein-70.html	mâchoires de frein
+124	canonique	/pieces/etrier-de-frein-78.html	intact	/pieces/etrier-de-frein-78.html	étrier arrière
+188	canonique	/pieces/amortisseur-854.html	intact	/pieces/amortisseur-854.html	amortisseur
+188	canonique	/pieces/amortisseur-854.html	intact	/pieces/amortisseur-854.html	amortisseurs
+188	canonique	/pieces/kit-de-butee-de-suspension-1632.html	intact	/pieces/kit-de-butee-de-suspension-1632.html	butées de suspension
+188	canonique	/pieces/amortisseur-854.html	intact	/pieces/amortisseur-854.html	amortisseur
+188	canonique	/pieces/butee-elastique-d-amortisseur-1182.html	retiré		butée élastique
+475	sans-id	/pieces/radiateur-de-refroidissement	réécrit	/pieces/radiateur-de-refroidissement-470.html	Radiateur de refroidissement
+475	sans-id	/pieces/thermostat	réécrit	/pieces/thermostat-316.html	Thermostat
+475	sans-id	/pieces/pompe-a-eau	réécrit	/pieces/pompe-a-eau-1260.html	Pompe à eau
+1389	sans-id	/pieces/kit-de-distribution	réécrit	/pieces/kit-de-distribution-307.html	Kit courroie de distribution
+234	sans-id	/pieces/recepteur-d-embrayage	réécrit	/pieces/recepteur-d-embrayage-620.html	récepteur d'embrayage
+234	sans-id	/pieces/recepteur-d-embrayage	réécrit	/pieces/recepteur-d-embrayage-620.html	Récepteur d'embrayage
+234	sans-id	/pieces/kit-d-embrayage	réécrit	/pieces/kit-d-embrayage-479.html	Kit d'embrayage
+306	sans-id	/pieces/kit-de-distribution	réécrit	/pieces/kit-de-distribution-307.html	kit de distribution complet
+306	sans-id	/pieces/kit-de-distribution	réécrit	/pieces/kit-de-distribution-307.html	Kit de distribution
+306	sans-id	/pieces/pompe-a-eau	réécrit	/pieces/pompe-a-eau-1260.html	Pompe à eau
+273	canonique	/pieces/rotule-de-suspension-2462.html	intact	/pieces/rotule-de-suspension-2462.html	rotules de suspension
+273	canonique	/pieces/biellette-de-barre-stabilisatrice-3230.html	retiré		biellettes de barre stabilisatrice
+273	canonique	/pieces/barre-stabilisatrice-274.html	intact	/pieces/barre-stabilisatrice-274.html	barre stabilisatrice
+273	canonique	/pieces/cremailliere-de-direction-286.html	intact	/pieces/cremailliere-de-direction-286.html	crémaillère de direction
+273	canonique	/pieces/amortisseur-854.html	intact	/pieces/amortisseur-854.html	amortisseur
+273	canonique	/pieces/ressort-de-suspension-188.html	intact	/pieces/ressort-de-suspension-188.html	ressort de suspension
+286	sans-id	/pieces/rotule-de-direction	réécrit	/pieces/rotule-de-direction-2066.html	Rotule de direction
+286	sans-id	/pieces/pompe-de-direction-assistee	réécrit	/pieces/pompe-de-direction-assistee-12.html	Pompe de direction assistée
+286	sans-id	/pieces/soufflet-de-direction	réécrit	/pieces/soufflet-de-direction-191.html	Soufflet de direction
+290	sans-id	/pieces/ampoule-feu-arriere	retiré		Ampoule feu arrière
+655	sans-id	/pieces/disque-de-frein	réécrit	/pieces/disque-de-frein-82.html	Disque de frein
+685	sans-id	/pieces/bougie-d-allumage	réécrit	/pieces/bougie-d-allumage-686.html	bougies
+685	sans-id	/pieces/bobine-d-allumage	réécrit	/pieces/bobine-d-allumage-689.html	bobine
+448	sans-id	/pieces/compresseur-de-climatisation	réécrit	/pieces/compresseur-de-climatisation-447.html	Compresseur
+448	sans-id	/pieces/filtre-d-habitacle	réécrit	/pieces/filtre-d-habitacle-424.html	Filtre d'habitacle
+624	sans-id	/pieces/soufflet-de-cardan	réécrit	/pieces/soufflet-de-cardan-193.html	soufflet de cardan
+259	sans-id	/pieces/correcteur-de-portee	retiré		correcteur de portée
+854	canonique	/pieces/ressort-de-suspension-188.html	intact	/pieces/ressort-de-suspension-188.html	ressorts de suspension
+854	canonique	/pieces/kit-de-butee-de-suspension-1632.html	intact	/pieces/kit-de-butee-de-suspension-1632.html	butées de suspension
+854	canonique	/pieces/ressort-de-suspension-188.html	intact	/pieces/ressort-de-suspension-188.html	ressort de suspension
+854	canonique	/pieces/butee-elastique-d-amortisseur-1182.html	retiré		butée élastique d'amortisseur
+7	sans-id	/pieces/filtre-a-air	réécrit	/pieces/filtre-a-air-8.html	filtre à air
+7	sans-id	/pieces/filtre-a-carburant	réécrit	/pieces/filtre-a-carburant-9.html	filtre à carburant
+7	sans-id	/pieces/filtre-de-boite-auto	retiré		filtre à huile de boîte automatique
+7	sans-id	/pieces/bouchon-de-vidange	réécrit	/pieces/bouchon-de-vidange-593.html	bouchon de vidange
+7	sans-id	/pieces/filtre-a-air	réécrit	/pieces/filtre-a-air-8.html	filtre à air
+285	sans-id	/pieces/cremailliere-de-direction	réécrit	/pieces/cremailliere-de-direction-286.html	crémaillère
+285	sans-id	/pieces/soufflet-de-direction	réécrit	/pieces/soufflet-de-direction-191.html	soufflets
+620	sans-id	/pieces/kit-d-embrayage	réécrit	/pieces/kit-d-embrayage-479.html	kit d'embrayage
+620	sans-id	/pieces/emetteur-d-embrayage	réécrit	/pieces/emetteur-d-embrayage-234.html	Émetteur d'embrayage
+620	sans-id	/pieces/kit-d-embrayage	réécrit	/pieces/kit-d-embrayage-479.html	Kit d'embrayage
+316	sans-id	/pieces/pompe-a-eau	réécrit	/pieces/pompe-a-eau-1260.html	Pompe à eau
+316	sans-id	/pieces/durite-de-refroidissement	réécrit	/pieces/durite-de-refroidissement-475.html	Durite de refroidissement
+316	sans-id	/pieces/radiateur-de-refroidissement	réécrit	/pieces/radiateur-de-refroidissement-470.html	Radiateur
+1145	sans-id	/pieces/corps-papillon	réécrit	/pieces/corps-papillon-158.html	corps papillon
+1145	sans-id	/pieces/fap	réécrit	/pieces/fap-1256.html	FAP
+686	sans-id	/pieces/bobine-d-allumage	réécrit	/pieces/bobine-d-allumage-689.html	Bobine d'allumage
+82	canonique	/pieces/plaquette-de-frein-402.html	intact	/pieces/plaquette-de-frein-402.html	plaquettes de frein
+82	canonique	/pieces/machoires-de-frein-70.html	intact	/pieces/machoires-de-frein-70.html	tambour de frein
+82	canonique	/pieces/plaquette-de-frein-402.html	intact	/pieces/plaquette-de-frein-402.html	plaquette de frein
+82	canonique	/pieces/etrier-de-frein-78.html	intact	/pieces/etrier-de-frein-78.html	étrier de frein
+82	canonique	/pieces/flexible-de-frein-83.html	intact	/pieces/flexible-de-frein-83.html	flexible de frein
+447	sans-id	/pieces/condenseur-de-climatisation	réécrit	/pieces/condenseur-de-climatisation-448.html	Condenseur
+447	sans-id	/pieces/filtre-d-habitacle	réécrit	/pieces/filtre-d-habitacle-424.html	Filtre d'habitacle
+313	sans-id	/pieces/kit-de-distribution	réécrit	/pieces/kit-de-distribution-307.html	kit de distribution complet
+470	canonique	/pieces/pompe-a-eau-1260.html	intact	/pieces/pompe-a-eau-1260.html	pompe à eau
+470	canonique	/pieces/thermostat-316.html	intact	/pieces/thermostat-316.html	thermostat
+470	canonique	/pieces/durite-de-refroidissement-475.html	intact	/pieces/durite-de-refroidissement-475.html	durits de refroidissement
+402	canonique	/pieces/disque-de-frein-82.html	intact	/pieces/disque-de-frein-82.html	disques de frein
+402	canonique	/pieces/disque-de-frein-82.html	intact	/pieces/disque-de-frein-82.html	disque de frein
+402	canonique	/pieces/machoires-de-frein-70.html	intact	/pieces/machoires-de-frein-70.html	mâchoire de frein
+308	sans-id	/pieces/kit-de-distribution	réécrit	/pieces/kit-de-distribution-307.html	kit de distribution complet
+308	sans-id	/pieces/courroie-de-distribution	réécrit	/pieces/courroie-de-distribution-306.html	Courroie de distribution
+830	sans-id	/pieces/thermostat	réécrit	/pieces/thermostat-316.html	thermostat
+830	sans-id	/pieces/durite-de-refroidissement	réécrit	/pieces/durite-de-refroidissement-475.html	durites
+83	canonique	/pieces/plaquette-de-frein-402.html	intact	/pieces/plaquette-de-frein-402.html	plaquettes
+83	canonique	/pieces/disque-de-frein-82.html	intact	/pieces/disque-de-frein-82.html	disques
+83	canonique	/pieces/etrier-de-frein-78.html	intact	/pieces/etrier-de-frein-78.html	étrier
+83	sans-id	/pieces/liquide-de-frein	retiré		liquide de frein
+412	sans-id	/pieces/roulement-de-roue	réécrit	/pieces/roulement-de-roue-655.html	roulement de roue
+1256	sans-id	/pieces/catalyseur	réécrit	/pieces/catalyseur-429.html	Catalyseur
+1256	sans-id	/pieces/vanne-egr	réécrit	/pieces/vanne-egr-1145.html	Vanne EGR
+478	sans-id	/pieces/kit-d-embrayage	réécrit	/pieces/kit-d-embrayage-479.html	Kit d'embrayage
+596	sans-id	/pieces/pressostat-d-huile	réécrit	/pieces/pressostat-d-huile-805.html	pressostat d'huile
+596	sans-id	/pieces/filtre-a-huile	réécrit	/pieces/filtre-a-huile-7.html	filtre à huile
+566	sans-id	/pieces/poussoir-de-soupape	réécrit	/pieces/poussoir-de-soupape-1216.html	poussoirs
+158	sans-id	/pieces/debitmetre-d-air	réécrit	/pieces/debitmetre-d-air-3927.html	Débitmètre d'air
+158	sans-id	/pieces/vanne-egr	réécrit	/pieces/vanne-egr-1145.html	Vanne EGR
+479	canonique	/pieces/butee-d-embrayage-48.html	intact	/pieces/butee-d-embrayage-48.html	butée d'embrayage
+479	canonique	/pieces/volant-moteur-577.html	intact	/pieces/volant-moteur-577.html	volant moteur
+479	sans-id	/pieces/convertisseur-de-couple	retiré		convertisseur de couple
+479	canonique	/pieces/emetteur-d-embrayage-234.html	intact	/pieces/emetteur-d-embrayage-234.html	émetteur d'embrayage
+479	canonique	/pieces/recepteur-d-embrayage-620.html	intact	/pieces/recepteur-d-embrayage-620.html	récepteur d'embrayage
+479	canonique	/pieces/cable-d-embrayage-478.html	intact	/pieces/cable-d-embrayage-478.html	câble d'embrayage
+312	sans-id	/pieces/galet-tendeur-de-courroie-d-accessoire	réécrit	/pieces/galet-tendeur-de-courroie-d-accessoire-310.html	galet tendeur
+312	sans-id	/pieces/courroie-d-accessoire	réécrit	/pieces/courroie-d-accessoire-10.html	courroie
+310	sans-id	/pieces/galet-enrouleur-de-courroie-d-accessoire	réécrit	/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html	galet enrouleur
+310	sans-id	/pieces/courroie-d-accessoire	réécrit	/pieces/courroie-d-accessoire-10.html	Courroie d'accessoire
+48	sans-id	/pieces/kit-d-embrayage	réécrit	/pieces/kit-d-embrayage-479.html	kit d'embrayage complet
+48	sans-id	/pieces/kit-d-embrayage	réécrit	/pieces/kit-d-embrayage-479.html	Kit d'embrayage
+48	sans-id	/pieces/emetteur-d-embrayage	réécrit	/pieces/emetteur-d-embrayage-234.html	Émetteur d'embrayage
+689	sans-id	/pieces/bougie-d-allumage	réécrit	/pieces/bougie-d-allumage-686.html	Bougie d'allumage
+1182	sans-id	/pieces/amortisseur	réécrit	/pieces/amortisseur-854.html	amortisseur
+1182	sans-id	/pieces/kit-de-butee-de-suspension	réécrit	/pieces/kit-de-butee-de-suspension-1632.html	coupelle de suspension
+13	canonique	/pieces/soufflet-de-cardan-193.html	intact	/pieces/soufflet-de-cardan-193.html	soufflet de cardan
+13	canonique	/pieces/bague-d-etancheite-cardan-624.html	intact	/pieces/bague-d-etancheite-cardan-624.html	bague d'étanchéité cardan
+13	canonique	/pieces/joint-arbre-longitudinal-1427.html	retiré		arbre de transmission longitudinal
+40	sans-id	/pieces/collecteur-d-echappement	retiré		Collecteur d'échappement
+592	sans-id	/pieces/joint-de-carter-d-huile	réécrit	/pieces/joint-de-carter-d-huile-455.html	joint de carter
+592	sans-id	/pieces/bouchon-de-vidange	réécrit	/pieces/bouchon-de-vidange-593.html	bouchon de vidange
+307	sans-id	/pieces/courroie-de-distribution	réécrit	/pieces/courroie-de-distribution-306.html	Courroie de distribution seule
+307	sans-id	/pieces/pompe-a-eau	réécrit	/pieces/pompe-a-eau-1260.html	Pompe à eau
+307	sans-id	/pieces/galet-tendeur-de-courroie-de-distribution	retiré		Galet tendeur
+429	sans-id	/pieces/sonde-lambda	réécrit	/pieces/sonde-lambda-3922.html	sondes lambda
+429	sans-id	/pieces/fap	réécrit	/pieces/fap-1256.html	FAP (filtre à particules)
+653	sans-id	/pieces/roulement-de-roue	réécrit	/pieces/roulement-de-roue-655.html	roulement de roue
+653	sans-id	/pieces/capteur-abs	réécrit	/pieces/capteur-abs-412.html	capteur ABS
+560	sans-id	/pieces/joint-de-culasse	réécrit	/pieces/joint-de-culasse-318.html	Joint de culasse
+560	sans-id	/pieces/joint-de-cache-culbuteurs	réécrit	/pieces/joint-de-cache-culbuteurs-321.html	Joint cache-culbuteurs
+247	canonique	/pieces/support-de-boite-vitesse-249.html	retiré		support de boîte de vitesses
+247	canonique	/pieces/support-de-boite-vitesse-249.html	retiré		Support de boîte de vitesses
+1260	sans-id	/pieces/kit-de-distribution	réécrit	/pieces/kit-de-distribution-307.html	Kit de distribution
+1260	sans-id	/pieces/thermostat	réécrit	/pieces/thermostat-316.html	Thermostat
+1260	sans-id	/pieces/durite-de-refroidissement	réécrit	/pieces/durite-de-refroidissement-475.html	Durite de refroidissement
+193	sans-id	/pieces/cardan	réécrit	/pieces/cardan-13.html	Cardan complet
