@@ -28,24 +28,71 @@ fi
 # (Claude Code 2.1.327, essai du 2026-11-18) : this hook, wired in settings.json for every Bash
 # call, is the guard. Allow-list, fail closed : every command of the line must be a read.
 # Refused : command substitution, process substitution, any redirection other than to /dev/null
-# or between fds, env assignments, and any program or subcommand not listed. Quoted strings are
-# blanked before splitting, so `jq '.a | .b'` stays one command.
+# or between fds, env assignments, and any program or subcommand not listed. The line is scanned
+# left to right by a quote-aware scanner (perl) : quoted and escaped parts become Q, so
+# `jq '.a | .b'` stays one command. Also refused : a quoted or escaped word that starts with `-`
+# (an option the checks below could not see), brace expansion, $'…' / $"…", `$[`, and any `${…}`
+# other than `${NAME}`. Option checks run on the argument list and refuse short-flag bundles and
+# any abbreviation of a dangerous long option (security review of 2026-11-18).
 AGENT_TYPE=$(jq -rs '.[0].agent_type // empty | strings' <<<"$INPUT" 2>/dev/null || true)
 if [[ "$AGENT_TYPE" == mandat-* ]]; then
   ro_block() { echo "BLOCKED (lecture seule, sous-agent $AGENT_TYPE) : $1. Ce sous-agent n'ecrit rien ; rapporter la commande au lieu de l'executer." >&2; exit 2; }
   if grep -qE '`|\$\(|<\(|>\(' <<<"$COMMAND"; then ro_block "substitution de commande ou de processus"; fi
-  RO_BARE=$(sed -E "s/'[^']*'/Q/g; s/\"([^\"\\\\]|\\\\.)*\"/Q/g" <<<"$COMMAND")
-  if grep -qE "['\"]" <<<"$RO_BARE"; then ro_block "guillemet non ferme"; fi
-  RO_NOREDIR=$(sed -E 's#[0-9]*>>?[[:space:]]*/dev/null##g; s#[0-9]*>&[0-9]##g; s#&>[[:space:]]*/dev/null##g' <<<"$RO_BARE")
+  RO_PL=$(cat <<'PL'
+my $s = $ENV{RO_CMD}; my $n = length $s; my ($i, $out, $w, $wq, $wpre) = (0, '', '', 0, '');
+sub bad { print "ERR\t$_[0]"; exit 0 }
+# A word starting with - whose quoting begins before its first = hides the option name.
+sub fin { bad("option entre guillemets ou echappee : $w") if $wq && $w =~ /^-/ && $wpre !~ /^-[^=]*=/; ($w, $wq) = ('', 0) }
+sub q1 { $wpre = $w unless $wq; $wq = 1 }
+sub dollar { my $r = substr($s, $_[0]);
+  bad("expansion \$[") if $r =~ /^\$\[/;
+  bad("expansion \${...} autre que \${NOM}") if $r =~ /^\$\{/ && $r !~ /^\$\{[A-Za-z_][A-Za-z0-9_]*\}/ }
+while ($i < $n) {
+  my $c = substr($s, $i, 1);
+  if ($c eq '\\') { q1(); $out .= 'Q'; $w .= substr($s, $i + 1, 1); $i += 2; next }
+  if ($c eq "'") { my $j = index($s, "'", $i + 1); bad("guillemet non ferme") if $j < 0;
+    q1(); $out .= 'Q'; $w .= substr($s, $i + 1, $j - $i - 1); $i = $j + 1; next }
+  if ($c eq '"') { my ($j, $v) = ($i + 1, '');
+    while ($j < $n) { my $d = substr($s, $j, 1);
+      if ($d eq '\\') { $v .= substr($s, $j + 1, 1); $j += 2; next }
+      last if $d eq '"'; dollar($j) if $d eq '$'; $v .= $d; $j++ }
+    bad("guillemet non ferme") if $j >= $n; q1(); $out .= 'Q'; $w .= $v; $i = $j + 1; next }
+  if ($c eq '$') { bad("chaine \$'...' ou \$\"...\"") if substr($s, $i + 1, 1) =~ /['"]/; dollar($i) }
+  bad("expansion d'accolades") if $c eq '{' && ($i == 0 || substr($s, $i - 1, 1) ne '$');
+  if ($c =~ /[\s;|&<>()]/) { fin() } else { $w .= $c }
+  $out .= $c; $i++ }
+fin();
+$out =~ s{\d*(?:>>?|&>>?)\s*/dev/null(?![^\s;|&)])}{}g;
+$out =~ s{\d*>&(?:\d+-?|-)(?![^\s;|&)])}{}g;
+print "OK\t$out";
+PL
+)
+  RO_SCAN=$(RO_CMD="$COMMAND" perl -e "$RO_PL" 2>/dev/null) || ro_block "analyse de la commande impossible"
+  case "$RO_SCAN" in
+    OK$'\t'*) RO_NOREDIR="${RO_SCAN#OK$'\t'}" ;;
+    ERR$'\t'*) ro_block "${RO_SCAN#ERR$'\t'}" ;;
+    *) ro_block "analyse de la commande impossible" ;;
+  esac
   if grep -qE '>' <<<"$RO_NOREDIR"; then ro_block "redirection vers un fichier"; fi
+  # ro_long NAME… : an argument --x[=v] where x is a prefix of NAME (getopt abbreviations).
+  ro_long() { local a n d; for a in "${W[@]:1}"; do [[ $a == --?* ]] || continue; n=${a#--}; n=${n%%=*}; [ -n "$n" ] || continue
+      for d in "$@"; do [[ $d == "$n"* ]] && return 0; done; done; return 1; }
+  # ro_short L : a short-flag word (-abc) that contains letter L, bundled or not.
+  ro_short() { local a; for a in "${W[@]:1}"; do [[ $a =~ ^-[A-Za-z0-9]+$ && $a == *"$1"* ]] && return 0; done; return 1; }
   while IFS= read -r seg; do
     seg=$(sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' <<<"$seg")
     [ -n "$seg" ] || continue
     read -r -a W <<<"$seg"
     case "${W[0]}" in
-      cat|head|tail|wc|uniq|cut|tr|jq|grep|sha256sum|ls|stat|date|basename|dirname|readlink|realpath|pwd|echo|printf|true|test|diff|comm|nl|column|cd) ;;
-      sort) grep -qE ' (-o|--output)' <<<" $seg" && ro_block "sort -o ecrit un fichier" ;;
-      rg) grep -qE ' --pre(=| |$)' <<<" $seg " && ro_block "rg --pre execute un programme" ;;
+      cat|head|tail|wc|cut|tr|jq|grep|sha256sum|ls|stat|date|basename|dirname|readlink|realpath|pwd|echo|true|test|diff|comm|nl|column|cd) ;;
+      printf) ro_short v && ro_block "printf -v affecte une variable" ;;
+      uniq) # uniq IN OUT writes OUT : at most one file operand.
+        k=0; skip=0; for a in "${W[@]:1}"; do
+          if [ "$skip" = 1 ]; then skip=0; continue; fi
+          case "$a" in -f|-s|-w|--skip-fields|--skip-chars|--check-chars) skip=1 ;; -?*) ;; *) k=$((k+1)) ;; esac
+        done; [ "$k" -le 1 ] || ro_block "uniq ENTREE SORTIE ecrit un fichier" ;;
+      sort) { ro_short o || ro_long output compress-program; } && ro_block "sort -o ou --compress-program" ;;
+      rg) ro_long pre && ro_block "rg --pre execute un programme" ;;
       export) [[ "$seg" =~ ^export[[:space:]]+GIT_OPTIONAL_LOCKS=0$ ]] || ro_block "export autre que GIT_OPTIONAL_LOCKS=0" ;;
       git)
         i=1
@@ -60,19 +107,21 @@ if [[ "$AGENT_TYPE" == mandat-* ]]; then
         sub="${W[$i]:-}"; rest=" ${W[*]:$((i+1))} "
         case "$sub" in
           status|log|show|diff|rev-parse|ls-files|ls-remote|cat-file|merge-base|describe|blame|shortlog|rev-list|for-each-ref|show-ref|name-rev) ;;
-          grep) grep -qE ' (-O[^ ]*|--open-files-in-pager[^ ]*)( |$)' <<<"$rest" && ro_block "git grep -O execute un programme" ;;
+          grep) ro_short O && ro_block "git grep -O execute un programme" ;;
           worktree) [ "${W[$((i+1))]:-}" = "list" ] || ro_block "git worktree autre que list" ;;
           branch) grep -qE '^ ((-r|-a|-v|-vv|--list|--show-current|--contains|--merged|--no-merged|--format=[^ ]*|--sort=[^ ]*)( |$))*$' <<<"$rest" || ro_block "git branch hors lecture" ;;
           *) ro_block "git $sub" ;;
         esac
-        if grep -qE ' --output(=| )| --ext-diff | --textconv | --upload-pack(=| )| -u ' <<<"$rest"; then ro_block "option git qui ecrit ou execute"; fi ;;
+        if grep -qE ' -u ' <<<"$rest" || ro_long output ext-diff textconv upload-pack open-files-in-pager \
+          || { [ "$sub" = ls-remote ] && ro_short u; }; then ro_block "option git qui ecrit ou execute"; fi ;;
       gh)
         sub="${W[1]:-} ${W[2]:-}"
         case "$sub" in
           "pr view"|"pr list"|"pr checks"|"pr diff"|"pr status"|"run view"|"run list"|"issue view"|"issue list"|"repo view"|"release view"|"release list") ;;
           "api "*)
             if grep -qE '(^| )(-X|--method)(=| )?[^ ]*' <<<"$seg" && ! grep -qE '(^| )(-X|--method)(=| )?GET( |$)' <<<"$seg"; then ro_block "gh api autre que GET"; fi
-            if grep -qE '(^| )(-f|-F|--field|--raw-field|--input)(=| |$)|(^| )-[fF][^ ]' <<<"$seg"; then ro_block "gh api avec corps de requete"; fi ;;
+            if grep -qE '(^| )(-f|-F|--field|--raw-field|--input)(=| |$)|(^| )-[fF][^ ]' <<<"$seg"; then ro_block "gh api avec corps de requete"; fi
+            for a in "${W[@]:2}"; do [[ $a != -X* && $a =~ ^-[A-Za-z]*[fFX] ]] && ro_block "gh api : option groupee $a"; done ;;
           *) ro_block "gh $sub" ;;
         esac
         if grep -qE '(^| )(-o|--output)(=| |$)' <<<"$seg"; then ro_block "option gh qui ecrit un fichier"; fi ;;

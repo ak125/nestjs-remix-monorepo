@@ -75,8 +75,24 @@ Lus sans y écrire. #2081 est la seule PR qui modifie le générateur.
   - Write : outil absent pour le sous-agent ;
   - `ls` : exécuté ;
   - aucun fichier `proof-*` n'existe après l'essai.
-- Tests : 19 cas ajoutés à `scripts/test-claude-hooks.sh`. Les 131 cas de la section
-  bash-guard passent. Le reste de la suite n'a pas été relancé : ses tests de surveillance
+- Revue de sécurité automatique du commit `bc4fef4f8` : elle a signalé 4 contournements, et
+  14 commandes d'écriture passaient effectivement. Exemples : `sort "-o" f`, `sort -uo f`,
+  `sort --out=f`, `sort --compress-program=sh`, `echo >&1fichier`, `git grep -iO`,
+  `git ls-remote --upload=`, `uniq ENTREE SORTIE`, `sort {-o,f}`, `$'\x2do'`, `${!y}`,
+  `printf -v`, `gh api -iXPOST`. Correction :
+  - l'effacement des guillemets par regex est remplacé par une analyse de gauche à droite (perl),
+    qui tient compte des guillemets ; si l'analyse échoue, la commande est refusée ;
+  - refusés en plus : un mot commençant par `-` dont les guillemets ou l'échappement débutent
+    avant le `=` (le nom de l'option serait masqué), les accolades, `$'…'`, `$[`, et tout `${…}`
+    autre que `${NOM}` ;
+  - les options sont vérifiées sur la liste des arguments : options groupées, et toute
+    abréviation d'une option longue dangereuse ;
+  - redirection : seuls `/dev/null` exact et `>&N` ou `>&-` sont admis ;
+  - `uniq` accepte au plus un fichier, et `printf -v` est refusé.
+- Tests : 42 cas ajoutés à `scripts/test-claude-hooks.sh` (19, puis 23 issus de la revue :
+  contournements et lectures courantes). Les 154 cas de la section bash-guard passent. L'essai
+  réel avec `claude -p` a été fait avant cette correction ; les cas `echo >` et `touch` restent
+  dans les tests avec la même enveloppe. Le reste de la suite n'a pas été relancé : ses tests de surveillance
   (nodemon, tsc) attendent un `node_modules` local, absent du worktree.
 - Limites :
   - la garde est lue depuis `/opt/automecanik/app` (chemin de `settings.json`), donc elle
@@ -184,6 +200,6 @@ frontmatter, que le registre relève et vérifie contre la carte.
 | État | Contenu |
 |---|---|
 | Appliqué (PR #2081, brouillon) | générateur étendu ; `$defs/subagent` ; registre régénéré ; garde lecture seule `mandat-*` ; 3 sous-agents mis à jour (garde, citations Vault retirées) ; test du générateur ; 19 cas de garde ; ce dossier |
-| Testé | `--check` vert ; 22 tests (générateur 6 nouveaux + verrou 16) ; 131 cas bash-guard ; Command Center `--check` et 23 tests ; essai réel de refus d'écriture |
+| Testé | `--check` vert ; 22 tests (générateur 6 nouveaux + verrou 16) ; 154 cas bash-guard (dont 23 issus de la revue de sécurité) ; Command Center `--check` et 23 tests ; essai réel de refus d'écriture |
 | Proposé, non appliqué | `skills-canon-gate.patch` ; `ownership-snippet-2081.yaml` ; format hooks/règles ; ligne de journal ; contreparties ; constats §8 |
 | Inconnu | effet en DEV tant que `/opt/automecanik/app` n'est pas à jour de `main` ; hook de frontmatter de sous-agent dans une version future de Claude Code |
