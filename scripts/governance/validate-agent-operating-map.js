@@ -305,9 +305,14 @@ function skillExistsOnDisk(name) {
 
 /** File text, "" for a directory, null when the path is absent from the repository. */
 function repoFileText(rel) {
-  const abs = path.join(REPO_ROOT, rel);
-  if (!fs.existsSync(abs)) return null;
-  return fs.statSync(abs).isDirectory() ? "" : fs.readFileSync(abs, "utf8");
+  // One read, no exists-then-read check (CodeQL js/file-system-race).
+  try {
+    return fs.readFileSync(path.join(REPO_ROOT, rel), "utf8");
+  } catch (e) {
+    if (e.code === "EISDIR") return "";
+    if (e.code === "ENOENT" || e.code === "ENOTDIR") return null;
+    throw e;
+  }
 }
 
 function functionDeps(map) {
