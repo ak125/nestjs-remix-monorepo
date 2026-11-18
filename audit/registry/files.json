@@ -35460,10 +35460,12 @@
       "importedBy": [],
       "imports": [
         "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
-        "backend/src/modules/supplier-truth/connectors/cal.connector.ts"
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "fs",
+        "path"
       ],
       "kind": "test",
-      "loc": 298,
+      "loc": 351,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
       "risk": "low",
@@ -35495,7 +35497,7 @@
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 392,
+      "loc": 423,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
       "risk": "low",
@@ -72881,7 +72883,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 414,
+      "loc": 611,
       "owner": "__unassigned__",
       "path": "scripts/audit/check-revoked-secrets-ratchet.test.ts",
       "risk": "low",
@@ -72900,7 +72902,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 533,
+      "loc": 706,
       "owner": "__unassigned__",
       "path": "scripts/audit/check-revoked-secrets-ratchet.ts",
       "risk": "low",
@@ -74663,6 +74665,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/governance/__tests__/validate-db-retention.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 155,
+      "owner": "__unassigned__",
+      "path": "scripts/governance/__tests__/validate-db-retention.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/governance/build-command-center-snapshot.js",
       "importedBy": [],
       "imports": [],
@@ -74746,6 +74767,25 @@
       "loc": 282,
       "owner": "__unassigned__",
       "path": "scripts/governance/validate-authority-graph.js",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/governance/validate-db-retention.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 323,
+      "owner": "__unassigned__",
+      "path": "scripts/governance/validate-db-retention.js",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
