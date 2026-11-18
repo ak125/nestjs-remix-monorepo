@@ -79,7 +79,9 @@ check "registre réel : 24 lignes de département" '[ "$(grep -c "^- [0-2][0-9] 
 check "registre réel : compte par statut du département 13" 'contient $T/reel.md "13 Commercial & Ventes — fonctions : 5 opérationnelle(s) · 8 non opérationnelle(s) · 0 absente(s)"'
 check "registre réel : « pas de mesure » sans indicateur mesurable" 'contient $T/reel.md "01 Direction générale — fonctions : 0 opérationnelle(s) · 1 non opérationnelle(s) · 0 absente(s) — pas de mesure"'
 check "registre réel : mode par défaut = dry-run" 'contient $T/reel.md "Mode \`dry-run\` : rien n'"'"'est écrit"'
-check "registre réel : payments-kept évaluable non branché" 'contient $T/reel.md "| \`sales.payments-kept\` | \`dept:13-sales\` | non branché"'
+# Évaluable (ligne du tableau, qui exclut le texte seul) et branché (wired: true, correctif 01) :
+# état d'un seuil branché, selon ce que le lecteur obtient dans le passage, jamais « non branché ».
+check "registre réel : payments-kept évaluable et branché (wired: true)" 'grep -qE "^\| \`sales\.payments-kept\` \| \`dept:13-sales\` \| (non mesuré|franchi|sous le seuil) " $T/reel.md && absent $T/reel.md "non branché"'
 check "seuil en texte seul = non évaluable, compté, n'ouvre rien" 'contient $T/reel.md "Seuils en texte seul, non évaluables (n'"'"'ouvrent rien) : 6."'
 check "registre réel : aucune écriture" '[ ! -s "$(W reel)" ]'
 
