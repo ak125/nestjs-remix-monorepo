@@ -32,7 +32,7 @@ fi
 # left to right by a quote-aware scanner (perl) : quoted and escaped parts become Q, so
 # `jq '.a | .b'` stays one command. Also refused : a quoted or escaped word that starts with `-`
 # (an option the checks below could not see), brace expansion, $'…' / $"…", `$[`, and any `${…}`
-# other than `${NAME}`. Option checks run on the argument list and refuse short-flag bundles and
+# other than `${NAME}`, an unquoted `#` starting a word (comment) and here-documents. Option checks run on the argument list and refuse short-flag bundles and
 # any abbreviation of a dangerous long option (security review of 2026-11-18).
 AGENT_TYPE=$(jq -rs '.[0].agent_type // empty | strings' <<<"$INPUT" 2>/dev/null || true)
 if [[ "$AGENT_TYPE" == mandat-* ]]; then
@@ -59,6 +59,9 @@ while ($i < $n) {
     bad("guillemet non ferme") if $j >= $n; q1(); $out .= 'Q'; $w .= $v; $i = $j + 1; next }
   if ($c eq '$') { bad("chaine \$'...' ou \$\"...\"") if substr($s, $i + 1, 1) =~ /['"]/; dollar($i) }
   bad("expansion d'accolades") if $c eq '{' && ($i == 0 || substr($s, $i - 1, 1) ne '$');
+  bad("commentaire (#) hors guillemets") if $c eq '#' && $w eq '' && !$wq;
+  if (substr($s, $i, 3) eq '<<<') { fin(); $out .= '<<<'; $i += 3; next }
+  bad("here-document") if substr($s, $i, 2) eq '<<';
   if ($c =~ /[\s;|&<>()]/) { fin() } else { $w .= $c }
   $out .= $c; $i++ }
 fin();
@@ -77,8 +80,9 @@ PL
   # ro_long NAME… : an argument --x[=v] where x is a prefix of NAME (getopt abbreviations).
   ro_long() { local a n d; for a in "${W[@]:1}"; do [[ $a == --?* ]] || continue; n=${a#--}; n=${n%%=*}; [ -n "$n" ] || continue
       for d in "$@"; do [[ $d == "$n"* ]] && return 0; done; done; return 1; }
-  # ro_short L : a short-flag word (-abc) that contains letter L, bundled or not.
-  ro_short() { local a; for a in "${W[@]:1}"; do [[ $a =~ ^-[A-Za-z0-9]+$ && $a == *"$1"* ]] && return 0; done; return 1; }
+  # ro_short L : a short-option word (-abc, -ovalue) whose flag letters contain L, bundled or
+  # with an attached value.
+  ro_short() { local a; for a in "${W[@]:1}"; do [[ $a =~ ^-[A-Za-z0-9]*$1 ]] && return 0; done; return 1; }
   while IFS= read -r seg; do
     seg=$(sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' <<<"$seg")
     [ -n "$seg" ] || continue
@@ -92,7 +96,7 @@ PL
           case "$a" in -f|-s|-w|--skip-fields|--skip-chars|--check-chars) skip=1 ;; -?*) ;; *) k=$((k+1)) ;; esac
         done; [ "$k" -le 1 ] || ro_block "uniq ENTREE SORTIE ecrit un fichier" ;;
       sort) { ro_short o || ro_long output compress-program; } && ro_block "sort -o ou --compress-program" ;;
-      rg) ro_long pre && ro_block "rg --pre execute un programme" ;;
+      rg) ro_long pre hostname-bin && ro_block "rg --pre ou --hostname-bin execute un programme" ;;
       export) [[ "$seg" =~ ^export[[:space:]]+GIT_OPTIONAL_LOCKS=0$ ]] || ro_block "export autre que GIT_OPTIONAL_LOCKS=0" ;;
       git)
         i=1

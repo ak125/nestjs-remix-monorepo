@@ -1196,6 +1196,14 @@ assert_exit 'bash-guard RO: git log -- path, sort -nr, uniq -c → allow' "0" "$
 assert_exit 'bash-guard RO: git log --format='\''%h %s'\'' → allow' "0" "$(run_ro_guard mandat-releve "git log --format='%h %s' -5")"
 assert_exit 'bash-guard RO: sort --o'\''utput'\''=f → BLOCK' "2" "$(run_ro_guard mandat-releve "sort --o'utput'=/tmp/ro-x f")"
 assert_exit 'bash-guard RO: sort --output='\''f'\'' → BLOCK' "2" "$(run_ro_guard mandat-releve "sort --output='/tmp/ro-x' f")"
+# Seconde revue de securite du 2026-11-18 : commentaire, valeur collee a une option courte, rg.
+assert_exit 'bash-guard RO: commentaire #'\'' puis ligne > f → BLOCK' "2" "$(run_ro_guard mandat-releve $'ls #\'\necho a > /tmp/ro-x #\'')"
+assert_exit 'bash-guard RO: here-document → BLOCK' "2" "$(run_ro_guard mandat-releve $'cat <<E\nx\nE')"
+assert_exit 'bash-guard RO: sort -o/tmp/f → BLOCK' "2" "$(run_ro_guard mandat-releve 'sort -o/tmp/ro-x f')"
+assert_exit 'bash-guard RO: git grep -O/bin/sh → BLOCK' "2" "$(run_ro_guard mandat-releve 'git grep -O/bin/sh x')"
+assert_exit 'bash-guard RO: git ls-remote -u/x → BLOCK' "2" "$(run_ro_guard mandat-releve 'git ls-remote -u/x origin')"
+assert_exit 'bash-guard RO: rg --hostname-bin → BLOCK' "2" "$(run_ro_guard mandat-releve 'rg --hostname-bin=sh x')"
+assert_exit 'bash-guard RO: echo a#b, grep '\''a#b'\'', jq <<< → allow' "0" "$(run_ro_guard mandat-releve "echo a#b; grep -c 'a#b' f; jq . <<< '{}'")"
 
 # ============================================================
 # Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)
