@@ -35460,10 +35460,12 @@
       "importedBy": [],
       "imports": [
         "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
-        "backend/src/modules/supplier-truth/connectors/cal.connector.ts"
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "fs",
+        "path"
       ],
       "kind": "test",
-      "loc": 298,
+      "loc": 351,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
       "risk": "low",
@@ -35495,7 +35497,7 @@
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 392,
+      "loc": 423,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
       "risk": "low",
@@ -72881,7 +72883,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 520,
+      "loc": 611,
       "owner": "__unassigned__",
       "path": "scripts/audit/check-revoked-secrets-ratchet.test.ts",
       "risk": "low",
@@ -72900,7 +72902,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 643,
+      "loc": 706,
       "owner": "__unassigned__",
       "path": "scripts/audit/check-revoked-secrets-ratchet.ts",
       "risk": "low",
