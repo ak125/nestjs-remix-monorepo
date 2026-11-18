@@ -1,4 +1,5 @@
-# VALID on purpose — used by --self-test (department functions, mandate BX).
+# VALID on purpose — used by --self-test (department functions, mandate BX and
+# complement BX-2: covers, missing function, à attribuer list).
 # Every path, rule, skill and subagent cited here exists in the repository, so
 # checkDepartmentFunctions must raise no error. runSchemaSelfTest then breaks
 # one rule at a time on in-memory copies (operability, path, kpi, id, reference)
@@ -25,6 +26,8 @@ department_contract_common:      # fixture : forme minimale valide des règles c
   seuil_franchi: { regle: "Issue dept:NN, fixture.", decisions: [9] }
   donnee_absente: { regle: "Pas de mesure, fixture.", decisions: [24] }
   sources: { regle: "Sources de mesure, fixture.", decisions: [36] }
+function_coverage_unassigned:
+  - { module: maintenance, reason: "importé par aucun module, fixture" }
 declared_capabilities:
   - { id: fixture-cap, type: module, owner: a, status: live }
 departments:
@@ -77,6 +80,12 @@ departments:
         rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
         uses:
           - { capability: fixture-cap, from: a }
+        covers:
+          - { module: health }
+          - { routes: admin.system }
+          - { workflow: .github/workflows/ci.yml }
+          - { cron: backend/src/modules/orders/services/order-cleanup.service.ts }
+          - { crontab: 39, script: scripts/cron/disk-alert.sh }
         agents: [marketing-lead-agent]
         skills: [code-review]
         evidence:
@@ -86,6 +95,7 @@ departments:
         decisions: [72, 112]
       - id: a.decided-only
         name: "Fonction décidée sans code"
+        owner: a-lead
         status: non_operational
         level: L0
         inputs: ["fixture input"]
@@ -104,3 +114,11 @@ departments:
           - { path: scripts/governance/__fixtures__ }
         decisions: [1]
         gaps: ["décidée, aucun code, fixture"]
+      - id: a.proposed
+        name: "Fonction manquante proposée"
+        owner: a-lead
+        status: missing
+        level: L0
+        justification: "proposition de fixture, aucun élément du dépôt"
+        evidence:
+          - { absent: "aucun code, fixture" }

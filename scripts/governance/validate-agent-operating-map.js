@@ -15,9 +15,11 @@
  *   --contracts  department contracts only (owner decision 72): exit 1 on a
  *                schema error or an incomplete contract, whatever --strict says;
  *                lists the fields left pending_owner_decision. The CI gate.
- *                Also refuses an incoherent department function (mandate BX:
- *                operability, path, kpi, id, reference; see
- *                checkDepartmentFunctions).
+ *                Also refuses an incoherent department function (mandate BX
+ *                and complement BX-2: empty, capability, operability,
+ *                missing, covers, path, kpi, id, reference; see
+ *                checkDepartmentFunctions) and prints the function coverage
+ *                report (functionCoverage), which never fails.
  *
  * Exit codes (aligned with sibling validate-skills-frontmatter.js):
  *   0  OK, or warn-only run (no --strict)
@@ -183,12 +185,18 @@ function checkDepartmentContracts(departments, fileExists) {
 }
 
 /**
- * Department functions (mandate BX, model in
+ * Department functions (mandate BX, complement BX-2; model in
  * .spec/00-canon/ai-registry/department-functions.md). Pure: returns
- * { errors: [{ id, rule, message }], summary: [{ id, status, level }] }.
+ * { errors: [{ id, rule, message }], summary: [{ department, id, status, level }] }.
  * The schema checks the shape; this checks what the schema cannot say:
- *   operability — without owner + wired trigger + check, the function is
- *                 non_operational and at level L0 or L1;
+ *   empty       — every department declares at least one function;
+ *   capability  — a capability is listed by one department only, and that
+ *                 department is its owner in declared_capabilities;
+ *   operability — without owner + wired trigger + check, a function is not
+ *                 operational and stays at level L0 or L1;
+ *   missing     — a missing function cites no existing element and only
+ *                 `absent` evidence; an existing one cites at least one proof;
+ *   covers      — every covered module, route, workflow and @Cron file exists;
  *   path        — every path cited by trigger, check or evidence exists, and a
  *                 cited line range stays inside the file;
  *   kpi         — a kpi_input "present" names a producer on disk, which contains
@@ -199,10 +207,11 @@ function checkDepartmentContracts(departments, fileExists) {
  *                 (owner = a department lead or a subagent in the repository).
  * `deps` is injected so tests stay pure: fileText(rel) → string ("" for a
  * directory) or null when absent; agentExists(name); skillExists(name);
- * capabilityOwners = Map(capability id → owning department).
+ * capabilityOwners = Map(capability id → owner in declared_capabilities);
+ * routeKeys (optional) = array of route keys, see routeKeysOnDisk.
  */
 function checkDepartmentFunctions(departments, deps) {
-  const { fileText, agentExists, skillExists, capabilityOwners } = deps;
+  const { fileText, agentExists, skillExists, capabilityOwners, routeKeys } = deps;
   const errors = [];
   const summary = [];
   const err = (id, rule, message) => errors.push({ id, rule, message });
@@ -217,10 +226,32 @@ function checkDepartmentFunctions(departments, deps) {
       if (last > count) err(fid, "path", `function ${fid} ${where} cites ${rel}:${lines}, beyond its ${count} lines`);
     }
   };
+  // capability — one listing department per capability, equal to the declared owner.
+  const listedBy = new Map();
   for (const d of departments) {
-    for (const f of Array.isArray(d.functions) ? d.functions : []) {
+    for (const cap of Array.isArray(d.capabilities) ? d.capabilities : []) {
+      if (!listedBy.has(cap)) listedBy.set(cap, []);
+      listedBy.get(cap).push(d.id);
+    }
+  }
+  for (const [cap, ds] of listedBy) {
+    if (ds.length > 1) err(cap, "capability", `capability "${cap}" is owned by ${ds.length} departments (${ds.join(", ")}); one owner, the others consume it in uses`);
+    const declared = capabilityOwners.get(cap);
+    if (declared !== undefined && !ds.includes(declared)) {
+      err(cap, "capability", `capability "${cap}" is listed by ${ds.join(", ")} but declared_capabilities gives it to ${declared}`);
+    }
+  }
+  const ownerOf = (cap) => (capabilityOwners.has(cap) ? capabilityOwners.get(cap) : (listedBy.get(cap) || [])[0]);
+  const routeMatches = (prefix, exact) =>
+    routeKeys.some((k) => k === prefix || (!exact && (k.startsWith(`${prefix}.`) || k.startsWith(`${prefix}/`))));
+
+  for (const d of departments) {
+    const fns = Array.isArray(d.functions) ? d.functions : [];
+    // empty
+    if (fns.length === 0) err(d.id, "empty", `department ${d.id} declares no function`);
+    for (const f of fns) {
       const fid = f.id;
-      summary.push({ id: fid, status: f.status, level: f.level });
+      summary.push({ department: d.id, id: fid, status: f.status, level: f.level });
       // id
       if (seen.has(fid)) err(fid, "id", `function id ${fid} is declared twice (${seen.get(fid)} and ${d.id})`);
       else seen.set(fid, d.id);
@@ -231,17 +262,41 @@ function checkDepartmentFunctions(departments, deps) {
         const missing = [!f.owner && "owner", !(f.trigger && f.trigger.wired === true) && "wired trigger", !f.check && "check"]
           .filter(Boolean)
           .join(", ");
-        if (f.status !== "non_operational") {
-          err(fid, "operability", `function ${fid} is "${f.status}" without ${missing}: it must be non_operational`);
+        if (f.status === "operational") {
+          err(fid, "operability", `function ${fid} is "${f.status}" without ${missing}: it cannot be operational`);
         }
         if (f.level !== "L0" && f.level !== "L1") {
           err(fid, "operability", `function ${fid} is at ${f.level} without ${missing}: the level must be L0 or L1`);
         }
       }
+      // missing
+      const evidence = Array.isArray(f.evidence) ? f.evidence : [];
+      const proofs = evidence.filter((e) => !e.absent);
+      if (f.status === "missing") {
+        if (proofs.length > 0) err(fid, "missing", `function ${fid} is missing but cites a proof in the repository; it exists, so it is operational or non_operational`);
+        if (Array.isArray(f.covers) && f.covers.length > 0) err(fid, "missing", `function ${fid} is missing but covers existing elements`);
+        if (f.trigger && f.trigger.wired === true) err(fid, "missing", `function ${fid} is missing but has a wired trigger`);
+      } else if (proofs.length === 0) {
+        err(fid, "missing", `function ${fid} is ${f.status} without any proof (path, PR or run); without one it is missing`);
+      }
+      // covers
+      for (const c of Array.isArray(f.covers) ? f.covers : []) {
+        if (c.module && fileText(`backend/src/modules/${c.module}`) !== "") {
+          err(fid, "covers", `function ${fid} covers module "${c.module}", absent from backend/src/modules`);
+        }
+        if (c.workflow && fileText(c.workflow) == null) err(fid, "covers", `function ${fid} covers workflow ${c.workflow}, absent from the repository`);
+        if (c.cron) {
+          const text = fileText(c.cron);
+          if (text == null || !text.includes("@Cron(")) err(fid, "covers", `function ${fid} covers cron file ${c.cron}, absent or without @Cron`);
+        }
+        if (Array.isArray(routeKeys) && (c.routes || c.route) && !routeMatches(c.routes || c.route, Boolean(c.route))) {
+          err(fid, "covers", `function ${fid} covers route ${c.routes ? "prefix " : ""}"${c.routes || c.route}", which matches no file of frontend/app/routes`);
+        }
+      }
       // path
       if (f.trigger) checkPath(fid, "trigger", f.trigger.ref);
       if (f.check) checkPath(fid, "check", f.check.ref);
-      for (const e of Array.isArray(f.evidence) ? f.evidence : []) {
+      for (const e of evidence) {
         if (e.path) checkPath(fid, "evidence", e.path, e.lines);
         if (e.workflow) checkPath(fid, "evidence", e.workflow);
       }
@@ -266,13 +321,136 @@ function checkDepartmentFunctions(departments, deps) {
         if (!skillExists(s)) err(fid, "reference", `function ${fid} cites skill "${s}", absent from the repository`);
       }
       for (const u of Array.isArray(f.uses) ? f.uses : []) {
-        const owner = capabilityOwners.get(u.capability);
-        if (owner === undefined) err(fid, "reference", `function ${fid} uses capability "${u.capability}", not in declared_capabilities`);
+        const owner = ownerOf(u.capability);
+        if (owner === undefined) err(fid, "reference", `function ${fid} uses capability "${u.capability}", owned by no department`);
         else if (owner !== u.from) err(fid, "reference", `function ${fid} uses "${u.capability}" from ${u.from}, but ${owner} owns it`);
       }
     }
   }
   return { errors, summary };
+}
+
+/** Route key of a file under frontend/app/routes: path without extension, `_` suffix of each dot segment dropped. */
+function routeKey(rel) {
+  return rel.replace(/\.(tsx|ts|jsx|js)$/, "").replace(/([^./])_(?=\.|$)/g, "$1");
+}
+
+/**
+ * Coverage report (complement BX-2). Pure: `inventory` = { modules, routes,
+ * workflows, cronFiles, agents, skills } (arrays of element ids, routes as
+ * route keys). Returns, per kind, the elements no function covers and that
+ * function_coverage_unassigned does not list (`unattached`), the listed ones
+ * (`unassigned`), the listed ones a function covers anyway or that no longer
+ * exist (`stale`), and the subagents and skills no function cites. Never fails:
+ * the caller prints it.
+ */
+function functionCoverage(map, inventory) {
+  const fns = (map.departments || []).flatMap((d) => (Array.isArray(d.functions) ? d.functions : []));
+  const covers = fns.flatMap((f) => (Array.isArray(f.covers) ? f.covers : []));
+  const routeHit = (key, c) =>
+    (c.route && key === c.route) ||
+    (c.routes && (key === c.routes || key.startsWith(`${c.routes}.`) || key.startsWith(`${c.routes}/`)));
+  const kinds = {
+    module: { all: inventory.modules, hit: (x, c) => c.module === x },
+    routes: { all: inventory.routes, hit: (x, c) => routeHit(x, c) },
+    workflow: { all: inventory.workflows, hit: (x, c) => c.workflow === x },
+    cron: { all: inventory.cronFiles, hit: (x, c) => c.cron === x },
+  };
+  const unassignedList = Array.isArray(map.function_coverage_unassigned) ? map.function_coverage_unassigned : [];
+  const kindOf = (u) => (u.module ? "module" : u.route || u.routes ? "routes" : u.workflow ? "workflow" : u.cron ? "cron" : null);
+  const unassignedHit = (kind, x) =>
+    unassignedList.find((u) => kindOf(u) === kind && kinds[kind].hit(x, u));
+  const unattached = {};
+  const unassigned = [];
+  const stale = [];
+  for (const [kind, k] of Object.entries(kinds)) {
+    unattached[kind] = [];
+    for (const x of k.all) {
+      if (covers.some((c) => k.hit(x, c))) continue;
+      const u = unassignedHit(kind, x);
+      if (u) unassigned.push({ kind, element: x, reason: u.reason });
+      else unattached[kind].push(x);
+    }
+  }
+  for (const u of unassignedList) {
+    const kind = kindOf(u);
+    if (!kind) continue;
+    const label = u.module || u.route || u.routes || u.workflow || u.cron;
+    const present = kinds[kind].all.filter((x) => kinds[kind].hit(x, u));
+    if (present.length === 0) stale.push({ kind, element: label, why: "absent from the repository" });
+    else if (present.every((x) => covers.some((c) => kinds[kind].hit(x, c)))) stale.push({ kind, element: label, why: "covered by a function" });
+  }
+  const citedAgents = new Set(fns.flatMap((f) => [...(f.agents || []), f.owner].filter(Boolean)));
+  const citedSkills = new Set(fns.flatMap((f) => f.skills || []));
+  return {
+    unattached,
+    unassigned,
+    stale,
+    agents_uncited: inventory.agents.filter((a) => !citedAgents.has(a)),
+    skills_uncited: inventory.skills.filter((s) => !citedSkills.has(s)),
+    crontab_lines_cited: [...new Set(covers.filter((c) => c.crontab).map((c) => c.crontab))].sort((a, b) => a - b),
+  };
+}
+
+/** Route keys of frontend/app/routes: its files, and the files of its sub-directories (a directory without route file counts as one element). */
+function routeKeysOnDisk() {
+  const base = path.join(REPO_ROOT, "frontend/app/routes");
+  const keys = [];
+  for (const e of fs.readdirSync(base, { withFileTypes: true })) {
+    if (e.isFile() && /\.(tsx|ts|jsx|js)$/.test(e.name)) keys.push(routeKey(e.name));
+    else if (e.isDirectory()) {
+      const inner = fs.readdirSync(path.join(base, e.name)).filter((n) => /\.(tsx|ts|jsx|js)$/.test(n));
+      if (inner.length === 0) keys.push(e.name);
+      for (const n of inner) keys.push(routeKey(`${e.name}/${n}`));
+    }
+  }
+  return keys.sort();
+}
+
+/** Inventory for functionCoverage, read from the repository. */
+function coverageInventoryOnDisk() {
+  const modules = fs
+    .readdirSync(path.join(REPO_ROOT, "backend/src/modules"), { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
+  const workflows = fs
+    .readdirSync(path.join(REPO_ROOT, ".github/workflows"))
+    .filter((n) => /\.ya?ml$/.test(n))
+    .map((n) => `.github/workflows/${n}`)
+    .sort();
+  const cronFiles = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) {
+        if (e.name !== "node_modules" && e.name !== "dist" && e.name !== "__tests__") walk(p);
+      } else if (/\.ts$/.test(e.name) && !/\.(test|spec)\.ts$/.test(e.name)) {
+        if (/@Cron\(/.test(fs.readFileSync(p, "utf8"))) cronFiles.push(path.relative(REPO_ROOT, p));
+      }
+    }
+  };
+  walk(path.join(REPO_ROOT, "backend/src"));
+  const agents = [];
+  const agentRoots = [path.join(REPO_ROOT, ".claude/agents")];
+  const ws = path.join(REPO_ROOT, "workspaces");
+  if (fs.existsSync(ws)) for (const w of fs.readdirSync(ws)) agentRoots.push(path.join(ws, w, ".claude/agents"));
+  const walkAgents = (dir) => {
+    if (!fs.existsSync(dir)) return;
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (e.isDirectory() && !e.name.startsWith("_")) walkAgents(path.join(dir, e.name));
+      else if (e.isFile() && e.name.endsWith(".md")) agents.push(e.name.slice(0, -3));
+    }
+  };
+  agentRoots.forEach(walkAgents);
+  return {
+    modules,
+    routes: routeKeysOnDisk(),
+    workflows,
+    cronFiles: cronFiles.sort(),
+    agents: [...new Set(agents)].sort(),
+    skills: [...skillNamesFromRegistry()].sort(),
+  };
 }
 
 /** Subagent `<name>.md` under .claude/agents/ or workspaces/*\/.claude/agents/, at any depth. */
@@ -321,6 +499,7 @@ function functionDeps(map) {
     agentExists: agentExistsOnDisk,
     skillExists: skillExistsOnDisk,
     capabilityOwners: new Map((map.declared_capabilities || []).map((c) => [c.id, c.owner])),
+    routeKeys: routeKeysOnDisk(),
   };
 }
 
@@ -698,8 +877,19 @@ function runFunctionsSelfTest(ajvValidate) {
   if (validErrors.length > 0) failures.push(`valid fixture refused: ${validErrors.map((e) => e.message).join("; ")}`);
   if (checkMap(valid, ajvValidate).some((f) => f.code === "DEPT_FUNCTION_INVALID")) failures.push("valid fixture raises DEPT_FUNCTION_INVALID in checkMap");
 
-  // One refused case per coherence rule; `f` = the operational function, `g` = the decided-only one.
+  // One refused case per coherence rule; `f` = the operational function, `g` =
+  // the decided-only one, `h` = the missing one.
   const cases = [
+    ["empty", "department without function", (m) => { delete m.departments[0].functions; }],
+    ["capability", "capability owned by two departments", (m) => { m.departments.push({ id: "b", lead: "b-lead", capabilities: ["fixture-cap"], functions: [] }); }],
+    ["capability", "listing department is not the declared owner", (m) => { m.declared_capabilities[0].owner = "b"; }],
+    ["missing", "missing function citing a proof", (m, f, g, h) => { h.evidence = [{ path: "scripts/governance/__fixtures__" }]; }],
+    ["missing", "missing function covering an element", (m, f, g, h) => { h.covers = [{ module: "health" }]; }],
+    ["missing", "existing function without any proof", (m, f, g) => { g.evidence = [{ absent: "aucune preuve, fixture" }]; }],
+    ["covers", "covered module absent", (m, f) => { f.covers[0].module = "no-such-module"; }],
+    ["covers", "covered route prefix matching no file", (m, f) => { f.covers[1].routes = "no-such-route"; }],
+    ["covers", "covered workflow absent", (m, f) => { f.covers[2].workflow = ".github/workflows/absent.yml"; }],
+    ["covers", "covered cron file without @Cron", (m, f) => { f.covers[3].cron = ".github/workflows/ci.yml"; }],
     ["operability", "operational without a wired trigger", (m, f) => { f.trigger.wired = false; }],
     ["operability", "operational without a check", (m, f) => { delete f.check; }],
     ["operability", "operational without an owner", (m, f) => { delete f.owner; }],
@@ -721,15 +911,22 @@ function runFunctionsSelfTest(ajvValidate) {
   ];
   for (const [rule, label, mutate] of cases) {
     const m = structuredClone(valid);
-    const [f, g] = m.departments[0].functions;
-    mutate(m, f, g);
+    const [f, g, h] = m.departments[0].functions;
+    mutate(m, f, g, h);
     const errs = run(m);
     if (!errs.some((e) => e.rule === rule)) failures.push(`${rule} / ${label}: not refused (got ${errs.map((e) => e.rule).join(", ") || "nothing"})`);
   }
 
   // Shape defects the schema refuses before the coherence rules run.
   const schemaCases = [
-    ["non_operational without gaps", (f, g) => { delete g.gaps; }],
+    ["missing function above L0", (f, g, h) => { h.level = "L1"; }],
+    ["missing function without justification", (f, g, h) => { delete h.justification; }],
+    ["missing function with covers", (f, g, h) => { h.covers = [{ module: "health" }]; }],
+    ["cover naming two kinds of element", (f) => { f.covers[0].workflow = ".github/workflows/ci.yml"; }],
+    ["unknown status", (f) => { f.status = "planned"; }],
+    ["function without owner field", (f, g) => { delete g.owner; }],
+    ["department with an empty functions list", (f, g, h, m) => { m.departments[0].functions = []; }],
+    ["à attribuer entry without reason", (f, g, h, m) => { delete m.function_coverage_unassigned[0].reason; }],
     ["present kpi_input without producer", (f) => { delete f.kpi_input[0].producer; }],
     ["absent kpi_input without note", (f, g) => { delete g.kpi_input[0].note; }],
     ["unknown level", (f) => { f.level = "L5"; }],
@@ -740,17 +937,45 @@ function runFunctionsSelfTest(ajvValidate) {
   ];
   for (const [label, mutate] of schemaCases) {
     const m = structuredClone(valid);
-    const [f, g] = m.departments[0].functions;
-    mutate(f, g);
+    const [f, g, h] = m.departments[0].functions;
+    mutate(f, g, h, m);
     if (ajvValidate(m)) failures.push(`schema / ${label}: not refused`);
   }
+
+  // Coverage report (complement BX-2): elements no function covers are reported,
+  // listed à attribuer entries are kept apart, stale entries are flagged.
+  const inventory = {
+    modules: ["health", "maintenance", "orphan-module"],
+    routes: ["admin.system", "admin.system-config._index", "orphan-route"],
+    workflows: [".github/workflows/ci.yml", ".github/workflows/orphan.yml"],
+    cronFiles: ["backend/src/modules/orders/services/order-cleanup.service.ts", "backend/src/orphan.service.ts"],
+    agents: ["marketing-lead-agent", "orphan-agent"],
+    skills: ["code-review", "orphan-skill"],
+  };
+  const withStale = structuredClone(valid);
+  withStale.function_coverage_unassigned.push({ module: "health", reason: "déjà couvert, fixture" });
+  const cov = functionCoverage(withStale, inventory);
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const coverageChecks = [
+    ["unattached module", same(cov.unattached.module, ["orphan-module"])],
+    ["unattached routes (prefix stops at the segment)", same(cov.unattached.routes, ["admin.system-config._index", "orphan-route"])],
+    ["unattached workflow", same(cov.unattached.workflow, [".github/workflows/orphan.yml"])],
+    ["unattached cron file", same(cov.unattached.cron, ["backend/src/orphan.service.ts"])],
+    ["à attribuer kept apart", cov.unassigned.length === 1 && cov.unassigned[0].element === "maintenance"],
+    ["stale à attribuer entry", cov.stale.some((u) => u.element === "health" && u.why === "covered by a function")],
+    ["uncited subagent", same(cov.agents_uncited, ["orphan-agent"])],
+    ["uncited skill", same(cov.skills_uncited, ["orphan-skill"])],
+    ["crontab lines cited", same(cov.crontab_lines_cited, [39])],
+    ["route key drops `_` suffixes", routeKey("account_.orders.$orderId.tsx") === "account.orders.$orderId" && routeKey("_public+/_layout.tsx") === "_public+/_layout"],
+  ];
+  for (const [label, ok] of coverageChecks) if (!ok) failures.push(`coverage / ${label}: wrong report ${JSON.stringify(cov)}`);
 
   if (failures.length > 0) {
     console.error(`functions self-test: FAIL\n  - ${failures.join("\n  - ")}`);
     process.exit(EXIT_VALIDATION);
   }
   console.log(
-    `functions self-test: PASS (valid fixture accepted; ${cases.length} coherence breaks and ${schemaCases.length} schema breaks refused)`,
+    `functions self-test: PASS (valid fixture accepted; ${cases.length} coherence breaks and ${schemaCases.length} schema breaks refused; ${coverageChecks.length} coverage report checks)`,
   );
 }
 
@@ -807,12 +1032,20 @@ function runContractsGate(map, ajvValidate) {
     schemaErrors.length === 0
       ? checkDepartmentFunctions(map.departments || [], functionDeps(map))
       : { errors: [], summary: [] };
+  const coverage = schemaErrors.length === 0 ? functionCoverage(map, coverageInventoryOnDisk()) : null;
+  const byDepartment = {};
+  for (const f of functions.summary) {
+    const c = (byDepartment[f.department] = byDepartment[f.department] || { operational: 0, non_operational: 0, missing: 0 });
+    c[f.status] += 1;
+  }
   const result = {
     ok: schemaErrors.length === 0 && errors.length === 0 && functions.errors.length === 0,
     schema_errors: schemaErrors.map((e) => `${e.instancePath || "<root>"} ${e.message}`),
     contract_errors: errors,
     function_errors: functions.errors,
     functions: functions.summary,
+    functions_by_department: byDepartment,
+    coverage,
     pending_owner_decision: pending,
     departments_with_pending: [...new Set(pending.map((p) => p.id))].length,
     kpi_without_producer: unproduced,
@@ -834,6 +1067,23 @@ function runContractsGate(map, ajvValidate) {
     for (const e of errors) console.log(`  [ERROR] DEPT_CONTRACT_INCOMPLETE: ${e.message}`);
     for (const e of functions.errors) console.log(`  [ERROR] DEPT_FUNCTION_INVALID [${e.rule}]: ${e.message}`);
     for (const f of functions.summary) console.log(`  [FUNCTION] ${f.id}: ${f.status}, ${f.level}`);
+    for (const [d, c] of Object.entries(byDepartment)) {
+      console.log(`  [DEPARTMENT] ${d}: ${c.operational} operational, ${c.non_operational} non_operational, ${c.missing} missing`);
+    }
+    if (coverage) {
+      const total = Object.values(coverage.unattached).reduce((n, xs) => n + xs.length, 0);
+      console.log(
+        `function coverage (report, not blocking): ${total} elements attached to no function, ` +
+          `${coverage.unassigned.length} listed à attribuer, ${coverage.stale.length} stale à attribuer entries, ` +
+          `${coverage.agents_uncited.length} subagents and ${coverage.skills_uncited.length} skills cited by no function, ` +
+          `crontab lines cited: ${coverage.crontab_lines_cited.join(", ") || "none"}`,
+      );
+      for (const [kind, xs] of Object.entries(coverage.unattached)) for (const x of xs) console.log(`  [UNATTACHED] ${kind}: ${x}`);
+      for (const u of coverage.unassigned) console.log(`  [À ATTRIBUER] ${u.kind}: ${u.element} — ${u.reason}`);
+      for (const u of coverage.stale) console.log(`  [STALE] ${u.kind}: ${u.element} — ${u.why}`);
+      for (const a of coverage.agents_uncited) console.log(`  [UNCITED] subagent: ${a}`);
+      for (const k of coverage.skills_uncited) console.log(`  [UNCITED] skill: ${k}`);
+    }
     for (const p of pending) console.log(`  [PENDING] ${p.id}.${p.field}: ${p.reason}`);
     for (const u of unproduced) console.log(`  [NO PRODUCER] ${u.id}.kpi: ${u.missing}`);
   }
@@ -905,6 +1155,8 @@ module.exports = {
   checkDepartmentProfiles,
   checkDepartmentContracts,
   checkDepartmentFunctions,
+  functionCoverage,
+  routeKey,
   makeAjv,
   loadYaml,
 };

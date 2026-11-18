@@ -641,21 +641,6 @@
       "type": "skill"
     },
     {
-      "certification": "CERTIFIED",
-      "evidence": {
-        "scripts": [
-          ".claude/skills/vehicle-ops/SKILL.md"
-        ]
-      },
-      "has_evidence": true,
-      "id": "vehicle-ops",
-      "module": "diagnostic",
-      "owner": "diagnostic",
-      "reason": null,
-      "status": "live",
-      "type": "skill"
-    },
-    {
       "certification": "PARTIAL",
       "evidence": {
         "adr": "ADR-033"
@@ -874,12 +859,11 @@
       "business_number": 11,
       "capabilities": [
         "diagnostic-engine",
-        "knowledge-graph",
-        "vehicle-ops"
+        "knowledge-graph"
       ],
       "certification": "PARTIAL",
       "family": "Operations",
-      "health_score_base": 67,
+      "health_score_base": 55,
       "id": "diagnostic",
       "kpi_primary": null,
       "label": "Expertise technique automobile",
@@ -1339,8 +1323,8 @@
       "label": "Capacités certifiées",
       "source": "canon",
       "status": "OK",
-      "unit": "/41",
-      "value": 22
+      "unit": "/40",
+      "value": 21
     },
     {
       "certified": true,
@@ -1453,8 +1437,8 @@
       "live": 3,
       "partial": 16
     },
-    "capabilities_certified": 22,
-    "capabilities_total": 41,
+    "capabilities_certified": 21,
+    "capabilities_total": 40,
     "capabilities_without_evidence": 4,
     "departments_total": 24,
     "handoffs_incomplete": 9,
