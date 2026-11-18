@@ -84,7 +84,7 @@ export function customerMailMessageId(
     .slice(0, 32)}`;
 }
 
-export function missingPlaceholders(input: CustomerMailInput): boolean {
+function missingPlaceholders(input: CustomerMailInput): boolean {
   return (
     input.subject.includes(PLACEHOLDER_MARK) ||
     input.body.includes(PLACEHOLDER_MARK)

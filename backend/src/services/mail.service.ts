@@ -74,7 +74,7 @@ function escapeHtml(value: unknown): string {
  * Mandat CG — boîte et nom affiché des mails écrits par la boutique depuis la
  * fiche commande (choix owner du 14 novembre : « Automecanik.com », contact@).
  */
-export const CUSTOMER_SERVICE_MAILBOX = 'contact@automecanik.com';
+const CUSTOMER_SERVICE_MAILBOX = 'contact@automecanik.com';
 export const CUSTOMER_SERVICE_FROM = `"Automecanik.com" <${CUSTOMER_SERVICE_MAILBOX}>`;
 
 /**

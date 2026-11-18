@@ -22,10 +22,7 @@ export const CUSTOMER_MAIL_TEMPLATES = [
 
 export type CustomerMailTemplate = (typeof CUSTOMER_MAIL_TEMPLATES)[number];
 
-export const CUSTOMER_MAIL_TEMPLATE_LABELS: Record<
-  CustomerMailTemplate,
-  string
-> = {
+const CUSTOMER_MAIL_TEMPLATE_LABELS: Record<CustomerMailTemplate, string> = {
   'cancel-payment-voided': 'Annulation — paiement annulé avant encaissement',
   'cancel-refunded': 'Annulation — remboursement fait dans Paybox',
   'stock-out-equivalent': 'Rupture — équivalent proposé',
@@ -60,7 +57,7 @@ function todo(what: string): string {
 }
 
 /** « 89,90 € » ; montant illisible ⇒ passage à compléter. */
-export function formatEuros(value: string | number | null): string {
+function formatEuros(value: string | number | null): string {
   const n = Number(String(value ?? '').replace(',', '.'));
   if (value === null || value === '' || !Number.isFinite(n)) {
     return todo('montant');
@@ -69,7 +66,7 @@ export function formatEuros(value: string | number | null): string {
 }
 
 /** « 17/11/2026 », heure de Paris ; date illisible ⇒ passage à compléter. */
-export function formatOrderDate(value: string | null): string {
+function formatOrderDate(value: string | null): string {
   const d = value ? new Date(value) : null;
   if (!d || Number.isNaN(d.getTime())) return todo('date de la commande');
   return new Intl.DateTimeFormat('fr-FR', {

@@ -19,14 +19,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "~/components/ui/button";
 
-export interface CustomerMailTemplate {
+interface CustomerMailTemplate {
   template: string;
   label: string;
   subject: string;
   body: string;
 }
 
-export interface CustomerMailHistoryEntry {
+interface CustomerMailHistoryEntry {
   msgId: string;
   sentAt: string | null;
   authorId: string | null;
