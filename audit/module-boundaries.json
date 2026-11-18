@@ -623,8 +623,8 @@
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 41,
-      "loc_total": 11118,
+      "files_count": 42,
+      "loc_total": 11405,
       "has_barrel": false
     },
     "products": {
@@ -879,7 +879,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 56,
-      "loc_total": 7823,
+      "loc_total": 7830,
       "has_barrel": true
     },
     "suppliers": {
@@ -1941,6 +1941,11 @@
       "from": "pricing",
       "to": "backend-core",
       "count": 1
+    },
+    {
+      "from": "pricing",
+      "to": "supplier-truth",
+      "count": 3
     },
     {
       "from": "products",

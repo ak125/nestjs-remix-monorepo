@@ -60,6 +60,17 @@ export interface CommitRowPayload {
   marge: number;
   vente_ht: number;
   vente_ttc: number;
+  /**
+   * Real supplier of the tariff (`___xtr_supplier.spl_name`, e.g. 'DCA'), written
+   * to `pieces_price.pri_frs` on the committed row only.
+   */
+  frs: string;
+  /**
+   * Tariff effective date, ISO `YYYY-MM-DDT00:00:00.000Z` (format of the
+   * historical `pieces_price.pri_date_from` text values), written on the
+   * committed row only.
+   */
+  date_from: string;
 }
 
 @Injectable()
