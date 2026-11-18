@@ -665,7 +665,7 @@
         "backend/src/modules/rag-proxy/types"
       ],
       "files_count": 34,
-      "loc_total": 12017,
+      "loc_total": 12052,
       "has_barrel": false
     },
     "scripts": {
@@ -963,8 +963,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 388,
-      "loc_total": 80559,
+      "files_count": 389,
+      "loc_total": 80809,
       "has_barrel": true
     },
     "upload": {
