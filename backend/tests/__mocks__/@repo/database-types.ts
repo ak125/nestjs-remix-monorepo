@@ -9,6 +9,8 @@ export const TABLES = {
   xtr_order: 'xtr_order',
   xtr_order_line: 'xtr_order_line',
   xtr_customer: 'xtr_customer',
+  xtr_invoice: 'xtr_invoice',
+  xtr_invoice_line: 'xtr_invoice_line',
   xtr_product: 'xtr_product',
   ic_postback: 'ic_postback',
   pieces: 'pieces',
