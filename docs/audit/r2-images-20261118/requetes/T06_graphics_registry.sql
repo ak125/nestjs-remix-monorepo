@@ -1,0 +1,1 @@
+\copy (select source_dlnr, bildname, bildtype from tecdoc_doc.graphics_registry where source_dlnr = any('{10,101,11,110,113,114,123,13,134,140,15,159,16,161,197,3,30,31,33,357,38,387,39,4,42,43,4368,6,62,65,83,85,89,95}'::int[])) to '<DIR>/data/graphics_missing_folders.csv' csv
