@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   calProductToObservation,
   classifyCalDispo,
@@ -7,8 +9,10 @@ import {
   parseCalRemisePct,
 } from './cal-parse';
 import {
+  CAL_PRIVATE_PWD_ENV,
   CalConnector,
   calQueryVariant,
+  readCalPrivatePwd,
   isForbiddenPostbackTarget,
   parsePriceFromText,
 } from './cal.connector';
@@ -293,5 +297,54 @@ describe('calQueryVariant — second essai sur la forme compacte (mandat BK)', (
   it('aucun second essai quand la référence est déjà compacte', () => {
     expect(calQueryVariant('554855')).toBeNull();
     expect(calQueryVariant(' 554855 ')).toBeNull();
+  });
+});
+
+describe('privatepwd CAL lu dans la configuration (mandat CB)', () => {
+  const FICTIF = 'valeur-fictive-de-test';
+  let saved: string | undefined;
+  beforeEach(() => {
+    saved = process.env[CAL_PRIVATE_PWD_ENV];
+  });
+  afterEach(() => {
+    if (saved === undefined) delete process.env[CAL_PRIVATE_PWD_ENV];
+    else process.env[CAL_PRIVATE_PWD_ENV] = saved;
+    jest.restoreAllMocks();
+  });
+
+  it('la variable porte un nom CAL_*, comme CAL_USER et CAL_PASSWORD', () => {
+    expect(CAL_PRIVATE_PWD_ENV).toBe('CAL_PRIVATE_PWD');
+  });
+
+  it.each([undefined, '', '   '])(
+    'absente ou vide (%p) : erreur explicite qui nomme la variable',
+    (value) => {
+      const env: NodeJS.ProcessEnv = {};
+      if (value !== undefined) env[CAL_PRIVATE_PWD_ENV] = value;
+      expect(() => readCalPrivatePwd(env)).toThrow(/CAL_PRIVATE_PWD absente/);
+    },
+  );
+
+  it('présente : renvoyée telle quelle (valeur fictive)', () => {
+    expect(readCalPrivatePwd({ [CAL_PRIVATE_PWD_ENV]: FICTIF })).toBe(FICTIF);
+  });
+
+  it('login() sans la variable échoue avant tout navigateur ou appel réseau', async () => {
+    delete process.env[CAL_PRIVATE_PWD_ENV];
+    const c = new CalConnector({ supplierId: '19', baseUrl: 'https://x' });
+    const close = jest.spyOn(c, 'close');
+    await expect(c.login({ user: 'u', password: 'p' })).rejects.toThrow(
+      /CAL_PRIVATE_PWD absente/,
+    );
+    // L'échec précède même la fermeture d'une session précédente : aucune
+    // étape de login() n'a été franchie (pas d'import playwright, pas de goto).
+    expect(close).not.toHaveBeenCalled();
+    await expect(c.fetchAvailability(['REF'])).rejects.toThrow(/before login/);
+  });
+
+  it('le source ne porte plus aucun littéral pour privatepwd', () => {
+    const src = readFileSync(join(__dirname, 'cal.connector.ts'), 'utf8');
+    expect(src).toMatch(/privatepwd:\s*this\.privatePwd/);
+    expect(src).not.toMatch(/privatepwd\s*:\s*['"`]/i);
   });
 });

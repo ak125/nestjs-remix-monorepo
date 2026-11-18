@@ -108,7 +108,8 @@ export type ShapeRule =
   | "payment-hmac-hex128-literal"
   | "payment-certificate-literal"
   | "credential-env-default-literal"
-  | "credential-documented-default";
+  | "credential-documented-default"
+  | "credential-param-literal";
 
 export type Rule =
   | "supabase-legacy-jwt"
@@ -385,6 +386,67 @@ export function scanCredentialDefaults(
 }
 
 /**
+ * Credential parameters (mandat CB, 2026-11-18). A literal given to a key named
+ * like a password inside an object — `{ privatepwd: '<literal>' }`,
+ * `{ "password": "<literal>" }` — ships the credential in the code. The two
+ * rules above miss it: they need an UPPER_CASE environment name and an
+ * environment read. Measured on 2026-11-18: the CAL connector sent such a
+ * literal to the supplier's web service, merged without a single red run.
+ *
+ * Scope, measured over the tracked tree before writing the rule: the same form
+ * hits 51 lines in 18 files, almost all fictitious values in tests, in the
+ * `.spec/` documentation and in `package-lock.json`. The rule therefore reads
+ * SOURCE files only (JS/TS/Python), never tests, and skips two code shapes that
+ * are not credentials — an UPPER_SNAKE constant (an error code such as
+ * `AUTH.X_Y`) and a value
+ * equal to its key (a table name). What remains on that tree: the CAL line.
+ * Tests must keep using fictitious values; this rule does not police them.
+ *
+ * No fingerprint, for the same reason as the credential defaults: a short human
+ * password is reversible by dictionary from a 12-hex SHA-256 prefix.
+ */
+const CRED_PARAM_RE =
+  /(?<![A-Za-z0-9_$])["']?([A-Za-z0-9_]*(?:pwd|passwd|password|passphrase)[A-Za-z0-9_]*)["']?\s*:\s*(["'`])([^"'`\n]*)\2/gi;
+const CRED_PARAM_SOURCE_FILE = /\.(?:[cm]?[jt]sx?|py)$/;
+const CRED_PARAM_TEST_FILE =
+  /(?:\.(?:test|spec)\.[cm]?[jt]sx?$|(?:^|\/)tests?\/|(?:^|\/)test_[^/]*\.py$|_test\.py$)/;
+const UPPER_SNAKE_CONSTANT = /^[A-Z][A-Z0-9]*(?:[._][A-Z0-9]+)+$/;
+
+/** Credential-parameter finding for one line — at most one. */
+export function scanCredentialParams(
+  file: string,
+  lineNo: number,
+  line: string,
+): Finding[] {
+  if (!CRED_PARAM_SOURCE_FILE.test(file) || CRED_PARAM_TEST_FILE.test(file)) {
+    return [];
+  }
+  for (const m of line.matchAll(CRED_PARAM_RE)) {
+    const key = m[1];
+    const v = m[3].trim();
+    if (
+      !v ||
+      /\s/.test(v) ||
+      PLACEHOLDER_VALUE.test(v) ||
+      UPPER_SNAKE_CONSTANT.test(v) ||
+      v.toLowerCase() === key.toLowerCase()
+    ) {
+      continue;
+    }
+    return [
+      {
+        file,
+        line: lineNo,
+        rule: "credential-param-literal",
+        fp: "n/a",
+        detail: `littéral pour le paramètre ${key} (${v.length} car.)`,
+      },
+    ];
+  }
+  return [];
+}
+
+/**
  * Shape pass — deliberately NOT part of `scanContent`.
  *
  * Keeping it separate from `scanContent` is a safety property, not a style
@@ -417,6 +479,7 @@ export function scanShapes(file: string, content: string): Finding[] {
       });
     }
     out.push(...scanCredentialDefaults(file, i + 1, line));
+    out.push(...scanCredentialParams(file, i + 1, line));
   });
   return out;
 }
