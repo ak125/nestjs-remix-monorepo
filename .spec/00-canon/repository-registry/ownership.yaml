@@ -1869,3 +1869,13 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: high
     risk: medium
+  # Mandat CA (PR #2167, 18/11/2026) : règles de conservation des tables de massdoc,
+  # toutes au statut « proposé » (durées fixées par Marwane), et leur schéma.
+  # Validées par scripts/governance/validate-db-retention.js (déjà couvert par scripts/**).
+  # Même domaine que l'inventaire qu'elles lisent (audit/massdoc-*.json, D13).
+  # config/** n'est pas couvert (seul config/caddy/** l'est) : glob explicite.
+  - glob: config/db-retention/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low

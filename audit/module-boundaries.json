@@ -702,8 +702,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 226,
-      "loc_total": 54902,
+      "files_count": 228,
+      "loc_total": 55226,
       "has_barrel": true
     },
     "search": {
@@ -879,7 +879,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 56,
-      "loc_total": 7823,
+      "loc_total": 7739,
       "has_barrel": true
     },
     "suppliers": {

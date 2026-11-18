@@ -1,0 +1,30 @@
+releve_utc|2026-11-18 09:58:06.70595
+stats_reset_db|NULL
+stats_reset_bgwriter|2026-09-17 00:53:38.396186+00
+stats_reset_wal|2026-09-17 00:53:38.396186+00
+stats_reset_io_min|2026-09-17 00:53:38.396186+00
+postmaster_start|2026-09-17 01:14:25.613135+00
+db_size_bytes|139086154899
+ns__archive_relkind_r|62 / 670 MB
+ns__archive_relkind_v|15 / 0 bytes
+ns__filter_relkind_r|1 / 2184 kB
+ns_auth_relkind_r|27 / 1152 kB
+ns_cron_relkind_r|2 / 10 MB
+ns_extensions_relkind_v|4 / 0 bytes
+ns_infra_relkind_r|1 / 168 kB
+ns_public_relkind_m|4 / 440 kB
+ns_public_relkind_p|17 / 0 bytes
+ns_public_relkind_r|346 / 120 GB
+ns_public_relkind_r_partition|355 / 3354 MB
+ns_public_relkind_v|45 / 0 bytes
+ns_realtime_relkind_p|1 / 0 bytes
+ns_realtime_relkind_r|2 / 56 kB
+ns_storage_relkind_r|10 / 2245 MB
+ns_supabase_migrations_relkind_r|1 / 888 kB
+ns_tecdoc_doc_relkind_r|3 / 2098 MB
+ns_tecdoc_ext_relkind_r|5 / 20 MB
+ns_tecdoc_map_relkind_m|3 / 190 MB
+ns_tecdoc_map_relkind_r|13 / 938 MB
+ns_tecdoc_norm_relkind_r|7 / 471 MB
+ns_vault_relkind_r|1 / 24 kB
+ns_vault_relkind_v|1 / 0 bytes

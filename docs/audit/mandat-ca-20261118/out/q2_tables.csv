@@ -1,0 +1,364 @@
+relname,relkind,nparts,total_bytes,reltuples,n_live_tup,seq_scan,idx_scan,n_tup_ins,n_tup_upd,n_tup_del,last_maint,last_seq_scan,last_idx_scan,nparts_empty_est,comment
+___config,r,0,393216,1,1,50,0,0,0,0,2026-09-17 01:41:28.890308+00,2026-10-10 16:30:08.827113+00,,0,Table ___CONFIG - Conversion automatique MySQL → PostgreSQL
+___config_admin,r,0,196608,11,11,635,31,0,7,0,2026-09-17 01:41:28.893706+00,2026-11-18 08:16:08.296267+00,2026-11-16 19:48:45.969953+00,0,Table ___CONFIG_ADMIN - Conversion automatique MySQL → PostgreSQL
+___config_ip,r,0,81920,3,3,12,0,0,0,0,2026-09-17 01:41:28.896548+00,2026-10-10 16:30:08.827113+00,,0,Table ___CONFIG_IP - Conversion automatique MySQL → PostgreSQL
+___footer_menu,r,0,98304,13,13,14,0,0,0,0,2026-09-17 01:41:28.898913+00,2026-10-10 16:30:08.827113+00,,0,Table ___FOOTER_MENU - Conversion automatique MySQL → PostgreSQL
+___header_menu,r,0,114688,6,6,16,0,0,0,0,2026-09-17 01:41:28.901105+00,2026-10-10 16:30:08.827113+00,,0,Table ___HEADER_MENU - Conversion automatique MySQL → PostgreSQL
+___legal_pages,r,0,114688,16,16,29,1135,0,0,0,2026-09-17 01:41:28.657459+00,2026-11-17 21:19:06.848758+00,2026-11-17 23:41:02.221265+00,0,
+___meta_tags_ariane,r,0,237568,5,5,3502,0,0,0,0,2026-09-17 01:41:28.654254+00,2026-11-18 08:16:25.896153+00,,0,Table ___META_TAGS_ARIANE - Conversion automatique MySQL → PostgreSQL
+___xtr_customer,r,0,49266688,59198,59199,188,60417,16,59109,0,2026-11-16 19:47:38.572184+00,2026-11-18 08:11:53.642518+00,2026-11-18 08:13:19.696633+00,0,Table ___XTR_CUSTOMER - Conversion automatique MySQL → PostgreSQL
+___xtr_customer_billing_address,r,0,27607040,59109,59109,19,1717,0,0,0,2026-09-17 01:41:19.80684+00,2026-09-23 23:58:40.178936+00,2026-11-18 08:13:19.744161+00,0,Table ___XTR_CUSTOMER_BILLING_ADDRESS - Conversion automatique MySQL → PostgreSQL
+___xtr_customer_delivery_address,r,0,27607040,59110,59110,19,1718,0,0,0,2026-09-17 01:41:19.317719+00,2026-09-23 23:58:40.178936+00,2026-11-18 08:13:19.823872+00,0,Table ___XTR_CUSTOMER_DELIVERY_ADDRESS - Conversion automatique MySQL → PostgreSQL
+___xtr_delivery_agent,r,0,163840,1,1,25,0,0,0,0,2026-09-17 01:41:28.903688+00,2026-11-15 23:47:14.478384+00,,0,Table ___XTR_DELIVERY_AGENT - Conversion automatique MySQL → PostgreSQL
+___xtr_delivery_ape_corse,r,0,98304,9,9,639,0,0,0,0,2026-09-17 01:41:28.905957+00,2026-11-18 08:30:50.079087+00,,0,Table ___XTR_DELIVERY_APE_CORSE - Conversion automatique MySQL → PostgreSQL
+___xtr_delivery_ape_domtom1,r,0,98304,7,7,636,0,0,0,0,2026-09-17 01:41:29.098107+00,2026-11-18 08:30:50.079087+00,,0,Table ___XTR_DELIVERY_APE_DOMTOM1 - Conversion automatique MySQL → PostgreSQL
+___xtr_delivery_ape_domtom2,r,0,98304,7,7,635,0,0,0,0,2026-09-17 01:41:29.100284+00,2026-11-18 08:30:50.055517+00,,0,Table ___XTR_DELIVERY_APE_DOMTOM2 - Conversion automatique MySQL → PostgreSQL
+___xtr_delivery_ape_france,r,0,131072,9,9,658,0,0,0,0,2026-09-17 01:41:28.908159+00,2026-11-18 08:30:47.461285+00,,0,Table ___XTR_DELIVERY_APE_FRANCE - Conversion automatique MySQL → PostgreSQL
+___xtr_invoice,r,0,294912,1,1,86,0,0,0,0,2026-09-17 01:41:28.910704+00,2026-11-17 17:47:59.198983+00,,0,Table ___XTR_INVOICE - Conversion automatique MySQL → PostgreSQL
+___xtr_invoice_line,r,0,294912,1,1,43,0,0,0,0,2026-09-17 01:41:28.91346+00,2026-11-17 17:44:24.826132+00,,0,Table ___XTR_INVOICE_LINE - Conversion automatique MySQL → PostgreSQL
+___xtr_msg,r,0,10306453504,15342444,15342521,473,47592,77,0,0,2026-09-17 01:32:48.347154+00,2026-11-16 17:42:49.190777+00,2026-11-18 09:56:50.528296+00,0,Table ___XTR_MSG - Conversion automatique MySQL → PostgreSQL
+___xtr_order,r,0,2252800,1690,1707,5313,131638,17,37,0,2026-09-17 01:41:27.286979+00,2026-11-18 09:44:54.117669+00,2026-11-18 09:45:02.920794+00,0,Table ___XTR_ORDER - Conversion automatique MySQL → PostgreSQL
+___xtr_order_history,r,0,114688,23,42,105,34,19,0,0,2026-09-17 01:41:28.922498+00,2026-11-17 23:29:12.26187+00,2026-11-17 17:50:44.739067+00,0,Event stream append-only pour le cycle de vie commande. Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#rpc_authority. Writes via RPC append_order_event uniquement (atomique avec create_order_atomic / cancel_order_atomic).
+___xtr_order_line,r,0,2957312,2530,2547,132,44231,17,1,0,2026-09-17 01:41:27.397337+00,2026-11-18 09:40:01.895413+00,2026-11-18 09:40:01.895413+00,0,Table ___XTR_ORDER_LINE - Conversion automatique MySQL → PostgreSQL
+___xtr_order_line_equiv_ticket,r,0,98304,13,13,90,8,0,0,0,2026-09-17 01:41:28.916361+00,2026-11-15 23:44:49.557066+00,2026-11-13 13:03:02.582925+00,0,Table ___XTR_ORDER_LINE_EQUIV_TICKET - Conversion automatique MySQL → PostgreSQL
+___xtr_order_line_status,r,0,98304,10,10,27,0,0,0,0,2026-09-17 01:41:28.919337+00,2026-11-17 18:08:08.444962+00,,0,Table ___XTR_ORDER_LINE_STATUS - Conversion automatique MySQL → PostgreSQL
+___xtr_order_status,r,0,98304,5,5,105,4,0,0,0,2026-09-17 01:41:28.925324+00,2026-11-18 08:13:19.904455+00,2026-11-17 21:08:17.396103+00,0,Table ___XTR_ORDER_STATUS - Conversion automatique MySQL → PostgreSQL
+___xtr_supplier,r,0,98304,70,70,52,4,0,0,0,2026-09-17 01:41:28.927883+00,2026-11-18 09:36:16.13423+00,2026-11-17 13:48:46.396764+00,0,Table ___XTR_SUPPLIER - Conversion automatique MySQL → PostgreSQL
+___xtr_supplier_link_pm,r,0,81920,108,108,27,20,0,0,0,2026-09-17 01:41:28.930669+00,2026-11-18 09:36:16.13423+00,2026-11-18 09:36:16.13423+00,0,Table ___XTR_SUPPLIER_LINK_PM - Conversion automatique MySQL → PostgreSQL
+__abandoned_cart_emails,r,0,40960,0,0,52,0,0,0,0,2026-09-17 01:41:29.276043+00,2026-11-17 21:55:23.424705+00,,0,Abandoned cart email send queue. RLS enabled 2026-04-22 — service_role only.
+__admin_audit_log,r,0,122880,78,80,59,16,20,0,0,2026-09-17 01:41:28.770663+00,2026-11-18 09:20:34.651748+00,2026-11-18 08:15:44.153313+00,0,
+__admin_job_health,r,0,81920,3,3,12292,0,0,6001,0,2026-11-18 01:30:04.957487+00,2026-11-18 09:30:02.095758+00,,0,
+__agent_runs,r,0,65536,7,7,11,0,0,0,0,2026-09-17 01:41:28.936441+00,2026-10-10 16:30:08.827113+00,,0,
+__blog_advice,r,0,1040384,85,85,148670,5138383,0,12,0,2026-09-17 01:41:27.78743+00,2026-11-18 09:57:45.090127+00,2026-11-18 09:58:24.006397+00,0,Table __BLOG_ADVICE - Conversion automatique MySQL → PostgreSQL
+__blog_advice_cross,r,0,98304,321,321,18,2135104,0,0,0,2026-09-17 01:41:28.768032+00,2026-11-04 20:26:33.023918+00,2026-11-18 09:58:22.950357+00,0,Table __BLOG_ADVICE_CROSS - Conversion automatique MySQL → PostgreSQL
+__blog_advice_h2,r,0,2449408,447,447,357,2141190,0,0,0,2026-09-17 01:41:27.215493+00,2026-11-18 09:49:09.578007+00,2026-11-18 09:58:24.044973+00,0,Table __BLOG_ADVICE_H2 - Conversion automatique MySQL → PostgreSQL
+__blog_advice_h3,r,0,1138688,200,200,23,1777598,0,0,0,2026-09-17 01:41:27.7731+00,2026-11-11 21:00:26.941794+00,2026-11-18 09:58:24.044973+00,0,Table __BLOG_ADVICE_H3 - Conversion automatique MySQL → PostgreSQL
+__blog_guide,r,0,2007040,223,223,23374,26419,0,0,0,2026-09-17 01:41:27.482253+00,2026-11-18 09:55:45.0281+00,2026-11-18 09:55:00.044163+00,0,Table __BLOG_GUIDE - Conversion automatique MySQL → PostgreSQL
+__blog_guide_h2,r,0,8437760,1790,1790,18,28178,0,0,0,2026-09-17 01:41:24.607181+00,2026-11-04 20:26:33.023918+00,2026-11-18 09:53:28.269615+00,0,Table __BLOG_GUIDE_H2 - Conversion automatique MySQL → PostgreSQL
+__blog_guide_h3,r,0,557056,674,674,26,21361,0,0,0,2026-09-17 01:41:27.98393+00,2026-11-04 20:26:33.023918+00,2026-11-18 09:53:28.179025+00,0,Table __BLOG_GUIDE_H3 - Conversion automatique MySQL → PostgreSQL
+__blog_meta_tags_ariane,r,0,163840,5,5,26,0,0,0,0,2026-09-17 01:41:28.93955+00,2026-11-04 20:26:33.023918+00,,0,Table __BLOG_META_TAGS_ARIANE - Conversion automatique MySQL → PostgreSQL
+__blog_seo_marque,r,0,147456,1,1,46533,0,0,0,0,2026-09-17 01:41:28.941155+00,2026-11-18 09:55:00.067099+00,,0,Table __BLOG_SEO_MARQUE - Conversion automatique MySQL → PostgreSQL
+__catalog_id_mapping,r,0,483328,950,950,15,0,0,0,0,2026-09-17 01:41:28.22192+00,2026-10-10 16:30:08.827113+00,,0,Maps external catalog IDs to internal Automecanik IDs
+__catalog_import_history,r,0,65536,3,3,13,0,0,0,0,2026-09-17 01:41:28.94333+00,2026-10-10 16:30:08.827113+00,,0,History of catalog import operations
+__claims,r,0,98304,0,0,16956,0,0,0,0,2026-09-17 01:41:28.945454+00,2026-11-18 09:43:02.199838+00,,0,
+__cnit_raw,r,0,16842752,55060,55060,7866,8376,0,0,0,2026-09-17 01:41:17.743798+00,2026-10-10 16:30:08.827113+00,2026-10-10 16:30:08.827113+00,0,Raw CNIT scraping data. RLS enabled 2026-04-22 — service_role only.
+__cross_gamme_car_new,r,0,51445760,182131,182131,6017,787258,0,0,0,2026-09-17 01:41:12.102849+00,2026-11-18 09:45:01.97529+00,2026-11-18 09:58:05.125635+00,0,Table __CROSS_GAMME_CAR_NEW - Conversion automatique MySQL → PostgreSQL
+__db_governance_snapshots,r,0,98304,30,30,8,0,0,0,0,2026-09-17 01:41:28.676337+00,2026-10-10 16:30:08.827113+00,,0,
+__diag_cause,r,0,98304,58,58,193,481,0,0,0,2026-09-17 01:41:28.72384+00,2026-11-18 02:14:31.332477+00,2026-11-17 10:35:55.325707+00,0,
+__diag_context_questions,r,0,49152,5,5,15,0,0,0,0,2026-09-17 01:41:28.949015+00,2026-10-28 16:11:26.71132+00,,0,Questions de contexte pour affiner le diagnostic
+__diag_link_provenance,r,0,24576,0,0,72,331,0,0,0,,2026-10-28 16:11:15.045902+00,2026-10-28 16:28:23.762582+00,0,"ADR-035 D1 : une ligne par couple (lien symptôme → cause, fiche WIKI). Lien documenté ssi ligne vivante (retired_at IS NULL). Écrit uniquement par __diag_projection_apply (ADR-035 D7)."
+__diag_maintenance_operation,r,0,114688,30,30,66,63,0,0,0,2026-09-17 01:41:28.68838+00,2026-11-02 07:50:14.429427+00,2026-11-17 10:35:56.332281+00,0,Operations entretien preventif. Recherche deleguee a /api/rag/search (pivot 2026-04-18).
+__diag_maintenance_symptom_link,r,0,65536,75,75,104,4,0,0,0,2026-09-17 01:41:28.946706+00,2026-11-17 10:35:58.625893+00,2026-09-30 14:35:45.226842+00,0,
+__diag_projection_conflicts,r,0,24576,0,0,61,0,0,0,0,,2026-10-28 16:17:15.802082+00,,0,"ADR-035 D1 : une relation exportée non projetée, avec sa raison bornée. Écrit uniquement par __diag_projection_apply."
+__diag_projection_runs,r,0,24576,0,0,72,4,0,0,0,,2026-10-30 07:31:28.844233+00,2026-10-15 07:19:09.659315+00,0,ADR-035 D1 : un run de projection WIKI → DB (applied ou failed). Écrit uniquement par __diag_projection_apply et __diag_projection_record_failure.
+__diag_related_parts,r,0,65536,7,7,16,0,0,0,0,2026-09-17 01:41:28.953417+00,2026-10-28 16:11:15.045902+00,,0,Pieces souvent remplacees ensemble ou a verifier
+__diag_safe_phrases,r,0,24576,17,17,6,0,0,0,0,2026-09-17 01:41:28.955473+00,2026-10-28 16:11:15.045902+00,,0,
+__diag_safety_rule,r,0,65536,21,21,420,0,0,0,0,2026-09-17 01:41:28.951316+00,2026-11-17 19:33:31.027654+00,,0,
+__diag_session,r,0,991232,175,218,49,33,43,0,0,2026-09-17 01:41:28.53774+00,2026-10-28 16:32:03.764841+00,2026-10-28 13:35:24.792805+00,0,
+__diag_symptom,r,0,131072,62,62,232,607,0,0,0,2026-09-17 01:41:28.614175+00,2026-11-18 02:14:30.811962+00,2026-11-17 19:33:32.533502+00,0,Symptomes diagnostiques. Recherche deleguee a /api/rag/search (pivot 2026-04-18).
+__diag_symptom_cause_link,r,0,131072,162,162,113,474,0,0,0,2026-09-17 01:41:28.650798+00,2026-10-30 06:03:58.965156+00,2026-11-17 10:35:55.275768+00,0,
+__diag_symptom_family,r,0,81920,35,35,13,0,0,0,0,2026-09-17 01:41:28.960404+00,2026-10-28 16:11:15.045902+00,,0,Liaison symptome -> famille(s) de pieces probables
+__diag_symptoms,r,0,57344,31,31,20,0,0,0,0,2026-09-17 01:41:28.957843+00,2026-10-28 16:11:15.045902+00,,0,Catalogue des symptomes detectables par le client
+__diag_system,r,0,49152,13,13,2188,181,0,0,0,2026-09-17 01:41:29.095935+00,2026-11-18 02:14:31.332477+00,2026-11-15 12:42:47.899965+00,0,
+__error_logs,r,0,162299904,51272,51268,82,123501,92054,0,113991,2026-11-16 13:52:33.585848+00,2026-11-15 23:49:09.523801+00,2026-11-18 09:55:00.187089+00,0,Runtime error log. Written by ErrorLogService (buffered+batched). 30-day retention via cron.
+__gamme_page_cache,r,0,3686400,238,265,465,81803,27,12,0,2026-09-17 01:41:28.684582+00,2026-11-05 06:16:10.463287+00,2026-11-18 09:50:00.017944+00,0,ADR-024 Phase 1: cache materialise du payload page gamme R1. Parite ADR-016 (__vehicle_page_cache).
+__import_batch_contract,r,0,32768,0,0,13,0,0,0,0,2026-09-17 01:41:29.273655+00,2026-10-10 16:30:08.827113+00,,0,Contrats de batch: garantit completeness >= 95%
+__import_gate_status,r,0,24576,0,0,5,0,0,0,0,2026-09-17 01:41:29.24888+00,2026-10-10 16:30:08.827113+00,,0,Status des 5 gates de validation
+__import_manifest,r,0,32768,0,0,11,0,0,0,0,2026-09-17 01:41:29.249276+00,2026-10-10 16:30:08.827113+00,,0,Manifest: tous les fichiers attendus doivent etre recus et traites
+__import_proof,r,0,32768,0,0,7,0,0,0,0,2026-09-17 01:41:29.272673+00,2026-10-10 16:30:08.827113+00,,0,Preuves cryptographiques et logiques pour chaque import
+__marketing_analytics_digests,r,0,24576,0,0,19,0,0,0,0,2026-09-17 01:41:29.272312+00,2026-11-15 22:20:16.201957+00,,0,
+__marketing_backlinks,r,0,131072,122,122,33,2,0,0,0,2026-09-17 01:41:28.680563+00,2026-11-16 05:40:16.926887+00,2026-11-12 02:00:08.81725+00,0,
+__marketing_brand_rules,r,0,49152,22,22,25,0,0,0,0,2026-09-17 01:41:29.102667+00,2026-11-17 21:13:32.18746+00,,0,
+__marketing_campaigns,r,0,16384,0,0,10,0,0,0,0,2026-09-17 01:41:29.271929+00,2026-10-15 08:20:48.231699+00,,0,
+__marketing_content_library,r,0,24576,0,0,15,0,0,0,0,2026-09-17 01:41:29.271191+00,2026-10-15 08:20:48.231699+00,,0,
+__marketing_content_roadmap,r,0,131072,58,58,21,0,0,0,0,2026-09-17 01:41:28.73453+00,2026-11-16 05:40:15.913017+00,,0,
+__marketing_guest_posts,r,0,32768,0,0,19,0,0,0,0,2026-09-17 01:41:29.25007+00,2026-10-12 23:59:01.362397+00,,0,
+__marketing_kpi_snapshots,r,0,49152,1,1,6,0,0,0,0,2026-09-17 01:41:28.962497+00,2026-11-16 05:38:10.844185+00,,0,
+__marketing_outreach,r,0,32768,0,0,19,0,0,0,0,2026-09-17 01:41:29.268446+00,2026-10-12 23:59:01.362397+00,,0,
+__marketing_social_posts,r,0,204800,0,0,53,0,0,0,0,2026-09-17 01:41:28.732823+00,2026-11-17 18:23:09.753243+00,,0,
+__marketing_utm_registry,r,0,40960,0,0,20,0,0,0,0,2026-09-17 01:41:29.250501+00,2026-10-15 08:20:48.231699+00,,0,
+__marketing_weekly_plans,r,0,65536,0,0,20,0,0,0,0,2026-09-17 01:41:28.964634+00,2026-11-14 07:57:06.002327+00,,0,
+__paybox_gate_log,r,0,49152,4,4,377,2,0,0,0,2026-09-17 01:41:28.96585+00,2026-11-17 21:55:23.424705+00,2026-09-23 20:14:32.735578+00,0,Persists Paybox callback gate decisions for monitoring. Query: SELECT * FROM __paybox_gate_log WHERE rejected = true ORDER BY created_at DESC
+__pipeline_chain_queue,r,0,974848,2510,2510,21,2,0,0,0,2026-09-17 01:41:27.75748+00,2026-11-17 14:04:02.622697+00,2026-10-10 16:30:08.827113+00,0,
+__qa_protected_meta_hash,r,0,360448,140,140,13,4,0,0,0,2026-09-17 01:41:28.060603+00,2026-10-10 16:30:08.827113+00,2026-10-10 16:30:08.827113+00,0,QA guard: baseline hashes of SEO-protected fields. Any post-refresh mismatch = incident.
+__quality_gamme_scores,r,0,557056,232,232,15,4,0,0,0,2026-09-17 01:41:27.768342+00,2026-10-10 16:30:08.827113+00,2026-11-16 00:31:39.092914+00,0,Scores de qualite agreges par gamme. Computed by NestJS GammeAggregator.
+__quality_page_scores,r,0,1646592,921,921,20,12,0,0,0,2026-09-17 01:41:26.329592+00,2026-11-16 00:31:39.092914+00,2026-11-16 00:31:39.092914+00,0,Scores de qualite par page (gamme x page_type). Computed by NestJS QualityScoringEngine.
+__quarantine_history,r,0,24576,0,0,8,0,0,0,0,2026-09-17 01:41:29.267303+00,2026-10-10 16:30:08.827113+00,,0,
+__quarantine_items,r,0,65536,0,0,19,0,0,0,0,2026-09-17 01:41:29.267869+00,2026-10-10 16:30:08.827113+00,,0,
+__quarantine_rules,r,0,49152,4,4,11,0,0,0,0,2026-09-17 01:41:29.104943+00,2026-10-10 16:30:08.827113+00,,0,
+__quote_requests,r,0,65536,0,0,21,0,0,0,0,2026-09-17 01:41:29.107049+00,2026-11-13 21:41:39.189057+00,,0,
+__quotes,r,0,16384,0,0,14,0,0,0,0,2026-09-17 01:41:29.26522+00,2026-11-13 21:41:39.189057+00,,0,
+__rag_change_events,r,0,491520,554,554,13,1,0,0,0,2026-09-17 01:41:28.08915+00,2026-10-10 16:30:08.827113+00,2026-10-10 16:30:08.827113+00,0,"Outbox: RAG content changes → content improvement pipeline (append-only, never replace)"
+__rag_check_history,r,0,32768,3,3,9,0,0,0,0,2026-09-17 01:41:28.968044+00,2026-10-10 16:30:08.827113+00,,0,
+__rag_content_refresh_log,r,0,1990656,913,913,26,6,0,0,0,2026-09-17 01:41:26.883215+00,2026-11-09 22:15:03.993847+00,2026-10-10 16:30:08.827113+00,0,
+__rag_knowledge,r,0,10207232,619,619,38,476,0,0,0,2026-09-17 01:41:25.861869+00,2026-11-15 14:50:06.920667+00,2026-10-22 16:44:22.482873+00,0,FALLBACK knowledge store — 5 seed rows only (migration 20260128). Real index = Weaviate (external). NOT synced from filesystem /opt/automecanik/rag/knowledge/. See rag-proxy.service.ts for circuit-breaker fallback logic.
+__rag_pipeline_incidents,r,0,65536,30,30,7,0,0,0,0,2026-09-17 01:41:28.71752+00,2026-10-10 16:30:08.827113+00,,0,Circuit breaker incident log for RAG merge pipeline
+__rag_proposals,r,0,131072,1,1,29,0,0,0,0,2026-09-17 01:41:28.972831+00,2026-11-15 14:50:06.920667+00,,0,L1 propose-before-write staging for RAG vehicle files. ADR-022.
+__rag_readiness,r,0,1114112,1219,1219,14,4,0,0,0,2026-09-17 01:41:27.302971+00,2026-10-10 16:30:08.827113+00,2026-10-22 16:42:55.95812+00,0,Phase 1.6 W2+W5: scoring par rôle et readiness machine-readable pour chaque gamme × rôle canonique.
+__rag_web_ingest_jobs,r,0,1007616,290,290,12,2,0,0,0,2026-09-17 01:41:27.975334+00,2026-10-10 16:30:08.827113+00,2026-10-10 16:30:08.827113+00,0,
+__rag_webhook_audit,r,0,65536,9,9,10,0,0,0,0,2026-09-17 01:41:28.975568+00,2026-10-10 16:30:08.827113+00,,0,
+__refunds,r,0,40960,0,0,16956,0,0,0,0,2026-09-17 01:41:29.264896+00,2026-11-18 09:43:02.291513+00,,0,
+__seo_action_outcome,r,0,40960,0,0,17,0,0,0,0,2026-09-17 01:41:29.252947+00,2026-11-13 07:09:47.888107+00,,0,"PR-2 boucle OBSERVE — outcomes SEO matérialisés (delta baseline vs fenêtre 7/14/28 j) par action attribuée. Snapshot immuable des fenêtres complètes + lignes pending. OBSERVATIONNEL, jamais causal. Table de lecture du RPC anon rpc_seo_action_outcomes_v1 (dénormalisée, sans exposer __admin_audit_log)."
+__seo_admin_job,r,0,40960,0,0,20,0,0,0,0,2026-09-17 01:41:29.348024+00,2026-11-11 19:34:54.62406+00,,0,"ADR-072 PR 2D-3 — Persistent audit + state-machine for admin-triggered long-running jobs. Pattern mirror : AWS Step Functions execution history, Temporal Workflow Executions. UNIQUE(job_type, idempotency_key) makes admin endpoints replay-safe — same key → same job row returned. status enum : pending (accepted, awaiting worker) → running (worker started) → completed | failed | cancelled."
+__seo_ai_runs,r,0,40960,0,0,16,0,0,0,0,2026-09-17 01:41:29.262913+00,2026-11-11 19:34:54.62406+00,,0,Audit log for AI-powered content generation runs (R1/R3/R4/R6)
+__seo_audit_findings,r,0,106496,0,0,165383,0,0,0,0,2026-09-17 01:41:28.977176+00,2026-11-18 09:58:07.853133+00,,0,Findings on-page unifiés (schema/image/canonical/meta-ab/linking). Variants discriminés par audit_type avec payload typé Zod (cf. seo-types/onpage.ts).
+__seo_audit_history,r,0,32768,4,4,12,0,0,0,0,2026-09-17 01:41:28.978399+00,2026-11-11 19:38:39.299366+00,,0,
+__seo_brand_editorial,r,0,139264,36,36,14,2,0,0,0,2026-09-17 01:41:28.518836+00,2026-10-10 16:30:08.827113+00,2026-10-05 05:43:28.989621+00,0,"Brand-specific editorial content (FAQ/issues/maintenance). Curated by humans, consumed by build-brand-rag.py to compose R7 RAG .md frontmatter."
+__seo_brief_template,r,0,40960,0,0,16,0,0,0,0,2026-09-17 01:41:29.262497+00,2026-11-04 20:26:33.023918+00,,0,Brief templates per family × role. Gamme briefs inherit template + apply overrides.
+__seo_cannibalization_recommendations,r,0,794624,662,662,16,4,0,0,0,2026-09-17 01:41:27.470147+00,2026-10-10 16:30:08.827113+00,2026-10-10 16:30:08.827113+00,0,GSC Cannibalization Audit : recommandations par page perdante. status proposed par défaut — JAMAIS appliqué auto.
+__seo_canon_runtime_flags,r,0,32768,1,1,10,0,0,0,0,2026-09-17 01:41:28.98044+00,2026-11-11 19:35:58.949441+00,,0,Runtime kill-switch flags for canon enforcement triggers. Disable rules documented in vault runbook (vault-seo-canon-runtime-flags.md). Audit trail : updated_at + updated_by per flag.
+__seo_confusion_pairs,r,0,180224,124,124,16,3,0,0,0,2026-09-17 01:41:28.58971+00,2026-10-10 16:30:08.827113+00,2026-10-10 16:30:08.827113+00,0,
+__seo_content_audit,r,0,196608,23,23,18,0,0,0,0,2026-09-17 01:41:28.661592+00,2026-10-10 16:30:08.827113+00,,0,"PR-A2 : persistance des findings forensic H1 (scripts/seo/forensic/). Append-only, idempotent via UNIQUE (run_id, asset_id, field_path, observed_hash). Verdict empirique PR-A1 #532 (2026-05-15) : H1 shifting / cross-gamme misassignment."
+__seo_content_block_versions,r,0,106496,0,14,62,721,14,0,0,2026-09-17 01:41:28.985355+00,2026-10-28 16:20:56.444653+00,2026-11-18 02:00:02.475102+00,0,ADR-059 PR-6 : versions immuables des blocks (INSERT-new-version-NEVER-UPDATE).
+__seo_content_blocks,r,0,49152,14,14,196,630,14,630,0,2026-11-16 02:00:42.01765+00,2026-11-15 14:50:06.920667+00,2026-11-18 02:00:02.475102+00,0,"ADR-059 PR-6 : blocks de contenu rôle-aware projetés (consommés via RPC PR-7, jamais SELECT direct)."
+__seo_content_events,r,0,196608,23,23,20,0,0,0,0,2026-09-17 01:41:28.635487+00,2026-11-06 08:33:54.552385+00,,0,PR-D Event Store minimal — append-only history.
+__seo_crawl_hub,r,0,81920,2,2,12,0,0,0,0,2026-09-17 01:41:28.982678+00,2026-11-11 19:34:41.113482+00,,0,
+__seo_crawl_log,r,0,40960,0,0,21,0,0,0,0,2026-09-17 01:41:29.33591+00,2026-11-15 23:04:35.348731+00,,0,
+__seo_cwv_daily,p,11,270336,0,0,141,0,0,0,0,2026-09-17 01:41:29.801461+00,,,11,Core Web Vitals daily (sample top 1k pages) — partitionné mensuel
+__seo_cwv_daily_rum,p,10,2539520,7094,7094,224,6667,3219,3211,0,2026-11-18 00:15:03.885625+00,,,3,"Bloc 4 — agrégat journalier CWV (RUM). p50/p75/p95_value : moyenne pondérée des percentiles de __seo_cwv_hourly (approximation historique, conservée). p75_exact, n_exact, n_good/n_needs_improvement/n_poor : calcul exact sur __seo_cwv_raw (20260911). Partitions monthly, TTL 12mo. Distinct de __seo_cwv_daily (lab PageSpeed, table existante)."
+__seo_cwv_hourly,p,18,3940352,6897,6897,3204,310198,6897,302589,0,2026-11-18 09:05:51.850989+00,,,3,"Bloc 4 — agrégat horaire CWV par (surface × route_group × device × metric × ua_class). Source : __seo_cwv_raw (48h TTL, bloc 3). Partitions daily, TTL 14j."
+__seo_cwv_raw,p,6,12222464,15531,16248,53,2281,16248,0,0,2026-11-18 09:36:52.313682+00,,,3,"Bloc 3 — landing beacons Core Web Vitals. Partitions daily, TTL 48h via maintain_cwv_raw_partitions(). NE PAS consommer en SLO direct — utiliser __seo_cwv_hourly/daily (bloc 4). Bots écrits dans __seo_event_log (jamais ici)."
+__seo_diagnostic,r,0,40960,0,0,22,0,0,0,0,2026-09-17 01:41:29.266567+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_entity_fact_versions,r,0,81920,0,4,242,0,4,0,0,2026-09-17 01:41:29.110548+00,2026-11-18 02:00:02.421235+00,,0,"ADR-059 PR-6 : versions immuables des facts (INSERT-new-version-NEVER-UPDATE, ADR-090 §C4 wouldRegress)."
+__seo_entity_facts,r,0,65536,4,4,84,184,4,180,0,2026-11-12 02:00:34.517788+00,2026-11-16 00:08:07.172327+00,2026-11-18 02:00:02.377132+00,0,ADR-059 PR-6 : facts par entity SEO. active_version_id pointe la version active (jamais SELECT direct frontend — RPC PR-7).
+__seo_entity_sources,r,0,24576,0,0,23,0,0,0,0,2026-09-17 01:41:29.255497+00,2026-10-28 16:20:52.595182+00,,0,ADR-059 PR-6 : provenance par entity (exports-seo.schema.json sources[]).
+__seo_equip_gamme,r,0,286720,137,137,14,859,0,0,0,2026-09-17 01:41:28.598891+00,2026-10-10 16:30:08.827113+00,2026-11-18 04:31:21.839642+00,0,Table __SEO_EQUIP_GAMME - Conversion automatique MySQL → PostgreSQL
+__seo_event_log,r,0,542367744,811554,845597,173,687391,201794,3,0,2026-11-07 08:53:17.656415+00,2026-11-15 23:06:03.497381+00,2026-11-18 09:58:07.853133+00,0,Event log unifié SEO (anomalies + alerts + ingestion runs + forecasts + digests). Variants discriminés par event_type avec payload typé Zod.
+__seo_family_gamme_car_switch,r,0,3153920,3790,3790,11,285,0,0,0,2026-09-17 01:41:26.602244+00,2026-10-10 16:30:08.827113+00,2026-11-18 06:53:43.478382+00,0,Table __SEO_FAMILY_GAMME_CAR_SWITCH - Conversion automatique MySQL → PostgreSQL
+__seo_ga4_daily,p,11,79814656,160175,163054,2124,71406,36935,0,0,2026-11-18 04:01:07.658643+00,,,3,"GA4 Data API daily — partitionné mensuel, ~1.5M rows/mois"
+__seo_gamme,r,0,1228800,177,177,6075,2010,0,0,0,2026-09-17 01:41:27.493894+00,2026-11-18 09:45:01.97529+00,2026-11-18 09:39:48.933958+00,0,Table __SEO_GAMME - Conversion automatique MySQL → PostgreSQL
+__seo_gamme_car,r,0,1245184,118,118,2916630,4300,0,0,0,2026-09-17 01:41:27.549057+00,2026-11-18 09:58:22.950357+00,2026-11-14 08:20:20.015613+00,0,Table __SEO_GAMME_CAR - Conversion automatique MySQL → PostgreSQL
+__seo_gamme_car_switch,r,0,1933312,6542,6542,3673,220530,0,0,0,2026-09-17 01:41:27.335086+00,2026-11-18 08:37:22.965789+00,2026-11-18 09:57:46.955553+00,0,Table __SEO_GAMME_CAR_SWITCH - Conversion automatique MySQL → PostgreSQL
+__seo_gamme_conseil,r,0,8044544,2790,2790,6063,5924,0,0,0,2026-09-17 01:41:22.157544+00,2026-11-18 09:45:01.97529+00,2026-11-18 09:49:20.612983+00,0,Table __SEO_GAMME_CONSEIL - Conversion automatique MySQL → PostgreSQL
+__seo_gamme_gsc_baseline,r,0,32768,0,0,17,0,0,0,0,2026-09-17 01:41:29.254798+00,2026-11-04 20:26:33.023918+00,,0,Baselines GSC par gamme. Capture position/clicks/impressions a date pour mesurer impact SEO.
+__seo_gamme_info,r,0,761856,986,986,15,860,0,0,0,2026-09-17 01:41:28.139092+00,2026-11-04 20:26:33.023918+00,2026-11-18 04:31:21.839642+00,0,Table __SEO_GAMME_INFO - Conversion automatique MySQL → PostgreSQL
+__seo_gamme_links,r,0,548864,1199,1199,13,0,0,0,0,2026-09-17 01:41:28.077788+00,2026-11-11 19:34:56.768232+00,,0,Maillage interne inter-gammes. Source de verite pour les liens R1 bidirectionnels.
+__seo_gamme_purchase_guide,r,0,3768320,241,241,11191,11272,0,0,0,2026-09-17 01:41:26.488391+00,2026-11-18 09:55:45.0281+00,2026-11-18 09:54:37.074881+00,0,Guide d'achat V2 orienté client - structure narrative
+__seo_generation_log,r,0,139264,157,219,13,0,62,0,0,2026-09-17 01:41:28.69186+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_gsc_daily,p,11,229195776,260129,261232,1747151,1704398,109003,282252,0,2026-11-18 04:01:07.865743+00,,,3,"GSC Search Analytics daily — partitionné mensuel, ~30M rows/mois"
+__seo_gsc_daily_page_totals,p,9,230776832,380280,382661,416,623144,287850,327414,0,2026-11-18 04:01:07.648617+00,,,3,"GSC Search Analytics — performance par URL, grain FIDÈLE (dimension page seule, agrégation byPage ≈ property_total). Source des opportunités par page (rpc_seo_low_ctr_v4). Partitionné mensuel."
+__seo_gsc_daily_pages,p,9,86622208,147978,147978,177,261149,73783,187195,0,2026-11-18 04:01:07.964527+00,,,3,GSC Search Analytics — détail segmenté date+page+country+device (sans query). LOSSY : restitue ~7 % des clics de la propriété (mesure 2026-09-10). Ne pas sommer comme total par page — utiliser __seo_gsc_daily_page_totals. Partitionné mensuel.
+__seo_gsc_daily_property_total,p,9,368640,158,168,52140,6575,82,426,0,2026-11-14 04:00:41.235518+00,,,3,"GSC Search Analytics — total GLOBAL quotidien (date seule, aucune dimension = volume le plus complet). Source de vérité des totaux. Partitionné mensuel."
+__seo_gsc_daily_totals,p,9,4907008,22887,23037,102,41304,11682,29608,0,2026-11-18 04:01:07.970949+00,,,3,GSC Search Analytics — totaux segmentés country+device (sans page/query). Vérité volume par géo/device. Partitionné mensuel.
+__seo_gsc_links_weekly,r,0,32768,0,0,15,0,0,0,0,2026-09-17 01:41:29.237559+00,2026-11-13 07:09:47.888107+00,,0,"Backlinks GSC (gratuit, ~1000 top liens) snapshot hebdo"
+__seo_index_history,r,0,49152,0,0,16,0,0,0,0,2026-09-17 01:41:29.245471+00,2026-11-15 23:04:27.840724+00,,0,Historique snapshots quotidiens du statut d'indexation pour tracking pertes
+__seo_internal_link,r,0,49152,0,0,24,0,0,0,0,2026-09-17 01:41:29.241691+00,2026-11-13 07:09:47.888107+00,,0,
+__seo_interpolation_alerts,r,0,49152,0,0,5646,0,0,0,0,2026-09-17 01:41:29.287945+00,2026-11-18 09:43:02.199838+00,,0,Alertes de variables SEO non-interpolées pour monitoring
+__seo_item_switch,r,0,2916352,7964,7964,11,3509558,0,0,0,2026-09-17 01:41:26.94689+00,2026-10-10 16:30:08.827113+00,2026-11-18 09:58:24.044973+00,0,Table __SEO_ITEM_SWITCH - Conversion automatique MySQL → PostgreSQL
+__seo_keyword_cluster,r,0,147456,3,3,14,4,0,0,0,2026-09-17 01:41:28.602354+00,2026-10-10 16:30:08.827113+00,2026-10-10 16:30:08.827113+00,0,
+__seo_keyword_results,r,0,9273344,10918,10918,11,11,0,0,0,2026-09-17 01:41:25.256965+00,2026-11-15 23:14:06.222105+00,2026-11-11 19:39:20.455552+00,0,"Mots-cles SEO par gamme et role, generes via Claude Chrome"
+__seo_keyword_type_mapping,r,0,11083776,0,0,14,0,0,0,0,2026-09-17 01:41:29.232045+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_keywords,r,0,13041664,13978,13978,65,6050,0,0,0,2026-09-17 01:41:24.246502+00,2026-11-16 05:50:12.389021+00,2026-11-18 09:57:46.952312+00,0,SEO keywords collected and classified by the keyword-engine pipeline
+__seo_marque,r,0,319488,35,35,25,11395,0,0,0,2026-09-17 01:41:28.631388+00,2026-11-12 01:05:55.343321+00,2026-11-18 09:48:22.187256+00,0,Table __SEO_MARQUE - Conversion automatique MySQL → PostgreSQL
+__seo_observable,r,0,1458176,1176,1176,52,159982,0,0,0,2026-09-17 01:41:27.078564+00,2026-11-12 01:28:57.068067+00,2026-11-18 09:58:08.746422+00,0,Pages SEO R5 Diagnostic - Observable Pro (Symptom 60% / Sign 85% / DTC 95%)
+__seo_observable_policy,r,0,49152,32,32,10,0,0,0,0,2026-09-17 01:41:28.992929+00,2026-10-10 16:30:08.827113+00,,0,MVP policy table — anti-variantes faibles R5. 6 colonnes metier.
+__seo_outbox_event,r,0,32768,0,0,1981336,0,0,0,0,2026-09-17 01:41:29.231534+00,2026-11-18 09:58:22.813863+00,,0,
+__seo_page,r,0,119455744,321838,321838,43,2,0,0,0,2026-09-17 01:40:40.043599+00,2026-11-11 20:33:42.213327+00,2026-10-10 16:30:08.827113+00,0,
+__seo_page_brief,r,0,294912,33,33,41,5,0,0,0,2026-09-17 01:41:28.402923+00,2026-11-09 22:15:03.993847+00,2026-10-20 23:58:43.039159+00,0,
+__seo_policy_evaluations,r,0,106496,0,0,16,0,0,0,0,2026-09-17 01:41:29.129366+00,2026-10-10 16:30:08.827113+00,,0,PR-C : audit-trail OPA des décisions de SeoContentWriteService. Append-only.
+__seo_projection_conflicts,r,0,24576,0,0,76,0,0,0,0,2026-09-17 01:41:29.230525+00,2026-11-11 19:36:36.776668+00,,0,"ADR-059 PR-6 : conflits observables (ADR-090 §C4 no-rétro-régression) — jamais silencieux, resolution pending/resolved/ignored."
+__seo_projection_runs,r,0,73728,26,45,137,6,45,45,0,2026-10-30 02:00:39.210314+00,2026-11-16 02:00:03.364795+00,2026-11-18 02:00:02.475102+00,0,ADR-059 PR-6 : audit trail (1 row/run) du forward-writer SEO projection. exports_snapshot_uri = seule autorité replay (pas git).
+__seo_quality_history,p,8,704512,338,338,161,0,0,0,0,2026-09-17 01:41:30.569895+00,,,7,Quality metrics history per role for drift detection (ADR-050). Snapshots monthly cron + pre/post-batch.
+__seo_quality_log,r,0,16384,0,0,11,0,0,0,0,2026-09-17 01:41:29.335504+00,2026-10-10 16:30:08.827113+00,,0,DEPRECATED - Migre vers __seo_audit_log
+__seo_r1_gamme_slots,r,0,958464,169,169,120,10837,0,0,0,2026-09-17 01:41:27.72538+00,2026-11-11 22:34:09.602138+00,2026-11-18 09:41:32.920007+00,0,R1_ROUTER rendering slots for /pieces/{gamme} pages. Separated from __seo_gamme_purchase_guide (2026-03-17). Owner: R1_ROUTER exclusively.
+__seo_r1_image_prompts,r,0,262144,70,70,29,12413,0,0,0,2026-09-17 01:41:28.326578+00,2026-11-17 14:04:02.622697+00,2026-11-18 09:41:31.846617+00,0,"Image prompts R1 editorial. 5 slots: HERO_EDITORIAL, TYPES_SCHEMA, PRICE_CHART, MOUNTING_DIAGRAM, OG_IMAGE. Pattern R3/R6."
+__seo_r1_keyword_plan,r,0,1253376,265,265,40,12,0,0,0,2026-09-17 01:41:27.43532+00,2026-11-12 23:17:01.949757+00,2026-11-13 06:44:45.785664+00,0,
+__seo_r1_related_blocks_cache,r,0,303104,238,238,17,11928,0,0,0,2026-09-17 01:41:28.148603+00,2026-10-10 16:30:08.827113+00,2026-11-18 09:41:32.843211+00,0,ADR-024 Phase 2: cache materialise des blocs maillage contextuel R1. Sortir RAG fs read du chemin SSR.
+__seo_r2_composition_inputs,r,0,32768,0,0,15,0,0,0,0,2026-09-17 01:41:29.291757+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r2_eligibility_log,r,0,40960,0,0,12,0,0,0,0,2026-09-17 01:41:29.221267+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r2_embeddings,r,0,3309568,0,0,19,0,0,0,0,2026-09-17 01:41:29.220268+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r2_keyword_plan,r,0,24576,0,0,24,0,0,0,0,2026-09-17 01:41:29.221674+00,2026-11-17 14:04:02.622697+00,,0,R2 Product page keyword plans — 4-phase pipeline (P0 Entity → P1 Intent → P2 Section → P3 Guard)
+__seo_r2_metrics,r,0,8192,0,0,3,0,0,0,0,2026-09-17 01:41:29.292108+00,2026-10-01 13:31:41.446564+00,,0,
+__seo_r2_page_content,r,0,16384,0,0,4,0,0,0,0,2026-09-17 01:41:29.214177+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r2_page_snapshot,r,0,40960,0,0,20,0,0,0,0,2026-09-17 01:41:29.21389+00,2026-10-28 16:13:59.658801+00,,0,
+__seo_r2_page_versions,r,0,32768,0,0,15,0,0,0,0,2026-09-17 01:41:29.214526+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r2_pages,r,0,57344,0,0,22,0,0,0,0,2026-09-17 01:41:29.292748+00,2026-11-15 23:08:41.079866+00,,0,
+__seo_r2_qa_reviews,r,0,40960,0,0,12,0,0,0,0,2026-09-17 01:41:29.271582+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r2_regeneration_queue,r,0,32768,0,0,6,0,0,0,0,2026-09-17 01:41:29.213418+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r2_signatures,r,0,65536,0,0,25,0,0,0,0,2026-09-17 01:41:29.21304+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r3_image_prompts,r,0,147456,10,10,3722,0,0,0,0,2026-09-17 01:41:28.742048+00,2026-11-18 09:49:20.720285+00,,0,
+__seo_r3_keyword_plan,r,0,2105344,260,260,42,3727,0,0,0,2026-09-17 01:41:26.549413+00,2026-11-15 23:14:06.222105+00,2026-11-18 09:49:20.720285+00,0,
+__seo_r4_batch_runs,r,0,98304,1,1,22,0,0,0,0,2026-09-17 01:41:29.11481+00,2026-11-17 14:04:02.622697+00,,0,R4 content enrichment run log — 1 row per gamme per execution
+__seo_r4_keyword_plan,r,0,884736,70,70,28,0,0,0,0,2026-09-17 01:41:28.210418+00,2026-11-15 14:50:06.920667+00,,0,R4 Keyword & Intent Plans — une ligne par gamme/reference
+__seo_r5_keyword_plan,r,0,155648,7,7,15,0,0,0,0,2026-09-17 01:41:28.75346+00,2026-10-10 16:30:08.827113+00,,0,"R5 Diagnostic keyword plan — symptom-first, evidence-based, with safety gate for critical parts"
+__seo_r6_image_prompts,r,0,81920,2,2,21,0,0,0,0,2026-09-17 01:41:28.995476+00,2026-10-10 16:30:08.827113+00,,0,Prompts image R6 guide achat. Generes par agent r6-image-prompt depuis media_slots_proposal + RAG.
+__seo_r6_keyword_plan,r,0,1916928,241,241,20,3,0,0,0,2026-09-17 01:41:27.588605+00,2026-11-15 23:14:06.222105+00,2026-10-10 16:30:08.827113+00,0,
+__seo_r7_fingerprints,r,0,376832,263,263,15,0,0,0,0,2026-09-17 01:41:27.943548+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r7_page_versions,r,0,2170880,263,263,12,0,0,0,0,2026-09-17 01:41:27.687505+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r7_pages,r,0,811008,36,36,48,14865,0,0,0,2026-09-17 01:41:28.16451+00,2026-11-11 19:36:36.776668+00,2026-11-18 09:46:37.689979+00,0,
+__seo_r7_qa_reviews,r,0,24576,0,0,9,0,0,0,0,2026-09-17 01:41:29.274628+00,2026-10-17 17:26:43.410035+00,,0,
+__seo_r7_regeneration_queue,r,0,24576,0,0,13,0,0,0,0,2026-09-17 01:41:29.212488+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r8_engine_family_stats,r,0,16384,0,0,11,0,0,0,0,2026-09-17 01:41:29.212119+00,2026-10-14 22:19:23.844017+00,,0,
+__seo_r8_fingerprints,r,0,393216,170,170,33,0,0,0,0,2026-09-17 01:41:27.884458+00,2026-11-15 23:09:18.596813+00,,0,
+__seo_r8_keyword_plan,r,0,114688,1,1,38,0,0,0,0,2026-09-17 01:41:28.999599+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_r8_page_versions,r,0,1024000,170,170,37,51,0,0,0,2026-09-17 01:41:27.677046+00,2026-11-06 08:30:56.873134+00,2026-09-24 00:11:38.775675+00,0,
+__seo_r8_pages,r,0,1081344,155,155,72529,89081,0,0,0,2026-09-17 01:41:27.780798+00,2026-11-15 23:09:18.596813+00,2026-11-18 09:58:13.498914+00,0,
+__seo_r8_qa_reviews,r,0,286720,163,163,20,0,0,0,0,2026-09-17 01:41:28.12502+00,2026-11-11 19:35:22.758451+00,,0,
+__seo_r8_regeneration_queue,r,0,49152,6,6,18,0,0,0,0,2026-09-17 01:41:29.001941+00,2026-11-11 19:35:30.417385+00,,0,
+__seo_r8_similarity_index,r,0,450560,218,218,13,3,0,0,0,2026-09-17 01:41:27.875329+00,2026-11-11 19:35:30.417385+00,2026-10-28 13:29:07.252181+00,0,
+__seo_r8_snapshot_store,r,0,40960,0,0,21,0,0,0,0,2026-09-17 01:41:29.211795+00,2026-10-30 17:38:09.795077+00,,0,
+__seo_reality_audit,r,0,57344,1,1,11,0,0,0,0,2026-09-17 01:41:29.117692+00,2026-10-10 16:30:08.827113+00,,0,Snapshot historique du bottleneck SEO réel (Phase 0.5 du plan Reality Audit Business-First). Une row par run de collector (site-wide OU par gamme pilote). Verdict dominant_problem oriente la décision : content_quality | indexation | intent_mismatch | conversion_funnel | business_unviable.
+__seo_reference,r,0,3825664,239,239,57,232582,0,0,0,2026-09-17 01:41:26.855166+00,2026-11-12 01:05:17.263619+00,2026-11-18 09:58:06.543223+00,0,
+__seo_research_brief,r,0,114688,6,6,17,0,0,0,0,2026-09-17 01:41:28.74463+00,2026-11-04 20:26:33.023918+00,,0,
+__seo_revert_candidates_log,r,0,40960,0,0,17,0,0,0,0,2026-09-17 01:41:29.21129+00,2026-10-10 16:30:08.827113+00,,0,
+__seo_role_canon_forbidden,r,0,32768,126,126,7,0,0,0,0,2026-09-17 01:41:29.003972+00,2026-10-10 16:30:08.827113+00,,0,CACHE/EXPORT-ONLY. Source of truth = @repo/seo-roles@>=0.5.0 (canon). Populated by scripts/seo/export-canon-forbidden.ts in CI. Manual SQL edits forbidden — RLS service_role-only. See ADR-049 (vault) for invariants.
+__seo_role_content,r,0,49152,0,0,27,0,0,0,0,2026-09-17 01:41:29.210845+00,2026-10-17 17:26:43.410035+00,,0,Shadow table for role-based content. Pipeline writes here; frontend reads legacy tables until Phase 2 switch.
+__seo_role_template_pool,r,0,65536,0,18,10,19,18,0,0,,2026-10-10 16:30:08.827113+00,2026-09-26 15:26:26.440947+00,0,DB-backed deterministic SEO template pool by role x slot x lang. PR-1: used by R8 meta layer.
+__seo_snapshot_cf_rum,p,105,4300800,0,0,1623,211836,0,0,0,2026-09-17 01:41:30.633246+00,,,105,"PR-2A-2.5 ADR-064 — L1 Cloudflare RUM Web Vitals, daily buckets, partitioned daily, TTL 90j. Source edge-RUM (utilisateur réel) complémentaire de __seo_snapshot_cf_analytics (edge-server status codes)."
+__seo_snapshot_synthetic,p,105,2854617088,1680375,1726170,1285,2437,1538696,0,0,2026-11-18 09:34:52.914347+00,,,32,"PR-2A-1 ADR-064 — L1 Collector snapshot, partitioned daily, TTL 90j."
+__seo_type_switch,r,0,122880,134,134,11,417549,0,0,0,2026-09-17 01:41:28.77317+00,2026-10-10 16:30:08.827113+00,2026-11-18 09:46:37.593723+00,0,Table __SEO_TYPE_SWITCH - Conversion automatique MySQL → PostgreSQL
+__seo_type_vlevel,r,0,1802240,6476,6476,25,12,0,0,0,2026-09-17 01:41:27.455012+00,2026-11-16 05:50:12.389021+00,2026-11-16 05:50:12.389021+00,0,"V-Level assignés aux type_id (motorisations), pas aux keywords"
+__sitemap_blog,r,0,147456,330,330,25,65,0,0,0,2026-09-17 01:41:28.670136+00,2026-11-18 03:08:15.704565+00,2026-11-18 03:07:37.020984+00,0,Table __SITEMAP_BLOG - Conversion automatique MySQL → PostgreSQL
+__sitemap_marque,r,0,65536,35,35,197,0,0,0,0,2026-09-17 01:41:29.008396+00,2026-11-18 03:07:36.708958+00,,0,Table __SITEMAP_MARQUE - Conversion automatique MySQL → PostgreSQL
+__sitemap_motorisation,r,0,2793472,12756,12756,12,23,0,0,0,2026-09-17 01:41:26.695783+00,2026-10-10 16:30:08.827113+00,2026-11-12 01:45:45.366092+00,0,Table __SITEMAP_MOTORISATION - Conversion automatique MySQL → PostgreSQL
+__sitemap_p_link,r,0,99131392,472917,472917,747,34941,0,0,0,2026-09-17 01:40:38.574218+00,2026-11-18 08:11:53.822983+00,2026-11-18 08:11:53.822983+00,0,
+__sitemap_p_xml,r,0,655360,1960,1960,14,0,0,0,0,2026-09-17 01:41:28.182193+00,2026-10-10 16:30:08.827113+00,,0,Table __SITEMAP_P_XML - Conversion automatique MySQL → PostgreSQL
+__sitemap_search_link,r,0,163840,1,1,22,0,0,0,0,2026-09-17 01:41:29.006258+00,2026-10-10 16:30:08.827113+00,,0,Table __SITEMAP_SEARCH_LINK - Conversion automatique MySQL → PostgreSQL
+__soft_404_events,r,0,129138688,498862,499550,56,59,316703,0,427184,2026-11-18 03:20:06.79493+00,2026-11-18 03:20:00.392988+00,2026-11-15 23:49:36.625823+00,0,"Soft-404 R2 telemetry, append-only, 90d retention. Ownership: seo-platform. ADR: ADR-soft-404-r2-strategy."
+__staging_article_mapping,r,0,40960,0,0,14,0,0,0,0,2026-09-17 01:41:29.351022+00,2026-10-10 16:30:08.827113+00,,0,Staging table pour mappings ARTNR|DLNR -> piece_id avant merge production
+__staging_brand_mapping,r,0,655360,1900,1900,8,4,0,0,0,2026-09-17 01:41:28.048529+00,2026-10-10 16:30:08.827113+00,2026-10-10 16:30:08.827113+00,0,Staging table pour mappings DLNR -> pm_id avant merge production
+__staging_piece_compat,r,0,40960,0,0,11,0,0,0,0,2026-09-17 01:41:29.280284+00,2026-10-10 16:30:08.827113+00,,0,Staging table pour compatibilites piece-vehicule avant merge production
+__staging_vehicle_mapping,r,0,40960,0,0,8,0,0,0,0,2026-09-17 01:41:29.351431+00,2026-10-10 16:30:08.827113+00,,0,Staging table pour mappings KTYPNR -> type_id avant merge production
+__substitution_logs,r,0,19931136,29305,31231,18,3,14946,0,0,2026-11-11 19:36:08.866547+00,2026-10-10 16:30:20.311769+00,2026-10-10 16:30:08.827113+00,0,Analytics du Moteur de Substitution Sémantique - Tracking funnel 412
+__tecdoc_import_log,r,0,16384,0,0,6,0,0,0,0,2026-09-17 01:41:29.351733+00,2026-10-10 16:30:08.827113+00,,0,Tracks TecDoc import operations for freshness auditing. Written by tecdoc-import.py.
+__tecdoc_supplier_mapping,r,0,212992,846,846,7,0,0,0,0,2026-09-17 01:41:28.503412+00,2026-11-18 09:38:43.506839+00,,0,
+__trend_signals,r,0,32768,0,0,11,0,0,0,0,2026-09-17 01:41:29.353403+00,2026-10-10 16:30:08.827113+00,,0,"Trend signals from public sources (rappels.gouv.fr, OBD codes, saisonnalité). Light ingestion, monthly cron, no auto content gen."
+__v_level_computed,r,0,90112,16,16,16,0,0,0,0,2026-09-17 01:41:29.010656+00,2026-11-13 08:19:07.728637+00,,0,
+__v_level_raw,r,0,49152,16,16,14,0,0,0,0,2026-09-17 01:41:29.123557+00,2026-11-13 08:19:07.728637+00,,0,
+__vehicle_page_cache,r,0,244776960,28505,28505,87,166547,0,488,0,2026-09-17 01:41:13.079928+00,2026-11-12 01:38:40.439923+00,2026-11-18 09:58:13.4445+00,0,ADR-016: cache materialise du payload page vehicule. Source de verite rapide pour /constructeurs/*/type.html et /pieces/*/type.html.
+__video_assets,r,0,40960,0,0,20,0,0,0,0,2026-09-17 01:41:29.355291+00,2026-11-14 07:33:41.76224+00,,0,
+__video_audio_cache,r,0,49152,1,1,12,0,0,0,0,2026-09-17 01:41:29.012846+00,2026-11-14 07:33:41.76224+00,,0,
+__video_execution_log,r,0,172032,9,9,53,3,0,0,0,2026-09-17 01:41:28.747766+00,2026-11-16 05:38:10.844185+00,2026-11-16 05:38:10.844185+00,0,
+__video_productions,r,0,139264,2,2,54,0,0,0,0,2026-09-17 01:41:29.015579+00,2026-11-16 05:38:10.844185+00,,0,
+__video_templates,r,0,24576,0,0,16,0,0,0,0,2026-09-17 01:41:29.356291+00,2026-11-14 07:33:41.76224+00,,0,
+__video_variants,r,0,32768,0,0,16,0,0,0,0,2026-09-17 01:41:29.355653+00,2026-11-14 07:33:41.76224+00,,0,
+__write_audit_log,r,0,2031616,2380,2380,15,1,0,0,0,2026-09-17 01:41:26.001342+00,2026-10-10 16:30:08.827113+00,2026-10-10 16:30:08.827113+00,0,WriteGuard successful-write audit trail. RLS enabled 2026-04-22 — service_role only.
+__write_collision_ledger,r,0,40960,0,0,25,0,0,0,0,2026-09-17 01:41:29.356706+00,2026-10-10 16:30:08.827113+00,,0,WriteGuard write-collision/conflict events. RLS enabled 2026-04-22 — service_role only.
+_killswitch_audit,r,0,24576,0,0,2,0,0,0,0,2026-09-17 01:41:29.357405+00,2026-09-17 00:53:55.990472+00,,0,
+_killswitch_breakglass,r,0,40960,0,0,8,0,0,0,0,2026-09-17 01:41:29.357093+00,2026-09-23 23:58:40.178936+00,,0,
+agent_scope_table_rules,r,0,98304,64,64,22,0,0,0,0,2026-09-17 01:41:28.736823+00,2026-10-31 16:32:43.396396+00,,0,Data-driven scope to table allowlist. table_pattern supports exact match or glob.
+agent_write_scopes,r,0,49152,34,34,9,0,0,0,0,2026-09-17 01:41:29.017681+00,2026-10-31 16:32:43.396396+00,,0,Maps AI-COS agent UUIDs to their write_scope. Used by enforce_agent_write_scope() trigger.
+am_2022_suppliers,r,0,884736,1087,1087,13,2,0,0,0,2026-09-17 01:41:28.299032+00,2026-09-23 23:58:40.178936+00,2026-11-18 09:38:43.506839+00,0,Table AM_2022_SUPPLIERS - Conversion automatique MySQL → PostgreSQL
+audit_vlevel_pg424_snapshot_20260608,r,0,204800,1616,1616,0,0,0,0,0,2026-09-17 01:41:28.308365+00,,,0,
+auto_marque,r,0,65536,117,117,140021,93919360,0,0,0,2026-09-17 01:41:28.765622+00,2026-11-18 09:51:49.174948+00,2026-11-18 09:58:22.950357+00,0,
+auto_modele,r,0,2285568,8150,8150,146636,93740065,0,102,0,2026-09-17 01:41:25.623089+00,2026-11-18 09:52:00.707792+00,2026-11-18 09:58:22.950357+00,0,
+auto_modele_group,r,0,614400,1957,1957,8,0,0,0,0,2026-09-17 01:41:28.28486+00,2026-09-23 23:58:40.178936+00,,0,Table groupes/séries de modèles auto - Migration MCP V2
+auto_modele_robot,r,0,106496,1,1,9,0,0,0,0,2026-09-17 01:41:29.020058+00,2026-09-23 23:58:40.178936+00,,0,Table modèles robot - Structure seulement (pas de données dans le dump)
+auto_type,r,0,47063040,53959,53959,9072,21911658,0,0,0,2026-09-17 01:41:13.781252+00,2026-11-18 03:07:38.85155+00,2026-11-18 09:58:22.950357+00,0,Table AUTO_TYPE - Conversion automatique MySQL → PostgreSQL
+auto_type_motor_code,r,0,10387456,63091,63091,426872,2590646,0,0,0,2026-09-30 15:55:18.860288+00,2026-10-05 05:44:46.167874+00,2026-11-18 09:58:22.950357+00,0,Table AUTO_TYPE_MOTOR_CODE - Conversion automatique MySQL → PostgreSQL
+auto_type_motor_fuel,r,0,147456,26,26,29,0,0,0,0,2026-09-17 01:41:29.023012+00,2026-09-23 23:58:40.178936+00,,0,Table AUTO_TYPE_MOTOR_FUEL - Conversion automatique MySQL → PostgreSQL
+auto_type_number_code,r,0,35889152,165027,165027,426872,2598168,0,0,0,2026-09-30 15:55:19.11946+00,2026-09-30 16:24:13.970539+00,2026-11-18 09:58:22.950357+00,0,Table AUTO_TYPE_NUMBER_CODE - Conversion automatique MySQL → PostgreSQL
+catalog_family,r,0,212992,19,19,27420,2625,0,0,0,2026-09-17 01:41:28.775635+00,2026-11-18 09:49:10.762999+00,2026-11-18 09:27:35.22007+00,0,Table CATALOG_FAMILY - Conversion automatique MySQL → PostgreSQL
+catalog_gamme,r,0,139264,177,177,5847314,137462,0,0,0,2026-09-17 01:41:28.780952+00,2026-11-18 09:58:22.950357+00,2026-11-18 09:41:31.781734+00,0,Table CATALOG_GAMME - Conversion automatique MySQL → PostgreSQL
+catalog_pricing_baseline,r,0,24576,0,0,4,0,0,0,0,2026-09-17 01:41:29.364689+00,2026-10-10 10:33:16.100745+00,,0,
+catalog_pricing_baseline_meta,r,0,16384,0,0,1,0,0,0,0,2026-09-17 01:41:29.364953+00,2026-09-17 00:53:54.917931+00,,0,
+crawl_budget_experiments,r,0,65536,2,2,68,0,0,0,0,2026-09-17 01:41:29.025349+00,2026-11-18 03:07:37.572324+00,,0,Expériences A/B pour optimiser le crawl budget en incluant/excluant des familles de produits
+crawl_budget_metrics,r,0,49152,0,0,6,0,0,0,0,2026-09-17 01:41:29.366196+00,2026-09-17 00:53:55.990472+00,,0,Métriques quotidiennes collectées durant les expériences (GSC + GA4)
+decision_article,r,0,40960,0,0,9,0,0,0,0,2026-09-17 01:41:29.365377+00,2026-09-23 23:58:40.178936+00,,0,Phase 1 Diff: Decisions auditables pour articles
+decision_brand,r,0,40960,0,0,9,0,0,0,0,2026-09-17 01:41:29.365771+00,2026-09-23 23:58:40.178936+00,,0,Phase 1 Diff: Decisions auditables pour marques
+decision_compat,r,0,40960,0,0,9,0,0,0,0,2026-09-17 01:41:29.285909+00,2026-09-23 23:58:40.178936+00,,0,Phase 1 Diff: Decisions auditables pour compatibilites
+error_logs,r,0,65536,0,0,18,0,0,0,0,2026-09-17 01:41:29.289889+00,2026-09-29 08:11:38.017131+00,,0,Logs d'erreurs dédiés. Rétention: 90 jours.
+error_statistics,r,0,40960,0,0,8,0,0,0,0,2026-09-17 01:41:29.325043+00,2026-09-23 23:58:40.178936+00,,0,Statistiques agrégées par jour/code/sévérité
+gamme_aggregates,r,0,7168000,241,241,6010,1054361,0,1053452,0,2026-11-18 09:45:52.467463+00,2026-11-18 09:45:01.97529+00,2026-11-18 09:45:01.97529+00,0,KPIs agrégés des gammes - Phase 1 Badges SEO v2
+gamme_filter_criteria,r,0,147456,320,320,6,0,0,0,0,2026-09-17 01:41:28.639846+00,2026-09-23 23:58:40.178936+00,,0,Configuration des filtres techniques par gamme (hybride auto-détection + override manuel)
+gamme_seo_audit,r,0,40960,0,0,8,0,0,0,0,2026-09-17 01:41:29.367046+00,2026-09-23 23:58:40.178936+00,,0,"Audit trail pour les modifications SEO (G-Level, V-Level)"
+gamme_seo_metrics,r,0,294912,239,239,14,4321,0,0,0,2026-09-17 01:41:28.367984+00,2026-11-13 08:19:07.728637+00,2026-11-18 09:45:01.97529+00,0,
+gate_thresholds,r,0,98304,17,17,8,0,0,0,0,2026-09-17 01:41:29.027513+00,2026-09-23 23:58:40.178936+00,,0,Seuils dynamiques par famille pour les gates G0-G4
+ic_postback,r,0,4112384,5926,5936,1927,2937,10,0,0,2026-09-17 01:41:26.075454+00,2026-11-16 07:45:12.455345+00,2026-11-18 08:13:19.938749+00,0,Table ic_postback - Conversion automatique MySQL → PostgreSQL
+import_batch,r,0,32768,0,0,7,0,0,0,0,2026-09-17 01:41:29.152843+00,2026-09-23 23:58:40.178936+00,,0,Registre central de tous les imports
+kg_audit_log,r,0,40960,0,0,11,0,0,0,0,2026-09-17 01:41:29.155605+00,2026-10-28 16:11:15.045902+00,,0,Historique des modifications du Knowledge Graph
+kg_case_outcomes,r,0,32768,0,0,8,0,0,0,0,2026-09-17 01:41:29.156012+00,2026-10-28 16:11:15.045902+00,,0,
+kg_cases,r,0,65536,0,0,16,0,0,0,0,2026-09-17 01:41:29.15364+00,2026-10-28 16:11:15.045902+00,,0,
+kg_confidence_config,r,0,49152,1,1,10,0,0,0,0,2026-09-17 01:41:29.029875+00,2026-10-28 16:11:15.045902+00,,0,
+kg_diagnostic_cases,r,0,24576,0,0,8,0,0,0,0,2026-09-17 01:41:29.156506+00,2026-10-28 16:11:15.045902+00,,0,
+kg_edge_history,r,0,40960,0,0,6,0,0,0,0,2026-09-17 01:41:29.156886+00,2026-10-28 16:11:15.045902+00,,0,
+kg_edges,r,0,221184,72,72,50,3,0,0,0,2026-09-17 01:41:28.71344+00,2026-10-28 16:30:51.00634+00,2026-09-29 12:04:54.405723+00,0,Knowledge Graph edges: relations versionnees entre nodes
+kg_engine_families,r,0,65536,10,10,31,0,0,0,0,2026-09-17 01:41:29.130578+00,2026-10-28 16:30:51.00634+00,,0,
+kg_feedback_config,r,0,32768,12,12,6,0,0,0,0,2026-09-17 01:41:29.133235+00,2026-10-28 16:11:15.045902+00,,0,
+kg_feedback_events,r,0,49152,0,0,14,0,0,0,0,2026-09-17 01:41:29.327785+00,2026-10-28 16:11:15.045902+00,,0,
+kg_learning_log,r,0,40960,0,0,8,0,0,0,0,2026-09-17 01:41:29.269693+00,2026-10-28 16:11:15.045902+00,,0,
+kg_node_history,r,0,40960,0,0,6,0,0,0,0,2026-09-17 01:41:29.15842+00,2026-10-28 16:11:15.045902+00,,0,
+kg_nodes,r,0,524288,89,89,153,147,0,0,0,2026-09-17 01:41:28.624967+00,2026-10-30 07:06:06.436236+00,2026-10-04 16:37:17.144243+00,0,"Knowledge Graph nodes: Vehicle, System, Observable, Fault, Action, Part"
+kg_rag_mapping,r,0,32768,0,0,13,0,0,0,0,2026-09-17 01:41:29.158884+00,2026-10-28 16:11:15.045902+00,,0,
+kg_rag_sync_log,r,0,49152,0,0,15,0,0,0,0,2026-09-17 01:41:29.157989+00,2026-10-28 16:11:15.045902+00,,0,
+kg_reasoning_cache,r,0,131072,7,7,13,0,0,0,0,2026-09-17 01:41:28.720932+00,2026-10-28 16:11:15.045902+00,,0,Cache des diagnostics pour performance
+kg_review_queue,r,0,24576,0,0,9,0,0,0,0,2026-09-17 01:41:29.160385+00,2026-10-28 16:11:15.045902+00,,0,
+kg_safety_triggers,r,0,49152,13,13,8,0,0,0,0,2026-09-17 01:41:29.032241+00,2026-10-28 16:11:15.045902+00,,0,
+kg_truth_labels,r,0,90112,0,0,19,0,0,0,0,2026-09-17 01:41:29.162056+00,2026-10-28 16:11:15.045902+00,,0,
+kg_weight_adjustments,r,0,32768,0,0,10,0,0,0,0,2026-09-17 01:41:29.162446+00,2026-10-28 16:11:15.045902+00,,0,
+natural_key_article,r,0,32768,0,0,8,0,0,0,0,2026-09-17 01:41:29.166488+00,2026-09-23 23:58:40.178936+00,,0,Natural Keys articles - permet re-matching via signature business
+natural_key_brand,r,0,32768,0,0,8,0,0,0,0,2026-09-17 01:41:29.166873+00,2026-09-23 23:58:40.178936+00,,0,Natural Keys marques - permet re-matching si IDs externes changent
+natural_key_vehicle,r,0,32768,0,0,8,0,0,0,0,2026-09-17 01:41:29.167409+00,2026-09-23 23:58:40.178936+00,,0,Natural Keys vehicules - permet re-matching si KTYPNR change
+norm_article,r,0,40960,0,0,10,0,0,0,0,2026-09-17 01:41:29.168828+00,2026-09-23 23:58:40.178936+00,,0,Couche B: Articles normalises avec fingerprint business
+norm_brand,r,0,40960,0,0,10,0,0,0,0,2026-09-17 01:41:29.169201+00,2026-09-23 23:58:40.178936+00,,0,Couche B: Marques normalisees avec fingerprint business
+norm_vehicle,r,0,40960,0,0,10,0,0,0,0,2026-09-17 01:41:29.168426+00,2026-09-23 23:58:40.178936+00,,0,Couche B: Vehicules normalises avec fingerprint business
+order_idempotency,r,0,106496,44,60,24158,18,16,16,0,2026-09-17 01:41:29.112506+00,2026-11-18 09:45:01.816339+00,2026-11-17 07:03:13.737228+00,0,Payment idempotency keys (24h TTL). RLS enabled 2026-04-22 — service_role only.
+order_resume_tokens,r,0,81920,42,58,68,7,16,0,0,2026-09-17 01:41:29.037151+00,2026-11-15 23:49:09.523801+00,2026-11-15 23:49:09.523801+00,0,"Order resumption tokens (2h TTL, single-use). RLS enabled 2026-04-22 — service_role only."
+password_resets,r,0,98304,17,18,10,1,1,0,0,2026-09-17 01:41:29.039461+00,2026-09-23 23:58:40.178936+00,2026-10-13 18:15:46.020263+00,0,
+pieces,r,0,1718796288,4155716,4155716,225,576186051,0,7,0,2026-09-17 01:39:39.08232+00,2026-11-18 08:11:53.721615+00,2026-11-18 09:58:22.950357+00,0,Table des pièces automobiles avec toutes les données du CSV original
+pieces_criteria,r,0,9882296320,17881382,17881382,14,63155697,0,0,0,2026-09-17 01:37:39.886073+00,2026-10-30 11:52:11.998445+00,2026-11-18 09:58:22.950357+00,0,Table Article Critères - Structure optimisée pour données mixtes
+pieces_criteria_group,r,0,1343488,4266,4266,14,8,0,0,0,2026-09-17 01:41:27.847397+00,2026-09-24 00:03:46.867669+00,2026-09-24 00:03:47.282862+00,0,Table PIECES_CRITERIA_GROUP - Conversion automatique MySQL → PostgreSQL
+pieces_criteria_link,r,0,23937024,77434,77434,20,23837,0,0,0,2026-09-17 01:41:20.13588+00,2026-10-18 23:44:31.262039+00,2026-11-18 08:42:33.79519+00,0,Table PIECES_CRITERIA_LINK - Conversion automatique MySQL → PostgreSQL
+pieces_details,r,0,245760,1,1,18,0,0,0,0,2026-09-17 01:41:29.034757+00,2026-09-23 23:58:40.178936+00,,0,Table PIECES_DETAILS - Conversion automatique MySQL → PostgreSQL
+pieces_display_history,r,0,1335296,9316,9316,2,0,0,0,0,2026-09-17 01:41:26.906284+00,2026-09-17 00:53:55.990472+00,,0,"Rollback journal for catalog_display_activate: per-piece old/new piece_display, keyed by governed batch_id. Service-role-only (RLS-off like pieces_price_history)."
+pieces_gamme,r,0,11649024,9719,9719,96961,103618352,0,0,0,2026-09-17 01:41:24.362405+00,2026-11-18 09:55:45.0281+00,2026-11-18 09:58:24.044973+00,0,Table PIECES_GAMME - Conversion automatique MySQL → PostgreSQL
+pieces_gamme_cross,r,0,376832,1406,1406,10,78,0,0,0,2026-09-17 01:41:28.515039+00,2026-09-23 23:58:40.178936+00,2026-11-17 07:01:27.626706+00,0,Table PIECES_GAMME_CROSS - Conversion automatique MySQL → PostgreSQL
+pieces_gamme_display_history,r,0,24576,0,0,2,0,0,0,0,2026-09-17 01:41:29.175375+00,2026-09-17 00:53:55.990472+00,,0,"Rollback journal for catalog_gamme_display_activate: per-gamme old/new pg_display (+ control snapshot of pg_relfollow/pg_sitemap proving they are untouched), keyed by governed batch_id. Service-role-only (RLS-off like pieces_display_history)."
+pieces_gamme_link_history,r,0,49152,1,1,2,0,0,0,0,2026-09-17 01:41:29.041581+00,2026-09-17 00:53:55.990472+00,,0,"Rollback journal for catalog_accessory_link_activate: per-accessory old/new pg_parent_gamme_id, keyed by governed batch_id. Service-role-only (RLS-off like pieces_gamme_display_history)."
+pieces_list,r,0,426598400,1805831,1805831,6,0,0,0,0,2026-09-17 01:40:25.789422+00,2026-09-17 00:53:55.990472+00,,0,Table PIECES_LIST - Structure corrigée avec clé primaire composée
+pieces_marque,r,0,630784,992,992,24345,526516426,0,0,0,2026-09-17 01:41:28.360939+00,2026-11-18 09:36:16.13423+00,2026-11-18 09:58:22.950357+00,0,Table PIECES_MARQUE - Conversion automatique MySQL → PostgreSQL
+pieces_media_img,r,0,3469418496,9631525,9631525,10,63130417,0,0,0,2026-09-17 01:39:24.994357+00,2026-10-21 07:59:04.289313+00,2026-11-18 09:58:22.950357+00,0,Table PIECES_MEDIA_IMG - Migration automatique optimisée
+pieces_media_img_backup_pm3040_20260610,r,0,966656,13477,13477,0,0,0,0,0,2026-09-17 01:41:27.015549+00,,,0,
+pieces_media_img_backup_pm3410_20260610,r,0,6864896,100020,100020,0,0,0,0,0,2026-09-17 01:41:21.643084+00,,,0,
+pieces_media_img_p1_backup_20260523,r,0,1376256,17951,17951,0,0,0,0,0,2026-09-17 01:41:26.30195+00,,,0,
+pieces_media_img_recover_flips_pm3040_20260610,r,0,2523136,16004,16004,1,0,0,0,0,2026-09-17 01:41:26.212648+00,2026-09-17 00:53:54.917931+00,,0,
+pieces_media_img_recover_flips_pm3410_20260610,r,0,13213696,91579,91579,1,0,0,0,0,2026-09-17 01:41:21.106016+00,2026-09-17 00:53:54.917931+00,,0,
+pieces_media_img_recover_manifest_pm3040_20260610,r,0,1933312,6452,6452,1,0,0,0,0,2026-09-17 01:41:27.254101+00,2026-09-17 00:53:54.917931+00,,0,
+pieces_media_img_recover_manifest_pm3410_20260610,r,0,2260992,10171,10171,1,0,0,0,0,2026-09-17 01:41:26.576387+00,2026-09-17 00:53:54.917931+00,,0,
+pieces_media_img_tier_c_flipped_20260523,r,0,149495808,1107390,1107390,1,0,0,0,0,2026-09-17 01:40:36.760768+00,2026-09-17 00:53:54.917931+00,,0,
+pieces_price,r,0,518979584,476086,476086,6536,70228759,0,404,0,2026-09-17 01:40:18.873875+00,2026-11-18 09:43:22.337559+00,2026-11-18 09:58:22.950357+00,0,Table PIECES_PRICE - Conversion automatique MySQL → PostgreSQL
+pieces_price_history,p,9,5308416,18038,18038,609,207,387,0,0,2026-10-19 06:17:19.348876+00,,,7,
+pieces_ref_brand,r,0,1196032,5853,5853,2590068,5339,0,0,0,2026-09-17 01:41:27.868469+00,2026-11-18 09:58:22.950357+00,2026-11-18 08:42:33.79519+00,0,Table PIECES_REF_BRAND - Conversion automatique MySQL → PostgreSQL
+pieces_ref_ean,r,0,559661056,3018757,3018757,3,0,0,0,0,2026-09-17 01:40:10.616456+00,2026-09-17 00:53:55.990472+00,,0,Piece EAN/barcode mapping (~3M rows). RLS hardened 2026-04-22 — removed always-true policies.
+pieces_ref_oem,r,0,3299303424,15415936,15415936,4,2575,0,0,0,2026-09-17 01:39:10.797044+00,2026-09-17 00:53:55.990472+00,2026-11-18 09:30:03.284082+00,0,Table PIECES_REF_OEM - Conversion automatique MySQL → PostgreSQL
+pieces_ref_search,r,0,10599555072,72900712,72900710,6,51307179,0,0,0,2026-09-17 01:35:57.714471+00,2026-09-17 00:53:55.990472+00,2026-11-18 09:58:22.950357+00,0,Search index : OEM/cross references (~72M rows). RLS enabled 2026-04-22 — service_role only.
+pieces_relation_criteria,r,0,32619184128,157986384,157986378,4,68940055,0,0,0,2026-09-17 01:29:10.659169+00,2026-09-17 00:53:55.990472+00,2026-11-18 09:58:22.950357+00,0,Table Critere Article/Version Auto
+pieces_relation_type,r,0,53049360384,367959136,367959129,13,1527240527,0,0,0,2026-09-17 01:25:50.873389+00,2026-10-30 20:44:39.199911+00,2026-11-18 09:58:22.950357+00,0,Catalog : piece <-> vehicle type compatibility (~368M rows). RLS enabled 2026-04-22 — service_role only. All reads via backend NestJS API.
+pieces_side_filtre,r,0,32768,5,5,63106426,0,0,0,0,2026-09-17 01:41:29.043036+00,2026-11-18 09:58:22.950357+00,,0,
+pieces_status,r,0,114688,13,13,8,0,0,0,0,2026-09-17 01:41:29.045945+00,2026-09-23 23:58:40.178936+00,,0,Table PIECES_STATUS - Conversion automatique MySQL → PostgreSQL
+pipeline_event_log,r,0,57344,0,0,10,0,0,0,0,2026-09-17 01:41:29.185036+00,2026-09-23 23:58:40.178936+00,,0,Journal des événements du pipeline import - traçabilité complète
+price_import_batch_chunks,r,0,65536,25,26,12,2,1,2,0,2026-09-17 01:41:29.04884+00,2026-11-18 09:37:14.927969+00,2026-11-18 09:37:14.927969+00,0,
+price_import_batches,r,0,98304,13,14,51,25,1,2,0,2026-09-17 01:41:29.051027+00,2026-11-18 09:37:34.201818+00,2026-11-18 09:40:39.110612+00,0,
+pricing_decision_snapshot,p,9,589824,0,0,119,3,0,0,0,2026-09-17 01:41:30.939607+00,,,9,"H1 — Audit trace per pricing decision (commit/rollback/replay/dry-run/simulation). Append-only, partitioned monthly, GIN per-partition on reasoning_json. Zero runtime consumer V1."
+pricing_rules,r,0,49152,6,6,9,0,0,0,0,2026-09-17 01:41:29.053475+00,2026-11-18 09:40:27.257738+00,,0,
+promo_codes,r,0,131072,8,8,23,0,0,0,0,2026-09-17 01:41:29.055966+00,2026-11-13 16:15:37.797956+00,,0,
+promo_usage,r,0,49152,0,0,7,0,0,0,0,2026-09-17 01:41:29.191911+00,2026-09-17 00:53:55.990472+00,,0,
+quantity_discounts,r,0,90112,6,6,5,0,0,0,0,2026-09-17 01:41:29.13546+00,2026-09-17 00:53:55.990472+00,,0,Remises progressives appliquées selon la quantité achetée
+reviews,r,0,73728,0,0,13,0,0,0,0,2026-09-17 01:41:29.252053+00,2026-11-13 21:41:39.189057+00,,0,Avis clients sur les produits (migré depuis ___xtr_msg)
+rm_build_log,r,0,40960,0,0,8,0,0,0,0,2026-09-17 01:41:29.193185+00,2026-09-23 23:58:40.178936+00,,0,"Observabilité: pourquoi une page est PARTIAL/FAILED.  v1.3.4: Inclut data_version pour traçabilité batch.  Utilisé pour debug et alerting."
+rm_data_version,r,0,65536,24,24,6,0,0,0,0,2026-09-17 01:41:29.058405+00,2026-09-23 23:58:40.178936+00,,0,"v1.3.1: Source canonique des UUIDs data_version. Chaque batch crée 1 entrée.  Permet traçabilité complète: quel import a généré quelle version."
+rm_facet_config,r,0,65536,1,1,3,0,0,0,0,2026-09-17 01:41:28.837893+00,2026-09-17 00:53:55.990472+00,,0,"v1.3.2: Hiérarchie gamme > famille > global.  rmfc_allowed_filter_keys = whitelist RPC (sécurité).  rmfc_enabled_facets = affichage UI.  v1.3.5: rmfc_partial_threshold pour matrice SEO indexable."
+rm_facets,r,0,32768,2,2,1,0,0,0,0,2026-09-17 01:41:29.137494+00,2026-09-17 00:53:54.917931+00,,0,"v1.3.1: JSONB = arrays triées pour stabilité diff/cache. brands_top = max 30.  Tri obligatoire: count DESC, id ASC (déterminisme)."
+rm_listing,r,0,98304,3,3,18,0,0,0,0,2026-09-17 01:41:29.139979+00,2026-09-30 22:05:50.562233+00,,0,"Read Model: 1 ligne par page listing (gamme_id, vehicle_id).  Contient uniquement les données serving-critical.  v1.3.1: Hashes pour cache granulaire (content/products/facets).  v1.3: BIGINT pour vehicle_id, UUID pour data_version."
+rm_listing_content,r,0,16384,0,0,1,1,0,0,0,2026-09-17 01:41:29.266843+00,2026-09-17 00:53:54.917931+00,2026-09-17 00:53:55.990472+00,0,"Contenu lourd (FAQ, guides). Chargé seulement si nécessaire.  FK vers rm_listing avec CASCADE DELETE.  v1.3: Split du payload pour réduire TTFB."
+rm_listing_products,p,7,458752,0,0,89,0,0,0,0,2026-09-17 01:42:05.52725+00,,,7,"Partitionnée par gamme_id. v1.3.1: FK optionnelle → integrity check offline.  v1.3.6: Partition DEFAULT + création dynamique via ensure_rm_partition().  6 index par partition obligatoires."
+rm_oem_top,r,0,16384,0,0,1,0,0,0,0,2026-09-17 01:41:29.195321+00,2026-09-17 00:53:54.917931+00,,0,"Top références OEM par couple (gamme, vehicle).  Utilisé pour affichage 'références d'origine compatibles'."
+rm_product,r,0,32768,0,0,20,0,0,0,0,2026-09-17 01:41:29.194497+00,2026-09-30 22:05:50.562233+00,,0,"Dimension produit BIGINT. FK cible pour rm_listing_products.  v1.3: BIGINT pour ID, UUID pour data_version.  Contient uniquement les données d'affichage (pas les relations)."
+rm_rebuild_queue,r,0,32768,0,0,31,0,0,0,0,2026-09-17 01:41:29.283487+00,2026-09-30 22:05:50.562233+00,,0,"Queue rebuild avec lock expiration.  v1.3: rmrq_lock_timeout configurable.  v1.3.1: Acquisition atomique via acquire_rebuild_job() avec SKIP LOCKED."
+seo_link_clicks,r,0,761856,581,656,17,21,174,0,0,2026-10-12 10:10:18.016803+00,2026-11-11 19:34:56.768232+00,2026-11-14 23:28:50.683717+00,0,Tracking des clics sur liens internes pour SEO maillage
+seo_link_impressions,r,0,122470400,459567,476737,5,17,160840,0,0,2026-11-11 22:43:52.172787+00,2026-11-11 19:34:54.62406+00,2026-11-14 23:28:50.683717+00,0,Tracking des impressions de liens (pour calcul CTR)
+seo_link_metrics_daily,r,0,40960,0,0,9,0,0,0,0,2026-09-17 01:41:29.197397+00,2026-09-30 14:46:54.747769+00,,0,Métriques agrégées quotidiennes pour dashboard SEO
+shipping_rates_cache,r,0,73728,5,5,8,0,0,0,0,2026-09-17 01:41:29.14232+00,2026-11-13 19:10:17.484315+00,,0,
+stg_article,r,0,32768,0,0,8,0,0,0,0,2026-09-17 01:41:29.198177+00,2026-09-23 23:58:40.178936+00,,0,Couche A: Staging brut articles - JAMAIS de UPDATE/DELETE
+stg_brand,r,0,24576,0,0,3,0,0,0,0,2026-09-17 01:41:29.19853+00,2026-09-17 00:53:55.990472+00,,0,Couche A: Staging brut marques - JAMAIS de UPDATE/DELETE
+stg_compatibility,r,0,24576,0,0,3,0,0,0,0,2026-09-17 01:41:29.197732+00,2026-09-17 00:53:55.990472+00,,0,Couche A: Staging brut compatibilites - JAMAIS de UPDATE/DELETE
+stg_vehicle,r,0,32768,0,0,4,0,0,0,0,2026-09-17 01:41:29.326882+00,2026-09-17 00:53:55.990472+00,,0,Couche A: Staging brut vehicules - JAMAIS de UPDATE/DELETE
+supplier_import_raw,r,0,65536,4,4,18,0,0,0,0,2026-09-17 01:41:29.060462+00,2026-11-18 09:36:53.259108+00,,0,L0 RAW append-only. Jamais UPDATE (immutabilité logique). DELETE réservé à la retention policy (24 mois).
+supplier_offer_snapshot,p,9,368640,0,0,229,9,0,0,0,2026-09-17 01:41:30.969853+00,,,9,H2 — Per-supplier observation timeline. Append-only (anti-mutation trigger). Read V1 = none (pricing stays 1-piece-1-price). Future-proofs multi-supplier arbitrage without runtime coupling.
+supplier_price_profiles,r,0,49152,1,1,18,0,0,0,0,2026-09-17 01:41:29.06262+00,2026-11-18 09:40:26.197447+00,,0,"L0.5. Quasi-source canonique → immutabilité logique : jamais UPDATE d'un profil actif, nouvelle version (effective_from/to)."
+support_tickets,r,0,73728,0,0,19,0,0,0,0,2026-09-17 01:41:29.200927+00,2026-11-17 21:55:23.424705+00,,0,Tickets de support client
+users,r,0,49152,2,2,6,0,0,0,0,2026-09-17 01:41:29.064693+00,2026-11-16 07:29:11.856022+00,,0,
+write_scope_violations,r,0,32768,0,0,5,0,0,0,0,2026-09-17 01:41:29.20294+00,2026-10-28 16:15:00.493981+00,,0,Audit log of agent write_scope violations and break-glass overrides.
+xref_article,r,0,40960,0,0,10,0,0,0,0,2026-09-17 01:41:29.252483+00,2026-09-23 23:58:40.178936+00,,0,Couche C: Resolution identite articles (externe → interne)
+xref_brand,r,0,40960,0,0,10,0,0,0,0,2026-09-17 01:41:29.203948+00,2026-09-23 23:58:40.178936+00,,0,Couche C: Resolution identite marques (externe → interne)
+xref_vehicle,r,0,40960,0,0,10,0,0,0,0,2026-09-17 01:41:29.204378+00,2026-09-23 23:58:40.178936+00,,0,Couche C: Resolution identite vehicules (externe → interne)
