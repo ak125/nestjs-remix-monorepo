@@ -365,9 +365,48 @@ export class SupplierTruthRepository extends SupabaseBaseService {
         });
       }
     }
+    await this.completerMarqueParPiece(lignes);
     return lignes
       .sort((a, b) => a.rang - b.rang)
       .map(({ rang: _rang, ...l }) => l);
+  }
+
+  /**
+   * Complément BK n° 5 : les lignes payées depuis 2026 n'ont pas d'`orl_pm_id`
+   * (relevé du 18/11 : 26 sur 26). La marque d'une telle ligne est celle de la
+   * pièce vendue (`pieces.piece_pm_id` de `orl_pg_id`). Une ligne qui porte son
+   * `orl_pm_id` le garde : sur les lignes anciennes, c'est lui qui correspond au
+   * nom de marque de la ligne, pas la pièce. Pièce introuvable : marque nulle,
+   * la ligne n'est relevée chez personne. Lecture seule.
+   */
+  private async completerMarqueParPiece(
+    lignes: { pieceId: number; pmId: number | null }[],
+  ): Promise<void> {
+    const sansMarque = [
+      ...new Set(lignes.filter((l) => l.pmId == null).map((l) => l.pieceId)),
+    ];
+    const marqueDe = new Map<number, number>();
+    for (let i = 0; i < sansMarque.length; i += 500) {
+      const lot = sansMarque.slice(i, i + 500);
+      const { data, error } = await this.supabase
+        .from('pieces')
+        .select('piece_id, piece_pm_id')
+        .in('piece_id', lot)
+        .limit(1000);
+      if (error) {
+        throw new Error(
+          `getReleveWorkingSet (pieces) failed: ${error.message}`,
+        );
+      }
+      for (const r of (data ?? []) as Record<string, unknown>[]) {
+        const pm = Number(r.piece_pm_id);
+        if (Number.isInteger(pm) && pm > 0)
+          marqueDe.set(Number(r.piece_id), pm);
+      }
+    }
+    for (const l of lignes) {
+      if (l.pmId == null) l.pmId = marqueDe.get(l.pieceId) ?? null;
+    }
   }
 
   /**
