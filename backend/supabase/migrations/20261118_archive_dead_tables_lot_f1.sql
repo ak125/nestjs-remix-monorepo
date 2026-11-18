@@ -275,6 +275,7 @@ DECLARE
   v       regclass;
   v_n     bigint;
   v_acl   text[];
+  v_exp   text[];
   c_acl_a CONSTANT text[] := ARRAY['dev_readonly=r/postgres',
                                    'postgres=arwdDxtm/postgres',
                                    'service_role=arwdDxtm/postgres'];
@@ -344,7 +345,10 @@ BEGIN
 
     SELECT array_agg(a ORDER BY a) INTO v_acl
       FROM pg_class c, unnest(c.relacl::text[]) AS a WHERE c.oid = v;
-    IF v_acl IS DISTINCT FROM CASE r.acl WHEN 'A' THEN c_acl_a ELSE c_acl_b END THEN
+    -- Le CASE est évalué hors du IF : PL/pgSQL lit la condition d'un IF jusqu'au
+    -- premier THEN, celui du CASE compris (échec du run 44334611333).
+    v_exp := CASE r.acl WHEN 'A' THEN c_acl_a ELSE c_acl_b END;
+    IF v_acl IS DISTINCT FROM v_exp THEN
       RAISE EXCEPTION 'ABORT: droits de % modifiés : %', v, v_acl;
     END IF;
   END LOOP;
