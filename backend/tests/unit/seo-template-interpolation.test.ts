@@ -77,12 +77,20 @@ describe('SeoTemplateService - Interpolation', () => {
 
     it.each([
       ['#Gamme#', 'Alternateur'],
-      ['#MinPrice#', 'à partir de 118.45€'],
+      ['#MinPrice#', 'à partir de 118€'],
       ['#Count#', '25'],
     ])('interpole nouveau format %s → "%s"', (variable, expected) => {
       const result = (service as any).processTemplate(variable, testContext);
       expect(result).toBe(expected);
     });
+  });
+
+  it('#MinPrice# arrondit à l\'euro inférieur, sans virgule (54,99 → 54€)', () => {
+    const ctx = { ...testContext, min_price: 54.99 };
+    expect((service as any).processTemplate('#MinPrice#', ctx)).toBe(
+      'à partir de 54€',
+    );
+    expect((service as any).processTemplate('%min_price%', ctx)).toBe('54€');
   });
 
   describe('Variables Modernes (%xxx%)', () => {
@@ -91,7 +99,7 @@ describe('SeoTemplateService - Interpolation', () => {
       ['%marque_name%', 'BMW'],
       ['%modele_name%', 'Série 3 (E46)'],
       ['%type_name%', '320 d'],
-      ['%min_price%', '118.45€'],
+      ['%min_price%', '118€'],
       ['%count%', '25'],
       ['%power_ps%', '136 ch'],
       ['%power_kw%', '100 kW'],
@@ -143,7 +151,7 @@ describe('SeoTemplateService - Interpolation', () => {
     it('interpole le Title Alternateur correctement', () => {
       const template = '#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.';
       const result = (service as any).processTemplate(template, testContext);
-      expect(result).toBe('Alternateur BMW Série 3 (E46) 320 d à partir de 118.45€ à tarif avantageux.');
+      expect(result).toBe('Alternateur BMW Série 3 (E46) 320 d à partir de 118€ à tarif avantageux.');
     });
 
     it('interpole le H1 Plaquette de frein correctement', () => {
@@ -248,7 +256,7 @@ describe('SeoTemplateService - Interpolation', () => {
 
     it('CRITIQUE: #MinPrice# ne doit pas rester vide si min_price > 0', () => {
       const result = (service as any).processTemplate('#MinPrice#', testContext);
-      expect(result).toContain('118.45');
+      expect(result).toContain('118€');
       expect(result).not.toBe('');
     });
 

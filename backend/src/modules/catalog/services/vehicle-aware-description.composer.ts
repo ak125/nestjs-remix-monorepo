@@ -71,8 +71,9 @@ function coreWords(s: string): string[] {
     .filter((w) => w && !STOP.has(w));
 }
 
+/** Euros entiers, arrondis à l'euro inférieur : « dès » reste vrai (mandat CI). */
 function formatEuro(n: number): string {
-  return `${n.toFixed(2).replace('.', ',')} €`;
+  return `${Math.floor(n)} €`;
 }
 
 function capitalize(s: string): string {
