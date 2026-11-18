@@ -204,7 +204,7 @@ const LINK_BASE = "https://page-ajout.invalid";
 /**
  * La page d'ajout est fournie par le navigateur du client : elle ne devient un
  * lien que si elle reste sur le site une fois analysée comme une URL (ce qui
- * écarte `javascript:`, `//hôte` et `/\hôte`). Le lien rendu est le chemin
+ * écarte `javascript:`, `//hôte`, `/\hôte`, `/.//hôte`). Le lien rendu est le chemin
  * normalisé ; sinon null et la valeur est affichée en texte brut.
  */
 export function internalPathHref(raw: string | null): string | null {
@@ -214,9 +214,11 @@ export function internalPathHref(raw: string | null): string | null {
   }
   try {
     const parsed = new URL(raw, LINK_BASE);
-    return parsed.origin === LINK_BASE
-      ? parsed.pathname + parsed.search + parsed.hash
-      : null;
+    if (parsed.origin !== LINK_BASE) return null;
+    // La normalisation peut produire « //hôte » (« /.//hôte », « /a/..//hôte ») :
+    // le chemin rendu doit commencer par une seule barre.
+    const href = parsed.pathname + parsed.search + parsed.hash;
+    return href.startsWith("/") && !/^\/[/\\]/.test(href) ? href : null;
   } catch {
     return null;
   }

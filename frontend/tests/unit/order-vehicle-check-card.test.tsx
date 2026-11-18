@@ -160,5 +160,9 @@ describe("OrderLineVehicle", () => {
     expect(internalPathHref("/\tevil")).toBeNull();
     expect(internalPathHref("https://evil.example/")).toBeNull();
     expect(internalPathHref(null)).toBeNull();
+    expect(internalPathHref("/.//evil.example")).toBeNull();
+    expect(internalPathHref("/%2e//evil.example")).toBeNull();
+    expect(internalPathHref("/a/..//evil.example")).toBeNull();
+    expect(internalPathHref("/a/../pieces/b.html")).toBe("/pieces/b.html");
   });
 });
