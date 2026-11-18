@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 450,
-    "backend_files_scanned": 1547
+    "backend_files_scanned": 1549
   },
   "tables": {
     "___config": {
@@ -14599,42 +14599,42 @@
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 226,
+      "line": 275,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 272,
+      "line": 321,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 619,
+      "line": 668,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 643,
+      "line": 692,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 835,
+      "line": 883,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 880,
+      "line": 930,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
