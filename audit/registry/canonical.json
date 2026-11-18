@@ -3227,6 +3227,43 @@
           {
             "mode": "IN",
             "name": "p_gamme_id",
+            "type": "integer"
+          },
+          {
+            "mode": "IN",
+            "name": "p_vehicle_id",
+            "type": "bigint"
+          },
+          {
+            "mode": "IN",
+            "name": "p_limit",
+            "type": "integer"
+          }
+        ],
+        "definedInMigrations": [
+          "20261118_r2_images_bmp_extension.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.get_listing_products_extended_filtered",
+        "language": "sql",
+        "name": "get_listing_products_extended_filtered",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "TABLE(id integer, nom text, reference text, reference_clean text, description text, quantite_vente numeric, has_image boolean, has_oem boolean, filtre_gamme text, is_accessory boolean, filtre_side text, marque text, marque_id integer, marque_logo text, nb_stars integer, prix_unitaire integer, prix_ttc numeric, prix_consigne integer, stock_status text, dispo boolean, quality text, score integer, image text)",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_gamme_id",
             "type": "INT"
           },
           {
@@ -3393,6 +3430,38 @@
           {
             "mode": "IN",
             "name": "p_type_id",
+            "type": "integer"
+          },
+          {
+            "mode": "IN",
+            "name": "p_pg_id",
+            "type": "integer"
+          }
+        ],
+        "definedInMigrations": [
+          "20261118_r2_images_bmp_extension.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.get_pieces_for_type_gamme_v3#sig:2baa804a",
+        "language": "plpgsql",
+        "name": "get_pieces_for_type_gamme_v3",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": true,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_type_id",
             "type": "INTEGER"
           },
           {
@@ -3405,7 +3474,7 @@
           "20260324_fix_ghost_pieces_rpc_v3.sql"
         ],
         "domain": "UNKNOWN",
-        "id": "public.get_pieces_for_type_gamme_v3",
+        "id": "public.get_pieces_for_type_gamme_v3#sig:73f8ba8f",
         "language": "plpgsql",
         "name": "get_pieces_for_type_gamme_v3",
         "owner": "__unassigned__",
@@ -109092,10 +109161,10 @@
       "audit/registry/db.json": "9c0c66011897c5b7653f62067bc273e25533433d2361112feae078c119c028a3",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
       "audit/registry/files.json": "16edfcae801f7cf68bd9e2907d94804043d2d8ef15b078982f84e2a4d6bb1dc9",
-      "audit/registry/rpc.json": "c50dbaaca74c234f82efc481724c4d24b381a08901ecfdbba11fafa1e03fbbc4",
+      "audit/registry/rpc.json": "81f9bf5b14a5bc0a652ee6adea5881f29b3835539d7ed98b9b7b651b18fbbeda",
       "audit/registry/runtime.json": "cc806ba9cf137d876ba7b389f9c521e1e0c3259947abce93dc996c8c4392823a"
     },
-    "sotFingerprint": "0cda26ea2717"
+    "sotFingerprint": "f4498cb206a9"
   },
   "runtime": [
     {
