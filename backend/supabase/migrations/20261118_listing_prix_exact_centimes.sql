@@ -43,6 +43,12 @@
 -- protégé par la garde 5 du dépôt (voir la PR).
 -- =============================================================================
 
+-- Garde-fous : le DROP prend un verrou exclusif sur une fonction appelée par
+-- chaque page R2 ; ne pas attendre derrière un appel long. SET LOCAL : le
+-- runner enveloppe le fichier dans BEGIN/COMMIT.
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '30s';
+
 DROP FUNCTION IF EXISTS public.get_listing_products_extended_filtered(integer, bigint, integer);
 
 CREATE OR REPLACE FUNCTION public.get_listing_products_extended_filtered(p_gamme_id integer, p_vehicle_id bigint, p_limit integer DEFAULT 200)
