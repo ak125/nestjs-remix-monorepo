@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 587,
-      "loc_total": 111395,
+      "loc_total": 111389,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -355,8 +355,8 @@
         "backend/src/modules/gamme-rest/utils",
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
-      "files_count": 20,
-      "loc_total": 6589,
+      "files_count": 21,
+      "loc_total": 6747,
       "has_barrel": true
     },
     "health": {
@@ -623,8 +623,8 @@
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 41,
-      "loc_total": 11118,
+      "files_count": 42,
+      "loc_total": 11405,
       "has_barrel": false
     },
     "products": {
@@ -665,7 +665,7 @@
         "backend/src/modules/rag-proxy/types"
       ],
       "files_count": 34,
-      "loc_total": 12017,
+      "loc_total": 12052,
       "has_barrel": false
     },
     "scripts": {
@@ -769,8 +769,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 289,
-      "loc_total": 62457,
+      "files_count": 290,
+      "loc_total": 62777,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -879,7 +879,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 56,
-      "loc_total": 7823,
+      "loc_total": 7830,
       "has_barrel": true
     },
     "suppliers": {
@@ -963,8 +963,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 388,
-      "loc_total": 80559,
+      "files_count": 389,
+      "loc_total": 80809,
       "has_barrel": true
     },
     "upload": {
@@ -1785,7 +1785,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 12
+      "count": 13
     },
     {
       "from": "health",
@@ -1941,6 +1941,11 @@
       "from": "pricing",
       "to": "backend-core",
       "count": 1
+    },
+    {
+      "from": "pricing",
+      "to": "supplier-truth",
+      "count": 3
     },
     {
       "from": "products",

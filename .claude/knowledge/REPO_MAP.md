@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: bbb2eb002975a2b76c7ead453c395727a5f1184ade9be5da9de2a44d874c56dd
+source_sha256: 713c8df8539a9ba83bf51133eb89459b045f4781fc01d7cb494d9d435e6ae8df
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3228 |
+| Files (Layer 1) | 3232 |
 | DB tables (Layer 1) | 316 |
-| DB RPC (Layer 1) | 265 |
+| DB RPC (Layer 1) | 267 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `08d904d4240e`.
+Source sotFingerprint: `855f6da809d8`.
 
 ## Comment l'utiliser
 
@@ -37,11 +37,11 @@ Source sotFingerprint: `08d904d4240e`.
 
 ### D1 — Catalog Core
 
-- **Files**: 87 (service=52, controller=21, test=10, config=4)
+- **Files**: 88 (service=52, controller=21, test=11, config=4)
 - **Runtime entrypoints**: 59
-- **Top owners**: @ak125/catalog-team (87)
+- **Top owners**: @ak125/catalog-team (88)
 - **Knowledge prose**: [`catalog`](modules/catalog.md), [`gamme-rest`](modules/gamme-rest.md), [`products`](modules/products.md)
-- **Status**: LIVE=74, UNKNOWN=13
+- **Status**: LIVE=74, UNKNOWN=14
 
 ### D2 — Legacy/XTR Migration
 
@@ -53,11 +53,11 @@ Source sotFingerprint: `08d904d4240e`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 439 (service=220, test=131, controller=34, config=28, script=26)
+- **Files**: 440 (service=220, test=132, controller=34, config=28, script=26)
 - **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (439)
+- **Top owners**: @ak125/seo-team (440)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=223, UNKNOWN=216
+- **Status**: LIVE=223, UNKNOWN=217
 
 ### D4 — Vehicle / Compatibility
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `08d904d4240e`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 323 (service=205, test=76, controller=40, config=2)
+- **Files**: 324 (service=205, test=77, controller=40, config=2)
 - **Runtime entrypoints**: 132
-- **Top owners**: @ak125 (137), @ak125/payments-team (95), @ak125/auth-team (79)
+- **Top owners**: @ak125 (138), @ak125/payments-team (95), @ak125/auth-team (79)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=191, UNKNOWN=132
+- **Status**: LIVE=191, UNKNOWN=133
 
 ### D12 — Marketing & Video
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `08d904d4240e`.
 
 ### D15 — Security & Governance
 
-- **Files**: 332 (test=218, script=62, service=49, config=2, controller=1)
+- **Files**: 333 (test=219, script=62, service=49, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (332)
+- **Top owners**: @ak125 (333)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=273
+- **Status**: LIVE=59, UNKNOWN=274
 
 ### D16 — Maintenance
 
@@ -165,7 +165,7 @@ Source sotFingerprint: `08d904d4240e`.
 
 - **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
 - **DB tables**: 316
-- **DB RPC**: 265
+- **DB RPC**: 267
 - **Runtime entrypoints**: 83
 - **Top owners**: __unassigned__ (243)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)

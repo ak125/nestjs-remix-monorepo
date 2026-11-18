@@ -21,8 +21,8 @@
     "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 446,
-    "backend_files_scanned": 1546
+    "migrations_scanned": 450,
+    "backend_files_scanned": 1549
   },
   "tables": {
     "___config": {
@@ -5287,7 +5287,9 @@
       "defined_in_migrations": [
         "20260522_pricing_control_plane_v1_functions.sql",
         "20260604_pricing_commit_chunk_import_pending_mode.sql",
-        "20260608_pricing_commit_chunk_persist_pri_ref.sql"
+        "20260608_pricing_commit_chunk_persist_pri_ref.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.down.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
       ],
       "is_trigger_function": false
     },
@@ -5319,7 +5321,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260522_pricing_control_plane_v1_functions.sql"
+        "20260522_pricing_control_plane_v1_functions.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.down.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
       ],
       "is_trigger_function": false
     },
@@ -10270,7 +10274,9 @@
       "defined_in_migrations": [
         "20260522_pricing_control_plane_v1_functions.sql",
         "20260604_pricing_commit_chunk_import_pending_mode.sql",
-        "20260608_pricing_commit_chunk_persist_pri_ref.sql"
+        "20260608_pricing_commit_chunk_persist_pri_ref.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.down.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -10334,7 +10340,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260522_pricing_control_plane_v1_functions.sql"
+        "20260522_pricing_control_plane_v1_functions.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.down.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -14591,42 +14599,42 @@
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 226,
+      "line": 275,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 272,
+      "line": 321,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 619,
+      "line": 668,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 643,
+      "line": 692,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 835,
+      "line": 883,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 880,
+      "line": 930,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

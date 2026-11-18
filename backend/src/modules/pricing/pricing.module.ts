@@ -18,8 +18,11 @@ import { CatalogDisplayActivationService } from './services/catalog-display-acti
 import { CatalogDisplayQuarantineService } from './services/catalog-display-quarantine.service';
 import { PricingSimulationService } from './services/pricing-simulation.service';
 import { PricingImportController } from './controllers/pricing-import.controller';
+import { SupplierTruthReadModule } from '../supplier-truth/supplier-truth-read.module';
 
 @Module({
+  // Supplier label for pri_frs on import commit (only reader of ___xtr_supplier).
+  imports: [SupplierTruthReadModule],
   controllers: [PricingImportController],
   providers: [
     PricingFormulaService,

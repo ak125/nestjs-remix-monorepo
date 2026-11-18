@@ -7459,7 +7459,7 @@
           }
         ],
         "definedInMigrations": [
-          "20260608_pricing_commit_chunk_persist_pri_ref.sql"
+          "20261117_pricing_commit_chunk_frs_date_from.sql"
         ],
         "domain": "UNKNOWN",
         "id": "public.pricing_commit_chunk#sig:31e9b09e",
@@ -7469,6 +7469,58 @@
         "parseMode": "parsed",
         "parseWarnings": [],
         "returnType": "JSONB",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_batch_id",
+            "type": "uuid"
+          },
+          {
+            "mode": "IN",
+            "name": "p_chunk_id",
+            "type": "uuid"
+          },
+          {
+            "mode": "IN",
+            "name": "p_supplier",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_operator",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_rows",
+            "type": "jsonb"
+          },
+          {
+            "mode": "IN",
+            "name": "p_activate",
+            "type": "boolean"
+          }
+        ],
+        "definedInMigrations": [
+          "20261117_pricing_commit_chunk_frs_date_from.down.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.pricing_commit_chunk#sig:419ad653",
+        "language": "plpgsql",
+        "name": "pricing_commit_chunk",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
         "schema": "public",
         "schemaVersion": "1.0.0",
         "searchPath": [],
@@ -7647,13 +7699,45 @@
           "20260522_pricing_control_plane_v1_functions.sql"
         ],
         "domain": "UNKNOWN",
-        "id": "public.pricing_rollback_batch",
+        "id": "public.pricing_rollback_batch#sig:6c9e49aa",
         "language": "plpgsql",
         "name": "pricing_rollback_batch",
         "owner": "__unassigned__",
         "parseMode": "parsed",
         "parseWarnings": [],
         "returnType": "JSONB",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_batch_id",
+            "type": "uuid"
+          },
+          {
+            "mode": "IN",
+            "name": "p_supplier",
+            "type": "text"
+          }
+        ],
+        "definedInMigrations": [
+          "20261117_pricing_commit_chunk_frs_date_from.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.pricing_rollback_batch#sig:af0cc18b",
+        "language": "plpgsql",
+        "name": "pricing_rollback_batch",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
         "schema": "public",
         "schemaVersion": "1.0.0",
         "searchPath": [],
@@ -46621,7 +46705,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 187,
+      "loc": 190,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "medium",
@@ -46662,6 +46746,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
+      "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+        "backend/src/modules/seo/index.ts"
+      ],
+      "kind": "test",
+      "loc": 121,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -46827,6 +46934,7 @@
       "domain": "D1",
       "id": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
         "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
         "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
         "backend/src/modules/gamme-rest/services/index.ts"
@@ -46849,7 +46957,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 1259,
+      "loc": 1293,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "medium",
@@ -52277,7 +52385,7 @@
         "backend/src/modules/pricing/services/pricing-strategy.service.ts"
       ],
       "kind": "controller",
-      "loc": 233,
+      "loc": 235,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
       "risk": "high",
@@ -52309,10 +52417,11 @@
         "backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts",
-        "backend/src/modules/pricing/services/supplier-profile.service.ts"
+        "backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "kind": "service",
-      "loc": 45,
+      "loc": 48,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/pricing.module.ts",
       "risk": "high",
@@ -52900,6 +53009,7 @@
       "id": "backend/src/modules/pricing/services/price-import.dry-run.ts",
       "importedBy": [
         "backend/src/modules/pricing/services/__tests__/price-import.dry-run.test.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
@@ -52925,10 +53035,36 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/modules/pricing/services/price-import.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/services/price-import.dry-run.ts",
+        "backend/src/modules/pricing/services/price-import.service.ts",
+        "backend/src/modules/pricing/services/pricing.repository.ts",
+        "backend/src/modules/supplier-truth/index.ts"
+      ],
+      "kind": "test",
+      "loc": 193,
+      "owner": "@ak125",
+      "path": "backend/src/modules/pricing/services/price-import.service.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/modules/pricing/services/price-import.service.ts",
       "importedBy": [
         "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
-        "backend/src/modules/pricing/pricing.module.ts"
+        "backend/src/modules/pricing/pricing.module.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts"
       ],
       "imports": [
         "backend/src/modules/pricing/services/price-import.dry-run.ts",
@@ -52936,10 +53072,11 @@
         "backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts",
         "backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 256,
+      "loc": 334,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/price-import.service.ts",
       "risk": "high",
@@ -53133,6 +53270,7 @@
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
         "backend/src/modules/pricing/services/price-deactivation.service.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.service.ts"
       ],
@@ -53147,7 +53285,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 907,
+      "loc": 918,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "high",
@@ -54880,7 +55018,7 @@
         "util"
       ],
       "kind": "service",
-      "loc": 377,
+      "loc": 412,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-video-management.service.ts",
       "risk": "high",
@@ -60016,6 +60154,7 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/index.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
       ],
       "imports": [
@@ -60029,7 +60168,7 @@
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
       "kind": "service",
-      "loc": 11,
+      "loc": 14,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/index.ts",
       "risk": "high",
@@ -60388,6 +60527,29 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo/internal-linking.service.gamme-links.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/seo/internal-linking.service.ts"
+      ],
+      "kind": "test",
+      "loc": 260,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo/internal-linking.service.gamme-links.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo/internal-linking.service.ts",
       "importedBy": [
         "backend/src/modules/blog/services/blog-seo.service.ts",
@@ -60397,6 +60559,7 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
+        "backend/src/modules/seo/internal-linking.service.gamme-links.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
@@ -60407,7 +60570,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 994,
+      "loc": 1051,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/internal-linking.service.ts",
       "risk": "high",
@@ -65955,13 +66118,16 @@
         "backend/src/modules/orders/services/supplier-order-controls.test.ts",
         "backend/src/modules/orders/services/supplier-order-controls.ts",
         "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
-        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts",
+        "backend/src/modules/pricing/services/price-import.service.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 13,
+      "loc": 18,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/index.ts",
       "risk": "high",
@@ -66355,6 +66521,7 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "importedBy": [
         "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/pricing/pricing.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -66363,7 +66530,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
       "kind": "service",
-      "loc": 38,
+      "loc": 40,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "risk": "high",
@@ -66479,6 +66646,7 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "importedBy": [
         "backend/src/modules/orders/services/order-line-supplier.service.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.test.ts",
@@ -73023,6 +73191,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/rag-video-serving.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 250,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/rag-video-serving.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/rag-webhook-completion.test.ts",
       "importedBy": [],
       "imports": [],
@@ -76200,7 +76388,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 155,
+      "loc": 149,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/blog/BlogInternalLinks.tsx",
       "risk": "low",
@@ -108968,15 +109156,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "f206262bf6acdd1375585eb0dd1db651dc5c65669087a463e7ca87ef3da035e9",
+      ".spec/00-canon/repository-registry/ownership.yaml": "1ef7e0a57e05ed939ff45efc96c95a10a29041ca31235db6172c3925c75473ff",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "9c0c66011897c5b7653f62067bc273e25533433d2361112feae078c119c028a3",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "fbe1cf8ceaccf0cb0ecb83d3a943956f4d9aa6ac6019055c076bb7be590e78f9",
-      "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "f2a5000ce3dc86d7afdc718757390e60e73567c5665b69640aa50801ca494a21"
+      "audit/registry/files.json": "4f01ccefb37bebddbcaa9d8dc88be0bb1ab83f4dcf5e3f35a98ba2210fa441e0",
+      "audit/registry/rpc.json": "c50dbaaca74c234f82efc481724c4d24b381a08901ecfdbba11fafa1e03fbbc4",
+      "audit/registry/runtime.json": "cc806ba9cf137d876ba7b389f9c521e1e0c3259947abce93dc996c8c4392823a"
     },
-    "sotFingerprint": "08d904d4240e"
+    "sotFingerprint": "855f6da809d8"
   },
   "runtime": [
     {
@@ -113689,7 +113877,8 @@
         "runtime:backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing.repository.ts",
-        "runtime:backend/src/modules/pricing/services/supplier-profile.service.ts"
+        "runtime:backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "id": "runtime:backend/src/modules/pricing/pricing.module.ts",
       "kind": "nestjs-module",

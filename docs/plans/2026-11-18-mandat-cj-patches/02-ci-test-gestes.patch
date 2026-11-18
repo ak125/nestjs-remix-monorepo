@@ -1,0 +1,12 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -576,6 +576,9 @@
+       - name: 🧾 Seuils des fonctions du registre (tests, mandat BZ)
+         run: bash scripts/governance/registry-thresholds.test.sh
+ 
++      - name: 🌅 Gestes du rapport du matin (tests, mandat CJ)
++        run: bash scripts/ops/morning-health-digest.test.sh
++
+       - name: 🚦 Classeur des circuits de fusion (tests)
+         run: node --test scripts/ci/merge-circuit.test.mjs
+ 

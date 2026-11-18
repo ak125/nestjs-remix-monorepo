@@ -17,7 +17,7 @@ name: 🌅 Morning health digest
 #     read-only PostgREST counts, else database signals « indisponible ».
 #   GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN, GMAIL_USER_EMAIL,
 #   ALERT_EMAIL_TO, EMAIL_FROM  same names as scripts/monitoring/check-payment-tunnel.sh;
-#     to be created as repository secrets by the owner, else the mail is written
+#     environment secrets of report-mail (branch main only), set by the owner, else the mail is written
 #     « canal indisponible » in the issue and the run log.
 # Repository variables (optional, empty if unset):
 #   REPORT_CONFIG_PATH  path in the repo of a report-config.v1 JSON file (hook for
@@ -61,6 +61,11 @@ jobs:
     name: Urgent checks, daily report on the standing issue
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Mail secrets live in the report-mail environment (main only), not at repository
+    # level; deployment: false = no deployment record per 15-minute run.
+    environment:
+      name: report-mail
+      deployment: false
     steps:
       - name: Checkout (shallow)
         uses: actions/checkout@v7

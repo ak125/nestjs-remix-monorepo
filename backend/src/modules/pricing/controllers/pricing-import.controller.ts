@@ -1,7 +1,9 @@
 /**
  * Admin endpoints for the price import + activation lifecycle (IsAdminGuard).
- *   POST /api/admin/pricing/import/dry-run     → report + batchId (no writes)
- *   POST /api/admin/pricing/import/commit      → chunked atomic apply
+ *   POST /api/admin/pricing/import/dry-run     → report + batchId (no price write; writes
+ *                                                one supplier_import_raw row + one batch row)
+ *   POST /api/admin/pricing/import/commit      → chunked atomic apply (tariffDate required:
+ *                                                stamps pri_date_from + pri_frs on committed rows)
  *   POST /api/admin/pricing/import/rollback    → LIFO restore
  *   POST /api/admin/pricing/activate/dry-run   → dispo-only projection (no writes)
  *   POST /api/admin/pricing/activate/commit    → flip pri_dispo 1/2 (confirm:true)
