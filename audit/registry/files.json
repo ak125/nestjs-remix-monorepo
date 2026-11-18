@@ -17535,7 +17535,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 187,
+      "loc": 190,
       "owner": "__unassigned__",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "low",
@@ -17575,6 +17575,28 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+        "backend/src/modules/seo/index.ts"
+      ],
+      "kind": "test",
+      "loc": 121,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -17733,6 +17755,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
         "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
         "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
         "backend/src/modules/gamme-rest/services/index.ts"
@@ -17755,7 +17778,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 1259,
+      "loc": 1293,
       "owner": "__unassigned__",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "low",
@@ -30520,6 +30543,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/index.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
       ],
       "imports": [
@@ -30533,7 +30557,7 @@
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
       "kind": "service",
-      "loc": 11,
+      "loc": 14,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/index.ts",
       "risk": "low",
@@ -30877,6 +30901,28 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/internal-linking.service.gamme-links.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/seo/internal-linking.service.ts"
+      ],
+      "kind": "test",
+      "loc": 260,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/internal-linking.service.gamme-links.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/internal-linking.service.ts",
       "importedBy": [
         "backend/src/modules/blog/services/blog-seo.service.ts",
@@ -30886,6 +30932,7 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
+        "backend/src/modules/seo/internal-linking.service.gamme-links.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
@@ -30896,7 +30943,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 994,
+      "loc": 1051,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/internal-linking.service.ts",
       "risk": "low",
@@ -46126,7 +46173,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 155,
+      "loc": 149,
       "owner": "__unassigned__",
       "path": "frontend/app/components/blog/BlogInternalLinks.tsx",
       "risk": "low",
