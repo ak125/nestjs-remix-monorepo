@@ -74845,7 +74845,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 89,
+      "loc": 119,
       "owner": "__unassigned__",
       "path": "scripts/governance/registry-threshold-read.ts",
       "risk": "low",
