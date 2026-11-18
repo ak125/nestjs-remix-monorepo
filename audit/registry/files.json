@@ -3607,8 +3607,6 @@
         "backend/src/config/write-guard.module.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.test.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
       ],
@@ -3865,7 +3863,7 @@
         "backend/src/config/role-ids.ts"
       ],
       "kind": "config",
-      "loc": 196,
+      "loc": 186,
       "owner": "__unassigned__",
       "path": "backend/src/config/execution-registry.constants.ts",
       "risk": "low",
@@ -3893,7 +3891,6 @@
         "backend/src/config/write-guard-cas.service.ts",
         "backend/src/config/write-guard-ledger.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
@@ -4397,7 +4394,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 361,
+      "loc": 370,
       "owner": "__unassigned__",
       "path": "backend/src/config/operating-matrix.service.test.ts",
       "risk": "low",
@@ -5122,9 +5119,6 @@
         "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
         "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
-        "backend/src/modules/admin/services/execution-router.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
-        "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
@@ -5224,7 +5218,6 @@
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/execution-router.service.test.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
         "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
@@ -5422,7 +5415,6 @@
         "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/blog/utils/source-provenance.util.ts",
         "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts"
@@ -6550,7 +6542,6 @@
         "backend/src/modules/admin/services/quality-scoring-engine.service.ts",
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r3-image-prompt.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r4-lint-gates.service.ts",
@@ -6583,7 +6574,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 331,
+      "loc": 329,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "low",
@@ -7003,7 +6994,7 @@
         "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
       "kind": "controller",
-      "loc": 205,
+      "loc": 204,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/admin-pipeline.controller.ts",
       "risk": "low",
@@ -8086,7 +8077,7 @@
         "backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
       ],
       "kind": "service",
-      "loc": 398,
+      "loc": 397,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
       "risk": "low",
@@ -8976,7 +8967,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "test",
-      "loc": 709,
+      "loc": 789,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/execution-router.service.test.ts",
       "risk": "low",
@@ -9003,10 +8994,8 @@
       "imports": [
         "@database/services/supabase-base.service",
         "backend/src/config/execution-registry.constants.ts",
-        "backend/src/config/rag.config.ts",
         "backend/src/config/role-ids.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r7-brand-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
@@ -9014,7 +9003,7 @@
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "service",
-      "loc": 829,
+      "loc": 796,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/execution-router.service.ts",
       "risk": "low",
@@ -9788,60 +9777,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "backend/src/modules/admin/services/r2-enricher.service.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/config/content-write-gate.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts"
-      ],
-      "kind": "test",
-      "loc": 83,
-      "owner": "__unassigned__",
-      "path": "backend/src/modules/admin/services/r2-enricher.service.test.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "backend/src/modules/admin/services/r2-enricher.service.ts",
-      "importedBy": [
-        "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/services/execution-router.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.test.ts"
-      ],
-      "imports": [
-        "@database/services/supabase-base.service",
-        "backend/src/config/content-write-gate.service.ts",
-        "backend/src/config/execution-registry.types.ts",
-        "backend/src/config/rag.config.ts",
-        "backend/src/config/role-ids.ts",
-        "backend/src/config/source-provenance.constants.ts",
-        "fs",
-        "path"
-      ],
-      "kind": "service",
-      "loc": 273,
-      "owner": "__unassigned__",
-      "path": "backend/src/modules/admin/services/r2-enricher.service.ts",
-      "risk": "low",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r3-image-prompt.b5-closure.test.ts",
       "importedBy": [],
       "imports": [
@@ -9899,13 +9834,10 @@
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/feature-flags.service.ts",
         "backend/src/config/r4-keyword-plan.constants.ts",
-        "backend/src/config/rag.config.ts",
-        "backend/src/modules/admin/services/r4-lint-gates.service.ts",
-        "fs",
-        "path"
+        "backend/src/modules/admin/services/r4-lint-gates.service.ts"
       ],
       "kind": "service",
-      "loc": 571,
+      "loc": 555,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r4-content-enricher.service.ts",
       "risk": "low",
@@ -40694,7 +40626,7 @@
         "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
       "kind": "test",
-      "loc": 188,
+      "loc": 185,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
       "risk": "low",
@@ -70772,7 +70704,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 26,
+      "loc": 30,
       "owner": "__unassigned__",
       "path": "packages/seo-role-contracts/src/contracts/r2.ts",
       "risk": "low",
@@ -72615,7 +72547,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 147,
+      "loc": 161,
       "owner": "__unassigned__",
       "path": "scripts/audit/check-rag-authority-read-ratchet.test.ts",
       "risk": "low",
@@ -73523,6 +73455,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/incident-issue-gate.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 406,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/incident-issue-gate.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/incident-issue-gate.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 437,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/incident-issue-gate.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/lighthouse-report-quality.mjs",
       "importedBy": [],
       "imports": [],
@@ -73660,7 +73630,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 258,
+      "loc": 287,
       "owner": "__unassigned__",
       "path": "scripts/ci/pr-dod-gate.test.mjs",
       "risk": "low",
@@ -74378,6 +74348,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/governance/__tests__/skills-third-party-lock.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 260,
+      "owner": "__unassigned__",
+      "path": "scripts/governance/__tests__/skills-third-party-lock.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/governance/build-command-center-snapshot.js",
       "importedBy": [],
       "imports": [],
@@ -74401,7 +74390,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 175,
+      "loc": 195,
       "owner": "__unassigned__",
       "path": "scripts/governance/build-skills-registry.js",
       "risk": "low",
@@ -74496,7 +74485,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 285,
+      "loc": 509,
       "owner": "__unassigned__",
       "path": "scripts/governance/validate-skills-frontmatter.js",
       "risk": "low",
@@ -74762,7 +74751,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 492,
+      "loc": 497,
       "owner": "__unassigned__",
       "path": "scripts/marketing/reactivation-runtime.test.mjs",
       "risk": "low",

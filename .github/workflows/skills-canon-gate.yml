@@ -33,6 +33,8 @@ on:
       - "scripts/governance/__fixtures__/agent-operating-map.contract.invalid.yaml"
       - "audit/registry/command-center-snapshot.json"
       - ".github/workflows/skills-canon-gate.yml"
+      - "skills-lock.json"
+      - "scripts/governance/__tests__/skills-third-party-lock.test.ts"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
@@ -66,6 +68,10 @@ jobs:
           set -e
           node scripts/governance/validate-skills-frontmatter.js --json > /tmp/skills-report.json
           cat /tmp/skills-report.json | jq -c '{ok, totalSkills, failureCount}'
+
+      - name: 🔐 Third-party skills lock — unit tests (P40, journal des principes)
+        if: always()
+        run: npx tsx --test scripts/governance/__tests__/skills-third-party-lock.test.ts
 
       # skills.registry.json porte un sha256 de chaque SKILL.md ; sans ce step, rien ne
       # signale qu'une édition de skill l'a rendu faux. Lecture seule (--check ne réécrit rien).

@@ -60,6 +60,15 @@
       "roleId": "R1_ROUTER"
     },
     {
+      "agentCount": 2,
+      "agents": [
+        "r2-keyword-planner",
+        "r2-product-validator"
+      ],
+      "reason": "agents_without_registry",
+      "roleId": "R2_PRODUCT"
+    },
+    {
       "agentCount": 5,
       "agents": [
         "conseil-batch",
@@ -123,25 +132,9 @@
         "r2-product-validator"
       ],
       "deprecated": false,
-      "healthScore": 100,
+      "healthScore": 70,
       "registry": {
-        "agentFiles": [
-          "r2-keyword-planner.md"
-        ],
-        "allowedModes": [
-          "create",
-          "regenerate",
-          "refresh_full",
-          "qa_only"
-        ],
-        "contractSchemaRef": "r2-content-contract.schema",
-        "defaultWriteMode": "draft_write",
-        "enricherServiceKey": "R2EnricherService",
-        "present": true,
-        "stopPolicy": {
-          "maxRetries": 1,
-          "timeoutMs": 120000
-        }
+        "present": false
       },
       "roleId": "R2_PRODUCT",
       "writeScope": {
@@ -456,7 +449,7 @@
     }
   ],
   "sourcesHash": {
-    "executionRegistry": "sha256:a386ffa59a474ccc3ece83995e947425ee632ba6c57d21ec80e9e67bf8e544fe",
+    "executionRegistry": "sha256:8d00fcd5a4d8adc56941c07e678ba01f4089b570765a58b2f8a3ef545d6957e8",
     "executionRegistryTypes": "sha256:6c585a3075471f5189d5c1a48bd83e0f1ce6460cd1af9a9398a6d2b0d68c1d46",
     "fieldCatalog": "sha256:de4b23f16019338092340be58b0cfe421519aceb94a148efca07f99021fef0f7",
     "roleIds": "sha256:1e6f6ff6a90ae6e26a3e5b16f907bf410f77166a8dc3d73a89787875b93cba04"

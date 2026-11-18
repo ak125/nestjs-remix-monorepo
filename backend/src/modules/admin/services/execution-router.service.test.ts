@@ -92,9 +92,6 @@ jest.mock('@database/services/supabase-base.service', () => ({
 jest.mock('./buying-guide-enricher.service', () => ({
   BuyingGuideEnricherService: class {},
 }));
-jest.mock('./r2-enricher.service', () => ({
-  R2EnricherService: class {},
-}));
 jest.mock('./r8-vehicle-enricher.service', () => ({
   R8VehicleEnricherService: class {},
 }));
@@ -704,5 +701,88 @@ describe('ExecutionRouterService — R6_GUIDE_ACHAT outcome (RAG write refused, 
 
     expect(enrich).toHaveBeenCalledWith(['655'], true);
     expect(result.results[0].status).toBe('success');
+  });
+});
+
+describe('ExecutionRouterService — R2_PRODUCT executable path removed (mandat BI, tranche B3, ADR-031/046)', () => {
+  beforeEach(resetMocks);
+
+  it.each([false, true])(
+    '16. R2_PRODUCT dispatch (dryRun=%s) → explicit failed, no RAG probe, no enricher',
+    async (dryRun) => {
+      setTable('pieces_gamme', {
+        single: () => Promise.resolve({ data: null, error: null }),
+      });
+      const enrichSingle = jest.fn();
+      const service = makeService({ R2EnricherService: { enrichSingle } });
+
+      const result = await service.execute({
+        roleId: 'R2_PRODUCT',
+        targetIds: ['4'],
+        dryRun,
+        vehicleKey: 'renault-clio-iii',
+      });
+
+      // Same explicit-fail surface as the R1_ROUTER and R3_CONSEILS precedents: the
+      // registry entry is removed, so execute() short-circuits before any dispatch.
+      // The dry-run no longer answers "would enrich from RAG" from a RAG file probe.
+      expect(result.mode).toBe('blocked_no_write');
+      expect(result.results[0].status).toBe('failed');
+      expect(String((result.results[0] as { error?: string }).error)).toMatch(
+        /No registry entry for role: R2_PRODUCT/,
+      );
+      expect(JSON.stringify(result)).not.toMatch(/hasRagFile|from RAG/);
+      expect(enrichSingle).not.toHaveBeenCalled();
+    },
+  );
+
+  it('17. registry has no executable R2_PRODUCT entry (RAG producer removed)', () => {
+    expect(EXECUTION_REGISTRY[RoleId.R2_PRODUCT]).toBeUndefined();
+  });
+});
+
+describe('ExecutionRouterService — R4_REFERENCE dry-run never probes the RAG (mandat BI, ADR-031/046)', () => {
+  beforeEach(resetMocks);
+
+  it('18. dryRun with getBySlug → preview from __seo_reference only', async () => {
+    setTable('pieces_gamme', {
+      single: () =>
+        Promise.resolve({ data: { pg_alias: 'filtre-a-huile' }, error: null }),
+    });
+    const getBySlug = jest.fn().mockResolvedValue({ slug: 'filtre-a-huile' });
+    const service = makeService({ ReferenceService: { getBySlug } });
+
+    const result = await service.execute({
+      roleId: 'R4_REFERENCE',
+      targetIds: ['7'],
+      dryRun: true,
+    });
+
+    expect(result.results[0].status).toBe('success');
+    expect(result.results[0].data).toMatchObject({
+      dryRun: true,
+      exists: true,
+    });
+    expect(JSON.stringify(result)).not.toMatch(/hasRagFile/);
+  });
+
+  it('19. dryRun without getBySlug → explicit failed, not a guess from a RAG file', async () => {
+    setTable('pieces_gamme', {
+      single: () =>
+        Promise.resolve({ data: { pg_alias: 'filtre-a-huile' }, error: null }),
+    });
+    const service = makeService({ ReferenceService: {} });
+
+    const result = await service.execute({
+      roleId: 'R4_REFERENCE',
+      targetIds: ['7'],
+      dryRun: true,
+    });
+
+    expect(result.results[0].status).toBe('failed');
+    expect(JSON.stringify(result.results[0])).toMatch(
+      /RAG file probe was removed/,
+    );
+    expect(JSON.stringify(result)).not.toMatch(/hasRagFile/);
   });
 });
