@@ -77,6 +77,9 @@ const COLONNES_TARIF = [
   // d'une ligne de commande (décision 50).
   'pricing_state',
   'pri_frs',
+  // Complément BK n° 4 : date du tarif, montrée par la proposition d'achat quand
+  // aucun relevé fournisseur frais n'existe (« tarif du 01/07/2022 »).
+  'pri_date_from',
   'pieces!fk_pieces_price_piece_i(piece_display)',
 ].join(', ');
 
@@ -100,6 +103,8 @@ export interface SellablePriceRow {
   pricing_state: string | null;
   /** Libellé fournisseur de la ligne (`ACR`, `DCA`…), cf. `___xtr_supplier`. */
   pri_frs: string | null;
+  /** Date de début du tarif (texte ISO ou historique) ; lue pour l'affichage seulement. */
+  pri_date_from?: string | null;
   /** Jointure `pieces` (clé `fk_pieces_price_piece_i`) : seul `piece_display`. */
   pieces: { piece_display: boolean | null } | null;
 }
