@@ -120,6 +120,15 @@ describe('OperatingMatrixService', () => {
       expect(r.deprecated).toBe(false);
     });
 
+    it('R2_PRODUCT — enrichment writer removed (mandat BI, tranche B3); registry entry gone, not deprecated', () => {
+      // R2EnricherService (RAG gamme file → __seo_r2_keyword_plan) deleted: the RAG has no
+      // content authority (P11, ADR-031/046). R2 is NOT deprecated — its pages stay served by
+      // the catalogue read path. Same registry-absent surface as R1_ROUTER and R3_CONSEILS.
+      const r = byRole.get(RoleId.R2_PRODUCT)!;
+      expect(r.registry.present).toBe(false);
+      expect(r.deprecated).toBe(false);
+    });
+
     it('R3_GUIDE — deprecated role removed from registry (closed deprecation)', () => {
       const r = byRole.get(RoleId.R3_GUIDE)!;
       expect(r.registry.present).toBe(false);
