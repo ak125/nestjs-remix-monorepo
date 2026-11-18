@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "769 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "774 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
     "8 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
@@ -13,16 +13,16 @@
     "tables_with_callsites": 214,
     "candidate_orphan_tables": 75,
     "partitions": 27,
-    "rpc_seen": 259,
+    "rpc_seen": 260,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 215,
-    "dynamic_from_callsites": 769,
+    "candidate_orphan_rpc": 216,
+    "dynamic_from_callsites": 774,
     "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 450,
-    "backend_files_scanned": 1547
+    "migrations_scanned": 454,
+    "backend_files_scanned": 1557
   },
   "tables": {
     "___config": {
@@ -116,9 +116,10 @@
     },
     "___xtr_supplier": {
       "used_by": [
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -126,9 +127,10 @@
     },
     "___xtr_supplier_link_pm": {
       "used_by": [
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -3025,9 +3027,10 @@
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
-        "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
+        "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts"
       ],
-      "used_by_count": 5,
+      "used_by_count": 6,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -3483,9 +3486,10 @@
     },
     "supplier_price_profiles": {
       "used_by": [
-        "backend/src/modules/pricing/services/pricing.repository.ts"
+        "backend/src/modules/pricing/services/pricing.repository.ts",
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [
         "20260522_pricing_control_plane_v1.sql"
       ],
@@ -5616,6 +5620,14 @@
         "20260523_pricing_decision_snapshot_and_offers.sql"
       ],
       "is_trigger_function": true
+    },
+    "supplier_price_condition_put": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261118_supplier_price_profiles_default_pct.sql"
+      ],
+      "is_trigger_function": false
     },
     "sync_entity_health_from_scores": {
       "called_by": [],
@@ -10881,6 +10893,22 @@
       ]
     },
     {
+      "name": "supplier_price_condition_put",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261118_supplier_price_profiles_default_pct.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "sync_entity_health_from_scores",
       "confidence": "medium",
       "derived_from": [
@@ -14906,6 +14934,55 @@
       "refusal": "import-outside-scanned-corpus"
     },
     {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 174,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 185,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 208,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier_link_pm",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 267,
+      "form": "IDENT",
+      "resolved_table": "supplier_price_profiles",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 329,
+      "form": "IDENT",
+      "resolved_table": "supplier_price_profiles",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 354,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 422,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier",
+      "refusal": null
+    },
+    {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "line": 122,
       "form": "IDENT",
@@ -14977,77 +15054,63 @@
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 248,
+      "line": 274,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 273,
+      "line": 298,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 310,
+      "line": 403,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 334,
+      "line": 437,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 439,
+      "line": 472,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 473,
+      "line": 492,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 508,
+      "line": 536,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 528,
+      "line": 589,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 572,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 625,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 635,
+      "line": 599,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
