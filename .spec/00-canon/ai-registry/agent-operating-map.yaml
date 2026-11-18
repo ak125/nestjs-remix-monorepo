@@ -299,6 +299,7 @@ departments:
           rule: "CRITICAL si aucune commande payée n'est gardée sur 30 jours ; WARNING si au moins une annulation après paiement (toPaymentsKeptKpi)"
           issue_label: "dept:13-sales"
           wired: false
+          eval: { indicator: cancelled_after_payment, field: status, operator: in, value: [WARNING, CRITICAL], window_days: 30 }
         rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
         uses:
           - { capability: orders, from: sales }
@@ -309,7 +310,7 @@ departments:
           - { path: backend/src/modules/admin/controllers/command-center.controller.ts, lines: "98-115" }
         decisions: [2, 72]
         gaps:
-          - "Seuil non branché : aucun mécanisme n'ouvre d'issue dept:13-sales (décision 9) ; recherche du 2026-11-18 00:15 UTC."
+          - "Seuil évaluable (threshold.eval, mandat BZ : verdict de toPaymentsKeptKpi, WARNING ou CRITICAL) mais non branché : son évaluation par le rapport du matin est le correctif 01 de docs/plans/2026-11-18-mandat-bz-patches/, réservé à l'owner (.github/**) ; il passe wired à true."
           - "Service en DEV, PREPROD ou PROD non observé par ce mandat : L3 non prouvé."
       - id: sales.unpaid-watch
         name: "Veille des commandes non payées et du tunnel de paiement (rapport du matin)"
