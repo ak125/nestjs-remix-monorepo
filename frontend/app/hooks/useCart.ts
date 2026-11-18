@@ -7,6 +7,8 @@
 
 import { useState, useCallback } from "react";
 
+import { resolveAddToCartVehicle } from "~/components/cart/cart-utils";
+import { getVehicleClient } from "~/utils/vehicle-cookie";
 import { useRootCart } from "../root";
 import { cartApi, formatPrice, getProductImageUrl } from "../services/cart.api";
 import { emitFunnel, getFunnelSessionId } from "~/utils/funnel-beacon";
@@ -60,11 +62,15 @@ export function useCart() {
           typeof window !== "undefined"
             ? window.location.pathname + window.location.search
             : undefined;
+        // Mandat CK : véhicule de la ligne — celui de la page, sinon celui
+        // choisi par le client (recherche, fiche produit), sinon aucun.
+        const vehicle = resolveAddToCartVehicle(typeId, getVehicleClient());
         const result = await cartApi.addItem(
           productId,
           quantity,
-          typeId,
+          vehicle.typeId,
           sourceUrl,
+          vehicle.vehicleSource,
         );
         if (result.success) {
           emitCartUpdated();

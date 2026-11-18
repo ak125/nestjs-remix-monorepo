@@ -105,3 +105,32 @@ describe("sauvegarde localStorage du panier", () => {
     expect(() => clearCartLocalStorage()).not.toThrow();
   });
 });
+
+// Mandat CK : la provenance du véhicule suit la ligne restaurée.
+describe("buildRestoreAddItemBody — provenance du véhicule (mandat CK)", () => {
+  it("rejoue la provenance avec le véhicule", () => {
+    expect(
+      buildRestoreAddItemBody({
+        product_id: 1,
+        quantity: 1,
+        type_id: 9045,
+        vehicle_source: "selected_vehicle",
+      }),
+    ).toEqual({
+      product_id: 1,
+      quantity: 1,
+      type_id: 9045,
+      vehicle_source: "selected_vehicle",
+    });
+  });
+
+  it("n'envoie pas de provenance sans véhicule", () => {
+    expect(
+      buildRestoreAddItemBody({
+        product_id: 1,
+        quantity: 1,
+        vehicle_source: "page",
+      }),
+    ).not.toHaveProperty("vehicle_source");
+  });
+});

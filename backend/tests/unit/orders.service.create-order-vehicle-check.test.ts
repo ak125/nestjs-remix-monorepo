@@ -129,7 +129,8 @@ describe('buildOrderVehicleCheck (pur)', () => {
       buildOrderVehicleCheck({ customerReference: null }, [
         null,
         undefined,
-        '',
+        { type_id: '' },
+        { productId: '1', type_id: null },
       ]),
     ).toBeNull();
   });
@@ -145,6 +146,7 @@ describe('buildOrderVehicleCheck (pur)', () => {
       customer_reference: 'AB-123-CD',
       purchase_vehicle: null,
       line_type_ids: [],
+      lines: [],
       captured_at: '2026-11-17T18:00:00.000Z',
     });
   });
@@ -160,7 +162,12 @@ describe('buildOrderVehicleCheck (pur)', () => {
           engine: '1.5 dCi',
         },
       },
-      [18376, '18376', 9045, null],
+      [
+        { type_id: 18376 },
+        { type_id: '18376' },
+        { type_id: 9045 },
+        { type_id: null },
+      ],
       NOW,
     );
     expect(v?.customer_reference).toBeNull();
@@ -171,6 +178,35 @@ describe('buildOrderVehicleCheck (pur)', () => {
       engine: '1.5 dCi',
       source: 'vehicle_context',
     });
+    expect(v?.line_type_ids).toEqual([9045, 18376]);
+  });
+
+  it('garde le véhicule de chaque ligne, sa provenance et son rang (mandat CK)', () => {
+    const v = buildOrderVehicleCheck(
+      { customerReference: '' },
+      [
+        { productId: '1946026', type_id: 18376, vehicle_source: 'page' },
+        { productId: 77, type_id: '9045', vehicle_source: 'selected_vehicle' },
+        { productId: '5', type_id: null },
+        // client antérieur à CK : type_id sans provenance = page véhicule
+        { productId: '6', type_id: 18376 },
+        // provenance inconnue : ramenée à « page », jamais inventée autrement
+        { productId: '7', type_id: 18376, vehicle_source: 'devine' },
+      ],
+      NOW,
+    );
+    expect(v?.lines).toEqual([
+      { position: 1, product_id: '1946026', type_id: 18376, source: 'page' },
+      {
+        position: 2,
+        product_id: '77',
+        type_id: 9045,
+        source: 'selected_vehicle',
+      },
+      { position: 3, product_id: '5', type_id: null, source: null },
+      { position: 4, product_id: '6', type_id: 18376, source: 'page' },
+      { position: 5, product_id: '7', type_id: 18376, source: 'page' },
+    ]);
     expect(v?.line_type_ids).toEqual([9045, 18376]);
   });
 
@@ -246,6 +282,28 @@ describe('OrdersService.createOrder — ord_vehicle_check (mandat BN)', () => {
     expect(stored.customer_reference).toBe('VF1BB05CF12345678');
     expect(stored.purchase_vehicle.type_id).toBe(18376);
     expect(stored.version).toBe(1);
+  });
+
+  it('véhicule de chaque ligne transmis dans p_order, champ vide accepté (mandat CK)', async () => {
+    const { service, callRpc } = makeService();
+    const data = orderData({ vehicleCheck: { customerReference: '' } });
+    data.orderLines = data.orderLines.map((l) => ({
+      ...l,
+      type_id: 9045,
+      vehicle_source: 'selected_vehicle',
+    }));
+    await runCreate(service, data);
+    expect(callRpc).toHaveBeenCalledTimes(1);
+    const [, payload] = callRpc.mock.calls[0];
+    const stored = JSON.parse(
+      JSON.stringify(payload.p_order.ord_vehicle_check),
+    );
+    expect(stored.customer_reference).toBeNull();
+    expect(stored.lines[0]).toMatchObject({
+      position: 1,
+      type_id: 9045,
+      source: 'selected_vehicle',
+    });
   });
 
   it('valeur invalide refusée avant toute écriture', async () => {

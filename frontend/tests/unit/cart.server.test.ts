@@ -157,3 +157,44 @@ describe("cartServerService.getCart — attribution website_url (orl_website_url
     expect(lines[0].website_url).toBe("/pieces/filtre-a-huile-7.html");
   });
 });
+
+describe("cartServerService.getCart — véhicule de la ligne (mandat CK)", () => {
+  it("conserve type_id et sa provenance jusqu'aux lignes de commande", async () => {
+    const backend = {
+      user_id: "usr_1",
+      items: [
+        {
+          id: "i1",
+          product_id: "123",
+          quantity: 1,
+          price: 10,
+          type_id: 9045,
+          vehicle_source: "selected_vehicle",
+          website_url: "/recherche?q=filtre",
+        },
+        { id: "i2", product_id: "456", quantity: 1, price: 5 },
+      ],
+      totals: { total_items: 2, total: 15, subtotal: 15 },
+      metadata: {},
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify(backend), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    const cart = await getCart(makeRequest());
+    const lines = buildOrderLines(cart.items);
+    expect(lines[0]).toMatchObject({
+      type_id: 9045,
+      vehicle_source: "selected_vehicle",
+      website_url: "/recherche?q=filtre",
+    });
+    expect(lines[1].type_id).toBeUndefined();
+    expect(lines[1].vehicle_source).toBeUndefined();
+  });
+});

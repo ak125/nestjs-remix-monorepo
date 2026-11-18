@@ -45,6 +45,9 @@ export const AddItemSchema = z
     // F1 attribution : URL/chemin de la page d'où l'article a été ajouté au panier
     // (source d'ajout par-ligne). Threadé jusqu'à ___xtr_order_line.orl_website_url.
     website_url: z.string().trim().max(2048).optional(),
+    // Mandat CK : provenance du type_id. 'page' = véhicule de la page d'ajout ;
+    // 'selected_vehicle' = véhicule choisi par le client, la page n'en portant pas.
+    vehicle_source: z.enum(['page', 'selected_vehicle']).optional(),
   })
   .refine((data) => data.productId || data.product_id, {
     message: "Il faut fournir soit 'productId' soit 'product_id'",

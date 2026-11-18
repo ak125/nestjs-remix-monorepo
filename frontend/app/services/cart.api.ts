@@ -152,6 +152,7 @@ export const cartApi = {
     quantity: number = 1,
     typeId?: number,
     sourceUrl?: string, // F1 attribution : page d'où l'article est ajouté → orl_website_url
+    vehicleSource?: "page" | "selected_vehicle", // Mandat CK : provenance de typeId
   ): Promise<AddItemResponse> {
     try {
       logger.log("➕ [cartApi.addItem]", { productId, quantity, typeId });
@@ -164,6 +165,7 @@ export const cartApi = {
           quantity,
           ...(typeId && { type_id: typeId }),
           ...(sourceUrl && { website_url: sourceUrl }),
+          ...(typeId && vehicleSource && { vehicle_source: vehicleSource }),
         }),
       });
 

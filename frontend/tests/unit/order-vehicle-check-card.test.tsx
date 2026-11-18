@@ -2,7 +2,9 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import {
+  OrderLineVehicle,
   OrderVehicleCheckCard,
+  orderLinePosition,
   readOrderVehicleCheck,
 } from "~/components/orders/OrderVehicleCheckCard";
 
@@ -33,6 +35,7 @@ describe("readOrderVehicleCheck", () => {
       customerReference: "AB-123-CD",
       purchaseVehicle: { typeId: 33300, label: "Renault Clio III 1.5 dCi" },
       lineTypeIds: [33300],
+      lines: [],
       capturedAt: "2026-11-17T18:00:00.000Z",
     };
     expect(readOrderVehicleCheck(stored)).toEqual(expected);
@@ -68,5 +71,84 @@ describe("OrderVehicleCheckCard", () => {
     expect(
       screen.getByText(/Aucune immatriculation, VIN ou référence fournie/),
     ).toBeTruthy();
+  });
+});
+
+/** Mandat CK — véhicule de chaque ligne, sous le produit. */
+describe("OrderLineVehicle", () => {
+  const withLines = {
+    ...stored,
+    lines: [
+      { position: 1, product_id: "1", type_id: 33300, source: "page" },
+      {
+        position: 2,
+        product_id: "2",
+        type_id: 9045,
+        source: "selected_vehicle",
+      },
+      { position: 3, product_id: "3", type_id: null, source: null },
+    ],
+  };
+
+  it("rang de ligne lu depuis orl_id", () => {
+    expect(orderLinePosition("ORD-1763-L001")).toBe(1);
+    expect(orderLinePosition("ORD-1763-L012")).toBe(12);
+    expect(orderLinePosition("12345")).toBeNull();
+    expect(orderLinePosition(null)).toBeNull();
+  });
+
+  it("ligne ajoutée depuis la page véhicule : véhicule, provenance et page", () => {
+    render(
+      <OrderLineVehicle
+        vehicleCheck={withLines}
+        lineId="ORD-1-L001"
+        websiteUrl="/pieces/disque-de-frein-82/renault-140/clio-iii-140004/1-5-dci-33300.html"
+      />,
+    );
+    expect(screen.getByText(/Renault Clio III 1\.5 dCi/)).toBeTruthy();
+    expect(screen.getByText(/véhicule de la page d'ajout/)).toBeTruthy();
+    const link = screen.getByRole("link");
+    expect(link.getAttribute("href")).toBe(
+      "/pieces/disque-de-frein-82/renault-140/clio-iii-140004/1-5-dci-33300.html",
+    );
+  });
+
+  it("ligne ajoutée hors page véhicule : véhicule choisi par le client", () => {
+    render(
+      <OrderLineVehicle
+        vehicleCheck={withLines}
+        lineId="ORD-1-L002"
+        websiteUrl="/recherche?q=disque"
+      />,
+    );
+    expect(screen.getByText(/type_id 9045/)).toBeTruthy();
+    expect(screen.getByText(/véhicule choisi par le client/)).toBeTruthy();
+  });
+
+  it("ligne sans véhicule, ou commande antérieure : la ligne le dit", () => {
+    const { unmount } = render(
+      <OrderLineVehicle vehicleCheck={withLines} lineId="ORD-1-L003" />,
+    );
+    expect(
+      screen.getByText("Aucun véhicule connu pour cette ligne"),
+    ).toBeTruthy();
+    unmount();
+    render(<OrderLineVehicle vehicleCheck={null} lineId="ORD-1-L001" />);
+    expect(
+      screen.getByText("Aucun véhicule connu pour cette ligne"),
+    ).toBeTruthy();
+  });
+
+  it("page d'ajout hors site : affichée en texte, jamais en lien", () => {
+    render(
+      <OrderLineVehicle
+        vehicleCheck={withLines}
+        lineId="ORD-1-L001"
+        // eslint-disable-next-line no-script-url -- valeur hostile testée : jamais rendue en lien
+        websiteUrl="javascript:alert(1)"
+      />,
+    );
+    expect(screen.queryByRole("link")).toBeNull();
+    expect(screen.getByText(/javascript:alert\(1\)/)).toBeTruthy();
   });
 });
