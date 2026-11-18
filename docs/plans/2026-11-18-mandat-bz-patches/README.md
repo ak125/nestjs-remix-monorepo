@@ -55,11 +55,34 @@ Limite connue : si l'heure du rapport est configurée hors de 7 h-10 h (`REPORT_
 quotidien n'a pas les dépendances et l'indicateur est « non mesuré ». La fenêtre se règle dans
 l'étape `window` de 02.
 
+## 03 — construction des paquets internes du backend (complément BZ-3)
+
+`03-workflow-construction-paquets-backend.patch`
+
+SHA-256 : `89a45464e798a82220bc07dc828fef30ef5ca65554737c5473cb74eb625a0ea2`
+
+Cause établie (run 44308306591, reproduite sur un worktree propre après `npm ci --ignore-scripts`,
+Node 24) : le lecteur sortait en erreur au chargement, avant son `try`, sur
+`Error: Cannot find module '…/node_modules/@repo/database-types/dist/index.js'`
+(`code: 'MODULE_NOT_FOUND'`). Le service importe `@repo/database-types` et `@repo/domain-commerce`,
+puis, par la chaîne d'imports du backend, d'autres paquets `@repo/*`, tous servis par leur `dist/`,
+que `npm ci --ignore-scripts` ne construit pas.
+
+- `.github/workflows/morning-health-digest.yml` : après l'installation, même condition
+  (`steps.window.outputs.deps == '1'`) et `continue-on-error`, étape
+  `npx --no-install turbo run build --filter='@fafa/backend^...' --filter='!@fafa/frontend'` :
+  les 9 dépendances de construction du backend, sans le frontend ni le backend (3 s sans cache
+  sur le DEV) ; commentaire d'en-tête complété.
+
+Sans 03, le lecteur corrigé (PR du complément BZ-3) ne sort plus en erreur : il écrit
+« chargement du producteur en échec (Error MODULE_NOT_FOUND @repo/database-types) » dans la
+section et dans le journal du job.
+
 ## Appliquer, vérifier, revenir en arrière
 
 ```bash
-git apply docs/plans/2026-11-18-mandat-bz-patches/01-rapport-du-matin-seuils-et-wired.patch
-git apply docs/plans/2026-11-18-mandat-bz-patches/02-workflow-dependances-et-test-ci.patch
+# 01 et 02 : appliqués par b201479 (fusionnés par #2165)
+git apply docs/plans/2026-11-18-mandat-bz-patches/03-workflow-construction-paquets-backend.patch
 node scripts/governance/validate-agent-operating-map.js --contracts
 bash scripts/governance/registry-thresholds.test.sh
 ```
