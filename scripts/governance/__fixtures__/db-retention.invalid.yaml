@@ -1,0 +1,34 @@
+# Fixture FAUSSE pour validate-db-retention.js --self-test. Ne pas corriger.
+# Attendu : SCHEMA (fixé sans décideur, action inconnue), FAMILY_DUP,
+# PROTECTED_MISSING, PARTITION_RULE (aucune règle de partition),
+# FAMILY_UNKNOWN (familles de l'inventaire non déclarées).
+schema_version: 1
+title: Règles fausses
+inventory: audit/massdoc-table-inventory-2026-11-18.json
+status: fixé
+decided_by: null
+decided_on: null
+archive_target_schema: _archive
+protected:
+  - pattern: "^autre_table"
+    reason: protection sans rapport avec les images
+families:
+  - id: journal
+    label: Journal
+    match: _log
+    proposed_retention_days: 90
+    after_retention: effacer_tout
+    rule: purge au bout de 90 jours
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - id: journal
+    label: Journal en double
+    match: _log
+    proposed_retention_days: 30
+    after_retention: purger_lignes
+    rule: purge au bout de 30 jours
+    status: fixé
+    decided_by: null
+    decided_on: null
+partitions: []

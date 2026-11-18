@@ -1,0 +1,232 @@
+# Règles de conservation des tables de la base massdoc (mandat CA, étape 1, 2026-11-18).
+#
+# STATUT : PROPOSÉ. Aucune durée n'est en service du fait de ce fichier.
+# Les durées (30 j, 90 j…) sont des propositions : Marwane les fixe.
+# Une règle passe à « fixé » seulement avec decided_by et decided_on renseignés.
+# Ce fichier ne change aucun cron, aucune rétention en service, aucune table.
+#
+# Contrôle : node scripts/governance/validate-db-retention.js (et --self-test).
+# Inventaire mesuré : audit/massdoc-table-inventory-2026-11-18.json (L0, daté).
+schema_version: 1
+title: Règles de conservation des tables de massdoc
+database: massdoc (Supabase cxpojprgwgubzjyqzmoq, schéma public)
+owner_departments: ["22 data", "21 runtime"]
+inventory: audit/massdoc-table-inventory-2026-11-18.json
+status: proposé
+decided_by: null
+decided_on: null
+
+# Ce qui sort de la base va dans _archive (ALTER TABLE … SET SCHEMA), jamais un DROP
+# sans décision écrite. Chaque lot passe par la migration manuelle, essai à blanc d'abord.
+archive_target_schema: _archive
+
+protected:
+  - pattern: "^pieces_media_img"
+    reason: >-
+      Zone interdite : images du catalogue et sauvegardes datées de l'incident de 2026.
+      Jamais candidate à l'archivage, quelle que soit sa classe.
+
+families:
+  - id: copie_ponctuelle
+    label: Copie datée ou sauvegarde ponctuelle
+    match: nom daté (_AAAAMMJJ), backup, _old, _copy, _snapshot_<date>
+    proposed_retention_days: 90
+    after_retention: archiver
+    rule: >-
+      Une copie faite pour un chantier se garde 90 jours après sa date, puis passe dans _archive.
+      Les tables protégées restent en place.
+    status: proposé
+    decided_by: null
+    decided_on: null
+
+  - id: partition_instantane
+    label: Table partitionnée par date (instantanés, séries)
+    match: table partitionnée (relkind p)
+    proposed_retention_days: null
+    after_retention: supprimer_tranche
+    rule: >-
+      La durée se règle table par table, dans la section partitions ci-dessous.
+      Une tranche supprimée par la rotation est perdue : la durée doit être fixée avant
+      d'ajouter une suppression là où il n'y en a pas.
+    status: proposé
+    decided_by: null
+    decided_on: null
+
+  - id: journal
+    label: Journal, historique, file ou trace d'exécution
+    match: suffixe _log(s), _history, _events, _runs, _audit, _ledger, _queue, _alerts…
+    proposed_retention_days: 90
+    after_retention: purger_lignes
+    rule: >-
+      Les lignes de plus de 90 jours sont purgées par un cron, comme __error_logs (30 j, cron#11)
+      et __soft_404_events (90 j, cron#31). Un journal jamais écrit et sans lecteur suit la règle
+      des tables mortes.
+    status: proposé
+    decided_by: null
+    decided_on: null
+
+  - id: import_staging
+    label: Import, préparation, correspondance d'identifiants
+    match: stg_, norm_, xref_, decision_, natural_key_, __import_, import_batch, __quarantine_…
+    proposed_retention_days: 30
+    after_retention: purger_lignes
+    rule: >-
+      Les lignes d'un lot d'import terminé se gardent 30 jours, puis sont purgées.
+      Une table d'import sans lot depuis 90 jours est à trancher.
+    status: proposé
+    decided_by: null
+    decided_on: null
+
+  - id: cache_projection
+    label: Cache, agrégat ou projection recalculable
+    match: suffixe _cache, _mv, _agg, _stats, _scores, _daily, _metrics, _baseline ; __sitemap*
+    proposed_retention_days: null
+    after_retention: aucune
+    rule: >-
+      Recalculable depuis sa source : pas de durée. Une projection qui n'est plus recalculée
+      depuis 90 jours est à trancher.
+    status: proposé
+    decided_by: null
+    decided_on: null
+
+  - id: ancien_site
+    label: Tables de l'ancien site (préfixe ___)
+    match: préfixe ___
+    proposed_retention_days: null
+    after_retention: aucune
+    rule: >-
+      Commandes, factures, clients et configuration de l'ancien site : obligations légales
+      et comptables possibles. Aucune durée ni archivage sans avis du département 18 (legal)
+      et 17 (finance).
+    status: proposé
+    decided_by: null
+    decided_on: null
+
+  - id: referentiel_metier
+    label: Référentiel ou donnée métier
+    match: toute autre table
+    proposed_retention_days: null
+    after_retention: aucune
+    rule: >-
+      Pas de durée : la donnée vit tant que le métier s'en sert. Une table morte (ni écrite,
+      ni lue, sans dépendance SQL ni code) devient candidate à l'archivage, par lot.
+    status: proposé
+    decided_by: null
+    decided_on: null
+
+# Tables partitionnées : rétention en service (mesurée le 2026-11-18) et proposition.
+# Rien n'est changé en base par ce fichier.
+partitions:
+  - parent: __seo_snapshot_cf_rum
+    in_service: { function: maintain_snapshot_partitions, cron: 15, lookahead: 14 jours, drop_after_days: 90 }
+    proposed_drop_after_days: 90
+    note: 105 tranches, toutes vides ; collecteur derrière SEO_CP_CF_RUM_ENABLED (faux par défaut). Décision ouverte depuis le lot D.
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_snapshot_synthetic
+    in_service: { function: maintain_snapshot_partitions, cron: 15, lookahead: 14 jours, drop_after_days: 90 }
+    proposed_drop_after_days: 90
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_cwv_raw
+    in_service: { function: maintain_cwv_raw_partitions, cron: 18, lookahead: 3 jours, drop_after_days: 2 }
+    proposed_drop_after_days: 2
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_cwv_hourly
+    in_service: { function: maintain_cwv_hourly_partitions, cron: 19, lookahead: 3 jours, drop_after_days: 14 }
+    proposed_drop_after_days: 14
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_cwv_daily_rum
+    in_service: { function: maintain_cwv_daily_rum_partitions, cron: 20, lookahead: 3 mois, drop_after_days: 365 }
+    proposed_drop_after_days: 365
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_cwv_daily
+    in_service: { function: maintain_observability_partitions, cron: 16, lookahead: 3 mois, drop_after_days: 548 }
+    proposed_drop_after_days: 548
+    note: 11 tranches, toutes vides ; écrivain cwv-fetcher.service.ts présent.
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_ga4_daily
+    in_service: { function: maintain_observability_partitions, cron: 16, lookahead: 3 mois, drop_after_days: 548 }
+    proposed_drop_after_days: 548
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_gsc_daily
+    in_service: { function: maintain_observability_partitions, cron: 16, lookahead: 3 mois, drop_after_days: 548 }
+    proposed_drop_after_days: 548
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_gsc_daily_pages
+    in_service: { function: __seo_ensure_monthly_partitions, cron: 22, lookahead: 3 mois, drop_after_days: null }
+    proposed_drop_after_days: 548
+    note: aucune suppression en service ; proposition alignée sur __seo_gsc_daily.
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_gsc_daily_page_totals
+    in_service: { function: __seo_ensure_monthly_partitions, cron: 22, lookahead: 3 mois, drop_after_days: null }
+    proposed_drop_after_days: 548
+    note: aucune suppression en service.
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_gsc_daily_property_total
+    in_service: { function: __seo_ensure_monthly_partitions, cron: 22, lookahead: 3 mois, drop_after_days: null }
+    proposed_drop_after_days: 548
+    note: aucune suppression en service.
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_gsc_daily_totals
+    in_service: { function: __seo_ensure_monthly_partitions, cron: 22, lookahead: 3 mois, drop_after_days: null }
+    proposed_drop_after_days: 548
+    note: aucune suppression en service.
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: __seo_quality_history
+    in_service: { function: ensure_next_quality_history_partition, cron: 17, lookahead: null, drop_after_days: null }
+    proposed_drop_after_days: null
+    note: historique de qualité SEO ; garder tout tant que la durée n'est pas fixée.
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: pieces_price_history
+    in_service: { function: maintain_pieces_price_history_partitions, cron: 24, lookahead: null, drop_after_days: null }
+    proposed_drop_after_days: null
+    note: historique de prix (zone prix, STOP) ; aucune suppression proposée, avis du département 16 requis.
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: pricing_decision_snapshot
+    in_service: { function: maintain_pricing_decision_snapshot_partitions, cron: 25, lookahead: null, drop_after_days: null }
+    proposed_drop_after_days: null
+    note: 9 tranches vides, aucun écrivain dans le code ; à trancher (inventaire §7).
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: supplier_offer_snapshot
+    in_service: { function: maintain_supplier_offer_snapshot_partitions, cron: 26, lookahead: null, drop_after_days: null }
+    proposed_drop_after_days: null
+    note: 9 tranches vides ; à trancher (inventaire §7).
+    status: proposé
+    decided_by: null
+    decided_on: null
+  - parent: rm_listing_products
+    in_service: { function: null, cron: null, lookahead: null, drop_after_days: null }
+    proposed_drop_after_days: null
+    note: partitions par liste (gamme), 7 tranches vides, ensure_rm_partition jamais appelée ; à trancher.
+    status: proposé
+    decided_by: null
+    decided_on: null

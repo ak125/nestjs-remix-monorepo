@@ -1,0 +1,83 @@
+{
+ "schema_version": 1,
+ "title": "Inventaire FAUX pour validate-db-retention.js --self-test (ne pas corriger)",
+ "totals": {
+  "tables_counted": 5,
+  "plain_tables": 3,
+  "partitioned_parents": 2,
+  "partition_slices_not_counted": 10,
+  "by_class": {
+   "vivante": 3,
+   "prevue": 0,
+   "copie_datee": 0,
+   "morte": 1,
+   "a_trancher": 0
+  }
+ },
+ "tables": [
+  {
+   "name": "ref_a",
+   "kind": "table",
+   "class": "vivante",
+   "family": "referentiel_metier"
+  },
+  {
+   "name": "pieces_media_img_bak_20260601",
+   "kind": "table",
+   "class": "copie_datee",
+   "family": "copie_ponctuelle"
+  },
+  {
+   "name": "live_tbl",
+   "kind": "table",
+   "class": "vivante",
+   "family": "famille_inventee"
+  },
+  {
+   "name": "__seo_cwv_raw",
+   "kind": "partitionnée (parent)",
+   "class": "vivante",
+   "family": "partition_instantane"
+  },
+  {
+   "name": "__seo_cwv_raw",
+   "kind": "partitionnée (parent)",
+   "class": "vivante",
+   "family": "partition_instantane"
+  },
+  {
+   "name": "__seo_cwv_raw_p20261118",
+   "kind": "table",
+   "class": "vivante",
+   "family": "journal"
+  }
+ ],
+ "partitions": [
+  {
+   "parent": "__seo_cwv_raw",
+   "slices": 6,
+   "empty_slices": 3,
+   "future_slices": 3
+  },
+  {
+   "parent": "__seo_cwv_raw",
+   "slices": 6,
+   "empty_slices": 3,
+   "future_slices": 3
+  },
+  {
+   "parent": "table_sans_regle",
+   "slices": 2,
+   "empty_slices": 5,
+   "future_slices": 0
+  }
+ ],
+ "archive_candidates": [
+  {
+   "name": "pieces_media_img_bak_20260601"
+  },
+  {
+   "name": "live_tbl"
+  }
+ ]
+}
