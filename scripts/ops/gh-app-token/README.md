@@ -9,7 +9,7 @@ ensuite selon la procédure ci-dessous. Droits demandés : ADR-130 D3.4 (vault),
 | `automecanik-gh-app-token` | `/usr/local/libexec/automecanik-gh-app-token` | `root:root 0755` | Délivreur : signe un JWT avec la clé de l'App, demande un jeton limité à `REPOS` et `PERMS`, refuse toute réponse qui n'est pas exactement ce périmètre. Exécuté sous `automecanik-ghapp`, seul lecteur de la clé. |
 | `automecanik-gh-app-token-refresh` | `/home/deploy/.local/libexec/automecanik-gh-app-token-refresh` | `deploy:deploy 0700` | Wrapper : appelle le délivreur par sudo, réécrit `~/.config/gh/hosts.yml` (0600), enregistre le résultat par `cron_report`. |
 | `automecanik-gh-app-token-refresh.service` | `/home/deploy/.config/systemd/user/` | `deploy:deploy 0644` | Unit utilisateur `oneshot` qui lance le wrapper. |
-| `automecanik-gh-app-token-refresh.timer` | `/home/deploy/.config/systemd/user/` | `deploy:deploy 0644` | Relance toutes les 20 min (jeton valable 1 h). |
+| `automecanik-gh-app-token-refresh.timer` | `/home/deploy/.config/systemd/user/` | `deploy:deploy 0644` | Relance 30 s après le démarrage du gestionnaire utilisateur (`OnStartupSec=`), puis toutes les 20 min (jeton valable 1 h). Jamais `OnBootSec=` : compté depuis le boot de la machine, il n'a pas relancé le minuteur après la relance du gestionnaire du 18 nov. 2026 (jeton expiré de 17:07 à 17:57 UTC). |
 
 Restent hors du dépôt et lus à leur emplacement, jamais copiés ni affichés :
 
@@ -38,11 +38,15 @@ Restent hors du dépôt et lus à leur emplacement, jamais copiés ni affichés 
 ```bash
 cd /opt/automecanik/app
 bash scripts/ops/gh-app-token/gh-app-token.test.sh          # sans réseau, ni sudo, ni installation
-bash scripts/ops/gh-app-token/controle-installation.sh       # empreintes source / installé, lecture seule
+bash scripts/ops/gh-app-token/controle-installation.sh       # empreintes source / installé + fraîcheur, lecture seule
 ```
 
 Le test échoue si `PERMS` gagne `workflows` ou tout droit au-delà des six attendus, si l'égalité
-stricte des droits reçus disparaît, ou si le wrapper perd la cause d'un échec.
+stricte des droits reçus disparaît, si le wrapper perd la cause d'un échec, ou si le minuteur perd
+`OnStartupSec=` ou reprend `OnBootSec=`.
+
+Le contrôle d'installation sort en erreur avec une ligne `ALERTE   minuteur : …` si le dernier
+déclenchement du minuteur (`LastTriggerUSec`) date de plus de 25 min, ou s'il n'y en a aucun.
 
 ## Installer ou mettre à jour depuis la source
 
@@ -77,6 +81,29 @@ bash "$S/controle-installation.sh"                 # attendu : 4 « identique »
 ```
 
 Une sauvegarde `….avant-<date>` est laissée en place à chaque étape ; la retirer après recette.
+
+### Minuteur seul (après fusion du passage à `OnStartupSec=`)
+
+Utilisateur `deploy`, sans sudo, depuis le checkout servi à jour sur `main`. Décision d'installer :
+Marwane.
+
+```bash
+cd /opt/automecanik/app
+S=scripts/ops/gh-app-token
+bash "$S/gh-app-token.test.sh"                     # attendu : tous « ok », code 0
+cp -p ~/.config/systemd/user/automecanik-gh-app-token-refresh.timer ~/.config/systemd/user/automecanik-gh-app-token-refresh.timer.avant-"$(date -u +%Y%m%d)"
+install -m 0644 "$S/automecanik-gh-app-token-refresh.timer" ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user restart automecanik-gh-app-token-refresh.timer
+systemctl --user show automecanik-gh-app-token-refresh.timer -p TimersMonotonic -p LastTriggerUSec
+bash "$S/controle-installation.sh"                 # attendu : 4 « identique », fraîcheur < 25 min, code 0
+```
+
+Le gestionnaire ayant démarré il y a plus de 30 s, le `restart` déclenche aussitôt un
+renouvellement (systemd.timer(5) : un `OnStartupSec=` déjà passé à l'activation expire tout de
+suite). Retour arrière : réinstaller la copie `….timer.avant-<date>`, puis `daemon-reload` et
+`restart` du minuteur. Le fichier `~/.local/share/systemd/timers/stamp-automecanik-gh-app-token-refresh.timer`,
+écrit tant que `Persistent=true` était présent, peut rester ; il ne contient aucun secret.
 
 **Retour arrière** : réinstaller la sauvegarde au même emplacement, avec les mêmes propriétaires et
 modes (`sudo install -o root -g root -m 0755 /usr/local/libexec/automecanik-gh-app-token.avant-$J
