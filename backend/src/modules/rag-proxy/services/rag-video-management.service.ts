@@ -16,6 +16,7 @@ import {
   createReadStream,
   mkdirSync,
   renameSync,
+  realpathSync,
 } from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -26,6 +27,14 @@ import type { Response } from 'express';
 const execFileAsync = promisify(execFile);
 
 const VIDEO_EXTS = new Set(['.mp4', '.webm', '.mkv', '.mov', '.m4v']);
+
+/**
+ * Nom d'un fichier vidéo servi : empreinte SHA-256 du contenu (64 caractères
+ * hexadécimaux en minuscules) suivie de l'extension. C'est le nom qu'écrit
+ * `ingestVideoUrl` (`${sha256}${ext}`) ; l'extension doit en plus appartenir
+ * à `VIDEO_EXTS`, la liste que sert `listVideos`.
+ */
+const VIDEO_FILE_NAME = /^[a-f0-9]{64}(\.[a-z0-9]+)$/;
 
 export interface VideoMeta {
   hash: string;
@@ -126,15 +135,41 @@ export class RagVideoManagementService {
   }
 
   /**
+   * Chemin réel d'un fichier vidéo servi, ou `null` si le nom n'a pas le
+   * format attendu, si le fichier n'existe pas, n'est pas un fichier
+   * ordinaire, ou si son chemin réel (liens symboliques suivis) n'est pas
+   * dans le répertoire des vidéos.
+   */
+  private resolveVideoFile(fileName: string): string | null {
+    if (typeof fileName !== 'string') return null;
+    const match = VIDEO_FILE_NAME.exec(fileName);
+    if (!match || !VIDEO_EXTS.has(match[1])) return null;
+
+    const dir = path.resolve(this.videoDir);
+    const candidate = path.resolve(dir, fileName);
+    if (path.dirname(candidate) !== dir) return null;
+
+    try {
+      const realDir = realpathSync(dir);
+      const realFile = realpathSync(candidate);
+      if (!realFile.startsWith(realDir + path.sep)) return null;
+      if (!statSync(realFile).isFile()) return null;
+      return realFile;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Stream a video file to the HTTP response.
    * Supports Range requests for seeking.
+   * Tout nom refusé ou introuvable donne la même réponse 404.
    */
   streamVideo(hashWithExt: string, res: Response): void {
-    const dir = this.videoDir;
-    const filePath = path.join(dir, hashWithExt);
+    const filePath = this.resolveVideoFile(hashWithExt);
 
-    if (!existsSync(filePath)) {
-      throw new NotFoundException(`Video not found: ${hashWithExt}`);
+    if (!filePath) {
+      throw new NotFoundException('Video not found');
     }
 
     const stat = statSync(filePath);
