@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 587,
-      "loc_total": 111395,
+      "loc_total": 111389,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -355,8 +355,8 @@
         "backend/src/modules/gamme-rest/utils",
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
-      "files_count": 20,
-      "loc_total": 6589,
+      "files_count": 21,
+      "loc_total": 6747,
       "has_barrel": true
     },
     "health": {
@@ -665,7 +665,7 @@
         "backend/src/modules/rag-proxy/types"
       ],
       "files_count": 34,
-      "loc_total": 12017,
+      "loc_total": 12052,
       "has_barrel": false
     },
     "scripts": {
@@ -769,8 +769,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 289,
-      "loc_total": 62457,
+      "files_count": 290,
+      "loc_total": 62777,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -963,8 +963,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 388,
-      "loc_total": 80559,
+      "files_count": 389,
+      "loc_total": 80809,
       "has_barrel": true
     },
     "upload": {
@@ -1785,7 +1785,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 12
+      "count": 13
     },
     {
       "from": "health",
