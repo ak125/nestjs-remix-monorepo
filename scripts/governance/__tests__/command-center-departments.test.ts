@@ -34,7 +34,7 @@ const profiles = readFileSync("audit/automecanik-departments-map.md", "utf8");
 const skills = JSON.parse(
   readFileSync(".spec/00-canon/ai-registry/skills.registry.json", "utf8"),
 );
-test("24 responsibilities preserve baseline fields except the approved People and 2026-11-04 deltas", () => {
+test("24 responsibilities preserve baseline fields except the approved People, 2026-11-04 and BX-2 deltas", () => {
   assert.equal(canon.departments.length, 24);
   assert.deepEqual(
     canon.departments
@@ -58,6 +58,9 @@ test("24 responsibilities preserve baseline fields except the approved People an
         continue;
       if (old.id === "diagnostic" && ["label", "kpi_primary"].includes(key))
         continue;
+      // Complément BX-2 (2026-11-18) : une capacité, un propriétaire. vehicle-ops
+      // reste à catalog (propriétaire proposé, frontière à trancher par Marwane).
+      if (old.id === "diagnostic" && key === "capabilities") continue;
       assert.deepEqual(next[key], old[key], `${old.id}.${key}`);
     }
   }
@@ -70,6 +73,15 @@ test("24 responsibilities preserve baseline fields except the approved People an
   assert.equal(expertise.business_number, 11);
   assert.equal(expertise.label, "Expertise technique automobile");
   assert.equal(expertise.kpi_primary, undefined);
+  assert.deepEqual(expertise.capabilities, [
+    "diagnostic-engine",
+    "knowledge-graph",
+  ]);
+  assert.ok(
+    canon.departments
+      .find((d: any) => d.id === "catalog")
+      .capabilities.includes("vehicle-ops"),
+  );
   const product = canon.departments.find((d: any) => d.id === "product");
   assert.equal(product.business_number, 20);
   assert.equal(product.operating_mode, "human");
@@ -93,8 +105,9 @@ test("generated counts and unknown human scores preserve technical evidence", ()
   assert.equal(s.summary.departments_total, 24);
   assert.equal(s.summary.by_state.dormant, 5);
   assert.deepEqual(s.summary.by_priority, { P0: 8, P1: 7, P2: 2, P3: 3 });
-  assert.equal(s.capabilities.length, 41);
-  assert.equal(s.summary.capabilities_certified, 22);
+  // 40 : vehicle-ops n'est plus déclaré deux fois (catalog seul propriétaire, BX-2).
+  assert.equal(s.capabilities.length, 40);
+  assert.equal(s.summary.capabilities_certified, 21);
   assert.equal(s.summary.capabilities_without_evidence, 4);
   assert.equal(s.chains.length, 10);
   assert.equal(s.summary.handoffs_incomplete, 9);
