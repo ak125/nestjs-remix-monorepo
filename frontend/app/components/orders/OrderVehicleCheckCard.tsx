@@ -199,6 +199,29 @@ export function OrderVehicleCheckCard({ vehicleCheck }: Props) {
   );
 }
 
+const LINK_BASE = "https://page-ajout.invalid";
+
+/**
+ * La page d'ajout est fournie par le navigateur du client : elle ne devient un
+ * lien que si elle reste sur le site une fois analysée comme une URL (ce qui
+ * écarte `javascript:`, `//hôte` et `/\hôte`). Le lien rendu est le chemin
+ * normalisé ; sinon null et la valeur est affichée en texte brut.
+ */
+export function internalPathHref(raw: string | null): string | null {
+  // eslint-disable-next-line no-control-regex -- refus voulu des caractères de contrôle
+  if (!raw || !raw.startsWith("/") || /[\\\u0000-\u001f]/.test(raw)) {
+    return null;
+  }
+  try {
+    const parsed = new URL(raw, LINK_BASE);
+    return parsed.origin === LINK_BASE
+      ? parsed.pathname + parsed.search + parsed.hash
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 interface LineProps {
   /** `order.ord_vehicle_check` tel que renvoyé par l'API. */
   vehicleCheck: unknown;
@@ -231,9 +254,7 @@ export function OrderLineVehicle({
       ? view.purchaseVehicle.label
       : null;
   const url = asText(websiteUrl);
-  // La page d'ajout est fournie par le navigateur du client : lien seulement
-  // pour un chemin interne (« /… »), sinon texte brut (pas de javascript:, etc.).
-  const isInternalPath = !!url && url.startsWith("/") && !url.startsWith("//");
+  const internalHref = internalPathHref(url);
 
   return (
     <div className="mt-1 space-y-0.5 text-xs font-normal">
@@ -251,12 +272,12 @@ export function OrderLineVehicle({
       ) : (
         <p className="text-amber-700">Aucun véhicule connu pour cette ligne</p>
       )}
-      {url && !isInternalPath && (
+      {url && !internalHref && (
         <p className="break-all text-slate-500">Page d&apos;ajout : {url}</p>
       )}
-      {url && isInternalPath && (
+      {url && internalHref && (
         <a
-          href={url}
+          href={internalHref}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 break-all text-slate-500 underline hover:text-slate-700"

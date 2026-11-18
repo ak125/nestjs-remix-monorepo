@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   OrderLineVehicle,
   OrderVehicleCheckCard,
+  internalPathHref,
   orderLinePosition,
   readOrderVehicleCheck,
 } from "~/components/orders/OrderVehicleCheckCard";
@@ -150,5 +151,14 @@ describe("OrderLineVehicle", () => {
     );
     expect(screen.queryByRole("link")).toBeNull();
     expect(screen.getByText(/javascript:alert\(1\)/)).toBeTruthy();
+  });
+
+  it("lien seulement pour un chemin qui reste sur le site", () => {
+    expect(internalPathHref("/pieces/a.html?x=1")).toBe("/pieces/a.html?x=1");
+    expect(internalPathHref("//evil.example/x")).toBeNull();
+    expect(internalPathHref("/\\evil.example/x")).toBeNull();
+    expect(internalPathHref("/\tevil")).toBeNull();
+    expect(internalPathHref("https://evil.example/")).toBeNull();
+    expect(internalPathHref(null)).toBeNull();
   });
 });
