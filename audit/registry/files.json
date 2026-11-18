@@ -74663,6 +74663,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/governance/__tests__/validate-db-retention.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 155,
+      "owner": "__unassigned__",
+      "path": "scripts/governance/__tests__/validate-db-retention.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/governance/build-command-center-snapshot.js",
       "importedBy": [],
       "imports": [],
@@ -74746,6 +74765,25 @@
       "loc": 282,
       "owner": "__unassigned__",
       "path": "scripts/governance/validate-authority-graph.js",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/governance/validate-db-retention.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 323,
+      "owner": "__unassigned__",
+      "path": "scripts/governance/validate-db-retention.js",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
