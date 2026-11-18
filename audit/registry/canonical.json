@@ -3227,43 +3227,6 @@
           {
             "mode": "IN",
             "name": "p_gamme_id",
-            "type": "integer"
-          },
-          {
-            "mode": "IN",
-            "name": "p_vehicle_id",
-            "type": "bigint"
-          },
-          {
-            "mode": "IN",
-            "name": "p_limit",
-            "type": "integer"
-          }
-        ],
-        "definedInMigrations": [
-          "20261118_r2_images_bmp_extension.sql"
-        ],
-        "domain": "UNKNOWN",
-        "id": "public.get_listing_products_extended_filtered",
-        "language": "sql",
-        "name": "get_listing_products_extended_filtered",
-        "owner": "__unassigned__",
-        "parseMode": "parsed",
-        "parseWarnings": [],
-        "returnType": "TABLE(id integer, nom text, reference text, reference_clean text, description text, quantite_vente numeric, has_image boolean, has_oem boolean, filtre_gamme text, is_accessory boolean, filtre_side text, marque text, marque_id integer, marque_logo text, nb_stars integer, prix_unitaire integer, prix_ttc numeric, prix_consigne integer, stock_status text, dispo boolean, quality text, score integer, image text)",
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "searchPath": [],
-        "securityDefiner": false,
-        "sourceConfidence": "high",
-        "status": "UNKNOWN",
-        "usedBy": []
-      },
-      {
-        "args": [
-          {
-            "mode": "IN",
-            "name": "p_gamme_id",
             "type": "INT"
           },
           {
@@ -3430,38 +3393,6 @@
           {
             "mode": "IN",
             "name": "p_type_id",
-            "type": "integer"
-          },
-          {
-            "mode": "IN",
-            "name": "p_pg_id",
-            "type": "integer"
-          }
-        ],
-        "definedInMigrations": [
-          "20261118_r2_images_bmp_extension.sql"
-        ],
-        "domain": "UNKNOWN",
-        "id": "public.get_pieces_for_type_gamme_v3#sig:2baa804a",
-        "language": "plpgsql",
-        "name": "get_pieces_for_type_gamme_v3",
-        "owner": "__unassigned__",
-        "parseMode": "parsed",
-        "parseWarnings": [],
-        "returnType": "jsonb",
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "searchPath": [],
-        "securityDefiner": true,
-        "sourceConfidence": "high",
-        "status": "UNKNOWN",
-        "usedBy": []
-      },
-      {
-        "args": [
-          {
-            "mode": "IN",
-            "name": "p_type_id",
             "type": "INTEGER"
           },
           {
@@ -3474,7 +3405,7 @@
           "20260324_fix_ghost_pieces_rpc_v3.sql"
         ],
         "domain": "UNKNOWN",
-        "id": "public.get_pieces_for_type_gamme_v3#sig:73f8ba8f",
+        "id": "public.get_pieces_for_type_gamme_v3",
         "language": "plpgsql",
         "name": "get_pieces_for_type_gamme_v3",
         "owner": "__unassigned__",
@@ -46774,7 +46705,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 187,
+      "loc": 190,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "medium",
@@ -46815,6 +46746,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
+      "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+        "backend/src/modules/seo/index.ts"
+      ],
+      "kind": "test",
+      "loc": 121,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -46980,6 +46934,7 @@
       "domain": "D1",
       "id": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
         "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
         "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
         "backend/src/modules/gamme-rest/services/index.ts"
@@ -47002,7 +46957,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 1259,
+      "loc": 1293,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "medium",
@@ -60199,6 +60154,7 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/index.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
       ],
       "imports": [
@@ -60212,7 +60168,7 @@
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
       "kind": "service",
-      "loc": 11,
+      "loc": 14,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/index.ts",
       "risk": "high",
@@ -60571,6 +60527,29 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo/internal-linking.service.gamme-links.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/seo/internal-linking.service.ts"
+      ],
+      "kind": "test",
+      "loc": 260,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo/internal-linking.service.gamme-links.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo/internal-linking.service.ts",
       "importedBy": [
         "backend/src/modules/blog/services/blog-seo.service.ts",
@@ -60580,6 +60559,7 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts",
+        "backend/src/modules/seo/internal-linking.service.gamme-links.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
@@ -60590,7 +60570,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 994,
+      "loc": 1051,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/internal-linking.service.ts",
       "risk": "high",
@@ -76408,7 +76388,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 155,
+      "loc": 149,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/blog/BlogInternalLinks.tsx",
       "risk": "low",
@@ -109176,15 +109156,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "6cffe6ff8d71b1b115153c3c66c35b2dc6cefecf80d14443a52159cf0d3b8b99",
+      ".spec/00-canon/repository-registry/ownership.yaml": "1ef7e0a57e05ed939ff45efc96c95a10a29041ca31235db6172c3925c75473ff",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "9c0c66011897c5b7653f62067bc273e25533433d2361112feae078c119c028a3",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "1a552d227884bf1722f5ac14e6c4feef354bccfc9751549d87b6c60e1df4daf9",
-      "audit/registry/rpc.json": "81f9bf5b14a5bc0a652ee6adea5881f29b3835539d7ed98b9b7b651b18fbbeda",
+      "audit/registry/files.json": "4f01ccefb37bebddbcaa9d8dc88be0bb1ab83f4dcf5e3f35a98ba2210fa441e0",
+      "audit/registry/rpc.json": "c50dbaaca74c234f82efc481724c4d24b381a08901ecfdbba11fafa1e03fbbc4",
       "audit/registry/runtime.json": "cc806ba9cf137d876ba7b389f9c521e1e0c3259947abce93dc996c8c4392823a"
     },
-    "sotFingerprint": "bfa8210f596b"
+    "sotFingerprint": "855f6da809d8"
   },
   "runtime": [
     {
