@@ -17,6 +17,11 @@
 # Passe 3 : un cache marqué CACHEDIR.TAG, ignoré et inactif part d'un worktree gardé (PR
 # ouverte) ; signature invalide, écriture récente, dossier non ignoré ou suivi, node_modules,
 # worktree verrouillé, occupé ou d'un autre gestionnaire : le cache reste.
+# Passe 4 : les node_modules (racine, backend, packages/*) d'un worktree inactif depuis plus
+# de IDLE_NM_DAYS jours partent, le reste du worktree reste ; index ou .package-lock.json récent,
+# verrou, attribution, processus (répertoire courant ou fichier ouvert), lien (node_modules ou
+# parent), autre gestionnaire, checkout principal : rien ne part. IDLE_NM_DAYS invalide = arrêt.
+# Fenêtre de PR : plafond PR_LIMIT atteint = avertissement.
 #
 # Usage : bash prune-merged-worktrees.test.sh
 #         PRUNE_SCRIPT=/chemin/autre-version.sh bash prune-merged-worktrees.test.sh
@@ -199,6 +204,42 @@ git -C "$R" worktree lock --reason "imbriqué" "$C/.claude/worktrees/inner"; tag
 tag "$WT/w6-locked/target"; tag "$WT/w7-active/target"; tag "$FIX/worktrees/codex-w10/target"
 tag "$WT/w22-claimed/target"; tag "$WT/w18-sub/target"
 
+# Passe 4 — worktrees gardés par la passe 1 (PR ouverte) portant des node_modules autonomes
+mknm() { # mknm <dir> : node_modules racine, backend/ et packages/a/, chacun avec .package-lock.json
+  local s; for s in "" backend/ packages/a/; do
+    mkdir -p "$1/${s}node_modules/pkg"; printf 'x\n' > "$1/${s}node_modules/pkg/i.js"
+    printf '{}\n' > "$1/${s}node_modules/.package-lock.json"
+  done
+}
+age_nm() { # age_nm <dir> : index git et node_modules vieillis de 10 jours (au-delà du défaut de 7)
+  local gd p; gd="$(git -C "$1" rev-parse --absolute-git-dir)"; touch -d '10 days ago' "$gd/index"
+  for p in "$1/node_modules" "$1"/*/node_modules "$1"/packages/*/node_modules; do
+    [[ -e "$p" || -L "$p" ]] && find "$p" -exec touch -h -d '10 days ago' {} +
+  done
+  return 0
+}
+n=50
+for c in n1-idle n2-index-recent n3-lock-recent n4-locked n5-claimed n6-cwd n7-openfile n8-links; do
+  s=$(mkwt "$WT/$c" "feat/$c"); pr "$n" OPEN "feat/$c" "$s"; n=$((n+1))
+done
+N1="$WT/n1-idle"; mknm "$N1"; printf 'notes\n' > "$N1/notes.txt"                 # témoin positif
+mknm "$WT/n2-index-recent"                                                         # index laissé « maintenant »
+mknm "$WT/n3-lock-recent"
+mknm "$WT/n4-locked"; git -C "$R" worktree lock --reason "agent-claim test/n4" "$WT/n4-locked"
+mknm "$WT/n5-claimed"; printf '{"mission":"fixture-n5"}\n' > "$(git -C "$WT/n5-claimed" rev-parse --absolute-git-dir)/agent-claim.json"
+mknm "$WT/n6-cwd"; mknm "$WT/n7-openfile"
+# N8 : node_modules lien symbolique, et parent backend/ lien vers un dossier hors du worktree
+mknm "$FIX/shared"; ln -s "$FIX/shared/node_modules" "$WT/n8-links/node_modules"; ln -s "$FIX/shared/backend" "$WT/n8-links/backend"
+s=$(mkwt "$FIX/worktrees/codex-n9" codex/n9); pr 60 OPEN codex/n9 "$s"; mknm "$FIX/worktrees/codex-n9"   # autre gestionnaire
+mknm "$R"                                                                                               # checkout principal
+for d in "$N1" "$WT/n2-index-recent" "$WT/n3-lock-recent" "$WT/n4-locked" "$WT/n5-claimed" "$WT/n6-cwd" \
+         "$WT/n7-openfile" "$WT/n8-links" "$FIX/worktrees/codex-n9" "$R"; do age_nm "$d"; done
+find "$FIX/shared" -exec touch -h -d '10 days ago' {} +
+touch "$(git -C "$WT/n2-index-recent" rev-parse --absolute-git-dir)/index"
+touch "$WT/n3-lock-recent/node_modules/.package-lock.json"
+(cd "$WT/n6-cwd" && exec sleep 600) & PIDS+=($!)
+(cd "$FIX" && exec sleep 600) < "$WT/n7-openfile/backend/node_modules/pkg/i.js" & PIDS+=($!)
+
 # Branches sans worktree (passe 2)
 s=$(mkbr feat/b1-extra); pr 21 MERGED feat/b1-extra "$s"
 B1_EXTRA="$(git -C "$R" commit-tree -p "$s" -m 'chore(log): auto session entry' "$(git -C "$R" rev-parse "$s^{tree}")")"
@@ -285,9 +326,14 @@ check "dry-run : W28 (scratchpad de session) proposé à la suppression" yes "$(
 check "dry-run : W29 (préfixe voisin) hors périmètre"               yes "$(grep -q 'other-manager.*w29-neighbour' <<<"$DRY" && echo yes || echo no)"
 check "dry-run : W27 cache inactif proposé au retrait"               yes "$(grep -q '^WOULD-REMOVE-CACHE .*w27-caches/svc/target ' <<<"$DRY" && echo yes || echo no)"
 check "dry-run : W27 cache inactif toujours présent"                 present "$(present "$C/svc/target/debug/app")"
+check "dry-run : N1 node_modules inactifs proposés (racine, backend, packages/a)" 3 "$(grep -cE '^WOULD-REMOVE-NM [0-9]+ Mo .*/n1-idle/' <<<"$DRY" || true)"
+check "dry-run : N1 node_modules toujours présents"                 present "$(present "$N1/node_modules/pkg/i.js")"
+check "dry-run : seul N1 proposé par la passe 4"                    0 "$(grep '^WOULD-REMOVE-NM ' <<<"$DRY" | grep -vc '/n1-idle/' || true)"
+check "dry-run : W15 (retiré par la passe 1) non recompté en passe 4" yes "$(grep -q '^NM-KEEP worktree-would-remove .*w15-regen' <<<"$DRY" && echo yes || echo no)"
 EMPTY="$(cd "$R" && PRUNE_ROOTS='::' LOG_DIR="$FIX/logs/dry" bash "$SCRIPT" 2>&1)"
 check "PRUNE_ROOTS sans entrée non vide : aucun worktree proposé"    0 "$(grep -c '^WOULD-REMOVE ' <<<"$EMPTY" || true)"
 check "PRUNE_ROOTS sans entrée non vide : aucun cache proposé"      0 "$(grep -c '^WOULD-REMOVE-CACHE ' <<<"$EMPTY" || true)"
+check "PRUNE_ROOTS sans entrée non vide : aucun node_modules proposé" 0 "$(grep -c '^WOULD-REMOVE-NM ' <<<"$EMPTY" || true)"
 check "PRUNE_ROOTS sans entrée non vide : W3 hors périmètre (témoin)" yes "$(grep -q 'other-manager.*w3-clean' <<<"$EMPTY" && echo yes || echo no)"
 check "dry-run : aucun état cron enregistré"                        absent "$(present "$STATE")"
 
@@ -301,6 +347,22 @@ check "gh en échec : branches, registrations et dossiers inchangés" same "$([[
 check "gh en échec : cause affichée"                             yes "$(grep -q 'FATAL' <<<"$GHFAIL" && echo yes || echo no)"
 check "gh en échec : état cron en erreur, cadence quotidienne"     "error 93600" "$(st '"\(.status) \(.max_age_s)"')"
 check "gh en échec : résumé nomme la cause"                       yes "$(st .summary | grep -q 'état des PR illisible' && echo yes || echo no)"
+
+# ---------------- 2b. réglages : IDLE_NM_DAYS invalide, plafond PR_LIMIT ----------------
+echo "[réglages]"
+for v in 0 abc -3; do
+  before="$(snap_local)"
+  BAD="$(cd "$R" && IDLE_NM_DAYS="$v" LOG_DIR="$FIX/logs/ghfail" bash "$SCRIPT" --apply 2>&1)"; rc=$?
+  after="$(snap_local)"
+  check "IDLE_NM_DAYS=$v : arrêt (code 2)"                        2 "$rc"
+  check "IDLE_NM_DAYS=$v : branches, registrations et dossiers inchangés" same "$([[ "$before" == "$after" ]] && echo same || echo changed)"
+  check "IDLE_NM_DAYS=$v : N1 node_modules intacts"               present "$(present "$N1/node_modules/pkg/i.js")"
+done
+check "IDLE_NM_DAYS invalide : état cron en erreur, cause nommée" "error yes" "$(st '.status') $(st .summary | grep -q 'IDLE_NM_DAYS invalide' && echo yes || echo no)"
+CAP="$(cd "$R" && PR_LIMIT=3 LOG_DIR="$FIX/logs/dry" bash "$SCRIPT" 2>&1)"
+check "PR_LIMIT=3 (plafond atteint) : avertissement"              yes "$(grep -q '^WARN    gh pr list : plafond de 3 PR atteint' <<<"$CAP" && echo yes || echo no)"
+check "PR_LIMIT par défaut : aucun avertissement de plafond"      0 "$(grep -c 'plafond de' <<<"$DRY" || true)"
+check "gh : --limit transmis (défaut 5000)"                       yes "$(grep -q -- '--limit 5000' "$FAKE_GH_CALLS" && echo yes || echo no)"
 
 # ---------------- 3. apply ----------------
 APPLY_OUT="$(cd "$R" && LOG_DIR="$FIX/logs/apply" LATE_WRITE_TARGET="$WT/w23-late" PATH="$FIX/shim:$PATH" bash "$SCRIPT" --apply 2>&1)"; rc=$?
@@ -374,6 +436,28 @@ check "W22 attribution sans verrou : cache conservé"                present "$(
 check "W18 sous-module peuplé : cache conservé"                     present "$(present "$WT/w18-sub/target/CACHEDIR.TAG")"
 check "caches : aucun retrait en échec"                             0 "$(grep -c '^CACHE-FAIL ' <<<"$APPLY_OUT" || true)"
 check "caches : bilan = 2 caches retirés"                           yes "$(grep -q 'caches ciblés=2 ' <<<"$APPLY_OUT" && echo yes || echo no)"
+check "apply : node_modules retirés = lignes NM-REMOVED"         "$(grep -c '^NM-REMOVED ' <<<"$APPLY_OUT" || true)" "$(st .metrics.node_modules_removed)"
+check "N1 inactif 10 j : 3 node_modules retirés, taille journalisée" 3 "$(grep -cE '^NM-REMOVED [0-9]+ Mo .*/n1-idle/' <<<"$APPLY_OUT" || true)"
+check "N1 : manifeste porte les retraits"                         3 "$(cat "$FIX"/logs/apply/* | grep -c '^NM-REMOVED .*/n1-idle/' || true)"
+check "N1 : node_modules racine retiré"                           absent "$(present "$N1/node_modules")"
+check "N1 : backend/node_modules retiré"                          absent "$(present "$N1/backend/node_modules")"
+check "N1 : packages/a/node_modules retiré"                       absent "$(present "$N1/packages/a/node_modules")"
+check "N1 : fichier suivi intact"                                 present "$(present "$N1/work.txt")"
+check "N1 : fichier non suivi intact"                             present "$(present "$N1/notes.txt")"
+check "N1 : worktree et branche conservés"                        present "$(branch feat/n1-idle)"
+check "N2 index récent : node_modules conservés"                  present "$(present "$WT/n2-index-recent/node_modules/pkg/i.js")"
+check "N3 .package-lock.json récent : node_modules conservés"     present "$(present "$WT/n3-lock-recent/backend/node_modules/pkg/i.js")"
+check "N4 verrouillé : node_modules conservés"                    present "$(present "$WT/n4-locked/node_modules/pkg/i.js")"
+check "N5 attribution sans verrou : node_modules conservés"       present "$(present "$WT/n5-claimed/node_modules/pkg/i.js")"
+check "N6 répertoire courant d'un processus : node_modules conservés" present "$(present "$WT/n6-cwd/node_modules/pkg/i.js")"
+check "N7 fichier ouvert par un processus : node_modules conservés" present "$(present "$WT/n7-openfile/node_modules/pkg/i.js")"
+check "N8 node_modules lien : lien intact"                        yes "$([[ -L "$WT/n8-links/node_modules" ]] && echo yes || echo no)"
+check "N8 node_modules lien : cible intacte"                      present "$(present "$FIX/shared/node_modules/pkg/i.js")"
+check "N8 parent backend/ lien : cible intacte"                   present "$(present "$FIX/shared/backend/node_modules/pkg/i.js")"
+check "N8 parent lien : refus journalisé"                         yes "$(grep -q '^NM-KEEP symlinked-path .*n8-links/backend/node_modules' <<<"$APPLY_OUT" && echo yes || echo no)"
+check "N9 autre gestionnaire : node_modules conservés"            present "$(present "$FIX/worktrees/codex-n9/node_modules/pkg/i.js")"
+check "checkout principal : node_modules conservés"               present "$(present "$R/node_modules/pkg/i.js")"
+check "node_modules : aucun retrait en échec"                     0 "$(grep -c '^NM-FAIL ' <<<"$APPLY_OUT" || true)"
 ALL_OUT="$( { printf '%s\n' "$DRY" "$GHFAIL" "$APPLY_OUT"; cat "$FIX"/logs/*/* 2>/dev/null; } )"
 check "journaux et sorties relus (témoin : W14 y figure)"           yes "$(grep -q 'w14-env' <<<"$ALL_OUT" && echo yes || echo no)"
 check "valeur d'un fichier ignoré absente des sorties et journaux"  0 "$(grep -c 'fixture-only' <<<"$ALL_OUT" || true)"
@@ -397,6 +481,7 @@ check "1er apply : suppressions journalisées (témoin)" yes "$(cat "$FIX"/logs/
 check "2e apply : aucune suppression supplémentaire" 0 "$( { printf '%s\n' "$AGAIN"; cat "$FIX"/logs/again/* 2>/dev/null; } | grep -cE '^(REMOVED|BRANCH-DEL) ' || true)"
 check "2e apply : aucun échec de suppression"        0 "$(grep -c '^FAIL ' <<<"$AGAIN" || true)"
 check "2e apply : aucun cache retiré"                0 "$(grep -c '^CACHE-REMOVED ' <<<"$AGAIN" || true)"
+check "2e apply : aucun node_modules retiré"         0 "$(grep -c '^NM-REMOVED ' <<<"$AGAIN" || true)"
 check "2e apply : état cron revenu à ok, rien retiré" "ok 0 0 0" "$(st '"\(.status) \(.metrics.worktrees_removed) \(.metrics.branches_deleted) \(.metrics.fails)"')"
 
 if [[ "${VERBOSE:-0}" == "1" ]]; then echo "--- sortie dry-run ---"; echo "$DRY"; echo "--- sortie apply ---"; echo "$APPLY_OUT"; echo "--- sortie gh en échec ---"; echo "$GHFAIL"; fi
