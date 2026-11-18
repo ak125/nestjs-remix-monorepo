@@ -13,15 +13,18 @@
  * écrits dans la sortie. La sortie est un fichier : les journaux du producteur
  * vont sur stdout.
  *
+ * Le producteur est chargé dans le `try` de son indicateur (import dynamique) :
+ * un paquet interne non construit (`@repo/*` sans `dist/`, cas d'un
+ * `npm ci --ignore-scripts` seul) donne `unmeasured` + raison, pas une sortie
+ * en erreur. Les paquets se construisent par
+ * `npx turbo run build --filter='@fafa/backend^...' --filter='!@fafa/frontend'`.
+ *
  * Sortie : {"read_at": ISO, "indicators": {<kpi_input id>: Reading}}
  *   Reading = {producer, status, value, certified, window_days}
  *           | {producer, unmeasured: "<raison>"}
  * `value` reste interne : le rapport, publié sur un dépôt public, ne la publie pas.
  */
 import { writeFileSync } from 'node:fs';
-import { ConfigService } from '@nestjs/config';
-import { CommandCenterKpiService } from '../../backend/src/modules/admin/services/command-center-kpi.service';
-import { TrackingIntegrityService } from '../../backend/src/modules/analytics/tracking-integrity/tracking-integrity.service';
 
 const KPI_PRODUCER =
   'backend/src/modules/admin/services/command-center-kpi.service.ts';
@@ -36,12 +39,39 @@ export type Reading =
     }
   | { producer: string; unmeasured: string };
 
-/** Nom de l'erreur seulement : un message brut peut citer une URL ou une clé. */
-const failure = (e: unknown): string =>
-  `lecture du producteur en échec (${e instanceof Error ? e.name : typeof e})`;
+/**
+ * Raison sûre d'une erreur : nom, code système (`MODULE_NOT_FOUND`…) et, pour un
+ * module introuvable, le seul nom du paquet. Jamais le message brut : il peut
+ * citer une URL, une clé ou un chemin.
+ */
+export function safeReason(e: unknown): string {
+  if (!(e instanceof Error)) return typeof e;
+  const parts = [/^[A-Za-z]{1,40}$/.test(e.name) ? e.name : 'Error'];
+  const code = (e as { code?: unknown }).code;
+  if (typeof code === 'string' && /^[A-Z][A-Z0-9_]{1,40}$/.test(code)) parts.push(code);
+  if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
+    const pkg = /node_modules\/((?:@[a-z0-9._-]+\/)?[a-z0-9._-]+)/i.exec(e.message);
+    if (pkg) parts.push(pkg[1]);
+  }
+  return parts.join(' ');
+}
+
+const failure = (step: string, e: unknown): string =>
+  `${step} du producteur en échec (${safeReason(e)})`;
 
 /** sales.payments-kept : verdict de toPaymentsKeptKpi, via computeLiveKpis('full'). */
 async function cancelledAfterPayment(now: Date): Promise<Reading> {
+  let mods;
+  try {
+    mods = await Promise.all([
+      import('@nestjs/config'),
+      import('../../backend/src/modules/admin/services/command-center-kpi.service'),
+      import('../../backend/src/modules/analytics/tracking-integrity/tracking-integrity.service'),
+    ]);
+  } catch (e) {
+    return { producer: KPI_PRODUCER, unmeasured: failure('chargement', e) };
+  }
+  const [{ ConfigService }, { CommandCenterKpiService }, { TrackingIntegrityService }] = mods;
   try {
     const config = new ConfigService();
     const kpis = new CommandCenterKpiService(
@@ -65,7 +95,7 @@ async function cancelledAfterPayment(now: Date): Promise<Reading> {
       window_days: m.window_days,
     };
   } catch (e) {
-    return { producer: KPI_PRODUCER, unmeasured: failure(e) };
+    return { producer: KPI_PRODUCER, unmeasured: failure('lecture', e) };
   }
 }
 
@@ -82,7 +112,7 @@ async function main(): Promise<void> {
 main().then(
   () => process.exit(0),
   (e) => {
-    console.error(`registry-threshold-read : ${e instanceof Error ? e.message : String(e)}`);
+    console.error(`registry-threshold-read : échec (${safeReason(e)})`);
     process.exit(1);
   },
 );

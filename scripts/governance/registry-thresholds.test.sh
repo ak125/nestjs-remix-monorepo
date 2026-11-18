@@ -66,7 +66,7 @@ run() { # <nom> [VAR=valeur ...] — exécute le script avec un faux gh neuf ; s
   [ -f "$T/body.md" ] && cp "$T/body.md" "$FAKE_DIR/body.md"
   printf 'dept:13-sales\n' > "$FAKE_DIR/labels"
   [ -n "${NO_LABEL:-}" ] && : > "$FAKE_DIR/labels"
-  env -u THRESHOLD_ISSUES_MODE -u THRESHOLD_READINGS -u THRESHOLD_MAP -u PUBLISH PATH="$T/bin:$PATH" REPO=o/r "$@" \
+  env -u THRESHOLD_ISSUES_MODE -u THRESHOLD_READINGS -u THRESHOLD_MAP -u THRESHOLD_READER -u PUBLISH PATH="$T/bin:$PATH" REPO=o/r "$@" \
     bash "$SUT" "$T/$name.md" > "$T/$name.out" 2>&1
   echo $? > "$T/$name.rc"
 }
@@ -149,6 +149,7 @@ check "illisible : non mesuré avec la raison" 'contient $T/unm.md "| non mesur�
 check "illisible : ligne du département « pas de mesure »" 'contient $T/unm.md "— pas de mesure (seuils : 1 non mesuré (sales.payments-kept)"'
 check "illisible : jamais zéro ni « sous le seuil »" 'absent $T/unm.md "sous le seuil" && absent $T/unm.md "🟢" && ! grep -q "payments-kept.*= 0" $T/unm.md'
 check "illisible : aucune écriture" '[ ! -s "$(W unm)" ]'
+check "illisible : raison aussi dans le journal" 'contient $T/unm.out "::warning::registry thresholds : cancelled_after_payment non mesuré (lecture du producteur en échec (ConfigurationException))"'
 
 # 11. Lecture d'une autre source que le producteur déclaré : non mesuré.
 run src THRESHOLD_MAP="$T/map-wired.yaml" THRESHOLD_READINGS="$T/other-source.json"
@@ -166,6 +167,35 @@ check "off : non évalué, aucun appel gh" 'contient $T/off.md "non évalué" &&
 echo "departments: []" > "$T/empty.yaml"
 run broken THRESHOLD_MAP="$T/empty.yaml"
 check "registre illisible : indisponible, sans échec pour l'appelant" '[ "$(cat $T/broken.rc)" = 0 ] && contient $T/broken.md "Registre **indisponible**"'
+
+# 15. Lecteur qui plante (paquet interne non construit, comme après un npm ci seul) : raison
+#     filtrée dans la section et dans le journal, jamais le stderr brut ni un secret qu'il cite.
+cat > "$T/reader-crash" <<'SH'
+#!/usr/bin/env bash
+cat >&2 <<'ERR'
+node:internal/modules/cjs/loader:1611
+Error: Cannot find module '/srv/x/node_modules/@repo/seo-roles/dist/index.js'
+    at Module._findPath (node:internal/modules/cjs/loader:821:31)
+    at resolveTsPaths (/srv/x/node_modules/tsx/dist/register.cjs:10:770) {
+  code: 'MODULE_NOT_FOUND',
+  url: 'https://secret-projet.supabase.co/rest/v1', key: 'sk-SECRET-123'
+}
+ERR
+exit 1
+SH
+cat > "$T/reader-ok" <<SH
+#!/usr/bin/env bash
+printf '%s' '{"read_at":"2026-11-18T07:00:00Z","indicators":{"cancelled_after_payment":{"producer":"$PRODUCER","status":"CRITICAL","value":0.42,"certified":true,"window_days":30}}}' > "\$1"
+SH
+chmod +x "$T/reader-crash" "$T/reader-ok"
+run crash THRESHOLD_MAP="$T/map-wired.yaml" THRESHOLD_READER="$T/reader-crash"
+check "lecteur qui plante : raison dans la section" 'contient $T/crash.md "Lecture des indicateurs : lecteur en échec (Error MODULE_NOT_FOUND @repo/seo-roles, code retour 1) : indicateurs non mesurés."'
+check "lecteur qui plante : raison dans le journal" 'contient $T/crash.out "::warning::registry thresholds : lecteur en échec (Error MODULE_NOT_FOUND @repo/seo-roles, code retour 1)"'
+check "lecteur qui plante : seuil non mesuré, jamais franchi ni sous le seuil" 'grep -qE "^\| \`sales\.payments-kept\` \| \`dept:13-sales\` \| non mesuré " $T/crash.md'
+check "lecteur qui plante : ni URL, ni clé, ni chemin publiés" 'absent $T/crash.md "secret-projet" && absent $T/crash.md "SECRET-123" && absent $T/crash.md "/srv/x" && absent $T/crash.out "secret-projet" && absent $T/crash.out "SECRET-123" && absent $T/crash.out "/srv/x"'
+check "lecteur qui plante : code retour 0, aucune écriture" '[ "$(cat $T/crash.rc)" = 0 ] && [ ! -s "$(W crash)" ]'
+run readerok THRESHOLD_MAP="$T/map-wired.yaml" THRESHOLD_READER="$T/reader-ok"
+check "lecteur qui répond : lecture prise, seuil évalué" 'contient $T/readerok.md "Lecture des indicateurs : lecteur exécuté." && contient $T/readerok.md "— seuils : sales.payments-kept 🔴 franchi"'
 
 echo ""
 echo "$((N - FAIL))/$N vérifications passées"

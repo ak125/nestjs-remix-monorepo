@@ -1,0 +1,43 @@
+### squawk v2.52.1 (version de ci.yml, binaire de la release GitHub sbdchd/squawk), config .squawk.toml
+### AVANT correction (head 60e9c8d1f), $ NO_COLOR=1 squawk --config .squawk.toml backend/supabase/migrations/20261118_r2_images_bmp_extension.sql
+warning[transaction-nesting]: There is an existing transaction already in progress, managed by your migration tool.
+   ╭▸ backend/supabase/migrations/20261118_r2_images_bmp_extension.sql:35:1
+   │
+35 │ BEGIN;
+   │ ━━━━━
+   │
+   ╰ help: Put migration statements in separate files to have them be in separate transactions or don't use the assume-in-transaction setting.
+warning[require-timeout-settings]: Missing `set statement_timeout` before potentially slow operations
+    ╭▸ backend/supabase/migrations/20261118_r2_images_bmp_extension.sql:39:1
+    │
+ 39 │ ┏ CREATE OR REPLACE FUNCTION public.get_pieces_for_type_gamme_v3(p_type_id integer, p_pg_id integer)
+ 40 │ ┃  RETURNS jsonb
+ 41 │ ┃  LANGUAGE plpgsql
+ 42 │ ┃  STABLE SECURITY DEFINER
+    ‡ ┃
+394 │ ┃ END;
+395 │ ┃ $function$;
+    │ ┗━━━━━━━━━━┛
+    │
+    ├ help: Configure a `statement_timeout` before this statement
+    ╭╴
+ 35 + set statement_timeout = '5s';
+    ╰╴
+warning[transaction-nesting]: Attempting to end the transaction that is managed by your migration tool
+    ╭▸ backend/supabase/migrations/20261118_r2_images_bmp_extension.sql:574:1
+    │
+574 │ COMMIT;
+    │ ━━━━━━
+    │
+    ╰ help: Put migration statements in separate files to have them be in separate transactions or don't use the assume-in-transaction setting.
+
+Find detailed examples and solutions for each rule at https://squawkhq.com/docs/rules
+Found 3 issues in 1 file (checked 1 source file)
+exit=1
+
+### APRÈS correction, même commande
+
+Found 0 issues in 1 file 🎉
+exit=0
+
+### Le .down.sql n'est pas lint : excluded_paths = ["**/*.down.sql"] dans .squawk.toml, et ci.yml le retire de la liste.

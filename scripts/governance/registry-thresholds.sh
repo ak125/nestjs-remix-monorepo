@@ -24,6 +24,9 @@
 #   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY  lus par le producteur, jamais affichés.
 #   THRESHOLD_READINGS     (tests) fichier de lectures à utiliser à la place du lecteur.
 #   THRESHOLD_MAP          (tests) carte à lire à la place du registre du dépôt.
+#   THRESHOLD_READER       (tests) commande à lancer à la place du lecteur (même argument).
+# Lecteur en échec : raison filtrée (nom, code, paquet) dans le journal (::warning::) et dans
+# la section ; son stderr brut n'est jamais affiché.
 #   GITHUB_SERVER_URL      base des liens (défaut https://github.com).
 set -uo pipefail
 
@@ -42,21 +45,52 @@ WRITE=0
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
+
+run_reader() { # <sortie.json> — lecteur du dépôt, ou THRESHOLD_READER (essai)
+  if [ -n "${THRESHOLD_READER:-}" ]; then timeout 180 "$THRESHOLD_READER" "$1"
+  else (cd "$ROOT/backend" && timeout 180 ../node_modules/.bin/tsx ../scripts/governance/registry-threshold-read.ts "$1"); fi
+}
+
+# Raison courte et sûre d'un lecteur en échec, tirée de son stderr par jetons autorisés seulement
+# (nom d'erreur, code système, nom de paquet) : jamais le message brut, qui peut citer une URL,
+# une clé ou un chemin. La ligne finale du lecteur est déjà filtrée (safeReason).
+reader_reason() { # <code retour> <stderr>
+  local rc="$1" f="$2" own name code pkg
+  [ "$rc" = 124 ] && { echo "délai de 180 s dépassé"; return; }
+  own=$(grep -m1 -oE '^registry-threshold-read : échec \([A-Za-z]{1,40}( [A-Z][A-Z0-9_]{1,40})?( (@[a-z0-9._-]+/)?[a-z0-9._-]+)?\)$' "$f" 2>/dev/null)
+  if [ -n "$own" ]; then echo "${own#registry-threshold-read : }, code retour $rc"; return; fi
+  name=$(grep -m1 -oE '^[A-Za-z]{0,30}(Error|Exception)\b' "$f" 2>/dev/null)
+  code=$(grep -m1 -oE "code: '[A-Z][A-Z0-9_]{1,40}'" "$f" 2>/dev/null | grep -oE '[A-Z][A-Z0-9_]+')
+  pkg=""
+  case "$code" in *MODULE_NOT_FOUND)
+    pkg=$(grep -m1 'Cannot find module' "$f" 2>/dev/null | grep -m1 -oE 'node_modules/(@[a-z0-9._-]+/)?[a-z0-9._-]+' | sed 's#^node_modules/##') ;;
+  esac
+  echo "$(echo "${name:-erreur} $code $pkg" | tr -s ' ' | sed 's/ $//'), code retour $rc"
+}
 READINGS="-"
 READ_NOTE=""
 if [ "$TMODE" != off ]; then
   if [ -n "${THRESHOLD_READINGS:-}" ]; then
     READINGS="$THRESHOLD_READINGS"; READ_NOTE="lectures fournies par THRESHOLD_READINGS (essai)"
-  elif [ -x "$ROOT/node_modules/.bin/tsx" ] && [ -d "$ROOT/node_modules/@nestjs/config" ]; then
-    if (cd "$ROOT/backend" && timeout 180 ../node_modules/.bin/tsx ../scripts/governance/registry-threshold-read.ts "$WORK/readings.json") >/dev/null 2>&1 \
-       && jq -e '.indicators | type == "object"' "$WORK/readings.json" >/dev/null 2>&1; then
+  elif [ -n "${THRESHOLD_READER:-}" ] || { [ -x "$ROOT/node_modules/.bin/tsx" ] && [ -d "$ROOT/node_modules/@nestjs/config" ]; }; then
+    # stdout du lecteur = journaux du producteur, jetés ; stderr gardé dans un fichier, jamais
+    # affiché : seule une raison filtrée (reader_reason) sort, dans le journal et la section.
+    rc=0
+    run_reader "$WORK/readings.json" >/dev/null 2> "$WORK/reader.err" || rc=$?
+    if [ "$rc" = 0 ] && jq -e '.indicators | type == "object"' "$WORK/readings.json" >/dev/null 2>&1; then
       READINGS="$WORK/readings.json"; READ_NOTE="lecteur exécuté"
     else
-      READ_NOTE="lecteur en échec : indicateurs non mesurés"
+      if [ "$rc" = 0 ]; then why="sortie du lecteur illisible"; else why=$(reader_reason "$rc" "$WORK/reader.err"); fi
+      echo "::warning::registry thresholds : lecteur en échec ($why), indicateurs non mesurés"
+      READ_NOTE="lecteur en échec ($why) : indicateurs non mesurés"
     fi
   else
+    echo "::warning::registry thresholds : dépendances du producteur absentes du job (tsx, node_modules), indicateurs non mesurés"
     READ_NOTE="dépendances du producteur absentes du job (tsx, node_modules) : indicateurs non mesurés"
   fi
+  # Indicateur lu mais non mesuré : sa raison (déjà filtrée par le lecteur) va aussi au journal.
+  [ "$READINGS" != "-" ] && jq -r '.indicators // {} | to_entries[] | select(.value.unmeasured)
+    | "::warning::registry thresholds : \(.key) non mesuré (\(.value.unmeasured | tostring | .[0:200]))"' "$READINGS" 2>/dev/null
 fi
 
 if ! python3 "$HERE/registry-thresholds.py" "${THRESHOLD_MAP:-$ROOT/$MAP_REL}" "$READINGS" "$TMODE" \

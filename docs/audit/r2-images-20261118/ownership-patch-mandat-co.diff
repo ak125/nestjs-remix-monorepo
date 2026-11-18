@@ -1,0 +1,14 @@
+--- a/.spec/00-canon/repository-registry/ownership.yaml
++++ b/.spec/00-canon/repository-registry/ownership.yaml
+@@ -1888,3 +1888,11 @@
+     owner: '@ak125'
+     sourceConfidence: high
+     risk: medium
++  # Mandat CO (18/11/2026) : les deux fonctions R2 servies reconnaissent .bmp
++  # (get_pieces_for_type_gamme_v3, get_listing_products_extended_filtered).
++  # Couvre .sql + .down.sql. Glob exact : les migrations ne sont pas auto-couvertes.
++  - glob: backend/supabase/migrations/20261118_r2_images_bmp_extension*.sql
++    domain: D1
++    owner: '@ak125/catalog-team'
++    sourceConfidence: high
++    risk: medium
