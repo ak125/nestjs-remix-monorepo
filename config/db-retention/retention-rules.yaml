@@ -1,9 +1,12 @@
 # Règles de conservation des tables de la base massdoc (mandat CA, étape 1, 2026-11-18).
 #
-# STATUT : PROPOSÉ. Aucune durée n'est en service du fait de ce fichier.
-# Les durées (30 j, 90 j…) sont des propositions : Marwane les fixe.
-# Une règle passe à « fixé » seulement avec decided_by et decided_on renseignés.
-# Ce fichier ne change aucun cron, aucune rétention en service, aucune table.
+# STATUT : PARTIELLEMENT DÉCIDÉ (2026-11-18). Marwane a retenu les durées des six
+# familles copie_ponctuelle, journal, import_staging, cache_projection, ancien_site et
+# referentiel_metier (statut « décidé »). La famille partition_instantane et toute la
+# section partitions restent « proposé » : durée table par table, plus tard.
+# Une règle passe à « décidé » seulement avec decided_by, decided_on et decision_ref.
+# Ce fichier ne change aucun cron, aucune rétention en service, aucune table :
+# appliquer une durée décidée demande un mandat suivant (cron ou migration).
 #
 # Contrôle : node scripts/governance/validate-db-retention.js (et --self-test).
 # Inventaire mesuré : audit/massdoc-table-inventory-2026-11-18.json (L0, daté).
@@ -12,9 +15,15 @@ title: Règles de conservation des tables de massdoc
 database: massdoc (Supabase cxpojprgwgubzjyqzmoq, schéma public)
 owner_departments: ["22 data", "21 runtime"]
 inventory: audit/massdoc-table-inventory-2026-11-18.json
-status: proposé
-decided_by: null
-decided_on: null
+status: partiellement décidé
+decided_by: Marwane
+decided_on: "2026-11-18"
+decision_ref: >-
+  Décision 84 (« règles de conservation par famille en configuration (ex. copie ponctuelle
+  30 jours, partitions d'instantanés 90 jours) »), précisée le 2026-11-18 : « Oui » de Marwane
+  à « Est-ce que je retiens ces durées, proposées par la session ? », en gardant 90 jours pour
+  les copies. Décidé pour six familles ; partition_instantane et les partitions ne sont pas
+  décidées (durée table par table plus tard).
 
 # Ce qui sort de la base va dans _archive (ALTER TABLE … SET SCHEMA), jamais un DROP
 # sans décision écrite. Chaque lot passe par la migration manuelle, essai à blanc d'abord.
@@ -35,9 +44,14 @@ families:
     rule: >-
       Une copie faite pour un chantier se garde 90 jours après sa date, puis passe dans _archive.
       Les tables protégées restent en place.
-    status: proposé
-    decided_by: null
-    decided_on: null
+    status: décidé
+    decided_by: Marwane
+    decided_on: "2026-11-18"
+    decision_ref: &decision_84_20261118 >-
+      Décision 84 (« règles de conservation par famille en configuration (ex. copie ponctuelle
+      30 jours, partitions d'instantanés 90 jours) »), précisée le 2026-11-18 : « Oui » de Marwane
+      à « Est-ce que je retiens ces durées, proposées par la session ? », en gardant 90 jours pour
+      les copies (et non les 30 jours donnés en exemple par la décision 84).
 
   - id: partition_instantane
     label: Table partitionnée par date (instantanés, séries)
@@ -61,9 +75,10 @@ families:
       Les lignes de plus de 90 jours sont purgées par un cron, comme __error_logs (30 j, cron#11)
       et __soft_404_events (90 j, cron#31). Un journal jamais écrit et sans lecteur suit la règle
       des tables mortes.
-    status: proposé
-    decided_by: null
-    decided_on: null
+    status: décidé
+    decided_by: Marwane
+    decided_on: "2026-11-18"
+    decision_ref: *decision_84_20261118
 
   - id: import_staging
     label: Import, préparation, correspondance d'identifiants
@@ -73,9 +88,10 @@ families:
     rule: >-
       Les lignes d'un lot d'import terminé se gardent 30 jours, puis sont purgées.
       Une table d'import sans lot depuis 90 jours est à trancher.
-    status: proposé
-    decided_by: null
-    decided_on: null
+    status: décidé
+    decided_by: Marwane
+    decided_on: "2026-11-18"
+    decision_ref: *decision_84_20261118
 
   - id: cache_projection
     label: Cache, agrégat ou projection recalculable
@@ -85,9 +101,10 @@ families:
     rule: >-
       Recalculable depuis sa source : pas de durée. Une projection qui n'est plus recalculée
       depuis 90 jours est à trancher.
-    status: proposé
-    decided_by: null
-    decided_on: null
+    status: décidé
+    decided_by: Marwane
+    decided_on: "2026-11-18"
+    decision_ref: *decision_84_20261118
 
   - id: ancien_site
     label: Tables de l'ancien site (préfixe ___)
@@ -98,9 +115,10 @@ families:
       Commandes, factures, clients et configuration de l'ancien site : obligations légales
       et comptables possibles. Aucune durée ni archivage sans avis du département 18 (legal)
       et 17 (finance).
-    status: proposé
-    decided_by: null
-    decided_on: null
+    status: décidé
+    decided_by: Marwane
+    decided_on: "2026-11-18"
+    decision_ref: *decision_84_20261118
 
   - id: referentiel_metier
     label: Référentiel ou donnée métier
@@ -110,9 +128,10 @@ families:
     rule: >-
       Pas de durée : la donnée vit tant que le métier s'en sert. Une table morte (ni écrite,
       ni lue, sans dépendance SQL ni code) devient candidate à l'archivage, par lot.
-    status: proposé
-    decided_by: null
-    decided_on: null
+    status: décidé
+    decided_by: Marwane
+    decided_on: "2026-11-18"
+    decision_ref: *decision_84_20261118
 
 # Tables partitionnées : rétention en service (mesurée le 2026-11-18) et proposition.
 # Rien n'est changé en base par ce fichier.

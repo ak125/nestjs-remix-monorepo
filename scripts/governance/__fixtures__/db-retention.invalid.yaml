@@ -1,11 +1,12 @@
 # Fixture FAUSSE pour validate-db-retention.js --self-test. Ne pas corriger.
-# Attendu : SCHEMA (fixé sans décideur, action inconnue), FAMILY_DUP,
+# Attendu : SCHEMA (décidé sans décideur ni référence, action inconnue), FAMILY_DUP,
 # PROTECTED_MISSING, PARTITION_RULE (aucune règle de partition),
-# FAMILY_UNKNOWN (familles de l'inventaire non déclarées).
+# FAMILY_UNKNOWN (familles de l'inventaire non déclarées),
+# STATUS_GLOBAL (fichier « décidé » alors qu'une famille reste « proposé »).
 schema_version: 1
 title: Règles fausses
 inventory: audit/massdoc-table-inventory-2026-11-18.json
-status: fixé
+status: décidé
 decided_by: null
 decided_on: null
 archive_target_schema: _archive
@@ -28,7 +29,7 @@ families:
     proposed_retention_days: 30
     after_retention: purger_lignes
     rule: purge au bout de 30 jours
-    status: fixé
+    status: décidé
     decided_by: null
     decided_on: null
 partitions: []

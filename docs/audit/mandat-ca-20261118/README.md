@@ -16,7 +16,8 @@ Rien n'a été écrit en base, aucune migration n'est écrite, aucun cron n'est 
 - Les 8 copies `pieces_media_img_*` restent en place : zone interdite.
 
 Toutes les mesures sont **mesurées** en base ou dans le dépôt ; le classement est
-**déduit** de ces mesures ; les durées sont **proposées** ; ce qui manque est dit
+**déduit** de ces mesures ; les durées des six familles sont **décidées** par Marwane le 2026-11-18, celles des
+partitions restent **proposées** ; ce qui manque est dit
 **non fait** (section Limites de l'inventaire).
 
 ## Les fichiers
@@ -25,10 +26,10 @@ Toutes les mesures sont **mesurées** en base ou dans le dépôt ; le classement
 |---|---|
 | `audit/massdoc-table-inventory-2026-11-18.md` | Inventaire lisible : réponse, synthèses par classe et par département, partitions, `cf_rum`, écart avec `partition-cron-gap`, tables à trancher, une ligne par table, limites |
 | `audit/massdoc-table-inventory-2026-11-18.json` | Le même inventaire pour les machines (lu par le validateur) |
-| `config/db-retention/retention-rules.yaml` | Règles de conservation par famille et par table partitionnée — **toutes au statut « proposé »** |
+| `config/db-retention/retention-rules.yaml` | Règles de conservation par famille et par table partitionnée — **partiellement décidé** : six familles « décidé » (2026-11-18), `partition_instantane` et les 17 partitions « proposé » |
 | `config/db-retention/retention-rules.schema.json` | Schéma des règles |
 | `scripts/governance/validate-db-retention.js` | Validateur (même modèle que `validate-agent-operating-map.js`) |
-| `scripts/governance/__tests__/validate-db-retention.test.mjs` | 10 tests `node:test` |
+| `scripts/governance/__tests__/validate-db-retention.test.mjs` | 12 tests `node:test` |
 | `scripts/governance/__fixtures__/db-retention*.invalid.*` | Fichiers faux que le validateur doit refuser |
 | `docs/audit/mandat-ca-20261118/candidats-archivage.md` | Les 39 candidats, au format du lot D, avec leurs preuves |
 | `docs/audit/mandat-ca-20261118/sql/` | Les SELECT exécutés |
@@ -57,9 +58,25 @@ est vide n'est pas comptée vivante : elle est à trancher.
 
 ## Ce que Marwane décide
 
-1. **Les durées** de `retention-rules.yaml` (30 j, 90 j… sont des propositions).
-   Une règle passe à `fixé` avec `decided_by` et `decided_on` ; le validateur
-   refuse un `fixé` sans ces deux champs.
+1. **Les durées.** Décidées le 2026-11-18 pour six familles (décision 84 précisée :
+   « Oui » à « Est-ce que je retiens ces durées, proposées par la session ? », en
+   gardant 90 jours pour les copies) :
+
+   | Famille | Durée | Ensuite |
+   |---|---|---|
+   | `copie_ponctuelle` | 90 jours | archiver dans `_archive` |
+   | `journal` | 90 jours | purger les lignes |
+   | `import_staging` | 30 jours après la fin du lot | purger les lignes |
+   | `cache_projection` | aucune | — |
+   | `ancien_site` | aucune ; ni durée ni archivage sans avis des départements 18 et 17 | — |
+   | `referentiel_metier` | aucune tant que le métier s'en sert | — |
+
+   **Reste à décider** : `partition_instantane` et les 17 tables partitionnées,
+   table par table. Le fichier est donc « partiellement décidé ». Une règle passe
+   à `décidé` avec `decided_by`, `decided_on` et `decision_ref` ; le validateur
+   refuse un `décidé` incomplet, un `proposé` qui porte un décideur, et un statut
+   de fichier qui ne dit pas l'état de ses règles (`[STATUS_GLOBAL]`). Décider une
+   durée ne la met pas en service : cron ou migration relèvent d'un mandat suivant.
 2. **Chaque lot d'archivage** (F1 : 19 tables ; F2 : 20 tables `__seo_*`, `__diag_*`,
    `kg_*` soumises à décision écrite). Migration écrite dans un mandat suivant,
    passée par « 🗄️ Apply Supabase migrations (manual) », essai à blanc d'abord.

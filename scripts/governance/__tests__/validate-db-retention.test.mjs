@@ -25,7 +25,7 @@ test("le fichier livré passe (code 0)", () => {
 test("les règles fausses échouent (code 1) avec les erreurs attendues", () => {
   const r = runCli("--rules", path.join(FIX, "db-retention.invalid.yaml"));
   assert.equal(r.status, 1, r.stdout);
-  for (const c of ["SCHEMA", "FAMILY_DUP", "PROTECTED_MISSING", "PARTITION_RULE", "FAMILY_UNKNOWN"]) {
+  for (const c of ["SCHEMA", "FAMILY_DUP", "PROTECTED_MISSING", "PARTITION_RULE", "FAMILY_UNKNOWN", "STATUS_GLOBAL"]) {
     assert.match(r.stderr, new RegExp(`\\[${c}\\]`), `${c} absent de :\n${r.stderr}`);
   }
 });
@@ -51,14 +51,65 @@ test("fichier absent = échec de fonctionnement (code 2, ligne [FATAL])", () => 
   assert.match(r.stderr, /^\[FATAL\]/);
 });
 
-test("« fixé » sans décideur est refusé", () => {
+test("« décidé » sans décideur, date ou référence est refusé ; « proposé » avec un décideur aussi", () => {
   const rules = loadRules(RULES_PATH);
   const inv = loadInventory(path.join(REPO_ROOT, rules.inventory));
-  rules.families[0].status = "fixé";
-  assert.ok(codes(validate(rules, inv, compileSchema())).has("SCHEMA"));
-  rules.families[0].decided_by = "Marwane";
-  rules.families[0].decided_on = "2026-11-20";
+  const fam = rules.families.find((f) => f.status === "décidé");
+  for (const field of ["decided_by", "decided_on", "decision_ref"]) {
+    const copy = structuredClone(rules);
+    const f = copy.families.find((x) => x.id === fam.id);
+    f[field] = null;
+    assert.ok(codes(validate(copy, inv, compileSchema())).has("SCHEMA"), field);
+    delete f[field];
+    assert.ok(codes(validate(copy, inv, compileSchema())).has("SCHEMA"), `${field} absent`);
+  }
+  const copy = structuredClone(rules);
+  copy.partitions[0].decided_by = "Marwane";
+  assert.ok(codes(validate(copy, inv, compileSchema())).has("SCHEMA"));
   assert.equal(validate(rules, inv, compileSchema()).length, 0);
+});
+
+test("le statut du fichier suit ses règles : proposé, partiellement décidé, décidé", () => {
+  const rules = loadRules(RULES_PATH);
+  const inv = loadInventory(path.join(REPO_ROOT, rules.inventory));
+  assert.equal(rules.status, "partiellement décidé");
+  for (const wrong of ["décidé", "proposé"]) {
+    const copy = structuredClone(rules);
+    copy.status = wrong;
+    if (wrong === "proposé") copy.decided_by = copy.decided_on = copy.decision_ref = null;
+    assert.ok(codes(validate(copy, inv, compileSchema())).has("STATUS_GLOBAL"), wrong);
+  }
+  const all = structuredClone(rules);
+  for (const x of [...all.families, ...all.partitions]) {
+    Object.assign(x, { status: "décidé", decided_by: "Marwane", decided_on: "2026-12-01", decision_ref: rules.decision_ref });
+  }
+  all.status = "décidé";
+  assert.equal(validate(all, inv, compileSchema()).length, 0);
+});
+
+test("les durées décidées le 2026-11-18 sont celles de la décision ; partitions non décidées", () => {
+  const rules = loadRules(RULES_PATH);
+  const want = {
+    copie_ponctuelle: [90, "archiver"],
+    journal: [90, "purger_lignes"],
+    import_staging: [30, "purger_lignes"],
+    cache_projection: [null, "aucune"],
+    ancien_site: [null, "aucune"],
+    referentiel_metier: [null, "aucune"],
+  };
+  for (const f of rules.families) {
+    if (f.id in want) {
+      assert.deepEqual([f.proposed_retention_days, f.after_retention], want[f.id], f.id);
+      assert.equal(f.status, "décidé", f.id);
+      assert.equal(f.decided_by, "Marwane", f.id);
+      assert.equal(f.decided_on, "2026-11-18", f.id);
+      assert.match(f.decision_ref, /Décision 84/, f.id);
+    } else {
+      assert.equal(f.status, "proposé", f.id);
+    }
+  }
+  assert.ok(rules.families.some((f) => f.id === "partition_instantane" && f.status === "proposé"));
+  assert.ok(rules.partitions.length > 0 && rules.partitions.every((p) => p.status === "proposé"));
 });
 
 test("une table pieces_media_img* ajoutée aux candidats est refusée", () => {

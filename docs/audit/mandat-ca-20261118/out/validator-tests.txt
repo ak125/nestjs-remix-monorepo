@@ -1,29 +1,31 @@
-# 2026-11-18T10:34:30Z — worktree /opt/automecanik/app-worktrees/mandat-ca-db-hygiene, HEAD 054f0573b + modifications du complément CA-2
+# 2026-11-18T11:05:48Z — worktree /opt/automecanik/app-worktrees/mandat-ca-db-hygiene, HEAD 37770d077 + modifications du complément CA-3
 # node v24.21.0 ; worktree sans node_modules ; NODE_PATH=/opt/automecanik/app/node_modules (lecture seule, aucune installation)
 $ node scripts/governance/validate-db-retention.js
 db-retention : conforme (audit/massdoc-table-inventory-2026-11-18.json)
 exit=0
 $ node scripts/governance/validate-db-retention.js --self-test
-self-test règles fausses : PASS (SCHEMA, FAMILY_DUP, PROTECTED_MISSING, PARTITION_RULE, FAMILY_UNKNOWN)
+self-test règles fausses : PASS (SCHEMA, FAMILY_DUP, PROTECTED_MISSING, PARTITION_RULE, FAMILY_UNKNOWN, STATUS_GLOBAL)
 self-test inventaire faux : PASS (CLASS_SUM, PARTITION_ONCE, PARTITION_RULE, FAMILY_UNKNOWN, PROTECTED_CANDIDATE, CANDIDATE_CLASS)
 exit=0
 $ node --test scripts/governance/__tests__/validate-db-retention.test.mjs
-✔ le fichier livré passe (code 0) (225.691508ms)
-✔ les règles fausses échouent (code 1) avec les erreurs attendues (134.338944ms)
-✔ l'inventaire faux échoue (code 1) avec les erreurs attendues (143.769802ms)
-✔ --self-test passe (153.755051ms)
-✔ fichier absent = échec de fonctionnement (code 2, ligne [FATAL]) (144.196622ms)
-✔ « fixé » sans décideur est refusé (123.183684ms)
-✔ une table pieces_media_img* ajoutée aux candidats est refusée (28.280706ms)
-✔ une table prévue par une décision, ou à retirer après tarissement, remise en candidate est refusée (49.047125ms)
-✔ une tranche comptée en plus comme table est refusée (36.832304ms)
-✔ l'inventaire livré : somme des classes = 363 = 346 + 17, 355 tranches (10.12541ms)
-ℹ tests 10
+✔ le fichier livré passe (code 0) (181.246068ms)
+✔ les règles fausses échouent (code 1) avec les erreurs attendues (128.455149ms)
+✔ l'inventaire faux échoue (code 1) avec les erreurs attendues (152.712112ms)
+✔ --self-test passe (144.55408ms)
+✔ fichier absent = échec de fonctionnement (code 2, ligne [FATAL]) (138.512405ms)
+✔ « décidé » sans décideur, date ou référence est refusé ; « proposé » avec un décideur aussi (207.419957ms)
+✔ le statut du fichier suit ses règles : proposé, partiellement décidé, décidé (59.269996ms)
+✔ les durées décidées le 2026-11-18 sont celles de la décision ; partitions non décidées (1.879975ms)
+✔ une table pieces_media_img* ajoutée aux candidats est refusée (19.881122ms)
+✔ une table prévue par une décision, ou à retirer après tarissement, remise en candidate est refusée (44.674988ms)
+✔ une tranche comptée en plus comme table est refusée (23.593852ms)
+✔ l'inventaire livré : somme des classes = 363 = 346 + 17, 355 tranches (3.359589ms)
+ℹ tests 12
 ℹ suites 0
-ℹ pass 10
+ℹ pass 12
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1180.921546
+ℹ duration_ms 1226.734332
 exit=0

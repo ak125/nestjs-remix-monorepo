@@ -10,7 +10,11 @@
  *
  * Contrôles (code entre crochets dans la sortie) :
  *   [SCHEMA]               les règles respectent retention-rules.schema.json
- *                          (dont : « fixé » exige decided_by et decided_on)
+ *                          (dont : « décidé » exige decided_by, decided_on et
+ *                          decision_ref ; « proposé » n'a ni décideur ni date)
+ *   [STATUS_GLOBAL]        le statut du fichier ne dit pas l'état de ses règles :
+ *                          « proposé » si aucune n'est décidée, « décidé » si
+ *                          toutes le sont, sinon « partiellement décidé »
  *   [FAMILY_DUP]           une famille déclarée deux fois
  *   [PROTECTED_MISSING]    la protection ^pieces_media_img a disparu des règles
  *   [INVENTORY]            inventaire absent ou illisible
@@ -125,6 +129,18 @@ function validate(rules, inventory, validateSchema) {
     err("PROTECTED_MISSING", `la protection ${REQUIRED_PROTECTION} doit rester dans protected`);
   }
   const isProtected = (n) => protectedRx.some((rx) => rx.test(n));
+
+  // --- statut du fichier = état de ses règles (familles et partitions) ---
+  const items = [...families, ...(Array.isArray(rules?.partitions) ? rules.partitions : [])];
+  const decided = items.filter((x) => x?.status === "décidé").length;
+  const expectedStatus =
+    decided === 0 ? "proposé" : decided === items.length ? "décidé" : "partiellement décidé";
+  if (items.length && rules?.status !== expectedStatus) {
+    err(
+      "STATUS_GLOBAL",
+      `statut « ${rules?.status} » ; ${decided} règle(s) décidée(s) sur ${items.length} : attendu « ${expectedStatus} »`,
+    );
+  }
 
   // --- inventaire ---
   if (!inventory || typeof inventory !== "object") {
@@ -246,7 +262,7 @@ function selfTest() {
       label: "règles fausses",
       rules: loadRules(path.join(FIXTURES, "db-retention.invalid.yaml")),
       inventory: goodInv,
-      expected: ["SCHEMA", "FAMILY_DUP", "PROTECTED_MISSING", "PARTITION_RULE", "FAMILY_UNKNOWN"],
+      expected: ["SCHEMA", "FAMILY_DUP", "PROTECTED_MISSING", "PARTITION_RULE", "FAMILY_UNKNOWN", "STATUS_GLOBAL"],
     },
     {
       label: "inventaire faux",
