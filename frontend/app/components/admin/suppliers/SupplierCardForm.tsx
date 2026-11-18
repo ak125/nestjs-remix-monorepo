@@ -29,7 +29,7 @@ import {
   type SupplierDuplicate,
 } from "./supplier-card";
 
-export interface SupplierCardFormErrors {
+interface SupplierCardFormErrors {
   message?: string;
   fieldErrors?: Record<string, string>;
   duplicates?: SupplierDuplicate[];
@@ -182,7 +182,11 @@ export function SupplierCardForm({
             label="Alias"
             defaultValue={card?.alias}
             error={fe.alias}
-            hint={mode === "create" ? "Déduit du nom s'il est laissé vide" : undefined}
+            hint={
+              mode === "create"
+                ? "Déduit du nom s'il est laissé vide"
+                : undefined
+            }
           />
           <Choice
             name="type"

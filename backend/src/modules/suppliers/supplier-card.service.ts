@@ -72,7 +72,7 @@ export interface SupplierCardView {
   possibleDuplicates: DuplicateMatch[];
 }
 
-export interface SupplierPriceProfileView {
+interface SupplierPriceProfileView {
   id: number;
   scopeLevel: string;
   scopeCode: string | null;

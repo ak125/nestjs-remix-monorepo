@@ -45,16 +45,12 @@ export const ACCESS_STATES = [
   'revoque',
 ] as const;
 
-export type SupplierType = (typeof SUPPLIER_TYPES)[number];
 export type SupplierStatus = (typeof SUPPLIER_STATUSES)[number];
-export type SupplyMode = (typeof SUPPLY_MODES)[number];
-export type OrderMode = (typeof ORDER_MODES)[number];
-export type AccessState = (typeof ACCESS_STATES)[number];
 
 /** Même motif que le CHECK SQL `___xtr_supplier_spl_secret_name_check`. */
-export const SECRET_NAME_PATTERN = /^[A-Z][A-Z0-9_]{0,63}$/;
+const SECRET_NAME_PATTERN = /^[A-Z][A-Z0-9_]{0,63}$/;
 /** Même motif que le CHECK SQL `___xtr_supplier_spl_country_check`. */
-export const COUNTRY_PATTERN = /^[A-Z]{2}$/;
+const COUNTRY_PATTERN = /^[A-Z]{2}$/;
 const HTTP_URL_PATTERN = /^https?:\/\/\S+$/;
 const PHONE_PATTERN = /^\+?[0-9 ().-]{6,30}$/;
 
@@ -183,11 +179,6 @@ export const LOCATION_FIELDS = [
   'country',
   'supplyMode',
 ] as const satisfies readonly SupplierCardField[];
-
-export const validateCreateSupplierCard = (data: unknown) =>
-  CreateSupplierCardSchema.parse(data);
-export const validateUpdateSupplierCard = (data: unknown) =>
-  UpdateSupplierCardSchema.parse(data);
 
 // Filtres de la liste (consommés par SuppliersModernController) — inchangés.
 export const SupplierFiltersSchema = z.object({

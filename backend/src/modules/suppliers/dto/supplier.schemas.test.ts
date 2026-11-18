@@ -10,7 +10,7 @@ import {
   SUPPLY_MODES,
   UpdateSupplierCardSchema,
 } from './supplier.schemas';
-import { SUPPLIER_CARD_COLUMNS } from '../../supplier-truth/supplier-card.repository';
+import { SUPPLIER_CARD_COLUMNS } from '../../supplier-truth';
 
 const MIGRATION = readFileSync(
   join(

@@ -51,7 +51,7 @@ export const SUPPLIER_CARD_COLUMNS = [
   'spl_updated_by',
 ] as const;
 
-export type SupplierCardColumn = (typeof SUPPLIER_CARD_COLUMNS)[number];
+type SupplierCardColumn = (typeof SUPPLIER_CARD_COLUMNS)[number];
 
 /** Ligne de fiche telle que lue (bigint rendu en number par PostgREST). */
 export type SupplierCardRow = Record<
@@ -60,7 +60,7 @@ export type SupplierCardRow = Record<
 >;
 
 /** Colonnes qu'un humain saisit (le reste : clé, connecteur, validation, traçabilité). */
-export type SupplierCardWritableColumn = Exclude<
+type SupplierCardWritableColumn = Exclude<
   SupplierCardColumn,
   | 'spl_id'
   | 'spl_display'

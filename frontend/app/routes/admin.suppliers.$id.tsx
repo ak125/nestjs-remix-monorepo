@@ -169,7 +169,10 @@ export default function AdminSupplierCard() {
             <ul className="list-disc pl-5">
               {card.possibleDuplicates.map((d) => (
                 <li key={d.splId}>
-                  <Link className="underline" to={`/admin/suppliers/${d.splId}`}>
+                  <Link
+                    className="underline"
+                    to={`/admin/suppliers/${d.splId}`}
+                  >
                     #{d.splId} {d.name ?? ""}
                   </Link>{" "}
                   ({d.kind === "exact" ? "même nom" : "nom proche"})

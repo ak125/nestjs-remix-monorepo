@@ -94,7 +94,10 @@ describe("cardFormToBody", () => {
       formOf({ name: "DCA", status: "archive", francoEuros: "150" }),
       "update",
     );
-    expect(r).toEqual({ ok: true, body: { name: "DCA", francoHtCents: 15000 } });
+    expect(r).toEqual({
+      ok: true,
+      body: { name: "DCA", francoHtCents: 15000 },
+    });
   });
 
   it("création : statut ignoré, vides conservés pour effacement", () => {
@@ -117,9 +120,15 @@ describe("cardFormToBody", () => {
   });
 
   it("refuse un nom vide et un franco illisible", () => {
-    const r = cardFormToBody(formOf({ name: " ", francoEuros: "abc" }), "update");
+    const r = cardFormToBody(
+      formOf({ name: " ", francoEuros: "abc" }),
+      "update",
+    );
     expect(r.ok).toBe(false);
-    expect(!r.ok && Object.keys(r.errors).sort()).toEqual(["francoEuros", "name"]);
+    expect(!r.ok && Object.keys(r.errors).sort()).toEqual([
+      "francoEuros",
+      "name",
+    ]);
   });
 });
 
@@ -132,7 +141,10 @@ describe("readCardApiError", () => {
         { field: "francoHtCents", message: "Trop grand" },
       ],
     });
-    expect(e.fieldErrors).toEqual({ country: "Pays ISO 2", francoEuros: "Trop grand" });
+    expect(e.fieldErrors).toEqual({
+      country: "Pays ISO 2",
+      francoEuros: "Trop grand",
+    });
   });
 
   it("409 doublon : liste des fiches", () => {
@@ -156,9 +168,14 @@ describe("action de modification", () => {
     expect(calls[0].url).toMatch(/\/api\/suppliers\/71\/card$/);
     expect(calls[0].method).toBe("PUT");
     expect(calls[0].headers.get("Cookie")).toBe("connect.sid=abc");
-    expect(JSON.parse(calls[0].body ?? "{}")).toEqual({ name: "DCA", city: "Lyon" });
+    expect(JSON.parse(calls[0].body ?? "{}")).toEqual({
+      name: "DCA",
+      city: "Lyon",
+    });
     expect((res as Response).status).toBe(302);
-    expect((res as Response).headers.get("Location")).toBe("/admin/suppliers/71");
+    expect((res as Response).headers.get("Location")).toBe(
+      "/admin/suppliers/71",
+    );
   });
 
   it("409 affiché avec le statut, pas de redirection", async () => {

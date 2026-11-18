@@ -49,14 +49,14 @@ export const SCOPE_LEVEL_LABELS: Record<string, string> = {
   SUBFAMILY: "Sous-famille",
 };
 
-export interface SupplierLinkedBrand {
+interface SupplierLinkedBrand {
   linkId: string;
   pmId: number | null;
   brandName: string | null;
   linkDisplayed: boolean;
 }
 
-export interface SupplierPriceProfile {
+interface SupplierPriceProfile {
   id: number;
   scopeLevel: string;
   scopeCode: string | null;
@@ -220,7 +220,10 @@ export interface CardApiError {
 }
 
 /** Réponse d'erreur du backend (400 Zod, 409 doublon, autre) → message affiché. */
-export function readCardApiError(status: number, payload: unknown): CardApiError {
+export function readCardApiError(
+  status: number,
+  payload: unknown,
+): CardApiError {
   const p = (payload ?? {}) as {
     message?: unknown;
     errors?: { field?: string; message?: string }[];

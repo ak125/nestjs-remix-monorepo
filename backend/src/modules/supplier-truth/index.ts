@@ -23,9 +23,7 @@ export {
   SUPPLIER_CARD_COLUMNS,
 } from './supplier-card.repository';
 export type {
-  SupplierCardColumn,
   SupplierCardRow,
-  SupplierCardWritableColumn,
   SupplierCardPatch,
   SupplierIdentity,
   SupplierLinkedBrand,
