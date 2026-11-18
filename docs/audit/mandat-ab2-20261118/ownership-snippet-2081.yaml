@@ -1,0 +1,13 @@
+  # PR #2081 (mandat AB, complément AB-2) — sous-agents racine et inventaire des agents.
+  # Département 23 (ia-agents), domaine D15 comme .claude/skills/**. Extrait préparé,
+  # non appliqué : ownership.yaml est owner-only, ajout en fin de fichier par resync-pr.sh.
+  - glob: .claude/agents/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: audit/agents/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low

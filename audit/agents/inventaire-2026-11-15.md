@@ -1,5 +1,11 @@
 # Inventaire des agents — 2026-11-15 (Mandat AB)
 
+> Relevé daté, laissé tel quel. Mise à jour du 2026-11-18 (complément AB-2) :
+> `docs/audit/mandat-ab2-20261118/README.md`. Les règles AI1, AI5 et AI6 et les fiches citées ici
+> viennent du Vault, qui n'est plus normatif (décision 72) ; les sous-agents sont désormais
+> inventoriés dans `skills.registry.json` (`subagents[]`), et `agent-operating-map.patch` ne
+> s'applique plus.
+
 - Statut AEC : `PARTIAL_COVERAGE` (voir manifeste en fin de document).
 - Base : `origin/main` = `c70c4025fa08e40193a9912182c9e0f2896db2d8`.
 - Ce document n'active rien. Il prépare des décisions réservées à l'owner.

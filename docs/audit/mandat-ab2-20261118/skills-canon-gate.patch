@@ -1,0 +1,29 @@
+--- a/.github/workflows/skills-canon-gate.yml	2026-11-18 01:07:13.835548211 +0100
++++ b/.github/workflows/skills-canon-gate.yml	2026-11-18 01:07:13.867548271 +0100
+@@ -22,6 +22,9 @@
+     branches: [main]
+     paths:
+       - ".claude/skills/**"
++      - ".claude/agents/**"
++      - "workspaces/*/.claude/skills/**"
++      - "workspaces/*/.claude/agents/**"
+       - ".spec/00-canon/ai-registry/**"
+       - "scripts/governance/validate-skills-frontmatter.js"
+       - "scripts/governance/build-skills-registry.js"
+@@ -35,6 +38,7 @@
+       - ".github/workflows/skills-canon-gate.yml"
+       - "skills-lock.json"
+       - "scripts/governance/__tests__/skills-third-party-lock.test.ts"
++      - "scripts/governance/__tests__/skills-registry-subagents.test.ts"
+ 
+ concurrency:
+   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+@@ -71,7 +75,7 @@
+ 
+       - name: 🔐 Third-party skills lock — unit tests (P40, journal des principes)
+         if: always()
+-        run: npx tsx --test scripts/governance/__tests__/skills-third-party-lock.test.ts
++        run: npx tsx --test scripts/governance/__tests__/skills-third-party-lock.test.ts scripts/governance/__tests__/skills-registry-subagents.test.ts
+ 
+       # skills.registry.json porte un sha256 de chaque SKILL.md ; sans ce step, rien ne
+       # signale qu'une édition de skill l'a rendu faux. Lecture seule (--check ne réécrit rien).

@@ -22,6 +22,65 @@ if ! COMMAND=$(jq -ers '
   exit 2
 fi
 
+# Read-only mode — mandate subagents (.claude/agents/mandat/*.md, mandat AB). Claude Code puts the
+# calling subagent's name in the envelope (`agent_type`, absent for the main session) ; every
+# subagent named mandat-* is read-only. A hook declared in a subagent's frontmatter was not run
+# (Claude Code 2.1.327, essai du 2026-11-18) : this hook, wired in settings.json for every Bash
+# call, is the guard. Allow-list, fail closed : every command of the line must be a read.
+# Refused : command substitution, process substitution, any redirection other than to /dev/null
+# or between fds, env assignments, and any program or subcommand not listed. Quoted strings are
+# blanked before splitting, so `jq '.a | .b'` stays one command.
+AGENT_TYPE=$(jq -rs '.[0].agent_type // empty | strings' <<<"$INPUT" 2>/dev/null || true)
+if [[ "$AGENT_TYPE" == mandat-* ]]; then
+  ro_block() { echo "BLOCKED (lecture seule, sous-agent $AGENT_TYPE) : $1. Ce sous-agent n'ecrit rien ; rapporter la commande au lieu de l'executer." >&2; exit 2; }
+  if grep -qE '`|\$\(|<\(|>\(' <<<"$COMMAND"; then ro_block "substitution de commande ou de processus"; fi
+  RO_BARE=$(sed -E "s/'[^']*'/Q/g; s/\"([^\"\\\\]|\\\\.)*\"/Q/g" <<<"$COMMAND")
+  if grep -qE "['\"]" <<<"$RO_BARE"; then ro_block "guillemet non ferme"; fi
+  RO_NOREDIR=$(sed -E 's#[0-9]*>>?[[:space:]]*/dev/null##g; s#[0-9]*>&[0-9]##g; s#&>[[:space:]]*/dev/null##g' <<<"$RO_BARE")
+  if grep -qE '>' <<<"$RO_NOREDIR"; then ro_block "redirection vers un fichier"; fi
+  while IFS= read -r seg; do
+    seg=$(sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' <<<"$seg")
+    [ -n "$seg" ] || continue
+    read -r -a W <<<"$seg"
+    case "${W[0]}" in
+      cat|head|tail|wc|uniq|cut|tr|jq|grep|sha256sum|ls|stat|date|basename|dirname|readlink|realpath|pwd|echo|printf|true|test|diff|comm|nl|column|cd) ;;
+      sort) grep -qE ' (-o|--output)' <<<" $seg" && ro_block "sort -o ecrit un fichier" ;;
+      rg) grep -qE ' --pre(=| |$)' <<<" $seg " && ro_block "rg --pre execute un programme" ;;
+      export) [[ "$seg" =~ ^export[[:space:]]+GIT_OPTIONAL_LOCKS=0$ ]] || ro_block "export autre que GIT_OPTIONAL_LOCKS=0" ;;
+      git)
+        i=1
+        while [ "$i" -lt "${#W[@]}" ]; do
+          case "${W[$i]}" in
+            -C) i=$((i+2)) ;;
+            --no-pager) i=$((i+1)) ;;
+            -*) ro_block "option globale git ${W[$i]}" ;;
+            *) break ;;
+          esac
+        done
+        sub="${W[$i]:-}"; rest=" ${W[*]:$((i+1))} "
+        case "$sub" in
+          status|log|show|diff|rev-parse|ls-files|ls-remote|cat-file|merge-base|describe|blame|shortlog|rev-list|for-each-ref|show-ref|name-rev) ;;
+          grep) grep -qE ' (-O[^ ]*|--open-files-in-pager[^ ]*)( |$)' <<<"$rest" && ro_block "git grep -O execute un programme" ;;
+          worktree) [ "${W[$((i+1))]:-}" = "list" ] || ro_block "git worktree autre que list" ;;
+          branch) grep -qE '^ ((-r|-a|-v|-vv|--list|--show-current|--contains|--merged|--no-merged|--format=[^ ]*|--sort=[^ ]*)( |$))*$' <<<"$rest" || ro_block "git branch hors lecture" ;;
+          *) ro_block "git $sub" ;;
+        esac
+        if grep -qE ' --output(=| )| --ext-diff | --textconv | --upload-pack(=| )| -u ' <<<"$rest"; then ro_block "option git qui ecrit ou execute"; fi ;;
+      gh)
+        sub="${W[1]:-} ${W[2]:-}"
+        case "$sub" in
+          "pr view"|"pr list"|"pr checks"|"pr diff"|"pr status"|"run view"|"run list"|"issue view"|"issue list"|"repo view"|"release view"|"release list") ;;
+          "api "*)
+            if grep -qE '(^| )(-X|--method)(=| )?[^ ]*' <<<"$seg" && ! grep -qE '(^| )(-X|--method)(=| )?GET( |$)' <<<"$seg"; then ro_block "gh api autre que GET"; fi
+            if grep -qE '(^| )(-f|-F|--field|--raw-field|--input)(=| |$)|(^| )-[fF][^ ]' <<<"$seg"; then ro_block "gh api avec corps de requete"; fi ;;
+          *) ro_block "gh $sub" ;;
+        esac
+        if grep -qE '(^| )(-o|--output)(=| |$)' <<<"$seg"; then ro_block "option gh qui ecrit un fichier"; fi ;;
+      *) ro_block "programme non autorise en lecture seule : ${W[0]}" ;;
+    esac
+  done < <(sed -E 's/\|\||&&|[;|&]/\n/g' <<<"$RO_NOREDIR")
+fi
+
 # Tests via here-string, never `echo "$X" | grep -q`: under pipefail, grep -q exits
 # on the first matching line, echo gets SIGPIPE on long multi-line input, and the
 # match reads as "no match" — the guard let it through (scripts/test-claude-hooks.sh, 1 Mo).

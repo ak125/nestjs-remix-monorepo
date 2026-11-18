@@ -1,9 +1,112 @@
 {
-  "compliantCount": 18,
-  "generatedAt": "2026-11-17T16:48:37.967Z",
-  "issues": [],
+  "compliantCount": 22,
+  "generatedAt": "2026-11-18T00:07:50.322Z",
+  "ignoredFiles": [
+    {
+      "path": "workspaces/seo-batch/.claude/agents/_shared/kp-shared-output.md",
+      "reason": "no frontmatter name : not loaded as a subagent"
+    }
+  ],
+  "issues": [
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "creative-pattern-extractor"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "fafa-brand-safety-reviewer"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "fafa-performance-analyzer"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "fafa-persona-canon"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "fafa-remotion-template-planner"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "fafa-script-generator"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "fafa-video-prompt-builder"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "content-audit"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "content-gen"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "content-quality-gate"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "keyword-planner"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "kw-classify"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "legacy-recycler"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "pipeline-orchestrator"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "r8-diversity-check"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "rag-check"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "rag-ops"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "seo-content-architect"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "seo-content-loop"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "seo-gamme-audit"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "seo-vault-verify"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "surgical-cleaner"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "v5-guardian"
+    },
+    {
+      "reason": "frontmatter not spec-compliant",
+      "skill": "wiki-proposal-writer"
+    }
+  ],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "skills": [
     {
       "checksum": "sha256:336ba50decc644fe54af99a6c74fcaeb10d9b663068b82f12c3f60fda2fcbb1f",
@@ -471,7 +574,800 @@
         "web-vitals"
       ],
       "type": "technique"
+    },
+    {
+      "checksum": "sha256:d6d5cb8d0110b5e8ae63c8bae78229d46f3248bcc1e457bc8ae8299114fde35f",
+      "domain": "D12",
+      "last_verified": "2026-10-02",
+      "llm_safe": true,
+      "metadata": {
+        "version": "2.1.4"
+      },
+      "name": "amk-marketing-operations",
+      "owners": [
+        "@ak125"
+      ],
+      "path": "workspaces/marketing/.claude/skills/amk-marketing-operations/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique",
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:f1e54013c60c3d96a0e0c444a3d1df46b1242ce5edb5dabe127108a5cd1081fd",
+      "domain": "D12",
+      "last_verified": "2026-10-13",
+      "llm_safe": true,
+      "metadata": {
+        "version": "2.1.9"
+      },
+      "name": "amk-marketing-preparation",
+      "owners": [
+        "@ak125"
+      ],
+      "path": "workspaces/marketing/.claude/skills/amk-marketing-preparation/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique",
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:4cdb307b7423c2ad2054129f3b4d8432740cb5bc9289a5b184db12340c67c5a1",
+      "domain": "D12",
+      "last_verified": "2026-10-13",
+      "llm_safe": true,
+      "metadata": {
+        "version": "2.0.1"
+      },
+      "name": "amk-marketing-validation",
+      "owners": [
+        "@ak125"
+      ],
+      "path": "workspaces/marketing/.claude/skills/amk-marketing-validation/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique",
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:3edfbb11a650ef9f4198dbd818ee362e275d79a8e13b1f6a934e1bc64533799e",
+      "domain": "D12",
+      "last_verified": "2026-10-02",
+      "llm_safe": true,
+      "metadata": {
+        "version": "1.0.0"
+      },
+      "name": "amk-reactivation",
+      "owners": [
+        "@ak125"
+      ],
+      "path": "workspaces/marketing/.claude/skills/amk-reactivation/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique",
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:2b6cd9afbf96349a1750e15744c4231ea19f815d07f2277cb8d8a45c4886b50b",
+      "name": "creative-pattern-extractor",
+      "path": "workspaces/marketing/.claude/skills/creative-pattern-extractor/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:3e55f5a4467a00b096315583e4fc54715c89160d9f92cc302bbe1c957b559092",
+      "name": "fafa-brand-safety-reviewer",
+      "path": "workspaces/marketing/.claude/skills/fafa-brand-safety-reviewer/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:15deedfcf7c505ce8b04ca5d39e4848dccbf9085f508b28b89fb2826b1bdb655",
+      "name": "fafa-performance-analyzer",
+      "path": "workspaces/marketing/.claude/skills/fafa-performance-analyzer/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:b9baa3ce01817471331189009bea7703e84a817a40a858993fd28ab652e4d0e7",
+      "name": "fafa-persona-canon",
+      "path": "workspaces/marketing/.claude/skills/fafa-persona-canon/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:87c40bf9b8449bdbff74a43bffe4adc134584ab1c043fb21e94d05d3fa0f7ff4",
+      "name": "fafa-remotion-template-planner",
+      "path": "workspaces/marketing/.claude/skills/fafa-remotion-template-planner/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:e903bee9f69b819cc99f0b098cde6ed024f597101a67c57be635ee47e3f8748d",
+      "name": "fafa-script-generator",
+      "path": "workspaces/marketing/.claude/skills/fafa-script-generator/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:0dec41844fdf8014db57de21c4bdab64e096af5a922db657fe5bec97d3fea6fe",
+      "name": "fafa-video-prompt-builder",
+      "path": "workspaces/marketing/.claude/skills/fafa-video-prompt-builder/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:8fdd1dc6be168c30d41c585f2091849bde94bcace7a257d9fd41f3e2c69155b4",
+      "name": "content-audit",
+      "path": "workspaces/seo-batch/.claude/skills/content-audit/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:ecdd722e26e375cf3dc0d8235fd0d024f7892a81857499a58fa8521615bbe292",
+      "name": "content-gen",
+      "path": "workspaces/seo-batch/.claude/skills/content-gen/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:1b1ea74771bcbf7fc0e0eab9424b3899ad77621d1b71e9778025f9be938ec175",
+      "name": "content-quality-gate",
+      "path": "workspaces/seo-batch/.claude/skills/content-quality-gate/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:0ad88ec1db4ca67fa40150aa8f8610c6f58cd5390fdf99f25542dc062ef99008",
+      "name": "keyword-planner",
+      "path": "workspaces/seo-batch/.claude/skills/keyword-planner/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:6dea78071a7bea0449d9c655a2ed62c35ba40886fe9ba049e3dbfcf4ccd61399",
+      "name": "kw-classify",
+      "path": "workspaces/seo-batch/.claude/skills/kw-classify/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:ecacc74ac80116eb2302d72fee1ee91f4f6a117e4c6a01c0dfd9200cc3ad8e31",
+      "name": "legacy-recycler",
+      "path": "workspaces/seo-batch/.claude/skills/legacy-recycler/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:d9ff3ddeecdfc4d5e1756661fbac774a677b497c4c0d44395242a5302d602e9b",
+      "name": "pipeline-orchestrator",
+      "path": "workspaces/seo-batch/.claude/skills/pipeline-orchestrator/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:faed0e48bf7dde6795daec27a53aafddffb927b8d16b27618c2a7d6b50726ddf",
+      "name": "r8-diversity-check",
+      "path": "workspaces/seo-batch/.claude/skills/r8-diversity-check/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:19ad79f2a3f96828cc7167d9deeee186c46168dc364a862d73e2344772a06571",
+      "name": "rag-check",
+      "path": "workspaces/seo-batch/.claude/skills/rag-check/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:b75a02200557a168c64a85b3da576bfdb67c4283fbaf6b67f492657f5a2c7359",
+      "name": "rag-ops",
+      "path": "workspaces/seo-batch/.claude/skills/rag-ops/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:8c142e5d9eff595b059a89a8dd40d192a0db4799449c89534b647b7a43fae2c7",
+      "name": "seo-content-architect",
+      "path": "workspaces/seo-batch/.claude/skills/seo-content-architect/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:9d2814511bd95c2fd1d0d172ea7925228b71c9229dc5a412b8d00ddf97dd79dc",
+      "name": "seo-content-loop",
+      "path": "workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:8b81935b2ff58e113f1bbb3aac2e77169c09a7ade228104e0b9e6d58acc2cc5a",
+      "name": "seo-gamme-audit",
+      "path": "workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:4d028edb26eaaacd54b7fa3db496c7dac662aad3794615255db5c353f8ed2056",
+      "name": "seo-vault-verify",
+      "path": "workspaces/seo-batch/.claude/skills/seo-vault-verify/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:394519c0362e03d9a359e3c5cc22d2f4b71c12e1e7ccbce2913a6176303728b6",
+      "name": "surgical-cleaner",
+      "path": "workspaces/seo-batch/.claude/skills/surgical-cleaner/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:3f9b3267e75e2ef33fa26e443e2b50f1f13e4527c4a8a2fbfb03fb149b120181",
+      "name": "v5-guardian",
+      "path": "workspaces/seo-batch/.claude/skills/v5-guardian/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:f20c2708f9e13f0030647e6a1941f4021c32cb938f13d0768355f09a1612f23e",
+      "name": "wiki-proposal-writer",
+      "path": "workspaces/wiki/.claude/skills/wiki-proposal-writer/SKILL.md",
+      "spec_compliant": false,
+      "workspace": "wiki"
     }
   ],
-  "totalSkills": 19
+  "subagentSchemaPath": ".spec/00-canon/ai-registry/skill.schema.json#/$defs/subagent",
+  "subagents": [
+    {
+      "checksum": "sha256:26429fa704af7f2d5a336a2acc7d5dfa33ba4266d49e55d5dc891ca226b78096",
+      "department": "ia-agents",
+      "disallowed_tools": [
+        "Edit",
+        "NotebookEdit",
+        "Write"
+      ],
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "mandat-reception",
+      "path": ".claude/agents/mandat/mandat-reception.md",
+      "tools": [
+        "Bash",
+        "Glob",
+        "Grep",
+        "Read"
+      ]
+    },
+    {
+      "checksum": "sha256:cd167845580620be2b8961d2bc3cbba555455928b28002ab53445e5d8e14c355",
+      "department": "ia-agents",
+      "disallowed_tools": [
+        "Edit",
+        "NotebookEdit",
+        "Write"
+      ],
+      "kind": "subagent",
+      "model": "haiku",
+      "name": "mandat-releve",
+      "path": ".claude/agents/mandat/mandat-releve.md",
+      "tools": [
+        "Bash",
+        "Glob",
+        "Grep",
+        "Read"
+      ]
+    },
+    {
+      "checksum": "sha256:24747454add97592ec77f587c89c79285ede25459486e43b6f95dfc403098866",
+      "department": "ia-agents",
+      "disallowed_tools": [
+        "Edit",
+        "NotebookEdit",
+        "Write"
+      ],
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "mandat-triage-ci",
+      "path": ".claude/agents/mandat/mandat-triage-ci.md",
+      "tools": [
+        "Bash",
+        "Glob",
+        "Grep",
+        "Read"
+      ]
+    },
+    {
+      "checksum": "sha256:cd7cb066f92e6b9de0f3d7eb4faf3687e933bd8ff0e6208da514a0b2e506f5d0",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "customer-retention-agent",
+      "path": "workspaces/marketing/.claude/agents/customer-retention-agent.md",
+      "role": "CUSTOMER_RETENTION",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:d34609c72988d704d3105e9a77e541fabdd03c0cedf2d3496e295e7d1d55d275",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "local-business-agent",
+      "path": "workspaces/marketing/.claude/agents/local-business-agent.md",
+      "role": "LOCAL_BUSINESS",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:01d468b84c35073dcc58fb8904f2f6da1573894cbef2c0dce5d71d71ad4d5f05",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "marketing-lead-agent",
+      "path": "workspaces/marketing/.claude/agents/marketing-lead-agent.md",
+      "role": "MARKETING_LEAD",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "marketing"
+    },
+    {
+      "checksum": "sha256:57df473d172175e241c9e0b9220882a732791ff6f5a812fe167b26bfb585c7ed",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "agentic-critic",
+      "path": "workspaces/seo-batch/.claude/agents/agentic-critic.md",
+      "role": "AGENTIC_ENGINE",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:c226370a506b7df273076784803aacbbcee93344739e4536ac1ed65180f918d5",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "agentic-planner",
+      "path": "workspaces/seo-batch/.claude/agents/agentic-planner.md",
+      "role": "AGENTIC_ENGINE",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:54669e1020ecf6994a4c5d99fc6c3926b0632d8ce1158ac80d5ee16b5d54ba58",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "agentic-solver",
+      "path": "workspaces/seo-batch/.claude/agents/agentic-solver.md",
+      "role": "AGENTIC_ENGINE",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:c59b246cbf0929f51639b10a4bb943c0f86549ac45cb1bce9eca30aa28524727",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "blog-hub-planner",
+      "path": "workspaces/seo-batch/.claude/agents/blog-hub-planner.md",
+      "role": "FOUNDATION",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:26f346c6ae02e112695e396175e9201dfd8374eb417d30efd6676aaa75998841",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "brief-enricher",
+      "path": "workspaces/seo-batch/.claude/agents/brief-enricher.md",
+      "role": "FOUNDATION",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:d512696b6c8b31e88fca1852be968ce2e61a01a92921dff38eeb13df3f4218a1",
+      "disable_model_invocation": true,
+      "kind": "subagent",
+      "name": "conseil-batch",
+      "path": "workspaces/seo-batch/.claude/agents/conseil-batch.md",
+      "role": "R3_CONSEILS",
+      "tools": [
+        "Read"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:2903716ad4b92f14fdd1fe79bbd679a07726a5a43c2ed3859d9212cba2f549ca",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "keyword-planner",
+      "path": "workspaces/seo-batch/.claude/agents/keyword-planner.md",
+      "role": "FOUNDATION",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:5359738f57de71578d17303f3ad40aaa399a9e8e128153816a9447a925da9d53",
+      "kind": "subagent",
+      "name": "phase1-auditor",
+      "path": "workspaces/seo-batch/.claude/agents/phase1-auditor.md",
+      "role": "FOUNDATION",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:00f3c4fe5ab24ceba8d2e2449804e0cb0fa13a8e66189c735ea00ac83b964d8a",
+      "kind": "subagent",
+      "name": "r0-home-execution",
+      "path": "workspaces/seo-batch/.claude/agents/r0-home-execution.md",
+      "role": "R0_HOME",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:6af1882f3c9fd3107146a1baf8f803fe612517695ad9c00d7e6ebd423e742e1d",
+      "kind": "subagent",
+      "name": "r0-home-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r0-home-validator.md",
+      "role": "R0_HOME",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:329796aa69efcefe3a4f2b1aca7031e9e1bb59a043318e76860f898f7870df35",
+      "disable_model_invocation": true,
+      "kind": "subagent",
+      "name": "r1-content-batch",
+      "path": "workspaces/seo-batch/.claude/agents/r1-content-batch.md",
+      "role": "R1_ROUTER",
+      "tools": [
+        "Read"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:26ab52123efe9c8f5a4d63ec0d9b4a26c56bd70f0b3aa418b18bc8ca3242fb79",
+      "kind": "subagent",
+      "name": "r1-keyword-planner",
+      "path": "workspaces/seo-batch/.claude/agents/r1-keyword-planner.md",
+      "role": "R1_ROUTER",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:f165f68ca5a59bea6941f61cc0a746ad6668d7ccc1b9bf91a0e6851855df4a63",
+      "kind": "subagent",
+      "name": "r1-router-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r1-router-validator.md",
+      "role": "R1_ROUTER",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:99263c469d919a77d44368543b4962d137b1c43ddf5c3a26299b6f8e7fd036a8",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "r2-keyword-planner",
+      "path": "workspaces/seo-batch/.claude/agents/r2-keyword-planner.md",
+      "role": "R2_PRODUCT",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:af5be6c435a65447e68675d78b453d36b6f47f5ffd196f591dab381423355f4d",
+      "kind": "subagent",
+      "name": "r2-product-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r2-product-validator.md",
+      "role": "R2_PRODUCT",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:d745fd854421f6dfd17a293708177687073d89f6533745e73e9480a92db71e2b",
+      "kind": "subagent",
+      "name": "r3-conseils-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r3-conseils-validator.md",
+      "role": "R3_CONSEILS",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:52127326f05e3d10e21275218b480f305e2e0596c34fc8554cc7ed8c8ae0994d",
+      "kind": "subagent",
+      "model": "haiku",
+      "name": "r3-image-prompt",
+      "path": "workspaces/seo-batch/.claude/agents/r3-image-prompt.md",
+      "role": "R3_CONSEILS",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:78c74ff6f2e1f559be381a34adac7f84d4a076ccefa53a2b1a67bb8960069b64",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "r3-keyword-plan-batch",
+      "path": "workspaces/seo-batch/.claude/agents/r3-keyword-plan-batch.md",
+      "role": "R3_CONSEILS",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:27d55c58b899346581fbbfe5e978252481c5b6f60712d324f10c1938611fcb6b",
+      "kind": "subagent",
+      "name": "r3-keyword-planner",
+      "path": "workspaces/seo-batch/.claude/agents/r3-keyword-planner.md",
+      "role": "R3_CONSEILS",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:355c8fa35712e6dfbebfe0a1e14a1d645daf213144116d4d4b03007aee1ca735",
+      "disable_model_invocation": true,
+      "kind": "subagent",
+      "name": "r4-content-batch",
+      "path": "workspaces/seo-batch/.claude/agents/r4-content-batch.md",
+      "role": "R4_REFERENCE",
+      "tools": [
+        "Read"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:02d7547a0ae2c72643fdb0c71fbaabfa8418f24abe96d034078d9ed4d928c809",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "r4-keyword-planner",
+      "path": "workspaces/seo-batch/.claude/agents/r4-keyword-planner.md",
+      "role": "R4_REFERENCE",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:dd133fa7eddba392d3bda7ac7b14a69816156fa9bbcfd3438166e7cc5842aaa9",
+      "kind": "subagent",
+      "name": "r4-reference-execution",
+      "path": "workspaces/seo-batch/.claude/agents/r4-reference-execution.md",
+      "role": "R4_REFERENCE",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:622cffd40b05be134c58c6b165b19feb2c1255279e415074387604c3c0922b3f",
+      "kind": "subagent",
+      "name": "r4-reference-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r4-reference-validator.md",
+      "role": "R4_REFERENCE",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:68d48e06247ea5b97e35018be0d8a5417cea041f888cbf5096e7ab63bb320bf5",
+      "kind": "subagent",
+      "name": "r5-diagnostic-execution",
+      "path": "workspaces/seo-batch/.claude/agents/r5-diagnostic-execution.md",
+      "role": "R5_DIAGNOSTIC",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:ae537ed26b3dc6705cbb203514b4324f49eab7284b18b379b8e0d7144e13f5e6",
+      "kind": "subagent",
+      "name": "r5-diagnostic-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r5-diagnostic-validator.md",
+      "role": "R5_DIAGNOSTIC",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:e68265ef53c66a4a77939fc888e2df8c12d3c9278b9208827708e856dacf0497",
+      "kind": "subagent",
+      "name": "r5-keyword-planner",
+      "path": "workspaces/seo-batch/.claude/agents/r5-keyword-planner.md",
+      "role": "R5_DIAGNOSTIC",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:203eeb34e8d777ec4c947aca27718a3173d49c6271f270991abd3f6a675f164e",
+      "disable_model_invocation": true,
+      "kind": "subagent",
+      "name": "r6-content-batch",
+      "path": "workspaces/seo-batch/.claude/agents/r6-content-batch.md",
+      "role": "R6_GUIDE_ACHAT",
+      "tools": [
+        "Read"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:6e82afb4eadfa3f4052dfcac40b9fda4f859457d26b3c0497240db8b00efc02d",
+      "kind": "subagent",
+      "name": "r6-guide-achat-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r6-guide-achat-validator.md",
+      "role": "R6_GUIDE_ACHAT",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:850a778be905af332790be1bb60a865b03398fad4af4b171a390e1d7e2ae2e79",
+      "kind": "subagent",
+      "model": "haiku",
+      "name": "r6-image-prompt",
+      "path": "workspaces/seo-batch/.claude/agents/r6-image-prompt.md",
+      "role": "R6_GUIDE_ACHAT",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:17f1a1d2e8bef2abc120a0f5bc92f500bd1631604832f114401818465830cbdc",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "r6-keyword-planner",
+      "path": "workspaces/seo-batch/.claude/agents/r6-keyword-planner.md",
+      "role": "R6_GUIDE_ACHAT",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:dda19fec9997f00e7f16453dcf14b1fba6ad31b338d7b83c5955f542d663f9e0",
+      "kind": "subagent",
+      "name": "r6-support-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r6-support-validator.md",
+      "role": "R6_SUPPORT",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:0a2d02d38460c1989bf15bc294d4aea3cc8402420b07df8fba13ed05a4a6e0c3",
+      "kind": "subagent",
+      "name": "r7-brand-execution",
+      "path": "workspaces/seo-batch/.claude/agents/r7-brand-execution.md",
+      "role": "R7_BRAND",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:cd94b7d442a04d50fb354f14a1b3691820812dcf4b32a42c4cff023fce43c144",
+      "disable_model_invocation": true,
+      "kind": "subagent",
+      "name": "r7-brand-rag-generator",
+      "path": "workspaces/seo-batch/.claude/agents/r7-brand-rag-generator.md",
+      "role": "R7_BRAND",
+      "tools": [
+        "Read"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:96b6b540c3ffba37b5507e28b06c04750e5ecf1cb7ba93b3c30a32d703b157a9",
+      "kind": "subagent",
+      "name": "r7-brand-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r7-brand-validator.md",
+      "role": "R7_BRAND",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:1849918224242ce0549927279a4d734eab797155a3b026293669f16a3a042cbc",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "r7-keyword-planner",
+      "path": "workspaces/seo-batch/.claude/agents/r7-keyword-planner.md",
+      "role": "R7_BRAND",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:ac7dcc75aa234b118593d0715fc89edf1523cf4f5ef62f1a1e13ade3b493da11",
+      "kind": "subagent",
+      "model": "sonnet",
+      "name": "r8-keyword-planner",
+      "path": "workspaces/seo-batch/.claude/agents/r8-keyword-planner.md",
+      "role": "R8_VEHICLE",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:cf858d196bb7d728cc23b2075afac6a5cb11167c398d81c1b4001fd8a17d3b51",
+      "kind": "subagent",
+      "name": "r8-vehicle-execution",
+      "path": "workspaces/seo-batch/.claude/agents/r8-vehicle-execution.md",
+      "role": "R8_VEHICLE",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:1c57ae3681f91885ab42273b820e3ee2835a38ab4a5870d1ca884d4d7528ae22",
+      "kind": "subagent",
+      "name": "r8-vehicle-validator",
+      "path": "workspaces/seo-batch/.claude/agents/r8-vehicle-validator.md",
+      "role": "R8_VEHICLE",
+      "workspace": "seo-batch"
+    },
+    {
+      "checksum": "sha256:7247a447f364c207816ba99fe251938ab6c8cb2ab9c83bf9dc2ab67699c56595",
+      "kind": "subagent",
+      "model": "haiku",
+      "name": "research-agent",
+      "path": "workspaces/seo-batch/.claude/agents/research-agent.md",
+      "role": "FOUNDATION",
+      "tools": [
+        "Glob",
+        "Grep",
+        "Read",
+        "mcp__supabase__execute_sql"
+      ],
+      "workspace": "seo-batch"
+    }
+  ],
+  "totalSkills": 47,
+  "totalSubagents": 45
 }
