@@ -14,7 +14,9 @@ import { OrderAvailabilityService } from './order-availability.service';
  *    (connector → processor → runner → Bull scheduler) on top of it;
  *  - `OrdersModule` (decision 50, 2026-11-16), for ONE read only:
  *    `SupplierTruthRepository.getSupplierDirectory()` (`___xtr_supplier`), used by
- *    the admin order-line supplier proposal. No funnel or cart code imports it.
+ *    the admin order-line supplier proposal. No funnel or cart code imports it ;
+ *  - `PricingModule` (2026-11-17), for the same read only: the label written to
+ *    `pieces_price.pri_frs` by `PriceImportService.commit`.
  * `SupplierTruthService` and `OrderAvailabilityService` read the deferred H3
  * consensus tables, which no migration declares (see `supplier-truth.repository.ts`):
  * still not wired to any funnel, cart or order code.

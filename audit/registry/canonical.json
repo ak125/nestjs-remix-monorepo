@@ -7459,7 +7459,7 @@
           }
         ],
         "definedInMigrations": [
-          "20260608_pricing_commit_chunk_persist_pri_ref.sql"
+          "20261117_pricing_commit_chunk_frs_date_from.sql"
         ],
         "domain": "UNKNOWN",
         "id": "public.pricing_commit_chunk#sig:31e9b09e",
@@ -7469,6 +7469,58 @@
         "parseMode": "parsed",
         "parseWarnings": [],
         "returnType": "JSONB",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_batch_id",
+            "type": "uuid"
+          },
+          {
+            "mode": "IN",
+            "name": "p_chunk_id",
+            "type": "uuid"
+          },
+          {
+            "mode": "IN",
+            "name": "p_supplier",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_operator",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_rows",
+            "type": "jsonb"
+          },
+          {
+            "mode": "IN",
+            "name": "p_activate",
+            "type": "boolean"
+          }
+        ],
+        "definedInMigrations": [
+          "20261117_pricing_commit_chunk_frs_date_from.down.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.pricing_commit_chunk#sig:419ad653",
+        "language": "plpgsql",
+        "name": "pricing_commit_chunk",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
         "schema": "public",
         "schemaVersion": "1.0.0",
         "searchPath": [],
@@ -7647,13 +7699,45 @@
           "20260522_pricing_control_plane_v1_functions.sql"
         ],
         "domain": "UNKNOWN",
-        "id": "public.pricing_rollback_batch",
+        "id": "public.pricing_rollback_batch#sig:6c9e49aa",
         "language": "plpgsql",
         "name": "pricing_rollback_batch",
         "owner": "__unassigned__",
         "parseMode": "parsed",
         "parseWarnings": [],
         "returnType": "JSONB",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_batch_id",
+            "type": "uuid"
+          },
+          {
+            "mode": "IN",
+            "name": "p_supplier",
+            "type": "text"
+          }
+        ],
+        "definedInMigrations": [
+          "20261117_pricing_commit_chunk_frs_date_from.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.pricing_rollback_batch#sig:af0cc18b",
+        "language": "plpgsql",
+        "name": "pricing_rollback_batch",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
         "schema": "public",
         "schemaVersion": "1.0.0",
         "searchPath": [],
@@ -52277,7 +52361,7 @@
         "backend/src/modules/pricing/services/pricing-strategy.service.ts"
       ],
       "kind": "controller",
-      "loc": 233,
+      "loc": 235,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
       "risk": "high",
@@ -52309,10 +52393,11 @@
         "backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts",
-        "backend/src/modules/pricing/services/supplier-profile.service.ts"
+        "backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "kind": "service",
-      "loc": 45,
+      "loc": 48,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/pricing.module.ts",
       "risk": "high",
@@ -52900,6 +52985,7 @@
       "id": "backend/src/modules/pricing/services/price-import.dry-run.ts",
       "importedBy": [
         "backend/src/modules/pricing/services/__tests__/price-import.dry-run.test.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
@@ -52925,10 +53011,36 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/modules/pricing/services/price-import.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/services/price-import.dry-run.ts",
+        "backend/src/modules/pricing/services/price-import.service.ts",
+        "backend/src/modules/pricing/services/pricing.repository.ts",
+        "backend/src/modules/supplier-truth/index.ts"
+      ],
+      "kind": "test",
+      "loc": 193,
+      "owner": "@ak125",
+      "path": "backend/src/modules/pricing/services/price-import.service.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/modules/pricing/services/price-import.service.ts",
       "importedBy": [
         "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
-        "backend/src/modules/pricing/pricing.module.ts"
+        "backend/src/modules/pricing/pricing.module.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts"
       ],
       "imports": [
         "backend/src/modules/pricing/services/price-import.dry-run.ts",
@@ -52936,10 +53048,11 @@
         "backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts",
         "backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 256,
+      "loc": 334,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/price-import.service.ts",
       "risk": "high",
@@ -53133,6 +53246,7 @@
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
         "backend/src/modules/pricing/services/price-deactivation.service.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.service.ts"
       ],
@@ -53147,7 +53261,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 907,
+      "loc": 918,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "high",
@@ -65955,13 +66069,16 @@
         "backend/src/modules/orders/services/supplier-order-controls.test.ts",
         "backend/src/modules/orders/services/supplier-order-controls.ts",
         "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
-        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts",
+        "backend/src/modules/pricing/services/price-import.service.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 13,
+      "loc": 18,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/index.ts",
       "risk": "high",
@@ -66355,6 +66472,7 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "importedBy": [
         "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/pricing/pricing.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -66363,7 +66481,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
       "kind": "service",
-      "loc": 38,
+      "loc": 40,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "risk": "high",
@@ -66479,6 +66597,7 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "importedBy": [
         "backend/src/modules/orders/services/order-line-supplier.service.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.test.ts",
@@ -108972,11 +109091,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "9c0c66011897c5b7653f62067bc273e25533433d2361112feae078c119c028a3",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "fbe1cf8ceaccf0cb0ecb83d3a943956f4d9aa6ac6019055c076bb7be590e78f9",
-      "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "f2a5000ce3dc86d7afdc718757390e60e73567c5665b69640aa50801ca494a21"
+      "audit/registry/files.json": "16edfcae801f7cf68bd9e2907d94804043d2d8ef15b078982f84e2a4d6bb1dc9",
+      "audit/registry/rpc.json": "c50dbaaca74c234f82efc481724c4d24b381a08901ecfdbba11fafa1e03fbbc4",
+      "audit/registry/runtime.json": "cc806ba9cf137d876ba7b389f9c521e1e0c3259947abce93dc996c8c4392823a"
     },
-    "sotFingerprint": "08d904d4240e"
+    "sotFingerprint": "42b202a50a74"
   },
   "runtime": [
     {
@@ -113689,7 +113808,8 @@
         "runtime:backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing.repository.ts",
-        "runtime:backend/src/modules/pricing/services/supplier-profile.service.ts"
+        "runtime:backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "id": "runtime:backend/src/modules/pricing/pricing.module.ts",
       "kind": "nestjs-module",
