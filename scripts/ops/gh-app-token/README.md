@@ -99,9 +99,21 @@ systemctl --user show automecanik-gh-app-token-refresh.timer -p TimersMonotonic 
 bash "$S/controle-installation.sh"                 # attendu : 4 « identique », fraîcheur < 25 min, code 0
 ```
 
-Le gestionnaire ayant démarré il y a plus de 30 s, le `restart` déclenche aussitôt un
-renouvellement (systemd.timer(5) : un `OnStartupSec=` déjà passé à l'activation expire tout de
-suite). Retour arrière : réinstaller la copie `….timer.avant-<date>`, puis `daemon-reload` et
+Le `restart` ne déclenche pas de renouvellement. Observé sur DEV à l'installation du
+18 nov. 2026 (mandat CZ) : après le `restart` de 21:18:22 UTC, `LastTriggerUSec` est resté à
+20:59:41 UTC ; le déclenchement suivant, à 21:19:42 UTC, est l'échéance normale de
+`OnUnitActiveSec=20min`. Le renouvellement suivant arrive donc à cette échéance, au plus 20 min
+après le dernier déclenchement. Pour vérifier après installation : `LastTriggerUSec` (commande
+`show` ci-dessus), puis `controle-installation.sh` (fraîcheur < 25 min). Pour renouveler tout de
+suite : `systemctl --user start automecanik-gh-app-token-refresh.service` (étape 3 de la procédure
+complète).
+
+systemd.timer(5) (systemd 255 installé) annonce qu'un `OnStartupSec=` déjà passé « when the timer
+unit is activated » expire tout de suite ; la page ne parle pas du `restart`. Un minuteur
+transitoire d'essai, sans `daemon-reload` (18 nov. 2026), s'est déclenché à sa première
+activation, pas à son `restart`. Cause non établie.
+
+Retour arrière : réinstaller la copie `….timer.avant-<date>`, puis `daemon-reload` et
 `restart` du minuteur. Le fichier `~/.local/share/systemd/timers/stamp-automecanik-gh-app-token-refresh.timer`,
 écrit tant que `Persistent=true` était présent, peut rester ; il ne contient aucun secret.
 
