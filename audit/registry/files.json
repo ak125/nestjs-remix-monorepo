@@ -25560,7 +25560,7 @@
         "util"
       ],
       "kind": "service",
-      "loc": 377,
+      "loc": 412,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/services/rag-video-management.service.ts",
       "risk": "low",
@@ -43055,6 +43055,25 @@
       "loc": 45,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/rag-search-provenance.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/rag-video-serving.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 250,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/rag-video-serving.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
