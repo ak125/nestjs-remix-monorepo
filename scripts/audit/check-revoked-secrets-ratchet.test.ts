@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   fingerprint,
   isSupabaseLegacyKey,
@@ -410,4 +411,109 @@ test("ANTI-OVERCLAIM: les règles de forme ne touchent PAS l'état de HEAD", () 
   // avant rotation, cet inventaire est une carte vers les secrets.
   assert.deepEqual(scanContent("a.md", `K=${SYNTH_HMAC}`, new Set()), []);
   assert.equal(scanShapes("a.md", `K=${SYNTH_HMAC}`).length, 1);
+});
+
+// ── 6. Mandat BY : identifiant en valeur par défaut d'une lecture d'environnement
+//
+// Cas réel (2026-11-18) : un script Python portait l'adresse et le mot de passe
+// d'un compte d'administration en défaut de os.environ.get ET dans sa
+// docstring. Gitleaks ne l'a pas vu (mot de passe court, peu entropique).
+// Les valeurs ci-dessous sont FICTIVES, construites à l'exécution ; la vraie
+// valeur n'apparaît nulle part dans ce dépôt de test.
+
+const FAUX_MAIL = ["faux.admin", "domaine-fictif.test"].join("@");
+const FAUX_MDP = ["Fictif", "Test", "0000!"].join("-");
+
+/** Reproduction de la FORME de l'ancien fichier, avec des valeurs fictives. */
+const ANCIEN_SCRIPT = [
+  '"""',
+  "Env vars (all optional) :",
+  "  R7_BASE_URL       default http://localhost:3000",
+  `  R7_ADMIN_EMAIL    default ${FAUX_MAIL}`,
+  `  R7_ADMIN_PASSWORD default ${FAUX_MDP} (override in secure env)`,
+  '"""',
+  'BASE_URL = os.environ.get("R7_BASE_URL", "http://localhost:3000")',
+  `ADMIN_EMAIL = os.environ.get("R7_ADMIN_EMAIL", "${FAUX_MAIL}")`,
+  `ADMIN_PASSWORD = os.environ.get("R7_ADMIN_PASSWORD", "${FAUX_MDP}")`,
+].join("\n");
+
+test("BY ANCIEN: défauts d'identifiant et docstring sont signalés, URL non", () => {
+  const f = scanShapes("scripts/seo/curate-r7-batch.py", ANCIEN_SCRIPT);
+  assert.deepEqual(
+    f.map((x) => [x.line, x.rule]),
+    [
+      [4, "credential-documented-default"],
+      [5, "credential-documented-default"],
+      [8, "credential-env-default-literal"],
+      [9, "credential-env-default-literal"],
+    ],
+  );
+});
+
+test("BY NOUVEAU: le script corrigé du dépôt ne produit aucun constat", () => {
+  const p = "scripts/seo/curate-r7-batch.py";
+  assert.deepEqual(scanShapes(p, readFileSync(p, "utf8")), []);
+});
+
+test("BY NOUVEAU: les scripts curl corrigés ne produisent aucun constat", () => {
+  for (const p of ["tests-curl/00-auth.sh", "scripts/dev-smoke-test.sh", "tests-curl/README.md"]) {
+    assert.deepEqual(scanShapes(p, readFileSync(p, "utf8")), [], p);
+  }
+});
+
+test("BY POSITIF: les autres formes de lecture d'environnement sont couvertes", () => {
+  const lignes = [
+    `const s = process.env.SESSION_SECRET || "${FAUX_MDP}";`,
+    `const t = process.env["API_TOKEN"] ?? '${FAUX_MDP}';`,
+    `PASS="\${DB_PWD:-${FAUX_MDP}}"`,
+    `      - GF_SECURITY_ADMIN_PASSWORD=\${GRAFANA_ADMIN_PASSWORD-${FAUX_MDP}}`,
+    `pw = os.getenv("SMTP_PASSWORD", default="${FAUX_MDP}")`,
+    `const k = config.get<string>('JWT_SECRET', '${FAUX_MDP}');`,
+    `# Mot de passe par défaut : ${FAUX_MDP}`,
+  ];
+  for (const l of lignes) {
+    assert.equal(scanShapes("x.ts", l).length >= 1, true, l);
+  }
+});
+
+test("BY NÉGATIF: ni chemins, ni durées, ni placeholders, ni lecture obligatoire", () => {
+  const lignes = [
+    'BASE="${BASE_URL:-http://127.0.0.1:3000}"',
+    'cd "${PWD:-/tmp}"',
+    "expiresIn: process.env.JWT_EXPIRES_IN || '7d',",
+    'k = os.environ.get("GOOGLE_TOKEN_FILE", "/run/secrets/token.json")',
+    'p = os.environ.get("R7_ADMIN_PASSWORD", "")',
+    'T="${API_TOKEN:-$FALLBACK_TOKEN}"',
+    'ADMIN_PASSWORD="${ADMIN_PASSWORD:?ADMIN_PASSWORD env var required}"',
+    "export ADMIN_EMAIL=... ADMIN_PASSWORD=...",
+    "  R7_ADMIN_PASSWORD  required (except --dry-run), no default",
+    "SYSTEMPAY_CERTIFICATE_PROD=<SET_IN_ENV>",
+    "  password: string;",
+    'E="${ADMIN_EMAIL:?ADMIN_EMAIL env var required (no default by design)}"',
+    "# Mot de passe : aucun défaut, variable obligatoire",
+  ];
+  for (const l of lignes) {
+    assert.deepEqual(scanShapes("x.sh", l), [], l);
+  }
+});
+
+test("BY NON-DIVULGATION: ni la valeur ni son empreinte ne sont imprimées", () => {
+  const f = scanShapes("x.py", ANCIEN_SCRIPT);
+  const json = JSON.stringify(f);
+  assert.ok(!json.includes(FAUX_MDP) && !json.includes(FAUX_MAIL));
+  assert.ok(!json.includes(fingerprint(FAUX_MDP)));
+  assert.ok(f.every((x) => x.fp === "n/a"));
+});
+
+test("BY MODE DIFF: la ligne ajoutée est bloquée au bon numéro", () => {
+  const diff = [
+    "--- a/scripts/x.py",
+    "+++ b/scripts/x.py",
+    "@@ -60,0 +61,1 @@",
+    `+ADMIN_PASSWORD = os.environ.get("R7_ADMIN_PASSWORD", "${FAUX_MDP}")`,
+  ].join("\n");
+  const f = scanAddedLines(addedLines(diff));
+  assert.equal(f.length, 1);
+  assert.equal(f[0].line, 61);
+  assert.equal(f[0].rule, "credential-env-default-literal");
 });

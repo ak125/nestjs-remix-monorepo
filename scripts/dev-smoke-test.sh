@@ -63,12 +63,16 @@ check "/api/catalog/homepage-rpc" 10
 
 # ===== Cart: SSR + Remix actions =====
 # Login for session cookie
+# Identifiants lus dans l'environnement, jamais écrits ici (mandat BY).
+ADMIN_EMAIL="${ADMIN_EMAIL:?ADMIN_EMAIL env var required (no default by design)}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:?ADMIN_PASSWORD env var required (no default by design)}"
+LOGIN_PAYLOAD=$(jq -n --arg e "$ADMIN_EMAIL" --arg p "$ADMIN_PASSWORD" '{email: $e, password: $p}')
 echo -n "-- POST /auth/login ... "
 LOGIN_CODE=$(curl -sS -o /tmp/smoke.out -w "%{http_code}" --max-time 5 \
   -X POST "$BASE/auth/login" \
   -H "Content-Type: application/json" \
   -c "$COOKIE_FILE" \
-  -d '{"email":"superadmin@autoparts.com","password":"SuperAdmin2025!"}' 2>/dev/null || true)
+  -d "$LOGIN_PAYLOAD" 2>/dev/null || true)
 if [ "$LOGIN_CODE" = "201" ] || [ "$LOGIN_CODE" = "200" ]; then
   echo "OK $LOGIN_CODE"
 
