@@ -191,7 +191,16 @@ et `20261118_r2_images_bmp_extension.down.sql`.
   filtered `87fe3a4b1d433f0bc466025e44afd8b1`, revérifiés à T09).
 - Seul changement : `(webp|jpg|jpeg|png|gif)` devient
   `(webp|jpg|jpeg|png|gif|bmp)` dans les 3 `CASE`.
-- Le down remet les définitions live à l'identique.
+- Après `get_pieces_for_type_gamme_v3`, la migration écrit le remède par
+  défaut de `scripts/lint/check-definer-anon-surface.sh` (règle 1) :
+  `REVOKE ALL … FROM PUBLIC, anon, authenticated` puis
+  `GRANT EXECUTE … TO service_role`. Ces deux lignes reproduisent l'ACL servie
+  `{postgres=X/postgres,service_role=X/postgres}`. Rien n'est ajouté à
+  `scripts/lint/definer-anon-allowlist.txt`, et les droits de
+  `get_listing_products_extended_filtered`, qui n'est pas `SECURITY DEFINER`,
+  ne changent pas.
+- Le down remet les définitions live à l'identique. La garde DEFINER saute les
+  `.down.sql` (ligne 188) ; aucun contrôle n'y exige de REVOKE.
 - `CREATE OR REPLACE` garde le propriétaire, les droits, `SECURITY DEFINER`,
   la volatilité, `PARALLEL` et `search_path`. Le test le vérifie.
 
@@ -202,16 +211,23 @@ véhicule) extraite en lecture à T10. `process_seo_template` est remplacée par
 fonction identité de même signature ; elle ne touche pas aux images. Les rôles
 `anon`, `authenticated` et `service_role` ont été créés avec les droits live.
 
-- Rejeu du 18/11 à 21:19 UTC sur un conteneur neuf, après la correction squawk
-  (ni `BEGIN` ni `COMMIT` dans le fichier up, `SET lock_timeout` et
-  `SET statement_timeout` en tête ; sortie squawk : `test-pg17/squawk.txt`).
-- UP à 21:19:58 : `exit=0` (`test-pg17/up.txt`), joué avec
+- Rejeu du 18/11 à 21:35 UTC sur un conteneur neuf, avec la migration finale :
+  ni `BEGIN` ni `COMMIT` dans le fichier up, `SET lock_timeout` et
+  `SET statement_timeout` en tête, REVOKE/GRANT de v3. Toutes les étapes du job
+  « Migration Safety » rejouées en local : `test-pg17/migration-safety.txt`
+  (squawk du correctif précédent : `test-pg17/squawk.txt`).
+- UP à 21:35:26 : `exit=0` (`test-pg17/up.txt`), joué avec
   `psql --single-transaction` parce que le moteur
   `scripts/ci/apply-supabase-migration.py` enveloppe le fichier dans
-  `BEGIN`/`COMMIT`. Droits, `SECURITY DEFINER`, volatilité, `PARALLEL` et
+  `BEGIN`/`COMMIT`. `SECURITY DEFINER`, volatilité, `PARALLEL` et
   configuration inchangés.
-- DOWN à 21:20:02 : `exit=0` (`test-pg17/down.txt`). md5 revenus à
+- DOWN à 21:35:34 : `exit=0` (`test-pg17/down.txt`). md5 revenus à
   `cc5a39a8…` et `87fe3a4b…`.
+- ACL relevée avant la migration, après, puis après le down : chaque fois égale
+  à l'ACL servie (v3 `{postgres=X/postgres,service_role=X/postgres}`, soit anon
+  non, authenticated non, service_role oui ; filtered
+  `{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}`).
+  Colonne `acl_egale_servie` dans `up.txt` et `down.txt`.
 - Comparaison avant/après sur 36 sorties (18 couples × 2 fonctions ; la clé
   `duration` de v3 est retirée) : `test-pg17/comparaison-avant-apres.txt`.
   - Pour chaque sortie, la sortie après est égale à la sortie avant où
@@ -222,7 +238,7 @@ fonction identité de même signature ; elle ne touche pas aux images. Les rôle
   - La sortie de v3 n'est pas stable d'un appel à l'autre dans la fonction live
     (même couple, longueur ou md5 différents) ; 5 longueurs diffèrent du premier
     passage de 17:40. La comparaison se fait donc dans un même passage, et les
-    36 sorties sont conformes aux deux passages.
+    36 sorties sont conformes aux trois passages (17:40, 21:19, 21:35).
 
 ### Garde « block-new » : patch d'ownership réservé à l'owner
 

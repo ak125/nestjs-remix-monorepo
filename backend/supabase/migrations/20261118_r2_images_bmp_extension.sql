@@ -397,6 +397,11 @@ BEGIN
 END;
 $function$;
 
+-- Droits identiques au live (proacl {postgres=X, service_role=X}) ; exigé par
+-- scripts/lint/check-definer-anon-surface.sh, forme de 20261030_get_substitution_status_definer_read.sql:138-139.
+REVOKE ALL ON FUNCTION public.get_pieces_for_type_gamme_v3(integer, integer) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_pieces_for_type_gamme_v3(integer, integer) TO service_role;
+
 CREATE OR REPLACE FUNCTION public.get_listing_products_extended_filtered(p_gamme_id integer, p_vehicle_id bigint, p_limit integer DEFAULT 200)
  RETURNS TABLE(id integer, nom text, reference text, reference_clean text, description text, quantite_vente numeric, has_image boolean, has_oem boolean, filtre_gamme text, is_accessory boolean, filtre_side text, marque text, marque_id integer, marque_logo text, nb_stars integer, prix_unitaire integer, prix_ttc numeric, prix_consigne integer, stock_status text, dispo boolean, quality text, score integer, image text)
  LANGUAGE sql
