@@ -1923,3 +1923,13 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Complément CH-4 (PR #2174, 18/11/2026) : tests unitaires ajoutés par la PR
+  # dans backend/src/modules/suppliers, non couverts par les globs exactes de
+  # l'extrait CH (constat ownership_gap du ratchet). Même domaine et owner que
+  # les fichiers qu'ils testent (D11, @ak125). Le fichier testé
+  # dto/supplier.schemas.ts reste hors de cet extrait (écart antérieur, en baseline).
+  - glob: backend/src/modules/suppliers/{supplier-card.service,supplier-name,supplier-price-rule,dto/supplier.schemas}.test.ts
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
