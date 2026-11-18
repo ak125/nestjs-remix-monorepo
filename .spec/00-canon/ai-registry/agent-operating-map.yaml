@@ -241,7 +241,7 @@ departments:
         owner: supplier-lead
         status: missing
         level: L0
-        justification: "Les ruptures après commande et les commandes payées annulées faute de disponibilité demandent de mesurer, par fournisseur, la part des lignes servies et le délai."
+        justification: "Proposition, besoin déclaré sans décision : les ruptures après commande et les commandes payées annulées faute de disponibilité demandent de mesurer, par fournisseur, la part des lignes servies et le délai."
         evidence:
           - { absent: "aucun calcul de taux de service ni de délai fournisseur trouvé (recherche du 2026-11-18)" }
 
@@ -597,7 +597,7 @@ departments:
         evidence:
           - { path: "backend/src/modules/orders/controllers/order-actions.controller.ts", note: "mark-rupture, accept-equivalent, reject-equivalent, supplier-proposal" }
         gaps:
-          - "Frontière sales/supplier à trancher : les actions fournisseur (supplier-proposal, confirm-supplier, order-from-supplier) vivent dans le même contrôleur."
+          - "Frontière sales/supplier tranchée par Marwane le 2026-11-18 à 08:53 : les actions fournisseur des commandes (supplier-proposal, confirm-supplier, order-from-supplier) appartiennent à sales."
       - id: sales.promo
         name: "Codes promo : validation et application au panier"
         owner: sales-lead
@@ -639,7 +639,7 @@ departments:
           - { path: "backend/src/modules/support/controllers/quote.controller.ts" }
           - { path: "backend/src/modules/support/controllers/leads-admin.controller.ts" }
         gaps:
-          - "Code dans le module support ; propriétaire sales proposé, à trancher."
+          - "Code dans le module support ; propriétaire sales, tranché par Marwane le 2026-11-18 à 08:53."
 
   - id: pricing
     business_number: 16
@@ -878,6 +878,7 @@ departments:
           - { module: "session" }
           - { module: "upload" }
           - { module: "mcp-validation" }
+          - { module: "maintenance" }
           - { routes: "admin.config" }
           - { routes: "admin.system-config" }
           - { routes: "admin.debug" }
@@ -885,6 +886,9 @@ departments:
           - { path: "backend/src/modules/config/controllers/simple-database-config.controller.ts" }
           - { path: "backend/src/modules/session/session-store.test.ts" }
           - { path: "backend/src/modules/upload/upload.controller.ts" }
+          - { path: "backend/src/modules/maintenance/maintenance.module.ts", note: "squelette, importé par aucun module" }
+        gaps:
+          - "Module maintenance (rattaché par Marwane le 2026-11-18 à 08:57) : aucun importeur trouvé, retrait à vérifier par un mandat."
       - id: runtime.deploy-chain
         name: "Chaîne de build et de déploiement (PREPROD sur main, PROD sur tag)"
         owner: runtime-lead
@@ -1340,7 +1344,7 @@ departments:
         evidence:
           - { path: "backend/src/modules/admin/controllers/stock.controller.ts" }
         gaps:
-          - "Frontière catalogue/logistique à trancher ; prix et stock runtime = zone STOP."
+          - "Stock affiché : propriétaire catalog, tranché par Marwane le 2026-11-18 à 08:53 ; prix et stock runtime = zone STOP."
 
   - id: diagnostic
     business_number: 11
@@ -1352,7 +1356,7 @@ departments:
     priority: P2                     # D7 = P2
     # kpi_primary absent : diagnostic_to_product relève de product (20) ; aucune mesure propre à l'expertise
     repo_domains: [D7]
-    capabilities: [diagnostic-engine, knowledge-graph]   # vehicle-ops appartient à catalog (propriétaire unique, BX-2) ; consommé par uses
+    capabilities: [diagnostic-engine, knowledge-graph]   # vehicle-ops appartient à catalog (tranché par Marwane le 2026-11-18 à 08:53) ; consommé par uses
     state: partial                   # V1A.0 OFF; __diag_* peuplé, kg_* vides
     contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
       surveillance: "Passage des connaissances de « proposée » à « qualifiée » et contradictions trouvées ; cas du diagnostic validés sur le total ; désaccords en attente."
@@ -1457,7 +1461,7 @@ departments:
         evidence:
           - { path: "backend/src/modules/merchant-center/controllers/merchant-center.controller.ts" }
         gaps:
-          - "Aucun test trouvé ; propriétaire marketing proposé."
+          - "Aucun test trouvé ; propriétaire marketing, tranché par Marwane le 2026-11-18 à 08:53."
       - id: marketing.trend-signals
         name: "Signaux de tendance (rappels constructeurs publics)"
         owner: marketing-lead
@@ -1469,23 +1473,25 @@ departments:
           - { path: "backend/src/modules/trend-signals/trend-signals.service.ts" }
           - { path: "backend/tests/unit/trend-signals/rappels-gouv-fr.fetcher.test.ts" }
         gaps:
-          - "Frontière marketing/stratégie à trancher."
+          - "Propriétaire marketing (et non strategy), tranché par Marwane le 2026-11-18 à 08:53."
       - id: marketing.newsletter
         name: "Envoi de lettres d'information aux clients inscrits"
         owner: marketing-lead
         status: missing
         level: L0
-        justification: "Le dépôt garde l'inscription des clients mais n'envoie rien ; le contrat compte les ouvertures et clics des envois."
+        justification: "Décidée (décision 44) : le dépôt garde l'inscription des clients mais n'envoie rien ; le contrat compte les ouvertures et clics des envois."
         evidence:
           - { absent: "aucun envoi (Brevo, Mailchimp, sendNewsletter) trouvé le 2026-11-18" }
+        decisions: [44]
       - id: marketing.shopping-ads
         name: "Pilotage des campagnes Shopping payantes"
         owner: marketing-lead
         status: missing
         level: L0
-        justification: "Le contrat suit clics, commandes et coût par commande Shopping ; seul le flux produit existe, aucune donnée de campagne n'est lue."
+        justification: "Décidée (décision 87) : le contrat suit clics, commandes et coût par commande Shopping ; seul le flux produit existe, aucune donnée de campagne n'est lue."
         evidence:
           - { absent: "aucune lecture de coût ou de campagne Google Ads trouvée le 2026-11-18" }
+        decisions: [87]
 
   - id: brand
     business_number: 5
@@ -1774,15 +1780,16 @@ departments:
           - { path: "backend/src/modules/rag-proxy/rag-proxy.controller.ts" }
           - { path: "backend/src/modules/support/controllers/ai-support.controller.ts" }
         gaps:
-          - "Frontière RAG : ingestion côté wiki, chatbot côté support (proposition)."
+          - "Frontière RAG tranchée par Marwane le 2026-11-18 à 08:53 : alimentation côté wiki, assistant côté support."
       - id: support.satisfaction-survey
         name: "Enquête de satisfaction après livraison"
         owner: support-lead
         status: missing
         level: L0
-        justification: "Le contrat suit les avis négatifs ; aucune enquête n'est envoyée après livraison pour les obtenir de façon systématique."
+        justification: "Décidée (décision 78) : le contrat suit les avis négatifs ; aucune enquête n'est envoyée après livraison pour les obtenir de façon systématique."
         evidence:
           - { absent: "aucune enquête NPS ou satisfaction trouvée le 2026-11-18" }
+        decisions: [78]
 
   - id: logistics
     business_number: 15
@@ -1829,7 +1836,7 @@ departments:
         owner: logistics-lead
         status: missing
         level: L0
-        justification: "Le contrat mesure le délai paiement → expédition ; aucune étiquette ni échange avec un transporteur n'existe dans le dépôt."
+        justification: "Proposition, besoin déclaré sans décision : le contrat mesure le délai paiement → expédition ; aucune étiquette ni échange avec un transporteur n'existe dans le dépôt."
         evidence:
           - { absent: "aucune génération d'étiquette trouvée le 2026-11-18 (seule mention : expedition-menu.service.ts)" }
 
@@ -1878,15 +1885,16 @@ departments:
         owner: finance-lead
         status: missing
         level: L0
-        justification: "C'est la surveillance du contrat finance ; aucun rapprochement entre encaissement, commande et facture n'est calculé."
+        justification: "Décidée (décision 26) : c'est la surveillance du contrat finance ; aucun rapprochement entre encaissement, commande et facture n'est calculé."
         evidence:
           - { absent: "aucun rapprochement trouvé le 2026-11-18" }
+        decisions: [26]
       - id: finance.accounting-export
         name: "Export comptable (fichier des écritures)"
         owner: finance-lead
         status: missing
         level: L0
-        justification: "Un vendeur en ligne remet ses écritures au comptable ; aucun export comptable n'existe."
+        justification: "Proposition, besoin déclaré sans décision : un vendeur en ligne remet ses écritures au comptable ; aucun export comptable n'existe."
         evidence:
           - { absent: "aucun export FEC ou comptable trouvé le 2026-11-18" }
 
@@ -2163,10 +2171,14 @@ departments:
           - { workflow: ".github/workflows/pilote-file.yml" }
           - { crontab: 5, script: "scripts/claude-hooks/clean-settings-local.sh" }
           - { crontab: 8, script: "scripts/claude-hooks/clean-orphan-claude.sh" }
+          - { module: "agentic-engine" }
         evidence:
           - { path: ".github/workflows/pilote-file.yml" }
           - { pr: 2153, state: "merged" }
+          - { path: "backend/src/app.module.ts", lines: "194", note: "AgenticEngineModule archivé le 2026-04-02, import commenté" }
         decisions: [69]
+        gaps:
+          - "Module agentic-engine (rattaché par Marwane le 2026-11-18 à 08:57) : archivé, commenté dans app.module.ts, retrait à vérifier par un mandat."
       - id: ia-agents.quota-alert
         name: "Alerte de quota des agents"
         owner: ia-agents-lead
@@ -2216,7 +2228,7 @@ departments:
           - { path: ".github/scripts/morning-health-digest.sh", lines: "725-761", note: "gestes attendus et mail court" }
         decisions: [7]
         gaps:
-          - "Le module admin porte 39 contrôleurs de plusieurs départements ; sa couverture de module est rattachée ici, chaque contrôleur est cité par la fonction qui le sert."
+          - "Le module admin porte 39 contrôleurs de plusieurs départements ; module rattaché à direction, tranché par Marwane le 2026-11-18 à 08:53, à découper à l'approfondissement ; chaque contrôleur est cité par la fonction qui le sert."
 
   - id: legal
     business_number: 18
@@ -2255,7 +2267,7 @@ departments:
           - { path: "backend/src/modules/support/controllers/legal.controller.ts" }
         decisions: [38]
         gaps:
-          - "Code dans le module support : frontière légal/support à trancher."
+          - "Code dans le module support ; propriétaire legal, tranché par Marwane le 2026-11-18 à 08:53."
       - id: legal.account-deletion
         name: "Suppression du compte client à sa demande"
         owner: legal-lead
@@ -2332,7 +2344,7 @@ departments:
         owner: risk-audit-lead
         status: missing
         level: L0
-        justification: "Proposition : seul le contrôle de la passerelle de paiement existe ; aucune règle côté commande (zone STOP, aucune action sans accord nominatif)."
+        justification: "Proposition, besoin déclaré sans décision : seul le contrôle de la passerelle de paiement existe ; aucune règle côté commande (zone STOP, aucune action sans accord nominatif)."
         evidence:
           - { absent: "seule mention : payments/services/paybox-callback-gate.service.ts" }
 
@@ -2397,11 +2409,9 @@ departments:
 # yet (modules/engines/services/signals). Keeps department.capabilities from being
 # ghost slugs; `owner` is the department id. Each commented with its real path.
 # Éléments du dépôt rattachés à aucune fonction, avec leur motif (complément BX-2).
-# Le validateur (--contracts) les retire du rapport de couverture.
-function_coverage_unassigned:
-  - { module: "maintenance", reason: "importé par aucun module (aucun import trouvé le 2026-11-18) : code mort à retirer ou à rebrancher, décision owner" }
-  - { module: "agentic-engine", reason: "archivé le 2026-04-02 et commenté dans app.module.ts (ligne 194)" }
-  - { routes: "_assets", reason: "répertoire d'images sous frontend/app/routes, pas une route servie" }
+# Le validateur (--contracts) les retire du rapport de couverture. Liste vide depuis le
+# complément BX-3 (rattachements décidés par Marwane le 2026-11-18 à 08:57).
+function_coverage_unassigned: []
 
 declared_capabilities:
   # `evidence` (optional, additive in this PR) carries the real backing — scripts/paths

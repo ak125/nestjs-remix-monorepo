@@ -392,12 +392,21 @@ function functionCoverage(map, inventory) {
   };
 }
 
-/** Route keys of frontend/app/routes: its files, and the files of its sub-directories (a directory without route file counts as one element). */
+/**
+ * Directories of frontend/app/routes that hold no route and are left out of the
+ * route coverage, each with its reason (complement BX-3).
+ */
+const ROUTE_DIRS_EXCLUDED = {
+  _assets: "fichiers statiques (images), pas une fonction ; exclusion décidée par Marwane le 2026-11-18 à 08:57 (heure de Paris)",
+};
+
+/** Route keys of frontend/app/routes: its files, and the files of its sub-directories (a directory without route file counts as one element; ROUTE_DIRS_EXCLUDED is left out). */
 function routeKeysOnDisk() {
   const base = path.join(REPO_ROOT, "frontend/app/routes");
   const keys = [];
   for (const e of fs.readdirSync(base, { withFileTypes: true })) {
     if (e.isFile() && /\.(tsx|ts|jsx|js)$/.test(e.name)) keys.push(routeKey(e.name));
+    else if (e.isDirectory() && Object.hasOwn(ROUTE_DIRS_EXCLUDED, e.name)) continue;
     else if (e.isDirectory()) {
       const inner = fs.readdirSync(path.join(base, e.name)).filter((n) => /\.(tsx|ts|jsx|js)$/.test(n));
       if (inner.length === 0) keys.push(e.name);
@@ -966,6 +975,7 @@ function runFunctionsSelfTest(ajvValidate) {
     ["uncited subagent", same(cov.agents_uncited, ["orphan-agent"])],
     ["uncited skill", same(cov.skills_uncited, ["orphan-skill"])],
     ["crontab lines cited", same(cov.crontab_lines_cited, [39])],
+    ["excluded route directories stay out of the inventory", !routeKeysOnDisk().some((k) => Object.hasOwn(ROUTE_DIRS_EXCLUDED, k.split("/")[0]))],
     ["route key drops `_` suffixes", routeKey("account_.orders.$orderId.tsx") === "account.orders.$orderId" && routeKey("_public+/_layout.tsx") === "_public+/_layout"],
   ];
   for (const [label, ok] of coverageChecks) if (!ok) failures.push(`coverage / ${label}: wrong report ${JSON.stringify(cov)}`);
@@ -1078,6 +1088,7 @@ function runContractsGate(map, ajvValidate) {
           `${coverage.agents_uncited.length} subagents and ${coverage.skills_uncited.length} skills cited by no function, ` +
           `crontab lines cited: ${coverage.crontab_lines_cited.join(", ") || "none"}`,
       );
+      for (const [dir, why] of Object.entries(ROUTE_DIRS_EXCLUDED)) console.log(`  [EXCLUDED] routes: ${dir} — ${why}`);
       for (const [kind, xs] of Object.entries(coverage.unattached)) for (const x of xs) console.log(`  [UNATTACHED] ${kind}: ${x}`);
       for (const u of coverage.unassigned) console.log(`  [À ATTRIBUER] ${u.kind}: ${u.element} — ${u.reason}`);
       for (const u of coverage.stale) console.log(`  [STALE] ${u.kind}: ${u.element} — ${u.why}`);

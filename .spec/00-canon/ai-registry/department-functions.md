@@ -1,4 +1,4 @@
-# Fonctions des départements — carte et modèle (mandat BX, complément BX-2)
+# Fonctions des départements — carte et modèle (mandat BX, compléments BX-2 et BX-3)
 
 Établi le 2026-11-18 (mandat BX, puis complément BX-2). Ce texte décrit le bloc
 `functions` du registre existant. Il ne crée ni registre ni tableau de bord : les
@@ -9,6 +9,10 @@ données vivent dans `agent-operating-map.yaml`, la forme dans
 Décision de Marwane (complément BX-2) : la carte couvre les 24 départements en
 largeur, dans la même PR, avant toute fusion. Elle remplace l'ordre « 13 d'abord »
 et « une fonction par décision » du mandat BX.
+
+Le 2026-11-18 (heure de Paris), Marwane a tranché les frontières (08:53), le sort
+des huit fonctions manquantes proposées (08:56) et les rattachements des éléments
+« à attribuer » (08:57) ; complément BX-3.
 
 ## La carte des 24 départements
 
@@ -47,59 +51,62 @@ Total : 98 fonctions, dont 17 `operational` (toutes L2), 69 `non_operational` et
 12 `missing`. Aucune fonction n'est déclarée L3 ou L4 : aucune n'a été observée
 en service par ce relevé.
 
-### Fonctions manquantes : des propositions, pas des décisions
+### Fonctions manquantes : décidées ou besoins déclarés
 
-Une fonction `missing` n'existe pas dans le dépôt. Si elle porte des `decisions`,
-elle est **décidée mais absente** ; sinon c'est une **proposition** : ce qu'un
-vendeur de pièces auto en ligne a normalement, rattaché à un besoin réel du
-département. Marwane accepte ou écarte chaque proposition ; aucune n'est un
-engagement.
+Une fonction `missing` n'existe pas dans le dépôt (statut `missing`, niveau L0).
+Si elle porte des `decisions`, elle est **décidée mais absente**. Sinon c'est une
+**proposition**, un besoin déclaré : rien ne se construit sans une décision de
+Marwane. Le 2026-11-18 à 08:56, Marwane a gardé les huit propositions du
+complément BX-2 dans le registre ; quatre citent désormais leur décision, les
+quatre autres restent des propositions.
 
 | Fonction                         | Intitulé                                                                  | Nature                | Justification                                                                                                                                                      |
 | -------------------------------- | ------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `marketing.newsletter`           | Envoi de lettres d'information aux clients inscrits                       | proposition           | Le dépôt garde l'inscription des clients mais n'envoie rien ; le contrat compte les ouvertures et clics des envois.                                                |
-| `marketing.shopping-ads`         | Pilotage des campagnes Shopping payantes                                  | proposition           | Le contrat suit clics, commandes et coût par commande Shopping ; seul le flux produit existe, aucune donnée de campagne n'est lue.                                 |
+| `marketing.newsletter`           | Envoi de lettres d'information aux clients inscrits                       | décidée (décision 44) | Le dépôt garde l'inscription des clients mais n'envoie rien ; le contrat compte les ouvertures et clics des envois.                                                |
+| `marketing.shopping-ads`         | Pilotage des campagnes Shopping payantes                                  | décidée (décision 87) | Le contrat suit clics, commandes et coût par commande Shopping ; seul le flux produit existe, aucune donnée de campagne n'est lue.                                 |
 | `supplier.service-rate`          | Taux de service et délai par fournisseur                                  | proposition           | Les ruptures après commande et les commandes payées annulées faute de disponibilité demandent de mesurer, par fournisseur, la part des lignes servies et le délai. |
-| `support.satisfaction-survey`    | Enquête de satisfaction après livraison                                   | proposition           | Le contrat suit les avis négatifs ; aucune enquête n'est envoyée après livraison pour les obtenir de façon systématique.                                           |
+| `support.satisfaction-survey`    | Enquête de satisfaction après livraison                                   | décidée (décision 78) | Le contrat suit les avis négatifs ; aucune enquête n'est envoyée après livraison pour les obtenir de façon systématique.                                           |
 | `logistics.carrier-labels`       | Étiquettes transporteur générées depuis la commande                       | proposition           | Le contrat mesure le délai paiement → expédition ; aucune étiquette ni échange avec un transporteur n'existe dans le dépôt.                                        |
-| `pricing.market-price`           | Écart au prix du marché par pièce                                         | décidée (décision 86) | Décidée (décision 86) : aucune source de prix de marché n'est désignée ni lue dans le dépôt.                                                                       |
-| `finance.payment-reconciliation` | Rapprochement paiement, commande, facture                                 | proposition           | C'est la surveillance du contrat finance ; aucun rapprochement entre encaissement, commande et facture n'est calculé.                                              |
+| `pricing.market-price`           | Écart au prix du marché par pièce                                         | décidée (décision 86) | Aucune source de prix de marché n'est désignée ni lue dans le dépôt.                                                                                               |
+| `finance.payment-reconciliation` | Rapprochement paiement, commande, facture                                 | décidée (décision 26) | C'est la surveillance du contrat finance ; aucun rapprochement entre encaissement, commande et facture n'est calculé.                                              |
 | `finance.accounting-export`      | Export comptable (fichier des écritures)                                  | proposition           | Un vendeur en ligne remet ses écritures au comptable ; aucun export comptable n'existe.                                                                            |
-| `risk-audit.order-fraud`         | Filtrage des commandes à risque de fraude                                 | proposition           | Proposition : seul le contrôle de la passerelle de paiement existe ; aucune règle côté commande (zone STOP, aucune action sans accord nominatif).                  |
-| `runtime.restore-test`           | Test périodique de restauration des sauvegardes                           | décidée (décision 79) | Décidée (décision 79) : la dernière restauration réussie doit être connue ; aucun test de restauration n'existe.                                                   |
-| `ia-agents.quota-alert`          | Alerte de quota des agents                                                | décidée (décision 14) | Décidée (décision 14) : alerte au-dessus de 80 % du quota ; aucune lecture de quota d'agent n'existe.                                                              |
-| `people.contradictions`          | Relevé des contradictions entre ce que lisent les agents et les décisions | décidée (décision 40) | Décidée (décision 40) : le contrat compte les contradictions ouvertes et leur âge ; aucun producteur ne les relève.                                                |
+| `risk-audit.order-fraud`         | Filtrage des commandes à risque de fraude                                 | proposition           | Seul le contrôle de la passerelle de paiement existe ; aucune règle côté commande (zone STOP, aucune action sans accord nominatif).                                |
+| `runtime.restore-test`           | Test périodique de restauration des sauvegardes                           | décidée (décision 79) | La dernière restauration réussie doit être connue ; aucun test de restauration n'existe.                                                                           |
+| `ia-agents.quota-alert`          | Alerte de quota des agents                                                | décidée (décision 14) | Alerte au-dessus de 80 % du quota ; aucune lecture de quota d'agent n'existe.                                                                                      |
+| `people.contradictions`          | Relevé des contradictions entre ce que lisent les agents et les décisions | décidée (décision 40) | Le contrat compte les contradictions ouvertes et leur âge ; aucun producteur ne les relève.                                                                        |
 
 ### Éléments « à attribuer »
 
-Listés à la racine du registre (`function_coverage_unassigned`), chacun avec son
-motif. Ils ne sont rattachés à aucune fonction.
+La liste `function_coverage_unassigned` est vide. Le 2026-11-18 à 08:57, Marwane
+a rattaché les trois éléments du complément BX-2 :
 
-| Élément                 | Motif                                                                                                              |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| module `maintenance`    | importé par aucun module (aucun import trouvé le 2026-11-18) : code mort à retirer ou à rebrancher, décision owner |
-| module `agentic-engine` | archivé le 2026-04-02 et commenté dans `app.module.ts` (ligne 194)                                                 |
-| routes `_assets`        | répertoire d'images sous `frontend/app/routes`, pas une route servie                                               |
+| Élément                 | Décision                                                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| module `maintenance`    | rattaché à `runtime.platform` (non opérationnelle) : aucun importeur trouvé, retrait à vérifier par un mandat                        |
+| module `agentic-engine` | rattaché à `ia-agents.mandate-queue` (non opérationnelle) : archivé, commenté dans `app.module.ts`, retrait à vérifier par un mandat |
+| routes `_assets`        | exclu de la couverture des routes (fichiers statiques, pas une fonction) ; la raison est écrite dans le validateur                   |
 
-### Frontières à trancher par Marwane
+### Frontières tranchées par Marwane
 
-Le registre applique un propriétaire proposé ; rien n'est tranché.
+Tranchées par Marwane le 2026-11-18 (heure de Paris) : les 13 frontières à 08:53,
+les huit fonctions manquantes à 08:56, les trois rattachements à 08:57. Le
+registre applique ces propriétaires ; un autre département passe par `uses`.
 
-| Cas                                                                                                                  | Propriétaire appliqué                                                         | Alternative                                                                      |
-| -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Skill `vehicle-ops` (était déclaré par catalog et diagnostic)                                                        | catalog ; diagnostic le consomme par `uses`                                   | diagnostic                                                                       |
-| Module `substitution` (URL 200/404/410)                                                                              | seo                                                                           | sales pour la substitution d'un produit en commande (`sales.order-substitution`) |
-| Actions de ligne fournisseur dans `order-actions.controller.ts` (proposition, confirmation, commande au fournisseur) | sales                                                                         | supplier                                                                         |
-| `support/controllers/legal.controller.ts` (pages légales)                                                            | legal                                                                         | support, qui porte le code                                                       |
-| Devis et mini-CRM (`quote.controller.ts`, `leads-admin.controller.ts`)                                               | sales                                                                         | support, qui porte le code                                                       |
-| RAG : ingestion et chatbot                                                                                           | wiki pour l'ingestion, support pour le chatbot                                | un seul propriétaire                                                             |
-| Module `trend-signals`                                                                                               | marketing                                                                     | strategy                                                                         |
-| Module `admin` (39 contrôleurs de plusieurs départements)                                                            | direction pour le module ; chaque contrôleur cité par la fonction qui le sert | découpage par contrôleur                                                         |
-| Module `merchant-center`                                                                                             | marketing                                                                     | sales                                                                            |
-| Stock affiché (`stock.controller.ts`)                                                                                | catalog                                                                       | logistics ; prix et stock runtime restent zone STOP                              |
-| Module `payments`                                                                                                    | sales, cité seulement (zone STOP)                                             | finance                                                                          |
-| Module `errors` (404, 410, page d'erreur)                                                                            | seo                                                                           | runtime                                                                          |
-| Guides R3 et R6 sous `blog-pieces-auto`                                                                              | content                                                                       | seo                                                                              |
+| Cas                                                                                                                       | Propriétaire                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Skill `vehicle-ops` (était déclaré par catalog et diagnostic)                                                             | catalog ; diagnostic le consomme par `uses`                                                          |
+| Module `substitution` (URL 200/404/410)                                                                                   | seo                                                                                                  |
+| Actions fournisseur des commandes dans `order-actions.controller.ts` (proposition, confirmation, commande au fournisseur) | sales                                                                                                |
+| `support/controllers/legal.controller.ts` (pages légales)                                                                 | legal                                                                                                |
+| Devis et mini-CRM (`quote.controller.ts`, `leads-admin.controller.ts`)                                                    | sales                                                                                                |
+| RAG                                                                                                                       | wiki pour l'alimentation, support pour l'assistant                                                   |
+| Module `trend-signals`                                                                                                    | marketing                                                                                            |
+| Module `admin` (39 contrôleurs de plusieurs départements)                                                                 | direction, à découper à l'approfondissement ; chaque contrôleur est cité par la fonction qui le sert |
+| Module `merchant-center`                                                                                                  | marketing                                                                                            |
+| Stock affiché (`stock.controller.ts`)                                                                                     | catalog ; prix et stock runtime restent zone STOP                                                    |
+| Module `payments`                                                                                                         | sales, cité seulement (zone STOP)                                                                    |
+| Module `errors` (404, 410, page d'erreur)                                                                                 | seo                                                                                                  |
+| Guides R3 et R6 sous `blog-pieces-auto`                                                                                   | content                                                                                              |
 
 ## Le modèle
 
@@ -196,6 +203,8 @@ vérifier, le rapport liste seulement les lignes citées.
   backend rattaché à aucune fonction ni listé « à attribuer » ;
 - `[À ATTRIBUER]` : la liste ci-dessus ; `[STALE]` : une entrée qui ne désigne
   plus rien du dépôt ou qu'une fonction couvre déjà ;
+- `[EXCLUDED]` : répertoire de `frontend/app/routes` sans route, laissé hors de la
+  couverture avec sa raison (`ROUTE_DIRS_EXCLUDED` du validateur : `_assets`) ;
 - `[UNCITED]` : sous-agent ou skill cité par aucune fonction ;
 - les numéros de lignes de crontab cités.
 
