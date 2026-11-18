@@ -1,6 +1,6 @@
 # Candidats à l’archivage — format du lot D (mandat CA, 2026-11-18)
 
-> **Aucune migration n’est écrite.** Ce document liste des candidats et leurs preuves, au format de `backend/supabase/migrations/20261001_archive_dead_tables_lot_d.sql` (PR #1650). Chaque lot reste un acte de Marwane : migration passée par « 🗄️ Apply Supabase migrations (manual) », essai à blanc d’abord.
+> **Mandat CA : aucune migration écrite.** Depuis le mandat CF (2026-11-18), la migration du lot F1 est préparée (voir § État du lot F1) ; F2 n’a toujours aucune migration. Ce document liste des candidats et leurs preuves, au format de `backend/supabase/migrations/20261001_archive_dead_tables_lot_d.sql` (PR #1650). Chaque lot reste un acte de Marwane : migration passée par « 🗄️ Apply Supabase migrations (manual) », essai à blanc d’abord.
 
 ## Lots précédents (contexte)
 
@@ -16,10 +16,28 @@ Source : `audit/massdoc-db-hygiene-candidates-2026-09-15.md` (worktree `db-hygie
 
 Le présent lot se nomme donc **F** (proposé). Il se découpe en deux :
 
-- **F1** : 19 tables sans règle de suppression particulière.
+- **F1** : 19 tables sans règle de suppression particulière. **État : préparé** (mandat CF, PR brouillon, non appliqué).
 - **F2** : 20 tables `__seo_*`, `__diag_*`, `kg_*` : `deletePolicy = ADR_REQUIRED` dans `.spec/00-canon/repository-registry/delete-policy.yaml`. Un archivage n’est pas une suppression, mais une décision écrite de Marwane est demandée avant ce lot.
 
 Retirée de la liste par le complément CA-2 (décision de Marwane citée par le pilotage) : `support_tickets` (décision 25, désormais « prévue »). Une table prévue par une décision n’est jamais candidate, même vide et sans code.
+
+## État du lot F1 (mandat CF, 2026-11-18)
+
+**Préparé, non appliqué.** Migration `backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.sql` et son retour `20261118_archive_dead_tables_lot_f1.down.sql`, au format du lot D. Fusion, essai à blanc puis application par « 🗄️ Apply Supabase migrations (manual) » : Marwane.
+
+Liste finale, inchangée par rapport au mandat CA (19 tables) : `__agent_runs`, `__catalog_import_history`, `__marketing_analytics_digests`, `__marketing_content_library`, `__marketing_guest_posts`, `__qa_protected_meta_hash`, `__rag_check_history`, `__rag_pipeline_incidents`, `__rag_readiness`, `__v_level_computed`, `__v_level_raw`, `audit_vlevel_pg424_snapshot_20260608`, `error_statistics`, `gamme_filter_criteria`, `norm_vehicle`, `rm_data_version`, `rm_listing_content`, `rm_oem_top`, `stg_compatibility`.
+
+Re-mesure CF du 2026-11-18 vers 13:10 UTC (SELECT seulement) :
+
+- lignes exactes identiques au relevé CA de 10:12 UTC, pour les 19 tables ;
+- `n_tup_ins`, `n_tup_upd` et `n_tup_del` à 0 depuis le 2026-09-17 ;
+- aucune dépendance extérieure dans `pg_depend` (seulement les index, séquences, contraintes, politiques, triggers et types propres à chaque table) ; aucune FK entrante, vue, règle, publication, ni appartenance à une extension ; 0 fonction et 0 job pg_cron citant un nom du lot ;
+- séquences possédées (14) : aucune autre table ni fonction ne s’en sert ;
+- recherche hors du monorepo : `git grep -l -w` sur `automecanik-raw`, `automecanik-wiki` et `automecanik-rag` (HEAD local et `origin/main`), crontab, `/etc/cron*`, systemd, workflows GitHub : 0 fichier ; aucune edge function déployée ; journaux PostgREST et edge sur 24 h : 0 requête.
+
+Les cinq tables à doute du mandat CF (`__rag_readiness`, `__v_level_computed`, `__v_level_raw`, `__qa_protected_meta_hash`, `gamme_filter_criteria`) restent dans F1 : aucune preuve d’usage trouvée. Pour `__qa_protected_meta_hash`, la seule trace est la procédure manuelle `.spec/tests/qa-seo-protected-fields-runbook.md` (S1, S6), sans automatisation et sans exécution observée depuis le 2026-09-17 ; après archivage, elle échouera visiblement. Le parcours séquentiel du 2026-10-10 16:30:08 UTC, commun à `__qa_protected_meta_hash` et `__rag_readiness`, reste non attribué (aucune écriture).
+
+Effets connus, consignés dans l’en-tête de la migration : `dev_readonly` perd la lecture ; FK sortantes conservées vers des tables restées dans public ; types générés à régénérer après application (alias `QaProtectedMetaHash` à retirer) ; le skill déprécié `rag-check` recréerait `__rag_check_history` vide dans public s’il était relancé.
 
 ## En-tête proposé (même plan que le lot D)
 
@@ -134,7 +152,7 @@ Règles et vues : 0 objet `pg_rewrite` ne dépend d’un candidat (mesuré, `q15
 
 ## Points d’attention (déduit)
 
-- `__qa_protected_meta_hash` (140 lignes) : son nom évoque la protection des meta et H1 optimisés. Aucun code ne la lit ; confirmer qu’aucune garde hors dépôt n’en dépend avant de l’archiver.
+- `__qa_protected_meta_hash` (140 lignes) : son nom évoque la protection des meta et H1 optimisés. Aucun code ne la lit ; confirmer qu’aucune garde hors dépôt n’en dépend avant de l’archiver. Mandat CF : aucune garde ni aucun lecteur trouvé hors du dépôt ; seule trace, la procédure manuelle `.spec/tests/qa-seo-protected-fields-runbook.md`.
 - `__seo_role_content` garde une clé étrangère vers `__seo_page_brief` (vivante) ; `__marketing_guest_posts` vers `__marketing_campaigns` et `__marketing_outreach` ; `norm_vehicle` et `stg_compatibility` vers `import_batch` ; `__seo_r2_page_content` vers `__seo_r2_pages` ; ces tables cibles restent dans public.
 - `__rag_readiness` (1 219 lignes) et `__seo_cannibalization_recommendations` (662 lignes) sont les plus grosses ; un export avant archivage est possible mais pas nécessaire (SET SCHEMA garde les données).
 - `audit_vlevel_pg424_snapshot_20260608` : copie datée du 2026-06-08, 1 616 lignes, 0 lecture depuis le 2026-09-17.
