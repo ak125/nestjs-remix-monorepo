@@ -262,14 +262,14 @@ Le détail des 199 constats est dans `annexe-tri.md`.
 
 ## 8. Routines possibles après fusion (aucune installée)
 
-Mesures de l'essai : 177 s et 975 000.0 tokens d'entrée en moyenne par PR, dont
+Mesures de l'essai : 177 s et 975 000 tokens d'entrée en moyenne par PR, dont
 91 % servis par le cache. Il y a eu 122 PR fusionnées du 2026-11-12 au 2026-11-18,
 soit environ 17 par jour. Le temps de tri par Claude n'a pas été chronométré ; c'est le poste
 le plus lourd de l'essai.
 
 | Routine | Déclenchement | Coût estimé | Risques |
 |---|---|---|---|
-| **R1 — à la demande** | Marwane ou le pilotage désigne une PR fusionnée ; une session lance la commande du §2 et trie | ≈ 3 min de Codex et ≈ 975 000.0 tokens par PR, plus le tri | aucun nouveau composant ; couverture partielle |
+| **R1 — à la demande** | Marwane ou le pilotage désigne une PR fusionnée ; une session lance la commande du §2 et trie | ≈ 3 min de Codex et ≈ 975 000 tokens par PR, plus le tri | aucun nouveau composant ; couverture partielle |
 | **R2 — lot quotidien sur le DEV** | une fois par jour, toutes les PR fusionnées des 24 h, puis tri | ≈ 17 × 3 min ≈ 50 min de Codex et ≈ 16,6 M tokens d'entrée par jour ; tri de plusieurs dizaines de constats par jour au rythme observé | le volume de constats faibles peut noyer les vrais ; demande un cron, à installer par décision |
 | **R3 — zones STOP seulement** | seulement les PR qui touchent paiement, panier ou commande, RLS ou migrations | quelques PR par semaine au rythme récent, même coût unitaire | couverture limitée aux zones où une erreur coûte le plus |
 
