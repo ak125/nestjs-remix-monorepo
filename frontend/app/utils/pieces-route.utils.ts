@@ -4,6 +4,7 @@
  */
 
 import { detectMalformedSegment as detectSegment } from "@repo/seo-url-contract";
+import { formatPriceNumber } from "~/utils/format";
 import { logger } from "~/utils/logger";
 import {
   type VehicleData,
@@ -272,7 +273,10 @@ export function mapApiPieceToData(p: any): PieceData {
     brand: p.marque || p.brand || "Marque inconnue",
     reference: p.reference || "",
     price: p.prix_unitaire || p.prix_ttc || p.price || 0,
-    priceFormatted: (p.prix_unitaire || p.prix_ttc || p.price || 0).toFixed(2),
+    // Format français sans symbole (« 54,38 »), comme rm-mapper.ts.
+    priceFormatted: formatPriceNumber(
+      p.prix_unitaire || p.prix_ttc || p.price || 0,
+    ),
     image: p.image || "",
     images: p.images || [],
     stock: "", // 🚫 Stock masqué selon config (2026-01-20)

@@ -9,6 +9,7 @@
 import { Truck } from "lucide-react";
 import React, { useState } from "react";
 
+import { formatPriceNumber } from "~/utils/format";
 import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
@@ -285,7 +286,7 @@ export const PiecesListView = React.memo(
                         <>
                           <span className="text-lg sm:text-xl font-bold text-gray-900">
                             {typeof piece.price === "number"
-                              ? piece.price.toFixed(2)
+                              ? formatPriceNumber(piece.price)
                               : piece.priceFormatted}
                           </span>
                           <span className="text-sm font-bold text-gray-400 ml-0.5">

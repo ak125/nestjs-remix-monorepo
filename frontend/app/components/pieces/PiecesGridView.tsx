@@ -14,6 +14,7 @@ import React, { useState, useRef, useMemo, useCallback, memo } from "react";
 import { toast } from "sonner";
 
 import { openCartSidebar } from "~/hooks/useCartSidebar";
+import { formatPrice as formatEuro, splitPrice } from "~/utils/format";
 import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
@@ -71,10 +72,7 @@ function formatPrice(
   priceFormatted: string | undefined,
 ) {
   if (typeof price === "number") {
-    return {
-      whole: Math.floor(price).toString(),
-      cents: (price % 1).toFixed(2).substring(2),
-    };
+    return splitPrice(price);
   }
   const parts = priceFormatted?.split(",") || ["0", "00"];
   return {
@@ -186,7 +184,7 @@ const PieceCard = memo(function PieceCard({
       }}
       role="button"
       tabIndex={0}
-      aria-label={`Voir ${piece.name} ${piece.brand} — ${piece.priceFormatted || ""}`}
+      aria-label={`Voir ${piece.name} ${piece.brand} — ${typeof piece.price === "number" ? formatEuro(piece.price) : piece.priceFormatted || ""}`}
     >
       {/* Header: Logo + Barre Fiabilité */}
       <div className="flex items-center justify-between gap-2 p-2.5 pb-1">

@@ -9,6 +9,24 @@ const pieceCollator = new Intl.Collator("fr", {
   sensitivity: "base",
 });
 
+/** Prix affichable : > 0. Une pièce sans prix vendable (0) n'est pas achetable. */
+function hasPrice(piece: PieceData): boolean {
+  return typeof piece.price === "number" && piece.price > 0;
+}
+
+/**
+ * Tri par prix, pièces sans prix toujours en fin de liste (sinon « Prix
+ * croissant » les placerait en tête à 0 €). Tri stable : à prix égal, l'ordre
+ * reçu (score du catalogue) est conservé.
+ */
+function comparePrice(a: PieceData, b: PieceData, direction: 1 | -1): number {
+  const aHas = hasPrice(a);
+  const bHas = hasPrice(b);
+  if (aHas !== bHas) return aHas ? -1 : 1;
+  if (!aHas) return 0;
+  return direction * (a.price - b.price);
+}
+
 /** Sort a newly filtered array, never the source catalogue. Shared by both views. */
 export function sortPiecesInPlace(
   pieces: PieceData[],
@@ -24,9 +42,9 @@ export function sortPiecesInPlace(
         pieceCollator.compare(a.brand || "", b.brand || ""),
       );
     case "price-asc":
-      return pieces.sort((a, b) => (a.price || 0) - (b.price || 0));
+      return pieces.sort((a, b) => comparePrice(a, b, 1));
     case "price-desc":
-      return pieces.sort((a, b) => (b.price || 0) - (a.price || 0));
+      return pieces.sort((a, b) => comparePrice(a, b, -1));
   }
 }
 

@@ -17,6 +17,7 @@ import { memo, useEffect, useState } from "react";
 
 import { useNativeDialog } from "~/hooks/useNativeDialog";
 
+import { formatPriceNumber } from "~/utils/format";
 import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { trackViewItem, trackAddToCart } from "../../utils/analytics";
@@ -421,7 +422,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                   <div className="text-sm text-gray-600 mb-2">Prix TTC</div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-black text-blue-600">
-                      {piece.prix_ttc.toFixed(2)}
+                      {formatPriceNumber(piece.prix_ttc)}
                     </span>
                     <span className="text-2xl font-bold text-gray-500">€</span>
                   </div>
@@ -621,7 +622,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                   <ShoppingCart className="w-5 h-5" />
                   <span>Ajouter au panier</span>
                   <span className="font-bold">
-                    · {piece.prix_ttc.toFixed(2)}€
+                    · {formatPriceNumber(piece.prix_ttc)}€
                   </span>
                 </>
               )}
