@@ -1,4 +1,4 @@
-import { InternalLinkingService } from '../../../seo/internal-linking.service';
+import { InternalLinkingService } from '../../../seo';
 import { GammeResponseBuilderService } from '../gamme-response-builder.service';
 
 /**
