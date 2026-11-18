@@ -395,7 +395,8 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
-        "backend/src/modules/orders/listeners/order-audit.listener.ts"
+        "backend/src/modules/orders/listeners/order-audit.listener.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
       ]
     },
     {

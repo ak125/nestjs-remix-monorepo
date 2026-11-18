@@ -4316,6 +4316,7 @@
         "runtime:backend/src/modules/orders/services/order-actions.service.ts",
         "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
         "runtime:backend/src/modules/orders/services/orders.service.ts",
+        "runtime:backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "runtime:backend/src/services/mail.service.ts"
       ],
       "id": "runtime:backend/src/modules/orders/controllers/order-actions.controller.ts",
@@ -4399,6 +4400,7 @@
         "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
         "runtime:backend/src/modules/orders/services/order-status.service.ts",
         "runtime:backend/src/modules/orders/services/orders.service.ts",
+        "runtime:backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "runtime:backend/src/modules/orders/services/tickets.service.ts",
         "runtime:backend/src/modules/shipping/shipping.module.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
@@ -4480,6 +4482,17 @@
       "id": "runtime:backend/src/modules/orders/services/orders.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/orders/services/orders.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

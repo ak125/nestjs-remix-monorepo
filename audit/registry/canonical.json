@@ -9706,7 +9706,8 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
-          "backend/src/modules/orders/listeners/order-audit.listener.ts"
+          "backend/src/modules/orders/listeners/order-audit.listener.ts",
+          "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
         ]
       },
       {
@@ -50589,6 +50590,29 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/orders/config/supplier-order-preparation.config.ts",
+      "importedBy": [
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 43,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/orders/config/supplier-order-preparation.config.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual"
       ],
       "domain": "D11",
@@ -50603,10 +50627,11 @@
         "backend/src/modules/orders/services/order-actions.service.ts",
         "backend/src/modules/orders/services/order-line-supplier.service.ts",
         "backend/src/modules/orders/services/orders.service.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 457,
+      "loc": 509,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "high",
@@ -50894,12 +50919,14 @@
         "backend/src/modules/orders/services/order-line-supplier.service.ts",
         "backend/src/modules/orders/services/order-status.service.ts",
         "backend/src/modules/orders/services/orders.service.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "backend/src/modules/orders/services/tickets.service.ts",
         "backend/src/modules/shipping/shipping.module.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "kind": "service",
-      "loc": 101,
+      "loc": 110,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/orders.module.ts",
       "risk": "high",
@@ -51096,7 +51123,9 @@
       "importedBy": [
         "backend/src/modules/orders/services/order-actions.service.ts",
         "backend/src/modules/orders/services/order-line-supplier-proposal.test.ts",
-        "backend/src/modules/orders/services/order-line-supplier.service.ts"
+        "backend/src/modules/orders/services/order-line-supplier.service.ts",
+        "backend/src/modules/orders/services/supplier-order-controls.test.ts",
+        "backend/src/modules/orders/services/supplier-order-controls.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -51121,7 +51150,9 @@
         "backend/src/modules/orders/controllers/order-actions.controller.ts",
         "backend/src/modules/orders/orders.module.ts",
         "backend/src/modules/orders/services/order-actions.line-supplier.test.ts",
-        "backend/src/modules/orders/services/order-actions.service.ts"
+        "backend/src/modules/orders/services/order-actions.service.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
       ],
       "imports": [
         "@database/services/piece-price-data.service",
@@ -51200,6 +51231,113 @@
       "loc": 1271,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/orders.service.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/orders/services/supplier-order-controls.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
+        "backend/src/modules/orders/services/supplier-order-controls.ts",
+        "backend/src/modules/supplier-truth/index.ts"
+      ],
+      "kind": "test",
+      "loc": 260,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/orders/services/supplier-order-controls.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/orders/services/supplier-order-controls.ts",
+      "importedBy": [
+        "backend/src/modules/orders/services/supplier-order-controls.test.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
+      ],
+      "imports": [
+        "@repo/domain-commerce",
+        "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
+        "backend/src/modules/supplier-truth/index.ts"
+      ],
+      "kind": "service",
+      "loc": 338,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/orders/services/supplier-order-controls.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/orders/services/order-line-supplier.service.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+        "backend/src/modules/supplier-truth/index.ts"
+      ],
+      "kind": "test",
+      "loc": 326,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+      "importedBy": [
+        "backend/src/modules/orders/controllers/order-actions.controller.ts",
+        "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts"
+      ],
+      "imports": [
+        "@database/services/supabase-base.service",
+        "@repo/database-types",
+        "backend/src/modules/orders/config/supplier-order-preparation.config.ts",
+        "backend/src/modules/orders/services/order-line-supplier.service.ts",
+        "backend/src/modules/orders/services/supplier-order-controls.ts",
+        "backend/src/modules/supplier-truth/index.ts"
+      ],
+      "kind": "service",
+      "loc": 383,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
       "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -65007,6 +65145,7 @@
         "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
         "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
         "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
         "backend/src/workers/supplier-availability-classify.ts"
       ],
       "imports": [
@@ -65057,6 +65196,8 @@
       "id": "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
       "importedBy": [
         "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/workers/supplier-availability-classify.ts",
         "backend/src/workers/supplier-price-verify.ts"
@@ -65163,6 +65304,8 @@
         "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
         "backend/src/workers/supplier-availability-classify.ts"
       ],
       "imports": [
@@ -65212,6 +65355,8 @@
       "id": "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
       "importedBy": [
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.test.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/workers/supplier-availability-classify.ts",
         "backend/src/workers/supplier-price-verify.ts"
@@ -65339,6 +65484,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.test.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.test.ts",
@@ -65390,6 +65536,7 @@
       "id": "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
       "importedBy": [
         "backend/src/modules/supplier-truth/connectors/supplier-registry.test.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
         "backend/src/workers/supplier-availability-classify.ts",
@@ -65796,6 +65943,35 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/index.ts",
+      "importedBy": [
+        "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/supplier-order-controls.test.ts",
+        "backend/src/modules/orders/services/supplier-order-controls.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+      ],
+      "kind": "service",
+      "loc": 13,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/index.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual"
       ],
       "domain": "D11",
@@ -65840,6 +66016,63 @@
       "path": "backend/src/modules/supplier-truth/order-availability.service.ts",
       "risk": "high",
       "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
+        "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+      ],
+      "kind": "test",
+      "loc": 209,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+      "importedBy": [
+        "backend/src/modules/supplier-truth/index.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts"
+      ],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
+        "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.runner.ts"
+      ],
+      "kind": "service",
+      "loc": 225,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+      "risk": "high",
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE"
@@ -65986,6 +66219,7 @@
       "domain": "D11",
       "id": "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
         "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
@@ -72251,7 +72485,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 150,
+      "loc": 151,
       "owner": "@ak125",
       "path": "backend/tests/unit/order-actions.cancel-order.test.ts",
       "risk": "medium",
@@ -72271,7 +72505,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 115,
+      "loc": 116,
       "owner": "@ak125",
       "path": "backend/tests/unit/order-actions.create-supplement.test.ts",
       "risk": "medium",
@@ -75067,6 +75301,29 @@
       "loc": 127,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/admin/QuickNoteDialog.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/admin/SupplierOrderPreparationPanel.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/badge",
+        "~/components/ui/button"
+      ],
+      "kind": "config",
+      "loc": 281,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/admin/SupplierOrderPreparationPanel.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -90738,6 +90995,8 @@
       "imports": [
         "frontend/app/auth/unified.server.ts",
         "frontend/app/utils/orders.utils.ts",
+        "~/components/admin/OrderLineSupplierPanel",
+        "~/components/admin/SupplierOrderPreparationPanel",
         "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
@@ -90745,7 +91004,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 657,
+      "loc": 684,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/commercial.orders.$orderId.tsx",
       "risk": "medium",
@@ -108647,15 +108906,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "77114994fae5308c02fdc8fb06619c68d29e9067afef3599e1eb032ee87b7a28",
+      ".spec/00-canon/repository-registry/ownership.yaml": "941d0ec7efa522e1ef04301cd8770dd2a8603f30da73ff8369e6473ddf8d4837",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "23203f9d6c6cbdfc32fa5ccdb6dab7d0365fc39bb8a9aacd423e722fc4fb9dfa",
+      "audit/registry/db.json": "9c0c66011897c5b7653f62067bc273e25533433d2361112feae078c119c028a3",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "19c4775fd33e4d205f1ebc81f6f5b9d615e0b71b47c7956a041d71cf4decd17e",
+      "audit/registry/files.json": "968b7a42f4f4a80aea03de558c11d85840911e056899b9530c0aa2572158e242",
       "audit/registry/rpc.json": "7bad5009842d31d108b2b0c9a1d7612d565cf40a748e28f0a78076a7be4070c4",
-      "audit/registry/runtime.json": "176095c5055e90ca2c990a1457d6321db1879f5464619c4842ae91308ef86e95"
+      "audit/registry/runtime.json": "f2a5000ce3dc86d7afdc718757390e60e73567c5665b69640aa50801ca494a21"
     },
-    "sotFingerprint": "0568b681c127"
+    "sotFingerprint": "e6e38a0bab51"
   },
   "runtime": [
     {
@@ -112974,6 +113233,7 @@
         "runtime:backend/src/modules/orders/services/order-actions.service.ts",
         "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
         "runtime:backend/src/modules/orders/services/orders.service.ts",
+        "runtime:backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "runtime:backend/src/services/mail.service.ts"
       ],
       "id": "runtime:backend/src/modules/orders/controllers/order-actions.controller.ts",
@@ -113057,6 +113317,7 @@
         "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts",
         "runtime:backend/src/modules/orders/services/order-status.service.ts",
         "runtime:backend/src/modules/orders/services/orders.service.ts",
+        "runtime:backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "runtime:backend/src/modules/orders/services/tickets.service.ts",
         "runtime:backend/src/modules/shipping/shipping.module.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
@@ -113138,6 +113399,17 @@
       "id": "runtime:backend/src/modules/orders/services/orders.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/orders/services/orders.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/orders/services/order-line-supplier.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
