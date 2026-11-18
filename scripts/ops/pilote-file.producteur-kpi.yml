@@ -1,0 +1,34 @@
+# Règles ast-grep de pilote-file.sh (ADR-128 D2) — lues par `ast-grep scan --rule`, avec la
+# version épinglée de @ast-grep/cli (package.json). Hors de .ast-grep/rules : elles ne gardent
+# pas le dépôt, elles décrivent ce que la routine compte comme producteur d'un KPI.
+#
+# Producteur « présent » = le KPI est défini dans le code, sous l'une des deux formes des
+# fichiers où vivent les producteurs :
+#   - objet  { id: '<kpi>' }       (command-center-kpi.service.ts)
+#   - règle  const id = '<kpi>'    (command-center-action-rules/department-kpi.rules.ts)
+# La valeur doit être une chaîne simple ('…' ou "…"). Un commentaire, une liste, une chaîne ou
+# un gabarit qui citent l'identifiant ne sont pas des nœuds de ces formes : ils ne comptent pas.
+# Le script compare la valeur au KPI du rôle ; les deux autres règles lui servent de témoins.
+id: pilote-file-producteur-kpi
+language: TypeScript
+rule:
+  any:
+    - pattern:
+        context: "({ id: $KPI })"
+        selector: pair
+    - pattern: "const id = $KPI"
+constraints:
+  KPI:
+    kind: string
+---
+# Témoin : un fichier qu'ast-grep n'a pas su lire entièrement ne permet aucune conclusion.
+id: pilote-file-erreur-syntaxe
+language: TypeScript
+rule:
+  kind: ERROR
+---
+# Témoin : un fichier sans ce nœud n'a pas été analysé (vide, non UTF-8, ignoré).
+id: pilote-file-fichier-lu
+language: TypeScript
+rule:
+  kind: program
