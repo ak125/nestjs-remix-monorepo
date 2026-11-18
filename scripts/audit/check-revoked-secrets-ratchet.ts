@@ -106,7 +106,9 @@ export interface Baseline {
  */
 export type ShapeRule =
   | "payment-hmac-hex128-literal"
-  | "payment-certificate-literal";
+  | "payment-certificate-literal"
+  | "credential-env-default-literal"
+  | "credential-documented-default";
 
 export type Rule =
   | "supabase-legacy-jwt"
@@ -276,6 +278,113 @@ const PAYMENT_CERT_RE =
   /(?:SYSTEMPAY_CERT[A-Z_]*|CYBERPLUS_CERTIFICAT[A-Z_]*)[^0-9]{0,40}([0-9]{16})(?![0-9])/g;
 
 /**
+ * Credential defaults (mandat BY, 2026-11-18). A login committed as the DEFAULT
+ * of an environment read — `os.environ.get("X_PASSWORD", "<literal>")`,
+ * `process.env.X_SECRET || "<literal>"`, `${X_TOKEN:-<literal>}` — makes the
+ * environment optional and publishes the credential. Gitleaks misses it: its
+ * generic rule needs entropy, and a human password is short and low-entropy.
+ * Measured on 2026-11-18: an admin login sat in such a default (and in the
+ * docstring that documented it) for seven months without a single red run.
+ *
+ * Anchored on a CREDENTIAL-NAMED variable, never on the value. Names that hold
+ * a path, URL, duration or flag (`*_FILE`, `*_URL`, `*_EXPIRES_IN`…) are not
+ * credentials; placeholders (`<…>`, `$…`, `...`, `***`) are not values.
+ *
+ * Findings of these two rules carry NO fingerprint: a 12-hex SHA-256 prefix of
+ * a short human password is reversible by dictionary, so printing it in a
+ * public CI log would publish the password. The variable name and the length
+ * are enough to locate it.
+ */
+const CRED_NAME = String.raw`[A-Z0-9_]*(?:PASSWORD|PASSWD|PASSPHRASE|_PWD|SECRET|TOKEN|API_?KEY|PRIVATE_KEY|ADMIN_(?:EMAIL|MAIL|USER|LOGIN))[A-Z0-9_]*`;
+const NOT_A_CREDENTIAL_NAME =
+  /_(?:FILE|PATH|DIR|URL|URI|TTL|EXPIRES?(?:_IN)?|EXPIRY|HEADER|NAME|ENDPOINT|HOST|PORT|LENGTH|LEN|TYPE|ALGO(?:RITHM)?|ISSUER|AUDIENCE|ENABLED|MODE|PREFIX|COOKIE)$/;
+const PLACEHOLDER_VALUE =
+  /^(?:<.*>|\$.*|\.{3}|…|\*+|none|null|undefined|empty|required|unset|vide|aucune?|is|to|of|the|est)$/i;
+const CRED_ENV_DEFAULT_RES: readonly RegExp[] = [
+  // Python: os.environ.get / os.getenv / os.environ.setdefault
+  new RegExp(
+    String.raw`os\.(?:environ\.get|getenv|environ\.setdefault)\(\s*["'](${CRED_NAME})["']\s*,\s*(?:default\s*=\s*)?["']([^"'\n]+)["']`,
+    "g",
+  ),
+  // JS/TS: process.env.X || "v" · process.env["X"] ?? 'v'
+  new RegExp(
+    String.raw`process\.env(?:\.(${CRED_NAME})|\[\s*["'](${CRED_NAME})["']\s*\])\s*(?:\|\||\?\?)\s*["'\x60]([^"'\x60\n]+)["'\x60]`,
+    "g",
+  ),
+  // Shell / compose: ${X:-v} · ${X-v}
+  new RegExp(String.raw`\$\{(${CRED_NAME}):?-([^}\n]+)\}`, "g"),
+  // Config readers: config.get("X", "v") · configService.get<string>('X', 'v')
+  new RegExp(
+    String.raw`\.get(?:OrThrow)?(?:<[^>\n]*>)?\(\s*["'](${CRED_NAME})["']\s*,\s*["'\x60]([^"'\x60\n]+)["'\x60]`,
+    "g",
+  ),
+];
+const CRED_DOC_DEFAULT_RE = new RegExp(
+  String.raw`\b(${CRED_NAME}|[Pp]assword|[Mm]ot de passe)\b[^\n]{0,40}?(?<!\b(?:[Nn]o|[Ss]ans|[Ww]ithout|[Aa]ucun)\s)\b(?:default|[Dd]éfaut)\b\s*[:=]?\s*([^\s,;)]+)`,
+  "g",
+);
+
+type CredentialRule =
+  | "credential-env-default-literal"
+  | "credential-documented-default";
+
+function credentialFinding(
+  file: string,
+  line: number,
+  rule: CredentialRule,
+  name: string,
+  value: string,
+): Finding | null {
+  const v = value.trim();
+  if (!v || NOT_A_CREDENTIAL_NAME.test(name) || PLACEHOLDER_VALUE.test(v)) {
+    return null;
+  }
+  if (
+    rule === "credential-documented-default" &&
+    /^(?:https?:\/\/|[0-9]+$)/.test(v)
+  ) {
+    return null;
+  }
+  return {
+    file,
+    line,
+    rule,
+    fp: "n/a",
+    detail:
+      rule === "credential-env-default-literal"
+        ? `identifiant en valeur par défaut de ${name} (${v.length} car.)`
+        : `identifiant documenté comme défaut de ${name} (${v.length} car.)`,
+  };
+}
+
+/** Credential-default findings for one line — at most one per rule. */
+export function scanCredentialDefaults(
+  file: string,
+  lineNo: number,
+  line: string,
+): Finding[] {
+  const out: Finding[] = [];
+  const firstOf = (
+    rule: CredentialRule,
+    res: readonly RegExp[],
+  ): Finding | null => {
+    for (const re of res) {
+      for (const m of line.matchAll(re)) {
+        const g = m.slice(1).filter((x): x is string => x !== undefined);
+        const f = credentialFinding(file, lineNo, rule, g[0], g[g.length - 1]);
+        if (f) return f;
+      }
+    }
+    return null;
+  };
+  const env = firstOf("credential-env-default-literal", CRED_ENV_DEFAULT_RES);
+  if (env) out.push(env);
+  const doc = firstOf("credential-documented-default", [CRED_DOC_DEFAULT_RE]);
+  if (doc) out.push(doc);
+  return out;
+}
+
+/**
  * Shape pass — deliberately NOT part of `scanContent`.
  *
  * Keeping it separate from `scanContent` is a safety property, not a style
@@ -307,6 +416,7 @@ export function scanShapes(file: string, content: string): Finding[] {
         detail: "certificat de paiement (16 chiffres) en clair",
       });
     }
+    out.push(...scanCredentialDefaults(file, i + 1, line));
   });
   return out;
 }
