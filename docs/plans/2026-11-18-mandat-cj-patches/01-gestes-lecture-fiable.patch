@@ -1,0 +1,300 @@
+--- a/.github/scripts/morning-health-digest.sh
++++ b/.github/scripts/morning-health-digest.sh
+@@ -497,30 +497,140 @@
+ fi
+ 
+ # ---- Owner's gestures: open PRs, labelled issues (read once, used below) ----
+-LABELS=$(gh label list --repo "$REPO" --limit 500 --json name --jq '.[].name' 2>/dev/null) || LABELS="__ILLISIBLE__"
+-PRS=$(gh pr list --repo "$REPO" --state open --limit 100 \
+-  --json number,title,url,isDraft,headRefName,labels,files,statusCheckRollup 2>/dev/null) || PRS=""
+-jq -e 'type == "array"' <<< "${PRS:-null}" >/dev/null 2>&1 || PRS=""
+-# label_issues <label> → JSON array [{n, t, u}] of open issues, "absent" if the label does not exist, "" if unreadable
++# Mandate CJ (2026-11-18): `gh pr list --limit 100 --json …,files,statusCheckRollup` ended
++# in HTTP 504 (GraphQL timeout; statusCheckRollup alone ≈ 11 s for 61 PRs), its error was
++# thrown away and the gestures were written « illisible » with no cause. Now every read is
++# bounded (timeout per call, a few tries on a transient error) and an unreadable source
++# keeps a short cause (« liste des PR : HTTP 504 GitHub »), written in the report and the
++# run log: an empty list is never taken for « no gesture ».
++GH_READ_TRIES=${GH_READ_TRIES:-3}; GH_READ_PAUSE=${GH_READ_PAUSE:-5}; GH_READ_TIMEOUT=${GH_READ_TIMEOUT:-60}
++# gh_cause <stderr file> <rc> → short cause, safe for the public issue (never the raw message)
++gh_cause() {
++  local http
++  if [ "$2" = 124 ]; then echo "délai de ${GH_READ_TIMEOUT} s dépassé"; return 0; fi
++  http=$(grep -oE 'HTTP [0-9]{3}' "$1" | head -n1 || true)
++  if [ -n "$http" ]; then echo "$http GitHub"
++  elif grep -q 'GraphQL' "$1"; then echo "erreur GraphQL GitHub"
++  elif grep -qiE 'timeout|timed out|connection|could not resolve|EOF|TLS' "$1"; then echo "erreur réseau"
++  else echo "échec de gh (code $2)"; fi
++}
++# gh_read <label> <jq test of a valid answer> <out file> <gh args…> → 0 and the answer in
++# <out file>, or 1 and the cause in GH_WHY. A transient failure (HTTP 5xx, timeout,
++# network, unreadable answer) is tried again, GH_READ_TRIES times at most.
++gh_read() {
++  local label="$1" test="$2" out="$3" try=1 rc err
++  shift 3
++  err=$(mktemp); GH_WHY=""
++  while :; do
++    rc=0; timeout "$GH_READ_TIMEOUT" gh "$@" > "$out" 2> "$err" || rc=$?
++    if [ "$rc" = 0 ]; then
++      if jq -e "$test" "$out" >/dev/null 2>&1; then rm -f "$err"; return 0; fi
++      GH_WHY="réponse illisible"
++    else
++      GH_WHY=$(gh_cause "$err" "$rc")
++    fi
++    case "$GH_WHY" in "HTTP 5"*|délai*|"erreur réseau"|"réponse illisible") ;; *) break ;; esac
++    [ "$try" -ge "$GH_READ_TRIES" ] && break
++    echo "lecture $label : $GH_WHY, nouvel essai dans $((GH_READ_PAUSE * try)) s ($((try + 1))/$GH_READ_TRIES)"
++    sleep $((GH_READ_PAUSE * try)); try=$((try + 1))
++  done
++  [ "$try" -gt 1 ] && GH_WHY="$GH_WHY après $try essais"
++  rm -f "$err"; return 1
++}
++
++# Open PRs, two light queries instead of one heavy: pages of 50 with the rollup STATE only
++# (≈ 2 s for 61 PRs), then the check names PR by PR, only for a PR whose rollup is not
++# green (the heavy part). Output keeps the shape of the former `gh pr list` read:
++# [{number, title, url, isDraft, headRefName, labels[{name}], files[{path}],
++#   statusCheckRollup[{name, conclusion}], or null if that PR's checks are unreadable}].
++PR_MAX=300; PR_PAGE=50
++PR_BASE_Q='query($owner: String!, $name: String!, $first: Int!, $after: String) {
++  repository(owner: $owner, name: $name) {
++    pullRequests(states: OPEN, first: $first, after: $after, orderBy: {field: CREATED_AT, direction: DESC}) {
++      totalCount
++      pageInfo { hasNextPage endCursor }
++      nodes { number title url isDraft headRefName
++        labels(first: 50) { nodes { name } }
++        files(first: 100) { nodes { path } }
++        commits(last: 1) { nodes { commit { statusCheckRollup { state } } } } } } } }'
++PR_CHECKS_Q='query($owner: String!, $name: String!, $n: Int!) {
++  repository(owner: $owner, name: $name) { pullRequest(number: $n) {
++    commits(last: 1) { nodes { commit { statusCheckRollup {
++      contexts(first: 100) { nodes { ... on CheckRun { name conclusion } } } } } } } } } }'
++PRS=""; PRS_WHY=""; PRS_TOTAL=0; CHK_FAIL=0; CHK_WHY=""
++PR_F=$(mktemp); PR_PAGES=$(mktemp); PR_CUR=null
++while :; do
++  if ! gh_read "liste des PR" '.data.repository.pullRequests.nodes | type == "array"' "$PR_F" \
++       api graphql -f query="$PR_BASE_Q" -F owner="${REPO%%/*}" -F name="${REPO#*/}" -F first="$PR_PAGE" -F after="$PR_CUR"; then
++    PRS_WHY="liste des PR : $GH_WHY"; break
++  fi
++  jq -c '.data.repository.pullRequests.nodes[]' "$PR_F" >> "$PR_PAGES"
++  PRS_TOTAL=$(jq '.data.repository.pullRequests.totalCount' "$PR_F")
++  [ "$(jq -r '.data.repository.pullRequests.pageInfo.hasNextPage' "$PR_F")" = true ] || break
++  [ "$(wc -l < "$PR_PAGES")" -lt "$PR_MAX" ] || break
++  PR_CUR=$(jq -r '.data.repository.pullRequests.pageInfo.endCursor' "$PR_F")
++done
++if [ -z "$PRS_WHY" ]; then
++  PRS=$(jq -cs 'unique_by(.number) | sort_by(-.number) | map({number, title, url, isDraft, headRefName,
++          labels: [.labels.nodes[]? | {name}], files: [.files.nodes[]? | {path}],
++          rollup: (.commits.nodes[0].commit.statusCheckRollup.state // null), statusCheckRollup: []})' "$PR_PAGES")
++  for P in $(jq -r '.[] | select(.rollup != null and .rollup != "SUCCESS") | .number' <<< "$PRS"); do
++    if [ "$CHK_FAIL" -eq 0 ] && gh_read "contrôles de la PR #$P" '.data.repository.pullRequest.commits.nodes | type == "array"' "$PR_F" \
++         api graphql -f query="$PR_CHECKS_Q" -F owner="${REPO%%/*}" -F name="${REPO#*/}" -F n="$P"; then
++      PRS=$(jq -c --argjson n "$P" --slurpfile c "$PR_F" 'map(if .number == $n then .statusCheckRollup =
++              [$c[0].data.repository.pullRequest.commits.nodes[0].commit.statusCheckRollup.contexts.nodes[]? | select(.name != null)]
++            else . end)' <<< "$PRS")
++    else
++      # After one definitive failure the remaining PRs are not tried: the run stays bounded.
++      [ "$CHK_FAIL" -eq 0 ] && CHK_WHY=$GH_WHY
++      CHK_FAIL=$((CHK_FAIL + 1))
++      PRS=$(jq -c --argjson n "$P" 'map(if .number == $n then .statusCheckRollup = null else . end)' <<< "$PRS")
++    fi
++  done
++  [ "$CHK_FAIL" -gt 0 ] && echo "::warning::contrôles de $CHK_FAIL PR illisibles ($CHK_WHY) : PR en échec comptées au moins"
++fi
++rm -f "$PR_F" "$PR_PAGES"
++
++LABELS_F=$(mktemp); LABELS_WHY=""
++if gh_read "labels" 'type == "array"' "$LABELS_F" label list --repo "$REPO" --limit 500 --json name; then
++  LABELS=$(jq -r '.[].name' "$LABELS_F")
++else
++  LABELS="__ILLISIBLE__"; LABELS_WHY="labels : $GH_WHY"
++fi
++rm -f "$LABELS_F"
++# label_issues <label> <VAR> → VAR = JSON array [{n, t, u}] of open issues, "absent" if the
++# label does not exist (not a failure: 0 issue, said so), "" if unreadable; VAR_WHY = cause.
+ label_issues() {
+-  [ "$LABELS" = "__ILLISIBLE__" ] && return 0
+-  grep -qx -- "$1" <<< "$LABELS" || { echo absent; return 0; }
+-  gh issue list --repo "$REPO" --state open --label "$1" --limit 200 --json number,title,url,labels 2>/dev/null \
+-    | jq -c --arg l "$1" '[.[] | select(any(.labels[]?; .name == $l)) | {n: .number, t: .title, u: .url}]' 2>/dev/null || true
++  local f
++  f=$(mktemp)
++  printf -v "$2" '%s' ""; printf -v "${2}_WHY" '%s' ""
++  if [ "$LABELS" = "__ILLISIBLE__" ]; then
++    printf -v "${2}_WHY" '%s' "$LABELS_WHY"
++  elif ! grep -Fqx -- "$1" <<< "$LABELS"; then
++    printf -v "$2" '%s' absent
++  elif gh_read "issues au label $1" 'type == "array"' "$f" \
++         issue list --repo "$REPO" --state open --label "$1" --limit 200 --json number,title,url,labels; then
++    printf -v "$2" '%s' "$(jq -c --arg l "$1" '[.[] | select(any(.labels[]?; .name == $l)) | {n: .number, t: .title, u: .url}]' "$f")"
++  else
++    printf -v "${2}_WHY" '%s' "issues au label $1 : $GH_WHY"
++  fi
++  rm -f "$f"
+ }
+-WAIT_ISSUES=$(label_issues "$LABEL_WAIT")
+-ARB_ISSUES=$(label_issues "$LABEL_ARB")
++label_issues "$LABEL_WAIT" WAIT_ISSUES
++label_issues "$LABEL_ARB" ARB_ISSUES
++# Causes of the gesture reads, deduplicated (unreadable labels fail both label reads).
++GEST_WHY=$(printf '%s\n' "$PRS_WHY" "$WAIT_ISSUES_WHY" "$ARB_ISSUES_WHY" | awk 'NF && !seen[$0]++' | paste -sd';' - | sed 's/;/ ; /g')
+ 
+ # ---- Issues waiting for the owner (label attend-marwane, if it exists) ----
+ OWNER_SRC="issues ouvertes au label $LABEL_WAIT"
+ if [ "$LABELS" = "__ILLISIBLE__" ]; then
+-  signal owner "Issues en attente de Marwane" indisponible "lecture des labels en échec" "$OWNER_SRC" "$Q_QUAL" ""
++  signal owner "Issues en attente de Marwane" indisponible "lecture en échec ($LABELS_WHY)" "$OWNER_SRC" "$Q_QUAL" ""
+ elif [ "$WAIT_ISSUES" = absent ]; then
+   signal owner "Issues en attente de Marwane" info "label $LABEL_WAIT inexistant (sa création revient à l'owner)" "$OWNER_SRC" "$Q_QUAL" direct
+ elif [ -n "$WAIT_ISSUES" ]; then
+   signal owner "Issues en attente de Marwane" info "$(jq -r 'length as $n | "\($n)" + (if $n > 0 then " : " + (map("#\(.n)") | join(" ")) else "" end)' <<< "$WAIT_ISSUES")" "$OWNER_SRC" "$Q_QUAL" direct
+ else
+-  signal owner "Issues en attente de Marwane" indisponible "lecture des issues en échec" "$OWNER_SRC" "$Q_QUAL" ""
++  signal owner "Issues en attente de Marwane" indisponible "lecture en échec ($WAIT_ISSUES_WHY)" "$OWNER_SRC" "$Q_QUAL" ""
+ fi
+ 
+ # ======================================================================
+@@ -562,19 +672,24 @@
+ fi
+ 
+ # ---- Open PRs with failing checks (from the PR list read above) ----
+-PRF_SRC="gh pr list, statusCheckRollup des PR ouvertes (100 au plus)"
++PRF_SRC="API GraphQL GitHub, contrôles des PR ouvertes ($PR_MAX au plus)"
+ if [ -n "$PRS" ]; then
+   FAILS=$(jq -c '[.[] | {n: .number, t: (.title[:65]), head: .headRefName, failed: ([.statusCheckRollup[]? | select(.conclusion=="FAILURE") | .name] | unique)} | select((.failed | length) > 0)]' <<< "$PRS")
+   DEPENDABOT=$(jq '[.[] | select(.head | startswith("dependabot/"))] | length' <<< "$FAILS")
+   OTHER=$(jq '[.[] | select(.head | startswith("dependabot/") | not)] | length' <<< "$FAILS")
+-  S=vert; [ "$OTHER" -gt 0 ] && S=orange
+-  signal prfail "PR ouvertes en échec" "$S" "$OTHER hors Dependabot ; $DEPENDABOT Dependabot (attendu, PR-9a)" "$PRF_SRC" "$Q_QUAL" direct
++  if [ "$CHK_FAIL" -gt 0 ]; then
++    # Some PRs' checks are unreadable: the counts are a floor, never a green.
++    signal prfail "PR ouvertes en échec" indisponible "lecture partielle : au moins $OTHER hors Dependabot ; contrôles de $CHK_FAIL PR illisibles ($CHK_WHY)" "$PRF_SRC" "$Q_QUAL" ""
++  else
++    S=vert; [ "$OTHER" -gt 0 ] && S=orange
++    signal prfail "PR ouvertes en échec" "$S" "$OTHER hors Dependabot ; $DEPENDABOT Dependabot (attendu, PR-9a)" "$PRF_SRC" "$Q_QUAL" direct
++  fi
+   if [ "$OTHER" -gt 0 ]; then
+     detail "### PR en échec hors Dependabot" ""
+     detail "$(jq -r '.[] | select(.head | startswith("dependabot/") | not) | "- #\(.n) \(.t | gsub("[`|]"; "")) — en échec : \(.failed | join(", "))"' <<< "$FAILS")" ""
+   fi
+ else
+-  signal prfail "PR ouvertes en échec" indisponible "lecture des PR en échec" "$PRF_SRC" "$Q_QUAL" ""
++  signal prfail "PR ouvertes en échec" indisponible "lecture en échec ($PRS_WHY)" "$PRF_SRC" "$Q_QUAL" ""
+ fi
+ 
+ # ---- Audit & drift on main ----
+@@ -708,16 +823,17 @@
+ # Migrations: open PRs out of draft touching $MIG_PATH (gh lists 100 files per PR).
+ # Disagreements: issues and PRs labelled $LABEL_ARB. Waiting: issues labelled $LABEL_WAIT.
+ if [ -n "$PRS" ]; then
+-  GEST=$(jq -c --arg mig "$MIG_PATH" --arg arb "$LABEL_ARB" --arg wait "$LABEL_WAIT" '
++  GEST=$(jq -c --arg mig "$MIG_PATH" --arg arb "$LABEL_ARB" --arg wait "$LABEL_WAIT" --argjson total "$PRS_TOTAL" '
+     map(. + {mig: any(.files[]?; .path | startswith($mig)), dep: (.headRefName | startswith("dependabot/")),
+-             failed: ([.statusCheckRollup[]? | select(.conclusion == "FAILURE")] | length)})
++             failed: (if .statusCheckRollup == null then null
++                      else ([.statusCheckRollup[]? | select(.conclusion == "FAILURE")] | length) end)})
+     | {fusions:   [.[] | select((.isDraft | not) and (.dep | not) and (.mig | not))],
+        migrations:[.[] | select((.isDraft | not) and .mig)],
+        mig_draft: ([.[] | select(.isDraft and .mig)] | length),
+        drafts:    ([.[] | select(.isDraft)] | length),
+        arb_pr:    [.[] | select(any(.labels[]?; .name == $arb))],
+        wait_pr:   [.[] | select(any(.labels[]?; .name == $wait))],
+-       truncated: (length >= 100)}' <<< "$PRS")
++       read: length, total: $total, truncated: ($total > length)}' <<< "$PRS")
+ else
+   GEST=""
+ fi
+@@ -727,6 +843,13 @@
+ N_WAIT=$(( $(g_count '.wait_pr | length') + $( [ -n "$WAIT_ISSUES" ] && [ "$WAIT_ISSUES" != absent ] && jq length <<< "$WAIT_ISSUES" || echo 0 ) ))
+ N_GEST=$((N_FUS + N_MIG + N_ARB + N_WAIT))
+ GEST_READ=1; { [ -z "$GEST" ] || [ -z "$WAIT_ISSUES" ] || [ -z "$ARB_ISSUES" ]; } && GEST_READ=0
++# A failed read always carries its cause (GEST_WHY); the run log says which one.
++[ "$GEST_READ" = 0 ] && [ -z "$GEST_WHY" ] && GEST_WHY="cause non déterminée"
++if [ "$GEST_READ" = 1 ]; then
++  echo "Gestes de Marwane : $N_GEST (fusions $N_FUS, migrations $N_MIG, désaccords $N_ARB, en attente $N_WAIT) ; PR ouvertes lues : $(jq .read <<< "$GEST")/$(jq .total <<< "$GEST")"
++else
++  echo "::warning::Gestes de Marwane : $N_GEST au moins, lecture en échec — $GEST_WHY"
++fi
+ 
+ MAIL_DAY=$(jq -r '.mail_jour // ""' <<< "$META_PREV"); MAIL_PREV=$(jq -r '.mail // ""' <<< "$META_PREV")
+ DAY_MAIL="sans objet (mode historique)"; DAY_MAIL_DAY="$MAIL_DAY"; DAY_MAIL_SEND=0
+@@ -738,7 +861,7 @@
+   elif [ "$N_GEST" -eq 0 ] && [ "$GEST_READ" = 1 ]; then
+     DAY_MAIL="aucun geste attendu, pas de mail"; DAY_MAIL_DAY="$PARIS_DAY"
+   elif [ "$N_GEST" -eq 0 ]; then
+-    DAY_MAIL="non envoyé : liste des gestes illisible"
++    DAY_MAIL="non envoyé : liste des gestes illisible ($GEST_WHY)"
+   else
+     # Sent AFTER the body is published (link to the issue, no mail if publication fails);
+     # this line and the report-meta marker are then rewritten with the outcome.
+@@ -767,15 +890,16 @@
+               | if $s.st then "⚠️ " + . else . end;'
+ ORDER='["tunnel","parcours","unpaid","err5xx","gsc","smoke","owner","secu","prix","sitemap","oidc","ci","prfail","audit","merged","ledger","registry"]'
+ gest_list() { # <jq path in GEST> → markdown list
+-  jq -r "$1[] | \"- [#\\(.number)](\\(.url)) \\(.title | gsub(\"[\`|\\\\[\\\\]<>\\n\\r]\"; \"\") | .[0:90])\" + (if .failed > 0 then \" — \\(.failed) check(s) en échec\" else \"\" end)" <<< "$GEST"
++  jq -r "$1[] | \"- [#\\(.number)](\\(.url)) \\(.title | gsub(\"[\`|\\\\[\\\\]<>\\n\\r]\"; \"\") | .[0:90])\" + (if .failed == null then \" — contrôles illisibles\" elif .failed > 0 then \" — \\(.failed) check(s) en échec\" else \"\" end)" <<< "$GEST"
+ }
+ issue_list() { jq -r '.[] | "- [#\(.n)](\(.u)) \(.t | gsub("[`|\\[\\]<>\n\r]"; "") | .[0:90])"' <<< "$1"; }
+ 
+ {
+   echo "## Gestes attendus de Marwane : $( [ "$GEST_READ" = 1 ] && echo "$N_GEST" || echo "$N_GEST au moins (liste partielle)" )"
+   echo ""
++  [ "$GEST_READ" = 1 ] || { echo "_Lecture en échec : $GEST_WHY. « Aucun geste » n'est pas affirmé._"; echo ""; }
+   if [ -z "$GEST" ]; then
+-    echo "_Liste des PR ouvertes illisible : fusions et migrations **indisponibles**._"
++    echo "_Liste des PR ouvertes illisible ($PRS_WHY) : fusions et migrations **indisponibles**._"
+   else
+     echo "**Fusions à décider ($N_FUS)** — PR ouvertes hors brouillon et hors Dependabot ; la commande de fusion est dans chaque PR."
+     [ "$N_FUS" -gt 0 ] && gest_list '.fusions'
+@@ -783,15 +907,15 @@
+     echo "**Migrations à appliquer ($N_MIG)** — PR ouvertes hors brouillon qui touchent \`$MIG_PATH\`$( [ "$(jq .mig_draft <<< "$GEST")" -gt 0 ] && echo " ; $(jq .mig_draft <<< "$GEST") autre(s) en brouillon" )."
+     [ "$N_MIG" -gt 0 ] && gest_list '.migrations'
+     echo ""
+-    echo "_$(jq .drafts <<< "$GEST") PR en brouillon, non listées$( [ "$(jq .truncated <<< "$GEST")" = true ] && echo " ; lecture limitée aux 100 dernières PR ouvertes" )._"
++    echo "_$(jq .drafts <<< "$GEST") PR en brouillon, non listées$( [ "$(jq .truncated <<< "$GEST")" = true ] && echo " ; lecture limitée aux $(jq .read <<< "$GEST") dernières PR ouvertes sur $(jq .total <<< "$GEST")" )._"
+   fi
+   echo ""
+   echo "**Désaccords à arbitrer ($N_ARB)** — label \`$LABEL_ARB\`."
+-  case "$ARB_ISSUES" in absent) echo "_Label $LABEL_ARB inexistant._" ;; "") echo "_Issues **indisponibles** (lecture en échec)._" ;; *) issue_list "$ARB_ISSUES" ;; esac
++  case "$ARB_ISSUES" in absent) echo "_Label $LABEL_ARB inexistant._" ;; "") echo "_Issues **indisponibles** ($ARB_ISSUES_WHY)._" ;; *) issue_list "$ARB_ISSUES" ;; esac
+   [ -n "$GEST" ] && [ "$(jq '.arb_pr | length' <<< "$GEST")" -gt 0 ] && gest_list '.arb_pr'
+   echo ""
+   echo "**En attente de Marwane ($N_WAIT)** — label \`$LABEL_WAIT\`."
+-  case "$WAIT_ISSUES" in absent) echo "_Label $LABEL_WAIT inexistant._" ;; "") echo "_Issues **indisponibles** (lecture en échec)._" ;; *) issue_list "$WAIT_ISSUES" ;; esac
++  case "$WAIT_ISSUES" in absent) echo "_Label $LABEL_WAIT inexistant._" ;; "") echo "_Issues **indisponibles** ($WAIT_ISSUES_WHY)._" ;; *) issue_list "$WAIT_ISSUES" ;; esac
+   [ -n "$GEST" ] && [ "$(jq '.wait_pr | length' <<< "$GEST")" -gt 0 ] && gest_list '.wait_pr'
+   echo ""
+   echo "Mail du jour : $DAY_MAIL."
+@@ -893,18 +1017,18 @@
+       if [ "$GEST_READ" = 1 ]; then
+         echo "Rapport du matin du $PARIS_DAY : $N_GEST geste(s) attendu(s)."
+       else
+-        echo "Rapport du matin du $PARIS_DAY : $N_GEST geste(s) attendu(s) au moins (liste partielle)."
++        echo "Rapport du matin du $PARIS_DAY : $N_GEST geste(s) attendu(s) au moins (liste partielle : $GEST_WHY)."
+       fi
+       echo ""
+       if [ -n "$GEST" ]; then
+         echo "- fusions à décider : $N_FUS"
+         echo "- migrations à appliquer : $N_MIG"
+       else
+-        echo "- fusions à décider : indisponible (liste des PR illisible)"
+-        echo "- migrations à appliquer : indisponible (liste des PR illisible)"
++        echo "- fusions à décider : indisponible ($PRS_WHY)"
++        echo "- migrations à appliquer : indisponible ($PRS_WHY)"
+       fi
+-      echo "- désaccords à arbitrer ($LABEL_ARB) : $N_ARB"
+-      echo "- en attente ($LABEL_WAIT) : $N_WAIT"
++      echo "- désaccords à arbitrer ($LABEL_ARB) : $( [ -n "$ARB_ISSUES_WHY" ] && echo "$N_ARB au moins ($ARB_ISSUES_WHY)" || echo "$N_ARB" )$( [ "$ARB_ISSUES" = absent ] && echo " (label inexistant)" )"
++      echo "- en attente ($LABEL_WAIT) : $( [ -n "$WAIT_ISSUES_WHY" ] && echo "$N_WAIT au moins ($WAIT_ISSUES_WHY)" || echo "$N_WAIT" )$( [ "$WAIT_ISSUES" = absent ] && echo " (label inexistant)" )"
+       echo ""
+       echo "Liste et liens directs : $GH_URL/$REPO/issues/$N"
+     } > "$MAIL_BODY"
+@@ -932,7 +1056,7 @@
+     fi
+     rm -f "$FIN" "$FIN.src"
+   fi
+-  echo "Issue de rapport : #$N (couleur globale : $OVERALL ; gestes : $N_GEST ; mail du jour : $DAY_MAIL ; urgences actives : $(jq 'length' <<< "$URG_NOW"))"
++  echo "Issue de rapport : #$N (couleur globale : $OVERALL ; gestes : $N_GEST$( [ "$GEST_READ" = 1 ] || echo " au moins, lecture en échec : $GEST_WHY" ) ; mail du jour : $DAY_MAIL ; urgences actives : $(jq 'length' <<< "$URG_NOW"))"
+   {
+     echo "issue=$N"
+     echo "overall=$OVERALL"
