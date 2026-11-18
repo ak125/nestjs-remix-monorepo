@@ -1318,7 +1318,6 @@
       "R2CompositionInputSnapshotService",
       "R2CompositionService",
       "R2EligibilityService",
-      "R2EnricherService",
       "R2FeatureFlagService",
       "R2IndexabilityGate",
       "R2MotorDeltaService",
@@ -1753,7 +1752,6 @@
       "backend/src/modules/admin/services/quality-scoring-engine.service.ts",
       "backend/src/modules/admin/services/r1-image-prompt.service.ts",
       "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
-      "backend/src/modules/admin/services/r2-enricher.service.ts",
       "backend/src/modules/admin/services/r3-image-prompt.service.ts",
       "backend/src/modules/admin/services/r4-content-enricher.service.ts",
       "backend/src/modules/admin/services/r4-lint-gates.service.ts",
@@ -3057,7 +3055,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1649,
+  "runtime_files_count": 1648,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3280,7 +3278,6 @@
     "backend/src/modules/admin/services/quality-scoring-engine.service.ts",
     "backend/src/modules/admin/services/r1-image-prompt.service.ts",
     "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
-    "backend/src/modules/admin/services/r2-enricher.service.ts",
     "backend/src/modules/admin/services/r3-image-prompt.service.ts",
     "backend/src/modules/admin/services/r4-content-enricher.service.ts",
     "backend/src/modules/admin/services/r4-lint-gates.service.ts",
