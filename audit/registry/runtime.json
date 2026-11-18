@@ -7099,6 +7099,7 @@
         "runtime:backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-hubs.service.ts",
+        "runtime:backend/src/modules/seo/services/sitemap-v10-pieces-vendable.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-scoring.service.ts",
@@ -7477,6 +7478,19 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/seo/services/sitemap-v10-data.service.ts",
+        "runtime:backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
+        "runtime:backend/src/modules/seo/services/sitemap-v10-xml.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo/services/sitemap-v10-pieces-vendable.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/seo/services/sitemap-v10-pieces-vendable.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-xml.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
@@ -7528,8 +7542,10 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-hubs.service.ts",
+        "runtime:backend/src/modules/seo/services/sitemap-v10-pieces-vendable.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-xml.service.ts"

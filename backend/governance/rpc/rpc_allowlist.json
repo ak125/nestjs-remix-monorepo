@@ -520,6 +520,11 @@
       "reason": "SELECT only"
     },
     {
+      "name": "get_sitemap_r2_types_vendables",
+      "volatility": "STABLE",
+      "reason": "SELECT only — types affichés portant une pièce vendable pour une gamme (mandat CT, sitemap gamme × véhicule en mode SITEMAP_R2_SOURCE=vendable)"
+    },
+    {
       "name": "get_stabilize_pages",
       "volatility": "VOLATILE",
       "reason": "SELECT only"

@@ -73,6 +73,7 @@ import { SitemapV10XmlService } from './services/sitemap-v10-xml.service';
 import { SitemapV10DataService } from './services/sitemap-v10-data.service';
 import { SitemapV10StaticService } from './services/sitemap-v10-static.service';
 import { SitemapV10PiecesService } from './services/sitemap-v10-pieces.service';
+import { SitemapV10PiecesVendableService } from './services/sitemap-v10-pieces-vendable.service';
 import { SitemapV10HubsService } from './services/sitemap-v10-hubs.service';
 import { HubsClusterService } from './services/sitemap-v10-hubs-cluster.service';
 import { HubsPriorityService } from './services/sitemap-v10-hubs-priority.service';
@@ -245,6 +246,7 @@ import { R2V2Module } from './r2/r2-v2.module';
     SitemapV10DataService,
     SitemapV10StaticService,
     SitemapV10PiecesService,
+    SitemapV10PiecesVendableService,
     SitemapV10Service,
     HubsClusterService,
     HubsPriorityService,

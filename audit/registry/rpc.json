@@ -2012,6 +2012,51 @@
       "args": [
         {
           "mode": "IN",
+          "name": "p_dispo",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_etat_tarif",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vente_ttc",
+          "type": "numeric"
+        },
+        {
+          "mode": "IN",
+          "name": "p_piece_affichee",
+          "type": "boolean"
+        }
+      ],
+      "definedInMigrations": [
+        "20261118_est_vendable_definition_unique.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.est_vendable",
+      "language": "sql",
+      "name": "est_vendable",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "boolean",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
           "name": "p_pg_id",
           "type": "integer"
         }
@@ -3276,6 +3321,46 @@
       "searchPath": [],
       "securityDefiner": false,
       "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_min",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_max",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20261118_est_vendable_definition_unique.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_sitemap_r2_types_vendables",
+      "language": "sql",
+      "name": "get_sitemap_r2_types_vendables",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "integer[]",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []
     },
@@ -6876,6 +6961,38 @@
       "searchPath": [],
       "securityDefiner": false,
       "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_piece_id",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20261118_est_vendable_definition_unique.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.piece_est_vendable",
+      "language": "sql",
+      "name": "piece_est_vendable",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "boolean",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp",
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []
     },

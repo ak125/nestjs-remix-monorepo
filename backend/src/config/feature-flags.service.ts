@@ -384,6 +384,23 @@ export class FeatureFlagsService {
   }
 
   /**
+   * Source du sitemap gamme × véhicule (mandat CT, décisions 48 et 118).
+   * `legacy` (défaut) : table figée `__sitemap_p_link` et seuil `map_has_item`.
+   * `vendable` : compatibilités × véhicule affiché × gamme indexable × au moins
+   * une pièce vendable selon `public.est_vendable`, derrière le garde-fou des
+   * URL cliquées. Toute autre valeur vaut `legacy`.
+   * Environnement seulement : la clé n'est pas dans `ALLOWED_KEYS`, aucun
+   * override admin ne la bascule. La bascule est un acte de l'owner ; le retour
+   * arrière est le même réglage remis à `legacy`. Les robots des pages n'en
+   * dépendent pas.
+   */
+  get sitemapR2Source(): 'legacy' | 'vendable' {
+    return this.resolve('SITEMAP_R2_SOURCE') === 'vendable'
+      ? 'vendable'
+      : 'legacy';
+  }
+
+  /**
    * Lit la provenance WIKI des liens et l'expose dans le pack de preuves
    * (information, pas pondération : le classement ne change pas). Calcule
    * l'écart de rang du mode primaire sans l'appliquer. Default `false`.

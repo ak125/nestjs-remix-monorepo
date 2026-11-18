@@ -35,3 +35,35 @@ describe('FeatureFlagsService.diagnosticProjectionEnabled', () => {
     expect(Object.keys(service.listFlags())).not.toContain(KEY);
   });
 });
+
+describe('FeatureFlagsService.sitemapR2Source', () => {
+  const CLE = 'SITEMAP_R2_SOURCE';
+  const service = (value?: string) =>
+    new FeatureFlagsService({
+      get: jest.fn((key: string) => (key === CLE ? value : undefined)),
+    } as unknown as ConfigService);
+
+  it('vaut legacy quand la variable est absente', () => {
+    expect(service().sitemapR2Source).toBe('legacy');
+  });
+
+  it("ne vaut vendable que pour la chaîne exacte 'vendable'", () => {
+    expect(service('vendable').sitemapR2Source).toBe('vendable');
+  });
+
+  it.each(['', 'legacy', 'VENDABLE', 'vendable ', 'true', '1', 'sellable'])(
+    'lit %p comme legacy',
+    (value) => {
+      expect(service(value).sitemapR2Source).toBe('legacy');
+    },
+  );
+
+  it("reste hors des overrides admin : seul l'environnement bascule", () => {
+    const s = service('legacy');
+    expect(() => s.setOverride(CLE, 'vendable')).toThrow(
+      `Unknown flag key: ${CLE}`,
+    );
+    expect(s.sitemapR2Source).toBe('legacy');
+    expect(Object.keys(s.listFlags())).not.toContain(CLE);
+  });
+});

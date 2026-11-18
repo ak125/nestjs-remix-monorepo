@@ -1,0 +1,104 @@
+debut 2026-11-18T19:24:13Z
+DROP DATABASE
+NOTICE:  database "ct_vendable_miroir" does not exist, skipping
+CREATE DATABASE
+You are now connected to database "ct_vendable_miroir" as user "postgres".
+                                                       version                                                        
+----------------------------------------------------------------------------------------------------------------------
+ PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+(1 row)
+
+DO
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+== migration (1re application)
+SET
+SET
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+== migration (2e application : rejouable)
+SET
+SET
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+CREATE TABLE
+INSERT 0 29
+DO
+miroir : 29 cas identiques a l echantillon
+INSERT 0 27
+INSERT 0 27
+DO
+INSERT 0 5
+INSERT 0 5
+INSERT 0 6
+INSERT 0 9
+DO
+jeu d essai : piece_est_vendable et get_sitemap_r2_types_vendables conformes
+DO
+catalogue : STABLE, sans SECURITY DEFINER, service_role seul, est_vendable remplacee par son expression
+== retour arriere
+BEGIN
+SET
+SET
+DO
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DO
+COMMIT
+DO
+== migration apres retour arriere
+SET
+SET
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+DO
+catalogue : STABLE, sans SECURITY DEFINER, service_role seul, est_vendable remplacee par son expression
+== retour arriere final
+BEGIN
+SET
+SET
+DO
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DO
+COMMIT
+DO
+You are now connected to database "postgres" as user "postgres".
+DROP DATABASE
+MIROIR VENDABLE OK : 29 cas, migration rejouee, retour arriere verifie
+exit=0
+fin 2026-11-18T19:24:13Z

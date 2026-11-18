@@ -1,0 +1,40 @@
+--- a/.github/workflows/ci.yml	2026-11-18 20:52:49.847140356 +0100
++++ b/.github/workflows/ci.yml	2026-11-18 20:52:49.867140382 +0100
+@@ -803,6 +803,37 @@
+           fi
+           python3 scripts/ci/check-plpgsql-compile.py ${{ steps.changed-sql.outputs.all_files }} | psql_ci
+ 
++      # Miroir « vendable » (décision 118, mandat CT) : public.est_vendable et
++      # estVendable (backend/src/database/services/vendable.ts) lisent le même
++      # échantillon, vendable.echantillon.json. Le côté application est joué par
++      # jest (vendable.miroir.test.ts) ; ce step joue le côté SQL sur le
++      # PostgreSQL 17 éphémère : migration deux fois, 29 cas, retour arrière,
++      # migration, retour arrière. SANS condition : un changement de
++      # l'échantillon ou du script seul doit aussi être rejoué.
++      # Le témoin négatif retire la disponibilité 3 de la définition SQL : s'il
++      # passe, la garde ne compare plus rien.
++      - name: Miroir « vendable » SQL ↔ application (PostgreSQL 17 éphémère)
++        env:
++          PGHOST: localhost
++          PGUSER: postgres
++          PGPASSWORD: ci-ephemeral
++        run: |
++          set -euo pipefail
++          psql_ci() { docker run --rm -i --network host -e PGHOST -e PGUSER -e PGPASSWORD postgres:17 psql -X -q -v ON_ERROR_STOP=1; }
++          miroir="$RUNNER_TEMP/miroir-vendable.sql"
++          temoin="$RUNNER_TEMP/miroir-vendable-temoin.sql"
++          python3 scripts/ci/check-vendable-mirror.py > "$miroir"
++          sed "s/IN ('1', '2', '3')/IN ('1', '2')/" "$miroir" > "$temoin"
++          if cmp -s "$miroir" "$temoin"; then
++            echo "::error::témoin négatif identique au miroir : le motif IN ('1', '2', '3') n'est plus dans la migration"
++            exit 1
++          fi
++          if psql_ci < "$temoin"; then
++            echo "::error::témoin négatif accepté : le miroir « vendable » ne détecte plus un écart de définition"
++            exit 1
++          fi
++          psql_ci < "$miroir"
++
+       # Surface DEFINER/anon : ratchet sur les privilèges d'exécution, pas sur la
+       # syntaxe — c'est pourquoi squawk ne le porte pas. Supabase octroie
+       # `EXECUTE` à `anon` sur CHAQUE nouvelle fonction de `public` via

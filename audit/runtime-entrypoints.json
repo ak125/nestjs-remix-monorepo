@@ -1515,6 +1515,7 @@
       "SitemapV10DataService",
       "SitemapV10HubsService",
       "SitemapV10PiecesService",
+      "SitemapV10PiecesVendableService",
       "SitemapV10SchedulerService",
       "SitemapV10ScoringService",
       "SitemapV10Service",
@@ -2260,6 +2261,7 @@
       "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
       "backend/src/modules/seo/services/sitemap-v10-hubs.service.ts",
+      "backend/src/modules/seo/services/sitemap-v10-pieces-vendable.service.ts",
       "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts",
       "backend/src/modules/seo/services/sitemap-v10-scoring.service.ts",
@@ -2867,6 +2869,8 @@
       "backend/supabase/migrations/20261117_pricing_commit_chunk_frs_date_from.sql",
       "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.down.sql",
       "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.sql",
+      "backend/supabase/migrations/20261118_est_vendable_definition_unique.down.sql",
+      "backend/supabase/migrations/20261118_est_vendable_definition_unique.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3063,7 +3067,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1655,
+  "runtime_files_count": 1658,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3793,6 +3797,7 @@
     "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
     "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
     "backend/src/modules/seo/services/sitemap-v10-hubs.service.ts",
+    "backend/src/modules/seo/services/sitemap-v10-pieces-vendable.service.ts",
     "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
     "backend/src/modules/seo/services/sitemap-v10-scheduler.service.ts",
     "backend/src/modules/seo/services/sitemap-v10-scoring.service.ts",
@@ -4377,6 +4382,8 @@
     "backend/supabase/migrations/20261117_pricing_commit_chunk_frs_date_from.sql",
     "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.down.sql",
     "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.sql",
+    "backend/supabase/migrations/20261118_est_vendable_definition_unique.down.sql",
+    "backend/supabase/migrations/20261118_est_vendable_definition_unique.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
