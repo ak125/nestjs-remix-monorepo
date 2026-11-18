@@ -6960,7 +6960,7 @@
         }
       ],
       "definedInMigrations": [
-        "20260608_pricing_commit_chunk_persist_pri_ref.sql"
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
       ],
       "domain": "UNKNOWN",
       "id": "public.pricing_commit_chunk#sig:31e9b09e",
@@ -6970,6 +6970,58 @@
       "parseMode": "parsed",
       "parseWarnings": [],
       "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_id",
+          "type": "uuid"
+        },
+        {
+          "mode": "IN",
+          "name": "p_chunk_id",
+          "type": "uuid"
+        },
+        {
+          "mode": "IN",
+          "name": "p_supplier",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_operator",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_rows",
+          "type": "jsonb"
+        },
+        {
+          "mode": "IN",
+          "name": "p_activate",
+          "type": "boolean"
+        }
+      ],
+      "definedInMigrations": [
+        "20261117_pricing_commit_chunk_frs_date_from.down.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.pricing_commit_chunk#sig:419ad653",
+      "language": "plpgsql",
+      "name": "pricing_commit_chunk",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
       "schema": "public",
       "schemaVersion": "1.0.0",
       "searchPath": [],
@@ -7148,13 +7200,45 @@
         "20260522_pricing_control_plane_v1_functions.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.pricing_rollback_batch",
+      "id": "public.pricing_rollback_batch#sig:6c9e49aa",
       "language": "plpgsql",
       "name": "pricing_rollback_batch",
       "owner": "__unassigned__",
       "parseMode": "parsed",
       "parseWarnings": [],
       "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_id",
+          "type": "uuid"
+        },
+        {
+          "mode": "IN",
+          "name": "p_supplier",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.pricing_rollback_batch#sig:af0cc18b",
+      "language": "plpgsql",
+      "name": "pricing_rollback_batch",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
       "schema": "public",
       "schemaVersion": "1.0.0",
       "searchPath": [],
