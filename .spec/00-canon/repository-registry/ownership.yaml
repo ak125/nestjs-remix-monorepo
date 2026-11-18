@@ -1888,3 +1888,38 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Mandat CH (PR #2174, 18/11/2026) : fiche fournisseur. Colonnes additives de
+  # ___xtr_supplier (type, statut, localisation validée par Marwane, contacts,
+  # conditions, nom du secret) et pourcentages par défaut de supplier_price_profiles.
+  # Tables lues et écrites par backend/src/modules/supplier-truth (D11, @ak125) et
+  # lues par backend/src/modules/pricing (D11, @ak125). Couvre .sql + .down.sql.
+  # Globs exacts : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261118_xtr_supplier_fiche_columns*.sql
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/20261118_supplier_price_profiles_default_pct*.sql
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Service de fiche et normalisation des noms (module suppliers, admin seul) ;
+  # même domaine et owner que supplier-truth, leur dépôt.
+  - glob: backend/src/modules/suppliers/supplier-card.service.ts
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/modules/suppliers/supplier-name.ts
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Complément CH-2 : règles de remise fournisseur × marque × famille /
+  # sous-famille, fonctions pures non branchées au calcul des prix.
+  - glob: backend/src/modules/suppliers/supplier-price-rule.ts
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
