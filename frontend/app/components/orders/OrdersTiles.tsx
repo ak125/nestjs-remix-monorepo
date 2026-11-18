@@ -79,7 +79,7 @@ export interface OrderTilesData {
 /** Valeur du paramètre `queue` qui active le filtre de la file. */
 export const PAID_UNPROCESSED_QUEUE = "payees-non-traitees";
 
-export type PaidUnprocessedReason =
+type PaidUnprocessedReason =
   | "no_active_line"
   | "supplier_missing"
   | "supplier_order_missing";

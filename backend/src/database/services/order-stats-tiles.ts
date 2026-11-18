@@ -371,18 +371,18 @@ const LINE_CANCELLED_STATUS = '2';
 const LINE_ORDERED_FROM_SUPPLIER_STATUS = '6';
 
 /** États d'encaissement de BM (`__order_capture_state.ocs_state`). */
-export type CaptureState = 'authorized' | 'captured' | 'cancelled' | 'refunded';
+type CaptureState = 'authorized' | 'captured' | 'cancelled' | 'refunded';
 const CAPTURE_STATES_OUT_OF_QUEUE: ReadonlySet<CaptureState> = new Set([
   'cancelled',
   'refunded',
 ]);
 
-export type PaidUnprocessedReason =
+type PaidUnprocessedReason =
   | 'no_active_line'
   | 'supplier_missing'
   | 'supplier_order_missing';
 
-export interface PaidUnprocessedCandidate {
+interface PaidUnprocessedCandidate {
   ordId: string;
   ordDate: string;
   /** Date du paiement retenue pour l'âge (ISO). */
@@ -395,7 +395,7 @@ export interface PaidUnprocessedCandidate {
   totalTtc: string | null;
 }
 
-export interface PaidUnprocessedOrder extends PaidUnprocessedCandidate {
+interface PaidUnprocessedOrder extends PaidUnprocessedCandidate {
   /** Jours entiers écoulés depuis le paiement. */
   ageDays: number;
   linesActive: number;
