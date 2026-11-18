@@ -32,16 +32,7 @@
         "cwd":      { "type": "string", "minLength": 1 },
         "role":     { "enum": ["dev", "content", "marketing", "knowledge", "advisory"] },
         "purpose":  { "type": "string", "minLength": 5 },
-        "capabilities": {
-          "type": "object",
-          "required": ["can_mutate", "can_open_pr", "can_trigger_pipeline"],
-          "additionalProperties": false,
-          "properties": {
-            "can_mutate":           { "type": "boolean" },
-            "can_open_pr":          { "type": "boolean" },
-            "can_trigger_pipeline": { "type": "boolean" }
-          }
-        },
+        "capabilities": { "$ref": "#/$defs/capabilityFlags" },
         "loads": {
           "type": "object",
           "additionalProperties": false,
@@ -200,6 +191,11 @@
         },
         "contract": {
           "$ref": "#/$defs/departmentContract"
+        },
+        "functions": {
+          "description": "Optional (mandate BX, 2026-11-18): the department's functions, each a service with a contract, an owner, a real trigger, an automatic check, its input KPIs, its threshold and its proven level (L0-L4 of the principles journal). Coherence rules beyond the schema are enforced by validate-agent-operating-map.js (--contracts). Model: .spec/00-canon/ai-registry/department-functions.md.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/departmentFunction" }
         }
       },
       "if": {
@@ -313,6 +309,151 @@
           "items": { "type": "integer", "minimum": 1, "maximum": 90 }
         }
       }
+    },
+    "capabilityFlags": {
+      "description": "Least-privilege rights, shared by a surface and a department function.",
+      "type": "object",
+      "required": ["can_mutate", "can_open_pr", "can_trigger_pipeline"],
+      "additionalProperties": false,
+      "properties": {
+        "can_mutate":           { "type": "boolean" },
+        "can_open_pr":          { "type": "boolean" },
+        "can_trigger_pipeline": { "type": "boolean" }
+      }
+    },
+    "repoPath": {
+      "description": "Path relative to the repository root; the validator requires it to exist.",
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9_.@][A-Za-z0-9_./@-]*$"
+    },
+    "functionTrigger": {
+      "description": "What starts the function. `wired` is true only when the trigger really fires on main (a @Cron under an inactive ScheduleModule, or an event nobody emits, is wired: false).",
+      "type": "object",
+      "required": ["kind", "ref", "wired"],
+      "additionalProperties": false,
+      "properties": {
+        "kind":   { "enum": ["workflow", "cron", "event", "issue", "mandate", "request"] },
+        "ref":    { "$ref": "#/$defs/repoPath" },
+        "wired":  { "type": "boolean" },
+        "detail": { "type": "string", "minLength": 3 }
+      }
+    },
+    "functionCheck": {
+      "description": "The automatic check that proves the function's contract (a test run in CI, a gate, a workflow).",
+      "type": "object",
+      "required": ["kind", "ref"],
+      "additionalProperties": false,
+      "properties": {
+        "kind":   { "enum": ["test", "ci_gate", "workflow"] },
+        "ref":    { "$ref": "#/$defs/repoPath" },
+        "detail": { "type": "string", "minLength": 3 }
+      }
+    },
+    "functionKpiInput": {
+      "description": "Input KPI of a function (the department's kpi_primary is the result KPI). `present` requires a producer on disk; `absent` says what is missing.",
+      "type": "object",
+      "required": ["id", "state"],
+      "additionalProperties": false,
+      "properties": {
+        "id":       { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "state":    { "enum": ["present", "absent"] },
+        "producer": { "$ref": "#/$defs/repoPath" },
+        "rule":     { "type": "string", "minLength": 3 },
+        "note":     { "type": "string", "minLength": 3 }
+      },
+      "if": { "properties": { "state": { "const": "present" } } },
+      "then": { "required": ["producer"] },
+      "else": { "required": ["note"] }
+    },
+    "functionThreshold": {
+      "description": "Threshold that opens a dept:NN issue (decision 9). `wired` is true only when something actually opens the issue.",
+      "type": "object",
+      "required": ["rule", "issue_label", "wired"],
+      "additionalProperties": false,
+      "properties": {
+        "rule":        { "type": "string", "minLength": 3 },
+        "issue_label": { "type": "string", "pattern": "^dept:\\d{2}-[a-z0-9-]+$" },
+        "wired":       { "type": "boolean" }
+      }
+    },
+    "functionEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["path"],
+          "additionalProperties": false,
+          "properties": {
+            "path":  { "$ref": "#/$defs/repoPath" },
+            "lines": { "type": "string", "pattern": "^[1-9]\\d*(-[1-9]\\d*)?$" },
+            "note":  { "type": "string", "minLength": 3 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["pr", "state"],
+          "additionalProperties": false,
+          "properties": {
+            "pr":    { "type": "integer", "minimum": 1 },
+            "state": { "enum": ["merged", "open", "draft", "closed"] },
+            "at":    { "type": "string", "format": "date-time" },
+            "note":  { "type": "string", "minLength": 3 }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["run", "workflow", "conclusion", "at"],
+          "additionalProperties": false,
+          "properties": {
+            "run":        { "type": "integer", "minimum": 1 },
+            "workflow":   { "$ref": "#/$defs/repoPath" },
+            "conclusion": { "enum": ["success", "failure", "cancelled", "skipped"] },
+            "at":         { "type": "string", "format": "date-time" },
+            "note":       { "type": "string", "minLength": 3 }
+          }
+        }
+      ]
+    },
+    "departmentFunction": {
+      "description": "One department function (mandate BX). Without an owner, a wired trigger and a check, it must be non_operational at level L0 or L1 (rule enforced by the validator).",
+      "type": "object",
+      "required": ["id", "name", "status", "level", "inputs", "outputs", "reads", "writes", "kpi_input", "threshold", "evidence", "decisions"],
+      "additionalProperties": false,
+      "properties": {
+        "id":      { "type": "string", "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$" },
+        "name":    { "type": "string", "minLength": 3 },
+        "owner":   { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "status":  { "enum": ["operational", "non_operational"] },
+        "level":   { "enum": ["L0", "L1", "L2", "L3", "L4"] },
+        "inputs":  { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 3 } },
+        "outputs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 3 } },
+        "reads":   { "type": "array", "items": { "type": "string", "minLength": 2 } },
+        "writes":  { "type": "array", "items": { "type": "string", "minLength": 2 } },
+        "trigger": { "$ref": "#/$defs/functionTrigger" },
+        "check":   { "$ref": "#/$defs/functionCheck" },
+        "kpi_input": { "type": "array", "minItems": 1, "maxItems": 2, "items": { "$ref": "#/$defs/functionKpiInput" } },
+        "threshold": { "$ref": "#/$defs/functionThreshold" },
+        "rights":  { "$ref": "#/$defs/capabilityFlags" },
+        "uses": {
+          "description": "Shared capabilities consumed by contract; the capability stays with the department that owns it in declared_capabilities.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["capability", "from"],
+            "additionalProperties": false,
+            "properties": {
+              "capability": { "$ref": "#/$defs/capabilityRef" },
+              "from":       { "$ref": "#/$defs/departmentId" }
+            }
+          }
+        },
+        "agents":   { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" } },
+        "skills":   { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" } },
+        "evidence": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/functionEvidence" } },
+        "decisions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "integer", "minimum": 1 } },
+        "gaps":     { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 10 } }
+      },
+      "if": { "properties": { "status": { "const": "non_operational" } } },
+      "then": { "required": ["gaps"] }
     },
     "departmentHandoff": {
       "type": "object",

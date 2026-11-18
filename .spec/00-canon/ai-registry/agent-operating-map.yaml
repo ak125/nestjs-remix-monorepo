@@ -213,6 +213,266 @@ departments:
       seuil_action: "CRITICAL si aucune commande payée n'est gardée sur 30 jours ; WARNING si au moins une annulation après paiement ; OK sinon (toPaymentsKeptKpi, seuils repris de audit/sales-funnel-scorecard.md)."
       ligne_rapport: "Commandes, paiements, non payées, annulations ; abandons au paiement ; paiements par moyen."
       decisions: [2, 76, 72]
+    # Fonctions du département (mandat BX, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Chaque champ est sourcé
+    # (chemin et lignes, PR, run) ou dit « absent ». Relevé du 2026-11-18 vers 00:20 UTC sur main 6800cf093.
+    functions:
+      - id: sales.payments-kept
+        name: "Mesure des paiements gardés"
+        owner: sales-lead
+        status: operational
+        level: L2
+        inputs: ["___xtr_order : paiement, confirmation, annulation et motif d'annulation (cinq colonnes d'état, sans montant ni client)"]
+        outputs: ["KPI payments_kept (OK, WARNING, CRITICAL, UNKNOWN) dans le Command Center, mode complet"]
+        reads: [___xtr_order]
+        writes: []
+        trigger:
+          kind: request
+          ref: backend/src/modules/admin/controllers/command-center.controller.ts
+          wired: true
+          detail: "GET api/admin/command-center (lignes 98 et 115), calcul par command-center-reader.service.ts:124 ; à la demande, aucun calcul planifié"
+        check:
+          kind: test
+          ref: backend/tests/unit/command-center-kpi.service.test.ts
+          detail: "jest backend, exécuté en CI"
+        kpi_input:
+          - id: cancelled_after_payment
+            state: present
+            producer: backend/src/modules/admin/services/command-center-kpi.service.ts
+            rule: cancelledAfterPayment
+            note: "Nombre de commandes payées puis annulées ; le KPI résultat est kpi_primary payments_kept"
+        threshold:
+          rule: "CRITICAL si aucune commande payée n'est gardée sur 30 jours ; WARNING si au moins une annulation après paiement (toPaymentsKeptKpi)"
+          issue_label: "dept:13-sales"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: orders, from: sales }
+        evidence:
+          - { path: backend/src/modules/admin/services/command-center-kpi.service.ts, lines: "135-159", note: "toPaymentsKeptKpi" }
+          - { path: backend/src/modules/admin/services/command-center-kpi.service.ts, lines: "356-374", note: "readPaymentsKept, lecture seule de ___xtr_order" }
+          - { path: backend/src/modules/admin/services/command-center-reader.service.ts, lines: "124" }
+          - { path: backend/src/modules/admin/controllers/command-center.controller.ts, lines: "98-115" }
+        decisions: [2, 72]
+        gaps:
+          - "Seuil non branché : aucun mécanisme n'ouvre d'issue dept:13-sales (décision 9) ; recherche du 2026-11-18 00:15 UTC."
+          - "Service en DEV, PREPROD ou PROD non observé par ce mandat : L3 non prouvé."
+      - id: sales.unpaid-watch
+        name: "Veille des commandes non payées et du tunnel de paiement (rapport du matin)"
+        owner: sales-lead
+        status: non_operational
+        level: L1
+        inputs:
+          - "___xtr_order : commandes créées entre J-30 et J-1, toujours non payées"
+          - "RPC check_payment_tunnel_health, lue par scripts/monitoring/check-payment-tunnel.sh en mode CHECK_ONLY"
+        outputs: ["Lignes « Commandes non payées > 24 h » et « Tunnel de paiement » de l'issue du rapport du matin"]
+        reads: [___xtr_order, check_payment_tunnel_health]
+        writes: ["issue GitHub du rapport du matin"]
+        trigger:
+          kind: workflow
+          ref: .github/workflows/morning-health-digest.yml
+          wired: true
+          detail: "cron */15 * * * * (ligne 33)"
+        kpi_input:
+          - id: unpaid_orders_24h
+            state: present
+            producer: .github/scripts/morning-health-digest.sh
+            rule: "Commandes non payées > 24 h"
+        threshold:
+          rule: "Tunnel : règle CREATION, SUSTAINED ou BURST déclenchée = rouge. Non payées : ligne d'information, aucun seuil décidé."
+          issue_label: "dept:13-sales"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: orders, from: sales }
+        evidence:
+          - { path: .github/scripts/morning-health-digest.sh, lines: "349-400" }
+          - { path: .github/workflows/morning-health-digest.yml, lines: "33" }
+          - { run: 44205474359, workflow: .github/workflows/morning-health-digest.yml, conclusion: success, at: "2026-11-18T00:09:27Z", note: "main 6800cf093 ; contenu des deux lignes non relu" }
+        decisions: [2, 67]
+        gaps:
+          - "Aucun contrôle automatique : ni test de morning-health-digest.sh ni test de check-payment-tunnel.sh trouvé (recherche du 2026-11-18 00:20 UTC)."
+          - "Seuil non branché : aucune issue dept:13-sales ouverte (décision 9) ; la ligne « non payées » reste une information."
+      - id: sales.unpaid-relaunch
+        name: "Relance des paniers et commandes non payés, un mail à 1 h et un à 24 h"
+        owner: sales-lead
+        status: non_operational
+        level: L1
+        inputs:
+          - "Événement cart.activity (userId, sessionId)"
+          - "Consentement marketing du client (base légale du département 18)"
+        outputs: ["Mail de relance à 1 h", "Mail de relance à 24 h"]
+        reads: ["Redis abandoned-cart:candidates", "panier du client"]
+        writes: [__abandoned_cart_emails, "file Bull d'envoi de mail"]
+        trigger:
+          kind: event
+          ref: backend/src/modules/cart/services/cart-analytics.service.ts
+          wired: false
+          detail: "cart.activity n'est émis que par trackCartCreated (ligne 69), qui n'a aucun appelant ; écouté par abandoned-cart.service.ts:95"
+        check:
+          kind: test
+          ref: backend/tests/unit/abandoned-cart-cadence.test.ts
+          detail: "cadence 1 h et 24 h ; aussi abandoned-cart-delivery-truth.test.ts"
+        kpi_input:
+          - id: relaunch_sent
+            state: absent
+            note: "Aucun producteur ; aucun envoi tant que ABANDONED_CART_EMAIL_ENABLED=false"
+          - id: relaunch_recovered_orders
+            state: absent
+            note: "Aucun producteur de commandes reprises après relance"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: cart, from: sales }
+        evidence:
+          - { path: backend/src/modules/cart/services/abandoned-cart.service.ts, lines: "18-36", note: "seuil d'abandon et séquence 1 h, 24 h" }
+          - { path: backend/src/modules/cart/services/abandoned-cart.service.ts, lines: "189-231", note: "planification et envoi, drapeau relu à l'envoi" }
+          - { path: backend/src/modules/cart/services/cart-analytics.service.ts, lines: "41-72" }
+          - { path: backend/src/config/feature-flags.service.ts, lines: "284" }
+          - { path: backend/.env.example, lines: "210-219" }
+          - { path: backend/tests/unit/abandoned-cart-delivery-truth.test.ts }
+          - { path: backend/src/modules/orders/controllers/order-actions.controller.ts, lines: "419-442", note: "relance manuelle d'une commande non payée par l'administration, hors cadence" }
+          - { path: RAPPORT-MANDAT-AN-COMPLEMENT.md, lines: "27-51" }
+          - { pr: 2088, state: merged, at: "2026-11-17T01:07:13Z" }
+        decisions: [5, 61, 111]
+        gaps:
+          - "Déclencheur non branché : cart.activity n'a aucun émetteur appelé."
+          - "ABANDONED_CART_EMAIL_ENABLED=false par défaut (feature-flags.service.ts:284)."
+          - "Base légale du département 18 non établie : aucun consentement marketing recensé (décision 44, RAPPORT-MANDAT-AN-COMPLEMENT.md)."
+          - "La correction du flux de candidats touche le panier, zone STOP."
+      - id: sales.order-provenance
+        name: "Provenance des commandes (première visite)"
+        owner: sales-lead
+        status: operational
+        level: L2
+        inputs: ["Balise de première visite : source et page d'arrivée (frontend/app/utils/attribution-beacon.client.ts)"]
+        outputs: ["Colonnes landing_source, landing_path et landing_first_seen_at de la commande"]
+        reads: [session.landing]
+        writes: [___xtr_order.landing_source, ___xtr_order.landing_path, ___xtr_order.landing_first_seen_at, ___xtr_order.ga_client_id]
+        trigger:
+          kind: request
+          ref: backend/src/modules/analytics/controllers/landing-attribution.controller.ts
+          wired: true
+          detail: "POST api/attribution/landing (lignes 84-88), contrôleur monté par analytics.module.ts:32, balise importée par entry.client.tsx:19 ; copie dans la commande à sa création (orders.controller.ts:386-397)"
+        check:
+          kind: test
+          ref: backend/tests/unit/session-regenerate-keeps-landing.test.ts
+          detail: "la provenance survit à la régénération de session à la connexion"
+        kpi_input:
+          - id: order_provenance_share
+            state: absent
+            note: "Aucun producteur de la part des commandes avec provenance ; 10 sur 55 mesuré au mandat AN (RAPPORT-MANDAT-AN.md:373), avant #2115"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: analytics, from: data }
+          - { capability: orders, from: sales }
+        evidence:
+          - { path: backend/src/modules/orders/controllers/orders.controller.ts, lines: "386-397" }
+          - { path: backend/src/modules/analytics/analytics.module.ts, lines: "32" }
+          - { path: frontend/app/entry.client.tsx, lines: "19" }
+          - { pr: 1965, state: merged, at: "2026-11-06T22:52:08Z", note: "parcours invité" }
+          - { pr: 2115, state: merged, at: "2026-11-17T06:50:23Z", note: "parcours avec connexion (mandat BE)" }
+        decisions: [112]
+        gaps:
+          - "Indicateur de provenance sans producteur ; aucun seuil."
+          - "Effet de #2115 sur les commandes servies non mesuré par ce mandat."
+      - id: sales.payment-methods
+        name: "Moyens de paiement actifs et abandons à la page de paiement"
+        owner: sales-lead
+        status: non_operational
+        level: L0
+        inputs: ["Événements enregistrés par le site à la page de paiement (à créer)"]
+        outputs: ["Paiements par moyen ; abandons à la page de paiement"]
+        reads: []
+        writes: []
+        kpi_input:
+          - id: payments_by_method
+            state: absent
+            note: "Aucun producteur sur main"
+          - id: payment_page_abandons
+            state: absent
+            note: "Seuls les événements GA4 begin_checkout et add_payment_info existent (analytics.ts:366 et 386) ; GA4 sert au recoupement seulement (décision 36)"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        evidence:
+          - { path: frontend/app/utils/analytics.ts, lines: "364-387" }
+        decisions: [76]
+        gaps:
+          - "Décidée (contrat du 13, champ surveillance), aucun code sur main : ni événement du site, ni producteur, ni déclencheur."
+      - id: sales.shipping-fees
+        name: "Frais de port affichés avant paiement et repris dans la commande"
+        owner: sales-lead
+        status: operational
+        level: L2
+        inputs: ["Poids total du panier", "Sous-total TTC"]
+        outputs: ["Frais de port du récapitulatif de commande", "___xtr_order.ord_shipping_fee_ttc"]
+        reads: ["grille de shipping-calculator.service.ts"]
+        writes: [___xtr_order.ord_shipping_fee_ttc]
+        trigger:
+          kind: request
+          ref: backend/src/modules/cart/controllers/cart-shipping.controller.ts
+          wired: true
+          detail: "POST api/cart/shipping/calculate (ligne 38) ; recalcul à la création de commande (orders.service.ts:350 et 402)"
+        check:
+          kind: test
+          ref: backend/src/modules/cart/services/shipping-weight-authority.test.ts
+        kpi_input:
+          - id: shipping_fee_per_order
+            state: absent
+            note: "Aucun producteur"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: cart, from: sales }
+        evidence:
+          - { path: backend/src/modules/cart/services/shipping-calculator.service.ts, lines: "32-47", note: "grille ; port offert dès 150 €" }
+          - { path: backend/src/modules/cart/services/shipping-calculator.service.ts, lines: "177-185" }
+          - { path: backend/src/modules/orders/services/orders.service.ts, lines: "350-402" }
+          - { path: frontend/app/components/checkout/CheckoutOrderSummary.tsx, lines: "103-112" }
+          - { pr: 2143, state: draft, note: "mandat BJ, forfait proposé, non fusionné" }
+        decisions: [75]
+        gaps:
+          - "Décision 75 à reconfirmer : #2143 (mandat BJ, brouillon) propose 9,90 € et le port offert dès 100 €."
+          - "Zone (Corse, DOM-TOM) non prise en compte (RAPPORT-MANDAT-AN-COMPLEMENT.md)."
+      - id: sales.invoice
+        name: "Facture de la commande, avec le département 17"
+        owner: sales-lead
+        status: non_operational
+        level: L0
+        inputs: ["Commande payée, encaissement réel"]
+        outputs: ["Facture de la commande"]
+        reads: []
+        writes: []
+        kpi_input:
+          - id: invoices_issued
+            state: absent
+            note: "Aucun producteur"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        uses:
+          - { capability: invoices, from: finance }
+        evidence:
+          - { path: backend/src/modules/invoices/invoices.service.ts, lines: "28-154", note: "lecture seule : liste, détail, statistiques, cache ; aucune génération" }
+          - { pr: 2150, state: draft, note: "mandat BM" }
+          - { pr: 2159, state: draft, note: "mandat BT" }
+        decisions: [26, 64]
+        gaps:
+          - "Aucune génération de facture sur main."
+          - "#2150 (mandat BM) et #2159 (mandat BT) en brouillon. #2150 applique « D64 amendée : facture à l'expédition, après encaissement réel » ; le mandat BX la nomme « facture au paiement » : moment à confirmer par Marwane."
 
   - id: pricing
     business_number: 16

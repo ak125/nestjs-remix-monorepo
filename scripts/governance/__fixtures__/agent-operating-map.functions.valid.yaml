@@ -1,0 +1,106 @@
+# VALID on purpose — used by --self-test (department functions, mandate BX).
+# Every path, rule, skill and subagent cited here exists in the repository, so
+# checkDepartmentFunctions must raise no error. runSchemaSelfTest then breaks
+# one rule at a time on in-memory copies (operability, path, kpi, id, reference)
+# and on the schema, and asserts each break is refused.
+version: 1
+last_verified: "2026-11-18"
+surfaces:
+  - id: root
+    cwd: .
+    role: dev
+    purpose: "self-test fixture surface"
+    capabilities:
+      can_mutate: false
+      can_open_pr: false
+      can_trigger_pipeline: false
+    loads:
+      skills: []
+      agents: []
+nodes: []
+handoffs: []
+department_contract_common:      # fixture : forme minimale valide des règles communes
+  rapport: { regle: "Rapport unique, fixture.", decisions: [7] }
+  entree_kpi: { regle: "Fiche de fiabilité, fixture.", decisions: [8] }
+  seuil_franchi: { regle: "Issue dept:NN, fixture.", decisions: [9] }
+  donnee_absente: { regle: "Pas de mesure, fixture.", decisions: [24] }
+  sources: { regle: "Sources de mesure, fixture.", decisions: [36] }
+declared_capabilities:
+  - { id: fixture-cap, type: module, owner: a, status: live }
+departments:
+  - id: a
+    business_number: 1
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-a
+    label: "Fixture A"
+    lead: a-lead
+    kpi_primary: fixture_kpi
+    repo_domains: [D1]
+    capabilities: [fixture-cap]
+    state: partial
+    contract:
+      surveillance: "fixture surveillance"
+      kpi:
+        producer: scripts/governance/validate-agent-operating-map.js
+        rule: checkDepartmentFunctions
+      source: "fixture source"
+      seuil_action: "fixture threshold"
+      ligne_rapport: "fixture report"
+      decisions: [72]
+    functions:
+      - id: a.operational
+        name: "Fonction opérationnelle de fixture"
+        owner: a-lead
+        status: operational
+        level: L2
+        inputs: ["fixture input"]
+        outputs: ["fixture output"]
+        reads: [fixture_table]
+        writes: []
+        trigger:
+          kind: workflow
+          ref: .github/workflows/ci.yml
+          wired: true
+        check:
+          kind: ci_gate
+          ref: scripts/governance/validate-agent-operating-map.js
+        kpi_input:
+          - id: fixture_input
+            state: present
+            producer: scripts/governance/validate-agent-operating-map.js
+            rule: checkDepartmentFunctions
+        threshold:
+          rule: "fixture threshold"
+          issue_label: "dept:01-a"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: fixture-cap, from: a }
+        agents: [marketing-lead-agent]
+        skills: [code-review]
+        evidence:
+          - { path: scripts/governance/validate-agent-operating-map.js, lines: "1-2" }
+          - { pr: 2093, state: merged }
+          - { run: 1, workflow: .github/workflows/ci.yml, conclusion: success, at: "2026-11-18T00:00:00Z" }
+        decisions: [72, 112]
+      - id: a.decided-only
+        name: "Fonction décidée sans code"
+        status: non_operational
+        level: L0
+        inputs: ["fixture input"]
+        outputs: ["fixture output"]
+        reads: []
+        writes: []
+        kpi_input:
+          - id: fixture_absent
+            state: absent
+            note: "aucun producteur, fixture"
+        threshold:
+          rule: "absent, fixture"
+          issue_label: "dept:01-a"
+          wired: false
+        evidence:
+          - { path: scripts/governance/__fixtures__ }
+        decisions: [1]
+        gaps: ["décidée, aucun code, fixture"]
