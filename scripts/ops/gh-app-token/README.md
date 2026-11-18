@@ -102,8 +102,8 @@ bash "$S/controle-installation.sh"                 # attendu : 4 « identique »
 Le `restart` ne déclenche pas de renouvellement. Observé sur DEV à l'installation du
 18 nov. 2026 (mandat CZ) : après le `restart` de 21:18:22 UTC, `LastTriggerUSec` est resté à
 20:59:41 UTC ; le déclenchement suivant, à 21:19:42 UTC, est l'échéance normale de
-`OnUnitActiveSec=20min`. Le renouvellement suivant arrive donc à cette échéance, au plus 20 min
-après le dernier déclenchement. Pour vérifier après installation : `LastTriggerUSec` (commande
+`OnUnitActiveSec=20min`. Le renouvellement suivant arrive donc à cette échéance, 20 min après le
+dernier déclenchement (à la précision du minuteur près, 1 min par défaut). Pour vérifier après installation : `LastTriggerUSec` (commande
 `show` ci-dessus), puis `controle-installation.sh` (fraîcheur < 25 min). Pour renouveler tout de
 suite : `systemctl --user start automecanik-gh-app-token-refresh.service` (étape 3 de la procédure
 complète).
