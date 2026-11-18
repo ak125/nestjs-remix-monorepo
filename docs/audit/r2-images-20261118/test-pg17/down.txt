@@ -1,7 +1,13 @@
-### DOWN 2026-11-18T17:41:00Z
+### DOWN 2026-11-18T21:20:02Z
 BEGIN
 SET
 CREATE FUNCTION
 CREATE FUNCTION
 COMMIT
 exit=0
+   phase    |                proname                 |                                               proacl                                               |               md5                
+------------+----------------------------------------+----------------------------------------------------------------------------------------------------+----------------------------------
+ after_down | get_pieces_for_type_gamme_v3           | {postgres=X/postgres,service_role=X/postgres}                                                      | cc5a39a896e5d4ca8ac222e78e0afbc3
+ after_down | get_listing_products_extended_filtered | {=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres} | 87fe3a4b1d433f0bc466025e44afd8b1
+(2 rows)
+

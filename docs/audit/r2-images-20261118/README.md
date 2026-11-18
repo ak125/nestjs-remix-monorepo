@@ -202,9 +202,15 @@ véhicule) extraite en lecture à T10. `process_seo_template` est remplacée par
 fonction identité de même signature ; elle ne touche pas aux images. Les rôles
 `anon`, `authenticated` et `service_role` ont été créés avec les droits live.
 
-- UP à 17:40:59 : `exit=0` (`test-pg17/up.txt`). Droits, `SECURITY DEFINER`,
-  volatilité, `PARALLEL` et configuration inchangés.
-- DOWN à 17:41:00 : `exit=0` (`test-pg17/down.txt`). md5 revenus à
+- Rejeu du 18/11 à 21:19 UTC sur un conteneur neuf, après la correction squawk
+  (ni `BEGIN` ni `COMMIT` dans le fichier up, `SET lock_timeout` et
+  `SET statement_timeout` en tête ; sortie squawk : `test-pg17/squawk.txt`).
+- UP à 21:19:58 : `exit=0` (`test-pg17/up.txt`), joué avec
+  `psql --single-transaction` parce que le moteur
+  `scripts/ci/apply-supabase-migration.py` enveloppe le fichier dans
+  `BEGIN`/`COMMIT`. Droits, `SECURITY DEFINER`, volatilité, `PARALLEL` et
+  configuration inchangés.
+- DOWN à 21:20:02 : `exit=0` (`test-pg17/down.txt`). md5 revenus à
   `cc5a39a8…` et `87fe3a4b…`.
 - Comparaison avant/après sur 36 sorties (18 couples × 2 fonctions ; la clé
   `duration` de v3 est retirée) : `test-pg17/comparaison-avant-apres.txt`.
@@ -213,6 +219,10 @@ fonction identité de même signature ; elle ne touche pas aux images. Les rôle
   - La sortie après le down est égale à la sortie avant.
   - Occurrences de `.bmp.webp` avant : 246 (v3) et 32 (filtered). Après : 0.
   - Les couples sans BMP donnent une sortie identique.
+  - La sortie de v3 n'est pas stable d'un appel à l'autre dans la fonction live
+    (même couple, longueur ou md5 différents) ; 5 longueurs diffèrent du premier
+    passage de 17:40. La comparaison se fait donc dans un même passage, et les
+    36 sorties sont conformes aux deux passages.
 
 ### Garde « block-new » : patch d'ownership réservé à l'owner
 

@@ -1,11 +1,16 @@
-### UP 2026-11-18T17:40:59Z PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2)
-BEGIN;
-BEGIN
-SET LOCAL lock_timeout = '5s';
+### UP 2026-11-18T21:19:58Z PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2)
+# psql --single-transaction : le moteur scripts/ci/apply-supabase-migration.py enveloppe le fichier dans BEGIN/COMMIT
+SET lock_timeout = '5s';
+SET
+SET statement_timeout = '30s';
 SET
 BEGIN
 CREATE FUNCTION
 CREATE FUNCTION
-COMMIT;
-COMMIT
 exit=0
+  phase   |                proname                 |                                               proacl                                               | prosecdef | provolatile | proparallel |      proconfig       |               md5                
+----------+----------------------------------------+----------------------------------------------------------------------------------------------------+-----------+-------------+-------------+----------------------+----------------------------------
+ after_up | get_pieces_for_type_gamme_v3           | {postgres=X/postgres,service_role=X/postgres}                                                      | t         | s           | u           | {search_path=public} | 2f6c309d735c7fc198eb5202dca514de
+ after_up | get_listing_products_extended_filtered | {=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres} | f         | s           | s           | {search_path=public} | 0451a0f66ca72f0f00b8cb0598612e90
+(2 rows)
+

@@ -31,10 +31,13 @@
 --
 -- APPLICATION : réservée à l'owner (workflow « Apply Supabase migrations
 --   (manual) », only_ids, dry run d'abord). Rollback : fichier .down.sql.
+-- TRANSACTION : gérée par l'outil de migration (squawk assume_in_transaction),
+--   d'où ni BEGIN ni COMMIT ; délais posés comme dans
+--   20261117_pricing_commit_chunk_frs_date_from.sql et
+--   20261030_get_substitution_status_definer_read.sql.
 -- ============================================================================
-BEGIN;
-
-SET LOCAL lock_timeout = '5s';
+SET lock_timeout = '5s';
+SET statement_timeout = '30s';
 
 CREATE OR REPLACE FUNCTION public.get_pieces_for_type_gamme_v3(p_type_id integer, p_pg_id integer)
  RETURNS jsonb
@@ -570,5 +573,3 @@ AS $function$
         a.prix_unitaire ASC NULLS LAST
     LIMIT LEAST(COALESCE(p_limit, 200), 500);
 $function$;
-
-COMMIT;
