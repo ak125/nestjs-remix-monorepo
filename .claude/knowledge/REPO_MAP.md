@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 6768adfa919779d933f9d6b087e9a346789b4dba154c005fd667f70e63e0edfe
+source_sha256: ce7ac0473aea80ddeca08e769aec8f7aa4275bad6ecae405fbd21d729e3a1638
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3230 |
+| Files (Layer 1) | 3233 |
 | DB tables (Layer 1) | 316 |
-| DB RPC (Layer 1) | 267 |
+| DB RPC (Layer 1) | 270 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1016 |
+| Runtime entrypoints (Layer 1) | 1017 |
 
-Source sotFingerprint: `ab349c08fd02`.
+Source sotFingerprint: `8695115698a7`.
 
 ## Comment l'utiliser
 
@@ -53,11 +53,11 @@ Source sotFingerprint: `ab349c08fd02`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 439 (service=220, test=131, controller=34, config=28, script=26)
-- **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (439)
+- **Files**: 441 (service=221, test=132, controller=34, config=28, script=26)
+- **Runtime entrypoints**: 170
+- **Top owners**: @ak125/seo-team (441)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=223, UNKNOWN=216
+- **Status**: LIVE=224, UNKNOWN=217
 
 ### D4 — Vehicle / Compatibility
 
@@ -163,13 +163,13 @@ Source sotFingerprint: `ab349c08fd02`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
+- **Files**: 244 (service=149, config=57, controller=20, script=14, test=4)
 - **DB tables**: 316
-- **DB RPC**: 267
+- **DB RPC**: 270
 - **Runtime entrypoints**: 83
-- **Top owners**: __unassigned__ (243)
+- **Top owners**: __unassigned__ (244)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=140, UNKNOWN=103
+- **Status**: LIVE=140, UNKNOWN=104
 
 ## Voir aussi
 
