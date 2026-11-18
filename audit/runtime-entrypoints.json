@@ -2867,6 +2867,8 @@
       "backend/supabase/migrations/20261117_pricing_commit_chunk_frs_date_from.sql",
       "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.down.sql",
       "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.sql",
+      "backend/supabase/migrations/20261118_r2_images_bmp_extension.down.sql",
+      "backend/supabase/migrations/20261118_r2_images_bmp_extension.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3063,7 +3065,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1655,
+  "runtime_files_count": 1657,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4377,6 +4379,8 @@
     "backend/supabase/migrations/20261117_pricing_commit_chunk_frs_date_from.sql",
     "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.down.sql",
     "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.sql",
+    "backend/supabase/migrations/20261118_r2_images_bmp_extension.down.sql",
+    "backend/supabase/migrations/20261118_r2_images_bmp_extension.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",

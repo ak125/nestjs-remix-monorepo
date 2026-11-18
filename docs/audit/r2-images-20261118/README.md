@@ -214,6 +214,28 @@ fonction identité de même signature ; elle ne touche pas aux images. Les rôle
   - Occurrences de `.bmp.webp` avant : 246 (v3) et 32 (filtered). Après : 0.
   - Les couples sans BMP donnent une sortie identique.
 
+### Garde « block-new » : patch d'ownership réservé à l'owner
+
+`node scripts/registry/check-new-files.js --base origin/main` refuse les deux
+fichiers de migration (`MISSING_BOTH`) : aucun glob de
+`.spec/00-canon/repository-registry/ownership.yaml` ne les couvre. Ce fichier est
+réservé à l'owner. Le patch est préparé dans `ownership-patch-mandat-co.diff`
+(domaine D1, `@ak125/catalog-team`, comme
+`20261003_drop_indexes_shadowed_by_unique_catalog*.sql`). Il n'est pas appliqué
+dans la PR. Pour vérifier qu'il suffit, il a été posé une seule commande dans le
+worktree jetable, puis retiré : la garde passe alors (25/25). Une fois le patch
+appliqué, il faudra relancer `npm run registry` pour mettre à jour
+`audit/registry/canonical.json`.
+
+Projections régénérées par leurs générateurs (`npm run audit:inventory`,
+`npm run registry`) : `audit/db-usage-map.json`, `audit/registry/rpc.json`,
+`audit/registry/canonical.json`, `audit/runtime-entrypoints.json`,
+`.claude/knowledge/REPO_MAP.md`. Leur diff ne porte que sur les deux nouvelles
+migrations. `audit/registry/files.json` est inchangé. Une première régénération
+y ajoutait `@tiptap/react` aux imports de `RichTextEditor.tsx`. La cause était
+locale : le worktree n'avait pas de `frontend/node_modules`. Avec des liens vers
+les `node_modules` du checkout principal, sans installation, la dérive disparaît.
+
 ### Gain attendu
 
 - Lot servi : 14 162 images redeviennent affichables, dont 11 084 images de
@@ -252,6 +274,7 @@ d'A1 portent sur le seul lot vendable servi ; c'est pourquoi ils sont plus petit
 - **Seulement proposé ou listé** : les 4 fonctions SQL non servies qui ont le même
   `CASE` ; B1.
 - **À décider par Marwane** :
+  - appliquer le patch `ownership-patch-mandat-co.diff` (sinon la garde block-new reste rouge) ;
   - appliquer la migration avec le workflow « Apply Supabase migrations
     (manual) », d'abord en simulation `only_ids` ;
   - récupérer les 36 938 images « inconnu » avec le paquet média TecDoc, qui

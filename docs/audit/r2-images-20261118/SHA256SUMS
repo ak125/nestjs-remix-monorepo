@@ -1,10 +1,11 @@
 f71f82d5a45e5a9c9ff7ae4d1cf0dcc33504904826511dd1505b891cb9c462a7  ./classes-par-marque.csv
 7722ff89dc703e577e5239a887dea2a3a482cca15a31829dd816d53e89690834  ./images-bmp-absentes-extension.csv.gz
 b1487abffdc9aa1e8404944cc3473d5b1d5e7ef882b5cb35dcbbc29cb03e21b3  ./images-r2-classees.csv.gz
+c7a0d544b37ad95890d3158156619207e523ae200a2ba662ca21276d76e1b4c9  ./ownership-patch-mandat-co.diff
 be628e039804c291287558b056843520bf631a712fd4b842fb8cd7ab726fa16b  ./prod-echantillon/bmp-sans-suffixe-webp.csv
 7ca7b1566624183e80c97315069ecb36016d8e246efcb8bb02d09bef9abc4d8b  ./prod-echantillon/images.csv
 f8eb81a955947df61374c209d0ae79540ecdfad261280a4aa1b5b63990ae4bef  ./prod-echantillon/pages.csv
-21a0e413bf9aa7ca33fccc74274a57d02bb06fe2b9df76a6fbea58a6cf1b67ef  ./README.md
+035a68bb691056e2e81d6000ec00cd7845267fe42582254ab763e04a91e62f06  ./README.md
 78d4b1c66b913853234d299267f19c727c8686edf41fd469f8466a6dd0d10fc3  ./requetes/classification_pg_jetable.sql
 8d4f86733897d1f54a5717b17b0c81e822e96f5390fbf541b3bce48c344ede5b  ./requetes/T01_objets_storage.sql
 acf07065e66498792cc0741b086ed4bd7c5a9bda94ed49a6126215bf55707a22  ./requetes/T02_lot_vendable.sql
