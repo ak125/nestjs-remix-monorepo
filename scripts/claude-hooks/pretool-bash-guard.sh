@@ -32,7 +32,8 @@ fi
 # left to right by a quote-aware scanner (perl) : quoted and escaped parts become Q, so
 # `jq '.a | .b'` stays one command. Also refused : a quoted or escaped word that starts with `-`
 # (an option the checks below could not see), brace expansion, $'…' / $"…", `$[`, and any `${…}`
-# other than `${NAME}`, an unquoted `#` starting a word (comment) and here-documents. Option checks run on the argument list and refuse short-flag bundles and
+# other than `${NAME}`, an unquoted `#` starting a word (comment), here-documents
+# and line continuations (backslash-newline). Option checks run on the argument list and refuse short-flag bundles and
 # any abbreviation of a dangerous long option (security review of 2026-11-18).
 AGENT_TYPE=$(jq -rs '.[0].agent_type // empty | strings' <<<"$INPUT" 2>/dev/null || true)
 if [[ "$AGENT_TYPE" == mandat-* ]]; then
@@ -41,6 +42,8 @@ if [[ "$AGENT_TYPE" == mandat-* ]]; then
   RO_PL=$(cat <<'PL'
 my $s = $ENV{RO_CMD}; my $n = length $s; my ($i, $out, $w, $wq, $wpre) = (0, '', '', 0, '');
 sub bad { print "ERR\t$_[0]"; exit 0 }
+# Backslash-newline is a line continuation that bash removes before parsing : refused.
+bad("continuation de ligne (\\ en fin de ligne)") if $s =~ /\\\n/;
 # A word starting with - whose quoting begins before its first = hides the option name.
 sub fin { bad("option entre guillemets ou echappee : $w") if $wq && $w =~ /^-/ && $wpre !~ /^-[^=]*=/; ($w, $wq) = ('', 0) }
 sub q1 { $wpre = $w unless $wq; $wq = 1 }

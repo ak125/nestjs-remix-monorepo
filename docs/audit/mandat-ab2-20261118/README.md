@@ -94,8 +94,11 @@ Lus sans y écrire. #2081 est la seule PR qui modifie le générateur.
     courte (`sort -o/tmp/f`, `git grep -O/bin/sh`, `git ls-remote -u/x`), et `rg --hostname-bin`.
     Sont désormais refusés : un `#` en début de mot, les here-documents (`<<<` reste admis) ;
     une lettre d'option est repérée même suivie d'une valeur collée.
-- Tests : 49 cas ajoutés à `scripts/test-claude-hooks.sh` (19, puis 30 issus des deux revues :
-  contournements et lectures courantes). Les 161 cas de la section bash-guard passent. L'essai
+  - troisième revue (commit `c32478c62`) : une continuation de ligne (`\` puis retour à la
+    ligne), que bash retire avant d'analyser la ligne, masquait un `#` ou une option
+    (`sort \⏎-o/tmp/f`). Confirmé par essai ; toute continuation de ligne est désormais refusée.
+- Tests : 51 cas ajoutés à `scripts/test-claude-hooks.sh` (19, puis 32 issus des trois revues :
+  contournements et lectures courantes). Les 163 cas de la section bash-guard passent. L'essai
   réel avec `claude -p` a été fait avant cette correction ; les cas `echo >` et `touch` restent
   dans les tests avec la même enveloppe. Le reste de la suite n'a pas été relancé : ses tests de surveillance
   (nodemon, tsc) attendent un `node_modules` local, absent du worktree.
@@ -205,6 +208,6 @@ frontmatter, que le registre relève et vérifie contre la carte.
 | État | Contenu |
 |---|---|
 | Appliqué (PR #2081, brouillon) | générateur étendu ; `$defs/subagent` ; registre régénéré ; garde lecture seule `mandat-*` ; 3 sous-agents mis à jour (garde, citations Vault retirées) ; test du générateur ; 19 cas de garde ; ce dossier |
-| Testé | `--check` vert ; 22 tests (générateur 6 nouveaux + verrou 16) ; 161 cas bash-guard (dont 30 issus des revues de sécurité) ; Command Center `--check` et 23 tests ; essai réel de refus d'écriture |
+| Testé | `--check` vert ; 22 tests (générateur 6 nouveaux + verrou 16) ; 163 cas bash-guard (dont 32 issus des revues de sécurité) ; Command Center `--check` et 23 tests ; essai réel de refus d'écriture |
 | Proposé, non appliqué | `skills-canon-gate.patch` ; `ownership-snippet-2081.yaml` ; format hooks/règles ; ligne de journal ; contreparties ; constats §8 |
 | Inconnu | effet en DEV tant que `/opt/automecanik/app` n'est pas à jour de `main` ; hook de frontmatter de sous-agent dans une version future de Claude Code |
