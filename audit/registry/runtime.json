@@ -4710,7 +4710,8 @@
         "runtime:backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing.repository.ts",
-        "runtime:backend/src/modules/pricing/services/supplier-profile.service.ts"
+        "runtime:backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "id": "runtime:backend/src/modules/pricing/pricing.module.ts",
       "kind": "nestjs-module",

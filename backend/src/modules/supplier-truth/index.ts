@@ -10,3 +10,8 @@ export type {
   LectureLive,
   ResultatLecture,
 } from './supplier-live-quote.service';
+
+// Annuaire fournisseur (`getSupplierDirectory`) : libellé `pri_frs` du commit
+// d'import tarifaire (PricingModule, via SupplierTruthReadModule). Seul lecteur
+// autorisé de `___xtr_supplier` (ast-grep `commerce-no-direct-supplier-read`).
+export { SupplierTruthRepository } from './supplier-truth.repository';

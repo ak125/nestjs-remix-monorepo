@@ -23023,7 +23023,7 @@
         "backend/src/modules/pricing/services/pricing-strategy.service.ts"
       ],
       "kind": "controller",
-      "loc": 233,
+      "loc": 235,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
       "risk": "low",
@@ -23054,10 +23054,11 @@
         "backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts",
-        "backend/src/modules/pricing/services/supplier-profile.service.ts"
+        "backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "kind": "service",
-      "loc": 45,
+      "loc": 48,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/pricing.module.ts",
       "risk": "low",
@@ -23620,6 +23621,7 @@
       "id": "backend/src/modules/pricing/services/price-import.dry-run.ts",
       "importedBy": [
         "backend/src/modules/pricing/services/__tests__/price-import.dry-run.test.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
@@ -23644,10 +23646,35 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/pricing/services/price-import.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/services/price-import.dry-run.ts",
+        "backend/src/modules/pricing/services/price-import.service.ts",
+        "backend/src/modules/pricing/services/pricing.repository.ts",
+        "backend/src/modules/supplier-truth/index.ts"
+      ],
+      "kind": "test",
+      "loc": 193,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/pricing/services/price-import.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/pricing/services/price-import.service.ts",
       "importedBy": [
         "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
-        "backend/src/modules/pricing/pricing.module.ts"
+        "backend/src/modules/pricing/pricing.module.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts"
       ],
       "imports": [
         "backend/src/modules/pricing/services/price-import.dry-run.ts",
@@ -23655,10 +23682,11 @@
         "backend/src/modules/pricing/services/pricing-strategy.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts",
         "backend/src/modules/pricing/services/supplier-profile.service.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 256,
+      "loc": 334,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/price-import.service.ts",
       "risk": "low",
@@ -23845,6 +23873,7 @@
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
         "backend/src/modules/pricing/services/price-deactivation.service.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.service.ts"
       ],
@@ -23859,7 +23888,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 907,
+      "loc": 918,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "low",
@@ -36211,13 +36240,16 @@
         "backend/src/modules/orders/services/supplier-order-controls.test.ts",
         "backend/src/modules/orders/services/supplier-order-controls.ts",
         "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
-        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+        "backend/src/modules/pricing/services/price-import.service.test.ts",
+        "backend/src/modules/pricing/services/price-import.service.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 13,
+      "loc": 18,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/index.ts",
       "risk": "low",
@@ -36596,6 +36628,7 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "importedBy": [
         "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/pricing/pricing.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -36604,7 +36637,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
       "kind": "service",
-      "loc": 38,
+      "loc": 40,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "risk": "low",
@@ -36715,6 +36748,7 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "importedBy": [
         "backend/src/modules/orders/services/order-line-supplier.service.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.test.ts",
