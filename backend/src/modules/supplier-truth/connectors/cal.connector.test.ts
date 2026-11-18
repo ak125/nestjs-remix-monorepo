@@ -8,6 +8,7 @@ import {
 } from './cal-parse';
 import {
   CalConnector,
+  calQueryVariant,
   isForbiddenPostbackTarget,
   parsePriceFromText,
 } from './cal.connector';
@@ -279,5 +280,18 @@ describe('CalConnector (construction, no I/O)', () => {
   it('close() is a no-op when never logged in', async () => {
     const c = new CalConnector({ supplierId: '19', baseUrl: 'https://x' });
     await expect(c.close()).resolves.toBeUndefined();
+  });
+});
+
+describe('calQueryVariant — second essai sur la forme compacte (mandat BK)', () => {
+  it('compacte une référence à espaces (LUK 500 0728 10)', () => {
+    expect(calQueryVariant('500 0728 10')).toBe('500072810');
+  });
+  it('compacte points et tirets (ATE 13.0460-2726.2)', () => {
+    expect(calQueryVariant('13.0460-2726.2')).toBe('13046027262');
+  });
+  it('aucun second essai quand la référence est déjà compacte', () => {
+    expect(calQueryVariant('554855')).toBeNull();
+    expect(calQueryVariant(' 554855 ')).toBeNull();
   });
 });

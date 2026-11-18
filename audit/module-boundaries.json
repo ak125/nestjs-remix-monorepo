@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 159,
-      "loc_total": 45077,
+      "files_count": 157,
+      "loc_total": 44748,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 105,
-      "loc_total": 25202,
+      "loc_total": 25201,
       "has_barrel": true
     },
     "customers": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115161,
+      "loc_total": 115188,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 586,
-      "loc_total": 111114,
+      "files_count": 587,
+      "loc_total": 111395,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -493,6 +493,7 @@
     "orders": {
       "dirs": [
         "backend/src/modules/orders",
+        "backend/src/modules/orders/config",
         "backend/src/modules/orders/controllers",
         "backend/src/modules/orders/dto",
         "backend/src/modules/orders/events",
@@ -501,8 +502,8 @@
         "backend/src/modules/orders/services",
         "backend/src/modules/orders/types"
       ],
-      "files_count": 25,
-      "loc_total": 7239,
+      "files_count": 30,
+      "loc_total": 8650,
       "has_barrel": true
     },
     "payments": {
@@ -702,7 +703,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 226,
-      "loc_total": 53997,
+      "loc_total": 54011,
       "has_barrel": true
     },
     "search": {
@@ -769,7 +770,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 289,
-      "loc_total": 62453,
+      "loc_total": 62457,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -877,9 +878,9 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 51,
-      "loc_total": 6948,
-      "has_barrel": false
+      "files_count": 56,
+      "loc_total": 7739,
+      "has_barrel": true
     },
     "suppliers": {
       "dirs": [
@@ -963,7 +964,7 @@
         "tests/registry"
       ],
       "files_count": 388,
-      "loc_total": 80557,
+      "loc_total": 80559,
       "has_barrel": true
     },
     "upload": {
@@ -1031,7 +1032,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 23,
-      "loc_total": 5477,
+      "loc_total": 5474,
       "has_barrel": false
     }
   },
@@ -1069,7 +1070,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 68
+      "count": 60
     },
     {
       "from": "admin",
@@ -1914,7 +1915,7 @@
     {
       "from": "orders",
       "to": "supplier-truth",
-      "count": 2
+      "count": 7
     },
     {
       "from": "payments",

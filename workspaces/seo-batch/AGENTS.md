@@ -16,7 +16,7 @@ Référentiel comportemental : **`packages/seo-role-contracts/`**, présent dans
 |------|-----------------|------|---------|---------------------|
 | **R0_HOME** | _aucun enricher dédié_ (composé via R1+R6+R7, cf. `contracts/r0.ts`) | — | — | `packages/seo-role-contracts/src/contracts/r0.ts` |
 | **R1_ROUTER** | _aucun_ (retiré 2026-07) | — | — | `r1.ts` |
-| **R2_PRODUCT** | `R2EnricherService` | NestJS service | `backend/src/modules/admin/services/r2-enricher.service.ts` | `r2.ts` |
+| **R2_PRODUCT** | _aucun_ (retiré 2026-11) | — | — | `r2.ts` |
 | **R3_CONSEILS** | _aucun_ (retiré 2026-07) | — | — | `r3.ts` |
 | **R4_REFERENCE** | `R4ContentEnricherService` | NestJS service | `backend/src/modules/admin/services/r4-content-enricher.service.ts` | `r4.ts` |
 | **R6_GUIDE_ACHAT** | `BuyingGuideEnricherService` | NestJS service | `backend/src/modules/admin/services/buying-guide-enricher.service.ts` | `r6.ts` |

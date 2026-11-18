@@ -24,6 +24,7 @@ import {
 import { MailService } from '../../../services/mail.service';
 import { z } from 'zod';
 import { OrderLineSupplierService } from '../services/order-line-supplier.service';
+import { SupplierOrderPreparationService } from '../services/supplier-order-preparation.service';
 
 /** `orl_id` / `ord_id` sont du texte en base : numérique, « <ord>-L001 », « ORD-… ». */
 const IDENTIFIANT_TEXTE = /^[A-Za-z0-9_-]{1,64}$/;
@@ -35,6 +36,16 @@ const ConfirmSupplierSchema = z
   .strict();
 const MarkRuptureSchema = z
   .object({ comment: z.string().max(500).optional() })
+  .strict();
+/**
+ * Mandat BK : aucun champ quantité, fournisseur ni prix — ils viennent de la
+ * ligne et de la relecture live, jamais du client (contrôle 5).
+ */
+const PrepareSupplierOrderSchema = z
+  .object({
+    compatibiliteVerifiee: z.boolean(),
+    confirmationPlafond: z.boolean().optional(),
+  })
   .strict();
 
 function identifiant(valeur: string, nom: string): string {
@@ -69,6 +80,7 @@ export class OrderActionsController {
     private readonly mailService: MailService,
     private readonly ordersService: OrdersService,
     private readonly lineSupplierService: OrderLineSupplierService,
+    private readonly supplierOrderPreparation: SupplierOrderPreparationService,
   ) {}
 
   /**
@@ -131,6 +143,46 @@ export class OrderActionsController {
       identifiant(lineId, 'lineId'),
       userId != null ? String(userId) : undefined,
       comment,
+    );
+  }
+
+  /**
+   * POST /api/admin/orders/:orderId/lines/:lineId/prepare-supplier-order
+   * Mandat BK, mode essai : relecture live du portail, 8 contrôles, trace sur la
+   * ligne. La commande fournisseur est PRÉPARÉE, jamais envoyée.
+   */
+  @Post(':orderId/lines/:lineId/prepare-supplier-order')
+  @RequirePermission('canValidate')
+  async prepareSupplierOrder(
+    @Param('orderId') orderId: string,
+    @Param('lineId') lineId: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    const demande = valider(PrepareSupplierOrderSchema, body);
+    const userId = (req.user as { id?: unknown } | undefined)?.id;
+    return this.supplierOrderPreparation.prepare(
+      identifiant(orderId, 'orderId'),
+      identifiant(lineId, 'lineId'),
+      demande,
+      userId != null ? String(userId) : null,
+    );
+  }
+
+  /**
+   * GET /api/admin/orders/:orderId/lines/:lineId/prepared-supplier-order
+   * Mandat BK : commande fournisseur préparée, dernier refus et comparaison avec
+   * la commande passée à la main. Lecture seule.
+   */
+  @Get(':orderId/lines/:lineId/prepared-supplier-order')
+  @RequirePermission('canValidate')
+  async getPreparedSupplierOrder(
+    @Param('orderId') orderId: string,
+    @Param('lineId') lineId: string,
+  ) {
+    return this.supplierOrderPreparation.getPrepared(
+      identifiant(orderId, 'orderId'),
+      identifiant(lineId, 'lineId'),
     );
   }
 

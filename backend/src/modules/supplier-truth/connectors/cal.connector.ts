@@ -37,11 +37,13 @@ import {
 import {
   calLookupToObservation,
   matchCalItem,
+  normalizeCalRef,
   parseCalAutocomplete,
   type CalArticleRow,
   type CalLookup,
 } from './cal-parse';
 import { brandTokenSet } from './inoshop-search-parse';
+import { installReadOnlyGuard } from './portal-read-only-guard';
 
 const AUTOCOMPLETE_ROOT =
   'ctl00$ContentPlaceHolder1$CtrlCatalogueTecdocV3$CtrlSearchVehiculesTemplateSelector1$ctl00$CtrlSearchArtByRef1$CtrlAutoComplete1';
@@ -114,6 +116,12 @@ export class CalConnector implements SupplierConnector {
       locale: 'fr-FR',
       userAgent: USER_AGENT,
     });
+    // Seconde barrière, au niveau réseau : toute écriture panier/commande est avortée.
+    await installReadOnlyGuard(this.context, (method, path) =>
+      this.logger.warn(
+        `CAL : écriture panier/commande avortée (${method} ${path})`,
+      ),
+    );
     const page = await this.context.newPage();
     page.setDefaultNavigationTimeout(this.opts.navigationTimeoutMs);
 
@@ -188,36 +196,29 @@ export class CalConnector implements SupplierConnector {
   async lookup(ref: string): Promise<CalLookup> {
     this.assertLoggedIn();
     const page = this.catalogPage!;
-    const ctx = this.context!;
 
     // (a) Resolve the article's `key` via the JSONP autocomplete API.
     const idsession =
       (await page
         .locator(`input[id="${ID_HIDDEN_SESSION}"]`)
         .getAttribute('value', { timeout: 5000 })) ?? '';
-    const params = new URLSearchParams({
-      featureClass: 'P',
-      style: 'full',
-      limit: '20',
-      // The UI prefixes the HiddenMarque input, which has no value in our
-      // session (live 2026-10-10). Explicitly no brand prefix: the plain ref;
-      // the brand is checked on the results instead (matchCalItem).
-      name_startsWith: ref,
-      idsession,
-      succ: '01',
-      privatepwd: 'wz7yH5STyWM=',
-      interface: 'CYB',
-      mode: 'RefWithCat',
-      cattag: '',
-      callback: 'jsonpCb',
-    });
-    const url = `${this.baseUrl}/CallWS.aspx?origine=autocomplete&${params}`;
-    const resp = await ctx.request.get(url, {
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-    });
-    if (!resp.ok()) throw new Error(`autocomplete HTTP ${resp.status()}`);
-    const items = parseCalAutocomplete(await resp.text());
-    const { item, kind } = matchCalItem(items, ref, this.brandTokens);
+    let { item, kind } = matchCalItem(
+      await this.autocomplete(ref, idsession),
+      ref,
+      this.brandTokens,
+    );
+    // CAL indexe certaines références sans séparateur : « 500 0728 10 » n'y
+    // répond pas, « 500072810 » si (lecture du 17/11/2026, mandat BK). Second
+    // essai sur la forme compacte, seulement si la forme saisie est absente.
+    const compact = calQueryVariant(ref);
+    if (!item && kind === 'NOT_FOUND' && compact !== null) {
+      await this.jitterDelay();
+      ({ item, kind } = matchCalItem(
+        await this.autocomplete(compact, idsession),
+        ref,
+        this.brandTokens,
+      ));
+    }
     if (!item) return { ref, kind, item: null, row: null };
 
     // (b) Drive the autocomplete `select` callback: set txtRef + HiddenValue,
@@ -295,6 +296,35 @@ export class CalConnector implements SupplierConnector {
     return { ref, kind, item, row };
   }
 
+  /** Appel JSONP d'autocomplétion (GET, lecture). */
+  private async autocomplete(
+    query: string,
+    idsession: string,
+  ): Promise<ReturnType<typeof parseCalAutocomplete>> {
+    const params = new URLSearchParams({
+      featureClass: 'P',
+      style: 'full',
+      limit: '20',
+      // The UI prefixes the HiddenMarque input, which has no value in our
+      // session (live 2026-10-10). Explicitly no brand prefix: the plain ref;
+      // the brand is checked on the results instead (matchCalItem).
+      name_startsWith: query,
+      idsession,
+      succ: '01',
+      privatepwd: 'wz7yH5STyWM=',
+      interface: 'CYB',
+      mode: 'RefWithCat',
+      cattag: '',
+      callback: 'jsonpCb',
+    });
+    const url = `${this.baseUrl}/CallWS.aspx?origine=autocomplete&${params}`;
+    const resp = await this.context!.request.get(url, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    if (!resp.ok()) throw new Error(`autocomplete HTTP ${resp.status()}`);
+    return parseCalAutocomplete(await resp.text());
+  }
+
   private assertLoggedIn(): void {
     if (!this.loggedIn || !this.catalogPage || !this.context) {
       throw new Error('CAL fetchAvailability called before login');
@@ -344,6 +374,17 @@ export class CalConnector implements SupplierConnector {
     const jitter = Math.floor(Math.random() * base * 0.4);
     await new Promise((r) => setTimeout(r, base + jitter));
   }
+}
+
+/**
+ * Forme compacte (sans espace, point ni tiret) à interroger en second essai,
+ * ou null si elle est identique à la référence saisie.
+ */
+export function calQueryVariant(ref: string): string | null {
+  const compact = normalizeCalRef(ref);
+  return compact !== '' && compact !== ref.trim().toUpperCase()
+    ? compact
+    : null;
 }
 
 /** Re-exported helper kept for unit tests (parses "12,15 €" / "12.15 €"). */

@@ -395,7 +395,8 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
-        "backend/src/modules/orders/listeners/order-audit.listener.ts"
+        "backend/src/modules/orders/listeners/order-audit.listener.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
       ]
     },
     {
@@ -13058,7 +13059,6 @@
         "backend/src/modules/admin/services/image-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
