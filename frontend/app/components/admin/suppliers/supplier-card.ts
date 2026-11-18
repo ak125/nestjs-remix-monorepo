@@ -56,10 +56,23 @@ interface SupplierLinkedBrand {
   linkDisplayed: boolean;
 }
 
+/** État d'une règle à la date de lecture (backend, supplier-price-rule.ts). */
+export const RULE_STATUS_LABELS: Record<string, string> = {
+  en_vigueur: "En vigueur",
+  remplacee: "Remplacée",
+  a_venir: "À venir",
+  expiree: "Expirée",
+  inactive: "Inactive",
+  sans_taux: "Sans remise ni marge",
+};
+
 interface SupplierPriceProfile {
   id: number;
   scopeLevel: string;
+  /** Famille : code famille (NU17) ; sous-famille : code sous-famille (1738). */
   scopeCode: string | null;
+  /** Marque de la règle (pm_id), ou null. */
+  brandPmId: string | null;
   priceBasis: string;
   derivation: string;
   version: number;
@@ -67,6 +80,10 @@ interface SupplierPriceProfile {
   effectiveTo: string | null;
   active: boolean;
   isPromo: boolean;
+  /** Profil d'import de base (fournisseur, sans marque ni date). */
+  isImportBase: boolean;
+  ruleStatus: string;
+  supersededBy: number | null;
   createdBy: string | null;
   changeReason: string | null;
   createdAt: string;
@@ -151,6 +168,34 @@ const TEXT_FIELDS = [
   "portalUrl",
   "secretName",
 ] as const;
+
+/** Champs du formulaire de règle de remise (complément CH-2). */
+const PRICE_RULE_FIELDS = [
+  "scopeLevel",
+  "brandPmId",
+  "scopeCode",
+  "remisePct",
+  "margePct",
+  "effectiveFrom",
+  "effectiveTo",
+  "changeReason",
+] as const;
+
+/**
+ * Formulaire de règle → corps de POST /api/suppliers/:id/price-rules. Seules
+ * les clés connues et non vides partent ; les contrôles de forme (marque,
+ * code, période, bornes) restent ceux du schéma Zod du backend.
+ */
+export function priceRuleFormToBody(
+  form: FormData,
+): Partial<Record<(typeof PRICE_RULE_FIELDS)[number], string>> {
+  const body: Partial<Record<(typeof PRICE_RULE_FIELDS)[number], string>> = {};
+  for (const field of PRICE_RULE_FIELDS) {
+    const value = String(form.get(field) ?? "").trim();
+    if (value !== "") body[field] = value;
+  }
+  return body;
+}
 
 /**
  * Euros saisis (« 150 », « 150,5 », « 150.50 ») → centimes entiers, sans

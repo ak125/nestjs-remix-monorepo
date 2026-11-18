@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  PriceRuleConflictError,
   SupplierCardRepository,
   SupplierIdConflictError,
 } from '../supplier-truth';
@@ -13,11 +14,13 @@ import type {
   SupplierCardPatch,
   SupplierCardRow,
   SupplierLinkedBrand,
+  SupplierPriceProfileInsert,
   SupplierPriceProfileRow,
 } from '../supplier-truth';
 import {
   LOCATION_FIELDS,
   SUPPLIER_CARD_FIELD_TO_COLUMN,
+  type CreatePriceRuleDto,
   type CreateSupplierCardDto,
   type SupplierCardField,
   type UpdateSupplierCardDto,
@@ -27,6 +30,16 @@ import {
   slugifySupplierAlias,
   type DuplicateMatch,
 } from './supplier-name';
+import {
+  isBaseImportProfile,
+  isDatedRule,
+  priceRuleStatus,
+  samePriceRuleKey,
+  selectedByImport,
+  type PriceRule,
+  type PriceRuleLevel,
+  type PriceRuleStatus,
+} from './supplier-price-rule';
 
 /** Fiche telle que servie à l'écran admin : champs camelCase, jamais de secret. */
 export interface SupplierCardView {
@@ -75,15 +88,23 @@ export interface SupplierCardView {
 interface SupplierPriceProfileView {
   id: number;
   scopeLevel: string;
+  /** FAMILY : code famille (NU17) ; SUBFAMILY : code sous-famille (1738). */
   scopeCode: string | null;
+  /** Marque de la règle (pm_id), ou null. */
+  brandPmId: string | null;
   priceBasis: string;
   derivation: string;
   version: number;
   effectiveFrom: string | null;
   effectiveTo: string | null;
   active: boolean;
-  /** Ligne datée dont le motif commence par PROMO (modele-fiche §b). */
+  /** Ligne datée = promotion (complément CH-2). */
   isPromo: boolean;
+  /** Profil d'import de base (SUPPLIER, sans marque ni date). */
+  isImportBase: boolean;
+  /** État à la date de lecture, selon resolvePriceRule (non branché aux prix). */
+  ruleStatus: PriceRuleStatus;
+  supersededBy: number | null;
   createdBy: string | null;
   changeReason: string | null;
   createdAt: string;
@@ -130,7 +151,7 @@ export class SupplierCardService {
     return {
       ...toView(row),
       brands,
-      priceProfiles: profiles.map(toProfileView),
+      priceProfiles: toProfileViews(profiles, new Date()),
       possibleDuplicates: findSupplierDuplicates(
         str(row.spl_name),
         str(row.spl_alias),
@@ -240,6 +261,159 @@ export class SupplierCardService {
     this.logger.log(`Fournisseur ${splId} archivé par ${by}`);
   }
 
+  /**
+   * Règle de remise / marge (complément CH-2). Une règle active de même clé
+   * (marque, niveau, code, période) est remplacée par une nouvelle version.
+   *
+   * Garde d'import : `resolveProfile` (PricingModule, non modifié) retient à
+   * l'import une ligne SUPPLIER ou BRAND et en lit les paramètres de fichier.
+   * Toute règle reprend donc ceux du profil de base (ou de la version
+   * remplacée) ; sans profil de base, une règle SUPPLIER ou BRAND est refusée.
+   */
+  async createPriceRule(
+    splId: string,
+    dto: CreatePriceRuleDto,
+    by: string,
+  ): Promise<{ id: number; version: number }> {
+    if (!(await this.cards.getCard(splId)))
+      throw new NotFoundException(`Fournisseur ${splId} introuvable`);
+    const brandPmId = dto.brandPmId ?? null;
+    if (brandPmId !== null) {
+      const brands = await this.cards.getLinkedBrands(splId);
+      if (!brands.some((b) => b.pmId !== null && String(b.pmId) === brandPmId))
+        throw new BadRequestException(
+          `Marque ${brandPmId} non liée au fournisseur ${splId}`,
+        );
+    }
+    const rows = await this.cards.getPriceProfiles(splId);
+    const created = await this.writeRuleVersion(
+      splId,
+      rows,
+      {
+        id: 0,
+        supplierId: splId,
+        brandPmId,
+        scopeLevel: dto.scopeLevel,
+        scopeCode: dto.scopeCode ?? null,
+        effectiveFrom: dayStart(dto.effectiveFrom),
+        effectiveTo: dayStart(dto.effectiveTo),
+        active: true,
+        version: 0,
+        remisePct: dto.remisePct ?? null,
+        margePct: dto.margePct ?? null,
+      },
+      by,
+      dto.changeReason ?? null,
+    );
+    this.logger.log(
+      `Règle de prix ${created.id} (v${created.version}) du fournisseur ${splId} écrite par ${by}`,
+    );
+    return { id: created.id, version: created.version };
+  }
+
+  /**
+   * Retrait d'une règle : active = false, sans DELETE. Le profil d'import de
+   * base n'est jamais désactivé : on lui écrit une version sans remise ni
+   * marge. Une ligne sans remise ni marge n'est pas une règle de la fiche.
+   */
+  async retirePriceRule(
+    splId: string,
+    ruleId: number,
+    by: string,
+  ): Promise<void> {
+    const rows = await this.cards.getPriceProfiles(splId);
+    const row = rows.find((r) => r.id === ruleId && r.active);
+    if (!row)
+      throw new NotFoundException(
+        `Règle active ${ruleId} introuvable pour le fournisseur ${splId}`,
+      );
+    const rule = toRule(row);
+    if (rule.remisePct === null && rule.margePct === null)
+      throw new ConflictException(
+        `Ligne ${ruleId} sans remise ni marge : profil d'import, non retiré depuis la fiche`,
+      );
+    if (isBaseImportProfile(rule)) {
+      await this.writeRuleVersion(
+        splId,
+        rows,
+        { ...rule, remisePct: null, margePct: null },
+        by,
+        'Remise et marge retirées depuis la fiche',
+      );
+    } else if (
+      !(await this.cards.setPriceProfileActive(splId, ruleId, false))
+    ) {
+      throw new NotFoundException(`Règle ${ruleId} introuvable`);
+    }
+    this.logger.log(
+      `Règle de prix ${ruleId} du fournisseur ${splId} retirée par ${by}`,
+    );
+  }
+
+  private async writeRuleVersion(
+    splId: string,
+    rows: SupplierPriceProfileRow[],
+    rule: PriceRule,
+    by: string,
+    reason: string | null,
+  ): Promise<SupplierPriceProfileRow> {
+    const sameKey = rows.filter((r) => samePriceRuleKey(toRule(r), rule));
+    const replaced = sameKey.find((r) => r.active) ?? null;
+    const base = rows.find((r) => isBaseImportProfile(toRule(r))) ?? null;
+    const source = replaced ?? base;
+    if (!source && selectedByImport(rule.scopeLevel)) {
+      throw new ConflictException(
+        'Profil d’import de base absent : une règle fournisseur ou fournisseur × marque ' +
+          'serait retenue par l’import tarifaire actuel. Créer d’abord le profil d’import, ' +
+          'ou saisir une règle de famille ou de sous-famille.',
+      );
+    }
+    const insert: SupplierPriceProfileInsert = {
+      supplier_id: splId,
+      scope_level: rule.scopeLevel,
+      scope_code: rule.scopeCode,
+      brand_pm_id: rule.brandPmId,
+      // Paramètres d'import repris tels quels ; sans source (famille ou
+      // sous-famille, jamais retenues par l'import actuel) : remise sur brut.
+      price_basis: source?.price_basis ?? 'BRUT',
+      derivation: source?.derivation ?? 'REMISE_ON_BRUT',
+      key_field: source?.key_field ?? 'REF',
+      column_mapping: source?.column_mapping ?? {},
+      version: 1 + Math.max(0, ...sameKey.map((r) => Number(r.version))),
+      effective_from: rule.effectiveFrom,
+      effective_to: rule.effectiveTo,
+      created_by: by,
+      change_reason: reason,
+      default_remise_pct: rule.remisePct,
+      default_marge_pct: rule.margePct,
+    };
+    // L'index unique ne tolère qu'une règle active par clé : l'ancienne
+    // version est désactivée d'abord, puis rétablie si l'insertion échoue.
+    if (
+      replaced &&
+      !(await this.cards.setPriceProfileActive(splId, replaced.id, false))
+    )
+      throw new ConflictException(
+        'Règle modifiée entre-temps : recharger la fiche',
+      );
+    try {
+      return await this.cards.insertPriceProfile(insert);
+    } catch (error) {
+      if (replaced) {
+        await this.cards
+          .setPriceProfileActive(splId, replaced.id, true)
+          .catch((e: unknown) =>
+            this.logger.error(
+              `Règle ${replaced.id} du fournisseur ${splId} non réactivée après échec : ${String(e)}`,
+            ),
+          );
+      }
+      if (error instanceof PriceRuleConflictError)
+        throw new ConflictException(error.message);
+      throw error;
+    }
+  }
+
   private assertNoExactDuplicate(
     name: string | null,
     alias: string | null,
@@ -322,22 +496,63 @@ function toView(
   };
 }
 
-function toProfileView(p: SupplierPriceProfileRow): SupplierPriceProfileView {
+/** 'AAAA-MM-JJ' → début du jour UTC (ISO), ou null. */
+function dayStart(day: string | null | undefined): string | null {
+  return day ? `${day}T00:00:00.000Z` : null;
+}
+
+function toRule(p: SupplierPriceProfileRow): PriceRule {
+  return {
+    id: p.id,
+    supplierId: p.supplier_id,
+    brandPmId: p.brand_pm_id ?? null,
+    scopeLevel: p.scope_level as PriceRuleLevel,
+    scopeCode: p.scope_code,
+    effectiveFrom: p.effective_from,
+    effectiveTo: p.effective_to,
+    active: p.active,
+    version: Number(p.version),
+    remisePct: num(p.default_remise_pct),
+    margePct: num(p.default_marge_pct),
+  };
+}
+
+function toProfileViews(
+  rows: SupplierPriceProfileRow[],
+  at: Date,
+): SupplierPriceProfileView[] {
+  const rules = rows.map(toRule);
+  return rows.map((p, i) => {
+    const { status, supersededBy } = priceRuleStatus(rules[i], rules, at);
+    return {
+      ...toProfileView(p, rules[i]),
+      ruleStatus: status,
+      supersededBy,
+    };
+  });
+}
+
+function toProfileView(
+  p: SupplierPriceProfileRow,
+  rule: PriceRule,
+): Omit<SupplierPriceProfileView, 'ruleStatus' | 'supersededBy'> {
   return {
     id: p.id,
     scopeLevel: p.scope_level,
     scopeCode: p.scope_code,
+    brandPmId: rule.brandPmId,
     priceBasis: p.price_basis,
     derivation: p.derivation,
     version: p.version,
     effectiveFrom: p.effective_from,
     effectiveTo: p.effective_to,
     active: p.active,
-    isPromo: (p.change_reason ?? '').toUpperCase().startsWith('PROMO'),
+    isPromo: isDatedRule(rule),
+    isImportBase: isBaseImportProfile(rule),
     createdBy: p.created_by,
     changeReason: p.change_reason,
     createdAt: p.created_at,
-    defaultRemisePct: num(p.default_remise_pct),
-    defaultMargePct: num(p.default_marge_pct),
+    defaultRemisePct: rule.remisePct,
+    defaultMargePct: rule.margePct,
   };
 }

@@ -147,11 +147,13 @@ const CONTROLLERS: Array<[string, Type<any>, string[]]> = [
       'getSupplierSimple',
       'getSupplierById',
       // Fiche fournisseur (mandat CH) : lecture, création, modification,
-      // validation de localisation.
+      // validation de localisation ; règles de remise (complément CH-2).
       'getCard',
       'createCard',
       'updateCard',
       'validateLocation',
+      'createPriceRule',
+      'retirePriceRule',
     ],
   ],
   [

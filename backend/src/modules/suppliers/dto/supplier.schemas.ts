@@ -145,6 +145,81 @@ export type UpdateSupplierCardDto = z.infer<typeof UpdateSupplierCardSchema>;
 /** Champs écrits par la fiche (création ou mise à jour), en camelCase. */
 export type SupplierCardField = keyof UpdateSupplierCardDto;
 
+// ===== RÈGLES DE REMISE (complément CH-2) =====
+// Alignées sur les CHECK de 20261118_supplier_price_profiles_default_pct.sql
+// (test d'alignement dans supplier.schemas.test.ts).
+
+const PRICE_RULE_LEVELS = ['SUPPLIER', 'BRAND', 'FAMILY', 'SUBFAMILY'] as const;
+const BRAND_PM_ID_PATTERN = /^[0-9]{1,10}$/;
+/** Codes relevés dans pieces_price : NU17 (famille), 1738 (sous-famille). */
+const SCOPE_CODE_PATTERN = /^[A-Z0-9]{1,20}$/;
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+const isCalendarDate = (d: string): boolean => {
+  const t = new Date(`${d}T00:00:00Z`);
+  return !Number.isNaN(t.getTime()) && t.toISOString().slice(0, 10) === d;
+};
+
+const optionalPct = z
+  .preprocess((v) => {
+    const b = blankToNull(v);
+    return typeof b === 'string' ? Number(b.replace(',', '.')) : b;
+  }, z.number().min(0).max(100).multipleOf(0.01).nullable())
+  .optional();
+
+/**
+ * Règle de remise et/ou de marge pour une portée. `effectiveFrom` inclus,
+ * `effectiveTo` exclu, à 00:00 UTC ; une règle datée est une promotion.
+ */
+export const CreatePriceRuleSchema = z
+  .strictObject({
+    scopeLevel: z.enum(PRICE_RULE_LEVELS),
+    brandPmId: z
+      .preprocess(
+        (v) => (typeof v === 'number' ? String(v) : blankToNull(v)),
+        z
+          .string()
+          .regex(BRAND_PM_ID_PATTERN, 'pm_id numérique attendu')
+          .nullable(),
+      )
+      .optional(),
+    scopeCode: z
+      .preprocess((v) => {
+        const b = blankToNull(v);
+        return typeof b === 'string' ? b.toUpperCase() : b;
+      }, z.string().regex(SCOPE_CODE_PATTERN, 'Code attendu : lettres et chiffres (ex. NU17, 1738)').nullable())
+      .optional(),
+    remisePct: optionalPct,
+    margePct: optionalPct,
+    effectiveFrom: optionalMatch(DATE_PATTERN, 10, 'Date AAAA-MM-JJ attendue'),
+    effectiveTo: optionalMatch(DATE_PATTERN, 10, 'Date AAAA-MM-JJ attendue'),
+    changeReason: optionalText(200),
+  })
+  .superRefine((v, ctx) => {
+    const issue = (path: string, message: string) =>
+      ctx.addIssue({ code: 'custom', path: [path], message });
+    const brand = v.brandPmId ?? null;
+    const code = v.scopeCode ?? null;
+    if (v.scopeLevel === 'SUPPLIER' && brand !== null)
+      issue('brandPmId', 'Portée fournisseur : pas de marque');
+    if (v.scopeLevel === 'BRAND' && brand === null)
+      issue('brandPmId', 'Portée marque : marque requise');
+    if ((v.scopeLevel === 'SUPPLIER' || v.scopeLevel === 'BRAND') && code)
+      issue('scopeCode', 'Code réservé aux portées famille et sous-famille');
+    if ((v.scopeLevel === 'FAMILY' || v.scopeLevel === 'SUBFAMILY') && !code)
+      issue('scopeCode', 'Code de famille ou de sous-famille requis');
+    if ((v.remisePct ?? null) === null && (v.margePct ?? null) === null)
+      issue('remisePct', 'Remise ou marge requise');
+    for (const key of ['effectiveFrom', 'effectiveTo'] as const) {
+      const d = v[key];
+      if (d && !isCalendarDate(d)) issue(key, 'Date inexistante');
+    }
+    if (v.effectiveFrom && v.effectiveTo && v.effectiveTo <= v.effectiveFrom)
+      issue('effectiveTo', 'La fin doit suivre le début');
+  });
+
+export type CreatePriceRuleDto = z.infer<typeof CreatePriceRuleSchema>;
+
 /**
  * Correspondance champ → colonne. Une seule table : le dépôt ne connaît que
  * les colonnes, l'API que les champs.

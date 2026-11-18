@@ -93,11 +93,16 @@ export interface SupplierLinkedBrand {
 
 export interface SupplierPriceProfileRow {
   id: number;
+  supplier_id: string;
   scope_level: string;
   scope_code: string | null;
+  /** pieces_marque.pm_id en texte (complément CH-2), ou null. */
+  brand_pm_id: string | null;
   price_basis: string;
   derivation: string;
   key_field: string;
+  /** Correspondance de colonnes du fichier tarif (noms de colonnes seulement). */
+  column_mapping: unknown;
   version: number;
   effective_from: string | null;
   effective_to: string | null;
@@ -123,9 +128,24 @@ const T_PROFILES = 'supplier_price_profiles';
 const ROW_CAP = 1000;
 
 const PROFILE_COLUMNS =
-  'id, scope_level, scope_code, price_basis, derivation, key_field, version, ' +
-  'effective_from, effective_to, active, created_by, change_reason, created_at, ' +
+  'id, supplier_id, scope_level, scope_code, brand_pm_id, price_basis, ' +
+  'derivation, key_field, column_mapping, version, effective_from, ' +
+  'effective_to, active, created_by, change_reason, created_at, ' +
   'default_remise_pct, default_marge_pct';
+
+/** Ligne de règle à insérer (complément CH-2) ; id et created_at par la base. */
+export type SupplierPriceProfileInsert = Omit<
+  SupplierPriceProfileRow,
+  'id' | 'created_at' | 'active'
+>;
+
+/** Une règle active de même clé existe déjà (index unique, écriture concurrente). */
+export class PriceRuleConflictError extends Error {
+  constructor() {
+    super('Règle active de même portée et période déjà présente');
+    this.name = 'PriceRuleConflictError';
+  }
+}
 
 @Injectable()
 export class SupplierCardRepository extends SupabaseBaseService {
@@ -222,8 +242,9 @@ export class SupplierCardRepository extends SupabaseBaseService {
   }
 
   /**
-   * Profils de prix du fournisseur, toutes versions (lecture seule : un profil
-   * est immuable, une condition nouvelle = nouvelle version par PricingModule).
+   * Profils de prix du fournisseur, toutes versions. Un profil est immuable :
+   * une condition nouvelle = nouvelle version (insertPriceProfile), l'ancienne
+   * passe active = false (setPriceProfileActive).
    */
   async getPriceProfiles(splId: string): Promise<SupplierPriceProfileRow[]> {
     const { data, error } = await this.supabase
@@ -235,6 +256,44 @@ export class SupplierCardRepository extends SupabaseBaseService {
       .limit(ROW_CAP);
     if (error) throw new Error(`getPriceProfiles failed: ${error.message}`);
     return (data ?? []) as unknown as SupplierPriceProfileRow[];
+  }
+
+  /** Nouvelle version de règle ; 409 métier si la clé active est déjà prise. */
+  async insertPriceProfile(
+    row: SupplierPriceProfileInsert,
+  ): Promise<SupplierPriceProfileRow> {
+    const { data, error } = await this.supabase
+      .from(T_PROFILES)
+      .insert({ ...row, active: true })
+      .select(PROFILE_COLUMNS)
+      .single();
+    if (error) {
+      if (error.code === '23505') throw new PriceRuleConflictError();
+      throw new Error(`insertPriceProfile failed: ${error.message}`);
+    }
+    return data as unknown as SupplierPriceProfileRow;
+  }
+
+  /**
+   * Active ou désactive une ligne du fournisseur, sans DELETE.
+   * @returns false si la ligne n'existe pas pour ce fournisseur.
+   */
+  async setPriceProfileActive(
+    splId: string,
+    id: number,
+    active: boolean,
+  ): Promise<boolean> {
+    const { data, error } = await this.supabase
+      .from(T_PROFILES)
+      .update({ active })
+      .eq('id', id)
+      .eq('supplier_id', splId)
+      .select('id');
+    if (error) {
+      if (error.code === '23505') throw new PriceRuleConflictError();
+      throw new Error(`setPriceProfileActive failed: ${error.message}`);
+    }
+    return (data ?? []).length > 0;
   }
 
   /**

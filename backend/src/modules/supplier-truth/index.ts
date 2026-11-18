@@ -20,6 +20,7 @@ export { SupplierTruthRepository } from './supplier-truth.repository';
 export {
   SupplierCardRepository,
   SupplierIdConflictError,
+  PriceRuleConflictError,
   SUPPLIER_CARD_COLUMNS,
 } from './supplier-card.repository';
 export type {
@@ -28,4 +29,5 @@ export type {
   SupplierIdentity,
   SupplierLinkedBrand,
   SupplierPriceProfileRow,
+  SupplierPriceProfileInsert,
 } from './supplier-card.repository';

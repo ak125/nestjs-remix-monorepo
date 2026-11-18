@@ -8,7 +8,9 @@
  *  - la modification passe par PUT /api/suppliers/:id/card avec le cookie ;
  *  - un refus backend (409 doublon, 400 Zod) est affiché, pas transformé
  *    en succès ;
- *  - les actions de la fiche n'appellent que les deux routes dédiées.
+ *  - les actions de la fiche n'appellent que leurs routes dédiées ;
+ *  - règles de remise (complément CH-2) : seules les clés du schéma partent,
+ *    le retrait exige un id numérique, un 400 Zod est affiché par champ.
  */
 import { type ActionFunctionArgs } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -16,6 +18,7 @@ import {
   cardFormToBody,
   centsToEuros,
   eurosToCents,
+  priceRuleFormToBody,
   readCardApiError,
 } from "~/components/admin/suppliers/supplier-card";
 import { action as cardAction } from "~/routes/admin.suppliers.$id";
@@ -231,4 +234,107 @@ describe("actions de la fiche", () => {
     expect(calls).toHaveLength(0);
     expect(res).toMatchObject({ init: { status: 400 } });
   });
+});
+
+describe("règles de remise (complément CH-2)", () => {
+  it("priceRuleFormToBody : clés connues et non vides seulement", () => {
+    expect(
+      priceRuleFormToBody(
+        formOf({
+          intent: "add-price-rule",
+          scopeLevel: "FAMILY",
+          brandPmId: "1200",
+          scopeCode: " NU17 ",
+          remisePct: "32,5",
+          margePct: "",
+          effectiveFrom: "",
+          active: "false",
+        }),
+      ),
+    ).toEqual({
+      scopeLevel: "FAMILY",
+      brandPmId: "1200",
+      scopeCode: "NU17",
+      remisePct: "32,5",
+    });
+  });
+
+  it("ajout : POST /price-rules avec le corps JSON et le cookie", async () => {
+    const calls = stubFetch(201, { id: 99, version: 1 });
+    const res = await cardAction({
+      request: post("/admin/suppliers/71", {
+        intent: "add-price-rule",
+        scopeLevel: "BRAND",
+        brandPmId: "1200",
+        remisePct: "25",
+      }),
+      params: { id: "71" },
+      context,
+    } as unknown as ActionFunctionArgs);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toMatch(/\/api\/suppliers\/71\/price-rules$/);
+    expect(calls[0].method).toBe("POST");
+    expect(calls[0].headers.get("Cookie")).toBe("connect.sid=abc");
+    expect(calls[0].headers.get("Content-Type")).toBe("application/json");
+    expect(JSON.parse(calls[0].body ?? "{}")).toEqual({
+      scopeLevel: "BRAND",
+      brandPmId: "1200",
+      remisePct: "25",
+    });
+    expect(res).toMatchObject({ ok: true, message: "Règle enregistrée" });
+  });
+
+  it("ajout refusé (400 Zod) : message et erreurs par champ, pas de succès", async () => {
+    stubFetch(400, {
+      message: "Validation failed",
+      errors: [{ field: "scopeCode", message: "Code requis" }],
+    });
+    const res = await cardAction({
+      request: post("/admin/suppliers/71", {
+        intent: "add-price-rule",
+        scopeLevel: "FAMILY",
+      }),
+      params: { id: "71" },
+      context,
+    } as unknown as ActionFunctionArgs);
+    expect(res).toMatchObject({
+      data: { ok: false, fieldErrors: { scopeCode: "Code requis" } },
+      init: { status: 400 },
+    });
+  });
+
+  it("retrait : POST /price-rules/:ruleId/retire sans corps", async () => {
+    const calls = stubFetch(200, { success: true, id: 5 });
+    const res = await cardAction({
+      request: post("/admin/suppliers/71", {
+        intent: "retire-price-rule",
+        ruleId: "5",
+      }),
+      params: { id: "71" },
+      context,
+    } as unknown as ActionFunctionArgs);
+    expect(calls[0].url).toMatch(
+      /\/api\/suppliers\/71\/price-rules\/5\/retire$/,
+    );
+    expect(calls[0].method).toBe("POST");
+    expect(calls[0].body).toBeUndefined();
+    expect(res).toMatchObject({ ok: true, message: "Règle retirée" });
+  });
+
+  it.each(["", "../card", "5/../../deactivate", "-1"])(
+    "retrait avec ruleId %j : aucun appel, 400",
+    async (ruleId) => {
+      const calls = stubFetch(200);
+      const res = await cardAction({
+        request: post("/admin/suppliers/71", {
+          intent: "retire-price-rule",
+          ruleId,
+        }),
+        params: { id: "71" },
+        context,
+      } as unknown as ActionFunctionArgs);
+      expect(calls).toHaveLength(0);
+      expect(res).toMatchObject({ init: { status: 400 } });
+    },
+  );
 });

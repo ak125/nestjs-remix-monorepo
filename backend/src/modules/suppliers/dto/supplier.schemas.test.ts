@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
   ACCESS_STATES,
+  CreatePriceRuleSchema,
   CreateSupplierCardSchema,
   ORDER_MODES,
   SUPPLIER_CARD_FIELD_TO_COLUMN,
@@ -127,5 +128,129 @@ describe('UpdateSupplierCardSchema', () => {
 
   it('refuse un corps vide', () => {
     expect(UpdateSupplierCardSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe('CreatePriceRuleSchema (complément CH-2)', () => {
+  const PROFILES_TABLE = readFileSync(
+    join(
+      __dirname,
+      '../../../../supabase/migrations/20260522_pricing_control_plane_v1.sql',
+    ),
+    'utf8',
+  );
+  const levels = [
+    ...(
+      PROFILES_TABLE.match(/scope_level\s+TEXT[^\n]*IN \(([^)]*)\)/)?.[1] ?? ''
+    ).matchAll(/'([^']+)'/g),
+  ].map((m) => m[1]);
+  const ok = (v: unknown) => CreatePriceRuleSchema.safeParse(v);
+  const issues = (v: unknown) => {
+    const r = ok(v);
+    return r.success ? [] : r.error.issues.map((i) => i.path.join('.'));
+  };
+
+  it('accepte chaque niveau du CHECK SQL de scope_level', () => {
+    expect(levels).toEqual(['SUPPLIER', 'BRAND', 'FAMILY', 'SUBFAMILY']);
+    const sample: Record<string, object> = {
+      SUPPLIER: {},
+      BRAND: { brandPmId: '1200' },
+      FAMILY: { scopeCode: 'NU17' },
+      SUBFAMILY: { brandPmId: '1200', scopeCode: '1738' },
+    };
+    for (const scopeLevel of levels) {
+      expect(
+        ok({ scopeLevel, remisePct: 10, ...sample[scopeLevel] }).success,
+      ).toBe(true);
+    }
+  });
+
+  it('SEIM × câbles : code mis en majuscules, pourcentage à virgule', () => {
+    const r = ok({
+      scopeLevel: 'FAMILY',
+      brandPmId: 1200,
+      scopeCode: ' nu17 ',
+      remisePct: '32,5',
+      margePct: '',
+      effectiveFrom: '2026-12-01',
+      effectiveTo: '2027-01-01',
+    });
+    expect(r.success && r.data).toEqual({
+      scopeLevel: 'FAMILY',
+      brandPmId: '1200',
+      scopeCode: 'NU17',
+      remisePct: 32.5,
+      margePct: null,
+      effectiveFrom: '2026-12-01',
+      effectiveTo: '2027-01-01',
+    });
+  });
+
+  it.each([
+    [
+      'fournisseur avec marque',
+      { scopeLevel: 'SUPPLIER', brandPmId: '10' },
+      'brandPmId',
+    ],
+    ['marque sans marque', { scopeLevel: 'BRAND' }, 'brandPmId'],
+    [
+      'marque avec code',
+      { scopeLevel: 'BRAND', brandPmId: '10', scopeCode: 'NU17' },
+      'scopeCode',
+    ],
+    [
+      'fournisseur avec code',
+      { scopeLevel: 'SUPPLIER', scopeCode: 'NU17' },
+      'scopeCode',
+    ],
+    ['famille sans code', { scopeLevel: 'FAMILY' }, 'scopeCode'],
+    [
+      'marque donnée par son nom',
+      { scopeLevel: 'BRAND', brandPmId: 'SEIM' },
+      'brandPmId',
+    ],
+    [
+      'code avec espace interne',
+      { scopeLevel: 'FAMILY', scopeCode: 'NU 17' },
+      'scopeCode',
+    ],
+    ['remise > 100', { scopeLevel: 'SUPPLIER', remisePct: 120 }, 'remisePct'],
+    ['remise négative', { scopeLevel: 'SUPPLIER', remisePct: -1 }, 'remisePct'],
+    [
+      'trois décimales',
+      { scopeLevel: 'SUPPLIER', remisePct: 1.234 },
+      'remisePct',
+    ],
+    [
+      'période inversée',
+      {
+        scopeLevel: 'SUPPLIER',
+        effectiveFrom: '2026-12-31',
+        effectiveTo: '2026-12-01',
+      },
+      'effectiveTo',
+    ],
+    [
+      'période vide',
+      {
+        scopeLevel: 'SUPPLIER',
+        effectiveFrom: '2026-12-01',
+        effectiveTo: '2026-12-01',
+      },
+      'effectiveTo',
+    ],
+    [
+      'date inexistante',
+      { scopeLevel: 'SUPPLIER', effectiveFrom: '2026-02-30' },
+      'effectiveFrom',
+    ],
+    ['clé inconnue', { scopeLevel: 'SUPPLIER', active: false }, ''],
+  ])('refuse : %s', (_label, input, path) => {
+    expect(issues({ remisePct: 10, ...input })).toContain(path);
+  });
+
+  it('exige une remise ou une marge', () => {
+    expect(issues({ scopeLevel: 'SUPPLIER' })).toEqual(['remisePct']);
+    expect(ok({ scopeLevel: 'SUPPLIER', margePct: '35' }).success).toBe(true);
   });
 });

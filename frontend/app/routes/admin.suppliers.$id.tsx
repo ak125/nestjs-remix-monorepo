@@ -6,6 +6,10 @@
  * Actions : validation de localisation (POST :id/location-validation, auteur
  * = utilisateur connecté, jamais automatique) et archivage (POST :id/deactivate,
  * spl_status='archive' + spl_display='0', sans suppression).
+ * Règles de remise (complément CH-2) : saisie (POST :id/price-rules) et
+ * retrait (POST :id/price-rules/:ruleId/retire, active = false) de règles
+ * fournisseur × marque × famille / sous-famille. Non lues par le calcul des
+ * prix tant que le branchement (mandat séparé) n'est pas fait.
  * Accès : nom du secret et état seulement, aucune valeur.
  */
 import { type ReactNode } from "react";
@@ -25,7 +29,9 @@ import {
   centsToEuros,
   labelOf,
   ORDER_MODE_LABELS,
+  priceRuleFormToBody,
   readCardApiError,
+  RULE_STATUS_LABELS,
   SCOPE_LEVEL_LABELS,
   SUPPLIER_STATUS_LABELS,
   SUPPLIER_TYPE_LABELS,
@@ -47,6 +53,9 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Select, SelectItem } from "~/components/ui/select";
 import {
   Table,
   TableBody,
@@ -76,33 +85,79 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   return { card: res.payload as SupplierCard };
 }
 
-const ACTIONS = {
-  "validate-location": {
-    path: "location-validation",
-    done: "Localisation validée",
-  },
-  archive: { path: "deactivate", done: "Fournisseur archivé" },
-} as const;
+type ActionResult = {
+  ok: boolean;
+  message: string;
+  fieldErrors?: Record<string, string>;
+};
+
+/** Intention → route POST dédiée et corps éventuel ; null = refus. */
+function actionRequest(
+  intent: string,
+  form: FormData,
+): { path: string; done: string; body?: unknown } | null {
+  switch (intent) {
+    case "validate-location":
+      return { path: "location-validation", done: "Localisation validée" };
+    case "archive":
+      return { path: "deactivate", done: "Fournisseur archivé" };
+    case "add-price-rule":
+      return {
+        path: "price-rules",
+        done: "Règle enregistrée",
+        body: priceRuleFormToBody(form),
+      };
+    case "retire-price-rule": {
+      const ruleId = String(form.get("ruleId") ?? "");
+      return /^\d{1,12}$/.test(ruleId)
+        ? { path: `price-rules/${ruleId}/retire`, done: "Règle retirée" }
+        : null;
+    }
+    default:
+      return null;
+  }
+}
 
 export async function action({ request, params, context }: ActionFunctionArgs) {
   await requireSupplierAdmin(context);
   const id = supplierIdParam(params.id);
-  const intent = String((await request.formData()).get("intent") ?? "");
-  if (!(intent in ACTIONS)) {
-    return data({ ok: false, message: "Action inconnue" }, { status: 400 });
+  const form = await request.formData();
+  const target = actionRequest(String(form.get("intent") ?? ""), form);
+  if (!target) {
+    return data<ActionResult>(
+      { ok: false, message: "Action inconnue" },
+      { status: 400 },
+    );
   }
-  const { path, done } = ACTIONS[intent as keyof typeof ACTIONS];
-  const res = await supplierApi(request, `/api/suppliers/${id}/${path}`, {
-    method: "POST",
-  });
+  const res = await supplierApi(
+    request,
+    `/api/suppliers/${id}/${target.path}`,
+    {
+      method: "POST",
+      body: target.body,
+    },
+  );
   if (!res.ok) {
-    return data(
-      { ok: false, message: readCardApiError(res.status, res.payload).message },
+    const error = readCardApiError(res.status, res.payload);
+    return data<ActionResult>(
+      { ok: false, message: error.message, fieldErrors: error.fieldErrors },
       { status: res.status },
     );
   }
-  return { ok: true, message: done };
+  const done: ActionResult = { ok: true, message: target.done };
+  return done;
 }
+
+const RULE_FIELD_LABELS: Record<string, string> = {
+  scopeLevel: "Portée",
+  brandPmId: "Marque",
+  scopeCode: "Code famille ou sous-famille",
+  remisePct: "Remise %",
+  margePct: "Marge %",
+  effectiveFrom: "Début (inclus)",
+  effectiveTo: "Fin (exclue)",
+  changeReason: "Motif",
+};
 
 function formatDate(value: string | null): string {
   if (!value) return "—";
@@ -127,6 +182,11 @@ export default function AdminSupplierCard() {
   const archived = card.status === "archive";
   const loc = card.location;
   const canValidate = Boolean(loc.country && loc.supplyMode);
+  const brandLabel = (pmId: string | null) =>
+    pmId === null
+      ? "Toutes"
+      : (card.brands.find((b) => String(b.pmId) === pmId)?.brandName ??
+        `pm_id ${pmId}`);
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -158,7 +218,19 @@ export default function AdminSupplierCard() {
 
       {result ? (
         <Alert variant={result.ok ? "success" : "error"}>
-          <AlertDescription>{result.message}</AlertDescription>
+          <AlertDescription>
+            {result.message}
+            {result.fieldErrors &&
+            Object.keys(result.fieldErrors).length > 0 ? (
+              <ul className="mt-1 list-disc pl-5">
+                {Object.entries(result.fieldErrors).map(([field, msg]) => (
+                  <li key={field}>
+                    {RULE_FIELD_LABELS[field] ?? field} : {msg}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </AlertDescription>
         </Alert>
       ) : null}
 
@@ -355,27 +427,32 @@ export default function AdminSupplierCard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Profils de remise et de marge</CardTitle>
+          <CardTitle>Remises et marges par portée</CardTitle>
           <CardDescription>
-            Lignes supplier_price_profiles par portée (fournisseur, marque,
-            famille, sous-famille) ; une promotion est une ligne datée.
+            La règle la plus précise gagne : marque × sous-famille, marque ×
+            famille, marque, sous-famille, famille, fournisseur. Une promotion
+            (règle datée) prime sur la règle de même portée pendant sa période.
+            Ces règles sont enregistrées mais pas encore lues par le calcul des
+            prix (branchement : mandat séparé).
           </CardDescription>
         </CardHeader>
         <CardContent>
           {card.priceProfiles.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucun profil.</p>
+            <p className="text-sm text-muted-foreground">Aucune règle.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Portée</TableHead>
+                    <TableHead>Marque</TableHead>
                     <TableHead>Code</TableHead>
-                    <TableHead>Version</TableHead>
-                    <TableHead>Période</TableHead>
                     <TableHead>Remise %</TableHead>
                     <TableHead>Marge %</TableHead>
+                    <TableHead>Période</TableHead>
+                    <TableHead>Version</TableHead>
                     <TableHead>État</TableHead>
+                    <TableHead className="sr-only">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -388,19 +465,67 @@ export default function AdminSupplierCard() {
                             Promo
                           </Badge>
                         ) : null}
+                        {p.isImportBase ? (
+                          <Badge className="ml-2" variant="outline">
+                            Profil d’import
+                          </Badge>
+                        ) : null}
                       </TableCell>
+                      <TableCell>{brandLabel(p.brandPmId)}</TableCell>
                       <TableCell>{p.scopeCode ?? "—"}</TableCell>
-                      <TableCell>v{p.version}</TableCell>
-                      <TableCell>
-                        {formatDate(p.effectiveFrom)} →{" "}
-                        {formatDate(p.effectiveTo)}
-                      </TableCell>
                       <TableCell>{p.defaultRemisePct ?? "—"}</TableCell>
                       <TableCell>{p.defaultMargePct ?? "—"}</TableCell>
                       <TableCell>
-                        <Badge variant={p.active ? "success" : "outline"}>
-                          {p.active ? "Actif" : "Inactif"}
+                        {p.isPromo
+                          ? `${formatDate(p.effectiveFrom)} → ${formatDate(p.effectiveTo)}`
+                          : "Permanente"}
+                      </TableCell>
+                      <TableCell>v{p.version}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            p.ruleStatus === "en_vigueur"
+                              ? "success"
+                              : "outline"
+                          }
+                        >
+                          {labelOf(RULE_STATUS_LABELS, p.ruleStatus)}
                         </Badge>
+                        {p.supersededBy !== null ? (
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            par #{p.supersededBy}
+                          </span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell>
+                        {p.active &&
+                        (p.defaultRemisePct !== null ||
+                          p.defaultMargePct !== null) ? (
+                          <Form
+                            method="post"
+                            onSubmit={(e) => {
+                              if (
+                                !window.confirm(`Retirer la règle #${p.id} ?`)
+                              )
+                                e.preventDefault();
+                            }}
+                          >
+                            <input
+                              type="hidden"
+                              name="intent"
+                              value="retire-price-rule"
+                            />
+                            <input type="hidden" name="ruleId" value={p.id} />
+                            <Button
+                              type="submit"
+                              size="sm"
+                              variant="outline"
+                              disabled={busy}
+                            >
+                              Retirer
+                            </Button>
+                          </Form>
+                        ) : null}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -410,6 +535,89 @@ export default function AdminSupplierCard() {
           )}
         </CardContent>
       </Card>
+
+      {!archived ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Ajouter ou remplacer une règle</CardTitle>
+            <CardDescription>
+              Même portée, même marque, même code et même période : la règle
+              existante est remplacée par une nouvelle version. Exemple : SEIM,
+              famille câbles (NU17), remise 32,5.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form method="post" className="grid gap-4 md:grid-cols-4">
+              <input type="hidden" name="intent" value="add-price-rule" />
+              <div className="space-y-1.5">
+                <Label htmlFor="scopeLevel">
+                  {RULE_FIELD_LABELS.scopeLevel}
+                </Label>
+                <Select id="scopeLevel" name="scopeLevel" defaultValue="FAMILY">
+                  {Object.entries(SCOPE_LEVEL_LABELS).map(([value, text]) => (
+                    <SelectItem key={value} value={value}>
+                      {text}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="brandPmId">{RULE_FIELD_LABELS.brandPmId}</Label>
+                <Select id="brandPmId" name="brandPmId" defaultValue="">
+                  <SelectItem value="">Toutes marques</SelectItem>
+                  {card.brands
+                    .filter((b) => b.pmId !== null)
+                    .map((b) => (
+                      <SelectItem key={b.linkId} value={String(b.pmId)}>
+                        {b.brandName ?? `pm_id ${b.pmId}`}
+                      </SelectItem>
+                    ))}
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="scopeCode">{RULE_FIELD_LABELS.scopeCode}</Label>
+                <Input
+                  id="scopeCode"
+                  name="scopeCode"
+                  placeholder="NU17 ou 1738"
+                  maxLength={20}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="changeReason">
+                  {RULE_FIELD_LABELS.changeReason}
+                </Label>
+                <Input id="changeReason" name="changeReason" maxLength={200} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="remisePct">{RULE_FIELD_LABELS.remisePct}</Label>
+                <Input id="remisePct" name="remisePct" inputMode="decimal" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="margePct">{RULE_FIELD_LABELS.margePct}</Label>
+                <Input id="margePct" name="margePct" inputMode="decimal" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="effectiveFrom">
+                  {RULE_FIELD_LABELS.effectiveFrom}
+                </Label>
+                <Input id="effectiveFrom" name="effectiveFrom" type="date" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="effectiveTo">
+                  {RULE_FIELD_LABELS.effectiveTo}
+                </Label>
+                <Input id="effectiveTo" name="effectiveTo" type="date" />
+              </div>
+              <div className="md:col-span-4">
+                <Button type="submit" disabled={busy}>
+                  Enregistrer la règle
+                </Button>
+              </div>
+            </Form>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {!archived ? (
         <Card>

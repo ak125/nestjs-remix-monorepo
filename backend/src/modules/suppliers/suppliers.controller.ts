@@ -7,6 +7,7 @@ import {
   Body,
   Query,
   Logger,
+  ParseIntPipe,
   UseGuards,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -17,8 +18,10 @@ import { ZodValidationPipe } from '@common/pipes/zod-validation.pipe';
 import { SuppliersService } from './suppliers.service';
 import { SupplierCardService } from './supplier-card.service';
 import {
+  CreatePriceRuleSchema,
   CreateSupplierCardSchema,
   UpdateSupplierCardSchema,
+  type CreatePriceRuleDto,
   type CreateSupplierCardDto,
   type UpdateSupplierCardDto,
 } from './dto/supplier.schemas';
@@ -79,6 +82,32 @@ export class SuppliersController {
   async validateLocation(@Param('id') id: string, @User('id') userId: unknown) {
     await this.supplierCards.validateLocation(id, actorOf(userId));
     return { success: true, id };
+  }
+
+  /**
+   * Règle de remise / marge fournisseur × marque × famille ou sous-famille
+   * (complément CH-2). Écrite dans supplier_price_profiles, non lue par le
+   * calcul des prix (branchement : mandat séparé).
+   */
+  @Post(':id/price-rules')
+  createPriceRule(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(CreatePriceRuleSchema))
+    body: CreatePriceRuleDto,
+    @User('id') userId: unknown,
+  ) {
+    return this.supplierCards.createPriceRule(id, body, actorOf(userId));
+  }
+
+  /** Retrait d'une règle : active = false, sans suppression. */
+  @Post(':id/price-rules/:ruleId/retire')
+  async retirePriceRule(
+    @Param('id') id: string,
+    @Param('ruleId', ParseIntPipe) ruleId: number,
+    @User('id') userId: unknown,
+  ) {
+    await this.supplierCards.retirePriceRule(id, ruleId, actorOf(userId));
+    return { success: true, id: ruleId };
   }
 
   /**
