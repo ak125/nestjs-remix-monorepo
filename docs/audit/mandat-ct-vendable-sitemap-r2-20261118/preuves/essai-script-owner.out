@@ -1,0 +1,21 @@
+# Essai du script owner d'ouverture de la PR (mode --essai : ni push ni PR)
+# Copie jetable du worktree, tête de départ 7043ef5f82887bb0a3c8ea95aed20e76767403c2, 2026-11-18 (UTC 20:16)
+# Sortie : lignes d'étape et de verdict du script, puis ratchet de dérive de contrat rejoué dans la même copie.
+▶ glob d'ownership (extrait inséré après l'entrée de vendable.test.ts)
+▶ inventaire audit
+▶ registry L1+L3
+▶ inventaire PR-8
+✅ Preprod vocabulary lint: 1 file(s) checked, 0 violations.
+▶ validations
+▶ garde block-new en local
+[check-new-files] evaluating 19 new files (added since origin/main)
+[check-new-files] new files: 19 (19 ok, 0 failures)
+[check-new-files] ✓ All new files pass owner+domain gate
+57545f1fc chore(audit): refresh PR-8 inventory fingerprint
+22174b05c chore(registry): resync L1+L3 projections
+bb8be9d50 chore(ownership): couvrir la migration et le miroir « vendable » du mandat CT
+✅ ESSAI : étapes 1 à 4 passées dans /home/deploy/worktrees/claude-ct-essai-20261118, tête 57545f1fce9f08443ab4987d9486608dc9c0992c. Rien n'est poussé, aucune PR.
+
+# npm run audit:drift-dashboard && npm run audit:contract-drift-ratchet (exit 0)
+✅ Contract drift ratchet: 0 new findings (243 current vs 541 accepted ceiling).
+   📉 298 historical finding(s) resolved. Consider maintainer refresh-down.

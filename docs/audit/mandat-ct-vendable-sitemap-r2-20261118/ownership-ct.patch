@@ -1,8 +1,10 @@
---- a/.spec/00-canon/repository-registry/ownership.yaml	2026-11-18 20:59:14.120046457 +0100
-+++ b/.spec/00-canon/repository-registry/ownership.yaml	2026-11-18 20:59:14.132046537 +0100
-@@ -1888,3 +1888,26 @@
-     owner: '@ak125'
-     sourceConfidence: high
+diff --git a/.spec/00-canon/repository-registry/ownership.yaml b/.spec/00-canon/repository-registry/ownership.yaml
+index 1538b3b10..4f588c922 100644
+--- a/.spec/00-canon/repository-registry/ownership.yaml
++++ b/.spec/00-canon/repository-registry/ownership.yaml
+@@ -1851,6 +1851,29 @@ entries:
+     owner: '@ak125/payments-team'
+     sourceConfidence: medium
      risk: medium
 +  # Mandat CT (18/11/2026, décisions 48 et 118) : fonction SQL unique « vendable »
 +  # (est_vendable, piece_est_vendable, get_sitemap_r2_types_vendables), lecture seule,
@@ -27,3 +29,6 @@
 +    owner: '@ak125/payments-team'
 +    sourceConfidence: medium
 +    risk: medium
+   # Complément n° 1 AW (ADR-137 D3/D7) : verrou des skills tiers à la racine. Même domaine et owner que .claude/skills/**. Glob exact.
+   - glob: skills-lock.json
+     domain: D15

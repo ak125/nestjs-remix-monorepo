@@ -175,24 +175,29 @@ Autres vérifications : jest sur les 8 suites touchées, 173 tests verts ; typec
 - Un worktree neuf n'a pas les paquets internes construits : jest échoue sur `@repo/seo-roles` tant que le paquet n'est pas construit.
 - La cohérence entre `pieces_relation_type.rtp_pg_id` et `pieces.piece_pg_id` n'a pas été mesurée.
 
-## 11. Deux patchs préparés, non appliqués
+## 11. Deux fichiers réservés à l'owner
 
 Deux fichiers sont réservés à l'owner ; leurs changements sont livrés en patch, sans contournement.
 
-| Patch | Fichier visé | Effet tant qu'il n'est pas appliqué |
+| Patch | Fichier visé | État |
 |---|---|---|
-| `ci-miroir-vendable.patch` | `.github/workflows/ci.yml` | le miroir côté SQL n'est pas joué par la CI (§4) |
-| `ownership-ct.patch` | `.spec/00-canon/repository-registry/ownership.yaml` | deux contrôles de la PR sont rouges : « Registry block-new gate » (les deux fichiers de migration et `vendable.echantillon.json`) et le ratchet de dérive de contrat (`vendable.miroir.test.ts`) |
+| `ci-miroir-vendable.patch` | `.github/workflows/ci.yml` | non appliqué : le miroir côté SQL n'est pas joué par la CI (§4) |
+| `ownership-ct.patch` | `.spec/00-canon/repository-registry/ownership.yaml` | pas appliqué par l'agent ; l'owner l'applique en ouvrant la PR (commit « chore(ownership): couvrir la migration et le miroir « vendable » du mandat CT ») |
 
-`ownership-ct.patch` propose le domaine D11, celui de `vendable.ts` : `@ak125` pour la migration, `@ak125/payments-team` pour l'échantillon et son test. Les deux contrôles ont été joués en local sans le patch (3 échecs et 1 nouveau constat, ceux du tableau). Avec le fichier patché, lu hors du dépôt, les quatre chemins trouvent leur entrée ; les deux contrôles eux-mêmes n'ont pas été rejoués avec le patch.
+`ownership-ct.patch` pose le domaine D11, celui de `vendable.ts` : `@ak125` pour la migration, `@ak125/payments-team` pour l'échantillon et son test. Les trois globs sont exacts et insérés juste après l'entrée de `vendable.test.ts`, pas en fin de fichier, pour ne pas entrer en conflit avec les autres PR ouvertes.
 
-Les projections (`audit/registry/*.json`, `REPO_MAP.md`, `audit/db-usage-map.json`, `audit/module-boundaries.json`, `audit/runtime-entrypoints.json`, `audit/cleanup/pr-8-*`) sont régénérées par leurs générateurs, pas éditées à la main. Elles seront à régénérer après application de `ownership-ct.patch`.
+Sans ces globs, la garde « Registry block-new gate » refuse les deux fichiers de migration et `vendable.echantillon.json`, et le ratchet de dérive de contrat signale `vendable.miroir.test.ts`. Dans le worktree de ce mandat, cette garde tourne aussi au push : la branche ne pouvait pas être poussée par l'agent sans l'exception `SKIP_REGISTRY_GATE`, qui n'a pas été utilisée. L'ouverture de la PR passe donc par un script lancé par l'owner (`open-pr-mandat-ct.sh`, rangé hors du dépôt avec ses autres outils) : contrôle de la tête relue, insertion de l'extrait, commit, régénération des projections, validations, push, PR en brouillon.
+
+Ce script a été joué en mode essai, sans push ni PR, sur une copie jetable du worktree à la tête `7043ef5f8` (`preuves/essai-script-owner.out`) : garde block-new verte sur les 19 fichiers ajoutés, ratchet de dérive de contrat à 0 nouveau constat, `audit:cleanup-candidates:check`, `registry:validate-invariants` et `audit:inventory:check` verts. Le commit de documentation posé après cet essai ne change aucune projection : aucun fichier de ce dossier n'y figure.
+
+Les projections (`audit/registry/*.json`, `REPO_MAP.md`, `audit/db-usage-map.json`, `audit/module-boundaries.json`, `audit/runtime-entrypoints.json`, `audit/cleanup/pr-8-*`) sont régénérées par leurs générateurs, pas éditées à la main. Le script les régénère de nouveau après le commit d'ownership.
 
 La régénération signale un avertissement d'hygiène nouveau, non bloquant (`no-deep-module-access`, une violation de plus) : le générateur importe `evaluerGardeFou` depuis `modules/pricing/config/supplier-sale-rules.ts`, pour ne pas écrire une seconde fois la règle « arrêt strictement au-delà du seuil ». Le module pricing n'a pas de point d'entrée public et n'est pas modifié ici. Si l'owner préfère zéro dépendance du sitemap vers le module des prix, la comparaison tient en une ligne à recopier.
 
 ## 12. Actes réservés à Marwane
 
-1. Appliquer `ownership-ct.patch` et `ci-miroir-vendable.patch` sur cette branche, ou les refuser.
-2. Fusionner la PR.
-3. Appliquer la migration par le workflow « Apply Supabase migrations (manual) ».
-4. Trancher le §1, puis basculer `SITEMAP_R2_SOURCE` à `vendable`.
+1. Lancer le script d'ouverture de la PR, ou le refuser. Le lancer vaut accord pour les trois globs d'ownership.
+2. Appliquer `ci-miroir-vendable.patch` sur cette branche, ou le refuser.
+3. Fusionner la PR.
+4. Appliquer la migration par le workflow « Apply Supabase migrations (manual) ».
+5. Trancher le §1, puis basculer `SITEMAP_R2_SOURCE` à `vendable`.
