@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 17,
-      "loc_total": 21607,
+      "loc_total": 21612,
       "has_barrel": true
     },
     "dev-only": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 587,
-      "loc_total": 111395,
+      "loc_total": 111424,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -503,7 +503,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 30,
-      "loc_total": 8650,
+      "loc_total": 8952,
       "has_barrel": true
     },
     "payments": {
@@ -879,7 +879,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 56,
-      "loc_total": 7739,
+      "loc_total": 8324,
       "has_barrel": true
     },
     "suppliers": {
@@ -1032,7 +1032,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 23,
-      "loc_total": 5474,
+      "loc_total": 5495,
       "has_barrel": false
     }
   },
@@ -1466,11 +1466,6 @@
       "from": "backend-core",
       "to": "trend-signals",
       "count": 1
-    },
-    {
-      "from": "backend-core",
-      "to": "uncategorized",
-      "count": 4
     },
     {
       "from": "backend-core",
@@ -2280,7 +2275,7 @@
     {
       "from": "workers",
       "to": "supplier-truth",
-      "count": 19
+      "count": 20
     }
   ],
   "deep_access_violations": [

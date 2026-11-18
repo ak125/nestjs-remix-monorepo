@@ -32,6 +32,10 @@ type Proposition =
         libelleFournisseur: string | null;
         motif: MotifEcart;
       }[];
+      /** Complément BK n° 4 : relevé fournisseur frais, sinon tarif daté. */
+      origine?:
+        | { type: "RELEVE"; observeA: string }
+        | { type: "TARIF"; dateTarif: string | null };
     }
   | { statut: "RUPTURE"; offresVendables: 0; procedure: string }
   | {
@@ -62,6 +66,23 @@ const MOTIFS: Record<MotifEcart, string> = {
   VENTE_A_PERTE_LIGNE: "vente à perte au prix payé",
   TVA_INCONNUE: "TVA inconnue",
 };
+
+/** « relevé du 18/11 10:15 » ou « tarif du 01/07/2022 » (date absente : signalée). */
+function libelleOrigine(
+  o: Extract<Proposition, { statut: "PROPOSE" }>["origine"],
+): string | null {
+  if (!o) return null;
+  if (o.type === "RELEVE") {
+    const d = new Date(o.observeA);
+    if (Number.isNaN(d.getTime())) return "relevé fournisseur";
+    return `relevé du ${d.toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}`;
+  }
+  if (!o.dateTarif) return "tarif sans date";
+  const d = new Date(o.dateTarif);
+  return Number.isNaN(d.getTime())
+    ? "tarif sans date"
+    : `tarif du ${d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" })}`;
+}
 
 const SKILL_RUPTURE = ".claude/skills/order-rupture-equivalence/SKILL.md";
 
@@ -165,6 +186,12 @@ export function OrderLineSupplierPanel({ orderId, lineId, label }: Props) {
             {euros(p.prixAchatUnitHt)} × {p.quantite} = {euros(p.prixAchatHt)}
             {p.offresVendables > 1 &&
               ` (meilleur de ${p.offresVendables} offres)`}
+            {libelleOrigine(p.origine) && (
+              <span className="text-muted-foreground">
+                {" "}
+                · {libelleOrigine(p.origine)}
+              </span>
+            )}
           </span>
           <Button
             size="sm"

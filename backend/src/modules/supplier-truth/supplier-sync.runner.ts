@@ -16,6 +16,7 @@ import type {
 } from './connectors/supplier-connector.interface';
 import { InoshopConnector } from './connectors/inoshop.connector';
 import { CalConnector } from './connectors/cal.connector';
+import { assertLecturePortailsAutorisee } from './supplier-sync.flag';
 
 /**
  * Orchestrates one full sync cycle: bounded working-set → each connectable
@@ -32,8 +33,13 @@ export type CredResolver = (
   cfg: SupplierConnectorConfig,
 ) => SupplierCredentials | null;
 
-/** Default factory: real connectors per platform. */
+/**
+ * Default factory: real connectors per platform. Garde PROD : refuse de
+ * construire un connecteur réel si ce processus n'est pas autorisé à lire les
+ * portails (`SUPPLIER_OFFER_RELEVE_ENABLED`, posé seulement sur DEV).
+ */
 export const defaultConnectorFactory: ConnectorFactory = (cfg) => {
+  assertLecturePortailsAutorisee();
   switch (cfg.platform) {
     case 'inoshop':
       return new InoshopConnector({

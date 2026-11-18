@@ -6151,7 +6151,7 @@
         "backend/src/database/services/vendable.ts"
       ],
       "kind": "service",
-      "loc": 289,
+      "loc": 294,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/piece-price-data.service.ts",
       "risk": "low",
@@ -6433,6 +6433,7 @@
       "id": "backend/src/main.ts",
       "importedBy": [],
       "imports": [
+        "../claude-bk-commande-fournisseur-20261117/frontend/index.cjs",
         "backend/src/app.module.ts",
         "backend/src/config/app.config.ts",
         "backend/src/config/csp.config.ts",
@@ -6440,8 +6441,7 @@
         "backend/src/instrument.ts",
         "backend/src/modules/seo/middleware/sitemap-static.middleware.ts",
         "backend/src/modules/session/session-store.service.ts",
-        "crypto",
-        "frontend/index.cjs"
+        "crypto"
       ],
       "kind": "service",
       "loc": 301,
@@ -21717,11 +21717,10 @@
         "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
         "backend/src/modules/orders/services/tickets.service.ts",
         "backend/src/modules/shipping/shipping.module.ts",
-        "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/supplier-truth/supplier-truth-read.module.ts"
       ],
       "kind": "service",
-      "loc": 110,
+      "loc": 106,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/orders.module.ts",
       "risk": "low",
@@ -21764,7 +21763,7 @@
         "backend/src/modules/orders/services/orders.service.ts"
       ],
       "kind": "test",
-      "loc": 240,
+      "loc": 242,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/order-actions.line-supplier.test.ts",
       "risk": "low",
@@ -21890,7 +21889,7 @@
         "backend/src/modules/orders/services/order-line-supplier-proposal.ts"
       ],
       "kind": "test",
-      "loc": 167,
+      "loc": 243,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/order-line-supplier-proposal.test.ts",
       "risk": "low",
@@ -21916,7 +21915,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 207,
+      "loc": 311,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
       "risk": "low",
@@ -21945,10 +21944,11 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/orders/services/order-line-supplier-proposal.ts",
+        "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 147,
+      "loc": 181,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/order-line-supplier.service.ts",
       "risk": "low",
@@ -22035,7 +22035,7 @@
         "backend/src/modules/supplier-truth/index.ts"
       ],
       "kind": "test",
-      "loc": 260,
+      "loc": 319,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/supplier-order-controls.test.ts",
       "risk": "low",
@@ -22062,7 +22062,7 @@
         "backend/src/modules/supplier-truth/index.ts"
       ],
       "kind": "service",
-      "loc": 338,
+      "loc": 356,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/supplier-order-controls.ts",
       "risk": "low",
@@ -22085,7 +22085,7 @@
         "backend/src/modules/supplier-truth/index.ts"
       ],
       "kind": "test",
-      "loc": 326,
+      "loc": 344,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
       "risk": "low",
@@ -22115,7 +22115,7 @@
         "backend/src/modules/supplier-truth/index.ts"
       ],
       "kind": "service",
-      "loc": 383,
+      "loc": 378,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
       "risk": "low",
@@ -35809,7 +35809,11 @@
       "id": "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
       "importedBy": [
         "backend/src/modules/supplier-truth/connectors/supplier-registry.test.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
         "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.test.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
         "backend/src/workers/supplier-availability-classify.ts",
@@ -36205,17 +36209,18 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/index.ts",
       "importedBy": [
-        "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/order-line-supplier.service.ts",
         "backend/src/modules/orders/services/supplier-order-controls.test.ts",
         "backend/src/modules/orders/services/supplier-order-controls.ts",
         "backend/src/modules/orders/services/supplier-order-preparation.service.test.ts",
         "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts"
       ],
       "kind": "service",
-      "loc": 13,
+      "loc": 21,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/index.ts",
       "risk": "low",
@@ -36287,10 +36292,13 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts",
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts"
+        "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.runner.ts"
       ],
       "kind": "test",
-      "loc": 209,
+      "loc": 323,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
       "risk": "low",
@@ -36309,7 +36317,12 @@
       "id": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
       "importedBy": [
         "backend/src/modules/supplier-truth/index.ts",
-        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts"
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.test.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.test.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
+        "backend/src/workers/worker.module.ts"
       ],
       "imports": [
         "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
@@ -36317,10 +36330,11 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts"
       ],
       "kind": "service",
-      "loc": 225,
+      "loc": 328,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
       "risk": "low",
@@ -36338,13 +36352,16 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
         "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 18,
+      "loc": 60,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
       "risk": "low",
@@ -36365,12 +36382,13 @@
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "kind": "service",
-      "loc": 52,
+      "loc": 77,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
       "risk": "low",
@@ -36411,6 +36429,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
@@ -36465,7 +36484,9 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.test.ts",
         "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
@@ -36478,12 +36499,13 @@
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
+        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 176,
+      "loc": 182,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
       "risk": "low",
@@ -36501,12 +36523,14 @@
       "id": "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
         "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "kind": "test",
-      "loc": 149,
+      "loc": 231,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
       "risk": "low",
@@ -36528,10 +36552,11 @@
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
         "backend/src/modules/supplier-truth/supplier-sync.flag.ts"
       ],
       "kind": "service",
-      "loc": 111,
+      "loc": 157,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts",
       "risk": "low",
@@ -36713,6 +36738,10 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "importedBy": [
         "backend/src/modules/orders/services/order-line-supplier.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.test.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.test.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.test.ts",
@@ -36724,10 +36753,11 @@
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
+        "@repo/domain-commerce",
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 312,
+      "loc": 471,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "risk": "low",
@@ -40287,10 +40317,10 @@
         "backend/src/remix/remix.module.ts"
       ],
       "imports": [
+        "../claude-bk-commande-fournisseur-20261117/frontend/index.cjs",
         "backend/src/database/services/orders.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
-        "backend/src/modules/staff/staff.service.ts",
-        "frontend/index.cjs"
+        "backend/src/modules/staff/staff.service.ts"
       ],
       "kind": "service",
       "loc": 209,
@@ -40311,8 +40341,8 @@
       "id": "backend/src/remix/remix.controller.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/remix/remix.controller.ts",
-        "frontend/index.cjs"
+        "../claude-bk-commande-fournisseur-20261117/frontend/index.cjs",
+        "backend/src/remix/remix.controller.ts"
       ],
       "kind": "test",
       "loc": 107,
@@ -40337,9 +40367,9 @@
         "backend/src/remix/session-data-cache-privacy.test.ts"
       ],
       "imports": [
+        "../claude-bk-commande-fournisseur-20261117/frontend/index.cjs",
         "backend/src/remix/remix-api.service.ts",
-        "backend/src/remix/remix.service.ts",
-        "frontend/index.cjs"
+        "backend/src/remix/remix.service.ts"
       ],
       "kind": "controller",
       "loc": 231,
@@ -41386,6 +41416,8 @@
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts",
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+        "backend/src/modules/supplier-truth/supplier-live-quote.service.ts",
+        "backend/src/modules/supplier-truth/supplier-offer-releve.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
@@ -41401,7 +41433,7 @@
         "backend/src/workers/services/seo-monitor-scheduler.service.ts"
       ],
       "kind": "service",
-      "loc": 192,
+      "loc": 213,
       "owner": "__unassigned__",
       "path": "backend/src/workers/worker.module.ts",
       "risk": "low",
@@ -45135,7 +45167,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 268,
+      "loc": 295,
       "owner": "__unassigned__",
       "path": "frontend/app/components/admin/OrderLineSupplierPanel.tsx",
       "risk": "low",
@@ -45228,7 +45260,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 281,
+      "loc": 283,
       "owner": "__unassigned__",
       "path": "frontend/app/components/admin/SupplierOrderPreparationPanel.tsx",
       "risk": "low",
@@ -65339,20 +65371,12 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise",
-        "reachability"
+        "depcruise"
       ],
       "domain": "UNKNOWN",
       "id": "frontend/index.cjs",
-      "importedBy": [
-        "backend/src/main.ts",
-        "backend/src/remix/remix-api.service.ts",
-        "backend/src/remix/remix.controller.test.ts",
-        "backend/src/remix/remix.controller.ts"
-      ],
-      "imports": [
-        "path"
-      ],
+      "importedBy": [],
+      "imports": [],
       "kind": "service",
       "loc": 91,
       "owner": "__unassigned__",
@@ -65361,7 +65385,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",

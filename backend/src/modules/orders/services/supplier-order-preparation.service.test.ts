@@ -1,16 +1,15 @@
 /**
  * Mandat BK — préparation d'une commande fournisseur en mode essai : trace,
  * double clic, reprise, course entre processus, flag d'envoi sans effet.
+ * Complément n° 4 : la lecture est le dernier relevé fourni par
+ * `getProposal` ; le service n'a plus aucun accès à un portail.
  */
 process.env.SUPABASE_URL ||= 'https://exemple.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY ||= 'cle-de-service-factice';
 
 import { InternalServerErrorException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import type {
-  LectureLive,
-  SupplierLiveQuoteService,
-} from '../../supplier-truth';
+import type { LectureLive, ResultatLecture } from '../../supplier-truth';
 import type {
   OrderLineSupplierService,
   PropositionLigne,
@@ -149,11 +148,14 @@ const PROPOSITION: PropositionLigne = {
     tauxTva: 0.2,
     offresVendables: 1,
     offresEcartees: [],
+    origine: { type: 'RELEVE', observeA: '2026-11-17T17:59:57.000Z' },
   },
+  releveFournisseurPropose: null,
 };
 
 const LIVE: LectureLive = {
   ok: true,
+  source: 'RELEVE',
   splId: '71',
   plateforme: 'inoshop',
   refDemandee: '500 0728 10',
@@ -172,32 +174,28 @@ const LIVE: LectureLive = {
 function sujet(
   opts: Parameters<typeof baseFactice>[0] = { indexUnique: true },
   flag?: string,
+  releve: ResultatLecture | null = LIVE,
 ) {
   const base = baseFactice(opts);
-  // Seule méthode exposée : `lire`. Toute autre (panier, commande) lèverait.
-  const lire = jest.fn().mockResolvedValue(LIVE);
-  const liveQuote = new Proxy(
-    { lire },
+  // Seule méthode exposée : `getProposal`. Toute autre lèverait.
+  const lire = jest
+    .fn()
+    .mockResolvedValue({ ...PROPOSITION, releveFournisseurPropose: releve });
+  const lineSupplier = new Proxy(
+    { getProposal: lire },
     {
       get(t, p) {
-        if (p === 'lire' || p === 'then' || typeof p === 'symbol')
+        if (p === 'getProposal' || p === 'then' || typeof p === 'symbol')
           return Reflect.get(t, p);
         throw new Error(`appel interdit : ${String(p)}`);
       },
     },
-  ) as unknown as SupplierLiveQuoteService;
-  const lineSupplier = {
-    getProposal: jest.fn().mockResolvedValue(PROPOSITION),
-  } as unknown as OrderLineSupplierService;
+  ) as unknown as OrderLineSupplierService;
   const config = {
     get: (k: string) =>
       k === 'SUPPLIER_ORDER_SEND_ENABLED' ? flag : undefined,
   } as unknown as ConfigService;
-  const service = new SupplierOrderPreparationService(
-    lineSupplier,
-    liveQuote,
-    config,
-  );
+  const service = new SupplierOrderPreparationService(lineSupplier, config);
   Object.defineProperty(service, 'supabase', { value: base.client });
   return { service, lire, ...base };
 }
@@ -224,7 +222,8 @@ describe('SupplierOrderPreparationService', () => {
       prixNetUnitHt: 23.4,
       montantNetHt: 46.8,
     });
-    expect(lire).toHaveBeenCalledWith('71', '500 0728 10', 'LUK');
+    expect(lire).toHaveBeenCalledWith('ORD-1', 'L1');
+    expect(r.lecture).toBe(LIVE);
     expect(journal).toHaveLength(1);
     expect(journal[0]).toMatchObject({
       aal_action: ACTION_PREPAREE,
@@ -238,7 +237,7 @@ describe('SupplierOrderPreparationService', () => {
     expect(r.traceId).toBe('trace-1');
   });
 
-  it('double clic simultané : une seule relecture, une seule préparation', async () => {
+  it('double clic simultané : une seule lecture, une seule préparation', async () => {
     const { service, journal, lire } = sujet();
     const [a, b] = await Promise.all([
       service.prepare('ORD-1', 'L1', OUI, '42'),
@@ -251,13 +250,13 @@ describe('SupplierOrderPreparationService', () => {
     ).toHaveLength(1);
   });
 
-  it('reprise après coup : DEJA_PREPAREE, aucun appel au portail', async () => {
-    const { service, journal, lire } = sujet();
+  it('reprise après coup : DEJA_PREPAREE, la trace existante fait foi', async () => {
+    const { service, journal } = sujet();
     await service.prepare('ORD-1', 'L1', OUI, '42');
     const r = await service.prepare('ORD-1', 'L1', OUI, '42');
     expect(r.decision).toBe('DEJA_PREPAREE');
     expect(r.traceId).toBe('trace-1');
-    expect(lire).toHaveBeenCalledTimes(1);
+    expect(r.lecture).toBeNull();
     expect(journal).toHaveLength(1);
   });
 
@@ -273,6 +272,25 @@ describe('SupplierOrderPreparationService', () => {
       journal.filter((x) => x.aal_action === ACTION_PREPAREE),
     ).toHaveLength(1);
   });
+
+  it.each([['relevé absent'], ['relevé de plus de 30 min']])(
+    '%s : refus tracé, contrôles 1, 2 et 6 bloqués',
+    async (motif) => {
+      const { service, journal } = sujet({ indexUnique: true }, undefined, {
+        ok: false,
+        splId: '71',
+        motif: motif === 'relevé absent' ? 'RELEVE_ABSENT' : 'RELEVE_PERIME',
+        detail: motif,
+        lueA: '2026-11-18T09:00:00.000Z',
+      });
+      const r = await service.prepare('ORD-1', 'L1', OUI, '42');
+      expect(r.decision).toBe('BLOQUEE');
+      expect(r.preparation).toBeNull();
+      for (const id of [1, 2, 6])
+        expect(r.controles.find((x) => x.id === id)?.detail).toBe(motif);
+      expect(journal[0].aal_action).toBe(ACTION_REFUSEE);
+    },
+  );
 
   it('case non cochée : refus tracé, rien de préparé', async () => {
     const { service, journal } = sujet();

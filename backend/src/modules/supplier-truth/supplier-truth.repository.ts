@@ -1,6 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { OrderLineStatus, OrderStatus } from '@repo/domain-commerce';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+
+/** Dernier relevé d'un fournisseur pour une pièce (`supplier_offer_snapshot`). */
+export interface OffreReleve {
+  supplier_id: string;
+  supplier_ref: string;
+  public_ht_cents: number | null;
+  remise_pct: number | null;
+  achat_ht_cents: number | null;
+  available: boolean | null;
+  delay_days: number | null;
+  parse_confidence: OfferSnapshotInsert['parse_confidence'];
+  observed_at: string;
+}
+
+/** Ligne de commande à relever (complément BK n° 4). */
+export interface LigneAReleve {
+  lineId: string;
+  orderId: string;
+  pieceId: number;
+  ref: string;
+  pmId: number | null;
+  marque: string;
+}
+
+/**
+ * Statuts de ligne exclus du relevé : annulée, non compatible, rupture marquée,
+ * équivalence refusée (mêmes interdits que le contrôle 3) et déjà commandée.
+ */
+const LIGNE_NON_RELEVEE: ReadonlySet<string> = new Set<string>([
+  OrderLineStatus.CANCELLED,
+  OrderLineStatus.NOT_COMPATIBLE,
+  OrderLineStatus.NOT_AVAILABLE,
+  OrderLineStatus.EQUIV_REFUSED,
+  OrderLineStatus.ORDERED_FROM_SUPPLIER,
+]);
 
 /**
  * Supplier Availability Truth — data access (Layers 2 & 3 persistence).
@@ -71,6 +107,8 @@ export interface OfferSnapshotInsert {
     | 'EAN_FALLBACK'
     | 'UNKNOWN';
   source_verified_at: string | null;
+  /** Heure de la lecture ; défaut base = heure d'insertion. */
+  observed_at?: string;
 }
 
 export interface ProjectionRow {
@@ -247,6 +285,127 @@ export class SupplierTruthRepository extends SupabaseBaseService {
       }
     }
     return out;
+  }
+
+  /**
+   * Lignes à relever (complément BK n° 4) : commande payée (`ord_is_pay='1'`),
+   * non annulée (`ord_ords_id <> '2'`), ligne ni annulée, ni incompatible, ni en
+   * rupture, ni équivalence refusée, ni déjà commandée (statut 6), et sans
+   * commande fournisseur préparée (`__admin_audit_log`, `supplier_order_prepared`).
+   * Commandes les plus récentes d'abord ; lecture seule.
+   */
+  async getReleveWorkingSet(limiteCommandes = 1000): Promise<LigneAReleve[]> {
+    const { data: commandes, error: e1 } = await this.supabase
+      .from('___xtr_order')
+      .select('ord_id, ord_date')
+      .eq('ord_is_pay', '1')
+      .or(`ord_ords_id.is.null,ord_ords_id.neq.${OrderStatus.CANCELLED}`)
+      .order('ord_date', { ascending: false })
+      .limit(limiteCommandes);
+    if (e1)
+      throw new Error(`getReleveWorkingSet (orders) failed: ${e1.message}`);
+    const ordre = new Map<string, number>();
+    ((commandes ?? []) as { ord_id: unknown }[]).forEach((c, i) =>
+      ordre.set(String(c.ord_id), i),
+    );
+    if (ordre.size === 0) return [];
+
+    const { data: traces, error: e2 } = await this.supabase
+      .from('__admin_audit_log')
+      .select('aal_entity_id')
+      .eq('aal_entity_type', 'order_line')
+      .eq('aal_action', 'supplier_order_prepared')
+      .limit(1000);
+    if (e2)
+      throw new Error(`getReleveWorkingSet (traces) failed: ${e2.message}`);
+    const preparees = new Set(
+      ((traces ?? []) as { aal_entity_id: unknown }[]).map((t) =>
+        String(t.aal_entity_id),
+      ),
+    );
+
+    const lignes: (LigneAReleve & { rang: number })[] = [];
+    const ids = [...ordre.keys()];
+    // 100 commandes par requête : bien sous le plafond de 1000 lignes de
+    // PostgREST ; un lot qui l'atteint est signalé, jamais tronqué en silence.
+    for (let i = 0; i < ids.length; i += 100) {
+      const { data, error } = await this.supabase
+        .from('___xtr_order_line')
+        .select(
+          'orl_id, orl_ord_id, orl_pg_id, orl_art_ref, orl_pm_id, orl_pm_name, orl_orls_id',
+        )
+        .in('orl_ord_id', ids.slice(i, i + 100))
+        .limit(1000);
+      if (error) {
+        throw new Error(`getReleveWorkingSet (lines) failed: ${error.message}`);
+      }
+      if ((data ?? []).length >= 1000) {
+        throw new Error(
+          'getReleveWorkingSet (lines) : 1000 lignes pour 100 commandes, lot possiblement tronqué',
+        );
+      }
+      for (const r of (data ?? []) as Record<string, unknown>[]) {
+        const lineId = String(r.orl_id);
+        const statut = r.orl_orls_id == null ? null : String(r.orl_orls_id);
+        const pieceId = Number(r.orl_pg_id);
+        const pmId = Number(r.orl_pm_id);
+        const ref = String(r.orl_art_ref ?? '').trim();
+        const marque = String(r.orl_pm_name ?? '').trim();
+        if (statut && LIGNE_NON_RELEVEE.has(statut)) continue;
+        if (preparees.has(lineId)) continue;
+        if (!Number.isInteger(pieceId) || pieceId <= 0 || !ref) continue;
+        lignes.push({
+          lineId,
+          orderId: String(r.orl_ord_id),
+          pieceId,
+          ref,
+          pmId: Number.isInteger(pmId) && pmId > 0 ? pmId : null,
+          marque,
+          rang: ordre.get(String(r.orl_ord_id)) ?? Number.MAX_SAFE_INTEGER,
+        });
+      }
+    }
+    return lignes
+      .sort((a, b) => a.rang - b.rang)
+      .map(({ rang: _rang, ...l }) => l);
+  }
+
+  /**
+   * Dernier relevé de chaque fournisseur pour une pièce
+   * (`supplier_offer_snapshot`, index `idx_sos_piece_time`). Lecture seule.
+   * Les 200 relevés les plus récents suffisent : un fournisseur absent de cette
+   * fenêtre n'a, au rythme du relevé, aucun relevé de moins de 30 min ; il est
+   * alors traité comme « relevé absent », jamais comme frais.
+   */
+  async readLatestOffers(pieceId: number): Promise<OffreReleve[]> {
+    const { data, error } = await this.supabase
+      .from(T_OFFERS)
+      .select(
+        'supplier_id, supplier_ref, public_ht_cents, remise_pct, achat_ht_cents, available, delay_days, parse_confidence, observed_at',
+      )
+      .eq('piece_id_i', pieceId)
+      .order('observed_at', { ascending: false })
+      .limit(200);
+    if (error) throw new Error(`readLatestOffers failed: ${error.message}`);
+    const parFournisseur = new Map<string, OffreReleve>();
+    for (const r of (data ?? []) as Record<string, unknown>[]) {
+      const splId = String(r.supplier_id);
+      if (parFournisseur.has(splId)) continue;
+      const n = (v: unknown): number | null =>
+        v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v);
+      parFournisseur.set(splId, {
+        supplier_id: splId,
+        supplier_ref: String(r.supplier_ref ?? ''),
+        public_ht_cents: n(r.public_ht_cents),
+        remise_pct: n(r.remise_pct),
+        achat_ht_cents: n(r.achat_ht_cents),
+        available: r.available == null ? null : r.available === true,
+        delay_days: n(r.delay_days),
+        parse_confidence: r.parse_confidence as OffreReleve['parse_confidence'],
+        observed_at: String(r.observed_at),
+      });
+    }
+    return [...parFournisseur.values()];
   }
 
   async getSupplierLinkedBrands(supplierId: string): Promise<number[]> {

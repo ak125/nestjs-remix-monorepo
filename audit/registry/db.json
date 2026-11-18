@@ -79,7 +79,8 @@
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
         "backend/src/modules/payments/services/paybox-callback-gate.service.ts",
-        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ]
     },
     {
@@ -396,7 +397,8 @@
       "usedBy": [
         "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
         "backend/src/modules/orders/listeners/order-audit.listener.ts",
-        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ]
     },
     {

@@ -9,6 +9,11 @@ import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { PiecePriceDataService } from '@database/services/piece-price-data.service';
 import { SupplierTruthRepository } from '../../supplier-truth/supplier-truth.repository';
 import {
+  lectureDepuisReleve,
+  releveEstFrais,
+  type ResultatLecture,
+} from '../../supplier-truth';
+import {
   proposerFournisseur,
   type PropositionFournisseur,
 } from './order-line-supplier-proposal';
@@ -18,6 +23,7 @@ const COLONNES_LIGNE = [
   'orl_id',
   'orl_ord_id',
   'orl_pg_id',
+  'orl_art_ref',
   'orl_orls_id',
   'orl_art_quantity',
   'orl_art_price_sell_unit_ttc',
@@ -32,6 +38,7 @@ interface LigneLue {
   orl_id: string;
   orl_ord_id: string;
   orl_pg_id: string | null;
+  orl_art_ref: string | null;
   orl_orls_id: string | null;
   orl_art_quantity: string | null;
   orl_art_price_sell_unit_ttc: string | null;
@@ -58,6 +65,12 @@ export interface PropositionLigne {
   /** Fournisseur déjà posé sur la ligne (`orl_spl_id` ni vide ni '0'). */
   fournisseurConfirme: FournisseurConfirme | null;
   proposition: PropositionFournisseur;
+  /**
+   * Dernier relevé (`supplier_offer_snapshot`) du fournisseur proposé, lu par les
+   * contrôles 1, 2 et 6 : lecture, ou motif « relevé absent » / « relevé de plus
+   * de 30 min ». null sans proposition. Aucun portail n'est appelé.
+   */
+  releveFournisseurPropose: ResultatLecture | null;
 }
 
 /** `orl_spl_id` vide, NULL ou '0' (valeur historique « aucun ») = non posé. */
@@ -107,10 +120,12 @@ export class OrderLineSupplierService extends SupabaseBaseService {
       );
     }
 
-    const [offres, annuaire] = await Promise.all([
+    const [offres, annuaire, releves] = await Promise.all([
       this.piecePriceData.findSellableOffers(pieceId),
       this.supplierTruth.getSupplierDirectory(),
+      this.supplierTruth.readLatestOffers(pieceId),
     ]);
+    const maintenant = new Date();
     const proposition = proposerFournisseur(
       offres.map((o) => ({
         libelleFournisseur: o.pri_frs,
@@ -118,13 +133,31 @@ export class OrderLineSupplierService extends SupabaseBaseService {
         venteHt: o.pri_vente_ht_n,
         tauxTva: o.pri_tva_n,
         type: o.pri_type ?? '',
+        dateTarif: o.pri_date_from ?? null,
       })),
       annuaire,
       {
         quantite: ligne.orl_art_quantity,
         venteUnitTtc: ligne.orl_art_price_sell_unit_ttc,
       },
+      releves.map((r) => ({
+        splId: r.supplier_id,
+        achatHt: r.achat_ht_cents == null ? null : r.achat_ht_cents / 100,
+        disponible: r.available === true,
+        exacte: r.parse_confidence === 'HIGH_CONFIDENCE',
+        frais: releveEstFrais(r.observed_at, maintenant),
+        observeA: r.observed_at,
+      })),
     );
+    const releveFournisseurPropose =
+      proposition.statut === 'PROPOSE'
+        ? lectureDepuisReleve(
+            releves.find((r) => r.supplier_id === proposition.splId) ?? null,
+            proposition.splId,
+            (ligne.orl_art_ref ?? '').trim(),
+            maintenant,
+          )
+        : null;
 
     return {
       orderId: ligne.orl_ord_id,
@@ -141,6 +174,7 @@ export class OrderLineSupplierService extends SupabaseBaseService {
           }
         : null,
       proposition,
+      releveFournisseurPropose,
     };
   }
 }

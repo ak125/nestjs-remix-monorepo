@@ -2,7 +2,9 @@
  * Les 8 contrôles d'une commande fournisseur préparée (mandat BK, décision de
  * Marwane du 17/11/2026 à 18:04). Fonctions pures : aucune lecture, aucune
  * écriture, aucun appel réseau. Le service de préparation fournit les faits
- * (commande, ligne, proposition, relecture live) et applique la décision.
+ * (commande, ligne, proposition, dernier relevé du fournisseur) et applique la
+ * décision. Complément n° 4 : la lecture vient d'un relevé daté écrit par DEV ;
+ * relevé absent ou de plus de 30 min ⇒ contrôles 1, 2 et 6 BLOQUÉS.
  *
  * Aucun contrôle ne déclenche d'envoi : la décision la plus favorable est
  * `PREPAREE`, c'est-à-dire une commande préparée, tracée et NON envoyée.
@@ -60,7 +62,7 @@ export interface EntreeControles {
     statut: string | null;
   };
   proposition: PropositionFournisseur;
-  /** Relecture live du fournisseur proposé ; null si aucune proposition. */
+  /** Dernier relevé du fournisseur proposé ; null si aucune proposition. */
   lecture: ResultatLecture | null;
   demande: {
     compatibiliteVerifiee: boolean;
@@ -76,7 +78,7 @@ export interface EntreeControles {
 export interface SortieControles {
   decision: DecisionPreparation;
   controles: ResultatControle[];
-  /** Montant net HT de la commande préparée (prix net live × quantité). */
+  /** Montant net HT de la commande préparée (prix net relevé × quantité). */
   montantNetHt: number | null;
   /** Numéro d'essai attribué si la préparation aboutit. */
   numeroEssai: number;
@@ -101,6 +103,17 @@ const nombre = (v: number | string | null | undefined): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 const centimes = (v: number): number => Math.round(v * 100) / 100;
+
+/**
+ * Motif bloquant du relevé (« relevé absent », « relevé de plus de 30 min »)
+ * repris tel quel par les contrôles 1, 2 et 6 ; null pour tout autre cas.
+ */
+const motifReleve = (lecture: ResultatLecture | null): string | null =>
+  lecture &&
+  'motif' in lecture &&
+  (lecture.motif === 'RELEVE_ABSENT' || lecture.motif === 'RELEVE_PERIME')
+    ? lecture.detail
+    : null;
 const eur = (v: number): string => `${v.toFixed(2)} € HT`;
 
 export function evaluerControles(e: EntreeControles): SortieControles {
@@ -108,9 +121,10 @@ export function evaluerControles(e: EntreeControles): SortieControles {
   const live = e.lecture?.ok ? e.lecture : null;
   const quantite = nombre(e.ligne.quantite);
   const net = live?.prixNetHt ?? null;
+  const releveBloquant = motifReleve(e.lecture);
   const controles: ResultatControle[] = [];
 
-  // 1 — relecture live, écart ≤ seuil avec le prix d'achat en base
+  // 1 — dernier relevé frais, écart ≤ seuil avec le prix d'achat proposé
   controles.push(controleRelecture(e, p, live));
 
   // 2 — jamais à perte : achat net HT ≤ prix HT payé par le client
@@ -120,8 +134,10 @@ export function evaluerControles(e: EntreeControles): SortieControles {
     let r: ResultatControle;
     if (!p) {
       r = bloque(2, 'JAMAIS_A_PERTE', 'aucun fournisseur proposé');
+    } else if (releveBloquant) {
+      r = bloque(2, 'JAMAIS_A_PERTE', releveBloquant);
     } else if (net == null) {
-      r = bloque(2, 'JAMAIS_A_PERTE', 'prix net live inconnu');
+      r = bloque(2, 'JAMAIS_A_PERTE', 'prix net relevé inconnu');
     } else if (ttc == null || ttc <= 0 || tva == null) {
       r = bloque(
         2,
@@ -206,7 +222,7 @@ export function evaluerControles(e: EntreeControles): SortieControles {
     net != null && quantite != null ? centimes(net * quantite) : null;
   controles.push(
     montantNetHt == null
-      ? bloque(6, 'PLAFOND_HT', 'montant inconnu')
+      ? bloque(6, 'PLAFOND_HT', releveBloquant ?? 'montant inconnu')
       : montantNetHt <= e.seuils.plafondHt
         ? ok(
             6,
@@ -274,11 +290,13 @@ function controleRelecture(
         : 'proposition à compléter (prix ou fournisseur manquant)',
     );
   }
+  const releveBloquant = motifReleve(e.lecture);
+  if (releveBloquant) return bloque(1, C, releveBloquant);
   if (!e.lecture || !e.lecture.ok) {
     return bloque(
       1,
       C,
-      `relecture du portail impossible (${e.lecture && 'motif' in e.lecture ? e.lecture.motif : 'non lancée'}) : rien ne part sans relecture`,
+      `relevé du fournisseur illisible (${e.lecture && 'motif' in e.lecture ? e.lecture.motif : 'non lancée'}) : rien ne part sans relevé frais`,
     );
   }
   if (!live || live.correspondance !== 'EXACTE') {
@@ -286,7 +304,7 @@ function controleRelecture(
       1,
       C,
       live?.correspondance === 'NON_EXACTE'
-        ? `référence absente telle quelle chez ${p.nomFournisseur} (portail : ${live.refFournisseur ?? '?'})`
+        ? `référence absente telle quelle chez ${p.nomFournisseur} (relevé : ${live.refFournisseur ?? '?'})`
         : `référence introuvable chez ${p.nomFournisseur}`,
     );
   }
@@ -298,7 +316,7 @@ function controleRelecture(
     );
   }
   if (live.prixNetHt == null) {
-    return bloque(1, C, 'prix net non lu sur le portail');
+    return bloque(1, C, 'prix net absent du relevé');
   }
   const base = p.prixAchatUnitHt;
   const ecart = base > 0 ? (live.prixNetHt - base) / base : Infinity;
@@ -312,12 +330,12 @@ function controleRelecture(
     ? ok(
         1,
         C,
-        `disponible, net live ${eur(live.prixNetHt)} vs base ${eur(base)} (écart ${pct} ≤ ${seuil})`,
+        `disponible, net relevé ${eur(live.prixNetHt)} le ${live.lueA} vs base ${eur(base)} (écart ${pct} ≤ ${seuil})`,
       )
     : bloque(
         1,
         C,
-        `net live ${eur(live.prixNetHt)} vs base ${eur(base)} : écart ${pct} > ${seuil}`,
+        `net relevé ${eur(live.prixNetHt)} vs base ${eur(base)} : écart ${pct} > ${seuil}`,
       );
 }
 

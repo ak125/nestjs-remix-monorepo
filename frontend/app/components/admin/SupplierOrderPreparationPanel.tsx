@@ -2,8 +2,10 @@
  * Mandat BK — commande fournisseur PRÉPARÉE en mode essai, sous la proposition
  * fournisseur de la ligne (décision 50, `OrderLineSupplierPanel`).
  *
- * Le clic relit le portail en lecture seule, applique les 8 contrôles et trace
- * la ligne. Rien n'est envoyé au fournisseur : aucun panier, aucune commande.
+ * Le clic lit le dernier relevé daté du fournisseur (complément BK n° 4 : la
+ * PROD n'appelle aucun portail ; relevé absent ou de plus de 30 min = bloqué),
+ * applique les 8 contrôles et trace la ligne. Rien n'est envoyé au
+ * fournisseur : aucun panier, aucune commande.
  */
 import { CheckCircle2, ClipboardList, Loader2, XCircle } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -70,7 +72,7 @@ interface Resultat {
 }
 
 const LIBELLES: Record<number, string> = {
-  1: "Relecture live (écart ≤ 5 %)",
+  1: "Relevé fournisseur de moins de 30 min (écart ≤ 5 %)",
   2: "Jamais à perte",
   3: "Carte, commande, compatibilité",
   4: "Une seule commande",
@@ -221,7 +223,7 @@ export function SupplierOrderPreparationPanel({ orderId, lineId }: Props) {
             <span>Total net : {euros(p.montantNetHt)}</span>
           </div>
           <div className="text-muted-foreground">
-            Base : {euros(p.prixAchatBaseUnitHt)} · relu le{" "}
+            Base : {euros(p.prixAchatBaseUnitHt)} · relevé du{" "}
             {new Date(p.lueA).toLocaleString("fr-FR")}
           </div>
           {etat?.comparaisonManuelle && (
