@@ -70,11 +70,41 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, '&#39;');
 }
 
+/**
+ * Mandat CG — boîte et nom affiché des mails écrits par la boutique depuis la
+ * fiche commande (choix owner du 14 novembre : « Automecanik.com », contact@).
+ */
+export const CUSTOMER_SERVICE_MAILBOX = 'contact@automecanik.com';
+export const CUSTOMER_SERVICE_FROM = `"Automecanik.com" <${CUSTOMER_SERVICE_MAILBOX}>`;
+
+/**
+ * Mandat CG — texte brut relu par la boutique → fragment HTML : tout est
+ * échappé, une ligne vide sépare deux paragraphes, un retour à la ligne
+ * devient `<br>`. Même fragment dans le mail et dans la messagerie client.
+ */
+export function customerMessageFragment(text: string): string {
+  return text
+    .replace(/\r\n?/g, '\n')
+    .trim()
+    .split(/\n[ \t]*\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map(
+      (p) =>
+        `<p style="margin:0 0 14px;color:#1f2937;line-height:1.6;">${p
+          .split('\n')
+          .map(escapeHtml)
+          .join('<br>')}</p>`,
+    )
+    .join('\n');
+}
+
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter: nodemailer.Transporter | null = null;
   private fromEmail: string;
+  private mailbox: string;
   private appUrl: string;
   private isConfigured = false;
   private testTransport = false;
@@ -88,6 +118,7 @@ export class MailService {
       'contact@automecanik.com';
     this.appUrl = this.configService.get<string>('APP_URL') || SITE_ORIGIN;
     this.fromEmail = `Automecanik <${userEmail}>`;
+    this.mailbox = userEmail.trim().toLowerCase();
 
     const appPassword = this.configService.get<string>('GMAIL_APP_PASSWORD');
 
@@ -251,46 +282,37 @@ export class MailService {
     );
   }
 
-  async sendCancellationEmail(
-    order: OrderEmailData,
-    customer: CustomerEmailData,
-    reason: string,
-  ): Promise<void> {
-    const html = this.getCancellationTemplate(order, customer, reason);
-    await this.doSend(
-      customer.cst_mail,
-      `Commande ${order.ord_id} annulee - Automecanik`,
-      html,
+  /**
+   * Mandat CG — mail écrit et relu dans la fiche commande. Même rendu que
+   * l'aperçu (`renderCustomerMessage`), expéditeur « Automecanik.com »
+   * <contact@>. Refuse de partir si la boîte configurée n'est pas contact@ :
+   * Gmail réécrirait l'expéditeur et le client verrait une autre adresse.
+   */
+  async sendCustomerMessage(
+    to: string,
+    subject: string,
+    text: string,
+  ): Promise<MailDelivery> {
+    if (this.mailbox !== CUSTOMER_SERVICE_MAILBOX) {
+      throw new Error(
+        `Boîte d'envoi configurée différente de ${CUSTOMER_SERVICE_MAILBOX} : mail client refusé`,
+      );
+    }
+    return this.doSend(
+      to,
+      subject,
+      this.renderCustomerMessage(subject, text),
+      undefined,
+      { from: CUSTOMER_SERVICE_FROM, text },
     );
   }
 
-  async sendRefundConfirmation(
-    order: OrderEmailData,
-    customer: CustomerEmailData,
-    amount: number,
-    reason: string,
-  ): Promise<void> {
-    const formattedAmount = amount.toFixed(2).replace('.', ',');
-    const body = `
-      <p>Bonjour <strong>${customer.cst_fname} ${customer.cst_name}</strong>,</p>
-      <p>Nous vous confirmons le remboursement de votre commande <strong>#${order.ord_id}</strong>.</p>
-      <div class="info-box" style="border-left-color:#10b981;background:#f0fdf4;">
-        <p style="margin:0 0 12px;font-weight:600;color:#059669;">Remboursement confirme</p>
-        <p style="margin:0 0 8px;color:#065f46;"><strong>Montant :</strong> ${formattedAmount} EUR</p>
-        <p style="margin:0;color:#065f46;"><strong>Raison :</strong> ${reason}</p>
-      </div>
-      <p>Le remboursement sera credite sur votre moyen de paiement sous 5 a 7 jours ouvres.</p>
-      <p>Pour toute question, n'hesitez pas a nous contacter.</p>
-      <div class="cta"><a href="${this.appUrl}/account/orders">Voir mes commandes</a></div>`;
-    const html = this.wrapLayout(
-      'Remboursement Confirme',
-      'linear-gradient(135deg,#10b981 0%,#059669 100%)',
-      body,
-    );
-    await this.doSend(
-      customer.cst_mail,
-      `Remboursement commande ${order.ord_id} - Automecanik`,
-      html,
+  /** Mandat CG — HTML final du mail client, dans la mise en page commune. */
+  renderCustomerMessage(subject: string, text: string): string {
+    return this.wrapLayout(
+      escapeHtml(subject),
+      '#1e3a8a',
+      customerMessageFragment(text),
     );
   }
 
@@ -486,6 +508,7 @@ export class MailService {
     subject: string,
     html: string,
     attachments?: MailAttachment[],
+    options?: { from?: string; text?: string },
   ): Promise<MailDelivery> {
     if (!this.isConfigured || !this.transporter) {
       this.logger.warn(`[DRY-RUN] Email to ${to}: ${subject}`);
@@ -494,10 +517,11 @@ export class MailService {
 
     try {
       await this.transporter.sendMail({
-        from: this.fromEmail,
+        from: options?.from ?? this.fromEmail,
         to,
         subject,
         html,
+        ...(options?.text ? { text: options.text } : {}),
         ...(attachments?.length ? { attachments } : {}),
       });
       if (this.testTransport) {
@@ -994,112 +1018,6 @@ export class MailService {
       <p style="margin-top: 32px; color: #6b7280; font-size: 14px;">
         ℹ️ Si vous avez déjà effectué le paiement, veuillez ignorer cet email.
       </p>
-    </div>
-
-    <div class="footer">
-      <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
-      <p style="margin-top: 8px;">© ${new Date().getFullYear()} AutoParts - Tous droits réservés</p>
-    </div>
-  </div>
-</body>
-</html>
-    `.trim();
-  }
-
-  private getCancellationTemplate(
-    order: OrderEmailData,
-    customer: CustomerEmailData,
-    reason: string,
-  ): string {
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      line-height: 1.6;
-      color: #1f2937;
-      margin: 0;
-      padding: 0;
-      background-color: #f3f4f6;
-    }
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-    .header {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: white;
-      padding: 32px 24px;
-      text-align: center;
-    }
-    .header h1 {
-      margin: 0;
-      font-size: 28px;
-      font-weight: 700;
-    }
-    .content { padding: 32px 24px; }
-    .info-box {
-      background: #fef2f2;
-      padding: 20px;
-      margin: 24px 0;
-      border-radius: 8px;
-      border-left: 4px solid #ef4444;
-    }
-    .button {
-      display: inline-block;
-      background: #6366f1;
-      color: white !important;
-      padding: 14px 28px;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      margin-top: 16px;
-    }
-    .footer {
-      text-align: center;
-      padding: 24px;
-      background: #f9fafb;
-      color: #6b7280;
-      font-size: 13px;
-    }
-    .emoji {
-      font-size: 48px;
-      margin-bottom: 16px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div class="emoji">❌</div>
-      <h1>Commande Annulée</h1>
-    </div>
-
-    <div class="content">
-      <p>Bonjour <strong>${customer.cst_fname} ${customer.cst_name}</strong>,</p>
-      <p>Nous vous informons que votre commande <strong>#${order.ord_id}</strong> a été annulée.</p>
-
-      <div class="info-box">
-        <p style="margin: 0 0 12px 0; font-weight: 600; color: #dc2626;">📋 Raison de l'annulation</p>
-        <p style="margin: 0; color: #991b1b;">${reason}</p>
-      </div>
-
-      <p>💰 Si vous avez déjà effectué le paiement, vous serez remboursé sous 5 à 7 jours ouvrés.</p>
-      <p>📧 Pour toute question, n'hésitez pas à nous contacter.</p>
-
-      <div style="text-align: center;">
-        <a href="${this.appUrl}/account/orders" class="button">
-          Voir mes commandes
-        </a>
-      </div>
     </div>
 
     <div class="footer">

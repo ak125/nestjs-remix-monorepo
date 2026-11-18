@@ -17,7 +17,7 @@ import {
   User,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
@@ -28,6 +28,10 @@ import {
 } from "react-router";
 import { toast } from "sonner";
 
+import {
+  OrderCustomerMailPanel,
+  type CustomerMailOpenRequest,
+} from "~/components/admin/OrderCustomerMailPanel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -149,7 +153,15 @@ export const action = async ({
       return data({ error: err.message || "Erreur" }, { status: 500 });
     }
 
-    return { success: true, message: `Action "${intent}" executee` };
+    const payload = await res.json().catch(() => ({}));
+    return {
+      success: true,
+      intent,
+      message:
+        typeof payload?.message === "string"
+          ? payload.message
+          : `Action "${intent}" executee`,
+    };
   } catch {
     return data({ error: "Erreur serveur" }, { status: 500 });
   }
@@ -192,9 +204,19 @@ export default function CommercialOrderDetailPage() {
   const { order } = useLoaderData<typeof loader>();
   const fetcher = useFetcher<{
     success?: boolean;
+    intent?: string;
     message?: string;
     error?: string;
   }>();
+  // Mandat CG : l'annulation n'envoie plus de mail ; la fiche ouvre
+  // « Écrire au client » sur le modèle d'annulation, texte à relire.
+  const [mailRequest, setMailRequest] =
+    useState<CustomerMailOpenRequest | null>(null);
+  useEffect(() => {
+    if (fetcher.data?.success && fetcher.data.intent === "cancel") {
+      setMailRequest({ template: "cancel-payment-voided", nonce: Date.now() });
+    }
+  }, [fetcher.data]);
   const [trackingInput, setTrackingInput] = useState("");
   const [cancelReason, setCancelReason] = useState("");
   const [showShipForm, setShowShipForm] = useState(false);
@@ -360,6 +382,11 @@ export default function CommercialOrderDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <OrderCustomerMailPanel
+              orderId={order.ord_id}
+              openRequest={mailRequest}
+            />
 
             {/* Adresses */}
             {(order.ord_billing_snapshot || order.ord_shipping_snapshot) && (

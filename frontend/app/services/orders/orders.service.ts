@@ -258,26 +258,3 @@ export async function sendOrderConfirmationEmail(
 
   return response.json();
 }
-
-/**
- * Envoie un email personnalisé au client
- */
-export async function sendCustomEmail(
-  orderId: string,
-  subject: string,
-  message: string,
-): Promise<{ success: boolean; message: string }> {
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/send-email`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ subject, message }),
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Erreur lors de l'envoi de l'email: ${response.statusText}`,
-    );
-  }
-
-  return response.json();
-}
