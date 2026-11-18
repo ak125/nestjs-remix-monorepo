@@ -768,7 +768,7 @@ export default function OrdersRoute() {
         setCancelModalOpen(false);
         setCancelReason("");
         setTimeout(() => window.location.reload(), 1500);
-        return "❌ Commande annulée et client notifié par email";
+        return "Commande annulée. Aucun mail envoyé : prévenez le client depuis la fiche commande (Écrire au client).";
       },
       error: (err) => `❌ Erreur: ${err.message}`,
     });

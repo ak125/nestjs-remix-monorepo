@@ -2,14 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { MailService } from '../../../services/mail.service';
-import {
-  ORDER_EVENTS,
-  type OrderShippedEvent,
-  type OrderCancelledEvent,
-  type OrderRefundedEvent,
-} from '../events/order.events';
+import { ORDER_EVENTS, type OrderShippedEvent } from '../events/order.events';
 import { TABLES } from '@repo/database-types';
 
+/**
+ * Mails automatiques des événements de commande : l'expédition seule.
+ *
+ * Mandat CG : l'annulation (ORDER_EVENTS.CANCELLED) et le remboursement
+ * (ORDER_EVENTS.REFUNDED) n'envoient plus de mail automatique — aucun texte
+ * ne part sans relecture. La boutique écrit au client depuis la fiche
+ * commande (« Écrire au client », OrderCustomerMailService). Les événements
+ * restent émis et journalisés par OrderAuditListener.
+ */
 @Injectable()
 export class OrderEmailListener extends SupabaseBaseService {
   protected readonly logger = new Logger(OrderEmailListener.name);
@@ -48,61 +52,6 @@ export class OrderEmailListener extends SupabaseBaseService {
       this.logger.log(`Shipping email sent for order ${event.orderId}`);
     } catch (error) {
       this.logger.warn(`Shipping email failed (non-blocking): ${error}`);
-    }
-  }
-
-  @OnEvent(ORDER_EVENTS.CANCELLED)
-  async onOrderCancelled(event: OrderCancelledEvent) {
-    try {
-      const { order, customer } = await this.loadOrderAndCustomer(
-        event.orderId,
-      );
-      if (!order || !customer) return;
-
-      await this.mailService.sendCancellationEmail(
-        {
-          ord_id: order.ord_id,
-          ord_total_ttc: order.ord_total_ttc,
-          ord_date: order.ord_date,
-        },
-        {
-          cst_mail: customer.cst_mail,
-          cst_fname: customer.cst_fname || '',
-          cst_name: customer.cst_name || '',
-        },
-        event.reason,
-      );
-      this.logger.log(`Cancellation email sent for order ${event.orderId}`);
-    } catch (error) {
-      this.logger.warn(`Cancellation email failed (non-blocking): ${error}`);
-    }
-  }
-
-  @OnEvent(ORDER_EVENTS.REFUNDED)
-  async onOrderRefunded(event: OrderRefundedEvent) {
-    try {
-      const { order, customer } = await this.loadOrderAndCustomer(
-        event.orderId,
-      );
-      if (!order || !customer) return;
-
-      await this.mailService.sendRefundConfirmation(
-        {
-          ord_id: order.ord_id,
-          ord_total_ttc: order.ord_total_ttc,
-          ord_date: order.ord_date,
-        },
-        {
-          cst_mail: customer.cst_mail,
-          cst_fname: customer.cst_fname || '',
-          cst_name: customer.cst_name || '',
-        },
-        event.amount,
-        event.reason,
-      );
-      this.logger.log(`Refund email sent for order ${event.orderId}`);
-    } catch (error) {
-      this.logger.warn(`Refund email failed (non-blocking): ${error}`);
     }
   }
 

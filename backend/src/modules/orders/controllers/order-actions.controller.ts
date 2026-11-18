@@ -348,15 +348,16 @@ export class OrderActionsController {
         `❌ Annulation commande ${orderId} - Raison: ${body.reason}`,
       );
 
-      // Le mail d'annulation part de l'écouteur de ORDER_EVENTS.CANCELLED
-      // (OrderEmailListener), émis par le service : un seul mail.
+      // Mandat CG : aucun mail automatique. Le client est prévenu depuis la
+      // fiche commande (« Écrire au client », modèle d'annulation), texte relu.
       await this.orderActionsService.cancelOrder(orderId, body.reason);
 
       this.logger.log(`✅ Commande ${orderId} annulée avec succès`);
 
       return {
         success: true,
-        message: 'Commande annulée et client notifié',
+        message:
+          "Commande annulée. Aucun mail n'est parti : prévenez le client depuis « Écrire au client ».",
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);

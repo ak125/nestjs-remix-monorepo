@@ -18,6 +18,7 @@ import {
   OrderBillingAdminController,
   OrderInvoiceCustomerController,
 } from './controllers/order-billing.controller';
+import { OrderCustomerMailController } from './controllers/order-customer-mail.controller';
 
 // Services consolidés - Phase 2
 import { OrderCalculationService } from './services/order-calculation.service';
@@ -29,6 +30,7 @@ import { OrderActionsService } from './services/order-actions.service';
 import { OrderLineSupplierService } from './services/order-line-supplier.service';
 import { OrderCleanupService } from './services/order-cleanup.service';
 import { OrderBillingService } from './services/order-billing.service';
+import { OrderCustomerMailService } from './services/order-customer-mail.service';
 
 // Event listeners
 import { OrderAuditListener } from './listeners/order-audit.listener';
@@ -80,6 +82,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrderActionsController, // /api/admin/orders/* (ACTIONS BACKOFFICE)
     OrderBillingAdminController, // Mandat BM : /api/admin/orders/:id/billing/*
     OrderInvoiceCustomerController, // Mandat BM : /api/orders/:id/invoice.pdf
+    OrderCustomerMailController, // Mandat CG : /api/admin/orders/:id/customer-mail*
   ],
   providers: [
     // Services consolidés Phase 2
@@ -92,8 +95,9 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrderLineSupplierService, // Décision 50 : proposition fournisseur (lecture)
     OrderCleanupService, // Cron: cleanup orphelins idempotency + resume tokens
     OrderAuditListener, // Event: audit trail → __admin_audit_log
-    OrderEmailListener, // Event: emails shipped/cancelled/refunded
+    OrderEmailListener, // Event: mail d'expédition seul (mandat CG)
     OrderBillingService, // Mandat BM : facture à l'expédition (ORDER_BILLING_ENABLED)
+    OrderCustomerMailService, // Mandat CG : « Écrire au client », relu puis envoyé
   ],
   exports: [
     // Export des services consolidés
