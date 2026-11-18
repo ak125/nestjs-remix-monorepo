@@ -1857,3 +1857,15 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Mandat BK (décision de Marwane du 17/11/2026, contrôle 4) : une seule commande
+  # fournisseur préparée par ligne — index unique partiel CONCURRENTLY sur
+  # __admin_audit_log (aal_action = 'supplier_order_prepared'), aucune donnée écrite.
+  # Table lue et écrite par backend/src/modules/orders (D11, SupplierOrderPreparationService).
+  # Domaine et owner de backend/src/modules/orders/** et des migrations de commande
+  # voisines (*order_history*, *cancel_order_atomic*). Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261117_admin_audit_log_supplier_order_prepared_unique*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: medium

@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 551ac2b3d9304f9250528f9c2670ac0360725e2126ede2271de36302d06d024f
+source_sha256: 9d8d588bd1b05ff1e0e030d5e76c71a73a19ba70ebaa210f5b14cad6c01dbd38
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3214 |
+| Files (Layer 1) | 3225 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 265 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1015 |
+| Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `5839421f97cf`.
+Source sotFingerprint: `bb589b3071c6`.
 
 ## Comment l'utiliser
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `5839421f97cf`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 943 (config=456, route=246, service=178, controller=39, test=24)
+- **Files**: 944 (config=457, route=246, service=178, controller=39, test=24)
 - **Runtime entrypoints**: 345
-- **Top owners**: @ak125/frontend-team (676), @ak125/admin-team (267)
+- **Top owners**: @ak125/frontend-team (677), @ak125/admin-team (267)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=513, UNKNOWN=430
+- **Status**: LIVE=513, UNKNOWN=431
 
 ### D9 — Import / ETL / Normalisation
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `5839421f97cf`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 313 (service=200, test=72, controller=40, config=1)
-- **Runtime entrypoints**: 131
-- **Top owners**: @ak125 (132), @ak125/payments-team (90), @ak125/auth-team (79)
+- **Files**: 323 (service=205, test=76, controller=40, config=2)
+- **Runtime entrypoints**: 132
+- **Top owners**: @ak125 (137), @ak125/payments-team (95), @ak125/auth-team (79)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=185, UNKNOWN=128
+- **Status**: LIVE=191, UNKNOWN=132
 
 ### D12 — Marketing & Video
 

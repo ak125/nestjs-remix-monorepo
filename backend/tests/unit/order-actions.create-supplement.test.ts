@@ -56,6 +56,7 @@ function makeController() {
     mailService as never,
     ordersService as never,
     {} as never, // lineSupplier — hors du chemin du supplément
+    {} as never, // supplierOrderPreparation — hors du chemin du supplément
   );
   return { controller, ordersService, mailService };
 }
