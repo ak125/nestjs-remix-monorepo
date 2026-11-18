@@ -784,22 +784,6 @@ export class PricingRepository extends SupabaseBaseService {
     };
   }
 
-  /**
-   * Supplier label written to `pieces_price.pri_frs` by a governed import
-   * (`___xtr_supplier.spl_name` for `spl_id = supplierId`). Null when the
-   * supplier id is unknown: the caller refuses the commit, no default label.
-   */
-  async fetchSupplierLabel(supplierId: string): Promise<string | null> {
-    const { data, error } = await this.supabase
-      .from('___xtr_supplier')
-      .select('spl_name')
-      .eq('spl_id', supplierId)
-      .maybeSingle();
-    if (error) throw error;
-    const label = (data?.spl_name ?? '').trim();
-    return label === '' ? null : label;
-  }
-
   async fetchProfiles(supplierId: string): Promise<SupplierPriceProfile[]> {
     const { data, error } = await this.supabase
       .from('supplier_price_profiles')

@@ -16,6 +16,7 @@ import {
 } from './price-import.service';
 import type { DryRunReport, ImportLine } from './price-import.dry-run';
 import type { PricingRepository } from './pricing.repository';
+import type { SupplierTruthRepository } from '../../supplier-truth/supplier-truth.repository';
 
 const line = (key: string, achatHtCents: number): ImportLine => ({
   key,
@@ -112,9 +113,8 @@ describe('PriceImportService.commit', () => {
     operator: 'test',
   };
 
-  function makeRepo(label: string | null) {
+  function makeRepo(_label?: string | null) {
     return {
-      fetchSupplierLabel: jest.fn().mockResolvedValue(label),
       setBatchStatus: jest.fn().mockResolvedValue(undefined),
       createChunk: jest.fn().mockResolvedValue('chunk-1'),
       commitChunk: jest
@@ -123,8 +123,24 @@ describe('PriceImportService.commit', () => {
     };
   }
 
-  function makeService(repo: ReturnType<typeof makeRepo>) {
-    const svc = new PriceImportService(repo as unknown as PricingRepository);
+  function makeSupplierTruth(label: string | null) {
+    const directory = new Map<string, { splId: string; nom: string }>([
+      ['CAL', { splId: '19', nom: 'CAL' }],
+    ]);
+    if (label) directory.set(label, { splId: '71', nom: label });
+    return {
+      getSupplierDirectory: jest.fn().mockResolvedValue(directory),
+    };
+  }
+
+  function makeService(
+    repo: ReturnType<typeof makeRepo>,
+    label: string | null = 'DCA',
+  ) {
+    const svc = new PriceImportService(
+      repo as unknown as PricingRepository,
+      makeSupplierTruth(label) as unknown as SupplierTruthRepository,
+    );
     jest
       .spyOn(svc as never, 'buildLines' as never)
       .mockResolvedValue([line('A1', 1000)] as never);
@@ -146,7 +162,7 @@ describe('PriceImportService.commit', () => {
   it('refuses a commit whose supplier has no label, before any write', async () => {
     const repo = makeRepo(null);
     await expect(
-      makeService(repo).commit('batch-1', {
+      makeService(repo, null).commit('batch-1', {
         ...baseReq,
         tariffDate: '2026-11-01',
       }),
@@ -161,7 +177,6 @@ describe('PriceImportService.commit', () => {
       ...baseReq,
       tariffDate: '2026-11-01',
     });
-    expect(repo.fetchSupplierLabel).toHaveBeenCalledWith('71');
     expect(repo.commitChunk).toHaveBeenCalledTimes(1);
     const sent = repo.commitChunk.mock.calls[0][0];
     expect(sent.supplier).toBe('71');

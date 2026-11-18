@@ -27,6 +27,7 @@ import {
   type PricingRule,
 } from './pricing-strategy.service';
 import { PricingRepository, type CommitRowPayload } from './pricing.repository';
+import { SupplierTruthRepository } from '../../supplier-truth/supplier-truth.repository';
 
 const CHUNK_SIZE = 5000;
 
@@ -123,7 +124,24 @@ export function buildCommitPayloads(
 export class PriceImportService {
   private readonly logger = new Logger(PriceImportService.name);
 
-  constructor(private readonly repo: PricingRepository) {}
+  constructor(
+    private readonly repo: PricingRepository,
+    /** Only reader of `___xtr_supplier` (ast-grep commerce-no-direct-supplier-read). */
+    private readonly supplierTruth: SupplierTruthRepository,
+  ) {}
+
+  /**
+   * Label written to `pieces_price.pri_frs` (`___xtr_supplier.spl_name` of
+   * `spl_id = supplierId`), via the supplier directory of SupplierTruthModule.
+   * Null when the id is unknown: the commit is refused, no default label.
+   */
+  private async supplierLabel(supplierId: string): Promise<string | null> {
+    const directory = await this.supplierTruth.getSupplierDirectory();
+    for (const entry of directory.values()) {
+      if (entry.splId === supplierId.trim()) return entry.nom;
+    }
+    return null;
+  }
 
   private hashRows(rows: Record<string, string>[]): string {
     return createHash('sha256').update(JSON.stringify(rows)).digest('hex');
@@ -243,7 +261,7 @@ export class PriceImportService {
     // Tariff date and real supplier are written on every committed row: refuse
     // the commit before any write when either is missing (no default value).
     const dateFrom = toPriDateFrom(req.tariffDate);
-    const frs = await this.repo.fetchSupplierLabel(req.supplierId);
+    const frs = await this.supplierLabel(req.supplierId);
     if (!frs) {
       throw new BadRequestException(
         `supplier ${req.supplierId} has no label in ___xtr_supplier: commit refused`,
