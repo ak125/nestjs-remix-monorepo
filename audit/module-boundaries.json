@@ -260,8 +260,8 @@
         "frontend/app/routes",
         "frontend/app/routes/_public+"
       ],
-      "files_count": 246,
-      "loc_total": 115188,
+      "files_count": 247,
+      "loc_total": 115451,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -274,6 +274,7 @@
         "frontend/app/components/admin/gamme-seo",
         "frontend/app/components/admin/patterns",
         "frontend/app/components/admin/seo",
+        "frontend/app/components/admin/suppliers",
         "frontend/app/components/ai",
         "frontend/app/components/auth",
         "frontend/app/components/blog",
@@ -341,8 +342,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 587,
-      "loc_total": 111389,
+      "files_count": 590,
+      "loc_total": 112123,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -624,7 +625,7 @@
         "backend/src/modules/pricing/utils/__tests__"
       ],
       "files_count": 42,
-      "loc_total": 11405,
+      "loc_total": 11409,
       "has_barrel": false
     },
     "products": {
@@ -878,8 +879,8 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 56,
-      "loc_total": 7830,
+      "files_count": 59,
+      "loc_total": 8487,
       "has_barrel": true
     },
     "suppliers": {
@@ -887,8 +888,8 @@
         "backend/src/modules/suppliers",
         "backend/src/modules/suppliers/dto"
       ],
-      "files_count": 7,
-      "loc_total": 1300,
+      "files_count": 14,
+      "loc_total": 3440,
       "has_barrel": true
     },
     "support": {
@@ -963,8 +964,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 389,
-      "loc_total": 80809,
+      "files_count": 391,
+      "loc_total": 81361,
       "has_barrel": true
     },
     "upload": {
@@ -1750,7 +1751,7 @@
     {
       "from": "frontend-routes",
       "to": "frontend-shared",
-      "count": 349
+      "count": 348
     },
     {
       "from": "frontend-shared",
@@ -2125,12 +2126,17 @@
     {
       "from": "supplier-truth",
       "to": "database",
-      "count": 1
+      "count": 2
     },
     {
       "from": "suppliers",
       "to": "database",
       "count": 1
+    },
+    {
+      "from": "suppliers",
+      "to": "supplier-truth",
+      "count": 4
     },
     {
       "from": "support",
