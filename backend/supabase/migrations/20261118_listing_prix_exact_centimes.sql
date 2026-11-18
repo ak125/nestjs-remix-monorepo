@@ -232,8 +232,12 @@ COMMENT ON FUNCTION public.get_listing_products_extended_filtered(integer, bigin
   'Session B 2026-04: filtered variant of get_listing_products_extended with NOT EXISTS on _filter.rtp_pollution_ids. 2026-11-18 (mandat CI): prix_unitaire/prix_consigne numeric exacts (pri_vente_ttc_n / pri_consigne_ttc_n, colonnes du panier), plus d''arrondi à l''euro. Rollback: 20261118_listing_prix_exact_centimes.down.sql.';
 
 -- ACL relevée en lecture le 2026-11-18 : PUBLIC, postgres, anon, authenticated,
--- service_role ont EXECUTE. Le DROP la retire ; elle est rétablie à l'identique.
-GRANT EXECUTE ON FUNCTION public.get_listing_products_extended_filtered(integer, bigint, integer) TO PUBLIC;
+-- service_role ont EXECUTE. Le DROP la retire. Rétablie sans PUBLIC ni
+-- authenticated (règle 2 de scripts/lint/check-definer-anon-surface.sh) : le
+-- backend n'appelle qu'en service_role (PROD) ou anon (PREPROD READ_ONLY), et
+-- rm_get_page_complete_v2, SECURITY DEFINER, l'exécute en tant que propriétaire.
+-- Le REVOKE retire aussi l'EXECUTE que CREATE FUNCTION donne à PUBLIC et que les
+-- privilèges par défaut donnent à authenticated. Le .down.sql rétablit l'ACL d'avant.
+REVOKE ALL ON FUNCTION public.get_listing_products_extended_filtered(integer, bigint, integer) FROM PUBLIC, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_listing_products_extended_filtered(integer, bigint, integer) TO anon;
-GRANT EXECUTE ON FUNCTION public.get_listing_products_extended_filtered(integer, bigint, integer) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_listing_products_extended_filtered(integer, bigint, integer) TO service_role;
