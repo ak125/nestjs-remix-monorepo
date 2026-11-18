@@ -76,7 +76,8 @@ departments:
         threshold:
           rule: "fixture threshold"
           issue_label: "dept:01-a"
-          wired: false
+          wired: true
+          eval: { indicator: fixture_input, field: status, operator: in, value: [WARNING, CRITICAL], window_days: 30 }
         rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
         uses:
           - { capability: fixture-cap, from: a }

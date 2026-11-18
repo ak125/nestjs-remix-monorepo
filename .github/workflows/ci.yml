@@ -573,6 +573,9 @@ jobs:
           node scripts/governance/validate-agent-operating-map.js --contracts
           node scripts/governance/validate-agent-operating-map.js --self-test
 
+      - name: 🧾 Seuils des fonctions du registre (tests, mandat BZ)
+        run: bash scripts/governance/registry-thresholds.test.sh
+
       - name: 🚦 Classeur des circuits de fusion (tests)
         run: node --test scripts/ci/merge-circuit.test.mjs
 

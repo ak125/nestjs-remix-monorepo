@@ -74741,11 +74741,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/governance/registry-threshold-read.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 89,
+      "owner": "__unassigned__",
+      "path": "scripts/governance/registry-threshold-read.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/governance/validate-agent-operating-map.js",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 1174,
+      "loc": 1212,
       "owner": "__unassigned__",
       "path": "scripts/governance/validate-agent-operating-map.js",
       "risk": "low",

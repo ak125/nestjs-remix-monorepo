@@ -23,6 +23,15 @@ name: 🌅 Morning health digest
 #   REPORT_CONFIG_PATH  path in the repo of a report-config.v1 JSON file (hook for
 #     the department contracts, mandat AR). Unset → the script defaults, declared.
 #   GARDE_PRIX_JSON_PATH  path of a garde-prix.v1 file (no producer yet).
+#   THRESHOLD_ISSUES_MODE  off | dry-run | write (mandate BZ, decision 9): issues of
+#     the registry thresholds (scripts/governance/registry-thresholds.sh). Unset →
+#     dry-run: the report lists the issues it would open, nothing is written.
+#     write = a separate « oui » of the owner.
+#
+# Registry thresholds read their indicator from the producer declared in the
+# registry (backend service, through tsx): the npm install below runs only in the
+# daily window (7-10 h Europe/Paris) or on workflow_dispatch, never on the
+# 15-minute urgent runs. Outside it the indicators are written « non mesuré ».
 #
 # Cron granularity: GitHub may start a scheduled run late; the 15-minute cadence
 # bounds the delay of the 7 h report and of an urgent mail to one or two slots.
@@ -47,12 +56,35 @@ jobs:
   digest:
     name: Urgent checks, daily report on the standing issue
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout (shallow)
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
+
+      - name: Daily window (producer dependencies of the registry thresholds)
+        id: window
+        env:
+          EVENT: ${{ github.event_name }}
+          TMODE: ${{ vars.THRESHOLD_ISSUES_MODE }}
+        run: |
+          h=$((10#$(TZ=Europe/Paris date +%H)))
+          if [ "$TMODE" != off ] && { [ "$EVENT" = workflow_dispatch ] || { [ "$h" -ge 7 ] && [ "$h" -lt 10 ]; }; }; then
+            echo "deps=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node (registry thresholds)
+        if: steps.window.outputs.deps == '1'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install (no scripts, ADR-030; registry thresholds)
+        if: steps.window.outputs.deps == '1'
+        continue-on-error: true
+        run: npm ci --ignore-scripts
 
       - name: Collect signals and update the standing digest issue
         id: collect
@@ -69,6 +101,7 @@ jobs:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           REPORT_CONFIG: ${{ vars.REPORT_CONFIG_PATH }}
           GARDE_PRIX_JSON: ${{ vars.GARDE_PRIX_JSON_PATH }}
+          THRESHOLD_ISSUES_MODE: ${{ vars.THRESHOLD_ISSUES_MODE || 'dry-run' }}
           EVENT: ${{ github.event_name }}
         run: |
           if [ "$EVENT" = "workflow_dispatch" ]; then

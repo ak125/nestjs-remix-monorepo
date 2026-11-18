@@ -27,6 +27,9 @@
 #   GARDE_PRIX_JSON      file, schema garde-prix.v1 (no producer as of 2026-11-16)
 #   GMAIL_* , ALERT_EMAIL_TO, EMAIL_FROM  mail channel (report-mail.py); else declared
 #                        « indisponible » in the issue and the run log.
+#   THRESHOLD_ISSUES_MODE  off | dry-run | write (mandate BZ, default dry-run): issues of
+#                        the registry thresholds, scripts/governance/registry-thresholds.sh;
+#                        its indicators need tsx + node_modules, else « non mesuré ».
 #
 # PUBLIC REPOSITORY: this body lands verbatim in a public issue and the run log is
 # public. Only aggregates go out: rule names, counts, URL paths without query string,
@@ -688,6 +691,17 @@ DEPT_ISSUES=$(gh issue list --repo "$REPO" --state open --limit 3000 --json labe
   | jq -c '[.[].labels[]?.name | select(startswith("dept:"))] | group_by(.) | map({(.[0]): length}) | add // {}' 2>/dev/null || true)
 
 # ======================================================================
+# Registry functions and their thresholds (mandate BZ, decision 9)
+# ======================================================================
+# scripts/governance/registry-thresholds.sh: one line per department (functions by
+# status, « pas de mesure »), evaluable thresholds read from their declared producer,
+# one dept:NN issue per crossed threshold. THRESHOLD_ISSUES_MODE = off | dry-run | write,
+# dry-run by default (nothing written); write acts only with --publish. Never fails here.
+FN_SECTION=$(mktemp)
+REPO="$REPO" GITHUB_SERVER_URL="$GH_URL" PUBLISH="$( [ "$MODE" = "--publish" ] && echo 1 || echo 0 )" \
+  bash "$ROOT/scripts/governance/registry-thresholds.sh" "$FN_SECTION" || : > "$FN_SECTION"
+
+# ======================================================================
 # Owner's gestures, then the daily mail (decision 67)
 # ======================================================================
 # Fusions: open PRs out of draft and out of Dependabot, migration PRs apart.
@@ -826,6 +840,14 @@ issue_list() { jq -r '.[] | "- [#\(.n)](\(.u)) \(.t | gsub("[`|\\[\\]<>\n\r]"; "
         + (if $worst == null then "—" else "\($worst | emoji) \($worst | word)" end) + " | "
         + (if ($ss | length) == 0 then "aucun" else ($ss | map("\(.c | emoji) \(.l)") | join(" · ")) end) + " | "
         + (if $iss == null then "indisponible" else "[\($iss[$dep.label] // 0)](\($base)\($dep.label | @uri))" end) + " |"'
+  fi
+  echo ""
+  if [ -s "$FN_SECTION" ]; then
+    cat "$FN_SECTION"
+  else
+    echo "## Fonctions du registre et seuils"
+    echo ""
+    echo "_Section **indisponible** (\`scripts/governance/registry-thresholds.sh\` sans sortie) : aucun seuil évalué, aucune issue écrite._"
   fi
   echo ""
   if [ -s "$DET" ]; then
