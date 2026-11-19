@@ -33,9 +33,15 @@ export default function GammeQuickNav() {
                 key={s.id}
                 type="button"
                 onClick={() => {
-                  document
-                    .getElementById(s.id)
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  // Défilement instantané si l'utilisateur demande moins d'animations (complément 3).
+                  // « instant » et non « auto » : root.tsx (useScrollBehavior) met scroll-behavior: smooth sur <html>.
+                  const reduce = window.matchMedia(
+                    "(prefers-reduced-motion: reduce)",
+                  ).matches;
+                  document.getElementById(s.id)?.scrollIntoView({
+                    behavior: reduce ? "instant" : "smooth",
+                    block: "start",
+                  });
                 }}
                 className="flex items-center gap-1.5 min-h-11 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-blue-900 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all cursor-pointer motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               >

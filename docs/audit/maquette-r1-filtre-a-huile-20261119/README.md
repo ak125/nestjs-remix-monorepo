@@ -437,6 +437,141 @@ poussées ni dans #2210. Elles sont sur la branche locale
 `wip/ds-complement1-vehicule-clio-iii-19052`, au commit `0d3e629f9`, sans
 upstream. On y trouve aussi l'annexe vidéo mise de côté.
 
+## Complément n° 3 — fin des corrections d'accessibilité (19 nov. 2026)
+
+Demande : « oui » de Marwane (19 nov. 2026, 21:45 Paris), sur la revérification
+du mandat DU (#2211, tête `86aefbe69` : REVUE-EXPERTE §6 et §12,
+REFERENTIEL-EXTERNE §3.F, mesures axe à 390×844). Apparence seulement : aucun
+titre, H1, texte, ancre, `id`, donnée structurée, base ni PROD.
+
+### Composants touchés : tous propres à R1
+
+Chaque composant modifié n'est importé que par `routes/pieces.$slug.tsx`
+(vérifié par `rg`). `components/pieces/CatalogueSection.tsx` n'est pas celui de
+l'accueil, qui importe `components/home/CatalogueSection` (via `~/components/home`).
+
+| Fichier | Changement (classes, sauf le défilement) |
+|---|---|
+| `components/gamme/GammeHero.tsx` | `motion-reduce:animate-none` sur les deux points `animate-ping` (l. 139 et 229) ; liens du fil d'Ariane en `inline-flex items-center min-h-6` |
+| `components/gamme/GammeDiagnosticCTA.tsx` | `motion-reduce:animate-none` sur l'icône (l. 15) ; `motion-reduce:animate-none!` sur le reflet (l. 51) ; badge « 2 min » `text-orange-600` → `text-cta-700` |
+| `components/gamme/GammeQuickNav.tsx` | `scrollIntoView` : `behavior: "instant"` si `prefers-reduced-motion: reduce`, sinon `"smooth"` |
+| `components/gamme/GammeChecklist.tsx` | sous-texte des étapes `text-slate-400` → `text-neutral-400` |
+| `components/pieces/R1SlotImage.tsx` | légende `text-slate-400` → `text-neutral-400` |
+| `components/pieces/CatalogueSection.tsx` | ancre des cartes `text-semantic-action` → `text-cta-700` (survol `cta-800`) ; « Lire plus » `text-semantic-action/70` → `text-cta-700` + `inline-flex items-center min-h-6` |
+| `routes/pieces.$slug.tsx` | trois liens utiles en `inline-flex items-center min-h-6` ; « Conseils entretien » `text-emerald-600` → `text-success` |
+
+Deux causes trouvées en mesurant, pas en lisant :
+
+- **Reflet** : `styles/animations.css` redéfinit `.animate-shimmer` après la
+  feuille Tailwind, donc `motion-reduce:animate-none` perdait. Le modificateur
+  `!` de Tailwind v4 (`animation: none !important`, seulement sous
+  `prefers-reduced-motion: reduce`) règle le cas sans toucher la feuille globale.
+- **Défilement** : le hook global `hooks/useScrollBehavior.ts` (monté par
+  `root.tsx`) met `scroll-behavior: smooth` sur `<html>`. `behavior: "auto"`
+  restait donc animé ; `"instant"` ne l'est pas. Le hook n'est pas modifié.
+
+### axe 4.12.1 à 390×844, avant (`e31d3babe`) et après
+
+| Règle | Avant | Après |
+|---|---|---|
+| `color-contrast` | 24 | **9** (tous dans le pied de page et la barre mobile, globaux) |
+| `target-size` | 1 | **0** |
+| `link-in-text-block` | 1 | 1 (non traité) |
+| `region` | 2 | 2 (non traité) |
+
+Fichiers : `complement-3-accessibilite/avant-axe-390x844.json` et
+`apres-axe-390x844.json` (tous les nœuds, couleurs, ratio, classes).
+`color-contrast` « incomplete » : 18 avant, 18 après. axe ne tranche pas ces
+nœuds (fond dégradé ou image), notamment le fil d'Ariane du hero en
+`text-white/25` sur navy, qui paraît faible à l'œil. Ils ne font pas partie des
+24 et ne sont pas traités ici.
+
+### Contraste : les 24 textes signalés
+
+| Nœuds | Avant | Jeton | Après (calculé) |
+|---|---|---|---|
+| « Conseils entretien » (12 px) | `#009966` sur `#f8fafc`, 3,49 | `success` `#1E8449` | 4,51 |
+| 3 légendes d'image (12 px) | `#90a1b9`, 2,51 à 2,63 | `neutral-400` `#6B7280` | 4,62 à 4,83 |
+| 5 sous-textes de « Bien choisir » (10 px) | `#90a1b9` sur `#fcfdfe`, 2,58 | `neutral-400` | 4,75 |
+| Badge « 2 min » (10 px) | `#f54900` sur `#fff7ed`, 3,38 | `cta-700` `#C2410C` | 4,88 |
+| 4 ancres de « Aller plus loin » (12 px) | `#f97316` sur `#f5f7fa`, 2,61 | `cta-700` | 4,83 |
+| « Lire plus » (12 px) | `#f89b5a` sur `#f5f7fa`, 1,99 | `cta-700` | 4,83 |
+| **Pied de page, 4 nœuds** | 3,73 ; 2,24 ×2 ; 1,88 (`text-white/40`, `/25`, `/20` sur `#0f1e38`) | non modifié | — |
+| **Barre « Navigation mobile », 5 nœuds** | 2,63 ×4 (`#90a1b9`) ; 2,80 (`#f97316`) sur blanc | non modifié | — |
+
+Les 15 nœuds R1 ne sont plus signalés par axe après correction. Aucune couleur
+n'a été créée et aucune valeur n'est écrite en dur.
+
+**Arrêt sur composant partagé (point 4)** : `components/home/Footer.tsx` (via
+`LazyFooter`, sur l'accueil et d'autres routes) et `components/layout/BottomNav.tsx`
+(monté par `root.tsx`, sur tout le site) ne sont pas propres à R1. Les corriger
+changerait toutes les pages. Ils ne sont pas touchés. Il ne manque pas de jeton :
+`neutral-400` (4,83 sur blanc) suffit pour la barre mobile, et les blancs
+translucides du pied de page peuvent passer à une teinte `neutral` claire. La
+décision revient à la revue du design system (05).
+
+### Cibles tactiles : 10 sous 24 px avant, 4 après
+
+Corrigées (hauteur portée à 24 px, `min-h-6`) :
+
+| Cible | Avant | Après |
+|---|---|---|
+| Fil d'Ariane « Accueil » | 36×16 | 36×24 |
+| Fil d'Ariane « Pièces Auto » | 58×16 | 58×24 |
+| « Guide d'achat » | 80×16 | 80×24 |
+| « Conseils entretien » | 104×16 | 104×24 |
+| « Fiche technique » | 92×16 | 92×24 |
+| « Lire plus » (Aller plus loin) | 48×16 | 48×24 |
+
+Restent sous 24 px, non touchées (exceptions de WCAG 2.5.8) :
+
+- lien d'évitement « Aller au contenu principal » (1×1) : masqué (`sr-only`),
+  visible seulement au focus ;
+- liens dans une phrase : « filtre à air » 63×18 dans `#reference` et dans
+  `#bien-choisir`, « En savoir plus sur le filtre à huile » 207×18 dans
+  `#emplacement`. Ce sont des liens du contenu (classe `seo-internal-link`).
+  L'exception « en ligne » s'applique, et les modifier toucherait le contenu.
+
+Entre 24 et 44 px, listées sans y toucher : champ de recherche 358×40,8 ; deux
+liens de `#reference` 344×40,8 et 347×40,8 ; un lien de `#bien-choisir`
+299×40,8 ; quatre liens « ressources liées » 284×43,6 ; « CGV » 26×44 (pied de
+page) ; « Retour en haut » 24×24. S'y ajoutent les six cibles corrigées
+ci-dessus, désormais à 24 px de haut.
+
+### Mouvement, avec `prefers-reduced-motion: reduce`
+
+| Mesure | Avant | Après |
+|---|---|---|
+| Animations infinies actives (`document.getAnimations()`) | `ping`, `subtle-float`, `shimmer` | aucune |
+| Navigation rapide → FAQ, position 60 ms après le clic | 791, fin 12 787 (animé) | 12 805, fin 12 805 (instantané) |
+
+Sans la préférence, les animations et le défilement doux restent inchangés.
+
+### Captures (390 et 1440 px, `reducedMotion: reduce`, animations figées)
+
+`complement-3-accessibilite/{avant,apres}-<zone>-{390,1440}.png`, pour sept zones :
+`fil-ariane`, `liens-utiles`, `bien-choisir-legende-et-etapes`,
+`qualite-prix-legende`, `emplacement-legende`, `diagnostic-badge-2-min` et
+`aller-plus-loin-cartes`.
+
+### Vérifications
+
+- `npm run typecheck` (frontend) : OK.
+- vitest : 9 fichiers, 107 tests réussis. Ce sont les 7 fichiers R1 de DU
+  (`r1-builders`, `r1-faq`, `r1-section-pack`, `r1-images-meta`, deux tests
+  `pieces-slug-*`) et 2 fichiers voisins.
+- Anti-patterns : `impeccable ratchet OK — total 9 ≤ baseline 9`.
+- `check-new-files --base origin/main` : 44 fichiers ok, 0 échec.
+
+### Non fait
+
+- Rangs 2, 4, 5, 6, 8, 9 et 10 de la revue.
+- `link-in-text-block` (lien « Conseils : changer un filtre à huile étape par
+  étape », `#reference`) et `region` (« Livraison gratuite dès 150€ »,
+  « Retours 30j », hors repère) : hors du complément n° 3.
+- Pied de page, barre mobile et hook `useScrollBehavior` : globaux, voir
+  ci-dessus.
+
 ## Limites
 
 - **Lighthouse n'est pas installé.** `npm install lighthouse` est bloqué par le
@@ -459,6 +594,8 @@ upstream. On y trouve aussi l'annexe vidéo mise de côté.
   seulement.
 - `outils/measure.cjs` : `node measure.cjs <url> <label> <sortie.json> [passages]`.
 - `outils/zone.cjs` : `node zone.cjs <base> <label> <dossier>` ; cibles, contraste et mouvement de la zone du complément n° 2.
+- `outils/axe-c3.cjs` : `node axe-c3.cjs <base> <label> <dossier>` ; axe 4.12.1 à 390×844, cibles sous 44 px, boucles et défilement avec reduced-motion (complément n° 3).
+- `outils/zones-c3.cjs` : `node zones-c3.cjs <base> <label> <dossier>` ; captures des zones du complément n° 3 à 390 et 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree
 (chemin à adapter).

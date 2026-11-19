@@ -12,7 +12,7 @@ export default function GammeDiagnosticCTA() {
             <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md shadow-orange-200 shrink-0">
               <SearchCheck
                 size={17}
-                className="text-white animate-subtle-float"
+                className="text-white animate-subtle-float motion-reduce:animate-none"
               />
             </div>
             <h2 className="text-[17px] lg:text-[20px] font-extrabold text-slate-900 tracking-tight font-heading">
@@ -28,7 +28,7 @@ export default function GammeDiagnosticCTA() {
             </Badge>
             <Badge
               variant="outline"
-              className="text-[10px] font-bold text-orange-600 bg-orange-50 border-orange-200 px-2 py-1"
+              className="text-[10px] font-bold text-cta-700 bg-orange-50 border-orange-200 px-2 py-1"
             >
               <Clock size={9} className="mr-1" /> 2 min
             </Badge>
@@ -48,7 +48,7 @@ export default function GammeDiagnosticCTA() {
               type="button"
               className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl text-white text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/[0.12] to-white/0 animate-shimmer" />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/[0.12] to-white/0 animate-shimmer motion-reduce:animate-none!" />
               <SearchCheck size={18} /> Lancer le diagnostic
             </button>
           </Link>

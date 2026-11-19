@@ -805,7 +805,7 @@ export default function PiecesDetailPage() {
             {data.content?.buyingGuideHref && (
               <a
                 href={data.content.buyingGuideHref}
-                className="text-blue-600 hover:text-blue-800 transition-colors"
+                className="inline-flex items-center min-h-6 text-blue-600 hover:text-blue-800 transition-colors"
               >
                 Guide d&apos;achat
               </a>
@@ -813,14 +813,14 @@ export default function PiecesDetailPage() {
             {data.content?.conseilsHref && (
               <a
                 href={data.content.conseilsHref}
-                className="text-emerald-600 hover:text-emerald-800 transition-colors"
+                className="inline-flex items-center min-h-6 text-success hover:text-emerald-800 transition-colors"
               >
                 Conseils entretien
               </a>
             )}
             <a
               href="/reference-auto"
-              className="text-foreground hover:text-foreground transition-colors"
+              className="inline-flex items-center min-h-6 text-foreground hover:text-foreground transition-colors"
             >
               Fiche technique
             </a>

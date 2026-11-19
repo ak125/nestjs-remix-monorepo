@@ -257,7 +257,7 @@ const CatalogueSection = memo(function CatalogueSection({
                         })()}
 
                       {/* Ancre SEO variée */}
-                      <div className="flex items-center text-xs text-semantic-action font-medium group-hover:text-semantic-action/80">
+                      <div className="flex items-center text-xs text-cta-700 font-medium group-hover:text-cta-800">
                         {anchorText}
                         <svg
                           className="w-3 h-3 ml-0.5 group-hover:translate-x-0.5 transition-transform"
@@ -285,7 +285,7 @@ const CatalogueSection = memo(function CatalogueSection({
                       {needsTruncation && (
                         <button
                           onClick={(e) => toggleDescription(index, e)}
-                          className="text-xs text-semantic-action/70 hover:text-semantic-action mt-1 font-medium"
+                          className="inline-flex items-center min-h-6 text-xs text-cta-700 hover:text-cta-800 mt-1 font-medium"
                         >
                           {isExpanded ? "Voir moins" : "Lire plus"}
                         </button>

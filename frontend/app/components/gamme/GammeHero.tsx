@@ -56,7 +56,7 @@ export default function GammeHero({
               {b.href ? (
                 <Link
                   to={b.href}
-                  className="hover:text-white/50 transition-colors"
+                  className="inline-flex items-center min-h-6 hover:text-white/50 transition-colors"
                 >
                   {b.label}
                 </Link>
@@ -136,7 +136,7 @@ export default function GammeHero({
                 <div className="mb-2.5 flex justify-center">
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-700 shadow-sm">
                     <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="absolute inline-flex h-full w-full animate-ping motion-reduce:animate-none rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                     </span>
                     Sélectionnez votre véhicule
@@ -226,7 +226,7 @@ export default function GammeHero({
                 <div className="flex justify-center pt-4 pb-1">
                   <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[13px] font-medium text-slate-700 shadow-sm">
                     <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="absolute inline-flex h-full w-full animate-ping motion-reduce:animate-none rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                     </span>
                     Sélectionnez votre véhicule
