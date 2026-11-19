@@ -23,6 +23,9 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   `__seo_item_switch`). Revérification finale : contrastes au pixel, phrases des cartes sur un rendu
   propre de la branche (backend et frontend de `06feff968` sur un port à moi, Redis privé, sans
   proxy), cache, lexique et régressions. Le verdict et le §12 sont mis à jour pour cette tête.
+- **Complément n° 6** : contraste du bouton « Lancer le diagnostic » (`GammeDiagnosticCTA`), mesuré
+  au pixel sur un rendu propre de la tête `06feff968`, inchangée. Voir le §14 ; les autres sections
+  ne changent pas.
 
 ## Verdict final
 
@@ -118,6 +121,10 @@ Je les ai mesurés au pixel.
   - cinq bénéfices génériques reviennent sur 95 à 96 des 101 gammes qui ont des bénéfices.
 
   Détail et sources au §12, lignes « Phrases des cartes » à « Écart de lexique ».
+
+**Complément n° 6, tête `06feff968` : bouton diagnostic : correction d'abord.** Le texte blanc du
+bouton descend à 2,75:1 (seuil 4,5:1). Le défaut est antérieur à #2210. La correction proposée à DS
+est locale aux pages R1 et reste dans les jetons `cta` (§14).
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -705,3 +712,125 @@ Rappel du complément n° 4, tête `34bdc1eb36e4120a4ec7769249b4c4ef5f9def95` :
   marquées dans la page servie (C10). Leur présence et leur longueur ne sont donc pas vérifiables.
 - **Seuil d'indexabilité par familles** : ses entrées ne sont pas lisibles depuis la page.
 - **Hors périmètre** : la variante vidéo, la page véhicule (Clio III) et toute page R2.
+
+## 14. Complément n° 6 : contraste du bouton « Lancer le diagnostic »
+
+**Verdict : bouton diagnostic : correction d'abord.**
+
+- **Tête mesurée** : `06feff9686afa610d5b0363397e2cd2b7ec3fe1d` (#2210, PR brouillon ouverte),
+  relevée avant les mesures et revérifiée avant la publication. Rien n'a été modifié dans #2210.
+- **Composant** : `frontend/app/components/gamme/GammeDiagnosticCTA.tsx`. Le bouton est aux lignes
+  51 à 56 et la pastille à la ligne 12.
+- **Rendu** : backend et frontend de `06feff968` sur un port à moi, avec un Redis privé. Le service
+  DEV n'a pas servi. Navigateur Chromium (Playwright), échelle 1, mouvement non réduit.
+- **Méthode** :
+  - le texte est rendu transparent, transition coupée, puis le fond est capturé dans la boîte du
+    texte (1 px de marge) ;
+  - le rapport retenu est celui du blanc contre le pixel de fond **le plus clair**, le pire cas ;
+  - le reflet `animate-shimmer` (cycle de 3 s) est mis en pause à 24 positions ;
+  - le survol est déclenché à 1440 px ;
+  - les rapports sont tronqués au centième, jamais arrondis vers le haut.
+- **Seuils** : texte de 15 px (390) et 14 px (1440) gras, donc pas « grand » : 4,5:1 (1.4.3).
+  Éléments graphiques : 3:1 (1.4.11). Cible : 24 px en AA, 44 px visés (2.5.8).
+- Script `scripts/diag-du6.cjs`. Mesures `mesures/c6-diag-*.json` et `mesures/c6-sim-*.json`.
+  Captures `captures/c6-*.png`.
+
+### 14.1 Couleurs réellement servies
+
+| Classe | Valeur calculée dans le CSS construit | Hex |
+|---|---|---|
+| `orange-500` | `oklch(70.5% .213 47.604)` | `#ff6900` |
+| `orange-600` | `oklch(64.6% .222 41.116)` | `#f54a00` |
+
+Ce sont les couleurs **par défaut de Tailwind 4**, pas les jetons du site. `tokens.json` n'a pas de
+palette `orange` ; les jetons orange du site sont `cta`, branchés par `tailwind.config.cjs:26`.
+Le constat du chat de pilotage partait de `#f97316` et `#ea580c`. Ces valeurs sont celles de Tailwind 3,
+reprises par les jetons `cta-500` et `cta-600` ; elles ne sont pas servies ici. Ses estimations
+(2,8 et 3,6:1) restent proches des mesures.
+
+### 14.2 Texte blanc du bouton (seuil 4,5:1)
+
+| Mesure | 390 px | 1440 px | 1440 px, survol |
+|---|---|---|---|
+| Bout gauche du dégradé, sans reflet | 2,90 | 2,90 | 2,88 |
+| Bout droit du dégradé, sans reflet | 3,54 | 3,58 | 3,58 |
+| Fond sous le texte, sans reflet (pixel le plus clair) | 3,03 | 3,11 | 3,11 |
+| Fond sous le texte, au passage du reflet (pire des 24 positions) | **2,75** (t = 0,46) | 2,82 (t = 0,50) | 2,82 |
+| Icône loupe du bouton (pire position) | 2,70 | 2,83 | 2,83 |
+
+**Le plus mauvais rapport est 2,75:1**, à 390 px, quand le reflet passe sur le texte. Aucune position
+n'atteint 4,5:1 ; le meilleur fond sous le texte reste sous 3,5:1.
+
+Le survol ne change aucune couleur. Il ajoute une ombre et remonte le bouton de 2 px
+(`translate: 0 -2px`). L'icône loupe accompagne le libellé : elle est décorative et 1.4.11 ne
+s'impose pas à elle. Sa valeur est donnée pour information.
+
+### 14.3 Titre, texte et pastille du bloc
+
+| Élément | Couleur | Fond mesuré | Rapport | Seuil | Résultat |
+|---|---|---|---|---|---|
+| Titre « Diagnostic gratuit » (17 et 20 px, 800) | `#0f172b` (`slate-900`) | `#ffffff` | 17,83 | 4,5 | conforme |
+| Texte « Notre diagnostic identifie… » (13 px, 400) | `#62748e` (`slate-500`) | `#ffffff` | 4,76 | 4,5 | conforme |
+| Icône blanche sur la pastille (36 et 40 px) | `#ffffff` | dégradé `#ff6900` → `#f54a00`, pixel le plus clair sous l'icône | 3,01 (390), 3,03 (1440) | 3 | conforme de justesse |
+
+La pastille passe de 0,01 à 0,03 point, et son icône redit le titre voisin. Si DS la passe aux jetons,
+`cta-500` ne convient pas : le blanc sur `#F97316` donne 2,80:1, mesuré en simulation. `cta-600` vers
+`cta-700` convient : 3,56 à 5,17:1, calculé et non mesuré.
+
+### 14.4 Zone cliquable
+
+| Largeur | Lien `<a>` | Bouton | Seuil |
+|---|---|---|---|
+| 390 px | 332 × 56 px | 332 × 56 px | 24 px (AA), 44 px visés |
+| 1440 px | 1182 × 54 px | 1182 × 54 px | idem |
+
+C'est conforme et au-dessus des 44 px visés.
+
+En aparté, hors verdict : le `<button>` est placé dans le `<a>` (`GammeDiagnosticCTA.tsx:50-53`), alors
+que HTML interdit un contenu interactif dans un lien. À traiter par DS en même temps, s'il le juge utile.
+
+### 14.5 Correction proposée à DS (non appliquée)
+
+**La plus simple**, une seule ligne de `GammeDiagnosticCTA.tsx:53` : remplacer
+`from-orange-500 to-orange-600` par `from-cta-700 to-cta-800`.
+- Texte blanc, reflet et forme sont gardés.
+- Couleurs tirées des jetons `cta` (`#C2410C` → `#9A3412`), seule source des jetons (décision 45).
+- Aucun composant partagé n'est touché.
+
+Mesures en simulation, par un style posé dans mon seul navigateur :
+
+| Variante | Pire au passage du reflet | Sans reflet (fond sous texte) | Bouts du dégradé | Icône du bouton |
+|---|---|---|---|---|
+| **A. `from-cta-700 to-cta-800`, texte blanc** | **4,73** (390), 4,90 (1440) | 5,73 et 6,00 | 5,2 à 7,25 | 4,59 et 4,95 |
+| B. `bg-cta text-black hover:bg-cta-hover`, comme le bouton de l'accueil | 7,40 | 7,49 | 7,49 | 7,40 |
+| C. `cta-700` plein, texte blanc | 4,27 : **non conforme** à cause du reflet | 5,17 | 5,17 | 4,30 |
+
+- **A** passe partout, avec une marge réduite (0,23) sous le reflet.
+  - `cta-700` est déjà servi dans ce composant (badge « 2 min », complément n° 5).
+  - `cta-800` vient des jetons, mais aucune classe ne l'utilise encore : DS doit vérifier sa valeur
+    servie après construction.
+- **B** a la plus grande marge et reprend le bouton « Lancer le diagnostic » de l'accueil. Mais il
+  change l'apparence, avec un texte noir : c'est une décision de design pour Marwane.
+- **C** n'est valable que si le reflet est retiré.
+
+Captures `captures/c6-diag-390-bouton.png` (actuel), `captures/c6-sim-A-cta700-800-390-bouton.png`,
+`captures/c6-sim-B-cta-noir-390-bouton.png` et `captures/c6-sim-C-cta700-plein-390-bouton.png`.
+
+### 14.6 Portée : où ce bouton existe
+
+- **`GammeDiagnosticCTA`** n'est importé qu'à un endroit : `routes/pieces.$slug.tsx:1070`, rendu
+  sans condition (export `components/gamme/index.ts:3`). Il sert donc **toutes les pages gamme R1**,
+  et aucune autre page. La correction A ou B est locale à R1 et ne touche pas le design commun du site.
+- **Défaut antérieur à #2210.** Sur ce composant, #2210 ajoute seulement `motion-reduce` et les
+  couleurs du badge ; les classes du bouton viennent de `main`. Le même contraste est donc dans le
+  code de `main` pour toutes les pages R1. L'état servi en PROD n'est pas vérifié ici.
+- **Même libellé, autres composants** (non touchés par la correction) :
+  - `components/home/DiagnosticBanner.tsx:48-51` (accueil) : `bg-cta text-black`, soit la variante
+    B, à 7,49:1 sur `cta` d'après la simulation ;
+  - `components/diagnostic-wizard/DiagnosticWizard.tsx:879-885` (page `/diagnostic-auto`) :
+    `bg-blue-600 hover:bg-blue-700`, non mesuré.
+- **Même dégradé `from-orange-500 to-orange-600`**, avec d'autres contenus, dans quatre autres
+  fichiers : `components/catalog/PurchaseGuide.tsx`, `components/blog/BlogSearchBar.tsx`,
+  `components/navbar/CartSidebarSimple.tsx` (panier, zone STOP) et
+  `routes/admin.optimization-summary.tsx`. Non mesurés, hors périmètre. Le même écart de jeton peut
+  y exister.
