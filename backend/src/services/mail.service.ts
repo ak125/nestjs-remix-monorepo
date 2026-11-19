@@ -344,6 +344,54 @@ export class MailService {
     );
   }
 
+  /**
+   * Mandat BT — écarts du passage quotidien des mails Paybox, vers
+   * `ADMIN_ORDER_EMAIL` (D4 : pas de nouvelle alerte de paiement). Référence
+   * de commande, montant et nature de l'écart seulement : aucune donnée client.
+   */
+  async sendPayboxCaptureDiscrepancies(
+    day: string,
+    items: Array<{
+      label: string;
+      orderRef?: string;
+      amountCents?: number;
+      detail: string;
+    }>,
+  ): Promise<MailDelivery | 'skipped'> {
+    const adminEmail = this.configService.get<string>('ADMIN_ORDER_EMAIL');
+    if (!adminEmail) {
+      this.logger.warn(
+        'ADMIN_ORDER_EMAIL not set — skipping Paybox capture report',
+      );
+      return 'skipped';
+    }
+    const cell = 'padding:6px 8px;border-bottom:1px solid #e5e7eb;';
+    const rows = items
+      .map((i) => {
+        const amount =
+          i.amountCents == null
+            ? ''
+            : `${Math.trunc(i.amountCents / 100)},${String(i.amountCents % 100).padStart(2, '0')} €`;
+        return `<tr><td style="${cell}">${escapeHtml(i.label)}</td><td style="${cell}">${escapeHtml(i.orderRef ?? '')}</td><td style="${cell}">${escapeHtml(amount)}</td><td style="${cell}">${escapeHtml(i.detail)}</td></tr>`;
+      })
+      .join('');
+    const html = this.wrapLayout(
+      'Encaissements Paybox : écarts',
+      '#dc2626',
+      `<p>Passage du ${escapeHtml(day)} : ${items.length} écart(s) entre les mails Paybox et les commandes.</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;">
+        <tr><th style="${cell}text-align:left;">Écart</th><th style="${cell}text-align:left;">Commande</th><th style="${cell}text-align:left;">Montant</th><th style="${cell}text-align:left;">Détail</th></tr>
+        ${rows}
+      </table>
+      <p>Aucun état d'encaissement n'a été écrit pour ces lignes. La saisie manuelle reste possible depuis la fiche commande.</p>`,
+    );
+    return this.doSend(
+      adminEmail,
+      `[ENCAISSEMENT] ${items.length} écart(s) Paybox — ${day}`,
+      html,
+    );
+  }
+
   async sendGuestAccountActivation(
     email: string,
     resetToken: string,

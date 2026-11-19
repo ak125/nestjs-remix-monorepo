@@ -65,7 +65,8 @@ export interface CaptureStateRow {
   ocs_ord_id: string;
   ocs_state: CaptureState;
   ocs_captured_amount_cents: number | null;
-  ocs_source: 'manual' | 'paybox_direct';
+  /** `paybox_mail` : lu dans les mails Paybox de automecanik.seo@gmail.com (mandat BT). */
+  ocs_source: 'manual' | 'paybox_direct' | 'paybox_mail';
   ocs_checked_at: string;
   ocs_updated_by: string | null;
 }

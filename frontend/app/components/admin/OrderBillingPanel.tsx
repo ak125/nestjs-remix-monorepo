@@ -52,6 +52,13 @@ export interface OrderBilling {
   invoice: { number: string; date: string | null; totalTtc: string } | null;
 }
 
+/** Origine de l'état d'encaissement (mandat BT : paybox_mail). */
+const SOURCES: Record<string, string> = {
+  manual: "saisi",
+  paybox_mail: "lu dans les mails Paybox",
+  paybox_direct: "lu par Paybox Direct",
+};
+
 const STATES: Array<[string, string]> = [
   ["authorized", "Autorisée, non encaissée"],
   ["captured", "Encaissée"],
@@ -180,14 +187,14 @@ export function OrderBillingPanel({ orderId }: { orderId: string }) {
             <dd data-testid="expected-capture">
               {euros(billing.expectedCaptureTtc)}
             </dd>
-            <dt>État Verifone (saisi)</dt>
+            <dt>État Verifone</dt>
             <dd data-testid="capture-state">
               {billing.capture
                 ? `${STATES.find(([k]) => k === billing.capture!.ocs_state)?.[1] ?? billing.capture.ocs_state}${
                     billing.capture.ocs_captured_amount_cents != null
                       ? ` — ${eurosFromCents(billing.capture.ocs_captured_amount_cents)}`
                       : ""
-                  }`
+                  } (${SOURCES[billing.capture.ocs_source] ?? billing.capture.ocs_source})`
                 : "Non renseigné"}
             </dd>
             <dt>Expédition</dt>
