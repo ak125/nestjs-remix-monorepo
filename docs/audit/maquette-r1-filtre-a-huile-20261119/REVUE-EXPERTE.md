@@ -10,6 +10,10 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   `frontend/app/routes/pieces.$slug.tsx`, plus le dossier `docs/audit/maquette-r1-filtre-a-huile-20261119/` de DS.
 - **Non lu** : le worktree et la session de DS, en particulier leurs changements non poussés sur la page véhicule.
 - Les numéros de ligne cités sont ceux de la tête ci-dessus.
+- **Complément n° 3** : la tête de #2210 est passée à `e31d3babe75d36521c0a9f240b2342743f258eec`
+  (complément n° 2 de DS, relevée le 19/11 vers 21 h 15). Les trois corrections d'apparence y sont
+  revérifiées par mes propres mesures. Le verdict et le §12 sont mis à jour pour cette tête ; les
+  autres sections restent celles de `8507eb5b8`.
 
 ## Verdict final
 
@@ -32,6 +36,17 @@ maintenant étendrait donc aussi ces défauts.
 Des textes interdits sur une page R1 restent servis : des prix en euros, « livraison » et « en stock ».
 Ils ne bloquent pas la décision sur l'ordre. Ils empêchent en revanche de dire que la page est
 conforme au rôle R1. Ils relèvent de l'équipe 06 et de Marwane (titres).
+
+**Complément n° 3, tête `e31d3babe` : corrections d'abord, mais il reste peu à faire.**
+- Le contraste des cartes véhicule et les cibles de la navigation rapide sont corrigés. Le plus bas
+  est 4,72:1 (pastille puissance) ; les boutons de la navigation font 44 px de haut.
+- Le mouvement n'est corrigé que sur les éléments touchés par DS. Avec « réduire les animations »,
+  trois boucles tournent encore : le point du hero (`GammeHero.tsx:139`) et deux effets du bloc
+  diagnostic (`GammeDiagnosticCTA.tsx:15` et `:51`). Le défilement `smooth` de la navigation rapide
+  (`GammeQuickNav.tsx:38`) les ignore aussi.
+- Le diff ne touche que des classes CSS : aucun texte, titre, ancre ni donnée structurée. axe donne
+  les mêmes 24 + 1 + 2 + 1 violations qu'à `8507eb5b8`, nœud pour nœud. Le typecheck et les
+  100 tests R1 passent.
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -494,6 +509,11 @@ Simulation de fusion (`git merge-tree --write-tree`) entre la tête de #2210 et 
 
 ## 12. Liste de contrôle « rien au hasard »
 
+Mise à jour du complément n° 3 pour la tête `e31d3babe75d36521c0a9f240b2342743f258eec`. Preuves :
+`mesures/c3-*.json`, scripts `apparence-du.cjs`, `survol-du.cjs` et `captures-du3.cjs`, captures
+`captures/c3-*.png`. Sur les captures pleine page, l'en-tête fixe et la barre basse recouvrent
+parfois une carte : c'est un effet de la capture, pas de la page.
+
 | Point | Verdict | Raison |
 |---|---|---|
 | Rôle et contrat | À CORRIGER | Rôle R1 bien déclaré, aucun écart nouveau. Restent 15 écarts antérieurs (§8.2) et 13 contradictions entre sources (§9) |
@@ -505,17 +525,20 @@ Simulation de fusion (`git merge-tree --write-tree`) entre la tête de #2210 et 
 | LCP mobile | À MESURER | Labo : 1,8 s à 412 × 823 et 375 × 800, 2,7 s à 412 × 915. Le terrain p75 reste à mesurer après PREPROD |
 | CLS | OK | 0 dans toutes les séries, y compris pendant un défilement immédiat |
 | INP | À MESURER | Labo : 24 à 96 ms. Le terrain reste à mesurer |
-| Contraste | À CORRIGER | 24 nœuds sous le seuil, plus le dégradé des cartes véhicule |
-| Cibles tactiles | À CORRIGER | Navigation rapide à 37 px ; 26 cibles sous 44 px ; un bouton de 48 × 16 |
+| Contraste | À CORRIGER (hors cartes) | Cartes véhicule corrigées à `e31d3babe` : aucun texte sous 4,5:1 à 390 et 1440 px, en mesure directe ; minimum 4,72:1. Restent 24 nœuds axe hors cartes, les mêmes qu'avant |
+| Cibles tactiles | À CORRIGER (hors navigation rapide) | Navigation rapide corrigée : 6 boutons de 44 px de haut et de 76 à 140 px de large. Restent 20 cibles sous 44 px (26 avant) et le bouton de 48 × 16 (sous le seuil AA de 24 px) |
 | Ordre de tabulation | À MESURER | Il suit l'ordre visuel. Le focus se perd au champ « Marque » dans le navigateur sans affichage (identique avant et après) ; à vérifier au clavier réel |
 | Libellés | OK | Aucun contrôle sans nom accessible ; champs du sélecteur libellés |
 | Lisibilité à 390 px | À CORRIGER | Textes de 10 à 12 px (réassurance, fil d'Ariane, cartes d'étapes) ; `#reference` mesure 5 255 px |
 | Parcours d'achat (sélecteur puis page véhicule) | OK, À MESURER | Le sélecteur est au premier écran et les cartes véhicule suivent. Le bouton du chat recouvre le bas du sélecteur. Le taux de passage de R1 à R2 reste à mesurer |
 | Éléments de confiance | OK | Réassurance placée juste après le sélecteur. Le seuil de livraison dépend de #2143 |
-| Jetons de design sans valeur en dur | À CORRIGER | `text-[12px]` (`GammeQuickNav.tsx:39`), dégradé sans couleur d'arrivée (`MotorisationsSection.tsx:49`), `text-white/25` (`GammeHero.tsx:52`), couleurs `#009966`, `#90a1b9`, `#f97316` relevées par axe |
-| Mouvement réduit | À CORRIGER | Défilement `smooth`, `shimmer` infini, `hover:scale` sans garde `prefers-reduced-motion` |
+| Jetons de design sans valeur en dur | À CORRIGER (hors cartes) | Le diff de `e31d3babe` n'ajoute aucune valeur en dur. `bg-navy` (#0F1E38) et `bg-success` / `text-success-foreground` (#1E8449 / #FFFFFF) viennent de `packages/design-tokens/src/tokens.json`. Restent `text-[12px]` (`GammeQuickNav.tsx:40`), `text-white/25` (`GammeHero.tsx:52`) et les couleurs relevées par axe hors cartes |
+| Mouvement réduit | À CORRIGER | Corrigé sur les éléments touchés : en mode réduit, plus aucun déplacement au survol ni reflet en boucle. Restent en boucle `animate-ping` (`GammeHero.tsx:139`), `animate-subtle-float` et `animate-shimmer` (`GammeDiagnosticCTA.tsx:15` et `:51`). Restent aussi le défilement `smooth` (`GammeQuickNav.tsx:38`) et 31 déplacements au survol non gardés (menu principal, `#bien-choisir`, `#aller-plus-loin`) |
 | Cohérence avec #1943, #1944, #2143 et DG | À CORRIGER | Doublon avec #1943, conflit avec #1944, dépendance du bandeau à #2143 (§11) |
 | Couverture par les contrôles | NON VÉRIFIÉ | Aucun contrôle de PR ne couvre l'ordre ni le rendu R1 (§10) |
+| Diff `8507eb5b8` → `e31d3babe` limité à l'apparence | OK | 2 fichiers de code ; toutes les lignes modifiées sont des `className`, plus la valeur par défaut `familleColor`. Aucun texte, titre, ancre, `id` ni donnée structurée. Les autres fichiers sont la documentation de DS |
+| Effet sur les autres gammes | OK | Composants utilisés seulement par `pieces.$slug.tsx` ; rendu identique vérifié sur `/pieces/plaquette-de-frein-402.html` (contraste, cibles, animations) |
+| Typecheck et tests R1 à `e31d3babe` | OK | `tsc` sans erreur ; 7 fichiers et 100 tests R1 passés |
 | Écran d'erreur observé une fois | NON VÉRIFIÉ | 1 occurrence sur 6 passages, non reproduite, cause inconnue (§6) |
 
 ## 13. Ce qui n'a pas pu être jugé, et pourquoi
@@ -530,7 +553,8 @@ Simulation de fusion (`git merge-tree --write-tree`) entre la tête de #2210 et 
 - **Lecteurs d'écran et appareils réels** (TalkBack, VoiceOver) : non testés, faute d'appareil.
 - **Desktop** : jugé sur captures seulement, sans mesure de performance (le mandat vise le mobile).
 - **Autres gammes** : la décision 57 étend l'apparence à toutes les gammes. La hauteur de `#reference`
-  et les textes varient selon la gamme ; je n'en ai mesuré qu'une.
+  et les textes varient selon la gamme. J'en ai mesuré deux : le filtre à huile entièrement, et la
+  plaquette de frein pour l'apparence seulement (complément n° 3).
 - **Exécution réelle du validateur de rôle** : sans accès aux journaux du backend, je n'ai pas pu
   vérifier si l'intercepteur se déclenche sur une page R1 servie (§8.2, n° 33).
 - **Rattachement des blocs au contrat** : la section micro-SEO et les sections S0 à S9 ne sont pas

@@ -12,6 +12,8 @@ Search Central, web.dev, W3C WCAG 2.2, Baymard Institute et Nielsen Norman Group
 - **Rien n'a été modifié** dans #2210, dans le code, en base ou en PROD. Aucune règle n'a été
   changée : les propositions du §5 passent par une PR sur le journal des principes, approuvée
   par Marwane.
+- **Complément n° 3** : le §3.F est remesuré à la tête `e31d3babe75d36521c0a9f240b2342743f258eec`
+  de #2210. Les autres sections restent celles de la tête `8507eb5b8`.
 - **Concurrents** : aucun n'est utilisé ici (consigne n° 4). Le pilotage fait leur relevé à part.
 
 ## 0. En bref
@@ -38,6 +40,9 @@ Search Central, web.dev, W3C WCAG 2.2, Baymard Institute et Nielsen Norman Group
    - une cible de moins de 24 px ;
    - trois animations sans fin, qui ne respectent pas le réglage « réduire les animations » ;
    - la maquette ajoute un lien distingué par sa seule couleur.
+
+   À la tête e31d3babe (complément n° 3, §3.F) : les cartes véhicule et la navigation rapide sont
+   corrigées. Les 24 textes hors cartes, la cible de 48×16, le lien et les trois boucles restent.
 6. **Le partage R1 sans prix / R2 avec prix reste défendable**, à une condition : que R1 soit un
    passage court vers R2. Le §5.3 détaille ce point.
 7. **Aucune donnée terrain n'a été consultée.** Les seuils Core Web Vitals portent sur le
@@ -175,17 +180,28 @@ Les citations sont reprises mot pour mot, en anglais, telles que dans la source.
 
 ### 3.F Accessibilité (WCAG 2.2)
 
-| ID | Exigence | Source | Actuelle | Maquette | Preuve |
-|---|---|---|---|---|---|
-| F-1 | 1.4.3 (AA) : contraste de 4,5:1, ou 3:1 pour le grand texte, sans arrondi | A1 | **NON** (25) | **NON** (24) | `mesures/avant-axe-390x844.json`, `mesures/apres-axe-390x844.json`. Exemple de la page actuelle : `#aller-plus-loin`, #62748e sur #f3f8fd, soit 4,45:1 |
-| F-2 | 2.5.8 (AA) : cible d'au moins 24×24 px CSS, sauf exceptions | A2 | **NON** (1) | **NON** (1) | Un bouton de 48×16 dans `#aller-plus-loin`, dans les deux versions |
-| F-3 | 2.5.5 (AAA) : 44×44 px. C'est aussi le seuil des skills du dépôt | A3 | NON | NON | 6 cibles sous 44 px dans la navigation rapide (bouton de 132×37), relevées dans les deux versions |
-| F-4 | 1.4.1 (A) : un lien dans un texte ne se distingue pas par sa seule couleur (technique G183 : 3:1 face au texte voisin, plus un repère au survol et au focus) | A9 | OUI (0) | **NON** (1) | La maquette ajoute « Conseils : changer un filtre à huile étape par étape » dans `#reference`, avec un écart de 1,44:1 (`apres-axe-390x844.json`, règle `link-in-text-block`) |
-| F-5 | 2.2.2 (A) : un mouvement qui démarre seul, dure plus de 5 s et côtoie d'autres contenus doit pouvoir être mis en pause, arrêté ou masqué | A5 | PARTIEL | PARTIEL | Trois animations sans fin et sans moyen de pause : `animate-ping` sur le badge du sélecteur (`GammeHero.tsx:139`), `animate-subtle-float`, qui dure 3 s et se répète sans fin (`GammeDiagnosticCTA.tsx:15`, `tailwind.config.cjs:178`), et `animate-shimmer`, en boucle sans fin (`GammeDiagnosticCTA.tsx:51`). Reste à confirmer par un auditeur humain si ces petites animations décoratives entrent dans le critère : axe ne le teste pas |
-| F-6 | 2.3.3 (AAA) et W7 : respecter `prefers-reduced-motion` | A4, W7 | **NON** | **NON** | Aucune occurrence de `motion-reduce` dans le HTML (`avant-ssr-liens-et-balises.json`). `global.css:920-925` ne coupe que `.shimmer-anim` et `.marquee-anim`, ni `.animate-shimmer`, ni `animate-ping`, ni `animate-subtle-float`. Le défilement `behavior: "smooth"` (`GammeQuickNav.tsx:37`) ne tient pas compte de ce réglage |
-| F-7 | 2.4.3 (A) : un ordre de focus « that preserves meaning and operability » | A6 | NON VÉRIFIABLE | NON VÉRIFIABLE | Aucun parcours au clavier n'a été fait. La maquette change l'ordre visuel par CSS (`order-last`) sur l'image, qui n'est pas focalisable. L'ordre de la navigation rapide suit désormais celui des sections (`GammeQuickNav.tsx`, diff) |
-| F-8 | 2.4.11 (AA) : focus non caché par un contenu de l'auteur ; un chat fixe « potentially fail » | A7 | NON VÉRIFIABLE | NON VÉRIFIABLE | Le bouton de chat est fixé à l'écran (`ChatWidget.tsx:210`) ; non testé au clavier |
-| F-9 | 3.3.2 (A) : étiquettes pour toute saisie | A8 | OUI (contrôle automatique) | OUI (contrôle automatique) | axe ne relève aucune violation d'étiquette sur le sélecteur, dans les deux versions |
+Mis à jour par le complément n° 3 pour la tête actuelle de #2210,
+`e31d3babe75d36521c0a9f240b2342743f258eec` (complément n° 2 du mandat DS). La colonne « 8507eb5b8 »
+reprend la tête relue jusqu'ici. La colonne « e31d3babe » est remesurée par moi, sans reprendre les
+chiffres de DS (axe et mesure directe : couleurs calculées et pixels, tailles, animations, survol).
+
+| ID | Exigence | Source | Actuelle | 8507eb5b8 | e31d3babe | Preuve |
+|---|---|---|---|---|---|---|
+| F-1 | 1.4.3 (AA) : contraste de 4,5:1, ou 3:1 pour le grand texte, sans arrondi | A1 | **NON** (25) | **NON** (24) | **NON** (24) ; cartes véhicule **OUI** | axe : `mesures/avant-axe-390x844.json`, `mesures/apres-axe-390x844.json`, `mesures/c3-e31d-axe-390x844.json`. Les 24 nœuds de e31d3babe sont exactement ceux de 8507eb5b8, aucun dans les cartes. Exemple hors cartes : `#aller-plus-loin`, #62748e sur #f3f8fd, soit 4,45:1. Cartes, par mesure directe à 390×844 et 1440×900 (`c3-e31d-apparence-*.json`) : aucun texte sous le seuil, aucun fond en image sous un texte. Minimum : pastille puissance, #ffffff sur #1e8449 (jeton `semantic.success`), 4,72:1 ; « Voir les pièces », « Voir les N autres » et pastille type, #ffffff sur #0f1e38 (jeton `navy`), 16,63:1 ; en-tête, 7,07:1 au pixel le plus défavorable |
+| F-2 | 2.5.8 (AA) : cible d'au moins 24×24 px CSS, sauf exceptions | A2 | **NON** (1) | **NON** (1) | **NON** (1) | Le même bouton de 48×16 dans `#aller-plus-loin`, dans les trois versions |
+| F-3 | 2.5.5 (AAA) : 44×44 px. C'est aussi le seuil des skills du dépôt | A3 | NON | NON | Navigation rapide **OUI** ; reste de la page NON | Les 6 boutons de la navigation rapide mesurent entre 76×44 et 140×44 à 390 et 1440 px (contre 132×37 avant). Il reste 20 cibles sous 44 px ailleurs, contre 26 à 8507eb5b8 (`c3-e31d-axe-390x844.json`, `smallTargets`) |
+| F-4 | 1.4.1 (A) : un lien dans un texte ne se distingue pas par sa seule couleur (technique G183 : 3:1 face au texte voisin, plus un repère au survol et au focus) | A9 | OUI (0) | **NON** (1) | **NON** (1) | Lien « Conseils : changer un filtre à huile étape par étape » dans `#reference`, inchangé (règle `link-in-text-block`) |
+| F-5 | 2.2.2 (A) : un mouvement qui démarre seul, dure plus de 5 s et côtoie d'autres contenus doit pouvoir être mis en pause, arrêté ou masqué | A5 | PARTIEL | PARTIEL | PARTIEL | Le reflet sans fin de l'en-tête des cartes s'arrête avec le réglage « réduire les animations ». Trois boucles continuent même avec ce réglage (`document.getAnimations()`) : `animate-ping` (`GammeHero.tsx:139` et `:229`), `animate-subtle-float` (`GammeDiagnosticCTA.tsx:15`) et `animate-shimmer` (`GammeDiagnosticCTA.tsx:51`). Reste à confirmer par un auditeur humain si ces petites animations décoratives entrent dans le critère |
+| F-6 | 2.3.3 (AAA) et W7 : respecter `prefers-reduced-motion` | A4, W7 | **NON** | **NON** | PARTIEL | Corrigés, avec le réglage : boutons de la navigation rapide, carte, image, « Voir les pièces », chevron et « Voir les N autres ». Au survol : `translate` 0, `scale` 1, `transition-property: none` (`c3-e31d-survol-1440x900.json`). Sans le réglage, l'effet est conservé. Restent : les trois boucles de F-5 ; le défilement `behavior: "smooth"` (`GammeQuickNav.tsx:38`), toujours inconditionnel ; 31 éléments qui se déplacent au survol sans garde (menu principal 8, `#bien-choisir` 5, `#aller-plus-loin` 15, autres 3) |
+| F-7 | 2.4.3 (A) : un ordre de focus « that preserves meaning and operability » | A6 | NON VÉRIFIABLE | NON VÉRIFIABLE | NON VÉRIFIABLE | Aucun parcours au clavier n'a été fait. La maquette change l'ordre visuel par CSS (`order-last`) sur l'image, qui n'est pas focalisable. L'ordre de la navigation rapide suit celui des sections |
+| F-8 | 2.4.11 (AA) : focus non caché par un contenu de l'auteur ; un chat fixe « potentially fail » | A7 | NON VÉRIFIABLE | NON VÉRIFIABLE | NON VÉRIFIABLE | Le bouton de chat est fixé à l'écran (`ChatWidget.tsx:210`) ; non testé au clavier |
+| F-9 | 3.3.2 (A) : étiquettes pour toute saisie | A8 | OUI (contrôle automatique) | OUI (contrôle automatique) | OUI (contrôle automatique) | axe ne relève aucune violation d'étiquette sur le sélecteur |
+
+Seconde gamme (`/pieces/plaquette-de-frein-402.html`, même build e31d3babe). Mêmes résultats sur
+les cartes (minimum 4,72:1) et la navigation rapide (44 px de haut) ; même liste de boucles
+(`c3-e31d-gamme2-plaquette-apparence-*.json`). `MotorisationsSection` et `GammeQuickNav` ne sont
+utilisés que par `pieces.$slug.tsx` (l. 830 et 861), sans couleur propre à la gamme : le rendu est
+le même pour toutes les gammes R1.
 
 ### 3.G Usage e-commerce (téléphone, ventes)
 
@@ -224,7 +240,9 @@ Les citations sont reprises mot pour mot, en anglais, telles que dans la source.
 1. G-1 et C-2 : la maquette corrige l'ordre (sélecteur d'abord).
 2. F-1 à F-4 : contrastes et cibles, sous le niveau AA dans les deux versions ; la maquette ajoute
    un lien distingué par sa seule couleur.
-3. F-5 et F-6 : animations sans fin, sans respect du réglage « réduire les animations ».
+3. F-5 et F-6 : animations sans fin, sans respect du réglage « réduire les animations ». À
+   e31d3babe, cartes et navigation rapide corrigées ; restent trois boucles, le défilement
+   `smooth` et 31 déplacements au survol (§3.F).
 4. G-4 : compteur trompeur (5 232 contre 19).
 
 **Ventes**
