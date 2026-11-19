@@ -1,9 +1,12 @@
 # Extrait à appliquer par l'owner (mandat DO, 2026-11-19), via :
 #   resync-pr.sh <N> --ownership docs/audit/mandat-DO-20261119/patches/ownership-snippet.yaml
-# À insérer dans .spec/00-canon/repository-registry/ownership.yaml, juste après
-# l'entrée « audit/runtime-entrypoints.json » (bloc PR #1956, même domaine, même
-# risque). Globs exacts, un par chemin : les neuf projections régénérées encore
-# non classées. Sans elles, une PR de régénération est classée « élevé »
+# (ajout en fin de .spec/00-canon/repository-registry/ownership.yaml ; la position
+# est indifférente : le glob le plus long gagne, findOwnershipMatch). Rangement
+# conseillé si édition à la main : après l'entrée « audit/runtime-entrypoints.json »
+# (bloc PR #1956, même domaine, même risque). Globs exacts, un par chemin : les
+# neuf projections régénérées encore non classées. Vérifié localement (copie
+# jetable) : registry:validate vert, 318 entrées ; circuit du robot élevé → faible.
+# Sans elles, une PR de régénération est classée « élevé »
 # (UNCLASSIFIED) et merge-circuits.yml désarme sa fusion automatique.
   - glob: audit/cycle-map.json
     domain: D15

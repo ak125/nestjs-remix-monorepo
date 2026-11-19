@@ -152,6 +152,57 @@ index 6330a2ed9a..71399a1b91 100644
 +
        - name: 🛡️ SEO agent-matrix determinism
          run: npm run audit:seo-matrix:check
+diff --git a/.github/workflows/dependency-family-bump.yml b/.github/workflows/dependency-family-bump.yml
+index 6f38becdcf..c9bcdac2b8 100644
+--- a/.github/workflows/dependency-family-bump.yml
++++ b/.github/workflows/dependency-family-bump.yml
+@@ -103,6 +103,17 @@ jobs:
+         if: ${{ !inputs.dry_run }}
+         run: bash scripts/governance/check-family-pr-scope.sh --base origin/main
+ 
++      # Mandat DO : les régénérations ci-dessus prouvent que les builders passent
++      # avec la famille montée ; la PR, elle, ne porte aucune projection générée
++      # (main les régénère). On reprend donc la version de main avant la PR.
++      - name: Mandat DO — reprendre les projections générées de main
++        if: ${{ !inputs.dry_run }}
++        run: |
++          set -euo pipefail
++          mapfile -t GEN < <(node scripts/registry/generated-projections.js list)
++          git checkout origin/main -- "${GEN[@]}"
++          git --no-pager diff --stat origin/main -- "${GEN[@]}"
++
+       - name: ✅ Verify — lint
+         if: ${{ !inputs.dry_run }}
+         run: npx turbo run lint 2>&1 | tee /tmp/verify-lint.log
+diff --git a/.github/workflows/dependency-modernization-fresh.yml b/.github/workflows/dependency-modernization-fresh.yml
+index fb1f7c1fd9..b55607a9f7 100644
+--- a/.github/workflows/dependency-modernization-fresh.yml
++++ b/.github/workflows/dependency-modernization-fresh.yml
+@@ -26,6 +26,10 @@ on:
+       - "scripts/audit/dependency-modernization.schema.ts"
+       - "package-lock.json"
+       - ".github/workflows/dependency-modernization-fresh.yml"
++      # Mandat DO : la PR ne porte plus deps.json ; ses manifestes déclenchent.
++      - "**/package.json"
++      - "scripts/registry/build-deps-registry.js"
++      - "scripts/registry/lib/**"
+   push:
+     branches: [main]
+     paths:
+@@ -63,6 +67,13 @@ jobs:
+       - name: Install deps
+         run: npm ci
+ 
++      # Mandat DO : sur une PR, deps.json et l'inventaire sont calculés depuis
++      # l'arbre de la PR (elle ne les porte plus) ; le --check ci-dessous devient
++      # une seconde passe (déterminisme). Sur main : inchangé (état commité).
++      - name: PR — calculer deps.json + inventaire depuis l'arbre de la PR (mandat DO)
++        if: github.event_name == 'pull_request'
++        run: npm run registry:build:deps && npm run audit:pr-9-modernization-inventory
++
+       - name: Determinism check (committed vs regenerated)
+         # --check mode rebuilds the artifact in a tmp file and compares its sha256
+         # against the committed file. Exits 1 on any drift; prints the regenerator
 diff --git a/.github/workflows/dependency-registry-freshness.yml b/.github/workflows/dependency-registry-freshness.yml
 index f09fd22111..7a3337eacf 100644
 --- a/.github/workflows/dependency-registry-freshness.yml
