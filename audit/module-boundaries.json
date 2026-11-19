@@ -794,8 +794,8 @@
         "backend/src/modules/seo-logs/dto",
         "backend/src/modules/seo-logs/services"
       ],
-      "files_count": 12,
-      "loc_total": 3625,
+      "files_count": 18,
+      "loc_total": 5190,
       "has_barrel": false
     },
     "seo-monitoring": {
