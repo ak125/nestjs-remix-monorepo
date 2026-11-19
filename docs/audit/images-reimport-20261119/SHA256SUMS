@@ -11,7 +11,7 @@ a10f2cc70e1e233411c481b1d861a56fea4c30bc825fddfb71803572f5db8915  ./analyse_jour
 fd7815d419983687e7ff564d685de07bafa28c887cd89fcd451d046137e64029  ./mesure/inventaire-detail.csv.gz
 aca10866d52cae9b44ff3e1bf344c74d7ba2e641164f82cd067f3c97df27c020  ./mesure/journal.txt
 caa302fa17e79886b14ca43ecc95d418027f6219b88cc531dff54ab58d3cb047  ./patch-workflow-recover-tecdoc-images.yml.diff
-b6ef676cc6ebfdf2a375aa53752e1c30db18bbb0e0b9f10d55bf74a92f78cebd  ./preuves/pytest.txt
+67625669e55ee62d158fc94db29cd18704074c49dc137c5a32679624c785b393  ./preuves/pytest.txt
 968616f3ade9976fb2f591db7148e124c69c59d16834127a28c5b7c61ab161aa  ./README.md
 5bcef738d4cbed0c4af2f667adbb7dcace048d5e7503b1c4650ad2aa4ea561af  ./requetes/agreger_inventaire.py
 b1cb869194db3bcfc7ecaea2e7b89196f813697df6053f5470bc791f391655a0  ./requetes/mesure_inventaire.sh
