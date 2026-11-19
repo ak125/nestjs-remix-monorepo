@@ -7,11 +7,12 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
+// Ordre = ordre des sections de la page R1 (maquette mandat DS : compatibilité d'abord)
 const SECTIONS = [
+  { id: "reference", label: "Compatibilité", icon: Car },
   { id: "bien-choisir", label: "Bien choisir", icon: ShieldCheck },
   { id: "qualite-prix", label: "Prix & Marques", icon: Award },
   { id: "emplacement", label: "Emplacement", icon: MapPin },
-  { id: "reference", label: "Compatibilité", icon: Car },
   { id: "faq", label: "FAQ", icon: HelpCircle },
   { id: "aller-plus-loin", label: "Voir aussi", icon: BookOpen },
 ];
