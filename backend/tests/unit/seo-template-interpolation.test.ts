@@ -51,6 +51,8 @@ describe('SeoTemplateService - Interpolation', () => {
     service = new SeoTemplateService(
       mockCacheService as any,
       mockPlaceholderEvents as any,
+      // Mandat DW, complément 1 : départage des titres R2 (non sollicité ici).
+      { resolveMotorCode: jest.fn().mockResolvedValue('') } as any,
     );
   });
 
