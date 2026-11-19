@@ -27416,22 +27416,48 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-logs/controllers/seo-audit.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
+        "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
+        "fs/promises"
+      ],
+      "kind": "test",
+      "loc": 496,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-logs/controllers/seo-audit.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
       "importedBy": [
+        "backend/src/modules/seo-logs/controllers/seo-audit.controller.test.ts",
         "backend/src/modules/seo-logs/seo-logs.module.ts"
       ],
       "imports": [
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
+        "@common/pipes/strict-zod-query-validation.pipe",
         "@common/utils/error.utils",
+        "backend/src/modules/seo-logs/dto/seo-logs-query.schema.ts",
         "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
-        "child_process",
         "fs/promises",
-        "path",
-        "util"
+        "path"
       ],
       "kind": "controller",
-      "loc": 466,
+      "loc": 523,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
       "risk": "low",
@@ -27446,19 +27472,43 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-logs/controllers/seo-kpi.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "backend/src/modules/seo-logs/controllers/seo-kpi.controller.ts"
+      ],
+      "kind": "test",
+      "loc": 467,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-logs/controllers/seo-kpi.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-logs/controllers/seo-kpi.controller.ts",
       "importedBy": [
+        "backend/src/modules/seo-logs/controllers/seo-kpi.controller.test.ts",
         "backend/src/modules/seo-logs/seo-logs.module.ts"
       ],
       "imports": [
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
+        "@common/pipes/strict-zod-query-validation.pipe",
         "@common/utils/error.utils",
-        "child_process",
-        "util"
+        "backend/src/modules/seo-logs/dto/seo-logs-query.schema.ts"
       ],
       "kind": "controller",
-      "loc": 251,
+      "loc": 324,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/controllers/seo-kpi.controller.ts",
       "risk": "low",
@@ -27490,6 +27540,73 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-logs/dto/seo-logs-query.schema.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-logs/dto/seo-logs-query.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 196,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-logs/dto/seo-logs-query.schema.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-logs/dto/seo-logs-query.schema.ts",
+      "importedBy": [
+        "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
+        "backend/src/modules/seo-logs/controllers/seo-kpi.controller.ts",
+        "backend/src/modules/seo-logs/dto/seo-logs-query.schema.test.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 85,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-logs/dto/seo-logs-query.schema.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-logs/seo-logs-no-shell.guard.test.ts",
+      "importedBy": [],
+      "imports": [
+        "fs",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 97,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-logs/seo-logs-no-shell.guard.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -27627,11 +27744,37 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
+        "child_process",
+        "path",
+        "util"
+      ],
+      "kind": "test",
+      "loc": 82,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "importedBy": [
         "backend/src/config/redis-single-target.test.ts",
+        "backend/src/modules/seo-logs/controllers/seo-audit.controller.test.ts",
         "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
-        "backend/src/modules/seo-logs/seo-logs.module.ts"
+        "backend/src/modules/seo-logs/seo-logs.module.ts",
+        "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.test.ts"
       ],
       "imports": [
         "@common/exceptions",
@@ -27644,7 +27787,7 @@
         "util"
       ],
       "kind": "service",
-      "loc": 465,
+      "loc": 477,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "risk": "low",
