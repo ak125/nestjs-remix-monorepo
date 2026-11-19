@@ -314,7 +314,7 @@ export class SupplierCardRepository extends SupabaseBaseService {
           pmId: valid ? pmId : null,
           brandName: valid ? (names.get(pmId) ?? null) : null,
           linkDisplayed: l.slpm_display === '1',
-          sourceRank: l.slpm_rank === null ? null : Number(l.slpm_rank),
+          sourceRank: l.slpm_rank == null ? null : Number(l.slpm_rank),
           deliverySplId: l.slpm_delivery_spl_id ?? null,
         };
       })
@@ -367,11 +367,11 @@ export class SupplierCardRepository extends SupabaseBaseService {
       linkId: String(r.slpm_id),
       splId: String(r.slpm_spl_id ?? ''),
       displayed: r.slpm_display === '1',
-      rank: r.slpm_rank === null ? null : Number(r.slpm_rank),
+      rank: r.slpm_rank == null ? null : Number(r.slpm_rank),
       deliverySplId: r.slpm_delivery_spl_id ?? null,
       stockKind: r.slpm_stock_kind ?? null,
       surchargeCents:
-        r.slpm_surcharge_cents === null ? null : Number(r.slpm_surcharge_cents),
+        r.slpm_surcharge_cents == null ? null : Number(r.slpm_surcharge_cents),
       updatedAt: r.slpm_updated_at ?? null,
       updatedBy: r.slpm_updated_by ?? null,
     }));
