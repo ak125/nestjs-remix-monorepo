@@ -23,6 +23,7 @@ import {
   computeOrderFingerprint,
   type CreateOrderData,
 } from '../../src/modules/orders/services/orders.service';
+import { EMAIL_MAX_LENGTH } from '../../src/common/utils/email-validation.util';
 
 const ORDER_ID = 'ORD-1758000000000-7';
 const NEW_USER_ID = 'usr_guest_test';
@@ -422,6 +423,29 @@ describe('OrdersController.createGuestOrder', () => {
       expect(authService.isEmailRegistered).not.toHaveBeenCalled();
     },
   );
+
+  it('adresse plus longue que la borne → 400, avant tout traitement', async () => {
+    const { controller, ordersService, authService, mailService, supabase } =
+      makeController();
+    const req = guestRequest();
+    const tooLong = `${'a'.repeat(EMAIL_MAX_LENGTH)}@example.test`;
+
+    const error = await controller
+      .createGuestOrder(body({ guestEmail: tooLong }), req as never)
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect((error as BadRequestException).getStatus()).toBe(400);
+    expect((error as BadRequestException).message).toBe(
+      'Adresse email invalide',
+    );
+    expect(supabase.calls).toHaveLength(0);
+    expect(authService.isEmailRegistered).not.toHaveBeenCalled();
+    expect(authService.register).not.toHaveBeenCalled();
+    expect(ordersService.createOrder).not.toHaveBeenCalled();
+    expect(mailService.sendGuestAccountActivation).not.toHaveBeenCalled();
+    expectNoSessionOpened(req);
+  });
 
   it('aucun log ne contient l’adresse email, quel que soit le parcours', async () => {
     const conflict = makeController({ emailRegistered: true });

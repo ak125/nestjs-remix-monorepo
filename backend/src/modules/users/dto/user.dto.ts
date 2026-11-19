@@ -212,12 +212,9 @@ export function mapUserToSupabase(
 // ============================================================================
 
 /**
- * Valider un email
+ * Valider un email : validateur commun du backend (longueur bornée, puis format).
  */
-export function isValidEmail(email: string): boolean {
-  const result = z.string().email().safeParse(email);
-  return result.success;
-}
+export { isValidEmail } from '@common/utils/email-validation.util';
 
 /**
  * Valider un mot de passe
