@@ -227,42 +227,6 @@ export class SuppliersService extends SupabaseBaseService {
   }
 
   /**
-   * Désactiver un fournisseur et ses liaisons
-   */
-  async deactivateSupplier(id: number): Promise<void> {
-    this.logger.log(`Désactivation fournisseur ${id}`);
-
-    try {
-      // Désactiver le fournisseur
-      const { error: supplierError } = await this.supabase
-        .from(TABLES.xtr_supplier)
-        .update({
-          is_active: false,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('spl_id', id);
-
-      if (supplierError) throw supplierError;
-
-      // Désactiver ses liaisons
-      const { error: linkError } = await this.supabase
-        .from(TABLES.xtr_supplier_link_pm)
-        .update({
-          is_active: false,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('supplier_id', id);
-
-      if (linkError) throw linkError;
-
-      this.logger.log(`Fournisseur ${id} désactivé avec succès`);
-    } catch (error) {
-      this.logger.error('Erreur désactivation fournisseur:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Obtenir les liens (marques/articles) d'un fournisseur
    */
   async getSupplierLinks(supplierId: string | number) {
