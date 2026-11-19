@@ -21,8 +21,8 @@
     "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 458,
-    "backend_files_scanned": 1565
+    "migrations_scanned": 460,
+    "backend_files_scanned": 1566
   },
   "tables": {
     "___config": {
@@ -14727,7 +14727,7 @@
     },
     {
       "file": "backend/src/modules/seo/services/chain/seo-template-renderer.service.ts",
-      "line": 98,
+      "line": 99,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "binding-not-literal"

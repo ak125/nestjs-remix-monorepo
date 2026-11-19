@@ -15,7 +15,8 @@
 -- Effet servi : après expiration du cache Redis `seo:processed:{pg}:{type}:*`
 -- (24 h) ou sa purge.
 -- Retour : 20261119_seo_r2_title_trial_pg10_pg316.down.sql (manuel).
-BEGIN;
+-- Transaction : le runner (scripts/ci/apply-supabase-migration.py) encadre
+-- le fichier de BEGIN/COMMIT ; pas de BEGIN/COMMIT ici.
 
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
@@ -46,5 +47,3 @@ BEGIN
   RAISE NOTICE 'mandat DW : % ligne(s) modifiée(s), 2 au nouveau gabarit', v_updated;
 END
 $essai$;
-
-COMMIT;
