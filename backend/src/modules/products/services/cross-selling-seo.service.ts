@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { buildR2TitleTypeLabel } from '@repo/seo-types';
 import { decodeHtmlEntities } from '../../../utils/html-entities';
 import type {
   CrossGamme,
@@ -181,7 +182,7 @@ export class CrossSellingSeoService extends SupabaseBaseService {
    * Replace #variable# placeholders in content.
    */
   replaceVariables(content: string, variables: SeoVariables): string {
-    let processed = content;
+    let processed = this.replaceLegacyMarkers(content, variables);
 
     Object.entries(variables).forEach(([key, value]) => {
       const regex = new RegExp(`#${key}#`, 'gi');
@@ -189,6 +190,35 @@ export class CrossSellingSeoService extends SupabaseBaseService {
     });
 
     return processed;
+  }
+
+  /**
+   * Marqueurs de `__seo_gamme_car.sgc_title` (gabarit R2), absents de
+   * {@link SeoVariables} et jusqu'ici retirés à vide par `cleanSeoText` :
+   * l'ancien gabarit rendait « . », le nouveau un titre vide (complément 1
+   * du mandat DW). `#VTypeCarburantPuissance#` suit `buildR2TitleTypeLabel`,
+   * sans carburant : le contexte véhicule d'ici ne le porte pas.
+   */
+  private replaceLegacyMarkers(
+    content: string,
+    variables: SeoVariables,
+  ): string {
+    const nbCh = variables.nbCh > 0 ? String(variables.nbCh) : '';
+    const legacy: Record<string, string> = {
+      Gamme: variables.gammeMeta,
+      VMarque: variables.marque,
+      VModele: variables.modele,
+      VType: variables.type,
+      VNbCh: nbCh,
+      VTypeCarburantPuissance: buildR2TitleTypeLabel({
+        typeName: variables.type,
+        powerPs: nbCh,
+      }),
+    };
+    return content.replace(
+      /#(Gamme|VMarque|VModele|VType|VNbCh|VTypeCarburantPuissance)#/g,
+      (_, key: string) => legacy[key] ?? '',
+    );
   }
 
   /**

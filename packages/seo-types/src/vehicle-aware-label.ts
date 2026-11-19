@@ -229,6 +229,46 @@ export function enrichTypeNameForHeadings(
 }
 
 /**
+ * Graphie d'affichage du carburant. `auto_type.type_fuel` porte deux graphies
+ * du même carburant (« Essence-Electrique » et « Essence-Électrique »,
+ * « Electrique » et « Électrique ») : le titre n'en montre qu'une. Affichage
+ * seulement, la base n'est pas modifiée (complément 1 du mandat DW).
+ */
+export function normalizeFuelForDisplay(fuel?: string): string {
+  return (fuel ?? "")
+    .trim()
+    .replace(/(^|[^A-Za-zÀ-ÿ])Electrique(?![A-Za-zÀ-ÿ])/g, "$1Électrique");
+}
+
+/**
+ * Code moteur ajouté au `<title>` R2 d'une page en collision (complément 1 du
+ * mandat DW) : deux types du même modèle, servis dans la même gamme, qui ont
+ * le même libellé {@link buildR2TitleTypeLabel}.
+ *
+ * - `ownCodes` : codes moteur du type de la page ;
+ * - `collidingCodes` : codes moteur de chaque type en collision avec elle.
+ *
+ * Renvoie le premier code du type (ordre stable, comparaison par point de
+ * code) s'il diffère du premier code de chacun des types en collision. Sinon
+ * `null` : la collision n'est pas départagée et l'appelant le signale.
+ * Aucune collision → `null` aussi ; le titre reste alors sans code.
+ */
+export function pickR2TitleMotorCode(
+  ownCodes: readonly string[],
+  collidingCodes: readonly (readonly string[])[],
+): string | null {
+  if (collidingCodes.length === 0) return null;
+  const first = (codes: readonly string[]): string =>
+    codes
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .sort()[0] ?? "";
+  const own = first(ownCodes);
+  if (!own) return null;
+  return collidingCodes.every((codes) => first(codes) !== own) ? own : null;
+}
+
+/**
  * Libellé motorisation du `<title>` R2 de la forme « <type> [carburant]
  * <puissance> ch » (mandat DW du 2026-11-19, essai sur deux gammes pilotées
  * par leur template `__seo_gamme_car.sgc_title`, marqueur
@@ -244,11 +284,14 @@ export function enrichTypeNameForHeadings(
 export function buildR2TitleTypeLabel(input: VehicleLabelInput): string {
   const baseName = (input.typeName ?? "").trim();
   const power = normalizePowerPs(input.powerPs);
-  const fuel = (input.fuel ?? "").trim();
+  const rawFuel = (input.fuel ?? "").trim();
+  const fuel = normalizeFuelForDisplay(rawFuel);
+  const lowerName = baseName.toLowerCase();
 
   const writeFuel =
     fuel !== "" &&
-    !baseName.toLowerCase().includes(fuel.toLowerCase()) &&
+    !lowerName.includes(fuel.toLowerCase()) &&
+    !lowerName.includes(rawFuel.toLowerCase()) &&
     !isFuelImpliedByTypeName(baseName, fuel);
 
   let label = baseName;

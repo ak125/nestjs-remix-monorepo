@@ -15,6 +15,7 @@ import {
 } from '@repo/seo-types';
 import { SeoPlaceholderEventsService } from '../../seo/services/seo-placeholder-events.service';
 import { composeVehicleAwareDescription } from './vehicle-aware-description.composer';
+import { R2TitleCollisionService } from './r2-title-collision.service';
 
 /**
  * Marqueur legacy non résolu : `#Nom#`, `#Nom_12#`, `#Nom_12_1289#`.
@@ -127,6 +128,13 @@ export interface SeoContext {
    */
   legacy_marker_motorisation?: string;
   legacy_marker_code_moteur?: string;
+  /**
+   * Code moteur ajouté à `#VTypeCarburantPuissance#` quand la page R2 est en
+   * collision de titre avec un type voisin (complément 1 du mandat DW).
+   * Renseigné par `processTemplates` via `R2TitleCollisionService`, seulement
+   * si le gabarit du titre porte ce marqueur. Vide → aucun code.
+   */
+  r2_title_motor_code?: string;
 }
 
 /**
@@ -192,6 +200,7 @@ export class SeoTemplateService {
   constructor(
     private readonly cacheService: CacheService,
     private readonly placeholderEvents: SeoPlaceholderEventsService,
+    private readonly r2TitleCollision: R2TitleCollisionService,
   ) {
     this.logger.log(
       '🚀 SeoTemplateService initialisé - Mode NestJS Processing (Regex Single-Pass)',
@@ -230,6 +239,19 @@ export class SeoTemplateService {
       // à `type_name` ambigu — ex. "2.0 HDi" partagé par 140 ch et 163 ch).
       // `description` (composer PR #665), `content`, `preview` reçoivent le
       // context ORIGINAL (zero impact hors H1/title).
+      // Code moteur des seules pages R2 en collision de titre (complément 1
+      // du mandat DW). Une erreur de lecture remonte au catch : échec habituel
+      // (`success: false`), rien n'est mis en cache, aucun titre dégradé.
+      if (templates.title?.includes('#VTypeCarburantPuissance#')) {
+        context = {
+          ...context,
+          r2_title_motor_code: await this.r2TitleCollision.resolveMotorCode(
+            context.pg_id,
+            context.type_id,
+          ),
+        };
+      }
+
       const enrichedTypeName = enrichTypeNameForHeadings({
         typeName: context.type_name,
         powerPs: context.power_ps,
@@ -413,11 +435,17 @@ export class SeoTemplateService {
       // seulement par les templates qui l'écrivent (sgc_title des gammes de
       // l'essai). Carburant = `fuel`, sinon `type_fuel` relayé par
       // `legacy_marker_motorisation` ; idempotent sur un type déjà enrichi.
-      VTypeCarburantPuissance: buildR2TitleTypeLabel({
-        typeName: context.type_name,
-        powerPs: context.power_ps,
-        fuel: context.fuel || context.legacy_marker_motorisation,
-      }),
+      // Code moteur ajouté seulement aux pages en collision (complément 1).
+      VTypeCarburantPuissance: [
+        buildR2TitleTypeLabel({
+          typeName: context.type_name,
+          powerPs: context.power_ps,
+          fuel: context.fuel || context.legacy_marker_motorisation,
+        }),
+        context.r2_title_motor_code ?? '',
+      ]
+        .filter(Boolean)
+        .join(' '),
       // Format #Xxx# (sans préfixe V)
       Gamme: context.gamme_name || '',
       MinPrice: context.min_price

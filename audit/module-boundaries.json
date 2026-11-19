@@ -146,7 +146,7 @@
         "backend/src/modules/catalog/utils"
       ],
       "files_count": 41,
-      "loc_total": 10379,
+      "loc_total": 10476,
       "has_barrel": false
     },
     "commercial": {
@@ -226,7 +226,7 @@
         "backend/src/modules/rm/utils"
       ],
       "files_count": 15,
-      "loc_total": 3634,
+      "loc_total": 3635,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -603,7 +603,7 @@
         "packages/seo-types/src"
       ],
       "files_count": 20,
-      "loc_total": 3945,
+      "loc_total": 4073,
       "has_barrel": true
     },
     "pkg-seo-url-contract": {
@@ -638,7 +638,7 @@
         "backend/src/modules/products/types"
       ],
       "files_count": 27,
-      "loc_total": 7138,
+      "loc_total": 7168,
       "has_barrel": true
     },
     "promo": {

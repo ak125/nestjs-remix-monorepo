@@ -1,0 +1,7 @@
+ensemble	pages	actuels_groupes	actuels_pages	avant_regle_groupes	avant_regle_pages	apres_regle_groupes	apres_regle_pages	plus_de_60
+servable	373005	20908	50175	3909	8879	2539	6139	163240
+indexable	101097	4768	11367	823	1848	518	1238	32915
+servable_migration	328047	18369	44036	1370	2740	0	0	121858
+indexable_migration	90714	4250	10129	305	610	0	0	23466
+servable_repli	44958	2539	6139	2539	6139	2539	6139	41382
+indexable_repli	10383	518	1238	518	1238	518	1238	9449

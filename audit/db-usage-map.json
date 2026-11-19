@@ -13768,21 +13768,21 @@
     },
     {
       "file": "backend/src/modules/products/services/cross-selling-seo.service.ts",
-      "line": 39,
+      "line": 40,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/cross-selling-seo.service.ts",
-      "line": 198,
+      "line": 228,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/cross-selling-seo.service.ts",
-      "line": 210,
+      "line": 240,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

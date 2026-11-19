@@ -6,13 +6,15 @@ import {
 
 /**
  * Mandat DW (2026-11-19) — titre R2 « <Gamme> <MARQUE> <MODÈLE> <type>
- * [carburant] <puissance> ch » sur courroie d'accessoire (pg 10) et
- * thermostat (pg 316), porté par `__seo_gamme_car.sgc_title` (migration
- * `20261119_seo_r2_title_trial_pg10_pg316.sql`).
+ * [carburant] <puissance> ch », porté par `__seo_gamme_car.sgc_title`
+ * (migration `20261119_seo_r2_title_all_gammes.sql`). Exemples des gammes
+ * 10 (courroie d'accessoire) et 316 (thermostat), essai initial.
  *
- * Gabarits : `OLD_TITLE` = valeur relevée en base le 2026-11-19 pour sgc_id
- * '4' (pg 10) et '75' (pg 316) ; `NEW_TITLE` = valeur posée par la migration.
+ * Gabarits : `OLD_TITLE` = valeur relevée en base le 2026-11-19 (118 lignes
+ * sur 118) ; `NEW_TITLE` = valeur posée par la migration.
  * Contextes = pages PROD relevées le 2026-11-19 (titre servi en commentaire).
+ * Complément 1 (2026-11-19) : toutes les gammes, code moteur ajouté aux
+ * seules pages en collision (`R2TitleCollisionService`, simulé ici).
  */
 const OLD_TITLE =
   '#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.';
@@ -49,7 +51,7 @@ const templates = (title: string): SeoTemplates => ({
   preview: '',
 });
 
-function build() {
+function build(resolveMotorCode: jest.Mock = jest.fn().mockResolvedValue('')) {
   const cache = {
     get: jest.fn().mockResolvedValue(null),
     set: jest.fn().mockResolvedValue(undefined),
@@ -60,8 +62,11 @@ function build() {
     { record } as unknown as ConstructorParameters<
       typeof SeoTemplateService
     >[1],
+    { resolveMotorCode } as unknown as ConstructorParameters<
+      typeof SeoTemplateService
+    >[2],
   );
-  return { svc, record };
+  return { svc, record, cache, resolveMotorCode };
 }
 
 describe('SeoTemplateService — #VTypeCarburantPuissance# (mandat DW)', () => {
@@ -148,5 +153,60 @@ describe('SeoTemplateService — #VTypeCarburantPuissance# (mandat DW)', () => {
       ctx({ legacy_marker_motorisation: undefined }),
     );
     expect(r.title).toBe("Courroie d'accessoire DACIA LOGAN I 1.4 75 ch");
+  });
+
+  it('page en collision : code moteur ajouté au seul titre', async () => {
+    // Paire relevée le 2026-11-19 (auto_type, modèle 58030) : FIAT DUCATO V
+    // Fourgon (250-290) « 2.3 D Multijet » 150 ch Diesel, types 10207
+    // (codes F1AE3481E) et 65976 (F1AGL411A, F1AGL411C).
+    const { svc, resolveMotorCode } = build(
+      jest.fn().mockResolvedValue('F1AE3481E'),
+    );
+    const r = await svc.processTemplates(
+      templates(NEW_TITLE),
+      ctx({
+        type_id: 10207,
+        marque_name: 'FIAT',
+        modele_name: 'DUCATO V Fourgon (250-290)',
+        type_name: '2.3 D Multijet',
+        power_ps: '150',
+        legacy_marker_motorisation: 'Diesel',
+      }),
+    );
+    expect(resolveMotorCode).toHaveBeenCalledWith(10, 10207);
+    expect(r.title).toBe(
+      "Courroie d'accessoire FIAT DUCATO V Fourgon (250-290) 2.3 D Multijet 150 ch F1AE3481E",
+    );
+    expect(r.h1).not.toContain('F1AE3481E');
+  });
+
+  it('ancien gabarit : aucune recherche de collision', async () => {
+    const { svc, resolveMotorCode } = build();
+    await svc.processTemplates(templates(OLD_TITLE), ctx());
+    expect(resolveMotorCode).not.toHaveBeenCalled();
+  });
+
+  it('lecture de collision en erreur : échec signalé, rien en cache', async () => {
+    const { svc, cache } = build(
+      jest.fn().mockRejectedValue(new Error('db down')),
+    );
+    const r = await svc.processTemplates(templates(NEW_TITLE), ctx());
+    expect(r.success).toBe(false);
+    expect(cache.set).not.toHaveBeenCalled();
+  });
+
+  it('carburant électrique : une seule graphie affichée', async () => {
+    const { svc } = build();
+    const a = await svc.processTemplates(
+      templates(NEW_TITLE),
+      ctx({
+        type_name: '1.8 Hybrid',
+        power_ps: '122',
+        legacy_marker_motorisation: 'Essence-Electrique',
+      }),
+    );
+    expect(a.title).toBe(
+      "Courroie d'accessoire DACIA LOGAN I 1.8 Hybrid Essence-Électrique 122 ch",
+    );
   });
 });

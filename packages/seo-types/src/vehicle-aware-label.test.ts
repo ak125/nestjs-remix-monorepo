@@ -2,6 +2,8 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  normalizeFuelForDisplay,
+  pickR2TitleMotorCode,
   buildR2TitleTypeLabel,
   enrichTypeNameForHeadings,
   FUEL_IMPLYING_TYPE_TOKENS,
@@ -415,6 +417,89 @@ describe("vehicle-aware-label", () => {
         }),
         "1.4 Essence 75 ch",
       );
+    });
+  });
+
+  describe("normalizeFuelForDisplay (complément 1 DW)", () => {
+    it("une seule graphie pour les carburants électriques", () => {
+      assert.strictEqual(
+        normalizeFuelForDisplay("Essence-Electrique"),
+        "Essence-Électrique",
+      );
+      assert.strictEqual(
+        normalizeFuelForDisplay("Diesel-Electrique"),
+        "Diesel-Électrique",
+      );
+      assert.strictEqual(normalizeFuelForDisplay("Electrique"), "Électrique");
+      assert.strictEqual(
+        normalizeFuelForDisplay("Essence-Électrique"),
+        "Essence-Électrique",
+      );
+      assert.strictEqual(normalizeFuelForDisplay("Diesel"), "Diesel");
+      assert.strictEqual(normalizeFuelForDisplay(undefined), "");
+    });
+
+    it("le titre montre la même graphie quelle que soit la base", () => {
+      const a = buildR2TitleTypeLabel({
+        typeName: "1.8 Hybrid",
+        powerPs: "122",
+        fuel: "Essence-Electrique",
+      });
+      const b = buildR2TitleTypeLabel({
+        typeName: "1.8 Hybrid",
+        powerPs: "122",
+        fuel: "Essence-Électrique",
+      });
+      assert.strictEqual(a, "1.8 Hybrid Essence-Électrique 122 ch");
+      assert.strictEqual(a, b);
+    });
+
+    it("pas de carburant répété si le nom porte l'une des graphies", () => {
+      assert.strictEqual(
+        buildR2TitleTypeLabel({
+          typeName: "1.5 Essence-Electrique",
+          powerPs: "116",
+          fuel: "Essence-Electrique",
+        }),
+        "1.5 Essence-Electrique 116 ch",
+      );
+      assert.strictEqual(
+        buildR2TitleTypeLabel({
+          typeName: "2.0 Essence-Électrique",
+          powerPs: "184",
+          fuel: "Essence-Electrique",
+        }),
+        "2.0 Essence-Électrique 184 ch",
+      );
+    });
+  });
+
+  describe("pickR2TitleMotorCode (complément 1 DW)", () => {
+    it("aucune collision : pas de code", () => {
+      assert.strictEqual(pickR2TitleMotorCode(["9HX"], []), null);
+    });
+
+    it("premier code en ordre stable, quel que soit l'ordre reçu", () => {
+      assert.strictEqual(
+        pickR2TitleMotorCode(["9HZ", "9HX"], [["9HY", "9HV"]]),
+        "9HX",
+      );
+      assert.strictEqual(
+        pickR2TitleMotorCode(["9HY", "9HV"], [["9HZ", "9HX"]]),
+        "9HV",
+      );
+    });
+
+    it("premier code identique : collision non départagée", () => {
+      assert.strictEqual(
+        pickR2TitleMotorCode(["F1AE3481G"], [["F1AE3481G"]]),
+        null,
+      );
+    });
+
+    it("type sans code : pas de code, le type en face garde le sien", () => {
+      assert.strictEqual(pickR2TitleMotorCode([], [["KFV"]]), null);
+      assert.strictEqual(pickR2TitleMotorCode(["KFV"], [[]]), "KFV");
     });
   });
 });
