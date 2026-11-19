@@ -1,0 +1,547 @@
+{
+  "url": "http://127.0.0.1:3027/pieces/filtre-a-huile-7.html",
+  "status": 200,
+  "viewport": "1440x900",
+  "reducedMotion": true,
+  "axe": "4.12.1",
+  "at": "2026-11-19T21:27:34.457Z",
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "count": 20,
+      "nodes": [
+        {
+          "target": ".text-emerald-600",
+          "zone": "R1 main",
+          "text": "Conseils entretien",
+          "data": {
+            "fg": "#009966",
+            "bg": "#f8fafc",
+            "ratio": 3.49,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": "#bien-choisir > .max-w-\\[1280px\\].mx-auto > .gap-8.lg\\:grid-cols-2.grid-cols-1 > div:nth-child(1) > figure > figcaption",
+          "zone": "R1 #bien-choisir",
+          "text": "Comment distinguer les types de filtre à huile",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(1) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > div:nth-child(2) > .",
+          "zone": "R1 #bien-choisir",
+          "text": "Vissant (spin-on) ou cartouche — vérifiez la référ",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(2) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > div:nth-child(2) > .",
+          "zone": "R1 #bien-choisir",
+          "text": "Saisissez marque, modèle et motorisation dans le s",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(3) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > div:nth-child(2) > .",
+          "zone": "R1 #bien-choisir",
+          "text": "Moteurs VW/BMW longlife : vérifiez l'approbation V",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(4) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > div:nth-child(2) > .",
+          "zone": "R1 #bien-choisir",
+          "text": "Certains moteurs modernes l'exigent — consultez la",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(5) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > div:nth-child(2) > .",
+          "zone": "R1 #bien-choisir",
+          "text": "Filtre à air, filtre à carburant, filtre à huile d",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": "#qualite-prix > .max-w-\\[1280px\\].mx-auto > .gap-8.lg\\:grid-cols-2.grid-cols-1 > div:nth-child(1) > figure > figcaption",
+          "zone": "R1 #qualite-prix",
+          "text": "Différences de qualité filtre à huile",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#f8fafc",
+            "ratio": 2.51,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".max-w-2xl > figcaption",
+          "zone": "R1 #emplacement",
+          "text": "Où se trouve le filtre à huile sur le véhicule",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-orange-600",
+          "zone": "R1 main",
+          "text": "2 min",
+          "data": {
+            "fg": "#f54900",
+            "bg": "#fff7ed",
+            "ratio": 3.38,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".hover\\:shadow-md.border-neutral-200.hover\\:border-semantic-action:nth-child(1) > .h-full.flex-col.flex > .mb-2.items-start.gap-3 > .min-w-0",
+          "zone": "R1 #aller-plus-loin",
+          "text": "Voir les références",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#f5f7fa",
+            "ratio": 2.61,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".hover\\:shadow-md.border-neutral-200.hover\\:border-semantic-action:nth-child(2) > .h-full.flex-col.flex > .mb-2.items-start.gap-3 > .min-w-0",
+          "zone": "R1 #aller-plus-loin",
+          "text": "Trouver la pièce compatible",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#f5f7fa",
+            "ratio": 2.61,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".hover\\:shadow-md.border-neutral-200.hover\\:border-semantic-action:nth-child(3) > .h-full.flex-col.flex > .mb-2.items-start.gap-3 > .min-w-0",
+          "zone": "R1 #aller-plus-loin",
+          "text": "Sélectionner par véhicule",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#f5f7fa",
+            "ratio": 2.61,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".hover\\:shadow-md.border-neutral-200.hover\\:border-semantic-action:nth-child(4) > .h-full.flex-col.flex > .mb-2.items-start.gap-3 > .min-w-0",
+          "zone": "R1 #aller-plus-loin",
+          "text": "Voir les prix",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#f5f7fa",
+            "ratio": 2.61,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-semantic-action\\/70",
+          "zone": "R1 #aller-plus-loin",
+          "text": "Lire plus",
+          "data": {
+            "fg": "#f89b5a",
+            "bg": "#f5f7fa",
+            "ratio": 1.99,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".mt-3 > .text-white\\/30.text-\\[12px\\]",
+          "zone": "GLOBAL pied de page",
+          "text": "Service client disponibleLun-Ven 9h-18h, Sam 9h-13",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".md\\:flex-row > .text-white\\/30.text-\\[12px\\]",
+          "zone": "GLOBAL pied de page",
+          "text": "© 2026 AutoMecanik. Tous droits réservés.",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30.no-style[href$=\"cgv\"]",
+          "zone": "GLOBAL pied de page",
+          "text": "CGV",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30.no-style[href$=\"privacy\"]",
+          "zone": "GLOBAL pied de page",
+          "text": "Confidentialité",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30:nth-child(5)",
+          "zone": "GLOBAL pied de page",
+          "text": "Paiement sécurisé · Livraison 24-48h",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "count": 4,
+      "nodes": [
+        {
+          "target": ".text-emerald-300",
+          "zone": "R1 body",
+          "text": "Livraison gratuite dès 150€"
+        },
+        {
+          "target": ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+          "zone": "R1 body",
+          "text": "Retours 30j"
+        },
+        {
+          "target": ".lg\\:inline",
+          "zone": "R1 body",
+          "text": "·"
+        },
+        {
+          "target": ".text-white\\/40.lg\\:flex[href=\"tel:+33148479627\"]",
+          "zone": "R1 body",
+          "text": "01 48 47 96 27"
+        }
+      ]
+    },
+    {
+      "id": "target-size",
+      "impact": "serious",
+      "count": 1,
+      "nodes": [
+        {
+          "target": ".text-semantic-action\\/70",
+          "zone": "R1 #aller-plus-loin",
+          "text": "Lire plus"
+        }
+      ]
+    }
+  ],
+  "colorContrastIncomplete": 25,
+  "contrasteDirect": [],
+  "cibles": {
+    "sous24": [
+      {
+        "zone": "R1 body",
+        "tag": "a",
+        "text": "01 48 47 96 27",
+        "w": 101,
+        "h": 16,
+        "display": "flex",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hidden lg:flex items-center gap-1.5 text-white/40 hover:text-white transition-co",
+        "distanceCentreVoisin": 101
+      },
+      {
+        "zone": "R1 main",
+        "tag": "a",
+        "text": "Aller au contenu principal",
+        "w": 1,
+        "h": 1,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": true,
+        "classes": "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 foc",
+        "distanceCentreVoisin": 122
+      },
+      {
+        "zone": "R1 main",
+        "tag": "a",
+        "text": "Accueil",
+        "w": 37,
+        "h": 17.6,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hover:text-white/50 transition-colors",
+        "distanceCentreVoisin": 65
+      },
+      {
+        "zone": "R1 main",
+        "tag": "a",
+        "text": "Pièces Auto",
+        "w": 61,
+        "h": 17.6,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hover:text-white/50 transition-colors",
+        "distanceCentreVoisin": 65
+      },
+      {
+        "zone": "R1 main",
+        "tag": "a",
+        "text": "Guide d'achat",
+        "w": 80,
+        "h": 16,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-blue-600 hover:text-blue-800 transition-colors",
+        "distanceCentreVoisin": 79
+      },
+      {
+        "zone": "R1 main",
+        "tag": "a",
+        "text": "Conseils entretien",
+        "w": 104,
+        "h": 16,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-emerald-600 hover:text-emerald-800 transition-colors",
+        "distanceCentreVoisin": 108
+      },
+      {
+        "zone": "R1 main",
+        "tag": "a",
+        "text": "Fiche technique",
+        "w": 92,
+        "h": 16,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-foreground hover:text-foreground transition-colors",
+        "distanceCentreVoisin": 104
+      },
+      {
+        "zone": "R1 #reference",
+        "tag": "a",
+        "text": "bouchon de vidange",
+        "w": 135,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Pensez à commander en même temps les pièces associées pour votre vidange complète : boucho",
+        "srOnly": false,
+        "classes": "seo-internal-link",
+        "distanceCentreVoisin": 35
+      },
+      {
+        "zone": "R1 #reference",
+        "tag": "a",
+        "text": "filtre à air",
+        "w": 63,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Pensez à commander en même temps les pièces associées pour votre vidange complète : boucho",
+        "srOnly": false,
+        "classes": "seo-internal-link",
+        "distanceCentreVoisin": 106
+      },
+      {
+        "zone": "R1 #bien-choisir",
+        "tag": "a",
+        "text": "filtre à air",
+        "w": 63,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Attention à ne pas confondre le filtre à huile moteur avec le filtre à air (circuit admiss",
+        "srOnly": false,
+        "classes": "seo-internal-link",
+        "distanceCentreVoisin": 374
+      },
+      {
+        "zone": "R1 #bien-choisir",
+        "tag": "a",
+        "text": "filtre à carburant",
+        "w": 111,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Attention à ne pas confondre le filtre à huile moteur avec le filtre à air (circuit admiss",
+        "srOnly": false,
+        "classes": "seo-internal-link",
+        "distanceCentreVoisin": 374
+      },
+      {
+        "zone": "R1 #aller-plus-loin",
+        "tag": "button",
+        "text": "Lire plus",
+        "w": 48,
+        "h": 16,
+        "display": "inline-block",
+        "dansUnePhrase": true,
+        "phrase": "Filtre de boîte auto : sélectionnez votre véhicule pour voir uniquement les références 100",
+        "srOnly": false,
+        "classes": "text-xs text-semantic-action/70 hover:text-semantic-action mt-1 font-medium",
+        "distanceCentreVoisin": 138
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "01 48 47 96 27",
+        "w": 86,
+        "h": 20.8,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-[13px] text-white/60 hover:text-white transition-colors",
+        "distanceCentreVoisin": 52
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "contact@automecanik.com",
+        "w": 166,
+        "h": 20.8,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-[13px] text-white/60 hover:text-white transition-colors",
+        "distanceCentreVoisin": 52
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "CGV",
+        "w": 26,
+        "h": 19.2,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "no-style no-visited text-white/30 hover:text-white transition-colors",
+        "distanceCentreVoisin": 90
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "Confidentialité",
+        "w": 85,
+        "h": 19.2,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "no-style no-visited text-white/30 hover:text-white transition-colors",
+        "distanceCentreVoisin": 90
+      }
+    ],
+    "de24a44": 19,
+    "total": 93
+  },
+  "animations": [
+    {
+      "type": "CSSAnimation",
+      "name": "ping",
+      "iterations": "infinite",
+      "duration": 1000,
+      "playState": "running",
+      "zone": "R1 main",
+      "el": "span animate-ping"
+    },
+    {
+      "type": "CSSAnimation",
+      "name": "subtle-float",
+      "iterations": "infinite",
+      "duration": 3000,
+      "playState": "running",
+      "zone": "R1 main",
+      "el": "svg animate-subtle-float"
+    },
+    {
+      "type": "CSSAnimation",
+      "name": "shimmer",
+      "iterations": "infinite",
+      "duration": 3000,
+      "playState": "running",
+      "zone": "R1 main",
+      "el": "div animate-shimmer"
+    }
+  ],
+  "boucles": [
+    {
+      "type": "CSSAnimation",
+      "name": "ping",
+      "iterations": "infinite",
+      "duration": 1000,
+      "playState": "running",
+      "zone": "R1 main",
+      "el": "span animate-ping"
+    },
+    {
+      "type": "CSSAnimation",
+      "name": "subtle-float",
+      "iterations": "infinite",
+      "duration": 3000,
+      "playState": "running",
+      "zone": "R1 main",
+      "el": "svg animate-subtle-float"
+    },
+    {
+      "type": "CSSAnimation",
+      "name": "shimmer",
+      "iterations": "infinite",
+      "duration": 3000,
+      "playState": "running",
+      "zone": "R1 main",
+      "el": "div animate-shimmer"
+    }
+  ],
+  "htmlScrollBehavior": "smooth",
+  "defilementNavRapide": {
+    "bouton": "Voir aussi",
+    "y0": 0,
+    "y60": 38,
+    "y1500": 7213,
+    "instantane": false
+  }
+}

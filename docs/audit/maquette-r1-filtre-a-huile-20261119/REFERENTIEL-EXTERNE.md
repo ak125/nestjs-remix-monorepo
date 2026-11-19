@@ -14,6 +14,9 @@ Search Central, web.dev, W3C WCAG 2.2, Baymard Institute et Nielsen Norman Group
   par Marwane.
 - **Complément n° 3** : le §3.F est remesuré à la tête `e31d3babe75d36521c0a9f240b2342743f258eec`
   de #2210. Les autres sections restent celles de la tête `8507eb5b8`.
+- **Complément n° 4** : le §3.F est remesuré à la tête `34bdc1eb36e4120a4ec7769249b4c4ef5f9def95`
+  de #2210 (colonne « 34bdc1eb3 »). La colonne porte sur la page R1 seule ; le pied de page et la
+  barre mobile du bas relèvent de la revue du design system (05).
 - **Concurrents** : aucun n'est utilisé ici (consigne n° 4). Le pilotage fait leur relevé à part.
 
 ## 0. En bref
@@ -43,6 +46,10 @@ Search Central, web.dev, W3C WCAG 2.2, Baymard Institute et Nielsen Norman Group
 
    À la tête e31d3babe (complément n° 3, §3.F) : les cartes véhicule et la navigation rapide sont
    corrigées. Les 24 textes hors cartes, la cible de 48×16, le lien et les trois boucles restent.
+   À la tête 34bdc1eb3 (complément n° 4, §3.F) :
+   - corrigés sur R1 : la cible de 48×16, les trois boucles et les 15 textes R1 relevés par axe ;
+   - restent sur R1 le lien distingué par sa seule couleur et quatre contrastes mesurés au pixel :
+     le fil d'Ariane, l'onglet « Type Mine », le badge « 2 min » et la bande sous le hero à 1440 px.
 6. **Le partage R1 sans prix / R2 avec prix reste défendable**, à une condition : que R1 soit un
    passage court vers R2. Le §5.3 détaille ce point.
 7. **Aucune donnée terrain n'a été consultée.** Les seuils Core Web Vitals portent sur le
@@ -180,28 +187,36 @@ Les citations sont reprises mot pour mot, en anglais, telles que dans la source.
 
 ### 3.F Accessibilité (WCAG 2.2)
 
-Mis à jour par le complément n° 3 pour la tête actuelle de #2210,
-`e31d3babe75d36521c0a9f240b2342743f258eec` (complément n° 2 du mandat DS). La colonne « 8507eb5b8 »
-reprend la tête relue jusqu'ici. La colonne « e31d3babe » est remesurée par moi, sans reprendre les
-chiffres de DS (axe et mesure directe : couleurs calculées et pixels, tailles, animations, survol).
+Mis à jour par le complément n° 4 pour la tête actuelle de #2210,
+`34bdc1eb36e4120a4ec7769249b4c4ef5f9def95` (complément n° 3 du mandat DS).
 
-| ID | Exigence | Source | Actuelle | 8507eb5b8 | e31d3babe | Preuve |
-|---|---|---|---|---|---|---|
-| F-1 | 1.4.3 (AA) : contraste de 4,5:1, ou 3:1 pour le grand texte, sans arrondi | A1 | **NON** (25) | **NON** (24) | **NON** (24) ; cartes véhicule **OUI** | axe : `mesures/avant-axe-390x844.json`, `mesures/apres-axe-390x844.json`, `mesures/c3-e31d-axe-390x844.json`. Les 24 nœuds de e31d3babe sont exactement ceux de 8507eb5b8, aucun dans les cartes. Exemple hors cartes : `#aller-plus-loin`, #62748e sur #f3f8fd, soit 4,45:1. Cartes, par mesure directe à 390×844 et 1440×900 (`c3-e31d-apparence-*.json`) : aucun texte sous le seuil, aucun fond en image sous un texte. Minimum : pastille puissance, #ffffff sur #1e8449 (jeton `semantic.success`), 4,72:1 ; « Voir les pièces », « Voir les N autres » et pastille type, #ffffff sur #0f1e38 (jeton `navy`), 16,63:1 ; en-tête, 7,07:1 au pixel le plus défavorable |
-| F-2 | 2.5.8 (AA) : cible d'au moins 24×24 px CSS, sauf exceptions | A2 | **NON** (1) | **NON** (1) | **NON** (1) | Le même bouton de 48×16 dans `#aller-plus-loin`, dans les trois versions |
-| F-3 | 2.5.5 (AAA) : 44×44 px. C'est aussi le seuil des skills du dépôt | A3 | NON | NON | Navigation rapide **OUI** ; reste de la page NON | Les 6 boutons de la navigation rapide mesurent entre 76×44 et 140×44 à 390 et 1440 px (contre 132×37 avant). Il reste 20 cibles sous 44 px ailleurs, contre 26 à 8507eb5b8 (`c3-e31d-axe-390x844.json`, `smallTargets`) |
-| F-4 | 1.4.1 (A) : un lien dans un texte ne se distingue pas par sa seule couleur (technique G183 : 3:1 face au texte voisin, plus un repère au survol et au focus) | A9 | OUI (0) | **NON** (1) | **NON** (1) | Lien « Conseils : changer un filtre à huile étape par étape » dans `#reference`, inchangé (règle `link-in-text-block`) |
-| F-5 | 2.2.2 (A) : un mouvement qui démarre seul, dure plus de 5 s et côtoie d'autres contenus doit pouvoir être mis en pause, arrêté ou masqué | A5 | PARTIEL | PARTIEL | PARTIEL | Le reflet sans fin de l'en-tête des cartes s'arrête avec le réglage « réduire les animations ». Trois boucles continuent même avec ce réglage (`document.getAnimations()`) : `animate-ping` (`GammeHero.tsx:139` et `:229`), `animate-subtle-float` (`GammeDiagnosticCTA.tsx:15`) et `animate-shimmer` (`GammeDiagnosticCTA.tsx:51`). Reste à confirmer par un auditeur humain si ces petites animations décoratives entrent dans le critère |
-| F-6 | 2.3.3 (AAA) et W7 : respecter `prefers-reduced-motion` | A4, W7 | **NON** | **NON** | PARTIEL | Corrigés, avec le réglage : boutons de la navigation rapide, carte, image, « Voir les pièces », chevron et « Voir les N autres ». Au survol : `translate` 0, `scale` 1, `transition-property: none` (`c3-e31d-survol-1440x900.json`). Sans le réglage, l'effet est conservé. Restent : les trois boucles de F-5 ; le défilement `behavior: "smooth"` (`GammeQuickNav.tsx:38`), toujours inconditionnel ; 31 éléments qui se déplacent au survol sans garde (menu principal 8, `#bien-choisir` 5, `#aller-plus-loin` 15, autres 3) |
-| F-7 | 2.4.3 (A) : un ordre de focus « that preserves meaning and operability » | A6 | NON VÉRIFIABLE | NON VÉRIFIABLE | NON VÉRIFIABLE | Aucun parcours au clavier n'a été fait. La maquette change l'ordre visuel par CSS (`order-last`) sur l'image, qui n'est pas focalisable. L'ordre de la navigation rapide suit celui des sections |
-| F-8 | 2.4.11 (AA) : focus non caché par un contenu de l'auteur ; un chat fixe « potentially fail » | A7 | NON VÉRIFIABLE | NON VÉRIFIABLE | NON VÉRIFIABLE | Le bouton de chat est fixé à l'écran (`ChatWidget.tsx:210`) ; non testé au clavier |
-| F-9 | 3.3.2 (A) : étiquettes pour toute saisie | A8 | OUI (contrôle automatique) | OUI (contrôle automatique) | OUI (contrôle automatique) | axe ne relève aucune violation d'étiquette sur le sélecteur |
+- **8507eb5b8 et e31d3babe** : ces colonnes reprennent les têtes relues aux compléments précédents.
+- **34bdc1eb3** : cette colonne est remesurée par moi, sans reprendre les chiffres de DS. Méthodes :
+  axe, mesure directe (couleurs calculées et pixels), tailles, animations et survol.
+- **Périmètre** : elle porte sur la page R1. Le pied de page, la barre mobile du bas et le bandeau de
+  l'en-tête sont partagés par tout le site ; ils sont comptés à part (revue 05).
 
-Seconde gamme (`/pieces/plaquette-de-frein-402.html`, même build e31d3babe). Mêmes résultats sur
-les cartes (minimum 4,72:1) et la navigation rapide (44 px de haut) ; même liste de boucles
-(`c3-e31d-gamme2-plaquette-apparence-*.json`). `MotorisationsSection` et `GammeQuickNav` ne sont
-utilisés que par `pieces.$slug.tsx` (l. 830 et 861), sans couleur propre à la gamme : le rendu est
-le même pour toutes les gammes R1.
+| ID | Exigence | Source | Actuelle | 8507eb5b8 | e31d3babe | 34bdc1eb3 | Preuve |
+|---|---|---|---|---|---|---|---|
+| F-1 | 1.4.3 (AA) : contraste de 4,5:1, ou 3:1 pour le grand texte, sans arrondi | A1 | **NON** (25) | **NON** (24) | **NON** (24) ; cartes véhicule **OUI** | axe **OUI** sur R1 (0) ; au pixel **NON** (4 défauts R1) | **e31d3babe** : 24 nœuds axe à 390 px, dont 15 sur R1 et 9 globaux (`c4-e31d-page-*-reduce.json`). Cartes au minimum 4,72:1 (`c3-e31d-apparence-*.json`). **34bdc1eb3** : axe 9 nœuds à 390 px et 5 à 1440 px, tous dans le pied de page ou la barre du bas (`c4-34bd-page-*.json`). Mesure directe des 15 textes R1 : « Conseils entretien » #1E8449 sur #F8FAFC, 4,51:1 ; légendes, 4,62 à 4,83:1 ; sous-textes de 10 px, 4,71:1 ; ancres et « Lire plus » #C2410C sur #F5F7FA, 4,83:1. Jetons `success`, `neutral-400` et `cta-700`. Restent au pixel, hors de vue d'axe (« incomplete ») : fil d'Ariane du hero 1,6:1, #0D4473 sur #101F39 (règle `nav a`, `global.css:217`, `c4-34bd-hero-pixel.txt`, `c4-34bd-ariane-origine-couleur.txt`) ; onglet inactif « Type Mine » 4,35:1 à 1440 px ; bande des liens utiles sous l'ombre de la carte du hero à 1440 px, de 3,9 à 4,3:1 (`bande-du4.cjs`). Le badge « 2 min » est rendu en #020817 et non en `cta-700` (18,84:1) : la classe ajoutée est sans effet |
+| F-2 | 2.5.8 (AA) : cible d'au moins 24×24 px CSS, sauf exceptions | A2 | **NON** (1) | **NON** (1) | **NON** (1) | **OUI** (0) | **e31d3babe** : le bouton de 48×16 dans `#aller-plus-loin`. **34bdc1eb3** : axe `target-size` 0. Restent 4 cibles sous 24 px à 390 px (10 avant), toutes en exception. Le lien d'évitement mesure 1×1 hors focus et 221×42 au focus. Les liens « filtre à air » (63×18) et « En savoir plus sur le filtre à huile » (207×18) sont dans une phrase. À 1440 px, deux liens en ligne s'y ajoutent, ainsi que des éléments globaux (revue 05) |
+| F-3 | 2.5.5 (AAA) : 44×44 px. C'est aussi le seuil des skills du dépôt | A3 | NON | NON | Navigation rapide **OUI** ; reste de la page NON | Navigation rapide **OUI** ; reste de la page NON | **e31d3babe** : les 6 boutons de la navigation rapide font de 76×44 à 140×44 ; 20 cibles restent sous 44 px. **34bdc1eb3** : 16 cibles de 24 à 44 px à 390 px et 25 à 1440 px. Le fil d'Ariane, les liens utiles et « Lire plus » passent de 16 à 24 px de haut |
+| F-4 | 1.4.1 (A) : un lien dans un texte ne se distingue pas par sa seule couleur (technique G183 : 3:1 face au texte voisin, plus un repère au survol et au focus) | A9 | OUI (0) | **NON** (1) | **NON** (1) | **NON** (1) | Lien « Conseils : changer un filtre à huile étape par étape » dans `#reference`, à 390 px. Inchangé (règle `link-in-text-block`) |
+| F-5 | 2.2.2 (A) : un mouvement qui démarre seul, dure plus de 5 s et côtoie d'autres contenus doit pouvoir être mis en pause, arrêté ou masqué | A5 | PARTIEL | PARTIEL | PARTIEL | **OUI** avec le réglage | **e31d3babe** : 3 boucles continuent avec le réglage « réduire les animations » (`GammeHero.tsx:139` et `:229`, `GammeDiagnosticCTA.tsx:15` et `:51`). **34bdc1eb3** : 0 boucle avec le réglage, à 390 comme à 1440 px (`document.getAnimations()`, `c4-34bd-page-*-reduce.json`). Sans le réglage, 4 boucles tournent : le point du hero, le reflet de `#reference`, le flottement et le reflet du bloc diagnostic. Reste à confirmer par un auditeur humain si un réglage du système suffit comme moyen d'arrêt |
+| F-6 | 2.3.3 (AAA) et W7 : respecter `prefers-reduced-motion` | A4, W7 | **NON** | **NON** | PARTIEL | **OUI** sur R1 | **e31d3babe** : le défilement `smooth` et 14 autres animations restaient. **34bdc1eb3**, avec le réglage : 0 animation. La navigation rapide est à la cible dès 60 ms (à 390 px, 750 → 13 653 px ; à 1440 px, 7 227 px), contre un défilement animé avant (769 px à 60 ms). Restent, hors R1 : `scroll-behavior: smooth` sur `html` (`hooks/useScrollBehavior.ts`) et 31 éléments déplacés au survol sans garde, rendus instantanés par `styles/animations.css:175-189` (`c4-34bd-survol-1440x900.json`) |
+| F-7 | 2.4.3 (A) : un ordre de focus « that preserves meaning and operability » | A6 | NON VÉRIFIABLE | NON VÉRIFIABLE | NON VÉRIFIABLE | NON VÉRIFIABLE | Aucun parcours complet au clavier n'a été fait. Constat préexistant : le lien d'évitement n'est que le 23e élément focalisable |
+| F-8 | 2.4.11 (AA) : focus non caché par un contenu de l'auteur ; un chat fixe « potentially fail » | A7 | NON VÉRIFIABLE | NON VÉRIFIABLE | NON VÉRIFIABLE | NON VÉRIFIABLE | Le bouton de chat est fixé à l'écran (`ChatWidget.tsx:210`) ; non testé au clavier |
+| F-9 | 3.3.2 (A) : étiquettes pour toute saisie | A8 | OUI (contrôle automatique) | OUI (contrôle automatique) | OUI (contrôle automatique) | OUI (contrôle automatique) | axe ne relève aucune violation d'étiquette sur le sélecteur |
+
+**Seconde gamme** : `/pieces/plaquette-de-frein-402.html`, même build 34bdc1eb3.
+
+- axe : 9 nœuds à 390 px et 5 à 1440 px, tous globaux.
+- Textes R1 : de 4,51 à 4,83:1, et 4,32:1 au pixel pour « Conseils entretien » à 1440 px.
+- Mouvement : 0 boucle et défilement instantané.
+- Fichiers : `c4-34bd-gamme2-plaquette-page-*-reduce.json`, captures `c4-34bd-plaquette-*`.
+
+Les 7 composants modifiés ne servent qu'à `pieces.$slug.tsx`, sans couleur propre à la gamme : le
+rendu est le même pour toutes les gammes R1.
 
 ### 3.G Usage e-commerce (téléphone, ventes)
 

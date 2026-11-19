@@ -14,6 +14,10 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   (complément n° 2 de DS, relevée le 19/11 vers 21 h 15). Les trois corrections d'apparence y sont
   revérifiées par mes propres mesures. Le verdict et le §12 sont mis à jour pour cette tête ; les
   autres sections restent celles de `8507eb5b8`.
+- **Complément n° 4** : la tête de #2210 est passée à `34bdc1eb36e4120a4ec7769249b4c4ef5f9def95`
+  (complément n° 3 de DS). Revérification indépendante de l'apparence de la page R1, hors pied de
+  page et barre mobile du bas (revue du design system, 05). Le verdict et le §12 sont mis à jour
+  pour cette tête. Liens manquants, titre et règles ne sont pas jugés ici.
 
 ## Verdict final
 
@@ -47,6 +51,44 @@ conforme au rôle R1. Ils relèvent de l'équipe 06 et de Marwane (titres).
 - Le diff ne touche que des classes CSS : aucun texte, titre, ancre ni donnée structurée. axe donne
   les mêmes 24 + 1 + 2 + 1 violations qu'à `8507eb5b8`, nœud pour nœud. Le typecheck et les
   100 tests R1 passent.
+
+**Complément n° 4, tête `34bdc1eb3` : apparence de la page R1 (hors éléments partagés par tout
+le site) : corrections d'abord.** Le mouvement est réglé, et le contraste mesuré par axe aussi. Il
+reste quatre défauts de contraste propres à R1, qu'axe ne voit pas car il les classe « incomplete ».
+Je les ai mesurés au pixel.
+- **Mouvement : corrigé.** Avec « réduire les animations », je mesure 0 boucle et 0 animation à 390 et
+  1440 px ; à `e31d3babe`, il y avait 3 boucles et 14 animations. La navigation rapide saute
+  directement à la section. Ce qui bouge encore vient de la feuille globale, pas de R1 :
+  - les 31 déplacements au survol sont instantanés, car `styles/animations.css:175-189` ramène
+    toutes les durées à 0,01 ms ;
+  - `html` garde `scroll-behavior: smooth`, posé par `hooks/useScrollBehavior.ts`.
+- **Contraste vu par axe : corrigé sur R1.** Il passe de 15 violations à 0. Les 9 violations à 390 px
+  et les 5 à 1440 px qui restent sont toutes dans le pied de page et la barre du bas. J'ai mesuré
+  directement les 15 textes corrigés. Ils sont tous entre 4,51 et 4,83:1, avec les jetons
+  `neutral-400`, `cta-700` et `success`, sans valeur en dur ni couleur créée.
+- **Restent sur R1** (préexistants, sauf le n° 3) :
+  1. Fil d'Ariane du hero, « Accueil » et « Pièces Auto » : 1,6:1 (#0D4473 sur bleu nuit). La règle
+     globale `nav a` (`global.css:217`) l'emporte sur `text-white/25` (`GammeHero.tsx:52`).
+  2. Onglet inactif « Type Mine », à 1440 px : 4,35:1 (`text-slate-500` sur `bg-slate-100`,
+     `GammeHero.tsx:251`).
+  3. Badge « 2 min » : `text-cta-700` est sans effet (`GammeDiagnosticCTA.tsx:31`). Le composant
+     partagé `Badge` ne fusionne pas les classes, et son `text-foreground` l'emporte : le texte est
+     quasi noir (18,8:1), pas orange. Le 4,88:1 annoncé ne correspond donc pas au rendu. À 390 px,
+     le badge passe sur deux lignes.
+  4. À 1440 px, l'ombre de la carte du hero (`GammeHero.tsx:224`, valeur en dur) déborde sur la bande
+     des liens utiles :
+     - « Conseils entretien » descend à 3,9 à 4,3:1 ;
+     - « Paiement sécurisé » à 4,0:1 ;
+     - « Retours 30 jours » à 4,3:1.
+- **Cibles : conformes au seuil AA de 24 px (2.5.8).** Il reste 4 cibles sous 24 px à 390 px, contre
+  10 avant. Toutes entrent dans une exception de la règle :
+  - le lien d'évitement est invisible hors focus, et mesure 221 × 42 px au focus ;
+  - les trois autres sont des liens placés dans une phrase.
+- **Régressions : aucune.**
+  - Le diff ne touche que l'apparence.
+  - axe ne relève aucune règle nouvelle.
+  - Le typecheck passe, ainsi que les 106 tests de 9 fichiers.
+  - La plaquette de frein donne les mêmes résultats.
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -509,10 +551,17 @@ Simulation de fusion (`git merge-tree --write-tree`) entre la tête de #2210 et 
 
 ## 12. Liste de contrôle « rien au hasard »
 
-Mise à jour du complément n° 3 pour la tête `e31d3babe75d36521c0a9f240b2342743f258eec`. Preuves :
-`mesures/c3-*.json`, scripts `apparence-du.cjs`, `survol-du.cjs` et `captures-du3.cjs`, captures
-`captures/c3-*.png`. Sur les captures pleine page, l'en-tête fixe et la barre basse recouvrent
-parfois une carte : c'est un effet de la capture, pas de la page.
+Mise à jour du complément n° 4 pour la tête `34bdc1eb36e4120a4ec7769249b4c4ef5f9def95`.
+
+- **Lignes remesurées** : Contraste, Cibles tactiles, Jetons, Mouvement réduit, Lisibilité, Diff,
+  Autres gammes, Typecheck, et la nouvelle ligne « Cohérence des teintes ». Les autres lignes gardent
+  le verdict du complément n° 3 : le diff ne les touche pas, et elles sortent du périmètre du n° 4.
+- **Preuves** : `mesures/c4-*.json` et `mesures/c4-*.txt` ; les scripts `page-du4.cjs`,
+  `captures-du4.cjs`, `bande-du4.cjs`, `hero-du4.cjs`, `ariane-du4.cjs` et `dis-du4.cjs` ; les
+  captures `captures/c4-*.png`.
+- **Captures** : le préfixe `c4-e31d` marque l'état avant, `c4-34bd` l'état après, et
+  `c4-34bd-plaquette` la seconde gamme. L'en-tête fixe et la barre basse recouvrent parfois une
+  zone : c'est un effet de la capture, pas de la page.
 
 | Point | Verdict | Raison |
 |---|---|---|
@@ -525,21 +574,40 @@ parfois une carte : c'est un effet de la capture, pas de la page.
 | LCP mobile | À MESURER | Labo : 1,8 s à 412 × 823 et 375 × 800, 2,7 s à 412 × 915. Le terrain p75 reste à mesurer après PREPROD |
 | CLS | OK | 0 dans toutes les séries, y compris pendant un défilement immédiat |
 | INP | À MESURER | Labo : 24 à 96 ms. Le terrain reste à mesurer |
-| Contraste | À CORRIGER (hors cartes) | Cartes véhicule corrigées à `e31d3babe` : aucun texte sous 4,5:1 à 390 et 1440 px, en mesure directe ; minimum 4,72:1. Restent 24 nœuds axe hors cartes, les mêmes qu'avant |
-| Cibles tactiles | À CORRIGER (hors navigation rapide) | Navigation rapide corrigée : 6 boutons de 44 px de haut et de 76 à 140 px de large. Restent 20 cibles sous 44 px (26 avant) et le bouton de 48 × 16 (sous le seuil AA de 24 px) |
+| Contraste | À CORRIGER | axe : 0 violation sur R1 à 390 et 1440 px, contre 15 à `e31d3babe`. Restent 9 (390) et 5 (1440), toutes dans le pied de page et la barre du bas (revue 05). Mesure directe des 15 textes corrigés : de 4,51 à 4,83:1. Restent sur R1, mesurés au pixel : le fil d'Ariane du hero à 1,6:1 (règle globale `nav a`, `global.css:217`) ; l'onglet « Type Mine » à 4,35:1 à 1440 px ; la bande des liens utiles sous l'ombre de la carte du hero, de 3,9 à 4,3:1 à 1440 px. `link-in-text-block` reste sur le lien « Conseils : changer un filtre à huile étape par étape » de `#reference`, à 390 px |
+| Cibles tactiles | OK (AA, 24 px) | À 390 px, 4 cibles sous 24 px, contre 10 à `e31d3babe`. Toutes sont dans une exception de 2.5.8 : le lien d'évitement, masqué hors focus (221 × 42 px au focus), et 3 liens dans une phrase. À 1440 px s'y ajoutent 2 liens dans une phrase et 5 éléments globaux : le téléphone du bandeau et 4 liens du pied de page (revue 05). Le fil d'Ariane et les liens utiles passent de 16 à 24 px de haut, et « Lire plus » aussi. Restent 16 cibles entre 24 et 44 px à 390 px : l'objectif de 44 px n'est pas atteint, mais il n'est pas exigé en AA |
 | Ordre de tabulation | À MESURER | Il suit l'ordre visuel. Le focus se perd au champ « Marque » dans le navigateur sans affichage (identique avant et après) ; à vérifier au clavier réel |
 | Libellés | OK | Aucun contrôle sans nom accessible ; champs du sélecteur libellés |
-| Lisibilité à 390 px | À CORRIGER | Textes de 10 à 12 px (réassurance, fil d'Ariane, cartes d'étapes) ; `#reference` mesure 5 255 px |
+| Lisibilité à 390 px | À CORRIGER | Textes de 10 à 12 px (réassurance, fil d'Ariane, cartes d'étapes) ; `#reference` mesure 5 255 px ; le badge « 2 min » se coupe sur deux lignes (capture `c4-34bd-badge-2-min-390.png`) |
 | Parcours d'achat (sélecteur puis page véhicule) | OK, À MESURER | Le sélecteur est au premier écran et les cartes véhicule suivent. Le bouton du chat recouvre le bas du sélecteur. Le taux de passage de R1 à R2 reste à mesurer |
 | Éléments de confiance | OK | Réassurance placée juste après le sélecteur. Le seuil de livraison dépend de #2143 |
-| Jetons de design sans valeur en dur | À CORRIGER (hors cartes) | Le diff de `e31d3babe` n'ajoute aucune valeur en dur. `bg-navy` (#0F1E38) et `bg-success` / `text-success-foreground` (#1E8449 / #FFFFFF) viennent de `packages/design-tokens/src/tokens.json`. Restent `text-[12px]` (`GammeQuickNav.tsx:40`), `text-white/25` (`GammeHero.tsx:52`) et les couleurs relevées par axe hors cartes |
-| Mouvement réduit | À CORRIGER | Corrigé sur les éléments touchés : en mode réduit, plus aucun déplacement au survol ni reflet en boucle. Restent en boucle `animate-ping` (`GammeHero.tsx:139`), `animate-subtle-float` et `animate-shimmer` (`GammeDiagnosticCTA.tsx:15` et `:51`). Restent aussi le défilement `smooth` (`GammeQuickNav.tsx:38`) et 31 déplacements au survol non gardés (menu principal, `#bien-choisir`, `#aller-plus-loin`) |
+| Jetons de design sans valeur en dur | À CORRIGER | Le diff n'emploie que des jetons de `packages/design-tokens/src/tokens.json` : `neutral-400` (#6B7280), `cta-700` (#C2410C), `cta-800` et `success` (#1E8449). Aucune couleur n'est créée, aucune valeur n'est en dur. Mais `text-cta-700` du badge reste sans effet (`Badge` sans fusion des classes), et `hover:text-emerald-800` (`pieces.$slug.tsx:816`) est hors jeton. Restent aussi `shadow-[0_24px_80px_rgba(0,0,0,0.22)]` (`GammeHero.tsx:224`), `text-[12px]` (`GammeQuickNav.tsx:46`) et `text-white/25` (`GammeHero.tsx:52`) |
+| Mouvement réduit | OK | Avec le réglage : 0 boucle et 0 animation à 390 et 1440 px, contre 3 boucles et 14 animations à `e31d3babe`. La navigation rapide défile sans animation (`GammeQuickNav.tsx:36-44`) : elle est à la cible dès 60 ms. Ce qui bouge encore vient du global, pas de R1. Les 31 déplacements au survol (menu principal, `#bien-choisir`, `#aller-plus-loin`) restent sans garde, mais sont instantanés grâce à la règle de `styles/animations.css:175-189` (0,01 ms). `scroll-behavior: smooth` reste posé sur `html` par `hooks/useScrollBehavior.ts`. Sans le réglage, les 4 boucles tournent, comme prévu |
 | Cohérence avec #1943, #1944, #2143 et DG | À CORRIGER | Doublon avec #1943, conflit avec #1944, dépendance du bandeau à #2143 (§11) |
 | Couverture par les contrôles | NON VÉRIFIÉ | Aucun contrôle de PR ne couvre l'ordre ni le rendu R1 (§10) |
-| Diff `8507eb5b8` → `e31d3babe` limité à l'apparence | OK | 2 fichiers de code ; toutes les lignes modifiées sont des `className`, plus la valeur par défaut `familleColor`. Aucun texte, titre, ancre, `id` ni donnée structurée. Les autres fichiers sont la documentation de DS |
-| Effet sur les autres gammes | OK | Composants utilisés seulement par `pieces.$slug.tsx` ; rendu identique vérifié sur `/pieces/plaquette-de-frein-402.html` (contraste, cibles, animations) |
-| Typecheck et tests R1 à `e31d3babe` | OK | `tsc` sans erreur ; 7 fichiers et 100 tests R1 passés |
+| Diff `e31d3babe` → `34bdc1eb3` limité à l'apparence | OK | 7 fichiers de code. Les changements portent sur des `className` (couleurs, `min-h-6`, `motion-reduce:`), plus le mode de défilement de la navigation rapide (`instant` avec le réglage). Aucun texte, titre, ancre, `id` ni donnée structurée. axe par règle, à 390 / 1440 px : `color-contrast` passe de 24/20 à 9/5 et `target-size` de 1/1 à 0/0 ; `link-in-text-block` (1/0) et `region` (2/4) ne changent pas. Aucune règle nouvelle |
+| Effet sur les autres gammes | OK | Les 7 composants modifiés ne servent qu'à `pieces.$slug.tsx`. `components/home/CatalogueSection.tsx` est un autre fichier. Sur `/pieces/plaquette-de-frein-402.html` à `34bdc1eb3`, mêmes résultats : axe à 9/5 nœuds, tous globaux, 0 sur R1 ; textes de 4,51 à 4,83:1 ; 0 boucle ; défilement instantané |
+| Typecheck et tests R1 à `34bdc1eb3` | OK | `react-router typegen && tsc` sans erreur ; 9 fichiers et 106 tests passés (les 7 fichiers R1 et 2 fichiers `pieces-slug-*`) |
+| Cohérence des teintes (captures à 390 et 1440 px) | À CORRIGER | Les ancres orange foncé (`cta-700`) et les textes gris (`neutral-400`) sont cohérents entre eux et avec le reste de la page. Deux écarts : les trois liens utiles ont chacun une couleur (bleu, vert, noir), ce qui est préexistant ; le badge « 2 min » sort en noir à côté du badge vert « Gratuit ». Les liens SEO de `#aller-plus-loin` restent bleus |
 | Écran d'erreur observé une fois | NON VÉRIFIÉ | 1 occurrence sur 6 passages, non reproduite, cause inconnue (§6) |
+
+**À part, pour la revue du design system (05)** (partagé par tout le site, hors verdict R1) :
+
+- Pied de page (`components/home/Footer.tsx`) :
+  - 4 contrastes faibles à 390 px (de 1,88 à 3,73:1) et 5 à 1440 px (#576174 sur #0F1E38, 2,66:1) ;
+  - 4 liens sous 24 px de haut à 1440 px.
+- Barre mobile du bas (`components/layout/BottomNav.tsx`) : 5 contrastes faibles (#90A1B9 à 2,63:1,
+  et l'orange #F97316 à 2,80:1).
+- Bandeau de l'en-tête (`components/Navbar.tsx`) : hors repère (règle `region`), téléphone de 16 px
+  de haut, `text-white/40`.
+- Règle globale `nav a` (`global.css:217`) : elle impose `text-secondary-600` à tout lien placé dans
+  un `nav`, y compris sur fond sombre. C'est la cause du fil d'Ariane à 1,6:1.
+- Composant `Badge` (`components/ui/badge.tsx`) : il concatène les classes sans les fusionner. Une
+  couleur passée en `className` peut donc perdre face à celle de la variante.
+- `VehicleSelector` en mode `mobile-premium` : les étapes « Année », « Modèle » et « Motorisation »
+  sont à 2,63:1 sur blanc. Ce sont des étapes inactives, sans attribut `disabled`.
+- Hook `useScrollBehavior` (défilement `smooth` sur `html`), règle globale de mouvement réduit
+  (`styles/animations.css:175-189`) et déplacements au survol sans garde dans le menu principal.
 
 ## 13. Ce qui n'a pas pu être jugé, et pourquoi
 
