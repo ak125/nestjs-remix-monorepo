@@ -21,6 +21,8 @@ export {
   SupplierCardRepository,
   SupplierIdConflictError,
   PriceRuleConflictError,
+  BrandSourcesRejectedError,
+  BrandSourcesConflictError,
   SUPPLIER_CARD_COLUMNS,
 } from './supplier-card.repository';
 export type {
@@ -30,4 +32,7 @@ export type {
   SupplierLinkedBrand,
   SupplierPriceProfileRow,
   SupplierPriceConditionPut,
+  SupplierBrandLinkRow,
+  SupplierBrandSourcePut,
+  SupplierSummary,
 } from './supplier-card.repository';

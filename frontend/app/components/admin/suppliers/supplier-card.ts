@@ -26,6 +26,18 @@ export const SUPPLY_MODE_LABELS = {
   import: "Import",
 } as const;
 
+/** Repli si la pièce n'est pas au dépôt (mandat DQ). */
+export const FALLBACK_MODE_LABELS = {
+  transporteur: "Transporteur",
+  aucun: "Aucun repli",
+} as const;
+
+/** Nature d'une source d'achat de marque (mandat DQ). */
+export const STOCK_KIND_LABELS = {
+  stock: "Stock",
+  commande: "Commande",
+} as const;
+
 export const ORDER_MODE_LABELS = {
   portail: "Portail",
   email: "E-mail",
@@ -54,6 +66,10 @@ interface SupplierLinkedBrand {
   pmId: number | null;
   brandName: string | null;
   linkDisplayed: boolean;
+  /** Rang du lien parmi les sources d'achat de la marque, ou null. */
+  sourceRank: number | null;
+  /** Point de livraison distinct du fournisseur, ou null. */
+  deliverySplId: string | null;
 }
 
 /** État d'une règle à la date de lecture (backend, supplier-price-rule.ts). */
@@ -125,6 +141,7 @@ export interface SupplierCard {
     city: string | null;
     country: string | null;
     supplyMode: string | null;
+    fallbackMode: string | null;
     validatedAt: string | null;
     validatedBy: string | null;
   };
@@ -170,6 +187,7 @@ const TEXT_FIELDS = [
   "city",
   "country",
   "supplyMode",
+  "fallbackMode",
   "paymentTerms",
   "deliveryDelayDays",
   "orderMode",
@@ -297,4 +315,109 @@ export function readCardApiError(
         ? p.message.join(" ; ")
         : `Erreur ${status}`;
   return { message, fieldErrors, duplicates };
+}
+
+// ===== SOURCES D'ACHAT PAR MARQUE (mandat DQ) =====
+// Contrat backend : GET/PUT /api/suppliers/brands/:pmId/sources (schéma Zod
+// strict PutBrandSourcesSchema). Rang = position dans la liste envoyée.
+
+export interface ResolvedBrandSource {
+  rank: number;
+  linkId: string;
+  source: { splId: string; name: string | null; type: string | null };
+  delivery: { splId: string; name: string | null; isSource: boolean };
+  stockKind: "stock" | "commande" | null;
+  surchargeCents: number | null;
+  supplyMode: string | null;
+  fallbackMode: string | null;
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+export interface BrandSources {
+  pmId: number;
+  brandName: string | null;
+  sources: ResolvedBrandSource[];
+  issues: Array<{
+    code: string;
+    rank: number;
+    linkId: string;
+    message: string;
+  }>;
+  unrankedLinks: Array<{
+    linkId: string;
+    splId: string;
+    name: string | null;
+    displayed: boolean;
+  }>;
+  activeSuppliers: Array<{
+    splId: string;
+    name: string | null;
+    type: string | null;
+    supplyMode: string | null;
+    fallbackMode: string | null;
+  }>;
+}
+
+export interface BrandSourceBody {
+  splId: string;
+  linkId?: string;
+  deliverySplId?: string;
+  stockKind: string;
+  surchargeCents: number;
+}
+
+export type BrandSourcesFormResult =
+  | { ok: true; body: { sources: BrandSourceBody[] } }
+  | { ok: false; errors: string[] };
+
+/**
+ * Formulaire de l'écran des sources → corps du PUT. Chaque ligne `i` porte
+ * `rank_i`, `splId_i`, `linkId_i`, `deliverySplId_i`, `stockKind_i` et
+ * `surcharge_i` (euros) ; une ligne sans fournisseur ou sans rang est
+ * ignorée (son lien éventuel reste en place, non classé). Les lignes
+ * sont triées par rang saisi, qui doit être unique ; le rang envoyé est la
+ * position. Les contrôles d'existence et de statut restent au backend.
+ */
+export function brandSourcesFormToBody(
+  form: FormData,
+  rowCount: number,
+): BrandSourcesFormResult {
+  const rows: Array<{ rank: number; body: BrandSourceBody }> = [];
+  const errors: string[] = [];
+  const seenRanks = new Set<number>();
+  for (let i = 0; i < rowCount; i++) {
+    const read = (key: string) => String(form.get(`${key}_${i}`) ?? "").trim();
+    const splId = read("splId");
+    const rankRaw = read("rank");
+    // Sans fournisseur ou sans rang : pas une source (le lien reste, non classé).
+    if (splId === "" || rankRaw === "") continue;
+    const line = `Ligne ${i + 1}`;
+    const rank = /^\d{1,2}$/.test(rankRaw) ? Number(rankRaw) : NaN;
+    if (!Number.isInteger(rank) || rank < 1) {
+      errors.push(`${line} : rang entier ≥ 1 attendu`);
+      continue;
+    }
+    if (seenRanks.has(rank)) errors.push(`${line} : rang ${rank} déjà pris`);
+    seenRanks.add(rank);
+    const stockKind = read("stockKind");
+    if (!(stockKind in STOCK_KIND_LABELS))
+      errors.push(`${line} : nature stock ou commande attendue`);
+    const cents = eurosToCents(read("surcharge"));
+    if (cents === undefined)
+      errors.push(`${line} : surcoût en euros attendu (ex. 3 ou 3,50)`);
+    const body: BrandSourceBody = {
+      splId,
+      stockKind,
+      surchargeCents: cents ?? 0,
+    };
+    const linkId = read("linkId");
+    if (linkId !== "") body.linkId = linkId;
+    const delivery = read("deliverySplId");
+    if (delivery !== "" && delivery !== splId) body.deliverySplId = delivery;
+    rows.push({ rank, body });
+  }
+  if (errors.length > 0) return { ok: false, errors };
+  rows.sort((a, b) => a.rank - b.rank);
+  return { ok: true, body: { sources: rows.map((r) => r.body) } };
 }

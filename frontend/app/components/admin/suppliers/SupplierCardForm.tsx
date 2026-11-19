@@ -25,6 +25,7 @@ import {
   SUPPLIER_STATUS_LABELS,
   SUPPLIER_TYPE_LABELS,
   SUPPLY_MODE_LABELS,
+  FALLBACK_MODE_LABELS,
   type SupplierCard,
   type SupplierDuplicate,
 } from "./supplier-card";
@@ -260,6 +261,13 @@ export function SupplierCardForm({
             options={SUPPLY_MODE_LABELS}
             defaultValue={card?.location.supplyMode}
             error={fe.supplyMode}
+          />
+          <Choice
+            name="fallbackMode"
+            label="Repli si absent du dépôt"
+            options={FALLBACK_MODE_LABELS}
+            defaultValue={card?.location.fallbackMode}
+            error={fe.fallbackMode}
           />
         </CardContent>
       </Card>
