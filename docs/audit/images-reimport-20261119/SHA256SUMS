@@ -1,0 +1,17 @@
+06bd4ce3f36840ee62ff07a6e8c6a71ca655c801030f832297a6ca4f211bd5a1  ./a-blanc/essai-fixture.out
+0f03429f495be8d8c9f0881070fc185a930edd5f31f1eb64a735dbf7ff45e67d  ./a-blanc/essai-fixture-rapport.csv
+ce24c761876747ada93a5e20aff2e59c9c85fa14dd1a5d4964c5414855e4eb09  ./a-blanc/inventaire-reel.out
+a88581ae1ee0aa31718c8b971c3db228ca01b303c6f87b32381058e4abced736  ./a-blanc/inventaire-reel-rapport.csv
+2b1c39917d6014dd48df2600a338eedbf6360e30d480816df6c14f525d8e2a07  ./a-blanc/inventaire-reel-rapport.json
+a10f2cc70e1e233411c481b1d861a56fea4c30bc825fddfb71803572f5db8915  ./analyse_journaux_avril.py
+049132ebc6fa43f3506f077d5999ecfa52d5a10aa3f9e93b2a47d05395743b76  ./inventaire-par-marque.csv
+2b925ec85705823592c457079f5b3c87c10a89d1110978619cd13c6490300868  ./journaux-avril-par-dossier.csv
+3c064da0956b62ee53115569fb4c6244bc5db948d915977ac36904e8aaba395e  ./journaux-avril-resume.txt
+366700dd323c11c61c8b6c19feaa9365a15cd3d6a7cecfbc38157d99febbfb87  ./mesure/bornes.txt
+fd7815d419983687e7ff564d685de07bafa28c887cd89fcd451d046137e64029  ./mesure/inventaire-detail.csv.gz
+aca10866d52cae9b44ff3e1bf344c74d7ba2e641164f82cd067f3c97df27c020  ./mesure/journal.txt
+caa302fa17e79886b14ca43ecc95d418027f6219b88cc531dff54ab58d3cb047  ./patch-workflow-recover-tecdoc-images.yml.diff
+67625669e55ee62d158fc94db29cd18704074c49dc137c5a32679624c785b393  ./preuves/pytest.txt
+968616f3ade9976fb2f591db7148e124c69c59d16834127a28c5b7c61ab161aa  ./README.md
+5bcef738d4cbed0c4af2f667adbb7dcace048d5e7503b1c4650ad2aa4ea561af  ./requetes/agreger_inventaire.py
+b1cb869194db3bcfc7ecaea2e7b89196f813697df6053f5470bc791f391655a0  ./requetes/mesure_inventaire.sh
