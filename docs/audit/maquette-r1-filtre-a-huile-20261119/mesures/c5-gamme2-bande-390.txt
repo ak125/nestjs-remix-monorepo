@@ -1,0 +1,1 @@
+390x844 [["Compatibilité vérifiée","#62748e","#f8fafc",4.55],["Livraison 24-48h","#62748e","#f8fafc",4.55],["Retours 30 jours","#62748e","#f8fafc",4.55],["Paiement sécurisé","#62748e","#f8fafc",4.55],["Guide d'achat","#155dfc","#155dfc",1],["Conseils entretien","#1e8449","#f8fafc",4.51],["Fiche technique","#020817","#f8fafc",19.12]]

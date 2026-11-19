@@ -1,0 +1,129 @@
+npm warn Unknown project config "puppeteer-skip-download". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=7: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: Cannot read properties of undefined (reading 'from')[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: Cannot read properties of undefined (reading 'from')[39m
+[31m[Nest] 3672583  - [39m20/11/2026 00:00:59 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-IMG] seo_gamme load failed pg_id=479: TypeError: Cannot read properties of undefined (reading 'from')[39m
+PASS tests/unit/gamme-response-builder.service.test.ts (7.648 s)
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ◈ encrypted .env [www.dotenvx.com]
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=7): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=7: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=7: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: this.buyingGuideService.getSupabaseClient is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: Cannot read properties of undefined (reading 'from')[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: Cannot read properties of undefined (reading 'from')[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[SEO_FIELD_GATE] shadow compute failed (pg=479): this.seoTitleEngine.resolveGated is not a function[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-IMG] query failed pg_id=479: TypeError: Cannot read properties of undefined (reading 'from')[39m
+[33m[Nest] 3672583  - [39m20/11/2026 00:00:59 [33m   WARN[39m [38;5;3m[GammeResponseBuilderService] [39m[33m[R1-LINKS] related blocks failed pg_id=479: TypeError: this.relatedResources.buildRelatedBlocks is not a function[39m
+PASS tests/unit/gamme-r3-cache-invalidation.http-guards.test.ts (7.78 s)
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ◈ secrets for agents [www.dotenvx.com]
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+PASS src/modules/gamme-rest/services/__tests__/gamme-response-builder-r1-motorisation-description.test.ts
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ◈ encrypted .env [www.dotenvx.com]
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+PASS src/modules/gamme-rest/utils/__tests__/r1-image-normalizer.test.ts
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ⌘ suppress logs { quiet: true }
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+PASS src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ⌘ suppress logs { quiet: true }
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+[31m[Nest] 3672583  - [39m20/11/2026 00:01:01 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-GAMME-LINKS] pg_id=7 résolution en échec, liens sans identifiant servis sans lien, réponse non cachée : DatabaseException: Résolution des liens de gamme impossible : lecture en échec[39m
+PASS src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ⌘ enable debugging { debug: true }
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+PASS src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ◈ encrypted .env [www.dotenvx.com]
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+[33m[Nest] 3672583  - [39m20/11/2026 00:01:01 [33m   WARN[39m [38;5;3m[InternalLinkingService] [39m[33m[gamme-links] 2 lien(s) éditorial(aux) sans gamme du catalogue correspondante — libellé servi sans lien[39m
+
+Test Suites: 7 passed, 7 total
+Tests:       67 passed, 67 total
+Snapshots:   0 total
+Time:        10.154 s
+Ran all test suites matching /src\/modules\/gamme-rest|tests\/unit\/gamme-response-builder.service.test.ts|tests\/unit\/gamme-r3-cache-invalidation.http-guards.test.ts/i.

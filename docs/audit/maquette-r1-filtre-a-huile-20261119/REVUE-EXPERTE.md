@@ -18,6 +18,11 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   (complément n° 3 de DS). Revérification indépendante de l'apparence de la page R1, hors pied de
   page et barre mobile du bas (revue du design system, 05). Le verdict et le §12 sont mis à jour
   pour cette tête. Liens manquants, titre et règles ne sont pas jugés ici.
+- **Complément n° 5** : la tête de #2210 est passée à `06feff9686afa610d5b0363397e2cd2b7ec3fe1d`
+  (compléments n° 4 et n° 5 de DS : quatre contrastes, puis une phrase par carte véhicule issue de
+  `__seo_item_switch`). Revérification finale : contrastes au pixel, phrases des cartes sur un rendu
+  propre de la branche (backend et frontend de `06feff968` sur un port à moi, Redis privé, sans
+  proxy), cache, lexique et régressions. Le verdict et le §12 sont mis à jour pour cette tête.
 
 ## Verdict final
 
@@ -89,6 +94,30 @@ Je les ai mesurés au pixel.
   - axe ne relève aucune règle nouvelle.
   - Le typecheck passe, ainsi que les 106 tests de 9 fichiers.
   - La plaquette de frein donne les mêmes résultats.
+
+**Complément n° 5, tête `06feff968`.**
+- **Apparence de la page R1 (hors éléments partagés par tout le site) : prête à valider par
+  Marwane.** Les quatre contrastes sont corrigés, mesurés au pixel, à 390 et 1440 px :
+  - fil d'Ariane : 6,47 et 6,38:1 (1,6:1 avant) ;
+  - onglet « Type Mine » : 6,90:1 à 1440 px (4,35:1 avant) ;
+  - badge « 2 min » : orange `cta-700` sur `cta-50`, 4,87:1, sur une ligne aux deux largeurs ;
+  - bande des liens utiles : 4,51 à 4,55:1, et « Guide d'achat » 5,01:1 (3,9 à 4,3:1 avant).
+
+  axe donne les mêmes nœuds qu'à `34bdc1eb3`. Aucune violation nouvelle, et la plaquette de frein
+  donne le même résultat. Une réserve, connue depuis le complément n° 2 et hors des quatre
+  corrections demandées : le lien « Conseils : changer un filtre à huile étape par étape » de
+  `#reference` reste distingué par sa seule couleur à 390 px (1.4.1, `link-in-text-block`).
+  C'est à Marwane de dire s'il le veut corrigé avant validation.
+- **Phrases des cartes véhicule : corrections d'abord.** Le builder les sert bien : je l'ai prouvé
+  sans proxy, avec 19 phrases distinctes sur 19 cartes et 17 sur 17. Aucun mot interdit R1, aucune
+  procédure. Mais :
+  - « pour maintenir en bon état » n'a pas de complément ;
+  - la phrase redit le modèle, le moteur et les ch déjà affichés sur la carte, sans la marque
+    (« compatible 500 1.2 69 ch ») ;
+  - 7 bénéfices seulement pour 19 cartes (« protéger le moteur » 6 fois) ;
+  - cinq bénéfices génériques reviennent sur 95 à 96 des 101 gammes qui ont des bénéfices.
+
+  Détail et sources au §12, lignes « Phrases des cartes » à « Écart de lexique ».
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -551,7 +580,28 @@ Simulation de fusion (`git merge-tree --write-tree`) entre la tête de #2210 et 
 
 ## 12. Liste de contrôle « rien au hasard »
 
-Mise à jour du complément n° 4 pour la tête `34bdc1eb36e4120a4ec7769249b4c4ef5f9def95`.
+Mise à jour du complément n° 5 pour la tête `06feff9686afa610d5b0363397e2cd2b7ec3fe1d`
+(relevée et revérifiée avant publication ; PR brouillon, ouverte).
+
+- **Lignes remesurées au n° 5** :
+  - Contraste, Jetons, Lisibilité, Cohérence des teintes, Diff, Autres gammes et Typecheck ;
+  - les quatre nouvelles lignes « Phrases des cartes véhicule », « Langue des phrases »,
+    « Répétition entre pages », « Cache des réponses v2 → v3 » et « Écart de lexique ».
+
+  Les autres lignes gardent le verdict du complément n° 4.
+- **Rendu propre** : backend et frontend construits depuis `06feff968` dans mon worktree, servis
+  sur un port à moi (ni :3000 ni le Redis DEV), avec un Redis privé sans persistance et les tâches
+  planifiées désactivées. L'environnement DEV est lu sans copie. Le serveur DEV partagé et le
+  checkout `/opt/automecanik/app` n'ont pas été touchés. Les deux serveurs ont été arrêtés après les
+  mesures.
+- **Preuves n° 5** :
+  - `mesures/c5-*` : API, cartes, lexique, switch, contrastes, axe et tests ;
+  - les scripts `cartes-du5.cjs`, `lexique-du5.cjs`, `elements-du5.cjs`, `badge-du5.cjs` et
+    `captures-du5.cjs`, avec les scripts du n° 4 `page-du4.cjs`, `hero-du4.cjs`, `ariane-du4.cjs` et
+    `bande-du4.cjs` ;
+  - les captures `captures/c5-06fe-*.png`.
+
+Rappel du complément n° 4, tête `34bdc1eb36e4120a4ec7769249b4c4ef5f9def95` :
 
 - **Lignes remesurées** : Contraste, Cibles tactiles, Jetons, Mouvement réduit, Lisibilité, Diff,
   Autres gammes, Typecheck, et la nouvelle ligne « Cohérence des teintes ». Les autres lignes gardent
@@ -574,21 +624,27 @@ Mise à jour du complément n° 4 pour la tête `34bdc1eb36e4120a4ec7769249b4c4e
 | LCP mobile | À MESURER | Labo : 1,8 s à 412 × 823 et 375 × 800, 2,7 s à 412 × 915. Le terrain p75 reste à mesurer après PREPROD |
 | CLS | OK | 0 dans toutes les séries, y compris pendant un défilement immédiat |
 | INP | À MESURER | Labo : 24 à 96 ms. Le terrain reste à mesurer |
-| Contraste | À CORRIGER | axe : 0 violation sur R1 à 390 et 1440 px, contre 15 à `e31d3babe`. Restent 9 (390) et 5 (1440), toutes dans le pied de page et la barre du bas (revue 05). Mesure directe des 15 textes corrigés : de 4,51 à 4,83:1. Restent sur R1, mesurés au pixel : le fil d'Ariane du hero à 1,6:1 (règle globale `nav a`, `global.css:217`) ; l'onglet « Type Mine » à 4,35:1 à 1440 px ; la bande des liens utiles sous l'ombre de la carte du hero, de 3,9 à 4,3:1 à 1440 px. `link-in-text-block` reste sur le lien « Conseils : changer un filtre à huile étape par étape » de `#reference`, à 390 px |
+| Contraste | OK sur R1 (1.4.3) ; réserve 1.4.1 | À `06feff968`, mesure au pixel (`elements-du5.cjs`, `badge-du5.cjs`, `ariane-du4.cjs`, `hero-du4.cjs`, `bande-du4.cjs`), à 390 / 1440 px. Fil d'Ariane #9CA3AF sur #101F3A : 6,47 / 6,38:1 (1,6 avant). Onglet « Type Mine » : 6,90:1 à 1440 px (4,35 avant) ; à 390 px, la variante mobile est à 12,0:1. Badge « 2 min » #C2410C sur #FFF7ED : 4,87:1. Bande des liens utiles : 4,51 à 4,55:1 aux deux largeurs, « Guide d'achat » 5,01:1 (3,9 à 4,3 avant à 1440 px). Textes R1 directs : de 4,51 à 4,88:1. axe identique à `34bdc1eb3`, nœud pour nœud : `color-contrast` 9 / 5, tous dans le pied de page et la barre du bas (revue 05). Deux artefacts connus : « Véhicule » à 1,12 (anticrénelage de la capture) et « Rechercher des pièces », désactivé (exempté). Réserve : `link-in-text-block` reste à 390 px sur le lien « Conseils : changer un filtre à huile étape par étape » de `#reference` (1.4.1, niveau A ; introduit à `8507eb5b8`, hors des quatre corrections demandées) |
 | Cibles tactiles | OK (AA, 24 px) | À 390 px, 4 cibles sous 24 px, contre 10 à `e31d3babe`. Toutes sont dans une exception de 2.5.8 : le lien d'évitement, masqué hors focus (221 × 42 px au focus), et 3 liens dans une phrase. À 1440 px s'y ajoutent 2 liens dans une phrase et 5 éléments globaux : le téléphone du bandeau et 4 liens du pied de page (revue 05). Le fil d'Ariane et les liens utiles passent de 16 à 24 px de haut, et « Lire plus » aussi. Restent 16 cibles entre 24 et 44 px à 390 px : l'objectif de 44 px n'est pas atteint, mais il n'est pas exigé en AA |
 | Ordre de tabulation | À MESURER | Il suit l'ordre visuel. Le focus se perd au champ « Marque » dans le navigateur sans affichage (identique avant et après) ; à vérifier au clavier réel |
 | Libellés | OK | Aucun contrôle sans nom accessible ; champs du sélecteur libellés |
-| Lisibilité à 390 px | À CORRIGER | Textes de 10 à 12 px (réassurance, fil d'Ariane, cartes d'étapes) ; `#reference` mesure 5 255 px ; le badge « 2 min » se coupe sur deux lignes (capture `c4-34bd-badge-2-min-390.png`) |
+| Lisibilité à 390 px | À CORRIGER | Le badge « 2 min » tient sur une ligne aux deux largeurs (`c5-badge-*.json`, une ligne mesurée sur le nœud texte). Restent les textes de 10 à 12 px (réassurance, fil d'Ariane, cartes d'étapes, badge en 10 px) et `#reference` très long, inchangés |
 | Parcours d'achat (sélecteur puis page véhicule) | OK, À MESURER | Le sélecteur est au premier écran et les cartes véhicule suivent. Le bouton du chat recouvre le bas du sélecteur. Le taux de passage de R1 à R2 reste à mesurer |
 | Éléments de confiance | OK | Réassurance placée juste après le sélecteur. Le seuil de livraison dépend de #2143 |
-| Jetons de design sans valeur en dur | À CORRIGER | Le diff n'emploie que des jetons de `packages/design-tokens/src/tokens.json` : `neutral-400` (#6B7280), `cta-700` (#C2410C), `cta-800` et `success` (#1E8449). Aucune couleur n'est créée, aucune valeur n'est en dur. Mais `text-cta-700` du badge reste sans effet (`Badge` sans fusion des classes), et `hover:text-emerald-800` (`pieces.$slug.tsx:816`) est hors jeton. Restent aussi `shadow-[0_24px_80px_rgba(0,0,0,0.22)]` (`GammeHero.tsx:224`), `text-[12px]` (`GammeQuickNav.tsx:46`) et `text-white/25` (`GammeHero.tsx:52`) |
+| Jetons de design sans valeur en dur | OK pour le diff | Le diff `34bdc1eb3` → `06feff968` n'emploie que des jetons : `neutral-300` (#9CA3AF), `neutral-500` (#4B5563), `cta-50`, `cta-200` et `cta-700`. Aucune couleur créée, aucune valeur en dur. La couleur du badge est portée par un `span` interne, ce qui contourne `Badge` sans le modifier. Restent préexistants : `hover:text-emerald-800` (`pieces.$slug.tsx`), `shadow-[0_24px_80px_rgba(0,0,0,0.22)]` (`GammeHero.tsx`) et `text-[12px]` (`GammeQuickNav.tsx`) |
 | Mouvement réduit | OK | Avec le réglage : 0 boucle et 0 animation à 390 et 1440 px, contre 3 boucles et 14 animations à `e31d3babe`. La navigation rapide défile sans animation (`GammeQuickNav.tsx:36-44`) : elle est à la cible dès 60 ms. Ce qui bouge encore vient du global, pas de R1. Les 31 déplacements au survol (menu principal, `#bien-choisir`, `#aller-plus-loin`) restent sans garde, mais sont instantanés grâce à la règle de `styles/animations.css:175-189` (0,01 ms). `scroll-behavior: smooth` reste posé sur `html` par `hooks/useScrollBehavior.ts`. Sans le réglage, les 4 boucles tournent, comme prévu |
 | Cohérence avec #1943, #1944, #2143 et DG | À CORRIGER | Doublon avec #1943, conflit avec #1944, dépendance du bandeau à #2143 (§11) |
 | Couverture par les contrôles | NON VÉRIFIÉ | Aucun contrôle de PR ne couvre l'ordre ni le rendu R1 (§10) |
-| Diff `e31d3babe` → `34bdc1eb3` limité à l'apparence | OK | 7 fichiers de code. Les changements portent sur des `className` (couleurs, `min-h-6`, `motion-reduce:`), plus le mode de défilement de la navigation rapide (`instant` avec le réglage). Aucun texte, titre, ancre, `id` ni donnée structurée. axe par règle, à 390 / 1440 px : `color-contrast` passe de 24/20 à 9/5 et `target-size` de 1/1 à 0/0 ; `link-in-text-block` (1/0) et `region` (2/4) ne changent pas. Aucune règle nouvelle |
-| Effet sur les autres gammes | OK | Les 7 composants modifiés ne servent qu'à `pieces.$slug.tsx`. `components/home/CatalogueSection.tsx` est un autre fichier. Sur `/pieces/plaquette-de-frein-402.html` à `34bdc1eb3`, mêmes résultats : axe à 9/5 nœuds, tous globaux, 0 sur R1 ; textes de 4,51 à 4,83:1 ; 0 boucle ; défilement instantané |
-| Typecheck et tests R1 à `34bdc1eb3` | OK | `react-router typegen && tsc` sans erreur ; 9 fichiers et 106 tests passés (les 7 fichiers R1 et 2 fichiers `pieces-slug-*`) |
-| Cohérence des teintes (captures à 390 et 1440 px) | À CORRIGER | Les ancres orange foncé (`cta-700`) et les textes gris (`neutral-400`) sont cohérents entre eux et avec le reste de la page. Deux écarts : les trois liens utiles ont chacun une couleur (bleu, vert, noir), ce qui est préexistant ; le badge « 2 min » sort en noir à côté du badge vert « Gratuit ». Les liens SEO de `#aller-plus-loin` restent bleus |
+| Diff `34bdc1eb3` → `06feff968` | OK | 13 fichiers de code (358 + / 143 −). Frontend : 4 fichiers, des `className` (`GammeHero.tsx`, `GammeDiagnosticCTA.tsx`, `pieces.$slug.tsx`) et l'affichage de la description R1 (`MotorisationsSection.tsx:250-263`). Backend : le builder (`gamme-response-builder.service.ts`), la clé de cache (`gamme-rpc.service.ts`), un commentaire du contrôleur et 6 fichiers de test. Aucun title, H1, meta, canonical, ancre, `id` ni donnée structurée : le JSON-LD `ItemList` ne lit que marque, modèle, type et lien (`pieces.$slug.tsx:341-346`). Réponse de l'API comparée à celle de `main` (:3000), pour les deux gammes : seuls `motorisations.items[].description` et `.content` changent, zéro autre ligne (`c5-api-diff-*.txt`). `content` n'est lu par aucun composant. Hors R1, `MotorisationsSection` garde son comportement |
+| Effet sur les autres gammes | OK (apparence) | `/pieces/plaquette-de-frein-402.html` à `06feff968` : axe identique à `34bdc1eb3` (9 / 5, tous globaux, 0 sur R1), cibles identiques, textes directs à 4,51:1 au minimum, badge à 4,87:1 sur une ligne, « Type Mine » à 6,9:1 et fil d'Ariane à 6,38:1 (`c5-gamme2-*`). Les phrases des cartes, elles, s'appliquent à toutes les gammes (ligne « Répétition entre pages ») |
+| Typecheck et tests à `06feff968` | OK | Frontend : `react-router typegen && tsc`, sortie 0 (`c5-typecheck-front.txt`). Backend : jest sur `src/modules/gamme-rest` et les deux tests unitaires modifiés, 7 fichiers et 67 tests passés, dont le nouveau `gamme-response-builder-r1-motorisation-description.test.ts` (`c5-jest-gamme-rest.txt`). Frontend : vitest, 9 fichiers et 100 tests passés (`r1-*`, `pieces-slug-*`, `catalog-gammes`, `gamme-autolink` et `blog-model-motorisation-links`, `c5-vitest-r1.txt`). Ce n'est pas le même jeu de fichiers qu'au n° 4 : les deux totaux ne se comparent pas |
+| Cohérence des teintes (captures à 390 et 1440 px) | OK sur le diff | Le badge « 2 min » est désormais orange, à côté du badge vert « Gratuit » (`captures/c5-06fe-*-haut-*.png`). Le fil d'Ariane gris clair et l'onglet gris foncé restent dans la gamme `neutral`. Restent préexistants : les trois liens utiles de couleurs différentes, et les liens SEO bleus de `#aller-plus-loin` |
+| Phrases des cartes véhicule (servies par le builder) | OK | Rendu propre de `06feff968`, sans proxy. Filtre à huile : 19 cartes, 19 phrases distinctes ; plaquette de frein : 17 cartes, 17 distinctes. Les phrases sont identiques dans le DOM, dans l'API et dans le HTML rendu côté serveur ; les clés `gamme:resp:v3:*` sont dans mon Redis privé (`c5-cartes-*.json`, `c5-api-*.json`). Gabarit : « {gamme} compatible {modèle} {moteur} {ch} ch, pour {bénéfice}. » Le builder écarte les fragments mal formés : 2 sur le filtre à huile et 2 sur la plaquette |
+| Mots interdits R1 dans les phrases | OK | 0 occurrence sur 36 phrases, contre six listes (`c5-lexique.json`) : le canon `getForbiddenOverlap(R1)`, `FORBIDDEN_KEYWORDS_R1` du backend, `r1-router-validator.md` (interdits absolus et lexique dominant), la liste du mandat (prix, achat, achetez, stock, livraison, promo, pas cher, €) et les verbes de montage. Seule la garde du front relève 2 fois « durée de vie » (plaquette) : voir « Écart de lexique » |
+| Langue des phrases | À CORRIGER (06) | Accords corrects. Défauts : « pour maintenir en bon état » sans complément (4 cartes) ; « prolonger la durée de vie » sans dire de quoi (2 cartes). La marque manque, d'où des ambiguïtés : « compatible 500 1.2 69 ch », « compatible 3 II 1.6 MZR CD », « compatible 206 1.4 HDI ». La phrase redit le modèle, le moteur et les ch déjà présents dans le titre et les pastilles de la carte. Variété faible : 7 bénéfices pour 19 cartes (« protéger le moteur » 6 fois) et 8 pour 17. Bénéfices hors sujet pour une plaquette : « optimiser les performances », « maintenir en bon état ». « compatible » sans « avec » est admis en catalogue |
+| Répétition entre pages | À CORRIGER (06) | Base en lecture seule, `__seo_item_switch` alias 2 (`c5-switch-alias2-top.tsv`). Cinq bénéfices génériques sont présents sur 95 à 96 des 101 gammes qui ont un alias 2 : « prolonger la durée de vie », « améliorer la fiabilité », « optimiser les performances » (96), « maintenir en bon état », « préserver le véhicule » (95). En moyenne, 47 % des fragments d'une gamme sont génériques. Les mêmes fins de phrase reviendront donc sur presque toutes les pages R1. 96 gammes sur 101 ont aussi au moins un fragment mal formé (double infinitif ou préposition finale), écarté par le builder |
+| Cache des réponses v2 → v3 | OK, À SURVEILLER | La clé `gamme:resp:v3:{segment}:{pg}` (`gamme-rpc.service.ts:99-100`) est commune à toutes les gammes. Passer à v3 invalide donc les réponses construites de toutes les pages gamme R1 (232 gammes affichées, `pg_display = 1`, niveaux 1 et 2), et pas d'autres rôles : seuls la route R1 (`gamme-api.service.ts:113`) et `admin.r1-qa.tsx` appellent `page-data-rpc-v2`. Le cache du RPC (`gamme:rpc:v2:*`, 1 h, copie de secours 24 h) n'est pas touché. Au premier passage, seul le builder est refait (pas le RPC), puis la réponse est remise en cache pour 1 h (`RESPONSE_CACHE_TTL = 3600`, contrôleur ligne 50). Le préchauffage au démarrage (`gamme-cache-warming.service.ts`) ne remplit que le cache du RPC. Le pic est donc limité au builder, pendant la première heure. Les clés v2 restent orphelines jusqu'à leur expiration (1 h). La route admin d'invalidation vise bien v3. Sans v3, les réponses v2 en cache auraient servi l'ancienne phrase jusqu'à 1 h : le changement est justifié, même s'il n'était pas demandé |
+| Écart de lexique « prolonger la durée de vie » | À TRANCHER (canon) | Le canon écrit n'interdit pas « durée de vie » en R1 : ni `role-matrix.md:87-100`, ni `getForbiddenOverlap(R1)`, ni `r1-router-validator.md`, ni `FORBIDDEN_KEYWORDS_R1`. Le backend suit donc la lettre du canon. La garde du front (`frontend/app/utils/r1-copy-gate.ts`, motif `durée de vie` rangé sous « Entretien ») est plus stricte, sans source canonique, et ne sert qu'à `CatalogueSection.tsx`. Indice en sa faveur : `keyword-plan.constants.ts:490` range « {gamme} durée de vie » dans les intentions informationnelles (R3/R4). Deux règles concurrentes : à réconcilier dans le canon par Marwane. Le fragment est de toute façon trop vague pour être gardé |
 | Écran d'erreur observé une fois | NON VÉRIFIÉ | 1 occurrence sur 6 passages, non reproduite, cause inconnue (§6) |
 
 **À part, pour la revue du design system (05)** (partagé par tout le site, hors verdict R1) :
@@ -601,13 +657,33 @@ Mise à jour du complément n° 4 pour la tête `34bdc1eb36e4120a4ec7769249b4c4e
 - Bandeau de l'en-tête (`components/Navbar.tsx`) : hors repère (règle `region`), téléphone de 16 px
   de haut, `text-white/40`.
 - Règle globale `nav a` (`global.css:217`) : elle impose `text-secondary-600` à tout lien placé dans
-  un `nav`, y compris sur fond sombre. C'est la cause du fil d'Ariane à 1,6:1.
+  un `nav`, y compris sur fond sombre. C'est la cause du fil d'Ariane à 1,6:1. À `06feff968`, R1
+  la contourne localement (`text-neutral-300`, `GammeHero.tsx:59`) ; la règle elle-même reste à
+  revoir pour les autres pages.
 - Composant `Badge` (`components/ui/badge.tsx`) : il concatène les classes sans les fusionner. Une
-  couleur passée en `className` peut donc perdre face à celle de la variante.
+  couleur passée en `className` peut donc perdre face à celle de la variante. À `06feff968`, R1 le
+  contourne par un `span` interne ; les autres usages de `Badge` restent exposés. Le badge « 2 min »
+  reste aussi en police de 10 px, une taille à fixer dans l'échelle typographique.
 - `VehicleSelector` en mode `mobile-premium` : les étapes « Année », « Modèle » et « Motorisation »
   sont à 2,63:1 sur blanc. Ce sont des étapes inactives, sans attribut `disabled`.
 - Hook `useScrollBehavior` (défilement `smooth` sur `html`), règle globale de mouvement réduit
   (`styles/animations.css:175-189`) et déplacements au survol sans garde dans le menu principal.
+
+**À part, pour les fragments en base (06)** (complément n° 5, rien n'a été écrit) :
+
+- Table `__seo_item_switch`, alias 2 (bénéfices) : cinq fragments génériques (« prolonger la durée
+  de vie », « améliorer la fiabilité », « optimiser les performances », « maintenir en bon état »,
+  « préserver le véhicule ») sont présents sur 95 à 96 des 101 gammes qui ont un alias 2, soit
+  47 % des fragments d'une gamme en moyenne. Ils créent une répétition entre pages R1.
+- Même table : 96 gammes sur 101 ont au moins un fragment mal formé (double infinitif ou
+  préposition finale). Le builder les écarte, mais ils restent en base.
+- Fragments sans complément ou vagues : « maintenir en bon état », « prolonger la durée de vie ».
+  Fragments hors sujet selon la pièce, par exemple « optimiser les performances » pour une
+  plaquette.
+- Gabarit de la phrase : il redit le véhicule déjà affiché sur la carte et omet la marque. Une
+  phrase qui apporte une information propre à la motorisation serait plus utile.
+- Écart de lexique « durée de vie » : la garde du front (`r1-copy-gate.ts`) l'interdit, le canon
+  écrit non. C'est à trancher dans le canon (Marwane), avant d'aligner l'une des deux règles.
 
 ## 13. Ce qui n'a pas pu être jugé, et pourquoi
 
