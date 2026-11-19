@@ -28,7 +28,6 @@ import { BadRequestException } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -101,12 +100,11 @@ const docFile = (marker: string): string =>
 const snapshot = (root: string): Record<string, string> => {
   const state: Record<string, string> = {};
   const walk = (dir: string): void => {
-    for (const name of readdirSync(dir).sort()) {
-      const full = path.join(dir, name);
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
       const rel = path.relative(root, full);
-      const stat = lstatSync(full);
-      if (stat.isSymbolicLink()) state[rel] = `lien → ${readlinkSync(full)}`;
-      else if (stat.isDirectory()) {
+      if (entry.isSymbolicLink()) state[rel] = `lien → ${readlinkSync(full)}`;
+      else if (entry.isDirectory()) {
         state[rel] = 'répertoire';
         walk(full);
       } else state[rel] = readFileSync(full, 'utf-8');

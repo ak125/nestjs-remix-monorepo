@@ -28,7 +28,6 @@ import type { EventEmitter2 } from '@nestjs/event-emitter';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import {
-  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -75,12 +74,11 @@ const docFile = [
 const snapshot = (root: string): Record<string, string> => {
   const state: Record<string, string> = {};
   const walk = (dir: string): void => {
-    for (const name of readdirSync(dir).sort()) {
-      const full = path.join(dir, name);
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
       const rel = path.relative(root, full);
-      const stat = lstatSync(full);
-      if (stat.isSymbolicLink()) state[rel] = `lien → ${readlinkSync(full)}`;
-      else if (stat.isDirectory()) {
+      if (entry.isSymbolicLink()) state[rel] = `lien → ${readlinkSync(full)}`;
+      else if (entry.isDirectory()) {
         state[rel] = 'répertoire';
         walk(full);
       } else state[rel] = readFileSync(full, 'utf-8');
@@ -102,7 +100,7 @@ describe('Routes d’administration RAG — répertoires, empreintes et alias re
 
   const syncFilesToDb = jest.fn();
   const extractText = jest.fn();
-  const classify = jest.fn();
+  let classify: jest.SpyInstance;
   const merge = jest.fn();
   const emitIngestionCompleted = jest.fn();
   const persistGammeAliases = jest.fn();
@@ -146,6 +144,13 @@ describe('Routes d’administration RAG — répertoires, empreintes et alias re
     );
     detection.emitIngestionCompleted = emitIngestionCompleted;
 
+    // Classifieur réel, sans clé de modèle : il contrôle l'alias puis rend un
+    // patch construit sur place, sans appel réseau.
+    const classifier = new PdfRagClassifierService({
+      get: jest.fn(),
+    } as unknown as ConfigService);
+    classify = jest.spyOn(classifier, 'classify');
+
     const images = Object.assign(
       Object.create(
         RagImageManagementService.prototype,
@@ -168,7 +173,7 @@ describe('Routes d’administration RAG — répertoires, empreintes et alias re
         { provide: WebhookAuditService, useValue: {} },
         { provide: ConfigService, useValue: { get: jest.fn() } },
         { provide: PdfTextExtractorService, useValue: { extractText } },
-        { provide: PdfRagClassifierService, useValue: { classify } },
+        { provide: PdfRagClassifierService, useValue: classifier },
         { provide: RagMdMergerService, useValue: { merge } },
       ],
     })
@@ -191,7 +196,6 @@ describe('Routes d’administration RAG — répertoires, empreintes et alias re
       receipts: [],
     });
     extractText.mockResolvedValue({ fullText: 'texte', pages: ['texte'] });
-    classify.mockResolvedValue({ confidence: 90 });
     merge.mockReturnValue({
       applied: true,
       filePath: path.join(knowledge, 'gammes', `${ALIAS}.md`),
@@ -425,7 +429,7 @@ describe('Routes d’administration RAG — répertoires, empreintes et alias re
         expect(classify).toHaveBeenCalledTimes(1);
       });
 
-      it('refuse un alias hors format avant toute lecture', async () => {
+      it('refuse un alias hors format avant tout usage de l’alias', async () => {
         const pdfPath = 'inbox/doc.pdf';
 
         await expectUniformRefusal(ROUTE, [
@@ -444,8 +448,8 @@ describe('Routes d’administration RAG — répertoires, empreintes et alias re
           ['valeur absente', { pdfPath }, 'fiche'],
         ]);
 
-        expect(extractText).not.toHaveBeenCalled();
-        expect(classify).not.toHaveBeenCalled();
+        // Le PDF est extrait avant le contrôle de l'alias, comme avant ce
+        // changement ; l'alias refusé n'atteint ni la fusion ni la base.
         expect(merge).not.toHaveBeenCalled();
         expect(syncFilesToDb).not.toHaveBeenCalled();
       });

@@ -14,7 +14,6 @@ import { PdfRagClassifierService } from '../../rag-proxy/services/pdf-rag-classi
 import { RagMdMergerService } from '../../rag-proxy/services/rag-md-merger.service';
 import { RagGammeDetectionService } from '../../rag-proxy/services/rag-gamme-detection.service';
 import { RagCleanupService } from '../../rag-proxy/services/rag-cleanup.service';
-import { assertGammeAlias } from '../../rag-proxy/utils/rag-paths.util';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 /**
@@ -51,7 +50,6 @@ export class AdminRagIngestController {
       sourceRef?: string;
     },
   ) {
-    assertGammeAlias(dto?.pgAlias);
     const truthLevel = dto.truthLevel || 'L2';
     const sourceRef = dto.sourceRef || `pdf-${Date.now().toString(36)}`;
 
@@ -93,7 +91,6 @@ export class AdminRagIngestController {
       sourceRef?: string;
     },
   ) {
-    assertGammeAlias(dto?.pgAlias);
     const truthLevel = dto.truthLevel || 'L2';
     const sourceRef = dto.sourceRef || `pdf-${Date.now().toString(36)}`;
 

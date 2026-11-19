@@ -27,15 +27,20 @@ export function resolveConfinedPath(
   try {
     const realRoot = realpathSync(path.resolve(root));
     const real = realpathSync(path.resolve(root, candidate));
-    const inside = real.startsWith(realRoot + path.sep);
 
-    if (kind === 'directory') {
-      if (!inside && real !== realRoot) return null;
-      return statSync(real).isDirectory() ? real : null;
+    // `root` lui-même n'est admis que là où un répertoire est attendu.
+    if (real === realRoot) {
+      return kind === 'directory' && statSync(realRoot).isDirectory()
+        ? realRoot
+        : null;
     }
 
-    if (!inside) return null;
-    return statSync(real).isFile() ? real : null;
+    if (!real.startsWith(realRoot + path.sep)) return null;
+
+    const stats = statSync(real);
+    const expected =
+      kind === 'directory' ? stats.isDirectory() : stats.isFile();
+    return expected ? real : null;
   } catch {
     return null;
   }
