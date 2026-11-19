@@ -55,7 +55,7 @@ if [[ "${1:-}" == "--version" ]]; then echo "codex-cli ${FAUX_VERSION:-0.170.0}"
 out=""; prev=""; for a in "$@"; do [[ "$prev" == "-o" ]] && out="$a"; prev="$a"; done
 prompt="${*: -1}"
 objet="$(sed -n 's/^PR #\([0-9]*\) fusionnée.*/\1/p;s/.*lot « \([^»]*\) ».*/lot-\1/p' <<< "$prompt" | head -n1)"
-{ echo "=== objet $objet"; printf '%s\n' "$@" | head -n -1; echo "GH_TOKEN=${GH_TOKEN:-absent}"; echo "GITHUB_TOKEN=${GITHUB_TOKEN:-absent}";
+{ echo "=== objet $objet"; printf '%s\n' "$@" | head -n -1; echo "GH_TOKEN=${GH_TOKEN:+présent}"; echo "GITHUB_TOKEN=${GITHUB_TOKEN:+présent}";
   echo "STDIN:"; cat; } >> "$FIX/codex.log"
 echo '{"type":"thread.started"}'
 if [[ -f "$FIX/quota" && "$objet" == "$(cat "$FIX/quota")" ]]; then
@@ -136,8 +136,8 @@ for opt in "-s" "read-only" "--ignore-user-config" "--ignore-rules" "--ephemeral
   "--disable" "plugins" "hooks" "gpt-6.2-astra" 'model_reasoning_effort="high"'; do
   contient "cadre, option $opt" "$L" "$opt"
 done
-contient "cadre, GH_TOKEN retiré" "$L" "GH_TOKEN=absent"
-contient "cadre, GITHUB_TOKEN retiré" "$L" "GITHUB_TOKEN=absent"
+absent "cadre, GH_TOKEN retiré" "$L" "GH_TOKEN=présent"
+absent "cadre, GITHUB_TOKEN retiré" "$L" "GITHUB_TOKEN=présent"
 absent "cadre, jeton jamais transmis" "$L" "jeton-de-test"
 absent "cadre, aucun serveur MCP" "$L" "mcp_servers"
 # Diff joint : package-lock.json retiré, a.txt présent.
