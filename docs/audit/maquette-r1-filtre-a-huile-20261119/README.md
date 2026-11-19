@@ -5,7 +5,9 @@ Date : 2026-11-19. Base : `main` à `2462efde5`. Branche :
 base. Aucun H1, H2, title, meta ni texte de contenu n'est modifié.
 
 Marwane valide l'aspect et l'ordre des blocs (décision 57) sur les captures de
-`captures/`.
+`captures/`. Il a validé l'ordre le 19 nov. 2026 à 19:36 (heure de Tunis).
+L'apparence n'est pas encore validée. Le complément n° 2 y apporte trois
+corrections (§Complément n° 2).
 
 ## En bref
 
@@ -306,6 +308,135 @@ rattachent sans les doubler.
 - **`design-system/roles/R1-router.md`** décrit une page de listing, en écart avec
   le canon R1. À aligner ou à marquer comme obsolète par décision.
 
+## Complément n° 2 — trois corrections d'apparence (19 nov. 2026)
+
+Source : la revue experte du mandat DU (PR #2211, `REVUE-EXPERTE.md` à
+`b44400954`, §4 rangs 1, 3 et 7, §6). Marwane a répondu « Oui » à 20:09 (heure de
+Tunis). Aucun titre, H1, texte, URL ni ancre n'est changé. Rien n'est écrit en base
+ni en PROD. Preuves : `complement-2-apparence/`.
+
+### Fichiers modifiés
+
+| Fichier | Lignes | Changement |
+|---|---|---|
+| `frontend/app/components/pieces/MotorisationsSection.tsx` | 49-51 | La couleur par défaut des dégradés décoratifs passe de `from-blue-950` à `from-navy` (jeton). |
+| | 91-93 | En-tête : un fond uni `bg-navy` remplace le dégradé. Le reflet animé reçoit `motion-reduce:animate-none`. |
+| | 160, 182, 263, 277 | Carte, image, flèche et bouton « autres compatibilités » : `motion-reduce:` neutralise la transition, la translation et l'agrandissement. |
+| | 223, 227 | Pastille moteur : `bg-navy`. Pastille puissance : `bg-success text-success-foreground`, à la place du dégradé vert codé en dur. |
+| | 260 | Bouton « Voir les pièces » : fond uni `bg-navy` et agrandissement neutralisé en reduced-motion. |
+| | 277 | Bouton « Voir les N autres compatibilités » : `bg-navy`. |
+| `frontend/app/components/gamme/GammeQuickNav.tsx` | 28, 40 | `min-h-11` (44 px) et survol sans déplacement en reduced-motion. Libellés, ids et `scrollIntoView` sont inchangés. |
+
+Les couleurs viennent de `packages/design-tokens` :
+- `navy` = `#0F1E38` ;
+- `success` = `#1E8449`, avec `success-foreground` = `#FFFFFF`.
+
+Aucune couleur n'est codée en dur.
+
+Les dégradés décoratifs au survol (bordure, fond de carte) sont gardés. Ils ne
+portent pas de texte.
+
+**Portée.** Les deux composants n'ont qu'un consommateur :
+`frontend/app/routes/pieces.$slug.tsx`, la route gamme R1.
+`MotorisationsSection` est aussi réexporté par `components/pieces/index.ts`, sans
+autre import. L'effet touche donc **toutes les pages gamme R1**. La page véhicule
+R2 et les autres rôles ne sont pas touchés.
+
+La propriété `familleColor` ne colore plus que les décors au survol. L'unique
+appelant ne la passe pas.
+
+### Contraste minimal mesuré sur le texte (WCAG 2.x, seuil 4,5:1)
+
+Méthode (`outils/zone.cjs`) :
+1. Le texte est rendu transparent et les animations sont arrêtées.
+2. Le fond réel est capturé sous les boîtes du texte.
+3. Le contraste est calculé pixel par pixel avec la couleur réelle du texte, alpha
+   compris. Le pire pixel est retenu.
+
+Les mesures viennent du même serveur isolé. La donnée est servie en GET par le
+DEV.
+
+| Élément | Avant 390 | Avant 1440 | Après 390 | Après 1440 |
+|---|---|---|---|---|
+| En-tête, phrase d'introduction | 1,64 | 1,85 | 10,15 | 10,58 |
+| En-tête, compteur « 5232 motorisations » | 1,55 | 1,42 | 7,01 | 6,98 |
+| Pastille moteur (cartes 1 et 2) | 1,48 | 1,50 | 16,63 | 16,63 |
+| Pastille puissance (cartes 1 et 2) | 2,44 | 2,44 | 4,72 | 4,72 |
+| Bouton « Voir les pièces » (cartes 1 et 2) | 1,70 | 1,71 | 16,63 | 16,63 |
+| Bouton « Voir les N autres compatibilités » | 1,65 | 1,15 | 16,63 | 16,63 |
+
+Pourquoi l'avant échouait : le dégradé `from-blue-950` n'avait pas de couleur
+d'arrivée. Il finissait donc transparent, et le texte blanc se retrouvait sur un
+fond presque blanc.
+
+Le compteur de l'en-tête a un fond blanc translucide sur `navy`. Il passe de 1,42
+à 6,98 sans changement propre.
+
+### Cibles tactiles de la navigation rapide
+
+Les 6 boutons ont été mesurés à 390 et à 1440 px :
+- **avant** : 37,2 px de haut ;
+- **après** : 44 px de haut.
+
+Les largeurs vont de 76 à 140 px et ne changent pas.
+
+Le reste du rang 3 n'est pas fait : des liens `<a href>` à la place des boutons,
+et un défilement sans animation en reduced-motion.
+
+### Mouvement, avec et sans `prefers-reduced-motion: reduce` (survol à 1440 px)
+
+| Effet | Avant, reduce | Après, sans préférence | Après, reduce |
+|---|---|---|---|
+| Reflet de l'en-tête | `shimmer` | `shimmer` | `none` |
+| Carte | `translate 0 -4px` | `0 -4px` | `0` |
+| Image | `scale 1.1` | `1.1` | `1` |
+| Bouton « Voir les pièces » | `scale 1.05` | `1.05` | `1` |
+| Flèche | `translate 4px` | `4px` | `0` |
+| Navigation rapide | `translate 0 -2px` | `0 -2px` | `0` |
+
+Captures du survol en reduced-motion : `avant-` et
+`apres-reduced-motion-survol-1440.webp`.
+
+### Captures de la zone touchée
+
+Dans `complement-2-apparence/`, pour `avant` et pour `apres` :
+- navigation rapide : `{avant,apres}-nav-{390,1440}.webp` ;
+- cartes véhicule : `{avant,apres}-cartes-{390,1440}.webp` ;
+- mesures brutes : `{avant,apres}-zone.json`.
+
+### Vérifications
+
+- `npm run -s typecheck` (frontend) : OK.
+- Tests R1, 35/35 réussis :
+  - `pieces-slug-conseils-link-gating` ;
+  - `pieces-slug-substitution-lock-strip` ;
+  - `r1-builders` ;
+  - `r1-images-meta`.
+
+  Les deux composants n'ont pas de test unitaire dédié.
+- Le build contient `min-h-11`, `.bg-navy` (`#0f1e38`) et `.bg-success`
+  (`#1e8449`).
+- Contrôle anti-patterns (`design:detect:json`, puis
+  `impeccable-ratchet-check.mjs`) : OK, 9 ≤ 9, rien d'ajouté.
+  - Un constat touche `MotorisationsSection.tsx:213` : `gradient-text`, le titre
+    de carte au survol.
+  - Il existait déjà sur `main` et n'est pas modifié ici.
+- `check-new-files --base origin/main` : 31 nouveaux fichiers sur 31 conformes.
+
+### Non fait (étapes suivantes, à décider par Marwane)
+
+- Rangs 2, 4, 5, 6, 8, 9 et 10 de la revue.
+- Le reste du rang 3 (liens et défilement).
+- L'emoji 📅 et la phrase répétée des cartes : ce sont des textes, donc hors
+  périmètre.
+
+### Page véhicule, mise de côté
+
+Les modifications de la page véhicule Clio III (complément n° 1) ne sont ni
+poussées ni dans #2210. Elles sont sur la branche locale
+`wip/ds-complement1-vehicule-clio-iii-19052`, au commit `0d3e629f9`, sans
+upstream. On y trouve aussi l'annexe vidéo mise de côté.
+
 ## Limites
 
 - **Lighthouse n'est pas installé.** `npm install lighthouse` est bloqué par le
@@ -327,6 +458,7 @@ rattachent sans les doubler.
   HTML pris en GET ; `VIDEO_SLOT=1` insère l'emplacement vidéo, en capture
   seulement.
 - `outils/measure.cjs` : `node measure.cjs <url> <label> <sortie.json> [passages]`.
+- `outils/zone.cjs` : `node zone.cjs <base> <label> <dossier>` ; cibles, contraste et mouvement de la zone du complément n° 2.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree
 (chemin à adapter).

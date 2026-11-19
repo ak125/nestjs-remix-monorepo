@@ -46,7 +46,9 @@ const VISIBLE_LIMIT = 12;
 
 const MotorisationsSection = memo(function MotorisationsSection({
   motorisations,
-  familleColor = "from-blue-950",
+  // Couleur de départ des dégradés décoratifs (survol) ; les fonds qui portent du texte
+  // sont unis (jeton navy) pour garder un contraste ≥ 4,5:1 (maquette R1, mandat DS, complément 2)
+  familleColor = "from-navy",
   familleName = "pièces",
   totalCount,
   compatibilitiesIntro,
@@ -86,11 +88,9 @@ const MotorisationsSection = memo(function MotorisationsSection({
   return (
     <section className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden border border-gray-100">
       {/* Header avec gradient de la famille + décoration */}
-      <div
-        className={`relative bg-gradient-to-br ${familleColor} p-6 md:p-8 overflow-hidden`}
-      >
+      <div className="relative bg-navy p-6 md:p-8 overflow-hidden">
         {/* Effet de brillance */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_ease-in-out_infinite]"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_ease-in-out_infinite] motion-reduce:animate-none"></div>
 
         {/* Décoration géométrique */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
@@ -157,7 +157,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
             <Link
               key={index}
               to={motorisation.link}
-              className="group relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+              className="group relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             >
               {/* Bordure gradient au hover */}
               <div
@@ -179,7 +179,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
                         alt={`${motorisation.marque_name} ${motorisation.modele_name}`}
                         width={96}
                         height={96}
-                        className="relative w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border-2 border-gray-100 group-hover:border-gray-200 group-hover:scale-110 transition-all duration-300 shadow-md"
+                        className="relative w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border-2 border-gray-100 group-hover:border-gray-200 group-hover:scale-110 transition-all duration-300 shadow-md motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
@@ -220,11 +220,11 @@ const MotorisationsSection = memo(function MotorisationsSection({
                     {/* Badges avec meilleur spacing */}
                     <div className="flex items-center gap-2 flex-wrap mb-2.5">
                       <div
-                        className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${familleColor} text-white shadow-sm`}
+                        className="px-3 py-1 rounded-full text-xs font-semibold bg-navy text-white shadow-sm"
                       >
                         {motorisation.type_name}
                       </div>
-                      <div className="px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-sm">
+                      <div className="px-3 py-1 rounded-full text-xs font-semibold bg-success text-success-foreground shadow-sm">
                         {motorisation.puissance}
                       </div>
                     </div>
@@ -257,10 +257,10 @@ const MotorisationsSection = memo(function MotorisationsSection({
 
                     {/* CTA amélioré */}
                     <div
-                      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r ${familleColor} text-white font-bold text-sm shadow-md group-hover:shadow-xl transition-all duration-300 group-hover:scale-105`}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-navy text-white font-bold text-sm shadow-md group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                     >
                       <span>Voir les pièces</span>
-                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
                     </div>
                   </div>
                 </div>
@@ -274,7 +274,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
           <div className="mt-8 text-center border-t border-gray-200 pt-6">
             <button
               onClick={() => setShowAllVehicles(!showAllVehicles)}
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r ${familleColor} text-white font-bold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-navy text-white font-bold text-base shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 motion-reduce:transition-none motion-reduce:hover:scale-100"
             >
               {showAllVehicles ? (
                 <>

@@ -25,6 +25,7 @@ export default function GammeQuickNav() {
     >
       <div className="max-w-7xl mx-auto px-page">
         <div className="flex items-center gap-2 overflow-x-auto lg:justify-center scrollbar-hide">
+          {/* Cibles tactiles ≥ 44 px (min-h-11) ; survol sans déplacement si reduced-motion (complément 2) */}
           {SECTIONS.map((s) => {
             const Icon = s.icon;
             return (
@@ -36,7 +37,7 @@ export default function GammeQuickNav() {
                     .getElementById(s.id)
                     ?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-blue-900 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 min-h-11 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-blue-900 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all cursor-pointer motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               >
                 <Icon size={13} /> {s.label}
               </button>
