@@ -229,10 +229,15 @@ constate, elle ne règle pas. Un principe est en vigueur quel que soit son nivea
 - **P33.** Un test de la Definition of Done nomme une mesure qui existe et dit ce qu'elle compare.
   Ce qui n'est pas mesuré est écrit comme tel dans la preuve, sans être retiré de l'exigence.
   Source : ADR-134 (PR vault #415, jamais fusionnée).
-  Application : L3 pour deux mesures relevées vertes sur `main` (`migration-ledger-freshness.yml`,
-  `registry-fresh.yml`). L0 pour le texte : la Definition of Done est encore la règle du vault
-  `rules-engineering-definition-of-done`, et son test DoD5 n'est pas corrigé. Aucune garde ne
-  vérifie qu'un test de la DoD nomme une mesure existante : intention seulement.
+  Application : L0 pour le texte, appliqué à DoD5. La Definition of Done est dans ce dépôt
+  (`.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md`, version 1.4.0,
+  décision 139, PR #2142 fusionnée le 2026-11-17) : les tests 1 à 4 de DoD5 nomment chacun un
+  contrôle et ce qu'il compare, et sa section « Non mesuré » liste ce qu'aucun contrôle ne vérifie.
+  L3 pour deux de ces mesures, relevées vertes sur `main` le 2026-11-19
+  (`migration-ledger-freshness.yml`, `registry-fresh.yml`). Écart : les sections « Escape hatch »
+  et « Enforcement automatique » de la DoD citent `weekly-vault-lint.yml` et `vault-governance.yml`,
+  absents de ce dépôt (question D19). Aucune garde ne vérifie qu'un test de la DoD nomme une
+  mesure existante : intention seulement.
 
 ## Méthode
 

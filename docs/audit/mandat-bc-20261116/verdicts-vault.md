@@ -70,10 +70,12 @@ et dans le tableau ci-dessous. **Aucune PR du Vault n'est fermée à cette heure
 - **D6 : réglée par les faits.** #2104 est fusionnée (2026-11-17T16:10:46Z) : `skills-lock.json` et
   P40 sont sur `main`.
 - **D8, décision 139 : oui.** La Definition of Done passe dans le monorepo, DoD5 corrigée :
-  PR #2142 (brouillon), patches réservés 14 et 15, document `etape-5-dod.md` de cette PR.
+  PR #2142, patches réservés 14 et 15, document `etape-5-dod.md` de cette PR. **Mise à jour DK
+  (19 nov.) : #2142 est fusionnée (2026-11-17T23:41:29Z).**
 - Les commentaires de fermeture de #345, #392, #413, #414 et #415 (section C et bloc) sont réécrits
   pour citer ces décisions. Le bloc ne ferme #415 qu'après la fusion de #2116 **et** de #2142 : son
-  commentaire cite P33 et le fichier déplacé.
+  commentaire cite P33 et le fichier déplacé. **Mise à jour DK : #2142 est fusionnée, #415
+  n'attend plus que la fusion de #2116.**
 - P32 et P33 sont libres sur `main` (qui porte P30, P31, P34 à P40) ; `gh` rend #2116 `MERGEABLE`.
   Aucune resynchronisation n'est faite (décision 122).
 - Question nouvelle, **D19** (PR #2142, `etape-5-dod.md`, section 7) : les passages de la DoD qui
@@ -91,12 +93,20 @@ et dans le tableau ci-dessous. **Aucune PR du Vault n'est fermée à cette heure
 | D5 | Où vit le registre des incidents ? | Une issue du monorepo par incident (P24) | tranchée, décision 138 : une issue par incident ; mandat BD | #345 (1) |
 | D6 | ADR-137 (skills tiers) entre-t-elle au journal maintenant ? | Non, avec la PR du pilote | réglée par les faits : #2104 fusionnée, P40 sur `main` | aucune (0) |
 | D7 | Fermer la PR #2079 du monorepo (niveau B, ADR-133) ? | Oui | tranchée, décision 132 : fermée | #416, sans attendre : conflit avec P20 (1) |
-| D8 | Où vit la Definition of Done après l'archivage ? | Dans `.spec/00-canon/canon-distribution/` du monorepo | tranchée, décision 139 : oui ; PR #2142 (brouillon) | #415, après la fusion de #2116 et de #2142 (1) |
+| D8 | Où vit la Definition of Done après l'archivage ? | Dans `.spec/00-canon/canon-distribution/` du monorepo | tranchée, décision 139 : oui ; PR #2142 fusionnée (17 nov., 23:41:29 UTC) | #415, après la fusion de #2116 (1) |
 | D9 | Que devient la porte ADR-124 ? | La retirer | tranchée, décision 132 : #2131 | aucune (0) |
 
 Sept PR du Vault sont liées à un verdict (#240, #345, #392, #413, #414, #415, #416) ; le bloc de la
 section F ne pose de question au clavier que pour les cinq premières ; #315 attend
 la fusion de #2116 ; les 38 autres se ferment sans question (section A). Total : 46.
+
+## Mise à jour du 2026-11-19 (mandat DK)
+
+La PR #2142 est fusionnée (2026-11-17T23:41:29Z, commit `23a9e2ae5`) : la Definition of Done est sur
+`main` (`.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md`, 1.4.0, DoD5
+corrigée). Lignes mises à jour : D8 (mise à jour BC-7, tableau des verdicts, section D), ligne
+ADR-134 de la section A, condition de fermeture de #415 (section C) et section F. La ligne
+« Application » de P33 au journal dit l'état de `main` relevé ce jour. Rien d'autre n'est rejoué.
 
 ## Relevé
 
@@ -151,7 +161,7 @@ du vault (`git ls-tree origin/main -- <fichier>`) et citations dans le monorepo
 | ADR-131, PR #413, qualification technique avant promotion WIKI | Ajouter une condition `technical_qualification_pass` : qualification par fiche et contestation par une autre famille de modèles. | Non câblé : `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md:149` (« aucune pièce câblée ») ; rien sur `main` du WIKI (`technical_qualification`, `qualification-technique` = aucun fichier) ; PR WIKI #134 en brouillon. Le texte de la PR dit « Je ratifie ADR-131 » (2026-11-15). | L0 | à décider par Marwane | Fermer #413 avec C#413. Suite dans le monorepo : question D2. **BC-7 : tranchée, décision 134 (journal avec le câblage).** |
 | ADR-132, PR #414, auteur éditorial et signature | Cinq rôles pour tout contenu publié ; aucune signature ne nomme un LLM comme auteur. | Signature en service : `frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx:386` (`Automecanik - Experts Automobile`). Mention en cause : `frontend/app/components/blog/EditorialTrust.tsx:11`. Question Q4 du texte ouverte, réservée à Marwane. | L1 pour la signature ; L0 pour les cinq rôles | à décider par Marwane | Fermer #414 avec C#414. Suite dans le monorepo : questions D3a et D3b. **BC-7 : tranchées, décisions 136 et 137 (PR #2140).** |
 | ADR-133, PR #416, niveau B de la fusion automatique | Créer une seconde GitHub App de revue, clé sur le DEV, revue de préférence par Codex. | Non construit : `level_b` dans `scripts/ci/merge-perimeter-gate.mjs scripts/ci/merge-circuit.mjs .github/workflows` = aucune occurrence ; PR monorepo #2079 ouverte, non fusionnée. | L0 | fermer : conflit avec P20 (décisions 72 et 91, constat AR-6) | Fermer #416 avec C#416. Le sort de la PR monorepo #2079 suit. |
-| ADR-134, PR #415, DoD5 nomme des mesures qui existent | Chaque test de la DoD nomme une mesure existante ; ce qui n'est pas mesuré est écrit comme tel. | Mesures en service : `.github/workflows/migration-ledger-freshness.yml`, runs 43677471198 et 43805923442 verts sur `main` (15 et 16 nov.) ; `.github/workflows/registry-fresh.yml`, run 43971112459 vert sur `main` (`0e2d0e7ed`) ; `scripts/ci/apply-supabase-migration.py` ; `scripts/audit/check-ledger-catalog-ratchet.py`. | L4 pour les mesures ; L0 pour le texte de DoD5 | journal | 1. PR du monorepo qui ajoute P33 (section B). 2. Fermer #415 avec C#415. 3. Le texte de DoD5 est corrigé au déplacement de la DoD : PR #2142 (décision 139) ; #415 ne se ferme qu'après la fusion de #2116 et de #2142. |
+| ADR-134, PR #415, DoD5 nomme des mesures qui existent | Chaque test de la DoD nomme une mesure existante ; ce qui n'est pas mesuré est écrit comme tel. | Mesures en service : `.github/workflows/migration-ledger-freshness.yml`, runs 43677471198 et 43805923442 verts sur `main` (15 et 16 nov.) ; `.github/workflows/registry-fresh.yml`, run 43971112459 vert sur `main` (`0e2d0e7ed`) ; `scripts/ci/apply-supabase-migration.py` ; `scripts/audit/check-ledger-catalog-ratchet.py`. | L4 pour les mesures ; L0 pour le texte de DoD5 | journal | 1. PR du monorepo qui ajoute P33 (section B). 2. Fermer #415 avec C#415. 3. Le texte de DoD5 est corrigé au déplacement de la DoD : PR #2142 (décision 139), fusionnée le 17 nov. ; #415 ne se ferme qu'après la fusion de #2116. |
 | ADR-135, PR #417, sous-agents de mandat | Rattacher trois sous-agents en lecture seule au rôle 23, au titre de `rules-ai-cos`. | Non construit : `.claude/agents/mandat/` absent de `main` ; PR monorepo #2081 en brouillon. P31 ne garde que AI2 et AI4. | L0 | fermer sans règle | Fermer #417 avec C#417. |
 | ADR-136, PR #418, point d'entrée unique de la boucle contenu | Toute exécution de la boucle contenu part d'une issue de la file, exécutée par `mandat-remise`. | Présent, non activé : `scripts/ops/mandat-remise.yml` existe sur `main`, hors de `.github/workflows/` (`commandes-owner.md:589`, « inactif ») ; PR monorepo #2080 fermée sans fusion le 2026-11-15. Seul `pilote-file.yml` tourne (run 43935848060). | L1 | fermer sans règle | Fermer #418 avec C#418. Corriger `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md:157`, qui cite encore l'ADR comme décision en cours. Voisins : P24, P25. |
 
@@ -262,7 +272,8 @@ de la PR #422 pour 122, 132 et 136 n'ont donc pas de champ d'accueil.
 
 ASCII seul, sans guillemet double, apostrophe, accent grave ni signe dollar. Les commentaires de
 #315 et #415 citent le journal : le bloc ne ferme #415 qu'après la fusion de #2116 et de #2142
-(Definition of Done déplacée), et #315 qu'après la fusion de #2116 et de #2122 (P35, P36).
+(Definition of Done déplacée ; #2142 fusionnée le 17 nov., mise à jour DK), et #315 qu'après la
+fusion de #2116 et de #2122 (P35, P36).
 Les 44 autres sont vrais quelle que soit la réponse aux questions de la section D. Pour les cinq PR
 de cette section, la fermeture découle de la règle 6 du tri, mais le bloc la demande au clavier.
 
@@ -329,7 +340,7 @@ C#420: Fermeture sans fusion : entree de sommaire interne au vault, sans objet u
 | D5 | #345, INC-2026-017 | Où vit le registre des incidents une fois le vault archivé, et ce compte rendu y entre-t-il ? | **Tranchée (décision 138) : une issue du monorepo par incident, qui ne se ferme que si elle dit ce qui empêche son retour.** Mandat BD, complément n° 4. Proposition d'origine : Pas de nouveau registre : un incident est une issue du monorepo (P24). Fermer #345 sans fusion, le texte reste lisible dans la PR. La rotation des secrets reste un geste de l'owner. |
 | D6 | ADR-137 (fusionnée) | ADR-137 est acceptée dans le vault depuis ce matin, sans ligne au journal ni mécanisme : la règle des skills tiers entre-t-elle au journal maintenant ? | **Réglée par les faits : #2104 est fusionnée (17 nov., 16:10:46 UTC), `skills-lock.json` et P40 sont sur `main`.** Proposition d'origine : Non. Elle y entre avec la PR du pilote, celle qui crée `skills-lock.json`. D'ici là, P26 s'applique. |
 | D7 | PR monorepo #2079 (niveau B de la porte, ADR-133) | ADR-133 est en conflit avec P20 : ferme-t-on aussi la PR #2079 du monorepo ? | **Tranchée (décision 132) : oui, #2079 est fermée (17 nov., 10:53:59 UTC).** Proposition d'origine : oui. Elle ajoute une seconde identité de revue que les décisions 72 et 91 remplacent, et elle modifie les deux fichiers de la porte touchés par #2113. |
-| D8 | Definition of Done (ADR-134, ADR-138 D6) | La DoD vit dans le vault (`ledger/rules/rules-engineering-definition-of-done.md`, 1.3.0) et le plan de sortie ne la nomme dans aucune étape : où vit-elle après l'archivage ? | **Tranchée (décision 139) : oui.** PR #2142 (brouillon), patches réservés 14 et 15. Proposition d'origine : Dans le monorepo, à l'étape 5 du plan (`.spec/00-canon/canon-distribution/`), avec le texte de DoD5 corrigé selon P33. Sans ce déplacement, DoD5 reste figée dans l'archive. |
+| D8 | Definition of Done (ADR-134, ADR-138 D6) | La DoD vit dans le vault (`ledger/rules/rules-engineering-definition-of-done.md`, 1.3.0) et le plan de sortie ne la nomme dans aucune étape : où vit-elle après l'archivage ? | **Tranchée (décision 139) : oui.** PR #2142, patches réservés 14 et 15, fusionnée le 17 nov. à 23:41:29 UTC (mise à jour DK). Proposition d'origine : Dans le monorepo, à l'étape 5 du plan (`.spec/00-canon/canon-distribution/`), avec le texte de DoD5 corrigé selon P33. Sans ce déplacement, DoD5 reste figée dans l'archive. |
 | D9 | Porte ADR-124 | La décision 120 (P20, #2122) dit la porte close : son script `scripts/ci/merge-perimeter-gate.mjs` n'est appelé par aucun workflow, seul son test tourne (`audit.yml`). Que devient-il, et avec lui la PR #2113 (étape 6) ? | **Tranchée (décision 132) : option B. #2113 est fermée (17 nov., 10:53:55 UTC) ; le retrait est la PR #2131 et son patch réservé 12.** Texte d'origine : deux options. **A, garder en réserve** : fusionner #2113 (patch 03 poussé du poste, nouveau fichier réservé `.spec/00-canon/repository-registry/merge-perimeter.v1.json`, question D15) ; 568 lignes et une politique restent à entretenir pour une porte que P20 dit close, et #2079 (D7) reste à décider. **B, retirer** : fermer #2113 et #2079, une PR retire le script, son test et corrige `.claude/rules/deployment.md` ; un patch réservé retire l'étape de `audit.yml`, la ligne de `CODEOWNERS` et la phrase de `CLAUDE.md` ; l'outil `merge-perimeter.sh` du DEV est supprimé par l'owner. Dans les deux cas plus rien ne lit le vault pour ce script. Proposition : B, cohérente avec « aucune règle sans mécanisme ». |
 | D10 | `scripts/governance/check-verdict-expirations.sh` (`etape-8.md`) | Le retire-t-on ? | **Tranchée (décision 129) : oui.** PR #2132, patch réservé 13. |
 | D11 | `tools/security/attack-simulations/simulate-escalation-hijack.sh` (`etape-8.md`) | Le retire-t-on ? | **Tranchée (décision 129) : oui.** PR #2132. |
@@ -374,7 +385,7 @@ Contrôles faits sur le texte : ASCII seul, aucun `&&`, accolades, parenthèses 
 Ordre : (1) fermeture commentée de 39 PR du vault ; (2) pour #240, #345, #392, #413 et #414, dont la
 suite est à décider (section D), une question au clavier par PR : « non » la laisse ouverte ;
 (3) sortie du brouillon de la PR #2116, attente de ses checks, accord au clavier, approbation, attente du check
-« 🚦 Circuit de fusion », fusion épinglée sur la tête lue ; (4) fermeture de #415 si la PR #2142 est fusionnée, puis de #315 si
+« 🚦 Circuit de fusion », fusion épinglée sur la tête lue ; (4) fermeture de #415 si la PR #2142 est fusionnée (c'est le cas depuis le 17 nov., mise à jour DK), puis de #315 si
 la PR #2122 est fusionnée (sinon la PR reste ouverte et le bloc se relance plus tard) ; (5) compte des
 PR restées ouvertes dans le vault (0 si tout est accepté).
 
@@ -541,7 +552,8 @@ close` sans `--delete-branch`), ce qui garde lisible le dossier de #351. Il lit 
 ```
 
 Après le bloc : les suites des verdicts (mise à jour BC-7) se jouent dans le monorepo, hors de ce
-bloc : #1958, #2140, #2142, le câblage de la qualification et les issues d'incident.
+bloc : #1958, #2140, le câblage de la qualification et les issues d'incident (#2142 est fusionnée
+depuis le 17 nov., mise à jour DK).
 
 ## G. Vérification rejouée par l'agent du mandat
 
