@@ -5,7 +5,7 @@ propriétaire (`.spec/00-canon/**`).
 
 ## Fichiers ajoutés et globs existants
 
-Relevé à la base `4c61f7600`.
+Relevé à la base `4c61f7600`, revérifié le 2026-11-19 pour les fichiers du complément 2 (`packages/seo-types/src/vehicle-aware-label.ts` est couvert par `packages/seo-types/**`).
 
 | fichier ajouté | glob de `.spec/00-canon/repository-registry/ownership.yaml` |
 |---|---|
@@ -15,8 +15,10 @@ Relevé à la base `4c61f7600`.
 | `docs/audit/mandat-dw-20261119/**` | `docs/audit/**` |
 | `backend/supabase/migrations/20261119_seo_r2_title_all_gammes.sql` | **aucun** |
 | `backend/supabase/migrations/20261119_seo_r2_title_all_gammes.down.sql` | **aucun** |
+| `backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.sql` (complément 2) | **aucun** |
+| `backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.down.sql` (complément 2) | **aucun** |
 
-La garde « Block-new (owner + domain required) » refuse donc les deux fichiers
+La garde « Block-new (owner + domain required) » refuse donc les quatre fichiers
 de migration :
 
 - Les globs SEO existants (`*seo_r2_v2*`, `*seo_control*`, etc.) ne les couvrent pas.
@@ -37,4 +39,15 @@ Il revient au pilotage, par commit signé. Il suit le précédent
 +    owner: '@ak125/seo-team'
 +    sourceConfidence: high
 +    risk: low
++  # Mandat DW, complément 2 (19/11/2026) : noms d'affichage dans seo_context
++  # du RPC rm_get_page_complete_v2 (titre R2). Couvre .sql + .down.sql.
++  - glob: backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc*.sql
++    domain: D14
++    owner: '@ak125/seo-team'
++    sourceConfidence: high
++    risk: medium
 ```
+
+Le second glob est classé `risk: medium` : la migration remplace le corps
+d'un RPC de page (`CREATE OR REPLACE`, garde md5 du corps relevé), et pas
+seulement une valeur de gabarit. Le niveau reste à confirmer par le pilotage.

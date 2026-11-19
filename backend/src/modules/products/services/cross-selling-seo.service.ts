@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
-import { buildR2TitleTypeLabel } from '@repo/seo-types';
+import {
+  buildR2TitleTypeLabel,
+  normalizeVehicleNameCase,
+} from '@repo/seo-types';
 import { decodeHtmlEntities } from '../../../utils/html-entities';
 import type {
   CrossGamme,
@@ -198,6 +201,9 @@ export class CrossSellingSeoService extends SupabaseBaseService {
    * l'ancien gabarit rendait « . », le nouveau un titre vide (complément 1
    * du mandat DW). `#VTypeCarburantPuissance#` suit `buildR2TitleTypeLabel`,
    * sans carburant : le contexte véhicule d'ici ne le porte pas.
+   * Complément 2 : `#VMarqueAffichage#` et `#VModeleAffichage#` en casse
+   * normale, sur les noms bruts (ce contexte ne porte pas les noms
+   * d'affichage).
    */
   private replaceLegacyMarkers(
     content: string,
@@ -208,6 +214,8 @@ export class CrossSellingSeoService extends SupabaseBaseService {
       Gamme: variables.gammeMeta,
       VMarque: variables.marque,
       VModele: variables.modele,
+      VMarqueAffichage: normalizeVehicleNameCase(variables.marque),
+      VModeleAffichage: normalizeVehicleNameCase(variables.modele),
       VType: variables.type,
       VNbCh: nbCh,
       VTypeCarburantPuissance: buildR2TitleTypeLabel({
@@ -216,7 +224,7 @@ export class CrossSellingSeoService extends SupabaseBaseService {
       }),
     };
     return content.replace(
-      /#(Gamme|VMarque|VModele|VType|VNbCh|VTypeCarburantPuissance)#/g,
+      /#(Gamme|VMarqueAffichage|VModeleAffichage|VMarque|VModele|VType|VNbCh|VTypeCarburantPuissance)#/g,
       (_, key: string) => legacy[key] ?? '',
     );
   }

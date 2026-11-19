@@ -74,6 +74,38 @@ describe('SeoTemplateRenderer.applyVariables (pure)', () => {
     );
   });
 
+  it("#VMarqueAffichage# #VModeleAffichage# : casse normale, nom d'affichage (complément 2 DW)", () => {
+    const render = (useMeta: boolean, modeleMeta: string) =>
+      renderer.applyVariables({
+        surfaceKey: 'R1_GAMME_VEHICLE_ROUTER',
+        templateText:
+          '#Gamme# #VMarqueAffichage# #VModeleAffichage# #VTypeCarburantPuissance#',
+        variables: {
+          ...baseVars,
+          marque: 'PEUGEOT',
+          modele: 'PARTNER I',
+          modeleMeta,
+          type: '1.9 D (Phase 1)',
+          typeMeta: '1.9 D',
+          nbCh: 69,
+          fuel: 'Diesel',
+        },
+        pgId: 10,
+        typeId: 7979,
+        useMeta,
+      });
+    expect(render(true, 'PARTNER I')).toBe(
+      'Plaquettes de frein Peugeot Partner I 1.9 D 69 ch',
+    );
+    // Nom d'affichage vide : nom brut.
+    expect(render(true, '')).toBe(
+      'Plaquettes de frein Peugeot Partner I 1.9 D 69 ch',
+    );
+    expect(render(false, 'PARTNER I')).toBe(
+      '<b>Plaquettes</b> <b>Peugeot</b> <b>Partner I</b> <b>1.9 D (Phase 1) 69 ch</b>',
+    );
+  });
+
   it('replace standard variables en mode HTML (avec <b>)', () => {
     const out = renderer.applyVariables({
       surfaceKey: 'R1_GAMME_VEHICLE_ROUTER',

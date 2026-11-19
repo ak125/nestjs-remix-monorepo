@@ -310,3 +310,120 @@ export function buildR2TitleTypeLabel(input: VehicleLabelInput): string {
   }
   return label.replace(/\s+/g, " ").trim();
 }
+
+/**
+ * Exceptions de casse des noms de marque et de modèle du `<title>` R2
+ * (complément 2 du mandat DW, 2026-11-19). Liste unique : clé = mot en
+ * capitales tel qu'en base, valeur = graphie affichée.
+ *
+ * - Sigles qui contiennent une voyelle, gardés en capitales (relevés dans
+ *   `auto_modele` le 2026-11-19, hors parenthèses ; plus BMW, DS, MG, GTI,
+ *   TDI cités par le mandat).
+ * - Mots de deux lettres écrits en casse normale (« Santa Fe », « Ka »).
+ *
+ * Les autres cas suivent les règles de {@link normalizeVehicleNameCase}.
+ */
+export const VEHICLE_NAME_CASE_EXCEPTIONS: Readonly<Record<string, string>> =
+  Object.freeze({
+    ADV: "ADV",
+    AMG: "AMG",
+    APV: "APV",
+    ASX: "ASX",
+    BMW: "BMW",
+    CLA: "CLA",
+    CLE: "CLE",
+    CUV: "CUV",
+    DS: "DS",
+    EQA: "EQA",
+    EQB: "EQB",
+    EQC: "EQC",
+    EQE: "EQE",
+    EQS: "EQS",
+    EQT: "EQT",
+    EQV: "EQV",
+    GLA: "GLA",
+    GLE: "GLE",
+    GTI: "GTI",
+    MG: "MG",
+    RAV: "RAV",
+    SAC: "SAC",
+    SAV: "SAV",
+    SUV: "SUV",
+    TDI: "TDI",
+    XRE: "XRE",
+    BE: "Be",
+    FE: "Fe",
+    KA: "Ka",
+    LE: "Le",
+    UP: "Up",
+  });
+
+const ROMAN_NUMERAL = /^(XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
+const VOWEL = /[AEIOUYÀÂÄÉÈÊËÎÏÔÖÙÛÜŸ]/;
+
+function normalizeNamePart(part: string): string {
+  if (part === "") return part;
+  const exception = VEHICLE_NAME_CASE_EXCEPTIONS[part];
+  if (exception !== undefined) return exception;
+  // Casse mixte ou minuscules (« Série », « eK », « dCi »), chiffres
+  // (« C4 », « 3008 », « 16V ») : la base l'a déjà écrit, rien ne change.
+  if (part !== part.toUpperCase() || /\d/.test(part)) return part;
+  const letters = part.replace(/[^A-ZÀ-ÖØ-Þ]/g, "");
+  if (letters.length <= 2) return part; // sigle court : GT, SW, CX
+  if (ROMAN_NUMERAL.test(part)) return part; // III, VIII
+  if (!VOWEL.test(part)) return part; // sigle sans voyelle : GTC, RCZ
+  const lower = part.toLocaleLowerCase("fr-FR");
+  return lower.charAt(0).toLocaleUpperCase("fr-FR") + lower.slice(1);
+}
+
+/**
+ * Casse normale d'un nom de marque ou de modèle pour le `<title>` R2
+ * (complément 2 du mandat DW) : « PEUGEOT » → « Peugeot », « CLIO III » →
+ * « Clio III », « LAND ROVER » → « Land Rover ».
+ *
+ * Gardés tels quels : exceptions de {@link VEHICLE_NAME_CASE_EXCEPTIONS},
+ * chiffres romains, mots avec chiffre, sigles de deux lettres ou sans
+ * voyelle, mots déjà en casse mixte, contenu entre parenthèses (codes
+ * châssis) et composés « lettre-MOT » (« C-MAX », « T-ROC »). Le nom du type
+ * n'y passe pas : il garde sa casse.
+ */
+export function normalizeVehicleNameCase(name?: string | null): string {
+  const words = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  let depth = 0;
+  return words
+    .map((word) => {
+      const inParens = depth > 0 || word.startsWith("(");
+      depth += (word.match(/\(/g) ?? []).length;
+      depth = Math.max(0, depth - (word.match(/\)/g) ?? []).length);
+      if (inParens || /^[A-Z]-[A-Z]/.test(word)) return word;
+      return word
+        .split(/([-/])/)
+        .map((part) =>
+          part === "-" || part === "/" ? part : normalizeNamePart(part),
+        )
+        .join("");
+    })
+    .join(" ");
+}
+
+/**
+ * Nom d'affichage du `<title>` R2 : le nom corrigé en base
+ * (`modele_name_meta`, `type_name_meta`) s'il est renseigné, sinon le nom
+ * brut. Espaces réduits (complément 2 du mandat DW).
+ */
+export function pickVehicleDisplayName(
+  displayName?: string | null,
+  rawName?: string | null,
+): string {
+  const display = (displayName ?? "").replace(/\s+/g, " ").trim();
+  return display !== "" ? display : (rawName ?? "").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Clé de comparaison de deux titres ou libellés R2 : sans casse ni espaces
+ * en trop. « 1.5 DCI » et « 1.5 dCi » sont le même titre pour un moteur de
+ * recherche (complément 2 du mandat DW).
+ */
+export function r2TitleCollisionKey(label: string): string {
+  return label.toLocaleLowerCase("fr-FR").replace(/\s+/g, " ").trim();
+}

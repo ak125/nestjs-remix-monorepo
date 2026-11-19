@@ -12,6 +12,8 @@ import {
 import {
   buildR2TitleTypeLabel,
   enrichTypeNameForHeadings,
+  normalizeVehicleNameCase,
+  pickVehicleDisplayName,
 } from '@repo/seo-types';
 import { SeoPlaceholderEventsService } from '../../seo/services/seo-placeholder-events.service';
 import { composeVehicleAwareDescription } from './vehicle-aware-description.composer';
@@ -135,6 +137,23 @@ export interface SeoContext {
    * si le gabarit du titre porte ce marqueur. Vide → aucun code.
    */
   r2_title_motor_code?: string;
+  /**
+   * Vrai quand les noms d'affichage confondent la page avec une autre que les
+   * codes moteur ne départagent pas : `#VModeleAffichage#` et
+   * `#VTypeCarburantPuissance#` servent alors les noms bruts (complément 2
+   * du mandat DW, `R2TitleCollisionService`).
+   */
+  r2_title_raw_names?: boolean;
+  /**
+   * Noms d'affichage corrigés en base (`auto_modele.modele_name_meta`,
+   * `auto_type.type_name_meta`), lus par les seuls marqueurs du `<title>` R2
+   * (`#VModeleAffichage#`, `#VTypeCarburantPuissance#`), complément 2 du
+   * mandat DW. Chaîne vide : colonne vide en base, le nom brut est servi.
+   * Absent (`undefined`) : l'appelant ne les transmet pas encore ; le nom brut
+   * est servi et un avertissement est journalisé une fois par processus.
+   */
+  modele_name_meta?: string;
+  type_name_meta?: string;
 }
 
 /**
@@ -195,7 +214,10 @@ export class SeoTemplateService {
   // 🔄 Regex pour le format LEGACY #Vxxx# et #Xxx# (templates existants en base)
   // Inclut: #VMarque#, #VGamme#, mais aussi #Gamme#, #MinPrice#
   private readonly LEGACY_REGEX =
-    /#(VMarque|VModele|VType|VNbCh|VAnnee|VGamme|VAnneeFrom|VAnneeTo|VFuel|VPower|VMotorisation|VCodeMoteur|VTypeCarburantPuissance|Gamme|MinPrice|Count)#/g;
+    /#(VMarqueAffichage|VModeleAffichage|VMarque|VModele|VType|VNbCh|VAnnee|VGamme|VAnneeFrom|VAnneeTo|VFuel|VPower|VMotorisation|VCodeMoteur|VTypeCarburantPuissance|Gamme|MinPrice|Count)#/g;
+
+  /** Avertissement « noms d'affichage non transmis », une fois par processus. */
+  private displayNamesMissingLogged = false;
 
   constructor(
     private readonly cacheService: CacheService,
@@ -242,13 +264,18 @@ export class SeoTemplateService {
       // Code moteur des seules pages R2 en collision de titre (complément 1
       // du mandat DW). Une erreur de lecture remonte au catch : échec habituel
       // (`success: false`), rien n'est mis en cache, aucun titre dégradé.
+      // Complément 2 : libellé et départage calculés sur la même source de
+      // noms (noms d'affichage s'ils sont transmis, sinon noms bruts).
       if (templates.title?.includes('#VTypeCarburantPuissance#')) {
+        const resolution = await this.r2TitleCollision.resolveTitle(
+          context.pg_id,
+          context.type_id,
+          this.hasDisplayNames(context),
+        );
         context = {
           ...context,
-          r2_title_motor_code: await this.r2TitleCollision.resolveMotorCode(
-            context.pg_id,
-            context.type_id,
-          ),
+          r2_title_motor_code: resolution.motorCode,
+          r2_title_raw_names: resolution.rawNames,
         };
       }
 
@@ -436,9 +463,22 @@ export class SeoTemplateService {
       // l'essai). Carburant = `fuel`, sinon `type_fuel` relayé par
       // `legacy_marker_motorisation` ; idempotent sur un type déjà enrichi.
       // Code moteur ajouté seulement aux pages en collision (complément 1).
+      // Titre R2, complément 2 : marque brute et modèle d'affichage en casse
+      // normale ; type d'affichage dans sa casse.
+      VMarqueAffichage: normalizeVehicleNameCase(context.marque_name),
+      VModeleAffichage: normalizeVehicleNameCase(
+        context.r2_title_raw_names
+          ? context.modele_name
+          : pickVehicleDisplayName(
+              context.modele_name_meta,
+              context.modele_name,
+            ),
+      ),
       VTypeCarburantPuissance: [
         buildR2TitleTypeLabel({
-          typeName: context.type_name,
+          typeName: context.r2_title_raw_names
+            ? context.type_name
+            : pickVehicleDisplayName(context.type_name_meta, context.type_name),
           powerPs: context.power_ps,
           fuel: context.fuel || context.legacy_marker_motorisation,
         }),
@@ -614,6 +654,24 @@ export class SeoTemplateService {
         })
         .catch(() => {});
     }
+  }
+
+  /**
+   * Noms d'affichage transmis par l'appelant (complément 2 du mandat DW) :
+   * les deux champs présents, même vides. Sinon le titre R2 sert les noms
+   * bruts, et l'écart est journalisé une fois par processus.
+   */
+  private hasDisplayNames(context: SeoContext): boolean {
+    const wired =
+      context.modele_name_meta !== undefined &&
+      context.type_name_meta !== undefined;
+    if (!wired && !this.displayNamesMissingLogged) {
+      this.displayNamesMissingLogged = true;
+      this.logger.warn(
+        `Titre R2 : noms d'affichage (modele_name_meta, type_name_meta) non transmis, noms bruts servis (pg=${context.pg_id} type=${context.type_id})`,
+      );
+    }
+    return wired;
   }
 
   /**

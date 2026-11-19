@@ -21,7 +21,10 @@ import type { CrossGamme, VehicleContext } from '../cross-selling.service';
  */
 const OLD_TITLE =
   '#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.';
-const NEW_TITLE = '#Gamme# #VMarque# #VModele# #VTypeCarburantPuissance#';
+const NEW_TITLE =
+  '#Gamme# #VMarqueAffichage# #VModeleAffichage# #VTypeCarburantPuissance#';
+// Gabarit du complément 1 (valeur antérieure acceptée par la migration).
+const C1_TITLE = '#Gamme# #VMarque# #VModele# #VTypeCarburantPuissance#';
 
 function build(sgcTitle: string) {
   const svc = new CrossSellingSeoService();
@@ -74,6 +77,17 @@ describe('CrossSellingSeoService — gabarit R2 de sgc_title (complément 1 DW)'
       316,
       vehicle,
     );
+    // Complément 2 : casse normale ; pas de nom d'affichage dans ce contexte.
+    expect(r.title).toBe('Thermostat Volkswagen Golf VI 1.6 TDI 90 ch');
+  });
+
+  it('gabarit du complément 1 : marque et modèle bruts', async () => {
+    const r = await build(C1_TITLE).generateAdvancedCrossSellingSeo(
+      gamme,
+      33030,
+      316,
+      vehicle,
+    );
     expect(r.title).toBe('Thermostat VOLKSWAGEN GOLF VI 1.6 TDI 90 ch');
   });
 
@@ -99,6 +113,6 @@ describe('CrossSellingSeoService — gabarit R2 de sgc_title (complément 1 DW)'
         nbCh: 0,
         annee: '2008',
       }),
-    ).toBe('Thermostat PEUGEOT 207 1.4');
+    ).toBe('Thermostat Peugeot 207 1.4');
   });
 });

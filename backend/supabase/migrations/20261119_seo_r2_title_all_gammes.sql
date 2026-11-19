@@ -1,12 +1,18 @@
 -- Mandat DW, complément 1 (2026-11-19) — nouveau titre R2 sur toutes les gammes.
--- Gabarit `__seo_gamme_car.sgc_title` : « <Gamme> <MARQUE> <MODÈLE> <type>
+-- Complément 2 : marque et modèle en casse normale, noms d'affichage.
+-- Gabarit `__seo_gamme_car.sgc_title` : « <Gamme> <Marque> <Modèle> <type>
 -- [carburant] <puissance> ch », sans prix, sans accroche, sans années ;
 -- code moteur ajouté par le code aux seules pages en collision.
--- Le marqueur #VTypeCarburantPuissance# est résolu par
+-- Les marqueurs #VMarqueAffichage#, #VModeleAffichage# et
+-- #VTypeCarburantPuissance# sont résolus par
 -- backend/src/modules/catalog/services/seo-template.service.ts
--- (buildR2TitleTypeLabel, packages/seo-types, et R2TitleCollisionService) :
--- il doit être servi en PROD AVANT l'application de ce fichier, sinon la garde
--- des marqueurs le retire et le titre perd type, carburant et puissance.
+-- (normalizeVehicleNameCase, buildR2TitleTypeLabel, packages/seo-types, et
+-- R2TitleCollisionService) : ils doivent être servis en PROD AVANT
+-- l'application de ce fichier, sinon la garde des marqueurs les retire et le
+-- titre se réduit à la gamme.
+-- Noms d'affichage (modele_name_meta, type_name_meta) : servis seulement
+-- après 20261119_seo_r2_title_display_names_rpc.sql ET le patch rm-builder
+-- (geste réservé) ; sinon noms bruts, en casse normale pour marque et modèle.
 -- sgc_h1, sgc_descrip, sgc_content et sgc_preview ne sont pas touchés.
 -- Garde : une ligne n'est modifiée que si elle porte encore exactement
 -- l'ancien gabarit relevé le 2026-11-19 (118 lignes sur 118). Relancé, le
@@ -25,7 +31,7 @@ SET LOCAL search_path = public, pg_temp;
 DO $titre_r2$
 DECLARE
   c_old CONSTANT text := '#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.';
-  c_new CONSTANT text := '#Gamme# #VMarque# #VModele# #VTypeCarburantPuissance#';
+  c_new CONSTANT text := '#Gamme# #VMarqueAffichage# #VModeleAffichage# #VTypeCarburantPuissance#';
   v_unexpected text;
   v_updated    bigint;
   v_new        bigint;

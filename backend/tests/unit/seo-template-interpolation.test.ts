@@ -5,7 +5,10 @@
  * CI/CD bloquant : si un test échoue, le déploiement est bloqué.
  */
 
-import { SeoTemplateService, SeoContext } from '../../src/modules/catalog/services/seo-template.service';
+import {
+  SeoTemplateService,
+  SeoContext,
+} from '../../src/modules/catalog/services/seo-template.service';
 
 // Mock du CacheService
 const mockCacheService = {
@@ -52,7 +55,11 @@ describe('SeoTemplateService - Interpolation', () => {
       mockCacheService as any,
       mockPlaceholderEvents as any,
       // Mandat DW, complément 1 : départage des titres R2 (non sollicité ici).
-      { resolveMotorCode: jest.fn().mockResolvedValue('') } as any,
+      {
+        resolveTitle: jest
+          .fn()
+          .mockResolvedValue({ motorCode: '', rawNames: false }),
+      } as any,
     );
   });
 
@@ -125,34 +132,56 @@ describe('SeoTemplateService - Interpolation', () => {
     });
 
     it('interpole #LinkCarAll# avec marque + modèle', () => {
-      const result = (service as any).processTemplate('#LinkCarAll#', testContext);
+      const result = (service as any).processTemplate(
+        '#LinkCarAll#',
+        testContext,
+      );
       expect(result).toBe('BMW Série 3 (E46)');
     });
 
     it('interpole #LinkGammeCar# avec gamme + marque + modèle', () => {
-      const result = (service as any).processTemplate('#LinkGammeCar#', testContext);
+      const result = (service as any).processTemplate(
+        '#LinkGammeCar#',
+        testContext,
+      );
       expect(result).toBe('Alternateur BMW Série 3 (E46)');
     });
   });
 
   describe('Templates réels de la base de données', () => {
     it('interpole le H1 Alternateur correctement', () => {
-      const template = 'Alternateur #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#';
+      const template =
+        'Alternateur #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#';
       const result = (service as any).processTemplate(template, testContext);
-      expect(result).toBe('Alternateur BMW Série 3 (E46) 320 d 136 ch 1998-2001');
+      expect(result).toBe(
+        'Alternateur BMW Série 3 (E46) 320 d 136 ch 1998-2001',
+      );
     });
 
     it('interpole le Title Alternateur correctement', () => {
-      const template = '#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.';
+      const template =
+        '#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.';
       const result = (service as any).processTemplate(template, testContext);
-      expect(result).toBe('Alternateur BMW Série 3 (E46) 320 d à partir de 118.45€ à tarif avantageux.');
+      expect(result).toBe(
+        'Alternateur BMW Série 3 (E46) 320 d à partir de 118.45€ à tarif avantageux.',
+      );
     });
 
     it('interpole le H1 Plaquette de frein correctement', () => {
-      const plaquetteContext = { ...testContext, gamme_name: 'Plaquette de frein', pg_id: 402 };
-      const template = 'Plaquette de frein pour #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#';
-      const result = (service as any).processTemplate(template, plaquetteContext);
-      expect(result).toBe('Plaquette de frein pour BMW Série 3 (E46) 320 d 136 ch 1998-2001');
+      const plaquetteContext = {
+        ...testContext,
+        gamme_name: 'Plaquette de frein',
+        pg_id: 402,
+      };
+      const template =
+        'Plaquette de frein pour #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#';
+      const result = (service as any).processTemplate(
+        template,
+        plaquetteContext,
+      );
+      expect(result).toBe(
+        'Plaquette de frein pour BMW Série 3 (E46) 320 d 136 ch 1998-2001',
+      );
     });
   });
 
@@ -230,7 +259,10 @@ describe('SeoTemplateService - Interpolation', () => {
 
     it('gère min_price = 0', () => {
       const contextZeroPrice = { ...testContext, min_price: 0 };
-      const result = (service as any).processTemplate('#MinPrice#', contextZeroPrice);
+      const result = (service as any).processTemplate(
+        '#MinPrice#',
+        contextZeroPrice,
+      );
       expect(result).toBe('');
     });
 
@@ -249,7 +281,10 @@ describe('SeoTemplateService - Interpolation', () => {
     });
 
     it('CRITIQUE: #MinPrice# ne doit pas rester vide si min_price > 0', () => {
-      const result = (service as any).processTemplate('#MinPrice#', testContext);
+      const result = (service as any).processTemplate(
+        '#MinPrice#',
+        testContext,
+      );
       expect(result).toContain('118.45');
       expect(result).not.toBe('');
     });

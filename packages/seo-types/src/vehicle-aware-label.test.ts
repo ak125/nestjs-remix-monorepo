@@ -9,6 +9,10 @@ import {
   FUEL_IMPLYING_TYPE_TOKENS,
   isFuelImpliedByTypeName,
   isTypeNameAmbiguousForSeo,
+  normalizeVehicleNameCase,
+  pickVehicleDisplayName,
+  r2TitleCollisionKey,
+  VEHICLE_NAME_CASE_EXCEPTIONS,
   type VehicleLabelInput,
 } from "./vehicle-aware-label.js";
 
@@ -500,6 +504,104 @@ describe("vehicle-aware-label", () => {
     it("type sans code : pas de code, le type en face garde le sien", () => {
       assert.strictEqual(pickR2TitleMotorCode([], [["KFV"]]), null);
       assert.strictEqual(pickR2TitleMotorCode(["KFV"], [[]]), "KFV");
+    });
+  });
+  describe("normalizeVehicleNameCase (complément 2 DW)", () => {
+    // Valeurs relevées dans auto_marque / auto_modele le 2026-11-19.
+    const cases: Array<[string, string]> = [
+      ["PEUGEOT", "Peugeot"],
+      ["ALFA ROMEO", "Alfa Romeo"],
+      ["CITROËN", "Citroën"],
+      ["LAND ROVER", "Land Rover"],
+      ["MERCEDES", "Mercedes"],
+      ["MINI", "Mini"],
+      ["BMW", "BMW"],
+      ["DS", "DS"],
+      ["MG", "MG"],
+      ["CLIO III", "Clio III"],
+      ["C-MAX", "C-MAX"],
+      ["GRAND C-MAX", "Grand C-MAX"],
+      ["X-TRAIL I", "X-TRAIL I"],
+      ["C4 PICASSO II", "C4 Picasso II"],
+      ["SANTA FE IV (TM, TMA)", "Santa Fe IV (TM, TMA)"],
+      ["RAV 4 IV", "RAV 4 IV"],
+      ["KANGOO BE BOP", "Kangoo Be Bop"],
+      ["NOAH-VOXY I", "Noah-Voxy I"],
+      ["SCÉNIC II", "Scénic II"],
+      ["GOLF VI", "Golf VI"],
+      ["206+", "206+"],
+      ["ID. Buzz Cargo (EBA)", "ID. Buzz Cargo (EBA)"],
+      ["X5 SAV (G05, F95)", "X5 SAV (G05, F95)"],
+      ["DUCATO V Fourgon (250-290)", "Ducato V Fourgon (250-290)"],
+    ];
+    for (const [raw, expected] of cases) {
+      it(`${raw} → ${expected}`, () => {
+        assert.strictEqual(normalizeVehicleNameCase(raw), expected);
+      });
+    }
+
+    it("sigles de la liste d'exceptions gardés en capitales", () => {
+      for (const w of ["BMW", "DS", "MG", "GTI", "TDI", "SUV", "AMG"]) {
+        assert.strictEqual(VEHICLE_NAME_CASE_EXCEPTIONS[w], w);
+        assert.strictEqual(normalizeVehicleNameCase(w), w);
+      }
+    });
+
+    it("mots de deux lettres listés passés en casse normale", () => {
+      assert.strictEqual(normalizeVehicleNameCase("UP"), "Up");
+      assert.strictEqual(normalizeVehicleNameCase("KA"), "Ka");
+    });
+
+    it("chiffres romains, codes et casse mixte conservés", () => {
+      assert.strictEqual(normalizeVehicleNameCase("CIVIC XI"), "Civic XI");
+      assert.strictEqual(normalizeVehicleNameCase("C4"), "C4");
+      assert.strictEqual(normalizeVehicleNameCase("dCi"), "dCi");
+      assert.strictEqual(normalizeVehicleNameCase("16V"), "16V");
+    });
+
+    it("idempotent", () => {
+      for (const [, expected] of cases) {
+        assert.strictEqual(normalizeVehicleNameCase(expected), expected);
+      }
+    });
+
+    it("vide ou absent : chaîne vide", () => {
+      assert.strictEqual(normalizeVehicleNameCase(""), "");
+      assert.strictEqual(normalizeVehicleNameCase(undefined), "");
+      assert.strictEqual(normalizeVehicleNameCase(null), "");
+    });
+  });
+
+  describe("pickVehicleDisplayName (complément 2 DW)", () => {
+    it("nom d'affichage rempli : retenu, espaces resserrés", () => {
+      assert.strictEqual(
+        pickVehicleDisplayName(" 2.0  HDi ", "2.0 HDI"),
+        "2.0 HDi",
+      );
+    });
+    it("nom d'affichage vide ou absent : nom brut", () => {
+      assert.strictEqual(pickVehicleDisplayName("", "2.0 HDI"), "2.0 HDI");
+      assert.strictEqual(pickVehicleDisplayName("  ", "2.0 HDI"), "2.0 HDI");
+      assert.strictEqual(
+        pickVehicleDisplayName(undefined, "2.0 HDI"),
+        "2.0 HDI",
+      );
+      assert.strictEqual(pickVehicleDisplayName(null, null), "");
+    });
+  });
+
+  describe("r2TitleCollisionKey (complément 2 DW)", () => {
+    it("casse et espaces ignorés", () => {
+      assert.strictEqual(
+        r2TitleCollisionKey("2.0  HDi 140 ch "),
+        r2TitleCollisionKey("2.0 HDI 140 ch"),
+      );
+    });
+    it("libellés différents : clés différentes", () => {
+      assert.notStrictEqual(
+        r2TitleCollisionKey("2.0 HDi 140 ch"),
+        r2TitleCollisionKey("2.0 HDi 163 ch"),
+      );
     });
   });
 });

@@ -1,57 +1,57 @@
-pg_id	gamme	source_titre	servables	indexables	collisions_actuelles_servables	collisions_avant_regle_servables	collisions_apres_regle_servables	collisions_actuelles_indexables	collisions_avant_regle_indexables	collisions_apres_regle_indexables	plus_de_60_servables	plus_de_60_indexables	pages_avec_code_servables
-2	Démarreur	__seo_gamme_car (migration)	8525	3485	1174	72	0	311	14	0	779	226	94
-4	Alternateur	__seo_gamme_car (migration)	8486	4676	1168	72	0	434	18	0	1091	530	94
-7	Filtre à huile	__seo_gamme_car (migration)	8745	711	1196	72	0	107	2	0	1765	79	95
-8	Filtre à air	__seo_gamme_car (migration)	8709	1185	1195	72	0	116	2	0	1258	116	95
-9	Filtre à carburant	__seo_gamme_car (migration)	7705	1506	1004	54	0	148	2	0	2542	453	79
-10	Courroie d'accessoire	__seo_gamme_car (migration)	8619	4761	1188	72	0	427	22	0	4039	1897	95
-12	Pompe de direction assistée	__seo_gamme_car (migration)	5594	0	693	46	0	0	0	0	4285	0	56
-13	Cardan	__seo_gamme_car (migration)	6950	1427	915	46	0	85	2	0	206	43	62
-48	Butée d'embrayage	__seo_gamme_car (migration)	7295	434	904	28	0	25	0	0	1994	125	38
-70	Mâchoires de frein	__seo_gamme_car (migration)	5371	976	528	54	0	52	4	0	2091	229	68
-78	Étrier de frein	__seo_gamme_car (migration)	8501	6705	1171	68	0	919	54	0	1983	1459	90
-82	Disque de frein	__seo_gamme_car (migration)	8921	8066	1213	72	0	1137	68	0	2130	1836	95
-83	Flexible de frein	__seo_gamme_car (migration)	8687	5194	1190	72	0	537	38	0	2647	1367	94
-123	Tambour de frein	__seo_gamme_car (migration)	2752	331	195	12	0	12	4	0	541	19	15
-124	Câble de frein à main	__seo_gamme_car (migration)	7648	1326	948	70	0	66	10	0	3581	667	91
-158	Boîtier papillon	__seo_gamme_car (migration)	5111	0	615	44	0	0	0	0	1318	0	65
-234	Emetteur d'embrayage	__seo_gamme_car (migration)	6666	190	947	64	0	48	0	0	2695	78	80
-243	Bougie de préchauffage	__seo_gamme_car (migration)	3998	139	632	22	0	11	0	0	1713	54	30
-247	Support moteur	__seo_gamme_car (migration)	7334	1799	960	66	0	78	6	0	1350	168	87
-258	Maître cylindre de frein	__seo_gamme_car (migration)	7802	848	1085	72	0	82	4	0	4847	507	91
-273	Bras de suspension	__seo_gamme_car (migration)	8873	7654	1210	72	0	1099	68	0	3032	2547	95
-277	Cylindre de roue	__seo_gamme_car (migration)	2849	354	207	12	0	12	2	0	564	20	15
-285	Barre de direction	__seo_gamme_car (migration)	6418	544	884	72	0	37	4	0	2205	175	89
-286	Crémaillière de direction	__seo_gamme_car (migration)	7578	26	926	56	0	0	0	0	5016	14	72
-306	Courroie de distribution	__seo_gamme_car (migration)	5052	27	648	18	0	2	0	0	2701	10	25
-307	Kit de distribution	__seo_gamme_car (migration)	4944	2628	596	8	0	228	4	0	1441	626	15
-310	Galet tendeur de courroie d'accessoire	__seo_gamme_car (migration)	8125	849	1143	72	0	22	6	0	8121	849	94
-316	Thermostat	__seo_gamme_car (migration)	8267	780	1097	66	0	44	0	0	798	47	87
-318	Joint de culasse	__seo_gamme_car (migration)	8460	262	1145	72	0	22	2	0	2241	27	92
-402	Plaquette de frein	__seo_gamme_car (migration)	8926	8272	1215	72	0	1150	68	0	3046	2752	95
-407	Témoin d'usure	__seo_gamme_car (migration)	3029	1247	529	66	0	234	52	0	1024	435	76
-412	Capteur ABS	__seo_gamme_car (migration)	8015	3373	1101	72	0	302	18	0	1060	347	95
-424	Filtre d'habitacle	__seo_gamme_car (migration)	8503	6528	1177	72	0	918	64	0	2898	2028	94
-447	Compresseur de climatisation	__seo_gamme_car (migration)	8174	1603	1142	68	0	111	0	0	6472	1249	92
-448	Condenseur de climatisation	__seo_gamme_car (migration)	8264	89	1163	72	0	0	0	0	6197	69	94
-458	Pompe à carburant	__seo_gamme_car (migration)	6887	193	895	68	0	0	0	0	1995	60	82
-470	Radiateur de refroidissement	__seo_gamme_car (migration)	8389	675	1158	72	0	35	2	0	6644	523	93
-478	Câble d'embrayage	__seo_gamme_car (migration)	1477	47	81	8	0	0	0	0	355	12	8
-479	Kit d'embrayage	__seo_gamme_car (migration)	7569	1528	946	54	0	114	6	0	1600	234	71
-577	Volant moteur	__seo_gamme_car (migration)	4728	0	781	58	0	0	0	0	759	0	71
-620	Récepteur d'embrayage	__seo_gamme_car (migration)	4772	131	670	54	0	2	0	0	2025	57	62
-806	Interrupteur des feux de freins	__seo_gamme_car (migration)	8032	360	1047	72	0	34	0	0	7278	324	94
-854	Amortisseur	__seo_gamme_car (migration)	8614	5950	1193	72	0	741	54	0	1112	538	95
-1108	Poulie d'alternateur	__seo_gamme_car (migration)	6318	1071	922	50	0	151	4	0	2377	359	70
-1123	Chaîne de distribution	__seo_gamme_car (migration)	5267	0	745	60	0	0	0	0	2894	0	78
-1145	Vanne EGR	__seo_gamme_car (migration)	3999	152	584	24	0	19	0	0	278	3	33
-1260	Pompe à eau	__seo_gamme_car (migration)	8679	2507	1191	70	0	229	6	0	1118	241	93
-1389	Kit de chaîne de distribution	__seo_gamme_car (migration)	4420	105	719	58	0	28	0	0	3752	67	71
-1750	Boîtier de préchauffage	repli frontend (inchangé)	2901	0	381	381	381	0	0	0	2875	0	0
-2066	Rotule de direction	repli frontend (inchangé)	8890	6523	1213	1213	1213	917	917	917	8076	5907	0
-2462	Rotule de suspension	repli frontend (inchangé)	7255	1537	933	933	933	172	172	172	6795	1419	0
-2669	Pulseur d'air d'habitacle	repli frontend (inchangé)	7487	806	1018	1018	1018	70	70	70	7456	806	0
-3213	Poulie vilebrequin	repli frontend (inchangé)	6726	671	894	894	894	32	32	32	5873	557	0
-3859	Kit de freins arrière	repli frontend (inchangé)	2019	676	116	116	116	22	22	22	1945	643	0
-3908	Capteur de pédale d'accélérateur	repli frontend (inchangé)	4063	0	626	626	626	0	0	0	4063	0	0
-3927	Débitmètre d'air	repli frontend (inchangé)	5617	170	958	958	958	25	25	25	4299	117	0
+pg_id	gamme	source_titre	servables	indexables	collisions_actuelles_servables	collisions_avant_regle_servables	collisions_apres_regle_servables	collisions_actuelles_indexables	collisions_avant_regle_indexables	collisions_apres_regle_indexables	plus_de_60_servables	plus_de_60_indexables	pages_avec_code_servables	pages_nom_affichage_different
+2	Démarreur	__seo_gamme_car (migration)	8525	3485	1174	136	0	311	40	0	481	118	167	3376
+4	Alternateur	__seo_gamme_car (migration)	8486	4676	1168	136	0	434	46	0	772	305	167	3356
+7	Filtre à huile	__seo_gamme_car (migration)	8745	711	1196	138	0	107	6	0	1336	47	171	3421
+8	Filtre à air	__seo_gamme_car (migration)	8709	1185	1195	138	0	116	4	0	911	67	171	3419
+9	Filtre à carburant	__seo_gamme_car (migration)	7705	1506	1004	110	0	148	20	0	2072	332	144	3017
+10	Courroie d'accessoire	__seo_gamme_car (migration)	8619	4761	1188	138	0	427	54	0	3497	1530	169	3417
+12	Pompe de direction assistée	__seo_gamme_car (migration)	5594	0	693	106	0	0	0	0	4004	0	116	2148
+13	Cardan	__seo_gamme_car (migration)	6950	1427	915	90	0	85	8	0	122	21	112	2795
+48	Butée d'embrayage	__seo_gamme_car (migration)	7295	434	904	96	0	25	10	0	1484	76	107	3043
+70	Mâchoires de frein	__seo_gamme_car (migration)	5371	976	528	124	0	52	22	0	1743	140	151	1869
+78	Étrier de frein	__seo_gamme_car (migration)	8501	6705	1171	132	0	919	110	0	1483	1050	163	3373
+82	Disque de frein	__seo_gamme_car (migration)	8921	8066	1213	140	0	1137	130	0	1612	1387	172	3474
+83	Flexible de frein	__seo_gamme_car (migration)	8687	5194	1190	138	0	537	74	0	2101	1002	167	3410
+123	Tambour de frein	__seo_gamme_car (migration)	2752	331	195	40	0	12	10	0	331	13	46	1037
+124	Câble de frein à main	__seo_gamme_car (migration)	7648	1326	948	126	0	66	32	0	3070	525	155	3037
+158	Boîtier papillon	__seo_gamme_car (migration)	5111	0	615	62	0	0	0	0	1054	0	100	2114
+234	Emetteur d'embrayage	__seo_gamme_car (migration)	6666	190	947	112	0	48	0	0	2272	77	136	2806
+243	Bougie de préchauffage	__seo_gamme_car (migration)	3998	139	632	40	0	11	0	0	1457	47	51	1886
+247	Support moteur	__seo_gamme_car (migration)	7334	1799	960	120	0	78	16	0	1027	69	153	2865
+258	Maître cylindre de frein	__seo_gamme_car (migration)	7802	848	1085	136	0	82	8	0	4322	419	159	3052
+273	Bras de suspension	__seo_gamme_car (migration)	8873	7654	1210	140	0	1099	128	0	2488	2096	171	3457
+277	Cylindre de roue	__seo_gamme_car (migration)	2849	354	207	44	0	12	6	0	346	6	46	1096
+285	Barre de direction	__seo_gamme_car (migration)	6418	544	884	116	0	37	10	0	1798	145	143	2415
+286	Crémaillière de direction	__seo_gamme_car (migration)	7578	26	926	120	0	0	0	0	4563	10	146	2895
+306	Courroie de distribution	__seo_gamme_car (migration)	5052	27	648	38	0	2	0	0	2301	8	37	2174
+307	Kit de distribution	__seo_gamme_car (migration)	4944	2628	596	38	0	228	16	0	1062	453	37	2106
+310	Galet tendeur de courroie d'accessoire	__seo_gamme_car (migration)	8125	849	1143	136	0	22	16	0	8115	849	166	3252
+316	Thermostat	__seo_gamme_car (migration)	8267	780	1097	128	0	44	6	0	556	28	154	3295
+318	Joint de culasse	__seo_gamme_car (migration)	8460	262	1145	138	0	22	4	0	1725	6	169	3346
+402	Plaquette de frein	__seo_gamme_car (migration)	8926	8272	1215	140	0	1150	134	0	2492	2248	172	3476
+407	Témoin d'usure	__seo_gamme_car (migration)	3029	1247	529	102	0	234	52	0	908	380	127	1088
+412	Capteur ABS	__seo_gamme_car (migration)	8015	3373	1101	128	0	302	52	0	744	252	163	3212
+424	Filtre d'habitacle	__seo_gamme_car (migration)	8503	6528	1177	136	0	918	108	0	2386	1692	168	3380
+447	Compresseur de climatisation	__seo_gamme_car (migration)	8174	1603	1142	128	0	111	12	0	6132	1178	158	3277
+448	Condenseur de climatisation	__seo_gamme_car (migration)	8264	89	1163	136	0	0	0	0	5782	63	162	3324
+458	Pompe à carburant	__seo_gamme_car (migration)	6887	193	895	122	0	0	0	0	1589	49	142	2650
+470	Radiateur de refroidissement	__seo_gamme_car (migration)	8389	675	1158	136	0	35	6	0	6296	500	160	3343
+478	Câble d'embrayage	__seo_gamme_car (migration)	1477	47	81	28	0	0	2	0	223	4	28	451
+479	Kit d'embrayage	__seo_gamme_car (migration)	7569	1528	946	128	0	114	16	0	1136	154	154	3067
+577	Volant moteur	__seo_gamme_car (migration)	4728	0	781	98	0	0	0	0	561	0	118	2011
+620	Récepteur d'embrayage	__seo_gamme_car (migration)	4772	131	670	82	0	2	0	0	1775	55	103	1866
+806	Interrupteur des feux de freins	__seo_gamme_car (migration)	8032	360	1047	138	0	34	0	0	7114	319	168	3127
+854	Amortisseur	__seo_gamme_car (migration)	8614	5950	1193	140	0	741	104	0	779	344	172	3414
+1108	Poulie d'alternateur	__seo_gamme_car (migration)	6318	1071	922	92	0	151	6	0	2004	273	118	2681
+1123	Chaîne de distribution	__seo_gamme_car (migration)	5267	0	745	94	0	0	0	0	2622	0	128	2063
+1145	Vanne EGR	__seo_gamme_car (migration)	3999	152	584	40	0	19	0	0	132	1	55	1865
+1260	Pompe à eau	__seo_gamme_car (migration)	8679	2507	1191	136	0	229	30	0	785	119	168	3420
+1389	Kit de chaîne de distribution	__seo_gamme_car (migration)	4420	105	719	84	0	28	0	0	3622	42	113	1806
+1750	Boîtier de préchauffage	repli frontend (inchangé)	2901	0	381	381	381	0	0	0	2875	0	0	0
+2066	Rotule de direction	repli frontend (inchangé)	8890	6523	1213	1213	1213	917	917	917	8076	5907	0	0
+2462	Rotule de suspension	repli frontend (inchangé)	7255	1537	933	933	933	172	172	172	6795	1419	0	0
+2669	Pulseur d'air d'habitacle	repli frontend (inchangé)	7487	806	1018	1018	1018	70	70	70	7456	806	0	0
+3213	Poulie vilebrequin	repli frontend (inchangé)	6726	671	894	894	894	32	32	32	5873	557	0	0
+3859	Kit de freins arrière	repli frontend (inchangé)	2019	676	116	116	116	22	22	22	1945	643	0	0
+3908	Capteur de pédale d'accélérateur	repli frontend (inchangé)	4063	0	626	626	626	0	0	0	4063	0	0	0
+3927	Débitmètre d'air	repli frontend (inchangé)	5617	170	958	958	958	25	25	25	4299	117	0	0
