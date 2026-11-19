@@ -1,0 +1,86 @@
+pg_alias,ba_pg_id,titre_servi_reproduit,source_titre,ba_h1,skp_status,skp_quality_score
+agregat-de-freinage,415,"Agrégat freinage : voyant ABS allumé, remplacement et purge",seo_brief,Système ABS : Agrégat de freinage (Bloc-hydraulique ABS),validated,90
+alternateur,4,Alternateur : Guide Symptomes Choix et Remplacement,seo_brief,Comment changer votre alternateur,validated,100
+amortisseur,854,"Amortisseur : symptômes, changement et prix",seo_brief,Quand changer vos amortisseurs,validated,
+arbre-a-came,566,"Arbre a came : symptomes, remplacement et prix | Guide",seo_brief,Changer un arbre à cames,validated,82
+bagues-d-etancheite-moteur,3874,Bagues etancheite moteur : fuites huile,seo_brief,Comment changer une bague d'étanchéité moteur,validated,89
+balais-d-essuie-glace,298,Choisir ses balais d'essuie-glace : guide complet,seo_brief,Comment changer des balais d'essuie-glace,validated,100
+bobine-d-allumage,689,"Bobine d allumage : rate moteur, diagnostic et remplacement",seo_brief,Comment changer une bobine d'allumage,validated,68
+boitier-de-prechauffage,1750,Boîtier préchauffage diesel : symptômes,seo_brief,Comment changer un boîtier de préchauffage,validated,82
+bougie-d-allumage,686,Bougie allumage : symptomes,seo_brief,Comment changer une bougie d'allumage,validated,93
+bougie-de-prechauffage,243,Bougie de prechauffage : symptomes,seo_brief,Comment changer vos bougies de préchauffage,validated,87
+bras-de-suspension,273,"Bras de suspension : symptômes, remplacement et géométrie",seo_brief,Comment changer un bras de suspension,validated,76
+butee-d-embrayage,48,Butée d embrayage : symptômes,seo_brief,SYMPTÔMES BUTÉE D'EMBRAYAGE HS,validated,70
+cable-d-embrayage,478,"Câble d'embrayage dur ? Réglage, changement et prix",seo_brief,CHANGEMENT DU CÂBLE D'EMBRAYAGE HS,validated,87
+cable-de-frein-a-main,124,Cable de frein a main : symptomes,seo_brief,Comment changer un câble de frein à main,validated,92
+capteur-abs,412,"Capteur ABS / ESP : voyant allumé, diagnostic OBD",seo_brief,"ABS, ASR, ESP : SYSTÈME DE FREINAGE ET DE SÉCURITÉ AUTOMOBILE",validated,85
+cardan,13,"Cardan : symptômes d usure, changement et erreurs à éviter",seo_brief,Comment changer un cardan,validated,76
+carter-d-huile,592,"Carter d'huile : rôle, signes de fuite et remplacement [Guide 2026]",seo_brief,Comment changer un carter d'huile,validated,84
+catalyseur,429,"Catalyseur : voyant P0420, bruit ferraille, remplacement",seo_brief,Comment changer un catalyseur,validated,90
+colonne-de-direction,1211,"Colonne de direction : symptômes d'usure, changement et prix",seo_brief,Comment changer une colonne de direction,validated,82
+commande-d-eclairage,809,Commande eclairage : feux en panne,seo_brief,Comment changer une commande d'éclairage,validated,91
+commande-de-ventilation,1385,Commande de ventilation : symptomes,seo_brief,Comment changer une commande de ventilation,validated,87
+compresseur-de-climatisation,447,"Compresseur clim : symptomes, remplacement, OE ou adaptable",seo_brief,Comment changer un compresseur de climatisation,validated,84
+condenseur-de-climatisation,448,Condenseur Clim : Guide Fuite Symptomes et Choix,seo_brief,Comment changer un condenseur de climatisation et une bouteille déshydratante,validated,100
+contacteur-de-feu-de-recul,807,Changer un contacteur de feu de recul : guide complet [2026],ba_title,Comment changer un contacteur de feu de recul,validated,90
+corps-papillon,158,Symptômes du boîtier papillon défectueux : guide complet [2026],ba_title,Symptômes du boîtier papillon défectueux,draft,86
+courroie-d-accessoire,10,"Courroie accessoire : quand changer, symptomes",seo_brief,Comment changer une courroie d'accessoires,validated,92
+courroie-de-distribution,306,"Courroie de distribution : quand changer, symptomes et kit",seo_brief,Comment changer une courroie de distribution,validated,85
+cremailliere-de-direction,286,"Cremaillere de direction : role, choix et remplacement",seo_brief,Changer une crémaillère de direction,validated,95
+cylindre-de-roue,277,"Cylindre de roue : symptômes de fuite, changement et purge",seo_brief,Comment changer un cylindre de roue,validated,76
+debitmetre-d-air,3927,"Débitmètre d'air : symptômes, nettoyage, remplacement",seo_brief,Comment changer un débitmètre d'air,validated,82
+demarreur,2,"Démarreur HS : symptomes, diagnostic et remplacement",seo_brief,Changer un démarreur,validated,92
+detendeur-de-climatisation,183,Détendeur climatisation : symptomes,seo_brief,Comment changer un détendeur de climatisation,validated,92
+disque-de-frein,82,Changer un disque de frein : guide complet [2026],ba_title,Changer un disque de frein : guide complet [2026],validated,82
+durite-de-refroidissement,475,"Durite de refroidissement : fuite, remplacement et conseils",seo_brief,Comment changer une durite de refroidissement,validated,82
+emetteur-d-embrayage,234,"Émetteur d'embrayage : pédale molle, diagnostic et prix",seo_brief,Changer un émetteur ou récepteur d'embrayage,validated,82
+etrier-de-frein,78,"Etrier de frein grippe : symptomes, reparation, prix",seo_brief,Comment changer un étrier de frein,validated,92
+evaporateur-de-climatisation,471,Evaporateur clim : mauvaises odeurs,seo_brief,Comment changer un évaporateur de climatisation,validated,83
+faisceau-d-allumage,685,"Faisceau allumage : symptomes, nettoyage et remplacement",seo_brief,Comment changer un faisceau d'allumage,validated,90
+fap,1256,"FAP : voyant allumé, nettoyage",seo_brief,Comment changer un FAP,validated,87
+feu-arriere,290,"Feu arrière : buée, stop HS",seo_brief,Comment changer un feu arrière,validated,85
+feu-avant,259,"Feu avant : phare opaque, buée, remplacement et réglage",seo_brief,Comment changer un feu avant,validated,85
+feu-clignotant,62,"Feu clignotant : symptomes, diagnostic et remplacement",seo_brief,Comment changer un feu clignotant,validated,94
+filtre-a-air,8,Filtre a Air : Guide Entretien Choix et Changement,seo_brief,Comment changer un filtre à air,validated,100
+filtre-a-carburant,9,"Filtre à carburant : à-coups, purge diesel et remplacement",seo_brief,Comment changer un filtre à carburant,validated,95
+filtre-a-huile,7,"Filtre à huile : symptômes, changement et prix",seo_brief,Comment changer un filtre à huile,validated,92
+filtre-d-habitacle,424,"Filtre habitacle : quand changer, mauvaises odeurs, pose",seo_brief,Comment changer un filtre d’habitacle,validated,92
+filtre-de-boite-auto,416,Filtre boîte auto : quand changer ? Signes et vidange,seo_brief,Changer votre filtre de boîte auto,validated,90
+flexible-de-frein,83,"Flexible de frein : symptomes, remplacement et prix",seo_brief,Comment changer un flexible de frein,validated,88
+galet-enrouleur-de-courroie-d-accessoire,312,Galet enrouleur courroie : symptomes,seo_brief,Comment changer un galet enrouleur de courroie d'accessoires,validated,91
+galet-tendeur-de-courroie-d-accessoire,310,Galet Tendeur Courroie : Guide Symptomes et Choix,seo_brief,Comment changer un galet tendeur d'accessoires,validated,100
+injecteur,3902,Injecteur : Guide Symptomes Choix et Remplacement,seo_brief,Changer un injecteur,validated,100
+interrupteur-des-feux-de-freins,806,Interrupteur feux stop : feux restent allumés,seo_brief,Comment changer un interrupteur des feux de frein,validated,87
+joint-de-cache-culbuteurs,321,"Joint cache culbuteur : symptomes, remplacement et prix",seo_brief,Comment changer un joint de cache culbuteurs,validated,82
+joint-de-collecteur,40,"Joint de collecteur : symptomes, remplacement et prix",seo_brief,Comment changer un joint de collecteur,validated,88
+joint-de-culasse,318,"Joint de culasse : symptomes, remplacement et erreurs",seo_brief,Comment changer un joint de culasse,validated,90
+kit-d-embrayage,479,"Kit d'embrayage : symptômes, remplacement et erreurs",seo_brief,Changer un kit d'embrayage et volant moteur,validated,82
+kit-de-chaine-de-distribution,1389,Kit de chaine distribution : symptomes,seo_brief,Comment changer un kit chaîne de distribution,validated,88
+kit-de-distribution,307,"Kit distribution : symptomes, remplacement et erreurs",seo_brief,Comment changer un kit de distribution,validated,92
+kit-de-freins-arriere,3859,"Kit freins arriere : symptomes, remplacement et prix",seo_brief,Comment changer un kit de frein arrière,validated,88
+leve-vitre,1561,"Leve-vitre : vitre bloquee, diagnostic et remplacement",seo_brief,Comment changer un lève-vitre,validated,83
+machoires-de-frein,70,"Machoires de frein : symptomes, remplacement et prix",seo_brief,Comment changer des mâchoires de frein,validated,88
+maitre-cylindre-de-frein,258,"Maitre-cylindre : symptomes, remplacement et purge",seo_brief,Changer un maître-cylindre de frein,validated,95
+plaquette-de-frein,402,Changer vos plaquettes de frein : guide complet [2026],ba_title,Comment changer vos plaquettes de frein,validated,82
+pompe-a-carburant,458,"Pompe a carburant : symptomes, remplacement et conseils",seo_brief,Comment changer une pompe à carburant,validated,82
+pompe-a-eau,1260,"Pompe a eau : symptomes fuite, remplacement et diagnostic",seo_brief,Comment changer une pompe à eau,validated,92
+pompe-de-direction-assistee,12,Pompe de direction assistée : symptômes,seo_brief,Changer une pompe de direction assistée,validated,78
+poulie-d-arbre-a-came,1067,"Poulie d'arbre a came : symptomes, calage et remplacement",seo_brief,Comment changer une poulie arbre à cames,validated,82
+poulie-vilebrequin,3213,"Poulie vilebrequin : vibrations, diagnostic et remplacement",seo_brief,Comment changer une poulie de vilebrequin,validated,92
+pulseur-d-air-d-habitacle,2669,"Pulseur d'air HS : symptomes, remplacement et ventilation",seo_brief,Comment changer un pulseur d'air d'habitacle,validated,82
+radiateur-de-chauffage,467,"Radiateur de chauffage : fuite, symptomes et remplacement",seo_brief,Comment changer un radiateur de chauffage,validated,82
+radiateur-de-refroidissement,470,Radiateur : Guide Fuite Surchauffe et Remplacement,seo_brief,Comment changer un radiateur de refroidissement moteur,validated,100
+retroviseur-exterieur,50,"Rétroviseur extérieur : symptômes, remplacement et erreurs",seo_brief,Comment changer un rétroviseur,validated,85
+rotule-de-direction,2066,"Rotule de direction : symptomes, diagnostic et remplacement",seo_brief,Comment changer une rotule de direction,validated,92
+rotule-de-suspension,2462,Rotule de suspension : claquements,seo_brief,Comment changer une rotule de suspension,validated,87
+roulement-de-roue,655,"Roulement de roue : symptomes, diagnostic et remplacement",seo_brief,Comment changer un roulement de roue,validated,92
+servo-frein,74,"Servo frein : pedale dure, sifflement et remplacement",seo_brief,Changer un servo-frein,validated,91
+sonde-de-refroidissement,830,Sonde de refroidissement : symptomes,seo_brief,Comment changer une sonde de refroidissement,validated,87
+sonde-lambda,3922,Sonde Lambda : Guide Symptomes Codes et Remplacement,seo_brief,Changer une sonde lambda,validated,100
+support-moteur,247,"Support moteur HS : bruits, vibrations et remplacement [Guide complet]",seo_brief,SYMPTÔMES SUPPORT MOTEUR ET BOÎTE VITESSE HS,validated,88
+tambour-de-frein,123,Tambour de frein : symptomes,seo_brief,Comment changer un tambour de frein,validated,92
+temoin-d-usure,407,"Témoin d'usure frein : voyant allumé, sifflement",seo_brief,Comment changer un témoin d'usure,validated,92
+thermostat,316,"Thermostat moteur : symptomes, remplacement et diagnostic",seo_brief,Comment changer un thermostat,validated,90
+turbo,2234,Turbo : Guide Complet Symptomes et Remplacement,seo_brief,Changer un turbocompresseur,validated,100
+vanne-egr,1145,"Vanne EGR : symptomes, nettoyage et remplacement",seo_brief,Comment changer une vanne EGR,validated,75
+ventilateur-de-refroidissement,508,"Ventilateur refroidissement : surchauffe, symptomes",seo_brief,Comment changer un ventilateur de refroidissement,validated,82

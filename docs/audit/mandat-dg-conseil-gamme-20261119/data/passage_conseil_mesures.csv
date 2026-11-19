@@ -1,0 +1,61 @@
+bloc,k1,k2,k3,n,debut,fin
+a_event_log,r2_order_placed,other,(absent),16,2026-07-22 21:54:47.619203+00,2026-11-16 08:34:31.874272+00
+a_event_log,r2_view,direct,suspect,1,2026-11-19 04:59:22.024591+00,2026-11-19 04:59:22.024591+00
+a_event_log,r2_order_placed,other,human,1,2026-11-17 07:06:22.92533+00,2026-11-17 07:06:22.92533+00
+a_event_log,r2_view,direct,(absent),88518,2026-05-26 21:00:28.431524+00,2026-11-17 06:25:49.368991+00
+a_event_log,r2_add_to_cart,(absent),(absent),491,2026-05-21 21:23:55.359766+00,2026-11-16 17:57:54.255724+00
+a_event_log,r2_order_placed,direct,(absent),8,2026-07-24 20:03:30.775529+00,2026-08-25 16:40:03.660243+00
+a_event_log,r2_view,direct,bot,3580,2026-11-17 06:27:05.971492+00,2026-11-19 06:37:26.769137+00
+a_event_log,r2_add_to_cart,(absent),human,1,2026-11-18 15:13:19.368694+00,2026-11-18 15:13:19.368694+00
+a_event_log,r2_view,internal,human,84,2026-11-17 07:58:20.165408+00,2026-11-19 06:30:06.581951+00
+a_event_log,r2_view,organic,(absent),11036,2026-05-26 15:50:24.17053+00,2026-11-17 06:19:09.13683+00
+a_event_log,r2_view,other,(absent),862,2026-05-26 16:56:37.528943+00,2026-11-16 19:08:53.865252+00
+a_event_log,r2_view,internal,(absent),234500,2026-05-26 16:30:44.010432+00,2026-11-17 06:22:15.160347+00
+a_event_log,r2_view,other,human,4,2026-11-17 11:11:35.573077+00,2026-11-18 15:37:36.583287+00
+a_event_log,r2_view,organic,human,143,2026-11-17 06:48:47.788654+00,2026-11-19 06:07:28.933458+00
+a_event_log,r2_view,direct,human,48,2026-11-17 06:34:37.412152+00,2026-11-19 06:33:46.601532+00
+bloc,k1,k2,k3,n,debut,fin
+b_link_clicks,VoirAussi,source_R2,dest_R1,15,2025-12-24 14:25:00.806+00,2026-11-03 22:09:42.55+00
+b_link_clicks,GammesPopulaires,source_R1,dest_R1,1,2025-12-24 19:06:23.776+00,2025-12-24 19:06:23.776+00
+b_link_clicks,RelatedArticles,source_R2,dest_autre,2,2026-09-22 03:40:08.178+00,2026-09-22 03:41:20.096+00
+b_link_clicks,LinkGamme,source_conseil,dest_R1,45,2026-03-04 15:31:19.635+00,2026-11-16 17:57:55.472+00
+b_link_clicks,LinkGammeCar,source_R2,dest_R2,44,2025-12-20 23:28:51.941+00,2026-01-20 10:11:30.634+00
+b_link_clicks,RelatedArticles-1 waitfor delay '0:0:15' -- ,source_R2,dest_blog,1,2026-09-22 02:18:37.284+00,2026-09-22 02:18:37.284+00
+b_link_clicks,TopMarques,source_autre,dest_autre,2,2025-12-21 21:43:05.465+00,2025-12-21 22:21:26.168+00
+b_link_clicks,GammesPopulaires,source_autre,dest_R1,2,2025-12-19 15:56:49.37+00,2025-12-24 19:06:03.186+00
+b_link_clicks,VoirAussi,source_R2,dest_autre,80,2025-12-14 16:48:09.371+00,2026-11-18 11:59:18.737+00
+b_link_clicks,LinkGammeCar,source_autre,dest_autre,2,2025-12-03 11:45:13.544+00,2025-12-03 11:47:24.593+00
+b_link_clicks,RelatedArticles,source_autre,dest_blog,1,2026-09-22 02:28:12.734+00,2026-09-22 02:28:12.734+00
+b_link_clicks,RelatedArticles,source_R2,dest_blog,455,2025-12-12 11:57:18.641+00,2026-11-18 11:58:27.995+00
+b_link_clicks,LinkGamme,source_conseil,dest_autre,4,2026-03-15 17:56:10.941+00,2026-09-07 09:37:38.391+00
+b_link_clicks,Footer,source_autre,dest_autre,3,2025-12-02 22:09:53.666+00,2025-12-02 22:28:37.173+00
+b_link_clicks,"if(now()=sysdate(),sleep(15),0)",source_R2,dest_blog,1,2026-09-22 02:17:20.481+00,2026-09-22 02:17:20.481+00
+bloc,k1,k2,k3,n,min,max
+c_conseil_vers_R1_90j,LinkGamme,ua_autre,,21,2026-09-04 15:05:19.057+00,2026-11-16 17:57:55.472+00
+bloc,k1,k2,k3,n,min,max
+d_link_impressions_conseil,Footer,,,836,2025-12-04 14:14:09.893+00,2026-01-06 16:15:52.746+00
+d_link_impressions_conseil,GammesPopulaires,,,838,2025-12-04 14:14:09.893+00,2026-01-06 16:15:52.741+00
+d_link_impressions_conseil,TopMarques,,,840,2025-12-04 14:14:09.891+00,2026-01-06 16:15:52.732+00
+bloc,k1,k2,k3,count,min,max
+e_link_impressions_total,,,,480021,2025-12-02 22:10:04.824+00,2026-11-19 06:39:35.717+00
+bloc,k1,k2,k3,sum,min,max
+f_ga4_sessions,autre,ai assistant,9,13,2026-08-20,2026-10-14
+f_ga4_sessions,autre,direct,1387,8652,2026-08-19,2026-11-16
+f_ga4_sessions,autre,organic search,1019,3201,2026-08-19,2026-11-16
+f_ga4_sessions,autre,organic social,3,4,2026-10-21,2026-10-21
+f_ga4_sessions,autre,referral,74,215,2026-08-19,2026-11-15
+f_ga4_sessions,autre,unassigned,41,107,2026-08-26,2026-11-16
+f_ga4_sessions,conseil,direct,78,249,2026-08-19,2026-11-16
+f_ga4_sessions,conseil,organic search,79,1284,2026-08-19,2026-11-16
+f_ga4_sessions,conseil,referral,19,27,2026-08-22,2026-11-12
+f_ga4_sessions,conseil,unassigned,3,3,2026-11-06,2026-11-10
+f_ga4_sessions,R1,direct,54,114,2026-08-20,2026-11-16
+f_ga4_sessions,R1,organic search,110,336,2026-08-19,2026-11-16
+f_ga4_sessions,R1,referral,14,62,2026-08-19,2026-11-13
+f_ga4_sessions,R1,unassigned,3,3,2026-09-07,2026-11-13
+f_ga4_sessions,R2,ai assistant,1,1,2026-08-20,2026-08-20
+f_ga4_sessions,R2,direct,37173,41252,2026-08-19,2026-11-16
+f_ga4_sessions,R2,organic search,3435,4545,2026-08-19,2026-11-16
+f_ga4_sessions,R2,organic social,2,5,2026-09-11,2026-10-21
+f_ga4_sessions,R2,referral,461,488,2026-08-19,2026-11-15
+f_ga4_sessions,R2,unassigned,116,117,2026-08-19,2026-11-13
