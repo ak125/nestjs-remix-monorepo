@@ -7765,6 +7765,26 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/supplier-truth/supplier-card.repository.ts"
+      ],
+      "id": "runtime:backend/src/modules/supplier-truth/supplier-card.module.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/supplier-truth/supplier-card.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "kind": "other",
+      "path": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
         "runtime:backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "id": "runtime:backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
@@ -7846,6 +7866,15 @@
       "status": "LIVE"
     },
     {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/suppliers/supplier-card.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/suppliers/supplier-card.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
       "dependsOn": [
         "runtime:backend/src/modules/suppliers/suppliers.service.ts"
       ],
@@ -7858,6 +7887,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/suppliers/supplier-card.service.ts",
         "runtime:backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "id": "runtime:backend/src/modules/suppliers/suppliers.controller.ts",
@@ -7870,6 +7900,8 @@
     {
       "dependsOn": [
         "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/supplier-truth/supplier-card.module.ts",
+        "runtime:backend/src/modules/suppliers/supplier-card.service.ts",
         "runtime:backend/src/modules/suppliers/suppliers-modern.controller.ts",
         "runtime:backend/src/modules/suppliers/suppliers.controller.ts",
         "runtime:backend/src/modules/suppliers/suppliers.service.ts"
@@ -10103,17 +10135,6 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:frontend/app/routes/admin.suppliers.tsx"
-      ],
-      "id": "runtime:frontend/app/routes/admin.suppliers.$id.edit.tsx",
-      "kind": "remix-route",
-      "path": "frontend/app/routes/admin.suppliers.$id.edit.tsx",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
       "dependsOn": [],
       "id": "runtime:frontend/app/routes/admin.suppliers.$id.tsx",
       "kind": "remix-route",
@@ -10124,9 +10145,27 @@
     },
     {
       "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.suppliers.$id_.edit.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.suppliers.$id_.edit.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
       "id": "runtime:frontend/app/routes/admin.suppliers._index.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/admin.suppliers._index.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.suppliers.new.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.suppliers.new.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
