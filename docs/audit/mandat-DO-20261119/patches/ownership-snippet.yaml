@@ -1,0 +1,52 @@
+# Extrait à appliquer par l'owner (mandat DO, 2026-11-19), via :
+#   resync-pr.sh <N> --ownership docs/audit/mandat-DO-20261119/patches/ownership-snippet.yaml
+# À insérer dans .spec/00-canon/repository-registry/ownership.yaml, juste après
+# l'entrée « audit/runtime-entrypoints.json » (bloc PR #1956, même domaine, même
+# risque). Globs exacts, un par chemin : les neuf projections régénérées encore
+# non classées. Sans elles, une PR de régénération est classée « élevé »
+# (UNCLASSIFIED) et merge-circuits.yml désarme sa fusion automatique.
+  - glob: audit/cycle-map.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/db-usage-map.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/dead-code-candidates.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/duplicate-map.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/dynamic-import-edges.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/registry/runtime.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/registry/deps.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/registry/db.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/registry/rpc.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
