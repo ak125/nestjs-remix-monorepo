@@ -493,13 +493,16 @@ nœuds (fond dégradé ou image), notamment le fil d'Ariane du hero en
 | « Conseils entretien » (12 px) | `#009966` sur `#f8fafc`, 3,49 | `success` `#1E8449` | 4,51 |
 | 3 légendes d'image (12 px) | `#90a1b9`, 2,51 à 2,63 | `neutral-400` `#6B7280` | 4,62 à 4,83 |
 | 5 sous-textes de « Bien choisir » (10 px) | `#90a1b9` sur `#fcfdfe`, 2,58 | `neutral-400` | 4,75 |
-| Badge « 2 min » (10 px) | `#f54900` sur `#fff7ed`, 3,38 | `cta-700` `#C2410C` | 4,88 |
+| Badge « 2 min » (10 px) | `#f54900` sur `#fff7ed`, 3,38 | `cta-700` `#C2410C` | ~~4,88~~ **faux** : sans effet au rendu, texte quasi noir (18,8) ; voir le complément n° 4 |
 | 4 ancres de « Aller plus loin » (12 px) | `#f97316` sur `#f5f7fa`, 2,61 | `cta-700` | 4,83 |
 | « Lire plus » (12 px) | `#f89b5a` sur `#f5f7fa`, 1,99 | `cta-700` | 4,83 |
 | **Pied de page, 4 nœuds** | 3,73 ; 2,24 ×2 ; 1,88 (`text-white/40`, `/25`, `/20` sur `#0f1e38`) | non modifié | — |
 | **Barre « Navigation mobile », 5 nœuds** | 2,63 ×4 (`#90a1b9`) ; 2,80 (`#f97316`) sur blanc | non modifié | — |
 
-Les 15 nœuds R1 ne sont plus signalés par axe après correction. Aucune couleur
+Les 15 nœuds R1 ne sont plus signalés par axe après correction. **Correction
+(complément n° 4)** : pour le badge, c'était pour une mauvaise raison. La classe
+`text-cta-700` ne s'appliquait pas ; le texte est sorti du signalement parce
+qu'il était devenu presque noir, pas parce qu'il était orange foncé. Aucune couleur
 n'a été créée et aucune valeur n'est écrite en dur.
 
 **Arrêt sur composant partagé (point 4)** : `components/home/Footer.tsx` (via
@@ -572,6 +575,98 @@ Sans la préférence, les animations et le défilement doux restent inchangés.
 - Pied de page, barre mobile et hook `useScrollBehavior` : globaux, voir
   ci-dessus.
 
+## Complément n° 4 — quatre contrastes propres à R1 (19 nov. 2026)
+
+Demande : « oui » de Marwane (19 nov. 2026, 22:48 Paris), sur le complément n° 4
+du mandat DU (#2211, tête `aef4cda09` : REVUE-EXPERTE §12, REFERENTIEL-EXTERNE
+§3.F, scripts de mesure directe). Apparence seulement : aucun titre, H1, texte,
+ancre, donnée structurée, base ni PROD. axe classe ces quatre points en
+« incomplete » ; ils sont donc mesurés sur les pixels rendus.
+
+### Correction de l'erreur du complément n° 3 (badge « 2 min »)
+
+J'avais annoncé 4,88:1. Ce chiffre était **calculé** à partir des jetons
+(`cta-700` `#C2410C` sur `#fff7ed`), pas mesuré sur le rendu. Au rendu, le
+texte était `#020817`, presque noir (18,8:1). Cause : le composant partagé
+`components/ui/badge.tsx` ajoute les classes à la suite sans les fusionner. Sa
+variante `outline` impose `text-foreground`, qui l'emportait sur `text-cta-700`
+dans la feuille générée. Le badge a quitté la liste d'axe parce qu'il était devenu
+presque noir. J'ai pris « plus de violation » pour « classe appliquée », sans
+vérifier la couleur calculée.
+
+### Causes et corrections (trois fichiers, tous propres à R1)
+
+| Point | Cause trouvée | Correction |
+|---|---|---|
+| 1. Fil d'Ariane (`GammeHero.tsx`) | La règle globale `nav a` de `global.css` (`@layer components`) impose `text-secondary-600` (`#0D4473`) au lien, qui n'héritait donc pas de `text-white/25` | `text-neutral-300` sur le lien : une classe utilitaire passe après `@layer components`, sans `!`. `no-visited` est l'exception déjà prévue par la règle globale `a:visited` (violet sur navy une fois le lien visité). Survol `hover:text-white` |
+| 2. Onglet « Type Mine » (`GammeHero.tsx`) | `text-slate-500` (palette Tailwind, hors jetons) sur `bg-slate-100` | `text-neutral-500`, survol `neutral-800` |
+| 3. Badge « 2 min » (`GammeDiagnosticCTA.tsx`) | Voir ci-dessus. Retour à la ligne à 390 px : le badge rétrécissait dans sa rangée flexible | La couleur passe sur un `span` interne (`text-cta-700`), que la variante ne peut pas écraser. `whitespace-nowrap` sur le badge. Fond et bord sur les jetons de même valeur (`bg-cta-50`, `border-cta-200`) |
+| 4. Bande sous le hero, 1440 px (`routes/pieces.$slug.tsx`) | L'ombre de la carte du sélecteur (`shadow-[0_24px_80px_…]`, positionnée) est peinte au-dessus de la bande, qui ne l'est pas | `relative` sur la bande : elle est peinte après la carte et recouvre l'ombre. Pas de `z-index` (l'en-tête collant garde le sien). Pas de ligne de coupure visible : `apres-contexte-bande-1440.png` |
+
+Les composants partagés ne sont pas touchés : `global.css` (`nav a`), `ui/badge.tsx`
+et l'en-tête. Tous les jetons employés existent : il n'en manque aucun.
+
+### Mesure directe au pixel, avant (`34bdc1eb3`) et après
+
+Méthode de DU, reprise dans `outils/contraste-c4.cjs`. Pour chaque texte : couleur
+calculée composée sur chaque fond qui couvre plus de 3 % de son cadre, et on garde
+le pire. Réglages : DPR 2, `reducedMotion: reduce`. Les valeurs avant sont celles de DU
+(`mesures/c4-34bd-hero-pixel.txt` dans #2211). Les scripts de DU relancés sur
+l'après donnent les mêmes chiffres (`apres-scripts-du.txt`).
+
+| Zone | 390 avant | 390 après | 1440 avant | 1440 après |
+|---|---|---|---|---|
+| Fil d'Ariane « Accueil », « Pièces Auto » | 1,64 ✗ | **6,47** | 1,61 ✗ | **6,38** |
+| Onglet « Type Mine » (inactif) | 12,0 (onglet mobile, autre style) | 12,0 | 4,35 ✗ | **6,90** |
+| Badge « 2 min » : couleur rendue | `#020817`, 18,84, **2 lignes** | `#C2410C`, **4,88, 1 ligne** | `#020817`, 18,84 | `#C2410C`, **4,88** |
+| Bande : « Conseils entretien » | 4,51 | 4,51 | 3,98 ✗ | **4,51** |
+| Bande : « Paiement sécurisé » | 4,55 | 4,55 | 4,02 ✗ | **4,55** |
+| Bande : « Retours 30 jours » | 4,55 | 4,55 | 4,28 ✗ | **4,55** |
+| Bande : « Guide d'achat » | 5,01 | 5,01 | 4,43 ✗ | **5,01** |
+
+Détail par texte : `complement-4-contrastes/{avant,apres}-contraste.json`. À
+1440 px, la bande retrouve un fond uni `#f8fafc`. « Conseils entretien » reste
+à 4,51, juste au-dessus du seuil.
+
+### axe 4.12.1 à 390×844
+
+Mêmes résultats qu'après le complément n° 3 : `color-contrast` 9 (pied de page et
+barre mobile, globaux), `link-in-text-block` 1, `region` 2. Aucun nœud nouveau
+(comparaison nœud à nœud). Cibles et mouvement inchangés : 4 cibles sous 24 px,
+toutes des exceptions ; aucune boucle avec reduced-motion ; défilement
+instantané. Fichier : `complement-4-contrastes/apres-axe-390x844.json`.
+
+### Captures
+
+`complement-4-contrastes/{avant,apres}-<zone>-{390,1440}.png` pour `fil-ariane`,
+`onglet-type-mine`, `badge-2-min` et `bande-sous-hero`, plus
+`apres-contexte-bande-1440.png`.
+
+### Vérifications
+
+- `npm run typecheck` (frontend) : OK.
+- vitest : les mêmes 9 fichiers, 107 tests réussis.
+- Anti-patterns : `impeccable ratchet OK — total 9 ≤ baseline 9`.
+
+### Non fait, signalé
+
+- Badge « GRATUIT » : même cause que « 2 min ». `text-emerald-700` ne s'applique
+  pas et le texte est rendu presque noir (18,99, conforme). Il n'est pas dans les
+  quatre points.
+- Pour la revue du design system (05) :
+  - `ui/badge.tsx` ne fusionne pas les classes. Toute couleur passée en
+    `className` à un `Badge` dont la variante fixe une couleur peut rester sans
+    effet.
+  - La règle globale `nav a` colore en `secondary-600` les liens de toute `nav`,
+    y compris sur fond sombre.
+- Échecs encore mesurés dans le hero à 390 px par le script de DU, déjà présents
+  avant et hors des quatre points :
+  - étapes du sélecteur véhicule partagé (« Année », « Modèle », « Motorisation » :
+    2,63) ;
+  - bouton « Rechercher des pièces » (2,68) ;
+  - onglet actif « Véhicule » (1,12 selon ce script, 20,16 sur son fond blanc
+    selon `contraste-c4.cjs`).
+
 ## Limites
 
 - **Lighthouse n'est pas installé.** `npm install lighthouse` est bloqué par le
@@ -596,6 +691,8 @@ Sans la préférence, les animations et le défilement doux restent inchangés.
 - `outils/zone.cjs` : `node zone.cjs <base> <label> <dossier>` ; cibles, contraste et mouvement de la zone du complément n° 2.
 - `outils/axe-c3.cjs` : `node axe-c3.cjs <base> <label> <dossier>` ; axe 4.12.1 à 390×844, cibles sous 44 px, boucles et défilement avec reduced-motion (complément n° 3).
 - `outils/zones-c3.cjs` : `node zones-c3.cjs <base> <label> <dossier>` ; captures des zones du complément n° 3 à 390 et 1440 px.
+- `outils/contraste-c4.cjs` : `node contraste-c4.cjs <base> <label> <dossier>` ; contraste au pixel et captures des quatre zones du complément n° 4, à 390 et 1440 px.
+- `outils/band-context.cjs` : `node band-context.cjs <base> <sortie.png>` ; bas du hero et bande à 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree
 (chemin à adapter).

@@ -28,9 +28,13 @@ export default function GammeDiagnosticCTA() {
             </Badge>
             <Badge
               variant="outline"
-              className="text-[10px] font-bold text-cta-700 bg-orange-50 border-orange-200 px-2 py-1"
+              className="text-[10px] font-bold bg-cta-50 border-cta-200 px-2 py-1 whitespace-nowrap"
             >
-              <Clock size={9} className="mr-1" /> 2 min
+              {/* Couleur portée par un span interne : Badge (partagé) ne fusionne pas les classes et sa
+                  variante outline impose text-foreground (complément 4). */}
+              <span className="inline-flex items-center text-cta-700">
+                <Clock size={9} className="mr-1" /> 2 min
+              </span>
             </Badge>
           </div>
         </div>

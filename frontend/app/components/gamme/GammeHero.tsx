@@ -56,7 +56,7 @@ export default function GammeHero({
               {b.href ? (
                 <Link
                   to={b.href}
-                  className="inline-flex items-center min-h-6 hover:text-white/50 transition-colors"
+                  className="inline-flex items-center min-h-6 text-neutral-300 hover:text-white no-visited transition-colors"
                 >
                   {b.label}
                 </Link>
@@ -251,7 +251,7 @@ export default function GammeHero({
                           className={`flex h-12 items-center justify-center gap-2 rounded-[16px] text-[14px] font-semibold transition-all ${
                             isActive
                               ? "bg-white text-slate-950 shadow-sm ring-1 ring-slate-200"
-                              : "text-slate-500 hover:text-slate-800"
+                              : "text-neutral-500 hover:text-neutral-800"
                           }`}
                         >
                           <Icon

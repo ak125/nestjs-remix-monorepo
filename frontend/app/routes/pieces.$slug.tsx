@@ -778,7 +778,7 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
       {/* Hero secondaire — Réassurance compacte + liens utiles (1 seul bloc, pas de redondance) */}
-      <div className="py-4 px-4 sm:px-6 bg-slate-50 border-b border-slate-100">
+      <div className="relative py-4 px-4 sm:px-6 bg-slate-50 border-b border-slate-100">
         <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3">
           {/* Trust badges — texte compact inline */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500">
