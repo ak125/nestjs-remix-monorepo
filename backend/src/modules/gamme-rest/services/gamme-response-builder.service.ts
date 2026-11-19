@@ -35,6 +35,13 @@ import {
   resolveGuideLink,
 } from '../../seo/services/r6-guide-link-policy.service';
 import { InternalLinkingService, unlinkGammeAliasLinks } from '../../seo';
+import { PageRoleValidatorService } from '../../seo/validation/page-role-validator.service';
+import { RoleId, getForbiddenOverlap, normalizePhrase } from '@repo/seo-roles';
+
+// Vocabulaire canon refusé sur la page gamme (cartes motorisation, complément n° 5).
+const R1_CANON_FORBIDDEN = getForbiddenOverlap(RoleId.R1_ROUTER)
+  .map((term) => normalizePhrase(term))
+  .filter(Boolean);
 
 interface MotorizationRow {
   type_id: number;
@@ -92,6 +99,7 @@ export class GammeResponseBuilderService {
     private readonly chainFlags: SeoFeatureFlagRegistry,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
     private readonly internalLinking: InternalLinkingService,
+    private readonly roleValidator: PageRoleValidatorService,
   ) {}
 
   /**
@@ -437,6 +445,7 @@ export class GammeResponseBuilderService {
     // ✅ Utilise fonctions centralisées depuis image-urls.utils.ts
 
     // Traitement motorisations
+    const rejectedR1Fragments = new Set<string>();
     const motorisations = motorisationsEnriched.map(
       (item: MotorizationRow, index: number) => {
         const { fragment1, fragment2 } =
@@ -546,132 +555,14 @@ export class GammeResponseBuilderService {
           return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name}`;
         };
 
-        // Construire la description avec templates variés et cohérents grammaticalement
-        const buildDescription = () => {
-          const hasFragment1 =
-            cleanedFragment1 && cleanedFragment1.trim().length > 3;
-          const hasFragment2 =
-            cleanedFragment2 && cleanedFragment2.trim().length > 3;
-
-          // Vérifier si les fragments sont identiques ou très similaires
-          const fragmentsAreSimilar =
-            hasFragment1 &&
-            hasFragment2 &&
-            (cleanedFragment1 === cleanedFragment2 ||
-              cleanedFragment1
-                .toLowerCase()
-                .startsWith(cleanedFragment2.toLowerCase().slice(0, 10)));
-
-          // Utiliser les informations de la DB (__seo_gamme_info) comme finitions dynamiques
-          // Ces informations sont déjà chargées dans 'informations' depuis la RPC
-          const getFinitionFromDb = (): string => {
-            if (informations.length === 0) {
-              // Fallback si pas d'informations en DB
-              return 'pour votre sécurité et le bon fonctionnement de votre véhicule.';
-            }
-
-            // Sélection rotative basée sur type_id + index
-            const infoIndex = (item.type_id + index) % informations.length;
-            const info = informations[infoIndex];
-
-            if (!info || info.length < 10) {
-              return 'pour votre sécurité et le bon fonctionnement de votre véhicule.';
-            }
-
-            // Extraire une partie pertinente de l'information
-            let finition = info;
-
-            // Chercher "pour" dans le texte et extraire à partir de là
-            const pourIndex = info.toLowerCase().indexOf(' pour ');
-            if (pourIndex > 0 && pourIndex < info.length - 20) {
-              finition = info.substring(pourIndex + 1).trim();
-              // S'assurer que ça commence par une minuscule
-              finition = finition.charAt(0).toLowerCase() + finition.slice(1);
-            } else {
-              // Si la phrase commence par "Les plaquettes...", "L'usure...", etc.
-              // On la garde mais on la reformule pour qu'elle s'intègre mieux
-              if (info.match(/^(Les |L'|Il |En |Quand |Attention)/i)) {
-                // Mettre la première lettre en minuscule pour l'intégrer après une virgule
-                finition = info.charAt(0).toLowerCase() + info.slice(1);
-              } else {
-                // Chercher le verbe principal pour extraire la partie utile
-                const verbMatch = info.match(
-                  /(servent à|jouent|permettent|assurent|doivent être|sont)/i,
-                );
-                if (verbMatch && verbMatch.index) {
-                  // Ajouter "les plaquettes de frein" devant pour donner un sujet
-                  const afterVerb = info.substring(verbMatch.index).trim();
-                  if (afterVerb.length > 15) {
-                    finition = 'les plaquettes de frein ' + afterVerb;
-                  }
-                }
-              }
-            }
-
-            // Ajouter un point final si nécessaire
-            if (!finition.endsWith('.')) {
-              finition = finition + '.';
-            }
-
-            return finition;
-          };
-
-          const finition = getFinitionFromDb();
-
-          // Formater la finition pour la ponctuation correcte
-          // Si la finition est une phrase longue, utiliser un point avant
-          const isLongFinition = finition.length > 50;
-          const separator = isLongFinition ? '. ' : ', ';
-          const formattedFinition = isLongFinition
-            ? finition.charAt(0).toUpperCase() + finition.slice(1)
-            : finition;
-
-          // Si fragments identiques, utiliser un seul fragment avec template amélioré
-          if (fragmentsAreSimilar || (hasFragment1 && !hasFragment2)) {
-            const fragment = cleanedFragment1;
-            const capitalizedFragment =
-              fragment.charAt(0).toUpperCase() + fragment.slice(1);
-            const templateIndex = item.type_id % 5;
-
-            switch (templateIndex) {
-              case 0:
-                return `${capitalizedFragment} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch${separator}${formattedFinition}`;
-              case 1:
-                return `Pensez à ${fragment.toLowerCase()} avant installation${separator}${formattedFinition}`;
-              case 2:
-                return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch : ${fragment.toLowerCase()}. Pensez à vérifier avant montage${separator}${formattedFinition}`;
-              case 3:
-                return `Pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch, ${fragment.toLowerCase()}${separator}${formattedFinition}`;
-              case 4:
-                return `${capitalizedFragment} pour ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch${separator}${formattedFinition}`;
-            }
-          }
-
-          // Templates variés basés sur type_id avec deux fragments distincts
-          if (hasFragment1 && hasFragment2) {
-            const templateIndex = item.type_id % 4;
-            const cap1 =
-              cleanedFragment1.charAt(0).toUpperCase() +
-              cleanedFragment1.slice(1);
-            const cap2 =
-              cleanedFragment2.charAt(0).toUpperCase() +
-              cleanedFragment2.slice(1);
-
-            switch (templateIndex) {
-              case 0:
-                return `${cap2} les ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch${separator}${formattedFinition}`;
-              case 1:
-                return `${cap1} pour ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch. ${cap2} avant installation${separator}${formattedFinition}`;
-              case 2:
-                return `${pgNameSite} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch : ${cleanedFragment1.toLowerCase()}. Pensez à ${cleanedFragment2.toLowerCase()} avant montage${separator}${formattedFinition}`;
-              case 3:
-                return `Pour votre ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch, ${cleanedFragment1.toLowerCase()}${separator}${formattedFinition}`;
-            }
-          }
-
-          // Sinon, description par défaut améliorée
-          return `Achetez ${pgNameSite.toLowerCase()} ${item.marque_name} ${item.modele_name} ${item.type_name} ${item.type_power_ps} ch ${periode}, ${finition}`;
-        };
+        // Phrase de la carte : variante R1 du gabarit (complément n° 5 au mandat DS).
+        // Ce champ n'est lu que par la carte motorisation de la page gamme R1.
+        const r1Description = this.buildR1MotorisationDescription(
+          item,
+          pgNameSite,
+          seoFragments2,
+          rejectedR1Fragments,
+        );
 
         return {
           cgc_level: item.cgc_level || '1', // Niveau CGC (1=page gamme, 2=page marque, 3=page type)
@@ -690,12 +581,18 @@ export class GammeResponseBuilderService {
           image: carImage,
           link: link,
           title: buildTitle(),
-          content: buildDescription(),
-          description: buildDescription(),
+          content: r1Description,
+          description: r1Description,
           advice: cleanedFragment2 || buildTitle(),
         };
       },
     );
+    if (rejectedR1Fragments.size > 0) {
+      // Fragments du switch écartés de la phrase R1 : défaut de donnée à corriger en base.
+      this.logger.warn(
+        `Gamme ${pgIdNum} : ${rejectedR1Fragments.size} fragment(s) alias 2 écarté(s) de la phrase R1 des cartes (sis_id ${[...rejectedR1Fragments].join(', ')})`,
+      );
+    }
 
     // Traitement motorisations blog (niveau 5)
     const motorisationsBlog = motorisationsBlogRaw.map(
@@ -1124,6 +1021,77 @@ export class GammeResponseBuilderService {
    * Matches slot to H2 by keyword, inserts <figure> after the H2.
    */
   // injectR1Images removed — images are now structured data in r1Images map
+
+  /**
+   * Phrase d'une carte motorisation de la page gamme R1 : variante R1 du gabarit du
+   * switch (complément n° 5 au mandat DS).
+   *
+   * - Seul l'alias 2 de `__seo_item_switch` (« Bénéfice », seo-switch-aliases.config.ts)
+   *   sert ici. L'alias 1 (« Action/Verbe » : contrôler, changer, remplacer…) décrit
+   *   une intervention d'entretien, hors du rôle de la page (role-matrix.md).
+   * - Un fragment est écarté s'il est incomplet (deux infinitifs en tête, mot-outil
+   *   final) ou s'il porte un terme refusé par l'un des deux lexiques existants du
+   *   rôle : PageRoleValidatorService.validateR1Router et le vocabulaire canon
+   *   getForbiddenOverlap(RoleId.R1_ROUTER) de @repo/seo-roles, avec la règle de
+   *   début de mot de scripts/governance/check-role-purity.ts. Contrôle refait sur
+   *   la phrase finale. Les fragments écartés sont signalés par log.
+   * - Le choix parmi les fragments admis reste celui du switch :
+   *   GammeRpcService.getSeoFragmentsByTypeId, par type_id.
+   * - Aucun fragment admis : chaîne vide, la carte reste sans phrase.
+   */
+  private buildR1MotorisationDescription(
+    item: MotorizationRow,
+    pgNameSite: string,
+    seoFragments2: SeoFragmentRow[],
+    rejected: Set<string>,
+  ): string {
+    const vehicle = [
+      item.modele_name,
+      item.type_name,
+      item.type_power_ps ? `${item.type_power_ps} ch` : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    const sentence = (benefit: string) =>
+      `${pgNameSite} compatible ${vehicle}, pour ${benefit}.`;
+    const fitsRole = (text: string) => {
+      if (this.roleValidator.validateR1Router(text).length > 0) return false;
+      const normalized = ` ${normalizePhrase(text)}`;
+      return !R1_CANON_FORBIDDEN.some((term) =>
+        normalized.includes(` ${term}`),
+      );
+    };
+
+    const admitted: SeoFragmentRow[] = [];
+    for (const row of seoFragments2) {
+      const benefit = this.transformer
+        .cleanSeoText(row.sis_content || '', String(item.marque_name || ''))
+        .replace(/\s+/g, ' ')
+        .trim();
+      const incomplete =
+        // « assurer purifier l'huile », « garantir filtrer… »
+        /^\p{L}+(?:er|ir|re)\s+\p{L}+(?:er|ir|re)(?:\s|$)/iu.test(benefit) ||
+        // « … les impuretés de », « … le freinage par »
+        /(?:^|\s)(?:de|du|des|d'|par|pour|à|au|aux|le|la|les|l'|et|en|sur|vers)$/iu.test(
+          benefit,
+        );
+      if (benefit.length < 10 || incomplete || !fitsRole(benefit)) {
+        rejected.add(String(row.sis_id));
+        continue;
+      }
+      admitted.push({ ...row, sis_content: benefit });
+    }
+    if (admitted.length === 0) return '';
+
+    const { fragment2 } = this.rpcService.getSeoFragmentsByTypeId(
+      item.type_id,
+      [],
+      admitted,
+    );
+    if (!fragment2) return '';
+    const text = sentence(fragment2);
+    return fitsRole(text) ? text : '';
+  }
 
   /**
    * Bloc « guide d'achat » : le conseil de la gamme (`aggregatedData.blog`).

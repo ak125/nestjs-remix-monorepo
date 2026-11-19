@@ -667,6 +667,248 @@ instantané. Fichier : `complement-4-contrastes/apres-axe-390x844.json`.
   - onglet actif « Véhicule » (1,12 selon ce script, 20,16 sur son fond blanc
     selon `contraste-c4.cjs`).
 
+## Complément n° 5 — phrase des cartes véhicule issue du switch (19 nov. 2026)
+
+Demande de Marwane (19 nov., 23:01) : remplacer la phrase identique des cartes
+véhicule R1 (« Sélectionnez cette motorisation pour afficher les références
+compatibles. », écrite en dur depuis `d604631c2`) par le système de switch
+existant, sans nouveau système ni texte écrit en dur.
+
+### Le switch existant et ce qu'il prévoit pour les cartes
+
+- La table `__seo_item_switch` est la famille « R1 catalogue gamme × véhicule »
+  (`seo-variant-family.registry.ts`). Ses alias sont définis dans
+  `seo-switch-aliases.config.ts` :
+  - 1 = action (entretien, signes d'usure) ;
+  - 2 = bénéfice ;
+  - 3 = variation.
+- `get_gamme_page_data_optimized(pg)` renvoie les fragments de la gamme
+  (`seo_fragments_1` = alias 1, `seo_fragments_2` = alias 2).
+  `GammeRpcService.getSeoFragmentsByTypeId` choisit un fragment par `type_id`
+  (hachage tournant). C'est ce qui varie d'une carte à l'autre.
+- `gamme-response-builder.service.ts` construisait déjà une `description` par
+  carte à partir de ces fragments. Elle était masquée en R1 parce que ses gabarits
+  violaient le rôle :
+  - « Achetez … » par défaut ;
+  - « avant montage » ou « avant installation » sur 9 cartes de pg 7 et 6 de pg 402 ;
+  - intervalles d'entretien ;
+  - fragments d'alias 1 rédigés en signes d'usure ;
+  - fautes : « Assurer purifier l'huile les filtre à huile … ».
+
+### Périmètre : R1 seulement
+
+- `GammeResponseBuilderService` n'est utilisé que par
+  `GET /api/gamme-rest/:pgId/page-data-rpc-v2`.
+- Ce point d'accès n'est lu que par la page gamme R1 (`pieces.$slug.tsx`) et par
+  `admin.r1-qa.tsx`, qui ne lit pas les motorisations.
+- `MotorisationsSection` n'est rendu que sur la page R1.
+- La page véhicule (R2) et les autres pages ne sont pas touchées.
+
+### Ce qui change
+
+1. **Builder** : le gabarit de la description est corrigé à sa source, dans la
+   méthode `buildR1MotorisationDescription`.
+   - Forme de la phrase : « {gamme} compatible {modèle motorisation puissance},
+     pour {bénéfice}. »
+   - Le bénéfice est un fragment **alias 2** du switch, choisi par le même
+     `getSeoFragmentsByTypeId`.
+   - Un fragment est écarté s'il est trop court, mal formé (deux infinitifs
+     collés, fin sur « de », « par »…) ou refusé par les lexiques R1 existants :
+     - `PageRoleValidatorService.validateR1Router` ;
+     - `getForbiddenOverlap(R1_ROUTER)` de `@repo/seo-roles`.
+   - Les fragments écartés sont journalisés (warn, avec leur `sis_id`).
+   - S'il ne reste aucun fragment, la description est vide.
+   - Aucune constante métier ni lexique nouveau.
+2. **Carte** (`MotorisationsSection.tsx`) : en R1, la carte affiche la
+   `description` du backend.
+   - Si elle est vide, la carte n'a pas de phrase (aucun remplissage).
+   - Le rendu hors R1 est inchangé.
+3. **Cache de réponse** : la clé passe de `gamme:resp:v2` à `gamme:resp:v3`
+   (`gamme-rpc.service.ts`).
+   - Pourquoi : sans ce changement, une réponse v2 encore en cache (TTL 1 h)
+     afficherait l'ancien gabarit dans la nouvelle carte. Les captures
+     `front-seul-*` montrent ce rendu : front après, réponse du DEV sur main.
+   - Le cache RPC `gamme:rpc:v2` et le préchauffage ne changent pas.
+   - La route d'invalidation admin utilise la même fonction.
+   - Seul effet : la réponse est recalculée une fois par gamme.
+
+Titre, H1, meta, ancres, données structurées, base : inchangés.
+
+### Preuve de variété : pg 7 « Filtre à huile » (19 cartes)
+
+Avant : 1 phrase distincte, identique sur les 19 cartes.
+Après : 19 phrases distinctes, aucune n'apparaît plus d'une fois.
+
+| n° | Carte | Avant (servi) | Après (servi) |
+|---|---|---|---|
+| 1 | RENAULT CLIO III 1.5 dCi | « Sélectionnez… » (identique) | Filtre à huile compatible CLIO III 1.5 dCi 86 ch, pour purifier l'huile. |
+| 2 | PEUGEOT 206 1.4 HDI | « Sélectionnez… » (identique) | Filtre à huile compatible 206 1.4 HDI 69 ch, pour retenir les particules. |
+| 3 | AUDI A3 II 2.0 TDI | « Sélectionnez… » (identique) | Filtre à huile compatible A3 II 2.0 TDI 140 ch, pour optimiser les performances. |
+| 4 | ALFA ROMEO 159 1.9 JTDM 8V | « Sélectionnez… » (identique) | Filtre à huile compatible 159 1.9 JTDM 8V 120 ch, pour retenir les particules. |
+| 5 | FORD FIESTA V 1.4 TDCI | « Sélectionnez… » (identique) | Filtre à huile compatible FIESTA V 1.4 TDCI 68 ch, pour retenir les particules. |
+| 6 | FIAT 500 1.2 | « Sélectionnez… » (identique) | Filtre à huile compatible 500 1.2 69 ch, pour préserver le véhicule. |
+| 7 | OPEL CORSA C 1.3 CDTI | « Sélectionnez… » (identique) | Filtre à huile compatible CORSA C 1.3 CDTI 70 ch, pour protéger le moteur. |
+| 8 | SEAT IBIZA III 1.4 TDI | « Sélectionnez… » (identique) | Filtre à huile compatible IBIZA III 1.4 TDI 75 ch, pour purifier l'huile. |
+| 9 | JEEP CHEROKEE III 2.8 CRD 4x4 | « Sélectionnez… » (identique) | Filtre à huile compatible CHEROKEE III 2.8 CRD 4x4 163 ch, pour protéger le moteur. |
+| 10 | DACIA SANDERO I 1.5 dCi | « Sélectionnez… » (identique) | Filtre à huile compatible SANDERO I 1.5 dCi 68 ch, pour protéger le moteur. |
+| 11 | BMW Série 3 (E46) 320 d | « Sélectionnez… » (identique) | Filtre à huile compatible Série 3 (E46) 320 d 150 ch, pour maintenir en bon état. |
+| 12 | NISSAN QASHQAI+2 (J10) 1.6 dCi | « Sélectionnez… » (identique) | Filtre à huile compatible QASHQAI+2 (J10) 1.6 dCi 130 ch, pour améliorer la fiabilité. |
+| 13 | VOLKSWAGEN TOURAN I 1.9 TDI | « Sélectionnez… » (identique) | Filtre à huile compatible TOURAN I 1.9 TDI 105 ch, pour améliorer la fiabilité. |
+| 14 | TOYOTA YARIS II 1.4 D4-D | « Sélectionnez… » (identique) | Filtre à huile compatible YARIS II 1.4 D4-D 90 ch, pour protéger le moteur. |
+| 15 | MERCEDES CLASSE C (W204) 200 CDI (204.001) | « Sélectionnez… » (identique) | Filtre à huile compatible CLASSE C (W204) 200 CDI (204.001) 136 ch, pour protéger le moteur. |
+| 16 | SUZUKI SWIFT IV 1.3 DDIS | « Sélectionnez… » (identique) | Filtre à huile compatible SWIFT IV 1.3 DDIS 75 ch, pour maintenir en bon état. |
+| 17 | MAZDA 3 II 1.6 MZR CD | « Sélectionnez… » (identique) | Filtre à huile compatible 3 II 1.6 MZR CD 109 ch, pour retenir les particules. |
+| 18 | HONDA CIVIC IX 2.2 DTEC | « Sélectionnez… » (identique) | Filtre à huile compatible CIVIC IX 2.2 DTEC 150 ch, pour protéger le moteur. |
+| 19 | KIA PICANTO II 1.2 | « Sélectionnez… » (identique) | Filtre à huile compatible PICANTO II 1.2 85 ch, pour purifier l'huile. |
+
+Usage des bénéfices :
+- protéger le moteur : 6 ;
+- retenir les particules : 4 ;
+- purifier l'huile : 3 ;
+- maintenir en bon état : 2 ;
+- améliorer la fiabilité : 2 ;
+- optimiser les performances : 1 ;
+- préserver le véhicule : 1.
+
+Fragments alias 2 écartés : 10185, 10186.
+
+### Preuve de variété : pg 402 « Plaquette de frein » (17 cartes)
+
+Avant : 1 phrase distincte, identique sur les 17 cartes.
+Après : 17 phrases distinctes, aucune n'apparaît plus d'une fois.
+
+| n° | Carte | Avant (servi) | Après (servi) |
+|---|---|---|---|
+| 1 | RENAULT MEGANE III 1.5 dCi | « Sélectionnez… » (identique) | Plaquette de frein compatible MEGANE III 1.5 dCi 95 ch, pour préserver le véhicule. |
+| 2 | CITROËN BERLINGO II - BERLINGO MULTISPACE (B9) 1.6 HDi-BlueHDi | « Sélectionnez… » (identique) | Plaquette de frein compatible BERLINGO II - BERLINGO MULTISPACE (B9) 1.6 HDi-BlueHDi 75 ch, pour optimiser les performances. |
+| 3 | RENAULT CLIO II 1.5 dCi | « Sélectionnez… » (identique) | Plaquette de frein compatible CLIO II 1.5 dCi 65 ch, pour garantir la sécurité. |
+| 4 | RENAULT CLIO II 1.5 dCi CAMPUS | « Sélectionnez… » (identique) | Plaquette de frein compatible CLIO II 1.5 dCi CAMPUS 84 ch, pour dissiper l'énergie. |
+| 5 | PEUGEOT 307 1.6 HDI | « Sélectionnez… » (identique) | Plaquette de frein compatible 307 1.6 HDI 90 ch, pour prolonger la durée de vie. |
+| 6 | PEUGEOT 307 1.6 HDI | « Sélectionnez… » (identique) | Plaquette de frein compatible 307 1.6 HDI 109 ch, pour maintenir en bon état. |
+| 7 | PEUGEOT 307 2.0 HDI | « Sélectionnez… » (identique) | Plaquette de frein compatible 307 2.0 HDI 90 ch, pour améliorer la fiabilité. |
+| 8 | AUDI A4 III B7 1.9 TDI | « Sélectionnez… » (identique) | Plaquette de frein compatible A4 III B7 1.9 TDI 116 ch, pour préserver le véhicule. |
+| 9 | AUDI A4 III B7 2.0 TDI | « Sélectionnez… » (identique) | Plaquette de frein compatible A4 III B7 2.0 TDI 121 ch, pour prolonger la durée de vie. |
+| 10 | AUDI A4 III B7 2.0 TDI | « Sélectionnez… » (identique) | Plaquette de frein compatible A4 III B7 2.0 TDI 126 ch, pour garantir la sécurité. |
+| 11 | VOLKSWAGEN GOLF IV 1.9 TDI | « Sélectionnez… » (identique) | Plaquette de frein compatible GOLF IV 1.9 TDI 90 ch, pour préserver le véhicule. |
+| 12 | VOLKSWAGEN GOLF IV 1.9 TDI | « Sélectionnez… » (identique) | Plaquette de frein compatible GOLF IV 1.9 TDI 110 ch, pour préserver le véhicule. |
+| 13 | VOLKSWAGEN GOLF IV 1.9 TDI | « Sélectionnez… » (identique) | Plaquette de frein compatible GOLF IV 1.9 TDI 115 ch, pour améliorer la fiabilité. |
+| 14 | BMW Série 1 (E81) 116 d | « Sélectionnez… » (identique) | Plaquette de frein compatible Série 1 (E81) 116 d 90 ch, pour optimiser les performances. |
+| 15 | BMW Série 1 (E81) 116 d | « Sélectionnez… » (identique) | Plaquette de frein compatible Série 1 (E81) 116 d 116 ch, pour maintenir en bon état. |
+| 16 | BMW Série 1 (E81) 118 d | « Sélectionnez… » (identique) | Plaquette de frein compatible Série 1 (E81) 118 d 136 ch, pour ralentir le véhicule. |
+| 17 | HONDA CIVIC IX 1.6 DTEC | « Sélectionnez… » (identique) | Plaquette de frein compatible CIVIC IX 1.6 DTEC 120 ch, pour ralentir le véhicule. |
+
+Usage des bénéfices :
+- préserver le véhicule : 4 ;
+- optimiser, garantir la sécurité, prolonger la durée de vie, maintenir,
+  améliorer, ralentir : 2 chacun ;
+- dissiper l'énergie : 1.
+
+Fragments écartés : 10559, 10684.
+
+### Contrôle R1 sur le rendu
+
+Le validateur est passé sur le texte réellement affiché dans chaque carte (titre
+et phrase), relevé par Playwright à 390 px (`outils/valide-rendu-c5.ts`). Il
+applique :
+- `validateR1Router` ;
+- le canon `getForbiddenOverlap(R1_ROUTER)` ;
+- les mots du mandat (prix, achat, achetez, stock, livraison, promo, pas cher, €),
+  plus montage et installation.
+
+Sortie (`complement-5-switch/validateur-r1-rendu.txt`) :
+
+```
+avant-pg7    cartes=19 distinctes=1 répétitionMax=19 violationsValidateur+canon+mandat=0 gateFront=[]
+apres-pg7    cartes=19 distinctes=19 répétitionMax=1 violationsValidateur+canon+mandat=0 gateFront=[]
+avant-pg402  cartes=17 distinctes=1 répétitionMax=17 violationsValidateur+canon+mandat=0 gateFront=[]
+apres-pg402  cartes=17 distinctes=17 répétitionMax=1 violationsValidateur+canon+mandat=0 gateFront=[5,9]
+```
+
+- Zéro mot interdit sur les 36 cartes après.
+- **Signalé, non corrigé** : la garde front `r1-copy-gate` (`isR3R5Content`,
+  utilisée par `CatalogueSection`) classe « prolonger la durée de vie »
+  (pg 402, cartes 5 et 9) comme contenu R3/R5. Les deux lexiques du backend
+  l'acceptent : les lexiques divergent.
+  - La correction n'a pas été faite par un filtre dans le composant (interdit
+    par le mandat). Elle relève de l'unification des lexiques.
+- **Écart de lexique** : achat, achetez, stock, promo, « pas cher » et « € » ne
+  figurent dans aucun des deux lexiques du backend. Ils sont vérifiés par le
+  nouveau test, mais le builder ne les refuse pas tant que le canon ne les
+  contient pas.
+
+Captures à 390 px (`complement-5-switch/`) :
+- `{avant,apres}-pg{7,402}-cartes-390.png` : section entière, toutes les cartes
+  après « Voir les N autres compatibilités » ;
+- `*-cartes-1a3-390.png` : trois premières cartes ;
+- `vide-pg7-cartes-1a3-390.png` : description vide, carte sans phrase.
+
+Les relevés JSON sont à côté. `calcul-phrases-pg7-pg402.json` contient le calcul,
+l'ancienne description masquée et le contrôle carte par carte.
+
+**Méthode du rendu après** : le service DEV partagé tourne sur main ; il ne doit
+être ni redémarré ni doublé (un backend isolé partagerait son Redis). Le proxy de
+mesure `outils/proxy-c5.mjs` (GET seulement) remplace donc dans la réponse
+`page-data-rpc-v2` de pg 7 et pg 402 les seuls champs `description` et
+`content` des motorisations. Il y met la phrase calculée par la méthode du
+builder patché (`outils/calcul-c5.ts`). Le texte rendu est identique au calcul
+sur les 36 cartes.
+
+### Vérifications
+
+- Typecheck backend et frontend : OK.
+- ESLint (fichiers source touchés) : OK. Deux fichiers de `backend/tests/unit/`
+  ne sont dans aucun projet du lint ; c'est déjà le cas sur main.
+- Jest :
+  - nouveau test `gamme-response-builder-r1-motorisation-description.test.ts`
+    (données réelles de pg 7 et pg 402) : 11 tests ; il vérifie une phrase du
+    switch par carte, au plus 2 répétitions, le validateur R1 et les mots du
+    mandat ;
+  - suites du builder et de `gamme-rest`, invalidation du cache : 7 suites,
+    67 tests ;
+  - `page-role-validator.test.ts` : 50 tests.
+- vitest R1 : 9 fichiers, 107 tests réussis.
+
+### Fragments en base à revoir (pour le 06, rien n'a été écrit)
+
+- pg 7, alias 2 :
+  - 10185 « garantir filtrer les impuretés de » ;
+  - 10186 « assurer purifier l'huile ».
+- pg 402, alias 2 :
+  - 10559 « assurer ralentir le véhicule » ;
+  - 10684 « garantir assurer le freinage par ».
+- Alias 2, toutes gammes : 1 000 lignes sur 101 gammes, dont 206 mal formées.
+  9 lignes touchent le lexique R1, par exemple :
+  - « absorber les vibrations » ;
+  - « prévenir du danger » ;
+  - « garantir réduire le bruit d'échappement ».
+
+  Les occurrences de « stocker » sont de faux positifs.
+- pg 7, alias 1 (3153–3178) : rédigé en signes d'usure et en entretien ;
+  3172–3178 répètent 3165–3171. pg 402, alias 1 : signes d'usure.
+
+### Autres contenus R1 qui répètent du texte (signalés, non corrigés)
+
+- Le bénéfice se répète d'une carte à l'autre (jusqu'à 6 fois sur pg 7), même si
+  les phrases entières sont toutes distinctes. Cela vient du nombre de fragments
+  admis et de la répartition du hachage existant.
+- Les champs `title` et `advice` des motorisations reposent toujours sur
+  l'alias 1 ; ils sont servis par l'API mais non affichés en R1.
+  `seoSwitches.verbs` est exposé mais ignoré en R1.
+- « Aller plus loin » (`CatalogueSection`, R1) : ce bloc n'utilise **pas** le
+  switch. Ses ancres tournent sur 4 textes écrits en dur (`R1_ANCHORS`), dont
+  « Voir les prix », qui contient « prix ».
+  - Hors switch, `MICRO_DESC_MAP` sert de description de repli.
+- Bloc micro-SEO (`R1ReusableContent`) : son texte vient de
+  `r1s_micro_seo_block` (créneaux R1), pas du switch.
+- `seo_fragments_3` (alias 3, pg 0) n'est pas utilisé par les cartes.
+
+### Limites propres au complément
+
+- Le rendu après est mesuré sur la page R1 isolée, avec la substitution
+  déclarée ci-dessus. Rien n'est intégré, activé ni servi en DEV, PREPROD ou PROD.
+- Seules pg 7 et pg 402 ont été relevées. Une gamme sans fragment alias 2 admis
+  aura des cartes sans phrase.
+
 ## Limites
 
 - **Lighthouse n'est pas installé.** `npm install lighthouse` est bloqué par le
@@ -692,6 +934,9 @@ instantané. Fichier : `complement-4-contrastes/apres-axe-390x844.json`.
 - `outils/axe-c3.cjs` : `node axe-c3.cjs <base> <label> <dossier>` ; axe 4.12.1 à 390×844, cibles sous 44 px, boucles et défilement avec reduced-motion (complément n° 3).
 - `outils/zones-c3.cjs` : `node zones-c3.cjs <base> <label> <dossier>` ; captures des zones du complément n° 3 à 390 et 1440 px.
 - `outils/contraste-c4.cjs` : `node contraste-c4.cjs <base> <label> <dossier>` ; contraste au pixel et captures des quatre zones du complément n° 4, à 390 et 1440 px.
+- `outils/proxy-c5.mjs` : proxy :3017, GET seulement ; `SUBST=1 APRES=<calcul.json>` remplace la description des cartes de pg 7 et 402, `EMPTY=1` la vide (complément n° 5).
+- `outils/cartes-c5.cjs` : `URL_PATH=/pieces/... node cartes-c5.cjs <base> <label> <dossier>` ; texte et captures des cartes à 390 px.
+- `outils/calcul-c5.ts` et `outils/valide-rendu-c5.ts` : calcul des phrases par la méthode du builder et validateur R1 sur le rendu (tsx, depuis `backend/`).
 - `outils/band-context.cjs` : `node band-context.cjs <base> <sortie.png>` ; bas du hero et bande à 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree

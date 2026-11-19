@@ -70,6 +70,7 @@ describe('GammeResponseBuilderService — SEO chain shadow mode (PR-5)', () => {
       chainFlags,
       dummy, // R6GuideLinkPolicyService
       dummy, // InternalLinkingService
+      dummy, // PageRoleValidatorService
     );
   }
 

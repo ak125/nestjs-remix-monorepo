@@ -247,13 +247,20 @@ const MotorisationsSection = memo(function MotorisationsSection({
                         ) : null;
                       })()}
 
-                    {/* Description — neutre en R1, enrichie en default */}
-                    <p className="text-sm text-gray-700 leading-relaxed mb-4">
-                      {isR1
-                        ? "Sélectionnez cette motorisation pour afficher les références compatibles."
-                        : motorisation.description ||
+                    {/* Description — en R1, phrase du switch construite par le backend
+                        (gamme-response-builder, complément n° 5 au mandat DS) ; vide = pas de phrase */}
+                    {isR1 ? (
+                      motorisation.description ? (
+                        <p className="text-sm text-gray-700 leading-relaxed mb-4">
+                          {motorisation.description}
+                        </p>
+                      ) : null
+                    ) : (
+                      <p className="text-sm text-gray-700 leading-relaxed mb-4">
+                        {motorisation.description ||
                           `${pluralizePieceName(familleName.toLowerCase()).replace(/^./, (c) => c.toUpperCase())} compatibles avec votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name}. Sélectionnez l'essieu (avant/arrière) pour afficher les références disponibles.`}
-                    </p>
+                      </p>
+                    )}
 
                     {/* CTA amélioré */}
                     <div

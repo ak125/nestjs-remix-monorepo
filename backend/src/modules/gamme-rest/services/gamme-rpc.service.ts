@@ -91,9 +91,13 @@ export class GammeRpcService extends SupabaseBaseService {
   /**
    * 🔑 Génère la clé du cache de réponse construite (2e couche, contrôleur RPC V2).
    * La réponse dépend du drapeau de consolidation R6 (liens guide, ADR-103 D5).
+   * v3 (complément n° 5 au mandat DS) : `motorisations.items[].description` porte
+   * désormais la phrase du switch affichée sur les cartes ; une réponse v2 encore en
+   * cache afficherait l'ancien gabarit pendant son TTL. Le cache RPC (`gamme:rpc:v2`)
+   * est inchangé.
    */
   getResponseCacheKey(pgId: string, segment: string): string {
-    return `gamme:resp:v2:${segment}:${pgId}`;
+    return `gamme:resp:v3:${segment}:${pgId}`;
   }
 
   /** Clés Redis d'une gamme : données RPC, copie de secours, réponse par segment R6. */
