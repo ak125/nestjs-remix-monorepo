@@ -10,6 +10,7 @@ import { RagFingerprintService } from './rag-fingerprint.service';
 import { RagNormalizationService } from './rag-normalization.service';
 import { RagAdmissibilityGateService } from './rag-admissibility-gate.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';
+import { resolveConfinedPath } from '../utils/rag-paths.util';
 import type {
   RagDocInput,
   IngestDecision,
@@ -18,6 +19,11 @@ import type {
 import type { TruthLevel } from '../types/rag-ingest.types';
 import type { IngestionReceipt } from '../types/rag-contracts.types';
 import type { Phase1Status } from '../types/rag-state.types';
+
+/** Rapport unique pour un fichier refusé, sans répéter le chemin reçu. */
+const FILE_REFUSED =
+  'File refused: missing, not a regular file or outside the knowledge base';
+const FILE_REFUSED_LOCATOR = '[refused]';
 
 /**
  * Compatibility matrix: source prefix → allowed categories + truth levels.
@@ -509,11 +515,21 @@ export class RagCleanupService extends SupabaseBaseService {
         reasons: [],
       };
 
+      // Lecture confinée à la base de connaissances. Un chemin refusé n'est
+      // ni lu ni répété dans le rapport.
+      const realPath = resolveConfinedPath(knowledgeBasePath, fp);
+      if (!realPath) {
+        receipt.sourceLocator = FILE_REFUSED_LOCATOR;
+        receipt.storagePath = FILE_REFUSED_LOCATOR;
+        receipt.reasons.push(FILE_REFUSED);
+        result.errors.push(FILE_REFUSED);
+        result.receipts.push(receipt);
+        this.logger.warn(`syncFilesToDb: ${FILE_REFUSED}`);
+        continue;
+      }
+
       try {
-        const absPath = path.isAbsolute(fp)
-          ? fp
-          : path.join(knowledgeBasePath, fp);
-        const content = readFileSync(absPath, 'utf-8');
+        const content = readFileSync(realPath, 'utf-8');
         receipt.receptionSuccess = true;
 
         // Parse frontmatter
