@@ -17,3 +17,4 @@ export {
   quoteFilterValue,
   ilikeContains,
 } from './postgrest-filter.util';
+export { EMAIL_MAX_LENGTH, isValidEmail } from './email-validation.util';

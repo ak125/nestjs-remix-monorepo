@@ -7,6 +7,7 @@ import {
 } from '@common/exceptions';
 import { NotificationService } from './notification.service';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { isValidEmail } from '@common/utils/email-validation.util';
 import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
 
 export interface QuoteRequest {
@@ -634,7 +635,7 @@ export class QuoteService extends SupabaseBaseService {
       });
     }
 
-    if (!this.isValidEmail(data.customerEmail)) {
+    if (!isValidEmail(data.customerEmail)) {
       throw new DomainValidationException({
         code: ErrorCodes.VALIDATION.INVALID_EMAIL,
         message: 'Invalid email format',
@@ -688,11 +689,6 @@ export class QuoteService extends SupabaseBaseService {
   // ---------------------------------------------------------------------------
   // Helpers (unchanged)
   // ---------------------------------------------------------------------------
-
-  private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
 
   private generateQuoteRequestId(): string {
     const timestamp = Date.now().toString(36);
