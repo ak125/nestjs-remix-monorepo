@@ -1,0 +1,13 @@
+[Unit]
+Description=Codex contrôleur : relecture en lecture seule des PR fusionnées sur main (département 23)
+Documentation=file:///opt/automecanik/app/scripts/ops/codex-controleur/README.md
+
+[Service]
+Type=oneshot
+# Exécuté depuis le checkout DEV ; la consigne lue est celle de ce checkout (son sha256 est noté
+# dans chaque meta.json). Codex et gh sont dans ~/.local/bin.
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/bin/bash /opt/automecanik/app/scripts/ops/codex-controleur/codex-controleur.sh quotidien
+# Plafond : 40 PR par passage (≈ 3 min chacune mesurées en CP) ; au-delà, arrêt par systemd.
+TimeoutStartSec=5h
+Nice=10
