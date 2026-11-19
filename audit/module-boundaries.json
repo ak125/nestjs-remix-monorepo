@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 247,
-      "loc_total": 115525,
+      "loc_total": 115451,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -504,7 +504,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 30,
-      "loc_total": 8650,
+      "loc_total": 8842,
       "has_barrel": true
     },
     "payments": {
@@ -794,8 +794,8 @@
         "backend/src/modules/seo-logs/dto",
         "backend/src/modules/seo-logs/services"
       ],
-      "files_count": 12,
-      "loc_total": 3625,
+      "files_count": 18,
+      "loc_total": 5190,
       "has_barrel": false
     },
     "seo-monitoring": {
@@ -964,8 +964,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 396,
-      "loc_total": 81921,
+      "files_count": 395,
+      "loc_total": 82362,
       "has_barrel": true
     },
     "upload": {

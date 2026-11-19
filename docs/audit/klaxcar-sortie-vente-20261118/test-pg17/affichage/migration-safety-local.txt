@@ -1,0 +1,22 @@
+== squawk 2.52.1 2026-11-19T06:44:52Z
+
+Found 0 issues in 1 file 🎉
+exit=0
+== marqueurs
+OK — @non_transactional reconciled on 1 file(s).
+exit=0
+== compilation PL/pgSQL (PostgreSQL 17 jetable mandat-db-pg17, base vide)
+NOTICE:  database "compile" does not exist, skipping
+OK
+6 bloc(s) DO à compiler
+backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql : bloc DO $precheck$, corps à partir de la ligne 106
+backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql : bloc DO $precheck_affichage$, corps à partir de la ligne 206
+backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql : bloc DO $sortie$, corps à partir de la ligne 257
+backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql : bloc DO $affichage$, corps à partir de la ligne 319
+backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.down.sql : bloc DO $retour$, corps à partir de la ligne 25
+backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.down.sql : bloc DO $retour_affichage$, corps à partir de la ligne 63
+compilation migration + down exit=0
+== garde DEFINER/anon
+19 réussi(s), 0 échec(s).
+OK — surface DEFINER/anon inchangée (50 migration(s) jugée(s) depuis 20260917, 35 fonction(s) dans l'ensemble fermé, 12 exception(s) motivée(s)).
+exit=0
