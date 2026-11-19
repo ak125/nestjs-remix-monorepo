@@ -239,8 +239,8 @@ session. Les sorties sont reproduites ci-dessus.
 | `npm run registry:test:generated-projections` | 7/7, dont un test d'intégration CLI sur un dépôt git jetable |
 | `npm run registry:test:check-new-files` | 4/4 |
 | `node --test scripts/ci/merge-circuit.test.mjs` | 20/20 |
-| `node scripts/registry/check-new-files.js --base origin/main` | 9 nouveaux fichiers, 9 conformes |
-| `node scripts/registry/generated-projections.js check --scope pr --base origin/main` | conforme : 0 généré, 11 autres |
+| `node scripts/registry/check-new-files.js --base origin/main` | 11 nouveaux fichiers, 11 conformes |
+| `node scripts/registry/generated-projections.js check --scope pr --base origin/main` | conforme : 0 généré, 13 autres |
 | `git apply --check` patches 01 puis 02, `patch --dry-run` patch 03 | s'appliquent sur main `1c4bbf4b2` |
 | YAML des 11 workflows patchés (`yaml.safe_load`) | valide ; `actionlint` absent du DEV, non exécuté |
 
