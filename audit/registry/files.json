@@ -57114,7 +57114,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 521,
+      "loc": 525,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
       "risk": "low",
@@ -60766,7 +60766,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 596,
+      "loc": 601,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "low",
@@ -60786,6 +60786,7 @@
       "imports": [
         "frontend/app/services/payment.server.ts",
         "frontend/app/utils/orders.ts",
+        "~/components/cart/cart-utils",
         "~/components/errors/ErrorGeneric",
         "~/components/ui/alert",
         "~/utils/analytics",
@@ -60794,7 +60795,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 553,
+      "loc": 599,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/checkout-payment-return.tsx",
       "risk": "low",
@@ -60884,7 +60885,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 175,
+      "loc": 187,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/checkout_.resume.tsx",
       "risk": "low",
@@ -62009,7 +62010,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "route",
-      "loc": 50,
+      "loc": 57,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/panier.recover.$token.tsx",
       "risk": "low",
@@ -66550,6 +66551,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/account-order-invoice-is-paid.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 73,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/account-order-invoice-is-paid.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/account-profile-edit.test.ts",
       "importedBy": [],
       "imports": [],
@@ -66835,6 +66855,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/cart-backup-restore-offer.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 166,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/cart-backup-restore-offer.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/cart-utils.restore.test.ts",
       "importedBy": [],
       "imports": [],
@@ -67070,6 +67109,44 @@
       "loc": 106,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/checkout-payment-return-order-event.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/checkout-payment-return-retry-link.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 153,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/checkout-payment-return-retry-link.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/checkout-resume-cancelled-order.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 84,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/checkout-resume-cancelled-order.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -68172,6 +68249,25 @@
       "loc": 121,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/page-role-normalization.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/panier-recover-redirect.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 84,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/panier-recover-redirect.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
