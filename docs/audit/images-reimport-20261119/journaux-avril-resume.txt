@@ -1,0 +1,1 @@
+# extensions des noms sans correspondance : jpg=8332, bmp=167, (aucune)=2, gif=1
