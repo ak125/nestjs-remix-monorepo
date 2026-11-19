@@ -2,9 +2,12 @@
 Description=GO 13 : renouvelle le jeton GitHub App toutes les 20 min
 
 [Timer]
-OnBootSec=1min
+# Unité du gestionnaire utilisateur : OnStartupSec part du démarrage de ce gestionnaire,
+# OnBootSec du boot de la machine. Après la relance du gestionnaire le 18/11/2026, OnBootSec
+# n'a pas relancé le minuteur (jeton expiré, mandat CS). Persistent retiré : documenté pour
+# OnCalendar seulement (systemd.timer(5)). Le test du dossier refuse OnBootSec.
+OnStartupSec=30s
 OnUnitActiveSec=20min
-Persistent=true
 
 [Install]
 WantedBy=timers.target
