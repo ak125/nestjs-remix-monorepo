@@ -87684,7 +87684,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 521,
+      "loc": 525,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
       "risk": "medium",
@@ -91473,7 +91473,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 596,
+      "loc": 601,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "medium",
@@ -91494,6 +91494,7 @@
       "imports": [
         "frontend/app/services/payment.server.ts",
         "frontend/app/utils/orders.ts",
+        "~/components/cart/cart-utils",
         "~/components/errors/ErrorGeneric",
         "~/components/ui/alert",
         "~/utils/analytics",
@@ -91502,7 +91503,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 553,
+      "loc": 599,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/checkout-payment-return.tsx",
       "risk": "medium",
@@ -91595,7 +91596,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 175,
+      "loc": 187,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/checkout_.resume.tsx",
       "risk": "medium",
@@ -92764,7 +92765,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "route",
-      "loc": 50,
+      "loc": 57,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/panier.recover.$token.tsx",
       "risk": "medium",
@@ -97445,6 +97446,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/account-order-invoice-is-paid.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 73,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/account-order-invoice-is-paid.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/account-profile-edit.test.ts",
       "importedBy": [],
       "imports": [],
@@ -97745,6 +97766,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/cart-backup-restore-offer.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 166,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/cart-backup-restore-offer.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/cart-utils.restore.test.ts",
       "importedBy": [],
       "imports": [],
@@ -97992,6 +98033,46 @@
       "loc": 106,
       "owner": "@ak125",
       "path": "frontend/tests/unit/checkout-payment-return-order-event.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/checkout-payment-return-retry-link.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 153,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/checkout-payment-return-retry-link.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/checkout-resume-cancelled-order.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 84,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/checkout-resume-cancelled-order.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -99152,6 +99233,26 @@
       "loc": 121,
       "owner": "@ak125",
       "path": "frontend/tests/unit/page-role-normalization.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/panier-recover-redirect.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 84,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/panier-recover-redirect.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -109706,11 +109807,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "1ed628874b5caf86ae0ff2b61cd19a0d558f5c0ad81bd5b4bb7de175fa26c91e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "674de61ece065c32e62461d2d0a2383dc543104558116818b269050b1743e7cf",
+      "audit/registry/files.json": "1c3746d1c20a8e80b34995b46b871fc29facf7cbe670ef7986a2e520e3ecf0fc",
       "audit/registry/rpc.json": "97e3cd0bb46a7389c7780aab203f64b278b5fecd03997a96976efc301abf93e3",
       "audit/registry/runtime.json": "d713efc440587e87193b79786b2ffd3d517eb643a00734c2f0d8d70a20e67e0e"
     },
-    "sotFingerprint": "2127be8dac5d"
+    "sotFingerprint": "06056d3e5e96"
   },
   "runtime": [
     {
