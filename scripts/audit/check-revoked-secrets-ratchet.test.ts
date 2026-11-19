@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   fingerprint,
   isSupabaseLegacyKey,
@@ -11,6 +12,7 @@ import {
   scanShapes,
   addedLines,
   scanAddedLines,
+  scanCredentialParams,
   type Baseline,
   type KnownSecretFingerprint,
 } from "./check-revoked-secrets-ratchet.ts";
@@ -410,4 +412,199 @@ test("ANTI-OVERCLAIM: les règles de forme ne touchent PAS l'état de HEAD", () 
   // avant rotation, cet inventaire est une carte vers les secrets.
   assert.deepEqual(scanContent("a.md", `K=${SYNTH_HMAC}`, new Set()), []);
   assert.equal(scanShapes("a.md", `K=${SYNTH_HMAC}`).length, 1);
+});
+
+// ── 6. Mandat BY : identifiant en valeur par défaut d'une lecture d'environnement
+//
+// Cas réel (2026-11-18) : un script Python portait l'adresse et le mot de passe
+// d'un compte d'administration en défaut de os.environ.get ET dans sa
+// docstring. Gitleaks ne l'a pas vu (mot de passe court, peu entropique).
+// Les valeurs ci-dessous sont FICTIVES, construites à l'exécution ; la vraie
+// valeur n'apparaît nulle part dans ce dépôt de test.
+
+const FAUX_MAIL = ["faux.admin", "domaine-fictif.test"].join("@");
+const FAUX_MDP = ["Fictif", "Test", "0000!"].join("-");
+
+/** Reproduction de la FORME de l'ancien fichier, avec des valeurs fictives. */
+const ANCIEN_SCRIPT = [
+  '"""',
+  "Env vars (all optional) :",
+  "  R7_BASE_URL       default http://localhost:3000",
+  `  R7_ADMIN_EMAIL    default ${FAUX_MAIL}`,
+  `  R7_ADMIN_PASSWORD default ${FAUX_MDP} (override in secure env)`,
+  '"""',
+  'BASE_URL = os.environ.get("R7_BASE_URL", "http://localhost:3000")',
+  `ADMIN_EMAIL = os.environ.get("R7_ADMIN_EMAIL", "${FAUX_MAIL}")`,
+  `ADMIN_PASSWORD = os.environ.get("R7_ADMIN_PASSWORD", "${FAUX_MDP}")`,
+].join("\n");
+
+test("BY ANCIEN: défauts d'identifiant et docstring sont signalés, URL non", () => {
+  const f = scanShapes("scripts/seo/curate-r7-batch.py", ANCIEN_SCRIPT);
+  assert.deepEqual(
+    f.map((x) => [x.line, x.rule]),
+    [
+      [4, "credential-documented-default"],
+      [5, "credential-documented-default"],
+      [8, "credential-env-default-literal"],
+      [9, "credential-env-default-literal"],
+    ],
+  );
+});
+
+test("BY NOUVEAU: le script corrigé du dépôt ne produit aucun constat", () => {
+  const p = "scripts/seo/curate-r7-batch.py";
+  assert.deepEqual(scanShapes(p, readFileSync(p, "utf8")), []);
+});
+
+test("BY NOUVEAU: les scripts curl corrigés ne produisent aucun constat", () => {
+  for (const p of ["tests-curl/00-auth.sh", "scripts/dev-smoke-test.sh", "tests-curl/README.md"]) {
+    assert.deepEqual(scanShapes(p, readFileSync(p, "utf8")), [], p);
+  }
+});
+
+test("BY POSITIF: les autres formes de lecture d'environnement sont couvertes", () => {
+  const lignes = [
+    `const s = process.env.SESSION_SECRET || "${FAUX_MDP}";`,
+    `const t = process.env["API_TOKEN"] ?? '${FAUX_MDP}';`,
+    `PASS="\${DB_PWD:-${FAUX_MDP}}"`,
+    `      - GF_SECURITY_ADMIN_PASSWORD=\${GRAFANA_ADMIN_PASSWORD-${FAUX_MDP}}`,
+    `pw = os.getenv("SMTP_PASSWORD", default="${FAUX_MDP}")`,
+    `const k = config.get<string>('JWT_SECRET', '${FAUX_MDP}');`,
+    `# Mot de passe par défaut : ${FAUX_MDP}`,
+  ];
+  for (const l of lignes) {
+    assert.equal(scanShapes("x.ts", l).length >= 1, true, l);
+  }
+});
+
+test("BY NÉGATIF: ni chemins, ni durées, ni placeholders, ni lecture obligatoire", () => {
+  const lignes = [
+    'BASE="${BASE_URL:-http://127.0.0.1:3000}"',
+    'cd "${PWD:-/tmp}"',
+    "expiresIn: process.env.JWT_EXPIRES_IN || '7d',",
+    'k = os.environ.get("GOOGLE_TOKEN_FILE", "/run/secrets/token.json")',
+    'p = os.environ.get("R7_ADMIN_PASSWORD", "")',
+    'T="${API_TOKEN:-$FALLBACK_TOKEN}"',
+    'ADMIN_PASSWORD="${ADMIN_PASSWORD:?ADMIN_PASSWORD env var required}"',
+    "export ADMIN_EMAIL=... ADMIN_PASSWORD=...",
+    "  R7_ADMIN_PASSWORD  required (except --dry-run), no default",
+    "SYSTEMPAY_CERTIFICATE_PROD=<SET_IN_ENV>",
+    "  password: string;",
+    'E="${ADMIN_EMAIL:?ADMIN_EMAIL env var required (no default by design)}"',
+    "# Mot de passe : aucun défaut, variable obligatoire",
+  ];
+  for (const l of lignes) {
+    assert.deepEqual(scanShapes("x.sh", l), [], l);
+  }
+});
+
+test("BY NON-DIVULGATION: ni la valeur ni son empreinte ne sont imprimées", () => {
+  const f = scanShapes("x.py", ANCIEN_SCRIPT);
+  const json = JSON.stringify(f);
+  assert.ok(!json.includes(FAUX_MDP) && !json.includes(FAUX_MAIL));
+  assert.ok(!json.includes(fingerprint(FAUX_MDP)));
+  assert.ok(f.every((x) => x.fp === "n/a"));
+});
+
+test("BY MODE DIFF: la ligne ajoutée est bloquée au bon numéro", () => {
+  const diff = [
+    "--- a/scripts/x.py",
+    "+++ b/scripts/x.py",
+    "@@ -60,0 +61,1 @@",
+    `+ADMIN_PASSWORD = os.environ.get("R7_ADMIN_PASSWORD", "${FAUX_MDP}")`,
+  ].join("\n");
+  const f = scanAddedLines(addedLines(diff));
+  assert.equal(f.length, 1);
+  assert.equal(f[0].line, 61);
+  assert.equal(f[0].rule, "credential-env-default-literal");
+});
+
+// ── Mandat CB : littéral dans un paramètre nommé *pwd* / *password* ─────────
+// Valeur FICTIVE, sans rapport avec la vraie. Le fichier source du connecteur
+// sert de chemin pour reproduire l'ancienne forme à l'identique.
+const FAUX_PWD = "Fictif-CB-2026";
+const CAL_SRC = "backend/src/modules/supplier-truth/connectors/cal.connector.ts";
+
+test("CB AVANT EXTENSION: les règles de #2163 ne voyaient pas l'ancienne forme", () => {
+  const ligne = `      privatepwd: '${FAUX_PWD}',`;
+  const f = scanShapes(CAL_SRC, ligne).filter(
+    (x) => x.rule !== "credential-param-literal",
+  );
+  assert.deepEqual(f, []);
+});
+
+test("CB ANCIEN ÉTAT: l'ancienne forme du connecteur CAL est signalée", () => {
+  const f = scanShapes(CAL_SRC, `      privatepwd: '${FAUX_PWD}',`);
+  assert.equal(f.length, 1);
+  assert.equal(f[0].rule, "credential-param-literal");
+  assert.match(f[0].detail, /privatepwd \(14 car\.\)/);
+});
+
+test("CB POSITIF: clés *pwd*/*password*, guillemets et casse variés", () => {
+  const lignes = [
+    `const p = { password: "${FAUX_PWD}" };`,
+    `  "adminPassword": '${FAUX_PWD}',`,
+    `  PRIVATE_PWD: \`${FAUX_PWD}\`,`,
+    `params = {"passwd": "${FAUX_PWD}"}`,
+  ];
+  for (const l of lignes) {
+    const file = l.startsWith("params") ? "scripts/x.py" : "src/x.ts";
+    const f = scanCredentialParams(file, 1, l);
+    assert.equal(f.length, 1, l);
+  }
+});
+
+test("CB NOUVEL ÉTAT: lecture de configuration et formes non secrètes passent", () => {
+  const lignes = [
+    "      privatepwd: this.privatePwd!,",
+    "  password: string;",
+    "  password: '',",
+    "  password: z.string().min(8),",
+    "  passwordLabel: 'Mot de passe',",
+    "  PASSWORD_FAILED: 'AUTH_PASSWORD_FAILED',",
+    "  PASSWORD_FAILED: 'AUTH.PASSWORD_FAILED',",
+    "  password_resets: 'password_resets',",
+    "  password: '<SET_IN_ENV>',",
+    "  password: `${process.env.X}`,",
+    "  type: 'password',",
+  ];
+  for (const l of lignes) {
+    assert.deepEqual(scanCredentialParams("src/x.ts", 1, l), [], l);
+  }
+});
+
+test("CB PÉRIMÈTRE: tests, documentation et lockfile ne sont pas lus", () => {
+  const l = `  password: '${FAUX_PWD}',`;
+  for (const file of [
+    "backend/src/x.test.ts",
+    "frontend/app/x.spec.tsx",
+    "backend/tests/unit/x.ts",
+    "scripts/test_x.py",
+    ".spec/features/auth-module.md",
+    "package-lock.json",
+    ".spec/openapi.yaml",
+  ]) {
+    assert.deepEqual(scanCredentialParams(file, 1, l), [], file);
+  }
+});
+
+test("CB NON-DIVULGATION: ni la valeur ni son empreinte ne sont imprimées", () => {
+  const f = scanShapes(CAL_SRC, `      privatepwd: '${FAUX_PWD}',`);
+  const json = JSON.stringify(f);
+  assert.ok(!json.includes(FAUX_PWD));
+  assert.ok(!json.includes(fingerprint(FAUX_PWD)));
+  assert.ok(f.every((x) => x.fp === "n/a"));
+});
+
+test("CB MODE DIFF: la ligne ajoutée est bloquée au bon numéro", () => {
+  const diff = [
+    `--- a/${CAL_SRC}`,
+    `+++ b/${CAL_SRC}`,
+    "@@ -313,0 +314,1 @@",
+    `+      privatepwd: '${FAUX_PWD}',`,
+  ].join("\n");
+  const f = scanAddedLines(addedLines(diff));
+  assert.equal(f.length, 1);
+  assert.equal(f[0].line, 314);
+  assert.equal(f[0].rule, "credential-param-literal");
 });

@@ -10,7 +10,9 @@ allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep, Bash
 
 # SEO Content Loop — la boucle canonique du contenu (NO-RAG)
 
-> **Skill = méthode opératoire, PAS canon.** La gouvernance vit au **vault** :
+> **Skill = méthode opératoire, PAS canon.** Les principes en vigueur sont au journal du monorepo
+> (`.claude/governance/journal-des-principes.md`, à la racine : P10, P11, P15). ADR d'origine, dans
+> l'archive du vault :
 > ADR-031 (raw/wiki/rag/seo separation) · ADR-046 (RAG = retrieval chatbot only) ·
 > ADR-059 (SEO Runtime Projection) · ADR-083 (tiered WIKI promotion) · ADR-086 (Content Excellence Contract).
 > Ce skill **pointe** vers eux, ne les réécrit jamais.
@@ -47,8 +49,9 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
      `automecanik-raw/sources/web-research/colonne-de-direction/` (pg 1211, 31 sources).
    - Le handoff `raw-to-wiki` (état **PARTIAL**, gate **`human_review_required`**, antérieur à ADR-119 et sans
      effet : aucune relecture humaine de fiche n'est une condition de promotion) est tracé dans la projection
-     **de référence** (non-canon) `.spec/00-canon/ai-registry/agent-operating-map.yaml` ; le **canon** est au
-     vault (**ADR-031** raw→wiki, **ADR-059** projection, **ADR-083** promotion tiered).
+     **de référence** (non-canon) `.spec/00-canon/ai-registry/agent-operating-map.yaml` ; la règle en vigueur est
+     P10 du journal des principes (origine, dans l'archive du vault : **ADR-031** raw→wiki, **ADR-059**
+     projection, **ADR-083** promotion tiered).
    - **Point de départ = besoin client** : les questions réelles de la gamme/motorisation (choix, compatibilité,
      symptômes, entretien, PAA), chacune rattachée à un `target_wiki_field`. La recherche répond à ces questions ;
      elle ne cherche pas à « saturer » le sujet.
@@ -127,12 +130,12 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
      les questions concernées, pas plus large), puis re-mesure. Arrêt dès que le seuil est atteint, qu'une reprise ne
      fait plus progresser la mesure, ou au maximum de reprises fixé par le brief : le lot est alors livré `à revoir`
      avec ses manques, pas relancé indéfiniment. Ne jamais relever une note, retirer un critère ni assouplir un seuil
-     pour passer. Une règle ou un seuil canonique change par son circuit de gouvernance (vault/ADR), jamais par une
+     pour passer. Une règle ou un seuil canonique change par son circuit de gouvernance (principe au journal ou contrat, par PR), jamais par une
      édition de ce skill ou d'un miroir.
 
 ## Carte du circuit — une pièce canon par étape
 
-> **Carte unique** des pièces du circuit (mandat AD, 2026-11-15). Les règles restent au vault (ADR-031/046/059/083/114/119) ;
+> **Carte unique** des pièces du circuit (mandat AD, 2026-11-15). Les règles en vigueur sont au journal des principes (origine : ADR-031/046/059/083/114/119, archive du vault) ;
 > cette carte nomme seulement la pièce qui exécute chaque étape. Les autres registres pointent ici :
 > `.claude/prompts/_registry/canon-registry.md`, `.spec/00-canon/prompt-registry.md`,
 > `.spec/00-canon/artefact-registry.md` et le handoff `raw-to-wiki` de `.spec/00-canon/ai-registry/agent-operating-map.yaml`
@@ -154,8 +157,9 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
 | 11 | Chatbot (hors chaîne contenu) | `scripts/cron/sync-rag-from-wiki.sh` : `exports/rag` → `automecanik-rag/knowledge` | cron horaire | no-op 15:00Z ; dernier commit RAG 2026-07-19 |
 | 12 | Mesure | skills `v5-guardian` (lignes existantes), `seo-gamme-audit` (rendu), `content-audit` ; GSC/GA4 | session sous mandat | aucune invocation `Skill` tracée depuis 2026-10-03 |
 
-Point d'entrée unique de la boucle : décision en cours, projet **ADR-136** (vault, `proposed`). Tant qu'elle n'est pas
-ratifiée, aucune pièce de cette carte n'est créée ni activée au nom de la carte.
+Point d'entrée unique de la boucle : non décidé. Le projet **ADR-136** (PR vault #418, jamais fusionnée) ne sera pas
+ratifié dans le vault, devenu archive : la décision revient à l'owner. Tant qu'elle n'est pas prise, aucune pièce de
+cette carte n'est créée ni activée au nom de la carte.
 
 ## Différenciation = réelle, sur le bon AXE (anti-bricolage)
 - **Jamais fabriquée** : si deux sœurs (ex. 105 std vs 105 4Motion) sont proches pour une gamme, l'assumer ;

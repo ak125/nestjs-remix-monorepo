@@ -21,6 +21,13 @@ Modes :
   --write   réécrit le manifeste et les copies du monorepo. Les copies des autres
             dépôts (wiki, raw) se mettent à jour par une PR dans leur dépôt.
   --print   imprime le manifeste calculé, sans rien écrire.
+  --dispatch-plan
+            imprime, en JSON, les annonces `canon-updated` à envoyer aux dépôts
+            consommateurs autres que le monorepo. Lit le manifeste écrit, pas le
+            réseau. Avec `--before <ancien manifeste>` : les couples (canon, dépôt)
+            dont le `distribution_sha256` a changé, ou qui sont nouveaux. Avec
+            `--canon <clé>` : tous les dépôts de ce canon. Appelé par
+            `.github/workflows/canon-publish.yml`.
 
 Gate de statut, fail-closed : un canon n'est distribué que si le statut déclaré dans
 son frontmatter figure dans `publishable_when` de son entrée. Refus si
@@ -255,13 +262,62 @@ def write(root: Path = REPO_ROOT, canons: dict[str, dict] | None = None) -> int:
     return 0
 
 
+def external_targets(manifest: dict) -> dict[tuple[str, str], str]:
+    """Couples (canon, dépôt hors monorepo) d'un manifeste, avec leur distribution_sha256."""
+    targets: dict[tuple[str, str], str] = {}
+    for key, entry in manifest.get("canons", {}).items():
+        for consumer in entry.get("consumers", []):
+            if consumer["repo"] != MONOREPO:
+                targets[(key, consumer["repo"])] = entry["distribution_sha256"]
+    return targets
+
+
+def dispatch_plan(manifest: dict, before: dict | None = None, canon: str | None = None) -> list[dict]:
+    """Annonces à envoyer : une par couple (canon, dépôt consommateur hors monorepo).
+
+    canon  : tous les dépôts de ce canon (annonce forcée). Clé inconnue : refus.
+    before : les couples dont le distribution_sha256 diffère de l'ancien manifeste,
+             et ceux que l'ancien manifeste ne déclarait pas.
+    Un seul des deux ; ni l'un ni l'autre : refus.
+    """
+    if (before is None) == (canon is None):
+        sys.exit("ERREUR : --dispatch-plan demande soit --before, soit --canon")
+    current = external_targets(manifest)
+    if canon is not None:
+        if canon not in manifest.get("canons", {}):
+            known = ", ".join(sorted(manifest.get("canons", {})))
+            sys.exit(f"ERREUR : canon inconnu : {canon!r} (connus : {known})")
+        chosen = [pair for pair in current if pair[0] == canon]
+    else:
+        previous = external_targets(before)
+        chosen = [pair for pair, digest in current.items() if previous.get(pair) != digest]
+    return [{"canon": key, "repo": repo} for key, repo in chosen]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0].strip())
     mode = ap.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true", help="échoue si le manifeste ou une copie diffère")
     mode.add_argument("--write", action="store_true", help="réécrit le manifeste et les copies du monorepo")
     mode.add_argument("--print", action="store_true", help="imprime le manifeste calculé")
+    mode.add_argument("--dispatch-plan", action="store_true", help="imprime les annonces à envoyer (JSON)")
+    ap.add_argument("--before", type=Path, help="avec --dispatch-plan : ancien manifeste à comparer")
+    ap.add_argument("--canon", help="avec --dispatch-plan : clé du canon à annoncer à tous ses dépôts")
     args = ap.parse_args()
+
+    if not args.dispatch_plan and (args.before is not None or args.canon is not None):
+        ap.error("--before et --canon ne s'emploient qu'avec --dispatch-plan")
+    if args.dispatch_plan:
+        manifest = load_manifest(REPO_ROOT)
+        if manifest is None:
+            sys.exit(f"ERREUR : manifeste absent : {MANIFEST_PATH}")
+        before = None
+        if args.before is not None:
+            if not args.before.is_file():
+                sys.exit(f"ERREUR : ancien manifeste absent : {args.before}")
+            before = json.loads(read_exact(args.before))
+        print(json.dumps(dispatch_plan(manifest, before, args.canon), separators=(",", ":")))
+        return 0
 
     if args.print:
         computed = compute()

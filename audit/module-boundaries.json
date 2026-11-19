@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 159,
-      "loc_total": 45077,
+      "files_count": 157,
+      "loc_total": 44748,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 105,
-      "loc_total": 25202,
+      "loc_total": 25201,
       "has_barrel": true
     },
     "customers": {
@@ -212,8 +212,8 @@
         "backend/src/database/services",
         "backend/src/database/types"
       ],
-      "files_count": 15,
-      "loc_total": 21407,
+      "files_count": 17,
+      "loc_total": 21607,
       "has_barrel": true
     },
     "dev-only": {
@@ -260,8 +260,8 @@
         "frontend/app/routes",
         "frontend/app/routes/_public+"
       ],
-      "files_count": 246,
-      "loc_total": 115141,
+      "files_count": 247,
+      "loc_total": 115451,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -274,6 +274,7 @@
         "frontend/app/components/admin/gamme-seo",
         "frontend/app/components/admin/patterns",
         "frontend/app/components/admin/seo",
+        "frontend/app/components/admin/suppliers",
         "frontend/app/components/ai",
         "frontend/app/components/auth",
         "frontend/app/components/blog",
@@ -341,8 +342,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 585,
-      "loc_total": 110846,
+      "files_count": 590,
+      "loc_total": 112123,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -355,8 +356,8 @@
         "backend/src/modules/gamme-rest/utils",
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
-      "files_count": 20,
-      "loc_total": 6589,
+      "files_count": 21,
+      "loc_total": 6747,
       "has_barrel": true
     },
     "health": {
@@ -493,6 +494,7 @@
     "orders": {
       "dirs": [
         "backend/src/modules/orders",
+        "backend/src/modules/orders/config",
         "backend/src/modules/orders/controllers",
         "backend/src/modules/orders/dto",
         "backend/src/modules/orders/events",
@@ -501,8 +503,8 @@
         "backend/src/modules/orders/services",
         "backend/src/modules/orders/types"
       ],
-      "files_count": 21,
-      "loc_total": 6147,
+      "files_count": 30,
+      "loc_total": 8842,
       "has_barrel": true
     },
     "payments": {
@@ -615,14 +617,15 @@
     "pricing": {
       "dirs": [
         "backend/src/modules/pricing",
+        "backend/src/modules/pricing/config",
         "backend/src/modules/pricing/controllers",
         "backend/src/modules/pricing/services",
         "backend/src/modules/pricing/services/__tests__",
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 39,
-      "loc_total": 10478,
+      "files_count": 42,
+      "loc_total": 11409,
       "has_barrel": false
     },
     "products": {
@@ -663,7 +666,7 @@
         "backend/src/modules/rag-proxy/types"
       ],
       "files_count": 34,
-      "loc_total": 12017,
+      "loc_total": 12052,
       "has_barrel": false
     },
     "scripts": {
@@ -700,8 +703,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 225,
-      "loc_total": 52805,
+      "files_count": 229,
+      "loc_total": 55537,
       "has_barrel": true
     },
     "search": {
@@ -767,8 +770,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 289,
-      "loc_total": 62453,
+      "files_count": 290,
+      "loc_total": 62777,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -876,17 +879,17 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 51,
-      "loc_total": 6906,
-      "has_barrel": false
+      "files_count": 59,
+      "loc_total": 8487,
+      "has_barrel": true
     },
     "suppliers": {
       "dirs": [
         "backend/src/modules/suppliers",
         "backend/src/modules/suppliers/dto"
       ],
-      "files_count": 7,
-      "loc_total": 1300,
+      "files_count": 14,
+      "loc_total": 3440,
       "has_barrel": true
     },
     "support": {
@@ -961,8 +964,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 388,
-      "loc_total": 80551,
+      "files_count": 395,
+      "loc_total": 82362,
       "has_barrel": true
     },
     "upload": {
@@ -1030,7 +1033,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 23,
-      "loc_total": 5477,
+      "loc_total": 5474,
       "has_barrel": false
     }
   },
@@ -1068,7 +1071,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 68
+      "count": 60
     },
     {
       "from": "admin",
@@ -1748,7 +1751,7 @@
     {
       "from": "frontend-routes",
       "to": "frontend-shared",
-      "count": 349
+      "count": 348
     },
     {
       "from": "frontend-shared",
@@ -1783,7 +1786,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 12
+      "count": 13
     },
     {
       "from": "health",
@@ -1911,6 +1914,11 @@
       "count": 2
     },
     {
+      "from": "orders",
+      "to": "supplier-truth",
+      "count": 7
+    },
+    {
       "from": "payments",
       "to": "backend-core",
       "count": 1
@@ -1934,6 +1942,11 @@
       "from": "pricing",
       "to": "backend-core",
       "count": 1
+    },
+    {
+      "from": "pricing",
+      "to": "supplier-truth",
+      "count": 3
     },
     {
       "from": "products",
@@ -2113,12 +2126,17 @@
     {
       "from": "supplier-truth",
       "to": "database",
-      "count": 1
+      "count": 2
     },
     {
       "from": "suppliers",
       "to": "database",
       "count": 1
+    },
+    {
+      "from": "suppliers",
+      "to": "supplier-truth",
+      "count": 4
     },
     {
       "from": "support",
@@ -2690,6 +2708,11 @@
     {
       "from": "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
       "to": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/orders/services/order-line-supplier.service.ts",
+      "to": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "rule": "no-deep-module-access"
     },
     {

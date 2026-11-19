@@ -1,17 +1,7 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
-  "count": 16,
+  "count": 14,
   "edges": [
-    {
-      "from": "backend/src/modules/admin/services/execution-router.service.ts",
-      "to": "fs",
-      "kind": "import()"
-    },
-    {
-      "from": "backend/src/modules/admin/services/execution-router.service.ts",
-      "to": "path",
-      "kind": "import()"
-    },
     {
       "from": "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
       "to": "fs",

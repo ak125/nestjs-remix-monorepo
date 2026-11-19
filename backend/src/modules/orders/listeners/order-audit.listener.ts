@@ -10,6 +10,7 @@ import {
   type OrderCancelledEvent,
   type OrderRefundedEvent,
   type OrderLineStatusChangedEvent,
+  type OrderLineSupplierConfirmedEvent,
 } from '../events/order.events';
 
 @Injectable()
@@ -147,6 +148,26 @@ export class OrderAuditListener extends SupabaseBaseService {
       { status: event.previousStatus },
       { status: event.newStatus },
       { orderId: event.orderId, comment: event.comment },
+      event.correlationId,
+    );
+  }
+
+  @OnEvent(ORDER_EVENTS.LINE_SUPPLIER_CONFIRMED)
+  async onLineSupplierConfirmed(event: OrderLineSupplierConfirmedEvent) {
+    await this.log(
+      'line_supplier_confirmed',
+      'order_line',
+      event.lineId,
+      event.confirmedBy,
+      undefined,
+      {
+        splId: event.splId,
+        supplierName: event.supplierName,
+        unitPurchaseHt: event.unitPurchaseHt,
+        quantity: event.quantity,
+        purchaseHt: event.purchaseHt,
+      },
+      { orderId: event.orderId, pieceId: event.pieceId, decision: 50 },
       event.correlationId,
     );
   }

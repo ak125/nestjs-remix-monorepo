@@ -1,9 +1,19 @@
 import { randomUUID } from 'crypto';
 import { TABLES } from '@repo/database-types';
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  ConflictException,
+  Logger,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { OrdersService } from './orders.service';
+import {
+  OrderLineSupplierService,
+  type PropositionLigne,
+} from './order-line-supplier.service';
+import { PROCEDURE_RUPTURE } from './order-line-supplier-proposal';
 import {
   ORDER_EVENTS,
   type OrderStatusChangedEvent,
@@ -11,6 +21,7 @@ import {
   type OrderDeliveredEvent,
   type OrderCancelledEvent,
   type OrderLineStatusChangedEvent,
+  type OrderLineSupplierConfirmedEvent,
 } from '../events/order.events';
 import type { OrderRecord, CustomerRecord } from '../types/order.types';
 
@@ -22,6 +33,15 @@ import type { OrderRecord, CustomerRecord } from '../types/order.types';
  * - Workflow équivalences (91-94)
  * - Commande fournisseur
  */
+/** Statut de ligne « Pièce non disponible » (`___xtr_order_line_status`). */
+export const STATUT_RUPTURE = '4';
+/** Statuts lus en texte ; NULL et '' = pas encore traité. */
+const statutTexte = (s: string | null): string => (s ?? '').trim();
+/** Non traitée, en attente (1), disponible (5) : fournisseur confirmable. */
+const STATUTS_CONFIRMABLES = new Set(['', '0', '1', '5']);
+/** + commandée chez le fournisseur (6) : la rupture peut être annoncée après. */
+const STATUTS_RUPTURE_POSSIBLE = new Set(['', '0', '1', '5', '6']);
+
 @Injectable()
 export class OrderActionsService extends SupabaseBaseService {
   protected readonly logger = new Logger(OrderActionsService.name);
@@ -29,8 +49,185 @@ export class OrderActionsService extends SupabaseBaseService {
   constructor(
     private readonly eventEmitter: EventEmitter2,
     private readonly ordersService: OrdersService,
+    private readonly lineSupplier: OrderLineSupplierService,
   ) {
     super();
+  }
+
+  /**
+   * Décision 50 — confirmation en un geste du fournisseur proposé.
+   *
+   * La proposition est RECALCULÉE au moment du clic : si elle a changé depuis
+   * l'affichage (tarif, dispo, annuaire), la confirmation est refusée (409) avec
+   * la nouvelle proposition, jamais appliquée sur une valeur périmée.
+   * N'écrit que les colonnes fournisseur de la ligne (`orl_spl_*`) ; aucun
+   * statut de ligne, aucun prix de vente, aucun tarif. TTC calculé sur le taux
+   * de l'offre retenue (`pri_tva_n`), laissé vide s'il est inconnu.
+   * Mise à jour conditionnelle sur l'état lu (fournisseur non posé, statut
+   * inchangé) : deux confirmations concurrentes n'écrivent qu'une fois.
+   */
+  async confirmLineSupplier(
+    orderId: string,
+    lineId: string,
+    attendu: { splId: string; prixAchatUnitHt: number },
+    confirmedBy?: string,
+  ): Promise<{
+    success: true;
+    orderId: string;
+    lineId: string;
+    splId: string;
+    supplierName: string;
+    unitPurchaseHt: number;
+    quantity: number;
+    purchaseHt: number;
+  }> {
+    const lue = await this.lineSupplier.getProposal(orderId, lineId);
+    const p = lue.proposition;
+    if (lue.fournisseurConfirme) {
+      throw new ConflictException({
+        message: 'Fournisseur déjà posé sur cette ligne',
+        current: lue,
+      });
+    }
+    if (!STATUTS_CONFIRMABLES.has(statutTexte(lue.statutLigne))) {
+      throw new ConflictException({
+        message: `Ligne au statut ${lue.statutLigne} : confirmation fournisseur fermée`,
+        current: lue,
+      });
+    }
+    if (
+      p.statut !== 'PROPOSE' ||
+      p.splId !== attendu.splId ||
+      p.prixAchatUnitHt !== attendu.prixAchatUnitHt
+    ) {
+      throw new ConflictException({
+        message: 'La proposition a changé depuis son affichage',
+        current: lue,
+      });
+    }
+
+    const ttc = (ht: number) =>
+      p.tauxTva == null
+        ? null
+        : (Math.round(ht * (1 + p.tauxTva) * 100) / 100).toString();
+    let maj = this.supabase
+      .from(TABLES.xtr_order_line)
+      .update({
+        orl_spl_id: p.splId,
+        orl_spl_name: p.nomFournisseur,
+        orl_spl_date: new Date().toISOString(),
+        orl_spl_price_buy_unit_ht: p.prixAchatUnitHt.toString(),
+        orl_spl_price_buy_ht: p.prixAchatHt.toString(),
+        orl_spl_price_buy_unit_ttc: ttc(p.prixAchatUnitHt),
+        orl_spl_price_buy_ttc: ttc(p.prixAchatHt),
+      })
+      .eq('orl_id', lue.lineId)
+      .eq('orl_ord_id', lue.orderId)
+      .or('orl_spl_id.is.null,orl_spl_id.in.("","0")');
+    maj =
+      lue.statutLigne == null
+        ? maj.is('orl_orls_id', null)
+        : maj.eq('orl_orls_id', lue.statutLigne);
+    const { data, error } = await maj.select('orl_id');
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+    if (!data || data.length !== 1) {
+      throw new ConflictException(
+        'Ligne modifiée pendant la confirmation : recharger la proposition',
+      );
+    }
+
+    this.eventEmitter.emit(ORDER_EVENTS.LINE_SUPPLIER_CONFIRMED, {
+      orderId: lue.orderId,
+      lineId: lue.lineId,
+      pieceId: lue.pieceId,
+      splId: p.splId,
+      supplierName: p.nomFournisseur,
+      unitPurchaseHt: p.prixAchatUnitHt,
+      quantity: p.quantite,
+      purchaseHt: p.prixAchatHt,
+      confirmedBy,
+      timestamp: new Date().toISOString(),
+    } satisfies OrderLineSupplierConfirmedEvent);
+    this.logger.log(
+      `Ligne ${lue.lineId} : fournisseur ${p.splId} confirmé (décision 50)`,
+    );
+    return {
+      success: true,
+      orderId: lue.orderId,
+      lineId: lue.lineId,
+      splId: p.splId,
+      supplierName: p.nomFournisseur,
+      unitPurchaseHt: p.prixAchatUnitHt,
+      quantity: p.quantite,
+      purchaseHt: p.prixAchatHt,
+    };
+  }
+
+  /**
+   * Décision 50 — marquage de rupture : statut de ligne 4 « Pièce non
+   * disponible ». Déclaration de l'administrateur (la rupture annoncée par le
+   * fournisseur n'est pas en base), possible que la proposition soit RUPTURE ou
+   * non. N'écrit que `orl_orls_id`, conditionnellement au statut lu. La suite
+   * (équivalent, supplément, annulation, mail client) suit la procédure
+   * `order-rupture-equivalence` ; rien n'est envoyé ni annulé ici.
+   */
+  async markLineRupture(
+    orderId: string,
+    lineId: string,
+    changedBy?: string,
+    comment?: string,
+  ): Promise<{
+    success: true;
+    lineId: string;
+    newStatus: string;
+    procedure: string;
+    proposition: PropositionLigne['proposition'];
+  }> {
+    const lue = await this.lineSupplier.getProposal(orderId, lineId);
+    if (!STATUTS_RUPTURE_POSSIBLE.has(statutTexte(lue.statutLigne))) {
+      throw new ConflictException({
+        message: `Ligne au statut ${lue.statutLigne} : marquage de rupture fermé`,
+        current: lue,
+      });
+    }
+    let maj = this.supabase
+      .from(TABLES.xtr_order_line)
+      .update({ orl_orls_id: STATUT_RUPTURE })
+      .eq('orl_id', lue.lineId)
+      .eq('orl_ord_id', lue.orderId);
+    maj =
+      lue.statutLigne == null
+        ? maj.is('orl_orls_id', null)
+        : maj.eq('orl_orls_id', lue.statutLigne);
+    const { data, error } = await maj.select('orl_id');
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+    if (!data || data.length !== 1) {
+      throw new ConflictException(
+        'Ligne modifiée pendant le marquage : recharger la ligne',
+      );
+    }
+
+    this.eventEmitter.emit(ORDER_EVENTS.LINE_STATUS_CHANGED, {
+      orderId: lue.orderId,
+      lineId: lue.lineId,
+      previousStatus: lue.statutLigne,
+      newStatus: Number(STATUT_RUPTURE),
+      changedBy,
+      comment:
+        comment ?? `rupture (décision 50) — procédure ${PROCEDURE_RUPTURE}`,
+      timestamp: new Date().toISOString(),
+    } satisfies OrderLineStatusChangedEvent);
+    return {
+      success: true,
+      lineId: lue.lineId,
+      newStatus: STATUT_RUPTURE,
+      procedure: PROCEDURE_RUPTURE,
+      proposition: lue.proposition,
+    };
   }
 
   /**

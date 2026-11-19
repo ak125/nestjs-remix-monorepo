@@ -5,7 +5,9 @@ name: 🚦 Circuit de fusion
 #   moyen  : CI verte + verdict GO de la revue Claude sur la tête → fusion automatique
 #            (décision 91, 2026-11-16 : la revue Claude, anthropics/claude-code-action, remplace la
 #            revue Codex ; authentification par le secret CLAUDE_CODE_OAUTH_TOKEN, mandat AR-5) ;
-#   élevé  : approbation de l'owner sur la tête ; l'owner fusionne.
+#   élevé  : revue approuvante de l'owner enregistrée sur la tête exacte → fusion par l'App
+#            (décision 120 ; mandat BH). Une nouvelle tête invalide l'approbation : le check
+#            échoue et la fusion est désarmée.
 #
 # Le circuit est calculé par scripts/ci/merge-circuit.mjs, lu sur le commit de BASE :
 # une PR ne peut pas abaisser son propre circuit en modifiant le classeur,
@@ -22,6 +24,11 @@ name: 🚦 Circuit de fusion
 # le circuit manquent sur la tête. Rendu requis sur `main` (réglage owner), il est le
 # verrou des circuits moyen et élevé ; la fusion automatique n'est armée que sur une
 # tête dont le check passe.
+# Ce job conclut toujours (mandat BH) : si le circuit n'a pas pu être calculé, il échoue et
+# désarme ; il n'est jamais sauté, car un contrôle requis sauté compte comme réussi. Run annulé :
+# le job est annulé, pas sauté, et le run qui le remplace décide.
+# Désarmement vérifié : l'état de la PR est relu après la tentative. S'il reste armé, l'App
+# désarme (pull_request_target) ou le job échoue avec la commande à lancer (pull_request_review).
 # Jeton de fusion : App GitHub `automecanik-actions` (mandat AR-6), commune à ce workflow,
 # registry-deps-self-heal.yml et mandat-remise.yml : variable ACTIONS_APP_ID, secret
 # ACTIONS_APP_PRIVATE_KEY de l'environnement `app-actions`, restreint à `main`. Sa clé ne vit que
@@ -29,6 +36,10 @@ name: 🚦 Circuit de fusion
 # Une fusion faite par GITHUB_TOKEN ne déclencherait pas ci.yml (chaîne PREPROD).
 # L'armement est un job séparé (« 🔐 Armement »), lancé seulement sur pull_request_target : un
 # événement pull_request_review porte la référence de la PR, que l'environnement refuserait.
+# Circuit élevé : la revue de l'owner arrive par cet événement-là. Le check passe aussitôt ;
+# l'armement est fait par merge-circuits-relais.yml, qui part à la fin de ce run, s'exécute sur
+# `main` et relit tout. À défaut, il suit au prochain événement pull_request_target de la PR sur
+# la même tête (brouillon puis prête, ou fermée puis rouverte), où l'approbation est relue.
 # App absente : le circuit est calculé, étiqueté et vérifié, rien n'est armé
 # (avis visible dans le run), jamais de repli silencieux sur GITHUB_TOKEN.
 
@@ -200,7 +211,11 @@ jobs:
   circuit:
     name: 🚦 Circuit de fusion
     needs: [classify, claude-review]
-    if: always() && needs.classify.result == 'success'
+    # Jamais sauté : un contrôle requis sauté compte comme réussi. Calcul du circuit en échec,
+    # annulé ou sauté : ce job tourne quand même, n'admet rien, désarme et échoue (mandat BH).
+    # Pas always() : dans un run annulé (remplacé par un événement plus récent), le job est
+    # annulé, donc non réussi, et ne désarme pas à la place du run qui le remplace.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -216,8 +231,11 @@ jobs:
       CLAUDE_VERDICT: ${{ needs.claude-review.outputs.verdict }}
       CLAUDE_REASON: ${{ needs.claude-review.outputs.reason }}
       HAS_ACTIONS_APP: ${{ vars.ACTIONS_APP_ID != '' }}
+      CLASSIFY_RESULT: ${{ needs.classify.result }}
+      EVENT_NAME: ${{ github.event_name }}
     outputs:
       armer: ${{ steps.arm.outputs.armer }}
+      desarmer: ${{ steps.arm.outputs.desarmer }}
     steps:
       - name: Verdict de la revue Claude posté sur la PR
         if: needs.classify.outputs.circuit == 'moyen' && needs.claude-review.result != 'skipped'
@@ -247,6 +265,12 @@ jobs:
         run: |
           set -euo pipefail
           ok=false
+          if [ "$CLASSIFY_RESULT" != "success" ]; then
+            # Échec fermé : sans circuit calculé par CE run, rien n'est admis.
+            echo "::error::Circuit non calculé (job « Calcul du circuit » : ${CLASSIFY_RESULT:-absent}) : rien n'est admis sur $HEAD_SHA."
+            echo "ok=$ok" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           case "$CIRCUIT" in
             faible) ok=true ;;
             moyen)
@@ -262,32 +286,53 @@ jobs:
                 | last | (.state // "") == "APPROVED"' /tmp/reviews.json)
               if [ "$approved" = "true" ]; then ok=true
               else echo "::error::Circuit élevé : approbation de l'owner absente sur $HEAD_SHA."; fi ;;
-            *) echo "::error::Circuit inconnu : $CIRCUIT" ;;
+            *) echo "::error::Circuit inconnu : ${CIRCUIT:-vide}" ;;
           esac
           echo "ok=$ok" >> "$GITHUB_OUTPUT"
 
       - name: Désarmer, ou admettre l'armement
         id: arm
+        # Tourne aussi quand l'étape précédente a échoué : OK est alors vide, donc rien n'est admis.
+        if: ${{ !cancelled() }}
         env:
           GH_TOKEN: ${{ github.token }}
           OK: ${{ steps.approval.outputs.ok }}
         run: |
           set -euo pipefail
-          if [ "$CIRCUIT" = "eleve" ] || [ "$OK" != "true" ] || [ "$IS_DRAFT" = "true" ]; then
-            gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
-            echo "Fusion automatique non armée (circuit $CIRCUIT, verdict/approbation=$OK, brouillon=$IS_DRAFT)."
+          if [ "$OK" != "true" ] || [ "$IS_DRAFT" = "true" ]; then
             echo "armer=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
+            # Désarmement vérifié : l'état est relu. Lecture impossible = encore armée (échec fermé).
+            arme=$(gh pr view "$PR" --json autoMergeRequest --jq '.autoMergeRequest != null' 2>/dev/null || echo true)
+            if [ "$arme" = "false" ]; then
+              echo "desarmer=false" >> "$GITHUB_OUTPUT"
+              echo "Fusion automatique non armée (circuit ${CIRCUIT:-non calculé}, verdict/approbation=${OK:-absent}, brouillon=$IS_DRAFT)."
+              exit 0
+            fi
+            echo "desarmer=true" >> "$GITHUB_OUTPUT"
+            if [ "$EVENT_NAME" = "pull_request_target" ]; then
+              echo "::warning::Désarmement non constaté avec le jeton du workflow : confié au job « 🔐 Armement » (App)."
+              exit 0
+            fi
+            echo "::error::Fusion automatique encore armée sur une PR non admise (circuit ${CIRCUIT:-non calculé}) et l'App n'agit pas sur l'événement $EVENT_NAME : désarmer à la main (gh pr merge $PR --disable-auto)."
+            exit 1
           fi
           if [ "$HAS_ACTIONS_APP" != "true" ]; then
             echo "::notice::Circuit $CIRCUIT admis, mais ACTIONS_APP_ID absent : fusion automatique non armée."
             echo "armer=false" >> "$GITHUB_OUTPUT"
+            echo "desarmer=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "armer=true" >> "$GITHUB_OUTPUT"
+          echo "desarmer=false" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" != "pull_request_target" ]; then
+            echo "::notice::Circuit $CIRCUIT admis sur $HEAD_SHA. L'événement $EVENT_NAME ne peut pas armer : circuit élevé, le relais s'en charge à la fin de ce run ; sinon l'armement suit au prochain événement pull_request_target de la PR sur cette tête."
+            exit 0
+          fi
           echo "Circuit $CIRCUIT admis sur $HEAD_SHA : armement confié au job « 🔐 Armement »."
 
       - name: Verdict du circuit
+        id: verdict
         env:
           OK: ${{ steps.approval.outputs.ok }}
         run: test "$OK" = "true"
@@ -299,7 +344,9 @@ jobs:
     # Condition explicite : sans fonction d'état, GitHub ajoute success(), qui tient compte des
     # ancêtres indirects. claude-review, sauté hors circuit moyen, sautait alors ce job même avec
     # armer=true (run 43957012088, PR #2109 ; actions/runner#2205).
-    if: ${{ !cancelled() && needs.circuit.result == 'success' && github.event_name == 'pull_request_target' && needs.circuit.outputs.armer == 'true' }}
+    # Désarmement (mandat BH) : quand le job du circuit n'a pas pu constater le désarmement
+    # (sortie desarmer), l'App désarme ici, même si ce job-là a échoué.
+    if: ${{ !cancelled() && github.event_name == 'pull_request_target' && ((needs.circuit.result == 'success' && needs.circuit.outputs.armer == 'true') || needs.circuit.outputs.desarmer == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: app-actions
@@ -308,6 +355,8 @@ jobs:
       GH_REPO: ${{ github.repository }}
       PR: ${{ github.event.pull_request.number }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      ARMER: ${{ needs.circuit.result == 'success' && needs.circuit.outputs.armer == 'true' }}
+      DESARMER: ${{ needs.circuit.outputs.desarmer == 'true' }}
     steps:
       - name: Jeton d'installation (App automecanik-actions, ce dépôt seul)
         id: app
@@ -321,9 +370,26 @@ jobs:
           permission-pull-requests: write
 
       - name: Armer la fusion automatique sur la tête
+        id: armer
+        if: env.ARMER == 'true' && env.DESARMER != 'true'
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
         run: |
           set -euo pipefail
           gh pr merge "$PR" --auto --squash --match-head-commit "$HEAD_SHA"
           echo "Fusion automatique armée sur $HEAD_SHA."
+
+      - name: Désarmer la fusion automatique (PR non admise)
+        id: desarmer
+        if: env.DESARMER == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          set -euo pipefail
+          gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
+          arme=$(gh pr view "$PR" --json autoMergeRequest --jq '.autoMergeRequest != null')
+          if [ "$arme" != "false" ]; then
+            echo "::error::Fusion automatique encore armée après le désarmement par l'App : désarmer à la main (gh pr merge $PR --disable-auto)."
+            exit 1
+          fi
+          echo "Fusion automatique désarmée : PR non admise sur $HEAD_SHA."

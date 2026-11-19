@@ -13,20 +13,20 @@
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `fccc735555cee9d6aae7b0ccf2353bfb08fe8845adf7da5eeb87da790663ae6e`
-- `canonical`: `61143cc1d857b21c679e60bfea92761df0ad4fae75f2767dd20b6f0d4a9a668b`
-- `ownershipYaml`: `3d349e47238d4c8541d31ccae0fb69a6a4db4cbe092176c389721f5daa8e1b36`
+- `deadCodeCandidates`: `29d0cb8f41c0205a994e2941286d220386e39e529fa2d2ebd29ee65780f1bfbb`
+- `canonical`: `c1fd7233b92921e0ecbffd1017e6f14109e853084dcb9baafea4106746611464`
+- `ownershipYaml`: `4517d3dde23cbe1db2c9a0d063db63118d7787d8e3f4111591c99d1f8090fc1a`
 - `contractHealth`: `<none>`
 - `validateScript`: `f89bd253b2e305831a01222da09bbef3b95fa51f461238886835fe4a0c2fa831`
 - `unreachableModules`: `75f4f5946d480ab8244e853aa25ffedb5d198bb4e7aee837cdb80e04e9e75e94`
 
 ## Counts
 
-- Total: **251**
-- By confidence: high=12 · medium=163 · low=76
-- By decision: candidate=175 · blocked=76 · excluded=0
+- Total: **253**
+- By confidence: high=12 · medium=165 · low=76
+- By decision: candidate=177 · blocked=76 · excluded=0
 
-## candidate (175)
+## candidate (177)
 
 ### candidate · high (12)
 
@@ -45,7 +45,7 @@
 | `frontend/app/utils/storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/utils/supabase-storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 
-### candidate · medium (163)
+### candidate · medium (165)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -206,6 +206,8 @@
 | `scripts/auto-migrate-design-system.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `scripts/clean-seo-database.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `scripts/get-oem-audi.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/governance/registry-threshold-read.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/governance/validate-db-retention.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `scripts/import-keyword-json.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `scripts/import-keyword-volume.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `scripts/mcp-server/server.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |

@@ -1,0 +1,76 @@
+name: 🧯 Fiche d'incident — fermeture contrôlée
+
+# Règle du journal des principes (décision 138 de l'owner) : une fiche par
+# incident, à trois rubriques ; elle ne reste fermée que si la rubrique « Ce qui
+# l'empêche de revenir » porte un lien admis. Sinon elle est rouverte, avec un
+# commentaire qui dit ce qui manque. Cas « aucun contrôle possible » : seul
+# l'owner ferme.
+#
+# Verdict et commentaire : scripts/ci/incident-issue-gate.mjs, prouvé par
+# scripts/ci/incident-issue-gate.test.mjs (lancé par audit.yml sur chaque PR).
+# Gabarit : .github/ISSUE_TEMPLATE/incident.yml.
+#
+# Un workflow déclenché par `issues` exécute le fichier de la branche par
+# défaut. Le corps de l'issue est un texte non sûr : il n'est jamais écrit dans
+# un `run:` ; le script le lit par l'API.
+#
+# La réouverture est faite avec le jeton du workflow : elle ne relance aucun
+# workflow. Une panne de l'API fait échouer le job sans rien rouvrir.
+#
+# Lancement manuel : balayage de toutes les fiches fermées, ou d'une seule ;
+# à blanc par défaut (verdicts dans le journal du job, rien n'est écrit).
+
+on:
+  issues:
+    types: [closed, edited, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Numéro d'une fiche (vide = toutes les fiches fermées)"
+        required: false
+        type: string
+      dry_run:
+        description: "Essai à blanc : ne rouvre rien, ne commente rien"
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: incident-issue-gate-${{ github.event.issue.number || 'balayage' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  gate:
+    name: 🧯 Fiche d'incident
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.issue.state == 'closed' &&
+       !github.event.issue.pull_request &&
+       contains(github.event.issue.labels.*.name, 'incident'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: ⬇️ Checkout de la branche par défaut
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: 🟢 Setup Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: 🧯 Contrôler la fiche
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OWNER_LOGIN: ak125
+          INCIDENT_LABEL: incident
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: node scripts/ci/incident-issue-gate.mjs

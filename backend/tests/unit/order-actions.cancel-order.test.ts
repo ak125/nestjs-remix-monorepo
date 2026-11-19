@@ -43,6 +43,7 @@ function makeService() {
   const service = new OrderActionsService(
     { emit } as never,
     ordersService as never,
+    {} as never, // lineSupplier — hors du chemin de l'annulation
   );
   // Tout accès direct aux tables passe par `from` : il ne doit y en avoir aucun.
   const from = jest.fn(() => {
@@ -132,6 +133,8 @@ describe('OrderActionsController.cancelOrder', () => {
       orderActionsService as never,
       mailService as never,
       {} as never, // ordersService — hors du chemin de l'annulation
+      {} as never, // lineSupplier — hors du chemin de l'annulation
+      {} as never, // supplierOrderPreparation — hors du chemin de l'annulation
     );
 
     await expect(

@@ -428,9 +428,19 @@ automecanik.com, www.automecanik.com {
     encode gzip zstd
     
     log {
+        # Conservation : 90 jours (mandat CY, 18/11/2026). Caddy supprime un
+        # fichier tourné dès qu'UNE des deux limites est dépassée : la durée
+        # doit donc couper avant le nombre de fichiers.
+        # Débit relevé en PROD le 18/11/2026 : 30 fichiers tournés couvraient
+        # du 15/11 00:53 UTC au 18/11 vers 20:20 UTC (3,8 jours), soit environ
+        # 8 fichiers de 50 Mo par jour (environ 4,5 Mo chacun une fois gzip).
+        # roll_keep = 8 fichiers/jour x 90 jours x marge 3 = 2160 : le nombre ne
+        # coupe avant 90 jours que si le trafic dépasse 3 fois celui relevé.
+        # Disque : environ 3,2 Go à 90 jours au débit relevé, 9,7 Go au plafond.
         output file /var/log/caddy/automecanik.log {
             roll_size 50mb
-            roll_keep 30
+            roll_keep 2160
+            roll_keep_for 2160h
         }
         format json {
             time_format "iso8601"

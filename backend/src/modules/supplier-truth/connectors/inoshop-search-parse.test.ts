@@ -50,6 +50,32 @@ function iconImg(code: string, state: string): string {
 const NK = brandTokenSet({ tokens: ['NK', 'SBS'] });
 
 describe('parseSearchHtml', () => {
+  it('lit prix public, remises et prix net du compte (mandat BK)', () => {
+    // Attributs relevés sur DistriCash le 17/11/2026 (LUK 500 0728 10).
+    const html = articleTr({
+      code: 'LUK500072810',
+      ref: '500072810',
+      marque: 'LUK',
+    }).replace(
+      'data-prix=""',
+      'data-prix="" data-Filtreprix="63.23" data-Filtreremise1="63.00" data-Filtreremise2="0" data-Filtreprixachat="23.40"',
+    );
+    const [r] = parseSearchHtml(html);
+    expect(r.prixPublic).toBe(63.23);
+    expect(r.remise1).toBe(63);
+    expect(r.remise2).toBe(0);
+    expect(r.prixAchat).toBe(23.4);
+  });
+
+  it('prix public, remises et net absents → null', () => {
+    const [r] = parseSearchHtml(
+      articleTr({ code: 'X1', ref: '1', marque: 'NK' }),
+    );
+    expect(r.prixPublic).toBeNull();
+    expect(r.remise1).toBeNull();
+    expect(r.prixAchat).toBeNull();
+  });
+
   it('extracts data-* fields and binds the icon structurally by code', () => {
     const html =
       articleTr({

@@ -1,0 +1,14 @@
+measured_utc
+2026-11-18 10:12:38.260732
+fn,args
+__seo_ensure_monthly_partitions(integer),p_months_ahead integer DEFAULT 3
+ensure_next_quality_history_partition(),
+ensure_rm_partition(integer),p_gamme_id integer
+"maintain_cwv_daily_rum_partitions(integer,integer)","p_lookahead_months integer DEFAULT 3, p_retention_months integer DEFAULT 12"
+"maintain_cwv_hourly_partitions(integer,integer)","p_lookahead_days integer DEFAULT 3, p_retention_days integer DEFAULT 14"
+"maintain_cwv_raw_partitions(integer,integer)","p_lookahead_days integer DEFAULT 3, p_retention_days integer DEFAULT 2"
+"maintain_observability_partitions(integer,integer)","p_lookahead_months integer DEFAULT 3, p_retention_months integer DEFAULT 18"
+maintain_pieces_price_history_partitions(),
+maintain_pricing_decision_snapshot_partitions(),
+"maintain_snapshot_partitions(integer,integer)","p_lookahead_days integer DEFAULT 14, p_retention_days integer DEFAULT 90"
+maintain_supplier_offer_snapshot_partitions(),

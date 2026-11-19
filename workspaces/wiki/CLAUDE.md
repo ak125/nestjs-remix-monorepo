@@ -21,7 +21,7 @@ Voir `.claude/rules/wiki-batch.md` pour :
 - Convention slug DB `__diag_symptom.slug` (anglais snake_case `brake_*`)
 - Workflow `wiki-protected-paths.yml` (4 markers `metadata-backfill: | template-migration: | promotion-from-proposals: | rollback:`)
 
-Voir `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo pour le contrat de sortie obligatoire (AEC : coverage manifest, 5 états séparés, statuts autorisés ; version dans son en-tête). C'est la copie déclarée, générée depuis sa source et contrôlée par hash. La copie locale `.claude/canon-mirrors/agent-exit-contract.md` du workspace (v1.0.0) est périmée et ne fait pas foi ; son retrait attend l'étape 2 du plan de sortie du vault (contradiction D16, mandat AR-4).
+Voir `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo pour le contrat de sortie obligatoire (AEC : coverage manifest, 5 états séparés, statuts autorisés ; version dans son en-tête). C'est la copie déclarée, générée depuis sa source et contrôlée par hash. La copie locale `.claude/canon-mirrors/agent-exit-contract.md` du workspace (v1.0.0) est périmée et ne fait pas foi ; son retrait attend la décision de l'owner (question D16, `docs/audit/mandat-bc-20261116/etape-2.md`).
 
 ## Validation des consommateurs
 
@@ -31,9 +31,10 @@ Voir `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo pou
 
 ## Références
 
-- ADR-031 (vault, accepted 2026-04-28) : 4-layer raw/wiki/exports/consumers
-- ADR-032 (vault, accepted 2026-04-29, PR #107) : diagnostic & maintenance unification, bloc `entity_data.maintenance{}` cohabite avec `diagnostic_relations[]`
-- ADR-033 (vault, accepted 2026-04-29, PR #108 commit `77085ef`) : wiki gamme `diagnostic_relations[]` contract, anti-patterns §D3
+- Règles en vigueur : P10 et P19 du journal des principes (`.claude/governance/journal-des-principes.md`, racine du monorepo). Les ADR ci-dessous en sont l'origine, dans l'archive du vault.
+- ADR-031 (archive du vault, accepted 2026-04-28) : 4-layer raw/wiki/exports/consumers
+- ADR-032 (archive du vault, accepted 2026-04-29, PR #107) : diagnostic & maintenance unification, bloc `entity_data.maintenance{}` cohabite avec `diagnostic_relations[]`
+- ADR-033 (archive du vault, accepted 2026-04-29, PR #108 commit `77085ef`) : wiki gamme `diagnostic_relations[]` contract, anti-patterns §D3
 - canon frontmatter wiki : `automecanik-wiki/_meta/schema/frontmatter.schema.json` v2.0.0
 - canon source registry : `automecanik-wiki/_meta/source-catalog.yaml` (PR wiki #9)
 - contrat data downstream : `automecanik-rag/docs/GAMME_PAGE_CONTRACT.md` v2.0 (PR-A.rag mergée `224e4c63`)

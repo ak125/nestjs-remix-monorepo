@@ -135,7 +135,6 @@ import { SystemModule } from '../system/system.module';
 import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
 import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
 import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
-import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
 import { R4ContentEnricherService } from './services/r4-content-enricher.service'; // 🏗️ R4 Reference enricher (0-LLM audit + lint)
 import { R4LintGatesService } from './services/r4-lint-gates.service'; // 🚦 R4 content lint gates LG1-LG8
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
@@ -297,7 +296,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     RagProposalService, // 📝 ADR-022 L1 propose-before-write staging (__rag_proposals)
     // AdminSupplierStatsService — not ready for prod
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
-    R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
     R4ContentEnricherService, // 🏗️ R4 Reference enricher (0-LLM audit + lint gates)
     R4LintGatesService, // 🚦 R4 content lint gates LG1-LG8
     // PR-SBD-1 Task 4 — SEO Business Control Dashboard

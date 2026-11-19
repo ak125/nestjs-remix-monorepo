@@ -1,0 +1,28 @@
+### UP 2026-11-18T21:35:26Z PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2)
+# psql --single-transaction : le moteur scripts/ci/apply-supabase-migration.py enveloppe le fichier dans BEGIN/COMMIT
+# ACL avant migration (état servi reproduit par la fixture)
+                proname                 |                                                acl                                                 | acl_egale_servie | anon | authenticated | service_role | prosecdef | provolatile | proparallel |      proconfig       |               md5                
+----------------------------------------+----------------------------------------------------------------------------------------------------+------------------+------+---------------+--------------+-----------+-------------+-------------+----------------------+----------------------------------
+ get_listing_products_extended_filtered | {=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres} | t                | t    | t             | t            | f         | s           | s           | {search_path=public} | 87fe3a4b1d433f0bc466025e44afd8b1
+ get_pieces_for_type_gamme_v3           | {postgres=X/postgres,service_role=X/postgres}                                                      | t                | f    | f             | t            | t         | s           | u           | {search_path=public} | cc5a39a896e5d4ca8ac222e78e0afbc3
+(2 rows)
+
+SET lock_timeout = '5s';
+SET
+SET statement_timeout = '30s';
+SET
+BEGIN
+CREATE FUNCTION
+REVOKE ALL ON FUNCTION public.get_pieces_for_type_gamme_v3(integer, integer) FROM PUBLIC, anon, authenticated;
+REVOKE
+GRANT EXECUTE ON FUNCTION public.get_pieces_for_type_gamme_v3(integer, integer) TO service_role;
+GRANT
+CREATE FUNCTION
+exit=0
+# ACL après migration
+                proname                 |                                                acl                                                 | acl_egale_servie | anon | authenticated | service_role | prosecdef | provolatile | proparallel |      proconfig       |               md5                
+----------------------------------------+----------------------------------------------------------------------------------------------------+------------------+------+---------------+--------------+-----------+-------------+-------------+----------------------+----------------------------------
+ get_listing_products_extended_filtered | {=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres} | t                | t    | t             | t            | f         | s           | s           | {search_path=public} | 0451a0f66ca72f0f00b8cb0598612e90
+ get_pieces_for_type_gamme_v3           | {postgres=X/postgres,service_role=X/postgres}                                                      | t                | f    | f             | t            | t         | s           | u           | {search_path=public} | 2f6c309d735c7fc198eb5202dca514de
+(2 rows)
+
