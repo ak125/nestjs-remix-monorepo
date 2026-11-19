@@ -27,6 +27,12 @@ import {
   CustomerEmailData,
 } from '../../../services/mail.service';
 import { ORDER_EVENTS, type OrderCreatedEvent } from '../events/order.events';
+import {
+  buildOrderVehicleCheck,
+  OrderVehicleCheckValidationError,
+  type OrderVehicleCheck,
+  type OrderVehicleCheckInput,
+} from './order-vehicle-check';
 
 /** Postal address for billing or shipping */
 export interface OrderAddress {
@@ -55,6 +61,7 @@ export interface CreateOrderData {
     consigne_unit?: number;
     has_consigne?: boolean;
     website_url?: string; // F1 attribution : source d'ajout par-ligne → orl_website_url
+    type_id?: number | string; // véhicule de la page d'achat (contexte panier) — mandat BN
   }>;
   billingAddress: OrderAddress;
   shippingAddress: OrderAddress;
@@ -65,6 +72,8 @@ export interface CreateOrderData {
   shippingFee?: number;
   couponCode?: string;
   gaClientId?: string;
+  /** Immatriculation/VIN/référence facultative + véhicule de la page d'achat (mandat BN). */
+  vehicleCheck?: OrderVehicleCheckInput | null;
 }
 
 export interface UpdateOrderData {
@@ -333,6 +342,20 @@ export class OrdersService extends SupabaseBaseService {
         );
       }
 
+      // Vérification véhicule (mandat BN) : validée avant toute écriture.
+      let vehicleCheck: OrderVehicleCheck | null;
+      try {
+        vehicleCheck = buildOrderVehicleCheck(
+          orderData.vehicleCheck,
+          orderData.orderLines.map((line) => line.type_id),
+        );
+      } catch (error) {
+        if (error instanceof OrderVehicleCheckValidationError) {
+          throw new BadRequestException(error.message);
+        }
+        throw error;
+      }
+
       // Générer numéro unique de commande
       const orderNumber = await this.generateOrderNumber();
 
@@ -411,6 +434,7 @@ export class OrdersService extends SupabaseBaseService {
           : null,
         ord_billing_snapshot: billingSnapshot,
         ord_shipping_snapshot: shippingSnapshot,
+        ord_vehicle_check: vehicleCheck,
       };
 
       this.logger.log(

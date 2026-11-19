@@ -10,8 +10,13 @@ import {
 } from './order-status';
 
 describe('OrderStatus enum', () => {
-  it('has the 5 canonical DB values', () => {
-    assert.deepEqual(Object.values(OrderStatus).sort(), ['1', '2', '3', '4', '5']);
+  it('has the canonical DB values, 6 excluded (legacy admin cancel)', () => {
+    assert.deepEqual(Object.values(OrderStatus).sort(), ['1', '2', '3', '4', '5', '7', '8']);
+  });
+
+  it('SHIPPED is 7, DELIVERED is 8 (mandate BN, migration 20261117)', () => {
+    assert.equal(OrderStatus.SHIPPED, '7');
+    assert.equal(OrderStatus.DELIVERED, '8');
   });
 
   it('PROCESSING is 1, CANCELLED is 2, PAID is 5', () => {
@@ -29,6 +34,18 @@ describe('ORDER_STATUS_LABEL', () => {
         `missing label for ${code}`,
       );
     }
+  });
+
+  it('exposes the labels set by mandate BN (migration 20261117)', () => {
+    assert.equal(ORDER_STATUS_LABEL['3'], 'Payée, à traiter');
+    assert.equal(ORDER_STATUS_LABEL['7'], 'Expédiée');
+    assert.equal(ORDER_STATUS_LABEL['8'], 'Livrée');
+  });
+
+  it('keeps the historical labels 1, 2, 4 and 5 untouched', () => {
+    assert.equal(ORDER_STATUS_LABEL['1'], 'Commande en cours de traitement');
+    assert.equal(ORDER_STATUS_LABEL['4'], 'Rajout de frais de port reçu');
+    assert.equal(ORDER_STATUS_LABEL['5'], 'Payée — En préparation');
   });
 
   it('exposes the cancellation label exactly as DB stores it', () => {
@@ -70,12 +87,23 @@ describe('ORDER_STATUS_TRANSITIONS — V1 anti-refund invariant', () => {
   it('2 → 1 (cancelled → processing) is invalid', () => {
     assert.equal(isValidTransition('2', '1'), false);
   });
+
+  it('7 → 8 (shipped → delivered) is valid, 8 is terminal', () => {
+    assert.equal(isValidTransition('7', '8'), true);
+    assert.deepEqual(ORDER_STATUS_TRANSITIONS['8'], []);
+  });
+
+  it('7 → 2 (cancel a shipped order) is invalid', () => {
+    assert.equal(isValidTransition('7', '2'), false);
+  });
 });
 
 describe('isOrderStatusCode type guard', () => {
   it('accepts canonical codes', () => {
     assert.equal(isOrderStatusCode('1'), true);
     assert.equal(isOrderStatusCode('5'), true);
+    assert.equal(isOrderStatusCode('7'), true);
+    assert.equal(isOrderStatusCode('8'), true);
   });
 
   it('rejects non-canonical values', () => {

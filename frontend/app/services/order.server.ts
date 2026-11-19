@@ -34,6 +34,7 @@ export interface CreateCheckoutOrderPayload {
     consigne_unit: number;
     has_consigne: boolean;
     website_url?: string; // F1 attribution : source d'ajout par-ligne → orl_website_url
+    type_id?: number; // vehicule de la page d'achat (contexte panier) — mandat BN
   }>;
   billingAddress: AddressData;
   shippingAddress: AddressData;
@@ -42,6 +43,18 @@ export interface CreateCheckoutOrderPayload {
   paymentMethod?: string;
   idempotencyKey?: string;
   gaClientId?: string;
+  /** Immatriculation/VIN/reference facultative + vehicule de la page d'achat (mandat BN). */
+  vehicleCheck?: OrderVehicleCheckPayload;
+}
+
+export interface OrderVehicleCheckPayload {
+  customerReference: string;
+  purchaseVehicle: {
+    typeId: number;
+    brand?: string;
+    model?: string;
+    engine?: string;
+  } | null;
 }
 
 export type CreateOrderResult =
@@ -79,7 +92,37 @@ export function buildOrderLines(items: CartItem[]) {
     consigne_unit: item.consigne_unit || 0,
     has_consigne: item.has_consigne || false,
     website_url: item.website_url, // F1 attribution : source d'ajout par-ligne
+    type_id: item.type_id, // vehicule de la page d'achat — mandat BN
   }));
+}
+
+/**
+ * Construit la verification vehicule envoyee avec la commande (mandat BN) :
+ * reference saisie par le client (facultative) + vehicule du contexte
+ * (cookie vehicule lu cote serveur). Le backend valide et enregistre.
+ */
+export function buildVehicleCheckPayload(
+  customerReference: string,
+  vehicle: {
+    type_id?: number | string | null;
+    marque_name?: string | null;
+    modele_name?: string | null;
+    type_name?: string | null;
+  } | null,
+): OrderVehicleCheckPayload {
+  const typeId = Number(vehicle?.type_id);
+  return {
+    customerReference,
+    purchaseVehicle:
+      vehicle && Number.isInteger(typeId) && typeId > 0
+        ? {
+            typeId,
+            brand: vehicle.marque_name || undefined,
+            model: vehicle.modele_name || undefined,
+            engine: vehicle.type_name || undefined,
+          }
+        : null,
+  };
 }
 
 /**

@@ -28,6 +28,34 @@ const frenchZipCodeRegex = /^[0-9]{4,10}$/;
 const phoneCharsRegex = /^[0-9+\s().-]+$/;
 
 // ---------------------------------------------------------------------------
+// Immatriculation / VIN / reference de piece (facultatif — mandat BN)
+// Meme regle que le backend (order-vehicle-check.ts), qui reste l'autorite.
+// ---------------------------------------------------------------------------
+
+export const VEHICLE_REFERENCE_MAX_LENGTH = 40;
+const vehicleReferenceRegex = /^[A-Za-z0-9][A-Za-z0-9 ./-]*$/;
+
+export const vehicleReferenceSchema = z
+  .string()
+  .optional()
+  .transform((v) => (v ?? "").trim().replace(/\s+/g, " "))
+  .pipe(
+    z.union([
+      z.literal(""),
+      z
+        .string()
+        .max(
+          VEHICLE_REFERENCE_MAX_LENGTH,
+          `${VEHICLE_REFERENCE_MAX_LENGTH} caracteres maximum.`,
+        )
+        .regex(
+          vehicleReferenceRegex,
+          "Lettres, chiffres, espaces, points, tirets ou barres obliques uniquement.",
+        ),
+    ]),
+  );
+
+// ---------------------------------------------------------------------------
 // Shipping address schema
 // ---------------------------------------------------------------------------
 
@@ -75,6 +103,7 @@ export const checkoutSubmitSchema = shippingAddressSchema.extend({
     .email("Email invalide.")
     .optional()
     .or(z.literal("")),
+  vehicleReference: vehicleReferenceSchema,
   paymentMethod: paymentMethodSchema,
   acceptTerms: z.literal("on", {
     error: "Vous devez accepter les conditions generales de vente.",
@@ -116,6 +145,7 @@ export const checkoutFieldErrorsSchema = z
     city: z.array(z.string()).optional(),
     country: z.array(z.string()).optional(),
     phone: z.array(z.string()).optional(),
+    vehicleReference: z.array(z.string()).optional(),
     paymentMethod: z.array(z.string()).optional(),
     acceptTerms: z.array(z.string()).optional(),
   })
@@ -198,6 +228,7 @@ export function parseCheckoutFormData(formData: FormData) {
     city: String(formData.get("city") ?? ""),
     country: String(formData.get("country") ?? "France"),
     phone: String(formData.get("phone") ?? ""),
+    vehicleReference: String(formData.get("vehicleReference") ?? ""),
     paymentMethod: String(formData.get("paymentMethod") ?? "cyberplus"),
     acceptTerms: formData.get("acceptTerms"),
   };

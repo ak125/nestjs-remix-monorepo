@@ -3,6 +3,7 @@ import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { type CheckoutFieldErrors } from "~/schemas/checkout.schemas";
 import { type PaymentMethod } from "~/types/payment";
+import { COMPATIBILITY_NOTICE } from "./compatibility-notice";
 
 interface Props {
   paymentMethods: PaymentMethod[];
@@ -188,7 +189,7 @@ export function CheckoutPaiementSection({
             />
           </svg>
           <span className="text-xs text-emerald-700">
-            {vehicleLabel} — <strong>Compatibilite verifiee</strong>
+            <strong>{vehicleLabel}</strong> — {COMPATIBILITY_NOTICE}.
           </span>
         </div>
       )}
