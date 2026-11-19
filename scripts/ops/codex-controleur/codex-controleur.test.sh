@@ -206,10 +206,23 @@ absent "minuteur, pas OnBootSec" "$U.timer" "OnBootSec"
 contient "service, oneshot" "$U.service" "Type=oneshot"
 contient "service, sous-commande" "$U.service" "codex-controleur.sh quotidien"
 contient "service, plafond" "$U.service" "TimeoutStartSec="
+# Clone dédié : script et dépôt de travail dans %h/codex-controleur/app, jamais le checkout partagé.
+contient "service, script du clone" "$U.service" \
+  "ExecStart=/usr/bin/bash %h/codex-controleur/app/scripts/ops/codex-controleur/codex-controleur.sh quotidien"
+contient "service, dépôt du clone" "$U.service" "Environment=CODEX_CONTROLEUR_DEPOT=%h/codex-controleur/app"
+absent "service, pas le checkout partagé" "$U.service" "/opt/automecanik/app"
 
 # 14. Usage invalide.
 check "sous-commande inconnue" "$(lance "$E2" nimporte)" 2
 check "max invalide" "$(lance "$E2" quotidien --max 0)" 2
+
+# 15. Checkout partagé refusé comme dépôt de travail, avant toute écriture (aucun dossier d'état créé).
+FAUX=(CODEX_CONTROLEUR_DEPOT=/opt/automecanik/app)
+E4="$FIX/e4"
+check "checkout partagé refusé" "$(lance "$E4" quotidien)" 2
+contient "checkout partagé, message" "$E4.out" "dépôt refusé"
+check "checkout partagé, rien créé" "$([[ -e "$E4" ]] && echo oui || echo non)" non
+FAUX=()
 
 echo "codex-controleur : $ok vérifications réussies, $ko en échec"
 [[ "$ko" -eq 0 ]]

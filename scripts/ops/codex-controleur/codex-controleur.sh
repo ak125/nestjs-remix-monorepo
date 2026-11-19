@@ -88,6 +88,11 @@ while [[ $# -gt 0 ]]; do
 done
 [[ "$MAX_PR" =~ ^[1-9][0-9]*$ ]] || die "--max doit être un entier positif" 2
 
+# Clone dédié (décision de Marwane du 2026-11-19) : la routine fait fetch et worktree jetable dans
+# son propre clone (~/codex-controleur/app), jamais dans le checkout DEV partagé.
+[[ "$(realpath -m "$DEPOT")" != "/opt/automecanik/app" ]] \
+  || die "dépôt refusé : /opt/automecanik/app est le checkout partagé ; utiliser le clone dédié ~/codex-controleur/app" 2
+
 CURSEUR="$ETAT/curseur.json"   # {"depuis": ISO, "faites": [{"pr": N, "fusion": ISO, "statut": ...}]}
 mkdir -p "$ETAT/bruts"
 # umask ne resserre pas un dossier déjà là (créé avant, ou par un autre outil) : droits posés ici.
