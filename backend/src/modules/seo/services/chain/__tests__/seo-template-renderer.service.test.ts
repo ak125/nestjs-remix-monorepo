@@ -47,6 +47,33 @@ describe('SeoTemplateRenderer.applyVariables (pure)', () => {
     );
   });
 
+  it('#VTypeCarburantPuissance# : même libellé que seo-template.service (mandat DW)', () => {
+    const render = (fuel: string, useMeta: boolean) =>
+      renderer.applyVariables({
+        surfaceKey: 'R1_GAMME_VEHICLE_ROUTER',
+        templateText: '#Gamme# #VMarque# #VModele# #VTypeCarburantPuissance#',
+        variables: {
+          ...baseVars,
+          type: '1.4',
+          typeMeta: '1.4',
+          nbCh: 75,
+          fuel,
+        },
+        pgId: 10,
+        typeId: 18389,
+        useMeta,
+      });
+    expect(render('Essence', true)).toBe(
+      'Plaquettes de frein Renault Clio IV 1.4 Essence 75 ch',
+    );
+    expect(render('Essence', false)).toBe(
+      '<b>Plaquettes</b> <b>Renault</b> <b>Clio</b> <b>1.4 Essence 75 ch</b>',
+    );
+    expect(render('', true)).toBe(
+      'Plaquettes de frein Renault Clio IV 1.4 75 ch',
+    );
+  });
+
   it('replace standard variables en mode HTML (avec <b>)', () => {
     const out = renderer.applyVariables({
       surfaceKey: 'R1_GAMME_VEHICLE_ROUTER',

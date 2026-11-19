@@ -9,7 +9,10 @@ import {
   SEO_PROPOSE_VARIATIONS,
   selectVariation,
 } from '../../../config/seo-variations.config';
-import { enrichTypeNameForHeadings } from '@repo/seo-types';
+import {
+  buildR2TitleTypeLabel,
+  enrichTypeNameForHeadings,
+} from '@repo/seo-types';
 import { SeoPlaceholderEventsService } from '../../seo/services/seo-placeholder-events.service';
 import { composeVehicleAwareDescription } from './vehicle-aware-description.composer';
 
@@ -184,7 +187,7 @@ export class SeoTemplateService {
   // 🔄 Regex pour le format LEGACY #Vxxx# et #Xxx# (templates existants en base)
   // Inclut: #VMarque#, #VGamme#, mais aussi #Gamme#, #MinPrice#
   private readonly LEGACY_REGEX =
-    /#(VMarque|VModele|VType|VNbCh|VAnnee|VGamme|VAnneeFrom|VAnneeTo|VFuel|VPower|VMotorisation|VCodeMoteur|Gamme|MinPrice|Count)#/g;
+    /#(VMarque|VModele|VType|VNbCh|VAnnee|VGamme|VAnneeFrom|VAnneeTo|VFuel|VPower|VMotorisation|VCodeMoteur|VTypeCarburantPuissance|Gamme|MinPrice|Count)#/g;
 
   constructor(
     private readonly cacheService: CacheService,
@@ -406,6 +409,15 @@ export class SeoTemplateService {
       VPower: context.power_ps ? `${context.power_ps} ch` : '',
       VMotorisation: context.legacy_marker_motorisation || '',
       VCodeMoteur: context.legacy_marker_code_moteur || '',
+      // « <type> [carburant] <puissance> ch » (mandat DW 2026-11-19), servi
+      // seulement par les templates qui l'écrivent (sgc_title des gammes de
+      // l'essai). Carburant = `fuel`, sinon `type_fuel` relayé par
+      // `legacy_marker_motorisation` ; idempotent sur un type déjà enrichi.
+      VTypeCarburantPuissance: buildR2TitleTypeLabel({
+        typeName: context.type_name,
+        powerPs: context.power_ps,
+        fuel: context.fuel || context.legacy_marker_motorisation,
+      }),
       // Format #Xxx# (sans préfixe V)
       Gamme: context.gamme_name || '',
       MinPrice: context.min_price

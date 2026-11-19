@@ -1,0 +1,70 @@
+pg_id	nouveau_titre	nb_pages	indexables	type_ids	codes_moteur	annees	difference_non_portee_par_le_titre
+10	Courroie d'accessoire BMW Série 1 (E81) 116 i Essence 122 ch	2	1	25488 | 31671	N43 B16 AA | N43 B20 A	2007-2011 | 2008-2011	codes moteur, années
+10	Courroie d'accessoire BMW Série 1 (E87) 116 i Essence 122 ch	2	2	58184 | 58169	N43 B20 A | N43 B16 AA	2009-2011 | 2007-2011	codes moteur, années
+10	Courroie d'accessoire BMW Série 1 (F20) 116 d 116 ch	2	0	10313 | 5335	N47 D20 C | N47 D16 A	2011-2015 | 2012-2015	codes moteur, années
+10	Courroie d'accessoire BMW Série 1 (F21) 116 d 116 ch	2	0	58364 | 58365	N47 D16 A | N47 D20 C	2011- | 2012-	codes moteur, années
+10	Courroie d'accessoire BMW Série 3 (E46) 316 i Essence 105 ch	2	2	11042 | 15894	M43 B19 (194E1) | M43 B16 (164E3)	1998-2002 | 2000-2005	codes moteur, années
+10	Courroie d'accessoire BMW Série 3 (E46) 316 i Essence 115 ch	2	2	18822 | 16325	N40 B16 A, N45 B16 A | N42 B18 A, N46 B18 A	2002-2005 | 2002-2005	codes moteur
+10	Courroie d'accessoire BMW Série 3 (E90) 325 xi Essence 218 ch	2	0	25469 | 19101	N53 B30 A | N52 B25 A	2007-2008 | 2005-2008	codes moteur, années
+10	Courroie d'accessoire BMW Série 3 Compact (E36) 318 ti Essence 140 ch	2	2	3825 | 5103	M42 B18 (184S1) | M44 B19 (194S1)	1994-1995 | 1996-1999	codes moteur, années
+10	Courroie d'accessoire BMW Série 3 Compact (E46) 316 ti Essence 115 ch	2	2	15924 | 30911	N42 B18 A, N46 B18 A | N40 B16 A, N45 B16 A	2001-2005 | 2002-2005	codes moteur, années
+10	Courroie d'accessoire BMW Série 3 Coupé (E92) 325 i Essence 211 ch	2	0	52830 | 53148	N52 B25 A, N52 B25 AF, N52 B25 BF | N53 B30 A	2010-2013 | 2010-2013	codes moteur
+10	Courroie d'accessoire BMW Série 3 Coupé (E92) 325 i Essence 218 ch	2	1	25483 | 19919	N53 B30 A | N52 B25 A, N52 B25 AF, N52 B25 BF	2007-2013 | 2006-2010	codes moteur, années
+10	Courroie d'accessoire BMW Série 3 Coupé (E92) 325 xi Essence 218 ch	2	0	25484 | 19930	N53 B30 A | N52 B25 A	2007-2008 | 2006-2010	codes moteur, années
+10	Courroie d'accessoire BMW Série 3 Décapotable (E93) 325 i Essence 218 ch	2	1	22957 | 22536	N52 B25 A | N53 B30 A	2006-2010 | 2007-2013	codes moteur, années
+10	Courroie d'accessoire BMW Série 3 Touring (E91) 325 i Essence 218 ch	2	1	18759 | 25480	N52 B25 A | N53 B30 A	2004-2008 | 2007-2012	codes moteur, années
+10	Courroie d'accessoire BMW Série 3 Touring (E91) 325 xi Essence 218 ch	2	0	19104 | 25481	N52 B25 A | N53 B30 A	2005-2008 | 2007-2008	codes moteur, années
+10	Courroie d'accessoire BMW Série 5 (E60) 525 i Essence 218 ch	2	0	19018 | 22657	N52 B25 A, N52 B25 B, N52 B25 BF | N53 B30 A	2005-2009 | 2007-2010	codes moteur, années
+10	Courroie d'accessoire BMW Série 5 (E60) 525 xi Essence 218 ch	2	0	19095 | 22658	N52 B25 A | N53 B30 A	2005-2007 | 2007-2009	codes moteur, années
+10	Courroie d'accessoire BMW Série 5 (F10-F18) 523 i Essence 204 ch	2	0	14030 | 33006	N52 B25 A, N52 B25 AF, N52 B25 B, N52 B25 BF | N53 B30 A	2010-2011 | 2009-2011	codes moteur, années
+10	Courroie d'accessoire CITROËN JUMPY I (U6U) 1.9 D 69 ch	2	2	5554 | 13181	D9B (XUD9A/U) | WJY (DW8B), WJZ (DW8)	1995-1998 | 1998-2003	codes moteur, années
+10	Courroie d'accessoire MERCEDES CLASSE A (W168) 140 Essence 82 ch	2	2	8386 | 16134	M 166.940 | M 166.960	1997-2004 | 2001-2004	codes moteur, années
+10	Courroie d'accessoire MERCEDES CLASSE C (W204) 180 CGI 156 ch	2	0	59476 | 32798	M 274.910 | M 271.820	2008-2014 | 2007-2014	codes moteur, années
+10	Courroie d'accessoire MERCEDES CLASSE C (W204) 180 Kompressor 156 ch	2	0	22460 | 30368	M 271.952 | M 271.910	2007-2014 | 2008-2014	codes moteur, années
+10	Courroie d'accessoire MERCEDES CLASSE C Break (S204) 180 Kompressor 156 ch	2	0	30372 | 23399	M 271.910 | M 271.952	2008-2014 | 2007-2014	codes moteur, années
+10	Courroie d'accessoire MERCEDES CLASSE E (W212) 63 AMG Essence 525 ch	2	0	10114 | 32945	M 157.980, M 157.981 | M 156.985	2011-2016 | 2009-2015	codes moteur, années
+10	Courroie d'accessoire MERCEDES CLASSE E Break (S212) 63 AMG Essence 525 ch	2	0	32683 | 10113	M 156.985 | M 157.981	2009-2011 | 2011-2016	codes moteur, années
+10	Courroie d'accessoire MINI (R56) Cooper D 112 ch	2	0	34920 | 9894	N47 C16 A | N47 C20 A	2010-2013 | 2011-2013	codes moteur, années
+10	Courroie d'accessoire MINI (R56) One D 90 ch	2	1	33056 | 3040	9HZ (DV6TED4) | N47 C16 A	2009-2010 | 2010-2013	codes moteur, années
+10	Courroie d'accessoire MINI (R56) One Essence 75 ch	2	2	31111 | 33051	N12 B14 A | N16 B16 A	2009-2010 | 2010-2013	codes moteur, années
+10	Courroie d'accessoire MINI CLUBMAN (R55) Cooper D 112 ch	2	0	34919 | 9896	N47 C16 A | N47 C20 A	2010-2014 | 2011-2014	codes moteur, années
+10	Courroie d'accessoire MINI COUNTRYMAN (R60) Cooper D 112 ch	2	0	9916 | 34924	N47 C20 A | N47 C16 A	2011-2016 | 2010-2016	codes moteur, années
+10	Courroie d'accessoire MINI COUNTRYMAN (R60) Cooper D ALL4 112 ch	2	0	34926 | 9926	N47 C16 A | N47 C20 A	2010-2016 | 2011-2016	codes moteur, années
+10	Courroie d'accessoire MINI Décapotable (R57) Cooper D 112 ch	2	0	9898 | 34917	N47 C20 A | N47 C16 A	2011-2015 | 2009-2013	codes moteur, années
+10	Courroie d'accessoire MINI PACEMAN (R61) Cooper D ALL4 112 ch	2	0	53236 | 58881	N47 C20 A | N47 C16 A	2012-2016 | 2012-2016	codes moteur
+10	Courroie d'accessoire PEUGEOT PARTNER I Combispace 1.9 D 69 ch	2	2	14434 | 21448	WJY (DW8B), WJZ (DW8) | XUD9	1999-2008 | 1996-1998	codes moteur, années
+10	Courroie d'accessoire SEAT AROSA 1.0 Essence 50 ch	2	2	7895 | 33058	AER, ALD, ALL, ANV, AUC | AHT	1997-2004 | 1998-2001	codes moteur, années
+10	Courroie d'accessoire SEAT IBIZA II 1.6 Essence 75 ch	2	2	18580 | 2914	1F | ABU, AEE, ALM	1994-1999 | 1993-2002	codes moteur, années
+316	Thermostat BMW Série 1 (E81) 116 i Essence 122 ch	2	0	25488 | 31671	N43 B16 AA | N43 B20 A	2007-2011 | 2008-2011	codes moteur, années
+316	Thermostat BMW Série 1 (E87) 116 i Essence 122 ch	2	0	58184 | 58169	N43 B20 A | N43 B16 AA	2009-2011 | 2007-2011	codes moteur, années
+316	Thermostat BMW Série 1 (F20) 116 d 116 ch	2	0	10313 | 5335	N47 D20 C | N47 D16 A	2011-2015 | 2012-2015	codes moteur, années
+316	Thermostat BMW Série 1 (F21) 116 d 116 ch	2	0	58364 | 58365	N47 D16 A | N47 D20 C	2011- | 2012-	codes moteur, années
+316	Thermostat BMW Série 3 (E46) 316 i Essence 105 ch	2	0	11042 | 15894	M43 B19 (194E1) | M43 B16 (164E3)	1998-2002 | 2000-2005	codes moteur, années
+316	Thermostat BMW Série 3 (E46) 316 i Essence 115 ch	2	0	18822 | 16325	N40 B16 A, N45 B16 A | N42 B18 A, N46 B18 A	2002-2005 | 2002-2005	codes moteur
+316	Thermostat BMW Série 3 (E90) 325 xi Essence 218 ch	2	0	25469 | 19101	N53 B30 A | N52 B25 A	2007-2008 | 2005-2008	codes moteur, années
+316	Thermostat BMW Série 3 Compact (E36) 318 ti Essence 140 ch	2	0	3825 | 5103	M42 B18 (184S1) | M44 B19 (194S1)	1994-1995 | 1996-1999	codes moteur, années
+316	Thermostat BMW Série 3 Compact (E46) 316 ti Essence 115 ch	2	0	15924 | 30911	N42 B18 A, N46 B18 A | N40 B16 A, N45 B16 A	2001-2005 | 2002-2005	codes moteur, années
+316	Thermostat BMW Série 3 Coupé (E92) 325 i Essence 211 ch	2	0	52830 | 53148	N52 B25 A, N52 B25 AF, N52 B25 BF | N53 B30 A	2010-2013 | 2010-2013	codes moteur
+316	Thermostat BMW Série 3 Coupé (E92) 325 i Essence 218 ch	2	0	25483 | 19919	N53 B30 A | N52 B25 A, N52 B25 AF, N52 B25 BF	2007-2013 | 2006-2010	codes moteur, années
+316	Thermostat BMW Série 3 Coupé (E92) 325 xi Essence 218 ch	2	0	25484 | 19930	N53 B30 A | N52 B25 A	2007-2008 | 2006-2010	codes moteur, années
+316	Thermostat BMW Série 3 Décapotable (E93) 325 i Essence 218 ch	2	0	22957 | 22536	N52 B25 A | N53 B30 A	2006-2010 | 2007-2013	codes moteur, années
+316	Thermostat BMW Série 3 Touring (E91) 325 i Essence 218 ch	2	0	18759 | 25480	N52 B25 A | N53 B30 A	2004-2008 | 2007-2012	codes moteur, années
+316	Thermostat BMW Série 3 Touring (E91) 325 xi Essence 218 ch	2	0	19104 | 25481	N52 B25 A | N53 B30 A	2005-2008 | 2007-2008	codes moteur, années
+316	Thermostat BMW Série 5 (E60) 525 i Essence 218 ch	2	0	19018 | 22657	N52 B25 A, N52 B25 B, N52 B25 BF | N53 B30 A	2005-2009 | 2007-2010	codes moteur, années
+316	Thermostat BMW Série 5 (E60) 525 xi Essence 218 ch	2	0	19095 | 22658	N52 B25 A | N53 B30 A	2005-2007 | 2007-2009	codes moteur, années
+316	Thermostat BMW Série 5 (F10-F18) 523 i Essence 204 ch	2	0	14030 | 33006	N52 B25 A, N52 B25 AF, N52 B25 B, N52 B25 BF | N53 B30 A	2010-2011 | 2009-2011	codes moteur, années
+316	Thermostat CITROËN JUMPY I (U6U) 1.9 D 69 ch	2	0	5554 | 13181	D9B (XUD9A/U) | WJY (DW8B), WJZ (DW8)	1995-1998 | 1998-2003	codes moteur, années
+316	Thermostat MERCEDES CLASSE A (W168) 140 Essence 82 ch	2	0	8386 | 16134	M 166.940 | M 166.960	1997-2004 | 2001-2004	codes moteur, années
+316	Thermostat MERCEDES CLASSE C (W204) 180 Kompressor 156 ch	2	0	22460 | 30368	M 271.952 | M 271.910	2007-2014 | 2008-2014	codes moteur, années
+316	Thermostat MERCEDES CLASSE C Break (S204) 180 Kompressor 156 ch	2	0	30372 | 23399	M 271.910 | M 271.952	2008-2014 | 2007-2014	codes moteur, années
+316	Thermostat MINI (R56) Cooper D 112 ch	2	0	34920 | 9894	N47 C16 A | N47 C20 A	2010-2013 | 2011-2013	codes moteur, années
+316	Thermostat MINI (R56) One D 90 ch	2	0	33056 | 3040	9HZ (DV6TED4) | N47 C16 A	2009-2010 | 2010-2013	codes moteur, années
+316	Thermostat MINI (R56) One Essence 75 ch	2	0	31111 | 33051	N12 B14 A | N16 B16 A	2009-2010 | 2010-2013	codes moteur, années
+316	Thermostat MINI CLUBMAN (R55) Cooper D 112 ch	2	0	34919 | 9896	N47 C16 A | N47 C20 A	2010-2014 | 2011-2014	codes moteur, années
+316	Thermostat MINI COUNTRYMAN (R60) Cooper D 112 ch	2	0	9916 | 34924	N47 C20 A | N47 C16 A	2011-2016 | 2010-2016	codes moteur, années
+316	Thermostat MINI COUNTRYMAN (R60) Cooper D ALL4 112 ch	2	0	34926 | 9926	N47 C16 A | N47 C20 A	2010-2016 | 2011-2016	codes moteur, années
+316	Thermostat MINI Décapotable (R57) Cooper D 112 ch	2	0	9898 | 34917	N47 C20 A | N47 C16 A	2011-2015 | 2009-2013	codes moteur, années
+316	Thermostat MINI PACEMAN (R61) Cooper D ALL4 112 ch	2	0	53236 | 58881	N47 C20 A | N47 C16 A	2012-2016 | 2012-2016	codes moteur
+316	Thermostat PEUGEOT PARTNER I Combispace 1.9 D 69 ch	2	0	14434 | 21448	WJY (DW8B), WJZ (DW8) | XUD9	1999-2008 | 1996-1998	codes moteur, années
+316	Thermostat SEAT AROSA 1.0 Essence 50 ch	2	1	7895 | 33058	AER, ALD, ALL, ANV, AUC | AHT	1997-2004 | 1998-2001	codes moteur, années
+316	Thermostat SEAT IBIZA II 1.6 Essence 75 ch	2	1	18580 | 2914	1F | ABU, AEE, ALM	1994-1999 | 1993-2002	codes moteur, années
