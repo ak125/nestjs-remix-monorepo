@@ -2,7 +2,7 @@
 
 Département 21 (Plateforme et exploitation), 2026-11-19. Base : `origin/main`
 `1c4bbf4b25fe8cba38ce3564fd211997afa1859f`. Branche :
-`ci/mandat-do-generes-sur-main-20261119`.
+`ci/mandat-do-projections-generees-20261119`.
 
 Décisions de l'owner appliquées : 113 (le goulot est la sortie), 114 (pas
 d'organisation GitHub ni de file de fusion ; leviers : alléger la charge par PR,
