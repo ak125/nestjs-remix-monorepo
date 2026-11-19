@@ -2869,6 +2869,8 @@
       "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.sql",
       "backend/supabase/migrations/20261118_r2_images_bmp_extension.down.sql",
       "backend/supabase/migrations/20261118_r2_images_bmp_extension.sql",
+      "backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.down.sql",
+      "backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3065,7 +3067,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1657,
+  "runtime_files_count": 1659,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4381,6 +4383,8 @@
     "backend/supabase/migrations/20261118_archive_dead_tables_lot_f1.sql",
     "backend/supabase/migrations/20261118_r2_images_bmp_extension.down.sql",
     "backend/supabase/migrations/20261118_r2_images_bmp_extension.sql",
+    "backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.down.sql",
+    "backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
