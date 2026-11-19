@@ -50947,7 +50947,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1005,
+      "loc": 1099,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "high",
@@ -51485,7 +51485,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 1271,
+      "loc": 1369,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "high",
@@ -73158,7 +73158,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 328,
+      "loc": 404,
       "owner": "@ak125",
       "path": "backend/tests/unit/orders-routes-authz.test.ts",
       "risk": "medium",
@@ -73194,11 +73194,51 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/orders.controller.customer-update.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 142,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders.controller.customer-update.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/orders.controller.customer-view.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 297,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders.controller.customer-view.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/orders.controller.guest-checkout.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 441,
+      "loc": 466,
       "owner": "@ak125",
       "path": "backend/tests/unit/orders.controller.guest-checkout.test.ts",
       "risk": "medium",
@@ -73238,9 +73278,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 167,
+      "loc": 175,
       "owner": "@ak125",
       "path": "backend/tests/unit/orders.service.create-correlation-id.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/orders.service.create-order-server-price.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 345,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders.service.create-order-server-price.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -73261,6 +73321,26 @@
       "loc": 552,
       "owner": "@ak125",
       "path": "backend/tests/unit/orders.service.create-supplement-order.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/orders.service.update-order-paid-guard.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 108,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders.service.update-order-paid-guard.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -109706,11 +109786,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "1ed628874b5caf86ae0ff2b61cd19a0d558f5c0ad81bd5b4bb7de175fa26c91e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "674de61ece065c32e62461d2d0a2383dc543104558116818b269050b1743e7cf",
+      "audit/registry/files.json": "57e3daf343a6c2d2bfa3b1c34104e7403390799184a4c4e40b848aba2fef4e94",
       "audit/registry/rpc.json": "97e3cd0bb46a7389c7780aab203f64b278b5fecd03997a96976efc301abf93e3",
       "audit/registry/runtime.json": "d713efc440587e87193b79786b2ffd3d517eb643a00734c2f0d8d70a20e67e0e"
     },
-    "sotFingerprint": "2127be8dac5d"
+    "sotFingerprint": "86ccb702740f"
   },
   "runtime": [
     {
