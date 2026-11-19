@@ -250,7 +250,6 @@ describe('RmBuilderService.getPageCompleteV2 — échec SEO sans contenu de repl
     const templates = new SeoTemplateService(
       templateCache as unknown as CacheService,
       {} as never,
-      {} as never,
     );
     const { service, callRpc, cache } = buildService(
       jest.fn(templates.processTemplates.bind(templates)),

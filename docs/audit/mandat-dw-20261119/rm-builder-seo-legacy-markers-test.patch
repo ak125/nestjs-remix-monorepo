@@ -1,0 +1,12 @@
+diff --git a/backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts b/backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts
+index 8679d4dacf..74918124a6 100644
+--- a/backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts
++++ b/backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts
+@@ -250,6 +250,7 @@ describe('RmBuilderService.getPageCompleteV2 — échec SEO sans contenu de repl
+     const templates = new SeoTemplateService(
+       templateCache as unknown as CacheService,
+       {} as never,
++      {} as never,
+     );
+     const { service, callRpc, cache } = buildService(
+       jest.fn(templates.processTemplates.bind(templates)),
