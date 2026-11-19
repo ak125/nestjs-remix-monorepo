@@ -67,6 +67,14 @@ function makeService(): {
     calculateByWeight: jest.fn().mockReturnValue(11.19),
   };
   const eventEmitter = { emit: jest.fn() };
+  // createOrder lit le prix dans le tarif vendable, pas dans la requête.
+  const piecePriceData = {
+    findSellablePrices: jest
+      .fn()
+      .mockResolvedValue(
+        new Map([[101, { pri_vente_ttc_n: 31.24, pri_consigne_ttc_n: 0 }]]),
+      ),
+  };
 
   const service = new OrdersService(
     calculationService as never,
@@ -75,7 +83,7 @@ function makeService(): {
     shippingCalculator as never,
     eventEmitter as never,
     {} as never, // mailService — guarded out (benign supabase → no customer email)
-    {} as never, // piecePriceData — unused on the createOrder path
+    piecePriceData as never,
   );
 
   // Override the protected readonly `supabase` + `callRpc` (same technique the
@@ -106,7 +114,7 @@ function orderData(idempotencyKey?: string) {
     customerId: '12345',
     orderLines: [
       {
-        productId: 'p1',
+        productId: '101',
         productName: 'Jeu de 4 plaquettes de frein',
         productReference: 'REF-1',
         quantity: 1,

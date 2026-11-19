@@ -2,8 +2,9 @@
 module: orders
 sources:
 - backend/src/modules/orders
-last_scan: '2026-09-23'
+last_scan: '2026-11-18'
 primary_files:
+- backend/src/modules/orders/config/supplier-order-preparation.config.ts
 - backend/src/modules/orders/controllers/order-actions.controller.ts
 - backend/src/modules/orders/controllers/order-archive.controller.ts
 - backend/src/modules/orders/controllers/orders.controller.ts
@@ -11,7 +12,6 @@ primary_files:
 - backend/src/modules/orders/dto/automotive-orders.dto.ts
 - backend/src/modules/orders/dto/index.ts
 - backend/src/modules/orders/dto/orders-enhanced.dto.ts
-- backend/src/modules/orders/dto/ticket.dto.ts
 depends_on:
 - DatabaseModule
 - ShippingModule
@@ -19,6 +19,7 @@ depends_on:
 - ApiModule
 - AuthModule
 - ConfigModule
+- SupplierTruthReadModule
 ---
 
 # Module Orders
@@ -44,9 +45,13 @@ _Section à rédiger._
 - `OrderArchiveService`
 - `TicketsService`
 - `OrderActionsService`
+- `OrderLineSupplierService`
+- `SupplierOrderPreparationService`
+- `SupplierLiveQuoteService`
 - `OrderCleanupService`
 
 ### Fichiers primaires
+- [backend/src/modules/orders/config/supplier-order-preparation.config.ts](../../../backend/src/modules/orders/config/supplier-order-preparation.config.ts)
 - [backend/src/modules/orders/controllers/order-actions.controller.ts](../../../backend/src/modules/orders/controllers/order-actions.controller.ts)
 - [backend/src/modules/orders/controllers/order-archive.controller.ts](../../../backend/src/modules/orders/controllers/order-archive.controller.ts)
 - [backend/src/modules/orders/controllers/orders.controller.ts](../../../backend/src/modules/orders/controllers/orders.controller.ts)
@@ -54,7 +59,6 @@ _Section à rédiger._
 - [backend/src/modules/orders/dto/automotive-orders.dto.ts](../../../backend/src/modules/orders/dto/automotive-orders.dto.ts)
 - [backend/src/modules/orders/dto/index.ts](../../../backend/src/modules/orders/dto/index.ts)
 - [backend/src/modules/orders/dto/orders-enhanced.dto.ts](../../../backend/src/modules/orders/dto/orders-enhanced.dto.ts)
-- [backend/src/modules/orders/dto/ticket.dto.ts](../../../backend/src/modules/orders/dto/ticket.dto.ts)
 
 <!-- END AUTO-GENERATED -->
 
