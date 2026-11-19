@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Mandat DM 6.3 — mots des requêtes du top 50 (data/rangs_4_15_90j.tsv) absents du title et du H1 servis
-(data/releve_prod_pages.tsv, GET PROD du 2026-11-19 12:34–12:37Z). Constat seulement, aucun titre proposé.
+"""Mandat DM 6.3 — mots des requêtes du top 50 (donnees/rangs_4_15_90j.tsv) absents du title et du H1 servis
+(donnees/releve_prod_pages.tsv, GET PROD du 2026-11-19 12:34–12:37Z). Constat seulement, aucun titre proposé.
 Normalisation : minuscules, accents retirés, apostrophes et tirets → espace ; « 1,5 » = « 1.5 ».
 Mots vides ignorés : MOTS_VIDES ci-dessous. Un mot est « absent » s'il n'apparaît comme mot entier ni dans le
 title ni dans le H1 (comparaison séparée title / H1 aussi fournie). Pas de lemmatisation (pièce ≠ pièces est
@@ -9,7 +9,7 @@ Usage : python3 -I scripts/mots_absents_6_3.py <dossier dm>"""
 import csv, re, sys, unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
-B = Path(sys.argv[1]); D = B / "data"
+B = Path(sys.argv[1]); D = B / "donnees"
 MOTS_VIDES = {"de", "a", "pour", "la", "le", "les", "du", "des", "d", "l", "en", "et", "sur", "au", "aux", "un", "une"}
 def norm(s):
     s = unicodedata.normalize("NFKD", s.lower()); s = "".join(c for c in s if not unicodedata.combining(c))

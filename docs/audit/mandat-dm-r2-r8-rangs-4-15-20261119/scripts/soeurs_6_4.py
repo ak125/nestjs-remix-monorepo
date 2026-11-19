@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Mandat DM 6.2/6.4 — jointure : règle sitemap rejouée (sql/10) × sitemap pièces servi (GET PROD 12:39Z)
-× présence GSC (grain page 90 j : data/grain_page_r2_r8.tsv ; grain requête 90 j : data/couples_r2_r8_brut.tsv).
+× présence GSC (grain page 90 j : donnees/grain_page_r2_r8.tsv ; grain requête 90 j : donnees/couples_r2_r8_brut.tsv).
 Clé de jointure = (pg_id, type_id) lus dans l'URL. L'état d'index par URL (« Explorée, non indexée ») n'est pas en base.
 Robots estimé = règle legacy r2-indexability.ts (count >= 2 → index) avec map_has_item comme approximation de count :
 c'est une estimation, pas le robots servi.
@@ -8,7 +8,7 @@ Usage : python3 -I scripts/soeurs_6_4.py <dossier dm>"""
 import csv, re, sys
 from collections import defaultdict, Counter
 from pathlib import Path
-B = Path(sys.argv[1]); D = B / "data"
+B = Path(sys.argv[1]); D = B / "donnees"
 RX = re.compile(r"^/pieces/[^/]*-(\d+)/[^/]*/[^/]*-(\d+)/[^/]*-(\d+)\.html$")
 def key(p):
     m = RX.match(p); return (int(m.group(1)), int(m.group(3))) if m else None

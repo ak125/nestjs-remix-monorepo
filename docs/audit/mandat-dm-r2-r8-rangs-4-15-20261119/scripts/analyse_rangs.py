@@ -2,9 +2,9 @@
 """Mandat DM — couples R2/R8 classés entre les rangs 4 et 15 sur des requêtes longues.
 
 Entrées (produites par les SQL du dossier sql/, lecture seule) :
-  data/couples_r2_r8_brut.tsv   — sql/01_couples_r2_r8.sql
-  data/courbe_ctr_brut.tsv      — sql/00_courbe_ctr.sql
-Sorties (data/) :
+  donnees/couples_r2_r8_brut.tsv   — sql/01_couples_r2_r8.sql
+  donnees/courbe_ctr_brut.tsv      — sql/00_courbe_ctr.sql
+Sorties (donnees/) :
   courbe_ctr.tsv, rangs_4_15_<fen>.tsv (retenus), divergents_<fen>.tsv,
   un_appareil_<fen>.tsv, totaux_<fen>_<axe>.tsv, resume.json
 
@@ -27,7 +27,7 @@ from collections import defaultdict
 from pathlib import Path
 
 BASE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
-DATA = BASE / "data"
+DATA = BASE / "donnees"
 
 MOTOR_RE = re.compile(
     r"(\d[.,]\d|\b\d{2,3}\s?(cv|ch|hp)\b|\b(hdi|dci|tdi|cdi|tce|vti|thp|jtd|jtdm|crdi|tdci|"

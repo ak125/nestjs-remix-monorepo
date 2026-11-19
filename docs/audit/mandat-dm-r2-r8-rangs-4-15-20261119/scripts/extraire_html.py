@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Mandat DM — extraction des éléments servis par les pages PROD relevées (point 6.2 et 6.3).
 
-Entrées : data/get_journal.tsv (scripts/get_prod.sh), prod_html/NNN.html(+.headers),
-          data/echantillon_6_2.tsv, data/rangs_4_15_90j.tsv.
-Sortie  : data/releve_prod_pages.tsv (une ligne par page R2/R8 relevée),
-          data/releve_prod_groupes.tsv (moyennes et médianes G vs S).
+Entrées : donnees/get_journal.tsv (scripts/get_prod.sh), prod_html/NNN.html(+.headers),
+          donnees/echantillon_6_2.tsv, donnees/rangs_4_15_90j.tsv.
+Sortie  : donnees/releve_prod_pages.tsv (une ligne par page R2/R8 relevée),
+          donnees/releve_prod_groupes.tsv (moyennes et médianes G vs S).
 Règles :
   - texte visible = HTML sans <script>/<style>/<noscript>/<svg>, balises retirées ;
   - part commune = part des 8-grammes de mots de la page présents dans au moins une
@@ -20,7 +20,7 @@ from collections import defaultdict
 from pathlib import Path
 
 BASE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
-DATA, HT = BASE / "data", BASE / "prod_html"
+DATA, HT = BASE / "donnees", BASE / "prod_html"
 journal = list(csv.DictReader(open(DATA / "get_journal.tsv"), delimiter="\t"))
 groupes = defaultdict(set)
 for r in csv.DictReader(open(DATA / "echantillon_6_2.tsv"), delimiter="\t"):

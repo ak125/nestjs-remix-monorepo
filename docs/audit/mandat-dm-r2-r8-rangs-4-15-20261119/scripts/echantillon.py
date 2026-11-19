@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Mandat DM — sélection des échantillons du point 6.2 (règle écrite, rejouable).
 
-Fenêtre : 90 j (couples) ; grain page : data/grain_page_r2_r8.tsv (90j).
+Fenêtre : 90 j (couples) ; grain page : donnees/grain_page_r2_r8.tsv (90j).
 Gagnantes (G) : pages ayant au moins un couple (requête de 3 mots ou plus) de position
 pondérée <= 5 avec clics > 0 ; tri par clics de ces couples décroissants, puis impressions.
 Stagnantes (S) : pages ayant au moins un couple (3 mots ou plus) de position pondérée
@@ -14,7 +14,7 @@ import csv, sys
 from collections import defaultdict
 from pathlib import Path
 BASE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
-DATA = BASE / "data"
+DATA = BASE / "donnees"
 rows = list(csv.DictReader(open(DATA / "couples_r2_r8_brut.tsv"), delimiter="\t"))
 pg = {}
 for r in csv.DictReader(open(DATA / "grain_page_r2_r8.tsv"), delimiter="\t"):

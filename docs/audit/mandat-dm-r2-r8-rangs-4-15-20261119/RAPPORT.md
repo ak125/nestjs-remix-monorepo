@@ -16,16 +16,15 @@ Chaque section sépare le **relevé** (ce qui a été mesuré) du **proposé** (
 
 ## Contenu du dossier
 
-- `RAPPORT.md` — ce document (le top 50 seulement ; les listes complètes sont dans `data/`).
-- `sql/` — toutes les requêtes (rejouables, `SELECT` seulement). Heure UTC de chaque extraction : `data/heure_extraction_NN.txt`.
+- `RAPPORT.md` — ce document (le top 50 seulement ; les listes complètes sont dans `donnees/`).
+- `sql/` — toutes les requêtes (rejouables, `SELECT` seulement). Heure UTC de chaque extraction : `donnees/heure_extraction_NN.txt`. `sql/00` et `sql/04` (courbes) n'ont pas de fichier d'heure : lancées dans la même série que `sql/01` et `sql/03`, entre 12:30Z et 12:33Z. Les requêtes d'inspection 05, 06, 08, 09, 13_cols et 14_r8_pages_count n'ont pas produit de chiffre du rapport, sauf 14_r8_pages_count (155 lignes).
 - `scripts/` — toutes les règles de classement et de comparaison, écrites avant lecture des résultats (`python3 -I scripts/<x>.py <ce dossier>`).
-- `data/` — les listes complètes en TSV (voir l'index en fin de rapport).
+- `donnees/` — les listes complètes en TSV (voir l'index en fin de rapport).
 
 Non versionnés, et pourquoi : le HTML brut des 114 pages et les XML des sitemaps (volume, et ce sont des copies du site) ;
 les extractions brutes `couples_r2_r8_brut.tsv` (34 468 lignes, 4,5 Mo), `grain_page_r2_r8.tsv` (77 502 lignes, 7,1 Mo)
 et `sitemap_pieces_servi_paths.txt` (101 097 chemins, 7,5 Mo). Elles se reproduisent avec `sql/01`, `sql/03` et
-`scripts/get_prod.sh` ; les listes qui en sont tirées (6.1 à 6.5) sont toutes versionnées. Choix aligné sur AK (#2087),
-qui ne versionnait pas non plus les données GSC brutes.
+`scripts/get_prod.sh` ; les listes qui en sont tirées (6.1 à 6.5) sont toutes versionnées. Le dossier s'appelle `donnees/` et non `data/`, car `.gitignore` (l. 196) exclut tout dossier `data/`.
 
 ---
 
@@ -64,7 +63,7 @@ Les chiffres R3 conseil, R1 et « hors rôles » du point 3 relèvent du rapport
 - Retenus = appareils concordants, ou un seul appareil avec au moins un clic.
 - **Clics gagnables** = impressions × max(0, CTR attendu au rang 3 − CTR réel).
 
-### Courbe de taux de clic du site (`sql/00_courbe_ctr.sql`, `data/courbe_ctr.tsv`)
+### Courbe de taux de clic du site (`sql/00_courbe_ctr.sql`, `donnees/courbe_ctr.tsv`)
 
 Calculée sur les données du site seulement : lignes jour × page × requête × appareil, pages R2 + R8, requêtes de 3 mots ou plus, 2026-04-01 → 2026-11-16, rang arrondi, puis régression isotonique non croissante pondérée par les impressions (pool-adjacent-violators).
 
@@ -108,7 +107,7 @@ Ce sont des **plafonds** (tout le monde au rang 3), pas des prévisions.
 
 ### Top 50, fenêtre 90 jours, classé par clics gagnables
 
-Liste complète : `data/rangs_4_15_90j.tsv` (640 couples). Divergents : `data/divergents_90j.tsv`. Non vérifiables : `data/un_appareil_90j.tsv`. Fenêtre 28 j : `data/rangs_4_15_28j.tsv`, `data/divergents_28j.tsv`, `data/un_appareil_28j.tsv`. La dernière colonne vient du 6.3.
+Liste complète : `donnees/rangs_4_15_90j.tsv` (640 couples). Divergents : `donnees/divergents_90j.tsv`. Non vérifiables : `donnees/un_appareil_90j.tsv`. Fenêtre 28 j : `donnees/rangs_4_15_28j.tsv`, `donnees/divergents_28j.tsv`, `donnees/un_appareil_28j.tsv`. La dernière colonne vient du 6.3.
 
 | # | Rôle | Page | Requête | Impr. | Clics | CTR % | Pos. | Ordi / mobile | Motif | Gagnables | Absents titre et H1 |
 |---:|---|---|---|---:|---:|---:|---:|---|---|---:|---|
@@ -210,7 +209,7 @@ Règle du motif (`analyse_rangs.py`, `motif()`) : commence par « référence/re
 | autre | R2 | 27 | 140 | 5 | 2.2 |
 | référence … | R2 | 4 | 51 | 1 | 0.9 |
 
-### Totaux par gamme (90 j, 12 premières ; complets dans `data/totaux_90j_gamme.tsv` et `data/totaux_28j_gamme.tsv`)
+### Totaux par gamme (90 j, 12 premières ; complets dans `donnees/totaux_90j_gamme.tsv` et `donnees/totaux_28j_gamme.tsv`)
 
 | gamme | role | couples | impr | clics | clics_gagnables |
 |---|---|---|---|---|---|
@@ -227,7 +226,7 @@ Règle du motif (`analyse_rangs.py`, `motif()`) : commence par « référence/re
 | compresseur-de-climatisation | R2 | 10 | 86 | 0 | 1.6 |
 | galet-tendeur-de-courroie-d-accessoire | R2 | 6 | 91 | 1 | 1.2 |
 
-### Totaux par marque (90 j, 10 premières ; complets dans `data/totaux_90j_marque.tsv` et `data/totaux_28j_marque.tsv`)
+### Totaux par marque (90 j, 10 premières ; complets dans `donnees/totaux_90j_marque.tsv` et `donnees/totaux_28j_marque.tsv`)
 
 | marque | role | couples | impr | clics | clics_gagnables |
 |---|---|---|---|---|---|
@@ -246,7 +245,7 @@ Règle du motif (`analyse_rangs.py`, `motif()`) : commence par « référence/re
 
 ## 6.2 Ce qui distingue les gagnantes (relevé)
 
-### Échantillon (`scripts/echantillon.py`, `data/echantillon_6_2.tsv`)
+### Échantillon (`scripts/echantillon.py`, `donnees/echantillon_6_2.tsv`)
 
 - **R2 G** (gagnantes) : 20 pages avec clics sur un couple de position ≤ 5, fenêtre 90 j.
 - **R2 S** (stagnantes) : 20 pages en position 8–15 sans clic, 90 j.
@@ -258,9 +257,9 @@ Règle du motif (`analyse_rangs.py`, `motif()`) : commence par « référence/re
 - `scripts/get_prod.sh` : 118 GET en tout.
   - 1 à 114 : de 12:34:15Z à 12:37:02Z, toutes en 200.
   - 115 à 118 : de 12:39:55Z à 12:39:59Z ; journal ajouté à la main au même fichier.
-  - Détail : `data/get_journal.tsv`.
-- Extraction par `scripts/extraire_html.py` vers `data/releve_prod_pages.tsv`.
-- Ajout des données en base par `scripts/comparer_6_2.py` vers `data/releve_prod_pages_complet.tsv`, avec :
+  - Détail : `donnees/get_journal.tsv`.
+- Extraction par `scripts/extraire_html.py` vers `donnees/releve_prod_pages.tsv`.
+- Ajout des données en base par `scripts/comparer_6_2.py` vers `donnees/releve_prod_pages_complet.tsv`, avec :
   - le sitemap servi ;
   - `map_has_item` ;
   - la présence de la gamme dans le cache R8 (`sql/07`, 12:39:25Z) ;
@@ -347,7 +346,7 @@ Règle (`scripts/mots_absents_6_3.py`) :
 - Mots vides ignorés : de, à, pour, la, le, les, du, des, d, l, en, et, sur, au, aux, un, une.
 - Pas de lemmatisation : « pièce » et « pièces » sont des mots différents, et « culbuteur » diffère de « culbuteurs ».
 
-Sorties : `data/mots_absents_top50.tsv` (couple par couple), `data/mots_absents_frequence.tsv` et `data/mots_absents_par_gamme.tsv`.
+Sorties : `donnees/mots_absents_top50.tsv` (couple par couple), `donnees/mots_absents_frequence.tsv` et `donnees/mots_absents_par_gamme.tsv`.
 
 - **24 couples sur 50** ont au moins un mot de la requête absent **à la fois** du title et du H1 : 13 R2 sur 33 et 11 R8 sur 17.
 - **37 couples sur 50** ont au moins un mot absent du **title**.
@@ -365,7 +364,7 @@ Sorties : `data/mots_absents_top50.tsv` (couple par couple), `data/mots_absents_
 | phase | 2 | 0 | présent dans le H1 |
 | schema, mpi, diesel, catalogue, accessoires, 2l | 1 chacun | 1 | — |
 
-Par gamme (`data/mots_absents_par_gamme.tsv`) :
+Par gamme (`donnees/mots_absents_par_gamme.tsv`) :
 
 | gamme | mot | couples |
 |---|---|---|
@@ -403,7 +402,7 @@ Autres constats sur le title servi :
 
 ## 6.4 Pages R2 sœurs des 20 gagnantes (relevé)
 
-Extraction : `sql/10_soeurs_r2_6_4.sql` (12:40:43Z) puis `scripts/soeurs_6_4.py` vers `data/soeurs_r2_6_4.tsv`.
+Extraction : `sql/10_soeurs_r2_6_4.sql` (12:40:43Z) puis `scripts/soeurs_6_4.py` vers `donnees/soeurs_r2_6_4.tsv`.
 
 **L'état d'indexation par URL n'est pas en base** : `__seo_index_history` a 0 ligne et aucune API Google n'a été appelée. « Absente de GSC » signifie « aucune impression au grain page sur 90 j ». Cela ne veut pas dire « Explorée, actuellement non indexée ».
 
@@ -429,7 +428,7 @@ Le nombre de pièces par sœur est dans la colonne `map_has_item` du TSV.
 
 **Concordance exacte avec AK** sur : 1 269 pages, dont 1 258 R2 ; 1 473 clics et 15 560 impressions en juillet ; 5 373 impressions en octobre ; 691 pages sans impression en octobre ; 1 131 pages à un seul clic. Le rapport AK a été lu à la tête `c32bec31ed1b8ddfd587c64bb19e001e5b63abd3`.
 
-Classement : `scripts/croisement_ak_6_5.py` vers `data/croisement_ak_6_1.tsv`. Classes exclusives, appliquées dans l'ordre :
+Classement : `scripts/croisement_ak_6_5.py` vers `donnees/croisement_ak_6_1.tsv`. Classes exclusives, appliquées dans l'ordre :
 
 | Classe | Pages | Clics 90 j | Dans le sitemap servi |
 |---|---:|---:|---:|
@@ -463,7 +462,7 @@ Classement : clics gagnables du périmètre concerné (grain page, 90 j), puis s
 
 - « essence » manque du title dans 17 couples du top 50, alors que le H1 le porte ;
 - 64 titles R2 sur 66 dépassent 60 caractères (Google les tronque) ;
-- le gabarit est identique sur les 118 gammes : `#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.` (`data/gabarits_r2_en_vigueur.tsv`) ;
+- le gabarit est identique sur les 118 gammes : `#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.` (`donnees/gabarits_r2_en_vigueur.tsv`) ;
 - les numéros de génération (« clio 3 » contre « CLIO III ») et les synonymes (« courroie alternateur ») manquent aussi.
 
 **Effet attendu** : meilleure concordance requête/title, donc un CTR meilleur à rang égal. Non chiffrable avant essai ; à suivre avec la ligne 6.7.
@@ -484,7 +483,7 @@ Classement : clics gagnables du périmètre concerné (grain page, 90 j), puis s
 
 **Décision de Marwane** : le gabarit, le maintien ou non du prix et de l'accroche, et l'ordre de déploiement.
 
-Gabarits candidats, montrés sur les 10 premières pages R2 distinctes du top 50 (`scripts/demo_gabarits_6_6.py` vers `data/gabarits_candidats_demo.tsv`) :
+Gabarits candidats, montrés sur les 10 premières pages R2 distinctes du top 50 (`scripts/demo_gabarits_6_6.py` vers `donnees/gabarits_candidats_demo.tsv`) :
 
 - Données véhicule : `auto_type`, `auto_modele`, `auto_marque` (`sql/13`, 12:44:09Z).
 - Prix mini et nombre de pièces : données du chargeur servies (GET).
@@ -653,7 +652,7 @@ Gabarits candidats, montrés sur les 10 premières pages R8 distinctes du top 50
 
 ## 6.7 Mesure hebdomadaire (PROPOSÉ — non planifiée, non branchée)
 
-Requête : `sql/14_ligne_hebdo.sql`. Testée une fois à 12:46:12Z ; résultat dans `data/ligne_hebdo_test.tsv`.
+Requête : `sql/14_ligne_hebdo.sql`. Testée une fois à 12:46:12Z ; résultat dans `donnees/ligne_hebdo_test.tsv`.
 
 - Une ligne par rôle et par semaine ISO **complète**, sur les 4 dernières semaines présentes en base.
 - Règles identiques au 6.1 : 3 mots ou plus, rang 4–15 pondéré, divergents et « un appareil sans clic » écartés mais comptés.
@@ -704,7 +703,7 @@ Limites :
 - Les liens entrants ne sont observés que dans les pages relevées ; ce n'est pas un graphe complet.
 - Les années et le carburant des gabarits viennent de `auto_type` tels quels.
 
-## Index des fichiers `data/`
+## Index des fichiers `donnees/`
 
 | Fichier | Contenu |
 |---|---|

@@ -1,0 +1,198 @@
+{
+ "ctr_rang3_reference": 0.018291436746372368,
+ "sensibilite_ctr_rang3": {
+  "r2r8_3mots_tous_iso": 0.018291436746372368,
+  "tout_3mots_tous_iso": 0.009854540689293671,
+  "tout_tous_iso": 0.009915306754802726,
+  "r2r8_3mots_desktop_iso": 0.014861995753715497,
+  "r2r8_3mots_mobile_iso": 0.018610421836228287
+ },
+ "fenetres": {
+  "90j": {
+   "couples_toutes_requetes": {
+    "R2": 8133,
+    "R8": 1838
+   },
+   "couples_3mots": {
+    "R2": 6407,
+    "R8": 1393
+   },
+   "couples_3mots_rang_4_15": {
+    "R2": 1723,
+    "R8": 617
+   },
+   "retenus": {
+    "R2": {
+     "couples": 398,
+     "pages": 311,
+     "impr": 5614,
+     "clics": 87,
+     "clics_gagnables": 76.4
+    },
+    "R8": {
+     "couples": 242,
+     "pages": 114,
+     "impr": 4192,
+     "clics": 34,
+     "clics_gagnables": 59.2
+    }
+   },
+   "divergents": {
+    "R2": {
+     "couples": 80,
+     "pages": 66,
+     "impr": 842,
+     "clics": 8,
+     "clics_gagnables": 11.9
+    },
+    "R8": {
+     "couples": 8,
+     "pages": 8,
+     "impr": 56,
+     "clics": 0,
+     "clics_gagnables": 1.0
+    }
+   },
+   "un_appareil_sans_clic": {
+    "R2": {
+     "couples": 1245,
+     "pages": 1041,
+     "impr": 2763,
+     "clics": 0,
+     "clics_gagnables": 51.9
+    },
+    "R8": {
+     "couples": 367,
+     "pages": 225,
+     "impr": 891,
+     "clics": 0,
+     "clics_gagnables": 16.7
+    }
+   }
+  },
+  "28j": {
+   "couples_toutes_requetes": {
+    "R2": 3871,
+    "R8": 800
+   },
+   "couples_3mots": {
+    "R2": 3043,
+    "R8": 640
+   },
+   "couples_3mots_rang_4_15": {
+    "R2": 906,
+    "R8": 341
+   },
+   "retenus": {
+    "R2": {
+     "couples": 194,
+     "pages": 162,
+     "impr": 1573,
+     "clics": 26,
+     "clics_gagnables": 25.2
+    },
+    "R8": {
+     "couples": 118,
+     "pages": 65,
+     "impr": 1203,
+     "clics": 16,
+     "clics_gagnables": 17.6
+    }
+   },
+   "divergents": {
+    "R2": {
+     "couples": 23,
+     "pages": 22,
+     "impr": 108,
+     "clics": 0,
+     "clics_gagnables": 1.9
+    },
+    "R8": {
+     "couples": 3,
+     "pages": 3,
+     "impr": 16,
+     "clics": 0,
+     "clics_gagnables": 0.3
+    }
+   },
+   "un_appareil_sans_clic": {
+    "R2": {
+     "couples": 689,
+     "pages": 567,
+     "impr": 1502,
+     "clics": 0,
+     "clics_gagnables": 28.2
+    },
+    "R8": {
+     "couples": 220,
+     "pages": 120,
+     "impr": 520,
+     "clics": 0,
+     "clics_gagnables": 9.8
+    }
+   }
+  },
+  "avr-nov": {
+   "couples_toutes_requetes": {
+    "R2": 16890,
+    "R8": 2930
+   },
+   "couples_3mots": {
+    "R2": 13491,
+    "R8": 2164
+   },
+   "couples_3mots_rang_4_15": {
+    "R2": 4409,
+    "R8": 951
+   },
+   "retenus": {
+    "R2": {
+     "couples": 1127,
+     "pages": 843,
+     "impr": 19020,
+     "clics": 253,
+     "clics_gagnables": 242.2
+    },
+    "R8": {
+     "couples": 344,
+     "pages": 174,
+     "impr": 9441,
+     "clics": 109,
+     "clics_gagnables": 118.3
+    }
+   },
+   "divergents": {
+    "R2": {
+     "couples": 235,
+     "pages": 203,
+     "impr": 3297,
+     "clics": 29,
+     "clics_gagnables": 49.4
+    },
+    "R8": {
+     "couples": 14,
+     "pages": 11,
+     "impr": 131,
+     "clics": 0,
+     "clics_gagnables": 2.4
+    }
+   },
+   "un_appareil_sans_clic": {
+    "R2": {
+     "couples": 3047,
+     "pages": 2454,
+     "impr": 7062,
+     "clics": 0,
+     "clics_gagnables": 132.2
+    },
+    "R8": {
+     "couples": 593,
+     "pages": 369,
+     "impr": 1155,
+     "clics": 0,
+     "clics_gagnables": 21.9
+    }
+   }
+  }
+ }
+}

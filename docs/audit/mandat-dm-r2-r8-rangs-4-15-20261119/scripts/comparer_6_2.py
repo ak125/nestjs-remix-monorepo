@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Mandat DM 6.2 — comparaison gagnantes (G) / stagnantes (S).
-Entrées : data/releve_prod_pages.tsv, data/soeurs_r2_6_4.tsv (kind=self), data/sitemap_pieces_servi_paths.txt,
-          data/lien_r8_vers_r2.tsv, data/echantillon_6_2.tsv.
+Entrées : donnees/releve_prod_pages.tsv, donnees/soeurs_r2_6_4.tsv (kind=self), donnees/sitemap_pieces_servi_paths.txt,
+          donnees/lien_r8_vers_r2.tsv, donnees/echantillon_6_2.tsv.
 Règle d'écart (écrite avant lecture des résultats, rejouable) :
   - indicateur numérique : écart retenu si |médiane G − médiane S| >= 25 % de la plus grande médiane
     ET les moyennes vont dans le même sens ; sinon « pas d'écart mesuré » ;
   - indicateur oui/non : écart retenu si la différence de part est >= 20 points ;
   - n = 20 + 20 (R2) et 5 + 10 (R8) : un écart retenu est une piste, pas une preuve de cause.
-Sortie : data/comparaison_6_2.tsv ; colonnes ajoutées à data/releve_prod_pages_complet.tsv."""
+Sortie : donnees/comparaison_6_2.tsv ; colonnes ajoutées à donnees/releve_prod_pages_complet.tsv."""
 import csv, statistics, sys, re
 from pathlib import Path
-B = Path(sys.argv[1]); D = B / "data"
+B = Path(sys.argv[1]); D = B / "donnees"
 pages = list(csv.DictReader(open(D / "releve_prod_pages.tsv"), delimiter="\t"))
 served = {l.strip() for l in open(D / "sitemap_pieces_servi_paths.txt")}
 RX = re.compile(r"^/pieces/[^/]*-(\d+)/[^/]*/[^/]*-(\d+)/[^/]*-(\d+)\.html$")

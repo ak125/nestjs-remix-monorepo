@@ -1,0 +1,34 @@
+role	indicateur	n_G	mediane_ou_part_G	moyenne_G	n_S	mediane_ou_part_S	moyenne_S	verdict
+R2	pieces_listees	20	15	19.1	19	10	15.4	écart
+R2	ld_product	20	15.5	14.4	20	10	10.1	écart
+R2	prix_affiches	20	26	30.9	20	25	24.8	pas d'écart mesuré
+R2	dispo_texte	20	2	3.2	20	3.5	4.8	écart
+R2	img_total	20	25	25.8	20	20.5	22.2	pas d'écart mesuré
+R2	img_piece	20	13.5	16.1	20	9	10.8	écart
+R2	mots_visibles	20	1429.5	1394.1	20	1242.5	1205.8	pas d'écart mesuré
+R2	mots_propres	20	529.5	519.1	20	311.5	415.3	écart
+R2	part_commune_pct	20	58.2	58.7	20	64.5	63.4	pas d'écart mesuré
+R2	liens_sortants_r2	20	0	0.0	20	0	0.0	pas d'écart mesuré
+R2	map_has_item	14	22	29.0	8	18	20.4	pas d'écart mesuré
+R2	impr_page_90j	20	230	289.8	20	38	47.6	écart
+R2	pos_page_90j	20	5.97	6.6	20	9.525	10.6	écart
+R2	sitemap_servi=oui (%)	20	40		20	15		écart
+R2	lien_depuis_r1=oui (%)	20	15		20	0		pas d'écart mesuré
+R2	robots_meta=index, follow (%)	20	100		20	95		pas d'écart mesuré
+R2	canonical_self=oui (%)	20	100		20	95		pas d'écart mesuré
+R2	dans_sitemap_p_link=oui (%)	20	70		20	40		écart
+R2	gamme_dans_catalogue_r8_cache=oui (%)	20	75		20	95		écart
+R8	ld_product	5	0	0.0	10	0	0.0	pas d'écart mesuré
+R8	prix_affiches	5	2	2.0	10	2	2.0	pas d'écart mesuré
+R8	dispo_texte	5	2	3.4	10	3	4.2	écart
+R8	img_total	5	21	21.8	10	21.5	21.8	pas d'écart mesuré
+R8	img_piece	5	0	0.0	10	0	0.0	pas d'écart mesuré
+R8	mots_visibles	5	914	951.4	10	916	949.3	pas d'écart mesuré
+R8	mots_propres	5	224	228.0	10	253	268.0	pas d'écart mesuré
+R8	part_commune_pct	5	74.9	75.5	10	71.65	70.7	pas d'écart mesuré
+R8	liens_sortants_r2	5	73	70.2	10	69.5	66.1	pas d'écart mesuré
+R8	impr_page_90j	5	73	436.6	10	103.5	139.6	pas d'écart mesuré
+R8	pos_page_90j	5	10.43	9.7	10	10.395	12.6	pas d'écart mesuré
+R8	sitemap_servi=oui (%)	5	0		10	0		pas d'écart mesuré
+R8	robots_meta=index, follow (%)	5	100		10	100		pas d'écart mesuré
+R8	canonical_self=oui (%)	5	100		10	100		pas d'écart mesuré

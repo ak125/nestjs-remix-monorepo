@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Mandat DM — complément au grain page (totaux Search Console par page, non anonymisés).
 
-Entrées : data/grain_page_r2_r8.tsv (sql/03), data/courbe_ctr_page_brut.tsv (sql/04),
-          data/rangs_4_15_<fen>.tsv (analyse_rangs.py).
+Entrées : donnees/grain_page_r2_r8.tsv (sql/03), donnees/courbe_ctr_page_brut.tsv (sql/04),
+          donnees/rangs_4_15_<fen>.tsv (analyse_rangs.py).
 Règles : taux attendu au rang 3 au grain page = courbe isotonique non croissante (rangs 1..20)
 sur les lignes jour × page R2+R8 depuis le 2026-06-01 ; clics gagnables page =
 impressions_page × max(0, taux rang 3 − taux réel page), pour les pages de rang page 4..15.
@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from analyse_rangs import isotonic_decreasing  # noqa: E402
 
 BASE = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".")
-DATA = BASE / "data"
+DATA = BASE / "donnees"
 cur = {int(r["rang"]): r for r in csv.DictReader(open(DATA / "courbe_ctr_page_brut.tsv"), delimiter="\t")}
 ranks = list(range(1, 21))
 ctr = [int(cur[b]["clics"]) / int(cur[b]["impr"]) for b in ranks]

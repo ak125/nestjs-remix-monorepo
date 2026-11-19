@@ -1,0 +1,910 @@
+rang_liste	role	path	query	n_mots	impr	clics	ctr_pct	pos	pos_desk	pos_mob	impr_desk	impr_mob	clics_desk	clics_mob	ecart_app	gamme	marque	modele	motif	clics_gagnables
+1	R2	/pieces/courroie-d-accessoire-10/renault-140/symbol-i-140092/1-4-16553.html	schema courroie alternateur symbol 1.4 essence	6	24	0	0.00	5.33		5.33		24		0		courroie-d-accessoire	renault	symbol-i	pièce + modèle + motorisation	0.44
+2	R2	/pieces/recepteur-d-embrayage-620/peugeot-128/207-128018/1-6-hdi-19353.html	récepteur embrayage 1.6 hdi	4	24	0	0.00	8.75		8.75		24		0		recepteur-d-embrayage	peugeot	207	pièce + modèle + motorisation	0.44
+3	R2	/pieces/thermostat-316/peugeot-128/206-ii-128131/1-4-19879.html	thermostat 206 1.4 essence	4	20	0	0.00	7.65		7.65		20		0		thermostat	peugeot	206-ii	pièce + modèle + motorisation	0.37
+4	R8	/constructeurs/peugeot-128/206-128014/1-1-i-9465.html	pieces detachees peugeot 206	4	20	0	0.00	13.85	13.85		20		0			(R8 sans gamme)	peugeot	206	pièces + modèle	0.37
+5	R8	/constructeurs/renault-140/megane-ii-break-140047/1-5-dci-17733.html	pièce megane 2 1.5 dci	5	18	0	0.00	8.89		8.89		18		0		(R8 sans gamme)	renault	megane-ii-break	pièces + modèle	0.33
+6	R2	/pieces/alternateur-4/peugeot-128/206-128014/1-1-i-9465.html	alternateur 206 1.1 essence	4	17	0	0.00	4.94		4.94		17		0		alternateur	peugeot	206	pièce + modèle + motorisation	0.31
+7	R8	/constructeurs/renault-140/symbol-i-140092/1-4-16v-16554.html	prix moteur 1.4 essence renault symbol	6	17	0	0.00	10.18		10.18		17		0		(R8 sans gamme)	renault	symbol-i	pièce + modèle + motorisation	0.31
+8	R2	/pieces/courroie-d-accessoire-10/renault-140/symbol-i-140092/1-4-16553.html	courroie alternateur symbol 1.4 essence	5	16	0	0.00	7.87		7.87		16		0		courroie-d-accessoire	renault	symbol-i	pièce + modèle + motorisation	0.29
+9	R8	/constructeurs/iveco-84/daily-iii-chassis-cabine-84014/2-8-d-35c15-34241.html	revision daily 3 camion plate-forme/châssis 35 c 15	8	16	0	0.00	8.81		8.81		16		0		(R8 sans gamme)	iveco	daily-iii-chassis-cabine	autre	0.29
+10	R2	/pieces/volant-moteur-577/opel-123/astra-j-sports-break-123027/1-7-cdti-9697.html	volant moteur opel astra j 1.7 cdti	7	14	0	0.00	5.57		5.57		14		0		volant-moteur	opel	astra-j-sports-break	pièce + modèle + motorisation	0.26
+11	R2	/pieces/alternateur-4/renault-140/symbol-i-140092/1-2-16v-19676.html	alternateur symbol 1.2 16v	4	13	0	0.00	6.69		6.69		13		0		alternateur	renault	symbol-i	pièce + modèle + motorisation	0.24
+12	R2	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	courroie partner 1.9 d	4	13	0	0.00	7.08		7.08		13		0		courroie-d-accessoire	peugeot	partner-i	pièce + modèle + motorisation	0.24
+13	R2	/pieces/support-moteur-247/peugeot-128/boxer-iii-fourgon-128143/2-2-hdi-11112.html	support moteur boxer 3	4	13	0	0.00	4.54		4.54		13		0		support-moteur	peugeot	boxer-iii-fourgon	autre	0.24
+14	R2	/pieces/thermostat-316/volkswagen-173/golf-vi-173046/1-6-tdi-33030.html	thermostat 1.6 tdi	3	13	0	0.00	8.31		8.31		13		0		thermostat	volkswagen	golf-vi	pièce + modèle + motorisation	0.24
+15	R2	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	schéma courroie accessoire partner 1.9 d avec clim	8	12	0	0.00	8.00		8.00		12		0		courroie-d-accessoire	peugeot	partner-i	pièce + modèle + motorisation	0.22
+16	R2	/pieces/poulie-vilebrequin-3213/peugeot-128/306-128032/2-0-hdi-12406.html	poulie vilebrequin 2.0 hdi	4	12	0	0.00	4.42		4.42		12		0		poulie-vilebrequin	peugeot	306	pièce + modèle + motorisation	0.22
+17	R2	/pieces/support-moteur-247/peugeot-128/307-128035/1-4-16182.html	support moteur 307 1.4 essence	5	12	0	0.00	7.42		7.42		12		0		support-moteur	peugeot	307	pièce + modèle + motorisation	0.22
+18	R2	/pieces/support-moteur-247/peugeot-128/406-128054/2-0-hdi-9981.html	support moteur 406 hdi	4	12	0	0.00	5.33		5.33		12		0		support-moteur	peugeot	406	pièce + modèle + motorisation	0.22
+19	R8	/constructeurs/fiat-58/panda-ii-58057/1-2-4x4-18093.html	piece panda 4x4	3	12	0	0.00	9.50		9.50		12		0		(R8 sans gamme)	fiat	panda-ii	pièces + modèle	0.22
+20	R8	/constructeurs/opel-123/astra-g-123017/2-0-opc-16v-13365.html	astra g opc	3	12	0	0.00	10.17		10.17		12		0		(R8 sans gamme)	opel	astra-g	autre	0.22
+21	R2	/pieces/capteur-temperature-d-air-admission-3939/renault-140/modus-140053/1-5-dci-18314.html	capteur temperature d'air 1.5 dci	5	11	0	0.00	10.09		10.09		11		0		capteur-temperature-d-air-admission	renault	modus	pièce + modèle + motorisation	0.20
+22	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128017/1-1-33837.html	référence courroie accessoire 206 1.1 essence	6	11	0	0.00	6.09		6.09		11		0		courroie-d-accessoire	peugeot	206	référence …	0.20
+23	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/206-128014/1-4-hdi-eco-16270.html	tendeur courroie 1.4 hdi	4	11	0	0.00	8.18		8.18		11		0		galet-tendeur-de-courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.20
+24	R2	/pieces/sonde-de-refroidissement-830/peugeot-128/206-128014/1-4-i-9466.html	sonde température 206 1.4 essence	5	11	0	0.00	6.45		6.45		11		0		sonde-de-refroidissement	peugeot	206	pièce + modèle + motorisation	0.20
+25	R2	/pieces/support-moteur-247/peugeot-128/206-128014/1-4-hdi-30091.html	support moteur 1.4 hdi	4	10	0	0.00	6.60		6.60		10		0		support-moteur	peugeot	206	pièce + modèle + motorisation	0.18
+26	R8	/constructeurs/bmw-33/serie-5-e60-33052/3-0-530-d-22661.html	pieces detachees bmw e60	4	10	0	0.00	14.10	14.10		10		0			(R8 sans gamme)	bmw	serie-5-e60	pièces + modèle	0.18
+27	R2	/pieces/alternateur-4/volkswagen-173/polo-vi-173114/1-4-30974.html	alternateur polo 6	3	9	0	0.00	5.67		5.67		9		0		alternateur	volkswagen	polo-vi	autre	0.16
+28	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128014/1-4-i-9466.html	courroie alternateur 206 1.4 essence	5	9	0	0.00	7.33		7.33		9		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.16
+29	R2	/pieces/filtre-a-huile-7/renault-140/clio-v-140174/1-0-tce-90-77699.html	filtre a huile clio 5 1.0 tce	7	9	0	0.00	8.56		8.56		9		0		filtre-a-huile	renault	clio-v	pièce + modèle + motorisation	0.16
+30	R2	/pieces/support-de-boite-vitesse-249/renault-140/kangoo-ii-140023/1-5-dci-23466.html	support boite kangoo 1.5 dci	5	9	0	0.00	8.44		8.44		9		0		support-de-boite-vitesse	renault	kangoo-ii	pièce + modèle + motorisation	0.16
+31	R2	/pieces/support-moteur-247/peugeot-128/207-128018/1-4-16v-26630.html	moteur 1.4 16v peugeot	4	9	0	0.00	9.22		9.22		9		0		support-moteur	peugeot	207	pièce + modèle + motorisation	0.16
+32	R2	/pieces/thermostat-316/peugeot-128/207-128018/1-4-16v-26630.html	calorstat 207 1.4 essence	4	9	0	0.00	8.56		8.56		9		0		thermostat	peugeot	207	pièce + modèle + motorisation	0.16
+33	R2	/pieces/thermostat-316/peugeot-128/207-128018/1-6-hdi-33260.html	thermostat 207 1.6 hdi	4	9	0	0.00	8.00		8.00		9		0		thermostat	peugeot	207	pièce + modèle + motorisation	0.16
+34	R8	/constructeurs/honda-74/cr-v-i-74066/2-0-4wd-8366.html	pièces crv rechargeable	3	9	0	0.00	14.11		14.11		9		0		(R8 sans gamme)	honda	cr-v-i	pièces + modèle	0.16
+35	R8	/constructeurs/mini-113/mini-r50-r53-113001/1-6-cooper-15890.html	pieces detachees mini r50	4	9	0	0.00	7.00	7.00		9		0			(R8 sans gamme)	mini	mini-r50-r53	pièces + modèle	0.16
+36	R8	/constructeurs/renault-140/scenic-i-140087/1-9-dti-15769.html	scenic 1.9 dti	3	9	0	0.00	10.89		10.89		9		0		(R8 sans gamme)	renault	scenic-i	pièce + modèle + motorisation	0.16
+37	R2	/pieces/contacteur-de-feu-de-recul-807/renault-140/symbol-i-140092/1-5-dci-19677.html	mano marche arrière symbole	4	8	0	0.00	10.38		10.38		8		0		contacteur-de-feu-de-recul	renault	symbol-i	autre	0.15
+38	R2	/pieces/demarreur-2/peugeot-128/206-128014/1-1-21501.html	starter 206 1.1 essence	4	8	0	0.00	7.38		7.38		8		0		demarreur	peugeot	206	pièce + modèle + motorisation	0.15
+39	R2	/pieces/filtre-a-huile-7/volkswagen-173/golf-viii-173302/1-5-etsi-82984.html	filtre a huile golf 8 1.5 tsi	7	8	0	0.00	7.75		7.75		8		0		filtre-a-huile	volkswagen	golf-viii	pièce + modèle + motorisation	0.15
+40	R2	/pieces/pompe-a-eau-1260/peugeot-128/208-128021/1-6-hdi-8686.html	pompe a eau 208 1.6 hdi	6	8	0	0.00	10.00		10.00		8		0		pompe-a-eau	peugeot	208	pièce + modèle + motorisation	0.15
+41	R8	/constructeurs/renault-140/symbol-i-140092/1-2-16v-19676.html	renault symbol 1.2 16v	4	8	0	0.00	7.25		7.25		8		0		(R8 sans gamme)	renault	symbol-i	pièce + modèle + motorisation	0.15
+42	R2	/pieces/cable-d-embrayage-478/citroen-46/xsara-picasso-46086/2-0-hdi-11873.html	câble embrayage xsara picasso 2.0 hdi	6	7	0	0.00	8.71		8.71		7		0		cable-d-embrayage	citroen	xsara-picasso	pièce + modèle + motorisation	0.13
+43	R2	/pieces/corps-papillon-158/peugeot-128/206-128014/1-4-i-9466.html	papillon 206 1.4 essence	4	7	0	0.00	8.86		8.86		7		0		corps-papillon	peugeot	206	pièce + modèle + motorisation	0.13
+44	R2	/pieces/thermostat-316/peugeot-128/208-128021/1-2-33807.html	thermostat 208 1.2 essence	4	7	0	0.00	8.86		8.86		7		0		thermostat	peugeot	208	pièce + modèle + motorisation	0.13
+45	R2	/pieces/thermostat-316/peugeot-128/partner-ii-tepee-128096/1-6-hdi-11044.html	thermostat peugeot partner 1.6 hdi	5	7	0	0.00	7.29		7.29		7		0		thermostat	peugeot	partner-ii-tepee	pièce + modèle + motorisation	0.13
+46	R8	/constructeurs/nissan-119/almera-i-119022/1-4-5225.html	acheter composants nissan almera 2000-2006 livraison france	7	7	0	0.00	7.14	7.14		7		0			(R8 sans gamme)	nissan	almera-i	autre	0.13
+47	R8	/constructeurs/nissan-119/interstar-119115/2-5-dci-16952.html	boite de vitesses nissan interstar 2,5	6	7	0	0.00	11.43	11.43		7		0			(R8 sans gamme)	nissan	interstar	pièce + modèle + motorisation	0.13
+48	R8	/constructeurs/volkswagen-173/golf-iii-173036/2-8-vr6-1877.html	pieces detachees volkswagen golf 3	5	7	0	0.00	13.86	13.86		7		0			(R8 sans gamme)	volkswagen	golf-iii	pièces + modèle	0.13
+49	R2	/pieces/alternateur-4/renault-140/kangoo-i-140021/1-9-d-8990.html	alternateur kangoo 1.9d	3	6	0	0.00	5.00		5.00		6		0		alternateur	renault	kangoo-i	pièce + modèle + motorisation	0.11
+50	R2	/pieces/corps-papillon-158/fiat-58/500-58126/1-3-d-multijet-23177.html	papillon fiat 500	3	6	0	0.00	8.83		8.83		6		0		corps-papillon	fiat	500	autre	0.11
+51	R2	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	montage courroie alternateur partner 1.9 d	6	6	0	0.00	8.50		8.50		6		0		courroie-d-accessoire	peugeot	partner-i	pièce + modèle + motorisation	0.11
+52	R2	/pieces/filtre-a-carburant-9/peugeot-128/207-128018/1-4-16v-26630.html	filtre essence 207 1.4	4	6	0	0.00	9.83		9.83		6		0		filtre-a-carburant	peugeot	207	pièce + modèle + motorisation	0.11
+53	R2	/pieces/filtre-a-carburant-9/renault-140/sandero-stepway-ii-140161/0-9-tce-77612.html	filtre à essence dacia sandero stepway 0.9 tce	8	6	0	0.00	9.17		9.40		5		0		filtre-a-carburant	renault	sandero-stepway-ii	pièce + modèle + motorisation	0.11
+54	R2	/pieces/filtre-a-carburant-9/volkswagen-173/touran-i-173141/1-9-tdi-17119.html	filtre a gasoil touran 1.9 tdi	6	6	0	0.00	9.00		9.00		6		0		filtre-a-carburant	volkswagen	touran-i	pièce + modèle + motorisation	0.11
+55	R2	/pieces/pompe-de-direction-assistee-12/dacia-47/logan-mcv-i-47019/1-5-dci-24491.html	pompe direction assistée dacia logan	5	6	0	0.00	5.17		5.17		6		0		pompe-de-direction-assistee	dacia	logan-mcv-i	autre	0.11
+56	R2	/pieces/support-moteur-247/renault-140/kangoo-i-140021/1-9-d-8990.html	support moteur kangoo 1.9 d	5	6	0	0.00	8.50		8.50		6		0		support-moteur	renault	kangoo-i	pièce + modèle + motorisation	0.11
+57	R2	/pieces/thermostat-316/dacia-47/logan-i-47017/1-4-18389.html	thermostat logan 1.4 essence	4	6	0	0.00	9.83		9.83		6		0		thermostat	dacia	logan-i	pièce + modèle + motorisation	0.11
+58	R2	/pieces/thermostat-316/ford-60/focus-iii-60081/1-0-ecoboost-29566.html	thermostat ford focus 1.0 ecoboost	5	6	0	0.00	5.17		5.17		6		0		thermostat	ford	focus-iii	pièce + modèle + motorisation	0.11
+59	R8	/constructeurs/bmw-33/serie-5-e60-33052/3-0-530-d-22661.html	pièces bmw e60	3	6	0	0.00	14.00		14.00		6		0		(R8 sans gamme)	bmw	serie-5-e60	pièces + modèle	0.11
+60	R8	/constructeurs/peugeot-128/207-128018/2-0-hdi-57721.html	peugeot 207 2.0 hdi	4	6	0	0.00	9.17		9.17		6		0		(R8 sans gamme)	peugeot	207	pièce + modèle + motorisation	0.11
+61	R8	/constructeurs/peugeot-128/208-128021/1-6-gti-58650.html	pieces 208 gti	3	6	0	0.00	5.17		5.17		6		0		(R8 sans gamme)	peugeot	208	pièces + modèle	0.11
+62	R8	/constructeurs/volkswagen-173/golf-v-173044/1-9-tdi-18114.html	piece golf 5	3	6	0	0.00	8.50	8.50		6		0			(R8 sans gamme)	volkswagen	golf-v	pièces + modèle	0.11
+63	R2	/pieces/alternateur-4/citroen-46/nemo-46068/1-4-hdi-24523.html	alternateur nemo 1.4 hdi	4	5	0	0.00	7.00		7.00		5		0		alternateur	citroen	nemo	pièce + modèle + motorisation	0.09
+64	R2	/pieces/alternateur-4/volkswagen-173/golf-vii-173049/2-0-tdi-56147.html	alternateur golf 7 2.0 tdi	5	5	0	0.00	10.00		10.00		5		0		alternateur	volkswagen	golf-vii	pièce + modèle + motorisation	0.09
+65	R2	/pieces/bougie-d-allumage-686/fiat-58/500-c-58122/1-2-32825.html	bougie d'allumage fiat 500	4	5	0	0.00	10.80		10.80		5		0		bougie-d-allumage	fiat	500-c	autre	0.09
+66	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-sw-128016/1-4-hdi-16678.html	courroie accessoire 206 1.4 hdi avec clim	7	5	0	0.00	5.60		5.60		5		0		courroie-d-accessoire	peugeot	206-sw	pièce + modèle + motorisation	0.09
+67	R2	/pieces/courroie-d-accessoire-10/peugeot-128/207-128018/1-4-16v-19349.html	courroie alternateur 207 1.4 essence	5	5	0	0.00	7.60		7.60		5		0		courroie-d-accessoire	peugeot	207	pièce + modèle + motorisation	0.09
+68	R2	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	berlingo 1.9 courroie accessoire partner 1.9 d sans clim	9	5	0	0.00	6.00		6.00		5		0		courroie-d-accessoire	peugeot	partner-i	pièce + modèle + motorisation	0.09
+69	R2	/pieces/courroie-d-accessoire-10/renault-140/clio-ii-140003/1-9-d-9044.html	courroie accessoire clio 2 1.9 d	6	5	0	0.00	6.40		6.40		5		0		courroie-d-accessoire	renault	clio-ii	pièce + modèle + motorisation	0.09
+70	R2	/pieces/courroie-d-accessoire-10/renault-140/clio-iv-140006/1-2-16v-57284.html	courroie climatiseur clio 4 1.2 16v	6	5	0	0.00	5.00	5.00		5		0			courroie-d-accessoire	renault	clio-iv	pièce + modèle + motorisation	0.09
+71	R2	/pieces/filtre-a-air-8/peugeot-128/206-128014/1-4-i-9466.html	filtre a air 206 1.4 essence	6	5	0	0.00	8.20		8.20		5		0		filtre-a-air	peugeot	206	pièce + modèle + motorisation	0.09
+72	R2	/pieces/filtre-a-carburant-9/renault-140/clio-ii-140003/1-4-16v-14184.html	filtre essence clio 2 1.4 16v	6	5	0	0.00	9.80		9.80		5		0		filtre-a-carburant	renault	clio-ii	pièce + modèle + motorisation	0.09
+73	R2	/pieces/filtre-a-huile-7/fiat-58/tipo-ii-58214/1-4-66299.html	filtre a huile fiat tipo 1.4 essence	7	5	0	0.00	9.60		9.60		5		0		filtre-a-huile	fiat	tipo-ii	pièce + modèle + motorisation	0.09
+74	R2	/pieces/filtre-a-huile-7/renault-140/captur-140001/1-2-tce-77169.html	filtre à huile renault captur 1.2 essence	7	5	0	0.00	10.80		10.80		5		0		filtre-a-huile	renault	captur	pièce + modèle + motorisation	0.09
+75	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/206-128014/1-4-hdi-eco-16270.html	galet tendeur 206 1.4 hdi	5	5	0	0.00	6.40		6.40		5		0		galet-tendeur-de-courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.09
+76	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/207-128018/1-6-hdi-19352.html	tendeur 1.6 hdi	3	5	0	0.00	9.80		9.80		5		0		galet-tendeur-de-courroie-d-accessoire	peugeot	207	pièce + modèle + motorisation	0.09
+77	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/307-128035/2-0-hdi-15903.html	courroie accessoire 307 2.0 hdi 90	6	5	0	0.00	8.00		8.00		5		0		galet-tendeur-de-courroie-d-accessoire	peugeot	307	pièce + modèle + motorisation	0.09
+78	R2	/pieces/kit-d-embrayage-479/peugeot-128/206-128014/1-4-i-9466.html	prix embrayage 206 1.4 essence	5	5	0	0.00	8.40		8.40		5		0		kit-d-embrayage	peugeot	206	pièce + modèle + motorisation	0.09
+79	R2	/pieces/poussoir-de-soupape-1216/peugeot-128/207-128018/1-4-hdi-19354.html	poussoir 1.4 hdi	3	5	0	0.00	8.20		8.20		5		0		poussoir-de-soupape	peugeot	207	pièce + modèle + motorisation	0.09
+80	R2	/pieces/recepteur-d-embrayage-620/citroen-46/c4-i-46030/1-6-hdi-18337.html	récepteur embrayage c4 1.6 hdi	5	5	0	0.00	10.20		10.20		5		0		recepteur-d-embrayage	citroen	c4-i	pièce + modèle + motorisation	0.09
+81	R2	/pieces/sonde-de-refroidissement-830/peugeot-128/206-128014/1-1-21501.html	sonde température 206 1.1 essence	5	5	0	0.00	8.40		8.40		5		0		sonde-de-refroidissement	peugeot	206	pièce + modèle + motorisation	0.09
+82	R2	/pieces/support-moteur-247/peugeot-128/207-cc-128019/1-6-hdi-20030.html	support moteur 207 1.6 hdi	5	5	0	0.00	9.40		9.40		5		0		support-moteur	peugeot	207-cc	pièce + modèle + motorisation	0.09
+83	R2	/pieces/vanne-egr-1145/volkswagen-173/caddy-iv-173228/1-6-tdi-82737.html	vanne egr caddy 1.6 tdi	5	5	0	0.00	9.60		9.60		5		0		vanne-egr	volkswagen	caddy-iv	pièce + modèle + motorisation	0.09
+84	R8	/constructeurs/bmw-33/serie-1-e87-33018/2-0-118-d-58253.html	pièces bmw série 1 e87	5	5	0	0.00	7.60	7.60		5		0			(R8 sans gamme)	bmw	serie-1-e87	pièces + modèle	0.09
+85	R8	/constructeurs/citroen-46/saxo-46070/1-6-vts-5552.html	pièces saxo vts	3	5	0	0.00	12.40		12.40		5		0		(R8 sans gamme)	citroen	saxo	pièces + modèle	0.09
+86	R8	/constructeurs/fiat-58/grande-punto-58043/1-3-d-multijet-9158.html	accessoire fiat punto	3	5	0	0.00	12.40		12.40		5		0		(R8 sans gamme)	fiat	grande-punto	autre	0.09
+87	R8	/constructeurs/mercedes-benz-108/classe-c-w202-108037/c-250-t-td-2-5-5117.html	mercedes w202 250 td	4	5	0	0.00	10.20	10.20		5		0			(R8 sans gamme)	mercedes-benz	classe-c-w202	autre	0.09
+88	R8	/constructeurs/opel-123/astra-g-123017/1-6-16v-8995.html	opel astra g 1.6 16v	5	5	0	0.00	6.60		6.60		5		0		(R8 sans gamme)	opel	astra-g	pièce + modèle + motorisation	0.09
+89	R8	/constructeurs/renault-140/megane-ii-break-140047/1-5-dci-17733.html	accessoire renault megane 2	4	5	0	0.00	8.60		8.60		5		0		(R8 sans gamme)	renault	megane-ii-break	autre	0.09
+90	R8	/constructeurs/volkswagen-173/golf-iii-173036/2-8-vr6-1877.html	piece pour golf 3	4	5	0	0.00	13.20		13.20		5		0		(R8 sans gamme)	volkswagen	golf-iii	pièces + modèle	0.09
+91	R2	/pieces/alternateur-4/opel-123/astra-h-twintop-123024/1-9-cdti-18951.html	alternateur opel astra prix	4	4	0	0.00	13.50	13.50		4		0			alternateur	opel	astra-h-twintop	autre	0.07
+92	R2	/pieces/alternateur-4/peugeot-128/partner-i-128093/1-9-d-18835.html	alternateur partner 1.9 d prix	5	4	0	0.00	5.25		5.25		4		0		alternateur	peugeot	partner-i	pièce + modèle + motorisation	0.07
+93	R2	/pieces/bougie-d-allumage-686/citroen-46/c3-i-46020/1-1-i-16330.html	bougie citroën c3 1.1 essence	5	4	0	0.00	10.00		10.00		4		0		bougie-d-allumage	citroen	c3-i	pièce + modèle + motorisation	0.07
+94	R2	/pieces/bougie-d-allumage-686/citroen-46/c3-iii-46099/1-2-puretech-65288.html	bougie citroën c3 1.2 puretech	5	4	0	0.00	10.50		10.50		4		0		bougie-d-allumage	citroen	c3-iii	pièce + modèle + motorisation	0.07
+95	R2	/pieces/bougie-d-allumage-686/fiat-58/500-c-58122/1-2-32825.html	bougie fiat 500 1.2 essence	5	4	0	0.00	7.25		7.25		4		0		bougie-d-allumage	fiat	500-c	pièce + modèle + motorisation	0.07
+96	R2	/pieces/bougie-de-prechauffage-243/dacia-47/sandero-i-47024/1-5-dci-65529.html	bougie de préchauffage dacia sandero 1.5 dci	7	4	0	0.00	9.00		9.00		4		0		bougie-de-prechauffage	dacia	sandero-i	pièce + modèle + motorisation	0.07
+97	R2	/pieces/compresseur-de-climatisation-447/peugeot-128/208-128021/1-4-vti-33823.html	compresseur peugeot 208	3	4	0	0.00	7.75		7.75		4		0		compresseur-de-climatisation	peugeot	208	autre	0.07
+98	R2	/pieces/compresseur-de-climatisation-447/peugeot-128/partner-i-128093/1-9-d-18835.html	compresseur clim partner 1.9 d	5	4	0	0.00	7.50		7.50		4		0		compresseur-de-climatisation	peugeot	partner-i	pièce + modèle + motorisation	0.07
+99	R2	/pieces/courroie-d-accessoire-10/citroen-46/saxo-46070/1-5-d-5616.html	courroie alternateur saxo 1.5 d	5	4	0	0.00	5.50		5.50		4		0		courroie-d-accessoire	citroen	saxo	pièce + modèle + motorisation	0.07
+100	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128014/2-0-hdi-14160.html	courroie accessoire 2l hdi 90	5	4	0	0.00	7.75		7.75		4		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.07
+101	R2	/pieces/courroie-d-accessoire-10/renault-140/megane-ii-140046/1-9-dci-16920.html	courroie accessoire megane 2 1.9 dci	6	4	0	0.00	10.25		10.25		4		0		courroie-d-accessoire	renault	megane-ii	pièce + modèle + motorisation	0.07
+102	R2	/pieces/debitmetre-d-air-3927/volkswagen-173/golf-vi-break-173047/1-6-tdi-32609.html	débitmètre golf 6 1.6 tdi 105	6	4	0	0.00	5.25		5.25		4		0		debitmetre-d-air	volkswagen	golf-vi-break	pièce + modèle + motorisation	0.07
+103	R2	/pieces/demarreur-2/peugeot-128/206-128014/1-4-i-9466.html	demarreur 206 1.4 essence	4	4	0	0.00	10.00		10.00		4		0		demarreur	peugeot	206	pièce + modèle + motorisation	0.07
+104	R2	/pieces/disque-de-frein-82/renault-140/symbol-ii-140093/1-6-16v-9293.html	prix disque de frein renault symbol	6	4	0	0.00	10.00		10.00		4		0		disque-de-frein	renault	symbol-ii	autre	0.07
+105	R2	/pieces/filtre-a-carburant-9/hyundai-76/accent-iv-berline-76110/1-6-crdi-55645.html	filtre gasoil accent 1.6 crdi	5	4	0	0.00	10.50		10.50		4		0		filtre-a-carburant	hyundai	accent-iv-berline	pièce + modèle + motorisation	0.07
+106	R2	/pieces/filtre-a-huile-7/peugeot-128/208-128021/1-2-puretech-76375.html	filtre huile 1.2 puretech	4	4	0	0.00	7.00		7.00		4		0		filtre-a-huile	peugeot	208	pièce + modèle + motorisation	0.07
+107	R2	/pieces/filtre-a-huile-7/volkswagen-173/caddy-iii-173018/1-6-tdi-34955.html	filtre a huile caddy 1.6 tdi	6	4	0	0.00	4.25		4.25		4		0		filtre-a-huile	volkswagen	caddy-iii	pièce + modèle + motorisation	0.07
+108	R2	/pieces/kit-d-embrayage-479/renault-140/trafic-ii-140096/1-9-dci-15716.html	embrayage trafic 2 1.9 dci	5	4	0	0.00	6.50		6.50		4		0		kit-d-embrayage	renault	trafic-ii	pièce + modèle + motorisation	0.07
+109	R2	/pieces/pompe-a-eau-1260/opel-123/corsa-c-123046/1-2-twinport-18229.html	prix pompe à eau opel corsa 1.2 essence	8	4	0	0.00	9.25		9.25		4		0		pompe-a-eau	opel	corsa-c	pièce + modèle + motorisation	0.07
+110	R2	/pieces/pompe-a-eau-1260/renault-140/clio-ii-140003/1-2-16v-16104.html	pompe à eau clio 2 1.2 essence	7	4	0	0.00	9.50		9.50		4		0		pompe-a-eau	renault	clio-ii	pièce + modèle + motorisation	0.07
+111	R2	/pieces/soufflet-de-cardan-193/citroen-46/c15-46015/1-0-e-20267.html	soufflet de cardan c15	4	4	0	0.00	14.00		14.00		4		0		soufflet-de-cardan	citroen	c15	autre	0.07
+112	R2	/pieces/support-moteur-247/ford-60/focus-iii-60081/1-6-tdci-8039.html	support moteur ford focus 1.6 tdci	6	4	0	0.00	5.25		5.25		4		0		support-moteur	ford	focus-iii	pièce + modèle + motorisation	0.07
+113	R2	/pieces/support-moteur-247/opel-123/corsa-d-123048/1-3-cdti-19725.html	support moteur opel corsa d 1.3 cdti	7	4	0	0.00	7.00		7.00		4		0		support-moteur	opel	corsa-d	pièce + modèle + motorisation	0.07
+114	R2	/pieces/support-moteur-247/peugeot-128/207-128018/1-4-16v-26630.html	support 8 207 1.4 essence	5	4	0	0.00	8.25		8.25		4		0		support-moteur	peugeot	207	pièce + modèle + motorisation	0.07
+115	R2	/pieces/support-moteur-247/peugeot-128/208-128021/1-6-hdi-8685.html	support moteur 208 1.6 hdi prix	6	4	0	0.00	8.50		8.50		4		0		support-moteur	peugeot	208	pièce + modèle + motorisation	0.07
+116	R2	/pieces/thermostat-316/peugeot-128/207-128018/1-4-16v-26630.html	changer thermostat 207 1.4 essence	5	4	0	0.00	9.25		9.25		4		0		thermostat	peugeot	207	pièce + modèle + motorisation	0.07
+117	R2	/pieces/thermostat-316/volkswagen-173/caddy-iii-173018/1-6-tdi-34958.html	thermostat 1.6 tdi	3	4	0	0.00	11.00		11.00		4		0		thermostat	volkswagen	caddy-iii	pièce + modèle + motorisation	0.07
+118	R2	/pieces/thermostat-316/volkswagen-173/golf-iii-173036/1-9-tdi-1868.html	thermostat golf 3 1.9 tdi	5	4	0	0.00	6.50		6.50		4		0		thermostat	volkswagen	golf-iii	pièce + modèle + motorisation	0.07
+119	R8	/constructeurs/mercedes-benz-108/classe-c-w202-108037/c-180-1-8-966.html	pieces mercedes w202	3	4	0	0.00	8.00		8.00		4		0		(R8 sans gamme)	mercedes-benz	classe-c-w202	pièces + modèle	0.07
+120	R8	/constructeurs/mini-113/mini-r50-r53-113001/1-6-cooper-15890.html	pieces mini r53	3	4	0	0.00	13.75	13.75		4		0			(R8 sans gamme)	mini	mini-r50-r53	pièces + modèle	0.07
+121	R8	/constructeurs/peugeot-128/206-128014/1-4-hdi-eco-16270.html	pieces peugeot 206 hdi	4	4	0	0.00	8.75		8.75		4		0		(R8 sans gamme)	peugeot	206	pièces + modèle	0.07
+122	R8	/constructeurs/renault-140/espace-iii-140011/2-2-12v-td-7830.html	piece espace 3 2.2 dt	5	4	0	0.00	9.50	9.50		4		0			(R8 sans gamme)	renault	espace-iii	pièces + modèle	0.07
+123	R8	/constructeurs/volkswagen-173/golf-v-173044/1-9-tdi-18114.html	accessoires golf 5 1.9 tdi	5	4	0	0.00	7.00		7.00		4		0		(R8 sans gamme)	volkswagen	golf-v	pièce + modèle + motorisation	0.07
+124	R2	/pieces/alternateur-4/peugeot-128/206-128014/1-4-hdi-eco-16270.html	alternateur 1.4 hdi	3	3	0	0.00	7.00		7.00		3		0		alternateur	peugeot	206	pièce + modèle + motorisation	0.05
+125	R2	/pieces/alternateur-4/peugeot-128/partner-i-128093/1-9-d-18835.html	alternateur peugeot partner 1.9 d	5	3	0	0.00	10.33		10.33		3		0		alternateur	peugeot	partner-i	pièce + modèle + motorisation	0.05
+126	R2	/pieces/alternateur-4/renault-140/kangoo-i-express-140022/1-9-d-9204.html	alternateur kangoo 1.9d	3	3	0	0.00	7.00		7.00		3		0		alternateur	renault	kangoo-i-express	pièce + modèle + motorisation	0.05
+127	R2	/pieces/bobine-d-allumage-689/peugeot-128/206-128014/1-1-i-9465.html	bobine allumage 206 1.1 essence	5	3	0	0.00	10.00		10.00		3		0		bobine-d-allumage	peugeot	206	pièce + modèle + motorisation	0.05
+128	R2	/pieces/bougie-d-allumage-686/volkswagen-173/polo-vii-173167/1-6-mpi-82620.html	bougie 1.6 mpi	3	3	0	0.00	6.67		6.67		3		0		bougie-d-allumage	volkswagen	polo-vii	pièce + modèle + motorisation	0.05
+129	R2	/pieces/bras-de-suspension-273/citroen-46/c15-46015/1-4-e-9120.html	bras de suspension c15 diesel	5	3	0	0.00	7.33		7.33		3		0		bras-de-suspension	citroen	c15	pièce + modèle + motorisation	0.05
+130	R2	/pieces/cardan-13/peugeot-128/partner-i-128093/1-6-hdi-19524.html	cardan partner 1.6 hdi	4	3	0	0.00	7.00		7.00		3		0		cardan	peugeot	partner-i	pièce + modèle + motorisation	0.05
+131	R2	/pieces/cardan-13/renault-140/express-140014/1-9-d-3771.html	cardan renault express	3	3	0	0.00	7.67		7.67		3		0		cardan	renault	express	autre	0.05
+132	R2	/pieces/compresseur-de-climatisation-447/peugeot-128/308-sw-i-128042/1-6-hdi-26615.html	compresseur clim 308 1.6 hdi	5	3	0	0.00	10.00		10.00		3		0		compresseur-de-climatisation	peugeot	308-sw-i	pièce + modèle + motorisation	0.05
+133	R2	/pieces/corps-papillon-158/peugeot-128/206-128014/1-1-i-9465.html	boitier papillon 206 1.1 essence	5	3	0	0.00	11.33		11.33		3		0		corps-papillon	peugeot	206	pièce + modèle + motorisation	0.05
+134	R2	/pieces/courroie-d-accessoire-10/fiat-58/doblo-ii-58023/1-3-jtd-65964.html	courroie alternateur fiat doblo 1.3 multijet	6	3	0	0.00	8.67		8.67		3		0		courroie-d-accessoire	fiat	doblo-ii	pièce + modèle + motorisation	0.05
+135	R2	/pieces/courroie-d-accessoire-10/ford-60/transit-vii-60345/2-4-tdci-19572.html	schéma courroie accessoire ford transit 2.4 tdci 2009	8	3	0	0.00	8.67		8.67		3		0		courroie-d-accessoire	ford	transit-vii	pièce + modèle + motorisation	0.05
+136	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128014/2-0-hdi-14160.html	courroie accessoire 2l hdi avec clim	6	3	0	0.00	8.33		8.33		3		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.05
+137	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-sw-128016/1-4-hdi-16678.html	courroie d'accessoire 206 1.4 hdi	5	3	0	0.00	6.33	6.33		3		0			courroie-d-accessoire	peugeot	206-sw	pièce + modèle + motorisation	0.05
+138	R2	/pieces/courroie-d-accessoire-10/peugeot-128/207-128018/1-4-hdi-19354.html	courroie accessoire 207 1.4 hdi	5	3	0	0.00	8.33		8.33		3		0		courroie-d-accessoire	peugeot	207	pièce + modèle + motorisation	0.05
+139	R2	/pieces/courroie-d-accessoire-10/renault-140/laguna-ii-140028/1-9-dci-15476.html	schema courroie accessoire laguna 2 1.9 dci	7	3	0	0.00	7.67		7.67		3		0		courroie-d-accessoire	renault	laguna-ii	pièce + modèle + motorisation	0.05
+140	R2	/pieces/debitmetre-d-air-3927/peugeot-128/206-128014/1-4-i-9466.html	débitmètre 206 1.4 essence	4	3	0	0.00	5.67		5.67		3		0		debitmetre-d-air	peugeot	206	pièce + modèle + motorisation	0.05
+141	R2	/pieces/demarreur-2/dacia-47/logan-i-47017/1-4-18389.html	demarreur logan 1.4	3	3	0	0.00	5.67		5.67		3		0		demarreur	dacia	logan-i	pièce + modèle + motorisation	0.05
+142	R2	/pieces/filtre-a-air-8/peugeot-128/partner-ii-tepee-128096/1-6-hdi-11044.html	filtre a air partner 1.6 hdi	6	3	0	0.00	8.00		8.00		3		0		filtre-a-air	peugeot	partner-ii-tepee	pièce + modèle + motorisation	0.05
+143	R2	/pieces/filtre-a-air-8/volkswagen-173/caddy-iii-173018/1-6-tdi-34958.html	filtre a air caddy 1.6 tdi	6	3	0	0.00	8.33		8.33		3		0		filtre-a-air	volkswagen	caddy-iii	pièce + modèle + motorisation	0.05
+144	R2	/pieces/filtre-a-carburant-9/peugeot-128/206-128014/1-1-i-9465.html	filtre à essence 206 1.1 essence	6	3	0	0.00	10.33		10.33		3		0		filtre-a-carburant	peugeot	206	pièce + modèle + motorisation	0.05
+145	R2	/pieces/filtre-a-carburant-9/peugeot-128/207-128018/1-4-16v-26630.html	filtre à essence peugeot 207 1.4 essence	7	3	0	0.00	9.33		9.33		3		0		filtre-a-carburant	peugeot	207	pièce + modèle + motorisation	0.05
+146	R2	/pieces/filtre-a-huile-7/fiat-58/doblo-cargo-ii-58022/1-3-d-multijet-33402.html	filtre à huile fiat doblo 1.3 multijet	7	3	0	0.00	4.67		4.67		3		0		filtre-a-huile	fiat	doblo-cargo-ii	pièce + modèle + motorisation	0.05
+147	R2	/pieces/filtre-a-huile-7/fiat-58/doblo-ii-58023/1-3-jtd-65964.html	filtre à huile fiat doblo 1.3 multijet	7	3	0	0.00	8.33		8.33		3		0		filtre-a-huile	fiat	doblo-ii	pièce + modèle + motorisation	0.05
+148	R2	/pieces/filtre-a-huile-7/kia-88/morning-hatchback-88099/1-0-70700.html	huile moteur kia morning 1.0 essence	6	3	0	0.00	9.00		9.00		3		0		filtre-a-huile	kia	morning-hatchback	pièce + modèle + motorisation	0.05
+149	R2	/pieces/filtre-a-huile-7/mercedes-benz-108/classe-c-w203-108038/c-220-cdi-2-2-54930.html	filtre à huile mercedes c 220 cdi	7	3	0	0.00	8.33		8.33		3		0		filtre-a-huile	mercedes-benz	classe-c-w203	pièce + modèle + motorisation	0.05
+150	R2	/pieces/filtre-a-huile-7/opel-123/corsa-d-123048/1-3-cdti-19726.html	filtre a huile corsa d 1.3 cdti	7	3	0	0.00	9.67		9.67		3		0		filtre-a-huile	opel	corsa-d	pièce + modèle + motorisation	0.05
+151	R2	/pieces/filtre-a-huile-7/peugeot-128/207-128018/1-4-16v-19349.html	filtre à huile 207 1.4 essence	6	3	0	0.00	8.33		8.33		3		0		filtre-a-huile	peugeot	207	pièce + modèle + motorisation	0.05
+152	R2	/pieces/filtre-a-huile-7/peugeot-128/207-128018/1-4-16v-26630.html	filtre à huile 207 1.4 essence	6	3	0	0.00	7.00		7.00		3		0		filtre-a-huile	peugeot	207	pièce + modèle + motorisation	0.05
+153	R2	/pieces/filtre-a-huile-7/peugeot-128/407-128057/2-0-hdi-17852.html	filtre à huile 407 2.0 hdi 136	7	3	0	0.00	6.67		6.67		3		0		filtre-a-huile	peugeot	407	pièce + modèle + motorisation	0.05
+154	R2	/pieces/filtre-a-huile-7/renault-140/master-ii-140038/2-5-dci-23076.html	filtre a huile master 2.5 dci	6	3	0	0.00	9.00		9.00		3		0		filtre-a-huile	renault	master-ii	pièce + modèle + motorisation	0.05
+155	R2	/pieces/filtre-d-habitacle-424/citroen-46/jumper-iii-46119/2-2-hdi-12065.html	filtre habitacle jumper 3	4	3	0	0.00	11.00		11.00		3		0		filtre-d-habitacle	citroen	jumper-iii	autre	0.05
+156	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/206-128014/1-4-hdi-eco-16270.html	galet tendeur 1.4 hdi	4	3	0	0.00	5.67		5.67		3		0		galet-tendeur-de-courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.05
+157	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/207-128018/1-6-hdi-19352.html	tendeur courroie alternateur 1.6 hdi	5	3	0	0.00	9.67		9.67		3		0		galet-tendeur-de-courroie-d-accessoire	peugeot	207	pièce + modèle + motorisation	0.05
+158	R2	/pieces/injecteur-3902/peugeot-128/partner-i-128093/1-9-d-18835.html	injecteur partner 1.9 d	4	3	0	0.00	10.33		10.33		3		0		injecteur	peugeot	partner-i	pièce + modèle + motorisation	0.05
+159	R2	/pieces/joint-de-cache-culbuteurs-321/volkswagen-173/golf-vi-173046/1-6-tdi-33030.html	changer joint cache culbuteur golf 6 1.6 tdi	8	3	0	0.00	5.67		5.67		3		0		joint-de-cache-culbuteurs	volkswagen	golf-vi	pièce + modèle + motorisation	0.05
+160	R2	/pieces/kit-d-embrayage-479/volkswagen-173/golf-vi-173046/1-6-tdi-31340.html	embrayage golf 6 1.6 tdi 105 prix	7	3	0	0.00	9.00		9.00		3		0		kit-d-embrayage	volkswagen	golf-vi	pièce + modèle + motorisation	0.05
+161	R2	/pieces/plaquette-de-frein-402/citroen-46/c3-i-46020/1-4-hdi-23829.html	plaquette de frein c3 1.4 hdi	6	3	0	0.00	11.33		11.33		3		0		plaquette-de-frein	citroen	c3-i	pièce + modèle + motorisation	0.05
+162	R2	/pieces/plaquette-de-frein-402/citroen-46/c4-i-46030/1-6-hdi-30137.html	plaquette de frein avant c4 1.6 hdi	7	3	0	0.00	13.33		13.33		3		0		plaquette-de-frein	citroen	c4-i	pièce + modèle + motorisation	0.05
+163	R2	/pieces/plaquette-de-frein-402/peugeot-128/308-i-128040/1-6-hdi-33271.html	plaquette de frein 308 1.6 hdi	6	3	0	0.00	6.00		6.00		3		0		plaquette-de-frein	peugeot	308-i	pièce + modèle + motorisation	0.05
+164	R2	/pieces/plaquette-de-frein-402/renault-140/clio-iv-140006/1-2-16v-57284.html	plaquette de frein clio 4	5	3	0	0.00	8.33		8.33		3		0		plaquette-de-frein	renault	clio-iv	autre	0.05
+165	R2	/pieces/radiateur-de-refroidissement-470/citroen-46/xsara-46083/2-0-hdi-16246.html	radiateur xsara 2.0 hdi	4	3	0	0.00	8.00		8.00		3		0		radiateur-de-refroidissement	citroen	xsara	pièce + modèle + motorisation	0.05
+166	R2	/pieces/radiateur-de-refroidissement-470/peugeot-128/206-128014/1-1-i-9465.html	radiateur 206 1.1 essence	4	3	0	0.00	9.67		9.67		3		0		radiateur-de-refroidissement	peugeot	206	pièce + modèle + motorisation	0.05
+167	R2	/pieces/radiateur-de-refroidissement-470/renault-140/symbol-i-140092/1-4-77376.html	radiateur symbol 1.4	3	3	0	0.00	9.33		9.33		3		0		radiateur-de-refroidissement	renault	symbol-i	pièce + modèle + motorisation	0.05
+168	R2	/pieces/recepteur-d-embrayage-620/peugeot-128/207-128018/1-6-hdi-19353.html	pompe embrayage 207 1.6 hdi	5	3	0	0.00	10.00		10.00		3		0		recepteur-d-embrayage	peugeot	207	pièce + modèle + motorisation	0.05
+169	R2	/pieces/support-moteur-247/peugeot-128/407-128057/2-0-hdi-33426.html	support moteur 407 2.0 hdi	5	3	0	0.00	9.67		9.67		3		0		support-moteur	peugeot	407	pièce + modèle + motorisation	0.05
+170	R2	/pieces/support-moteur-247/volkswagen-173/golf-v-173044/1-9-tdi-17484.html	support moteur 1.9 tdi 105	5	3	0	0.00	12.00		12.00		3		0		support-moteur	volkswagen	golf-v	pièce + modèle + motorisation	0.05
+171	R2	/pieces/thermostat-316/citroen-46/saxo-46070/1-5-d-5616.html	thermostat saxo 1.5 d	4	3	0	0.00	10.00		10.00		3		0		thermostat	citroen	saxo	pièce + modèle + motorisation	0.05
+172	R2	/pieces/thermostat-316/ford-60/focus-i-break-60077/1-8-tdci-15812.html	thermostat ford focus 1.8 tdci	5	3	0	0.00	7.67		7.67		3		0		thermostat	ford	focus-i-break	pièce + modèle + motorisation	0.05
+173	R2	/pieces/thermostat-316/peugeot-128/206-128014/2-0-hdi-14160.html	thermostat 2.0 hdi 90	4	3	0	0.00	6.67		6.67		3		0		thermostat	peugeot	206	pièce + modèle + motorisation	0.05
+174	R2	/pieces/thermostat-316/peugeot-128/207-128018/1-4-16v-26630.html	thermostat piloté 207 1.4 essence	5	3	0	0.00	10.33		10.33		3		0		thermostat	peugeot	207	pièce + modèle + motorisation	0.05
+175	R2	/pieces/thermostat-316/peugeot-128/307-128035/1-6-hdi-19341.html	thermostat 1.6 hdi 90	4	3	0	0.00	7.33		7.33		3		0		thermostat	peugeot	307	pièce + modèle + motorisation	0.05
+176	R2	/pieces/thermostat-316/volkswagen-173/passat-cc-173082/2-0-tdi-4motion-31974.html	thermostat passat b6 2.0 tdi	5	3	0	0.00	10.00		10.00		3		0		thermostat	volkswagen	passat-cc	pièce + modèle + motorisation	0.05
+177	R2	/pieces/volant-moteur-577/opel-123/astra-j-berline-123151/1-7-cdti-55384.html	volant moteur opel astra j 1.7 cdti	7	3	0	0.00	6.67		6.67		3		0		volant-moteur	opel	astra-j-berline	pièce + modèle + motorisation	0.05
+178	R8	/constructeurs/chevrolet-44/aveo-i-44010/1-5-55817.html	piece chevrolet aveo	3	3	0	0.00	10.33		10.33		3		0		(R8 sans gamme)	chevrolet	aveo-i	pièces + modèle	0.05
+179	R8	/constructeurs/citroen-46/saxo-46070/1-5-d-5551.html	pièces détachées citroën saxo 1.5 d	6	3	0	0.00	6.67		6.67		3		0		(R8 sans gamme)	citroen	saxo	pièces + modèle	0.05
+180	R8	/constructeurs/dacia-47/duster-47014/1-5-dci-33042.html	piece dacia duster	3	3	0	0.00	10.67	10.67		3		0			(R8 sans gamme)	dacia	duster	pièces + modèle	0.05
+181	R8	/constructeurs/kia-88/picanto-i-88041/1-1-18042.html	pièces kia picanto	3	3	0	0.00	12.00	12.00		3		0			(R8 sans gamme)	kia	picanto-i	pièces + modèle	0.05
+182	R8	/constructeurs/mercedes-benz-108/classe-c-w203-108038/c-200-cdi-2-2-14818.html	c 200 cdi w203	4	3	0	0.00	10.00		10.00		3		0		(R8 sans gamme)	mercedes-benz	classe-c-w203	pièce + modèle + motorisation	0.05
+183	R8	/constructeurs/mercedes-benz-108/classe-c-w203-108038/c-200-cdi-2-2-16089.html	piece mercedes w203	3	3	0	0.00	12.67		12.67		3		0		(R8 sans gamme)	mercedes-benz	classe-c-w203	pièces + modèle	0.05
+184	R8	/constructeurs/mercedes-benz-108/classe-c-w204-108039/c-220-cdi-2-1-54942.html	pièce mercedes classe c 200 cdi	6	3	0	0.00	8.00	8.00		3		0			(R8 sans gamme)	mercedes-benz	classe-c-w204	pièces + modèle	0.05
+185	R8	/constructeurs/opel-123/astra-g-123017/1-7-td-8998.html	opel astra g 1.7 td	5	3	0	0.00	6.67		6.67		3		0		(R8 sans gamme)	opel	astra-g	pièce + modèle + motorisation	0.05
+186	R8	/constructeurs/opel-123/astra-g-break-123018/1-6-9001.html	opel astra g break	4	3	0	0.00	8.67		8.67		3		0		(R8 sans gamme)	opel	astra-g-break	autre	0.05
+187	R8	/constructeurs/opel-123/astra-g-break-123018/1-7-dti-16v-14182.html	astra g dti	3	3	0	0.00	11.00		11.00		3		0		(R8 sans gamme)	opel	astra-g-break	pièce + modèle + motorisation	0.05
+188	R8	/constructeurs/opel-123/astra-g-break-123018/1-7-dti-16v-14182.html	opel astra g 2004	4	3	0	0.00	7.00		7.00		3		0		(R8 sans gamme)	opel	astra-g-break	autre	0.05
+189	R8	/constructeurs/peugeot-128/106-i-128003/1-5-d-8582.html	pièces détachées peugeot 106 essence	5	3	0	0.00	10.33	10.33		3		0			(R8 sans gamme)	peugeot	106-i	pièces + modèle	0.05
+190	R8	/constructeurs/peugeot-128/206-128014/1-1-i-9465.html	moteur 206 1.1 essence prix	5	3	0	0.00	10.00		10.00		3		0		(R8 sans gamme)	peugeot	206	pièce + modèle + motorisation	0.05
+191	R8	/constructeurs/peugeot-128/307-128035/1-6-hdi-19341.html	accessoire peugeot 307	3	3	0	0.00	10.00	10.00		3		0			(R8 sans gamme)	peugeot	307	autre	0.05
+192	R8	/constructeurs/renault-140/clio-i-140002/1-2-chipie-14908.html	moteur 1.2 chipie	3	3	0	0.00	9.33		9.33		3		0		(R8 sans gamme)	renault	clio-i	pièce + modèle + motorisation	0.05
+193	R8	/constructeurs/renault-140/clio-i-140002/1-2-chipie-14908.html	renault clio 1 chipie	4	3	0	0.00	10.33		10.33		3		0		(R8 sans gamme)	renault	clio-i	autre	0.05
+194	R8	/constructeurs/renault-140/express-140014/1-6-d-2113.html	moteur 1.6 diesel renault express	5	3	0	0.00	9.33		9.33		3		0		(R8 sans gamme)	renault	express	pièce + modèle + motorisation	0.05
+195	R8	/constructeurs/renault-140/symbol-i-140092/1-4-16v-16554.html	moteur symbol 1.4 essence	4	3	0	0.00	10.33		10.33		3		0		(R8 sans gamme)	renault	symbol-i	pièce + modèle + motorisation	0.05
+196	R8	/constructeurs/renault-140/symbol-i-140092/1-4-16v-16554.html	renault symbol 2000	3	3	0	0.00	5.00		5.00		3		0		(R8 sans gamme)	renault	symbol-i	autre	0.05
+197	R8	/constructeurs/volkswagen-173/golf-iii-173036/2-8-vr6-1877.html	pour golf 3	3	3	0	0.00	11.33		11.33		3		0		(R8 sans gamme)	volkswagen	golf-iii	autre	0.05
+198	R8	/constructeurs/volkswagen-173/golf-v-173044/1-9-tdi-18114.html	prix moteur golf 5 1.9 tdi	6	3	0	0.00	10.67		10.67		3		0		(R8 sans gamme)	volkswagen	golf-v	pièce + modèle + motorisation	0.05
+199	R2	/pieces/alternateur-4/fiat-58/doblo-ii-platforme-chassis-263-58218/1-3-d-multijet-66316.html	alternateur fiat doblo 1.3 multijet	5	2	0	0.00	10.00		10.00		2		0		alternateur	fiat	doblo-ii-platforme-chassis-263	pièce + modèle + motorisation	0.04
+200	R2	/pieces/alternateur-4/opel-123/astra-h-twintop-123024/1-9-cdti-18951.html	opel astra alternateur	3	2	0	0.00	12.50		12.50		2		0		alternateur	opel	astra-h-twintop	autre	0.04
+201	R2	/pieces/alternateur-4/peugeot-128/208-128021/1-2-puretech-76375.html	alternateur 208 1.2 puretech	4	2	0	0.00	5.50		5.50		2		0		alternateur	peugeot	208	pièce + modèle + motorisation	0.04
+202	R2	/pieces/alternateur-4/peugeot-128/308-i-128040/2-0-hdi-33865.html	alternateur 308 2.0 hdi	4	2	0	0.00	10.50		10.50		2		0		alternateur	peugeot	308-i	pièce + modèle + motorisation	0.04
+203	R2	/pieces/alternateur-4/renault-140/kangoo-i-140021/1-9-dti-14575.html	alternateur kangoo 1.9 dti	4	2	0	0.00	14.50		14.50		2		0		alternateur	renault	kangoo-i	pièce + modèle + motorisation	0.04
+204	R2	/pieces/bougie-d-allumage-686/peugeot-128/206-128014/1-1-i-9465.html	bougie 206 1.1 essence	4	2	0	0.00	9.50	9.50		2		0			bougie-d-allumage	peugeot	206	pièce + modèle + motorisation	0.04
+205	R2	/pieces/bougie-d-allumage-686/peugeot-128/301-128023/1-2-puretech-82-76394.html	bougie 1.2 puretech 82	4	2	0	0.00	10.00		10.00		2		0		bougie-d-allumage	peugeot	301	pièce + modèle + motorisation	0.04
+206	R2	/pieces/bougie-d-allumage-686/renault-140/duster-140008/1-6-16v-57983.html	bougie d allumage duster 1.6 essence	6	2	0	0.00	8.50		8.50		2		0		bougie-d-allumage	renault	duster	pièce + modèle + motorisation	0.04
+207	R2	/pieces/bras-de-suspension-273/citroen-46/c15-46015/1-3-17427.html	bras de suspension c15 diesel	5	2	0	0.00	8.00		8.00		2		0		bras-de-suspension	citroen	c15	pièce + modèle + motorisation	0.04
+208	R2	/pieces/butee-d-embrayage-48/renault-140/clio-iv-140006/1-5-dci-57282.html	butée embrayage clio 4 1.5 dci	6	2	0	0.00	9.50		9.50		2		0		butee-d-embrayage	renault	clio-iv	pièce + modèle + motorisation	0.04
+209	R2	/pieces/cable-d-embrayage-478/citroen-46/xsara-picasso-46086/2-0-hdi-11873.html	cable embrayage xsara	3	2	0	0.00	14.00	14.00		2		0			cable-d-embrayage	citroen	xsara-picasso	autre	0.04
+210	R2	/pieces/cable-d-embrayage-478/peugeot-128/206-128014/1-9-d-9468.html	câble embrayage 206 1.9 diesel	5	2	0	0.00	7.00		7.00		2		0		cable-d-embrayage	peugeot	206	pièce + modèle + motorisation	0.04
+211	R2	/pieces/capteur-abs-412/peugeot-128/301-128023/1-6-hdi-58770.html	capteur abs peugeot 301	4	2	0	0.00	8.50		8.50		2		0		capteur-abs	peugeot	301	autre	0.04
+212	R2	/pieces/capteur-temperature-d-air-admission-3939/peugeot-128/308-i-128040/1-6-hdi-23382.html	capteur de température d'air d'admission 1.6 hdi	7	2	0	0.00	8.50		8.50		2		0		capteur-temperature-d-air-admission	peugeot	308-i	pièce + modèle + motorisation	0.04
+213	R2	/pieces/cardan-13/nissan-119/qashqai-2-119199/1-6-dci-traction-integrale-11757.html	cardan nissan qashqai 1.6 dci	5	2	0	0.00	12.50		12.50		2		0		cardan	nissan	qashqai-2	pièce + modèle + motorisation	0.04
+214	R2	/pieces/carter-d-huile-592/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html	carter huile golf 4	4	2	0	0.00	12.50	12.50		2		0			carter-d-huile	volkswagen	golf-iv	autre	0.04
+215	R2	/pieces/catalyseur-429/citroen-46/c3-iii-46099/1-2-puretech-82-lpg-65289.html	catalyseur c3 1.2 puretech 82	5	2	0	0.00	5.50		5.50		2		0		catalyseur	citroen	c3-iii	pièce + modèle + motorisation	0.04
+216	R2	/pieces/corps-papillon-158/peugeot-128/206-128014/1-4-i-9466.html	boitier papillon 206 1.4 essence	5	2	0	0.00	11.00		11.00		2		0		corps-papillon	peugeot	206	pièce + modèle + motorisation	0.04
+217	R2	/pieces/courroie-d-accessoire-10/chevrolet-44/captiva-44046/2-0-d-24471.html	courroie alternateur chevrolet captiva	4	2	0	0.00	14.00	14.00		2		0			courroie-d-accessoire	chevrolet	captiva	autre	0.04
+218	R2	/pieces/courroie-d-accessoire-10/fiat-58/500-c-58122/1-2-32825.html	courroie accessoire fiat 500 1.2 essence	6	2	0	0.00	8.50		8.50		2		0		courroie-d-accessoire	fiat	500-c	pièce + modèle + motorisation	0.04
+219	R2	/pieces/courroie-d-accessoire-10/fiat-58/grande-punto-58043/1-3-d-multijet-18900.html	courroie accessoire 1.3 multijet	4	2	0	0.00	8.50		8.50		2		0		courroie-d-accessoire	fiat	grande-punto	pièce + modèle + motorisation	0.04
+220	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128014/1-4-i-9466.html	courroie accessoire 206 1.4 essence sans clim	7	2	0	0.00	8.50		8.50		2		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.04
+221	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128014/1-4-i-9466.html	schéma courroie accessoire 206 1.4 essence avec clim	8	2	0	0.00	10.00		10.00		2		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.04
+222	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128017/1-1-33837.html	changer courroie accessoire 206 1.1 essence	6	2	0	0.00	10.00		10.00		2		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.04
+223	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-sw-128016/1-4-hdi-16678.html	courroie accessoire 206 1.4 hdi	5	2	0	0.00	7.00		7.00		2		0		courroie-d-accessoire	peugeot	206-sw	pièce + modèle + motorisation	0.04
+224	R2	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	changer courroie accessoire partner 1.9 d	6	2	0	0.00	7.50		7.50		2		0		courroie-d-accessoire	peugeot	partner-i	pièce + modèle + motorisation	0.04
+225	R2	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	peugeot partner courroie accessoire partner 1.9 d sans clim	9	2	0	0.00	11.00		11.00		2		0		courroie-d-accessoire	peugeot	partner-i	pièce + modèle + motorisation	0.04
+226	R2	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	schéma courroie accessoire partner 1.9 d' avec clim	8	2	0	0.00	8.00		8.00		2		0		courroie-d-accessoire	peugeot	partner-i	pièce + modèle + motorisation	0.04
+227	R2	/pieces/courroie-d-accessoire-10/renault-140/master-ii-140038/2-5-dci-23076.html	courroie accessoire renault master 2.5 dci	6	2	0	0.00	4.00		4.00		2		0		courroie-d-accessoire	renault	master-ii	pièce + modèle + motorisation	0.04
+228	R2	/pieces/courroie-d-accessoire-10/volkswagen-173/golf-iv-173039/1-9-tdi-16063.html	schema courroie accessoire golf 4 1.9 tdi	7	2	0	0.00	11.00	11.00		2		0			courroie-d-accessoire	volkswagen	golf-iv	pièce + modèle + motorisation	0.04
+229	R2	/pieces/courroie-de-distribution-306/fiat-58/doblo-ii-58023/1-6-d-multijet-1051.html	courroie de distribution fiat doblo 1.6 multijet	7	2	0	0.00	10.00		10.00		2		0		courroie-de-distribution	fiat	doblo-ii	pièce + modèle + motorisation	0.04
+230	R2	/pieces/courroie-de-distribution-306/fiat-58/tipo-ii-58214/1-4-66299.html	courroie de distribution fiat tipo 1.4 essence	7	2	0	0.00	8.00		8.00		2		0		courroie-de-distribution	fiat	tipo-ii	pièce + modèle + motorisation	0.04
+231	R2	/pieces/courroie-de-distribution-306/ford-60/fiesta-vi-60074/1-25-28236.html	courroie de distribution ford fiesta 1.2 essence	7	2	0	0.00	6.50		6.50		2		0		courroie-de-distribution	ford	fiesta-vi	pièce + modèle + motorisation	0.04
+232	R2	/pieces/courroie-de-distribution-306/peugeot-128/407-128057/2-0-hdi-17852.html	courroie de distribution peugeot 407 2.0 hdi 136 prix	9	2	0	0.00	9.50		9.50		2		0		courroie-de-distribution	peugeot	407	pièce + modèle + motorisation	0.04
+233	R2	/pieces/cremailliere-de-direction-286/renault-140/express-140014/1-9-d-2114.html	crémaillère renault express	3	2	0	0.00	8.00		8.00		2		0		cremailliere-de-direction	renault	express	autre	0.04
+234	R2	/pieces/debitmetre-d-air-3927/ford-60/fiesta-v-60073/1-4-tdci-16102.html	débitmètre ford fiesta 1.4 tdci	5	2	0	0.00	7.00		7.00		2		0		debitmetre-d-air	ford	fiesta-v	pièce + modèle + motorisation	0.04
+235	R2	/pieces/demarreur-2/dacia-47/logan-i-47017/1-4-18389.html	starter dacia logan 1.4	4	2	0	0.00	10.50		10.50		2		0		demarreur	dacia	logan-i	pièce + modèle + motorisation	0.04
+236	R2	/pieces/demarreur-2/peugeot-128/206-128014/1-4-i-9466.html	starter 206 1.4 essence	4	2	0	0.00	8.50		8.50		2		0		demarreur	peugeot	206	pièce + modèle + motorisation	0.04
+237	R2	/pieces/demarreur-2/peugeot-128/206-ii-128131/1-4-19879.html	starter 206 1.4 essence	4	2	0	0.00	8.50		8.50		2		0		demarreur	peugeot	206-ii	pièce + modèle + motorisation	0.04
+238	R2	/pieces/demarreur-2/peugeot-128/208-128021/1-2-puretech-76375.html	démarreur 208 1.2 puretech	4	2	0	0.00	6.50		6.50		2		0		demarreur	peugeot	208	pièce + modèle + motorisation	0.04
+239	R2	/pieces/demarreur-2/renault-140/express-140014/1-6-d-2113.html	demarreur express 1.6 d	4	2	0	0.00	7.50		7.50		2		0		demarreur	renault	express	pièce + modèle + motorisation	0.04
+240	R2	/pieces/disque-de-frein-82/fiat-58/ducato-iv-244-58027/2-8-td-20850.html	disque de frein fiat ducato camping-car	6	2	0	0.00	14.50	14.50		2		0			disque-de-frein	fiat	ducato-iv-244	autre	0.04
+241	R2	/pieces/disque-de-frein-82/renault-140/kangoo-ii-140023/1-5-dci-58648.html	disque de frein arrière kangoo 2	6	2	0	0.00	4.50	4.50		2		0			disque-de-frein	renault	kangoo-ii	autre	0.04
+242	R2	/pieces/disque-de-frein-82/renault-140/kangoo-ii-140023/1-5-dci-58648.html	disque kangoo 2	3	2	0	0.00	6.50	6.50		2		0			disque-de-frein	renault	kangoo-ii	autre	0.04
+243	R2	/pieces/durite-de-refroidissement-475/peugeot-128/207-128018/1-4-hdi-19354.html	durite chauffage 207	3	2	0	0.00	8.50		8.50		2		0		durite-de-refroidissement	peugeot	207	autre	0.04
+244	R2	/pieces/durite-de-refroidissement-475/peugeot-128/207-128018/1-6-hdi-19352.html	durite 207 1.6 hdi	4	2	0	0.00	9.00		9.00		2		0		durite-de-refroidissement	peugeot	207	pièce + modèle + motorisation	0.04
+245	R2	/pieces/durite-de-refroidissement-475/peugeot-128/307-128035/1-6-hdi-19341.html	durite de refroidissement 307 1.6 hdi	6	2	0	0.00	10.00		10.00		2		0		durite-de-refroidissement	peugeot	307	pièce + modèle + motorisation	0.04
+246	R2	/pieces/emetteur-d-embrayage-234/citroen-46/berlingo-38837/1-6-hdi-92-64974.html	émetteur embrayage berlingo 1.6 hdi	5	2	0	0.00	5.50	5.50		2		0			emetteur-d-embrayage	citroen	berlingo	pièce + modèle + motorisation	0.04
+247	R2	/pieces/emetteur-d-embrayage-234/peugeot-128/208-128021/1-6-hdi-76387.html	émetteur embrayage 208 1.6 hdi	5	2	0	0.00	12.50		12.50		2		0		emetteur-d-embrayage	peugeot	208	pièce + modèle + motorisation	0.04
+248	R2	/pieces/etrier-de-frein-78/peugeot-128/207-128018/1-6-16v-rc-22685.html	etrier 207 rc	3	2	0	0.00	10.00		10.00		2		0		etrier-de-frein	peugeot	207	autre	0.04
+249	R2	/pieces/filtre-a-air-8/dacia-47/logan-mcv-i-47019/1-5-dci-19899.html	filtre a air dacia logan mcv	6	2	0	0.00	12.00	12.00		2		0			filtre-a-air	dacia	logan-mcv-i	autre	0.04
+250	R2	/pieces/filtre-a-air-8/peugeot-128/206-128014/1-4-i-9466.html	filtre à air peugeot 206 1.4 essence	7	2	0	0.00	8.50		8.50		2		0		filtre-a-air	peugeot	206	pièce + modèle + motorisation	0.04
+251	R2	/pieces/filtre-a-carburant-9/audi-22/a1-sportback-22026/1-4-tfsi-11783.html	filtre a essence audi a1 tfsi	6	2	0	0.00	10.50		10.50		2		0		filtre-a-carburant	audi	a1-sportback	pièce + modèle + motorisation	0.04
+252	R2	/pieces/filtre-a-carburant-9/ford-60/ranger-iii-60130/2-2-tdci-12573.html	filtre a gasoil ford ranger 2.2	6	2	0	0.00	7.50		7.50		2		0		filtre-a-carburant	ford	ranger-iii	pièce + modèle + motorisation	0.04
+253	R2	/pieces/filtre-a-carburant-9/peugeot-128/407-128057/2-0-hdi-17852.html	filtre à gasoil 407 2.0 hdi 136	7	2	0	0.00	10.50		10.50		2		0		filtre-a-carburant	peugeot	407	pièce + modèle + motorisation	0.04
+254	R2	/pieces/filtre-a-carburant-9/renault-140/megane-ii-140046/1-9-dci-19040.html	filtre gasoil megane 2 1.9 dci	6	2	0	0.00	11.00		11.00		2		0		filtre-a-carburant	renault	megane-ii	pièce + modèle + motorisation	0.04
+255	R2	/pieces/filtre-a-carburant-9/toyota-164/yaris-ii-164387/1-3-vti-7761.html	filtre essence yaris 1.3 vvti	5	2	0	0.00	8.50		8.50		2		0		filtre-a-carburant	toyota	yaris-ii	pièce + modèle + motorisation	0.04
+256	R2	/pieces/filtre-a-carburant-9/volkswagen-173/caddy-iii-break-173019/1-6-tdi-34951.html	filtre gasoil caddy 1.6 tdi	5	2	0	0.00	9.00		9.00		2		0		filtre-a-carburant	volkswagen	caddy-iii-break	pièce + modèle + motorisation	0.04
+257	R2	/pieces/filtre-a-carburant-9/volkswagen-173/touran-i-173141/1-9-tdi-17119.html	filtre gasoil touran 1.9 tdi	5	2	0	0.00	9.00		9.00		2		0		filtre-a-carburant	volkswagen	touran-i	pièce + modèle + motorisation	0.04
+258	R2	/pieces/filtre-a-huile-7/dacia-47/sandero-iii-47035/1-0-tce-90-65578.html	filtre à huile dacia sandero stepway tce 90	8	2	0	0.00	6.00		6.00		2		0		filtre-a-huile	dacia	sandero-iii	pièce + modèle + motorisation	0.04
+259	R2	/pieces/filtre-a-huile-7/fiat-58/500-c-58122/1-2-32825.html	filtre à huile fiat 500	5	2	0	0.00	4.00		4.00		2		0		filtre-a-huile	fiat	500-c	autre	0.04
+260	R2	/pieces/filtre-a-huile-7/fiat-58/doblo-ii-platforme-chassis-263-58218/1-6-d-multijet-263yxd1b-263xyr1b-263yxx1b-263hxd1b--9300.html	filtre à huile fiat doblo 1.6 multijet	7	2	0	0.00	8.00		8.00		2		0		filtre-a-huile	fiat	doblo-ii-platforme-chassis-263	pièce + modèle + motorisation	0.04
+261	R2	/pieces/filtre-a-huile-7/peugeot-128/206-128017/1-4-i-33838.html	filtre a huile 206 1.4 essence	6	2	0	0.00	10.00		10.00		2		0		filtre-a-huile	peugeot	206	pièce + modèle + motorisation	0.04
+262	R2	/pieces/filtre-a-huile-7/peugeot-128/partner-i-128093/1-6-hdi-19523.html	filtre a huile partner 1.6 hdi	6	2	0	0.00	11.00		11.00		2		0		filtre-a-huile	peugeot	partner-i	pièce + modèle + motorisation	0.04
+263	R2	/pieces/filtre-a-huile-7/renault-140/clio-iv-140006/0-9-tce-57401.html	filtre a huile clio 4 tce 90	7	2	0	0.00	11.00		11.00		2		0		filtre-a-huile	renault	clio-iv	pièce + modèle + motorisation	0.04
+264	R2	/pieces/filtre-a-huile-7/skoda-150/octavia-ii-150016/2-0-tdi-20001.html	filtre a huile skoda octavia 2.0 tdi	7	2	0	0.00	11.00		11.00		2		0		filtre-a-huile	skoda	octavia-ii	pièce + modèle + motorisation	0.04
+265	R2	/pieces/filtre-a-huile-7/toyota-164/hiace-v-164215/2-5-d4-d-55939.html	filtre a huile toyota hiace	5	2	0	0.00	9.00		9.00		2		0		filtre-a-huile	toyota	hiace-v	autre	0.04
+266	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/audi-22/a3-i-sportback-22034/2-0-tdi-quattro-19617.html	galet tendeur audi a3 2.0 tdi	6	2	0	0.00	10.00		10.00		2		0		galet-tendeur-de-courroie-d-accessoire	audi	a3-i-sportback	pièce + modèle + motorisation	0.04
+267	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/206-128014/1-4-hdi-eco-16270.html	courroie accessoire 206 1.4 hdi	5	2	0	0.00	5.00	5.00		2		0			galet-tendeur-de-courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.04
+268	R2	/pieces/injecteur-3902/volkswagen-173/golf-vi-173046/1-6-tdi-33030.html	injecteurs golf 6	3	2	0	0.00	7.00	7.00		2		0			injecteur	volkswagen	golf-vi	autre	0.04
+269	R2	/pieces/intercooler-468/renault-140/trafic-iii-140167/1-6-dci-120-77655.html	intercooler trafic 3	3	2	0	0.00	14.00	14.00		2		0			intercooler	renault	trafic-iii	autre	0.04
+270	R2	/pieces/kit-d-embrayage-479/citroen-46/c4-ii-46031/1-6-hdi-470.html	kit embrayage citroën c4 1.6 hdi	6	2	0	0.00	9.50		9.50		2		0		kit-d-embrayage	citroen	c4-ii	pièce + modèle + motorisation	0.04
+271	R2	/pieces/kit-d-embrayage-479/peugeot-128/407-128057/1-6-hdi-17986.html	kit embrayage 407 1.6 hdi	5	2	0	0.00	10.00		10.00		2		0		kit-d-embrayage	peugeot	407	pièce + modèle + motorisation	0.04
+272	R2	/pieces/kit-de-chaine-de-distribution-1389/peugeot-128/207-128018/1-4-16v-58571.html	kit chaine 207 1.4 essence	5	2	0	0.00	12.50		12.50		2		0		kit-de-chaine-de-distribution	peugeot	207	pièce + modèle + motorisation	0.04
+273	R2	/pieces/kit-de-chaine-de-distribution-1389/peugeot-128/207-128018/1-6-16v-vti-22681.html	kit chaine 1.6 vti	4	2	0	0.00	7.50		7.50		2		0		kit-de-chaine-de-distribution	peugeot	207	pièce + modèle + motorisation	0.04
+274	R2	/pieces/kit-de-distribution-307/renault-140/captur-140001/1-5-dci-77174.html	courroie de distribution captur	4	2	0	0.00	7.00	7.00		2		0			kit-de-distribution	renault	captur	autre	0.04
+275	R2	/pieces/kit-de-distribution-307/renault-140/clio-iii-140004/1-4-16v-19050.html	distribution clio 3 1.4 16v	5	2	0	0.00	10.00		10.00		2		0		kit-de-distribution	renault	clio-iii	pièce + modèle + motorisation	0.04
+276	R2	/pieces/plaquette-de-frein-402/peugeot-128/407-sw-128059/1-6-hdi-18015.html	plaquette de frein 407 1.6 hdi	6	2	0	0.00	9.50		9.50		2		0		plaquette-de-frein	peugeot	407-sw	pièce + modèle + motorisation	0.04
+277	R2	/pieces/plaquette-de-frein-402/volkswagen-173/golf-vii-break-173050/1-0-tsi-82370.html	plaquettes de frein golf 7	5	2	0	0.00	4.00	4.00		2		0			plaquette-de-frein	volkswagen	golf-vii-break	autre	0.04
+278	R2	/pieces/pompe-a-carburant-458/citroen-46/berlingo-i-46006/1-9-d-10227.html	pompe gasoil berlingo 1.9 d	5	2	0	0.00	8.00		8.00		2		0		pompe-a-carburant	citroen	berlingo-i	pièce + modèle + motorisation	0.04
+279	R2	/pieces/pompe-a-eau-1260/nissan-119/serena-v-119485/2-0-75489.html	serena ch 150	3	2	0	0.00	13.00		13.00		2		0		pompe-a-eau	nissan	serena-v	autre	0.04
+280	R2	/pieces/pompe-a-eau-1260/opel-123/corsa-c-123046/1-2-twinport-18229.html	pompe a eau opel corsa	5	2	0	0.00	6.00		6.00		2		0		pompe-a-eau	opel	corsa-c	autre	0.04
+281	R2	/pieces/pompe-a-eau-1260/peugeot-128/206-128014/1-4-i-9466.html	pompe à eau 206 1.4 essence	6	2	0	0.00	10.00		10.00		2		0		pompe-a-eau	peugeot	206	pièce + modèle + motorisation	0.04
+282	R2	/pieces/pompe-a-eau-1260/renault-140/clio-ii-140003/1-2-16v-16104.html	pompe à eau clio 2	5	2	0	0.00	9.50		9.50		2		0		pompe-a-eau	renault	clio-ii	autre	0.04
+283	R2	/pieces/pompe-a-eau-1260/renault-140/sandero-stepway-ii-140161/1-6-77618.html	pompe a eau stepway 1.6 essence	6	2	0	0.00	11.00		11.00		2		0		pompe-a-eau	renault	sandero-stepway-ii	pièce + modèle + motorisation	0.04
+284	R2	/pieces/pompe-a-eau-1260/renault-140/trafic-iii-140167/2-0-dci-77659.html	remplacement pompe à eau trafic 2.0 dci	7	2	0	0.00	7.50		7.50		2		0		pompe-a-eau	renault	trafic-iii	pièce + modèle + motorisation	0.04
+285	R2	/pieces/pompe-a-vide-de-freinage-387/peugeot-128/partner-i-128093/1-9-d-18835.html	pompe a vide partner 1.9 d	6	2	0	0.00	14.00		14.00		2		0		pompe-a-vide-de-freinage	peugeot	partner-i	pièce + modèle + motorisation	0.04
+286	R2	/pieces/radiateur-de-refroidissement-470/peugeot-128/207-128018/1-4-hdi-19354.html	radiateur 207 1.4 hdi	4	2	0	0.00	10.50		10.50		2		0		radiateur-de-refroidissement	peugeot	207	pièce + modèle + motorisation	0.04
+287	R2	/pieces/recepteur-d-embrayage-620/citroen-46/c4-i-46030/1-6-hdi-30137.html	récepteur embrayage c4 1.6 hdi	5	2	0	0.00	11.00		11.00		2		0		recepteur-d-embrayage	citroen	c4-i	pièce + modèle + motorisation	0.04
+288	R2	/pieces/recepteur-d-embrayage-620/peugeot-128/207-128018/1-6-hdi-19353.html	récepteur embrayage 207 1.6 hdi	5	2	0	0.00	9.00		9.00		2		0		recepteur-d-embrayage	peugeot	207	pièce + modèle + motorisation	0.04
+289	R2	/pieces/sonde-de-refroidissement-830/peugeot-128/206-128014/1-1-i-9465.html	sonde température 206 1.1 essence	5	2	0	0.00	8.50		8.50		2		0		sonde-de-refroidissement	peugeot	206	pièce + modèle + motorisation	0.04
+290	R2	/pieces/sonde-lambda-3922/renault-140/megane-ii-140046/1-6-16v-16917.html	sonde lambda megane 2 1.6 16v	6	2	0	0.00	4.50		4.50		2		0		sonde-lambda	renault	megane-ii	pièce + modèle + motorisation	0.04
+291	R2	/pieces/support-de-boite-vitesse-249/peugeot-128/208-128021/1-6-hdi-8686.html	support boite 208 1.6 hdi	5	2	0	0.00	9.00		9.00		2		0		support-de-boite-vitesse	peugeot	208	pièce + modèle + motorisation	0.04
+292	R2	/pieces/support-de-boite-vitesse-249/renault-140/symbol-i-140092/1-4-16553.html	boite vitesse symbol 1.4 essence	5	2	0	0.00	7.00		7.00		2		0		support-de-boite-vitesse	renault	symbol-i	pièce + modèle + motorisation	0.04
+293	R2	/pieces/support-moteur-247/citroen-46/berlingo-ii-46007/1-6-hdi-24516.html	support moteur b9 1.6 hdi	5	2	0	0.00	8.50		8.50		2		0		support-moteur	citroen	berlingo-ii	pièce + modèle + motorisation	0.04
+294	R2	/pieces/support-moteur-247/citroen-46/saxo-46070/1-1-xsx-5548.html	support moteur saxo 1.1	4	2	0	0.00	8.00		8.00		2		0		support-moteur	citroen	saxo	pièce + modèle + motorisation	0.04
+295	R2	/pieces/support-moteur-247/citroen-46/xsara-picasso-46086/2-0-hdi-11873.html	support moteur xsara picasso 2.0 hdi	6	2	0	0.00	8.00		8.00		2		0		support-moteur	citroen	xsara-picasso	pièce + modèle + motorisation	0.04
+296	R2	/pieces/support-moteur-247/dacia-47/duster-47014/1-5-dci-5377.html	support moteur duster 1.5 dci	5	2	0	0.00	8.50		8.50		2		0		support-moteur	dacia	duster	pièce + modèle + motorisation	0.04
+297	R2	/pieces/support-moteur-247/dacia-47/duster-47014/1-6-16v-33039.html	support moteur duster 1.6 16v	5	2	0	0.00	10.50		10.50		2		0		support-moteur	dacia	duster	pièce + modèle + motorisation	0.04
+298	R2	/pieces/support-moteur-247/dacia-47/duster-47014/1-6-16v-33039.html	support moteur duster 1.6 essence	5	2	0	0.00	10.00		10.00		2		0		support-moteur	dacia	duster	pièce + modèle + motorisation	0.04
+299	R2	/pieces/support-moteur-247/peugeot-128/107-128005/1-0-18586.html	support moteur peugeot 107	4	2	0	0.00	11.00		11.00		2		0		support-moteur	peugeot	107	autre	0.04
+300	R2	/pieces/support-moteur-247/peugeot-128/207-128018/1-4-16v-26630.html	1.4 16v peugeot	3	2	0	0.00	10.50		10.50		2		0		support-moteur	peugeot	207	pièce + modèle + motorisation	0.04
+301	R2	/pieces/support-moteur-247/peugeot-128/208-128021/1-2-thp-76376.html	support moteur 208 1.2 essence	5	2	0	0.00	10.00		10.00		2		0		support-moteur	peugeot	208	pièce + modèle + motorisation	0.04
+302	R2	/pieces/support-moteur-247/peugeot-128/208-128021/1-6-hdi-8686.html	support moteur peugeot 208 prix	5	2	0	0.00	14.00		14.00		2		0		support-moteur	peugeot	208	autre	0.04
+303	R2	/pieces/support-moteur-247/peugeot-128/307-128035/1-6-hdi-19341.html	support moteur 1.6 hdi 90	5	2	0	0.00	10.50		10.50		2		0		support-moteur	peugeot	307	pièce + modèle + motorisation	0.04
+304	R2	/pieces/support-moteur-247/peugeot-128/308-i-128040/1-6-hdi-23383.html	support moteur 308 1.6 hdi	5	2	0	0.00	10.00		10.00		2		0		support-moteur	peugeot	308-i	pièce + modèle + motorisation	0.04
+305	R2	/pieces/support-moteur-247/peugeot-128/406-128054/2-0-hdi-9981.html	support moteur 406 2.0 hdi	5	2	0	0.00	4.00		4.00		2		0		support-moteur	peugeot	406	pièce + modèle + motorisation	0.04
+306	R2	/pieces/support-moteur-247/peugeot-128/508-sw-128073/2-0-hdi-732.html	support moteur 508 2.0 hdi	5	2	0	0.00	5.50		5.50		2		0		support-moteur	peugeot	508-sw	pièce + modèle + motorisation	0.04
+307	R2	/pieces/support-moteur-247/peugeot-128/partner-ii-tepee-128096/1-6-hdi-76575.html	support moteur partner tepee 1.6 hdi	6	2	0	0.00	11.00		11.00		2		0		support-moteur	peugeot	partner-ii-tepee	pièce + modèle + motorisation	0.04
+308	R2	/pieces/support-moteur-247/renault-140/espace-iii-140011/2-2-12v-td-7830.html	support moteur espace 3 2.2 dt	6	2	0	0.00	9.50		9.50		2		0		support-moteur	renault	espace-iii	pièce + modèle + motorisation	0.04
+309	R2	/pieces/support-moteur-247/renault-140/megane-iii-140049/1-9-dci-31163.html	support moteur megane 3 1.9 dci	6	2	0	0.00	10.00		10.00		2		0		support-moteur	renault	megane-iii	pièce + modèle + motorisation	0.04
+310	R2	/pieces/thermostat-316/citroen-46/c3-i-46020/1-1-i-16330.html	thermostat c3 1.1 essence	4	2	0	0.00	8.50		8.50		2		0		thermostat	citroen	c3-i	pièce + modèle + motorisation	0.04
+311	R2	/pieces/thermostat-316/citroen-46/c3-ii-46021/1-4-32028.html	thermostat c3 1.4 essence	4	2	0	0.00	11.00		11.00		2		0		thermostat	citroen	c3-ii	pièce + modèle + motorisation	0.04
+312	R2	/pieces/thermostat-316/ford-60/fiesta-v-60073/1-4-tdci-16102.html	thermostat ford fiesta 1.4 tdci	5	2	0	0.00	6.50		6.50		2		0		thermostat	ford	fiesta-v	pièce + modèle + motorisation	0.04
+313	R2	/pieces/thermostat-316/hyundai-76/getz-76021/1-4-i-19917.html	thermostat hyundai getz	3	2	0	0.00	8.50		8.50		2		0		thermostat	hyundai	getz	autre	0.04
+314	R2	/pieces/thermostat-316/opel-123/corsa-d-123048/1-3-cdti-19725.html	thermostat opel corsa d 1.3 cdti	6	2	0	0.00	9.00		9.00		2		0		thermostat	opel	corsa-d	pièce + modèle + motorisation	0.04
+315	R2	/pieces/thermostat-316/peugeot-128/207-128018/1-4-16v-26630.html	boîtier thermostat 207 1.4 essence	5	2	0	0.00	7.00		7.00		2		0		thermostat	peugeot	207	pièce + modèle + motorisation	0.04
+316	R2	/pieces/thermostat-316/renault-140/trafic-ii-140096/2-0-dci-19861.html	thermostat trafic 2	3	2	0	0.00	7.00		7.00		2		0		thermostat	renault	trafic-ii	autre	0.04
+317	R2	/pieces/thermostat-316/skoda-150/octavia-iii-combi-150019/2-0-tdi-59080.html	thermostat skoda octavia 2.0 tdi	5	2	0	0.00	8.00		8.00		2		0		thermostat	skoda	octavia-iii-combi	pièce + modèle + motorisation	0.04
+318	R2	/pieces/thermostat-316/skoda-150/octavia-iv-combi-150053/2-0-tdi-4x4-78382.html	thermostat skoda octavia 2.0 tdi	5	2	0	0.00	7.00		7.00		2		0		thermostat	skoda	octavia-iv-combi	pièce + modèle + motorisation	0.04
+319	R2	/pieces/thermostat-316/volkswagen-173/golf-vii-173049/2-0-tdi-59070.html	thermostat golf 7 2.0 tdi	5	2	0	0.00	9.00		9.00		2		0		thermostat	volkswagen	golf-vii	pièce + modèle + motorisation	0.04
+320	R2	/pieces/thermostat-316/volkswagen-173/touran-i-173141/2-0-tdi-19964.html	thermostat touran 2.0 tdi 140	5	2	0	0.00	9.00		9.00		2		0		thermostat	volkswagen	touran-i	pièce + modèle + motorisation	0.04
+321	R2	/pieces/vanne-egr-1145/hyundai-76/tucson-76083/2-0-crdi-23308.html	egr tucson 2.0 crdi	4	2	0	0.00	10.00		10.00		2		0		vanne-egr	hyundai	tucson	pièce + modèle + motorisation	0.04
+322	R2	/pieces/vanne-egr-1145/kia-88/carens-ii-88010/2-0-crdi-19802.html	egr kia carens 2.0 crdi	5	2	0	0.00	9.50		9.50		2		0		vanne-egr	kia	carens-ii	pièce + modèle + motorisation	0.04
+323	R2	/pieces/vanne-egr-1145/opel-123/corsa-d-123048/1-3-cdti-19725.html	vanne egr 1.3 cdti	4	2	0	0.00	7.50		7.50		2		0		vanne-egr	opel	corsa-d	pièce + modèle + motorisation	0.04
+324	R2	/pieces/vanne-egr-1145/renault-140/laguna-ii-140028/2-0-dci-19356.html	vanne egr laguna 2	4	2	0	0.00	8.50		8.50		2		0		vanne-egr	renault	laguna-ii	autre	0.04
+325	R2	/pieces/vanne-egr-1145/volkswagen-173/caddy-iv-break-173227/2-0-tdi-4motion-82728.html	vanne egr caddy 2.0 tdi	5	2	0	0.00	10.00		10.00		2		0		vanne-egr	volkswagen	caddy-iv-break	pièce + modèle + motorisation	0.04
+326	R2	/pieces/volant-moteur-577/chevrolet-44/captiva-44046/2-2-d-8510.html	volant moteur chevrolet captiva	4	2	0	0.00	9.00		9.00		2		0		volant-moteur	chevrolet	captiva	autre	0.04
+327	R2	/pieces/volant-moteur-577/volkswagen-173/golf-vi-173046/1-6-tdi-33030.html	volant moteur golf 6 1.6 tdi	6	2	0	0.00	6.50		6.50		2		0		volant-moteur	volkswagen	golf-vi	pièce + modèle + motorisation	0.04
+328	R8	/constructeurs/alfa-romeo-13/147-13002/1-9-jtd-16v-17161.html	pieces alfa 147	3	2	0	0.00	10.00		10.00		2		0		(R8 sans gamme)	alfa-romeo	147	pièces + modèle	0.04
+329	R8	/constructeurs/bmw-33/serie-1-e87-33018/2-0-118-d-58253.html	accessoire bmw serie 1 e87	5	2	0	0.00	15.00		15.00		2		0		(R8 sans gamme)	bmw	serie-1-e87	autre	0.04
+330	R8	/constructeurs/bmw-33/serie-3-e90-33028/2-0-320-i-25470.html	pièces bmw e90	3	2	0	0.00	11.50		11.50		2		0		(R8 sans gamme)	bmw	serie-3-e90	pièces + modèle	0.04
+331	R8	/constructeurs/bmw-33/serie-5-e39-33051/3-0-530-d-10025.html	piece auto bmw e39	4	2	0	0.00	10.00		10.00		2		0		(R8 sans gamme)	bmw	serie-5-e39	pièces + modèle	0.04
+332	R8	/constructeurs/bmw-33/serie-5-e39-33051/525-i-15270.html	e39 525 i	3	2	0	0.00	10.00		10.00		2		0		(R8 sans gamme)	bmw	serie-5-e39	autre	0.04
+333	R8	/constructeurs/bmw-33/serie-5-touring-e34-33055/540-i-3727.html	bmw e34 540i	3	2	0	0.00	7.00	7.00		2		0			(R8 sans gamme)	bmw	serie-5-touring-e34	autre	0.04
+334	R8	/constructeurs/citroen-46/c2-46017/1-4-16v-19682.html	piece citroen c2	3	2	0	0.00	12.00	12.00		2		0			(R8 sans gamme)	citroen	c2	pièces + modèle	0.04
+335	R8	/constructeurs/citroen-46/c3-i-46020/1-4-hdi-23829.html	vue éclatée moteur c3 1.4 hdi	6	2	0	0.00	6.00	6.00		2		0			(R8 sans gamme)	citroen	c3-i	pièce + modèle + motorisation	0.04
+336	R8	/constructeurs/citroen-46/jumpy-ii-46065/2-0-hdi-20038.html	piece jumpy 2	3	2	0	0.00	9.50		9.50		2		0		(R8 sans gamme)	citroen	jumpy-ii	pièces + modèle	0.04
+337	R8	/constructeurs/citroen-46/xantia-i-46075/1-9-turbo-diesel-4029.html	citroen xantia 1.9 td	4	2	0	0.00	9.00	9.00		2		0			(R8 sans gamme)	citroen	xantia-i	pièce + modèle + motorisation	0.04
+338	R8	/constructeurs/citroen-46/xsara-46083/1-8-i-16v-8755.html	xsara 1.8 16v	3	2	0	0.00	11.00		11.00		2		0		(R8 sans gamme)	citroen	xsara	pièce + modèle + motorisation	0.04
+339	R8	/constructeurs/dacia-47/sandero-i-47024/1-5-dci-6666.html	piece dacia sandero	3	2	0	0.00	11.50	11.50		2		0			(R8 sans gamme)	dacia	sandero-i	pièces + modèle	0.04
+340	R8	/constructeurs/fiat-58/500-c-58122/1-2-32825.html	fiat 500 pieces	3	2	0	0.00	12.50	12.50		2		0			(R8 sans gamme)	fiat	500-c	pièces + modèle	0.04
+341	R8	/constructeurs/hyundai-76/santa-fe-i-76066/2-7-44525.html	pieces detachees hyundai santa fe	5	2	0	0.00	11.50		11.50		2		0		(R8 sans gamme)	hyundai	santa-fe-i	pièces + modèle	0.04
+342	R8	/constructeurs/land-rover-93/freelander-soft-top-93013/2-0-di-4x4-10541.html	freelander soft top	3	2	0	0.00	14.00	14.00		2		0			(R8 sans gamme)	land-rover	freelander-soft-top	autre	0.04
+343	R8	/constructeurs/mercedes-benz-108/classe-c-w202-108037/c-250-t-td-2-5-5117.html	mercedes c250 td w202	4	2	0	0.00	9.50		9.50		2		0		(R8 sans gamme)	mercedes-benz	classe-c-w202	autre	0.04
+344	R8	/constructeurs/mercedes-benz-108/classe-c-w203-108038/c-200-cdi-2-2-14818.html	piece mercedes classe c w203	5	2	0	0.00	11.50	11.50		2		0			(R8 sans gamme)	mercedes-benz	classe-c-w203	pièces + modèle	0.04
+345	R8	/constructeurs/mercedes-benz-108/classe-c-w203-108038/c-200-cdi-2-2-14818.html	w203 200 cdi	3	2	0	0.00	10.50		10.50		2		0		(R8 sans gamme)	mercedes-benz	classe-c-w203	pièce + modèle + motorisation	0.04
+346	R8	/constructeurs/mercedes-benz-108/classe-e-w210-108048/e-290-t-td-2-9-5371.html	w210 290 td	3	2	0	0.00	10.50		10.50		2		0		(R8 sans gamme)	mercedes-benz	classe-e-w210	autre	0.04
+347	R8	/constructeurs/mercedes-benz-108/classe-e-w211-108049/e-220-cdi-2-1-16594.html	e 220 cdi w211	4	2	0	0.00	10.00		10.00		2		0		(R8 sans gamme)	mercedes-benz	classe-e-w211	pièce + modèle + motorisation	0.04
+348	R8	/constructeurs/mercedes-benz-108/classe-s-w221-108076/500-4matic-19854.html	classe s w221	3	2	0	0.00	11.00	11.00		2		0			(R8 sans gamme)	mercedes-benz	classe-s-w221	autre	0.04
+349	R8	/constructeurs/mini-113/mini-r56-113002/1-6-cooper-d-22486.html	pièces mini cooper r56	4	2	0	0.00	8.00	8.00		2		0			(R8 sans gamme)	mini	mini-r56	pièces + modèle	0.04
+350	R8	/constructeurs/mini-113/mini-r56-113002/1-6-cooper-d-22486.html	pieces mini cooper s r56	5	2	0	0.00	12.00	12.00		2		0			(R8 sans gamme)	mini	mini-r56	pièces + modèle	0.04
+351	R8	/constructeurs/mini-113/mini-r56-113002/1-6-cooper-d-22486.html	pièces mini r56	3	2	0	0.00	7.00		7.00		2		0		(R8 sans gamme)	mini	mini-r56	pièces + modèle	0.04
+352	R8	/constructeurs/opel-123/astra-g-123017/1-7-td-8998.html	astra 1.7 td	3	2	0	0.00	9.50		9.50		2		0		(R8 sans gamme)	opel	astra-g	pièce + modèle + motorisation	0.04
+353	R8	/constructeurs/opel-123/astra-g-break-123018/1-7-dti-16v-14182.html	opel astra g dti	4	2	0	0.00	5.00		5.00		2		0		(R8 sans gamme)	opel	astra-g-break	pièce + modèle + motorisation	0.04
+354	R8	/constructeurs/opel-123/astra-g-break-123018/2-0-dti-16v-14181.html	astra g break	3	2	0	0.00	9.00		9.00		2		0		(R8 sans gamme)	opel	astra-g-break	autre	0.04
+355	R8	/constructeurs/peugeot-128/106-i-128003/1-5-d-8582.html	pieces peugeot 106	3	2	0	0.00	9.50		9.50		2		0		(R8 sans gamme)	peugeot	106-i	pièces + modèle	0.04
+356	R8	/constructeurs/peugeot-128/206-128014/1-1-i-9465.html	piece auto 206	3	2	0	0.00	10.00		10.00		2		0		(R8 sans gamme)	peugeot	206	pièces + modèle	0.04
+357	R8	/constructeurs/peugeot-128/206-128014/1-4-hdi-eco-16270.html	piece auto 206 hdi	4	2	0	0.00	11.50	11.50		2		0			(R8 sans gamme)	peugeot	206	pièces + modèle	0.04
+358	R8	/constructeurs/peugeot-128/207-passion-128133/10293.html	peugeot 207 passion	3	2	0	0.00	8.50		8.50		2		0		(R8 sans gamme)	peugeot	207-passion	autre	0.04
+359	R8	/constructeurs/peugeot-128/207-sw-128020/1-6-hdi-33265.html	accessoire 207 peugeot	3	2	0	0.00	14.50	14.50		2		0			(R8 sans gamme)	peugeot	207-sw	autre	0.04
+360	R8	/constructeurs/peugeot-128/207-sw-128020/1-6-hdi-33265.html	piece detachee peugeot 207 sw	5	2	0	0.00	14.00		14.00		2		0		(R8 sans gamme)	peugeot	207-sw	pièces + modèle	0.04
+361	R8	/constructeurs/peugeot-128/207-sw-128020/1-6-hdi-33265.html	pieces detachees peugeot 207 hdi	5	2	0	0.00	5.00	5.00		2		0			(R8 sans gamme)	peugeot	207-sw	pièces + modèle	0.04
+362	R8	/constructeurs/peugeot-128/208-128021/1-6-gti-58650.html	208 gti parts	3	2	0	0.00	11.50		11.50		2		0		(R8 sans gamme)	peugeot	208	pièce + modèle + motorisation	0.04
+363	R8	/constructeurs/peugeot-128/208-128021/1-6-gti-58650.html	peugeot accessoire 208	3	2	0	0.00	9.50	9.50		2		0			(R8 sans gamme)	peugeot	208	autre	0.04
+364	R8	/constructeurs/peugeot-128/306-128032/1-6-2482.html	catalogue pièces détachées peugeot 306	5	2	0	0.00	10.00	10.00		2		0			(R8 sans gamme)	peugeot	306	pièces + modèle	0.04
+365	R8	/constructeurs/porsche-133/boxster-986-133032/2-5-5633.html	pieces porsche 986	3	2	0	0.00	12.50	12.50		2		0			(R8 sans gamme)	porsche	boxster-986	pièces + modèle	0.04
+366	R8	/constructeurs/renault-140/express-140014/1-6-d-2113.html	renault express 1.6 d	4	2	0	0.00	5.00		5.00		2		0		(R8 sans gamme)	renault	express	pièce + modèle + motorisation	0.04
+367	R8	/constructeurs/renault-140/master-ii-140038/2-5-d-10081.html	piece renault master 2	4	2	0	0.00	8.00	8.00		2		0			(R8 sans gamme)	renault	master-ii	pièces + modèle	0.04
+368	R8	/constructeurs/renault-140/megane-ii-break-140047/1-5-dci-17733.html	mégane break 2	3	2	0	0.00	8.50	8.50		2		0			(R8 sans gamme)	renault	megane-ii-break	autre	0.04
+369	R8	/constructeurs/renault-140/safrane-i-140082/2-1-td-3766.html	moteur safrane 2.1 td	4	2	0	0.00	8.00		8.00		2		0		(R8 sans gamme)	renault	safrane-i	pièce + modèle + motorisation	0.04
+370	R8	/constructeurs/renault-140/safrane-i-140082/2-1-td-3766.html	safrane 2.1 dt	3	2	0	0.00	5.00	5.00		2		0			(R8 sans gamme)	renault	safrane-i	pièce + modèle + motorisation	0.04
+371	R8	/constructeurs/renault-140/twingo-ii-140098/1-2-23485.html	accessoire twingo 2	3	2	0	0.00	12.00	12.00		2		0			(R8 sans gamme)	renault	twingo-ii	autre	0.04
+372	R8	/constructeurs/renault-140/twingo-ii-140098/1-2-23485.html	pieces detachees renault twingo 2	5	2	0	0.00	10.50	10.50		2		0			(R8 sans gamme)	renault	twingo-ii	pièces + modèle	0.04
+373	R8	/constructeurs/renault-140/twingo-ii-140098/1-2-23485.html	pieces twingo 2	3	2	0	0.00	11.50	11.50		2		0			(R8 sans gamme)	renault	twingo-ii	pièces + modèle	0.04
+374	R8	/constructeurs/volkswagen-173/golf-iii-173036/2-8-vr6-1877.html	golf 3 vr6 moteur	4	2	0	0.00	14.00	14.00		2		0			(R8 sans gamme)	volkswagen	golf-iii	autre	0.04
+375	R8	/constructeurs/volkswagen-173/golf-iii-173036/2-8-vr6-1877.html	piece golf 3 vr6	4	2	0	0.00	8.00		8.00		2		0		(R8 sans gamme)	volkswagen	golf-iii	pièces + modèle	0.04
+376	R2	/pieces/alternateur-4/citroen-46/berlingo-i-46006/1-9-d-5720.html	alternateur berlingo 1.9d	3	1	0	0.00	11.00		11.00		1		0		alternateur	citroen	berlingo-i	pièce + modèle + motorisation	0.02
+377	R2	/pieces/alternateur-4/citroen-46/jumper-iii-46119/2-2-hdi-19578.html	alternateur citroen jumper	3	1	0	0.00	10.00		10.00		1		0		alternateur	citroen	jumper-iii	autre	0.02
+378	R2	/pieces/alternateur-4/ford-60/focus-c-max-60075/1-6-tdci-17631.html	alternateur ford c max 1.6 tdci	6	1	0	0.00	4.00	4.00		1		0			alternateur	ford	focus-c-max	pièce + modèle + motorisation	0.02
+379	R2	/pieces/alternateur-4/opel-123/astra-h-123021/1-7-cdti-17847.html	alternateur opel astra 1.7 cdti	5	1	0	0.00	12.00								alternateur	opel	astra-h	pièce + modèle + motorisation	0.02
+380	R2	/pieces/alternateur-4/opel-123/astra-h-twintop-123024/1-9-cdti-18951.html	alternateur opel astra h	4	1	0	0.00	11.00	11.00		1		0			alternateur	opel	astra-h-twintop	autre	0.02
+381	R2	/pieces/alternateur-4/peugeot-128/206-128014/1-4-hdi-30091.html	alternateur 1.4 hdi	3	1	0	0.00	10.00		10.00		1		0		alternateur	peugeot	206	pièce + modèle + motorisation	0.02
+382	R2	/pieces/alternateur-4/peugeot-128/206-128014/1-6-16v-15705.html	alternateur 206 1.6 essence	4	1	0	0.00	6.00		6.00		1		0		alternateur	peugeot	206	pièce + modèle + motorisation	0.02
+383	R2	/pieces/alternateur-4/peugeot-128/206-128014/1-9-d-9468.html	alternateur 206 1.9 d	4	1	0	0.00	10.00		10.00		1		0		alternateur	peugeot	206	pièce + modèle + motorisation	0.02
+384	R2	/pieces/alternateur-4/peugeot-128/208-128021/1-2-puretech-76375.html	alternateur 1.2 puretech	3	1	0	0.00	7.00		7.00		1		0		alternateur	peugeot	208	pièce + modèle + motorisation	0.02
+385	R2	/pieces/alternateur-4/peugeot-128/208-128021/1-6-hdi-76387.html	alternateur peugeot 208 1.6 hdi	5	1	0	0.00	6.00		6.00		1		0		alternateur	peugeot	208	pièce + modèle + motorisation	0.02
+386	R2	/pieces/alternateur-4/peugeot-128/208-128021/1-6-hdi-76387.html	changer alternateur 208 1.6 hdi	5	1	0	0.00	8.00		8.00		1		0		alternateur	peugeot	208	pièce + modèle + motorisation	0.02
+387	R2	/pieces/alternateur-4/peugeot-128/3008-128022/1-6-hdi-bluehdi-76392.html	alternateur 3008 1.6 hdi prix	5	1	0	0.00	11.00		11.00		1		0		alternateur	peugeot	3008	pièce + modèle + motorisation	0.02
+388	R2	/pieces/alternateur-4/peugeot-128/406-128054/2-0-hdi-16288.html	alternateur 406 2.0 hdi	4	1	0	0.00	7.00		7.00		1		0		alternateur	peugeot	406	pièce + modèle + motorisation	0.02
+389	R2	/pieces/alternateur-4/peugeot-128/boxer-iii-128083/2-2-hdi-11107.html	alternateur boxer 3	3	1	0	0.00	8.00		8.00		1		0		alternateur	peugeot	boxer-iii	autre	0.02
+390	R2	/pieces/alternateur-4/renault-140/symbol-i-140092/1-4-16553.html	alternator renault symbol 1.4	4	1	0	0.00	4.00		4.00		1		0		alternateur	renault	symbol-i	pièce + modèle + motorisation	0.02
+391	R2	/pieces/alternateur-4/renault-140/trafic-iii-platforme-chassis-eg-140200/1-6-dci-140-77786.html	alternateur trafic 3 1.6 dci	5	1	0	0.00	7.00		7.00		1		0		alternateur	renault	trafic-iii-platforme-chassis-eg	pièce + modèle + motorisation	0.02
+392	R2	/pieces/alternateur-4/skoda-150/superb-ii-150035/2-0-tdi-28256.html	alternator skoda superb 2.0 tdi	5	1	0	0.00	12.00	12.00		1		0			alternateur	skoda	superb-ii	pièce + modèle + motorisation	0.02
+393	R2	/pieces/alternateur-4/volkswagen-173/golf-iv-173039/1-9-tdi-16063.html	alternateur golf 4 1.9 tdi	5	1	0	0.00	7.00		7.00		1		0		alternateur	volkswagen	golf-iv	pièce + modèle + motorisation	0.02
+394	R2	/pieces/alternateur-4/volkswagen-173/tiguan-173138/2-0-tdi-4motion-82553.html	prix alternateur tiguan 2.0 tdi	5	1	0	0.00	11.00		11.00		1		0		alternateur	volkswagen	tiguan	pièce + modèle + motorisation	0.02
+395	R2	/pieces/amortisseur-854/citroen-46/c4-grand-picasso-ii-46029/1-6-hdi-53293.html	jaka skrzynia biegów	3	1	0	0.00	4.00	4.00		1		0			amortisseur	citroen	c4-grand-picasso-ii	autre	0.02
+396	R2	/pieces/amortisseur-854/peugeot-128/307-128035/1-6-hdi-19341.html	amortisseur 307 hdi 90ch	4	1	0	0.00	5.00		5.00		1		0		amortisseur	peugeot	307	pièce + modèle + motorisation	0.02
+397	R2	/pieces/amortisseur-854/peugeot-128/308-i-128040/1-6-hdi-33270.html	amortisseur avant 308 1.6 hdi	5	1	0	0.00	11.00		11.00		1		0		amortisseur	peugeot	308-i	pièce + modèle + motorisation	0.02
+398	R2	/pieces/balais-d-essuie-glace-298/peugeot-128/3008-suv-128098/hybrid-76595.html	essuie glace arriere 3008 hybride	5	1	0	0.00	8.00		8.00		1		0		balais-d-essuie-glace	peugeot	3008-suv	autre	0.02
+399	R2	/pieces/barre-de-direction-285/citroen-46/c15-46015/1-1-20268.html	biellette de direction c15	4	1	0	0.00	11.00		11.00		1		0		barre-de-direction	citroen	c15	autre	0.02
+400	R2	/pieces/barre-stabilisatrice-274/peugeot-128/208-128021/1-2-33807.html	barre stabilisatrice peugeot 208	4	1	0	0.00	7.00		7.00		1		0		barre-stabilisatrice	peugeot	208	autre	0.02
+401	R2	/pieces/boitier-de-prechauffage-1750/citroen-46/berlingo-i-46006/1-9-d-5720.html	boitier prechauffage berlingo 1.9 d	5	1	0	0.00	5.00		5.00		1		0		boitier-de-prechauffage	citroen	berlingo-i	pièce + modèle + motorisation	0.02
+402	R2	/pieces/boitier-de-prechauffage-1750/kia-88/rio-iii-88052/1-4-crdi-11036.html	quel est le prix ?	5	1	0	0.00	9.00		9.00		1		0		boitier-de-prechauffage	kia	rio-iii	autre	0.02
+403	R2	/pieces/bougie-d-allumage-686/citroen-46/c3-iii-37098/1-2-puretech-110-64966.html	bougies c3 1.2 puretech	4	1	0	0.00	9.00		9.00		1		0		bougie-d-allumage	citroen	c3-iii	pièce + modèle + motorisation	0.02
+404	R2	/pieces/bougie-d-allumage-686/citroen-46/c3-iii-46099/1-2-puretech-65288.html	bougies c3 1.2 puretech	4	1	0	0.00	10.00		10.00		1		0		bougie-d-allumage	citroen	c3-iii	pièce + modèle + motorisation	0.02
+405	R2	/pieces/bougie-d-allumage-686/opel-123/astra-h-break-123022/1-4-9156.html	bujie opel astra h	4	1	0	0.00	15.00	15.00		1		0			bougie-d-allumage	opel	astra-h-break	autre	0.02
+406	R2	/pieces/bougie-d-allumage-686/peugeot-128/106-ii-128004/1-1-i-quicksilver-5620.html	bougie 106 1.1 essence	4	1	0	0.00	10.00		10.00		1		0		bougie-d-allumage	peugeot	106-ii	pièce + modèle + motorisation	0.02
+407	R2	/pieces/bougie-d-allumage-686/peugeot-128/107-128005/1-0-18586.html	bougie peugeot 107 essence	4	1	0	0.00	8.00		8.00		1		0		bougie-d-allumage	peugeot	107	pièce + modèle + motorisation	0.02
+408	R2	/pieces/bougie-d-allumage-686/peugeot-128/208-camionnette-berline-bicorps-trois-ou-36228/1-2-vti-68-puretech-68-76246.html	bougie 208 1.2 vti	4	1	0	0.00	9.00		9.00		1		0		bougie-d-allumage	peugeot	208-camionnette-berline-bicorps-trois-ou	pièce + modèle + motorisation	0.02
+409	R2	/pieces/bougie-d-allumage-686/renault-140/symbol-i-140092/1-2-16v-19676.html	bougie d'allumage renault symbol 1.2 essence	6	1	0	0.00	6.00		6.00		1		0		bougie-d-allumage	renault	symbol-i	pièce + modèle + motorisation	0.02
+410	R2	/pieces/bougie-d-allumage-686/volkswagen-173/golf-viii-173302/1-5-tsi-82986.html	bougie 1.5 tsi	3	1	0	0.00	11.00		11.00		1		0		bougie-d-allumage	volkswagen	golf-viii	pièce + modèle + motorisation	0.02
+411	R2	/pieces/bougie-de-prechauffage-243/peugeot-128/boxer-iii-fourgon-128143/2-2-hdi-19871.html	bougie prechauffage boxer 2.2 hdi	5	1	0	0.00	11.00		11.00		1		0		bougie-de-prechauffage	peugeot	boxer-iii-fourgon	pièce + modèle + motorisation	0.02
+412	R2	/pieces/bras-de-suspension-273/citroen-46/jumpy-i-46064/2-0-hdi-10544.html	prix en tunisi	3	1	0	0.00	15.00		15.00		1		0		bras-de-suspension	citroen	jumpy-i	autre	0.02
+413	R2	/pieces/butee-d-embrayage-48/citroen-46/c15-46015/1-1-20268.html	fourchette embrayage c15	3	1	0	0.00	4.00		4.00		1		0		butee-d-embrayage	citroen	c15	autre	0.02
+414	R2	/pieces/butee-d-embrayage-48/citroen-46/c3-pluriel-46023/1-4-hdi-18085.html	oui, pourquoi pas	3	1	0	0.00	4.00		4.00		1		0		butee-d-embrayage	citroen	c3-pluriel	autre	0.02
+415	R2	/pieces/cable-d-embrayage-478/peugeot-128/206-128014/1-4-i-9466.html	câble d'embrayage 206	3	1	0	0.00	6.00		6.00		1		0		cable-d-embrayage	peugeot	206	autre	0.02
+416	R2	/pieces/cable-d-embrayage-478/peugeot-128/206-128014/1-4-i-9466.html	câble embrayage 206	3	1	0	0.00	4.00	4.00		1		0			cable-d-embrayage	peugeot	206	autre	0.02
+417	R2	/pieces/cable-d-embrayage-478/peugeot-128/206-128014/1-4-i-9466.html	câble embrayage 206 prix	4	1	0	0.00	7.00		7.00		1		0		cable-d-embrayage	peugeot	206	autre	0.02
+418	R2	/pieces/cable-d-embrayage-478/peugeot-128/partner-i-128093/1-6-hdi-19523.html	cable embrayage partner	3	1	0	0.00	11.00	11.00		1		0			cable-d-embrayage	peugeot	partner-i	autre	0.02
+419	R2	/pieces/cable-d-embrayage-478/peugeot-128/partner-i-128093/1-6-hdi-19523.html	câble embrayage partner 1.6 hdi	5	1	0	0.00	11.00		11.00		1		0		cable-d-embrayage	peugeot	partner-i	pièce + modèle + motorisation	0.02
+420	R2	/pieces/cable-d-embrayage-478/peugeot-128/partner-i-128093/2-0-hdi-16269.html	cable d embrayage partner 2.0 hdi	6	1	0	0.00	6.00		6.00		1		0		cable-d-embrayage	peugeot	partner-i	pièce + modèle + motorisation	0.02
+421	R2	/pieces/cable-de-compteur-de-vitesse-1150/volkswagen-173/polo-iii-173109/1-4-5277.html	cable vitesse polo 3	4	1	0	0.00	10.00		10.00		1		0		cable-de-compteur-de-vitesse	volkswagen	polo-iii	autre	0.02
+422	R2	/pieces/capteur-de-cognement-3921/peugeot-128/206-128014/1-4-i-9466.html	capteur 206 1.4 essence	4	1	0	0.00	9.00		9.00		1		0		capteur-de-cognement	peugeot	206	pièce + modèle + motorisation	0.02
+423	R2	/pieces/capteur-de-pression-turbo-3553/renault-140/fluence-140016/1-5-dci-31724.html	capteur de pression turbo 1.5 dci	6	1	0	0.00	10.00	10.00		1		0			capteur-de-pression-turbo	renault	fluence	pièce + modèle + motorisation	0.02
+424	R2	/pieces/capteur-temperature-d-air-admission-3939/peugeot-128/207-128018/1-6-hdi-19353.html	capteur de température d'air d'admission 1.6 hdi	7	1	0	0.00	6.00		6.00		1		0		capteur-temperature-d-air-admission	peugeot	207	pièce + modèle + motorisation	0.02
+425	R2	/pieces/capteur-temperature-d-air-admission-3939/peugeot-128/partner-i-128093/1-6-hdi-19523.html	capteur de température d'air d'admission 1.6 hdi	7	1	0	0.00	9.00	9.00		1		0			capteur-temperature-d-air-admission	peugeot	partner-i	pièce + modèle + motorisation	0.02
+426	R2	/pieces/capteur-temperature-d-air-admission-3939/renault-140/modus-140053/1-5-dci-18314.html	admission 1.5 dci	3	1	0	0.00	6.00		6.00		1		0		capteur-temperature-d-air-admission	renault	modus	pièce + modèle + motorisation	0.02
+427	R2	/pieces/capteur-temperature-d-air-admission-3939/renault-140/r21-break-140071/2-0-phase-1-5049.html	سعره في الجزائر	3	1	0	0.00	6.00		6.00		1		0		capteur-temperature-d-air-admission	renault	r21-break	autre	0.02
+428	R2	/pieces/cardan-13/bmw-33/serie-3-e90-33028/328-i-xdrive-61528.html	bmw e90 328	3	1	0	0.00	11.00		11.00		1		0		cardan	bmw	serie-3-e90	autre	0.02
+429	R2	/pieces/cardan-13/citroen-46/saxo-46070/1-5-d-5616.html	cardan saxo 1.5 d	4	1	0	0.00	5.00		5.00		1		0		cardan	citroen	saxo	pièce + modèle + motorisation	0.02
+430	R2	/pieces/cardan-13/citroen-46/xsara-picasso-46086/1-6-hdi-17961.html	cardan xsara picasso 1.6 hdi	5	1	0	0.00	6.00		6.00		1		0		cardan	citroen	xsara-picasso	pièce + modèle + motorisation	0.02
+431	R2	/pieces/cardan-13/mercedes-benz-108/vito-638-108202/110-d-2-3-11098.html	cardan vito w638	3	1	0	0.00	10.00		10.00		1		0		cardan	mercedes-benz	vito-638	autre	0.02
+432	R2	/pieces/cardan-13/nissan-119/qashqai-2-119199/1-5-dci-19887.html	cardan nissan qashqai 1.5 dci	5	1	0	0.00	9.00		9.00		1		0		cardan	nissan	qashqai-2	pièce + modèle + motorisation	0.02
+433	R2	/pieces/cardan-13/peugeot-128/206-128017/1-4-hdi-eco-33839.html	cardan 206 1.4 hdi	4	1	0	0.00	8.00		8.00		1		0		cardan	peugeot	206	pièce + modèle + motorisation	0.02
+434	R2	/pieces/cardan-13/peugeot-128/406-128054/2-0-hdi-16288.html	cardan 406 hdi 110	4	1	0	0.00	5.00		5.00		1		0		cardan	peugeot	406	pièce + modèle + motorisation	0.02
+435	R2	/pieces/cardan-13/peugeot-128/partner-i-128093/1-6-hdi-19523.html	cardan partner 1.6 hdi	4	1	0	0.00	12.00	12.00		1		0			cardan	peugeot	partner-i	pièce + modèle + motorisation	0.02
+436	R2	/pieces/cardan-13/renault-140/clio-i-140002/1-2-chipie-14908.html	cardan clio 1	3	1	0	0.00	7.00		7.00		1		0		cardan	renault	clio-i	autre	0.02
+437	R2	/pieces/cardan-13/renault-140/clio-i-140002/1-2-chipie-14908.html	cardan clio 1 1.2 essence	5	1	0	0.00	5.00		5.00		1		0		cardan	renault	clio-i	pièce + modèle + motorisation	0.02
+438	R2	/pieces/cardan-13/renault-140/clio-iii-140004/1-5-dci-19051.html	cardan clio 3 1.5 dci	5	1	0	0.00	4.00		4.00		1		0		cardan	renault	clio-iii	pièce + modèle + motorisation	0.02
+439	R2	/pieces/cardan-13/renault-140/kangoo-i-140021/1-9-dti-14575.html	cardan kangoo 1.9d	3	1	0	0.00	11.00	11.00		1		0			cardan	renault	kangoo-i	pièce + modèle + motorisation	0.02
+440	R2	/pieces/cardan-13/renault-140/master-iii-140039/2-3-dci-fwd-77287.html	cardan master 3	3	1	0	0.00	9.00		9.00		1		0		cardan	renault	master-iii	autre	0.02
+441	R2	/pieces/cardan-13/renault-140/megane-ii-140046/1-5-dci-18790.html	cardan megane 2 1.5 dci	5	1	0	0.00	4.00		4.00		1		0		cardan	renault	megane-ii	pièce + modèle + motorisation	0.02
+442	R2	/pieces/chaine-de-distribution-1123/mercedes-benz-108/classe-b-w245-108035/b-180-cdi-2-0-18507.html	distribution mercedes classe b 180 cdi	6	1	0	0.00	10.00		10.00		1		0		chaine-de-distribution	mercedes-benz	classe-b-w245	pièce + modèle + motorisation	0.02
+443	R2	/pieces/chaine-de-distribution-1123/peugeot-128/2008-128006/1-6-vti-58875.html	2008 moteur a chaine	4	1	0	0.00	9.00		9.00		1		0		chaine-de-distribution	peugeot	2008	autre	0.02
+444	R2	/pieces/chaine-de-distribution-1123/renault-140/captur-140001/1-2-tce-59002.html	moteur renault 1.2 tce intens 130cv distribution	7	1	0	0.00	7.00	7.00		1		0			chaine-de-distribution	renault	captur	pièce + modèle + motorisation	0.02
+445	R2	/pieces/chaine-de-distribution-1123/renault-140/clio-iv-140006/0-9-tce-57401.html	chaîne de distribution clio 4 tce 90 prix	8	1	0	0.00	15.00		15.00		1		0		chaine-de-distribution	renault	clio-iv	pièce + modèle + motorisation	0.02
+446	R2	/pieces/commande-d-eclairage-809/peugeot-128/208-128021/1-6-8683.html	commande peugeot 208	3	1	0	0.00	10.00	10.00		1		0			commande-d-eclairage	peugeot	208	autre	0.02
+447	R2	/pieces/compresseur-de-climatisation-447/citroen-46/berlingo-ii-46007/1-6-hdi-24515.html	compresseur clim berlingo 1.6 hdi	5	1	0	0.00	6.00	6.00		1		0			compresseur-de-climatisation	citroen	berlingo-ii	pièce + modèle + motorisation	0.02
+448	R2	/pieces/compresseur-de-climatisation-447/citroen-46/berlingo-ii-46007/1-6-hdi-7247.html	compresseur de clim berlingo 1.6 hdi	6	1	0	0.00	8.00	8.00		1		0			compresseur-de-climatisation	citroen	berlingo-ii	pièce + modèle + motorisation	0.02
+449	R2	/pieces/compresseur-de-climatisation-447/peugeot-128/208-128021/1-4-vti-33823.html	compresseur climatisation 208	3	1	0	0.00	8.00		8.00		1		0		compresseur-de-climatisation	peugeot	208	autre	0.02
+450	R2	/pieces/compresseur-de-climatisation-447/peugeot-128/406-128054/2-0-hdi-16288.html	compresseur clim 406 hdi	4	1	0	0.00	13.00	13.00		1		0			compresseur-de-climatisation	peugeot	406	pièce + modèle + motorisation	0.02
+451	R2	/pieces/compresseur-de-climatisation-447/peugeot-128/5008-128061/1-6-bluehdi-76511.html	compresseur clim 5008	3	1	0	0.00	7.00		7.00		1		0		compresseur-de-climatisation	peugeot	5008	autre	0.02
+452	R2	/pieces/contacteur-de-feu-de-recul-807/peugeot-128/206-128014/1-4-hdi-eco-16270.html	contacteur feu de recul 206	5	1	0	0.00	11.00	11.00		1		0			contacteur-de-feu-de-recul	peugeot	206	autre	0.02
+453	R2	/pieces/corps-papillon-158/bmw-33/serie-1-e87-33018/2-0-120-d-58283.html	boitier papillon bmw serie 1	5	1	0	0.00	11.00		11.00		1		0		corps-papillon	bmw	serie-1-e87	autre	0.02
+454	R2	/pieces/corps-papillon-158/citroen-46/c3-ii-46021/1-1-32027.html	boitier papillon c3 1.1 essence	5	1	0	0.00	10.00		10.00		1		0		corps-papillon	citroen	c3-ii	pièce + modèle + motorisation	0.02
+455	R2	/pieces/corps-papillon-158/opel-123/corsa-b-123044/1-0-i-12v-7863.html	boitier papillon opel corsa	4	1	0	0.00	9.00		9.00		1		0		corps-papillon	opel	corsa-b	autre	0.02
+456	R2	/pieces/corps-papillon-158/peugeot-128/206-128014/1-4-i-9466.html	boîtier papillon 206 1.4 essence 75ch	6	1	0	0.00	4.00		4.00		1		0		corps-papillon	peugeot	206	pièce + modèle + motorisation	0.02
+457	R2	/pieces/corps-papillon-158/peugeot-128/206-128014/1-6-16v-15705.html	boitier papillon 206 1.6 essence	5	1	0	0.00	8.00		8.00		1		0		corps-papillon	peugeot	206	pièce + modèle + motorisation	0.02
+458	R2	/pieces/corps-papillon-158/peugeot-128/208-128021/1-2-puretech-76375.html	boitier papillon 208 1.2 puretech	5	1	0	0.00	11.00		11.00		1		0		corps-papillon	peugeot	208	pièce + modèle + motorisation	0.02
+459	R2	/pieces/corps-papillon-158/volkswagen-173/golf-vi-173046/2-0-tdi-29994.html	boitier papillon golf 6 2.0 tdi 140	7	1	0	0.00	10.00		10.00		1		0		corps-papillon	volkswagen	golf-vi	pièce + modèle + motorisation	0.02
+460	R2	/pieces/courroie-d-accessoire-10/alfa-romeo-13/147-13002/1-9-jtd-16441.html	courroie accessoire alfa 147 1.9 jtd	6	1	0	0.00	8.00		8.00		1		0		courroie-d-accessoire	alfa-romeo	147	pièce + modèle + motorisation	0.02
+461	R2	/pieces/courroie-d-accessoire-10/alfa-romeo-13/159-13006/1-9-jtdm-16v-18930.html	courroie accessoire 1.9 jtd	4	1	0	0.00	7.00	7.00		1		0			courroie-d-accessoire	alfa-romeo	159	pièce + modèle + motorisation	0.02
+462	R2	/pieces/courroie-d-accessoire-10/alfa-romeo-13/159-13006/1-9-jtdm-16v-18930.html	schema courroie accessoire alfa 159 1.9 jtdm	7	1	0	0.00	6.00	6.00		1		0			courroie-d-accessoire	alfa-romeo	159	pièce + modèle + motorisation	0.02
+463	R2	/pieces/courroie-d-accessoire-10/chevrolet-44/captiva-44046/2-0-d-24471.html	courroie chevrolet captiva	3	1	0	0.00	9.00		9.00		1		0		courroie-d-accessoire	chevrolet	captiva	autre	0.02
+464	R2	/pieces/courroie-d-accessoire-10/citroen-46/c4-picasso-i-46032/1-6-hdi-6442.html	courroie accessoire c4 picasso 1.6 hdi	6	1	0	0.00	5.00		5.00		1		0		courroie-d-accessoire	citroen	c4-picasso-i	pièce + modèle + motorisation	0.02
+465	R2	/pieces/courroie-d-accessoire-10/fiat-58/ducato-v-250-58225/2-3-d-multijet-19975.html	courroie accessoire ducato 2.3 multijet	5	1	0	0.00	9.00	9.00		1		0			courroie-d-accessoire	fiat	ducato-v-250	pièce + modèle + motorisation	0.02
+466	R2	/pieces/courroie-d-accessoire-10/ford-60/fiesta-v-60073/1-4-tdci-16102.html	schéma courroie accessoire ford fiesta 1.4 tdci	7	1	0	0.00	11.00		11.00		1		0		courroie-d-accessoire	ford	fiesta-v	pièce + modèle + motorisation	0.02
+467	R2	/pieces/courroie-d-accessoire-10/mercedes-benz-108/classe-a-w169-108033/a-160-cdi-2-0-18263.html	courroie d accessoire mercedes classe a	6	1	0	0.00	15.00	15.00		1		0			courroie-d-accessoire	mercedes-benz	classe-a-w169	autre	0.02
+468	R2	/pieces/courroie-d-accessoire-10/mercedes-benz-108/classe-a-w169-108033/a-180-cdi-2-0-18264.html	courroie accessoire mercedes classe a 180 cdi	7	1	0	0.00	7.00	7.00		1		0			courroie-d-accessoire	mercedes-benz	classe-a-w169	pièce + modèle + motorisation	0.02
+469	R2	/pieces/courroie-d-accessoire-10/mercedes-benz-108/classe-a-w176-108034/a-200-cdi-1-8-55338.html	courroie accessoire mercedes classe a	5	1	0	0.00	13.00	13.00		1		0			courroie-d-accessoire	mercedes-benz	classe-a-w176	autre	0.02
+470	R2	/pieces/courroie-d-accessoire-10/mercedes-benz-108/classe-b-w245-108035/b-200-cdi-2-0-18508.html	courroie accessoire classe b w245	5	1	0	0.00	8.00		8.00		1		0		courroie-d-accessoire	mercedes-benz	classe-b-w245	autre	0.02
+471	R2	/pieces/courroie-d-accessoire-10/mercedes-benz-108/classe-b-w245-108035/b-200-cdi-2-0-18508.html	schéma courroie alternateur mercedes classe b w245	7	1	0	0.00	11.00		11.00		1		0		courroie-d-accessoire	mercedes-benz	classe-b-w245	autre	0.02
+472	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128014/1-4-i-9466.html	courroie d'accessoire 206 1.4 essence	5	1	0	0.00	9.00		9.00		1		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.02
+473	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128014/1-4-i-9466.html	schéma courroie accessoire 206 1.4 essence sans clim	8	1	0	0.00	8.00		8.00		1		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.02
+474	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128014/1-9-d-9468.html	schéma courroie accessoire 206 1.9 d avec clim	8	1	0	0.00	6.00		6.00		1		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.02
+475	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-128014/1-9-d-9468.html	schema courroie accessoire 206 1.9d avec clim	7	1	0	0.00	9.00		9.00		1		0		courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.02
+476	R2	/pieces/courroie-d-accessoire-10/peugeot-128/206-sw-128016/1-4-hdi-16678.html	référence courroie accessoire 206 1.4 essence	6	1	0	0.00	4.00	4.00		1		0			courroie-d-accessoire	peugeot	206-sw	référence …	0.02
+477	R2	/pieces/courroie-d-accessoire-10/peugeot-128/207-128018/1-4-16v-19349.html	courroie accessoire 207 1.4 essence	5	1	0	0.00	9.00		9.00		1		0		courroie-d-accessoire	peugeot	207	pièce + modèle + motorisation	0.02
+478	R2	/pieces/courroie-d-accessoire-10/peugeot-128/207-128018/1-4-16v-19349.html	courroie alternateur peugeot 207	4	1	0	0.00	11.00		11.00		1		0		courroie-d-accessoire	peugeot	207	autre	0.02
+479	R2	/pieces/courroie-d-accessoire-10/peugeot-128/307-128035/2-0-hdi-15903.html	courroie accessoire 307 2.0 hdi 90	6	1	0	0.00	5.00	5.00		1		0			courroie-d-accessoire	peugeot	307	pièce + modèle + motorisation	0.02
+480	R2	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	schema courroie accessoire partner 1.9 d sans clim	8	1	0	0.00	10.00		10.00		1		0		courroie-d-accessoire	peugeot	partner-i	pièce + modèle + motorisation	0.02
+481	R2	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	schema courroie alternateur partner 1.9 d	6	1	0	0.00	8.00		8.00		1		0		courroie-d-accessoire	peugeot	partner-i	pièce + modèle + motorisation	0.02
+482	R2	/pieces/courroie-d-accessoire-10/renault-140/clio-ii-140003/1-5-dci-campus-30936.html	courroie accessoire 1.5 dci	4	1	0	0.00	7.00		7.00		1		0		courroie-d-accessoire	renault	clio-ii	pièce + modèle + motorisation	0.02
+483	R2	/pieces/courroie-d-accessoire-10/renault-140/clio-ii-140003/1-9-d-9044.html	schema courroie accessoire clio 2 1.9 d	7	1	0	0.00	8.00		8.00		1		0		courroie-d-accessoire	renault	clio-ii	pièce + modèle + motorisation	0.02
+484	R2	/pieces/courroie-d-accessoire-10/renault-140/clio-iii-140004/1-5-dci-19052.html	courroie 1.5 dci	3	1	0	0.00	11.00		11.00		1		0		courroie-d-accessoire	renault	clio-iii	pièce + modèle + motorisation	0.02
+485	R2	/pieces/courroie-d-accessoire-10/renault-140/clio-iv-140006/1-2-16v-57284.html	courroie accessoire clio 4 1.2 16v	6	1	0	0.00	10.00		10.00		1		0		courroie-d-accessoire	renault	clio-iv	pièce + modèle + motorisation	0.02
+486	R2	/pieces/courroie-d-accessoire-10/renault-140/espace-iii-140011/2-2-dci-15054.html	schema courroie accessoire espace 3 2.2 dci	7	1	0	0.00	11.00		11.00		1		0		courroie-d-accessoire	renault	espace-iii	pièce + modèle + motorisation	0.02
+487	R2	/pieces/courroie-d-accessoire-10/renault-140/kangoo-i-140021/1-9-d-8989.html	courroie accessoire kangoo 1.9 d	5	1	0	0.00	5.00		5.00		1		0		courroie-d-accessoire	renault	kangoo-i	pièce + modèle + motorisation	0.02
+488	R2	/pieces/courroie-d-accessoire-10/renault-140/laguna-ii-140028/1-9-dci-18643.html	schema courroie accessoire laguna 2 1.9 dci	7	1	0	0.00	4.00		4.00		1		0		courroie-d-accessoire	renault	laguna-ii	pièce + modèle + motorisation	0.02
+489	R2	/pieces/courroie-d-accessoire-10/renault-140/master-iii-140039/2-3-dci-fwd-33278.html	courroie master 3	3	1	0	0.00	4.00		4.00		1		0		courroie-d-accessoire	renault	master-iii	autre	0.02
+490	R2	/pieces/courroie-d-accessoire-10/renault-140/symbol-i-140092/1-4-16553.html	courroie alternateur symbol 1.2 16v	5	1	0	0.00	10.00	10.00		1		0			courroie-d-accessoire	renault	symbol-i	pièce + modèle + motorisation	0.02
+491	R2	/pieces/courroie-d-accessoire-10/renault-140/symbol-ii-140093/1-2-16v-9292.html	schema courroie alternateur symbol 1.2 16v	6	1	0	0.00	5.00		5.00		1		0		courroie-d-accessoire	renault	symbol-ii	pièce + modèle + motorisation	0.02
+492	R2	/pieces/courroie-d-accessoire-10/renault-140/trafic-ii-140096/1-9-dci-15716.html	courroie accessoire trafic 1.9 dci	5	1	0	0.00	10.00		10.00		1		0		courroie-d-accessoire	renault	trafic-ii	pièce + modèle + motorisation	0.02
+493	R2	/pieces/courroie-d-accessoire-10/suzuki-158/alto-k10-i-158066/1-0-79232.html	تاكد من الاسعار	3	1	0	0.00	7.00		7.00		1		0		courroie-d-accessoire	suzuki	alto-k10-i	autre	0.02
+494	R2	/pieces/courroie-d-accessoire-10/volkswagen-173/amarok-173006/2-0-tdi-56896.html	schema courroie accessoire amarok 2.0 tdi	6	1	0	0.00	10.00		10.00		1		0		courroie-d-accessoire	volkswagen	amarok	pièce + modèle + motorisation	0.02
+495	R2	/pieces/courroie-de-distribution-306/fiat-58/tipo-ii-58214/1-4-66299.html	courroie distribution fiat tipo 1.4 essence	6	1	0	0.00	7.00		7.00		1		0		courroie-de-distribution	fiat	tipo-ii	pièce + modèle + motorisation	0.02
+496	R2	/pieces/courroie-de-distribution-306/peugeot-128/206-128014/1-1-i-9465.html	distribution 206 1.1 essence	4	1	0	0.00	8.00		8.00		1		0		courroie-de-distribution	peugeot	206	pièce + modèle + motorisation	0.02
+497	R2	/pieces/courroie-de-distribution-306/peugeot-128/partner-i-128093/1-6-hdi-8v-76559.html	distribution partner 1.6 hdi	4	1	0	0.00	9.00		9.00		1		0		courroie-de-distribution	peugeot	partner-i	pièce + modèle + motorisation	0.02
+498	R2	/pieces/courroie-de-distribution-306/renault-140/clio-iv-140006/1-2-16v-57284.html	courroie de distribution clio 4 1.2 16v	7	1	0	0.00	10.00	10.00		1		0			courroie-de-distribution	renault	clio-iv	pièce + modèle + motorisation	0.02
+499	R2	/pieces/courroie-de-distribution-306/volkswagen-173/caddy-iv-173228/2-0-tdi-82743.html	courroie de distribution volkswagen caddy 2.0 tdi	7	1	0	0.00	11.00		11.00		1		0		courroie-de-distribution	volkswagen	caddy-iv	pièce + modèle + motorisation	0.02
+500	R2	/pieces/courroie-de-distribution-306/volkswagen-173/golf-viii-break-173303/1-5-tsi-83007.html	courroie de distribution golf 8 1.5 tsi	7	1	0	0.00	14.00		14.00		1		0		courroie-de-distribution	volkswagen	golf-viii-break	pièce + modèle + motorisation	0.02
+501	R2	/pieces/cremailliere-de-direction-286/citroen-46/c3-i-46020/1-4-16v-hdi-16336.html	crémaillère de direction c3 1.4 hdi	6	1	0	0.00	8.00	8.00		1		0			cremailliere-de-direction	citroen	c3-i	pièce + modèle + motorisation	0.02
+502	R2	/pieces/cremailliere-de-direction-286/renault-140/kangoo-i-140021/1-9-d-8989.html	crémaillère de direction kangoo 1.9 d'	6	1	0	0.00	11.00		11.00		1		0		cremailliere-de-direction	renault	kangoo-i	pièce + modèle + motorisation	0.02
+503	R2	/pieces/debitmetre-d-air-3927/fiat-58/doblo-cargo-ii-58022/1-3-d-multijet-33402.html	débitmètre fiat doblo 1.3 multijet	5	1	0	0.00	10.00		10.00		1		0		debitmetre-d-air	fiat	doblo-cargo-ii	pièce + modèle + motorisation	0.02
+504	R2	/pieces/debitmetre-d-air-3927/peugeot-128/207-128018/1-6-hdi-19352.html	débitmètre 207 1.6 hdi	4	1	0	0.00	11.00	11.00		1		0			debitmetre-d-air	peugeot	207	pièce + modèle + motorisation	0.02
+505	R2	/pieces/debitmetre-d-air-3927/renault-140/trafic-ii-140096/1-9-dci-15716.html	débitmètre trafic 1.9 dci 100	5	1	0	0.00	11.00		11.00		1		0		debitmetre-d-air	renault	trafic-ii	pièce + modèle + motorisation	0.02
+506	R2	/pieces/demarreur-2/chevrolet-44/spark-ii-44183/1-0-sx-22306.html	starter spark 2	3	1	0	0.00	10.00		10.00		1		0		demarreur	chevrolet	spark-ii	autre	0.02
+507	R2	/pieces/demarreur-2/dacia-47/logan-i-47017/1-4-18389.html	starter logan 1.4	3	1	0	0.00	11.00		11.00		1		0		demarreur	dacia	logan-i	pièce + modèle + motorisation	0.02
+508	R2	/pieces/demarreur-2/peugeot-128/206-128014/1-1-21501.html	démarreur 206 1.1 essence	4	1	0	0.00	7.00		7.00		1		0		demarreur	peugeot	206	pièce + modèle + motorisation	0.02
+509	R2	/pieces/demarreur-2/peugeot-128/206-128017/1-4-i-33838.html	demarreur 206 1.4 essence	4	1	0	0.00	15.00		15.00		1		0		demarreur	peugeot	206	pièce + modèle + motorisation	0.02
+510	R2	/pieces/demarreur-2/peugeot-128/307-128035/2-0-hdi-15903.html	démarreur 2l hdi 90	4	1	0	0.00	9.00		9.00		1		0		demarreur	peugeot	307	pièce + modèle + motorisation	0.02
+511	R2	/pieces/demarreur-2/peugeot-128/308-i-128040/1-6-hdi-33270.html	démarreur peugeot 308 1.6 hdi	5	1	0	0.00	10.00		10.00		1		0		demarreur	peugeot	308-i	pièce + modèle + motorisation	0.02
+512	R2	/pieces/demarreur-2/renault-140/clio-ii-140003/1-5-dci-29998.html	démarreur clio 2 1.5 dci	5	1	0	0.00	12.00		12.00		1		0		demarreur	renault	clio-ii	pièce + modèle + motorisation	0.02
+513	R2	/pieces/disque-de-frein-82/renault-140/clio-iv-140006/1-5-dci-57282.html	disque clio 4	3	1	0	0.00	5.00	5.00		1		0			disque-de-frein	renault	clio-iv	autre	0.02
+514	R2	/pieces/durite-de-refroidissement-475/peugeot-128/206-128014/1-4-i-9466.html	durite de refroidissement 206 1.4 essence	6	1	0	0.00	7.00		7.00		1		0		durite-de-refroidissement	peugeot	206	pièce + modèle + motorisation	0.02
+515	R2	/pieces/durite-de-refroidissement-475/peugeot-128/207-128018/1-4-hdi-19354.html	durite 207 1.4 hdi	4	1	0	0.00	9.00		9.00		1		0		durite-de-refroidissement	peugeot	207	pièce + modèle + motorisation	0.02
+516	R2	/pieces/durite-de-refroidissement-475/renault-140/kangoo-i-140021/1-9-d-8989.html	durite kangoo 1.9 d	4	1	0	0.00	9.00		9.00		1		0		durite-de-refroidissement	renault	kangoo-i	pièce + modèle + motorisation	0.02
+517	R2	/pieces/emetteur-d-embrayage-234/peugeot-128/207-128018/1-4-hdi-19354.html	émetteur embrayage 207 1.4 hdi	5	1	0	0.00	8.00		8.00		1		0		emetteur-d-embrayage	peugeot	207	pièce + modèle + motorisation	0.02
+518	R2	/pieces/emetteur-d-embrayage-234/peugeot-128/207-128018/1-6-16v-vti-22681.html	pompe embrayage 207	3	1	0	0.00	9.00		9.00		1		0		emetteur-d-embrayage	peugeot	207	autre	0.02
+519	R2	/pieces/emetteur-d-embrayage-234/peugeot-128/207-128018/1-6-hdi-19352.html	emetteur embrayage 1.6 hdi	4	1	0	0.00	11.00		11.00		1		0		emetteur-d-embrayage	peugeot	207	pièce + modèle + motorisation	0.02
+520	R2	/pieces/emetteur-d-embrayage-234/renault-140/clio-iv-140006/1-2-16v-57284.html	émetteur embrayage clio 4	4	1	0	0.00	15.00	15.00		1		0			emetteur-d-embrayage	renault	clio-iv	autre	0.02
+521	R2	/pieces/emetteur-d-embrayage-234/renault-140/laguna-ii-140028/1-9-dci-15476.html	émetteur embrayage laguna 2 1.9 dci	6	1	0	0.00	14.00		14.00		1		0		emetteur-d-embrayage	renault	laguna-ii	pièce + modèle + motorisation	0.02
+522	R2	/pieces/emetteur-d-embrayage-234/volkswagen-173/polo-vi-173114/1-4-tdi-82496.html	émetteur embrayage polo 6	4	1	0	0.00	9.00		9.00		1		0		emetteur-d-embrayage	volkswagen	polo-vi	autre	0.02
+523	R2	/pieces/etrier-de-frein-78/opel-123/astra-g-break-123018/2-2-16v-15778.html	etrier opel astra g	4	1	0	0.00	7.00		7.00		1		0		etrier-de-frein	opel	astra-g-break	autre	0.02
+524	R2	/pieces/fap-1256/citroen-46/c4-grand-picasso-ii-46029/1-6-bluehdi-65120.html	fap c4 picasso 1.6 hdi	5	1	0	0.00	10.00		10.00		1		0		fap	citroen	c4-grand-picasso-ii	pièce + modèle + motorisation	0.02
+525	R2	/pieces/fap-1256/dacia-47/sandero-ii-47025/1-5-dci-35269.html	fap dacia sandero	3	1	0	0.00	10.00		10.00		1		0		fap	dacia	sandero-ii	autre	0.02
+526	R2	/pieces/fap-1256/renault-140/master-iii-140039/2-3-dci-fwd-77287.html	fap master 3	3	1	0	0.00	9.00		9.00		1		0		fap	renault	master-iii	autre	0.02
+527	R2	/pieces/fap-1256/volkswagen-173/golf-vi-173046/1-6-tdi-33030.html	fap 1.6 tdi 90	4	1	0	0.00	9.00		9.00		1		0		fap	volkswagen	golf-vi	pièce + modèle + motorisation	0.02
+528	R2	/pieces/filtre-a-air-8/citroen-46/saxo-46070/1-1-xsx-5548.html	filtre à air saxo 1.1 essence	6	1	0	0.00	11.00		11.00		1		0		filtre-a-air	citroen	saxo	pièce + modèle + motorisation	0.02
+529	R2	/pieces/filtre-a-air-8/dacia-47/duster-47014/1-5-dci-4x4-5389.html	filtre à air dacia duster 1.5 dci	7	1	0	0.00	9.00		9.00		1		0		filtre-a-air	dacia	duster	pièce + modèle + motorisation	0.02
+530	R2	/pieces/filtre-a-air-8/dacia-47/duster-47014/1-5-dci-4x4-5389.html	filtre a air duster 1.5 dci	6	1	0	0.00	5.00		5.00		1		0		filtre-a-air	dacia	duster	pièce + modèle + motorisation	0.02
+531	R2	/pieces/filtre-a-air-8/dacia-47/duster-47014/1-5-dci-4x4-5389.html	filtre à air duster 1.5 dci	6	1	0	0.00	7.00		7.00		1		0		filtre-a-air	dacia	duster	pièce + modèle + motorisation	0.02
+532	R2	/pieces/filtre-a-air-8/fiat-58/tipo-ii-58214/1-4-66298.html	filtre a air fiat tipo 1.4 essence	7	1	0	0.00	9.00	9.00		1		0			filtre-a-air	fiat	tipo-ii	pièce + modèle + motorisation	0.02
+533	R2	/pieces/filtre-a-air-8/ford-60/focus-i-60076/1-8-tdci-16967.html	filtre a air ford focus	5	1	0	0.00	11.00		11.00		1		0		filtre-a-air	ford	focus-i	autre	0.02
+534	R2	/pieces/filtre-a-air-8/mercedes-benz-108/classe-c-w204-108039/c-220-cdi-2-1-22458.html	filtre à air mercedes c 220 cdi	7	1	0	0.00	11.00		11.00		1		0		filtre-a-air	mercedes-benz	classe-c-w204	pièce + modèle + motorisation	0.02
+535	R2	/pieces/filtre-a-air-8/nissan-119/qashqai-2-119199/1-5-dci-11136.html	filtre à air nissan qashqai 1.5 dci	7	1	0	0.00	9.00		9.00		1		0		filtre-a-air	nissan	qashqai-2	pièce + modèle + motorisation	0.02
+536	R2	/pieces/filtre-a-air-8/opel-123/corsa-d-123048/1-3-cdti-19726.html	filtre a air opel corsa 1.3 cdti	7	1	0	0.00	9.00		9.00		1		0		filtre-a-air	opel	corsa-d	pièce + modèle + motorisation	0.02
+537	R2	/pieces/filtre-a-air-8/peugeot-128/107-128005/1-4-hdi-18587.html	filtre à air peugeot 107	5	1	0	0.00	5.00		5.00		1		0		filtre-a-air	peugeot	107	autre	0.02
+538	R2	/pieces/filtre-a-air-8/peugeot-128/partner-ii-tepee-128096/1-6-hdi-11044.html	filtre à air peugeot partner 1.6 hdi	7	1	0	0.00	8.00		8.00		1		0		filtre-a-air	peugeot	partner-ii-tepee	pièce + modèle + motorisation	0.02
+539	R2	/pieces/filtre-a-air-8/renault-140/megane-iii-140049/1-5-dci-29956.html	filtre a air megane 3 1.5 dci	7	1	0	0.00	7.00		7.00		1		0		filtre-a-air	renault	megane-iii	pièce + modèle + motorisation	0.02
+540	R2	/pieces/filtre-a-air-8/toyota-164/corolla-ix-berline-164452/1-8-10517.html	corolla le 2015	3	1	0	0.00	4.00		4.00		1		0		filtre-a-air	toyota	corolla-ix-berline	autre	0.02
+541	R2	/pieces/filtre-a-air-8/volkswagen-173/t-roc-173171/1-5-tsi-82647.html	filtre a air t roc 1.5 tsi	7	1	0	0.00	7.00	7.00		1		0			filtre-a-air	volkswagen	t-roc	pièce + modèle + motorisation	0.02
+542	R2	/pieces/filtre-a-carburant-9/chevrolet-44/captiva-44046/2-2-d-4wd-8513.html	filtre a gasoil chevrolet captiva 2.2	6	1	0	0.00	11.00		11.00		1		0		filtre-a-carburant	chevrolet	captiva	pièce + modèle + motorisation	0.02
+543	R2	/pieces/filtre-a-carburant-9/citroen-46/c3-iii-37098/1-2-puretech-110-64966.html	filtre à essence c3 1.2 puretech	6	1	0	0.00	6.00		6.00		1		0		filtre-a-carburant	citroen	c3-iii	pièce + modèle + motorisation	0.02
+544	R2	/pieces/filtre-a-carburant-9/citroen-46/c3-iii-37098/1-2-puretech-110-64966.html	filtre a essence citroen c3 1.2 puretech	7	1	0	0.00	13.00		13.00		1		0		filtre-a-carburant	citroen	c3-iii	pièce + modèle + motorisation	0.02
+545	R2	/pieces/filtre-a-carburant-9/citroen-46/c3-iii-37098/1-2-puretech-110-64966.html	filtre essence c3 1.2 puretech	5	1	0	0.00	10.00		10.00		1		0		filtre-a-carburant	citroen	c3-iii	pièce + modèle + motorisation	0.02
+546	R2	/pieces/filtre-a-carburant-9/citroen-46/c3-iii-46099/1-2-puretech-65288.html	filtre à essence c3 1.2 puretech	6	1	0	0.00	6.00		6.00		1		0		filtre-a-carburant	citroen	c3-iii	pièce + modèle + motorisation	0.02
+547	R2	/pieces/filtre-a-carburant-9/citroen-46/nemo-break-46069/1-4-hdi-31518.html	filtre à gasoil nemo 1.4 hdi	6	1	0	0.00	11.00		11.00		1		0		filtre-a-carburant	citroen	nemo-break	pièce + modèle + motorisation	0.02
+548	R2	/pieces/filtre-a-carburant-9/ford-60/fiesta-v-60073/1-4-tdci-16102.html	filtre a gasoil fiesta 1.4 tdci	6	1	0	0.00	5.00	5.00		1		0			filtre-a-carburant	ford	fiesta-v	pièce + modèle + motorisation	0.02
+549	R2	/pieces/filtre-a-carburant-9/ford-60/fiesta-v-60073/1-4-tdci-16102.html	filtre gasoil ford fiesta 1.4 tdci	6	1	0	0.00	5.00		5.00		1		0		filtre-a-carburant	ford	fiesta-v	pièce + modèle + motorisation	0.02
+550	R2	/pieces/filtre-a-carburant-9/hyundai-76/atos-76006/1-0-8982.html	filtre essence atos	3	1	0	0.00	10.00		10.00		1		0		filtre-a-carburant	hyundai	atos	pièce + modèle + motorisation	0.02
+551	R2	/pieces/filtre-a-carburant-9/hyundai-76/getz-76021/1-5-crdi-16812.html	filtre a gasoil	3	1	0	0.00	6.00		6.00		1		0		filtre-a-carburant	hyundai	getz	autre	0.02
+552	R2	/pieces/filtre-a-carburant-9/mercedes-benz-108/classe-c-w204-108039/c-220-cdi-2-1-22458.html	filtre à carburant	3	1	0	0.00	5.00		5.00		1		0		filtre-a-carburant	mercedes-benz	classe-c-w204	autre	0.02
+553	R2	/pieces/filtre-a-carburant-9/mercedes-benz-108/sprinter-classic-3-5-t-909-108175/313-cdi-73387.html	filtre a gasoil sprinter 313 cdi	6	1	0	0.00	11.00		11.00		1		0		filtre-a-carburant	mercedes-benz	sprinter-classic-3-5-t-909	pièce + modèle + motorisation	0.02
+554	R2	/pieces/filtre-a-carburant-9/mercedes-benz-108/vito-w639-108095/113-cdi-7625.html	filtre à gasoil vito w639	5	1	0	0.00	10.00	10.00		1		0			filtre-a-carburant	mercedes-benz	vito-w639	autre	0.02
+555	R2	/pieces/filtre-a-carburant-9/peugeot-128/2008-128006/1-5-bluehdi-76349.html	filtro gasolio peugeot 2008 1.5 hdi	6	1	0	0.00	9.00		9.00		1		0		filtre-a-carburant	peugeot	2008	pièce + modèle + motorisation	0.02
+556	R2	/pieces/filtre-a-carburant-9/peugeot-128/206-128014/1-1-21501.html	filtre a essence 206 1.1	5	1	0	0.00	11.00		11.00		1		0		filtre-a-carburant	peugeot	206	pièce + modèle + motorisation	0.02
+557	R2	/pieces/filtre-a-carburant-9/peugeot-128/206-128014/1-4-i-9466.html	filtre a essence 206 1.4	5	1	0	0.00	9.00		9.00		1		0		filtre-a-carburant	peugeot	206	pièce + modèle + motorisation	0.02
+558	R2	/pieces/filtre-a-carburant-9/peugeot-128/206-128014/1-4-i-9466.html	filtre essence 206 1.4	4	1	0	0.00	9.00		9.00		1		0		filtre-a-carburant	peugeot	206	pièce + modèle + motorisation	0.02
+559	R2	/pieces/filtre-a-carburant-9/peugeot-128/207-128018/1-6-16v-vti-22681.html	filtre à essence peugeot 207 1.6 essence	7	1	0	0.00	11.00		11.00		1		0		filtre-a-carburant	peugeot	207	pièce + modèle + motorisation	0.02
+560	R2	/pieces/filtre-a-carburant-9/peugeot-128/207-128018/1-6-hdi-19353.html	filtre a carburant 207 1.6 hdi	6	1	0	0.00	10.00		10.00		1		0		filtre-a-carburant	peugeot	207	pièce + modèle + motorisation	0.02
+561	R2	/pieces/filtre-a-carburant-9/peugeot-128/3008-128022/2-0-hdi-33266.html	filtre gasoil 3008 2.0 hdi	5	1	0	0.00	5.00		5.00		1		0		filtre-a-carburant	peugeot	3008	pièce + modèle + motorisation	0.02
+562	R2	/pieces/filtre-a-carburant-9/volkswagen-173/touareg-i-173139/3-0-v6-tdi-18428.html	filtre gasoil touareg v6 tdi	5	1	0	0.00	12.00		12.00		1		0		filtre-a-carburant	volkswagen	touareg-i	pièce + modèle + motorisation	0.02
+563	R2	/pieces/filtre-a-carburant-9/volkswagen-173/touareg-ii-173140/3-0-v6-tdi-58984.html	filtre gasoil touareg v6 tdi	5	1	0	0.00	6.00		6.00		1		0		filtre-a-carburant	volkswagen	touareg-ii	pièce + modèle + motorisation	0.02
+564	R2	/pieces/filtre-a-carburant-9/volkswagen-173/touran-i-173141/1-9-tdi-17119.html	filtre à gasoil touran 1.9 tdi	6	1	0	0.00	12.00	12.00		1		0			filtre-a-carburant	volkswagen	touran-i	pièce + modèle + motorisation	0.02
+565	R2	/pieces/filtre-a-huile-7/bmw-33/serie-1-f21-33020/118-i-61474.html	filtre a huile bmw serie 1	6	1	0	0.00	11.00		11.00		1		0		filtre-a-huile	bmw	serie-1-f21	autre	0.02
+566	R2	/pieces/filtre-a-huile-7/citroen-46/saxo-46070/1-5-d-5551.html	filtre a huile saxo	4	1	0	0.00	10.00	10.00		1		0			filtre-a-huile	citroen	saxo	autre	0.02
+567	R2	/pieces/filtre-a-huile-7/dacia-47/duster-47014/1-5-dci-5377.html	la référence du filtre à huile	6	1	0	0.00	4.00		4.00		1		0		filtre-a-huile	dacia	duster	autre	0.02
+568	R2	/pieces/filtre-a-huile-7/fiat-58/500-c-58122/1-2-32825.html	filtre à huile fiat 500 1.2 essence	7	1	0	0.00	8.00		8.00		1		0		filtre-a-huile	fiat	500-c	pièce + modèle + motorisation	0.02
+569	R2	/pieces/filtre-a-huile-7/fiat-58/doblo-ii-58023/1-3-d-multijet-33397.html	filtre à huile fiat doblo 1.3 multijet	7	1	0	0.00	15.00		15.00		1		0		filtre-a-huile	fiat	doblo-ii	pièce + modèle + motorisation	0.02
+570	R2	/pieces/filtre-a-huile-7/ford-60/fiesta-vi-60074/1-4-tdci-10105.html	filtre à huile ford fiesta 1.4 tdci	7	1	0	0.00	5.00		5.00		1		0		filtre-a-huile	ford	fiesta-vi	pièce + modèle + motorisation	0.02
+571	R2	/pieces/filtre-a-huile-7/mercedes-benz-108/classe-c-w203-108038/c-220-cdi-2-2-17864.html	filtre a huile mercedes classe c	6	1	0	0.00	4.00		4.00		1		0		filtre-a-huile	mercedes-benz	classe-c-w203	autre	0.02
+572	R2	/pieces/filtre-a-huile-7/nissan-119/qashqai-119198/1-5-dci-75021.html	filtre à huile nissan qashqai 1.5 dci	7	1	0	0.00	12.00		12.00		1		0		filtre-a-huile	nissan	qashqai	pièce + modèle + motorisation	0.02
+573	R2	/pieces/filtre-a-huile-7/nissan-119/qashqai-2-119199/1-5-dci-11136.html	filtre à huile nissan qashqai 1.5 dci	7	1	0	0.00	13.00		13.00		1		0		filtre-a-huile	nissan	qashqai-2	pièce + modèle + motorisation	0.02
+574	R2	/pieces/filtre-a-huile-7/peugeot-128/107-128005/1-0-18586.html	filtre à huile peugeot 107 essence	6	1	0	0.00	6.00		6.00		1		0		filtre-a-huile	peugeot	107	pièce + modèle + motorisation	0.02
+575	R2	/pieces/filtre-a-huile-7/peugeot-128/206-128017/1-4-i-33838.html	filtre à huile peugeot 206 1.4 essence	7	1	0	0.00	5.00		5.00		1		0		filtre-a-huile	peugeot	206	pièce + modèle + motorisation	0.02
+576	R2	/pieces/filtre-a-huile-7/peugeot-128/207-128018/1-4-hdi-19354.html	filtre a huile 207	4	1	0	0.00	6.00		6.00		1		0		filtre-a-huile	peugeot	207	autre	0.02
+577	R2	/pieces/filtre-a-huile-7/peugeot-128/208-128021/1-2-puretech-76375.html	filtre à huile 208 1.2 puretech 82	7	1	0	0.00	8.00		8.00		1		0		filtre-a-huile	peugeot	208	pièce + modèle + motorisation	0.02
+578	R2	/pieces/filtre-a-huile-7/peugeot-128/208-128021/1-2-puretech-76375.html	filtre à huile peugeot 208 1.2 puretech	7	1	0	0.00	10.00	10.00		1		0			filtre-a-huile	peugeot	208	pièce + modèle + motorisation	0.02
+579	R2	/pieces/filtre-a-huile-7/peugeot-128/407-128057/2-0-hdi-17852.html	filtre a huile 407 hdi 136	6	1	0	0.00	15.00	15.00		1		0			filtre-a-huile	peugeot	407	pièce + modèle + motorisation	0.02
+580	R2	/pieces/filtre-a-huile-7/peugeot-128/boxer-iii-128083/2-2-hdi-11107.html	filtre à huile peugeot boxer 2.2 hdi	7	1	0	0.00	11.00		11.00		1		0		filtre-a-huile	peugeot	boxer-iii	pièce + modèle + motorisation	0.02
+581	R2	/pieces/filtre-a-huile-7/peugeot-128/expert-i-128084/2-0-hdi-15116.html	filtre a huile peugeot expert 2.0 hdi	7	1	0	0.00	11.00		11.00		1		0		filtre-a-huile	peugeot	expert-i	pièce + modèle + motorisation	0.02
+582	R2	/pieces/filtre-a-huile-7/peugeot-128/partner-i-128093/1-6-hdi-19523.html	filtre huile partner 1.6 hdi	5	1	0	0.00	10.00		10.00		1		0		filtre-a-huile	peugeot	partner-i	pièce + modèle + motorisation	0.02
+583	R2	/pieces/filtre-a-huile-7/peugeot-128/partner-i-128093/1-6-hdi-8v-76559.html	filtre a huile partner 1.6 hdi	6	1	0	0.00	8.00		8.00		1		0		filtre-a-huile	peugeot	partner-i	pièce + modèle + motorisation	0.02
+584	R2	/pieces/filtre-a-huile-7/renault-140/clio-iv-140006/0-9-tce-57401.html	filtre a huile 0.9 tce	5	1	0	0.00	8.00		8.00		1		0		filtre-a-huile	renault	clio-iv	pièce + modèle + motorisation	0.02
+585	R2	/pieces/filtre-a-huile-7/renault-140/clio-iv-140006/0-9-tce-57401.html	filtre a huile clio 4 0.9 tce	7	1	0	0.00	10.00		10.00		1		0		filtre-a-huile	renault	clio-iv	pièce + modèle + motorisation	0.02
+586	R2	/pieces/filtre-a-huile-7/renault-140/clio-iv-140006/0-9-tce-57401.html	filtre à huile clio 4 0.9 tce	7	1	0	0.00	10.00	10.00		1		0			filtre-a-huile	renault	clio-iv	pièce + modèle + motorisation	0.02
+587	R2	/pieces/filtre-a-huile-7/renault-140/clio-v-140174/1-0-tce-90-77699.html	filtre à huile	3	1	0	0.00	5.00		5.00		1		0		filtre-a-huile	renault	clio-v	autre	0.02
+588	R2	/pieces/filtre-a-huile-7/renault-140/clio-v-140174/1-5-blue-dci-115-77703.html	filtre a huile clio 5 1.5 dci	7	1	0	0.00	7.00	7.00		1		0			filtre-a-huile	renault	clio-v	pièce + modèle + motorisation	0.02
+589	R2	/pieces/filtre-a-huile-7/renault-140/kangoo-i-140021/1-9-d-8990.html	filtre a huile kangoo 1.9 d	6	1	0	0.00	10.00	10.00		1		0			filtre-a-huile	renault	kangoo-i	pièce + modèle + motorisation	0.02
+590	R2	/pieces/filtre-a-huile-7/seat-147/ibiza-iv-147026/1-4-tdi-77954.html	filtre a huile	3	1	0	0.00	9.00		9.00		1		0		filtre-a-huile	seat	ibiza-iv	autre	0.02
+591	R2	/pieces/filtre-a-huile-7/seat-147/ibiza-v-147046/1-0-mpi-78054.html	filtre a huile seat ibiza 1.0 essence	7	1	0	0.00	6.00		6.00		1		0		filtre-a-huile	seat	ibiza-v	pièce + modèle + motorisation	0.02
+592	R2	/pieces/filtre-a-huile-7/skoda-150/octavia-iv-150052/2-0-tdi-78362.html	huile moteur skoda octavia 2.0 tdi 143ch	7	1	0	0.00	9.00		9.00		1		0		filtre-a-huile	skoda	octavia-iv	pièce + modèle + motorisation	0.02
+593	R2	/pieces/filtre-a-huile-7/volkswagen-173/caddy-v-173294/2-0-tdi-bmt-82921.html	filtre a huile caddy 2.0 tdi	6	1	0	0.00	9.00		9.00		1		0		filtre-a-huile	volkswagen	caddy-v	pièce + modèle + motorisation	0.02
+594	R2	/pieces/filtre-a-huile-7/volkswagen-173/crafter-173064/2-0-tdi-82454.html	filtre a huile crafter 2.0 tdi	6	1	0	0.00	8.00		8.00		1		0		filtre-a-huile	volkswagen	crafter	pièce + modèle + motorisation	0.02
+595	R2	/pieces/filtre-d-habitacle-424/citroen-46/c3-iii-46099/1-2-vti-82-lpg-65293.html	filtre à air et filtre habitacle	6	1	0	0.00	12.00	12.00		1		0			filtre-d-habitacle	citroen	c3-iii	autre	0.02
+596	R2	/pieces/filtre-d-habitacle-424/dacia-47/sandero-ii-47025/1-5-dci-58144.html	références exactes des pièces	4	1	0	0.00	13.00	13.00		1		0			filtre-d-habitacle	dacia	sandero-ii	référence …	0.02
+597	R2	/pieces/filtre-d-habitacle-424/renault-140/clio-ii-140003/1-5-dci-campus-30936.html	filtre habitacle clio 2 campus	5	1	0	0.00	10.00		10.00		1		0		filtre-d-habitacle	renault	clio-ii	autre	0.02
+598	R2	/pieces/filtre-d-habitacle-424/renault-140/kangoo-ii-140023/1-5-dci-77240.html	filtre habitacle kangoo 2 1.5 dci	6	1	0	0.00	13.00		13.00		1		0		filtre-d-habitacle	renault	kangoo-ii	pièce + modèle + motorisation	0.02
+599	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/citroen-46/c4-picasso-i-46032/1-6-hdi-19749.html	galet tendeur c4 picasso 1.6 hdi	6	1	0	0.00	6.00		6.00		1		0		galet-tendeur-de-courroie-d-accessoire	citroen	c4-picasso-i	pièce + modèle + motorisation	0.02
+600	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/mercedes-benz-108/sprinter-3-5-t-907-108021/314-cdi-traction-integrale-72981.html	le prix des pièces	4	1	0	0.00	5.00		5.00		1		0		galet-tendeur-de-courroie-d-accessoire	mercedes-benz	sprinter-3-5-t-907	pièces + modèle	0.02
+601	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/206-128014/1-4-hdi-30091.html	galet tendeur 206 1.4 hdi	5	1	0	0.00	8.00		8.00		1		0		galet-tendeur-de-courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.02
+602	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/206-128014/1-4-hdi-eco-16270.html	galet tendeur courroie accessoire 206	5	1	0	0.00	12.00	12.00		1		0			galet-tendeur-de-courroie-d-accessoire	peugeot	206	autre	0.02
+603	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/206-128014/1-4-i-9466.html	galet tendeur 206 1.4 essence	5	1	0	0.00	5.00		5.00		1		0		galet-tendeur-de-courroie-d-accessoire	peugeot	206	pièce + modèle + motorisation	0.02
+604	R2	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/207-128018/1-6-hdi-19352.html	tendeur courroie accessoire 1.6 hdi	5	1	0	0.00	9.00		9.00		1		0		galet-tendeur-de-courroie-d-accessoire	peugeot	207	pièce + modèle + motorisation	0.02
+605	R2	/pieces/injecteur-3902/citroen-46/saxo-46070/1-5-d-5616.html	injecteur saxo 1.5 d	4	1	0	0.00	8.00		8.00		1		0		injecteur	citroen	saxo	pièce + modèle + motorisation	0.02
+606	R2	/pieces/injecteur-3902/ford-60/fiesta-v-60073/1-4-tdci-16102.html	injecteur ford fiesta	3	1	0	0.00	5.00		5.00		1		0		injecteur	ford	fiesta-v	autre	0.02
+607	R2	/pieces/injecteur-3902/renault-140/trafic-ii-140096/1-9-dci-15716.html	injecteur trafic 2 1.9 dci 100	6	1	0	0.00	11.00		11.00		1		0		injecteur	renault	trafic-ii	pièce + modèle + motorisation	0.02
+608	R2	/pieces/joint-d-injecteur-3894/volkswagen-173/golf-vii-173049/1-6-tdi-59068.html	joint injecteur golf 7 1.6 tdi	6	1	0	0.00	4.00		4.00		1		0		joint-d-injecteur	volkswagen	golf-vii	pièce + modèle + motorisation	0.02
+609	R2	/pieces/joint-de-cache-culbuteurs-321/renault-140/symbol-i-140092/1-5-dci-16831.html	joint cache soupape symbol 1	5	1	0	0.00	8.00	8.00		1		0			joint-de-cache-culbuteurs	renault	symbol-i	autre	0.02
+610	R2	/pieces/joint-de-culasse-318/dacia-47/logan-mcv-i-47019/1-4-19896.html	dacia logan 1.4 essence	4	1	0	0.00	5.00		5.00		1		0		joint-de-culasse	dacia	logan-mcv-i	pièce + modèle + motorisation	0.02
+611	R2	/pieces/joint-de-culasse-318/dacia-47/logan-mcv-i-47019/1-4-19896.html	joint de culasse dacia logan	5	1	0	0.00	8.00		8.00		1		0		joint-de-culasse	dacia	logan-mcv-i	autre	0.02
+612	R2	/pieces/joint-de-culasse-318/ford-60/ranger-iii-60130/3-2-tdci-4x4-12606.html	prix joint de culasse	4	1	0	0.00	4.00		4.00		1		0		joint-de-culasse	ford	ranger-iii	autre	0.02
+613	R2	/pieces/joint-de-culasse-318/peugeot-128/208-camionnette-berline-bicorps-trois-ou-36228/1-2-vti-82-puretech-82-76247.html	joint de culasse 208 1.2 puretech	6	1	0	0.00	14.00		14.00		1		0		joint-de-culasse	peugeot	208-camionnette-berline-bicorps-trois-ou	pièce + modèle + motorisation	0.02
+614	R2	/pieces/joint-de-culasse-318/peugeot-128/308-i-128040/1-6-hdi-33271.html	joint de culasse 308 1.6 hdi	6	1	0	0.00	10.00		10.00		1		0		joint-de-culasse	peugeot	308-i	pièce + modèle + motorisation	0.02
+615	R2	/pieces/joint-de-culasse-318/peugeot-128/308-i-128040/1-6-hdi-33271.html	joint de culasse 308 1.6 hdi prix	7	1	0	0.00	5.00		5.00		1		0		joint-de-culasse	peugeot	308-i	pièce + modèle + motorisation	0.02
+616	R2	/pieces/kit-d-embrayage-479/ford-60/focus-iii-60081/1-6-tdci-8039.html	kit embrayage ford focus 1.6 tdci maroc	7	1	0	0.00	10.00		10.00		1		0		kit-d-embrayage	ford	focus-iii	pièce + modèle + motorisation	0.02
+617	R2	/pieces/kit-d-embrayage-479/nissan-119/qashqai-2-119199/1-5-dci-11136.html	kit embrayage nissan qashqai 1.5 dci 110	7	1	0	0.00	9.00		9.00		1		0		kit-d-embrayage	nissan	qashqai-2	pièce + modèle + motorisation	0.02
+618	R2	/pieces/kit-d-embrayage-479/opel-123/astra-g-break-123018/2-0-opc-17252.html	opel astra g	3	1	0	0.00	8.00		8.00		1		0		kit-d-embrayage	opel	astra-g-break	autre	0.02
+619	R2	/pieces/kit-d-embrayage-479/peugeot-128/206-128014/1-4-hdi-eco-16270.html	kit embrayage 206 1.4 hdi	5	1	0	0.00	9.00	9.00		1		0			kit-d-embrayage	peugeot	206	pièce + modèle + motorisation	0.02
+620	R2	/pieces/kit-d-embrayage-479/peugeot-128/206-128014/1-4-i-9466.html	embrayage peugeot 206 1.4 essence	5	1	0	0.00	9.00		9.00		1		0		kit-d-embrayage	peugeot	206	pièce + modèle + motorisation	0.02
+621	R2	/pieces/kit-d-embrayage-479/renault-140/express-140014/1-6-d-2113.html	embrayage renault express	3	1	0	0.00	4.00		4.00		1		0		kit-d-embrayage	renault	express	autre	0.02
+622	R2	/pieces/kit-d-embrayage-479/volkswagen-173/golf-vi-173046/1-6-tdi-31340.html	embrayage golf 6 1.6 tdi 105	6	1	0	0.00	10.00		10.00		1		0		kit-d-embrayage	volkswagen	golf-vi	pièce + modèle + motorisation	0.02
+623	R2	/pieces/kit-d-embrayage-479/volkswagen-173/tiguan-173138/2-0-tdi-4motion-30397.html	kit embrayage tiguan 2.0 tdi prix	6	1	0	0.00	11.00		11.00		1		0		kit-d-embrayage	volkswagen	tiguan	pièce + modèle + motorisation	0.02
+624	R2	/pieces/kit-de-chaine-de-distribution-1389/opel-123/corsa-d-123048/1-3-cdti-19725.html	chaine distribution opel corsa 1.3 cdti	6	1	0	0.00	7.00		7.00		1		0		kit-de-chaine-de-distribution	opel	corsa-d	pièce + modèle + motorisation	0.02
+625	R2	/pieces/kit-de-chaine-de-distribution-1389/peugeot-128/207-128018/1-4-16v-26630.html	kit chaine 207 1.4 essence	5	1	0	0.00	11.00		11.00		1		0		kit-de-chaine-de-distribution	peugeot	207	pièce + modèle + motorisation	0.02
+626	R2	/pieces/kit-de-chaine-de-distribution-1389/peugeot-128/207-128018/1-4-16v-58571.html	chaîne de distribution peugeot 207 1.4 essence	7	1	0	0.00	9.00		9.00		1		0		kit-de-chaine-de-distribution	peugeot	207	pièce + modèle + motorisation	0.02
+627	R2	/pieces/kit-de-chaine-de-distribution-1389/peugeot-128/207-128018/1-6-hdi-19352.html	kit chaine 1.6 hdi	4	1	0	0.00	11.00		11.00		1		0		kit-de-chaine-de-distribution	peugeot	207	pièce + modèle + motorisation	0.02
+628	R2	/pieces/kit-de-distribution-307/citroen-46/c3-iii-37098/1-2-puretech-82-64967.html	distribution c3 1.2 puretech 82	5	1	0	0.00	10.00		10.00		1		0		kit-de-distribution	citroen	c3-iii	pièce + modèle + motorisation	0.02
+629	R2	/pieces/kit-de-distribution-307/citroen-46/c3-iii-46099/1-2-puretech-65288.html	kit distribution c3 1.2 puretech	5	1	0	0.00	8.00		8.00		1		0		kit-de-distribution	citroen	c3-iii	pièce + modèle + motorisation	0.02
+630	R2	/pieces/kit-de-distribution-307/ford-60/focus-c-max-60075/1-6-tdci-17631.html	vérifier la référence exacte	4	1	0	0.00	6.00		6.00		1		0		kit-de-distribution	ford	focus-c-max	autre	0.02
+631	R2	/pieces/kit-de-distribution-307/ford-60/focus-ii-60078/1-8-tdci-18935.html	distribution ford focus 1.8 tdci	5	1	0	0.00	11.00		11.00		1		0		kit-de-distribution	ford	focus-ii	pièce + modèle + motorisation	0.02
+632	R2	/pieces/kit-de-distribution-307/seat-147/ateca-147008/1-5-tsi-77920.html	courroie de distribution seat ateca 1.5 tsi	7	1	0	0.00	11.00		11.00		1		0		kit-de-distribution	seat	ateca	pièce + modèle + motorisation	0.02
+633	R2	/pieces/kit-de-distribution-307/seat-147/ateca-147008/1-5-tsi-77920.html	kit de distribution complet	4	1	0	0.00	4.00		4.00		1		0		kit-de-distribution	seat	ateca	autre	0.02
+634	R2	/pieces/kit-de-distribution-307/seat-147/ateca-147008/1-5-tsi-77920.html	prix kit complet	3	1	0	0.00	4.00		4.00		1		0		kit-de-distribution	seat	ateca	autre	0.02
+635	R2	/pieces/kit-de-distribution-307/volkswagen-173/golf-iv-break-173040/1-9-tdi-4motion-59345.html	distribution golf 4	3	1	0	0.00	6.00		6.00		1		0		kit-de-distribution	volkswagen	golf-iv-break	autre	0.02
+636	R2	/pieces/kit-de-distribution-307/volkswagen-173/polo-iv-173110/1-4-tdi-14066.html	kit distributie polo 1.4 tdi	5	1	0	0.00	6.00		6.00		1		0		kit-de-distribution	volkswagen	polo-iv	pièce + modèle + motorisation	0.02
+637	R2	/pieces/kit-de-distribution-307/volkswagen-173/tiguan-173138/2-0-tdi-82551.html	kit distribution tiguan 2.0 tdi 150	6	1	0	0.00	6.00		6.00		1		0		kit-de-distribution	volkswagen	tiguan	pièce + modèle + motorisation	0.02
+638	R2	/pieces/kit-de-freins-arriere-3859/renault-140/kangoo-i-140021/1-5-dci-18618.html	frein arrière kangoo 1.5 dci	5	1	0	0.00	8.00		8.00		1		0		kit-de-freins-arriere	renault	kangoo-i	pièce + modèle + motorisation	0.02
+639	R2	/pieces/machoires-de-frein-70/dacia-47/logan-ii-47018/1-5-dci-58617.html	logan dacia 2012	3	1	0	0.00	8.00		8.00		1		0		machoires-de-frein	dacia	logan-ii	autre	0.02
+640	R2	/pieces/maitre-cylindre-de-frein-258/volkswagen-173/golf-vi-break-173047/1-6-tdi-33031.html	maitre cylindre golf 6	4	1	0	0.00	5.00		5.00		1		0		maitre-cylindre-de-frein	volkswagen	golf-vi-break	autre	0.02
+641	R2	/pieces/neiman-1367/seat-147/leon-iii-147032/2-0-cupra-77999.html	kit neman leon cupra 2017	5	1	0	0.00	11.00		11.00		1		0		neiman	seat	leon-iii	autre	0.02
+642	R2	/pieces/plaquette-de-frein-402/citroen-46/c4-i-46030/1-6-hdi-30137.html	plaquette de frein c4 1.6 hdi	6	1	0	0.00	9.00		9.00		1		0		plaquette-de-frein	citroen	c4-i	pièce + modèle + motorisation	0.02
+643	R2	/pieces/plaquette-de-frein-402/peugeot-128/2008-128006/1-6-vti-58875.html	plaquette de frein peugeot 2008	5	1	0	0.00	11.00	11.00		1		0			plaquette-de-frein	peugeot	2008	autre	0.02
+644	R2	/pieces/plaquette-de-frein-402/peugeot-128/208-128021/1-2-76372.html	voyant plaquette de frein peugeot 208	6	1	0	0.00	11.00		11.00		1		0		plaquette-de-frein	peugeot	208	autre	0.02
+645	R2	/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-9-dti-14577.html	plaquette de frein pour clio 2	6	1	0	0.00	5.00	5.00		1		0			plaquette-de-frein	renault	clio-ii	autre	0.02
+646	R2	/pieces/plaquette-de-frein-402/renault-140/clio-iv-140006/1-2-16v-57284.html	plaquette frein clio 4	4	1	0	0.00	12.00	12.00		1		0			plaquette-de-frein	renault	clio-iv	autre	0.02
+647	R2	/pieces/pompe-a-carburant-458/fiat-58/palio-i-58053/1-0-14496.html	pompe essence fiat palio	4	1	0	0.00	9.00		9.00		1		0		pompe-a-carburant	fiat	palio-i	pièce + modèle + motorisation	0.02
+648	R2	/pieces/pompe-a-carburant-458/peugeot-128/806-128077/2-0-3740.html	moteur peugeot 806 2.0 essence	5	1	0	0.00	9.00	9.00		1		0			pompe-a-carburant	peugeot	806	pièce + modèle + motorisation	0.02
+649	R2	/pieces/pompe-a-eau-1260/chevrolet-44/aveo-i-44010/1-5-55817.html	pompe a eau chevrolet aveo	5	1	0	0.00	10.00		10.00		1		0		pompe-a-eau	chevrolet	aveo-i	autre	0.02
+650	R2	/pieces/pompe-a-eau-1260/citroen-46/c1-46014/1-0-18584.html	pompe a eau citroen c1	5	1	0	0.00	4.00		4.00		1		0		pompe-a-eau	citroen	c1	autre	0.02
+651	R2	/pieces/pompe-a-eau-1260/citroen-46/jumper-iii-fourgon-46063/2-2-hdi-12066.html	pompe a eau jumper 2.2 hdi	6	1	0	0.00	12.00		12.00		1		0		pompe-a-eau	citroen	jumper-iii-fourgon	pièce + modèle + motorisation	0.02
+652	R2	/pieces/pompe-a-eau-1260/opel-123/corsa-c-123046/1-2-twinport-18229.html	pompe à eau opel corsa	5	1	0	0.00	9.00	9.00		1		0			pompe-a-eau	opel	corsa-c	autre	0.02
+653	R2	/pieces/pompe-a-eau-1260/peugeot-128/206-128014/1-4-hdi-eco-16270.html	pompe a eau 1.4 hdi	5	1	0	0.00	10.00		10.00		1		0		pompe-a-eau	peugeot	206	pièce + modèle + motorisation	0.02
+654	R2	/pieces/pompe-a-eau-1260/renault-140/clio-ii-140003/1-2-16v-16104.html	pompe a eau clio 2 1.2 essence	7	1	0	0.00	10.00		10.00		1		0		pompe-a-eau	renault	clio-ii	pièce + modèle + motorisation	0.02
+655	R2	/pieces/pompe-a-eau-1260/renault-140/clio-ii-140003/1-2-16v-16104.html	prix pompe a eau clio 2	6	1	0	0.00	11.00		11.00		1		0		pompe-a-eau	renault	clio-ii	autre	0.02
+656	R2	/pieces/pompe-a-eau-1260/renault-140/sandero-stepway-ii-140161/0-9-tce-77612.html	pompe a eau 0.9 tce	5	1	0	0.00	9.00		9.00		1		0		pompe-a-eau	renault	sandero-stepway-ii	pièce + modèle + motorisation	0.02
+657	R2	/pieces/pompe-a-eau-1260/renault-140/symbol-i-140092/1-4-16553.html	سيارة سيمبول 2012	3	1	0	0.00	7.00		7.00		1		0		pompe-a-eau	renault	symbol-i	autre	0.02
+658	R2	/pieces/pompe-a-eau-1260/renault-140/symbol-i-140092/1-6-16v-16832.html	prix pompe a eau	4	1	0	0.00	4.00		4.00		1		0		pompe-a-eau	renault	symbol-i	autre	0.02
+659	R2	/pieces/pompe-a-eau-1260/toyota-164/auris-touring-sports-164021/1-8-hybrid-59608.html	pompe a eau toyota auris	5	1	0	0.00	10.00	10.00		1		0			pompe-a-eau	toyota	auris-touring-sports	autre	0.02
+660	R2	/pieces/pompe-a-eau-1260/volkswagen-173/golf-vi-173046/1-6-tdi-31340.html	pompe à eau golf 6 1.6 tdi	7	1	0	0.00	9.00		9.00		1		0		pompe-a-eau	volkswagen	golf-vi	pièce + modèle + motorisation	0.02
+661	R2	/pieces/pompe-de-direction-assistee-12/citroen-46/c4-i-46030/1-6-hdi-18336.html	pompe direction assistée c4 1.6 hdi	6	1	0	0.00	4.00		4.00		1		0		pompe-de-direction-assistee	citroen	c4-i	pièce + modèle + motorisation	0.02
+662	R2	/pieces/pompe-de-direction-assistee-12/dacia-47/logan-i-47017/1-5-dci-24490.html	pompe direction assistée dacia logan	5	1	0	0.00	7.00	7.00		1		0			pompe-de-direction-assistee	dacia	logan-i	autre	0.02
+663	R2	/pieces/pompe-de-direction-assistee-12/mini-113/mini-r50-r53-113001/1-6-cooper-s-16600.html	pompe de direction mini cooper	5	1	0	0.00	8.00		8.00		1		0		pompe-de-direction-assistee	mini	mini-r50-r53	autre	0.02
+664	R2	/pieces/pompe-de-direction-assistee-12/peugeot-128/307-128035/2-0-hdi-15903.html	direction assistée 307	3	1	0	0.00	9.00		9.00		1		0		pompe-de-direction-assistee	peugeot	307	autre	0.02
+665	R2	/pieces/pompe-de-direction-assistee-12/peugeot-128/307-128035/2-0-hdi-15903.html	direction assistée peugeot 307	4	1	0	0.00	9.00		9.00		1		0		pompe-de-direction-assistee	peugeot	307	autre	0.02
+666	R2	/pieces/pompe-de-direction-assistee-12/peugeot-128/307-128035/2-0-hdi-15903.html	pompe de direction assistée 307	5	1	0	0.00	8.00		8.00		1		0		pompe-de-direction-assistee	peugeot	307	autre	0.02
+667	R2	/pieces/pompe-de-direction-assistee-12/peugeot-128/partner-ii-tepee-128096/1-6-hdi-24533.html	pompe direction assistée partner 1.6 hdi	6	1	0	0.00	11.00		11.00		1		0		pompe-de-direction-assistee	peugeot	partner-ii-tepee	pièce + modèle + motorisation	0.02
+668	R2	/pieces/pompe-de-direction-assistee-12/renault-140/laguna-iii-140030/2-0-dci-23373.html	pompe direction assistée laguna 3	5	1	0	0.00	8.00		8.00		1		0		pompe-de-direction-assistee	renault	laguna-iii	autre	0.02
+669	R2	/pieces/poulie-d-arbre-a-came-1067/renault-140/modus-140053/1-5-dci-5267.html	poulie arbre a came 1.5 dci	6	1	0	0.00	10.00		10.00		1		0		poulie-d-arbre-a-came	renault	modus	pièce + modèle + motorisation	0.02
+670	R2	/pieces/poulie-vilebrequin-3213/renault-140/kangoo-i-140021/1-5-dci-19034.html	poulie vilebrequin 1.5 dci	4	1	0	0.00	10.00		10.00		1		0		poulie-vilebrequin	renault	kangoo-i	pièce + modèle + motorisation	0.02
+671	R2	/pieces/poulie-vilebrequin-3213/renault-140/scenic-i-140087/1-9-dci-15762.html	poulie vilebrequin 1.9 dci	4	1	0	0.00	8.00		8.00		1		0		poulie-vilebrequin	renault	scenic-i	pièce + modèle + motorisation	0.02
+672	R2	/pieces/radiateur-de-chauffage-467/peugeot-128/206-128014/1-4-i-9466.html	radiateur 206 1.4 essence	4	1	0	0.00	10.00		10.00		1		0		radiateur-de-chauffage	peugeot	206	pièce + modèle + motorisation	0.02
+673	R2	/pieces/radiateur-de-chauffage-467/peugeot-128/206-128014/1-4-i-9466.html	radiateur de chauffage peugeot 206	5	1	0	0.00	13.00		13.00		1		0		radiateur-de-chauffage	peugeot	206	autre	0.02
+674	R2	/pieces/radiateur-de-chauffage-467/peugeot-128/partner-ii-tepee-128096/1-6-hdi-11044.html	radiateur chauffage partner tepee	4	1	0	0.00	9.00								radiateur-de-chauffage	peugeot	partner-ii-tepee	autre	0.02
+675	R2	/pieces/radiateur-de-refroidissement-470/citroen-46/berlingo-i-46006/1-9-d-10227.html	radiateur berlingo 1.9d	3	1	0	0.00	9.00		9.00		1		0		radiateur-de-refroidissement	citroen	berlingo-i	pièce + modèle + motorisation	0.02
+676	R2	/pieces/radiateur-de-refroidissement-470/citroen-46/c4-ii-46031/1-6-hdi-470.html	radiateur c4 1.6 hdi	4	1	0	0.00	15.00		15.00		1		0		radiateur-de-refroidissement	citroen	c4-ii	pièce + modèle + motorisation	0.02
+677	R2	/pieces/radiateur-de-refroidissement-470/citroen-46/c4-ii-46031/1-6-hdi-472.html	radiateur refroidissement moteur	3	1	0	0.00	7.00	7.00		1		0			radiateur-de-refroidissement	citroen	c4-ii	autre	0.02
+678	R2	/pieces/radiateur-de-refroidissement-470/citroen-46/jumpy-ii-46065/1-6-hdi-20036.html	citroen jumpy 2015	3	1	0	0.00	4.00		4.00		1		0		radiateur-de-refroidissement	citroen	jumpy-ii	autre	0.02
+679	R2	/pieces/radiateur-de-refroidissement-470/citroen-46/saxo-46070/1-1-xsx-5548.html	radiateur saxo 1.1 essence	4	1	0	0.00	10.00		10.00		1		0		radiateur-de-refroidissement	citroen	saxo	pièce + modèle + motorisation	0.02
+680	R2	/pieces/radiateur-de-refroidissement-470/ford-60/fusion-60083/1-2-16v-18692.html	radiateur ford fusion	3	1	0	0.00	6.00		6.00		1		0		radiateur-de-refroidissement	ford	fusion	autre	0.02
+681	R2	/pieces/radiateur-de-refroidissement-470/opel-123/astra-h-123021/1-7-cdti-17848.html	radiateur opel astra h 1.7 cdti	6	1	0	0.00	5.00		5.00		1		0		radiateur-de-refroidissement	opel	astra-h	pièce + modèle + motorisation	0.02
+682	R2	/pieces/radiateur-de-refroidissement-470/peugeot-128/boxer-iii-128083/2-2-hdi-11107.html	radiateur boxer 3	3	1	0	0.00	9.00		9.00		1		0		radiateur-de-refroidissement	peugeot	boxer-iii	autre	0.02
+683	R2	/pieces/radiateur-de-refroidissement-470/volkswagen-173/golf-viii-173302/1-0-tsi-82976.html	oui estimation stp	3	1	0	0.00	4.00	4.00		1		0			radiateur-de-refroidissement	volkswagen	golf-viii	autre	0.02
+684	R2	/pieces/recepteur-d-embrayage-620/citroen-46/berlingo-ii-46007/1-6-hdi-24516.html	récepteur embrayage berlingo 1.6 hdi	5	1	0	0.00	9.00		9.00		1		0		recepteur-d-embrayage	citroen	berlingo-ii	pièce + modèle + motorisation	0.02
+685	R2	/pieces/recepteur-d-embrayage-620/peugeot-128/207-128018/1-6-hdi-19352.html	récepteur embrayage 1.6 hdi	4	1	0	0.00	13.00		13.00		1		0		recepteur-d-embrayage	peugeot	207	pièce + modèle + motorisation	0.02
+686	R2	/pieces/recepteur-d-embrayage-620/peugeot-128/207-128018/1-6-hdi-19353.html	recepteur embrayage 1.6 hdi	4	1	0	0.00	8.00		8.00		1		0		recepteur-d-embrayage	peugeot	207	pièce + modèle + motorisation	0.02
+687	R2	/pieces/recepteur-d-embrayage-620/peugeot-128/307-128035/1-6-hdi-17989.html	récepteur embrayage 307 1.6 hdi	5	1	0	0.00	11.00		11.00		1		0		recepteur-d-embrayage	peugeot	307	pièce + modèle + motorisation	0.02
+688	R2	/pieces/rotule-de-suspension-2462/citroen-46/xsara-picasso-46086/1-8-16v-11872.html	rotule de suspension xsara picasso	5	1	0	0.00	6.00	6.00		1		0			rotule-de-suspension	citroen	xsara-picasso	autre	0.02
+689	R2	/pieces/roulement-de-roue-655/chevrolet-44/captiva-44046/2-2-d-8510.html	roulement chevrolet captiva	3	1	0	0.00	6.00		6.00		1		0		roulement-de-roue	chevrolet	captiva	autre	0.02
+690	R2	/pieces/roulement-de-roue-655/peugeot-128/206-128014/1-1-21501.html	roulement de roue avant 206	5	1	0	0.00	7.00		7.00		1		0		roulement-de-roue	peugeot	206	autre	0.02
+691	R2	/pieces/sonde-de-refroidissement-830/peugeot-128/206-128014/1-1-21501.html	sonde de température 206 1.1 essence	6	1	0	0.00	8.00		8.00		1		0		sonde-de-refroidissement	peugeot	206	pièce + modèle + motorisation	0.02
+692	R2	/pieces/sonde-de-refroidissement-830/peugeot-128/206-128014/1-4-i-9466.html	sonde ventilateur 206 1.4 essence	5	1	0	0.00	8.00		8.00		1		0		sonde-de-refroidissement	peugeot	206	pièce + modèle + motorisation	0.02
+693	R2	/pieces/sonde-de-refroidissement-830/renault-140/clio-ii-140003/1-5-dci-29998.html	référence de la pièce	4	1	0	0.00	4.00		4.00		1		0		sonde-de-refroidissement	renault	clio-ii	référence …	0.02
+694	R2	/pieces/sonde-lambda-3922/citroen-46/c3-i-46020/1-4-i-23183.html	sonde lambda c3 1.4 essence	5	1	0	0.00	11.00		11.00		1		0		sonde-lambda	citroen	c3-i	pièce + modèle + motorisation	0.02
+695	R2	/pieces/sonde-lambda-3922/citroen-46/c3-i-46020/1-4-i-23183.html	sonde lambda citroën c3 1.4 essence	6	1	0	0.00	7.00		7.00		1		0		sonde-lambda	citroen	c3-i	pièce + modèle + motorisation	0.02
+696	R2	/pieces/sonde-lambda-3922/opel-123/corsa-b-123044/1-4-i-1840.html	sonde lambda opel corsa 1.4 essence	6	1	0	0.00	7.00	7.00		1		0			sonde-lambda	opel	corsa-b	pièce + modèle + motorisation	0.02
+697	R2	/pieces/sonde-lambda-3922/peugeot-128/206-128014/1-4-i-9466.html	1.4 75 cv	3	1	0	0.00	6.00		6.00		1		0		sonde-lambda	peugeot	206	pièce + modèle + motorisation	0.02
+698	R2	/pieces/sonde-lambda-3922/peugeot-128/206-128017/1-4-i-33838.html	sonde lambda peugeot 206 1.4 essence	6	1	0	0.00	11.00		11.00		1		0		sonde-lambda	peugeot	206	pièce + modèle + motorisation	0.02
+699	R2	/pieces/sonde-lambda-3922/renault-140/clio-iii-140004/1-2-16v-23045.html	sonde lambda clio 3 1.2 16v	6	1	0	0.00	8.00		8.00		1		0		sonde-lambda	renault	clio-iii	pièce + modèle + motorisation	0.02
+700	R2	/pieces/sonde-lambda-3922/renault-140/espace-iv-140012/2-2-dci-19675.html	sonde lambda espace 4 2.0 dci	6	1	0	0.00	15.00	15.00		1		0			sonde-lambda	renault	espace-iv	pièce + modèle + motorisation	0.02
+701	R2	/pieces/sonde-lambda-3922/renault-140/megane-iii-140049/1-5-dci-29956.html	sonde lambda megane 3 1.5 dci	6	1	0	0.00	6.00		6.00		1		0		sonde-lambda	renault	megane-iii	pièce + modèle + motorisation	0.02
+702	R2	/pieces/sonde-lambda-3922/volkswagen-173/golf-vi-173046/2-0-tdi-29995.html	sonda lambda golf 6 2.0 tdi	6	1	0	0.00	5.00	5.00		1		0			sonde-lambda	volkswagen	golf-vi	pièce + modèle + motorisation	0.02
+703	R2	/pieces/soufflet-de-cardan-193/citroen-46/c15-46015/1-9-d-18017.html	soufflet de cardan c15	4	1	0	0.00	15.00		15.00		1		0		soufflet-de-cardan	citroen	c15	autre	0.02
+704	R2	/pieces/soufflet-de-cardan-193/renault-140/clio-ii-140003/1-6-16v-9043.html	soufflet de cardan clio 2	5	1	0	0.00	4.00		4.00		1		0		soufflet-de-cardan	renault	clio-ii	autre	0.02
+705	R2	/pieces/soufflet-de-cardan-193/renault-140/master-iii-140039/2-3-dci-fwd-33279.html	soufflet de cardan master 3	5	1	0	0.00	6.00		6.00		1		0		soufflet-de-cardan	renault	master-iii	autre	0.02
+706	R2	/pieces/soupape-d-admission-1269/citroen-46/saxo-46070/1-6-28184.html	tu peux me donner des liens	6	1	0	0.00	4.00	4.00		1		0			soupape-d-admission	citroen	saxo	autre	0.02
+707	R2	/pieces/support-de-boite-vitesse-249/renault-140/clio-iii-140004/1-2-16v-19047.html	support boite clio 3 1.2 16v	6	1	0	0.00	9.00		9.00		1		0		support-de-boite-vitesse	renault	clio-iii	pièce + modèle + motorisation	0.02
+708	R2	/pieces/support-de-boite-vitesse-249/renault-140/kangoo-ii-140023/1-5-dci-23466.html	support boite de vitesse kangoo 1.5 dci	7	1	0	0.00	10.00		10.00		1		0		support-de-boite-vitesse	renault	kangoo-ii	pièce + modèle + motorisation	0.02
+709	R2	/pieces/support-de-boite-vitesse-249/renault-140/kangoo-ii-140023/1-5-dci-23466.html	support de boite kangoo 1.5 dci	6	1	0	0.00	6.00		6.00		1		0		support-de-boite-vitesse	renault	kangoo-ii	pièce + modèle + motorisation	0.02
+710	R2	/pieces/support-de-boite-vitesse-249/renault-140/symbol-i-140092/1-4-77376.html	support boite symbol 1.4	4	1	0	0.00	8.00		8.00		1		0		support-de-boite-vitesse	renault	symbol-i	pièce + modèle + motorisation	0.02
+711	R2	/pieces/support-de-boite-vitesse-249/volkswagen-173/golf-vii-173049/2-0-r-4motion-82362.html	support boite de vitesse golf 7	6	1	0	0.00	8.00		8.00		1		0		support-de-boite-vitesse	volkswagen	golf-vii	autre	0.02
+712	R2	/pieces/support-moteur-247/citroen-46/berlingo-ii-46007/1-6-hdi-56261.html	support moteur b9 1.6 hdi	5	1	0	0.00	8.00		8.00		1		0		support-moteur	citroen	berlingo-ii	pièce + modèle + motorisation	0.02
+713	R2	/pieces/support-moteur-247/citroen-46/jumpy-ii-46065/2-0-hdi-12049.html	support moteur jumpy 2l hdi	5	1	0	0.00	14.00	14.00		1		0			support-moteur	citroen	jumpy-ii	pièce + modèle + motorisation	0.02
+714	R2	/pieces/support-moteur-247/citroen-46/saxo-46070/1-6-vts-18496.html	support moteur saxo vts 16v	5	1	0	0.00	8.00		8.00		1		0		support-moteur	citroen	saxo	pièce + modèle + motorisation	0.02
+715	R2	/pieces/support-moteur-247/mercedes-benz-108/classe-c-w203-108038/c-220-cdi-2-2-14820.html	support moteur w203	3	1	0	0.00	10.00		10.00		1		0		support-moteur	mercedes-benz	classe-c-w203	autre	0.02
+716	R2	/pieces/support-moteur-247/mercedes-benz-108/sl-r231-108159/500-phase-2-73370.html	quelle référence ?	3	1	0	0.00	4.00		4.00		1		0		support-moteur	mercedes-benz	sl-r231	autre	0.02
+717	R2	/pieces/support-moteur-247/mitsubishi-114/asx-114002/2-0-i-4wd-5517.html	support moteur mitsubishi asx	4	1	0	0.00	10.00		10.00		1		0		support-moteur	mitsubishi	asx	autre	0.02
+718	R2	/pieces/support-moteur-247/opel-123/corsa-d-123048/1-3-cdti-19725.html	support moteur opel corsa	4	1	0	0.00	8.00	8.00		1		0			support-moteur	opel	corsa-d	autre	0.02
+719	R2	/pieces/support-moteur-247/peugeot-128/206-128014/2-0-hdi-14160.html	support moteur 206 2.0 hdi	5	1	0	0.00	9.00		9.00		1		0		support-moteur	peugeot	206	pièce + modèle + motorisation	0.02
+720	R2	/pieces/support-moteur-247/peugeot-128/206-128017/1-4-i-33838.html	support moteur 206 1.4 essence	5	1	0	0.00	12.00		12.00		1		0		support-moteur	peugeot	206	pièce + modèle + motorisation	0.02
+721	R2	/pieces/support-moteur-247/peugeot-128/207-128018/1-6-hdi-33260.html	support moteur 1.6 hdi 92	5	1	0	0.00	11.00		11.00		1		0		support-moteur	peugeot	207	pièce + modèle + motorisation	0.02
+722	R2	/pieces/support-moteur-247/peugeot-128/207-cc-128019/1-6-hdi-20030.html	support moteur peugeot 207 1.6 hdi	6	1	0	0.00	9.00		9.00		1		0		support-moteur	peugeot	207-cc	pièce + modèle + motorisation	0.02
+723	R2	/pieces/support-moteur-247/peugeot-128/208-128021/1-6-hdi-8686.html	support boite 208 1.6 hdi	5	1	0	0.00	13.00	13.00		1		0			support-moteur	peugeot	208	pièce + modèle + motorisation	0.02
+724	R2	/pieces/support-moteur-247/peugeot-128/307-128035/1-6-hdi-19341.html	support moteur peugeot 307 1.6 hdi	6	1	0	0.00	14.00	14.00		1		0			support-moteur	peugeot	307	pièce + modèle + motorisation	0.02
+725	R2	/pieces/support-moteur-247/peugeot-128/307-128035/2-0-hdi-15903.html	support moteur 2.0 hdi	4	1	0	0.00	8.00		8.00		1		0		support-moteur	peugeot	307	pièce + modèle + motorisation	0.02
+726	R2	/pieces/support-moteur-247/peugeot-128/307-128035/2-0-hdi-15903.html	support moteur 307 2.0 hdi 90	6	1	0	0.00	9.00		9.00		1		0		support-moteur	peugeot	307	pièce + modèle + motorisation	0.02
+727	R2	/pieces/support-moteur-247/peugeot-128/307-break-128036/1-6-16v-17914.html	support moteur 307 1.6 essence	5	1	0	0.00	6.00		6.00		1		0		support-moteur	peugeot	307-break	pièce + modèle + motorisation	0.02
+728	R2	/pieces/support-moteur-247/peugeot-128/806-128077/2-0-hdi-16v-18276.html	support moteur 806	3	1	0	0.00	11.00		11.00		1		0		support-moteur	peugeot	806	autre	0.02
+729	R2	/pieces/support-moteur-247/renault-140/clio-ii-140003/1-5-dci-28769.html	support moteur 1.5 dci	4	1	0	0.00	5.00		5.00		1		0		support-moteur	renault	clio-ii	pièce + modèle + motorisation	0.02
+730	R2	/pieces/support-moteur-247/renault-140/clio-iii-140004/1-2-16v-23045.html	support moteur clio 3	4	1	0	0.00	10.00	10.00		1		0			support-moteur	renault	clio-iii	autre	0.02
+731	R2	/pieces/support-moteur-247/renault-140/express-140014/1-6-d-2113.html	support moteur renault express	4	1	0	0.00	7.00		7.00		1		0		support-moteur	renault	express	autre	0.02
+732	R2	/pieces/support-moteur-247/renault-140/express-140014/1-9-d-3771.html	support moteur express 1.9 d	5	1	0	0.00	4.00		4.00		1		0		support-moteur	renault	express	pièce + modèle + motorisation	0.02
+733	R2	/pieces/support-moteur-247/renault-140/express-140014/1-9-d-3771.html	support moteur renault express	4	1	0	0.00	4.00		4.00		1		0		support-moteur	renault	express	autre	0.02
+734	R2	/pieces/support-moteur-247/renault-140/laguna-ii-140028/1-9-dci-44781.html	laguna 2 1.9	3	1	0	0.00	6.00		6.00		1		0		support-moteur	renault	laguna-ii	pièce + modèle + motorisation	0.02
+735	R2	/pieces/support-moteur-247/renault-140/r19-ii-chamade-140068/1-9-d-28704.html	support moteur r19	3	1	0	0.00	7.00	7.00		1		0			support-moteur	renault	r19-ii-chamade	autre	0.02
+736	R2	/pieces/tambour-de-frein-123/renault-140/clio-iii-break-140005/1-2-16v-23451.html	tambour arriere clio 3	4	1	0	0.00	12.00	12.00		1		0			tambour-de-frein	renault	clio-iii-break	autre	0.02
+737	R2	/pieces/thermostat-316/audi-22/a1-22025/1-4-tfsi-33305.html	prix d un thermostat	4	1	0	0.00	4.00		4.00		1		0		thermostat	audi	a1	autre	0.02
+738	R2	/pieces/thermostat-316/audi-22/q3-22069/2-0-tdi-60486.html	thermostat audi q3 2.0 tdi	5	1	0	0.00	9.00		9.00		1		0		thermostat	audi	q3	pièce + modèle + motorisation	0.02
+739	R2	/pieces/thermostat-316/citroen-46/c3-ii-46021/1-4-32028.html	thermostat citroen c3	3	1	0	0.00	8.00		8.00		1		0		thermostat	citroen	c3-ii	autre	0.02
+740	R2	/pieces/thermostat-316/citroen-46/c3-ii-46021/1-4-hdi-33395.html	thermostat c3 1.4 hdi	4	1	0	0.00	10.00		10.00		1		0		thermostat	citroen	c3-ii	pièce + modèle + motorisation	0.02
+741	R2	/pieces/thermostat-316/citroen-46/c4-ii-46031/1-6-hdi-472.html	thermostat citroën c4 1.6 hdi	5	1	0	0.00	10.00		10.00		1		0		thermostat	citroen	c4-ii	pièce + modèle + motorisation	0.02
+742	R2	/pieces/thermostat-316/citroen-46/nemo-46068/1-3-hdi-3083.html	non pas de start and stop	6	1	0	0.00	4.00		4.00		1		0		thermostat	citroen	nemo	autre	0.02
+743	R2	/pieces/thermostat-316/citroen-46/saxo-46070/1-5-d-5551.html	thermostat saxo 1.5 d	4	1	0	0.00	10.00		10.00		1		0		thermostat	citroen	saxo	pièce + modèle + motorisation	0.02
+744	R2	/pieces/thermostat-316/dacia-47/duster-47014/1-5-dci-4x4-65482.html	thermostat dacia duster 1.5 dci	5	1	0	0.00	4.00	4.00		1		0			thermostat	dacia	duster	pièce + modèle + motorisation	0.02
+745	R2	/pieces/thermostat-316/dacia-47/logan-mcv-i-47019/1-6-mpi-6710.html	termostat 1.6 mpi	3	1	0	0.00	9.00		9.00		1		0		thermostat	dacia	logan-mcv-i	pièce + modèle + motorisation	0.02
+746	R2	/pieces/thermostat-316/fiat-58/500-l-58127/1-6-d-multijet-58528.html	thermostat fiat 500	3	1	0	0.00	11.00	11.00		1		0			thermostat	fiat	500-l	autre	0.02
+747	R2	/pieces/thermostat-316/mini-113/mini-r56-113002/1-6-cooper-s-33054.html	thermostat mini cooper s r56	5	1	0	0.00	10.00		10.00		1		0		thermostat	mini	mini-r56	autre	0.02
+748	R2	/pieces/thermostat-316/opel-123/vectra-b-break-123127/1-6-16v-5914.html	termostat opel vectra b 1.6 16v	6	1	0	0.00	7.00	7.00		1		0			thermostat	opel	vectra-b-break	pièce + modèle + motorisation	0.02
+749	R2	/pieces/thermostat-316/peugeot-128/207-128018/1-4-16v-19349.html	thermostat 207 1.4 essence	4	1	0	0.00	12.00		12.00		1		0		thermostat	peugeot	207	pièce + modèle + motorisation	0.02
+750	R2	/pieces/thermostat-316/peugeot-128/207-128018/1-4-16v-26630.html	thermostat 207 1.4 essence 75ch	5	1	0	0.00	8.00		8.00		1		0		thermostat	peugeot	207	pièce + modèle + motorisation	0.02
+751	R2	/pieces/thermostat-316/peugeot-128/207-128018/1-6-16v-vti-22681.html	thermostat 1.6 vti	3	1	0	0.00	9.00		9.00		1		0		thermostat	peugeot	207	pièce + modèle + motorisation	0.02
+752	R2	/pieces/thermostat-316/peugeot-128/308-sw-ii-128043/2-0-gt-bluehdi-76469.html	thermostat 308 2.0 hdi	4	1	0	0.00	13.00	13.00		1		0			thermostat	peugeot	308-sw-ii	pièce + modèle + motorisation	0.02
+753	R2	/pieces/thermostat-316/peugeot-128/407-128057/2-0-hdi-17852.html	thermostat 407 hdi 136	4	1	0	0.00	8.00		8.00		1		0		thermostat	peugeot	407	pièce + modèle + motorisation	0.02
+754	R2	/pieces/thermostat-316/peugeot-128/boxer-ii-fourgon-128082/2-2-hdi-16754.html	termostat peugeot boxer 2.2 hdi	5	1	0	0.00	11.00	11.00		1		0			thermostat	peugeot	boxer-ii-fourgon	pièce + modèle + motorisation	0.02
+755	R2	/pieces/thermostat-316/peugeot-128/expert-ii-128085/2-0-hdi-33621.html	thermostat peugeot expert 2.0 hdi	5	1	0	0.00	7.00		7.00		1		0		thermostat	peugeot	expert-ii	pièce + modèle + motorisation	0.02
+756	R2	/pieces/thermostat-316/renault-140/clio-ii-140003/1-5-dci-54943.html	thermostat clio 2 1.5 dci	5	1	0	0.00	10.00		10.00		1		0		thermostat	renault	clio-ii	pièce + modèle + motorisation	0.02
+757	R2	/pieces/thermostat-316/renault-140/clio-iii-140004/1-2-16v-19047.html	thermostat clio 3 1.2 16v	5	1	0	0.00	11.00		11.00		1		0		thermostat	renault	clio-iii	pièce + modèle + motorisation	0.02
+758	R2	/pieces/thermostat-316/renault-140/express-pick-up-140015/1-9-d-57681.html	thermostat renault express	3	1	0	0.00	9.00		9.00		1		0		thermostat	renault	express-pick-up	autre	0.02
+759	R2	/pieces/thermostat-316/renault-140/kangoo-i-140021/1-5-dci-19035.html	thermostat kangoo 1.5 dci	4	1	0	0.00	11.00		11.00		1		0		thermostat	renault	kangoo-i	pièce + modèle + motorisation	0.02
+760	R2	/pieces/thermostat-316/renault-140/kangoo-ii-express-140024/1-5-dci-phase-2-77249.html	thermostat kangoo 2 1.5 dci	5	1	0	0.00	10.00		10.00		1		0		thermostat	renault	kangoo-ii-express	pièce + modèle + motorisation	0.02
+761	R2	/pieces/thermostat-316/seat-147/leon-ii-147031/1-9-tdi-28172.html	thermostat seat leon 1.9 tdi	5	1	0	0.00	9.00		9.00		1		0		thermostat	seat	leon-ii	pièce + modèle + motorisation	0.02
+762	R2	/pieces/thermostat-316/skoda-150/superb-iii-150041/2-0-tdi-78267.html	thermostat skoda superb 2.0 tdi	5	1	0	0.00	8.00		8.00		1		0		thermostat	skoda	superb-iii	pièce + modèle + motorisation	0.02
+763	R2	/pieces/thermostat-316/suzuki-158/sx4-berline-158118/1-6-vvt-79417.html	thermostat suzuki sx4	3	1	0	0.00	5.00		5.00		1		0		thermostat	suzuki	sx4-berline	autre	0.02
+764	R2	/pieces/thermostat-316/volkswagen-173/caddy-iii-173018/1-6-tdi-34958.html	termostat caddy 1.6 tdi	4	1	0	0.00	11.00		11.00		1		0		thermostat	volkswagen	caddy-iii	pièce + modèle + motorisation	0.02
+765	R2	/pieces/thermostat-316/volkswagen-173/caddy-iii-173018/2-0-tdi-15235.html	thermostat vw caddy 2.0 tdi	5	1	0	0.00	8.00		8.00		1		0		thermostat	volkswagen	caddy-iii	pièce + modèle + motorisation	0.02
+766	R2	/pieces/thermostat-316/volkswagen-173/caddy-iv-173228/2-0-tdi-82741.html	thermostat caddy 2.0 tdi	4	1	0	0.00	9.00	9.00		1		0			thermostat	volkswagen	caddy-iv	pièce + modèle + motorisation	0.02
+767	R2	/pieces/thermostat-316/volkswagen-173/golf-iv-173039/1-4-16v-8799.html	calorstat golf 4	3	1	0	0.00	9.00	9.00		1		0			thermostat	volkswagen	golf-iv	autre	0.02
+768	R2	/pieces/thermostat-316/volkswagen-173/golf-iv-173039/1-9-tdi-16063.html	calorstat golf 4	3	1	0	0.00	5.00	5.00		1		0			thermostat	volkswagen	golf-iv	autre	0.02
+769	R2	/pieces/thermostat-316/volkswagen-173/golf-vi-173046/1-6-tdi-33030.html	termostat golf 6 1.6 tdi	5	1	0	0.00	6.00	6.00		1		0			thermostat	volkswagen	golf-vi	pièce + modèle + motorisation	0.02
+770	R2	/pieces/thermostat-316/volkswagen-173/passat-vi-173092/2-0-tdi-4motion-32791.html	thermostat passat b6 2.0 tdi	5	1	0	0.00	10.00		10.00		1		0		thermostat	volkswagen	passat-vi	pièce + modèle + motorisation	0.02
+771	R2	/pieces/turbo-2234/ford-60/focus-ii-break-60079/1-8-tdci-18936.html	turbo ford focus 1.8 tdci 115cv 2006	7	1	0	0.00	15.00	15.00		1		0			turbo	ford	focus-ii-break	pièce + modèle + motorisation	0.02
+772	R2	/pieces/turbo-2234/peugeot-128/boxer-iii-128083/2-2-hdi-19868.html	turbo boxer 3 2.2 hdi	5	1	0	0.00	8.00		8.00		1		0		turbo	peugeot	boxer-iii	pièce + modèle + motorisation	0.02
+773	R2	/pieces/vanne-egr-1145/citroen-46/c8-46041/2-0-hdi-23048.html	vanne egr c8 2.0 hdi	5	1	0	0.00	10.00		10.00		1		0		vanne-egr	citroen	c8	pièce + modèle + motorisation	0.02
+774	R2	/pieces/vanne-egr-1145/opel-123/astra-g-123017/2-0-dti-16v-13742.html	où puis-je commander cette pièce ?	6	1	0	0.00	13.00		13.00		1		0		vanne-egr	opel	astra-g	pièces + modèle	0.02
+775	R2	/pieces/vanne-egr-1145/opel-123/corsa-d-123048/1-3-cdti-19726.html	vanne egr opel corsa	4	1	0	0.00	6.00		6.00		1		0		vanne-egr	opel	corsa-d	autre	0.02
+776	R2	/pieces/vanne-egr-1145/peugeot-128/207-128018/1-6-hdi-33260.html	vanne egr 207 1.6 hdi prix	6	1	0	0.00	11.00		11.00		1		0		vanne-egr	peugeot	207	pièce + modèle + motorisation	0.02
+777	R2	/pieces/vanne-egr-1145/peugeot-128/307-128035/2-0-16v-15902.html	vanne egr 307 2.0 hdi 90	6	1	0	0.00	12.00		12.00		1		0		vanne-egr	peugeot	307	pièce + modèle + motorisation	0.02
+778	R2	/pieces/vanne-egr-1145/peugeot-128/308-sw-i-128042/1-6-hdi-11074.html	prix vanne egr 308	4	1	0	0.00	11.00		11.00		1		0		vanne-egr	peugeot	308-sw-i	autre	0.02
+779	R2	/pieces/vanne-egr-1145/peugeot-128/407-sw-128059/2-0-hdi-28141.html	egr peugeot 407 2.0 hdi	5	1	0	0.00	5.00	5.00		1		0			vanne-egr	peugeot	407-sw	pièce + modèle + motorisation	0.02
+780	R2	/pieces/vanne-egr-1145/peugeot-128/407-sw-128059/2-0-hdi-28141.html	vanne egr 2.0 hdi 140	5	1	0	0.00	10.00		10.00		1		0		vanne-egr	peugeot	407-sw	pièce + modèle + motorisation	0.02
+781	R2	/pieces/vanne-egr-1145/peugeot-128/boxer-iii-fourgon-128143/2-2-hdi-11113.html	vanne egr boxer 3	4	1	0	0.00	10.00		10.00		1		0		vanne-egr	peugeot	boxer-iii-fourgon	autre	0.02
+782	R2	/pieces/vanne-egr-1145/skoda-150/superb-ii-150035/2-0-tdi-28257.html	egr valve skoda superb 2.0 tdi	6	1	0	0.00	11.00	11.00		1		0			vanne-egr	skoda	superb-ii	pièce + modèle + motorisation	0.02
+783	R2	/pieces/vanne-egr-1145/volkswagen-173/caddy-iv-173228/1-6-tdi-82737.html	egr caddy 1.6 tdi	4	1	0	0.00	8.00		8.00		1		0		vanne-egr	volkswagen	caddy-iv	pièce + modèle + motorisation	0.02
+784	R2	/pieces/ventilateur-de-refroidissement-508/citroen-46/zx-46087/1-8-i-2262.html	trouve moi le sur internet	5	1	0	0.00	4.00		4.00		1		0		ventilateur-de-refroidissement	citroen	zx	autre	0.02
+785	R2	/pieces/volant-moteur-577/mitsubishi-114/pajero-iii-114130/3-2-did-57188.html	volant moteur pajero 3.2 did	5	1	0	0.00	10.00		10.00		1		0		volant-moteur	mitsubishi	pajero-iii	pièce + modèle + motorisation	0.02
+786	R2	/pieces/volant-moteur-577/opel-123/astra-j-sports-break-123027/1-7-cdti-9697.html	opel astra 1.7 cdti	4	1	0	0.00	6.00		6.00		1		0		volant-moteur	opel	astra-j-sports-break	pièce + modèle + motorisation	0.02
+787	R2	/pieces/volant-moteur-577/renault-140/laguna-ii-140028/1-9-dci-15476.html	volant moteur laguna 2 1.9 dci	6	1	0	0.00	15.00		15.00		1		0		volant-moteur	renault	laguna-ii	pièce + modèle + motorisation	0.02
+788	R2	/pieces/volant-moteur-577/volkswagen-173/touran-i-173141/1-9-tdi-17768.html	volanta touran 1.9 tdi	4	1	0	0.00	11.00		11.00		1		0		volant-moteur	volkswagen	touran-i	pièce + modèle + motorisation	0.02
+789	R8	/constructeurs/alfa-romeo-13/155-13003/2-5-td-150.html	alfa 155 2.5 td	4	1	0	0.00	7.00		7.00		1		0		(R8 sans gamme)	alfa-romeo	155	pièce + modèle + motorisation	0.02
+790	R8	/constructeurs/alfa-romeo-13/mito-13054/1-6-jtdm-28250.html	piece alfa romeo mito	4	1	0	0.00	10.00	10.00		1		0			(R8 sans gamme)	alfa-romeo	mito	pièces + modèle	0.02
+791	R8	/constructeurs/audi-22/a1-22025/1-4-tfsi-11754.html	audi a1 pièces détachées	4	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	audi	a1	pièces + modèle	0.02
+792	R8	/constructeurs/bmw-33/serie-1-e87-33018/2-0-118-d-58253.html	pièces bmw e87	3	1	0	0.00	12.00		12.00		1		0		(R8 sans gamme)	bmw	serie-1-e87	pièces + modèle	0.02
+793	R8	/constructeurs/bmw-33/serie-1-e87-33018/2-0-118-d-58253.html	schema moteur bmw serie 1	5	1	0	0.00	8.00	8.00		1		0			(R8 sans gamme)	bmw	serie-1-e87	autre	0.02
+794	R8	/constructeurs/bmw-33/serie-5-e39-33051/3-0-530-d-10025.html	piece bmw e39	3	1	0	0.00	7.00	7.00		1		0			(R8 sans gamme)	bmw	serie-5-e39	pièces + modèle	0.02
+795	R8	/constructeurs/bmw-33/serie-5-e60-33052/3-0-530-d-22661.html	accessoire bmw e60	3	1	0	0.00	9.00		9.00		1		0		(R8 sans gamme)	bmw	serie-5-e60	autre	0.02
+796	R8	/constructeurs/bmw-33/serie-5-e60-33052/3-0-530-d-22661.html	pieces detachees bmw 530d	4	1	0	0.00	13.00		13.00		1		0		(R8 sans gamme)	bmw	serie-5-e60	pièces + modèle	0.02
+797	R8	/constructeurs/chevrolet-44/captiva-44046/2-2-d-4wd-8513.html	chevrolet captiva parts	3	1	0	0.00	13.00	13.00		1		0			(R8 sans gamme)	chevrolet	captiva	autre	0.02
+798	R8	/constructeurs/chevrolet-44/spark-ii-44183/0-8-22305.html	pièces détachées chevrolet spark	4	1	0	0.00	10.00	10.00		1		0			(R8 sans gamme)	chevrolet	spark-ii	pièces + modèle	0.02
+799	R8	/constructeurs/citroen-46/ax-46004/10-2148.html	citroen ax pieces detachees	4	1	0	0.00	6.00		6.00		1		0		(R8 sans gamme)	citroen	ax	pièces + modèle	0.02
+800	R8	/constructeurs/citroen-46/ax-46004/10-2148.html	piece auto ax citroen	4	1	0	0.00	6.00	6.00		1		0			(R8 sans gamme)	citroen	ax	pièces + modèle	0.02
+801	R8	/constructeurs/citroen-46/ax-46004/10-2148.html	piece auto citroen ax essence	5	1	0	0.00	12.00	12.00		1		0			(R8 sans gamme)	citroen	ax	pièces + modèle	0.02
+802	R8	/constructeurs/citroen-46/berlingo-i-46006/2-0-hdi-14491.html	2 l hdi	3	1	0	0.00	5.00	5.00		1		0			(R8 sans gamme)	citroen	berlingo-i	pièce + modèle + motorisation	0.02
+803	R8	/constructeurs/citroen-46/berlingo-ii-46007/1-6-hdi-56261.html	pièces berlingo hdi	3	1	0	0.00	10.00	10.00		1		0			(R8 sans gamme)	citroen	berlingo-ii	pièces + modèle	0.02
+804	R8	/constructeurs/citroen-46/c25-46019/2-5-d-2237.html	pièces citroën c25 diesel	4	1	0	0.00	12.00	12.00		1		0			(R8 sans gamme)	citroen	c25	pièces + modèle	0.02
+805	R8	/constructeurs/citroen-46/c25-46019/2-5-td-2241.html	citroen c25 2.5 td	4	1	0	0.00	4.00	4.00		1		0			(R8 sans gamme)	citroen	c25	pièce + modèle + motorisation	0.02
+806	R8	/constructeurs/citroen-46/c4-i-46030/1-6-hdi-30137.html	pièces détachées citroën c4 hdi	5	1	0	0.00	11.00	11.00		1		0			(R8 sans gamme)	citroen	c4-i	pièces + modèle	0.02
+807	R8	/constructeurs/citroen-46/jumpy-ii-46065/2-0-hdi-12053.html	piece jumpy 2	3	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	citroen	jumpy-ii	pièces + modèle	0.02
+808	R8	/constructeurs/citroen-46/jumpy-ii-46065/2-0-hdi-20038.html	pieces jumpy 2	3	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	citroen	jumpy-ii	pièces + modèle	0.02
+809	R8	/constructeurs/citroen-46/saxo-46070/1-5-d-5551.html	motor saxo 1.5 diesel	4	1	0	0.00	4.00		4.00		1		0		(R8 sans gamme)	citroen	saxo	pièce + modèle + motorisation	0.02
+810	R8	/constructeurs/citroen-46/saxo-46070/1-6-vts-5552.html	saxo vts 1.6	3	1	0	0.00	12.00	12.00		1		0			(R8 sans gamme)	citroen	saxo	pièce + modèle + motorisation	0.02
+811	R8	/constructeurs/citroen-46/xantia-i-46075/2-1-td-12v-5143.html	citroen xantia 2.1 td	4	1	0	0.00	4.00		4.00		1		0		(R8 sans gamme)	citroen	xantia-i	pièce + modèle + motorisation	0.02
+812	R8	/constructeurs/citroen-46/xsara-46083/2-0-hdi-13182.html	oui pour les références	4	1	0	0.00	6.00		6.00		1		0		(R8 sans gamme)	citroen	xsara	autre	0.02
+813	R8	/constructeurs/dacia-47/duster-47014/1-5-dci-33042.html	pièces dacia duster	3	1	0	0.00	9.00		9.00		1		0		(R8 sans gamme)	dacia	duster	pièces + modèle	0.02
+814	R8	/constructeurs/dacia-47/sandero-i-47024/1-5-dci-6666.html	pieces detachees dacia sandero	4	1	0	0.00	15.00	15.00		1		0			(R8 sans gamme)	dacia	sandero-i	pièces + modèle	0.02
+815	R8	/constructeurs/dacia-47/sandero-i-47024/1-5-dci-6666.html	pièces détachées dacia sandero	4	1	0	0.00	6.00	6.00		1		0			(R8 sans gamme)	dacia	sandero-i	pièces + modèle	0.02
+816	R8	/constructeurs/fiat-58/500-c-58122/1-2-32825.html	pièces détachées pour fiat 500	5	1	0	0.00	14.00		14.00		1		0		(R8 sans gamme)	fiat	500-c	pièces + modèle	0.02
+817	R8	/constructeurs/fiat-58/ducato-iv-244-58027/2-3-jtd-9627.html	fiat ducato 244 2.3 jtd	5	1	0	0.00	5.00		5.00		1		0		(R8 sans gamme)	fiat	ducato-iv-244	pièce + modèle + motorisation	0.02
+818	R8	/constructeurs/fiat-58/palio-ii-weekend-58052/1-8-adventure-locker-flex-9775.html	palio weekend adventure locker	4	1	0	0.00	7.00		7.00		1		0		(R8 sans gamme)	fiat	palio-ii-weekend	autre	0.02
+819	R8	/constructeurs/fiat-58/panda-ii-58057/1-2-4x4-18093.html	piece fiat panda 4x4	4	1	0	0.00	12.00		12.00		1		0		(R8 sans gamme)	fiat	panda-ii	pièces + modèle	0.02
+820	R8	/constructeurs/ford-60/transit-vii-fourgon-60217/2-2-tdci-30418.html	vue éclatée moteur ford transit 2.2 tdci	7	1	0	0.00	6.00	6.00		1		0			(R8 sans gamme)	ford	transit-vii-fourgon	pièce + modèle + motorisation	0.02
+821	R8	/constructeurs/honda-74/accord-viii-74019/2-2-i-dtec-29482.html	support moteur honda accord 2.2 i dtec	7	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	honda	accord-viii	pièce + modèle + motorisation	0.02
+822	R8	/constructeurs/iveco-84/daily-iii-fourgon-84026/2-8-d-65c15-34441.html	pièces iveco pas cher	4	1	0	0.00	9.00								(R8 sans gamme)	iveco	daily-iii-fourgon	pièces + modèle	0.02
+823	R8	/constructeurs/mercedes-benz-108/classe-b-w246-108036/b-180-cdi-1-5-59438.html	w246 180 cdi	3	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	mercedes-benz	classe-b-w246	pièce + modèle + motorisation	0.02
+824	R8	/constructeurs/mercedes-benz-108/classe-b-w246-108036/b-180-cdi-1-8-12173.html	pièces détachées mercedes classe b 180 cdi	7	1	0	0.00	12.00		12.00		1		0		(R8 sans gamme)	mercedes-benz	classe-b-w246	pièces + modèle	0.02
+825	R8	/constructeurs/mercedes-benz-108/classe-c-w202-108037/c-250-t-td-2-5-5117.html	mercedes w202 250td	3	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	mercedes-benz	classe-c-w202	autre	0.02
+826	R8	/constructeurs/mercedes-benz-108/classe-c-w203-108038/c-200-cdi-2-2-14818.html	pièce mercedes classe c 220 cdi	6	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	mercedes-benz	classe-c-w203	pièces + modèle	0.02
+827	R8	/constructeurs/mercedes-benz-108/classe-c-w203-108038/c-200-cdi-2-2-14818.html	piece mercedes w203	3	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	mercedes-benz	classe-c-w203	pièces + modèle	0.02
+828	R8	/constructeurs/mercedes-benz-108/classe-c-w203-108038/c-200-cdi-2-2-16089.html	mercedes w203 200 cdi	4	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	mercedes-benz	classe-c-w203	pièce + modèle + motorisation	0.02
+829	R8	/constructeurs/mercedes-benz-108/classe-c-w203-108038/c-200-cdi-2-2-16089.html	w203 200 cdi	3	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	mercedes-benz	classe-c-w203	pièce + modèle + motorisation	0.02
+830	R8	/constructeurs/mercedes-benz-108/classe-c-w203-108038/c-200-kompressor-1-8-16715.html	kompressor mercedes c200	3	1	0	0.00	8.00	8.00		1		0			(R8 sans gamme)	mercedes-benz	classe-c-w203	autre	0.02
+831	R8	/constructeurs/mercedes-benz-108/classe-c-w204-108039/c-200-kompressor-1-8-22461.html	mercedes benz c200 kompressor w204	5	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	mercedes-benz	classe-c-w204	autre	0.02
+832	R8	/constructeurs/mercedes-benz-108/classe-e-w210-108048/240-15062.html	mercedes w210 prix	3	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	mercedes-benz	classe-e-w210	autre	0.02
+833	R8	/constructeurs/mercedes-benz-108/classe-e-w210-108048/e-290-t-td-2-9-5371.html	mercedes e290 w210	3	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	mercedes-benz	classe-e-w210	autre	0.02
+834	R8	/constructeurs/mercedes-benz-108/classe-e-w210-108048/e-290-t-td-2-9-5371.html	mercedes w210 290td	3	1	0	0.00	9.00		9.00		1		0		(R8 sans gamme)	mercedes-benz	classe-e-w210	autre	0.02
+835	R8	/constructeurs/mercedes-benz-108/classe-e-w211-108049/e-320-cdi-4matic-3-0-19293.html	mercedes w211 320	3	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	mercedes-benz	classe-e-w211	autre	0.02
+836	R8	/constructeurs/mercedes-benz-108/classe-e-w211-108049/e-320-cdi-4matic-3-0-19293.html	w211 320 cdi 2008	4	1	0	0.00	6.00		6.00		1		0		(R8 sans gamme)	mercedes-benz	classe-e-w211	pièce + modèle + motorisation	0.02
+837	R8	/constructeurs/mercedes-benz-108/classe-e-w212-108050/63-amg-51926.html	e63 amg w212	3	1	0	0.00	5.00	5.00		1		0			(R8 sans gamme)	mercedes-benz	classe-e-w212	autre	0.02
+838	R8	/constructeurs/mercedes-benz-108/classe-e-w212-108050/63-amg-51926.html	mercedes w212 amg	3	1	0	0.00	5.00	5.00		1		0			(R8 sans gamme)	mercedes-benz	classe-e-w212	autre	0.02
+839	R8	/constructeurs/mercedes-benz-108/classe-e-w212-108050/e-220-cdi-2-3-0-58601.html	e 220 cdi w212	4	1	0	0.00	11.00	11.00		1		0			(R8 sans gamme)	mercedes-benz	classe-e-w212	pièce + modèle + motorisation	0.02
+840	R8	/constructeurs/mercedes-benz-108/classe-e-w212-108050/e-350-cdi-3-0-31051.html	w212 e350 cdi	3	1	0	0.00	5.00		5.00		1		0		(R8 sans gamme)	mercedes-benz	classe-e-w212	pièce + modèle + motorisation	0.02
+841	R8	/constructeurs/mercedes-benz-108/vito-w639-108203/122-cdi-3-0-7614.html	vito mixto w639	3	1	0	0.00	4.00		4.00		1		0		(R8 sans gamme)	mercedes-benz	vito-w639	autre	0.02
+842	R8	/constructeurs/mini-113/mini-r50-r53-113001/1-6-cooper-15890.html	accessoires mini r53	3	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	mini	mini-r50-r53	autre	0.02
+843	R8	/constructeurs/mini-113/mini-r50-r53-113001/1-6-cooper-15890.html	mini cooper r50 accessoires	4	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	mini	mini-r50-r53	autre	0.02
+844	R8	/constructeurs/mini-113/mini-r50-r53-113001/1-6-cooper-15890.html	mini cooper s r53 parts	5	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	mini	mini-r50-r53	autre	0.02
+845	R8	/constructeurs/mini-113/mini-r56-113002/1-6-cooper-d-22486.html	catalogue pièces mini cooper r56	5	1	0	0.00	6.00	6.00		1		0			(R8 sans gamme)	mini	mini-r56	pièces + modèle	0.02
+846	R8	/constructeurs/mitsubishi-114/pajero-iii-114130/3-2-did-59737.html	accessoires pajero 3.2 did	4	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	mitsubishi	pajero-iii	pièce + modèle + motorisation	0.02
+847	R8	/constructeurs/mitsubishi-114/pajero-iv-114132/3-2-d-id-22653.html	accessoires pajero 3.2 did	4	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	mitsubishi	pajero-iv	pièce + modèle + motorisation	0.02
+848	R8	/constructeurs/nissan-119/almera-ii-119024/1-8-phase-1-15110.html	berline 5 portes	3	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	nissan	almera-ii	autre	0.02
+849	R8	/constructeurs/nissan-119/x-trail-i-119278/2-0-4x4-15969.html	pièce 4x4 nissan	3	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	nissan	x-trail-i	pièces + modèle	0.02
+850	R8	/constructeurs/nissan-119/x-trail-i-119278/2-0-4x4-15969.html	pieces auto nissan x trail	5	1	0	0.00	15.00		15.00		1		0		(R8 sans gamme)	nissan	x-trail-i	pièces + modèle	0.02
+851	R8	/constructeurs/opel-123/astra-f-123147/2-0-gsi-16v-1819.html	opel astra f gsi	4	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	opel	astra-f	autre	0.02
+852	R8	/constructeurs/opel-123/astra-g-123017/1-2-16v-15337.html	moteur opel astra g 1.2 essence	6	1	0	0.00	4.00	4.00		1		0			(R8 sans gamme)	opel	astra-g	pièce + modèle + motorisation	0.02
+853	R8	/constructeurs/opel-123/astra-g-123017/2-0-opc-16v-13365.html	le faisceau électrique	3	1	0	0.00	5.00		5.00		1		0		(R8 sans gamme)	opel	astra-g	autre	0.02
+854	R8	/constructeurs/opel-123/astra-g-123017/2-0-opc-16v-13365.html	opel astra g 2.0 16v	5	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	opel	astra-g	pièce + modèle + motorisation	0.02
+855	R8	/constructeurs/opel-123/astra-g-break-123018/1-7-dti-16v-14182.html	opel astra g	3	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	opel	astra-g-break	autre	0.02
+856	R8	/constructeurs/opel-123/corsa-c-123046/1-7-cdti-17697.html	opel corsa c 1.7 cdti	5	1	0	0.00	5.00		5.00		1		0		(R8 sans gamme)	opel	corsa-c	pièce + modèle + motorisation	0.02
+857	R8	/constructeurs/opel-123/corsa-d-123048/1-3-cdti-19725.html	je recherche des pièces	4	1	0	0.00	9.00		9.00		1		0		(R8 sans gamme)	opel	corsa-d	pièces + modèle	0.02
+858	R8	/constructeurs/opel-123/corsa-d-123048/1-3-cdti-19725.html	schema moteur opel corsa 1.3 cdti	6	1	0	0.00	5.00		5.00		1		0		(R8 sans gamme)	opel	corsa-d	pièce + modèle + motorisation	0.02
+859	R8	/constructeurs/peugeot-128/106-i-128003/1-5-d-8582.html	catalogue pièces peugeot 106	4	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	peugeot	106-i	pièces + modèle	0.02
+860	R8	/constructeurs/peugeot-128/106-i-128003/1-5-d-8582.html	peugeot 106 accessoires	3	1	0	0.00	7.00		7.00		1		0		(R8 sans gamme)	peugeot	106-i	autre	0.02
+861	R8	/constructeurs/peugeot-128/106-i-128003/1-5-d-8582.html	pièces détachées peugeot 106	4	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	peugeot	106-i	pièces + modèle	0.02
+862	R8	/constructeurs/peugeot-128/206-128014/1-1-i-9465.html	bloc 206 1.1 essence	4	1	0	0.00	15.00	15.00		1		0			(R8 sans gamme)	peugeot	206	pièce + modèle + motorisation	0.02
+863	R8	/constructeurs/peugeot-128/206-128014/1-1-i-9465.html	pièces 206 1.4 essence	4	1	0	0.00	8.00	8.00		1		0			(R8 sans gamme)	peugeot	206	pièces + modèle	0.02
+864	R8	/constructeurs/peugeot-128/206-128014/1-4-hdi-eco-16270.html	piece 206 1.4 hdi	4	1	0	0.00	8.00	8.00		1		0			(R8 sans gamme)	peugeot	206	pièces + modèle	0.02
+865	R8	/constructeurs/peugeot-128/207-128018/1-4-16v-26630.html	piece peugeot 207	3	1	0	0.00	13.00	13.00		1		0			(R8 sans gamme)	peugeot	207	pièces + modèle	0.02
+866	R8	/constructeurs/peugeot-128/207-128018/1-6-hdi-19352.html	207 1.6 hdi	3	1	0	0.00	5.00		5.00		1		0		(R8 sans gamme)	peugeot	207	pièce + modèle + motorisation	0.02
+867	R8	/constructeurs/peugeot-128/207-128018/2-0-hdi-57721.html	207 hdi 2.0	3	1	0	0.00	7.00		7.00		1		0		(R8 sans gamme)	peugeot	207	pièce + modèle + motorisation	0.02
+868	R8	/constructeurs/peugeot-128/207-sw-128020/1-6-hdi-33265.html	accessoires pour peugeot 207	4	1	0	0.00	11.00	11.00		1		0			(R8 sans gamme)	peugeot	207-sw	autre	0.02
+869	R8	/constructeurs/peugeot-128/207-sw-128020/1-6-hdi-33265.html	pieces peugeot 207	3	1	0	0.00	11.00	11.00		1		0			(R8 sans gamme)	peugeot	207-sw	pièces + modèle	0.02
+870	R8	/constructeurs/peugeot-128/208-128021/1-6-gti-58650.html	catalogue accessoire peugeot 208	4	1	0	0.00	8.00	8.00		1		0			(R8 sans gamme)	peugeot	208	autre	0.02
+871	R8	/constructeurs/peugeot-128/307-128035/1-6-hdi-19341.html	peugeot 307 accessoires	3	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	peugeot	307	autre	0.02
+872	R8	/constructeurs/peugeot-128/307-128035/1-6-hdi-19341.html	piece auto peugeot 307	4	1	0	0.00	10.00	10.00		1		0			(R8 sans gamme)	peugeot	307	pièces + modèle	0.02
+873	R8	/constructeurs/peugeot-128/406-128054/1-8-16v-15557.html	406 1.8 l 16v	4	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	peugeot	406	pièce + modèle + motorisation	0.02
+874	R8	/constructeurs/peugeot-128/406-coupe-128056/2-2-hdi-15854.html	piece 406 coupe	3	1	0	0.00	6.00		6.00		1		0		(R8 sans gamme)	peugeot	406-coupe	pièces + modèle	0.02
+875	R8	/constructeurs/peugeot-128/boxer-i-fourgon-128138/2-5-d-7963.html	peugeot boxer 230l	3	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	peugeot	boxer-i-fourgon	autre	0.02
+876	R8	/constructeurs/renault-140/clio-i-140002/1-2-chipie-14908.html	clio chipie prix tunisie	4	1	0	0.00	10.00	10.00		1		0			(R8 sans gamme)	renault	clio-i	autre	0.02
+877	R8	/constructeurs/renault-140/clio-i-140002/1-2-chipie-14908.html	محرك 1.2 شيبي	3	1	0	0.00	6.00		6.00		1		0		(R8 sans gamme)	renault	clio-i	pièce + modèle + motorisation	0.02
+878	R8	/constructeurs/renault-140/clio-i-140002/1-8-16v-2130.html	clio 1 8 16v	4	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	renault	clio-i	pièce + modèle + motorisation	0.02
+879	R8	/constructeurs/renault-140/espace-iii-140011/2-0-7828.html	pièces de rechange	3	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	renault	espace-iii	pièces + modèle	0.02
+880	R8	/constructeurs/renault-140/express-140014/1-2-phase-2-23507.html	moteur express 1.2 essence	4	1	0	0.00	4.00	4.00		1		0			(R8 sans gamme)	renault	express	pièce + modèle + motorisation	0.02
+881	R8	/constructeurs/renault-140/express-140014/1-6-d-2113.html	piece auto renault express	4	1	0	0.00	14.00		14.00		1		0		(R8 sans gamme)	renault	express	pièces + modèle	0.02
+882	R8	/constructeurs/renault-140/express-140014/1-9-d-2114.html	pièces détachées renault express occasion	5	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	renault	express	pièces + modèle	0.02
+883	R8	/constructeurs/renault-140/express-140014/1-9-d-2114.html	renault express 1.9 diesel 1996	5	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	renault	express	pièce + modèle + motorisation	0.02
+884	R8	/constructeurs/renault-140/kangoo-i-140021/1-5-dci-58573.html	pièces détachées renault kangoo 1.5 dci	6	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	renault	kangoo-i	pièces + modèle	0.02
+885	R8	/constructeurs/renault-140/kangoo-i-140021/1-9-d-8990.html	catalogue pièces détachées renault kangoo	5	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	renault	kangoo-i	pièces + modèle	0.02
+886	R8	/constructeurs/renault-140/kangoo-i-140021/1-9-d-8990.html	piece renault kangoo	3	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	renault	kangoo-i	pièces + modèle	0.02
+887	R8	/constructeurs/renault-140/kangoo-i-140021/1-9-d-8990.html	pièces détachées compatibles	3	1	0	0.00	5.00	5.00		1		0			(R8 sans gamme)	renault	kangoo-i	pièces + modèle	0.02
+888	R8	/constructeurs/renault-140/kangoo-i-140021/1-9-d-8990.html	prix moteur kangoo 1.9 d	5	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	renault	kangoo-i	pièce + modèle + motorisation	0.02
+889	R8	/constructeurs/renault-140/kangoo-i-140021/1-9-d-8990.html	renault kangoo pièces détachées	4	1	0	0.00	11.00	11.00		1		0			(R8 sans gamme)	renault	kangoo-i	pièces + modèle	0.02
+890	R8	/constructeurs/renault-140/kangoo-ii-express-140024/1-5-dci-32805.html	1.5 dci 90	3	1	0	0.00	4.00		4.00		1		0		(R8 sans gamme)	renault	kangoo-ii-express	pièce + modèle + motorisation	0.02
+891	R8	/constructeurs/renault-140/kangoo-ii-express-140024/1-5-dci-32805.html	trouve le moi	3	1	0	0.00	4.00		4.00		1		0		(R8 sans gamme)	renault	kangoo-ii-express	autre	0.02
+892	R8	/constructeurs/renault-140/laguna-ii-140028/2-0-16v-18578.html	piece auto renault laguna 2	5	1	0	0.00	13.00		13.00		1		0		(R8 sans gamme)	renault	laguna-ii	pièces + modèle	0.02
+893	R8	/constructeurs/renault-140/laguna-ii-140028/2-0-16v-18578.html	piece laguna 2	3	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	renault	laguna-ii	pièces + modèle	0.02
+894	R8	/constructeurs/renault-140/master-ii-140038/2-5-d-10081.html	pieces renault master 2	4	1	0	0.00	11.00	11.00		1		0			(R8 sans gamme)	renault	master-ii	pièces + modèle	0.02
+895	R8	/constructeurs/renault-140/master-ii-140038/2-5-d-10081.html	pièces renault master 2	4	1	0	0.00	9.00	9.00		1		0			(R8 sans gamme)	renault	master-ii	pièces + modèle	0.02
+896	R8	/constructeurs/renault-140/master-ii-140038/2-5-d-10081.html	vue eclatee renault master 2	5	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	renault	master-ii	autre	0.02
+897	R8	/constructeurs/renault-140/symbol-i-140092/1-2-16v-19676.html	moteur 1.2 16v renault symbol	5	1	0	0.00	13.00		13.00		1		0		(R8 sans gamme)	renault	symbol-i	pièce + modèle + motorisation	0.02
+898	R8	/constructeurs/renault-140/symbol-i-140092/1-2-16v-19676.html	moteur renault symbol 1.2 essence	5	1	0	0.00	11.00	11.00		1		0			(R8 sans gamme)	renault	symbol-i	pièce + modèle + motorisation	0.02
+899	R8	/constructeurs/renault-140/symbol-i-140092/1-2-16v-19676.html	moteur symbole 1.2	3	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	renault	symbol-i	pièce + modèle + motorisation	0.02
+900	R8	/constructeurs/renault-140/symbol-i-140092/1-2-16v-19676.html	symbol 1 2	3	1	0	0.00	5.00	5.00		1		0			(R8 sans gamme)	renault	symbol-i	autre	0.02
+901	R8	/constructeurs/renault-140/twingo-ii-140098/1-2-23485.html	pièces détachées twingo 2	4	1	0	0.00	11.00	11.00		1		0			(R8 sans gamme)	renault	twingo-ii	pièces + modèle	0.02
+902	R8	/constructeurs/toyota-164/avensis-ii-164033/17709.html	pieces auto toyota avensis	4	1	0	0.00	11.00	11.00		1		0			(R8 sans gamme)	toyota	avensis-ii	pièces + modèle	0.02
+903	R8	/constructeurs/toyota-164/corolla-verso-i-164119/1-6-vvti-16384.html	corolla verso 1.6 vvti	4	1	0	0.00	11.00		11.00		1		0		(R8 sans gamme)	toyota	corolla-verso-i	pièce + modèle + motorisation	0.02
+904	R8	/constructeurs/volkswagen-173/golf-v-173044/1-9-tdi-18114.html	golf 1.9 tdi	3	1	0	0.00	9.00		9.00		1		0		(R8 sans gamme)	volkswagen	golf-v	pièce + modèle + motorisation	0.02
+905	R8	/constructeurs/volkswagen-173/golf-v-173044/1-9-tdi-18114.html	motor 1.9 tdi golf 5	5	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	volkswagen	golf-v	pièce + modèle + motorisation	0.02
+906	R8	/constructeurs/volkswagen-173/passat-cc-173082/3-6-fsi-4motion-26608.html	passat cc 3.6	3	1	0	0.00	10.00		10.00		1		0		(R8 sans gamme)	volkswagen	passat-cc	pièce + modèle + motorisation	0.02
+907	R8	/constructeurs/volkswagen-173/polo-iii-173109/1-9-sdi-15410.html	1.9 sdi polo	3	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	volkswagen	polo-iii	pièce + modèle + motorisation	0.02
+908	R8	/constructeurs/volkswagen-173/polo-iii-173109/1-9-sdi-15410.html	vw polo sdi	3	1	0	0.00	10.00	10.00		1		0			(R8 sans gamme)	volkswagen	polo-iii	autre	0.02
+909	R8	/constructeurs/volkswagen-173/vento-173149/1-9-tdi-5718.html	vento 1.9 tdi	3	1	0	0.00	8.00		8.00		1		0		(R8 sans gamme)	volkswagen	vento	pièce + modèle + motorisation	0.02

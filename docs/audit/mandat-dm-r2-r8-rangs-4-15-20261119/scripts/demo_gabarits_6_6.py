@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Mandat DM 6.6 — PROPOSÉ, non appliqué : rendu de gabarits title candidats sur 10 pages réelles par rôle.
-Pages = les 10 premières pages R2 et les 10 premières pages R8 distinctes du top 50 (data/rangs_4_15_90j.tsv).
-Données : véhicule = data/vehicules_releves.tsv (auto_type/auto_modele/auto_marque, sql/13) ;
+Pages = les 10 premières pages R2 et les 10 premières pages R8 distinctes du top 50 (donnees/rangs_4_15_90j.tsv).
+Données : véhicule = donnees/vehicules_releves.tsv (auto_type/auto_modele/auto_marque, sql/13) ;
 prix mini et nombre de pièces = données du chargeur servies (GET PROD 12:34–12:37Z, prod_html/).
 Carburant ajouté seulement s'il n'est pas déjà implicite dans le nom du type (règle FUEL_IMPLICITE).
 Aucun de ces titres n'est écrit nulle part : décision réservée à Marwane.
 Usage : python3 -I scripts/demo_gabarits_6_6.py <dossier dm>"""
 import csv, re, sys
 from pathlib import Path
-B = Path(sys.argv[1]); D = B / "data"; H = B / "prod_html"
+B = Path(sys.argv[1]); D = B / "donnees"; H = B / "prod_html"
 veh = {r["type_id"]: r for r in csv.DictReader(open(D / "vehicules_releves.tsv"), delimiter="\t")}
 pages = {r["path"]: r for r in csv.DictReader(open(D / "releve_prod_pages.tsv"), delimiter="\t")}
 top = list(csv.DictReader(open(D / "rangs_4_15_90j.tsv"), delimiter="\t"))[:50]

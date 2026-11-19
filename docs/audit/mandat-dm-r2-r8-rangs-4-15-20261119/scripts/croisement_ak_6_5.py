@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Mandat DM 6.5 — pages perdues AK (#2087, reconstituées par sql/11) × liste 6.1.
 Classes (exclusives, dans l'ordre) :
-  A « dans la liste 6.1 (couples) »     : la page porte au moins un couple retenu 90 j (data/rangs_4_15_90j.tsv) ;
-  B « rang 4–15 au grain page »         : position page 90 j pondérée entre 4 et 15 (data/grain_page_r2_r8.tsv) ;
+  A « dans la liste 6.1 (couples) »     : la page porte au moins un couple retenu 90 j (donnees/rangs_4_15_90j.tsv) ;
+  B « rang 4–15 au grain page »         : position page 90 j pondérée entre 4 et 15 (donnees/grain_page_r2_r8.tsv) ;
   C « rang 1–3 au grain page »          ;
   D « au-delà du rang 15 »              ;
   E « sortie : aucune impression 90 j » : absente du grain page sur 2026-08-19 → 2026-11-16.
@@ -11,7 +11,7 @@ Usage : python3 -I scripts/croisement_ak_6_5.py <dossier dm>"""
 import csv, sys
 from collections import Counter, defaultdict
 from pathlib import Path
-B = Path(sys.argv[1]); D = B / "data"
+B = Path(sys.argv[1]); D = B / "donnees"
 lost = list(csv.DictReader(open(D / "pages_perdues_ak_reconstituees.tsv"), delimiter="\t"))
 l61 = defaultdict(list)
 for r in csv.DictReader(open(D / "rangs_4_15_90j.tsv"), delimiter="\t"):
