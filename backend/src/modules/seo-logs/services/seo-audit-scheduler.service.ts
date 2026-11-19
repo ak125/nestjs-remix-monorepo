@@ -5,7 +5,7 @@ import {
   OnModuleDestroy,
 } from '@nestjs/common';
 import { Queue, Worker } from 'bullmq';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -14,7 +14,8 @@ import { getErrorMessage } from '@common/utils/error.utils';
 import { isReadOnlyMode } from '@config/env-validation';
 import { redisConnectionOptions } from '../../../config/app.config';
 
-const execAsync = promisify(exec);
+// Lancement direct du fichier du script, sans interpréteur de commandes.
+const execFileAsync = promisify(execFile);
 
 /**
  * 📅 Service de scheduling des audits SEO hebdomadaires
@@ -100,11 +101,26 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * ▶️ Exécute le script d'audit (chemin fixe, aucun argument).
+   *
+   * Seul point du module qui lance un processus : le fichier est exécuté
+   * directement, sans interpréteur de commandes, et rien de ce qui vient
+   * d'une requête n'y entre. Le script hérite de l'environnement du processus
+   * et porte lui-même ses valeurs par défaut (SITEMAP_URL, LOKI_URL,
+   * MEILISEARCH_*).
+   */
+  async runAuditScript(): Promise<{ stdout: string; stderr: string }> {
+    return execFileAsync(this.scriptPath, {
+      maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+    });
+  }
+
+  /**
    * 🔄 Process un job (audit ou cleanup)
    *
    * ADR-028 Option D — gate processor (Principe 1) : worker créé en preprod
    * pour valider BullMQ wiring, mais le handler court-circuite sans
-   * `execAsync(scriptPath)` qui crasherait sur script absent du Docker image.
+   * `runAuditScript()` qui crasherait sur script absent du Docker image.
    */
   private async processJob(
     job: any,
@@ -137,11 +153,7 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
     try {
       await job.updateProgress(20);
 
-      // Le script hérite de l'environnement du processus et porte lui-même
-      // ses valeurs par défaut (SITEMAP_URL, LOKI_URL, MEILISEARCH_*).
-      const { stdout, stderr } = await execAsync(this.scriptPath, {
-        maxBuffer: 10 * 1024 * 1024,
-      });
+      const { stdout, stderr } = await this.runAuditScript();
 
       // Log stderr si présent (warnings, infos)
       if (stderr) {

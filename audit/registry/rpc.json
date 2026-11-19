@@ -8482,6 +8482,81 @@
       "usedBy": []
     },
     {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_supplier_id",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_brand_pm_id",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_scope_level",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_scope_code",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_effective_from",
+          "type": "timestamptz"
+        },
+        {
+          "mode": "IN",
+          "name": "p_effective_to",
+          "type": "timestamptz"
+        },
+        {
+          "mode": "IN",
+          "name": "p_remise_pct",
+          "type": "numeric"
+        },
+        {
+          "mode": "IN",
+          "name": "p_marge_pct",
+          "type": "numeric"
+        },
+        {
+          "mode": "IN",
+          "name": "p_change_reason",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_by",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20261118_supplier_price_profiles_default_pct.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.supplier_price_condition_put",
+      "language": "plpgsql",
+      "name": "supplier_price_condition_put",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE (rule_id bigint, rule_version bigint, replaced_id bigint)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
       "args": [],
       "definedInMigrations": [
         "20260123_seo_enterprise_dashboard.sql"

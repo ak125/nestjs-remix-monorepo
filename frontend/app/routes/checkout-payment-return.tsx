@@ -5,7 +5,7 @@ import {
   AlertTriangle,
   HelpCircle,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -15,6 +15,7 @@ import {
   isRouteErrorResponse,
 } from "react-router";
 
+import { clearCartLocalStorage } from "~/components/cart/cart-utils";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { trackPurchase } from "~/utils/analytics";
@@ -220,6 +221,14 @@ export default function PaymentReturnPage() {
     }
   }, [result]);
 
+  // Paiement réussi : le panier est devenu une commande payée, sa sauvegarde
+  // locale ne doit plus être proposée à la restauration sur la page panier.
+  useEffect(() => {
+    if (result?.status === "SUCCESS") {
+      clearCartLocalStorage();
+    }
+  }, [result?.status]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="py-12 px-page">
@@ -257,6 +266,41 @@ export default function PaymentReturnPage() {
 }
 
 // -- Status views ------------------------------------------------------------
+
+/**
+ * Lien de nouvelle tentative de paiement pour CETTE commande.
+ * Le tunnel pose le jeton de reprise dans sessionStorage (`pendingOrder`, voir
+ * `checkout.tsx`) : quand il correspond à la commande, le lien mène à
+ * `/checkout/resume`, qui relance son paiement. Sans jeton pour cette commande
+ * (autre onglet, autre appareil), repli sur le lien d'origine. L'expiration du
+ * jeton est jugée par le backend, pas ici.
+ */
+function useRetryPaymentHref(orderId: string): string {
+  const [href, setHref] = useState(`/checkout-payment?orderId=${orderId}`);
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("pendingOrder");
+      if (!raw) return;
+      const pending = JSON.parse(raw) as {
+        orderId?: unknown;
+        resumeToken?: unknown;
+      };
+      if (
+        orderId &&
+        typeof pending?.resumeToken === "string" &&
+        pending.resumeToken &&
+        String(pending.orderId) === String(orderId)
+      ) {
+        setHref(
+          `/checkout/resume?token=${encodeURIComponent(pending.resumeToken)}`,
+        );
+      }
+    } catch {
+      /* sessionStorage indisponible ou illisible : le lien de repli reste */
+    }
+  }, [orderId]);
+  return href;
+}
 
 function SuccessView({ result }: { result: PaymentResult }) {
   return (
@@ -330,6 +374,7 @@ function SuccessView({ result }: { result: PaymentResult }) {
 }
 
 function RefusedView({ result }: { result: PaymentResult }) {
+  const retryHref = useRetryPaymentHref(result.orderId);
   return (
     <div className="p-8 text-center">
       <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-destructive/15 mb-6">
@@ -371,7 +416,7 @@ function RefusedView({ result }: { result: PaymentResult }) {
 
       <div className="space-y-3">
         <Link
-          to={`/checkout-payment?orderId=${result.orderId}`}
+          to={retryHref}
           className="w-full inline-flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Reessayer le paiement
@@ -388,6 +433,7 @@ function RefusedView({ result }: { result: PaymentResult }) {
 }
 
 function CancelledView({ result }: { result: PaymentResult }) {
+  const retryHref = useRetryPaymentHref(result.orderId);
   return (
     <div className="p-8 text-center">
       <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-warning/15 mb-6">
@@ -408,7 +454,7 @@ function CancelledView({ result }: { result: PaymentResult }) {
 
       <div className="space-y-3 mt-6">
         <Link
-          to={`/checkout-payment?orderId=${result.orderId}`}
+          to={retryHref}
           className="w-full inline-flex justify-center items-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Reprendre le paiement

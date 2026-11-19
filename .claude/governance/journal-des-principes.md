@@ -90,6 +90,15 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L1 pour l'allocateur
   (`backend/supabase/migrations/20260615_massdoc_type_id_allocator.sql`). Son usage n'est imposé
   par aucun appelant, contrainte ou trigger : intention seulement. État de la base non vérifié.
+- **P32.** Importer un tarif, activer une pièce (la rendre vendable) et l'afficher au catalogue
+  sont trois étapes distinctes. Source : ADR-084 « écriture du tarif » (PR vault #315, jamais
+  fusionnée).
+  Application : L3 pour les tests (check requis `🧪 Backend Tests`, relevé vert sur `main` le
+  2026-11-17). Trois services de `backend/src/modules/pricing/services/` :
+  `price-import.service.ts` écrit le coût et laisse la disponibilité inchangée par défaut ;
+  `price-activation.service.ts` ne change que `pri_dispo` ; `catalog-display-activation.service.ts`
+  ne change que `piece_display`, pour des pièces déjà vendables. Écart : l'option `activate` de
+  l'import, fermée par défaut, rend vendable dans le même commit. Usage en service non observé.
 
 ## Paiement et chaîne logicielle
 
@@ -290,6 +299,18 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   `.spec/reports/incident-2026-04-14-payments-sev1.md`). Une fiche ouverte figure dans la liste
   que lit la routine de P24 (`scripts/ops/pilote-file.sh`, l. 58), qui liste toutes les issues
   ouvertes. À relever à nouveau à la fusion.
+- **P33.** Un test de la Definition of Done nomme une mesure qui existe et dit ce qu'elle compare.
+  Ce qui n'est pas mesuré est écrit comme tel dans la preuve, sans être retiré de l'exigence.
+  Source : ADR-134 (PR vault #415, jamais fusionnée).
+  Application : L0 pour le texte, appliqué à DoD5. La Definition of Done est dans ce dépôt
+  (`.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md`, version 1.4.0,
+  décision 139, PR #2142 fusionnée le 2026-11-17) : les tests 1 à 4 de DoD5 nomment chacun un
+  contrôle et ce qu'il compare, et sa section « Non mesuré » liste ce qu'aucun contrôle ne vérifie.
+  L3 pour deux de ces mesures, relevées vertes sur `main` le 2026-11-19
+  (`migration-ledger-freshness.yml`, `registry-fresh.yml`). Écart : les sections « Escape hatch »
+  et « Enforcement automatique » de la DoD citent `weekly-vault-lint.yml` et `vault-governance.yml`,
+  absents de ce dépôt (question D19). Aucune garde ne vérifie qu'un test de la DoD nomme une
+  mesure existante : intention seulement.
 
 ## Méthode
 

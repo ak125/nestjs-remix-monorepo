@@ -1,0 +1,45 @@
+pg_id,gamme,pages_sans_piece_vendable,pages_a_zero_produit,pages_avec_seulement_indisponible
+9,Filtre à carburant,423,411,12
+3890,Electrovanne,106,106,0
+117,Ampoule éclairage intérieur,396,99,297
+1361,Serrure de porte,93,93,0
+4175,Capteur pression et température d'huile,56,56,0
+112,Ampoule feu éclaireur de plaque,2661,43,2618
+3927,Débitmètre d'air,42,42,0
+458,Pompe à carburant,24,23,1
+111,Ampoule feu stop,319,22,297
+3219,Bride de liquide de refroidissement,104,17,87
+805,Pressostat d'huile,53,12,41
+1145,Vanne EGR,52,12,40
+794,Pompe nettoyage des vitres,12,11,1
+470,Radiateur de refroidissement,10,8,2
+313,Galet enrouleur de courroie de distribution,8,8,0
+107,Ampoule feu avant,45,7,38
+48,Butée d'embrayage,13,6,7
+298,Balais d'essuie-glace,6,6,0
+310,Galet tendeur de courroie d'accessoire,6,6,0
+1260,Pompe à eau,41,5,36
+146,Joint de boîte vitesse,5,5,0
+307,Kit de distribution,8,4,4
+806,Interrupteur des feux de freins,7,4,3
+807,Contacteur feu de recul,6,3,3
+312,Galet enrouleur de courroie d'accessoire,3,3,0
+467,Radiateur de chauffage,3,3,0
+468,Intercooler,3,3,0
+655,Roulement de roue,3,3,0
+448,Condenseur de climatisation,2,2,0
+3230,Biellette de barre stabilisatrice,2,2,0
+3922,Sonde lambda,13,1,12
+308,Galet tendeur de courroie de distribution,11,1,10
+10,Courroie d'accessoire,1,1,0
+424,Filtre d'habitacle,1,1,0
+479,Kit d'embrayage,1,1,0
+1108,Poulie d'alternateur,1,1,0
+1298,Valve de réglage du ralenti,1,1,0
+2066,Rotule de direction,1,1,0
+3947,Capteur pression du tuyau d'admission,1,1,0
+105,Ampoule feu clignotant,58,0,58
+854,Amortisseur,5,0,5
+170,Transmetteur de pression,4,0,4
+830,Sonde de refroidissement,4,0,4
+273,Bras de suspension,1,0,1

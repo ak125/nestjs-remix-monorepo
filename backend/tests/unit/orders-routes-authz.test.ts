@@ -38,6 +38,7 @@ import { OrdersController } from '../../src/modules/orders/controllers/orders.co
 // NestJS reflection keys (`@nestjs/common/constants` — stable literals).
 const GUARDS_METADATA = '__guards__';
 const METHOD_METADATA = 'method';
+const PATH_METADATA = 'path';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -321,6 +322,81 @@ describe('api/orders — access boundary', () => {
       ).resolves.toMatchObject({
         success: true,
         data: { ord_id: order.ord_id },
+      });
+    });
+  });
+
+  // ─── Handler rule behind the session guard ────────────────────────────────
+  //
+  // `AuthenticatedGuard` proves a session, not that the session owns the order
+  // named in the URL. A session route that takes an order id must refuse
+  // another account in its handler, before any write. The list is EXHAUSTIVE:
+  // a session route with an `:id` added later without an entry fails the test.
+
+  describe('session routes on one order — session owner only', () => {
+    const ORDER_ID = 1234567;
+    const order = {
+      ord_id: String(ORDER_ID),
+      ord_cst_id: 'owner',
+      ord_ords_id: '1',
+      ord_is_pay: '0',
+      customer: null,
+      lines: [],
+      statusHistory: [],
+    };
+    const req = (userId?: string) =>
+      ({ user: userId ? { id: userId } : undefined, session: {} }) as never;
+
+    /** How each handler is called, and the service writes it must not reach. */
+    const OWNER_ONLY: Record<
+      string,
+      (controller: OrdersController, request: never) => Promise<unknown>
+    > = {
+      updateOrder: (controller, request) =>
+        controller.updateOrder(ORDER_ID, { comment: 'note' }, request),
+      cancelOrder: (controller, request) =>
+        controller.cancelOrder(String(ORDER_ID), request),
+    };
+
+    function makeController() {
+      const ordersService = {
+        getOrderById: jest.fn(async () => order),
+        updateOrder: jest.fn(async () => order),
+        cancelOrder: jest.fn(async () => order),
+      };
+      const controller = new OrdersController(
+        ordersService as never,
+        {} as never, // authService — unused on these paths
+        {} as never, // mailService — unused on these paths
+        {} as never, // cacheService — unused on these paths
+      );
+      return { controller, ordersService };
+    }
+
+    it('lists every session route that takes an order id', () => {
+      const withOrderId = SESSION_ROUTES.filter((method) =>
+        String(
+          Reflect.getMetadata(
+            PATH_METADATA,
+            OrdersController.prototype[method as keyof OrdersController],
+          ),
+        ).includes(':id'),
+      );
+      expect(withOrderId.sort()).toEqual(Object.keys(OWNER_ONLY).sort());
+    });
+
+    describe.each(Object.entries(OWNER_ONLY))('%s', (_method, call) => {
+      it.each([
+        ['another account', 'other'],
+        ['a request without a user', undefined],
+      ])('answers 404 to %s, without any write', async (_label, userId) => {
+        const { controller, ordersService } = makeController();
+
+        await expect(call(controller, req(userId))).rejects.toThrow(
+          NotFoundException,
+        );
+        expect(ordersService.updateOrder).not.toHaveBeenCalled();
+        expect(ordersService.cancelOrder).not.toHaveBeenCalled();
       });
     });
   });
