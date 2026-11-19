@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: dde33a34368ef987845f5a364ba180fbc9f608ef28bd565e45da19cf7d3b4fb4
+source_sha256: e7efbd464889d8726476ced79e1cf6f737ec4446bbfe03d106fb02f850c2cef9
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3248 |
+| Files (Layer 1) | 3232 |
 | DB tables (Layer 1) | 316 |
-| DB RPC (Layer 1) | 268 |
+| DB RPC (Layer 1) | 269 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1020 |
+| Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `d34bc148e188`.
+Source sotFingerprint: `e680dc49760e`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `d34bc148e188`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 180 (test=164, service=11, config=4, controller=1)
+- **Files**: 179 (test=163, service=11, config=4, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (165), __unassigned__ (15)
+- **Top owners**: @ak125 (164), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=165
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=164
 
 ### D3 — SEO & Sitemap
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `d34bc148e188`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 948 (config=460, route=247, service=178, controller=39, test=24)
-- **Runtime entrypoints**: 346
-- **Top owners**: @ak125/frontend-team (680), @ak125/admin-team (268)
+- **Files**: 944 (config=457, route=246, service=178, controller=39, test=24)
+- **Runtime entrypoints**: 345
+- **Top owners**: @ak125/frontend-team (677), @ak125/admin-team (267)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=514, UNKNOWN=434
+- **Status**: LIVE=513, UNKNOWN=431
 
 ### D9 — Import / ETL / Normalisation
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `d34bc148e188`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 334 (service=210, test=82, controller=40, config=2)
-- **Runtime entrypoints**: 135
-- **Top owners**: @ak125 (148), @ak125/payments-team (95), @ak125/auth-team (79)
-- **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`suppliers`](modules/suppliers.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=196, UNKNOWN=138
+- **Files**: 324 (service=205, test=77, controller=40, config=2)
+- **Runtime entrypoints**: 132
+- **Top owners**: @ak125 (138), @ak125/payments-team (95), @ak125/auth-team (79)
+- **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
+- **Status**: LIVE=191, UNKNOWN=133
 
 ### D12 — Marketing & Video
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `d34bc148e188`.
 
 ### D15 — Security & Governance
 
-- **Files**: 334 (test=220, script=62, service=49, config=2, controller=1)
+- **Files**: 333 (test=219, script=62, service=49, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (334)
+- **Top owners**: @ak125 (333)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=59, UNKNOWN=275
+- **Status**: LIVE=59, UNKNOWN=274
 
 ### D16 — Maintenance
 
@@ -165,7 +165,7 @@ Source sotFingerprint: `d34bc148e188`.
 
 - **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
 - **DB tables**: 316
-- **DB RPC**: 268
+- **DB RPC**: 269
 - **Runtime entrypoints**: 83
 - **Top owners**: __unassigned__ (243)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)

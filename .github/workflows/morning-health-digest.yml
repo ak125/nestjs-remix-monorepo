@@ -32,6 +32,10 @@ name: 🌅 Morning health digest
 # registry (backend service, through tsx): the npm install below runs only in the
 # daily window (7-10 h Europe/Paris) or on workflow_dispatch, never on the
 # 15-minute urgent runs. Outside it the indicators are written « non mesuré ».
+# The backend imports internal packages (@repo/*) through their dist/: npm ci
+# --ignore-scripts does not build them, so the step after the install builds the
+# backend's workspace dependencies (frontend excluded). Without it the reader
+# reports « MODULE_NOT_FOUND @repo/… » (mandate BZ, complement BZ-3).
 #
 # Cron granularity: GitHub may start a scheduled run late; the 15-minute cadence
 # bounds the delay of the 7 h report and of an urgent mail to one or two slots.
@@ -90,6 +94,11 @@ jobs:
         if: steps.window.outputs.deps == '1'
         continue-on-error: true
         run: npm ci --ignore-scripts
+
+      - name: Build backend workspace packages (registry thresholds)
+        if: steps.window.outputs.deps == '1'
+        continue-on-error: true
+        run: npx --no-install turbo run build --filter='@fafa/backend^...' --filter='!@fafa/frontend'
 
       - name: Collect signals and update the standing digest issue
         id: collect
