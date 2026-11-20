@@ -64,6 +64,7 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 // Hook et types
 import { usePiecesFilters } from "../hooks/use-pieces-filters";
 import { type PieceData } from "../types/pieces-route.types";
+import { sortPiecesInPlace } from "../utils/pieces-filters.utils";
 
 // Mappers
 import {
@@ -505,44 +506,50 @@ export default function SearchPage() {
   const filteredGroups = useMemo(() => {
     if (!allGroupedPieces.length) return [];
 
+    // Les pièces de chaque groupe suivent le tri choisi (prix croissant par
+    // défaut) ; l'ordre des groupes reste celui de la recherche.
     return allGroupedPieces
       .map((group) => ({
         ...group,
-        items: group.items.filter((piece) => {
-          // Appliquer les mêmes filtres que filteredProducts
-          if (
-            activeFilters.brands.length &&
-            !activeFilters.brands.includes(piece.brand)
-          )
-            return false;
-          if (
-            activeFilters.quality !== "all" &&
-            piece.quality !== activeFilters.quality
-          )
-            return false;
-          if (activeFilters.priceRange !== "all") {
-            const price = piece.price;
-            if (activeFilters.priceRange === "low" && price >= 50) return false;
+        items: sortPiecesInPlace(
+          group.items.filter((piece) => {
+            // Appliquer les mêmes filtres que filteredProducts
             if (
-              activeFilters.priceRange === "medium" &&
-              (price < 50 || price >= 150)
+              activeFilters.brands.length &&
+              !activeFilters.brands.includes(piece.brand)
             )
               return false;
-            if (activeFilters.priceRange === "high" && price < 150)
+            if (
+              activeFilters.quality !== "all" &&
+              piece.quality !== activeFilters.quality
+            )
               return false;
-          }
-          // Filtre stock DÉSACTIVÉ (flux tendu)
-          // Stock non fiable, ne pas filtrer
-          if (activeFilters.minNote) {
-            const stars = piece.stars || 3;
-            const note = Math.round((stars / 6) * 10);
-            if (note < activeFilters.minNote) return false;
-          }
-          return true;
-        }),
+            if (activeFilters.priceRange !== "all") {
+              const price = piece.price;
+              if (activeFilters.priceRange === "low" && price >= 50)
+                return false;
+              if (
+                activeFilters.priceRange === "medium" &&
+                (price < 50 || price >= 150)
+              )
+                return false;
+              if (activeFilters.priceRange === "high" && price < 150)
+                return false;
+            }
+            // Filtre stock DÉSACTIVÉ (flux tendu)
+            // Stock non fiable, ne pas filtrer
+            if (activeFilters.minNote) {
+              const stars = piece.stars || 3;
+              const note = Math.round((stars / 6) * 10);
+              if (note < activeFilters.minNote) return false;
+            }
+            return true;
+          }),
+          sortBy,
+        ),
       }))
       .filter((group) => group.items.length > 0);
-  }, [allGroupedPieces, activeFilters]);
+  }, [allGroupedPieces, activeFilters, sortBy]);
 
   // Handler sélection pièce (mode comparaison)
   const handleSelectPiece = useCallback(

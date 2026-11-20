@@ -54,15 +54,15 @@ describe('composeVehicleAwareDescription', () => {
     expect(d).toMatch(FRAME_VERBS);
   });
 
-  it('formats price in French (comma decimal + €)', () => {
+  it('formats price in whole euros, rounded down (9,99 → « dès 9 € »)', () => {
     const d = composeVehicleAwareDescription({
       ...base,
       typeId: 1,
       pgId: 0,
-      minPrice: 9.5,
+      minPrice: 9.99,
     });
-    expect(d).toContain('9,50');
-    expect(d).toContain('€');
+    expect(d).toContain('dès 9 €');
+    expect(d).not.toMatch(/9[,.]99/);
   });
 
   it('omits the count clause when count is 0 or missing, staying grammatical', () => {

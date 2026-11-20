@@ -34,3 +34,16 @@ export function formatPriceNumber(amount: string | number | undefined): string {
     maximumFractionDigits: 2,
   }).format(num);
 }
+
+/**
+ * Sépare un prix en partie entière et centimes, au format français
+ * (ex: 54.38 → { whole: "54", cents: "38" } ; 1234.5 → { whole: "1 234", cents: "50" }).
+ * Arrondi au centime le plus proche : 9.999 → { whole: "10", cents: "00" }.
+ */
+export function splitPrice(amount: string | number | undefined): {
+  whole: string;
+  cents: string;
+} {
+  const [whole, cents = "00"] = formatPriceNumber(amount).split(",");
+  return { whole, cents };
+}

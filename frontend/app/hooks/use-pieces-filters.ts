@@ -51,7 +51,9 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
   // ⚡ useTransition: defer filter recalc so browser paints interaction feedback first
   const [isFilterPending, startTransition] = useTransition();
 
-  const [sortBy, setSortBy] = useState<SortBy>("name");
+  // Tri par défaut : prix croissant (mandat CI, 2026-11-18). L'utilisateur
+  // garde le choix du tri dans la barre d'outils.
+  const [sortBy, setSortBy] = useState<SortBy>("price-asc");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedPieces, setSelectedPieces] = useState<number[]>([]);
   const [favoritesPieces, setFavoritesPieces] = useState<number[]>([]);

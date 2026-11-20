@@ -7,6 +7,7 @@
 
 import { memo } from "react";
 import { Badge } from "~/components/ui/badge";
+import { formatPriceNumber } from "~/utils/format";
 import { type PieceData } from "../../types/pieces-route.types";
 
 interface PiecesComparisonViewProps {
@@ -152,18 +153,24 @@ export const PiecesComparisonView = memo(function PiecesComparisonView({
           <div className="flex items-center justify-between">
             <div className="text-sm text-blue-900">
               <strong>Prix minimum:</strong>{" "}
-              {Math.min(...comparedPieces.map((p) => p.price)).toFixed(2)}€
+              {formatPriceNumber(
+                Math.min(...comparedPieces.map((p) => p.price)),
+              )}
+              €
             </div>
             <div className="text-sm text-blue-900">
               <strong>Prix maximum:</strong>{" "}
-              {Math.max(...comparedPieces.map((p) => p.price)).toFixed(2)}€
+              {formatPriceNumber(
+                Math.max(...comparedPieces.map((p) => p.price)),
+              )}
+              €
             </div>
             <div className="text-sm text-blue-900">
               <strong>Différence:</strong>{" "}
-              {(
+              {formatPriceNumber(
                 Math.max(...comparedPieces.map((p) => p.price)) -
-                Math.min(...comparedPieces.map((p) => p.price))
-              ).toFixed(2)}
+                  Math.min(...comparedPieces.map((p) => p.price)),
+              )}
               €
             </div>
           </div>
@@ -238,7 +245,7 @@ function renderComparisonCell(
           className={`font-bold text-lg ${isCheapest ? "text-green-600" : "text-gray-900"}`}
         >
           {typeof piece.price === "number"
-            ? piece.price.toFixed(2)
+            ? formatPriceNumber(piece.price)
             : piece.priceFormatted}
           €
           {isCheapest && (

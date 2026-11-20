@@ -374,8 +374,10 @@ export class SeoTemplateService {
       type_alias: context.type_alias || '',
       motorization: context.type_name || '',
 
-      // Prix et quantité
-      min_price: context.min_price ? `${context.min_price.toFixed(2)}€` : '',
+      // Prix et quantité. Euros entiers, arrondis à l'euro inférieur, pour que
+      // « à partir de » reste vrai (décision de Marwane du 18/11/2026, mandat CI) ;
+      // les cartes, la fiche, le panier et le JSON-LD gardent le prix au centime.
+      min_price: context.min_price ? `${Math.floor(context.min_price)}€` : '',
       count: context.count?.toString() || '',
       pieces_count: context.count?.toString() || '',
 
@@ -409,7 +411,7 @@ export class SeoTemplateService {
       // Format #Xxx# (sans préfixe V)
       Gamme: context.gamme_name || '',
       MinPrice: context.min_price
-        ? `à partir de ${context.min_price.toFixed(2)}€`
+        ? `à partir de ${Math.floor(context.min_price)}€`
         : '',
       Count: context.count?.toString() || '',
     };
