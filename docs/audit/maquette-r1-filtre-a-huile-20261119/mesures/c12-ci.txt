@@ -1,0 +1,47 @@
+cancelled	🧾 DoD self-evaluation present	2026-11-20T14:31:32Z	136349664673
+failure	🚦 Circuit de fusion	2026-11-20T14:33:11Z	136350637958
+failure	CodeQL	2026-11-20T14:37:12Z	136352930344
+failure	🧾 DoD self-evaluation present	2026-11-20T14:32:39Z	136349815315
+failure	Registry freshness (warn-only, Phase 1)	2026-11-20T14:33:57Z	136349664387
+skipped	🔐 Armement de la fusion automatique (App)	2026-11-20T14:33:11Z	136350737647
+skipped	auto-merge	2026-11-20T14:31:14Z	136349647950
+skipped	🐳 build / 🐳 Build	2026-11-20T14:31:16Z	136349668334
+skipped	🧪 Deploy PREPROD	2026-11-20T14:37:34Z	136353182462
+skipped	🔍 Docker Image Scan	2026-11-20T14:31:17Z	136349668496
+skipped	🎭 E2E Smoke Tests	2026-11-20T14:37:34Z	136353182773
+skipped	🚦 Gate check (snapshots ≥ auto_types)	2026-11-20T14:31:16Z	136349666579
+skipped	🔦 Lighthouse Performance Audit	2026-11-20T14:37:34Z	136353182782
+skipped	🔔 Notify on Failure	2026-11-20T14:37:34Z	136353183857
+skipped	review	2026-11-20T14:31:14Z	136349646863
+skipped	🤖 Revue Claude (circuit moyen)	2026-11-20T14:33:01Z	136350638756
+success	🛡️ ADR-010 Governance	2026-11-20T14:33:09Z	136349665302
+success	🧪 Backend Tests	2026-11-20T14:37:33Z	136349665587
+success	Block forbidden DEV/PREPROD/PROD formulations in .md	2026-11-20T14:31:37Z	136349663038
+success	Block-new (owner + domain required)	2026-11-20T14:32:56Z	136349664373
+success	Block new / stale orphan files (G3)	2026-11-20T14:32:44Z	136349663573
+success	Calcul du circuit	2026-11-20T14:33:00Z	136349645843
+success	check-cart-conversion-r-role.sh (R-role invariant)	2026-11-20T14:32:47Z	136349666889
+success	check-role-purity.ts (role-vocabulary purity, source comments)	2026-11-20T14:33:25Z	136349666834
+success	🔬 CodeQL Scan (javascript-typescript)	2026-11-20T14:37:16Z	136349662452
+success	🛡️ Contract Gate	2026-11-20T14:33:02Z	136349665522
+success	🔒 Core Build Only	2026-11-20T14:34:07Z	136349665287
+success	🔍 CWV Performance Check	2026-11-20T14:34:05Z	136349664281
+success	🛡️ Deterministic gates	2026-11-20T14:35:34Z	136349665187
+success	🔒 DEV Safety (Blocking)	2026-11-20T14:31:28Z	136349664521
+success	🔍 DEV Safety (Observe)	2026-11-20T14:31:28Z	136349663858
+success	⬣ ESLint	2026-11-20T14:34:42Z	136349664752
+success	🧪 Frontend Tests	2026-11-20T14:36:34Z	136349665416
+success	Impeccable count ≤ committed baseline	2026-11-20T14:32:49Z	136349664978
+success	🛡️ Import Firewall	2026-11-20T14:31:41Z	136349665480
+success	🗄️ Migration Safety	2026-11-20T14:32:22Z	136349665396
+success	🕸️ No new deep PR-stacks	2026-11-20T14:32:34Z	136349663880
+success	Refuser SEO_CHAIN_R*_MODE=on dans la config	2026-11-20T14:31:25Z	136349664059
+success	Repo Map Drift Check	2026-11-20T14:31:31Z	136349664238
+success	🛡️ RPC Safety Gate	2026-11-20T14:31:50Z	136349665612
+success	🔐 Secrets Detection	2026-11-20T14:33:30Z	136349665284
+success	🔒 Security Audit	2026-11-20T14:33:25Z	136349665205
+success	ʦ TypeScript	2026-11-20T14:35:36Z	136349665352
+success	url-immutability	2026-11-20T14:32:08Z	136349663136
+success	validate-exploration-probe.sh (ADR-081 G10)	2026-11-20T14:31:52Z	136349666123
+success	validate-top-priorities.sh (ADR-081)	2026-11-20T14:32:16Z	136349666682
+success	Verify ADR canon references have vault backing	2026-11-20T14:31:41Z	136349663746

@@ -1,0 +1,384 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/plaquette-de-frein-402.html",
+  "viewport": "1440x900",
+  "at": "2026-11-20T14:57:02.730Z",
+  "fixes": [
+    {
+      "tag": "BUTTON",
+      "label": "Retour en haut",
+      "classes": "fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-cen",
+      "x": 1360,
+      "y": 756,
+      "w": 48,
+      "h": 48
+    },
+    {
+      "tag": "BUTTON",
+      "label": "Ouvrir le chat",
+      "classes": "fixed bottom-24 md:bottom-6 right-4 md:right-6 w-14 h-14 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounde",
+      "x": 1360,
+      "y": 820,
+      "w": 56,
+      "h": 56
+    }
+  ],
+  "lignes": [
+    {
+      "i": 0,
+      "titre": "RENAULT MEGANE III",
+      "texte": "Fabrication : 2013–2015",
+      "anneesDroite": 406,
+      "anneesGauche": 335,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 1,
+      "titre": "CITROËN BERLINGO II - BERLINGO MULTISPAC",
+      "texte": "Début de fabrication : 2008",
+      "anneesDroite": 1053,
+      "anneesGauche": 1017,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 2,
+      "titre": "RENAULT CLIO II",
+      "texte": "Fabrication : 2001–2009",
+      "anneesDroite": 413,
+      "anneesGauche": 335,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 3,
+      "titre": "RENAULT CLIO II",
+      "texte": "Fabrication : 2007–2009",
+      "anneesDroite": 1034,
+      "anneesGauche": 954,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 4,
+      "titre": "PEUGEOT 307",
+      "texte": "Fabrication : 2005–2009",
+      "anneesDroite": 417,
+      "anneesGauche": 335,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 5,
+      "titre": "PEUGEOT 307",
+      "texte": "Fabrication : 2004–2009",
+      "anneesDroite": 1036,
+      "anneesGauche": 954,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 6,
+      "titre": "PEUGEOT 307",
+      "texte": "Fabrication : 2000–2007",
+      "anneesDroite": 416,
+      "anneesGauche": 335,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 7,
+      "titre": "AUDI A4 III B7",
+      "texte": "Fabrication : 2004–2008",
+      "anneesDroite": 1036,
+      "anneesGauche": 954,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 8,
+      "titre": "AUDI A4 III B7",
+      "texte": "Fabrication : 2005–2006",
+      "anneesDroite": 417,
+      "anneesGauche": 335,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 9,
+      "titre": "AUDI A4 III B7",
+      "texte": "Fabrication : 2005–2006",
+      "anneesDroite": 1036,
+      "anneesGauche": 954,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 10,
+      "titre": "VOLKSWAGEN GOLF IV",
+      "texte": "Fabrication : 1997–2004",
+      "anneesDroite": 410,
+      "anneesGauche": 335,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 11,
+      "titre": "VOLKSWAGEN GOLF IV",
+      "texte": "Fabrication : 1997–2004",
+      "anneesDroite": 1029,
+      "anneesGauche": 954,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 12,
+      "titre": "VOLKSWAGEN GOLF IV",
+      "texte": "Fabrication : 1998–2001",
+      "anneesDroite": 407,
+      "anneesGauche": 335,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 13,
+      "titre": "BMW Série 1 (E81)",
+      "texte": "Fabrication : 2011",
+      "anneesDroite": 981,
+      "anneesGauche": 954,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 14,
+      "titre": "BMW Série 1 (E81)",
+      "texte": "Fabrication : 2008–2011",
+      "anneesDroite": 408,
+      "anneesGauche": 335,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 15,
+      "titre": "BMW Série 1 (E81)",
+      "texte": "Fabrication : 2006–2011",
+      "anneesDroite": 1027,
+      "anneesGauche": 954,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    },
+    {
+      "i": 16,
+      "titre": "HONDA CIVIC IX",
+      "texte": "Début de fabrication : 2013",
+      "anneesDroite": 428,
+      "anneesGauche": 398,
+      "boutons": [
+        {
+          "bouton": "Retour en haut",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        },
+        {
+          "bouton": "Ouvrir le chat",
+          "chevauchementHorizontal": 0,
+          "pixelsCouverts": 0,
+          "verif": null
+        }
+      ]
+    }
+  ]
+}

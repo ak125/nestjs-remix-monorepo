@@ -53,6 +53,13 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   trois véhicules, à des fiches publiques ; les cartes sont mesurées au pixel à 390 et 1440 px sur deux
   gammes ; le retrait du builder, la clé de cache, le contrat, axe, le typecheck, les tests et la CI
   sont revérifiés. Voir le §19 ; les autres sections ne changent pas.
+- **Complément n° 12** : la tête de #2210 est passée à `da7f091b761c2093836319eb49a41953400ecb3a`
+  (complément n° 11 de DS : « Début de fabrication : AAAA » quand la fin manque, plus de « dès »,
+  accord de Marwane du 20 novembre à 13:47). Les cinq cas sont revérifiés dans le test et sur le rendu,
+  les 123 pages R1 sont recensées, les cartes sont mesurées au pixel à 390 et 1440 px sur deux gammes,
+  le recouvrement par les boutons flottants est mesuré avant et après, axe, le typecheck, les tests et
+  la CI sont refaits. Une erreur du §19.4 est rectifiée. Voir le §20 ; les autres sections ne changent
+  pas.
 
 ## Verdict final
 
@@ -258,6 +265,21 @@ page R1. Ce qui reste ouvert, hors de ce verdict ou à trancher par Marwane :
 - Backend identique à `2462efde5`, clé `gamme:resp:v2` sans risque de mauvais format, contrat sans
   fuite. Aucune nouvelle violation axe ; typecheck, lint et tests passent ; la CI n'a aucun échec
   nouveau (§19.3, §19.4).
+
+**Complément n° 12, tête `da7f091b7` : cartes véhicule conformes.**
+
+- Plus aucun « dès » : 0 occurrence dans le HTML servi des 57 pages R1 à cartes, 0 dans l'API des
+  123 pages. 185 cartes sur 891 affichent « Début de fabrication : AAAA », sur 54 pages (§20.1).
+- Le test des cinq cas échoue sur deux cas avec le composant de `31fa098f4` et passe en entier à la
+  tête (§20.1).
+- À 390 px, « Début de fabrication : » tient sur une ligne et l'année passe entière à la ligne
+  suivante : +20 px pour les 6 cartes concernées des deux gammes, les autres ne changent pas.
+  Contraste 7,55:1, aucun décalage de mise en page venant des cartes (§20.2).
+- Le bouton de discussion recouvre 2 à 7 px de la fin de l'année sur certaines lignes « Fabrication »
+  à 390 px, quand la ligne passe à sa hauteur, exactement comme avant la correction. Élément commun au
+  site, il ne bloque pas ce verdict (§20.3).
+- Diff limité au composant et à son test ; axe, typecheck, lint et tests passent ; la CI n'a aucun
+  échec nouveau (§20.4).
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -1826,3 +1848,184 @@ frein ». Je le note ; ce n'est ni dans le périmètre ni dans les cartes.
 `scripts/c11-cartes.py`, `scripts/c11-des.sql` ; `mesures/c11-*` ; `captures/c11-cartes-*.png`.
 
 LIVRABLE COMPLÉMENT N° 11 DU
+
+## 20. Complément n° 12 : « Début de fabrication » sur les cartes véhicule R1
+
+**Verdict : cartes véhicule conformes.** La correction proposée au §19.5 est appliquée telle quelle,
+sans effet de bord : plus aucun « dès », un libellé qui dit ce que la base sait, et une mise en page
+qui ne gagne qu'une ligne sur les cartes concernées à 390 px.
+
+- **Tête mesurée** : `da7f091b761c2093836319eb49a41953400ecb3a` (#2210, PR brouillon ouverte, mise à
+  jour à 14:32:57 UTC), relevée à 14:50 UTC avant les mesures, puis revérifiée à 15:02 UTC
+  (`git ls-remote` et `gh` concordent). Rien n'a été modifié dans #2210.
+- **Rendu** : frontend de `da7f091b7` reconstruit dans mon worktree, backend identique à `31fa098f4`
+  (le diff ne touche pas `backend/`), servis sur un port à moi avec un Redis privé. Le service DEV n'a
+  pas servi. Chrome 153 complet, 390×844 et 1440×900.
+- **Ce que DS a changé** (diff `31fa098f4` → `da7f091b7`, hors documentation : 2 fichiers)
+  - `MotorisationsSection.tsx` : `r1FabricationYears` renvoie un libellé et des années.
+    Début et fin : « Fabrication : 2005–2012 », ou « Fabrication : 2011 » si les deux sont égaux.
+    Début seul : « Début de fabrication : 2008 ». Fin seule : « Fin de fabrication : 2012 ».
+    Aucune date : pas de ligne. Les années restent dans un `span` insécable.
+  - `frontend/tests/unit/r1-motorisation-fabrication.test.tsx` (nouveau) : un test par cas, sur le
+    rendu du composant en variante R1.
+
+### 20.1 Les cinq cas
+
+**Dans le test.** J'ai lancé le nouveau test sur le composant de `31fa098f4`, puis sur celui de la
+tête (le fichier de test est le même ; le composant d'avant a été remis en place après la mesure).
+
+| Cas | Composant de `31fa098f4` | Tête `da7f091b7` |
+|---|---|---|
+| Début et fin | réussi | réussi |
+| Début seul : « Début de fabrication : AAAA », jamais « dès » | **échec** | réussi |
+| Fin seule : « Fin de fabrication : AAAA » | **échec** | réussi |
+| Aucune date : pas de ligne | réussi | réussi |
+| Début = fin : une seule année | réussi | réussi |
+
+Le test détecte donc bien l'ancien comportement. Il contrôle aussi l'absence de « depuis ».
+
+**Sur le rendu.** Trois cas existent dans les données et se voient sur les deux gammes : la plage
+(« Fabrication : 2005–2012 »), l'année seule (« Fabrication : 2011 », BMW E81 116d de pg 402) et le
+début seul. Les deux autres n'existent pas en base, ils ne sont couverts que par le test.
+
+| Gamme | « dès » avant | « Début de fabrication » à la tête |
+|---|---|---|
+| Filtre à huile (pg 7) | 4 cartes | les 4 mêmes : Fiat 500 1.2 (2007), Sandero I 1.5 dCi 68 (2008), Swift IV (2010), Civic IX 2.2 (2012) |
+| Plaquette de frein (pg 402) | 2 cartes | les 2 mêmes : Berlingo B9 (2008), Civic IX 1.6 (2013) |
+
+Les 30 autres lignes des deux gammes ont un texte identique à celui du n° 11.
+
+**Recensement des 123 pages R1** (API et HTML servi de mon rendu) :
+
+| Mesure | Résultat |
+|---|---|
+| Pages avec cartes / sans cartes | 57 / 66 |
+| Cartes (API, cartes après le bouton comprises) | 891 |
+| « Fabrication : AAAA–AAAA » | 703 |
+| « Fabrication : AAAA » (début = fin) | 3 |
+| **« Début de fabrication : AAAA »** | **185**, sur 54 pages |
+| « Fin de fabrication » / sans ligne | 0 / 0 |
+| HTML servi (12 premières cartes par page) | 57 pages en 200, 618 lignes : 510 « Fabrication », 108 « Début de fabrication » |
+| **« dès AAAA »** | **0** dans le HTML servi ; aucune page ne diffère de ce que l'API laisse attendre |
+
+Les 185 cartes sont celles que le §19 comptait en « dès ».
+
+**En base** (`auto_type` entière, lecture seule) : 53 959 types, dont 17 446 avec un début sans fin,
+0 avec une fin sans début, 0 sans aucune date, 383 avec début = fin. Le chiffre de 17 446 annoncé par
+DS est exact. Le cas « fin seule » est donc théorique aujourd'hui ; le traiter ne coûte rien.
+
+### 20.2 Retour à la ligne, hauteur, contraste, CLS
+
+**Retour à la ligne.** À 390 px, la ligne de la carte mesure 168 px de large. « Début de fabrication :
+2008 » en demande 177 à 183. Le navigateur garde « Début de fabrication : » sur la première ligne et
+passe l'année entière à la ligne suivante, sans la couper. Sur les 6 cartes concernées des deux gammes,
+le libellé n'est jamais coupé et l'année n'est jamais coupée. À 1440 px, tout tient sur une ligne.
+Les lignes « Fabrication » restent sur une ligne, aux deux largeurs.
+
+**Hauteur des cartes à 390 px**, comparée au n° 11 :
+
+| Carte | n° 11 | Tête |
+|---|---|---|
+| Fiat 500, Sandero I, Swift IV, Civic IX 2.2 (pg 7) | 184 px | 204 px |
+| Civic IX 1.6 (pg 402) | 184 px | 204 px |
+| Berlingo B9 (pg 402, nom sur trois lignes) | 256 px | 276 px |
+| Les 30 autres cartes | inchangées (184 à 236 px) | inchangées |
+
+À 1440 px, toutes les cartes gardent 195 px. L'espace sous le bouton « Voir les pièces » reste de 21
+à 22 px à 390 px et de 26 px à 1440 px. Les +20 px annoncés par DS sont confirmés.
+
+Une carte « Début de fabrication » est un peu plus haute que ses voisines à 390 px, sur une colonne :
+cela ne crée pas de trou, chaque carte prenant sa hauteur.
+
+**Contraste.** Texte `#4a5565` sur `#ffffff`, 14 px, graisse 500 : **7,55:1** au pixel, à taille
+réelle et agrandi, sur les deux gammes et aux deux largeurs (seuil 4,5:1). La mesure porte sur la
+première ligne de chaque page ; les lignes « Début de fabrication » ont la même classe et la même
+couleur calculée. Une première mesure sur pg 7
+a donné 7,24:1 : la carte était capturée pendant son effet de survol (dégradé de fond). Deux rejeux
+donnent 7,55:1 ; même dans l'état de survol, le seuil est largement dépassé.
+
+**CLS.** 0 à 390 px sur les deux gammes. À 1440 px : 0,0223 au premier passage sur pg 7 (même valeur
+et même source qu'au n° 11 : la barre de navigation et le bandeau du haut, avant les cartes), 0,0001
+au rejeu, 0,0001 sur pg 402. Aucun décalage ne vient des cartes.
+
+### 20.3 Bouton de discussion et bouton « remonter »
+
+Deux boutons fixes sont visibles en bas à droite quand on descend jusqu'aux cartes :
+
+- « Ouvrir le chat » (`ChatWidget.tsx`), rond de 56 px, à 318–374 px de gauche à 390 px ;
+- « Retour en haut » (`root.tsx`), rond de 48 px, à 326–374 px, au-dessus du premier.
+
+**Méthode.** Pour chaque ligne de fabrication, cartes cachées ouvertes, j'amène la ligne à la hauteur
+du centre du bouton, puis je teste chaque pixel de l'année sur sa ligne médiane : qui est au premier
+plan, l'année ou le bouton ? Je refais la mesure sur la page dont j'ai remis le texte de `31fa098f4`
+(« Fabrication : dès AAAA ») dans les 6 lignes concernées, même balisage.
+
+| Gamme, largeur | Bouton de discussion | Bouton « remonter » |
+|---|---|---|
+| pg 7, 390 px | **12 lignes sur 19, 2 à 7 px** couverts | 0 ligne |
+| pg 402, 390 px | **8 lignes sur 17, 3 à 7 px** couverts | 0 ligne |
+| pg 7 et pg 402, 1440 px | 0 ligne | 0 ligne |
+| Texte de `31fa098f4` remis, 390 px | les mêmes 12 et 8 lignes, mêmes pixels | 0 ligne |
+
+**Constat.**
+
+- Le recouvrement par le bouton de discussion est **confirmé** à 390 px. Il touche la fin de l'année
+  des lignes « Fabrication : AAAA–AAAA » les plus longues, qui finissent entre 318 et 325 px. Il ne
+  dure que le temps où la ligne passe derrière le bouton en faisant défiler la page ; un léger
+  défilement la dégage.
+- Il ne touche **aucune** ligne « Début de fabrication » : l'année passe à la ligne et finit vers
+  195 px. Avant la correction, les 6 lignes « dès » finissaient entre 301 et 307 px et n'étaient pas
+  touchées non plus. **Le recouvrement est le même avant et après** : la correction n'en crée pas et
+  n'en supprime pas.
+- Pour le bouton « remonter », je ne confirme pas le recouvrement : sur mon rendu, l'année la plus à
+  droite finit à 325 px et le bouton commence à 326 px, soit 1 px d'écart. DS mesure 1 px sur 2 lignes
+  et 1 ligne ; l'écart tient à l'arrondi des polices entre nos deux rendus.
+- Mes comptes diffèrent un peu de ceux de DS (12 lignes au lieu de 11 sur pg 7 ; 2 à 7 px au lieu
+  de 1 à 9) : je mesure sur la ligne médiane du texte et le bouton rond ne couvre pas ses coins. Le
+  constat est le même.
+
+**Bloque-t-il le verdict ?** Non. Le bouton est commun à tout le site, il recouvrait déjà ces lignes
+avant la correction, et le texte reste lisible dès que la page défile. Son placement relève de la
+revue du 05 et d'une décision de design commune au site, réservée à Marwane. Je ne propose pas de le
+corriger dans #2210.
+
+### 20.4 Régressions
+
+| Contrôle | Résultat | Preuve |
+|---|---|---|
+| Diff `31fa098f4` → `da7f091b7` | Un commit. Hors documentation, 2 fichiers : `MotorisationsSection.tsx` (+18 / −10) et le nouveau test (96 lignes). Backend et `package.json` inchangés. Hors R1, la carte est inchangée | `git diff` |
+| Build frontend | Code de sortie 0 ; le bundle serveur contient « Début de fabrication » | journal de build (non publié) |
+| axe 4.12, page entière | Aucun nœud en défaut dans les cartes. Mêmes violations qu'au n° 11, aux deux largeurs et sur les deux gammes : `color-contrast` dans le pied de page et la barre mobile du bas, `region` dans le bandeau | `mesures/c12-page-*.json` |
+| Typecheck frontend | Code de sortie 0 | `mesures/c12-typecheck.txt` |
+| Lint des deux fichiers modifiés | Code de sortie 0, aucun avertissement | `mesures/c12-lint.txt` |
+| vitest | 13 fichiers, 244 tests passent : les 11 du n° 11, `pieces-family-contract.test.ts` et le nouveau test (5) | `mesures/c12-vitest.txt` |
+| jest backend | Sans objet : backend inchangé depuis le n° 11 | — |
+| CI du commit `da7f091b7` | 31 réussis, 11 ignorés, 4 en échec, 1 annulé : mêmes contrôles et mêmes conclusions qu'à `31fa098f4` | `mesures/c12-ci.txt` |
+
+Sur la CI : Deterministic gates passe toujours. Restent en échec, comme au n° 11 : Circuit de fusion
+(brouillon), DoD self-evaluation (un en échec, un annulé), Registry freshness (avertissement seul) et
+CodeQL, avec les trois mêmes alertes (`pieces.$slug.tsx:723` et `:727`, `outils/proxy-c5.mjs:41`), dont
+aucune ne touche le diff. **Aucun échec nouveau.**
+
+**Rectification du §19.4.** J'y ai écrit que le 11e fichier vitest était `pieces-family-contract.test.ts`.
+C'était `blog-model-motorisation-links.test.tsx` (4 tests) : les 10 fichiers du n° 10 en comptent
+233, plus 4, soit 237. `pieces-family-contract.test.ts` (2 tests) n'avait pas été lancé ; il passe à la
+tête.
+
+### 20.5 Ce que je n'ai pas vérifié, et hors périmètre
+
+- Les cas « fin seule » et « aucune date » sur le rendu : aucune donnée ne les produit. Ils ne sont
+  prouvés que par le test.
+- Le recouvrement mesuré sur la page réellement servie à `31fa098f4` : je l'ai mesuré sur la page de
+  la tête dont j'ai remis l'ancien texte, ce qui donne la même géométrie, mais pas sur un rendu
+  reconstruit de cette tête.
+- Firefox, Safari, d'autres largeurs que 390 et 1440 px.
+- Le Redis DEV partagé (lecture refusée au n° 11, non contournée).
+- Hors périmètre, sans jugement : carburant et mois (décision de Marwane en attente), donnée de la BMW
+  E81 116d (signalée au n° 10), V-Level, 7 cartes sans lien. Aucune correction n'est faite, ni dans
+  #2210 ni ailleurs.
+
+**Preuves** : `scripts/cartes-du12.cjs`, `scripts/flottants-du12.cjs`, `scripts/coupure-du12.cjs`,
+`scripts/c12-portee.py`, `scripts/c12-base.sql` ; `mesures/c12-*` ; `captures/c12-cartes-*.png`.
+
+LIVRABLE COMPLÉMENT N° 12 DU
