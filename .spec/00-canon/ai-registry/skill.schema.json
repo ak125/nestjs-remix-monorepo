@@ -109,5 +109,69 @@
         "type": ["string", "number", "boolean"]
       }
     }
+  },
+  "$defs": {
+    "subagent": {
+      "description": "Frontmatter d un sous-agent Claude Code (.claude/agents/**/*.md, racine ou workspaces/*/). Inventorié dans skills.registry.json, tableau subagents[] (mandat AB-2, décision 13). Champs Claude Code ouverts : additionalProperties reste vrai, le registre ne relève que les champs listés ici.",
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "name",
+        "description"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "maxLength": 64,
+          "description": "Identifiant du sous-agent, unique parmi les sous-agents (un skill peut porter le même nom)."
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tools": {
+          "description": "Outils autorisés : liste séparée par des virgules ou tableau.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "disallowedTools": {
+          "description": "Outils retirés : liste séparée par des virgules ou tableau.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "model": {
+          "type": "string"
+        },
+        "department": {
+          "type": "string",
+          "description": "Id de département de .spec/00-canon/ai-registry/agent-operating-map.yaml ; un id inconnu est relevé dans issues[]."
+        },
+        "role": {
+          "type": "string"
+        },
+        "disable-model-invocation": {
+          "type": "boolean"
+        }
+      }
+    }
   }
 }

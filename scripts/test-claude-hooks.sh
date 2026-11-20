@@ -1147,6 +1147,66 @@ assert_exit "bash-guard 5b: npm install, node_modules réel → BLOCK (Guard 5 i
 assert_contains "bash-guard 5b: cible du lien intacte" "keep" "$(ls "$G5/shared/node_modules")"
 rm -rf "$G5"
 
+# Lecture seule des sous-agents de mandat (mandat AB-2) : l'enveloppe porte agent_type.
+run_ro_guard() {
+  jq -nc --arg a "$1" --arg c "$2" '{tool_name:"Bash",agent_type:$a,agent_id:"x",tool_input:{command:$c}}' \
+    | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "bash-guard RO: mandat-releve git status → allow"            "0" "$(run_ro_guard mandat-releve 'export GIT_OPTIONAL_LOCKS=0; git -C /tmp status --short')"
+assert_exit "bash-guard RO: gh pr view | jq → allow"                     "0" "$(run_ro_guard mandat-releve "gh pr view 12 --json state | jq '.state | ascii_downcase'")"
+assert_exit "bash-guard RO: ls 2>&1 | wc -l → allow"                     "0" "$(run_ro_guard mandat-releve 'ls -la 2>&1 | wc -l')"
+assert_exit "bash-guard RO: gh api GET → allow"                          "0" "$(run_ro_guard mandat-triage-ci 'gh api repos/o/r/pulls/1 --jq .head.sha')"
+assert_exit "bash-guard RO: echo > fichier → BLOCK"                      "2" "$(run_ro_guard mandat-releve 'echo x > /tmp/f')"
+assert_exit "bash-guard RO: tee → BLOCK"                                 "2" "$(run_ro_guard mandat-releve 'git status | tee /tmp/f')"
+assert_exit "bash-guard RO: touch → BLOCK"                               "2" "$(run_ro_guard mandat-reception 'touch /tmp/f')"
+assert_exit "bash-guard RO: \$(…) → BLOCK"                               "2" "$(run_ro_guard mandat-releve 'echo $(rm -f x)')"
+assert_exit "bash-guard RO: git commit → BLOCK"                          "2" "$(run_ro_guard mandat-releve 'git commit -m x')"
+assert_exit "bash-guard RO: git push → BLOCK"                            "2" "$(run_ro_guard mandat-releve 'git push origin x')"
+assert_exit "bash-guard RO: gh pr merge → BLOCK"                         "2" "$(run_ro_guard mandat-triage-ci 'gh pr merge 12')"
+assert_exit "bash-guard RO: gh run rerun → BLOCK"                        "2" "$(run_ro_guard mandat-triage-ci 'gh run rerun 1')"
+assert_exit "bash-guard RO: gh api -X POST → BLOCK"                      "2" "$(run_ro_guard mandat-triage-ci 'gh api -X POST repos/o/r/issues -f title=x')"
+assert_exit "bash-guard RO: sort -o → BLOCK"                             "2" "$(run_ro_guard mandat-releve 'sort -o /tmp/f a')"
+assert_exit "bash-guard RO: git diff --output → BLOCK"                   "2" "$(run_ro_guard mandat-releve 'git diff --output=/tmp/f')"
+assert_exit "bash-guard RO: sed -i → BLOCK"                              "2" "$(run_ro_guard mandat-releve "sed -i 's/a/b/' f")"
+assert_exit "bash-guard RO: guillemet non fermé → BLOCK"                 "2" "$(run_ro_guard mandat-releve "echo 'x")"
+assert_exit "bash-guard RO: session principale echo > f → allow (inchangé)" "0" "$(run_bash_guard_cmd 'echo x > /tmp/f')"
+assert_exit "bash-guard RO: autre sous-agent echo > f → allow (hors mandat-*)" "0" "$(run_ro_guard keyword-planner 'echo x > /tmp/f')"
+# Revue de securite du 2026-11-18 : contournements signales, puis lectures courantes.
+assert_exit 'bash-guard RO: guillemets imbriques "'\''" > f "'\''"' "2" "$(run_ro_guard mandat-releve 'echo "'\''" > /tmp/ro-x "'\''"')"
+assert_exit 'bash-guard RO: sort "-o" (option entre guillemets)' "2" "$(run_ro_guard mandat-releve 'sort "-o" /tmp/ro-x f')"
+assert_exit 'bash-guard RO: sort -uo (options groupees)' "2" "$(run_ro_guard mandat-releve 'sort -uo /tmp/ro-x f')"
+assert_exit 'bash-guard RO: sort --out= (abreviation)' "2" "$(run_ro_guard mandat-releve 'sort --out=/tmp/ro-x f')"
+assert_exit 'bash-guard RO: sort --compress-program' "2" "$(run_ro_guard mandat-releve 'sort --compress-program=sh f')"
+assert_exit 'bash-guard RO: echo >&1file' "2" "$(run_ro_guard mandat-releve 'echo a >&1file')"
+assert_exit 'bash-guard RO: git grep -iO' "2" "$(run_ro_guard mandat-releve 'git grep -iO x')"
+assert_exit 'bash-guard RO: git grep --open= (abreviation)' "2" "$(run_ro_guard mandat-releve 'git grep --open=vi x')"
+assert_exit 'bash-guard RO: git ls-remote --upload= (abreviation)' "2" "$(run_ro_guard mandat-releve 'git ls-remote --upload=x origin')"
+assert_exit 'bash-guard RO: uniq ENTREE SORTIE' "2" "$(run_ro_guard mandat-releve 'uniq a.txt /tmp/ro-out')"
+assert_exit 'bash-guard RO: accolades {-o,f}' "2" "$(run_ro_guard mandat-releve 'sort {-o,/tmp/ro-x} f')"
+assert_exit 'bash-guard RO: chaine $'\''\x2do'\''' "2" "$(run_ro_guard mandat-releve 'sort $'\''\x2do'\'' /tmp/ro-x f')"
+assert_exit 'bash-guard RO: expansion ${!y}' "2" "$(run_ro_guard mandat-releve 'echo ${!y}')"
+assert_exit 'bash-guard RO: printf -v' "2" "$(run_ro_guard mandat-releve 'printf -v y %s x')"
+assert_exit 'bash-guard RO: gh api -iXPOST' "2" "$(run_ro_guard mandat-releve 'gh api -iXPOST repos/x')"
+assert_exit 'bash-guard RO: git status -uno → allow' "0" "$(run_ro_guard mandat-releve 'git status -uno')"
+assert_exit 'bash-guard RO: grep '\''foo$'\'' 2>/dev/null → allow' "0" "$(run_ro_guard mandat-releve 'grep -n '\''foo$'\'' f 2>/dev/null')"
+assert_exit 'bash-guard RO: ls ${HOME} → allow' "0" "$(run_ro_guard mandat-releve 'ls ${HOME}')"
+assert_exit 'bash-guard RO: gh api -X GET --jq → allow' "0" "$(run_ro_guard mandat-releve 'gh api -X GET repos/x --jq '\''.a'\''')"
+assert_exit 'bash-guard RO: git log -- path, sort -nr, uniq -c → allow' "0" "$(run_ro_guard mandat-releve 'git log --oneline -- f | sort -nr | uniq -c')"
+assert_exit 'bash-guard RO: git log --format='\''%h %s'\'' → allow' "0" "$(run_ro_guard mandat-releve "git log --format='%h %s' -5")"
+assert_exit 'bash-guard RO: sort --o'\''utput'\''=f → BLOCK' "2" "$(run_ro_guard mandat-releve "sort --o'utput'=/tmp/ro-x f")"
+assert_exit 'bash-guard RO: sort --output='\''f'\'' → BLOCK' "2" "$(run_ro_guard mandat-releve "sort --output='/tmp/ro-x' f")"
+# Seconde revue de securite du 2026-11-18 : commentaire, valeur collee a une option courte, rg.
+assert_exit 'bash-guard RO: commentaire #'\'' puis ligne > f → BLOCK' "2" "$(run_ro_guard mandat-releve $'ls #\'\necho a > /tmp/ro-x #\'')"
+assert_exit 'bash-guard RO: here-document → BLOCK' "2" "$(run_ro_guard mandat-releve $'cat <<E\nx\nE')"
+assert_exit 'bash-guard RO: sort -o/tmp/f → BLOCK' "2" "$(run_ro_guard mandat-releve 'sort -o/tmp/ro-x f')"
+assert_exit 'bash-guard RO: git grep -O/bin/sh → BLOCK' "2" "$(run_ro_guard mandat-releve 'git grep -O/bin/sh x')"
+assert_exit 'bash-guard RO: git ls-remote -u/x → BLOCK' "2" "$(run_ro_guard mandat-releve 'git ls-remote -u/x origin')"
+assert_exit 'bash-guard RO: rg --hostname-bin → BLOCK' "2" "$(run_ro_guard mandat-releve 'rg --hostname-bin=sh x')"
+assert_exit 'bash-guard RO: echo a#b, grep '\''a#b'\'', jq <<< → allow' "0" "$(run_ro_guard mandat-releve "echo a#b; grep -c 'a#b' f; jq . <<< '{}'")"
+assert_exit 'bash-guard RO: continuation \ puis #'\'' → BLOCK' "2" "$(run_ro_guard mandat-releve $'ls \\\n#\'\necho a > /tmp/ro-x #\'')"
+assert_exit 'bash-guard RO: continuation \ puis -o/tmp/f → BLOCK' "2" "$(run_ro_guard mandat-releve $'sort \\\n-o/tmp/ro-x f')"
+
 # ============================================================
 # Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)
 # ============================================================

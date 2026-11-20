@@ -1,0 +1,59 @@
+diff --git a/.spec/00-canon/ai-registry/agent-operating-map.yaml b/.spec/00-canon/ai-registry/agent-operating-map.yaml
+--- a/.spec/00-canon/ai-registry/agent-operating-map.yaml
++++ b/.spec/00-canon/ai-registry/agent-operating-map.yaml
+@@ -14,7 +14,11 @@
+       can_trigger_pipeline: false   # intentionally strict: "trigger pipeline" too broad. Refine in V1.5 with narrower verbs if needed.
+     loads:
+       skills: []   # populated in PR#2 after filesystem inventory verification
+-      agents: []
++      # Mandat AB (2026-11-15) — sous-agents natifs Claude Code des sessions de
++      # mandat, découverts récursivement sous .claude/agents/mandat/ (docs
++      # code.claude.com/docs/en/sub-agents). Lecture seule. Statut : proposé,
++      # activation = fusion owner. Inventaire : audit/agents/inventaire-2026-11-15.md.
++      agents: [root/mandat-releve, root/mandat-reception, root/mandat-triage-ci]
+ 
+   - id: seo-batch
+     cwd: workspaces/seo-batch
+@@ -64,7 +68,23 @@
+       skills: []
+       agents: []   # populated in PR#2 after filesystem inventory verification
+ 
+-nodes: []   # populated in PR#2 after filesystem inventory verification (expected ~77)
++# Inventaire complet des autres agents : PR#2 (non fait). Seuls les 3 sous-agents
++# de mandat (Mandat AB, ADR Vault proposée ADR-135) sont déclarés ici.
++# Champs AI1/AI5 (rules-ai-cos) hors schéma (additionalProperties: false) :
++# portés en commentaire, à reloger dans la fiche de catalogue Vault (ADR-129 D5).
++nodes:
++  # metric_id: mandat_releve_mutation_free_rate  (cible 100 % ; critique < 100 %)
++  # reports_to: ia-agents-lead (rôle 23) ; sponsor: @ak125 ; squad: sessions-mandat
++  # AI6 : contrepartie = retrait proposé de agents/ceo/AGENTS.md
++  - { id: root/mandat-releve,    type: agent, path: .claude/agents/mandat/mandat-releve.md,    owner: "@ak125", domain: D15 }
++  # metric_id: mandat_reception_verdict_agreement_rate  (cible >= 90 % ; alerte < 90 % ; critique < 70 %)
++  # reports_to: ia-agents-lead (rôle 23) ; sponsor: @ak125 ; squad: sessions-mandat
++  # AI6 : contrepartie = retrait proposé de workspaces/seo-batch/.claude/agents/conseil-batch.md
++  - { id: root/mandat-reception, type: agent, path: .claude/agents/mandat/mandat-reception.md, owner: "@ak125", domain: D15 }
++  # metric_id: mandat_triage_cause_cited_rate  (cible >= 80 % ; alerte < 80 % ; critique < 50 %)
++  # reports_to: ia-agents-lead (rôle 23) ; sponsor: @ak125 ; squad: sessions-mandat
++  # AI6 : contrepartie = retrait proposé de agents/cto/AGENTS.md
++  - { id: root/mandat-triage-ci, type: agent, path: .claude/agents/mandat/mandat-triage-ci.md, owner: "@ak125", domain: D15 }
+ 
+ handoffs:
+   - id: raw-to-wiki
+@@ -412,7 +432,7 @@
+     priority: P1                     # D15 governance/meta-operations = P1 stance
+     kpi_primary: useful_capabilities_not_complexity
+     repo_domains: [D15]
+-    capabilities: [agent-operating-map, skills-registry]
++    capabilities: [agent-operating-map, skills-registry, mandat-subagents]
+     state: live                      # operating-map validator + skills registry are live, evidence-backed
+ 
+   - id: direction
+@@ -508,6 +528,8 @@
+   # #23 ia-agents — the agent-governance machinery itself (operating map + skills registry).
+   - { id: agent-operating-map, type: service, owner: ia-agents, status: live, evidence: { scripts: [scripts/governance/validate-agent-operating-map.js, .spec/00-canon/ai-registry/agent-operating-map.yaml] } }
+   - { id: skills-registry,     type: service, owner: ia-agents, status: live, evidence: { scripts: [scripts/governance/build-skills-registry.js, .spec/00-canon/ai-registry/skills.registry.json] } }
++  # Mandat AB : dormant tant que le producteur des metric_id ci-dessus est absent (ADR-128 D2, AI1).
++  - { id: mandat-subagents,    type: agent,   owner: ia-agents, status: dormant, evidence: { scripts: [.claude/agents/mandat/mandat-releve.md, .claude/agents/mandat/mandat-reception.md, .claude/agents/mandat/mandat-triage-ci.md] } }
+ 
+ # Business handoffs (department→department), distinct from the pipeline `handoffs`
+ # above. Communication by contract, not free discussion. `contract_ref` points to
