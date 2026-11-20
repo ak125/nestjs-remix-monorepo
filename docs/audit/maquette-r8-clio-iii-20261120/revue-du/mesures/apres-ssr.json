@@ -1,0 +1,1181 @@
+{
+ "octets": 158051,
+ "gzip9": 24605,
+ "title": "Pièces RENAULT CLIO III 1.5 dCi à prix discount",
+ "robots": [
+  "index, follow"
+ ],
+ "canonical": [
+  "https://www.automecanik.com/constructeurs/renault-140/clio-iii-140004/1-5-dci-19052.html"
+ ],
+ "description": [
+  "Catalogue pièces détachées pour RENAULT CLIO III 1.5 dCi 86 ch de 2005 à 2012 neuves et équipements"
+ ],
+ "jsonld_types": [
+  "Car",
+  "Brand",
+  "Organization",
+  "EngineSpecification",
+  "QuantitativeValue",
+  "PropertyValue",
+  "BreadcrumbList",
+  "ListItem",
+  "ListItem",
+  "ListItem"
+ ],
+ "sections": [
+  "S_BREADCRUMB",
+  "S_HERO",
+  "S_IDENTITY",
+  "S_SAFE_TABLE",
+  "S_SEO_INTRO",
+  "S_FAST_ACCESS",
+  "S_CATALOG",
+  "S_ANTI_ERRORS",
+  "S_PLACEHOLDER_TOP_PARTS",
+  "S_PLACEHOLDER_MAINTENANCE",
+  "S_PLACEHOLDER_VARIANTS",
+  "S_PLACEHOLDER_LINKS",
+  "S_PLACEHOLDER_FAQ",
+  "S_TRUST"
+ ],
+ "titres": [
+  [
+   "h1",
+   "S_HERO",
+   "RENAULT CLIO III 1.5 dCi 86 ch de 2005 à 2012"
+  ],
+  [
+   "h2",
+   "S_SAFE_TABLE",
+   "Fiche technique"
+  ],
+  [
+   "h2",
+   "S_FAST_ACCESS",
+   "Acces rapide"
+  ],
+  [
+   "h2",
+   "S_CATALOG",
+   "Catalogue de pieces auto"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Système de filtration"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Système de freinage"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Courroie, galet, poulie et chaîne"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Préchauffage et allumage"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Direction et liaison au sol"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Amortisseur et suspension"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Support moteur"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Embrayage"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Transmission"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Système électrique"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Capteurs"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Système d'alimentation"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Moteur"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Refroidissement"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Climatisation"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Echappement"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Eclairage"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Accessoires"
+  ],
+  [
+   "h3",
+   "S_CATALOG",
+   "Turbo"
+  ],
+  [
+   "h2",
+   "S_ANTI_ERRORS",
+   "Erreurs fréquentes à éviter"
+  ],
+  [
+   "h3",
+   "S_TRUST",
+   "Garantie 1 an"
+  ],
+  [
+   "h3",
+   "S_TRUST",
+   "Livraison 24-48h"
+  ],
+  [
+   "h3",
+   "S_TRUST",
+   "Conseil expert"
+  ],
+  [
+   "h3",
+   "S_TRUST",
+   "Retour 30 jours"
+  ],
+  [
+   "h4",
+   "S_TRUST",
+   "Navigation"
+  ],
+  [
+   "h4",
+   "S_TRUST",
+   "Informations véhicule"
+  ],
+  [
+   "h4",
+   "S_TRUST",
+   "Assistance"
+  ],
+  [
+   "h3",
+   "S_TRUST",
+   "À propos"
+  ],
+  [
+   "h3",
+   "S_TRUST",
+   "Liens utiles"
+  ],
+  [
+   "h3",
+   "S_TRUST",
+   "Informations légales"
+  ],
+  [
+   "h3",
+   "S_TRUST",
+   "Contact"
+  ]
+ ],
+ "mots_par_section": {
+  "null": 85,
+  "S_BREADCRUMB": 8,
+  "S_HERO": 25,
+  "S_SAFE_TABLE": 69,
+  "S_SEO_INTRO": 61,
+  "S_FAST_ACCESS": 24,
+  "S_CATALOG": 338,
+  "S_ANTI_ERRORS": 67,
+  "S_PLACEHOLDER_TOP_PARTS": 22,
+  "S_PLACEHOLDER_MAINTENANCE": 17,
+  "S_PLACEHOLDER_VARIANTS": 18,
+  "S_PLACEHOLDER_LINKS": 27,
+  "S_PLACEHOLDER_FAQ": 16,
+  "S_TRUST": 182
+ },
+ "mots_total": 959,
+ "liens_par_role": {
+  "autre": 50,
+  "R5": 5,
+  "R7": 3,
+  "ancre": 6,
+  "R2": 73,
+  "externe": 2
+ },
+ "liens_par_section_role": {
+  "None|autre": 15,
+  "None|R5": 2,
+  "S_BREADCRUMB|autre": 1,
+  "S_BREADCRUMB|R7": 1,
+  "S_FAST_ACCESS|ancre": 6,
+  "S_CATALOG|R2": 73,
+  "S_TRUST|R7": 2,
+  "S_TRUST|autre": 34,
+  "S_TRUST|R5": 3,
+  "S_TRUST|externe": 2
+ },
+ "R2_uniques": [
+  "/pieces/alternateur-4/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/amortisseur-854/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/ampoule-feu-avant-107/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/attelage-39/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/bague-d-etancheite-cardan-624/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/balais-d-essuie-glace-298/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/barre-de-direction-285/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/barre-stabilisatrice-274/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/bougie-de-prechauffage-243/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/bouteille-deshydratante-851/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/bras-de-suspension-273/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/butee-d-embrayage-48/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/butee-elastique-d-amortisseur-1182/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/capteur-niveau-d-huile-moteur-1289/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/capteur-pression-de-carburant-817/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/cardan-13/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/catalyseur-429/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/commande-d-eclairage-809/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/commande-de-ventilation-1385/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/compresseur-de-climatisation-447/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/condenseur-de-climatisation-448/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/contacteur-de-feu-de-recul-807/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/corps-papillon-158/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/courroie-d-accessoire-10/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/courroie-de-distribution-306/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/cylindre-de-roue-277/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/demarreur-2/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/detendeur-de-climatisation-183/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/disque-de-frein-82/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/durite-de-refroidissement-475/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/emetteur-d-embrayage-234/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/etrier-de-frein-78/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/feu-avant-259/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/filtre-a-air-8/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/filtre-a-carburant-9/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/filtre-d-habitacle-424/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/galet-enrouleur-de-courroie-d-accessoire-312/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/galet-tendeur-de-courroie-d-accessoire-310/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/intercooler-468/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/joint-d-echappement-138/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/joint-de-cache-culbuteurs-321/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/joint-de-collecteur-40/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/joint-de-culasse-318/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/joint-de-turbo-141/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/kit-d-embrayage-479/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/kit-de-distribution-307/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/machoires-de-frein-70/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/moteur-d-essuie-glace-295/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/neiman-1367/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/phares-antibrouillard-289/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/plaquette-de-frein-402/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/pompe-a-carburant-458/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/pompe-a-eau-1260/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/pressostat-d-huile-805/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/radiateur-de-refroidissement-470/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/recepteur-d-embrayage-620/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/ressort-de-suspension-188/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/retroviseur-exterieur-50/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/roulement-de-roue-655/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/sonde-de-refroidissement-830/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/soufflet-de-cardan-193/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/soufflet-de-direction-191/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/soupape-d-admission-1269/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/soupape-d-echappement-1270/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/support-de-boite-vitesse-249/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/support-moteur-247/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/thermostat-316/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/transmetteur-de-pression-170/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/tringlerie-d-essuie-glace-300/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/vanne-egr-1145/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "/pieces/volant-moteur-577/renault-140/clio-iii-140004/1-5-dci-19052.html"
+ ],
+ "liens": [
+  {
+   "href": "/",
+   "sec": null,
+   "role": "autre",
+   "txt": "AUTOMECANIK"
+  },
+  {
+   "href": "/",
+   "sec": null,
+   "role": "autre",
+   "txt": "AUTOMECANIK"
+  },
+  {
+   "href": "/#catalogue",
+   "sec": null,
+   "role": "autre",
+   "txt": "Catalogue pièces auto"
+  },
+  {
+   "href": "/#marques",
+   "sec": null,
+   "role": "autre",
+   "txt": "Marques & Constructeurs"
+  },
+  {
+   "href": "/blog-pieces-auto",
+   "sec": null,
+   "role": "autre",
+   "txt": "Blog"
+  },
+  {
+   "href": "/diagnostic-auto",
+   "sec": null,
+   "role": "R5",
+   "txt": "DiagnosticGRATUIT"
+  },
+  {
+   "href": "/login",
+   "sec": null,
+   "role": "autre",
+   "txt": "Compte"
+  },
+  {
+   "href": "/register",
+   "sec": null,
+   "role": "autre",
+   "txt": "Inscription"
+  },
+  {
+   "href": "/#catalogue",
+   "sec": null,
+   "role": "autre",
+   "txt": "Catalogue pièces auto"
+  },
+  {
+   "href": "/#marques",
+   "sec": null,
+   "role": "autre",
+   "txt": "Marques & Constructeurs"
+  },
+  {
+   "href": "/blog-pieces-auto",
+   "sec": null,
+   "role": "autre",
+   "txt": "Blog"
+  },
+  {
+   "href": "/diagnostic-auto",
+   "sec": null,
+   "role": "R5",
+   "txt": "DiagnosticGRATUIT"
+  },
+  {
+   "href": "/login",
+   "sec": null,
+   "role": "autre",
+   "txt": "Connexion"
+  },
+  {
+   "href": "/register",
+   "sec": null,
+   "role": "autre",
+   "txt": "Inscription"
+  },
+  {
+   "href": "tel:+33148479627",
+   "sec": null,
+   "role": "autre",
+   "txt": "01 48 47 96 27"
+  },
+  {
+   "href": "/",
+   "sec": null,
+   "role": "autre",
+   "txt": "🛍️ Continuer mes achats"
+  },
+  {
+   "href": "tel:+33148479627",
+   "sec": null,
+   "role": "autre",
+   "txt": "01 48 47 96 27"
+  },
+  {
+   "href": "/",
+   "sec": "S_BREADCRUMB",
+   "role": "autre",
+   "txt": "Accueil"
+  },
+  {
+   "href": "/constructeurs/renault-140.html",
+   "sec": "S_BREADCRUMB",
+   "role": "R7",
+   "txt": "RENAULT"
+  },
+  {
+   "href": "#catalogue",
+   "sec": "S_FAST_ACCESS",
+   "role": "ancre",
+   "txt": "Système de filtration"
+  },
+  {
+   "href": "#catalogue",
+   "sec": "S_FAST_ACCESS",
+   "role": "ancre",
+   "txt": "Système de freinage"
+  },
+  {
+   "href": "#catalogue",
+   "sec": "S_FAST_ACCESS",
+   "role": "ancre",
+   "txt": "Courroie, galet, poulie et chaîne"
+  },
+  {
+   "href": "#catalogue",
+   "sec": "S_FAST_ACCESS",
+   "role": "ancre",
+   "txt": "Préchauffage et allumage"
+  },
+  {
+   "href": "#catalogue",
+   "sec": "S_FAST_ACCESS",
+   "role": "ancre",
+   "txt": "Direction et liaison au sol"
+  },
+  {
+   "href": "#catalogue",
+   "sec": "S_FAST_ACCESS",
+   "role": "ancre",
+   "txt": "Amortisseur et suspension"
+  },
+  {
+   "href": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Filtre à huile"
+  },
+  {
+   "href": "/pieces/filtre-a-air-8/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Filtre à air"
+  },
+  {
+   "href": "/pieces/filtre-a-carburant-9/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Filtre à carburant"
+  },
+  {
+   "href": "/pieces/filtre-d-habitacle-424/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Filtre d'habitacle"
+  },
+  {
+   "href": "/pieces/plaquette-de-frein-402/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Plaquette de frein"
+  },
+  {
+   "href": "/pieces/disque-de-frein-82/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Disque de frein"
+  },
+  {
+   "href": "/pieces/etrier-de-frein-78/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Étrier de frein"
+  },
+  {
+   "href": "/pieces/machoires-de-frein-70/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Mâchoires de frein"
+  },
+  {
+   "href": "/pieces/cylindre-de-roue-277/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Cylindre de roue"
+  },
+  {
+   "href": "/pieces/courroie-d-accessoire-10/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Courroie d'accessoire"
+  },
+  {
+   "href": "/pieces/galet-tendeur-de-courroie-d-accessoire-310/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Galet tendeur de courroie d'accessoire"
+  },
+  {
+   "href": "/pieces/galet-enrouleur-de-courroie-d-accessoire-312/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Galet enrouleur de courroie d'accessoire"
+  },
+  {
+   "href": "/pieces/kit-de-distribution-307/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Kit de distribution"
+  },
+  {
+   "href": "/pieces/courroie-de-distribution-306/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Courroie de distribution"
+  },
+  {
+   "href": "/pieces/bougie-de-prechauffage-243/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Bougie de préchauffage"
+  },
+  {
+   "href": "/pieces/barre-de-direction-285/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Barre de direction"
+  },
+  {
+   "href": "/pieces/bras-de-suspension-273/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Bras de suspension"
+  },
+  {
+   "href": "/pieces/barre-stabilisatrice-274/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Barre stabilisatrice"
+  },
+  {
+   "href": "/pieces/soufflet-de-direction-191/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Soufflet de direction"
+  },
+  {
+   "href": "/pieces/roulement-de-roue-655/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Roulement de roue"
+  },
+  {
+   "href": "/pieces/amortisseur-854/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Amortisseur"
+  },
+  {
+   "href": "/pieces/butee-elastique-d-amortisseur-1182/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Butée élastique d'amortisseur"
+  },
+  {
+   "href": "/pieces/ressort-de-suspension-188/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Ressort de suspension"
+  },
+  {
+   "href": "/pieces/support-moteur-247/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Support moteur"
+  },
+  {
+   "href": "/pieces/support-de-boite-vitesse-249/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Support de boîte vitesse"
+  },
+  {
+   "href": "/pieces/kit-d-embrayage-479/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Kit d'embrayage"
+  },
+  {
+   "href": "/pieces/butee-d-embrayage-48/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Butée d'embrayage"
+  },
+  {
+   "href": "/pieces/emetteur-d-embrayage-234/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Emetteur d'embrayage"
+  },
+  {
+   "href": "/pieces/recepteur-d-embrayage-620/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Récepteur d'embrayage"
+  },
+  {
+   "href": "/pieces/volant-moteur-577/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Volant moteur"
+  },
+  {
+   "href": "/pieces/cardan-13/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Cardan"
+  },
+  {
+   "href": "/pieces/soufflet-de-cardan-193/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Soufflet de Cardan"
+  },
+  {
+   "href": "/pieces/bague-d-etancheite-cardan-624/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Bague d'étanchéité cardan"
+  },
+  {
+   "href": "/pieces/alternateur-4/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Alternateur"
+  },
+  {
+   "href": "/pieces/demarreur-2/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Démarreur"
+  },
+  {
+   "href": "/pieces/neiman-1367/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Neiman"
+  },
+  {
+   "href": "/pieces/pressostat-d-huile-805/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Pressostat d'huile"
+  },
+  {
+   "href": "/pieces/capteur-niveau-d-huile-moteur-1289/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Capteur niveau d'huile moteur"
+  },
+  {
+   "href": "/pieces/capteur-pression-de-carburant-817/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Capteur pression de carburant"
+  },
+  {
+   "href": "/pieces/sonde-de-refroidissement-830/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Sonde de refroidissement"
+  },
+  {
+   "href": "/pieces/transmetteur-de-pression-170/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Transmetteur de pression"
+  },
+  {
+   "href": "/pieces/vanne-egr-1145/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Vanne EGR"
+  },
+  {
+   "href": "/pieces/pompe-a-carburant-458/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Pompe à carburant"
+  },
+  {
+   "href": "/pieces/corps-papillon-158/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Boîtier papillon"
+  },
+  {
+   "href": "/pieces/joint-de-culasse-318/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Joint de culasse"
+  },
+  {
+   "href": "/pieces/joint-de-cache-culbuteurs-321/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Joint de cache culbuteurs"
+  },
+  {
+   "href": "/pieces/joint-de-collecteur-40/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Joint de collecteur"
+  },
+  {
+   "href": "/pieces/soupape-d-admission-1269/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Soupape d'admission"
+  },
+  {
+   "href": "/pieces/soupape-d-echappement-1270/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Soupape d'échappement"
+  },
+  {
+   "href": "/pieces/pompe-a-eau-1260/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Pompe à eau"
+  },
+  {
+   "href": "/pieces/radiateur-de-refroidissement-470/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Radiateur de refroidissement"
+  },
+  {
+   "href": "/pieces/thermostat-316/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Thermostat"
+  },
+  {
+   "href": "/pieces/sonde-de-refroidissement-830/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Sonde de refroidissement"
+  },
+  {
+   "href": "/pieces/durite-de-refroidissement-475/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Durite de refroidissement"
+  },
+  {
+   "href": "/pieces/compresseur-de-climatisation-447/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Compresseur de climatisation"
+  },
+  {
+   "href": "/pieces/condenseur-de-climatisation-448/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Condenseur de climatisation"
+  },
+  {
+   "href": "/pieces/detendeur-de-climatisation-183/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Détendeur de climatisation"
+  },
+  {
+   "href": "/pieces/commande-de-ventilation-1385/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Commande de ventilation"
+  },
+  {
+   "href": "/pieces/bouteille-deshydratante-851/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Bouteille déshydratante"
+  },
+  {
+   "href": "/pieces/catalyseur-429/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Catalyseur"
+  },
+  {
+   "href": "/pieces/joint-d-echappement-138/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Joint d'échappement"
+  },
+  {
+   "href": "/pieces/feu-avant-259/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Feu avant"
+  },
+  {
+   "href": "/pieces/phares-antibrouillard-289/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Phares antibrouillard"
+  },
+  {
+   "href": "/pieces/contacteur-de-feu-de-recul-807/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Contacteur feu de recul"
+  },
+  {
+   "href": "/pieces/commande-d-eclairage-809/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Commande d'éclairage"
+  },
+  {
+   "href": "/pieces/ampoule-feu-avant-107/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Ampoule feu avant"
+  },
+  {
+   "href": "/pieces/balais-d-essuie-glace-298/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Balais d'essuie-glace"
+  },
+  {
+   "href": "/pieces/retroviseur-exterieur-50/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Rétroviseur extérieur"
+  },
+  {
+   "href": "/pieces/attelage-39/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Attelage"
+  },
+  {
+   "href": "/pieces/moteur-d-essuie-glace-295/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Moteur d'essuie-glace"
+  },
+  {
+   "href": "/pieces/tringlerie-d-essuie-glace-300/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Tringlerie d'essuie-glace"
+  },
+  {
+   "href": "/pieces/intercooler-468/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Intercooler"
+  },
+  {
+   "href": "/pieces/joint-de-turbo-141/renault-140/clio-iii-140004/1-5-dci-19052.html",
+   "sec": "S_CATALOG",
+   "role": "R2",
+   "txt": "Joint de turbo"
+  },
+  {
+   "href": "/constructeurs/renault-140.html",
+   "sec": "S_TRUST",
+   "role": "R7",
+   "txt": "Voir toutes les pièces RENAULT→"
+  },
+  {
+   "href": "/",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Accueil"
+  },
+  {
+   "href": "/constructeurs/renault-140.html",
+   "sec": "S_TRUST",
+   "role": "R7",
+   "txt": "Modèles RENAULT"
+  },
+  {
+   "href": "/contact",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Contact"
+  },
+  {
+   "href": "/aide",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Aide"
+  },
+  {
+   "href": "/",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Accueil"
+  },
+  {
+   "href": "/#catalogue",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Catalogue"
+  },
+  {
+   "href": "/diagnostic-auto",
+   "sec": "S_TRUST",
+   "role": "R5",
+   "txt": "Diagnostic"
+  },
+  {
+   "href": "/account/dashboard",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Compte"
+  },
+  {
+   "href": "https://www.facebook.com/Automecanik63",
+   "sec": "S_TRUST",
+   "role": "externe",
+   "txt": ""
+  },
+  {
+   "href": "https://www.instagram.com/automecanik.co",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": ""
+  },
+  {
+   "href": "https://www.youtube.com/@automecanik8508",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": ""
+  },
+  {
+   "href": "/#catalogue",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Catalogue pièces"
+  },
+  {
+   "href": "/#marques",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Constructeurs"
+  },
+  {
+   "href": "/diagnostic-auto",
+   "sec": "S_TRUST",
+   "role": "R5",
+   "txt": "Diagnostic auto"
+  },
+  {
+   "href": "/blog-pieces-auto",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Blog & Conseils"
+  },
+  {
+   "href": "/contact",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Contact"
+  },
+  {
+   "href": "/plan-du-site",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Plan du site"
+  },
+  {
+   "href": "/legal/cgv",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "CGV"
+  },
+  {
+   "href": "/legal/privacy",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Politique de confidentialité"
+  },
+  {
+   "href": "/legal/cookies",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Gestion des cookies"
+  },
+  {
+   "href": "/legal/legal-notice",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Mentions légales"
+  },
+  {
+   "href": "tel:+33148479627",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "01 48 47 96 27"
+  },
+  {
+   "href": "mailto:contact@automecanik.com",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "contact@automecanik.com"
+  },
+  {
+   "href": "/legal/cgv",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "CGV"
+  },
+  {
+   "href": "/legal/privacy",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Confidentialité"
+  },
+  {
+   "href": "https://www.facebook.com/Automecanik63",
+   "sec": "S_TRUST",
+   "role": "externe",
+   "txt": ""
+  },
+  {
+   "href": "https://www.instagram.com/automecanik.co",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": ""
+  },
+  {
+   "href": "https://www.youtube.com/@automecanik8508",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": ""
+  },
+  {
+   "href": "/#catalogue",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Catalogue pièces"
+  },
+  {
+   "href": "/#marques",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Constructeurs"
+  },
+  {
+   "href": "/diagnostic-auto",
+   "sec": "S_TRUST",
+   "role": "R5",
+   "txt": "Diagnostic auto"
+  },
+  {
+   "href": "/blog-pieces-auto",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Blog & Conseils"
+  },
+  {
+   "href": "/contact",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Contact"
+  },
+  {
+   "href": "/plan-du-site",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Plan du site"
+  },
+  {
+   "href": "/legal/cgv",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "CGV"
+  },
+  {
+   "href": "/legal/privacy",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Politique de confidentialité"
+  },
+  {
+   "href": "/legal/cookies",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Gestion des cookies"
+  },
+  {
+   "href": "/legal/legal-notice",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "Mentions légales"
+  },
+  {
+   "href": "tel:+33148479627",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "01 48 47 96 27"
+  },
+  {
+   "href": "mailto:contact@automecanik.com",
+   "sec": "S_TRUST",
+   "role": "autre",
+   "txt": "contact@automecanik.com"
+  }
+ ],
+ "emplacements": 5,
+ "termes_interdits": {
+  "démontage": 0,
+  "remontage": 0,
+  "étapes de remplacement": 0,
+  "couple de serrage": 0,
+  "définition": 0,
+  "qu'est-ce que": 0,
+  "composé de": 0,
+  "glossaire": 0,
+  "prix": 2,
+  "panier": 9,
+  "en stock": 0,
+  "livraison": 6
+ }
+}

@@ -1,0 +1,6 @@
+pages avec cartes 57, sans cartes 66, erreurs []
+cartes 891 ; cas {'des': 185, 'plage': 703, 'annee': 3} ; types des champs {'str': 1597, 'NoneType': 185}
+lignes « Fabrication » partagées par 2+ cartes d'une même page : 147 cartes sur 37 pages ; parmi les 12 visibles : 59
+des [('2', '33395', 'CITROËN', 'C3 II', '1.4 HDi', 'dès 2009'), ('2', '23464', 'RENAULT', 'KANGOO II', '1.5 dCi', 'dès 2008'), ('2', '10271', 'LANCIA', 'YPSILON II', '1.3 D Multijet', 'dès 2011'), ('2', '11253', 'TOYOTA', 'YARIS III (P13)', '1.4 D', 'dès 2011'), ('2', '23177', 'FIAT', '500', '1.3 D Multijet', 'dès 2007'), ('4', '58791', 'HONDA', 'CIVIC IX', '1.6 DTEC', 'dès 2013')]
+annee [('402', '58963', 'BMW', 'Série 1 (E81)', '116 d', '2011'), ('412', '58964', 'BMW', 'Série 1 (E87)', '116 d', '2011'), ('415', '58964', 'BMW', 'Série 1 (E87)', '116 d', '2011')]
+type_id distincts en 'dès' : 86

@@ -1,0 +1,46 @@
+ total_kw 
+----------
+    13978
+(1 row)
+
+ pg_id |               nom               | vol_tot | nb |              top_kw               | sur_19052 | lien_apres 
+-------+---------------------------------+---------+----+-----------------------------------+-----------+------------
+   424 | Filtre d'habitacle              |   15650 | 16 | filtre habitacle clio 3           |         1 | t
+     9 | Filtre à carburant              |   12600 | 18 | clio 3 filtre a gasoil            |         1 | t
+     7 | Filtre à huile                  |    3950 | 28 | filtre huile clio 3               |         0 | t
+    82 | Disque de frein                 |    2950 | 39 | disque et plaquette clio 3        |        20 | t
+   402 | Plaquette de frein              |    2700 | 34 | plaquettes clio 3                 |         9 | t
+   306 | Courroie de distribution        |    2400 | 12 | prix courroie distribution clio 3 |         0 | t
+     8 | Filtre à air                    |    2000 | 13 | filtre air clio 3                 |         1 | t
+   123 | Tambour de frein                |    1300 |  8 | tambour clio 3                    |         0 | f
+   307 | Kit de distribution             |    1250 | 16 | kit distribution clio 3           |         0 | t
+    10 | Courroie d'accessoire           |    1200 |  6 | courroie accessoire clio 3        |         0 | t
+   806 | Interrupteur des feux de freins |    1150 |  5 | contacteur de frein clio 3        |         0 | f
+    78 | Étrier de frein                 |     400 |  8 | etrier de frein brembo clio 3 rs  |         0 | t
+  1123 | Chaîne de distribution          |     150 |  3 | chaine distribution clio 3        |         0 | f
+  3859 | Kit de freins arrière           |     100 |  2 | kit frein arriere clio 3          |         0 | f
+   124 | Câble de frein à main           |     100 |  2 | cable frein a main clio 3         |         1 | f
+   258 | Maître cylindre de frein        |      50 |  1 | maitre cylindre clio 3            |         0 | f
+    83 | Flexible de frein               |      50 |  1 | flexible de frein clio 3          |         0 | f
+    70 | Mâchoires de frein              |      50 |  1 | machoire de frein clio 3          |         0 | t
+(18 rows)
+
+                 keyword                 | volume | pg_id | type_id | energy 
+-----------------------------------------+--------+-------+---------+--------
+ courroie de distribution clio 3 1.5 dci |    500 |   306 |         | 
+ filtre à gasoil clio 3 1.5 dci          |    500 |     9 |         | 
+ filtre huile clio 3 1.5 dci             |    500 |     7 |         | 
+ filtre gasoil clio 3 1.5 dci            |    500 |     9 |         | 
+ filtre à huile clio 3 1.5 dci           |    500 |     7 |         | 
+ filtre a air clio 3 1.5 dci             |     50 |     8 |         | 
+ filtre a air clio 3 diesel              |     50 |     8 |         | 
+ prix filtre a gasoil clio 3 1.5 dci     |     50 |     9 |         | 
+ courroie accessoire clio 3 1.5 dci      |     50 |    10 |         | 
+ filtre a huile purflux clio 3 1.5 dci   |     50 |     7 |         | 
+ filtre a gasoil clio 3 1.5 dci 85       |     50 |     9 |         | 
+ filtre a gasoil clio 3 dci              |     50 |     9 |         | 
+ filtre à huile clio 3 dci               |     50 |     7 |   19051 | diesel
+ filtre a carburant clio 3 1.5 dci       |     50 |     9 |         | 
+ filtre habitacle clio 3 dci             |     50 |   424 |         | 
+(15 rows)
+

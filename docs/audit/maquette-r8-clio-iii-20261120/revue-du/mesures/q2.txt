@@ -1,0 +1,15 @@
+ pg_id |          nom          | vol_tot | nb_req |           top_kw           | top_vol | lien_avant | lien_apres 
+-------+-----------------------+---------+--------+----------------------------+---------+------------+------------
+   424 | Filtre d'habitacle    |    5000 |      1 | filtre habitacle clio iii  |    5000 | t          | t
+    82 | Disque de frein       |    2800 |     20 | disque et plaquette clio 3 |     500 | t          | t
+   402 | Plaquette de frein    |    1750 |      9 | disque et plaquette clio 3 |     500 | t          | t
+     8 | Filtre à air          |      50 |      1 | filtre à air clio iii      |      50 | t          | t
+     9 | Filtre à carburant    |      50 |      1 | filtre à gasoil clio iii   |      50 | t          | t
+   124 | Câble de frein à main |      50 |      1 | cable frein a main clio 3  |      50 | t          | f
+(6 rows)
+
+ req_19052 | gammes | vol  
+-----------+--------+------
+        33 |      6 | 9700
+(1 row)
+

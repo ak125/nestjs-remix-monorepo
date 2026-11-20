@@ -1,0 +1,101 @@
+{
+ "url": "http://127.0.0.1:3000/pieces/filtre-a-huile-7.html",
+ "words": 1883,
+ "total": {
+  "R1kw": {
+   "quand": 1,
+   "pourquoi": 1,
+   "causes": 1
+  },
+  "R2": {
+   "€": 7,
+   "prix": 8,
+   "commander": 3,
+   "en stock": 1
+  },
+  "R5": {
+   "diagnostic": 4,
+   "usure prématurée": 1
+  },
+  "R4": {
+   "ne pas confondre avec": 2
+  },
+  "R3": {},
+  "lex": {
+   "livraison": 9,
+   "en stock": 1
+  }
+ },
+ "gateA": [],
+ "bySec": {
+  "bien-choisir": {
+   "R2": {
+    "commander": 1
+   },
+   "R4": {
+    "ne pas confondre avec": 1
+   }
+  },
+  "qualite-prix": {
+   "R2": {
+    "€": 7,
+    "prix": 5
+   }
+  },
+  "emplacement": {
+   "R1kw": {
+    "quand": 1
+   },
+   "R5": {
+    "usure prématurée": 1
+   }
+  },
+  "reference": {
+   "R1kw": {
+    "pourquoi": 1
+   },
+   "R2": {
+    "prix": 1,
+    "commander": 2,
+    "en stock": 1
+   },
+   "lex": {
+    "livraison": 2,
+    "en stock": 1
+   }
+  },
+  "aller-plus-loin": {
+   "R2": {
+    "prix": 1
+   },
+   "lex": {
+    "livraison": 4
+   },
+   "R4": {
+    "ne pas confondre avec": 1
+   }
+  }
+ },
+ "linksByRole": {
+  "ancre": 5,
+  "autre:/": 1,
+  "autre:/pieces": 1,
+  "R6": 3,
+  "R3": 3,
+  "R4": 2,
+  "R5": 3,
+  "R1": 13,
+  "R2": 12,
+  "autre:https://www.facebook.com/Automecanik63": 2,
+  "autre:https://www.instagram.com/automecanik.co": 2,
+  "autre:https://www.youtube.com/@automecanik8508": 2,
+  "autre:/blog-pieces-auto": 2,
+  "autre:/contact": 2,
+  "autre:/plan-du-site": 2,
+  "autre:/legal/cgv": 3,
+  "autre:/legal/privacy": 3,
+  "autre:/legal/cookies": 2,
+  "autre:/legal/legal-notice": 2,
+  "contact": 4
+ }
+}

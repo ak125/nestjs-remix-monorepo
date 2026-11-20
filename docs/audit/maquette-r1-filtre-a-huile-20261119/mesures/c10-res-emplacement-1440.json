@@ -1,0 +1,290 @@
+{
+  "base": "http://127.0.0.1:3029",
+  "lien": "#emplacement .gamme-editorial a[href=\"/pieces/amortisseur-854.html\"]",
+  "page": "/pieces/ressort-de-suspension-188.html",
+  "selecteur": "#emplacement .gamme-editorial a[href=\"/pieces/amortisseur-854.html\"]",
+  "viewport": "1440x900",
+  "at": "2026-11-20T10:02:34.054Z",
+  "navigateur": "153.0.8010.47",
+  "avantVisite": {
+    "cible": {
+      "boites": [
+        {
+          "x": 457,
+          "y": 441,
+          "w": 77,
+          "h": 18
+        }
+      ],
+      "display": "inline",
+      "parent": "p",
+      "hauteurLigneParagraphe": "22.75px",
+      "taillePolice": "14px",
+      "texteAvant": "e suivre le profil du sol sans transmettre les chocs à l'habitacle. Associé à l'",
+      "texteApres": ", il forme le tandem fondamental de la s",
+      "autresLiensDuParagraphe": []
+    },
+    "repos": {
+      "etat": "repos",
+      "calcule": {
+        "couleur": "#155dfc",
+        "soulignement": "underline",
+        "couleurSoulignement": "#155dfc",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "none 3px #155dfc décalage 0px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": false,
+        "matchHover": false
+      },
+      "premiereLigne": {
+        "x": 457,
+        "y": 441,
+        "w": 77,
+        "h": 18
+      },
+      "fondDominant": "#ffffff",
+      "pixelLePlusContraste": "#155dfc",
+      "ratioAuPixel": 5.24,
+      "soulignementAuPixel": [
+        {
+          "rangee": 16,
+          "couverture": 1,
+          "couleur": "#155dfc"
+        }
+      ],
+      "couleurReelle": {
+        "texte": "#155dfc",
+        "pixelsPleins": 3349,
+        "fondPlein": "#ffffff",
+        "ratioContreFond": 5.24,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.44
+      }
+    },
+    "survol": {
+      "etat": "survol",
+      "calcule": {
+        "couleur": "#193cb8",
+        "soulignement": "underline",
+        "couleurSoulignement": "#193cb8",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "none 3px #193cb8 décalage 0px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": false,
+        "matchHover": true
+      },
+      "premiereLigne": {
+        "x": 457,
+        "y": 441,
+        "w": 77,
+        "h": 18
+      },
+      "fondDominant": "#ffffff",
+      "pixelLePlusContraste": "#193cb8",
+      "ratioAuPixel": 8.82,
+      "soulignementAuPixel": [
+        {
+          "rangee": 16,
+          "couverture": 1,
+          "couleur": "#193cb8"
+        }
+      ],
+      "couleurReelle": {
+        "texte": "#193cb8",
+        "pixelsPleins": 3349,
+        "fondPlein": "#ffffff",
+        "ratioContreFond": 8.82,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.16
+      }
+    },
+    "focus": {
+      "actif": true,
+      "toujoursActif": true,
+      "calcule": {
+        "couleur": "#155dfc",
+        "soulignement": "underline",
+        "couleurSoulignement": "#155dfc",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "solid 2px #0f1e38 décalage 2px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": true,
+        "matchHover": false,
+        "ombre": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 2px, rgb(15, 30, 56) 0px 0px 0px 4px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+      },
+      "pixelsAnneau": 434,
+      "couleurAnneau": "#0f1e38",
+      "fond": "#ffffff",
+      "ratioAnneauContreFond": 16.62,
+      "couleurReelle": {
+        "texte": "#155dfc",
+        "pixelsPleins": 3349,
+        "fondPlein": "#ffffff",
+        "ratioContreFond": 5.24,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.44
+      }
+    },
+    "temoin": "#020817"
+  },
+  "visite": {
+    "url": "/pieces/amortisseur-854.html"
+  },
+  "apresVisite": {
+    "cible": {
+      "boites": [
+        {
+          "x": 457,
+          "y": 441,
+          "w": 77,
+          "h": 18
+        }
+      ],
+      "display": "inline",
+      "parent": "p",
+      "hauteurLigneParagraphe": "22.75px",
+      "taillePolice": "14px",
+      "texteAvant": "e suivre le profil du sol sans transmettre les chocs à l'habitacle. Associé à l'",
+      "texteApres": ", il forme le tandem fondamental de la s",
+      "autresLiensDuParagraphe": []
+    },
+    "repos": {
+      "etat": "repos",
+      "calcule": {
+        "couleur": "#155dfc",
+        "soulignement": "underline",
+        "couleurSoulignement": "#155dfc",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "none 3px #155dfc décalage 0px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": false,
+        "matchHover": false
+      },
+      "premiereLigne": {
+        "x": 457,
+        "y": 441,
+        "w": 77,
+        "h": 18
+      },
+      "fondDominant": "#ffffff",
+      "pixelLePlusContraste": "#9810fa",
+      "ratioAuPixel": 5.54,
+      "soulignementAuPixel": [
+        {
+          "rangee": 16,
+          "couverture": 1,
+          "couleur": "#9810fa"
+        }
+      ],
+      "couleurReelle": {
+        "texte": "#9810fa",
+        "pixelsPleins": 3349,
+        "fondPlein": "#ffffff",
+        "ratioContreFond": 5.54,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.36
+      }
+    },
+    "survol": {
+      "etat": "survol",
+      "calcule": {
+        "couleur": "#193cb8",
+        "soulignement": "underline",
+        "couleurSoulignement": "#193cb8",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "none 3px #193cb8 décalage 0px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": false,
+        "matchHover": true
+      },
+      "premiereLigne": {
+        "x": 457,
+        "y": 441,
+        "w": 77,
+        "h": 18
+      },
+      "fondDominant": "#ffffff",
+      "pixelLePlusContraste": "#9810fa",
+      "ratioAuPixel": 5.54,
+      "soulignementAuPixel": [
+        {
+          "rangee": 16,
+          "couverture": 1,
+          "couleur": "#9810fa"
+        }
+      ],
+      "couleurReelle": {
+        "texte": "#9810fa",
+        "pixelsPleins": 3349,
+        "fondPlein": "#ffffff",
+        "ratioContreFond": 5.54,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.36
+      }
+    },
+    "focus": {
+      "actif": true,
+      "toujoursActif": true,
+      "calcule": {
+        "couleur": "#155dfc",
+        "soulignement": "underline",
+        "couleurSoulignement": "#155dfc",
+        "epaisseur": "auto",
+        "decalage": "2px",
+        "contour": "solid 2px #0f1e38 décalage 2px",
+        "classes": null,
+        "parent": "p",
+        "couleurTexteVoisin": "#45556c",
+        "taille": "14px",
+        "graisse": "400",
+        "hauteurLigneParagraphe": "22.75px",
+        "matchFocusVisible": true,
+        "matchHover": false,
+        "ombre": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(255, 255, 255) 0px 0px 0px 2px, rgb(15, 30, 56) 0px 0px 0px 4px, rgba(0, 0, 0, 0) 0px 0px 0px 0px"
+      },
+      "pixelsAnneau": 434,
+      "couleurAnneau": "#0f1e38",
+      "fond": "#ffffff",
+      "ratioAnneauContreFond": 16.62,
+      "couleurReelle": {
+        "texte": "#9810fa",
+        "pixelsPleins": 3349,
+        "fondPlein": "#ffffff",
+        "ratioContreFond": 5.54,
+        "texteVoisin": "#45556c",
+        "ratioContreTexteVoisin": 1.36
+      }
+    },
+    "temoin": "#9810fa"
+  }
+}

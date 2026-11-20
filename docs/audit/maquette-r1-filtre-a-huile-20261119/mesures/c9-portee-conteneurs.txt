@@ -1,0 +1,11 @@
+('bien-choisir', False, 'sans classe') 28 liens, 21 pages
+('bien-choisir', False, 'seo-internal-link') 2 liens, 1 pages
+('emplacement', False, 'sans classe') 44 liens, 21 pages
+('emplacement', False, 'seo-internal-link') 3 liens, 3 pages
+('qualite-prix', False, 'sans classe') 81 liens, 56 pages
+('qualite-prix', False, 'seo-internal-link') 53 liens, 31 pages
+('reference', True, 'sans classe') 41 liens, 30 pages
+('reference', True, 'seo-internal-link') 38 liens, 21 pages
+pages 123 erreurs 0
+non soulignés au repos (hors seo-internal-link) : 153 liens sur 72 pages
+exit 0

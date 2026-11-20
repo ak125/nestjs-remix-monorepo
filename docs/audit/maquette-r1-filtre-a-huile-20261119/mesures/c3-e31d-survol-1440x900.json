@@ -1,0 +1,281 @@
+{
+  "url": "http://127.0.0.1:3027/pieces/filtre-a-huile-7.html",
+  "at": "2026-11-19T20:18:37.858Z",
+  "viewport": "1440x900",
+  "res": {
+    "no-preference": {
+      "nav-rapide (bouton)": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.15s",
+          "transitionProperty": "all"
+        },
+        "after": {
+          "translate": "0px -2px",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.15s",
+          "transitionProperty": "all"
+        },
+        "moved": true
+      },
+      "carte (lien)": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "all"
+        },
+        "after": {
+          "translate": "0px -4px",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "all"
+        },
+        "moved": true
+      },
+      "carte > image": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "all"
+        },
+        "after": {
+          "translate": "none",
+          "scale": "1.1",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "all"
+        },
+        "moved": true
+      },
+      "carte > Voir les pièces": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "all"
+        },
+        "after": {
+          "translate": "none",
+          "scale": "1.05",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "all"
+        },
+        "moved": true
+      },
+      "carte > chevron": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.15s",
+          "transitionProperty": "transform, translate, scale, rotate"
+        },
+        "after": {
+          "translate": "4px",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.15s",
+          "transitionProperty": "transform, translate, scale, rotate"
+        },
+        "moved": true
+      },
+      "Voir les N autres": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "all"
+        },
+        "after": {
+          "translate": "none",
+          "scale": "1.05",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "all"
+        },
+        "moved": true
+      },
+      "__ailleurs": [
+        "nav[Navigation principale] svg group-hover:translate-x-0.5",
+        "nav[Navigation principale] span group-hover:scale-x-100",
+        "nav[Navigation principale] svg group-hover:translate-x-0.5",
+        "nav[Navigation principale] span group-hover:scale-x-100",
+        "nav[Navigation principale] span group-hover:scale-x-100",
+        "nav[Navigation principale] a hover:-translate-y-0.5",
+        "nav[Navigation principale] span group-hover:translate-x-full",
+        "nav[Navigation principale] svg group-hover:scale-110",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "body button hover:-translate-y-0.5",
+        "#aller-plus-loin a hover:-translate-y-1",
+        "#aller-plus-loin img group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "#aller-plus-loin a hover:-translate-y-1",
+        "#aller-plus-loin img group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "#aller-plus-loin a hover:-translate-y-1",
+        "#aller-plus-loin img group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "#aller-plus-loin a hover:-translate-y-1",
+        "#aller-plus-loin img group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "#aller-plus-loin a hover:-translate-y-0.5",
+        "#aller-plus-loin div group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "body button hover:scale-110",
+        "body svg group-hover:scale-110"
+      ]
+    },
+    "reduce": {
+      "nav-rapide (bouton)": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.15s",
+          "transitionProperty": "none"
+        },
+        "after": {
+          "translate": "0px",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.15s",
+          "transitionProperty": "none"
+        },
+        "moved": false
+      },
+      "carte (lien)": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "none"
+        },
+        "after": {
+          "translate": "0px",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "none"
+        },
+        "moved": false
+      },
+      "carte > image": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "none"
+        },
+        "after": {
+          "translate": "none",
+          "scale": "1",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "none"
+        },
+        "moved": false
+      },
+      "carte > Voir les pièces": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "none"
+        },
+        "after": {
+          "translate": "none",
+          "scale": "1",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "none"
+        },
+        "moved": false
+      },
+      "carte > chevron": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.15s",
+          "transitionProperty": "none"
+        },
+        "after": {
+          "translate": "0px",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.15s",
+          "transitionProperty": "none"
+        },
+        "moved": false
+      },
+      "Voir les N autres": {
+        "before": {
+          "translate": "none",
+          "scale": "none",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "none"
+        },
+        "after": {
+          "translate": "none",
+          "scale": "1",
+          "transform": "none",
+          "transitionDuration": "0.3s",
+          "transitionProperty": "none"
+        },
+        "moved": false
+      },
+      "__ailleurs": [
+        "nav[Navigation principale] svg group-hover:translate-x-0.5",
+        "nav[Navigation principale] span group-hover:scale-x-100",
+        "nav[Navigation principale] svg group-hover:translate-x-0.5",
+        "nav[Navigation principale] span group-hover:scale-x-100",
+        "nav[Navigation principale] span group-hover:scale-x-100",
+        "nav[Navigation principale] a hover:-translate-y-0.5",
+        "nav[Navigation principale] span group-hover:translate-x-full",
+        "nav[Navigation principale] svg group-hover:scale-110",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "#bien-choisir button hover:-translate-y-0.5",
+        "body button hover:-translate-y-0.5",
+        "#aller-plus-loin a hover:-translate-y-1",
+        "#aller-plus-loin img group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "#aller-plus-loin a hover:-translate-y-1",
+        "#aller-plus-loin img group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "#aller-plus-loin a hover:-translate-y-1",
+        "#aller-plus-loin img group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "#aller-plus-loin a hover:-translate-y-1",
+        "#aller-plus-loin img group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "#aller-plus-loin a hover:-translate-y-0.5",
+        "#aller-plus-loin div group-hover:scale-105",
+        "#aller-plus-loin svg group-hover:translate-x-0.5",
+        "body button hover:scale-110",
+        "body svg group-hover:scale-110"
+      ]
+    }
+  }
+}

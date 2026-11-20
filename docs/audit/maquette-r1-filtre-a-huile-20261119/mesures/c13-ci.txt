@@ -1,0 +1,47 @@
+completed	cancelled	🧾 DoD self-evaluation present
+completed	failure	🚦 Circuit de fusion
+completed	failure	CodeQL
+completed	failure	🧾 DoD self-evaluation present
+completed	failure	Registry freshness (warn-only, Phase 1)
+completed	skipped	🔐 Armement de la fusion automatique (App)
+completed	skipped	auto-merge
+completed	skipped	🐳 build / 🐳 Build
+completed	skipped	🧪 Deploy PREPROD
+completed	skipped	🔍 Docker Image Scan
+completed	skipped	🎭 E2E Smoke Tests
+completed	skipped	🚦 Gate check (snapshots ≥ auto_types)
+completed	skipped	🔦 Lighthouse Performance Audit
+completed	skipped	🔔 Notify on Failure
+completed	skipped	review
+completed	skipped	🤖 Revue Claude (circuit moyen)
+completed	success	🛡️ ADR-010 Governance
+completed	success	🧪 Backend Tests
+completed	success	Block forbidden DEV/PREPROD/PROD formulations in .md
+completed	success	Block-new (owner + domain required)
+completed	success	Block new / stale orphan files (G3)
+completed	success	Calcul du circuit
+completed	success	check-cart-conversion-r-role.sh (R-role invariant)
+completed	success	check-role-purity.ts (role-vocabulary purity, source comments)
+completed	success	🔬 CodeQL Scan (javascript-typescript)
+completed	success	🛡️ Contract Gate
+completed	success	🔒 Core Build Only
+completed	success	🔍 CWV Performance Check
+completed	success	🛡️ Deterministic gates
+completed	success	🔒 DEV Safety (Blocking)
+completed	success	🔍 DEV Safety (Observe)
+completed	success	⬣ ESLint
+completed	success	🧪 Frontend Tests
+completed	success	Impeccable count ≤ committed baseline
+completed	success	🛡️ Import Firewall
+completed	success	🗄️ Migration Safety
+completed	success	🕸️ No new deep PR-stacks
+completed	success	Refuser SEO_CHAIN_R*_MODE=on dans la config
+completed	success	Repo Map Drift Check
+completed	success	🛡️ RPC Safety Gate
+completed	success	🔐 Secrets Detection
+completed	success	🔒 Security Audit
+completed	success	ʦ TypeScript
+completed	success	url-immutability
+completed	success	validate-exploration-probe.sh (ADR-081 G10)
+completed	success	validate-top-priorities.sh (ADR-081)
+completed	success	Verify ADR canon references have vault backing

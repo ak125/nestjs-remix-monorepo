@@ -1,0 +1,420 @@
+{
+ "apres-filtre-a-huile-7.html": {
+  "octets": 239643,
+  "gzip9": 40366,
+  "cartes": 19,
+  "avec_href": 19,
+  "visibles": 12,
+  "repliees": 7,
+  "cartes_detail": [
+   {
+    "href": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/renault/clio-3.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/peugeot-128/206-128014/1-4-hdi-30091.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/peugeot/206-phase-1.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/audi-22/a3-ii-22031/2-0-tdi-19966.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/audi/a3-2.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/alfa-romeo-13/159-13006/1-9-jtdm-8v-18929.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/alfa-romeo/159.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/ford-60/fiesta-v-60073/1-4-tdci-16102.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/ford/fiesta-5.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/fiat-58/500-58126/1-2-23175.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/fiat/500.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/opel-123/corsa-c-123046/1-3-cdti-17696.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/opel/corsa-c.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/seat-147/ibiza-iii-147025/1-4-tdi-17079.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/seat/ibiza-4.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/jeep-86/cherokee-iii-86002/2-8-crd-4wd-18793.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/jeep/cherokee-3.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/dacia-47/sandero-i-47024/1-5-dci-31083.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/dacia/sandero-1.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/bmw-33/serie-3-e46-33027/2-0-320-d-16201.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/bmw/serie-3-e46.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/nissan-119/qashqai-2-119199/1-6-dci-11758.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/nissan/qashqai+2.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/volkswagen-173/touran-i-173141/1-9-tdi-17768.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/volkswagen/touran-1.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/toyota-164/yaris-ii-164387/1-4-d-4d-19255.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/toyota/yaris-2.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/mercedes-benz-108/classe-c-w204-108039/c-200-cdi-2-1-22457.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/mercedes-benz/classe-c-w204.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/suzuki-158/swift-iv-158049/1-3-ddis-57.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/suzuki/swift-4.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/mazda-105/mazda-3-ii-105058/1-6-mzr-cd-31077.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/mazda/mazda-3-phase2.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/honda-74/civic-ix-74048/2-2-i-dtec-13927.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/honda/civic-9.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/filtre-a-huile-7/kia-88/picanto-ii-88042/1-2-7072.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/kia/picanto-2.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   }
+  ],
+  "bouton": true
+ },
+ "apres-plaquette-de-frein-402.html": {
+  "octets": 241970,
+  "gzip9": 38760,
+  "cartes": 17,
+  "avec_href": 17,
+  "visibles": 12,
+  "repliees": 5,
+  "cartes_detail": [
+   {
+    "href": "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/renault/megane-3.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/citroen/berlingo-2.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/renault/clio-2.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/renault/clio-2.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/peugeot/307.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/peugeot/307.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/peugeot/307.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/audi/a4-3.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/audi/a4-3.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/audi/a4-3.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/volkswagen/golf-4.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html",
+    "hidden": false,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/volkswagen/golf-4.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/volkswagen/golf-4.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/bmw/serie-1-e81.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/bmw/serie-1-e81.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/bmw/serie-1-e81.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   },
+   {
+    "href": "/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html",
+    "hidden": true,
+    "img": {
+     "src": "/img/uploads/constructeurs-automobiles/marques-modeles/honda/civic-9.webp",
+     "loading": "lazy"
+    },
+    "tabindex": null,
+    "aria_hidden": null,
+    "inert": false
+   }
+  ],
+  "bouton": true
+ }
+}

@@ -1,0 +1,47 @@
+cancelled	🧾 DoD self-evaluation present	2026-11-20T13:22:31Z
+failure	🚦 Circuit de fusion	2026-11-20T13:23:50Z
+failure	CodeQL	2026-11-20T13:27:51Z
+failure	🧾 DoD self-evaluation present	2026-11-20T13:23:26Z
+failure	Registry freshness (warn-only, Phase 1)	2026-11-20T13:25:12Z
+skipped	🔐 Armement de la fusion automatique (App)	2026-11-20T13:23:50Z
+skipped	auto-merge	2026-11-20T13:22:14Z
+skipped	🐳 build / 🐳 Build	2026-11-20T13:22:17Z
+skipped	🧪 Deploy PREPROD	2026-11-20T13:27:41Z
+skipped	🔍 Docker Image Scan	2026-11-20T13:22:17Z
+skipped	🎭 E2E Smoke Tests	2026-11-20T13:27:41Z
+skipped	🚦 Gate check (snapshots ≥ auto_types)	2026-11-20T13:22:16Z
+skipped	🔦 Lighthouse Performance Audit	2026-11-20T13:27:42Z
+skipped	🔔 Notify on Failure	2026-11-20T13:27:42Z
+skipped	review	2026-11-20T13:22:14Z
+skipped	🤖 Revue Claude (circuit moyen)	2026-11-20T13:23:43Z
+success	🛡️ ADR-010 Governance	2026-11-20T13:24:28Z
+success	🧪 Backend Tests	2026-11-20T13:27:41Z
+success	Block forbidden DEV/PREPROD/PROD formulations in .md	2026-11-20T13:22:30Z
+success	Block-new (owner + domain required)	2026-11-20T13:23:46Z
+success	Block new / stale orphan files (G3)	2026-11-20T13:24:11Z
+success	Calcul du circuit	2026-11-20T13:23:43Z
+success	check-cart-conversion-r-role.sh (R-role invariant)	2026-11-20T13:22:27Z
+success	check-role-purity.ts (role-vocabulary purity, source comments)	2026-11-20T13:23:28Z
+success	🔬 CodeQL Scan (javascript-typescript)	2026-11-20T13:27:57Z
+success	🛡️ Contract Gate	2026-11-20T13:23:55Z
+success	🔒 Core Build Only	2026-11-20T13:24:50Z
+success	🔍 CWV Performance Check	2026-11-20T13:24:17Z
+success	🛡️ Deterministic gates	2026-11-20T13:27:30Z
+success	🔒 DEV Safety (Blocking)	2026-11-20T13:22:27Z
+success	🔍 DEV Safety (Observe)	2026-11-20T13:22:26Z
+success	⬣ ESLint	2026-11-20T13:25:51Z
+success	🧪 Frontend Tests	2026-11-20T13:25:55Z
+success	Impeccable count ≤ committed baseline	2026-11-20T13:24:11Z
+success	🛡️ Import Firewall	2026-11-20T13:23:02Z
+success	🗄️ Migration Safety	2026-11-20T13:23:07Z
+success	🕸️ No new deep PR-stacks	2026-11-20T13:23:13Z
+success	Refuser SEO_CHAIN_R*_MODE=on dans la config	2026-11-20T13:22:26Z
+success	Repo Map Drift Check	2026-11-20T13:22:26Z
+success	🛡️ RPC Safety Gate	2026-11-20T13:23:20Z
+success	🔐 Secrets Detection	2026-11-20T13:24:35Z
+success	🔒 Security Audit	2026-11-20T13:24:11Z
+success	ʦ TypeScript	2026-11-20T13:25:54Z
+success	url-immutability	2026-11-20T13:22:54Z
+success	validate-exploration-probe.sh (ADR-081 G10)	2026-11-20T13:22:37Z
+success	validate-top-priorities.sh (ADR-081)	2026-11-20T13:22:25Z
+success	Verify ADR canon references have vault backing	2026-11-20T13:22:40Z

@@ -1,0 +1,46 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/filtre-a-huile-7.html",
+  "viewport": "1440x900",
+  "at": "2026-11-19T22:55:24.861Z",
+  "text": "2 min",
+  "cls": "inline-flex items-center text-cta-700",
+  "badgeCls": "inline-flex items-center gap-1 rounded-full border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 px-2.5 py-0.5 text-xs text-foreground text-[10px] font-bold bg-cta-50 border-cta-200 px-2 py-1 whitespace-nowrap",
+  "color": "#c2410c",
+  "fontSize": "10px",
+  "fontWeight": "600",
+  "lignesTexte": 1,
+  "badgeBox": {
+    "x": 1246,
+    "y": 438,
+    "w": 61,
+    "h": 23
+  },
+  "badgeWhiteSpace": "nowrap",
+  "bg": "#fff7ed",
+  "hasTextNode": true,
+  "pixelsTop5": [
+    [
+      "#fff7ed",
+      68.3
+    ],
+    [
+      "#ffffff",
+      6.1
+    ],
+    [
+      "#fed7aa",
+      2.6
+    ],
+    [
+      "#ffeeda",
+      0.8
+    ],
+    [
+      "#fdf7ed",
+      0.6
+    ]
+  ],
+  "fondPixel": "#fff7ed",
+  "ratioCalcule": 4.87,
+  "ratioPixel": 4.87
+}

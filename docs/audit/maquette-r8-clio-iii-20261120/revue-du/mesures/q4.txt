@@ -1,0 +1,12 @@
+ pg_id |               nom               | lien_avant | liees | vendables | sitemap_has_item 
+-------+---------------------------------+------------+-------+-----------+------------------
+    83 | Flexible de frein               | f          |   123 |        26 |               28
+   123 | Tambour de frein                | f          |    75 |        13 |               19
+   124 | Câble de frein à main           | t          |   166 |        37 |               30
+   258 | Maître cylindre de frein        | f          |    72 |        22 |               17
+   806 | Interrupteur des feux de freins | f          |    82 |        10 |               12
+  1123 | Chaîne de distribution          | f          |     9 |         2 |                3
+  2462 | Rotule de suspension            | t          |   142 |        11 |               13
+  3859 | Kit de freins arrière           | f          |     4 |         1 |               18
+(8 rows)
+

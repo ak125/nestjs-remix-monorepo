@@ -1,0 +1,86 @@
+{
+  "accueil-390": {
+    "repos": {
+      "tag": "button",
+      "parentTag": null,
+      "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 h-12 w-full shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover lg:w-auto",
+      "backgroundColor": "rgb(249, 115, 22)",
+      "backgroundImage": "none",
+      "color": "rgb(0, 0, 0)",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "borderRadius": "16px",
+      "height": "48px",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(249, 115, 22, 0.28) 0px 12px 24px 0px",
+      "outlineStyle": "none",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineWidth": "3px",
+      "outlineOffset": "0px"
+    },
+    "survolBg": "rgb(234, 88, 12)",
+    "survolColor": "rgb(0, 0, 0)"
+  },
+  "r1-390": {
+    "repos": {
+      "tag": "a",
+      "parentTag": null,
+      "classes": "w-full py-4 bg-cta hover:bg-cta-hover rounded-xl text-black text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-cta/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden",
+      "backgroundColor": "rgb(249, 115, 22)",
+      "backgroundImage": "none",
+      "color": "rgb(0, 0, 0)",
+      "fontSize": "15px",
+      "fontWeight": "700",
+      "borderRadius": "12px",
+      "height": "56px",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.704871 0.125896 0.137895 / 0.25) 0px 10px 15px -3px, oklab(0.704871 0.125896 0.137895 / 0.25) 0px 4px 6px -4px",
+      "outlineStyle": "none",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineWidth": "3px",
+      "outlineOffset": "0px"
+    },
+    "survolBg": "rgb(234, 88, 12)",
+    "survolColor": "rgb(0, 0, 0)"
+  },
+  "accueil-1440": {
+    "repos": {
+      "tag": "button",
+      "parentTag": null,
+      "classes": "inline-flex items-center justify-center gap-2 whitespace-nowrap ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 py-2 h-12 w-full shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover lg:w-auto",
+      "backgroundColor": "rgb(249, 115, 22)",
+      "backgroundImage": "none",
+      "color": "rgb(0, 0, 0)",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "borderRadius": "16px",
+      "height": "48px",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(249, 115, 22, 0.28) 0px 12px 24px 0px",
+      "outlineStyle": "none",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineWidth": "3px",
+      "outlineOffset": "0px"
+    },
+    "survolBg": "rgb(234, 88, 12)",
+    "survolColor": "rgb(0, 0, 0)"
+  },
+  "r1-1440": {
+    "repos": {
+      "tag": "a",
+      "parentTag": null,
+      "classes": "w-full py-4 bg-cta hover:bg-cta-hover rounded-xl text-black text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-cta/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden",
+      "backgroundColor": "rgb(249, 115, 22)",
+      "backgroundImage": "none",
+      "color": "rgb(0, 0, 0)",
+      "fontSize": "14px",
+      "fontWeight": "700",
+      "borderRadius": "12px",
+      "height": "54.3906px",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.704871 0.125896 0.137895 / 0.25) 0px 10px 15px -3px, oklab(0.704871 0.125896 0.137895 / 0.25) 0px 4px 6px -4px",
+      "outlineStyle": "none",
+      "outlineColor": "rgb(0, 0, 0)",
+      "outlineWidth": "3px",
+      "outlineOffset": "0px"
+    },
+    "survolBg": "rgb(234, 88, 12)",
+    "survolColor": "rgb(0, 0, 0)"
+  }
+}

@@ -1,0 +1,5 @@
+// Complément n° 4 au mandat DU : état désactivé des contrôles du hero mobile dont le libellé est clair.
+const { chromium } = require(process.env.PW || "playwright");
+(async () => { const b = await chromium.launch(); const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const p = await ctx.newPage(); await p.goto(process.argv[2], { waitUntil: "load" }); await p.waitForTimeout(2000);
+  console.log(JSON.stringify(await p.evaluate(() => ["Année", "Modèle", "Motorisation", "Rechercher des pièces", "Véhicule"].map((t) => { const w = document.createTreeWalker(document.querySelector("h1").closest("section"), NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) if (n.nodeValue.trim() === t) { const c = n.parentElement.closest("button, select, [role=combobox], [aria-disabled]"); const s = getComputedStyle(n.parentElement); return [t, c ? c.tagName.toLowerCase() : "-", c ? (c.disabled || c.getAttribute("aria-disabled")) : null, s.color, getComputedStyle(n.parentElement.closest("button") || n.parentElement).backgroundColor]; } return [t, "?"]; })))); await b.close(); })();

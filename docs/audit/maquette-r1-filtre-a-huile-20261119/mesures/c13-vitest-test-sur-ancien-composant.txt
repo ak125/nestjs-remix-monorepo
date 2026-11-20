@@ -1,0 +1,95 @@
+npm warn Unknown project config "puppeteer-skip-download". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.9 <worktree>/frontend
+
+stderr | tests/unit/r1-motorisation-ssr-links.test.tsx > cartes véhicule R1 — lien dans le rendu serveur > rend un <a href> pour chacune des 19 cartes, vers la même cible
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+
+stderr | tests/unit/r1-motorisation-ssr-links.test.tsx > cartes véhicule R1 — lien dans le rendu serveur > le bouton révèle les cartes repliées, puis les replie
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+An empty string ("") was passed to the src attribute. This may cause the browser to download the whole page again over the network. To fix this, either do not render the element at all or pass null to src instead of an empty string.
+
+ ❯ tests/unit/r1-motorisation-ssr-links.test.tsx (3 tests | 2 failed) 173ms
+     × rend un <a href> pour chacune des 19 cartes, vers la même cible 87ms
+     × le bouton révèle les cartes repliées, puis les replie 46ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/r1-motorisation-ssr-links.test.tsx > cartes véhicule R1 — lien dans le rendu serveur > rend un <a href> pour chacune des 19 cartes, vers la même cible
+AssertionError: expected [ …(12) ] to deeply equal [ …(19) ]
+
+- Expected
++ Received
+
+@@ -9,13 +9,6 @@
+    "/pieces/filtre-a-huile-7/dacia-1/modele8-1/1-5-dci-8.html",
+    "/pieces/filtre-a-huile-7/dacia-1/modele9-1/1-5-dci-9.html",
+    "/pieces/filtre-a-huile-7/dacia-1/modele10-1/1-5-dci-10.html",
+    "/pieces/filtre-a-huile-7/dacia-1/modele11-1/1-5-dci-11.html",
+    "/pieces/filtre-a-huile-7/dacia-1/modele12-1/1-5-dci-12.html",
+-   "/pieces/filtre-a-huile-7/dacia-1/modele13-1/1-5-dci-13.html",
+-   "/pieces/filtre-a-huile-7/dacia-1/modele14-1/1-5-dci-14.html",
+-   "/pieces/filtre-a-huile-7/dacia-1/modele15-1/1-5-dci-15.html",
+-   "/pieces/filtre-a-huile-7/dacia-1/modele16-1/1-5-dci-16.html",
+-   "/pieces/filtre-a-huile-7/dacia-1/modele17-1/1-5-dci-17.html",
+-   "/pieces/filtre-a-huile-7/dacia-1/modele18-1/1-5-dci-18.html",
+-   "/pieces/filtre-a-huile-7/dacia-1/modele19-1/1-5-dci-19.html",
+  ]
+
+ ❯ tests/unit/r1-motorisation-ssr-links.test.tsx:58:19
+     56|     );
+     57|     const liens = cartes(doc).map((a) => a.getAttribute("href"));
+     58|     expect(liens).toEqual(ITEMS.map((m) => m.link));
+       |                   ^
+     59|   });
+     60|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/unit/r1-motorisation-ssr-links.test.tsx > cartes véhicule R1 — lien dans le rendu serveur > le bouton révèle les cartes repliées, puis les replie
+AssertionError: expected [] to have a length of 7 but got +0
+
+- Expected
++ Received
+
+- 7
++ 0
+
+ ❯ tests/unit/r1-motorisation-ssr-links.test.tsx:74:47
+     72|   it("le bouton révèle les cartes repliées, puis les replie", () => {
+     73|     const { container } = render(section());
+     74|     expect(cartes(container).filter(repliee)).toHaveLength(7);
+       |                                               ^
+     75|     fireEvent.click(
+     76|       screen.getByRole("button", { name: /Voir les 7 autres compatibil…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 1 passed (3)
+   Start at  18:20:14
+   Duration  1.87s (transform 575ms, setup 0ms, import 789ms, tests 173ms, environment 544ms)
+

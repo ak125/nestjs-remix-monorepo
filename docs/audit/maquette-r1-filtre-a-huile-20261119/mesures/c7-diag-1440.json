@@ -1,0 +1,702 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/filtre-a-huile-7.html",
+  "at": "2026-11-20T00:43:15.043Z",
+  "viewport": "1440x900",
+  "mode": "repos",
+  "structure": {
+    "tag": "a",
+    "href": "/diagnostic-auto",
+    "role": null,
+    "descendantsInteractifs": 0,
+    "ancetreInteractif": false,
+    "interactifsDansLaCarte": [
+      "a[href=/diagnostic-auto]"
+    ],
+    "liensDiagnosticDansLaPage": 6,
+    "svg": [
+      {
+        "ariaHidden": null,
+        "focusable": null
+      }
+    ],
+    "tabIndex": 0,
+    "nomAccessible": 1,
+    "ariaSnapshot": "- link \"Lancer le diagnostic\":\n  - /url: /diagnostic-auto\n  - img\n  - text: Lancer le diagnostic"
+  },
+  "etat": {
+    "bg": "#f97316",
+    "bgImage": "none",
+    "color": "#000000",
+    "colorBrut": "rgb(0, 0, 0)",
+    "colorBlack": "#000",
+    "fontSize": "14px",
+    "fontWeight": "700",
+    "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklab(0.704871 0.125896 0.137895 / 0.25) 0px 10px 15px -3px, oklab(0.704871 0.125896 0.137895 / 0.25) 0px 4px 6px -4px",
+    "translate": "none",
+    "transform": "none",
+    "outline": {
+      "style": "none",
+      "width": "3px",
+      "color": "#000000",
+      "offset": "0px"
+    },
+    "focusVisible": false,
+    "focus": false,
+    "box": {
+      "x": 129,
+      "y": 423,
+      "w": 1182,
+      "h": 54
+    },
+    "texte": {
+      "x": 665,
+      "y": 441,
+      "w": 139,
+      "h": 18,
+      "lignes": 1
+    },
+    "icone": {
+      "x": 637,
+      "y": 441,
+      "w": 18,
+      "h": 18
+    },
+    "iconeAnimations": 0,
+    "reflet": {
+      "animations": 1,
+      "nom": "shimmer",
+      "duree": 3000,
+      "bgImage": "linear-gradient(to right, oklab(0 0 0 / 0) 0%, oklab(0.999994 0.0000455678 0.0000200868 / 0.12) 50%, oklab(0 0 0 / 0) 100%)",
+      "animationCss": "3s ease-in-out infinite shimmer"
+    },
+    "iconePastilleAnimations": 1,
+    "iconePastilleAnimationCss": "3s ease-in-out infinite subtle-float",
+    "carteBg": "#ffffff",
+    "transition": "0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  "sansReflet": {
+    "texte": {
+      "pixels": 2820,
+      "fondLePlusClair": "#f97316",
+      "fondLePlusSombre": "#f97316",
+      "ratioContreClair": 7.49,
+      "ratioContreSombre": 7.49,
+      "ratioMedian": 7.49,
+      "pire": 7.49
+    },
+    "icone": {
+      "pixels": 400,
+      "fondLePlusClair": "#f97316",
+      "fondLePlusSombre": "#f97316",
+      "ratioContreClair": 7.49,
+      "ratioContreSombre": 7.49,
+      "ratioMedian": 7.49,
+      "pire": 7.49
+    },
+    "boutGauche": "#f97316",
+    "boutDroit": "#f97316",
+    "ratioBoutGauche": 7.49,
+    "ratioBoutDroit": 7.49
+  },
+  "framesReflet": [
+    {
+      "t": 0,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.04,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.08,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.13,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97418",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.17,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f9761b",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.21,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97920",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.25,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97b23",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.29,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97e29",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.33,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f87215",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.4,
+        "ratioMedian": 7.49,
+        "pire": 7.4
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97417",
+        "fondLePlusSombre": "#f87316",
+        "ratioContreClair": 7.53,
+        "ratioContreSombre": 7.45,
+        "ratioMedian": 7.49,
+        "pire": 7.45
+      },
+      "boutGauche": "#f9822f",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.38,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f9771d",
+        "fondLePlusSombre": "#f87215",
+        "ratioContreClair": 7.68,
+        "ratioContreSombre": 7.4,
+        "ratioMedian": 7.58,
+        "pire": 7.4
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f9781f",
+        "fondLePlusSombre": "#f8761d",
+        "ratioContreClair": 7.73,
+        "ratioContreSombre": 7.6,
+        "ratioMedian": 7.68,
+        "pire": 7.6
+      },
+      "boutGauche": "#f9812d",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.42,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97b24",
+        "fondLePlusSombre": "#f8771e",
+        "ratioContreClair": 7.88,
+        "ratioContreSombre": 7.64,
+        "ratioMedian": 7.78,
+        "pire": 7.64
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97c26",
+        "fondLePlusSombre": "#f87b24",
+        "ratioContreClair": 7.93,
+        "ratioContreSombre": 7.84,
+        "ratioMedian": 7.93,
+        "pire": 7.84
+      },
+      "boutGauche": "#f87b25",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.46,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f9802c",
+        "fondLePlusSombre": "#f87b25",
+        "ratioContreClair": 8.15,
+        "ratioContreSombre": 7.85,
+        "ratioMedian": 8.04,
+        "pire": 7.85
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f9812d",
+        "fondLePlusSombre": "#f8802c",
+        "ratioContreClair": 8.2,
+        "ratioContreSombre": 8.11,
+        "ratioMedian": 8.15,
+        "pire": 8.11
+      },
+      "boutGauche": "#f9771e",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.5,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f98432",
+        "fondLePlusSombre": "#f8802d",
+        "ratioContreClair": 8.37,
+        "ratioContreSombre": 8.11,
+        "ratioMedian": 8.26,
+        "pire": 8.11
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f9812e",
+        "fondLePlusSombre": "#f8802d",
+        "ratioContreClair": 8.2,
+        "ratioContreSombre": 8.11,
+        "ratioMedian": 8.2,
+        "pire": 8.11
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.54,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f9812d",
+        "fondLePlusSombre": "#f87d27",
+        "ratioContreClair": 8.2,
+        "ratioContreSombre": 7.95,
+        "ratioMedian": 8.09,
+        "pire": 7.95
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97c26",
+        "fondLePlusSombre": "#f87b25",
+        "ratioContreClair": 7.93,
+        "ratioContreSombre": 7.85,
+        "ratioMedian": 7.93,
+        "pire": 7.85
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f9771e"
+    },
+    {
+      "t": 0.58,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97c26",
+        "fondLePlusSombre": "#f8781f",
+        "ratioContreClair": 7.93,
+        "ratioContreSombre": 7.69,
+        "ratioMedian": 7.83,
+        "pire": 7.69
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f9781f",
+        "fondLePlusSombre": "#f8771e",
+        "ratioContreClair": 7.73,
+        "ratioContreSombre": 7.64,
+        "ratioMedian": 7.68,
+        "pire": 7.64
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f87b25"
+    },
+    {
+      "t": 0.63,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f9781f",
+        "fondLePlusSombre": "#f87317",
+        "ratioContreClair": 7.73,
+        "ratioContreSombre": 7.45,
+        "ratioMedian": 7.59,
+        "pire": 7.45
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97417",
+        "fondLePlusSombre": "#f87316",
+        "ratioContreClair": 7.53,
+        "ratioContreSombre": 7.45,
+        "ratioMedian": 7.49,
+        "pire": 7.45
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f9812d"
+    },
+    {
+      "t": 0.67,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97417",
+        "fondLePlusSombre": "#f87215",
+        "ratioContreClair": 7.53,
+        "ratioContreSombre": 7.4,
+        "ratioMedian": 7.49,
+        "pire": 7.4
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f9822f"
+    },
+    {
+      "t": 0.71,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f97e29"
+    },
+    {
+      "t": 0.75,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f97b23"
+    },
+    {
+      "t": 0.79,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f9781f"
+    },
+    {
+      "t": 0.83,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f9761b"
+    },
+    {
+      "t": 0.88,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f97418"
+    },
+    {
+      "t": 0.92,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f97316"
+    },
+    {
+      "t": 0.96,
+      "texte": {
+        "pixels": 2820,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "icone": {
+        "pixels": 400,
+        "fondLePlusClair": "#f97316",
+        "fondLePlusSombre": "#f97316",
+        "ratioContreClair": 7.49,
+        "ratioContreSombre": 7.49,
+        "ratioMedian": 7.49,
+        "pire": 7.49
+      },
+      "boutGauche": "#f97316",
+      "boutDroit": "#f97316"
+    }
+  ],
+  "pireTexte": {
+    "t": 0.33,
+    "texte": {
+      "pixels": 2820,
+      "fondLePlusClair": "#f97316",
+      "fondLePlusSombre": "#f87215",
+      "ratioContreClair": 7.49,
+      "ratioContreSombre": 7.4,
+      "ratioMedian": 7.49,
+      "pire": 7.4
+    },
+    "icone": {
+      "pixels": 400,
+      "fondLePlusClair": "#f97417",
+      "fondLePlusSombre": "#f87316",
+      "ratioContreClair": 7.53,
+      "ratioContreSombre": 7.45,
+      "ratioMedian": 7.49,
+      "pire": 7.45
+    },
+    "boutGauche": "#f9822f",
+    "boutDroit": "#f97316"
+  },
+  "pireIcone": {
+    "t": 0.33,
+    "texte": {
+      "pixels": 2820,
+      "fondLePlusClair": "#f97316",
+      "fondLePlusSombre": "#f87215",
+      "ratioContreClair": 7.49,
+      "ratioContreSombre": 7.4,
+      "ratioMedian": 7.49,
+      "pire": 7.4
+    },
+    "icone": {
+      "pixels": 400,
+      "fondLePlusClair": "#f97417",
+      "fondLePlusSombre": "#f87316",
+      "ratioContreClair": 7.53,
+      "ratioContreSombre": 7.45,
+      "ratioMedian": 7.49,
+      "pire": 7.45
+    },
+    "boutGauche": "#f9822f",
+    "boutDroit": "#f97316"
+  },
+  "pireBouts": 7.49
+}

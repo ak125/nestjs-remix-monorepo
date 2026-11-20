@@ -1,0 +1,114 @@
+{
+  "url": "http://127.0.0.1:3000/pieces/filtre-a-huile-7.html",
+  "at": "2026-11-19T19:26:29.540Z",
+  "runs": [
+    {
+      "tab-type-mine": {
+        "inp": 24,
+        "events": 2,
+        "box": {
+          "w": 174,
+          "h": 44
+        }
+      },
+      "quicknav-1": {
+        "inp": 32,
+        "events": 3,
+        "box": {
+          "w": 119,
+          "h": 37
+        }
+      },
+      "voir-autres": {
+        "inp": 168,
+        "events": 5,
+        "box": {
+          "w": 320,
+          "h": 48
+        }
+      },
+      "faq-1": {
+        "inp": 80,
+        "events": 3,
+        "box": {
+          "w": 353,
+          "h": 64
+        }
+      }
+    },
+    {
+      "tab-type-mine": {
+        "inp": 32,
+        "events": 3,
+        "box": {
+          "w": 174,
+          "h": 44
+        }
+      },
+      "quicknav-1": {
+        "inp": 32,
+        "events": 3,
+        "box": {
+          "w": 119,
+          "h": 37
+        }
+      },
+      "voir-autres": {
+        "inp": 160,
+        "events": 3,
+        "box": {
+          "w": 320,
+          "h": 48
+        }
+      },
+      "faq-1": {
+        "inp": 80,
+        "events": 3,
+        "box": {
+          "w": 353,
+          "h": 64
+        }
+      }
+    },
+    {
+      "tab-type-mine": {
+        "inp": 24,
+        "events": 3,
+        "box": {
+          "w": 174,
+          "h": 44
+        }
+      },
+      "quicknav-1": {
+        "inp": 32,
+        "events": 3,
+        "box": {
+          "w": 119,
+          "h": 37
+        }
+      },
+      "voir-autres": {
+        "inp": 144,
+        "events": 5,
+        "box": {
+          "w": 320,
+          "h": 48
+        }
+      },
+      "faq-1": {
+        "inp": 64,
+        "events": 3,
+        "box": {
+          "w": 353,
+          "h": 64
+        }
+      }
+    }
+  ],
+  "median": {
+    "tab-type-mine": 24,
+    "quicknav-1": 32,
+    "voir-autres": 160,
+    "faq-1": 80
+  }
+}

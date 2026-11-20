@@ -1,0 +1,101 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/filtre-a-huile-7.html",
+  "viewport": "390x844",
+  "at": "2026-11-19T22:54:36.011Z",
+  "res": {
+    "badge 2 min": {
+      "text": "2 min",
+      "cls": "inline-flex items-center gap-1 rounded-full border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 px-2.5 py-0.5 text-xs text-foreground text-[10px] font-bold bg-cta-50 border-cta-200 px-2 py-1 whitespace-nowrap",
+      "color": "#020817",
+      "rawColor": "rgb(2, 8, 23)",
+      "fontSize": "10px",
+      "fontWeight": "600",
+      "whiteSpace": "nowrap",
+      "box": {
+        "w": 61,
+        "h": 23
+      },
+      "lineHeight": 13.3333,
+      "lignes": 2,
+      "clientRects": 1,
+      "bg": {
+        "el": "span.inline-flex.items-center.gap-1.rounded-full.border.font-semibold",
+        "color": "#fff7ed",
+        "raw": "rgb(255, 247, 237)"
+      },
+      "parentCls": "flex items-center gap-1.5",
+      "pixelsTop5": [
+        [
+          "#fff7ed",
+          62.1
+        ],
+        [
+          "#ffffff",
+          11
+        ],
+        [
+          "#fed7aa",
+          5.2
+        ],
+        [
+          "#fdf7ed",
+          0.6
+        ],
+        [
+          "#fedeb9",
+          0.5
+        ]
+      ],
+      "fondPixel": "#fff7ed",
+      "ratioTexteFondCalcule": 18.84,
+      "ratioTexteFondPixel": 18.84
+    },
+    "Guide d'achat (bande)": {
+      "text": "Guide d'achat",
+      "cls": "inline-flex items-center min-h-6 text-blue-600 hover:text-blue-800 transition-colors",
+      "color": "#155dfc",
+      "rawColor": "oklch(0.546 0.245 262.881)",
+      "fontSize": "12px",
+      "fontWeight": "500",
+      "whiteSpace": "normal",
+      "box": {
+        "w": 80,
+        "h": 24
+      },
+      "lineHeight": 16,
+      "lignes": 2,
+      "clientRects": 1,
+      "bg": {
+        "el": "div.relative.py-4.px-4.sm:px-6.bg-slate-50.border-b",
+        "color": "#f8fafc",
+        "raw": "oklch(0.984 0.003 247.858)"
+      },
+      "parentCls": "flex items-center gap-4 text-xs font-medium",
+      "pixelsTop5": [
+        [
+          "#f8fafc",
+          75.5
+        ],
+        [
+          "#cdf5fc",
+          0.8
+        ],
+        [
+          "#155dfc",
+          0.8
+        ],
+        [
+          "#e9d7fc",
+          0.7
+        ],
+        [
+          "#f0dcfc",
+          0.6
+        ]
+      ],
+      "fondPixel": "#f8fafc",
+      "ratioTexteFondCalcule": 5.01,
+      "ratioTexteFondPixel": 5.01
+    }
+  }
+}

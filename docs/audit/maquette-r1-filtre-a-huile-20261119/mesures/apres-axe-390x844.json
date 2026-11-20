@@ -1,0 +1,415 @@
+{
+  "url": "http://127.0.0.1:3027/pieces/filtre-a-huile-7.html",
+  "viewport": "390x844",
+  "axe": {
+    "name": "axe-core",
+    "version": "4.12.1"
+  },
+  "at": "2026-11-19T18:16:27.858Z",
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "count": 24,
+      "nodes": [
+        {
+          "target": ".text-emerald-600",
+          "where": "body | Conseils entretien",
+          "summary": "  Element has insufficient color contrast of 3.49 (foreground color: #009966, background color: #f8fafc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#009966",
+            "bg": "#f8fafc",
+            "ratio": 3.49,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": "#bien-choisir > .max-w-\\[1280px\\].mx-auto > .gap-8.lg\\:grid-cols-2.grid-cols-1 > div:nth-child(1) > figure > figcaption",
+          "where": "#bien-choisir | ",
+          "summary": "  Element has insufficient color contrast of 2.63 (foreground color: #90a1b9, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(1) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > ",
+          "where": "#bien-choisir | ",
+          "summary": "  Element has insufficient color contrast of 2.58 (foreground color: #90a1b9, background color: #fcfdfe, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(2) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > ",
+          "where": "#bien-choisir | ",
+          "summary": "  Element has insufficient color contrast of 2.58 (foreground color: #90a1b9, background color: #fcfdfe, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(3) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > ",
+          "where": "#bien-choisir | ",
+          "summary": "  Element has insufficient color contrast of 2.58 (foreground color: #90a1b9, background color: #fcfdfe, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(4) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > ",
+          "where": "#bien-choisir | ",
+          "summary": "  Element has insufficient color contrast of 2.58 (foreground color: #90a1b9, background color: #fcfdfe, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".motion-safe\\:animate-reveal-up:nth-child(5) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .gap-2\\.5.items-center.flex > ",
+          "where": "#bien-choisir | ",
+          "summary": "  Element has insufficient color contrast of 2.58 (foreground color: #90a1b9, background color: #fcfdfe, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#fcfdfe",
+            "ratio": 2.58,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": "#qualite-prix > .max-w-\\[1280px\\].mx-auto > .gap-8.lg\\:grid-cols-2.grid-cols-1 > div:nth-child(1) > figure > figcaption",
+          "where": "#qualite-prix | ",
+          "summary": "  Element has insufficient color contrast of 2.51 (foreground color: #90a1b9, background color: #f8fafc, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#f8fafc",
+            "ratio": 2.51,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".max-w-2xl > figcaption",
+          "where": "#emplacement | ",
+          "summary": "  Element has insufficient color contrast of 2.63 (foreground color: #90a1b9, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-orange-600",
+          "where": "body | 2 min",
+          "summary": "  Element has insufficient color contrast of 3.38 (foreground color: #f54900, background color: #fff7ed, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#f54900",
+            "bg": "#fff7ed",
+            "ratio": 3.38,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".hover\\:shadow-md.border-neutral-200.hover\\:border-semantic-action:nth-child(1) > .h-full.flex-col.flex > .mb-2.items-st",
+          "where": "#aller-plus-loin | ",
+          "summary": "  Element has insufficient color contrast of 2.61 (foreground color: #f97316, background color: #f5f7fa, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#f5f7fa",
+            "ratio": 2.61,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".hover\\:shadow-md.border-neutral-200.hover\\:border-semantic-action:nth-child(2) > .h-full.flex-col.flex > .mb-2.items-st",
+          "where": "#aller-plus-loin | ",
+          "summary": "  Element has insufficient color contrast of 2.61 (foreground color: #f97316, background color: #f5f7fa, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#f5f7fa",
+            "ratio": 2.61,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".hover\\:shadow-md.border-neutral-200.hover\\:border-semantic-action:nth-child(3) > .h-full.flex-col.flex > .mb-2.items-st",
+          "where": "#aller-plus-loin | ",
+          "summary": "  Element has insufficient color contrast of 2.61 (foreground color: #f97316, background color: #f5f7fa, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#f5f7fa",
+            "ratio": 2.61,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".hover\\:shadow-md.border-neutral-200.hover\\:border-semantic-action:nth-child(4) > .h-full.flex-col.flex > .mb-2.items-st",
+          "where": "#aller-plus-loin | ",
+          "summary": "  Element has insufficient color contrast of 2.61 (foreground color: #f97316, background color: #f5f7fa, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#f5f7fa",
+            "ratio": 2.61,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-semantic-action\\/70",
+          "where": "#aller-plus-loin | ",
+          "summary": "  Element has insufficient color contrast of 1.99 (foreground color: #f89b5a, background color: #f5f7fa, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#f89b5a",
+            "bg": "#f5f7fa",
+            "ratio": 1.99,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/40.mt-1.text-\\[12px\\]",
+          "where": "footer | Pièces auto de qualité · Livraison rapide",
+          "summary": "  Element has insufficient color contrast of 3.73 (foreground color: #6f7888, background color: #0f1e38, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#6f7888",
+            "bg": "#0f1e38",
+            "ratio": 3.73,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": "div:nth-child(1) > .uppercase.tracking-widest.text-white\\/25",
+          "where": "footer | NAVIGATION",
+          "summary": "  Element has insufficient color contrast of 2.24 (foreground color: #4b566a, background color: #0f1e38, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#4b566a",
+            "bg": "#0f1e38",
+            "ratio": 2.24,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": "div:nth-child(2) > .uppercase.tracking-widest.text-white\\/25",
+          "where": "footer | INFORMATIONS",
+          "summary": "  Element has insufficient color contrast of 2.24 (foreground color: #4b566a, background color: #0f1e38, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#4b566a",
+            "bg": "#0f1e38",
+            "ratio": 2.24,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/20.text-\\[10px\\]",
+          "where": "footer | © 2026 AutoMecanik · Paiement sécurisé · Livraison 24-48h",
+          "summary": "  Element has insufficient color contrast of 1.88 (foreground color: #3f4b60, background color: #0f1e38, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#3f4b60",
+            "bg": "#0f1e38",
+            "ratio": 1.88,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".gap-0\\.5.py-2[href=\"/\"]",
+          "where": "nav[Navigation mobile] | Accueil",
+          "summary": "  Element has insufficient color contrast of 2.63 (foreground color: #90a1b9, background color: #ffffff, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": "a[aria-current=\"page\"]",
+          "where": "nav[Navigation mobile] | Catalogue",
+          "summary": "  Element has insufficient color contrast of 2.8 (foreground color: #f97316, background color: #ffffff, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#ffffff",
+            "ratio": 2.8,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": ".gap-0\\.5.py-2[href$=\"diagnostic-auto\"]",
+          "where": "nav[Navigation mobile] | Diagnostic",
+          "summary": "  Element has insufficient color contrast of 2.63 (foreground color: #90a1b9, background color: #ffffff, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": "a[href$=\"dashboard\"]",
+          "where": "nav[Navigation mobile] | Compte",
+          "summary": "  Element has insufficient color contrast of 2.63 (foreground color: #90a1b9, background color: #ffffff, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "size": "7.5pt (10px)"
+          }
+        },
+        {
+          "target": "button[aria-label=\"Ouvrir le panier\"]",
+          "where": "nav[Navigation mobile] | Panier",
+          "summary": "  Element has insufficient color contrast of 2.63 (foreground color: #90a1b9, background color: #ffffff, font size: 7.5pt (10px), font weight: normal). Expected contrast ratio of 4.5:1",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "size": "7.5pt (10px)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "link-in-text-block",
+      "impact": "serious",
+      "help": "Links must be distinguishable without relying on color",
+      "count": 1,
+      "nodes": [
+        {
+          "target": "p:nth-child(3) > a:nth-child(3)",
+          "where": "#reference | Conseils : changer un filtre à huile étape par étape",
+          "summary": "  The link has insufficient color contrast of 1.44:1 with the surrounding text. (Minimum contrast is 3:1, link text: #155dfc, surrounding text: #45556c)",
+          "data": {
+            "ratio": 1.44
+          }
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "help": "All page content should be contained by landmarks",
+      "count": 2,
+      "nodes": [
+        {
+          "target": ".text-emerald-300",
+          "where": "body | Livraison gratuite dès 150€",
+          "summary": "  Some page content is not contained by landmarks",
+          "data": {}
+        },
+        {
+          "target": ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+          "where": "body | Retours 30j",
+          "summary": "  Some page content is not contained by landmarks",
+          "data": {}
+        }
+      ]
+    },
+    {
+      "id": "target-size",
+      "impact": "serious",
+      "help": "All touch targets must be 24px large, or leave sufficient space",
+      "count": 1,
+      "nodes": [
+        {
+          "target": ".text-semantic-action\\/70",
+          "where": "#aller-plus-loin | ",
+          "summary": "  Target has insufficient size (48px by 16px, should be at least 24px by 24px)",
+          "data": {}
+        }
+      ]
+    }
+  ],
+  "smallTargets": {
+    "nav[Navigation principale]": {
+      "n": 1,
+      "ex": [
+        "input 358x41 « Rechercher une pièce auto »"
+      ]
+    },
+    "body": {
+      "n": 5,
+      "ex": [
+        "a 1x1 « Aller au contenu principal »",
+        "a 80x16 « Guide d'achat »",
+        "a 104x16 « Conseils entretien »",
+        "a 92x16 « Fiche technique »"
+      ]
+    },
+    "nav": {
+      "n": 2,
+      "ex": [
+        "a 36x16 « Accueil »",
+        "a 58x16 « Pièces Auto »"
+      ]
+    },
+    "nav[Navigation rapide]": {
+      "n": 6,
+      "ex": [
+        "button 132x37 « Compatibilité »",
+        "button 119x37 « Bien choisir »",
+        "button 140x37 « Prix & Marques »",
+        "button 133x37 « Emplacement »"
+      ]
+    },
+    "#reference": {
+      "n": 3,
+      "ex": [
+        "a 344x41 « bouchon de vidange »",
+        "a 63x18 « filtre à air »",
+        "a 347x41 « Conseils : changer un filtre à huile éta »"
+      ]
+    },
+    "#bien-choisir": {
+      "n": 2,
+      "ex": [
+        "a 63x18 «  »",
+        "a 299x41 «  »"
+      ]
+    },
+    "#emplacement": {
+      "n": 1,
+      "ex": [
+        "a 207x18 «  »"
+      ]
+    },
+    "#aller-plus-loin": {
+      "n": 5,
+      "ex": [
+        "button 48x16 «  »",
+        "a 284x44 «  »",
+        "a 284x44 «  »",
+        "a 284x44 «  »"
+      ]
+    },
+    "footer": {
+      "n": 1,
+      "ex": [
+        "a 26x44 « CGV »"
+      ]
+    }
+  },
+  "headings": [
+    "H1 Filtre à huile compatible avec votre véhicule",
+    "H2 Trouver la bonne référence pour votre véhicule",
+    "H2 ",
+    "H2 Diagnostic gratuit"
+  ],
+  "emoji": [
+    "body | 🚚 Livraison gratuite dès",
+    "body | 💡 Plus que",
+    "body | 🛍️ Continuer mes achats",
+    "#reference | 📅",
+    "footer | ©"
+  ]
+}

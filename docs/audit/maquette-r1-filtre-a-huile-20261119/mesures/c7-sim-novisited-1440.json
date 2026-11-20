@@ -1,0 +1,14 @@
+{
+  "avantVisite": {
+    "fondDominant": "#f98331",
+    "pixelDuTexte": "#1a1a1a",
+    "ratioTexteFond": 6.89,
+    "temoinCouleur": "#020817"
+  },
+  "apresVisite": {
+    "fondDominant": "#f98331",
+    "pixelDuTexte": "#1a1a1a",
+    "ratioTexteFond": 6.89,
+    "temoinCouleur": "#9810fa"
+  }
+}

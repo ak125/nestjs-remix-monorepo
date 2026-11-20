@@ -1,0 +1,46 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/plaquette-de-frein-402.html",
+  "viewport": "390x844",
+  "at": "2026-11-19T22:57:45.786Z",
+  "text": "2 min",
+  "cls": "inline-flex items-center text-cta-700",
+  "badgeCls": "inline-flex items-center gap-1 rounded-full border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 px-2.5 py-0.5 text-xs text-foreground text-[10px] font-bold bg-cta-50 border-cta-200 px-2 py-1 whitespace-nowrap",
+  "color": "#c2410c",
+  "fontSize": "10px",
+  "fontWeight": "600",
+  "lignesTexte": 1,
+  "badgeBox": {
+    "x": 296,
+    "y": 410,
+    "w": 61,
+    "h": 23
+  },
+  "badgeWhiteSpace": "nowrap",
+  "bg": "#fff7ed",
+  "hasTextNode": true,
+  "pixelsTop5": [
+    [
+      "#fff7ed",
+      68.3
+    ],
+    [
+      "#ffffff",
+      6.1
+    ],
+    [
+      "#fed7aa",
+      2.6
+    ],
+    [
+      "#fee1c0",
+      0.9
+    ],
+    [
+      "#fdf7ed",
+      0.6
+    ]
+  ],
+  "fondPixel": "#fff7ed",
+  "ratioCalcule": 4.87,
+  "ratioPixel": 4.87
+}

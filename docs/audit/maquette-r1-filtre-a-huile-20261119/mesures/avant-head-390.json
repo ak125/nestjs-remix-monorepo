@@ -1,0 +1,407 @@
+{
+  "title": "Filtre à huile | Trouvez la référence compatible | AutoMeca…",
+  "desc": "Filtre à huile voiture pas cher dès 5€. Sélectionnez votre véhicule pour voir les références compatibles. En stock, livraison 24-48h.",
+  "robots": "index, follow",
+  "canonical": "https://www.automecanik.com/pieces/filtre-a-huile-7.html",
+  "ogUrl": "https://www.automecanik.com/pieces/filtre-a-huile-7.html",
+  "hreflang": 0,
+  "h1": [
+    "Filtre à huile compatible avec votre véhicule"
+  ],
+  "ld": [
+    "CollectionPage,ItemList n=19,FAQPage q=4,Organization"
+  ],
+  "imgs": [
+    {
+      "src": "https://www.automecanik.com/imgproxy/rs:fit:720/q:90/plain/https://cxpojprgwgubzjyqzmoq.su",
+      "alt": "Filtre à huile — pièce automobile neuve",
+      "w": "360",
+      "h": "360",
+      "loading": "eager",
+      "fp": "high",
+      "nat": "390x260",
+      "box": "364x243",
+      "sec": "-"
+    },
+    {
+      "src": "https://www.automecanik.com/imgproxy/rs:fit:640/plain/https://cxpojprgwgubzjyqzmoq.supabas",
+      "alt": "Types de filtre à huile — comparatif visuel",
+      "w": null,
+      "h": null,
+      "loading": "lazy",
+      "fp": null,
+      "nat": "390x260",
+      "box": "358x269",
+      "sec": "bien-choisir"
+    },
+    {
+      "src": "https://www.automecanik.com/imgproxy/rs:fit:640/plain/https://cxpojprgwgubzjyqzmoq.supabas",
+      "alt": "Filtre à huile — comparatif qualité par gamme",
+      "w": null,
+      "h": null,
+      "loading": "lazy",
+      "fp": null,
+      "nat": "390x260",
+      "box": "358x269",
+      "sec": "qualite-prix"
+    },
+    {
+      "src": "/img/uploads/equipementiers-automobiles/bosch.webp",
+      "alt": "Logo BOSCH",
+      "w": "64",
+      "h": "64",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "100x80",
+      "box": "64x64",
+      "sec": "qualite-prix"
+    },
+    {
+      "src": "/img/uploads/equipementiers-automobiles/denso.webp",
+      "alt": "Logo DENSO",
+      "w": "64",
+      "h": "64",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "100x80",
+      "box": "64x64",
+      "sec": "qualite-prix"
+    },
+    {
+      "src": "/img/uploads/equipementiers-automobiles/mann-filter.webp",
+      "alt": "Logo MANN FILTER",
+      "w": "64",
+      "h": "64",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "100x80",
+      "box": "64x64",
+      "sec": "qualite-prix"
+    },
+    {
+      "src": "/img/uploads/equipementiers-automobiles/magneti-marelli.webp",
+      "alt": "Logo MAGNETI MARELLI",
+      "w": "64",
+      "h": "64",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "100x80",
+      "box": "64x64",
+      "sec": "qualite-prix"
+    },
+    {
+      "src": "/images/categories/default.svg",
+      "alt": "Logo WIX FILTERS",
+      "w": "64",
+      "h": "64",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "400x225",
+      "box": "64x64",
+      "sec": "qualite-prix"
+    },
+    {
+      "src": "/img/uploads/equipementiers-automobiles/knecht.webp",
+      "alt": "Logo KNECHT",
+      "w": "64",
+      "h": "64",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "100x80",
+      "box": "64x64",
+      "sec": "qualite-prix"
+    },
+    {
+      "src": "https://www.automecanik.com/imgproxy/rs:fit:640/plain/https://cxpojprgwgubzjyqzmoq.supabas",
+      "alt": "Emplacement du filtre à huile sur le véhicule",
+      "w": null,
+      "h": null,
+      "loading": "lazy",
+      "fp": null,
+      "nat": "390x292",
+      "box": "358x269",
+      "sec": "emplacement"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/renault/clio-3.webp",
+      "alt": "RENAULT CLIO III",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/peugeot/206-phase-1.webp",
+      "alt": "PEUGEOT 206",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/audi/a3-2.webp",
+      "alt": "AUDI A3 II",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "235x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/alfa-romeo/159.webp",
+      "alt": "ALFA ROMEO 159",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "256x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/ford/fiesta-5.webp",
+      "alt": "FORD FIESTA V",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/fiat/500.webp",
+      "alt": "FIAT 500",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/opel/corsa-c.webp",
+      "alt": "OPEL CORSA C",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/seat/ibiza-4.webp",
+      "alt": "SEAT IBIZA III",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/jeep/cherokee-3.webp",
+      "alt": "JEEP CHEROKEE III",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/dacia/sandero-1.webp",
+      "alt": "DACIA SANDERO I",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/bmw/serie-3-e46.webp",
+      "alt": "BMW Série 3 (E46)",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/constructeurs-automobiles/marques-modeles/nissan/qashqai+2.webp",
+      "alt": "NISSAN QASHQAI+2 (J10)",
+      "w": "96",
+      "h": "96",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "270x135",
+      "box": "80x80",
+      "sec": "reference"
+    },
+    {
+      "src": "/img/uploads/articles/gammes-produits/catalogue/filtre-a-air.webp",
+      "alt": "Filtre à air — Autres pièces de la famille Filtres",
+      "w": "80",
+      "h": "80",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "225x165",
+      "box": "64x64",
+      "sec": "aller-plus-loin"
+    },
+    {
+      "src": "/img/uploads/articles/gammes-produits/catalogue/filtre-a-carburant.webp",
+      "alt": "Filtre à carburant — Autres pièces de la famille Filtres",
+      "w": "80",
+      "h": "80",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "225x165",
+      "box": "64x64",
+      "sec": "aller-plus-loin"
+    },
+    {
+      "src": "/img/uploads/articles/gammes-produits/catalogue/filtre-d-habitacle.webp",
+      "alt": "Filtre d'habitacle — Autres pièces de la famille Filtres",
+      "w": "80",
+      "h": "80",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "225x165",
+      "box": "64x64",
+      "sec": "aller-plus-loin"
+    },
+    {
+      "src": "/img/uploads/articles/gammes-produits/catalogue/filtre-boite-automatique.webp",
+      "alt": "Filtre de boîte auto — Autres pièces de la famille Filtres",
+      "w": "80",
+      "h": "80",
+      "loading": "lazy",
+      "fp": null,
+      "nat": "225x165",
+      "box": "64x64",
+      "sec": "aller-plus-loin"
+    }
+  ],
+  "nLinks": 90,
+  "dupLinks": [
+    [
+      "/diagnostic-auto",
+      6
+    ],
+    [
+      "/",
+      5
+    ],
+    [
+      "/#catalogue",
+      5
+    ],
+    [
+      "/pieces/filtre-a-air-8.html",
+      5
+    ],
+    [
+      "/#marques",
+      4
+    ],
+    [
+      "/blog-pieces-auto",
+      4
+    ],
+    [
+      "tel:+33148479627",
+      4
+    ],
+    [
+      "/pieces/filtre-a-carburant-9.html",
+      4
+    ],
+    [
+      "/blog-pieces-auto/guide-achat/filtre-a-huile",
+      3
+    ],
+    [
+      "/blog-pieces-auto/conseils/filtre-a-huile",
+      3
+    ],
+    [
+      "/legal/cgv",
+      3
+    ],
+    [
+      "/legal/privacy",
+      3
+    ],
+    [
+      "/login",
+      2
+    ],
+    [
+      "/register",
+      2
+    ],
+    [
+      "/pieces/bouchon-de-vidange-593.html",
+      2
+    ],
+    [
+      "https://www.facebook.com/Automecanik63",
+      2
+    ],
+    [
+      "https://www.instagram.com/automecanik.co",
+      2
+    ],
+    [
+      "https://www.youtube.com/@automecanik8508",
+      2
+    ],
+    [
+      "/contact",
+      2
+    ],
+    [
+      "/plan-du-site",
+      2
+    ],
+    [
+      "/legal/cookies",
+      2
+    ],
+    [
+      "/legal/legal-notice",
+      2
+    ],
+    [
+      "mailto:contact@automecanik.com",
+      2
+    ]
+  ],
+  "extLinks": [
+    "https://www.facebook.com/Automecanik63",
+    "https://www.instagram.com/automecanik.co",
+    "https://www.youtube.com/@automecanik8508",
+    "https://www.facebook.com/Automecanik63",
+    "https://www.instagram.com/automecanik.co",
+    "https://www.youtube.com/@automecanik8508"
+  ],
+  "xrobots": null,
+  "status": 200
+}

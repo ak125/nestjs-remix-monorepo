@@ -1,0 +1,347 @@
+{
+ "largeur": 1440,
+ "hauteur": 900,
+ "docH": 6838,
+ "sections": [
+  {
+   "s": "S_BREADCRUMB",
+   "y": 113,
+   "h": 45
+  },
+  {
+   "s": "S_HERO",
+   "y": 158,
+   "h": 163
+  },
+  {
+   "s": "S_IDENTITY",
+   "y": 321,
+   "h": 193
+  },
+  {
+   "s": "S_FAST_ACCESS",
+   "y": 546,
+   "h": 184
+  },
+  {
+   "s": "S_SEO_INTRO",
+   "y": 762,
+   "h": 125
+  },
+  {
+   "s": "S_CATALOG",
+   "y": 919,
+   "h": 2595
+  },
+  {
+   "s": "S_BESTSELLERS",
+   "y": 3578,
+   "h": 1059
+  },
+  {
+   "s": "S_SAFE_TABLE",
+   "y": 4685,
+   "h": 417
+  },
+  {
+   "s": "S_ANTI_ERRORS",
+   "y": 5150,
+   "h": 232
+  },
+  {
+   "s": "S_HOWTO",
+   "y": 5430,
+   "h": 270
+  },
+  {
+   "s": "S_TRUST",
+   "y": 5748,
+   "h": 216
+  }
+ ],
+ "recherche": [
+  {
+   "ph": "Rechercher une gamme (ex: plaquettes, filtre a huile...)",
+   "y": 615,
+   "lab": null
+  }
+ ],
+ "premierLienR2": {
+  "href": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "y": 1353
+ },
+ "liensR2VisiblesPremierEcran": 0,
+ "liensR2Visibles": 81,
+ "titres": [
+  {
+   "t": "H1",
+   "txt": "RENAULT CLIO III 1.5 dCi 86 ch de 2005 à 2012",
+   "y": 190,
+   "sec": "S_HERO"
+  },
+  {
+   "t": "H2",
+   "txt": "Acces rapide",
+   "y": 571,
+   "sec": "S_FAST_ACCESS"
+  },
+  {
+   "t": "H2",
+   "txt": "Catalogue de pieces auto",
+   "y": 919,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Système de filtration",
+   "y": 1304,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Système de freinage",
+   "y": 1304,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Courroie, galet, poulie et chaîne",
+   "y": 1304,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Préchauffage et allumage",
+   "y": 1304,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Direction et liaison au sol",
+   "y": 1781,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Amortisseur et suspension",
+   "y": 1781,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Support moteur",
+   "y": 1781,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Embrayage",
+   "y": 1781,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Transmission",
+   "y": 2278,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Système électrique",
+   "y": 2278,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Capteurs",
+   "y": 2278,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Système d'alimentation",
+   "y": 2278,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Moteur",
+   "y": 2721,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Refroidissement",
+   "y": 2721,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Climatisation",
+   "y": 2721,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Echappement",
+   "y": 2721,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Eclairage",
+   "y": 3218,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Accessoires",
+   "y": 3218,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Turbo",
+   "y": 3218,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H2",
+   "txt": "Pièces auto RENAULT les plus vendues",
+   "y": 3613,
+   "sec": "S_BESTSELLERS"
+  },
+  {
+   "t": "H3",
+   "txt": "Courroie d'accessoire",
+   "y": 3954,
+   "sec": "S_BESTSELLERS"
+  },
+  {
+   "t": "H3",
+   "txt": "Vanne EGR",
+   "y": 3954,
+   "sec": "S_BESTSELLERS"
+  },
+  {
+   "t": "H3",
+   "txt": "Câble de frein à main",
+   "y": 3954,
+   "sec": "S_BESTSELLERS"
+  },
+  {
+   "t": "H3",
+   "txt": "Boîtier papillon",
+   "y": 3954,
+   "sec": "S_BESTSELLERS"
+  },
+  {
+   "t": "H3",
+   "txt": "Démarreur",
+   "y": 4414,
+   "sec": "S_BESTSELLERS"
+  },
+  {
+   "t": "H3",
+   "txt": "Emetteur d'embrayage",
+   "y": 4414,
+   "sec": "S_BESTSELLERS"
+  },
+  {
+   "t": "H3",
+   "txt": "Rotule de suspension",
+   "y": 4414,
+   "sec": "S_BESTSELLERS"
+  },
+  {
+   "t": "H3",
+   "txt": "Support moteur",
+   "y": 4414,
+   "sec": "S_BESTSELLERS"
+  },
+  {
+   "t": "H2",
+   "txt": "Fiche technique",
+   "y": 4710,
+   "sec": "S_SAFE_TABLE"
+  },
+  {
+   "t": "H2",
+   "txt": "Erreurs fréquentes à éviter",
+   "y": 5175,
+   "sec": "S_ANTI_ERRORS"
+  },
+  {
+   "t": "H2",
+   "txt": "Comment choisir sans se tromper",
+   "y": 5455,
+   "sec": "S_HOWTO"
+  },
+  {
+   "t": "H3",
+   "txt": "Garantie 1 an",
+   "y": 5833,
+   "sec": "S_TRUST"
+  },
+  {
+   "t": "H3",
+   "txt": "Livraison 24-48h",
+   "y": 5833,
+   "sec": "S_TRUST"
+  },
+  {
+   "t": "H3",
+   "txt": "Conseil expert",
+   "y": 5833,
+   "sec": "S_TRUST"
+  },
+  {
+   "t": "H3",
+   "txt": "Retour 30 jours",
+   "y": 5833,
+   "sec": "S_TRUST"
+  },
+  {
+   "t": "H4",
+   "txt": "Navigation",
+   "y": 6174,
+   "sec": "footer"
+  },
+  {
+   "t": "H4",
+   "txt": "Informations véhicule",
+   "y": 6174,
+   "sec": "footer"
+  },
+  {
+   "t": "H4",
+   "txt": "Assistance",
+   "y": 6174,
+   "sec": "footer"
+  },
+  {
+   "t": "H3",
+   "txt": "À propos",
+   "y": 6394,
+   "sec": "footer"
+  },
+  {
+   "t": "H3",
+   "txt": "Liens utiles",
+   "y": 6394,
+   "sec": "footer"
+  },
+  {
+   "t": "H3",
+   "txt": "Informations légales",
+   "y": 6394,
+   "sec": "footer"
+  },
+  {
+   "t": "H3",
+   "txt": "Contact",
+   "y": 6394,
+   "sec": "footer"
+  }
+ ]
+}

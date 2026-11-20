@@ -1,0 +1,77 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/plaquette-de-frein-402.html",
+  "viewport": "390x844",
+  "at": "2026-11-20T14:55:08.715Z",
+  "lignes": [
+    {
+      "titre": "CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)",
+      "texte": "Début de fabrication : 2008",
+      "libelle": [
+        {
+          "x": 159,
+          "top": -1900,
+          "w": 137
+        }
+      ],
+      "annees": [
+        {
+          "x": 159,
+          "top": -1880,
+          "w": 36
+        }
+      ],
+      "p": {
+        "w": 168,
+        "x": 159
+      },
+      "largeurNaturelle": 183,
+      "parent": {
+        "tag": "DIV",
+        "classes": "flex-1 min-w-0",
+        "display": "block",
+        "flexDirection": "row",
+        "w": 168
+      },
+      "pStyle": {
+        "display": "block",
+        "flex": "0 1 auto",
+        "whiteSpace": "normal"
+      }
+    },
+    {
+      "titre": "HONDA CIVIC IX",
+      "texte": "Début de fabrication : 2013",
+      "libelle": [
+        {
+          "x": 159,
+          "top": 1272,
+          "w": 137
+        }
+      ],
+      "annees": [
+        {
+          "x": 159,
+          "top": 1292,
+          "w": 31
+        }
+      ],
+      "p": {
+        "w": 168,
+        "x": 159
+      },
+      "largeurNaturelle": 177,
+      "parent": {
+        "tag": "DIV",
+        "classes": "flex-1 min-w-0",
+        "display": "block",
+        "flexDirection": "row",
+        "w": 168
+      },
+      "pStyle": {
+        "display": "block",
+        "flex": "0 1 auto",
+        "whiteSpace": "normal"
+      }
+    }
+  ]
+}
