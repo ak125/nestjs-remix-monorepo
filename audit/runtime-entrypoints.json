@@ -2888,6 +2888,8 @@
       "backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql",
       "backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.down.sql",
       "backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.sql",
+      "backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.down.sql",
+      "backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3084,7 +3086,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1669,
+  "runtime_files_count": 1671,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4411,6 +4413,8 @@
     "backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql",
     "backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.down.sql",
     "backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.sql",
+    "backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.down.sql",
+    "backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
