@@ -40,9 +40,19 @@ jq -n --arg a "${SHA[101]}" --arg b "${SHA[102]}" --arg c "${SHA[103]}" '[
 
 # --- Faux outils ---
 mkdir -p "$FIX/bin"
+# Faux gh fidèle au vrai sur la résolution du dépôt : sans -R ni GH_REPO, il lit le dépôt du
+# répertoire courant et échoue hors dépôt avec le message de gh 2.101.0 (mandat EF) ; avec -R, il
+# n'accepte que l'URL du remote origin du dépôt de travail.
 cat > "$FIX/bin/gh" <<'EOF'
 #!/usr/bin/env bash
 echo "$*" >> "$FIX/gh.log"
+if [[ "${1:-}" == "-R" ]]; then
+  [[ "$2" == "$FIX/origine.git" ]] || { echo "dépôt inattendu : $2" >&2; exit 1; }
+  shift 2
+elif [[ -z "${GH_REPO:-}" ]] && ! git rev-parse --git-dir > /dev/null 2>&1; then
+  echo "failed to run git: fatal: not a git repository (or any of the parent directories): .git" >&2
+  exit 1
+fi
 case "$1 $2" in
   "pr list") cat "$FIX/prs.json" ;;
   "pr view") jq -r --argjson n "$3" '.[]|select(.number==$n)|.mergedAt' "$FIX/prs.json" ;;
@@ -72,11 +82,13 @@ jq -n --arg o "$objet" --arg p "$preuve" '{findings:[{file:"a.txt",line:1,severi
 EOF
 chmod +x "$FIX/bin/gh" "$FIX/bin/codex"
 
+# Lancement depuis un répertoire hors dépôt, comme l'unité systemd (démarrée dans $HOME).
+mkdir -p "$FIX/hors-depot"
 lance() { # dossier d'état, puis arguments ; affiche le code de sortie
   local etat="$1"; shift
-  env FIX="$FIX" PATH="$FIX/bin:$PATH" GH_TOKEN=jeton-de-test GITHUB_TOKEN=jeton-de-test \
+  (cd "$FIX/hors-depot" && env FIX="$FIX" PATH="$FIX/bin:$PATH" GH_TOKEN=jeton-de-test GITHUB_TOKEN=jeton-de-test \
     XDG_STATE_HOME="$FIX/state-$(basename "$etat")" CODEX_CONTROLEUR_DEPOT="$FIX/depot" \
-    CODEX_CONTROLEUR_ETAT="$etat" "${FAUX[@]}" bash "$SCRIPT" "$@" > "$etat.out" 2>&1 && echo 0 || echo $?
+    CODEX_CONTROLEUR_ETAT="$etat" "${FAUX[@]}" bash "$SCRIPT" "$@" > "$etat.out" 2>&1) && echo 0 || echo $?
 }
 FAUX=()
 faites() { jq -c '[.faites[] | select(.statut=="relue") | .pr]' "$1/curseur.json"; }
@@ -121,6 +133,9 @@ check "méta, tokens" "$(jq -r '.entree,.cache' "$J/pr103/meta.json" | paste -sd
 check "méta, consigne" "$(jq -r .consigne_sha256 "$J/pr103/meta.json")" "$(sha256sum "$ICI/consigne.md" | cut -d' ' -f1)"
 # Texte « usage_limit_reached » lu dans un fichier par Codex : pas pris pour un quota (103 relue).
 
+# Dépôt GitHub explicite : chaque appel gh porte -R <origin du dépôt de travail> (mandat EF).
+check "gh, dépôt explicite (pr list)" "$(grep -c "^-R $FIX/origine.git pr list " "$FIX/gh.log")" "$(grep -c 'pr list ' "$FIX/gh.log")"
+
 # 5. Plus rien de neuf : code 0, Codex non lancé.
 : > "$FIX/codex.log"
 check "rien de neuf" "$(lance "$E" quotidien)" 0
@@ -157,6 +172,7 @@ check "panne, rapport" "$(cron "$E2")" "error"
 # 9. ignorer : la PR qui échoue est marquée avec motif, la suivante est relue.
 check "ignorer sans motif" "$(lance "$E2" ignorer --pr 102)" 2
 check "ignorer" "$(lance "$E2" ignorer --pr 102 --motif 'diff illisible')" 0
+contient "ignorer, dépôt explicite (pr view)" "$FIX/gh.log" "-R $FIX/origine.git pr view 102 "
 check "ignorer, statut" "$(jq -r '.faites[]|select(.pr==102)|.statut+":"+.motif' "$E2/curseur.json")" "ignoree:diff illisible"
 check "après ignorer" "$(lance "$E2" quotidien)" 0
 check "après ignorer, curseur" "$(faites "$E2")" "[101,103]"
