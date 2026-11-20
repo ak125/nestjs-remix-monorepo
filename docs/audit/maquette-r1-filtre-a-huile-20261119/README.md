@@ -1375,6 +1375,92 @@ apparaît sur certaines captures (widget de la page, hors cartes).
 - Deux gammes relevées. Les 7 cartes sans lien, le V-Level, le titre et la
   description de la page ne sont pas traités.
 
+## Complément n° 11 — « Début de fabrication » quand la date de fin manque (20 nov. 2026)
+
+Demande de Marwane (20 nov., 13:47, « oui »), sur le constat de DU (§19 de
+REVUE-EXPERTE.md, #2211, commit 45b4b6a99) : 185 cartes sur 891 affichaient
+« Fabrication : dès AAAA » alors que la base ne connaît pas la date de fin (exemple :
+Sandero I 1.5 dCi 68, « dès 2008 », vendue de 2008 à 2012). Ce complément termine
+le changement du complément n° 10 et remplace son « dès AAAA ».
+Tête de départ : `31fa098f42ea5642d7aa10755fb842c2b18038a3`.
+
+### Changement
+
+`MotorisationsSection.tsx`, R1 seulement : `r1FabricationYears` renvoie le libellé
+et les années ; le rendu affiche `{libellé} : <années insécables>`. Aucune autre
+modification des cartes.
+
+| Données (`auto_type`) | Avant (31fa098f4) | Après | Lignes en base |
+| --- | --- | --- | --- |
+| début et fin | Fabrication : 2005–2012 | Fabrication : 2005–2012 (inchangé) | — |
+| années égales | Fabrication : 2011 | Fabrication : 2011 (inchangé) | — |
+| début seul | Fabrication : dès 2008 | **Début de fabrication : 2008** | 17 446 |
+| fin seule | Fabrication : jusqu'en 2012 | **Fin de fabrication : 2012** | 0 |
+| aucune date | pas de ligne | pas de ligne (inchangé) | 0 |
+
+Le cas « fin seule » n'existe pas en base (SELECT sur `auto_type`, début vide et fin
+présente : 0 ligne) ; il est traité par symétrie, sans rien affirmer sur le début.
+
+### Test
+
+`frontend/tests/unit/r1-motorisation-fabrication.test.tsx` : rendu réel de la
+section R1 avec cinq véhicules (les cinq cas). Sur 31fa098f4 : 2 échecs, 3 réussites
+(« Received: "Fabrication : dès 2008" » et « "Fabrication : jusqu'en 2012" »),
+`vitest-rouge-31fa098f4.txt`. Après : vert, avec les 5 autres fichiers de tests R1
+et cartes (6 fichiers, 59 tests, `vitest.txt`).
+
+### Mesures (390 et 1440 px, `filtre-a-huile-7` et `plaquette-de-frein-402`)
+
+- Titres, liens, badges et largeurs des cartes : identiques avant / après
+  (19 et 17 cartes). Aucune carte n'affiche plus « dès » (HTML servi et cartes
+  dépliées).
+- Cartes changées : FIAT 500, DACIA SANDERO I, SUZUKI SWIFT IV, HONDA CIVIC IX (pg 7) ;
+  CITROËN BERLINGO II, HONDA CIVIC IX (pg 402).
+- Contraste de la ligne : 7,55:1 sur blanc, inchangé.
+- Coupure à 390 px : la colonne de texte fait 168 px ; « Début de fabrication : »
+  tient sur la première ligne et l'année passe seule à la ligne suivante
+  (`apres-*-coupure.json`, `apres-*-coupure-390.png`). Ces 6 cartes gagnent 20 px
+  de hauteur (184 → 204 ; Berlingo 256 → 276). Avant, 2 cartes du pg 7 et 5 du
+  pg 402 avaient déjà « Fabrication : » / « AAAA–AAAA » sur deux lignes ; inchangé.
+  À 1440 px : une ligne partout, hauteurs inchangées.
+- axe : section des cartes sans violation avant comme après ; page inchangée
+  (390 : color-contrast ×9, region ×2 ; 1440 : color-contrast ×5, region ×4).
+
+### Bouton flottant de discussion à 390 px (relevé, rien n'est corrigé)
+
+Élément commun au site (`components/rag/ChatWidget.tsx`, `fixed bottom-24
+right-4`, cercle de 56 px, x 318–374, y 692–748 dans une vue de 844 px). Il est
+fixe : une ligne passe dessous au défilement dès que leurs étendues horizontales se
+croisent. Preuve par `elementFromPoint` après avoir amené chaque ligne à la hauteur
+du bouton.
+
+| Page | Lignes recouvertes avant | Après | Largeur recouverte |
+| --- | --- | --- | --- |
+| pg 7 | 11 / 19 | 11 / 19 | 1 à 9 px (fin du dernier chiffre de l'année) |
+| pg 402 | 8 / 17 | 8 / 17 | 1 à 9 px |
+
+Les lignes « Début de fabrication : » s'arrêtent à x 305 et ne sont pas recouvertes.
+Le bouton « remonter » de `root.tsx` (`fixed bottom-40 right-4`, 48 px, juste
+au-dessus) recouvre 1 px de 2 lignes (pg 7) et d'une ligne (pg 402), avant comme
+après. Captures : `*-chat-recouvre-390.png` (CLIO III, le « 2 » final de 2012 sous
+le bouton), `*-chat-libre-390.png`, `*-remonter-*-390.png`. Toute correction
+relève d'une décision de design commune au site (revue du 05).
+
+### Fichiers (`complement-11/`)
+
+`avant-*` et `apres-*` pour les deux gammes : `-cartes.json`, `-cartes-390.png`,
+`-cartes-1a3-390.png`, `-axe.json`, `-chat.json`, `-remonter.json` et leurs
+captures ; `apres-*-coupure.json` et `-coupure-390.png`. Contrôles :
+`typecheck-frontend.txt`, `eslint.txt`, `vitest.txt`, `vitest-rouge-31fa098f4.txt`.
+Backend non touché par ce complément : son typecheck du complément n° 10 reste valable.
+
+### Limites
+
+- Mesures de laboratoire sur le rendu local. Rien n'est intégré, activé ni servi en
+  DEV, PREPROD ou PROD.
+- Hors périmètre : carburant, mois de début et de fin, donnée BMW E81 116d, V-Level,
+  les 7 cartes sans lien, toute écriture en base.
+
 ## Limites propres au complément n° 5
 
 - Le rendu après est mesuré sur la page R1 isolée, avec la substitution
@@ -1423,6 +1509,9 @@ apparaît sur certaines captures (widget de la page, hors cartes).
 - `outils/cartes-c10.cjs` : `URL_PATH=… node cartes-c10.cjs <base> <label> <dossier>` ; cartes véhicule dépliées : titre, lien, badges, taille, contraste au pixel de chaque paragraphe, lignes identiques, captures à 390 px (complément n° 10).
 - `outils/axe-c10.cjs` : `URL_PATH=… node axe-c10.cjs <base> <label> <dossier>` ; axe sur la page et sur la section des cartes dépliée (complément n° 10).
 - `outils/cwv-c10.cjs` : `URL_PATH=… N=5 [ATTR=1] node cwv-c10.cjs <base> <label> <dossier>` ; LCP, CLS, INP (web-vitals 5.3.0), 390 CPU ×4 et 1440, parcours scripté ; `ATTR=1` pour le diagnostic des éléments (complément n° 10).
+- `outils/cartes-c10.cjs` relève aussi « Début de fabrication : » et « Fin de fabrication : » depuis le complément n° 11.
+- `outils/bulle-c11.cjs` : `BULLE=chat|remonter URL_PATH=… node bulle-c11.cjs <base> <label> <dossier>` ; bouton flottant fixe à 390 px : lignes « Fabrication » dont l'étendue croise le bouton, preuve `elementFromPoint` ligne par ligne, captures recouverte / libre (complément n° 11).
+- `outils/coupure-c11.cjs` : `URL_PATH=… node coupure-c11.cjs <base> <label> <dossier>` ; lignes « Fabrication » coupées à 390 px, texte de chaque ligne affichée, capture de la carte (complément n° 11).
 - `outils/band-context.cjs` : `node band-context.cjs <base> <sortie.png>` ; bas du hero et bande à 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree

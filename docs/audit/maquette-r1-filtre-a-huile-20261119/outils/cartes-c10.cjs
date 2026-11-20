@@ -4,7 +4,7 @@
 // badges, paragraphes (texte), taille de la carte (largeur × hauteur), et pour chaque paragraphe sa couleur
 // calculée et son contraste au pixel contre le fond dominant de chacune de ses lignes (rects d'un Range sur le
 // texte), la pire ligne retenue. Doublons : cartes dont la ligne mesurée ('faits' : paragraphe qui commence
-// par « Fabrication : » ; 'phrase' : dernier autre paragraphe avant le bouton, hors période « 📅 »)
+// par « Fabrication : », « Début de fabrication : » ou « Fin de fabrication : » ; 'phrase' : dernier autre paragraphe avant le bouton, hors période « 📅 »)
 // est identique à celle d'une autre carte de la même page.
 // Captures à 390 : section entière et trois premières cartes.
 // Usage : URL_PATH=/pieces/… node cartes-c10.cjs <base> <label> <dossier>
@@ -43,7 +43,7 @@ async function parLigne(page, rects, color) {
   }
   return best;
 }
-const FAITS = /^Fabrication\s:\s/;
+const FAITS = /^(Début de |Fin de )?[Ff]abrication\s:\s/; // « Fabrication : », « Début de fabrication : », « Fin de fabrication : » (complément n° 11)
 
 (async () => {
   fs.mkdirSync(outDir, { recursive: true });

@@ -48,18 +48,24 @@ const VISIBLE_LIMIT = 12;
 
 /**
  * Ligne de faits de la carte R1 : années de fabrication de la motorisation (auto_type.type_year_from /
- * type_year_to, renvoyées par get_gamme_page_data_optimized). Renvoie la valeur affichée après
- * « Fabrication : ». Une borne absente n'est pas affichée ; aucune borne = pas de ligne.
+ * type_year_to, renvoyées par get_gamme_page_data_optimized). Une date absente veut dire « inconnue » :
+ * début et fin → « Fabrication : début–fin » (une seule année si égales) ; début seul → « Début de
+ * fabrication : AAAA », sans rien affirmer sur la fin (jamais « dès ») ; fin seule → « Fin de
+ * fabrication : AAAA » ; aucune date → pas de ligne (complément n° 11 au mandat DS).
  */
 function r1FabricationYears(
   from?: string | null,
   to?: string | null,
-): string | null {
+): { libelle: string; annees: string } | null {
   const start = (from ?? "").trim();
   const end = (to ?? "").trim();
-  if (start && end) return start === end ? start : `${start}–${end}`;
-  if (start) return `dès ${start}`;
-  if (end) return `jusqu'en ${end}`;
+  if (start && end)
+    return {
+      libelle: "Fabrication",
+      annees: start === end ? start : `${start}–${end}`,
+    };
+  if (start) return { libelle: "Début de fabrication", annees: start };
+  if (end) return { libelle: "Fin de fabrication", annees: end };
   return null;
 }
 
@@ -250,15 +256,17 @@ const MotorisationsSection = memo(function MotorisationsSection({
                       // R1 : une seule ligne de faits propres au véhicule, sans phrase
                       // (complément n° 10 au mandat DS)
                       (() => {
-                        const annees = r1FabricationYears(
+                        const fab = r1FabricationYears(
                           motorisation.type_year_from,
                           motorisation.type_year_to,
                         );
                         // Plage insécable : à 390 px, « 2005–2008 » ne se coupe pas après le tiret.
-                        return annees ? (
+                        return fab ? (
                           <p className="text-sm text-gray-600 mb-4 font-medium">
-                            Fabrication&nbsp;:{" "}
-                            <span className="whitespace-nowrap">{annees}</span>
+                            {fab.libelle}&nbsp;:{" "}
+                            <span className="whitespace-nowrap">
+                              {fab.annees}
+                            </span>
                           </p>
                         ) : null;
                       })()

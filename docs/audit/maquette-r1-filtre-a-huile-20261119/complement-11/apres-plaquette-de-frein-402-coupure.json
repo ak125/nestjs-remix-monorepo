@@ -1,0 +1,81 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/plaquette-de-frein-402.html",
+  "label": "apres",
+  "at": "2026-11-20T14:30:12.642Z",
+  "vue": "390×844",
+  "lignesCoupees": 7,
+  "capture": "apres-plaquette-de-frein-402-coupure-390.png",
+  "carteCapturee": "CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)",
+  "coupees": [
+    {
+      "i": 1,
+      "titre": "CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)",
+      "ligne": "Début de fabrication : 2008",
+      "lignes": [
+        "Début de fabrication :",
+        "2008"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 4,
+      "titre": "PEUGEOT 307",
+      "ligne": "Fabrication : 2005–2009",
+      "lignes": [
+        "Fabrication :",
+        "2005–2009"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 5,
+      "titre": "PEUGEOT 307",
+      "ligne": "Fabrication : 2004–2009",
+      "lignes": [
+        "Fabrication :",
+        "2004–2009"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 7,
+      "titre": "AUDI A4 III B7",
+      "ligne": "Fabrication : 2004–2008",
+      "lignes": [
+        "Fabrication :",
+        "2004–2008"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 8,
+      "titre": "AUDI A4 III B7",
+      "ligne": "Fabrication : 2005–2006",
+      "lignes": [
+        "Fabrication :",
+        "2005–2006"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 9,
+      "titre": "AUDI A4 III B7",
+      "ligne": "Fabrication : 2005–2006",
+      "lignes": [
+        "Fabrication :",
+        "2005–2006"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 16,
+      "titre": "HONDA CIVIC IX",
+      "ligne": "Début de fabrication : 2013",
+      "lignes": [
+        "Début de fabrication :",
+        "2013"
+      ],
+      "largeurColonnePx": 168
+    }
+  ]
+}

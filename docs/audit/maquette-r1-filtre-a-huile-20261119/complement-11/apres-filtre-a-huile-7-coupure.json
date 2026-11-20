@@ -1,0 +1,71 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "apres",
+  "at": "2026-11-20T14:30:04.244Z",
+  "vue": "390×844",
+  "lignesCoupees": 6,
+  "capture": "apres-filtre-a-huile-7-coupure-390.png",
+  "carteCapturee": "FIAT 500",
+  "coupees": [
+    {
+      "i": 2,
+      "titre": "AUDI A3 II",
+      "ligne": "Fabrication : 2005–2008",
+      "lignes": [
+        "Fabrication :",
+        "2005–2008"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 5,
+      "titre": "FIAT 500",
+      "ligne": "Début de fabrication : 2007",
+      "lignes": [
+        "Début de fabrication :",
+        "2007"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 8,
+      "titre": "JEEP CHEROKEE III",
+      "ligne": "Fabrication : 2004–2008",
+      "lignes": [
+        "Fabrication :",
+        "2004–2008"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 9,
+      "titre": "DACIA SANDERO I",
+      "ligne": "Début de fabrication : 2008",
+      "lignes": [
+        "Début de fabrication :",
+        "2008"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 15,
+      "titre": "SUZUKI SWIFT IV",
+      "ligne": "Début de fabrication : 2010",
+      "lignes": [
+        "Début de fabrication :",
+        "2010"
+      ],
+      "largeurColonnePx": 168
+    },
+    {
+      "i": 17,
+      "titre": "HONDA CIVIC IX",
+      "ligne": "Début de fabrication : 2012",
+      "lignes": [
+        "Début de fabrication :",
+        "2012"
+      ],
+      "largeurColonnePx": 168
+    }
+  ]
+}
