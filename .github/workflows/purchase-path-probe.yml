@@ -74,6 +74,7 @@ jobs:
       - name: Parcours d'achat (PROD, sans payer)
         env:
           PURCHASE_PROBE_RESULT: ${{ runner.temp }}/purchase-probe-out/result.json
+          PURCHASE_PROBE_BYPASS_TOKEN: ${{ secrets.PURCHASE_PROBE_BYPASS_TOKEN }}
         working-directory: ${{ runner.temp }}/purchase-probe
         run: npx playwright test -c playwright.config.ts
 
