@@ -62,6 +62,13 @@ SENSIBLE_RE='eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|sb_secret_[A-Za-z0-9_-]{8
 die() { echo "codex-controleur : $*" >&2; exit "${2:-1}"; }
 usage() { sed -n '/^# Usage :/,/^# Codes de sortie/p' "${BASH_SOURCE[0]}" >&2; exit 2; }
 horodate() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+# Tout appel gh nomme son dépôt GitHub : l'URL du remote origin de $DEPOT (une seule source,
+# CODEX_CONTROLEUR_DEPOT). Sans -R, gh le déduit du répertoire courant, qui n'est pas un dépôt
+# sous systemd (mandat EF : échec du 2026-11-20 05:30 UTC, lancement depuis $HOME).
+gh_depot() {
+  local url; url="$(git -C "$DEPOT" remote get-url origin)" || die "remote origin illisible dans $DEPOT"
+  gh -R "$url" "$@"
+}
 
 # Rapport d'état local (lu par le hook SessionStart) ; ne fait jamais échouer la routine.
 rapport() { # statut durée résumé métriques-json
@@ -109,7 +116,7 @@ paquet_codex() { # dossier packages/standalone de l'installation de Codex, s'il 
 }
 commande_codex() { # remplit le tableau CODEX_CMD ; $1 = fichier last.json
   local git_commun pkg perms
-  git_commun="${GIT_COMMUN:-$(cd "$WT" && cd "$(git rev-parse --git-common-dir)" && pwd)}"
+  git_commun="${GIT_COMMUN:-$(git -C "$WT" rev-parse --path-format=absolute --git-common-dir)}"
   pkg="$(paquet_codex)"
   perms="{\":minimal\"=\"read\",\"$WT\"=\"read\",\"$git_commun\"=\"read\""
   [[ -z "$pkg" ]] || perms+=",\"$pkg\"=\"read\""
@@ -250,7 +257,7 @@ case "$CMD" in
   ignorer)
     [[ "$PR" =~ ^[0-9]+$ && -n "$MOTIF" ]] || die "ignorer exige --pr N et --motif TEXTE" 2
     lire_curseur; verrou
-    f="$(gh pr view "$PR" --json mergedAt --jq '.mergedAt')" || die "PR #$PR illisible"
+    f="$(gh_depot pr view "$PR" --json mergedAt --jq '.mergedAt')" || die "PR #$PR illisible"
     [[ -n "$f" && "$f" != "null" ]] || die "PR #$PR non fusionnée"
     marquer "$PR" "$f" ignoree "$MOTIF"
     echo "PR #$PR marquée non relue : $MOTIF"
@@ -267,7 +274,7 @@ case "$CMD" in
     t0=$(date +%s); jour="$ETAT/bruts/$(date -u +%Y-%m-%d)"; mkdir -p "$jour"
     depuis="$(jq -r '.depuis' "$CURSEUR")"
     liste="$jour/prs.json"
-    gh pr list --state merged --base "$BRANCHE" --search "merged:>=$depuis" --limit 500 \
+    gh_depot pr list --state merged --base "$BRANCHE" --search "merged:>=$depuis" --limit 500 \
       --json number,title,mergedAt,mergeCommit > "$liste.brut" || die "liste des PR fusionnées illisible"
     [[ "$(jq length "$liste.brut")" -lt 500 ]] || die "liste tronquée à 500 PR : relancer avec un curseur plus récent"
     jq --slurpfile c "$CURSEUR" '[$c[0].faites[].pr] as $f
