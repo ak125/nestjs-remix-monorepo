@@ -190,3 +190,79 @@ describe('PriceImportService.commit', () => {
     ]);
   });
 });
+
+/**
+ * Mandat EI : chaque déclenchement du garde-fou des prix (ligne refusée par
+ * validatePriceChain) est persisté dans `price_import_batches.failed_rows`, état
+ * lu par le producteur du rapport du matin (price-guard-signal.core). Avant ce
+ * mandat, le refus n'était qu'écrit dans le journal.
+ */
+describe('PriceImportService persists guard-rail triggers (failed_rows)', () => {
+  const req: ImportRequest = {
+    supplierId: '71',
+    brandPmId: '4200',
+    fileRows: [{ ref: 'A1', achat_ht: '10.00' }],
+    operator: 'test',
+    tariffDate: '2026-11-01',
+  };
+  const guarded = report([
+    row({ key: 'A1' }),
+    row({ key: 'B1', rejected: true, rejectReason: 'VENTE_BELOW_ACHAT' }),
+    row({
+      key: 'C1',
+      rejected: true,
+      rejectReason: 'MARGE_EXCEEDS_MAX,DELTA_EXCEEDS_MAX',
+    }),
+    // Refus hors garde-fou : non comptés.
+    row({ key: 'D1', rejected: true, rejectReason: 'NO_GRID_RULE' }),
+    row({ key: 'E1', matched: false, rejected: true, rejectReason: 'PARSE' }),
+  ]);
+
+  function makeService() {
+    const repo = {
+      insertRaw: jest.fn().mockResolvedValue(7),
+      createBatch: jest.fn().mockResolvedValue('batch-1'),
+      setBatchStatus: jest.fn().mockResolvedValue(undefined),
+      createChunk: jest.fn().mockResolvedValue('chunk-1'),
+      commitChunk: jest
+        .fn()
+        .mockResolvedValue({ committed: 1, skipped: 0, missing: 0 }),
+    };
+    const truth = {
+      getSupplierDirectory: jest
+        .fn()
+        .mockResolvedValue(new Map([['DCA', { splId: '71', nom: 'DCA' }]])),
+    };
+    const svc = new PriceImportService(
+      repo as unknown as PricingRepository,
+      truth as unknown as SupplierTruthRepository,
+    );
+    jest
+      .spyOn(svc as never, 'buildLines' as never)
+      .mockResolvedValue([line('A1', 1000)] as never);
+    jest
+      .spyOn(svc as never, 'computeReport' as never)
+      .mockResolvedValue(guarded as never);
+    return { svc, repo };
+  }
+
+  it('dry-run writes the guard-rail rejections as failed_rows', async () => {
+    const { svc, repo } = makeService();
+    await svc.dryRun(req);
+    expect(repo.setBatchStatus).toHaveBeenCalledWith(
+      'batch-1',
+      'DRY_RUN_OK',
+      expect.objectContaining({ failed_rows: 2 }),
+    );
+  });
+
+  it('commit writes the guard-rail rejections as failed_rows', async () => {
+    const { svc, repo } = makeService();
+    await svc.commit('batch-1', req);
+    expect(repo.setBatchStatus).toHaveBeenCalledWith(
+      'batch-1',
+      'COMMITTED',
+      expect.objectContaining({ failed_rows: 2, committed_rows: 1 }),
+    );
+  });
+});
