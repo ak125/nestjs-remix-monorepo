@@ -1,0 +1,28 @@
+== Q3a par gamme : kw v_level vs type_vlevel (toutes gammes)
+pg | pg_alias | n | nveh | veh_no_tid | kv2 | kv3 | kv4 | kv5 | vnull | kupd | srcs | tv2 | tv3 | tv4 | tv5 | tupd
+7 | filtre-a-huile | 2002 | 312 | 9 | 0 | 117 | 1702 | 0 | 183 | 2026-06-18 | google-ads-kp,google-paa,keyword-engine | 73 | 45 | 986 | 0 | 2026-02-01
+424 | filtre-d-habitacle | 1616 | 317 | 208 | 10 | 102 | 25 | 0 | 1479 | 2026-06-08 | google-ads-kp | 11 | 15 | 988 | 0 | 2026-04-22
+82 | disque-de-frein | 1446 | 1096 | 55 | 10 | 54 | 561 | 471 | 350 | 2026-06-18 | keyword-engine | 9 | 49 | 137 | 467 | 2026-04-23
+402 | plaquette-de-frein | 1384 | 1094 | 39 | 10 | 65 | 92 | 716 | 501 | 2026-06-07 | keyword-engine | 10 | 46 | 13 | 581 | 2026-04-23
+306 | courroie-de-distribution | 1366 | 0 | 0 | 0 | 0 | 1366 | 0 | 0 | 2026-06-18 | google-ads-kp |  |  |  |  | 
+9 | filtre-a-carburant | 940 | 191 | 127 | 10 | 74 | 856 | 0 | 0 | 2026-06-07 | google-ads-kp | 27 | 26 | 835 | 0 | 2026-04-22
+8 | filtre-a-air | 849 | 150 | 84 | 10 | 69 | 770 | 0 | 0 | 2026-06-07 | google-ads-kp | 22 | 30 | 803 | 0 | 2026-04-21
+10 | courroie-d-accessoire | 808 | 0 | 0 | 0 | 0 | 808 | 0 | 0 | 2026-06-18 | google-ads-kp |  |  |  |  | 
+307 | kit-de-distribution | 704 | 0 | 0 | 0 | 0 | 704 | 0 | 0 | 2026-06-18 | google-ads-kp |  |  |  |  | 
+78 | etrier-de-frein | 630 | 97 | 97 | 0 | 0 | 630 | 0 | 0 | 2026-04-22 | google-ads-kp | 6 | 7 | 442 | 0 | 2026-04-22
+1123 | chaine-de-distribution | 601 | 0 | 0 | 0 | 0 | 601 | 0 | 0 | 2026-06-18 | google-ads-kp |  |  |  |  | 
+258 | maitre-cylindre-de-frein | 313 | 0 | 0 | 10 | 25 | 31 | 0 | 247 | 2026-04-23 | google-ads-kp,keyword-engine | 8 | 22 | 1 | 0 | 2026-04-23
+123 | tambour-de-frein | 246 | 96 | 96 | 0 | 0 | 246 | 0 | 0 | 2026-04-23 | google-ads-kp | 4 | 1 | 299 | 0 | 2026-04-23
+806 | interrupteur-des-feux-de-freins | 186 | 0 | 0 | 0 | 0 | 186 | 0 | 0 | 2026-04-22 | google-ads-kp | 5 | 0 | 236 | 0 | 2026-04-22
+124 | cable-de-frein-a-main | 160 | 77 | 0 | 10 | 26 | 27 | 14 | 83 | 2026-06-07 | google-ads-kp,keyword-engine | 10 | 24 | 0 | 14 | 2026-04-23
+3859 | kit-de-freins-arriere | 150 | 64 | 0 | 26 | 39 | 1 | 0 | 84 | 2026-04-24 | google-ads-kp,keyword-engine | 25 | 0 | 0 | 0 | 2026-04-24
+83 | flexible-de-frein | 128 | 35 | 35 | 0 | 0 | 128 | 0 | 0 | 2026-04-23 | google-ads-kp | 4 | 0 | 168 | 0 | 2026-04-23
+387 | pompe-a-vide-de-freinage | 91 | 20 | 0 | 10 | 3 | 7 | 0 | 71 | 2026-04-23 | google-ads-kp,keyword-engine | 10 | 2 | 0 | 0 | 2026-04-23
+1108 | poulie-d-alternateur | 77 | 0 | 0 | 0 | 0 | 77 | 0 | 0 | 2026-06-18 | google-ads-kp |  |  |  |  | 
+277 | cylindre-de-roue | 69 | 5 | 5 | 0 | 0 | 69 | 0 | 0 | 2026-04-22 | google-ads-kp |  |  |  |  | 
+73 | repartiteur-de-frein | 62 | 18 | 0 | 11 | 9 | 2 | 0 | 40 | 2026-04-24 | google-ads-kp,keyword-engine | 9 | 0 | 0 | 0 | 2026-04-24
+310 | galet-tendeur-de-courroie-d-accessoire | 54 | 0 | 0 | 0 | 0 | 54 | 0 | 0 | 2026-06-18 | google-ads-kp |  |  |  |  | 
+70 | machoires-de-frein | 47 | 10 | 0 | 6 | 4 | 37 | 0 | 0 | 2026-04-23 | google-ads-kp | 6 | 0 | 0 | 0 | 2026-04-23
+407 | temoin-d-usure | 39 | 0 | 0 | 0 | 0 | 39 | 0 | 0 | 2026-04-22 | google-ads-kp |  |  |  |  | 
+416 | filtre-de-boite-auto | 10 | 0 | 0 | 0 | 0 | 10 | 0 | 0 | 2026-04-22 | google-ads-kp |  |  |  |  | 
+(25 rows)

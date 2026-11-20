@@ -1,0 +1,59 @@
+== Q4a fonctions qui citent les tables/colonnes V-Level
+proname | args | tv | kw | vl | sw
+__rls_reconcile_internal_tables |  | f | f | t | f
+auto_promote_to_v1 |  | f | t | t | f
+backfill_seo_keywords_type_ids | p_batch_size integer, p_pg_id integer | f | t | t | f
+check_v2_uniqueness |  | f | f | t | f
+extract_vehicle_keywords | p_pg_id integer | f | t | f | f
+get_brand_page_data_optimized | p_marque_id integer | f | f | f | t
+get_catalog_type_ids_for_gamme | p_pg_id integer | f | t | f | f
+get_extras_v4_type_ids | p_pg_id integer | f | t | t | f
+get_gamme_page_data_optimized | p_pg_id integer | f | f | f | t
+get_missing_v4_type_ids | p_pg_id integer | f | t | t | f
+get_top_money_gammes | p_limit integer | f | t | f | f
+get_vlevel_champions | p_pg_id integer | f | t | t | f
+get_vlevel_dashboard | p_pg_id integer, p_limit integer, p_offset integer | f | t | t | f
+get_vlevel_data | p_pg_id integer | f | t | t | f
+get_vlevel_section_k_extras | p_pg_id integer | f | t | t | f
+get_vlevel_section_k_metrics | p_pg_id integer | f | t | t | f
+get_vlevel_section_k_missing | p_pg_id integer | f | t | t | f
+kg_calculate_confidence_score | p_current_km integer, p_maintenance_records jsonb, p_ctx_phase text, p_ctx_temp text, p_ctx_speed text, p_observable_count integer, p_vehicle_id uuid, p_engine_family_code text, p_has_dtc boolean | f | f | t | f
+kg_calculate_risk_level | p_rule_id uuid, p_current_km integer, p_last_service_km integer | f | f | t | f
+match_keywords_batch | p_pg_id integer | f | t | f | f
+process_seo_template | p_template text, p_type_id integer, p_pg_id integer, p_mf_id integer, p_marque_name text, p_marque_alias text, p_marque_id integer, p_modele_name text, p_modele_alias text, p_modele_id integer, p_type_name text, p_type_alias text, p_type_power_ps text | f | f | f | t
+propagate_vlevel_per_typeid | p_pg_id bigint | f | t | t | f
+refresh_gamme_aggregates | p_pg_id integer | f | f | t | f
+rpc_seo_ready_gammes | p_min_kw integer | f | t | f | f
+sync_keywords_to_gamme_aggregates |  | f | t | t | f
+update_v2_repetitions_on_change |  | f | t | t | f
+update_v2_repetitions_on_delete |  | f | t | t | f
+validate_vlevel_integrity |  | f | t | t | f
+(28 rows)
+== Q4b vues qui citent
+viewname
+v_kw_pipeline_status
+v_seo_keywords_unmatched
+(2 rows)
+matviewname
+(0 rows)
+== Q4c triggers sur les tables
+relname | tgname | tgenabled | proname
+__seo_keywords | trg_seo_keywords_updated_at | O | update_seo_keywords_updated_at
+__seo_keywords | trg_sync_keywords_aggregates | O | sync_keywords_to_gamme_aggregates
+__seo_keywords | trg_update_v2_repetitions_delete | O | update_v2_repetitions_on_delete
+__seo_keywords | trg_update_v2_repetitions_insert | O | update_v2_repetitions_on_change
+__seo_keywords | trg_vlevel_integrity | D | validate_vlevel_integrity
+__seo_keywords | trg_write_scope___seo_keywords | O | enforce_agent_write_scope
+__seo_type_vlevel | trg_write_scope___seo_type_vlevel | O | enforce_agent_write_scope
+(7 rows)
+== Q4d stats acces
+relname | seq_scan | idx_scan | n_tup_ins | n_tup_upd | n_tup_del | last_seq_scan | last_idx_scan
+__seo_gamme_car_switch | 4023 | 229315 | 0 | 0 | 0 | 2026-11-20 09:57:15.129979+00 | 2026-11-20 10:47:34.694952+00
+__seo_item_switch | 15 | 3648037 | 0 | 0 | 0 | 2026-11-19 22:52:20.090799+00 | 2026-11-20 11:00:16.216812+00
+__seo_type_switch | 12 | 436771 | 0 | 0 | 0 | 2026-11-18 19:37:10.170693+00 | 2026-11-20 10:11:59.567574+00
+__seo_keywords | 74 | 6316 | 0 | 0 | 0 | 2026-11-20 11:00:04.935815+00 | 2026-11-20 10:47:36.896429+00
+__seo_type_vlevel | 49 | 15 | 0 | 0 | 0 | 2026-11-20 11:00:04.935815+00 | 2026-11-20 10:59:52.993045+00
+(5 rows)
+stats_reset
+
+(1 row)

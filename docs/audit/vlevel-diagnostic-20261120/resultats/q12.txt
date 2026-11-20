@@ -1,0 +1,81 @@
+== Q12a regle V3 : un seul champion par groupe [pg, modele, energie] (lignes vehicule)
+pg_id | groupes | groupes_plusieurs_v3 | groupes_sans_v3
+3859 | 29 | 7 | 13
+73 | 9 | 2 | 4
+70 | 6 | 1 | 4
+7 | 144 | 0 | 27
+8 | 79 | 0 | 10
+9 | 84 | 0 | 10
+78 | 36 | 0 | 36
+82 | 208 | 0 | 154
+83 | 17 | 0 | 17
+123 | 24 | 0 | 24
+124 | 41 | 0 | 15
+277 | 5 | 0 | 5
+387 | 13 | 0 | 10
+402 | 203 | 0 | 138
+424 | 164 | 0 | 62
+(15 rows)
+== Q12b regle V2 <= 10 par gamme (__seo_keywords vs __seo_type_vlevel)
+pg | v2_kw | v2_tvl
+7 |  | 73
+8 | 10 | 22
+9 | 10 | 27
+70 | 6 | 6
+73 | 11 | 9
+78 |  | 6
+82 | 10 | 9
+83 |  | 4
+123 |  | 4
+124 | 10 | 10
+258 | 10 | 8
+387 | 10 | 10
+402 | 10 | 10
+424 | 10 | 11
+806 |  | 5
+3859 | 26 | 25
+(16 rows)
+== Q12c V3 dont le type_id est absent ou non affiche (display<>1)
+pg_id | v3 | sans_tid | tid_non_affiche
+7 | 117 | 2 | 0
+8 | 69 | 11 | 0
+9 | 74 | 18 | 0
+70 | 4 | 0 | 0
+73 | 9 | 0 | 0
+82 | 54 | 1 | 0
+124 | 26 | 0 | 0
+258 | 25 | 1 | 0
+387 | 3 | 0 | 0
+402 | 65 | 0 | 0
+424 | 102 | 8 | 0
+3859 | 39 | 1 | 0
+(12 rows)
+== Q12d google-ads-kp : lignes typees generic qui citent pourtant un modele (motif modele + chiffre/cylindree)
+pg_id | generic | cite_modele
+306 | 1366 | 824
+424 | 1299 | 707
+7 | 1507 | 692
+10 | 808 | 437
+9 | 749 | 400
+307 | 704 | 388
+8 | 699 | 305
+1123 | 601 | 248
+78 | 533 | 179
+806 | 186 | 120
+258 | 309 | 94
+123 | 150 | 44
+310 | 54 | 35
+83 | 93 | 33
+1108 | 77 | 33
+(15 rows)
+== Q12e decision 48 : mots-cles vehicule google-ads-kp avec type_id -> page R2 (pg x type) presente au sitemap et type affiche
+source | kw_veh | avec_tid | au_sitemap | au_sitemap_affiche
+google-ads-kp | 1053 | 401 | 242 | 242
+keyword-engine | 2529 | 2426 | 2138 | 1901
+(2 rows)
+== Q12f idem tous types (vehicle+generic) a volume >0 : combien ont une page R2 identifiable
+source | kw_vol | avec_tid
+google-ads-kp | 10581 | 460
+google-paa | 0 | 0
+keyword-engine | 1617 | 684
+(3 rows)

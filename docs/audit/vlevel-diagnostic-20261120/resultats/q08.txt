@@ -1,0 +1,97 @@
+== Q8a couverture des tables GSC (min/max date)
+t | min | max | max
+daily | 2026-04-01 | 2026-11-17 | 2026-11-20 04:00:00.155+00
+page_totals | 2026-06-01 | 2026-11-17 | 2026-11-20 04:00:00.155+00
+(2 rows)
+== Q8b page R1 filtre-a-huile-7 : totaux par mois (page_totals)
+m | clics | impr | pos_moy
+2026-06-01 | 7 | 473 | 22.9
+2026-07-01 | 10 | 1242 | 20.7
+2026-08-01 | 3 | 1226 | 32.9
+2026-09-01 | 1 | 763 | 29.9
+2026-10-01 | 2 | 1103 | 34.8
+2026-11-01 | 5 | 757 | 39.8
+(6 rows)
+== Q8c pages R2 filtre-a-huile-7 x Clio III (toutes motorisations) depuis 2026-06-01
+page | clics | impr | pos
+https://www.automecanik.com/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-26627.html | 0 | 31 | 26.8
+https://www.automecanik.com/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html | 0 | 30 | 10.5
+https://www.automecanik.com/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-2-16v-23045.html | 0 | 22 | 10.2
+https://www.automecanik.com/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-34746.html | 0 | 10 | 8.8
+https://www.automecanik.com/pieces/filtre-a-huile-7/renault-140/clio-iii-break-140005/1-5-dci-34749.html | 0 | 3 | 9.0
+https://www.automecanik.com/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19051.html | 0 | 2 | 32.0
+https://www.automecanik.com/pieces/filtre-a-huile-7/renault-140/clio-iii-break-140005/1-2-16v-23452.html | 0 | 1 | 9.0
+(7 rows)
+== Q8d toutes pages R2 filtre-a-huile-7 : nb de pages avec impressions, clics
+pages | clics | impr
+2205 | 265 | 19789
+(1 row)
+== Q8e requetes GSC contenant filtre + huile + clio (toutes pages)
+query | clics | impr | pos | pages
+filtre a huile clio 5 1.0 tce | 0 | 70 | 9.6 | 2
+filtre a huile clio 3 | 0 | 14 | 43.6 | 2
+filtre a huile clio 3 1.5 dci | 0 | 6 | 31.3 | 2
+filtre a huile clio 4 | 0 | 6 | 57.5 | 1
+filtre à huile clio 4 0.9 tce | 0 | 5 | 13.5 | 1
+filtre a huile clio 4 tce 90 | 0 | 4 | 12.3 | 1
+filtre à huile clio 3 1.5 dci | 0 | 2 | 25.5 | 2
+filtre a huile clio 3 1.2 16v | 0 | 2 | 11.0 | 1
+filtre a huile clio 4 1.2 essence | 0 | 2 | 9.0 | 2
+filtre huile clio 3 1.5 dci | 0 | 1 | 28.0 | 1
+filtre a huile clio 2 | 0 | 1 | 53.0 | 1
+prix filtre a huile clio 3 | 0 | 1 | 13.0 | 1
+filtre à huile clio 2 | 0 | 1 | 41.0 | 1
+filtre a huile clio 2 1.2 essence | 0 | 1 | 26.0 | 1
+filtre à huile clio 2 1.5 dci | 0 | 1 | 25.0 | 1
+filtre a huile clio 4 0.9 tce | 0 | 1 | 10.0 | 1
+filtre a huile clio 4 dci | 0 | 1 | 36.0 | 1
+filtre a huile clio 5 1.5 dci | 0 | 1 | 7.0 | 1
+filtre huile clio 2 1.5 dci | 0 | 1 | 25.0 | 1
+filtre huile clio 3 | 0 | 1 | 41.0 | 1
+(20 rows)
+== Q8f top 20 requetes GSC filtre a huile (toutes pages)
+query | clics | impr | pos
+filtre a huile | 0 | 688 | 57.4
+filtre à huile | 0 | 400 | 61.3
+prix filtre à huile | 0 | 371 | 35.3
+filtre huile | 0 | 176 | 65.5
+filtre à huile prix | 0 | 164 | 39.1
+filtre huile moteur | 0 | 140 | 52.3
+filtre a huile boite de vitesse automatique | 0 | 133 | 9.5
+filtres huile | 0 | 133 | 66.8
+correspondance filtre a huile | 0 | 120 | 36.3
+filtre à huile voiture | 0 | 99 | 56.5
+filtre a huile 107 essence | 1 | 79 | 8.4
+filtre à huile peugeot 107 essence | 0 | 77 | 10.3
+filtre a huile clio 5 1.0 tce | 0 | 70 | 9.6
+filtre a huile 206 1.4 hdi | 0 | 66 | 30.0
+filtres (air, huile, essence) | 0 | 65 | 58.6
+filtre à huile 206 1.1 essence | 1 | 60 | 6.4
+filtres à huile | 0 | 60 | 58.9
+filtre à huile moteur | 0 | 58 | 30.0
+filtre huile boite automatique | 0 | 57 | 9.0
+filtre a huile boite automatique | 0 | 53 | 8.2
+(20 rows)
+== Q8g requetes GSC menant a la page R1 filtre-a-huile-7
+query | clics | impr | pos
+filtre a huile | 0 | 683 | 58.6
+filtre à huile | 0 | 392 | 63.6
+prix filtre à huile | 0 | 371 | 35.3
+filtre huile | 0 | 176 | 65.5
+filtre à huile prix | 0 | 164 | 39.1
+filtre huile moteur | 0 | 140 | 52.3
+filtres huile | 0 | 133 | 66.8
+correspondance filtre a huile | 0 | 120 | 36.3
+filtre à huile voiture | 0 | 99 | 56.5
+filtres (air, huile, essence) | 0 | 65 | 58.6
+filtres à huile | 0 | 60 | 58.9
+filtre à huile moteur | 0 | 58 | 30.0
+filtre à huile de voiture | 0 | 30 | 26.5
+achat filtre a huile | 0 | 28 | 33.1
+prix filtre a huile | 0 | 26 | 29.6
+filtre a huile pas cher | 0 | 22 | 39.2
+filtre huile voiture | 0 | 20 | 57.7
+tableau de correspondance filtre à huile | 0 | 19 | 29.3
+cartouche filtre a huile | 0 | 19 | 51.2
+filtre a huile prix | 0 | 18 | 31.0
+(20 rows)

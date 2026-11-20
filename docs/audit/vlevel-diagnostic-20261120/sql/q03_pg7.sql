@@ -1,0 +1,5 @@
+\echo == Q3a par gamme : kw v_level vs type_vlevel (toutes gammes)
+with kw as (select pg_id, count(*) filter (where v_level='V2') v2, count(*) filter (where v_level='V3') v3, count(*) filter (where v_level='V4') v4, count(*) filter (where v_level='V5') v5, count(*) filter (where v_level is null) vnull, count(*) n, count(*) filter (where type='vehicle') nveh, count(*) filter (where type='vehicle' and type_id is null) veh_no_tid, max(updated_at)::date upd, string_agg(distinct source, ',') srcs from __seo_keywords group by 1),
+tv as (select pg_id, count(*) filter (where v_level='V2') v2, count(*) filter (where v_level='V3') v3, count(*) filter (where v_level='V4') v4, count(*) filter (where v_level='V5') v5, max(updated_at)::date upd from __seo_type_vlevel group by 1)
+select coalesce(kw.pg_id,tv.pg_id) pg, g.pg_alias, kw.n, kw.nveh, kw.veh_no_tid, kw.v2 kv2, kw.v3 kv3, kw.v4 kv4, kw.v5 kv5, kw.vnull, kw.upd kupd, kw.srcs, tv.v2 tv2, tv.v3 tv3, tv.v4 tv4, tv.v5 tv5, tv.upd tupd
+from kw full join tv using (pg_id) left join pieces_gamme g on g.pg_id=coalesce(kw.pg_id,tv.pg_id) order by kw.n desc nulls last;
