@@ -29,7 +29,11 @@
 import type { DryRunReport } from './price-import.dry-run';
 import type { InvariantCode } from './pricing-invariants.service';
 import { OPERATION_ARRET_GARDE_FOU } from '../config/supplier-sale-rules';
-import { DISPO_DEACTIVATION_OPERATION } from './pricing.repository';
+import {
+  DISPO_DEACTIVATION_OPERATION,
+  type GuardBatchRow,
+  type SellAtLossScan,
+} from './pricing.repository';
 
 export const GARDE_PRIX_SCHEMA = 'garde-prix.v1';
 
@@ -64,22 +68,8 @@ export function countInvariantRejections(
   return n;
 }
 
-/** Ligne de `price_import_batches` lue par le producteur. */
-export interface GuardBatchRow {
-  batch_id: string;
-  supplier_id: string | null;
-  operation: string | null;
-  status: string;
-  failed_rows: number | null;
-  started_at: string | null;
-  completed_at: string | null;
-}
-
-/** Lignes vendables à perte, par marque (`pri_pm_id`). */
-export interface SellAtLossScan {
-  scanned: number;
-  byBrand: Map<string, number>;
-}
+// Types de lignes définis par le dépôt qui les lit ; réexportés pour les appelants.
+export type { GuardBatchRow, SellAtLossScan };
 
 export interface GardePrixDeclenchement {
   cle: string;

@@ -13,7 +13,6 @@ import type { CatalogPiece, ExistingPriceRow } from './price-import.dry-run';
 import type { SupplierPriceProfile } from './supplier-profile.service';
 import type { PricingRule } from './pricing-strategy.service';
 import type { CostBucketAggregate } from './pricing-simulation.core';
-import type { GuardBatchRow, SellAtLossScan } from './price-guard-signal.core';
 
 const PAGE = 1000; // supabase-js caps a single select at 1000 rows → paginate
 const SCOPE_CHUNK = 200; // ids per `.in()` so a multi-row scope stays under PAGE
@@ -34,6 +33,26 @@ function keysetValue(v: string): string {
 
 /** `price_import_batches.operation` marker of a dispo-withdrawal batch. */
 export const DISPO_DEACTIVATION_OPERATION = 'DISPO_DEACTIVATION';
+
+/**
+ * Ligne de `price_import_batches` lue par le producteur garde-prix
+ * (price-guard-signal.core.ts, qui dépend de ce dépôt et non l'inverse).
+ */
+export interface GuardBatchRow {
+  batch_id: string;
+  supplier_id: string | null;
+  operation: string | null;
+  status: string;
+  failed_rows: number | null;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+/** Lignes vendables à perte, par marque (`pri_pm_id`). */
+export interface SellAtLossScan {
+  scanned: number;
+  byBrand: Map<string, number>;
+}
 
 /** One pieces_price row in a withdrawal scope (see resolveDeactivationRows). */
 export interface DeactivationScopeRow {
