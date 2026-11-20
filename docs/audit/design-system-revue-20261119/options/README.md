@@ -1,4 +1,4 @@
-# Options de couleurs en images — compléments n° 2 et n° 3 au mandat DZ
+# Options de couleurs en images — compléments n° 2, n° 3 et n° 4 au mandat DZ
 
 **Maquette par feuille injectée, pas une implémentation.** Rien n'est en vigueur. Les décisions 45, 55
 et 57 sont inchangées. Aucun fichier du frontend, des jetons ni de Tailwind n'est modifié : chaque
@@ -7,33 +7,33 @@ servie par DEV. Le choix entre les options appartient à l'owner et au chat 05.
 
 | | |
 |---|---|
-| Accord | Marwane, 20 nov. 2026 à 09:37 heure de Tunis (complément n° 2, options A et B) ; 10:13 heure de Tunis (complément n° 3, option C « bouton d'achat vert », page produit seulement) |
+| Accord | Marwane, 20 nov. 2026 à 09:37 heure de Tunis (complément n° 2, options A et B) ; 10:13 heure de Tunis (complément n° 3, option C « bouton d'achat vert », page produit seulement) ; 11:06 heure de Tunis (complément n° 4, option A2 : logo orange, action principale de chaque page en orange) |
 | AVANT | DEV `http://127.0.0.1:3000`, servant `7f4dded37d068286e467ff69f0c4b2fcdacb0232` (origin/main) ; `frontend/` et `packages/design-tokens/` y sont identiques à la base de la PR `7368d72d` |
 | Pages | `r0-accueil` `/`, `r1-gamme` `/pieces/filtre-a-huile-7.html`, `r2-produit` `/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html`, `panier-vide` `/cart`, `connexion` `/login` ([`scripts/pages-options-dz.tsv`](scripts/pages-options-dz.tsv)) |
 | Tailles | 390×844 (mobile tactile) et 1440×900 |
-| Feuilles mesurées | [`option-a.css`](option-a.css) `2e00e790…ead3d`, [`option-b.css`](option-b.css) `2d63b7ca…ea5f570` (SHA-256 complets en fin de page), 63 règles chacune ; [`option-c.css`](option-c.css) `07d5b10d…af0f93`, 63 règles, mesurée sur `r2-produit` seulement ([§ Option C](#option-c--bouton-dachat-vert-complément-n-3)) |
+| Feuilles mesurées | [`option-a.css`](option-a.css) `2e00e790…ead3d`, [`option-b.css`](option-b.css) `2d63b7ca…ea5f570` (SHA-256 complets en fin de page), 63 règles chacune ; [`option-c.css`](option-c.css) `07d5b10d…af0f93`, 63 règles, mesurée sur `r2-produit` seulement ([§ Option C](#option-c--bouton-dachat-vert-complément-n-3)) ; [`option-a2.css`](option-a2.css) `1bef7ff9…630a64`, 67 règles, cinq pages ([§ Option A2](#option-a2--logo-et-action-principale-en-orange-complément-n-4)) |
 | Fenêtre | AVANT 08:53Z → 09:03Z ; captures A/B 09:34Z → 09:45Z ; mesures A/B 09:34:33Z → 09:51:47Z (2026-11-20) |
 | Garde-fous | toute requête non GET abandonnée (journal dans chaque JSON), aucun clic ni saisie, aucun formulaire envoyé ; traceurs tiers bloqués |
 
 ## Les options (jeu réduit)
 
-| Point | AVANT (main) | OPTION A | OPTION B | OPTION C (n° 3, r2 seulement) |
-|---|---|---|---|---|
-| 1. Structure | navy `#0F1E38` et dégradés de marque (bandeau R2 noir → jaune) | navy `#0F1E38`, bandeau R2 navy | identique à A | identique à A |
-| 2. Achat seul | « Ajouter » navy, « Panier » collant `#FF6900` texte noir, « Se connecter » `#F97316` texte noir | fond `#F97316`, texte navy, survol `#EA580C` | fond `#C2410C`, texte blanc, survol `#9A3412` | fond `#1E8449` (jeton semantic.success), texte blanc, survol `#196F3D` **(valeur NOUVELLE, absente des jetons : semantic.success n'a pas d'échelle)** |
-| 3. Orange ailleurs | orange, ambre, jaune décoratifs sur toutes les pages | retirés ; onglet actif de la barre mobile en navy, graisse 800 | identique à A | identique à A |
-| 4. Liens, actions secondaires | bleus bruts (`blue-400` à `blue-900`, `semantic-action`) | `#0F4C81` ; bleu de surface → navy | identique à A | identique à A |
-| 5. Texte | titres et textes de plusieurs gris (`slate-300` à `slate-500`) | titres navy, courant `#1F2937`, secondaire `#4B5563` ; sur navy ≥ `#9CA3AF` | identique à A | identique à A |
-| 6. Bords de champ | `#E2E8F0` (1,23:1), `#E5E7EB` (1,24:1), `#50A2FF` (2,64:1) ; sur navy `#27354C` (1,35:1) | `#6B7280` (sur navy `#9CA3AF`) | identique à A | identique à A |
-| 7. États | verts, rouges, ambres variés | succès `#1E8449`, erreur `#C0392B`, avertissement fond `#FEF3C7` **(valeur NOUVELLE, absente des jetons)**, texte `#1F2937` | identique à A | identique à A ; le succès garde `#1E8449`, la même couleur que le bouton d'achat, volontairement |
-| 8. Focus | contour 1 px auto (ambre `#E59700` sur r2 390) ou absent | 2 px navy ; sur fond navy, 2 px blanc doublés d'un liseré navy | identique à A | identique à A |
-| 9. Violets, roses, corail, vert vif | présents (dégradés, pastilles, filets au survol) | ramenés à navy, `#0F4C81` ou gris | identique à A | identique à A |
+| Point | AVANT (main) | OPTION A | OPTION B | OPTION C (n° 3, r2 seulement) | OPTION A2 (n° 4) |
+|---|---|---|---|---|---|
+| 1. Structure | navy `#0F1E38` et dégradés de marque (bandeau R2 noir → jaune) | navy `#0F1E38`, bandeau R2 navy | identique à A | identique à A | identique à A ; logo « MECANIK » garde `#F97316` sur navy (5,93:1) ; fil d'Ariane sur navy (r1) en `#9CA3AF` (6,55:1), page courante blanche |
+| 2. Achat seul | « Ajouter » navy, « Panier » collant `#FF6900` texte noir, « Se connecter » `#F97316` texte noir | fond `#F97316`, texte navy, survol `#EA580C` | fond `#C2410C`, texte blanc, survol `#9A3412` | fond `#1E8449` (jeton semantic.success), texte blanc, survol `#196F3D` **(valeur NOUVELLE, absente des jetons : semantic.success n'a pas d'échelle)** | action principale de chaque page : fond `#F97316`, texte navy, survol `#EA580C` ; désactivé fond `#FED7AA` (cta.200), texte navy, opacité 1 |
+| 3. Orange ailleurs | orange, ambre, jaune décoratifs sur toutes les pages | retirés ; onglet actif de la barre mobile en navy, graisse 800 | identique à A | identique à A | identique à A, hors logo et action principale |
+| 4. Liens, actions secondaires | bleus bruts (`blue-400` à `blue-900`, `semantic-action`) | `#0F4C81` ; bleu de surface → navy | identique à A | identique à A | identique à A |
+| 5. Texte | titres et textes de plusieurs gris (`slate-300` à `slate-500`) | titres navy, courant `#1F2937`, secondaire `#4B5563` ; sur navy ≥ `#9CA3AF` | identique à A | identique à A | identique à A |
+| 6. Bords de champ | `#E2E8F0` (1,23:1), `#E5E7EB` (1,24:1), `#50A2FF` (2,64:1) ; sur navy `#27354C` (1,35:1) | `#6B7280` (sur navy `#9CA3AF`) | identique à A | identique à A | identique à A |
+| 7. États | verts, rouges, ambres variés | succès `#1E8449`, erreur `#C0392B`, avertissement fond `#FEF3C7` **(valeur NOUVELLE, absente des jetons)**, texte `#1F2937` | identique à A | identique à A ; le succès garde `#1E8449`, la même couleur que le bouton d'achat, volontairement | identique à A |
+| 8. Focus | contour 1 px auto (ambre `#E59700` sur r2 390) ou absent | 2 px navy ; sur fond navy, 2 px blanc doublés d'un liseré navy | identique à A | identique à A | identique à A |
+| 9. Violets, roses, corail, vert vif | présents (dégradés, pastilles, filets au survol) | ramenés à navy, `#0F4C81` ou gris | identique à A | identique à A | identique à A |
 
 Jetons repris de `packages/design-tokens/src/tokens.json` : navy `#0F1E38`, secondary/info `#0F4C81`,
 neutral.800 `#1F2937`, neutral.500 `#4B5563`, neutral.300 `#9CA3AF`, neutral.400 `#6B7280`,
 neutral.100 `#E5E7EB`, neutral.50 `#F5F7FA`, success `#1E8449`, danger `#C0392B`, cta.500 `#F97316`,
 cta.600 `#EA580C`, cta.700 `#C2410C`, cta.800 `#9A3412`. Valeurs nouvelles : `#FEF3C7` (A, B, C) et `#196F3D`
-(survol de C seulement).
+(survol de C seulement). A2 n'ajoute aucune valeur : cta.200 `#FED7AA` est un jeton existant.
 
 ## Planches
 
@@ -288,6 +288,163 @@ serait sur une page qui affiche un succès `#1E8449` (non mesuré).
 - La pastille de discussion est un indicateur décoratif de 12 px. Le critère « vert » la compte comme
   les autres éléments ; son poids visuel est faible.
 
+## Option A2 : logo et action principale en orange (complément n° 4)
+
+Accord : Marwane, 20 nov. 2026 à 11:06 heure de Tunis, « Oui » à : « refaire les planches de A avec la
+règle corrigée : logo orange, action principale de chaque page en orange ». Correction de la règle du
+complément n° 2 (« orange réservé à l'achat »), jugée trop stricte : logo éteint, accueil et gamme sans
+orange, « Rechercher des pièces » en gris.
+
+[`option-a2.css`](option-a2.css) (`1bef7ff9…630a64`, 67 règles) = `option-a.css` avec ces changements seulement :
+
+1. **Logo** : « MECANIK » garde `#F97316` sur navy (5,93:1), comme sur main.
+2. **Action principale de chaque page** : fond `#F97316`, texte navy, survol `#EA580C`, focus 2 px navy ;
+   désactivé fond `#FED7AA` (jeton cta.200, existant), texte navy, opacité 1 (au lieu de l'opacité 0,4
+   de main et du gris de A). Actions retenues : « Rechercher des pièces » (r0, r1), « Ajouter » et
+   « Panier » collant (r2), « Trouver une pièce » (panier vide), « Se connecter » (connexion). L'état
+   désactivé `#FED7AA` s'applique aussi aux actions d'achat (A les laissait orange une fois désactivées).
+3. **Fil d'Ariane sur navy** (r1, faisable par la même feuille) : liens et séparateurs `#9CA3AF`
+   (neutral.300, 6,55:1 sur navy, 5,31:1 sur navy-light `#162D5A`), page courante blanche. Sur main, les
+   liens sont `#0D4473` (1,66:1). Sur r2, le fil est sur fond blanc : non concerné.
+
+Tout le reste est identique à A (orange retiré ailleurs, liens `#0F4C81`, gris, bords, états, focus).
+Captures A2 : 2026-11-20 10:22:43Z → 10:34:59Z ; mesures A2 10:23:32Z → 10:35:33Z ; actions orange par
+écran 10:36:01Z → 10:38:17Z (même DEV `7f4dded3`). Requêtes abandonnées : 44 POST (captures) et 36
+(actions orange), toutes consignées dans les JSON ; aucun clic, aucune saisie.
+
+### Planches A2
+
+| Page | 390×844, premier écran AVANT / A / A2 / B | 1440×900, premier écran AVANT / A / A2 / B |
+|---|---|---|
+| r0-accueil | [`planches/r0-accueil-390-a2.webp`](planches/r0-accueil-390-a2.webp) | [`planches/r0-accueil-1440-a2.webp`](planches/r0-accueil-1440-a2.webp) |
+| r1-gamme | [`planches/r1-gamme-390-a2.webp`](planches/r1-gamme-390-a2.webp) | [`planches/r1-gamme-1440-a2.webp`](planches/r1-gamme-1440-a2.webp) |
+| r2-produit | [`planches/r2-produit-390-a2.webp`](planches/r2-produit-390-a2.webp) | [`planches/r2-produit-1440-a2.webp`](planches/r2-produit-1440-a2.webp) |
+| panier-vide | [`planches/panier-vide-390-a2.webp`](planches/panier-vide-390-a2.webp) | [`planches/panier-vide-1440-a2.webp`](planches/panier-vide-1440-a2.webp) |
+| connexion | [`planches/connexion-390-a2.webp`](planches/connexion-390-a2.webp) | [`planches/connexion-1440-a2.webp`](planches/connexion-1440-a2.webp) |
+
+Actions principales A2 seules, agrandies 3×, colonnes repos / survol / focus / désactivé :
+[`planches/actions-principales-a2-390.webp`](planches/actions-principales-a2-390.webp),
+[`planches/actions-principales-a2-1440.webp`](planches/actions-principales-a2-1440.webp).
+Captures A2 : `captures/<page>-<W>-a2-ecran.webp`, `-a2-page.webp` ; recadrages
+`captures/boutons/bouton-<page>-<W>-<action>-a2-<état>.webp` (`-desactive-reel` : état désactivé servi).
+
+### Défauts mesurés AVANT / A / A2 / B
+
+Même mesure qu'au n° 2 (`mesure-option-dz.cjs` sur `mesure-dz.cjs` non modifié). Synthèse :
+[`mesures/synthese-option-a2-dz.md`](mesures/synthese-option-a2-dz.md) et `.json` (SHA-256 des 40 mesures
+brutes hors dépôt dans `sources`).
+
+| Passage | Textes sous seuil (AVANT / A / A2 / B) | Bords sous 3:1 | Focus invisible ou masqué | axe color-contrast |
+|---|---|---|---|---|
+| r0-accueil-390 | 39 / 3 / 3 / 3 | 3 / 0 / 0 / 0 | 12 / 4 / 5 / 5 | 31 / 0 / 0 / 0 |
+| r0-accueil-1440 | 41 / 4 / 4 / 4 | 3 / 0 / 0 / 0 | 3 / 0 / 0 / 0 | 26 / 1 / 1 / 1 |
+| r1-gamme-390 | 79 / 2 / 0 / 2 | 3 / 0 / 0 / 0 | 14 / 6 / 6 / 6 | 25 / 0 / 0 / 0 |
+| r1-gamme-1440 | 76 / 2 / 0 / 2 | 3 / 0 / 0 / 0 | 1 / 0 / 0 / 0 | 21 / 0 / 0 / 0 |
+| r2-produit-390 | 97 / 0 / 0 / 0 | 22 / 20 / 20 / 20 | 25 / 15 / 15 / 15 | 9 / 0 / 0 / 0 |
+| r2-produit-1440 | 105 / 3 / 4 / 3 | 21 / 20 / 20 / 20 | 5 / 2 / 2 / 2 | 5 / 0 / 0 / 0 |
+| panier-vide-390 | 8 / 0 / 0 / 0 | 1 / 0 / 0 / 0 | 5 / 3 / 3 / 3 | 6 / 0 / 0 / 0 |
+| panier-vide-1440 | 5 / 0 / 0 / 0 | 1 / 0 / 0 / 0 | 1 / 0 / 0 / 0 | 1 / 0 / 0 / 0 |
+| connexion-390 | 8 / 0 / 0 / 0 | 2 / 0 / 0 / 0 | 7 / 3 / 3 / 3 | 5 / 0 / 0 / 0 |
+| connexion-1440 | 8 / 0 / 0 / 0 | 2 / 0 / 0 / 0 | 2 / 0 / 0 / 0 | 5 / 0 / 0 / 0 |
+| **Total** | **466 / 14 / 11 / 14** | **61 / 40 / 40 / 40** | **75 / 33 / 34 / 34** | **134 / 1 / 1 / 1** |
+
+- **r1-gamme, textes 2 → 0** : les deux liens du fil d'Ariane (`#0D4473` sur navy) passent à `#9CA3AF`.
+- **r2-produit-1440, textes 3 → 4** et **r0-accueil-390, focus 4 → 5** : artefacts d'échantillonnage
+  de pixels, pas des effets de A2. Le style calculé est identique à A (« Véhicule sélectionné » :
+  `#4B5563` sur blanc, 7,53:1 ; « Par véhicule » : contour 2 px navy, 16,63:1). La mesure a relevé un
+  défilement entre ses deux captures (`defilementEntreCaptures`) ; B montre le même écart de focus sur
+  « Par véhicule » depuis le n° 2.
+
+| Passage | Résidus hors jeu au repos (AVANT / A / A2 / B) | Au survol forcé | Logo orange exclu (A2) |
+|---|---|---|---|
+| r0-accueil-390 | 243 / 0 / 0 / 0 | 319 / 0 / 0 / 0 | 1 |
+| r0-accueil-1440 | 283 / 0 / 0 / 0 | 363 / 0 / 0 / 0 | 1 |
+| r1-gamme-390 | 252 / 0 / 0 / 0 | 248 / 0 / 0 / 0 | 1 |
+| r1-gamme-1440 | 255 / 0 / 0 / 0 | 265 / 0 / 0 / 0 | 1 |
+| r2-produit-390 | 563 / 0 / 0 / 0 | 585 / 0 / 0 / 0 | 1 |
+| r2-produit-1440 | 620 / 0 / 0 / 0 | 663 / 0 / 0 / 0 | 1 |
+| panier-vide-390 | 32 / 0 / 0 / 0 | 100 / 0 / 0 / 0 | 1 |
+| panier-vide-1440 | 25 / 0 / 0 / 0 | 107 / 0 / 0 / 0 | 1 |
+| connexion-390 | 10 / 4 / 4 / 4 | 10 / 4 / 4 / 4 | 1 |
+| connexion-1440 | 10 / 4 / 4 / 4 | 10 / 4 / 4 / 4 | 1 |
+
+Le logo orange (1 élément par passage) est hors jeu par construction dans A ; dans A2, il est voulu et
+compté à part (`logoOrangeExclu`). Les 4 résidus de connexion sont le logo Google du bouton
+« Continuer avec Google » (image SVG à couleurs fixes), comme en A et B.
+
+### Ratios des actions principales A2
+
+| Action | Option | Repos (fond / texte : ratio) | Bouton / page | Survol | Focus (anneau : ratio anneau/page) | Désactivé |
+|---|---|---|---|---|---|---|
+| r0-accueil-390 · Rechercher des pièces (sélecteur véhicule) ¹ | A2 | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #FED7AA / #0F1E38 : 12.28 (réel) ; bouton/page 1.35 |
+| r1-gamme-390 · Rechercher des pièces (sélecteur véhicule) ¹ | A2 | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #FED7AA / #0F1E38 : 12.28 (réel) ; bouton/page 1.35 |
+| r2-produit-390 · Ajouter … au panier | A | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #F97316 / #0F1E38 : 5.93 (simulé) ; bouton/page 2.8 |
+| r2-produit-390 · Ajouter … au panier | A2 | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #FED7AA / #0F1E38 : 12.28 (simulé) ; bouton/page 1.35 |
+| r2-produit-390 · Panier (bouton collant) | A | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #F97316 / #0F1E38 : 5.93 (simulé) ; bouton/page 2.8 |
+| r2-produit-390 · Panier (bouton collant) | A2 | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #FED7AA / #0F1E38 : 12.28 (simulé) ; bouton/page 1.35 |
+| r2-produit-1440 · Ajouter … au panier | A | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #F97316 / #0F1E38 : 5.93 (simulé) ; bouton/page 2.8 |
+| r2-produit-1440 · Ajouter … au panier | A2 | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #FED7AA / #0F1E38 : 12.28 (simulé) ; bouton/page 1.35 |
+| panier-vide-390 · Trouver une pièce (panier vide) | A2 | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #F97316 / #0F1E38 : 5.93 (simulé) ; bouton/page 2.8 |
+| panier-vide-1440 · Trouver une pièce (panier vide) | A2 | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #F97316 / #0F1E38 : 5.93 (simulé) ; bouton/page 2.8 |
+| connexion-390 · Se connecter (bouton principal du formulaire) | A | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #F97316 / #0F1E38 : 5.93 (opacité 0.5, effectif 1.93) (simulé) ; bouton/page 2.8 |
+| connexion-390 · Se connecter (bouton principal du formulaire) | A2 | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #FED7AA / #0F1E38 : 12.28 (simulé) ; bouton/page 1.35 |
+| connexion-1440 · Se connecter (bouton principal du formulaire) | A | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #F97316 / #0F1E38 : 5.93 (opacité 0.5, effectif 1.93) (simulé) ; bouton/page 2.8 |
+| connexion-1440 · Se connecter (bouton principal du formulaire) | A2 | #F97316 / #0F1E38 : 5.93 | 2.8 | #EA580C / #0F1E38 : 4.67 | 2px solid #0F1E38 : 16.63 | #FED7AA / #0F1E38 : 12.28 (simulé) ; bouton/page 1.35 |
+
+¹ « Rechercher des pièces » est désactivé tant qu'aucun véhicule n'est choisi : repos, survol et focus sont mesurés après retrait local de l'attribut disabled (aucun clic, aucune saisie). « Trouver une pièce » est un lien : l'attribut `disabled` n'a pas d'effet, sa colonne
+« désactivé » est sans objet. Points à décider par le chat 05 :
+
+- **Survol `#EA580C`, texte navy : 4,67:1**, juste au-dessus de 4,5:1 (même valeur qu'en A).
+- **Bouton / page au repos : 2,80:1** (`#F97316` sur blanc), sous 3:1 ; le texte navy porte le contraste
+  (5,93:1), et le contour du bouton n'a pas d'autre bord. Même valeur qu'en A.
+- **Désactivé `#FED7AA` : texte 12,28:1, mais bouton / page 1,35:1** : le bouton désactivé se lit par
+  son texte, sa forme se distingue à peine du blanc. Main (opacité 0,4) rendait le texte peu lisible ;
+  A le rendait gris.
+
+### Une seule action principale orange par écran ?
+
+Bouton ou lien visible, fond calculé orange, entier dans l'écran et non recouvert en son centre ;
+la page est parcourue écran par écran (défilement d'une hauteur d'écran). Script :
+[`scripts/actions-orange-a2-dz.cjs`](scripts/actions-orange-a2-dz.cjs).
+
+| Passage | Actions orange entières, premier écran (A2) | Écrans de la page | Écrans à plusieurs actions orange | Maximum par écran | Toute la page |
+|---|---|---|---|---|---|
+| r0-accueil-390 | 1 (Rechercher des pièces (désactivé) #FED7AA) | 10 | 0 | 1 | 1 |
+| r0-accueil-1440 | 0 | 6 | 0 | 0 | 0 |
+| r1-gamme-390 | 0 | 19 | 0 | 0 | 1 |
+| r1-gamme-1440 | 0 | 10 | 0 | 0 | 0 |
+| r2-produit-390 | 1 (Panier (collant) #F97316) | 16 | 4 | 5 | 21 |
+| r2-produit-1440 | 0 | 12 | 4 | 3 | 20 |
+| panier-vide-390 | 1 (Trouver une pièce #F97316) | 2 | 0 | 1 | 1 |
+| panier-vide-1440 | 1 (Trouver une pièce #F97316) | 2 | 0 | 1 | 1 |
+| connexion-390 | 1 (Se connecter #F97316) | 2 | 0 | 1 | 1 |
+| connexion-1440 | 1 (Se connecter #F97316) | 2 | 0 | 1 | 1 |
+
+- **Plusieurs actions orange dans un même écran : r2-produit seulement.** À 390 px, 4 écrans sur 16 en
+  montrent 3 à 5 (« Ajouter » des cartes de la liste, deux par rangée, plus « Panier » collant) ; à
+  1440 px, 4 écrans sur 12 en montrent 2 ou 3 (trois cartes par rangée). La page compte 21 (390) et
+  20 (1440) actions orange. La règle « une seule par écran » n'est pas tenue par une liste de produits
+  dont chaque carte a son bouton d'achat : décision du chat 05 (par exemple « Ajouter » en contour
+  sur les cartes, plein sur la fiche seule), non maquettée ici.
+- **r0-accueil et r1-gamme à 1440 : aucune action orange**, ni dans le premier écran ni plus bas. Le
+  sélecteur de bureau (Marque, Année, Modèle, Motorisation, Réinitialiser) n'a pas de bouton de
+  validation : il n'y a pas d'action principale à mettre en orange sans modifier le composant.
+  « Inscription » (en-tête) et « Lancer le diagnostic » (r1), orange sur main, restent navy comme en A.
+- **r1-gamme à 390** : « Rechercher des pièces » est sous le premier écran (y = 873 pour 844) ; dans le
+  découpage écran par écran, il tombe sous la barre collante du haut (écran 2, défilement 846) et n'est
+  donc compté entier dans aucun écran. Le défilement réel d'un visiteur le montre.
+- **r2-produit, premier écran** : 1 action orange à 390 (« Panier » collant) ; 0 à 1440 (« Ajouter »
+  apparaît au deuxième écran).
+
+### Limites propres à A2
+
+- Le choix des actions principales est fait par sélecteur sur les classes servies : un autre composant
+  ou une autre page peut avoir une action principale non couverte.
+- « Rechercher des pièces » : repos, survol et focus mesurés après retrait local de l'attribut `disabled`
+  (aucun véhicule n'est choisi, aucun clic ni saisie) ; l'état désactivé, lui, est l'état servi.
+- AVANT, A et B sont les mesures et captures du n° 2 (09:34Z → 09:51Z) ; A2 a été mesurée à 10:22Z →
+  10:38Z sur le même DEV, sans rien lancer en parallèle.
+
 ## Limites
 
 - **Maquette par feuille injectée, pas une implémentation.** Une feuille à `!important` écrase les
@@ -311,8 +468,8 @@ serait sur une page qui affiche un succès `#1E8449` (non mesuré).
 ```bash
 cd docs/audit/design-system-revue-20261119/options
 export NODE_PATH=/opt/automecanik/app/node_modules
-node scripts/genere-options-css-dz.cjs .                       # option-a.css, option-b.css, option-c.css
-node scripts/mesure-option-dz.cjs <avant|a|b> <id> <chemin> <L> <H> <sortie>
+node scripts/genere-options-css-dz.cjs .                       # option-a.css, option-b.css, option-c.css, option-a2.css
+node scripts/mesure-option-dz.cjs <avant|a|b|a2> <id> <chemin> <L> <H> <sortie>
 node scripts/options-captures-dz.cjs <id> <chemin> <L> <H> . <dossier-brut>
 bash scripts/planches-options-dz.sh <dossier-brut> .
 node scripts/condense-options-dz.cjs <dossier-mesures> .
@@ -321,6 +478,12 @@ node scripts/options-captures-dz.cjs r2-produit <chemin> <L> <H> . <dossier-brut
 node scripts/verts-option-c-dz.cjs r2-produit <chemin> <L> <H> . <dossier-brut> <c|avant>
 bash scripts/planches-option-c-dz.sh <dossier-brut> .
 node scripts/condense-option-c-dz.cjs .
+# Complément n° 4 (option A2, cinq pages) :
+node scripts/options-captures-dz.cjs <id> <chemin> <L> <H> . <dossier-brut> a2
+node scripts/mesure-option-dz.cjs a2 <id> <chemin> <L> <H> <dossier-mesures>/a2
+node scripts/actions-orange-a2-dz.cjs <id> <chemin> <L> <H> . a2
+bash scripts/planches-option-a2-dz.sh <dossier-brut> .
+node scripts/condense-option-a2-dz.cjs <dossier-mesures> .
 ```
 
 Inventaire préalable : `scripts/inventaire-options-dz.cjs`, `scripts/roles-options-dz.cjs`,
@@ -332,4 +495,5 @@ SHA-256 des feuilles mesurées :
 2e00e7903af39c8d1aa08616e5356fbc8f0a56d91886196706b6d8c56a9ead3d  option-a.css
 2d63b7ca0f7673e429a5d37bd0a27c471504f102e2d26f901eed58f474c5f570  option-b.css
 07d5b10de5a3ad538bcda022f455527bb11c6176ed2b5085769f30222aaf0f93  option-c.css
+1bef7ff971c110d914355120e44e3e23807e4b160119485fa873251cc0630a64  option-a2.css
 ```

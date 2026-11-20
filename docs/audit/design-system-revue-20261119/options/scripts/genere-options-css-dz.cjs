@@ -9,6 +9,11 @@ const OPTIONS = {
   b: { nom: "OPTION B", fond: "#C2410C", texte: T.blanc, survol: "#9A3412", note: "fond cta.700 #C2410C, texte blanc ; survol cta.800 #9A3412 (un ton plus foncé de la même échelle)" },
   // Complément n° 3 : jeu réduit de A, sauf le bouton d'achat (r2-produit seulement sur les planches).
   c: { nom: "OPTION C", complement: "n° 3", fond: "#1E8449", texte: T.blanc, survol: "#196F3D", note: "fond semantic.success #1E8449, texte blanc ; survol #196F3D (VALEUR NOUVELLE, absente des jetons : semantic.success n'a pas d'échelle). Les états positifs (en stock, compatible, validé) gardent #1E8449 (point 7), volontairement" },
+  // Complément n° 4 : option A corrigée (A2). Trois changements seulement par rapport à A : logo orange,
+  // action principale de chaque page en orange (pas seulement l'achat), fil d'Ariane lisible sur navy.
+  a2: { nom: "OPTION A2", complement: "n° 4", fond: "#F97316", texte: T.navy, survol: "#EA580C", principales: true,
+        desactive: { fond: "#FED7AA", texte: T.navy }, logo: "#F97316",
+        note: "action principale de chaque page (achat, « Rechercher des pièces », « Trouver une pièce », « Se connecter ») : fond cta.500 #F97316, texte navy ; survol cta.600 #EA580C ; désactivé fond cta.200 #FED7AA, texte navy, opacité 1. Logo « MECANIK » cta.500 #F97316 sur navy. Fil d'Ariane sur navy : neutral.300 #9CA3AF, page courante blanc" },
 };
 const q = (c) => `[class~="${c.replace(/"/g, '\\"')}"]`;                 // classe rendue exacte
 const L = (...cs) => cs.map(q).join(",\n");
@@ -33,6 +38,13 @@ const inSombre = (sel) => sel.split(",\n").flatMap((s) => [`${SOMBRE} ${s}:not($
 const CLAIR_MD = '[class*="md:bg-white"]';
 const ACHAT = `:is(button[aria-label^="Ajouter"][aria-label$="au panier"], button${q("bg-orange-500")}${q("rounded-xl")}, form[method="post" i] button[type="submit"]):not(#dz-option)`;
 const BARRE = 'nav[aria-label="Navigation mobile"]';
+// Complément n° 4 (A2 seulement) : action principale de chaque page, en plus de l'achat. Sélecteurs relevés par sonde
+// en lecture seule (20 nov. 2026) : « Rechercher des pièces » du sélecteur véhicule mobile (r0, r1 ; bg-cta + disabled:opacity-40,
+// unique sur les 5 pages) et « Trouver une pièce » du panier vide (lien bg-blue-600 h-12 px-8, unique). « Se connecter » est
+// déjà couvert par ACHAT (bouton submit d'un formulaire POST).
+const PRINCIPALE = `:is(button[aria-label^="Ajouter"][aria-label$="au panier"], button${q("bg-orange-500")}${q("rounded-xl")}, form[method="post" i] button[type="submit"], button${q("bg-cta")}${q("disabled:opacity-40")}, a${q("bg-blue-600")}${q("h-12")}${q("px-8")}):not(#dz-option)`;
+const LOGO = `:is(header, nav${q("bg-navy")}) a[href="/"] span${q("text-cta")}:not(#dz-logo)`;
+const ARIANE = `[class*="from-navy"] nav${q("text-[10px]")}`;
 
 function regles(o) {
   const R = [];
@@ -108,6 +120,18 @@ function regles(o) {
   r(5, "≥ 768 px, surface md:bg-white : texte secondaire #4B5563", `${CLAIR_MD} :is(${L("text-slate-300", "text-slate-400", "text-gray-400", "text-gray-500").split(",\n").join(", ")}):not(#dz-clair)`, `color:${T.texte2}`, "(min-width: 768px)");
   r(4, "≥ 768 px, surface md:bg-white : lien #0F4C81", `${CLAIR_MD} :is(${L("text-blue-400", "md:text-blue-600").split(",\n").join(", ")}):not(#dz-clair)`, `color:${T.lien}`, "(min-width: 768px)");
   r(8, "≥ 768 px, surface md:bg-white : focus navy de 2 px", `${CLAIR_MD} :focus-visible:not(#dz-clair)`, `outline:2px solid ${T.navy};outline-offset:2px;box-shadow:none;--tw-ring-color:${T.navy}`, "(min-width: 768px)");
+  if (o.principales) {
+    // ---------- complément n° 4 : logo, fil d'Ariane, action principale (A2) ----------
+    r(3, `logo « MECANIK » : orange ${o.logo} sur navy, comme sur main (complément n° 4)`, LOGO, `color:${o.logo}`);
+    r(5, `fil d'Ariane sur navy (R1) : liens, séparateurs et page courante → neutral.300 ${T.texte2Sombre} (complément n° 4)`, `${ARIANE} :is(a, span, svg):not(#dz-ariane)`, `color:${T.texte2Sombre}`);
+    r(5, "fil d'Ariane sur navy : page courante et survol de lien → blanc (complément n° 4)", join(`${ARIANE} span${q("text-white/60")}:not(#dz-ariane)`, `${ARIANE} a:hover:not(#dz-ariane)`), `color:${T.blanc}`);
+    r(2, `action principale de chaque page — ${o.nom} : ${o.note}`, PRINCIPALE, `background-image:none;background-color:${o.fond};color:${o.texte};border-color:${o.fond};--tw-shadow-color:rgba(15,30,56,.15)`);
+    r(2, `action principale — ${o.nom} : texte et icônes intérieurs à la couleur du texte du bouton`, `${PRINCIPALE} *`, `color:${o.texte}`);
+    r(2, `action principale — ${o.nom} : survol, un ton plus foncé (${o.survol})`, `${PRINCIPALE}:hover`, `background-color:${o.survol}`);
+    r(2, `action principale — ${o.nom} : désactivé, fond orange clair ${o.desactive.fond} (cta.200), texte ${o.desactive.texte}, opacité 1 (au lieu de l'opacité 0,4)`, join(`${PRINCIPALE}:disabled`, `${PRINCIPALE}:disabled:hover`), `background-image:none;background-color:${o.desactive.fond};color:${o.desactive.texte};border-color:${o.desactive.fond};opacity:1;box-shadow:none;cursor:not-allowed`);
+    r(8, "action principale : anneau de focus navy de 2 px, hors du bouton (fond clair)", `${PRINCIPALE}:focus-visible`, `outline:2px solid ${T.navy};outline-offset:2px`);
+    return R;
+  }
   // ---------- 2 : action d'achat seule ----------
   r(2, `action d'achat (ajouter au panier, bouton collant « Panier », bouton principal d'un formulaire POST) — ${o.nom} : ${o.note}`, ACHAT, `background-image:none;background-color:${o.fond};color:${o.texte};border-color:${o.fond};--tw-shadow-color:rgba(15,30,56,.15)`);
   r(2, `action d'achat — ${o.nom} : texte et icônes intérieurs à la couleur du texte du bouton`, `${ACHAT} *`, `color:${o.texte}`);

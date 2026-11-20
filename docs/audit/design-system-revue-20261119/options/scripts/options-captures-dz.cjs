@@ -15,6 +15,16 @@ const ACHAT = [
   { nom: "Panier (bouton collant)", sel: 'button.bg-orange-500.rounded-xl' },
   { nom: "Se connecter (bouton principal du formulaire)", sel: 'form[method="post" i] button[type="submit"]' },
 ];
+// Complément n° 4 (A2) : actions principales hors achat, mesurées seulement quand la liste contient a2 (les sorties
+// des n° 2 et 3 restent reproductibles à l'identique). « Rechercher des pièces » est réellement désactivé tant
+// qu'aucun véhicule n'est choisi : ses états actifs sont mesurés en retirant l'attribut disabled dans le DOM
+// (simulation locale, aucun clic ni saisie), puis l'attribut est remis pour l'état désactivé réel.
+const A2 = VARIANTES.includes("a2");
+if (A2) ACHAT.push(
+  { nom: "Rechercher des pièces (sélecteur véhicule)", sel: 'button[class~="bg-cta"][class~="disabled:opacity-40"]', cle: "rechercher", activerSimule: true },
+  { nom: "Trouver une pièce (panier vide)", sel: 'a[class~="bg-blue-600"][class~="h-12"][class~="px-8"]', cle: "trouver" });
+const ACH_EXTRA = A2 ? ["#FED7AA"] : [];
+const LOGO_SEL = ':is(header, nav[class~="bg-navy"]) a[href="/"] span[class~="text-cta"]';
 const PAGE_FN = () => {
   const cv = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
   const rgb = (c) => { cv.clearRect(0, 0, 1, 1); cv.fillStyle = "#000"; cv.fillStyle = c; cv.fillRect(0, 0, 1, 1); const d = cv.getImageData(0, 0, 1, 1).data; return { r: d[0], g: d[1], b: d[2], a: d[3] / 255 }; };
@@ -27,10 +37,10 @@ const PAGE_FN = () => {
   return { rgb, hex, ratio, blend, fondDe, hsl };
 };
 async function residus(page) {
-  return page.evaluate(([fnSrc, achatSels]) => {
+  return page.evaluate(([fnSrc, achatSels, achExtra, logoSel]) => {
     const { rgb, hex, hsl } = eval("(" + fnSrc + ")")();
     const OK = ["#0F1E38", "#0F4C81", "#1E8449", "#C0392B", "#FEF3C7"];
-    const ACH = ["#F97316", "#EA580C", "#C2410C", "#9A3412", "#1E8449", "#196F3D"];
+    const ACH = ["#F97316", "#EA580C", "#C2410C", "#9A3412", "#1E8449", "#196F3D", ...achExtra]; let logoOrange = 0;
     const fam = (c) => { if (c.a < 0.35) return null; const x = hsl(c); if (x.s < 0.45 || x.l < 0.3 || x.l > 0.9) return null; const h = x.h;
       if (h >= 15 && h < 65) return "orange, ambre, jaune"; if (h >= 65 && h < 170) return "vert vif"; if (h >= 170 && h < 255) return "bleu, cyan"; if (h >= 255 && h < 340) return "violet, rose"; return "rouge, corail"; };
     const out = {}; const ex = {}; let n = 0;
@@ -43,13 +53,13 @@ async function residus(page) {
       if (e instanceof SVGElement) { props.push(["fill", cs.fill], ["stroke", cs.stroke]); }
       for (const m of cs.backgroundImage.includes("gradient") ? cs.backgroundImage.match(/(rgba?|oklch|oklab|lab|color)\([^)]*\)/g) || [] : []) props.push(["background-image (dégradé)", m]);
       for (const [p, v] of props) { if (!v || v === "none" || v.startsWith("url")) continue; if (p === "color" && !(e.childNodes && [...e.childNodes].some((t) => t.nodeType === 3 && t.textContent.trim())) && !(e instanceof SVGElement)) continue;
-        const c = rgb(v); const h = hex(c); if (OK.includes(h) || (dansAchat && ACH.includes(h))) continue; const f = fam(c); if (f) { add(f, e, p, c); n++; } }
+        const c = rgb(v); const h = hex(c); if (OK.includes(h) || (dansAchat && ACH.includes(h))) continue; if (logoSel && e.matches(logoSel) && h === "#F97316") { logoOrange++; continue; } const f = fam(c); if (f) { add(f, e, p, c); n++; } }
     }
     const imgs = [...document.querySelectorAll("img")].filter((i) => i.getBoundingClientRect().width > 0).length;
     const enLigne = [...document.querySelectorAll("body [style]")].filter((e) => /color|background|gradient/i.test(e.getAttribute("style")) && e.getBoundingClientRect().width > 0).length;
     const svgDurs = [...document.querySelectorAll("svg [fill]:not([fill=none]):not([fill=currentColor]), svg [stroke]:not([stroke=none]):not([stroke=currentColor])")].filter((e) => e.getBoundingClientRect().width > 0).length;
-    return { totalProprietes: n, parFamille: out, exemples: ex, imagesVisibles: imgs, stylesEnLigneCouleur: enLigne, svgCouleurEnDur: svgDurs };
-  }, [PAGE_FN.toString(), ACHAT.map((a) => a.sel)]);
+    return { totalProprietes: n, ...(logoSel ? { logoOrangeExclu: logoOrange } : {}), parFamille: out, exemples: ex, imagesVisibles: imgs, stylesEnLigneCouleur: enLigne, svgCouleurEnDur: svgDurs };
+  }, [PAGE_FN.toString(), ACHAT.map((a) => a.sel), ACH_EXTRA, A2 ? LOGO_SEL : null]);
 }
 // Résidus au survol : :hover forcé par CDP (CSS.forcePseudoState) sur tous les éléments porteurs d'une classe hover:
 // et sur tous les groupes (group, group/…), en même temps, puis retiré. Aucun clic, aucun déplacement de souris.
@@ -78,11 +88,13 @@ async function bouton(page, a, v, crops) {
       return out;
     }, PAGE_FN.toString());
     const bb = await loc.boundingBox();
-    if (bb && crops) { const f = path.join(brut, `bouton-${id}-${W}-${a.sel.includes("aria-label") ? "ajouter" : a.sel.includes("rounded-xl") ? "panier" : "connexion"}-${v}-${etat}.png`); await page.screenshot({ path: f, clip: { x: Math.max(0, bb.x - 12), y: Math.max(0, bb.y - 12), width: bb.width + 24, height: bb.height + 24 }, animations: "disabled" }); d.capture = path.basename(f); }
+    if (bb && crops) { const f = path.join(brut, `bouton-${id}-${W}-${a.cle || (a.sel.includes("aria-label") ? "ajouter" : a.sel.includes("rounded-xl") ? "panier" : "connexion")}-${v}-${etat}.png`); await page.screenshot({ path: f, clip: { x: Math.max(0, bb.x - 12), y: Math.max(0, bb.y - 12), width: bb.width + 24, height: bb.height + 24 }, animations: "disabled" }); d.capture = path.basename(f); }
     return { etat, ...d };
   };
   await loc.evaluate((e) => e.scrollIntoView({ block: "center", behavior: "instant" })); await page.waitForTimeout(400);
   const res = [];
+  let desactiveReel = null;
+  if (a.activerSimule) { desactiveReel = await loc.evaluate((e) => e.disabled); if (desactiveReel) { res.push(await lire("désactivé (état réel servi, aucun véhicule choisi)")); await loc.evaluate((e) => e.removeAttribute("disabled")); await page.waitForTimeout(250); } }
   await page.mouse.move(1, 1); await page.evaluate(() => document.activeElement && document.activeElement.blur()); await page.waitForTimeout(250); res.push(await lire("repos"));
   await loc.hover({ force: true }); await page.waitForTimeout(350); res.push(await lire("survol"));
   await page.mouse.move(1, 1); await page.waitForTimeout(200); await page.keyboard.press("Shift"); await loc.focus(); await page.waitForTimeout(300);
@@ -91,6 +103,8 @@ async function bouton(page, a, v, crops) {
   await loc.evaluate((e) => { e.dataset.dzDisabledAvant = e.hasAttribute("disabled") ? "1" : "0"; e.setAttribute("disabled", ""); }); await page.waitForTimeout(250);
   const ds = await lire("désactivé (simulé : attribut disabled posé dans le DOM)"); res.push(ds);
   await loc.evaluate((e) => { if (e.dataset.dzDisabledAvant === "0") e.removeAttribute("disabled"); delete e.dataset.dzDisabledAvant; });
+  if (desactiveReel) await loc.evaluate((e) => e.setAttribute("disabled", ""));
+  if (desactiveReel) res.forEach((x) => { if (["repos", "survol", "focus"].includes(x.etat)) x.note = (x.note ? x.note + " ; " : "") + "état actif simulé : attribut disabled retiré dans le DOM"; });
   return { bouton: a.nom, selecteur: a.sel, etats: res };
 }
 (async () => {
