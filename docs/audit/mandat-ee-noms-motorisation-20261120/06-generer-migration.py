@@ -1,26 +1,40 @@
 #!/usr/bin/env python3
 """Mandat EE, 6.5 : génère la migration gardée et son retour depuis classement.tsv.
 
-Usage : python3 -I 06-generer-migration.py <classement.tsv> <dossier migrations> <07-controle-apres.sql> <exclusions-6-6.tsv>
+Usage : python3 -I 06-generer-migration.py <classement.tsv> <dossier migrations> <07-controle-apres.sql> <exclusions-6-6.tsv> [<decisions.tsv>]
 Entrent dans la migration les lignes au verdict « erreur », sauf celles que
 09-collisions.mjs écarte (exclusions-6-6.tsv : la correction rendrait identique
 le nom R8 ou le titre R2 de deux motorisations).
+Mandat EH : avec <decisions.tsv> (docs/audit/mandat-eh-sources-noms-motorisation-20261120/),
+seules restent les lignes dont `migration` vaut « affichage » (nom d'affichage
+faux et nom d'origine juste selon les sources extérieures).
 """
 import csv
 import sys
 
 NOM = "20261120_auto_type_name_meta_corrections_mandat_ee"
-RAISON = "mandat EE 2026-11-20 : correction de auto_type.type_name_meta (liste validée par Marwane)"
+RAISON = "mandat EE 2026-11-20 : correction de auto_type.type_name_meta (cas confirmés par sources extérieures, mandat EH)"
 
 
-def lit(path, exclusions):
+def lit(path, exclusions, decisions=None):
     with open(exclusions, newline="", encoding="utf-8") as f:
         exclues = {r["type_id"] for r in csv.DictReader(f, delimiter="\t")}
     with open(path, newline="", encoding="utf-8") as f:
         rows = [r for r in csv.DictReader(f, delimiter="\t") if r["verdict"] == "erreur"]
     if not exclues <= {r["type_id"] for r in rows}:
         raise SystemExit(f"exclusions hors des erreurs : {sorted(exclues - {r['type_id'] for r in rows})}")
-    return [r for r in rows if r["type_id"] not in exclues]
+    rows = [r for r in rows if r["type_id"] not in exclues]
+    if decisions:
+        with open(decisions, newline="", encoding="utf-8") as f:
+            dec = {r["type_id"]: r for r in csv.DictReader(f, delimiter="\t")}
+        if set(dec) != {r["type_id"] for r in rows} | exclues:
+            raise SystemExit("decisions.tsv ne couvre pas exactement les cas de classement.tsv")
+        for r in rows:
+            d = dec[r["type_id"]]
+            if d["migration"] == "affichage" and (d["meta_avant"], d["meta_apres"]) != (r["type_name_meta"], r["valeur_corrigee"]):
+                raise SystemExit(f"type {r['type_id']} : valeurs différentes entre decisions.tsv et classement.tsv")
+        rows = [r for r in rows if dec[r["type_id"]]["migration"] == "affichage"]
+    return rows
 
 
 def q(s):
@@ -48,14 +62,17 @@ CORPS = """-- ==================================================================
 --             ni URL, ni alias. Aucun DELETE, aucun DDL.
 -- Généré par docs/audit/mandat-ee-noms-motorisation-20261120/06-generer-migration.py
 -- depuis classement.tsv (verdict « erreur ») moins exclusions-6-6.tsv (correction
--- qui rendrait identique un nom R8 ou un titre R2) : ne pas éditer à la main, régénérer.
+-- qui rendrait identique un nom R8 ou un titre R2), restreint par le mandat EH aux
+-- cas confirmés sur sources extérieures (decisions.tsv, migration = « affichage ») :
+-- ne pas éditer à la main, régénérer.
 -- =============================================================================
 --
 -- POURQUOI : type_name_meta alimente le <title>, la description et les mots-clés
 -- des pages R8 (frontend/app/components/vehicle/r8/r8-transform.ts:133-148 et
 -- build_vehicle_page_payload). Ces {n} valeurs nomment une autre motorisation
 -- ou changent la désignation du moteur (EcoBoost -> Econetic, VVTi -> VTi,
--- 520 i -> 523 i…). Preuves par ligne : PR du mandat EE et classement.tsv.
+-- 520 i -> 523 i…). Preuves par ligne : classement.tsv (mandat EE) et, pour les
+-- sources extérieures, docs/audit/mandat-eh-sources-noms-motorisation-20261120/verdicts-sources.tsv.
 --
 -- APPLICATION : acte réservé à Marwane, après validation de la liste. Retirer
 -- d'abord du bloc VALUES (ici ET dans le .down.sql) toute ligne non validée.
@@ -137,7 +154,7 @@ $mandat_ee$;
 
 
 def main():
-    rows = lit(sys.argv[1], sys.argv[4])
+    rows = lit(sys.argv[1], sys.argv[4], sys.argv[5] if len(sys.argv) > 5 else None)
     out = sys.argv[2].rstrip("/")
     vals = valeurs(rows)
     commun = dict(n=len(rows), nom=NOM, valeurs=vals, raison=q(RAISON))

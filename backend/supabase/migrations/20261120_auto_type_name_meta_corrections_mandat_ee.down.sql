@@ -1,19 +1,22 @@
 -- =============================================================================
 -- Migration : RETOUR — remettre type_name_meta d'origine (mandat EE)
 -- Date      : 2026-11-20 (mandat EE, « 07 Pages et SEO »)
--- Scope     : public.auto_type.type_name_meta de 173 types affichés, et rien
+-- Scope     : public.auto_type.type_name_meta de 164 types affichés, et rien
 --             d'autre. Ni type_name, ni modele_name_meta, ni marque_name_meta,
 --             ni URL, ni alias. Aucun DELETE, aucun DDL.
 -- Généré par docs/audit/mandat-ee-noms-motorisation-20261120/06-generer-migration.py
 -- depuis classement.tsv (verdict « erreur ») moins exclusions-6-6.tsv (correction
--- qui rendrait identique un nom R8 ou un titre R2) : ne pas éditer à la main, régénérer.
+-- qui rendrait identique un nom R8 ou un titre R2), restreint par le mandat EH aux
+-- cas confirmés sur sources extérieures (decisions.tsv, migration = « affichage ») :
+-- ne pas éditer à la main, régénérer.
 -- =============================================================================
 --
 -- POURQUOI : type_name_meta alimente le <title>, la description et les mots-clés
 -- des pages R8 (frontend/app/components/vehicle/r8/r8-transform.ts:133-148 et
--- build_vehicle_page_payload). Ces 173 valeurs nomment une autre motorisation
+-- build_vehicle_page_payload). Ces 164 valeurs nomment une autre motorisation
 -- ou changent la désignation du moteur (EcoBoost -> Econetic, VVTi -> VTi,
--- 520 i -> 523 i…). Preuves par ligne : PR du mandat EE et classement.tsv.
+-- 520 i -> 523 i…). Preuves par ligne : classement.tsv (mandat EE) et, pour les
+-- sources extérieures, docs/audit/mandat-eh-sources-noms-motorisation-20261120/verdicts-sources.tsv.
 --
 -- APPLICATION : acte réservé à Marwane, après validation de la liste. Retirer
 -- d'abord du bloc VALUES (ici ET dans le .down.sql) toute ligne non validée.
@@ -51,7 +54,6 @@ BEGIN
     (   69, '1.6 Econetic', '1.6 EcoBoost 16V'),  -- FORD | C-MAX II | brut « 1.6 EcoBoost 16V » | R7
     (   74, '1.6 Econetic', '1.6 EcoBoost 16V'),  -- FORD | GRAND C-MAX | brut « 1.6 EcoBoost 16V » | R7
     (   75, '1.6 Econetic', '1.6 EcoBoost 16V'),  -- FORD | GRAND C-MAX | brut « 1.6 EcoBoost 16V » | R7
-    ( 5260, '1.3 JTD 16V', '1.3 JTD Multijet 16V'),  -- FIAT | DOBLO Cargo I | brut « 1.3 JTD Multijet 16V » | R2
     ( 5530, '2.2 MRZ CD', '2.2 MZR-CD'),  -- MAZDA | 6 II Break | brut « 2.2 MZR-CD » | R7
     ( 5544, '250 TD', '250 D'),  -- MERCEDES | CLASSE E Break (S210) | brut « 250 D » | R2
     ( 6915, '1.6 Econetic', '1.6 EcoBoost 16V'),  -- FORD | S-MAX I | brut « 1.6 EcoBoost 16V » | R7
@@ -82,7 +84,6 @@ BEGIN
     (11838, '535 d', '530 d'),  -- BMW | Série 5 (F10-F18) | brut « 530 d » | R2
     (12028, '2.3 JTD 4x4', '2.3 D Multijet 4x4'),  -- FIAT | DUCATO V Fourgon (250-290) | brut « 2.3 D Multijet 4x4 » | R7
     (12470, '320i', '328 i'),  -- BMW | Série 3 (F30-F35) | brut « 328 i » | R2,R7
-    (13620, '1.9 DS', '1.9 D'),  -- FIAT | PUNTO II | brut « 1.9 D » | R7
     (14826, '313 CDI', '311 CDI'),  -- MERCEDES | SPRINTER 3-t (B903) | brut « 311 CDI » | R2
     (15490, '2.0 16V TDi TDCi', '2.0 DI-TDDI-TDCI'),  -- FORD | MONDEO III | brut « 2.0 DI-TDDI-TDCI » | R7
     (15491, '2.0 16V TDi TDCi', '2.0 DI- TDDI-TDCI'),  -- FORD | MONDEO III Break | brut « 2.0 DI- TDDI-TDCI » | R7
@@ -97,10 +98,8 @@ BEGIN
     (23358, '2.0 JTD', '2.0 D Multijet'),  -- LANCIA | PHEDRA | brut « 2.0 D Multijet » | R2,R7
     (24472, '2.0 TFSI Quattro', '2.0 TTS Quattro'),  -- AUDI | TT II | brut « 2.0 TTS Quattro » | R2,R7
     (26765, '260', '250 4-Matic'),  -- MERCEDES | CLASSE CLA Coupé (C117) | brut « 250 4-Matic » | R7
-    (28249, '1.4 TB', '1.4 TJet'),  -- ALFA ROMEO | MITO | brut « 1.4 TJet » | R2,R7
     (29566, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | FOCUS III | brut « 1.0 EcoBoost » | R7
     (29567, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | FOCUS III | brut « 1.0 EcoBoost » | R7
-    (29807, '2.0 Econetic 4x4 16V', '2.0 EcoBoost 4x4 16V'),  -- FORD | MONDEO V Berline | brut « 2.0 EcoBoost 4x4 16V » | R7
     (30438, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | FOCUS III Break | brut « 1.0 EcoBoost » | R7
     (30487, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | FOCUS III Break | brut « 1.0 EcoBoost » | R7
     (30845, '1.33 VTi', '1.33 VVTi'),  -- TOYOTA | YARIS II | brut « 1.33 VVTi » | R7
@@ -108,10 +107,8 @@ BEGIN
     (31095, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | FOCUS III Berline | brut « 1.0 EcoBoost » | R7
     (31115, '1.33 Dual-VTi', '1.33 Dual VVTi'),  -- TOYOTA | AURIS I | brut « 1.33 Dual VVTi » | R7
     (32741, '1.4 TB', '1.4 TURBO MultiAir'),  -- ALFA ROMEO | MITO | brut « 1.4 TURBO MultiAir » | R7
-    (33063, '320 CDI 350 BlueTEC 4Matic', '320 CDI 4-Matic'),  -- MERCEDES | CLASSE GL (X164) | brut « 320 CDI 4-Matic » | R2
     (33251, '1.2 TSI', '1.2 TFSI'),  -- AUDI | A3 II | brut « 1.2 TFSI » | R7
     (33252, '1.2 TSI', '1.2 TFSI'),  -- AUDI | A3 II Sportback | brut « 1.2 TFSI » | R7
-    (33593, '2.0 JTD', '2.0 D Multijet'),  -- LANCIA | PHEDRA | brut « 2.0 D Multijet » | R2,R7
     (33778, 'xDrive 28 d', '20 d xDrive'),  -- BMW | X3 (F25) | brut « 20 d xDrive » | R2
     (47547, '1.6 Econetic', '1.6 EcoBoost 16V'),  -- FORD | TOURNEO CONNECT II | brut « 1.6 EcoBoost 16V » | R7
     (53336, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | TOURNEO CONNECT II | brut « 1.0 EcoBoost » | R7
@@ -128,9 +125,7 @@ BEGIN
     (59494, '2.0 Econetic', '2.0 EcoBoost 16V'),  -- FORD | GALAXY III | brut « 2.0 EcoBoost 16V » | R7
     (59495, '2.0 Econetic', '2.0 EcoBoost 16V'),  -- FORD | S-MAX I | brut « 2.0 EcoBoost 16V » | R7
     (59928, '3.0 JTD', '3.0 D Multijet'),  -- FIAT | DUCATO V (250) | brut « 3.0 D Multijet » | R7
-    (60342, '2.0 TFSI', '2.0 45 TFSI'),  -- AUDI | A3 III Sportback | brut « 2.0 45 TFSI » | R2
     (61907, 'sDrive 18 i', '20 i sDrive'),  -- BMW | X3 (F25) | brut « 20 i sDrive » | R2
-    (62033, '730 d xDrive', '730 d Ld xDrive'),  -- BMW | Série 7 (G11-G12) | brut « 730 d Ld xDrive » | R2
     (65057, '1.6 BlueHDi', '1.6 HDi-BlueHDi'),  -- CITROËN | BERLINGO II - BERLINGO MULTISPACE (B9) | brut « 1.6 HDi-BlueHDi » | R2
     (65090, '1.2 VTi', '1.2 THP'),  -- CITROËN | C3 II | brut « 1.2 THP » | R2,R7
     (65167, '1.2 VTi', '1.2 THP'),  -- CITROËN | DS3 | brut « 1.2 THP » | R2,R7
@@ -212,7 +207,6 @@ BEGIN
     (67190, '1.6 Econetic 16V', '1.6 EcoBoost 16V'),  -- FORD | MONDEO IV Berline | brut « 1.6 EcoBoost 16V » | R7
     (67193, '2.0 Econetic 16V', '2.0 EcoBoost 16V'),  -- FORD | MONDEO IV Berline | brut « 2.0 EcoBoost 16V » | R7
     (70010, '2.2  II', '2.2 Multijet II'),  -- JEEP | WRANGLER IV | brut « 2.2 Multijet II » | R1
-    (73442, '220 d', '200 D'),  -- MERCEDES | CLASSE C Coupé (C205) | brut « 200 D » | R2
     (73446, '200 D', '220 D'),  -- MERCEDES | CLASSE C Coupé (C205) | brut « 220 D » | R2
     (73534, '300', '250 4-Matic'),  -- MERCEDES | CALSSE GLC (X253) | brut « 250 4-Matic » | R2
     (73557, '300 D', '250 D 4-Matic'),  -- MERCEDES | CLASSE GLE (W166) | brut « 250 D 4-Matic » | R7

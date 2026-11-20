@@ -1,13 +1,21 @@
 --- a/.spec/00-canon/repository-registry/ownership.yaml	2026-11-20 01:08:17.339149860 +0100
 +++ b/.spec/00-canon/repository-registry/ownership.yaml	2026-11-20 01:08:17.344149874 +0100
-@@ -1941,3 +1941,11 @@
+@@ -1941,3 +1941,19 @@
      owner: '@ak125/catalog-team'
      sourceConfidence: high
      risk: medium
-+  # Mandat EE (20/11/2026) : 173 type_name_meta d'auto_type remis au nom brut
-+  # (title R8), migration gardée. Couvre .sql + .down.sql. Glob exact : les
-+  # migrations ne sont pas auto-couvertes.
++  # Mandat EE (20/11/2026), restreint par le mandat EH : 164 type_name_meta
++  # d'auto_type remis au nom brut (title R8), migration gardée. Couvre .sql +
++  # .down.sql. Glob exact : les migrations ne sont pas auto-couvertes.
 +  - glob: backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee*.sql
++    domain: D4
++    owner: '@ak125/vehicle-team'
++    sourceConfidence: high
++    risk: medium
++  # Mandat EH (20/11/2026) : 4 type_name d'auto_type (nom d'origine faux selon
++  # sources extérieures) corrigés, migration gardée. Couvre .sql + .down.sql.
++  # Glob exact : les migrations ne sont pas auto-couvertes.
++  - glob: backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh*.sql
 +    domain: D4
 +    owner: '@ak125/vehicle-team'
 +    sourceConfidence: high
