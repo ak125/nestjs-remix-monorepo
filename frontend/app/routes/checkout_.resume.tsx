@@ -20,6 +20,10 @@ import { buildPayboxRedirectUrl } from "~/services/order.server";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
+/** `ord_ords_id` d'une commande annulée — canon :
+ * `packages/domain-commerce/src/order-status.ts` (OrderStatus.CANCELLED). */
+const ORDER_STATUS_CANCELLED = "2";
+
 export const meta: MetaFunction = () => [
   { title: "Reprise de paiement | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
@@ -72,6 +76,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
         isPaid: true,
         orderStatus,
       };
+    }
+
+    // Commande annulée : ne jamais la renvoyer vers la page de paiement.
+    if (String(orderStatus) === ORDER_STATUS_CANCELLED) {
+      throw new Response(
+        "Cette commande a été annulée : elle ne peut plus être payée.",
+        { status: 410 },
+      );
     }
 
     // Email vide ⇒ /api/paybox/redirect répond 400 « Paramètres manquants » :

@@ -1,8 +1,9 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { existsSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
+import { assertGammeAlias, resolveConfinedPath } from '../utils/rag-paths.util';
 import type { RagMergePatch } from './pdf-rag-classifier.service';
 
 export interface MergeResult {
@@ -37,6 +38,7 @@ export class RagMdMergerService {
    * All modifications are attributed with (Source: {sourceRef}).
    */
   merge(pgAlias: string, patch: RagMergePatch): MergeResult {
+    assertGammeAlias(pgAlias);
     const filePath = join(this.RAG_GAMMES_DIR, `${pgAlias}.md`);
 
     // Guard: reject low-confidence LLM output to protect RAG files
@@ -56,11 +58,13 @@ export class RagMdMergerService {
       };
     }
 
-    if (!existsSync(filePath)) {
-      throw new BadRequestException(`RAG file not found: ${filePath}`);
+    // Lecture et écriture sur le chemin réel, confiné au répertoire des gammes.
+    const realPath = resolveConfinedPath(this.RAG_GAMMES_DIR, `${pgAlias}.md`);
+    if (!realPath) {
+      throw new BadRequestException(`RAG file not found for gamme ${pgAlias}`);
     }
 
-    const originalContent = readFileSync(filePath, 'utf-8');
+    const originalContent = readFileSync(realPath, 'utf-8');
     const { charsBefore } = { charsBefore: originalContent.length };
 
     // Split into YAML frontmatter + markdown body
@@ -243,9 +247,9 @@ export class RagMdMergerService {
     const finalContent = `---\n${newYaml}---\n${newBody}`;
 
     // 8. Write file (atomic: write tmp then rename to prevent corruption)
-    const tmpPath = filePath + '.tmp';
+    const tmpPath = realPath + '.tmp';
     writeFileSync(tmpPath, finalContent, 'utf-8');
-    renameSync(tmpPath, filePath);
+    renameSync(tmpPath, realPath);
 
     const result: MergeResult = {
       applied: true,
@@ -277,8 +281,8 @@ export class RagMdMergerService {
     sectionsToAdd: string[];
     estimatedNewItems: number;
   } {
-    const filePath = join(this.RAG_GAMMES_DIR, `${pgAlias}.md`);
-    if (!existsSync(filePath)) {
+    assertGammeAlias(pgAlias);
+    if (!resolveConfinedPath(this.RAG_GAMMES_DIR, `${pgAlias}.md`)) {
       return { fieldsToModify: [], sectionsToAdd: [], estimatedNewItems: 0 };
     }
 

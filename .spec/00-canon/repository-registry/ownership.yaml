@@ -150,6 +150,20 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Mandat DW et complément 1 (19/11/2026) : titre R2 sans prix, toutes gammes
+  # (gabarit __seo_gamme_car.sgc_title, 118 lignes). Couvre .sql + .down.sql.
+  - glob: backend/supabase/migrations/20261119_seo_r2_title_all_gammes*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # Mandat DW, complément 2 (19/11/2026) : noms d'affichage dans seo_context
+  # du RPC rm_get_page_complete_v2 (titre R2). Couvre .sql + .down.sql.
+  - glob: backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   # Fix get_page_quality_features 22023 (jsonb_array_length sur jsonb non-array) — débloque
   # le recompute du quality-scoring (de-RAG v2.2 #935). Owner GO session 2026-06-11. Glob exact.
   - glob: backend/supabase/migrations/20260611_fix_get_page_quality_features_jsonb_array_length_guard.sql
