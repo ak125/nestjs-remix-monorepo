@@ -295,7 +295,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 284,
+      "loc": 285,
       "owner": "__unassigned__",
       "path": "backend/scripts/generate-sitemaps.ts",
       "risk": "low",
@@ -3100,6 +3100,7 @@
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
@@ -5123,6 +5124,7 @@
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
+        "backend/src/modules/rag-proxy/services/pdf-text-extractor.service.ts",
         "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
         "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
         "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
@@ -13787,6 +13789,7 @@
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/catalog/services/oem-platform-mapping.service.ts",
         "backend/src/modules/catalog/services/popular-gammes.service.ts",
+        "backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "backend/src/modules/catalog/services/seo-template.service.ts",
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
         "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
@@ -13795,7 +13798,7 @@
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "service",
-      "loc": 166,
+      "loc": 169,
       "owner": "__unassigned__",
       "path": "backend/src/modules/catalog/catalog.module.ts",
       "risk": "low",
@@ -14097,19 +14100,62 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/catalog/services/__tests__/r2-title-collision.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/catalog/services/r2-title-collision.service.ts"
+      ],
+      "kind": "test",
+      "loc": 394,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/catalog/services/__tests__/r2-title-collision.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
       "importedBy": [],
       "imports": [
         "@cache/cache.service",
         "backend/src/modules/catalog/catalog.module.ts",
+        "backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "backend/src/modules/catalog/services/seo-template.service.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "test",
-      "loc": 58,
+      "loc": 61,
       "owner": "__unassigned__",
       "path": "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/catalog/services/__tests__/seo-template-r2-title-trial.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/catalog/services/seo-template.service.ts"
+      ],
+      "kind": "test",
+      "loc": 379,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/catalog/services/__tests__/seo-template-r2-title-trial.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -14128,7 +14174,7 @@
         "backend/src/modules/catalog/services/seo-template.service.ts"
       ],
       "kind": "test",
-      "loc": 417,
+      "loc": 418,
       "owner": "__unassigned__",
       "path": "backend/src/modules/catalog/services/__tests__/seo-template-residual-markers.test.ts",
       "risk": "low",
@@ -14566,10 +14612,39 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "importedBy": [
+        "backend/src/modules/catalog/catalog.module.ts",
+        "backend/src/modules/catalog/services/__tests__/r2-title-collision.service.test.ts",
+        "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+        "backend/src/modules/catalog/services/seo-template.service.ts"
+      ],
+      "imports": [
+        "@database/services/supabase-base.service",
+        "@repo/database-types",
+        "@repo/seo-types"
+      ],
+      "kind": "service",
+      "loc": 256,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/catalog/services/seo-template.service.ts",
       "importedBy": [
         "backend/src/modules/catalog/catalog.module.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+        "backend/src/modules/catalog/services/__tests__/seo-template-r2-title-trial.test.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-residual-markers.test.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-switch.test.ts",
         "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
@@ -14579,11 +14654,12 @@
         "@cache/cache.service",
         "@repo/seo-types",
         "backend/src/config/seo-variations.config.ts",
+        "backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts",
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "service",
-      "loc": 672,
+      "loc": 770,
       "owner": "__unassigned__",
       "path": "backend/src/modules/catalog/services/seo-template.service.ts",
       "risk": "low",
@@ -24462,19 +24538,43 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/products/services/__tests__/cross-selling-seo-r2-title.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/products/services/cross-selling-seo.service.ts",
+        "backend/src/modules/products/services/cross-selling.service.ts"
+      ],
+      "kind": "test",
+      "loc": 119,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/products/services/__tests__/cross-selling-seo-r2-title.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/products/services/cross-selling-seo.service.ts",
       "importedBy": [
         "backend/src/modules/products/products.module.ts",
+        "backend/src/modules/products/services/__tests__/cross-selling-seo-r2-title.test.ts",
         "backend/src/modules/products/services/cross-selling.service.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@repo/seo-types",
         "backend/src/modules/products/services/cross-selling.service.ts",
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 284,
+      "loc": 322,
       "owner": "__unassigned__",
       "path": "backend/src/modules/products/services/cross-selling-seo.service.ts",
       "risk": "low",
@@ -24519,6 +24619,7 @@
       "importedBy": [
         "backend/src/modules/products/cross-selling.controller.ts",
         "backend/src/modules/products/products.module.ts",
+        "backend/src/modules/products/services/__tests__/cross-selling-seo-r2-title.test.ts",
         "backend/src/modules/products/services/cross-selling-seo.service.ts",
         "backend/src/modules/products/services/cross-selling-source.service.ts"
       ],
@@ -24988,11 +25089,12 @@
         "backend/src/modules/rag-proxy/services/webhook-audit.service.ts",
         "backend/src/modules/rag-proxy/types/rag-ingest.types.ts",
         "backend/src/modules/rag-proxy/types/rag-phase2a.types.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "fs",
         "path"
       ],
       "kind": "controller",
-      "loc": 592,
+      "loc": 595,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
       "risk": "low",
@@ -25121,11 +25223,11 @@
       ],
       "imports": [
         "backend/src/config/rag.config.ts",
-        "fs",
-        "path"
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
+        "fs"
       ],
       "kind": "service",
-      "loc": 283,
+      "loc": 285,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
       "risk": "low",
@@ -25146,11 +25248,13 @@
         "backend/src/modules/rag-proxy/rag-proxy.module.ts"
       ],
       "imports": [
+        "backend/src/config/rag.config.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 89,
+      "loc": 100,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/services/pdf-text-extractor.service.ts",
       "risk": "low",
@@ -25265,12 +25369,13 @@
         "backend/src/modules/rag-proxy/types/rag-contracts.types.ts",
         "backend/src/modules/rag-proxy/types/rag-ingest.types.ts",
         "backend/src/modules/rag-proxy/types/rag-state.types.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "crypto",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 788,
+      "loc": 804,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
       "risk": "low",
@@ -25352,11 +25457,12 @@
         "backend/src/modules/rag-proxy/events/rag-ingestion.events.ts",
         "backend/src/modules/rag-proxy/services/frontmatter-validator.service.ts",
         "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 1393,
+      "loc": 1412,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
       "risk": "low",
@@ -25380,12 +25486,13 @@
       "imports": [
         "@database/services/supabase-base.service",
         "backend/src/config/rag.config.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "backend/src/modules/upload/services/supabase-storage.service.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 475,
+      "loc": 489,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
       "risk": "low",
@@ -25439,11 +25546,12 @@
       "imports": [
         "backend/src/config/rag.config.ts",
         "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 362,
+      "loc": 366,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts",
       "risk": "low",
@@ -25577,6 +25685,7 @@
       ],
       "imports": [
         "backend/src/config/rag.config.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "child_process",
         "crypto",
         "fs",
@@ -25584,7 +25693,7 @@
         "util"
       ],
       "kind": "service",
-      "loc": 412,
+      "loc": 416,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/services/rag-video-management.service.ts",
       "risk": "low",
@@ -25827,6 +25936,38 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
+      "importedBy": [
+        "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
+        "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
+        "backend/src/modules/rag-proxy/services/pdf-text-extractor.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-video-management.service.ts"
+      ],
+      "imports": [
+        "fs",
+        "path"
+      ],
+      "kind": "service",
+      "loc": 66,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -26012,7 +26153,7 @@
         "backend/src/modules/rm/services/rm-builder.service.ts"
       ],
       "kind": "test",
-      "loc": 267,
+      "loc": 268,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
       "risk": "low",
@@ -26139,7 +26280,7 @@
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
       ],
       "kind": "service",
-      "loc": 996,
+      "loc": 1003,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-builder.service.ts",
       "risk": "low",
@@ -30662,9 +30803,11 @@
       "id": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
       "importedBy": [
         "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.test.ts",
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.test.ts",
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts"
       ],
       "imports": [],
@@ -30672,6 +30815,56 @@
       "loc": 146,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts"
+      ],
+      "kind": "test",
+      "loc": 233,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
+      "importedBy": [
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
+      ],
+      "imports": [
+        "@repo/seo-role-contracts",
+        "backend/src/common/utils/url-builder.utils.ts",
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts"
+      ],
+      "kind": "service",
+      "loc": 226,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -33027,7 +33220,7 @@
         "backend/src/modules/seo/services/chain/seo-template-renderer.service.ts"
       ],
       "kind": "test",
-      "loc": 213,
+      "loc": 272,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/chain/__tests__/seo-template-renderer.service.test.ts",
       "risk": "low",
@@ -33295,10 +33488,11 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@repo/seo-role-contracts",
+        "@repo/seo-types",
         "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
-      "loc": 234,
+      "loc": 258,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/chain/seo-template-renderer.service.ts",
       "risk": "low",
@@ -34259,13 +34453,13 @@
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/config/app.config.ts",
-        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs.types.ts",
         "fs/promises",
         "path"
       ],
       "kind": "service",
-      "loc": 713,
+      "loc": 649,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
       "risk": "low",
@@ -34343,6 +34537,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts",
@@ -34352,7 +34547,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 820,
+      "loc": 997,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
       "risk": "low",
@@ -34513,6 +34708,7 @@
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/config/feature-flags.service.ts",
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.types.ts",
@@ -34521,7 +34717,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 686,
+      "loc": 741,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "low",
@@ -43521,6 +43717,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/rag-path-confinement-routes.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 459,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/rag-path-confinement-routes.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/rag-path-confinement.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 1025,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/rag-path-confinement.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/rag-proxy.controller.test.ts",
       "importedBy": [],
       "imports": [],
@@ -44361,7 +44595,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 268,
+      "loc": 305,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/seo-template-interpolation.test.ts",
       "risk": "low",
@@ -72920,7 +73154,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 230,
+      "loc": 608,
       "owner": "__unassigned__",
       "path": "packages/seo-types/src/vehicle-aware-label.test.ts",
       "risk": "low",
@@ -72939,7 +73173,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 111,
+      "loc": 430,
       "owner": "__unassigned__",
       "path": "packages/seo-types/src/vehicle-aware-label.ts",
       "risk": "low",

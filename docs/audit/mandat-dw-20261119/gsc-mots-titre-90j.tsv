@@ -1,0 +1,28 @@
+ensemble	mesure	impressions	clics	pct_imp	pct_clics
+migration	total	25806	107	100	100
+migration	ancien_tous_mots	12939	45	50.1	42.1
+migration	nouveau_tous_mots	14202	50	55.0	46.7
+migration	mot_gagne	2290	17	8.9	15.9
+migration	mot_perdu	472	6	1.8	5.6
+migration	prix	1300	3	5.0	2.8
+migration	ancien_part_mots_x_imp			79.9	
+migration	nouveau_part_mots_x_imp			81.3	
+repli	total	634	4	100	100
+repli	ancien_tous_mots	357	3	56.3	75.0
+repli	nouveau_tous_mots	357	3	56.3	75.0
+repli	mot_gagne	0	0	0.0	0.0
+repli	mot_perdu	0	0	0.0	0.0
+repli	prix	5	0	0.8	0.0
+repli	ancien_part_mots_x_imp			81.8	
+repli	nouveau_part_mots_x_imp			81.8	
+hors sitemap (non rattachées) imp 11391
+
+forme	impressions	clics	exemples
+chiffre arabe (ex. clio 3)	7135	35	vanne egr megane 2 (177) ; courroie accessoire clio 3 1.5 dci (158) ; vanne egr laguna 2 1.9 dci (151)
+nom sans numéro (ex. clio)	3020	18	vanne egr c4 picasso (132) ; vanne egr 308 (108) ; courroie alternateur symbol 1.2 16v (97)
+modèle absent de la requête	2918	9	594415 euros (363) ; ai35815 (215) ; vanne egr 1.6 tdi (146)
+« + » : requête sans +	363	6	courroie de distribution 206 1.4 hdi (77) ; référence courroie accessoire 206 1.1 essence (58) ; distribution 206 1.4 hdi (41)
+chiffre romain (ex. clio iii)	8	0	vanne egr clio iii (5) ; clio ii (2) ; audi a3 ii (1)
+
+mots gagnés (impressions) [('essence', 2261), ('110', 15), ('90', 6), ('v', 2), ('105', 2), ('diesel', 1), ('dw', 1), ('8', 1), ('115', 1), ('1.25', 1)]
+mots perdus (impressions) [('2', 193), ('multijet', 72), ('vvti', 69), ('b', 61), ('phase', 38), ('6', 32), ('1', 29), ('b6', 20), ('3', 20), ('b3', 17), ('ecoboost', 11), ('b9', 9), ('9', 9), ('1.2', 7), ('w638', 5)]
