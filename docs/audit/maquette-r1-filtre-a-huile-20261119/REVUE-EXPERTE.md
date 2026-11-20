@@ -41,6 +41,12 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   survol, après une vraie visite et au focus clavier, à 390 et 1440 px. La portée est relevée sur les
   123 pages R1, la cible est jugée au regard du 2.5.8, et le défaut signalé par DS sur `#emplacement`
   est mesuré. Voir le §17 ; les autres sections ne changent pas.
+- **Complément n° 10** : la tête de #2210 est passée à `318f405d3a61dbb1b7d7819be5b9431d637117ac`
+  (complément n° 9 de DS : liens soulignés dans `#bien-choisir`, `#qualite-prix` et `#emplacement`,
+  accord de Marwane du 20 novembre à 10:23). Cinq liens de ces trois blocs, sur deux gammes, sont
+  revérifiés au pixel dans Chrome 153, à 390 et 1440 px. Le recensement des 123 pages R1, axe, le
+  typecheck, les tests et la CI sont refaits. Une erreur du §17.4 est rectifiée. Voir le §18 ; les
+  autres sections ne changent pas.
 
 ## Verdict final
 
@@ -197,6 +203,38 @@ régression de #2210 : les liens des blocs `#bien-choisir`, `#qualite-prix` et `
 pas soulignés au repos (1.4.1). Tant qu'elle est ouverte, la page R1 ne peut pas être dite conforme au
 1.4.1. La correction tient en une classe sur les trois conteneurs de `pieces.$slug.tsx`, la même que
 celle de DS ; elle est décrite au §17.4 et n'est pas appliquée.
+
+**Complément n° 10, tête `318f405d3` : liens des trois blocs conformes.**
+
+- Les liens de `#bien-choisir`, `#qualite-prix` et `#emplacement` sont soulignés au repos, à 390 et
+  1440 px, sur le filtre à huile et sur le ressort de suspension. Le soulignement reste au survol,
+  après une vraie visite et au focus. Le 1.4.1 n'est plus en défaut dans ces blocs (§18.1).
+- Contrastes inchangés : 5,01 ou 5,24:1 au repos selon le fond, 8,43 ou 8,82:1 au survol, 5,29 ou
+  5,54:1 après visite. Focus visible, anneau à 15,89 ou 16,62:1 (§18.1).
+- Recensement confirmé : 153 liens de texte sur 72 pages (28, 81 et 44), tous dans des paragraphes,
+  sans bouton, carte ni image. Les 58 liens déjà soulignés par leur classe ne changent pas. Le
+  contenu non classé de `#emplacement` (30 liens sur 15 pages) n'est pas gêné (§18.2).
+- Diff limité à 3 lignes de `pieces.$slug.tsx` hors documentation. Aucune nouvelle violation axe,
+  typecheck, lint et tests passent. La CI a un échec de plus qu'à `dad1abcbc` : CodeQL, sur des
+  lignes que ce commit ne touche pas (§18.3).
+
+**Verdict global sur l'apparence R1, hors éléments communs au site, à `318f405d3`.** L'apparence est
+prête à valider par Marwane. La réserve du complément n° 9 est levée : les liens des quatre blocs
+éditoriaux de la page R1 sont soulignés au repos, et je ne trouve plus de défaut ouvert propre à la
+page R1. Ce qui reste ouvert, hors de ce verdict ou à trancher par Marwane :
+
+- la règle commune des liens (`.gamme-editorial a` de `global.css`) et la couleur violette des liens
+  visités (`a:visited`), renvoyées à la revue du 05 ;
+- les violations axe communes au site : `color-contrast` dans le pied de page et la barre mobile du
+  bas, `region` dans le bandeau du haut ; elles sont identiques avant et après ;
+- l'alerte CodeQL nouvellement affichée sur `pieces.$slug.tsx:723` et `:727`, du code de mars que
+  #2210 ne modifie pas (§18.3) ; elle est à lire par le propriétaire du fichier ;
+- les autres échecs de CI, déjà présents avant : `depcruise` à 170 pour une base de 163, Circuit de
+  fusion (brouillon), DoD self-evaluation, Registry freshness ;
+- Firefox, Safari et les autres pages qui utilisent `.gamme-editorial` ne sont pas mesurés ;
+- la validation de l'ordre des blocs et la régénération des images de référence `r1-gamme.png`, si
+  l'ordre est retenu ;
+- les écarts antérieurs au contrat R1 décrits au §8 à §12, que #2210 ne prétend pas corriger.
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -1395,3 +1433,153 @@ ce choix serait commun au site et revient à Marwane.
   C'est le design commun du site : il n'est pas jugé ici.
 - Les autres conteneurs `.gamme-editorial` hors de la page R1 ne sont pas relevés.
 - Le reste du site, Firefox et Safari ne sont pas mesurés.
+
+## 18. Complément n° 10 : liens soulignés dans `#bien-choisir`, `#qualite-prix` et `#emplacement`
+
+**Verdict : liens des trois blocs conformes au 1.4.1, sans régression introduite par le correctif.**
+
+- **Tête mesurée** : `318f405d3a61dbb1b7d7819be5b9431d637117ac` (#2210, PR brouillon ouverte),
+  relevée avant les mesures et revérifiée avant la publication (`git ls-remote` et `gh`). Rien n'a
+  été modifié dans #2210.
+- **Correction de DS** : trois lignes de `frontend/app/routes/pieces.$slug.tsx`, aux lignes 911
+  (`#bien-choisir`), 968 (`#qualite-prix`) et 1040 (`#emplacement`). Chaque conteneur
+  `div.gamme-editorial` reçoit `[&_a]:underline [&_a]:underline-offset-2`, comme celui de
+  `#reference` au complément n° 9. `global.css` n'est pas touché.
+- **Rendu** : backend et frontend de `318f405d3`, reconstruits dans mon worktree, sur un port à moi,
+  avec un Redis privé. Le service DEV n'a pas servi. Le HTML servi porte la classe sur les quatre
+  conteneurs.
+- **Navigateur** : Chrome 153.0.8010.47 complet, profil persistant neuf pour chaque mesure, échelle 1.
+  L'état « visité » est obtenu par un vrai clic sur le lien, vérifié par l'URL atteinte, avec un lien
+  témoin.
+- **Méthode** : celle du §17, inchangée. Styles calculés, puis contrôle au pixel : le soulignement est
+  une rangée de pixels de la couleur du lien couvrant au moins 80 % de sa largeur. Focus au clavier
+  (Tab), comparé à la même capture sans `outline` ni `box-shadow`. Rapports tronqués au centième.
+  Je n'ai repris aucun chiffre de DS.
+- Scripts `scripts/lien-du10.cjs`, `c10-run.sh`, `portee-du10.py`, `capture-bloc-du10.cjs` ; axe avec
+  `scripts/page-du4.cjs` et `scripts/axe-lien-du9.cjs`. Mesures `mesures/c10-*`. Captures
+  `captures/c10-*.png`.
+
+### 18.1 Soulignement, contrastes et focus
+
+Cinq liens, un par bloc et par gamme ; la page du filtre à huile n'a pas de lien sans classe dans
+`#bien-choisir`. Tous sont dans une phrase (`p`), en 14 px, sur des boîtes de 18 px de haut.
+
+| Lien | Bloc et fond | Repos | Survol | Après visite (repos et survol) | Focus : anneau |
+|---|---|---|---|---|---|
+| Filtre à huile, guide d'achat | `#qualite-prix`, `#f8fafc` | 5,01 | 8,43 | 5,29 | 15,89 |
+| Filtre à huile, `/reference-auto/filtre-a-huile` | `#emplacement`, `#ffffff` | 5,24 | 8,82 | 5,54 | 16,62 |
+| Ressort, « amortisseur » | `#bien-choisir`, `#ffffff` | 5,24 | 8,82 | 5,54 | 16,62 |
+| Ressort, `/reference-auto/ressort-de-suspension` | `#qualite-prix`, `#f8fafc` | 5,01 | 8,43 | 5,29 | 15,89 |
+| Ressort, « amortisseur » | `#emplacement`, `#ffffff` | 5,24 | 8,82 | 5,54 | 16,62 |
+
+- **Soulignement au pixel présent dans tous les cas** : 5 liens × 2 largeurs × repos, survol, focus,
+  avant et après visite. Style calculé : `underline`, décalage 2 px, aucune classe sur le lien.
+- Couleurs réelles lues sur le lien agrandi : `#155dfc` au repos, `#193cb8` au survol, `#9810fa`
+  après visite. Les rapports sont identiques à 390 et 1440 px.
+- Contre le texte voisin (`#45556c`), l'écart reste 1,44:1 au repos, 1,16:1 au survol et 1,36:1 après
+  visite. Ce n'est plus un défaut : le soulignement suffit au 1.4.1.
+- Les contrastes sont ceux mesurés avant le correctif au §17.4 sur fond blanc. Le soulignement ne
+  change pas la couleur.
+- Visite réelle : le témoin passe de `#020817` à `#9810fa` dans chaque mesure, et l'URL atteinte au
+  clic est la bonne (guide d'achat du filtre à huile, `reference-auto/filtre-a-huile`,
+  `amortisseur-854`, `reference-auto/ressort-de-suspension`).
+- Focus clavier : `:focus-visible` vrai, anneau `#0f1e38` présent dans chaque cas, soulignement
+  conservé.
+- Cible : les liens sont dans des phrases, l'exception « en ligne » du 2.5.8 s'applique comme au
+  §17.3. Le soulignement ne change pas la boîte.
+
+### 18.2 Recensement sur les 123 pages R1
+
+Relevé sur le HTML servi de `318f405d3` pour les 123 URL du sitemap des catégories, sans erreur
+(`mesures/c10-portee.txt` et `.json`).
+
+| Conteneur | Liens sans classe, soulignés | Pages | Liens `seo-internal-link`, inchangés | Pages |
+|---|---|---|---|---|
+| `#bien-choisir` | 28 | 21 | 2 | 1 |
+| `#qualite-prix` | 81 | 56 | 53 | 31 |
+| `#emplacement` | 44 | 21 | 3 | 3 |
+| **Trois blocs** | **153** | **72** | **58** | |
+| `#reference` (complément n° 9) | 41 | 30 | 38 | 21 |
+
+- **153 liens sur 72 pages, répartis 28 / 81 / 44 : confirmé.** Les 58 liens déjà soulignés par leur
+  classe sont confirmés aussi.
+- Plus aucun lien non souligné au repos dans les quatre blocs, hors `seo-internal-link` : 0 lien,
+  0 page.
+- Aucun lien ne contient de bouton, d'image ni de SVG. Seules deux classes de lien existent : aucune
+  (194) et `seo-internal-link` (96). Aucun bouton ni carte n'est donc souligné.
+- Les 153 liens sont dans des paragraphes. 111 sont au milieu d'une phrase. 42 sont seuls dans leur
+  paragraphe : 26 liens « Fiche technique » de `#qualite-prix`, 15 liens « Guide d'achat » de
+  `#emplacement` et un autre lien de `#emplacement`.
+
+**Contenu non classé porté par `#emplacement` : pas de soulignement gênant.**
+
+- Il concerne 15 pages, avec chacune deux liens : « Guide d'achat … : comment choisir la bonne
+  référence », seul dans un `p.mt-3`, et « Bruit … : causes et diagnostic », précédé d'un emoji. Soit
+  30 des 44 liens du bloc.
+- Ce sont des liens de texte, sous forme de phrase. Le soulignement est l'état attendu pour eux.
+- Vu sur `bouchon-de-vidange-593` à 390 et 1440 px (`captures/c10-bloc-emplacement-bouchon-*.png`) :
+  le soulignement est fin, à 2 px du texte. Il ne chevauche rien et ne crée aucun effet de bloc.
+  Le lien « Guide d'achat » passe sur deux lignes à 390 px sans gêne.
+- Même constat sur le bloc le plus chargé, `#qualite-prix` du ressort
+  (`captures/c10-bloc-qualite-ressort-*.png`).
+- Un défaut de forme existe, mais il n'est pas lié au soulignement : l'emoji placé devant « Bruit … »
+  sert d'icône. Il vient du contenu éditorial et ne relève pas de ce complément.
+
+**Rectification du §17.4.** J'y ai écrit que, sur la page du filtre à huile, le conteneur de
+`#emplacement` contenait le lien du guide d'achat. **C'est faux.** Ce lien est dans `#qualite-prix`.
+Le conteneur de `#emplacement` du filtre à huile ne contient qu'un lien : `/reference-auto/filtre-a-huile`.
+Je précise aussi les 18 liens « guide d'achat » de `#emplacement` cités au §17.4 : 15 viennent du
+contenu non classé, et 3 sont dans des phrases des paragraphes d'emplacement (alternateur, amortisseur,
+étrier de frein). Les totaux 28 / 81 / 44 du §17.4 ne changent pas.
+
+### 18.3 Régressions
+
+| Contrôle | Résultat | Preuve |
+|---|---|---|
+| Tête de #2210 | `318f405d3`, PR brouillon ouverte, même valeur dans `git ls-remote` et `gh` | relevé avant les mesures et avant la publication |
+| Diff `dad1abcbc` → `318f405d3` | Un commit, 99 fichiers. Hors `docs/audit/maquette-r1-filtre-a-huile-20261119/`, un seul fichier : `pieces.$slug.tsx`, 3 lignes modifiées, uniquement les classes des trois conteneurs | `git diff --stat` |
+| axe, filtre à huile, 390 et 1440 px | Identique à `dad1abcbc` nœud pour nœud : `color-contrast` 9 et `region` 2 à 390 px, `color-contrast` 5 et `region` 4 à 1440 px. Tous hors des blocs : pied de page, barre mobile du bas, bandeau du haut | `mesures/c10-page-filtre-a-huile-7-*.json`, comparés à `mesures/c9-page-*.json` |
+| axe, ressort de suspension, 390 et 1440 px | Mêmes règles et mêmes nombres, mêmes zones communes au site. Aucun nœud dans les blocs éditoriaux. Je n'observe pas de `target-size` sur cette page avec les mêmes étiquettes axe (`wcag22aa` comprise) | `mesures/c10-page-ressort-de-suspension-188-*.json` |
+| axe, `link-in-text-block` seule | 0 violation et 0 incomplet sur les deux pages aux deux largeurs | `mesures/c10-axe-liens-*.json` |
+| Cibles sous 24 px dans les blocs | Toutes dans une phrase : exception « en ligne » | champ `cibles` des `c10-page-*.json` |
+| Typecheck frontend | Code de sortie 0 | `mesures/c10-typecheck-front.txt` |
+| Lint du fichier modifié | Code de sortie 0, aucun avertissement | `mesures/c10-lint.txt` |
+| Tests | vitest : 10 fichiers, 233 tests passent, dont `pieces-slug-*`, `r1-*`, `sanitize-editorial-html*`, `gamme-*`. Aucun test n'a été ajouté ; le soulignement est prouvé par la mesure du §18.1 | `mesures/c10-vitest.txt` |
+| CI du commit `318f405d3` | 33 réussis, 11 ignorés, 6 en échec | `mesures/c10-ci.txt` |
+
+Sur la CI :
+
+- Cinq échecs sont les mêmes qu'à `dad1abcbc` : Circuit de fusion (brouillon), Deterministic gates,
+  DoD self-evaluation (deux fois) et Registry freshness (avertissement seul).
+- Deterministic gates échoue pour la même cause, avec les mêmes nombres : `depcruise.violations` 170
+  pour une base de 163. Le diff ne touche aucun import.
+- **Un échec est nouveau : CodeQL.** Il affiche deux alertes « Incomplete multi-character
+  sanitization » (sévérité haute) sur `pieces.$slug.tsx:723` et `:727`.
+  - Ces lignes datent du 4 mars 2026 (`git blame`). Ni `318f405d3` ni le reste de #2210 ne les
+    modifient : le diff de #2210 sur ce fichier commence à la ligne 778.
+  - CodeQL précise lui-même que des alertes non introduites par la PR peuvent apparaître quand les
+    changements sont volumineux.
+  - Le texte filtré sert de nom affiché dans `GammeHero` (`GammeHero.tsx:71`). React l'insère comme
+    du texte, qui est échappé. Je n'en ai pas fait l'analyse de sécurité complète : ce n'est pas le
+    périmètre.
+  - La troisième alerte, de sévérité moyenne (« Log injection »), est dans
+    `outils/proxy-c5.mjs:41`. CodeQL la comptait déjà à `dad1abcbc`, sans échec.
+- **Conclusion** : le correctif n'introduit aucun échec de CI. L'échec CodeQL est à lire par le
+  propriétaire de `pieces.$slug.tsx` avant toute fusion.
+
+Ce que je n'ai pas vérifié :
+
+- Les 7 `link-in-text-block` des blocs et celui de la page à 1440 px que DS dit disparus. Je n'ai pas
+  mesuré la page du ressort à `dad1abcbc`, donc je ne peux pas confirmer l'état d'avant. L'état
+  d'après est confirmé : aucun.
+- La `target-size` que DS dit présente sur la page du ressort, hors des blocs : je ne la reproduis pas
+  sur mon rendu.
+
+### 18.4 Hors périmètre
+
+- Aucune correction n'est faite, ni dans #2210 ni ailleurs.
+- La couleur violette des liens visités (`a:visited`) et la règle commune `.gamme-editorial a`
+  relèvent de la revue du 05.
+- Le contenu éditorial (emoji devant « Bruit … ») n'est pas jugé.
+- Les autres pages qui utilisent `.gamme-editorial`, la page véhicule, les pages R2, Firefox et Safari
+  ne sont pas mesurés.

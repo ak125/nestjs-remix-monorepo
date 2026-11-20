@@ -1,0 +1,15 @@
+('bien-choisir', True, 'sans classe') 28 liens, 21 pages
+('bien-choisir', True, 'seo-internal-link') 2 liens, 1 pages
+('emplacement', True, 'sans classe') 44 liens, 21 pages
+('emplacement', True, 'seo-internal-link') 3 liens, 3 pages
+('qualite-prix', True, 'sans classe') 81 liens, 56 pages
+('qualite-prix', True, 'seo-internal-link') 53 liens, 31 pages
+('reference', True, 'sans classe') 41 liens, 30 pages
+('reference', True, 'seo-internal-link') 38 liens, 21 pages
+pages 123 erreurs 0
+non soulignés au repos (hors seo-internal-link) : 0 liens sur 0 pages
+trois blocs : total 211 dont sans classe 153 pages 72 | seo-internal-link 58
+enfants rencontrés : Counter()
+classes rencontrées : Counter({None: 194, 'seo-internal-link': 96})
+parents (trois blocs, sans classe) : Counter({('p', False): 111, ('p', True): 42})
+exit 0

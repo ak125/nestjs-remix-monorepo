@@ -1,0 +1,16 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/ressort-de-suspension-188.html",
+  "viewport": "1440x900",
+  "at": "2026-11-20T10:08:40.774Z",
+  "violations": [],
+  "incomplets": [],
+  "conformes": [
+    {
+      "cible": "#bien-choisir > .max-w-\\[1280px\\].mx-auto > .gap-8.lg\\:grid-cols-2.grid-cols-1 > .gamme-editorial.\\[\\&_a\\]\\:underline.\\[\\&_a\\]\\:underline-offset-2 > div > p > a[href$=\"amortisseur-854.html\"]",
+      "html": "<a href=\"/pieces/amortisseur-854.html\">amortisseur</a>",
+      "messages": [
+        "Links can be distinguished from surrounding text by visual styling"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+CI du commit 318f405d3a61dbb1b7d7819be5b9431d637117ac (PR #2210), relevée le 2026-11-20 vers 10:10 UTC via gh api .../commits/<sha>/check-runs
+
+failure | 🚦 Circuit de fusion
+failure | CodeQL
+failure | 🛡️ Deterministic gates
+failure | 🧾 DoD self-evaluation present
+failure | 🧾 DoD self-evaluation present
+failure | Registry freshness (warn-only, Phase 1)
+skipped | 🔐 Armement de la fusion automatique (App)
+skipped | auto-merge
+skipped | 🐳 build / 🐳 Build
+skipped | 🧪 Deploy PREPROD
+skipped | 🔍 Docker Image Scan
+skipped | 🎭 E2E Smoke Tests
+skipped | 🚦 Gate check (snapshots ≥ auto_types)
+skipped | 🔦 Lighthouse Performance Audit
+skipped | 🔔 Notify on Failure
+skipped | review
+skipped | 🤖 Revue Claude (circuit moyen)
+success | 🛡️ ADR-010 Governance
+success | 🧪 Backend Tests
+success | Block forbidden DEV/PREPROD/PROD formulations in .md
+success | Block-new (owner + domain required)
+success | Block new served-content write sinks
+success | Block new / stale orphan files (G3)
+success | Calcul du circuit
+success | check-cart-conversion-r-role.sh (R-role invariant)
+success | check-role-purity.ts (role-vocabulary purity, source comments)
+success | 🔬 CodeQL Scan (javascript-typescript)
+success | 🛡️ Contract Gate
+success | 🔒 Core Build Only
+success | 🔍 CWV Performance Check
+success | Detect inert scheduling decorators
+success | 🔒 DEV Safety (Blocking)
+success | 🔍 DEV Safety (Observe)
+success | ⬣ ESLint
+success | 🧪 Frontend Tests
+success | Impeccable count ≤ committed baseline
+success | 🛡️ Import Firewall
+success | 🗄️ Migration Safety
+success | 🕸️ No new deep PR-stacks
+success | Refuser SEO_CHAIN_R*_MODE=on dans la config
+success | Repo Map Drift Check
+success | 🛡️ RPC Safety Gate
+success | 🔐 Secrets Detection
+success | 🔒 Security Audit
+success | ʦ TypeScript
+success | url-immutability
+success | validate-exploration-probe.sh (ADR-081 G10)
+success | Validate Specifications
+success | validate-top-priorities.sh (ADR-081)
+success | Verify ADR canon references have vault backing
+
+Totaux :
+      6 failure
+     11 skipped
+     33 success
+
+CodeQL (annotations) :
+frontend/app/routes/pieces.$slug.tsx:723 | failure | Incomplete multi-character sanitization
+frontend/app/routes/pieces.$slug.tsx:727 | failure | Incomplete multi-character sanitization
+docs/audit/maquette-r1-filtre-a-huile-20261119/outils/proxy-c5.mjs:41 | warning | Log injection
+
+Deterministic gates, extrait du journal (job 136210737893) :
+✖ Found 14 circular dependencies!
+✔ comparator CLI with installed analysers: madge cycles count, invalid madge evidence exits 2 without metrics or refresh (3727.117907ms)
+  madge.cycles              15        14       -1     0          improved  
+  depcruise.violations      163       170      +7     +5         REGRESSION
+REGRESSION detected. One or more metrics exceeded their threshold.
+
+Même job à dad1abcbc (136174507482) :
+✖ Found 14 circular dependencies!
+✔ comparator CLI with installed analysers: madge cycles count, invalid madge evidence exits 2 without metrics or refresh (3840.796129ms)
+  madge.cycles              15        14       -1     0          improved  
+  depcruise.violations      163       170      +7     +5         REGRESSION
+REGRESSION detected. One or more metrics exceeded their threshold.

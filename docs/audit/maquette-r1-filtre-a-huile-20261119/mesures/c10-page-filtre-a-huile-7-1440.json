@@ -1,0 +1,452 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/filtre-a-huile-7.html",
+  "status": 200,
+  "viewport": "1440x900",
+  "reducedMotion": true,
+  "axe": "4.12.1",
+  "at": "2026-11-20T10:07:20.194Z",
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "count": 5,
+      "nodes": [
+        {
+          "target": ".mt-3 > .text-white\\/30.text-\\[12px\\]",
+          "zone": "GLOBAL pied de page",
+          "text": "Service client disponibleLun-Ven 9h-18h, Sam 9h-13",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".md\\:flex-row > .text-white\\/30.text-\\[12px\\]",
+          "zone": "GLOBAL pied de page",
+          "text": "© 2026 AutoMecanik. Tous droits réservés.",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30.no-style[href$=\"cgv\"]",
+          "zone": "GLOBAL pied de page",
+          "text": "CGV",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30.no-style[href$=\"privacy\"]",
+          "zone": "GLOBAL pied de page",
+          "text": "Confidentialité",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30:nth-child(5)",
+          "zone": "GLOBAL pied de page",
+          "text": "Paiement sécurisé · Livraison 24-48h",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "count": 4,
+      "nodes": [
+        {
+          "target": ".text-emerald-300",
+          "zone": "R1 body",
+          "text": "Livraison gratuite dès 150€"
+        },
+        {
+          "target": ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+          "zone": "R1 body",
+          "text": "Retours 30j"
+        },
+        {
+          "target": ".lg\\:inline",
+          "zone": "R1 body",
+          "text": "·"
+        },
+        {
+          "target": ".text-white\\/40.lg\\:flex[href=\"tel:+33148479627\"]",
+          "zone": "R1 body",
+          "text": "01 48 47 96 27"
+        }
+      ]
+    }
+  ],
+  "colorContrastIncomplete": 25,
+  "contrasteDirect": [
+    {
+      "idx": 0,
+      "zone": "R1 main",
+      "token": "text-success",
+      "text": "Conseils entretien",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#1e8449",
+      "bg": "#f8fafc",
+      "ratio": 4.51,
+      "bgImages": [],
+      "bgPixel": "#f8fafc",
+      "ratioPixel": 4.51
+    },
+    {
+      "idx": 1,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Comment distinguer les types de filtre à huile",
+      "fontPx": 12,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#ffffff",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#ffffff",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 2,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Vissant (spin-on) ou cartouche — vérifiez la référ",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 3,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Saisissez marque, modèle et motorisation dans le s",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 4,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Moteurs VW/BMW longlife : vérifiez l'approbation V",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 5,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Certains moteurs modernes l'exigent — consultez la",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 6,
+      "zone": "R1 #bien-choisir",
+      "token": "text-neutral-400",
+      "text": "Filtre à air, filtre à carburant, filtre à huile d",
+      "fontPx": 10,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#fbfcfd",
+      "ratio": 4.71,
+      "bgImages": [],
+      "bgPixel": "#fbfcfd",
+      "ratioPixel": 4.71
+    },
+    {
+      "idx": 7,
+      "zone": "R1 #qualite-prix",
+      "token": "text-neutral-400",
+      "text": "Différences de qualité filtre à huile",
+      "fontPx": 12,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#f8fafc",
+      "ratio": 4.62,
+      "bgImages": [],
+      "bgPixel": "#f8fafc",
+      "ratioPixel": 4.62
+    },
+    {
+      "idx": 8,
+      "zone": "R1 #emplacement",
+      "token": "text-neutral-400",
+      "text": "Où se trouve le filtre à huile sur le véhicule",
+      "fontPx": 12,
+      "weight": 400,
+      "fg": "#6b7280",
+      "bg": "#ffffff",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#ffffff",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 9,
+      "zone": "R1 main",
+      "token": "text-cta-700",
+      "text": "2 min",
+      "fontPx": 10,
+      "weight": 600,
+      "fg": "#c2410c",
+      "bg": "#fff7ed",
+      "ratio": 4.88,
+      "bgImages": [],
+      "bgPixel": "#fff7ed",
+      "ratioPixel": 4.88
+    },
+    {
+      "idx": 10,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Voir les références",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 11,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Trouver la pièce compatible",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 12,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Sélectionner par véhicule",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 13,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Voir les prix",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    },
+    {
+      "idx": 14,
+      "zone": "R1 #aller-plus-loin",
+      "token": "text-cta-700",
+      "text": "Lire plus",
+      "fontPx": 12,
+      "weight": 500,
+      "fg": "#c2410c",
+      "bg": "#f5f7fa",
+      "ratio": 4.83,
+      "bgImages": [],
+      "bgPixel": "#f5f7fa",
+      "ratioPixel": 4.83
+    }
+  ],
+  "cibles": {
+    "sous24": [
+      {
+        "zone": "R1 body",
+        "tag": "a",
+        "text": "01 48 47 96 27",
+        "w": 101,
+        "h": 16,
+        "display": "flex",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hidden lg:flex items-center gap-1.5 text-white/40 hover:text-white transition-co",
+        "distanceCentreVoisin": 101
+      },
+      {
+        "zone": "R1 main",
+        "tag": "a",
+        "text": "Aller au contenu principal",
+        "w": 1,
+        "h": 1,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": true,
+        "classes": "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 foc",
+        "distanceCentreVoisin": 122
+      },
+      {
+        "zone": "R1 #reference",
+        "tag": "a",
+        "text": "bouchon de vidange",
+        "w": 135,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Pensez à commander en même temps les pièces associées pour votre vidange complète : boucho",
+        "srOnly": false,
+        "classes": "seo-internal-link",
+        "distanceCentreVoisin": 35
+      },
+      {
+        "zone": "R1 #reference",
+        "tag": "a",
+        "text": "filtre à air",
+        "w": 63,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Pensez à commander en même temps les pièces associées pour votre vidange complète : boucho",
+        "srOnly": false,
+        "classes": "seo-internal-link",
+        "distanceCentreVoisin": 106
+      },
+      {
+        "zone": "R1 #bien-choisir",
+        "tag": "a",
+        "text": "filtre à air",
+        "w": 63,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Attention à ne pas confondre le filtre à huile moteur avec le filtre à air (circuit admiss",
+        "srOnly": false,
+        "classes": "seo-internal-link",
+        "distanceCentreVoisin": 374
+      },
+      {
+        "zone": "R1 #bien-choisir",
+        "tag": "a",
+        "text": "filtre à carburant",
+        "w": 111,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": true,
+        "phrase": "Attention à ne pas confondre le filtre à huile moteur avec le filtre à air (circuit admiss",
+        "srOnly": false,
+        "classes": "seo-internal-link",
+        "distanceCentreVoisin": 374
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "01 48 47 96 27",
+        "w": 86,
+        "h": 20.8,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-[13px] text-white/60 hover:text-white transition-colors",
+        "distanceCentreVoisin": 52
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "contact@automecanik.com",
+        "w": 166,
+        "h": 20.8,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-[13px] text-white/60 hover:text-white transition-colors",
+        "distanceCentreVoisin": 52
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "CGV",
+        "w": 26,
+        "h": 19.2,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "no-style no-visited text-white/30 hover:text-white transition-colors",
+        "distanceCentreVoisin": 90
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "Confidentialité",
+        "w": 85,
+        "h": 19.2,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "no-style no-visited text-white/30 hover:text-white transition-colors",
+        "distanceCentreVoisin": 90
+      }
+    ],
+    "de24a44": 25,
+    "total": 92
+  },
+  "animations": [],
+  "boucles": [],
+  "htmlScrollBehavior": "smooth",
+  "defilementNavRapide": {
+    "bouton": "Voir aussi",
+    "y0": 0,
+    "y60": 7228,
+    "y1500": 7217,
+    "instantane": false
+  }
+}
