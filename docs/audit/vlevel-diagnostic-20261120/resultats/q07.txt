@@ -1,0 +1,71 @@
+== Q7a __sitemap_p_link pg 7 x types Clio III 1.5 dCi
+map_type_id | map_modele_alias | map_type_alias | map_has_item
+19051 | clio-iii | 1-5-dci | 23
+19052 | clio-iii | 1-5-dci | 23
+19053 | clio-iii | 1-5-dci | 23
+23455 | clio-iii-break | 1-5-dci | 16
+23456 | clio-iii-break | 1-5-dci | 16
+23457 | clio-iii-break | 1-5-dci | 16
+26627 | clio-iii | 1-5-dci | 20
+34744 | clio-iii | 1-5-dci | 15
+34745 | clio-iii-break | 1-5-dci | 15
+34746 | clio-iii | 1-5-dci | 13
+34747 | clio-iii-break | 1-5-dci | 16
+34749 | clio-iii-break | 1-5-dci | 15
+(12 rows)
+== Q7b tables GSC
+table_name | est
+__seo_gsc_daily | 153671
+__seo_gsc_daily_2026_04 | 27514
+__seo_gsc_daily_2026_05 | 22908
+__seo_gsc_daily_2026_06 | 27697
+__seo_gsc_daily_2026_07 | 33744
+__seo_gsc_daily_2026_08 | 46676
+__seo_gsc_daily_2026_09 | 36683
+__seo_gsc_daily_2026_10 | 42620
+__seo_gsc_daily_2026_11 | 25702
+__seo_gsc_daily_2026_12 | 0
+__seo_gsc_daily_2027_01 | -1
+__seo_gsc_daily_2027_02 | -1
+__seo_gsc_daily_page_totals | 94811
+__seo_gsc_daily_page_totals_2026_06 | 66761
+__seo_gsc_daily_page_totals_2026_07 | 83323
+__seo_gsc_daily_page_totals_2026_08 | 78111
+__seo_gsc_daily_page_totals_2026_09 | 61814
+__seo_gsc_daily_page_totals_2026_10 | 56552
+__seo_gsc_daily_page_totals_2026_11 | 39912
+__seo_gsc_daily_page_totals_2026_12 | 0
+__seo_gsc_daily_page_totals_2027_01 | -1
+__seo_gsc_daily_page_totals_2027_02 | -1
+__seo_gsc_daily_pages | 74195
+__seo_gsc_daily_pages_2026_06 | 20924
+__seo_gsc_daily_pages_2026_07 | 25501
+__seo_gsc_daily_pages_2026_08 | 34055
+__seo_gsc_daily_pages_2026_09 | 27771
+__seo_gsc_daily_pages_2026_10 | 26319
+__seo_gsc_daily_pages_2026_11 | 15660
+__seo_gsc_daily_pages_2026_12 | 0
+__seo_gsc_daily_pages_2027_01 | -1
+__seo_gsc_daily_pages_2027_02 | -1
+__seo_gsc_daily_property_total | 86
+__seo_gsc_daily_property_total_2026_06 | 30
+__seo_gsc_daily_property_total_2026_07 | 27
+__seo_gsc_daily_property_total_2026_08 | 31
+__seo_gsc_daily_property_total_2026_09 | 29
+__seo_gsc_daily_property_total_2026_10 | 31
+__seo_gsc_daily_property_total_2026_11 | 17
+__seo_gsc_daily_property_total_2026_12 | 0
+__seo_gsc_daily_property_total_2027_01 | -1
+__seo_gsc_daily_property_total_2027_02 | -1
+__seo_gsc_daily_totals | 11355
+__seo_gsc_daily_totals_2026_06 | 3698
+__seo_gsc_daily_totals_2026_07 | 3867
+__seo_gsc_daily_totals_2026_08 | 4691
+__seo_gsc_daily_totals_2026_09 | 4406
+__seo_gsc_daily_totals_2026_10 | 4211
+__seo_gsc_daily_totals_2026_11 | 2343
+__seo_gsc_daily_totals_2026_12 | 0
+__seo_gsc_daily_totals_2027_01 | -1
+__seo_gsc_daily_totals_2027_02 | -1
+__seo_gsc_links_weekly | 0
+(53 rows)

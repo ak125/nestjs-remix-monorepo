@@ -1,0 +1,110 @@
+== Q6a mots-cles pg 7 mentionnant clio 3 / clio iii
+id | keyword | type | v_level | model | energy | displacement | power | volume | type_id | source | updated_at
+54095 | clio 3 filtre a huile | generic | V4 |  |  |  |  | 500 |  | google-ads-kp | 2026-06-18
+54004 | filtre a huile clio 3 | generic | V4 |  |  |  |  | 500 |  | google-ads-kp | 2026-06-18
+30427 | filtre à huile clio 3 | vehicle | V3 | clio iii | essence |  |  | 500 | 11056 | keyword-engine | 2026-04-02
+54075 | filtre à huile clio 3 1.5 dci | generic | V4 |  |  |  |  | 500 |  | google-ads-kp | 2026-06-18
+54050 | filtre huile clio 3 | generic | V4 |  |  |  |  | 500 |  | google-ads-kp | 2026-06-18
+55277 | filtre huile clio 3 1.5 dci | generic | V4 |  |  |  |  | 500 |  | google-ads-kp | 2026-06-18
+54291 | filtre a huile bloqué clio 3 | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-04-12
+54422 | filtre a huile clio 3 1.2 16v | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+30129 | filtre a huile clio 3 1.5 dci | vehicle | V3 | clio iii | diesel |  |  | 50 | 19051 | keyword-engine | 2026-06-07
+54423 | filtre a huile clio 3 1.5 dci 105 | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+54424 | filtre a huile clio 3 1.5 dci 85 | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+30428 | filtre à huile clio 3 1.5 dci 85 | vehicle | V4 | clio iii | diesel |  |  | 50 | 19051 | keyword-engine | 2026-06-07
+54425 | filtre a huile clio 3 1.5 dci purflux | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+54426 | filtre a huile clio 3 dci | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+30429 | filtre à huile clio 3 dci | vehicle | V4 | clio iii | diesel |  |  | 50 | 19051 | keyword-engine | 2026-04-02
+54427 | filtre a huile clio 3 diesel | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+30430 | filtre à huile clio 3 diesel | vehicle | V4 | clio iii | diesel |  |  | 50 | 19051 | keyword-engine | 2026-04-02
+54428 | filtre a huile clio 3 essence | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-04-12
+54429 | filtre a huile clio 3 prix | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+54430 | filtre a huile clio 3 rs | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+55448 | filtre à huile clio iii | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+54965 | filtre a huile purflux clio 3 1.5 dci | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+55006 | filtre a huile renault clio 3 | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+30489 | filtre à huile renault clio 3 | vehicle | V4 | clio iii | essence |  |  | 50 | 11056 | keyword-engine | 2026-04-02
+55515 | prix filtre a huile clio 3 | generic | V4 |  |  |  |  | 50 |  | google-ads-kp | 2026-06-18
+39134 | filtre à huile clio iii 1.2 16v (phase 2) | vehicle | V4 | clio iii | essence |  |  | 0 | 11056 | keyword-engine | 2026-04-02
+39432 | filtre à huile clio iii 1.5 dci | vehicle | V4 | clio iii | diesel |  |  | 0 | 19051 | keyword-engine | 2026-06-07
+30541 | reference filtre a huile clio 3 1.5 dci | vehicle | V4 | clio iii | diesel |  |  | 0 | 19051 | keyword-engine | 2026-06-07
+(28 rows)
+== Q6b __seo_type_vlevel pg 7 pour les type_id Clio III 1.5 dCi
+type_id | v_level | source | model | energy | confidence | updated_at
+19051 | V4 | catalog |  |  |  | 2026-02-01 18:14:30.59076+00
+19053 | V4 | catalog |  |  |  | 2026-02-01 18:14:30.590757+00
+(2 rows)
+== Q6c __seo_type_vlevel pg 7 : V2 (73) — quels modeles
+model | energy | n
+207 | diesel | 1
+3008 | diesel | 1
+5008 | diesel | 1
+a1 | essence | 1
+a3 | diesel | 1
+a4 | diesel | 1
+astra | diesel | 1
+astra h | diesel | 1
+astra j | diesel | 1
+auris | diesel | 1
+berlingo | diesel | 1
+boxer | diesel | 1
+c2 | diesel | 1
+c5 | diesel | 1
+caddy | diesel | 1
+captur | diesel | 1
+classe a | diesel | 1
+classe b | diesel | 1
+classe c | diesel | 1
+clio i | diesel | 1
+clio ii | essence | 1
+clio iv | essence | 1
+clio iv | diesel | 1
+corolla | diesel | 1
+corsa | diesel | 1
+corsa c | diesel | 1
+corsa d | diesel | 1
+ds3 | essence | 1
+ducato | diesel | 1
+expert | diesel | 1
+(30 rows)
+== Q6d top 15 mots-cles pg 7 par volume
+keyword | type | v_level | model | energy | volume | type_id | source
+filtre a huile | generic |  |  | unknown | 5000 |  | keyword-engine
+filtre huile | generic | V4 |  |  | 5000 |  | google-ads-kp
+filtre à huile | generic | V4 |  |  | 5000 |  | google-ads-kp
+filtre à huile prix | generic | V4 |  |  | 500 |  | google-ads-kp
+filtre à l huile | generic | V4 |  |  | 500 |  | google-ads-kp
+vidange filtre à huile prix | generic | V4 |  |  | 500 |  | google-ads-kp
+filtre a huile clio 2 | generic | V4 |  |  | 500 |  | google-ads-kp
+filtre a huile c3 | generic | V4 |  |  | 500 |  | google-ads-kp
+filtre a huile clio 4 | generic | V4 |  |  | 500 |  | google-ads-kp
+filtre à huile purflux | generic | V4 |  |  | 500 |  | google-ads-kp
+vidange filtre à huile | generic | V4 |  |  | 500 |  | google-ads-kp
+vidange et filtre à huile | generic | V4 |  |  | 500 |  | google-ads-kp
+filtre à huile voiture | generic | V4 |  |  | 500 |  | google-ads-kp
+filtre a huile clio 3 | generic | V4 |  |  | 500 |  | google-ads-kp
+filtre huile voiture | generic | V4 |  |  | 500 |  | google-ads-kp
+(15 rows)
+== Q6e top 20 V3 pg 7 (champions) par volume
+keyword | model | energy | volume | type_id | v2_repetitions
+filtre à huile clio 3 | clio iii | essence | 500 | 11056 | 0
+filtre à huile twingo 1 | twingo i | essence | 500 | 2132 | 0
+filtre à huile 2008 1.6 hdi | 2008 | diesel | 50 | 58876 | 0
+filtre à huile 3008 1.6 hdi 112 | 3008 | diesel | 50 |  | 0
+filtre à huile 307 1.6 hdi 110 | 307 | diesel | 50 | 17989 | 0
+filtre à huile 407 1.6 hdi | 407 | diesel | 50 | 17986 | 0
+filtre à huile audi a3 1.6 tdi | a3 | diesel | 50 | 31320 | 0
+filtre à huile c3 picasso | c3 picasso | diesel | 50 | 7244 | 0
+filtre à huile c4 picasso | c4 picasso | essence | 50 | 6440 | 0
+filtre à huile c4 picasso 1.6 hdi | c4 picasso | diesel | 50 | 6442 | 0
+filtre à huile clio 2 | clio ii | essence | 50 | 9040 | 0
+filtre à huile clio 2 1.5 dci | clio ii | diesel | 50 | 16108 | 0
+filtre a huile clio 3 1.5 dci | clio iii | diesel | 50 | 19051 | 0
+filtre à huile clio 4 | clio iv | diesel | 50 | 57281 | 0
+filtre à huile clio 5 dci | clio v | diesel | 50 | 77702 | 0
+filtre à huile ford mondeo 2.0 tdci | mondeo | diesel | 50 | 16452 | 0
+filtre à huile golf 3 | golf iii | diesel | 50 | 1866 | 0
+filtre à huile golf 4 | golf iv | diesel | 50 | 8456 | 0
+filtre à huile golf 5 | golf v | essence | 50 | 17278 | 0
+filtre à huile golf 5 1.9 tdi 105 | golf v | diesel | 50 | 17484 | 0
+(20 rows)

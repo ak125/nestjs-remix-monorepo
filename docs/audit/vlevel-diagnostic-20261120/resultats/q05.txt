@@ -1,0 +1,11 @@
+== Q5a Clio III : modeles
+modele_id | modele_name | modele_alias | modele_parent | modele_year_from | modele_year_to | modele_display
+6446 | CLIO III Sportour (KR0/1_) | clio-iii-sportour | 0 | 2007 | 0 | 1
+11387 | CLIO III Camionnette/Berline bicorps tro | clio-iii-camionnette-berline-bicorps-tro | 0 | 2005 | 0 | 1
+140004 | CLIO III | clio-iii | 0 | 2005 | 2014 | 1
+140005 | CLIO III Break | clio-iii-break | 140004 | 2007 |  | 1
+(4 rows)
+== Q5b types 1.5 dCi des Clio III
+psql:/tmp/claude-1000/-opt-automecanik-app/439cab0f-ebc9-4b27-b2fb-5283732ad9e1/scratchpad/sql/q05_clio3.sql:5: ERROR:  column t.type_engine_code does not exist
+LINE 1: ...t.type_year_from, t.type_year_to, t.type_display, t.type_eng...
+                                                             ^

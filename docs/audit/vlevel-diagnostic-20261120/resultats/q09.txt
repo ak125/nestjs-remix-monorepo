@@ -1,0 +1,87 @@
+== Q9a ventes 12 mois (2025-11-20 -> 2026-11-20) par gamme : commandes payees, non annulees
+pg | gamme | commandes | qte | kw | tvl
+3283437 | Jeu d'émetteurs et récepteurs embrayage | 4 | 4 | 0 | 0
+ | Contacteur feu de recul | 2 | 2 | 0 | 0
+3468161 | Câble compteur de vitesse | 2 | 2 | 0 | 0
+2089685 | Support moteur | 1 | 1 | 0 | 0
+222984 | Sphère de suspension | 1 | 2 | 0 | 0
+27843 | Injecteur | 1 | 6 | 0 | 0
+3175413 | Butée mécanique d'embrayage | 1 | 1 | 0 | 0
+3217238 | Cardan | 1 | 1 | 0 | 0
+11619 | Maître-cylindre de frein | 1 | 1 | 0 | 0
+1090474 | Jeu de 4 plaquettes de frein | 1 | 1 | 0 | 0
+4751917 | Lève-vitre | 1 | 1 | 0 | 0
+5660748 | Sphère de suspension | 1 | 2 | 0 | 0
+8415883 | Crémaillière de direction | 1 | 1 | 0 | 0
+8934318 | Filtre à huile | 1 | 1 | 0 | 0
+9573325 | Filtre à huile | 1 | 1 | 0 | 0
+(15 rows)
+== Q9b meme chose, annulees incluses (pour comparaison)
+pg | gamme | commandes
+3283437 | Jeu d'émetteurs et récepteurs embrayage | 4
+3468161 | Câble compteur de vitesse | 2
+ | Contacteur feu de recul | 2
+1783478 | Capteur niveau de carburant | 1
+27843 | Injecteur | 1
+3175413 | Butée mécanique d'embrayage | 1
+222984 | Sphère de suspension | 1
+3217238 | Cardan | 1
+3283439 | Jeu d'émetteurs et récepteurs embrayage | 1
+2089685 | Support moteur | 1
+(10 rows)
+== Q9c fragments switch par gamme 7 (alias)
+sis_alias | n | distincts
+3 | 45 | 45
+1 | 26 | 19
+2 | 10 | 10
+(3 rows)
+== Q9d contenus switch pg 7
+sis_pg_id | sis_alias | sis_content
+7 | 1 | contrôler si encrassé
+7 | 1 | contrôler s'il fuit
+7 | 1 | contrôler s'il se desserre
+7 | 1 | contrôler s'il est usé
+7 | 1 | contrôler si fumée blanche
+7 | 1 | contrôler si témoin allumé
+7 | 1 | vérifier si encrassé
+7 | 1 | vérifier s'il fuit
+7 | 1 | vérifier s'il se desserre
+7 | 1 | vérifier s'il est usé
+7 | 1 | vérifier si fumée blanche
+7 | 1 | vérifier si témoin allumé
+7 | 1 | changer lors de vidange
+7 | 1 | changer si encrassé
+7 | 1 | changer s'il fuit
+7 | 1 | changer s'il se desserre
+7 | 1 | changer s'il est usé
+7 | 1 | changer si fumée blanche
+7 | 1 | changer si témoin allumé
+7 | 1 | changer lors de vidange
+7 | 1 | changer si encrassé
+7 | 1 | changer s'il fuit
+7 | 1 | changer s'il se desserre
+7 | 1 | changer s'il est usé
+7 | 1 | changer si fumée blanche
+7 | 1 | changer si témoin allumé
+7 | 2 | purifier l'huile
+7 | 2 | protéger le moteur
+7 | 2 | retenir les particules
+7 | 2 | garantir filtrer les impuretés de
+7 | 2 | assurer purifier l'huile
+7 | 2 | optimiser les performances
+7 | 2 | améliorer la fiabilité
+7 | 2 | prolonger la durée de vie
+7 | 2 | maintenir en bon état
+7 | 2 | préserver le véhicule
+(36 rows)
+== Q9e __seo_gamme_car_switch / __seo_type_switch volumes
+t | count | gammes | distincts
+gamme_car | 6542 | 221 | 1818
+type | 134 | 5 | 86
+(2 rows)
+== Q9f gamme_car_switch pg 7
+sgcs_alias | count | count
+1 | 10 | 10
+2 | 10 | 10
+3 | 10 | 10
+(3 rows)

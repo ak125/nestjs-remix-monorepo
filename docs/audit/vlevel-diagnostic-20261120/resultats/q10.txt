@@ -1,0 +1,25 @@
+== Q10a volume total commandes payees 12 mois (annulees exclues / incluses)
+payees_non_annulees | payees_toutes | min | max
+21 | 27 | 2026-03-13T16:18:37.060Z | 2026-11-17T07:03:10.228Z
+(1 row)
+== Q10b orl_pg_id = id gamme ? (match pieces_gamme)
+lignes | match_pg_id | match_nom
+27 | 0 | 14
+(1 row)
+== Q10c ventes 12 mois par nom de gamme -> pg_id via pieces_gamme (payees non annulees)
+orl_pg_name | pg_ids | commandes | qte
+Jeu d'émetteurs et récepteurs embrayage |  | 4 | 4
+Sphère de suspension | 1718 | 2 | 4
+Câble compteur de vitesse |  | 2 | 2
+Cardan | 13 | 2 | 2
+Filtre à huile | 7 | 2 | 2
+Injecteur | 3902 | 1 | 6
+Maître-cylindre de frein |  | 1 | 1
+Butée mécanique d'embrayage |  | 1 | 1
+Support moteur | 247 | 1 | 1
+Capteur niveau de carburant |  | 1 | 1
+Contacteur feu de recul | 807 | 1 | 1
+Crémaillière de direction | 286 | 1 | 1
+Jeu de 4 plaquettes de frein |  | 1 | 1
+Lève-vitre | 1561 | 1 | 1
+(14 rows)

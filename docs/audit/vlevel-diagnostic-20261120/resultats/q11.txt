@@ -1,0 +1,37 @@
+== Q11a gammes candidates : nom proche "emetteur recepteur embrayage", "cable compteur"
+pg_id | pg_name | pg_alias | pg_display | pg_level
+164 | Soupape maintien de pression cylindre émetteur d'embrayage | soupape-maintien-de-pression-cylindre-emetteur-d-e | 0 | 4
+234 | Emetteur d'embrayage | emetteur-d-embrayage | 1 | 1
+258 | Maître cylindre de frein | maitre-cylindre-de-frein | 1 | 1
+276 | Kit de réparation maître cylindre de frein | kit-de-reparation-maitre-cylindre-de-frein | 0 | 4
+620 | Récepteur d'embrayage | recepteur-d-embrayage | 1 | 1
+621 | Kit d'assemblage cylindre émetteur d'embrayage | kit-d-assemblage-cylindre-emetteur-d-embrayage | 0 | 4
+622 | Kit d'assemblage cylindre récepteur d'embrayage | kit-d-assemblage-cylindre-recepteur-d-embrayage | 0 | 4
+982 | Bouchon maître cylindre de frein | bouchon-maitre-cylindre-de-frein | 0 | 4
+1150 | Câble de compteur de vitesse | cable-de-compteur-de-vitesse | 1 | 2
+1304 | Soupape maintien de pression cylindre récepteur d'embrayage | soupape-maintien-de-pression-cylindre-recepteur-d- | 0 | 4
+2202 | Renvoi d'angle câble flexible de compteur de vitesse | renvoi-d-angle-cable-flexible-de-compteur-de-vites | 0 | 4
+2251 | Barre-boulons maître cylindre de frein | barre-boulons-maitre-cylindre-de-frein | 0 | 4
+2297 | Rondelle de buté maître-cylindre de frein | rondelle-de but maître-cylindre de frein-e069ea | 1 | 0
+2299 | Manchette maître cylindre de frein | manchette-maitre-cylindre-de-frein | 0 | 4
+2587 | Rondelle de buté maître-cylindre de frein | rondelle-de but maître-cylindre de frein-ef0917 | 1 | 0
+2588 | Manchette maître-cylindre de frein | manchette-matre-cylindre de frein-fb89fd | 1 | 0
+3400 | Détecteur de l'usure des plaquettes de frein | detecteur-de-l-usure-des-plaquettes-de-frein | 0 | 5
+9607 | Kit rép. câble indicateur d’usure de plaquettes de frein | kit-rp. câble indicateur d’usure de plaquettes de frein-b0da9d | 1 | 0
+9608 | Kit rép. câble indicateur d’usure de plaquettes de frein | kit-rp. câble indicateur d’usure de plaquettes de frein-1a7259 | 1 | 0
+60360 | Kit de réparation cylindre émetteur d’embrayage (BVR) | kit-de rparation cylindre émetteur d’embrayage (bvr)-a4e1ae | 1 | 0
+60362 | Électrovanne cylindre émetteur d’embrayage (BVR) | lectrovanne-cylindre émetteur d’embrayage (bvr)-e7b777 | 1 | 0
+60371 | Cylindre émetteur d’embrayage BV manuelle robotisée (BVR) | cylindre-metteur d’embrayage bv manuelle robotisée (bvr)-71397d | 1 | 0
+60403 | Roue motrice câble flexible de compteur de vitesse | roue-motrice cble flexible de compteur de vitesse-35309e | 1 | 0
+(23 rows)
+== Q11b candidats : mots-cles, type_vlevel, clics GSC juillet vs octobre (pages /pieces/<alias>-<pg>)
+pg | pg_alias | kw | kw_veh | tvl | clics_juil | clics_oct
+7 | filtre-a-huile | 2002 | 312 | 1104 | 71 | 30
+13 | cardan | 0 | 0 | 0 | 67 | 41
+247 | support-moteur | 0 | 0 | 0 | 33 | 51
+286 | cremailliere-de-direction | 0 | 0 | 0 | 18 | 9
+807 | contacteur-de-feu-de-recul | 0 | 0 | 0 | 7 | 5
+1561 | leve-vitre | 0 | 0 | 0 | 0 | 3
+1718 | sphere-de-suspension | 0 | 0 | 0 | 1 | 1
+3902 | injecteur | 0 | 0 | 0 | 7 | 7
+(8 rows)
