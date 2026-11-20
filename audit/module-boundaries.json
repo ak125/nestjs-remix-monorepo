@@ -664,10 +664,11 @@
         "backend/src/modules/rag-proxy/dto",
         "backend/src/modules/rag-proxy/events",
         "backend/src/modules/rag-proxy/services",
-        "backend/src/modules/rag-proxy/types"
+        "backend/src/modules/rag-proxy/types",
+        "backend/src/modules/rag-proxy/utils"
       ],
-      "files_count": 34,
-      "loc_total": 12052,
+      "files_count": 35,
+      "loc_total": 12191,
       "has_barrel": false
     },
     "scripts": {
@@ -965,8 +966,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 400,
-      "loc_total": 82959,
+      "files_count": 402,
+      "loc_total": 84443,
       "has_barrel": true
     },
     "upload": {
@@ -1992,7 +1993,7 @@
     {
       "from": "rag-proxy",
       "to": "config",
-      "count": 18
+      "count": 19
     },
     {
       "from": "rag-proxy",

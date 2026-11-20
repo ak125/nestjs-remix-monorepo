@@ -1,4 +1,10 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { readdirSync, statSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -9,6 +15,7 @@ import {
 } from '../events/rag-ingestion.events';
 import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagKnowledgeService } from './rag-knowledge.service';
+import { resolveConfinedPath } from '../utils/rag-paths.util';
 
 /** Candidate match from any detection strategy, with confidence score 0-100. */
 interface CandidateMatch {
@@ -637,8 +644,12 @@ export class RagGammeDetectionService {
         continue;
       }
 
+      // Lecture confinée à la base de connaissances ; hors base : fichier ignoré.
+      const realPath = resolveConfinedPath(knowledgePath, fullPath);
+      if (!realPath) continue;
+
       try {
-        const head = readFileSync(fullPath, 'utf-8').slice(0, 800);
+        const head = readFileSync(realPath, 'utf-8').slice(0, 800);
 
         // Guard: reject non-gamme content (consumables, manuals, brand pages)
         if (RagGammeDetectionService.isNonGammeContent(head)) {
@@ -893,13 +904,19 @@ export class RagGammeDetectionService {
 
     const filePaths: string[] = [];
     for (const dir of dirs) {
+      const realDir = resolveConfinedPath(knowledgePath, dir, 'directory');
+      if (!realDir) {
+        // Un sous-répertoire demandé doit exister dans la base de connaissances.
+        if (options.subDir) throw new BadRequestException('Invalid subDir');
+        continue; // répertoire par défaut absent
+      }
       const fullDir = path.join(knowledgePath, dir);
       try {
-        for (const f of readdirSync(fullDir)) {
+        for (const f of readdirSync(realDir)) {
           if (f.endsWith('.md')) filePaths.push(path.join(fullDir, f));
         }
       } catch {
-        /* dir may not exist */
+        /* dir may not be readable */
       }
     }
 
@@ -936,7 +953,9 @@ export class RagGammeDetectionService {
         let score = 0;
         let strategy = 'unknown';
         try {
-          const head = readFileSync(fp, 'utf-8').slice(0, 500);
+          const realPath = resolveConfinedPath(knowledgePath, fp);
+          if (!realPath) throw new Error('file outside the knowledge base');
+          const head = readFileSync(realPath, 'utf-8').slice(0, 500);
           const candidates = this.collectCandidates(
             head,
             knownAliases,

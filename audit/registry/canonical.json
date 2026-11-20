@@ -34046,6 +34046,7 @@
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
+        "backend/src/modules/rag-proxy/services/pdf-text-extractor.service.ts",
         "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
         "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
         "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
@@ -54691,11 +54692,12 @@
         "backend/src/modules/rag-proxy/services/webhook-audit.service.ts",
         "backend/src/modules/rag-proxy/types/rag-ingest.types.ts",
         "backend/src/modules/rag-proxy/types/rag-phase2a.types.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "fs",
         "path"
       ],
       "kind": "controller",
-      "loc": 592,
+      "loc": 595,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
       "risk": "high",
@@ -54828,11 +54830,11 @@
       ],
       "imports": [
         "backend/src/config/rag.config.ts",
-        "fs",
-        "path"
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
+        "fs"
       ],
       "kind": "service",
-      "loc": 283,
+      "loc": 285,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
       "risk": "high",
@@ -54854,11 +54856,13 @@
         "backend/src/modules/rag-proxy/rag-proxy.module.ts"
       ],
       "imports": [
+        "backend/src/config/rag.config.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 89,
+      "loc": 100,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/pdf-text-extractor.service.ts",
       "risk": "high",
@@ -54977,12 +54981,13 @@
         "backend/src/modules/rag-proxy/types/rag-contracts.types.ts",
         "backend/src/modules/rag-proxy/types/rag-ingest.types.ts",
         "backend/src/modules/rag-proxy/types/rag-state.types.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "crypto",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 788,
+      "loc": 804,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
       "risk": "high",
@@ -55067,11 +55072,12 @@
         "backend/src/modules/rag-proxy/events/rag-ingestion.events.ts",
         "backend/src/modules/rag-proxy/services/frontmatter-validator.service.ts",
         "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 1393,
+      "loc": 1412,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
       "risk": "high",
@@ -55096,12 +55102,13 @@
       "imports": [
         "@database/services/supabase-base.service",
         "backend/src/config/rag.config.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "backend/src/modules/upload/services/supabase-storage.service.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 475,
+      "loc": 489,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
       "risk": "high",
@@ -55157,11 +55164,12 @@
       "imports": [
         "backend/src/config/rag.config.ts",
         "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 362,
+      "loc": 366,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts",
       "risk": "high",
@@ -55300,6 +55308,7 @@
       ],
       "imports": [
         "backend/src/config/rag.config.ts",
+        "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
         "child_process",
         "crypto",
         "fs",
@@ -55307,7 +55316,7 @@
         "util"
       ],
       "kind": "service",
-      "loc": 412,
+      "loc": 416,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-video-management.service.ts",
       "risk": "high",
@@ -55550,6 +55559,39 @@
       "loc": 287,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/types/rag-state.types.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D6",
+      "id": "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
+      "importedBy": [
+        "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
+        "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
+        "backend/src/modules/rag-proxy/services/pdf-text-extractor.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-video-management.service.ts"
+      ],
+      "imports": [
+        "fs",
+        "path"
+      ],
+      "kind": "service",
+      "loc": 66,
+      "owner": "@ak125/rag-team",
+      "path": "backend/src/modules/rag-proxy/utils/rag-paths.util.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -73891,6 +73933,46 @@
       "loc": 63,
       "owner": "@ak125",
       "path": "backend/tests/unit/rag-knowledge-bootstrap.guard.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/rag-path-confinement-routes.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 459,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/rag-path-confinement-routes.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/rag-path-confinement.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 1025,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/rag-path-confinement.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -110177,11 +110259,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "1ed628874b5caf86ae0ff2b61cd19a0d558f5c0ad81bd5b4bb7de175fa26c91e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "54b3023e0ef9f6095aadf039d72950774b9f83912ec8f3d4e40ba8a603a0dedf",
+      "audit/registry/files.json": "f0104c469b5c10ff74f924ed1b2a094a178d1882fc6ac7576f409775349fa5a3",
       "audit/registry/rpc.json": "ae924a85483e215265b47c3f6c98988c62512b08260e003ab3ab96db651b6211",
       "audit/registry/runtime.json": "4950b9611ddfa67b77433a772064549b6a82173cb60b05cc2b24d34510d4a82d"
     },
-    "sotFingerprint": "382aa90e6329"
+    "sotFingerprint": "1af7719abf26"
   },
   "runtime": [
     {

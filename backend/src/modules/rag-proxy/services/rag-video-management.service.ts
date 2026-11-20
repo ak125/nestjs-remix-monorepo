@@ -16,13 +16,13 @@ import {
   createReadStream,
   mkdirSync,
   renameSync,
-  realpathSync,
 } from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { Response } from 'express';
+import { resolveConfinedPath } from '../utils/rag-paths.util';
 
 const execFileAsync = promisify(execFile);
 
@@ -35,6 +35,9 @@ const VIDEO_EXTS = new Set(['.mp4', '.webm', '.mkv', '.mov', '.m4v']);
  * à `VIDEO_EXTS`, la liste que sert `listVideos`.
  */
 const VIDEO_FILE_NAME = /^[a-f0-9]{64}(\.[a-z0-9]+)$/;
+
+/** Empreinte seule, telle que la reçoivent les routes d'administration. */
+const VIDEO_HASH = /^[a-f0-9]{64}$/;
 
 export interface VideoMeta {
   hash: string;
@@ -146,18 +149,9 @@ export class RagVideoManagementService {
     if (!match || !VIDEO_EXTS.has(match[1])) return null;
 
     const dir = path.resolve(this.videoDir);
-    const candidate = path.resolve(dir, fileName);
-    if (path.dirname(candidate) !== dir) return null;
+    if (path.dirname(path.resolve(dir, fileName)) !== dir) return null;
 
-    try {
-      const realDir = realpathSync(dir);
-      const realFile = realpathSync(candidate);
-      if (!realFile.startsWith(realDir + path.sep)) return null;
-      if (!statSync(realFile).isFile()) return null;
-      return realFile;
-    } catch {
-      return null;
-    }
+    return resolveConfinedPath(dir, fileName);
   }
 
   /**
@@ -229,10 +223,20 @@ export class RagVideoManagementService {
    * Enrich .prompt.md sidecars: replace `gamme: null` with detected gamme.
    */
   enrichVideoPrompts(hashes: string[], gamme: string): number {
+    if (
+      !Array.isArray(hashes) ||
+      !hashes.every((hash) => VIDEO_HASH.test(hash))
+    ) {
+      throw new BadRequestException(
+        'Invalid hash format (expected 64 hex chars)',
+      );
+    }
+
     const dir = this.videoDir;
     let enriched = 0;
     for (const hash of hashes) {
-      const promptPath = path.join(dir, `${hash}.prompt.md`);
+      const promptPath = resolveConfinedPath(dir, `${hash}.prompt.md`);
+      if (!promptPath) continue;
       try {
         let content = readFileSync(promptPath, 'utf-8');
         if (content.includes('gamme: null')) {
