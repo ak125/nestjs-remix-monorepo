@@ -1,14 +1,11 @@
 import { GammeResponseBuilderService } from '../../src/modules/gamme-rest/services/gamme-response-builder.service';
 import { BuyingGuideDataService } from '../../src/modules/gamme-rest/services/buying-guide-data.service';
-import { PageRoleValidatorService } from '../../src/modules/seo/validation/page-role-validator.service';
 
 // Résolveur des liens conseils du texte R1 : passe-plat ici, couvert par
 // internal-linking.service.conseils-links.test.ts.
 const internalLinking = {
   resolveConseilsLinks: jest.fn(async (html: string) => html),
 } as any;
-// Lexique R1 de la phrase des cartes motorisation (complément n° 5 au mandat DS).
-const roleValidator = new PageRoleValidatorService();
 
 describe('GammeResponseBuilderService buying guide fallback', () => {
   const makeBaseRpcPayload = () => ({
@@ -195,7 +192,6 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainFlags,
       guideLinkPolicy,
       internalLinking,
-      roleValidator,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -266,7 +262,6 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainFlags,
       guideLinkPolicy,
       internalLinking,
-      roleValidator,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -337,7 +332,6 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainFlags,
       guideLinkPolicy,
       internalLinking,
-      roleValidator,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -396,7 +390,6 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
         { mode: jest.fn(() => 'off') } as any,
         guideLinkPolicy,
         internalLinking,
-        roleValidator,
       );
     };
 
@@ -469,7 +462,6 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
         })),
       } as any,
       internalLinking,
-      roleValidator,
     );
 
     await service.buildRpcV2Response('7');
@@ -526,7 +518,6 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
           })),
         } as any,
         internalLinking,
-        roleValidator,
       ).buildRpcV2Response('479');
 
     const withContract = (faqSource: 'db' | 'mixed' | 'fallback') =>

@@ -20,6 +20,8 @@ interface MotorisationItem {
   type_name: string;
   puissance: string;
   periode: string;
+  type_year_from?: string | null;
+  type_year_to?: string | null;
   image: string;
   link: string;
   description: string;
@@ -43,6 +45,23 @@ interface MotorisationsSectionProps {
 
 // Limite d'affichage par défaut (SEO: éviter dilution)
 const VISIBLE_LIMIT = 12;
+
+/**
+ * Ligne de faits de la carte R1 : années de fabrication de la motorisation (auto_type.type_year_from /
+ * type_year_to, renvoyées par get_gamme_page_data_optimized). Renvoie la valeur affichée après
+ * « Fabrication : ». Une borne absente n'est pas affichée ; aucune borne = pas de ligne.
+ */
+function r1FabricationYears(
+  from?: string | null,
+  to?: string | null,
+): string | null {
+  const start = (from ?? "").trim();
+  const end = (to ?? "").trim();
+  if (start && end) return start === end ? start : `${start}–${end}`;
+  if (start) return `dès ${start}`;
+  if (end) return `jusqu'en ${end}`;
+  return null;
+}
 
 const MotorisationsSection = memo(function MotorisationsSection({
   motorisations,
@@ -219,9 +238,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
 
                     {/* Badges avec meilleur spacing */}
                     <div className="flex items-center gap-2 flex-wrap mb-2.5">
-                      <div
-                        className="px-3 py-1 rounded-full text-xs font-semibold bg-navy text-white shadow-sm"
-                      >
+                      <div className="px-3 py-1 rounded-full text-xs font-semibold bg-navy text-white shadow-sm">
                         {motorisation.type_name}
                       </div>
                       <div className="px-3 py-1 rounded-full text-xs font-semibold bg-success text-success-foreground shadow-sm">
@@ -229,43 +246,50 @@ const MotorisationsSection = memo(function MotorisationsSection({
                       </div>
                     </div>
 
-                    {/* Période plus visible */}
-                    <p className="text-sm text-gray-600 mb-3 font-medium">
-                      📅 {motorisation.periode}
-                    </p>
-
-                    {/* Conseil SEO (fragment2 du backend, sanitized) — masqué en R1 */}
-                    {!isR1 &&
+                    {isR1 ? (
+                      // R1 : une seule ligne de faits propres au véhicule, sans phrase
+                      // (complément n° 10 au mandat DS)
                       (() => {
-                        const cleanAdvice = motorisation.advice
-                          ? sanitizeAdvice(motorisation.advice)
-                          : null;
-                        return cleanAdvice ? (
-                          <p className="text-xs text-foreground bg-muted rounded px-2 py-1 mb-2 line-clamp-1">
-                            Conseil : {cleanAdvice}
+                        const annees = r1FabricationYears(
+                          motorisation.type_year_from,
+                          motorisation.type_year_to,
+                        );
+                        // Plage insécable : à 390 px, « 2005–2008 » ne se coupe pas après le tiret.
+                        return annees ? (
+                          <p className="text-sm text-gray-600 mb-4 font-medium">
+                            Fabrication&nbsp;:{" "}
+                            <span className="whitespace-nowrap">{annees}</span>
                           </p>
                         ) : null;
-                      })()}
-
-                    {/* Description — en R1, phrase du switch construite par le backend
-                        (gamme-response-builder, complément n° 5 au mandat DS) ; vide = pas de phrase */}
-                    {isR1 ? (
-                      motorisation.description ? (
-                        <p className="text-sm text-gray-700 leading-relaxed mb-4">
-                          {motorisation.description}
-                        </p>
-                      ) : null
+                      })()
                     ) : (
-                      <p className="text-sm text-gray-700 leading-relaxed mb-4">
-                        {motorisation.description ||
-                          `${pluralizePieceName(familleName.toLowerCase()).replace(/^./, (c) => c.toUpperCase())} compatibles avec votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name}. Sélectionnez l'essieu (avant/arrière) pour afficher les références disponibles.`}
-                      </p>
+                      <>
+                        {/* Période plus visible */}
+                        <p className="text-sm text-gray-600 mb-3 font-medium">
+                          📅 {motorisation.periode}
+                        </p>
+
+                        {/* Conseil SEO (fragment2 du backend, sanitized) */}
+                        {(() => {
+                          const cleanAdvice = motorisation.advice
+                            ? sanitizeAdvice(motorisation.advice)
+                            : null;
+                          return cleanAdvice ? (
+                            <p className="text-xs text-foreground bg-muted rounded px-2 py-1 mb-2 line-clamp-1">
+                              Conseil : {cleanAdvice}
+                            </p>
+                          ) : null;
+                        })()}
+
+                        <p className="text-sm text-gray-700 leading-relaxed mb-4">
+                          {motorisation.description ||
+                            `${pluralizePieceName(familleName.toLowerCase()).replace(/^./, (c) => c.toUpperCase())} compatibles avec votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name}. Sélectionnez l'essieu (avant/arrière) pour afficher les références disponibles.`}
+                        </p>
+                      </>
                     )}
 
                     {/* CTA amélioré */}
-                    <div
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-navy text-white font-bold text-sm shadow-md group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-                    >
+                    <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-navy text-white font-bold text-sm shadow-md group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100">
                       <span>Voir les pièces</span>
                       <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform motion-reduce:transition-none motion-reduce:group-hover:translate-x-0" />
                     </div>

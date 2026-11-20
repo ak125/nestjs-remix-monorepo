@@ -71,8 +71,8 @@ const PG_ALIAS = 'filtre-a-huile';
 const r1Keys = (pgId: string) => [
   `gamme:rpc:v2:${pgId}`,
   `gamme:rpc:v2:stale:${pgId}`,
-  `gamme:resp:v3:r6c0:${pgId}`,
-  `gamme:resp:v3:r6c1:${pgId}`,
+  `gamme:resp:v2:r6c0:${pgId}`,
+  `gamme:resp:v2:r6c1:${pgId}`,
 ];
 const R1_KEYS = r1Keys(PG_ID);
 const R3_KEYS = [

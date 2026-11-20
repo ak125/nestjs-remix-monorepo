@@ -84,7 +84,6 @@ function resolveR1GammeLinks(fail = false): ResolveR1GammeLinks {
     dummy, // SeoFeatureFlagRegistry
     dummy, // R6GuideLinkPolicyService
     linking,
-    dummy, // PageRoleValidatorService
   );
   const helper = (
     service as never as { resolveR1GammeLinks: ResolveR1GammeLinks }

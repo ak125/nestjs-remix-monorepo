@@ -669,6 +669,9 @@ instantané. Fichier : `complement-4-contrastes/apres-axe-390x844.json`.
 
 ## Complément n° 5 — phrase des cartes véhicule issue du switch (19 nov. 2026)
 
+> Retiré par le complément n° 10 (20 nov. 2026) : la phrase est remplacée par une ligne de faits,
+> et la variante R1 du builder, son test et la clé de cache `v3` sont rétablis à l'état de la base.
+
 Demande de Marwane (19 nov., 23:01) : remplacer la phrase identique des cartes
 véhicule R1 (« Sélectionnez cette motorisation pour afficher les références
 compatibles. », écrite en dur depuis `d604631c2`) par le système de switch
@@ -1259,6 +1262,119 @@ Les sections ont le même résultat à 390 et à 1440 px.
   commune confiée à 05.
 - Le reste de la page.
 
+## Complément n° 10 — ligne de faits sur les cartes véhicule (20 nov. 2026)
+
+Demande de Marwane (20 nov., 13:47, « oui ») : sur les cartes véhicule R1, une
+information propre à chaque véhicule remplace la phrase. V-Level hors périmètre.
+Décisions 157 (croiser avec les requêtes, rendu conforme aux règles de Google) et
+81 (Core Web Vitals avant / après). Tête de départ : `318f405d3a61dbb1b7d7819be5b9431d637117ac`.
+
+### Données disponibles et source
+
+- Années : `get_gamme_page_data_optimized` (`motorisations_enriched`) lit
+  `auto_type.type_year_from` et `type_year_to` (colonnes `text`). Le builder les
+  renvoie déjà dans chaque élément de `motorisations.items`. Aucune nouvelle requête.
+- Nombre de références compatibles par véhicule : **absent** de la fonction SQL et
+  de la réponse. `cgcLevelStats` et `technicalCodes` (mines, CNIT) n'en sont pas.
+  Il n'est donc pas affiché.
+- Borne absente : `type_year_to` est nul pour FIAT 500, DACIA SANDERO I, SUZUKI
+  SWIFT IV, HONDA CIVIC IX et CITROËN BERLINGO II. La ligne affiche « dès 2007 »,
+  sans affirmer une production en cours (l'ancien « Depuis … » le laissait croire).
+
+### Changement
+
+- `MotorisationsSection.tsx`, R1 seulement : la ligne « 📅 période » et la phrase
+  disparaissent ; une ligne `Fabrication : 2005–2012` (ou `dès 2007`,
+  `jusqu'en 2012`, une seule année si début = fin) ; aucune ligne si aucune borne.
+  Plage insécable (`whitespace-nowrap`) : à 390 px, « 2005–2008 » se coupait
+  après le tiret. Hors R1, rendu identique à la base.
+- `gamme-page-contract.types.ts` : le schéma zod des motorisations enlevait les
+  champs non déclarés ; `type_year_from` et `type_year_to` y sont ajoutés
+  (`nullish`). Sans ce point, aucune année n'arrivait au composant.
+- Prettier : les deux `div` `bg-navy` de ce fichier (compléments 2 et 3) n'étaient
+  pas formatés à la tête 318f405d3 ; formatés ici.
+
+### Retiré (complément n° 5)
+
+Plus rien n'affiche la phrase : `buildR1MotorisationDescription` n'a plus de
+consommateur. Les 8 fichiers backend modifiés par le complément n° 5 sont rétablis
+à la base de fusion `2462efde5`, et son test est supprimé. Le diff backend
+de la branche contre la base est vide.
+La clé de cache revient de `gamme:resp:v3` à `gamme:resp:v2` : le complément n° 5
+était le seul changement backend de la branche. La réponse redevient celle de
+`main`, donc les entrées `v2` en cache restent valides ; garder `v3` forcerait un
+recalcul sans objet. Les fragments en base ne sont pas touchés.
+
+### Requêtes (décision 157)
+
+Sur `__seo_keywords` :
+- pg 7 : 2002 mots-clés, dont 21 avec un nombre de quatre chiffres, surtout
+  « peugeot 2008 », le modèle ; aucun avec « année » ou « fabrication ».
+- pg 402 : 1384 mots-clés, dont 12 avec « 2008 » (le modèle) ; aucun avec « année ».
+
+La demande passe par le modèle. La ligne d'années sert à choisir la bonne
+motorisation, elle ne vise aucun mot-clé. Elle n'ajoute ni remplissage ni texte
+répété entre cartes ; aucun mot du lexique interdit R1 dans les lignes rendues.
+Constat hors périmètre : les mots-clés rattachés à pg 402 sont surtout
+« disque de frein… ». Rattachement à vérifier, non corrigé.
+
+### Mesures (rendu local, branche, API du DEV en GET)
+
+Avant = tête 318f405d3, phrases du complément n° 5 substituées par le proxy.
+Après = état final, proxy sans substitution.
+
+| Gamme | Vue | Cartes | Hauteur min / max / moy. avant | après | Largeur |
+|---|---|---|---|---|---|
+| pg 7 | 390 | 19 | 264 / 339 / 279 | 184 / 236 / 191 | 308 → 308 |
+| pg 7 | 1440 | 19 | 229 / 252 / 251 | 195 / 195 / 195 | 595 → 595 |
+| pg 402 | 390 | 17 | 287 / 405 / 301 | 184 / 256 / 200 | 308 → 308 |
+| pg 402 | 1440 | 17 | 252 / 275 / 255 | 195 / 195 / 195 | 595 → 595 |
+
+- Titres, liens, badges et largeurs identiques avant / après (comparaison des
+  relevés carte par carte) ; la hauteur baisse, puisque la phrase de 3 à 6 lignes
+  disparaît.
+- Contraste de la ligne : rgb(74,85,101) sur #fff, 7,55:1 à 390 et 1440 px.
+- axe : page 390 color-contrast×9, region×2 ; page 1440 color-contrast×5,
+  region×4, avant comme après ; section des cartes : aucune violation, avant
+  comme après.
+- CWV, médiane de 5 passages, cache froid (LCP ms / CLS / INP ms) :
+
+| Gamme | Vue | Avant | Après |
+|---|---|---|---|
+| pg 7 | 390, CPU ×4 | 3816 / 0 / 64 | 3820 / 0 / 80 |
+| pg 7 | 1440 | 3456 / 0,0223 / 48 | 3472 / 0,0223 / 56 |
+| pg 402 | 390, CPU ×4 | 372 / 0 / 72 | 408 / 0 / 56 |
+| pg 402 | 1440 | 288 / 0,0223 / 40 | 308 / 0,0223 / 40 |
+
+  Les écarts restent dans la dispersion des passages (`*-cwv.json`). Le LCP de
+  pg 7 est une image de `figure` hors des cartes (`diagnostic-lcp-apres-filtre-a-huile-7-cwv.json`,
+  build attribution, 3 passages).
+
+### Lignes identiques sur une même page
+
+- pg 7 : 2 cartes sur 19 (CLIO III 1.5 dCi et YARIS II 1.4 D4-D : 2005–2012).
+  Exemples : « Fabrication : 2005–2012 », « Fabrication : dès 2007 »,
+  « Fabrication : 2011–2017 ».
+- pg 402 : 4 cartes sur 17, en 2 paires de motorisations sœurs : AUDI A4 III B7
+  2.0 TDI 121 et 126 ch (2005–2006), GOLF IV 1.9 TDI 90 et 110 ch (1997–2004) ;
+  le titre et la puissance les distinguent. Exemples : « Fabrication : 2013–2015 »,
+  « Fabrication : dès 2008 », « Fabrication : 2011 ».
+
+### Fichiers (`complement-10/`)
+
+`avant-*` et `apres-*` pour `filtre-a-huile-7` et `plaquette-de-frein-402` :
+`-cartes.json`, `-cartes-390.png`, `-cartes-1a3-390.png`, `-axe.json`, `-cwv.json`.
+Contrôles : `typecheck-frontend.txt`, `typecheck-backend.txt`, `eslint.txt`
+(eslint et prettier), `vitest.txt`, `jest.txt`. La bulle de discussion fixe
+apparaît sur certaines captures (widget de la page, hors cartes).
+
+### Limites
+
+- Mesures de laboratoire sur le rendu local. Rien n'est intégré, activé ni servi
+  en DEV, PREPROD ou PROD.
+- Deux gammes relevées. Les 7 cartes sans lien, le V-Level, le titre et la
+  description de la page ne sont pas traités.
+
 ## Limites propres au complément n° 5
 
 - Le rendu après est mesuré sur la page R1 isolée, avec la substitution
@@ -1304,6 +1420,9 @@ Les sections ont le même résultat à 390 et à 1440 px.
 - `outils/liens-c9.cjs` : `URL_PATH=… node liens-c9.cjs <base> <label> <dossier>` ; chaque lien de `#bien-choisir`, `#qualite-prix` et `#emplacement` : soulignement, contrastes repos et survol, focus clavier, capture du paragraphe, à 390 et 1440 px (complément n° 9).
 - `outils/visite-lien-c9.cjs` : `URL_PATH=… SEL=… HREF=… CHROME=/usr/bin/google-chrome node visite-lien-c9.cjs <base> <largeur> <hauteur> <profil> <sortie.json>` ; un lien avant et après visite réelle (complément n° 9).
 - `outils/axe-c9.cjs` : `URL_PATH=… node axe-c9.cjs <base> <label> <dossier>` ; axe sur la page et sur chacune des trois sections, lien centré (complément n° 9).
+- `outils/cartes-c10.cjs` : `URL_PATH=… node cartes-c10.cjs <base> <label> <dossier>` ; cartes véhicule dépliées : titre, lien, badges, taille, contraste au pixel de chaque paragraphe, lignes identiques, captures à 390 px (complément n° 10).
+- `outils/axe-c10.cjs` : `URL_PATH=… node axe-c10.cjs <base> <label> <dossier>` ; axe sur la page et sur la section des cartes dépliée (complément n° 10).
+- `outils/cwv-c10.cjs` : `URL_PATH=… N=5 [ATTR=1] node cwv-c10.cjs <base> <label> <dossier>` ; LCP, CLS, INP (web-vitals 5.3.0), 390 CPU ×4 et 1440, parcours scripté ; `ATTR=1` pour le diagnostic des éléments (complément n° 10).
 - `outils/band-context.cjs` : `node band-context.cjs <base> <sortie.png>` ; bas du hero et bande à 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree

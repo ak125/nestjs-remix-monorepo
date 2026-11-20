@@ -164,7 +164,7 @@ export class GammeRestRpcV2Controller {
    * Admin uniquement : la route était ouverte à toute requête anonyme
    * (aucun appelant légitime non authentifié). Clés effacées en un seul DEL :
    * `gamme:rpc:v2:<pgId>`, `gamme:rpc:v2:stale:<pgId>` et
-   * `gamme:resp:v3:<r6c0|r6c1>:<pgId>`.
+   * `gamme:resp:v2:<r6c0|r6c1>:<pgId>`.
    * Redis indisponible → 503 : aucune réponse de succès sans purge confirmée.
    */
   @Post(':pgId/cache/invalidate')
