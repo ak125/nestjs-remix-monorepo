@@ -13,6 +13,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getEffectiveSupabaseKey } from '@common/utils';
+import {
+  GOOGLEBOT_PATTERNS,
+  isKnownBotUserAgent,
+} from '../../../common/utils/user-agent-class.util';
 
 export interface GooglebotInfo {
   isGooglebot: boolean;
@@ -46,36 +50,6 @@ export class GooglebotDetectorService {
   private readonly logger = new Logger(GooglebotDetectorService.name);
   private readonly supabase: SupabaseClient;
 
-  // Patterns for bot detection (reused from LogIngestionService)
-  private readonly googlebotPatterns = [
-    'googlebot',
-    'googlebot-image',
-    'googlebot-news',
-    'googlebot-video',
-    'google-inspectiontool',
-    'storebot-google',
-    'google-extended',
-    'adsbot-google',
-    'mediapartners-google',
-    'apis-google',
-  ];
-
-  private readonly otherBotPatterns = [
-    'bingbot',
-    'slurp', // Yahoo
-    'duckduckbot',
-    'baiduspider',
-    'yandexbot',
-    'sogou',
-    'exabot',
-    'facebot',
-    'ia_archiver', // Alexa
-    'semrushbot',
-    'ahrefsbot',
-    'dotbot',
-    'mj12bot',
-  ];
-
   constructor(private readonly configService: ConfigService) {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL') || '';
     // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
@@ -96,7 +70,7 @@ export class GooglebotDetectorService {
     clientIp: string = 'unknown',
   ): GooglebotInfo {
     const ua = userAgent.toLowerCase();
-    const isGooglebot = this.googlebotPatterns.some((pattern) =>
+    const isGooglebot = GOOGLEBOT_PATTERNS.some((pattern) =>
       ua.includes(pattern),
     );
     const botName = this.detectBotName(ua);
@@ -113,15 +87,7 @@ export class GooglebotDetectorService {
    * Check if user-agent is any known bot
    */
   isBot(userAgent: string): boolean {
-    const ua = userAgent.toLowerCase();
-    const allPatterns = [
-      ...this.googlebotPatterns,
-      ...this.otherBotPatterns,
-      'crawler',
-      'spider',
-      'bot',
-    ];
-    return allPatterns.some((pattern) => ua.includes(pattern));
+    return isKnownBotUserAgent(userAgent);
   }
 
   /**

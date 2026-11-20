@@ -35,9 +35,16 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
   it("404 catch-all émet X-Robots-Tag: noindex, follow", async () => {
     const request = new Request("https://www.automecanik.com/wp-admin/");
 
-    let thrown: { init?: { status?: number; headers?: HeadersInit } } | undefined;
+    let thrown:
+      | { init?: { status?: number; headers?: HeadersInit } }
+      | undefined;
     try {
-      await loader({ request, params: {}, context: {} } as never);
+      await loader({
+        request,
+        url: new URL(request.url),
+        params: {},
+        context: {},
+      } as never);
     } catch (e) {
       thrown = e as { init?: { status?: number; headers?: HeadersInit } };
     }
@@ -54,9 +61,16 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
       "https://www.automecanik.com/wl8k5m6HsSkVW3cXi61ZQ==",
     );
 
-    let thrown: { init?: { status?: number; headers?: HeadersInit } } | undefined;
+    let thrown:
+      | { init?: { status?: number; headers?: HeadersInit } }
+      | undefined;
     try {
-      await loader({ request, params: {}, context: {} } as never);
+      await loader({
+        request,
+        url: new URL(request.url),
+        params: {},
+        context: {},
+      } as never);
     } catch (e) {
       thrown = e as { init?: { status?: number; headers?: HeadersInit } };
     }
@@ -76,9 +90,16 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
       "https://www.automecanik.com/this-page-does-not-exist-12345",
     );
 
-    let thrown: { init?: { status?: number; headers?: HeadersInit } } | undefined;
+    let thrown:
+      | { init?: { status?: number; headers?: HeadersInit } }
+      | undefined;
     try {
-      await loader({ request, params: {}, context: {} } as never);
+      await loader({
+        request,
+        url: new URL(request.url),
+        params: {},
+        context: {},
+      } as never);
     } catch (e) {
       thrown = e as { init?: { status?: number; headers?: HeadersInit } };
     }

@@ -12,7 +12,7 @@ role: R7_BRAND
 > 🚫 **NEUTRALISÉ** — cet agent est **inerte**. Son corps opératoire (fetch DB + lecture du
 > corpus RAG gammes, génération `brand.md` / `role_map.json`, écriture dans
 > `/opt/automecanik/rag/knowledge/constructeurs/`) a été **retiré**. C'était la direction
-> **RAG→source-de-contenu abandonnée** (ADR-031 / ADR-046, vault) : le RAG est un retrieval
+> **RAG→source-de-contenu abandonnée** (P11 du journal des principes ; origine ADR-031 / ADR-046) : le RAG est un retrieval
 > **chatbot uniquement**, jamais une source de contenu / SEO. Déjà `[DEPRECATED 2026-06-12]` ;
 > son Step 4 était déjà mort (`backend/src/config/brand-role-map.schema.ts` absent du repo).
 

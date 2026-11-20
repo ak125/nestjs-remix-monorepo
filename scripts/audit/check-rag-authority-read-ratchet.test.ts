@@ -108,20 +108,34 @@ test("closure done right → refreshed baseline matches new scan → ok", () => 
   assert.equal(ok, true);
 });
 
-// ── Integration: the committed baseline freezes the remaining debt (16/6) ─────
+// ── Integration: the committed baseline freezes the remaining debt (10/3) ─────
 // R8 no longer reads RAG files as an editorial source. Its last two findings
 // were removed with an explicit same-PR baseline refresh (20/8 → 18/7).
 // The R1 keyword-plan batch followed: the service was retired, its two RAG
 // reads with it, with an explicit same-PR baseline refresh (18/7 → 16/6).
-test("committed baseline totals 16 findings across 6 files without R8 or the R1 batch", () => {
+// Mandat BI, tranche B3: R2EnricherService deleted (2), the router's RAG file
+// probe and the R4 enricher's unused RAG file load removed (2 + 2), with an
+// explicit same-PR baseline refresh (16/6 → 10/3).
+test("committed baseline totals 10 findings across 3 files without R8, the R1 batch, R2, R4 or the router", () => {
   const p = join(
     process.cwd(),
     "audit/baselines/rag-authority-read-baseline.json",
   );
   const b = JSON.parse(readFileSync(p, "utf-8")) as Baseline;
   assert.equal(b.rule, "seo-no-rag-as-content-source");
-  assert.equal(b.total, 16);
-  assert.equal(Object.keys(b.files).length, 6);
+  assert.equal(b.total, 10);
+  assert.equal(Object.keys(b.files).length, 3);
+  for (const closed of [
+    "backend/src/modules/admin/services/r2-enricher.service.ts",
+    "backend/src/modules/admin/services/r4-content-enricher.service.ts",
+    "backend/src/modules/admin/services/execution-router.service.ts",
+  ]) {
+    assert.equal(
+      Object.hasOwn(b.files, closed),
+      false,
+      `${closed} must not read the RAG as a content source again`,
+    );
+  }
   assert.equal(
     Object.hasOwn(
       b.files,

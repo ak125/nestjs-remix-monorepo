@@ -556,6 +556,9 @@ def format_master_md(design_system: dict) -> str:
     # Logic header
     lines.append("# Design System Master File")
     lines.append("")
+    lines.append("> **Generated proposal, non-normative.** AutoMecanik design values: `packages/design-tokens/src/tokens.json`;")
+    lines.append("> UI rules: `.claude/skills/frontend-design/SKILL.md`. The repository file `design-system/MASTER.md` is retired.")
+    lines.append("")
     lines.append("> **LOGIC:** When building a specific page, first check `design-system/pages/[page-name].md`.")
     lines.append("> If that file exists, its rules **override** this Master file.")
     lines.append("> If not, strictly follow the rules below.")
@@ -819,7 +822,7 @@ def format_page_override_md(design_system: dict, page_name: str, page_query: str
     lines.append(f"> **Generated:** {timestamp}")
     lines.append(f"> **Page Type:** {page_overrides.get('page_type', 'General')}")
     lines.append("")
-    lines.append("> ⚠️ **IMPORTANT:** Rules in this file **override** the Master file (`design-system/MASTER.md`).")
+    lines.append("> ⚠️ **IMPORTANT:** Rules in this file **override** the Master file of this generated proposal (`../MASTER.md`, non-normative).")
     lines.append("> Only deviations from the Master are documented here. For all other rules, refer to the Master.")
     lines.append("")
     lines.append("---")
@@ -1001,7 +1004,7 @@ def _generate_intelligent_overrides(page_name: str, page_query: str, design_syst
     
     if not recommendations:
         recommendations = [
-            "Refer to MASTER.md for all design rules",
+            "Refer to this proposal's MASTER.md; design values come from packages/design-tokens/src/tokens.json",
             "Add specific overrides as needed for this page"
         ]
     

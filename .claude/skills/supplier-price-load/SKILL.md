@@ -36,11 +36,41 @@ PR #707/#709), de façon vérifiée et réversible. Doctrine = runbook
 > **Invariant dispo `[CRITICAL]`** : le commit gouverné écrit en **PENDING par
 > défaut** (`ImportRequest.activate:false` → `pri_dispo='0'` +
 > `pending_stock_check`, non vendable ; **`pri_ref` persisté** #913 = clé de
-> l'activation). Tous les chemins de lecture filtrent `pri_dispo IN ('1','2','3')`
-> → un prix pending/null est **INVISIBLE partout** (0,00 €). Rendre vendable =
-> étape séparée `activate/{dry-run,commit}` sur les seules réfs
-> **portal-CONFIRMED** (AG→`'1'`, GRP→`'2'`), puis visible = `display/commit`
-> (gate gamme `pg_display` #915). Chaque étape = **GO owner** + rollback batch.
+> l'activation). Un prix pending/null n'est **vendable nulle part** (0,00 €).
+> Rendre vendable = étape séparée `activate/{dry-run,commit}` sur les seules réfs
+> **portal-CONFIRMED** (AG→`'1'`, GRP→`'2'`, voir ci-dessous pour `'2'`), puis
+> visible = `display/commit` (gate gamme `pg_display` #915). Chaque étape =
+> **GO owner** + rollback batch.
+
+> **Définition unique de vendable — décision 51 (owner, 2026-11-15/16), amendée
+> par la décision 118 (2026-11-17) `[CRITICAL]`** : une ligne est vendable si et
+> seulement si **`pri_dispo` vaut `'1'` (en stock), `'2'` (stock faible) ou `'3'`
+> (sur commande, délai affiché)**, `pricing_state <> 'FROZEN'`, pièce non masquée
+> (`piece_display = true`) et `pri_vente_ttc_n > 0`. Même définition pour les
+> pages et le panier. Code : `backend/src/database/services/vendable.ts`
+> (`estVendable`, `DISPOS_VENDABLES`), lu par le panier (`PiecePriceDataService`)
+> et le module tarifaire (impact, dénominateur et garde-fou du retrait). `'0'` et
+> `null` ne vendent pas ; une activation AG→`'1'` ou GRP→`'2'` rend vendable.
+> **Écart encore servi** : la RPC catalogue `get_pieces_for_type_gamme_v3` ne
+> retient que `'1'` (les RPC R2 et la quarantaine SQL, et le `isSellable`
+> frontend, acceptent `'1'|'2'|'3'`) ; fonction SQL unique `est_vendable` à
+> mandater séparément (zone SEO).
+>
+> **Fraîcheur par fournisseur** (`backend/src/modules/pricing/config/supplier-sale-rules.ts`,
+> `FRAICHEUR_PAR_FOURNISSEUR`, clé = `pri_frs`) : tant que la première mise à
+> jour complète d'un fournisseur n'est pas datée (`premiereMajCompleteLe: null`,
+> tous au 2026-11-16), un retrait `DISCONTINUED_TARIFF` de ses lignes
+> **alerte seulement** (`report.freshnessAlerts`, jamais commité). Après, seul
+> sort ce qui est **absent** (`DISCONTINUED_TARIFF`) ou **indisponible**
+> (`CONFIRMED_OUT`) dans le nouveau tarif. Dater un fournisseur = PR revue
+> (zone prix/stock), jamais une variable d'environnement.
+>
+> **Garde-fou 5 %** (`SEUIL_GARDE_FOU_SORTIE`) : un `deactivate/commit` qui
+> ferait sortir de la vente **plus de 5 %** des pièces vendables de la marque
+> (`pri_pm_id`) s'arrête : lot `FAILED`, opération
+> `DISPO_DEACTIVATION_GUARD_HALT`, aucune écriture de dispo. Reprise uniquement
+> avec `guardAcknowledgement: { haltBatchId, approvedBy }` posé par **Marwane**,
+> sur le même périmètre (même nombre de sorties projetées).
 
 ## Quand proposer ce skill
 
@@ -141,8 +171,17 @@ réfs (brand-locké, **disjoint du domaine activate**, réversible). Vérif : le
 `quarantine/dry-run` retombe à `{eligible:0}`. Complément SEO = flag #916 (`R2
 noindex si <1 vendable`, **catalogue-wide owner-gated séparé**).
 
+### 9 bis. Retrait de dispo (GO owner — décision 51)
+`POST /api/admin/pricing/deactivate/dry-run` puis `commit` `{ supplierId: <pm_id>,
+rows: [{ref, reason}], confirm: true }` (`reason` = `DISCONTINUED_TARIFF` absent
+du nouveau tarif, ou `CONFIRMED_OUT` indisponible). Lire dans le dry-run
+`freshnessAlerts` (retenus, fournisseur non daté) et `guard` (part de sortie vs
+5 %). Arrêt du garde-fou ⇒ **attendre Marwane**, ne jamais rejouer en scindant
+le lot pour passer sous le seuil. Rapport :
+`scripts/audit/supplier-sale-report.sql` (lecture seule).
+
 ### 10. Rollback gouverné (si besoin, par étape)
-`POST /api/admin/pricing/{import,activate,display,display/quarantine}/rollback`
+`POST /api/admin/pricing/{import,activate,deactivate,display,display/quarantine}/rollback`
 `{ batchId, supplierId }` → LIFO restore (dispo / prix / `piece_display`).
 
 ### 11. MAJ suivantes : **INCRÉMENTAL — nouvelles réfs only**, même profil.

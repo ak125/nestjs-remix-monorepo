@@ -45,7 +45,7 @@ const tpl = (text: string): SeoTemplates => ({
 describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
   let svc: SeoTemplateService;
   beforeEach(() => {
-    svc = new SeoTemplateService(noCache, noEvents);
+    svc = new SeoTemplateService(noCache, noEvents, {} as never);
   });
 
   it('résout #CompSwitch_3# depuis comp_switches (plus de strip à vide)', async () => {
@@ -118,7 +118,7 @@ describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
 describe('SeoTemplateService — description composée (vraie phrase véhicule-aware)', () => {
   let svc: SeoTemplateService;
   beforeEach(() => {
-    svc = new SeoTemplateService(noCache, noEvents);
+    svc = new SeoTemplateService(noCache, noEvents, {} as never);
   });
 
   const tplDesc = (description: string): SeoTemplates => ({

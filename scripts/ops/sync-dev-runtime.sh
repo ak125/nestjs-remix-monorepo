@@ -549,7 +549,30 @@ fi
 #    chaque cache turbo manqué du backend ; le `touch` de l'étape 7 n'y peut rien).
 INSTALL_LOG="${TMPDIR:-/tmp}/${LOG_TAG}-npm-install-$$.log"
 BUILD_LOG="${TMPDIR:-/tmp}/${LOG_TAG}-npm-build-$$.log"
+#
+#    Stack DEV arrêté pendant `npm ci` quand il tourne sous son unit : `npm ci` vide
+#    node_modules, et le stack en marche recompile alors backend/dist sur des dépendances
+#    absentes (incident 2026-11-15 : 5 sorties sur `stock_dto_1 is not defined`, nodemon
+#    relançant un dist compilé à moitié). Le piège EXIT le relance sur tout chemin de sortie,
+#    abort compris : un échec ne laisse jamais DEV:3000 arrêté en silence. Stack hors unit
+#    (terminal) : rien à arrêter proprement, comportement inchangé, journalisé.
+DEV_UNIT_STOPPED=0
+restart_dev_unit_on_exit() {
+  [ "$DEV_UNIT_STOPPED" = "1" ] || return 0
+  DEV_UNIT_STOPPED=0
+  "$SYSTEMCTL" --user start "$DEV_UNIT" \
+    || echo "[$LOG_TAG] ALERTE : relance de $DEV_UNIT échouée après l'arrêt pour npm ci — DEV:3000 arrêté. Relance : systemctl --user start $DEV_UNIT" >&2
+}
 if ! git diff --quiet "$local_sha" "$remote_sha" -- package-lock.json 2>/dev/null; then
+  unit_props=$("$SYSTEMCTL" --user show "$DEV_UNIT" -p LoadState -p ActiveState 2>/dev/null || true)
+  if grep -qx 'LoadState=loaded' <<<"$unit_props" && grep -qx 'ActiveState=active' <<<"$unit_props"; then
+    log "arrêt de $DEV_UNIT pendant npm ci (relancé après le build, ou à la sortie en cas d'échec)"
+    "$SYSTEMCTL" --user stop "$DEV_UNIT" || abort "arrêt de $DEV_UNIT échoué — npm ci non lancé, le stack DEV aurait recompilé sur un node_modules vide"
+    DEV_UNIT_STOPPED=1
+    trap restart_dev_unit_on_exit EXIT
+  else
+    log "$DEV_UNIT inactif ou non installé — npm ci sans arrêt du stack"
+  fi
   log "package-lock.json modifié → npm ci (install déterministe, log: $INSTALL_LOG)"
   if ! npm ci >"$INSTALL_LOG" 2>&1; then
     tail -50 "$INSTALL_LOG" >&2
@@ -569,12 +592,23 @@ check_workspace_integrity || abort "drift workspaces après npm install + build 
 
 # 7. Redémarrer le runtime : nodemon ne surveille que backend/dist, pas les dist des
 #    workspaces que le build vient de réécrire — on force un boot qui les recharge.
-touch backend/dist/main.js
+#    Stack arrêté pour npm ci : on le relance, sa compilation complète précède le boot ;
+#    la santé lui laisse plus de temps (démarrage à froid ~2 min le 2026-11-15).
+HEALTH_TRIES=12
+if [ "$DEV_UNIT_STOPPED" = "1" ]; then
+  DEV_UNIT_STOPPED=0
+  trap - EXIT
+  "$SYSTEMCTL" --user start "$DEV_UNIT" || abort "relance de $DEV_UNIT échouée après npm ci — DEV:3000 arrêté. Relance : systemctl --user start $DEV_UNIT"
+  log "$DEV_UNIT relancé après npm ci + build"
+  HEALTH_TRIES=48
+else
+  touch backend/dist/main.js
+fi
 
 # 8. Health check avec retries — un échec ici = dérive non auto-réparable (env manquant,
 #    migration DB pendante, Node…). On alerte pour intervention manuelle, sans masquer.
 healthy=0
-for i in $(seq 1 12); do
+for i in $(seq 1 "$HEALTH_TRIES"); do
   sleep 5
   if curl -sf --max-time 5 "$HEALTH_URL" >/dev/null 2>&1; then healthy=1; break; fi
 done

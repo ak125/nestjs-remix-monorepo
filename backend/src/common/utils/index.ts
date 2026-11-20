@@ -12,3 +12,8 @@ export {
 export { getErrorMessage, getErrorStack, serializeError } from './error.utils';
 export { getEffectiveSupabaseKey } from './supabase-key.util';
 export { splatToPath } from './splat-path.util';
+export {
+  escapeLikePattern,
+  quoteFilterValue,
+  ilikeContains,
+} from './postgrest-filter.util';

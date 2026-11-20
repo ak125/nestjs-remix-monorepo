@@ -4,6 +4,7 @@ import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import { VehicleEnrichmentService } from '../core/vehicle-enrichment.service';
 import { PaginationOptions, VehicleResponse } from '../../types/vehicle.types';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 /**
  * ⛏️ VEHICLE MINE SERVICE - Service dédié aux recherches par codes Mine
@@ -169,8 +170,8 @@ export class VehicleMineService extends SupabaseBaseService {
             )
             .eq('type_display', 1)
             .or(
-              `type_mine_code.ilike.%${minePattern}%,` +
-                `type_name.ilike.%${minePattern}%`,
+              `type_mine_code.ilike.${ilikeContains(minePattern)},` +
+                `type_name.ilike.${ilikeContains(minePattern)}`,
             )
             .limit(limit)
             .range(offset, offset + limit - 1)

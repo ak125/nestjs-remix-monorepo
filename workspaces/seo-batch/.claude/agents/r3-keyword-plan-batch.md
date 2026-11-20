@@ -2,7 +2,7 @@
 name: r3-keyword-plan-batch
 description: >-
   Batch KP R3 sequentiel. 10 gammes/session. Gap detection -> RAG parse -> P0-P3
-  -> UPSERT. Pattern conseil-batch.
+  -> UPSERT.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql

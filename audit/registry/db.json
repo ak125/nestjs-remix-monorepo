@@ -226,6 +226,26 @@
       "columns": [],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",
+      "id": "___xtr_supplier",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "___xtr_supplier",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "FREE",
+      "domain": "UNKNOWN",
       "id": "___xtr_supplier_link_pm",
       "inMigrations": [],
       "indexes": [],
@@ -238,6 +258,7 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ]
     },
@@ -376,7 +397,8 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
-        "backend/src/modules/orders/listeners/order-audit.listener.ts"
+        "backend/src/modules/orders/listeners/order-audit.listener.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
       ]
     },
     {
@@ -5170,6 +5192,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts"
       ]
@@ -5899,6 +5922,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
@@ -10129,9 +10153,9 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts"
       ]
     },
@@ -10688,6 +10712,7 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
       ]
     },
@@ -13037,7 +13062,6 @@
         "backend/src/modules/admin/services/image-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
@@ -13196,7 +13220,8 @@
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
-        "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
+        "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts"
       ]
     },
     {
@@ -14926,7 +14951,8 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
-        "backend/src/modules/pricing/services/pricing.repository.ts"
+        "backend/src/modules/pricing/services/pricing.repository.ts",
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts"
       ]
     },
     {

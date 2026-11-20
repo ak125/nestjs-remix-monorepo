@@ -7,7 +7,7 @@
  * Fixes applied:
  * - R4/R5: single-target dispatch instead of batch-all
  * - R7_BRAND: dispatch to R7BrandEnricherService.enrichSingle(marqueId)
- * - dryRun: supported for R1/R2/R3-conseil/R5/R7/R8 (preview without DB write)
+ * - dryRun: supported for R4/R5/R6/R7/R8 (preview without DB write)
  *
  * @see execution-registry.constants.ts
  */
@@ -19,13 +19,11 @@ import { RoleId, normalizeRoleId } from '../../../config/role-ids';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { BuyingGuideEnricherService } from '../services/buying-guide-enricher.service';
-import { R2EnricherService } from '../services/r2-enricher.service';
 import { R8VehicleEnricherService } from '../services/r8-vehicle-enricher.service';
 import { R7BrandEnricherService } from '../services/r7-brand-enricher.service';
 import { DiagnosticService } from '../../seo/validation/diagnostic.service';
 import { ReferenceService } from '../../seo/services/reference.service';
 import { R4ContentEnricherService } from '../services/r4-content-enricher.service';
-import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 // ── Result types ──
 
@@ -38,7 +36,11 @@ export interface ExecutionRequest {
   dryRun?: boolean;
   /** Source of the request — used for R4 routing (r4_batch → 0-LLM audit enricher) */
   source?: string;
-  /** Optional vehicle key for R2 (gamme × vehicle) */
+  /**
+   * Legacy field, no longer read: it was only passed to the R2 enricher, removed
+   * with the RAG-fed R2 path (mandat BI, tranche B3 — ADR-031/046). Kept optional
+   * so existing callers of POST /api/admin/pipeline/execute are not rejected.
+   */
   vehicleKey?: string;
 }
 
@@ -98,9 +100,6 @@ export class ExecutionRouterService extends SupabaseBaseService {
     super(configService);
     this.serviceClassMap = {
       BuyingGuideEnricherService: BuyingGuideEnricherService as unknown as new (
-        ...args: unknown[]
-      ) => unknown,
-      R2EnricherService: R2EnricherService as unknown as new (
         ...args: unknown[]
       ) => unknown,
       R8VehicleEnricherService: R8VehicleEnricherService as unknown as new (
@@ -176,7 +175,6 @@ export class ExecutionRouterService extends SupabaseBaseService {
                 enricher,
                 targetId,
                 dryRun,
-                request.vehicleKey,
                 request.source,
               ),
             );
@@ -238,7 +236,6 @@ export class ExecutionRouterService extends SupabaseBaseService {
     enricher: EnricherLike,
     targetId: string,
     dryRun: boolean,
-    vehicleKey?: string,
     source?: string,
   ): Promise<unknown> {
     // Resolve pgAlias for gamme-based roles
@@ -250,15 +247,11 @@ export class ExecutionRouterService extends SupabaseBaseService {
       // fails explicitly upstream ("No registry entry for role") before ever reaching this
       // switch — same surface as R3_CONSEILS. Do NOT re-add a RAG-fed R1 enricher.
 
-      case RoleId.R2_PRODUCT:
-        if (dryRun) {
-          return this.dryRunPreview(roleId, targetId, pgAlias);
-        }
-        return enricher.enrichSingle!(
-          targetId,
-          pgAlias ?? targetId,
-          vehicleKey,
-        );
+      // R2_PRODUCT: no dispatch case — executable path removed (mandat BI, tranche B3,
+      // ADR-031/046; RAG producer R2EnricherService deleted). The registry entry is gone,
+      // so execute() fails explicitly upstream ("No registry entry for role") before ever
+      // reaching this switch — same surface as R1_ROUTER and R3_CONSEILS. Do NOT re-add a
+      // RAG-fed R2 enricher.
 
       // R3_CONSEILS: no dispatch case — executable path removed (B2/B6, ADR-027
       // §Correction + ADR-080; RAG producer deleted). The registry entry is gone,
@@ -358,7 +351,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
   ): Promise<unknown> {
     const slug = pgAlias ?? targetId;
 
-    // Route to R4ContentEnricherService (0-LLM audit — delegates content gen to /content-gen skill)
+    // Route to R4ContentEnricherService (0-LLM audit; R4 content comes from the seo-content-loop, RAW → WIKI → projection)
     if (source === 'r4_batch') {
       const enricher0llm = this.getR4ContentEnricher();
       if (enricher0llm) {
@@ -380,7 +373,16 @@ export class ExecutionRouterService extends SupabaseBaseService {
             : 'no-op (génération RAG retirée — ADR-031/046)',
         };
       }
-      return this.dryRunPreview(RoleId.R4_REFERENCE, targetId, pgAlias);
+      // No RAG file probe here (ADR-031/046): a reference service without getBySlug
+      // cannot answer a dry-run, and that is reported, never guessed from the RAG.
+      return {
+        targetId,
+        dryRun: true,
+        status: 'failed',
+        slug,
+        reason:
+          'R4 dry-run needs ReferenceService.getBySlug; the RAG file probe was removed (ADR-031/046).',
+      };
     }
 
     // Génération R4 depuis le filesystem RAG retirée (ADR-031/046 — RAG = chatbot only).
@@ -433,41 +435,6 @@ export class ExecutionRouterService extends SupabaseBaseService {
       slug,
       reason:
         'R5 template/RAG generation removed (ADR-031/046). No write dispatch for R5_DIAGNOSTIC.',
-    };
-  }
-
-  // ── Private: dry-run preview (for enrichers without native dryRun) ──
-
-  private async dryRunPreview(
-    roleId: RoleId,
-    targetId: string,
-    pgAlias: string | null,
-  ): Promise<unknown> {
-    // Load RAG file info for preview
-    const { existsSync } = await import('node:fs');
-    const { join } = await import('node:path');
-    const ragPath = join(
-      `${RAG_KNOWLEDGE_PATH}/gammes`,
-      `${pgAlias ?? targetId}.md`,
-    );
-    const hasRag = existsSync(ragPath);
-
-    // Load gamme info
-    const { data: gamme } = await this.client
-      .from('pieces_gamme')
-      .select('pg_id, pg_name, pg_alias')
-      .eq('pg_id', targetId)
-      .single();
-
-    return {
-      targetId,
-      dryRun: true,
-      roleId,
-      pgAlias: pgAlias ?? targetId,
-      gammeName: gamme?.pg_name ?? 'unknown',
-      hasRagFile: hasRag,
-      action: hasRag ? 'would enrich from RAG' : 'would skip (no RAG file)',
-      status: hasRag ? 'ready' : 'skipped',
     };
   }
 

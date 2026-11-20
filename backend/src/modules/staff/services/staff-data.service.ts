@@ -10,6 +10,7 @@ import type {
   PaginatedStaff,
 } from '../dto/staff.dto';
 import * as bcrypt from 'bcrypt';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 /**
  * Structural row shape for the `___config_admin` table (the `cnfa_*` columns the
@@ -57,7 +58,7 @@ export class StaffDataService extends SupabaseBaseService {
       // Filtres
       if (search) {
         query = query.or(
-          `cnfa_mail.ilike.%${search}%,cnfa_name.ilike.%${search}%,cnfa_fname.ilike.%${search}%`,
+          `cnfa_mail.ilike.${ilikeContains(search)},cnfa_name.ilike.${ilikeContains(search)},cnfa_fname.ilike.${ilikeContains(search)}`,
         );
       }
       if (level !== undefined) {

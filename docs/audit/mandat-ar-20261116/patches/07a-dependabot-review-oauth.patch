@@ -1,0 +1,20 @@
+--- a/.github/workflows/dependabot-claude-review.yml
++++ b/.github/workflows/dependabot-claude-review.yml
+@@ -8,7 +8,7 @@
+ # Activation contrôlée par deux variables repo (à créer côté Settings) :
+ #   - vars.CLAUDE_REVIEW_ENABLED  : kill-switch global (true|false)
+ #   - vars.CLAUDE_REVIEW_DRY_RUN  : commenter sans merger (true|false)
+-# Et le secret repo `ANTHROPIC_API_KEY`.
++# Et le secret repo `CLAUDE_CODE_OAUTH_TOKEN` (mandat AR-5 : `ANTHROPIC_API_KEY` n'existe pas).
+ #
+ # Voir plan rev 1 : /home/deploy/.claude/plans/aller-au-contenu-utiliser-dapper-rose.md
+ 
+@@ -70,7 +70,7 @@
+         if: steps.skip-check.outputs.skip == 'false'
+         uses: anthropics/claude-code-action@v1
+         with:
+-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
++          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+           allowed_bots: "dependabot[bot]"
+           claude_args: "--model claude-haiku-4-5-20251001"
+           prompt: |

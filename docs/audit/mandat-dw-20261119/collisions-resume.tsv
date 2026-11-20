@@ -1,0 +1,7 @@
+ensemble	pages	actuels_groupes	actuels_pages	c1_avant_regle_groupes	c1_avant_regle_pages	c1_apres_regle_groupes	c1_apres_regle_pages	c2_avant_regle_groupes	c2_avant_regle_pages	c2_apres_regle_groupes	c2_apres_regle_pages	c2_noms_bruts_apres_regle_groupes	c2_noms_bruts_apres_regle_pages	plus_de_60_c2
+servable	373005	20908	50175	3909	8879	2539	6139	5161	11383	2539	6139	2539	6139	146569
+indexable	101097	4768	11367	823	1848	518	1238	1167	2536	518	1238	518	1238	27948
+servable_migration	328047	18369	44036	1370	2740	0	0	2622	5244	0	0	0	0	105187
+indexable_migration	90714	4250	10129	305	610	0	0	649	1298	0	0	0	0	18499
+servable_repli	44958	2539	6139	2539	6139	2539	6139	2539	6139	2539	6139	2539	6139	41382
+indexable_repli	10383	518	1238	518	1238	518	1238	518	1238	518	1238	518	1238	9449

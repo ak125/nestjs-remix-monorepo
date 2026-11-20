@@ -1,0 +1,1035 @@
+pg_id,gamme,type_id,marque,modele,type,carburant,puissance_ch,annee_debut,annee_fin
+9,Filtre à carburant,1052,ABARTH,500,1.4 16V,Essence,180,2008,
+9,Filtre à carburant,1054,ABARTH,500 C,1.4 16V,Essence,140,2009,
+9,Filtre à carburant,5714,CHEVROLET,ORLANDO,1.8,Essence,141,2011,
+9,Filtre à carburant,7205,ALFA ROMEO,GIULIETTA II,1.4 TB,Essence,116,2010,2016
+9,Filtre à carburant,7206,ALFA ROMEO,GIULIETTA II,1.4 TB,Essence,163,2010,2018
+9,Filtre à carburant,9586,CHEVROLET,CAPTIVA I,3.0 4WD,Essence,258,2010,2018
+9,Filtre à carburant,9592,CHEVROLET,VOLT I,EV 150,Essence-Électrique,151,2011,
+9,Filtre à carburant,9947,PORSCHE,PANAMERA (970),4.8 TURBO S,Essence,550,2011,2013
+9,Filtre à carburant,9977,CHEVROLET,CAMARO III Décapotable,6.2,Essence,432,2011,
+9,Filtre à carburant,9978,CHEVROLET,CAMARO III Décapotable,6.2,Essence,405,2011,
+9,Filtre à carburant,9997,CHEVROLET,AVEO III,1.2,Essence,69,2011,
+9,Filtre à carburant,9998,CHEVROLET,AVEO III,1.2,Essence,86,2011,
+9,Filtre à carburant,10019,CHEVROLET,AVEO III,1.4,Essence,101,2011,
+9,Filtre à carburant,10029,CHEVROLET,AVEO III Berline,1.2,Essence,86,2011,
+9,Filtre à carburant,10035,CHEVROLET,AVEO III,1.6,Essence,116,2011,
+9,Filtre à carburant,10351,CHEVROLET,CRUZE III  Hatchback (J305),1.8,Essence,141,2011,
+9,Filtre à carburant,10352,CHEVROLET,CRUZE III  Hatchback (J305),1.6,Essence,124,2011,
+9,Filtre à carburant,10443,CHEVROLET,AVEO III Berline,1.6,Essence,116,2011,
+9,Filtre à carburant,10444,CHEVROLET,AVEO III Berline,1.4,Essence,100,2011,
+9,Filtre à carburant,10572,CHEVROLET,AVEO III Berline,1.2,Essence,69,2011,
+9,Filtre à carburant,10932,VOLKSWAGEN,TIGUAN I,1.4 TSI 4Motion,Essence,160,2011,2018
+9,Filtre à carburant,11207,CITROËN,C CROSSER ENTERPRISE,2.4 16V,Essence,170,2009,
+9,Filtre à carburant,11703,PORSCHE,PANAMERA (970),4.8 TURBO,Essence,540,2010,2013
+9,Filtre à carburant,12017,ALFA ROMEO,GIULIETTA II,1.4 TB,Essence,105,2011,2017
+9,Filtre à carburant,12037,OPEL,INSIGNIA A Sport Break,2.0 16V TURBO 4x4,Essence,250,2011,2013
+9,Filtre à carburant,12045,OPEL,INSIGNIA A,2.0 16V TURBO 4x4,Essence,250,2011,2017
+9,Filtre à carburant,12050,OPEL,INSIGNIA A Berline,2.0 16V TURBO 4x4,Essence,250,2011,2017
+9,Filtre à carburant,13978,CHEVROLET,MALIBU V (V300),2.4,Essence,167,2012,
+9,Filtre à carburant,13980,FIAT,LINEA,1.6 16V,Essence,110,2011,
+9,Filtre à carburant,14002,FIAT,PANDA III,1.2,Essence,69,2012,
+9,Filtre à carburant,14015,FIAT,PANDA III,0.9,Essence,86,2012,
+9,Filtre à carburant,14548,FIAT,UNO (146),1.6 R,Essence,90,1993,1995
+9,Filtre à carburant,17793,MINI,(R50-R53),Works,Essence,210,2003,2006
+9,Filtre à carburant,17811,BMW,X3 (E83),3.0 i xDrive,Essence,231,2003,2006
+9,Filtre à carburant,17812,BMW,X3 (E83),2.5 i,Essence,192,2004,2006
+9,Filtre à carburant,18584,CITROËN,C1 I,1.0,Essence,68,2005,2014
+9,Filtre à carburant,18586,PEUGEOT,107,1.0,Essence,68,2005,2014
+9,Filtre à carburant,19033,BMW,X3 (E83),2.0 i,Essence,150,2005,2008
+9,Filtre à carburant,19395,VOLKSWAGEN,PASSAT VI B6,2.0 FSI,Essence,200,2005,2010
+9,Filtre à carburant,19396,VOLKSWAGEN,PASSAT VI B6 Break,2.0 FSI,Essence,200,2005,2010
+9,Filtre à carburant,19553,ALFA ROMEO,SPIDER V,3.2 JTS Q4,Essence,260,2006,2011
+9,Filtre à carburant,19823,CHRYSLER,300 C Touring,6.1 SRT8,Essence,431,2005,2010
+9,Filtre à carburant,19827,BMW,X3 (E83),3.0 si,Essence,272,2006,2008
+9,Filtre à carburant,19828,BMW,X3 (E83),2.5 si,Essence,218,2006,2008
+9,Filtre à carburant,20475,FIAT,PANDA III,0.9,Essence,65,2012,
+9,Filtre à carburant,20743,BMW,X5 (F15),50 i xDrive,Essence,449,2013,2018
+9,Filtre à carburant,20872,ABARTH,500 C,1.4 16V (Phase 1),Essence,160,2011,
+9,Filtre à carburant,21803,SEAT,LEON ST,1.4 TSI,Essence,140,2013,
+9,Filtre à carburant,23159,MERCEDES,CLASSE CLK Décapotable (A209),500,Essence,388,2006,2010
+9,Filtre à carburant,23181,VOLKSWAGEN,TIGUAN I,2.0 TFSI 4Motion,Essence,170,2007,2018
+9,Filtre à carburant,23228,FIAT,LINEA,1.4,Essence,77,2007,
+9,Filtre à carburant,24522,CITROËN,NEMO,1.4,Essence,73,2008,
+9,Filtre à carburant,24527,PEUGEOT,BIPPER,1.4,Essence,73,2008,
+9,Filtre à carburant,26003,FIAT,PUNTO III,1.2,Essence,69,2012,
+9,Filtre à carburant,26004,FIAT,PUNTO III,1.4,Essence,75,2012,
+9,Filtre à carburant,26235,ALFA ROMEO,GIULIETTA II,1.8 TBI,Essence,241,2013,2018
+9,Filtre à carburant,26601,ALFA ROMEO,SPIDER V,3.2 JTS,Essence,260,2008,2011
+9,Filtre à carburant,26753,VOLKSWAGEN,GOLF VII Break,1.4 TSI,Essence,140,2013,2017
+9,Filtre à carburant,27004,CHEVROLET,AVEO III,1.4 TURBO,Essence,140,2013,
+9,Filtre à carburant,27009,VOLKSWAGEN,GOLF VII Break,1.4 TGI CNG,Essence-Gaz GNC,110,2013,
+9,Filtre à carburant,27308,FIAT,PUNTO III,1.4 Natural Power,Essence-Gaz GNC,78,2012,
+9,Filtre à carburant,27569,PEUGEOT,4007,2.4 16V,Essence,170,2007,2013
+9,Filtre à carburant,28251,ABARTH,500,1.4 16V,Essence,135,2008,
+9,Filtre à carburant,29315,PORSCHE,PANAMERA (970),4.8 GTS,Essence,430,2012,2015
+9,Filtre à carburant,29685,SEAT,LEON ST,1.2 TSI,Essence,105,2013,
+9,Filtre à carburant,29725,SEAT,LEON ST,1.2 TSI,Essence,86,2013,
+9,Filtre à carburant,30569,SEAT,LEON ST,1.4 TSI,Essence,122,2012,
+9,Filtre à carburant,31004,BMW,X6 (E71-E72),35 i xDrive,Essence,306,2008,2014
+9,Filtre à carburant,31008,BMW,X3 (E83),20 i xDrive,Essence,150,2008,2011
+9,Filtre à carburant,31009,BMW,X3 (E83),25 i xDrive,Essence,218,2008,2010
+9,Filtre à carburant,31010,BMW,X3 (E83),30 i xDrive,Essence,272,2008,2010
+9,Filtre à carburant,31175,CITROËN,C CROSSER,2.4 16V,Essence,170,2008,
+9,Filtre à carburant,31470,CHEVROLET,CRUZE II (J300),1.8,Essence,141,2009,
+9,Filtre à carburant,31519,CITROËN,NEMO Break,1.4,Essence,73,2009,
+9,Filtre à carburant,31525,PEUGEOT,BIPPER Tepee,1.4,Essence,73,2008,
+9,Filtre à carburant,31960,BMW,X5 (E70),M 4.4 i,Essence,555,2009,2013
+9,Filtre à carburant,32064,PORSCHE,PANAMERA (970),4.8 S,Essence,400,2009,2013
+9,Filtre à carburant,32065,PORSCHE,PANAMERA (970),4.8 4S,Essence,400,2009,2013
+9,Filtre à carburant,32066,PORSCHE,PANAMERA (970),4.8 TURBO,Essence,500,2009,2013
+9,Filtre à carburant,32837,MERCEDES,CLASSE GLK (X204),300 4-Matic,Essence,231,2009,2015
+9,Filtre à carburant,33299,ALFA ROMEO,GIULIETTA II,1.4 TB,Essence,170,2010,2018
+9,Filtre à carburant,33300,ALFA ROMEO,GIULIETTA II,1.8 TBI,Essence,235,2010,2016
+9,Filtre à carburant,33492,PORSCHE,PANAMERA (970),3.6,Essence,300,2010,2013
+9,Filtre à carburant,33493,PORSCHE,PANAMERA (970),3.6 4,Essence,300,2010,2013
+9,Filtre à carburant,33667,ABARTH,500,1.4 16V (Phase 1),Essence,160,2008,
+9,Filtre à carburant,35666,AUDI,A3 III Limousine,1.4 TFSI,Essence,122,2013,2020
+9,Filtre à carburant,45814,VOLKSWAGEN,GOLF VII,1.4 TGI CNG,Essence-Gaz GNC,110,2013,
+9,Filtre à carburant,52004,KIA,CEE'D II,1.6 GT,Essence,204,2013,2018
+9,Filtre à carburant,52465,FIAT,PUNTO III,0.9,Essence,105,2013,
+9,Filtre à carburant,53686,AUDI,A3 III Limousine,1.4 TFSI,Essence,125,2013,
+9,Filtre à carburant,54902,FIAT,PANDA III,"0.9 (312PXN1A, 312PXN11)",Essence,78,2012,
+9,Filtre à carburant,55092,AUDI,A3 III,1.4 TFSI,Essence,122,2012,2014
+9,Filtre à carburant,55093,AUDI,A3 III,1.8 TFSI,Essence,180,2012,2016
+9,Filtre à carburant,55254,BMW,X6 (E71-E72),40 i xDrive,Essence,320,2009,2014
+9,Filtre à carburant,55461,CHEVROLET,CRUZE II (J300),1.4,Essence,101,2013,
+9,Filtre à carburant,55465,CHEVROLET,CRUZE III  Hatchback (J305),1.4,Essence,101,2013,2015
+9,Filtre à carburant,55475,CHEVROLET,CRUZE III Station Wagon (J308),1.4,Essence,101,2013,2015
+9,Filtre à carburant,55595,AUDI,A3 III,1.4 TFSI,Essence,140,2013,2016
+9,Filtre à carburant,55596,AUDI,A3 III Sportback,1.4 TFSI,Essence,122,2012,2020
+9,Filtre à carburant,55600,AUDI,A3 III Sportback,1.8 TFSI,Essence,180,2012,
+9,Filtre à carburant,55634,FIAT,500 L,1.4,Essence,95,2012,
+9,Filtre à carburant,55635,FIAT,500 L,0.9,Essence,105,2012,
+9,Filtre à carburant,55798,CHEVROLET,CRUZE III Station Wagon (J308),1.4,Essence,140,2012,
+9,Filtre à carburant,55799,CHEVROLET,CRUZE III Station Wagon (J308),1.6,Essence,124,2012,2015
+9,Filtre à carburant,55800,CHEVROLET,CRUZE III Station Wagon (J308),1.8,Essence,141,2012,
+9,Filtre à carburant,56142,VOLKSWAGEN,GOLF VII,1.2 TSI,Essence,86,2012,2017
+9,Filtre à carburant,56739,FIAT,PANDA III,0.9 Natural Power,Essence-Gaz GNC,86,2012,
+9,Filtre à carburant,56748,FIAT,PANDA III,0.9 4x4,Essence,86,2012,
+9,Filtre à carburant,56749,FIAT,PANDA III,1.2 LPG,Essence-Gaz GPL,69,2012,
+9,Filtre à carburant,56753,CHEVROLET,CRUZE III  Hatchback (J305),1.4,Essence,140,2012,
+9,Filtre à carburant,56755,CHEVROLET,ORLANDO,1.4,Essence,140,2012,
+9,Filtre à carburant,56779,SEAT,LEON III,1.4 TSI,Essence,122,2012,
+9,Filtre à carburant,57116,CHEVROLET,TRAX,1.6,Essence,116,2012,
+9,Filtre à carburant,57117,CHEVROLET,TRAX,1.4 AWD,Essence,140,2012,
+9,Filtre à carburant,57387,CHEVROLET,AVEO III,1.2 LPG,Essence-Gaz GPL,86,2012,2015
+9,Filtre à carburant,57388,CHEVROLET,AVEO III Berline,1.2 LPG,Essence-Gaz GPL,86,2012,2015
+9,Filtre à carburant,57390,CHEVROLET,CRUZE III  Hatchback (J305),1.8 LPG,Essence-Gaz GPL,141,2011,2015
+9,Filtre à carburant,57414,CHEVROLET,CRUZE III  Hatchback (J305),1.6,Essence,117,2012,
+9,Filtre à carburant,57433,AUDI,A3 III,1.2 TFSI,Essence,105,2013,2015
+9,Filtre à carburant,57456,VOLKSWAGEN,GOLF VII,1.2 TSI,Essence,105,2012,2017
+9,Filtre à carburant,57459,VOLKSWAGEN,GOLF VII,1.4 TSI,Essence,122,2012,
+9,Filtre à carburant,57587,SEAT,LEON III,1.2 TSI,Essence,86,2012,
+9,Filtre à carburant,57589,SEAT,LEON III,1.2 TSI,Essence,105,2013,
+9,Filtre à carburant,57590,SEAT,LEON III,1.4 TSI,Essence,140,2012,
+9,Filtre à carburant,57592,SEAT,LEON III,1.8 TSI,Essence,180,2013,
+9,Filtre à carburant,58619,KIA,CARENS IV,1.6 GDI,Essence,135,2013,
+9,Filtre à carburant,58620,KIA,CARENS IV,2.0 GDI,Essence,177,2013,
+9,Filtre à carburant,58731,ABARTH,500,1.4 16V,Essence,140,2010,
+9,Filtre à carburant,58750,SKODA,OCTAVIA III,1.4 TSI,Essence,140,2012,
+9,Filtre à carburant,58757,SKODA,OCTAVIA III,1.2 TSI,Essence,86,2012,
+9,Filtre à carburant,58758,SKODA,OCTAVIA III,1.2 TSI,Essence,105,2012,
+9,Filtre à carburant,58759,SKODA,OCTAVIA III,1.8 TSI,Essence,180,2012,
+9,Filtre à carburant,58762,SKODA,OCTAVIA III Combi,1.2 TSI,Essence,86,2012,
+9,Filtre à carburant,58763,SKODA,OCTAVIA III Combi,1.2 TSI,Essence,105,2012,
+9,Filtre à carburant,58764,SKODA,OCTAVIA III Combi,1.4 TSI,Essence,140,2012,
+9,Filtre à carburant,58765,SKODA,OCTAVIA III Combi,1.8 TSI,Essence,180,2012,
+9,Filtre à carburant,58792,FIAT,500 L,0.9 Natural Power,Essence-Gaz GNC,86,2013,
+9,Filtre à carburant,58894,KIA,CARENS IV,2.0 GDI,Essence,166,2013,
+9,Filtre à carburant,58926,VOLKSWAGEN,GOLF VII Break,1.2 TSI,Essence,86,2013,2017
+9,Filtre à carburant,58943,VOLKSWAGEN,GOLF VII Break,1.2 TSI,Essence,105,2013,
+9,Filtre à carburant,58944,VOLKSWAGEN,GOLF VII Break,1.4 TSI,Essence,122,2013,
+9,Filtre à carburant,58947,AUDI,A3 III Sportback,1.4 TFSI,Essence,140,2013,
+9,Filtre à carburant,59073,CHEVROLET,TRAX,1.4,Essence,140,2012,
+9,Filtre à carburant,59115,VOLKSWAGEN,GOLF VII,2.0 GTI,Essence,220,2013,
+9,Filtre à carburant,59224,ABARTH,500 C,1.4 16V,Essence,180,2010,
+9,Filtre à carburant,59247,AUDI,A3 III Sportback,1.2 TFSI,Essence,105,2013,
+9,Filtre à carburant,59489,SKODA,OCTAVIA III Combi,1.8 TSI 4x4,Essence,180,2012,
+9,Filtre à carburant,59585,PORSCHE,PANAMERA (970),3.0 S E-Hybrid,Essence-Électrique,380,2011,2013
+9,Filtre à carburant,59587,PORSCHE,PANAMERA (970),3.0 S E-Hybrid,Essence-Électrique,416,2013,2016
+9,Filtre à carburant,59589,PORSCHE,PANAMERA (970),3.0 S,Essence,420,2013,2016
+9,Filtre à carburant,59590,PORSCHE,PANAMERA (970),3.0 4S,Essence,420,2013,2016
+9,Filtre à carburant,59591,PORSCHE,PANAMERA (970),3.6,Essence,310,2013,2016
+9,Filtre à carburant,59592,PORSCHE,PANAMERA (970),3.6 4,Essence,310,2013,2016
+9,Filtre à carburant,59593,PORSCHE,PANAMERA (970),4.8 TURBO,Essence,520,2013,2016
+9,Filtre à carburant,59594,PORSCHE,PANAMERA (970),4.8 GTS,Essence,440,2013,2016
+9,Filtre à carburant,59596,SEAT,LEON SC,1.2 TSI,Essence,86,2013,2018
+9,Filtre à carburant,59597,SEAT,LEON SC,1.2 TSI,Essence,105,2013,2014
+9,Filtre à carburant,59598,SEAT,LEON SC,1.4 TSI,Essence,122,2013,2015
+9,Filtre à carburant,59599,SEAT,LEON SC,1.4 TSI,Essence,140,2013,2016
+9,Filtre à carburant,59601,SEAT,LEON SC,1.8 TSI,Essence,180,2013,2018
+9,Filtre à carburant,59616,AUDI,A3 III Limousine,1.4 TFSI,Essence,140,2013,
+9,Filtre à carburant,59617,AUDI,A3 III Limousine,1.8 TFSI,Essence,180,2013,
+9,Filtre à carburant,59677,SKODA,OCTAVIA III,2.0 TSI RS,Essence,220,2013,
+9,Filtre à carburant,59680,SKODA,OCTAVIA III Combi,2.0 TSI RS,Essence,220,2012,
+9,Filtre à carburant,59698,ABARTH,500 C,1.4 16V,Essence,135,2008,
+9,Filtre à carburant,60039,ALFA ROMEO,GIULIETTA II,1.4 TB,Essence,150,2014,2018
+9,Filtre à carburant,60043,ALFA ROMEO,GIULIETTA II,1.8 TBI,Essence,230,2010,2013
+9,Filtre à carburant,60049,ALFA ROMEO,MITO,0.9,Essence,101,2013,2018
+9,Filtre à carburant,60102,ALFA ROMEO,GIULIETTA II Hatchback,1.4 (940FXB1A),Essence,170,2011,2020
+9,Filtre à carburant,60259,AUDI,A3 III Décapotable,1.4 TFSI,Essence,140,2013,
+9,Filtre à carburant,60260,AUDI,A3 III Décapotable,1.4 TFSI,Essence,125,2014,
+9,Filtre à carburant,60261,AUDI,A3 III Décapotable,1.4 TFSI,Essence,150,2014,2020
+9,Filtre à carburant,60262,AUDI,A3 III Décapotable,1.4 TFSI,Essence,115,2016,2020
+9,Filtre à carburant,60263,AUDI,A3 III Décapotable,1.5 TFSI,Essence,150,2017,2018
+9,Filtre à carburant,60266,AUDI,A3 III Décapotable,1.8 TFSI,Essence,180,2013,2016
+9,Filtre à carburant,60267,AUDI,A3 III Décapotable,1.8 TFSI,Essence,170,2014,2020
+9,Filtre à carburant,60274,AUDI,A3 III Décapotable,2.0 TFSI,Essence,190,2016,2020
+9,Filtre à carburant,60278,AUDI,A3 III Décapotable,2.0 TFSI Quattro,Essence,190,2016,2020
+9,Filtre à carburant,60279,AUDI,A3 III Décapotable,35 TFSI,Essence,150,2018,2020
+9,Filtre à carburant,60281,AUDI,A3 III Décapotable,40 TFSI quattro,Essence,190,2018,2020
+9,Filtre à carburant,60286,AUDI,A3 III,1.0 TFSI,Essence,115,2016,2017
+9,Filtre à carburant,60287,AUDI,A3 III,1.2 TFSI,Essence,110,2014,2016
+9,Filtre à carburant,60288,AUDI,A3 III,1.4 TFSI,Essence,125,2014,2016
+9,Filtre à carburant,60289,AUDI,A3 III,1.4 TFSI,Essence,150,2014,2017
+9,Filtre à carburant,60290,AUDI,A3 III,1.5 TFSI,Essence,150,2017,2017
+9,Filtre à carburant,60293,AUDI,A3 III,2.0 TFSI,Essence,190,2016,2017
+9,Filtre à carburant,60296,AUDI,A3 III,S3 2.0 Quattro,Essence,310,2016,2017
+9,Filtre à carburant,60298,AUDI,A3 III Limousine,1.0 TFSI,Essence,115,2016,2020
+9,Filtre à carburant,60299,AUDI,A3 III Limousine,1.2 TFSI,Essence,110,2014,
+9,Filtre à carburant,60300,AUDI,A3 III Limousine,1.4 TFSI,Essence,150,2014,2020
+9,Filtre à carburant,60302,AUDI,A3 III Limousine,1.5 TFSI,Essence,150,2017,2018
+9,Filtre à carburant,60306,AUDI,A3 III Limousine,1.8 TFSI,Essence,170,2013,2020
+9,Filtre à carburant,60311,AUDI,A3 III Limousine,2.0 TFSI,Essence,190,2016,2020
+9,Filtre à carburant,60317,AUDI,A3 III Limousine,30 TFSI,Essence,115,2018,2020
+9,Filtre à carburant,60319,AUDI,A3 III Limousine,35 TFSI,Essence,150,2018,2020
+9,Filtre à carburant,60326,AUDI,A3 III Limousine,S3 2.0 Quattro,Essence,310,2016,2020
+9,Filtre à carburant,60330,AUDI,A3 III Sportback,1.0 TFSI,Essence,115,2016,2020
+9,Filtre à carburant,60331,AUDI,A3 III Sportback,1.2 TFSI,Essence,110,2014,2016
+9,Filtre à carburant,60333,AUDI,A3 III Sportback,1.4 TFSI,Essence,125,2014,2016
+9,Filtre à carburant,60334,AUDI,A3 III Sportback,1.4 TFSI,Essence,150,2014,2020
+9,Filtre à carburant,60337,AUDI,A3 III Sportback,1.4 TFSI g-tron,Essence-Gaz GNC,110,2013,2020
+9,Filtre à carburant,60338,AUDI,A3 III Sportback,1.5 TFSI,Essence,150,2017,2018
+9,Filtre à carburant,60343,AUDI,A3 III Sportback,2.0 TFSI,Essence,190,2016,2020
+9,Filtre à carburant,60347,AUDI,A3 III Sportback,30 TFSI,Essence,116,2018,2020
+9,Filtre à carburant,60349,AUDI,A3 III Sportback,35 TFSI,Essence,150,2018,2020
+9,Filtre à carburant,60356,AUDI,A3 III Sportback,S3 2.0 Quattro,Essence,310,2016,2020
+9,Filtre à carburant,60518,AUDI,A1 II Sportback,30 TFSI,Essence,116,2018,
+9,Filtre à carburant,60737,AUDI,Q2,1.0 TFSI,Essence,115,2016,2020
+9,Filtre à carburant,60738,AUDI,Q2,1.4 TFSI,Essence,150,2016,2018
+9,Filtre à carburant,60764,AUDI,Q3 II,40 TFSI Quattro,Essence,190,2018,
+9,Filtre à carburant,60817,AUDI,A4 V B9,1.4 TFSI,Essence,150,2015,2019
+9,Filtre à carburant,60856,AUDI,A4 V B9 Break,1.4 TFSI,Essence,150,2016,2019
+9,Filtre à carburant,60926,AUDI,TT III,1.8 TFSI,Essence,180,2015,2018
+9,Filtre à carburant,60929,AUDI,TT III,2.0 TFSI,Essence,230,2014,
+9,Filtre à carburant,60942,AUDI,TT III Roadster,1.8 TFSI,Essence,180,2015,2018
+9,Filtre à carburant,60945,AUDI,TT III Roadster,2.0 TFSI,Essence,230,2014,
+9,Filtre à carburant,61946,BMW,X5 (F15),35 i xDrive,Essence,306,2013,2018
+9,Filtre à carburant,61947,BMW,X5 (F15),35 i xDrive,Essence,326,2013,2018
+9,Filtre à carburant,61954,BMW,X5 (F15),M 4.4 i,Essence,575,2014,2018
+9,Filtre à carburant,62091,BMW,X6 (F16-F86),35 i xDrive,Essence,306,2014,2019
+9,Filtre à carburant,62092,BMW,X6 (F16-F86),35 i xDrive,Essence,326,2014,2019
+9,Filtre à carburant,62094,BMW,X6 (F16-F86),50 i xDrive,Essence,449,2014,2019
+9,Filtre à carburant,62096,BMW,X6 (F16-F86),M 4.4 i,Essence,575,2014,2019
+9,Filtre à carburant,63838,CHEVROLET,CORVETTE IV,6.2 Z06,Essence,660,2014,
+9,Filtre à carburant,63852,CHEVROLET,CRUZE III  Hatchback (J305),1.8,Essence,140,2011,
+9,Filtre à carburant,64105,CHEVROLET,TRAX,1.4 LPG,Essence-Gaz GPL,140,2013,
+9,Filtre à carburant,65228,CITROËN,C1 II,1.0 VTi,Essence,69,2014,
+9,Filtre à carburant,65229,CITROËN,C1 II,1.0 VTi,Essence,72,2018,
+9,Filtre à carburant,65230,CITROËN,C1 II,1.2 VTi,Essence,82,2014,
+9,Filtre à carburant,65553,DACIA,DUSTER II,1.0 TCe 100 (HMMT),Essence,101,2019,
+9,Filtre à carburant,66001,FIAT,FIORINO III (255),1.4,Essence,78,2009,
+9,Filtre à carburant,66063,FIAT,PANDA III,0.9,Essence,60,2013,
+9,Filtre à carburant,66064,FIAT,PANDA III,0.9,Essence,80,2013,
+9,Filtre à carburant,66065,FIAT,PANDA III,0.9 4x4,Essence,90,2014,
+9,Filtre à carburant,66066,FIAT,PANDA III,0.9 Natural Power,Essence-Gaz GNC,80,2015,
+9,Filtre à carburant,66067,FIAT,PANDA III,0.9 Natural Power (312PXN1A),Essence-Gaz GNC,69,2019,
+9,Filtre à carburant,66084,FIAT,PUNTO III,0.9,Essence,101,2013,
+9,Filtre à carburant,66085,FIAT,PUNTO III,1.2,Essence,67,2014,
+9,Filtre à carburant,66096,FIAT,QUBO,1.4,Essence,78,2009,
+9,Filtre à carburant,66141,FIAT,500 L,0.9 Natural Power,Essence-Gaz GNC,80,2017,
+9,Filtre à carburant,66143,FIAT,500 L,1.4,Essence,120,2013,
+9,Filtre à carburant,66220,FIAT,TIPO II Berline,1.4,Essence,95,2015,
+9,Filtre à carburant,66233,FIAT,PANDA VAN III,0.9,Essence,65,2012,
+9,Filtre à carburant,66234,FIAT,PANDA VAN III,0.9,Essence,86,2012,
+9,Filtre à carburant,66235,FIAT,PANDA VAN III,0.9,Essence,80,2013,
+9,Filtre à carburant,66236,FIAT,PANDA VAN III,0.9 4x4,Essence,86,2012,
+9,Filtre à carburant,66237,FIAT,PANDA VAN III,0.9 Natural Power,Essence-Gaz GNC,80,2015,
+9,Filtre à carburant,66238,FIAT,PANDA VAN III,0.9 Natural Power,Essence-Gaz GNC,86,2012,
+9,Filtre à carburant,66240,FIAT,PANDA VAN III,1.2,Essence,69,2012,
+9,Filtre à carburant,66241,FIAT,PANDA VAN III,1.2 LPG,Essence-Gaz GPL,69,2012,
+9,Filtre à carburant,66289,FIAT,TIPO II Break,1.4,Essence,95,2016,
+9,Filtre à carburant,66290,FIAT,TIPO II Break,1.4,Essence,120,2016,
+9,Filtre à carburant,66298,FIAT,TIPO II,1.4,Essence,95,2016,
+9,Filtre à carburant,66299,FIAT,TIPO II,1.4,Essence,120,2016,
+9,Filtre à carburant,66319,FIAT,DOBLO II Platforme-Châssis (263),1.4 Natural Power,Essence-Gaz GNC,120,2010,
+9,Filtre à carburant,67068,FORD,MONDEO V Break,2.0 Hybrid iVCT,Essence-Électrique,188,2019,
+9,Filtre à carburant,68553,HYUNDAI,GRANDEUR IV,2.4 16V,Essence,201,2011,2016
+9,Filtre à carburant,70438,KIA,SORENTO II,3.5,Essence,278,2013,
+9,Filtre à carburant,72654,MERCEDES,CLASSE A (W177),160,Essence,109,2018,
+9,Filtre à carburant,72655,MERCEDES,CLASSE A (W177),180,Essence,136,2018,
+9,Filtre à carburant,72664,MERCEDES,CLASSE A (W177),250 4-Matic,Essence,224,2018,
+9,Filtre à carburant,72690,MERCEDES,CLASSE A Berline (W177),A 250 4-matic (177.147),Essence,224,2018,
+9,Filtre à carburant,72697,MERCEDES,AMG GT (X290),63 S 4-Matic+,Essence,639,2018,2021
+9,Filtre à carburant,72710,MERCEDES,CLASSE B (W247),B 160 (247.082),Essence,109,2019,
+9,Filtre à carburant,72726,MERCEDES,CLASSE C Décapotable (A205),200 EQ Boost,Essence-Électrique,184,2018,
+9,Filtre à carburant,72793,MERCEDES,CLASSE E (W213),450 4-Matic,Essence,367,2018,
+9,Filtre à carburant,72833,MERCEDES,CLASSE E Décapotable (A238),450 4-Matic,Essence,367,2018,
+9,Filtre à carburant,72861,MERCEDES,CLASSE E Coupé (C238),450 4-Matic,Essence,367,2018,
+9,Filtre à carburant,72896,MERCEDES,CLASSE E Break (S213),450 4-Matic,Essence,367,2018,
+9,Filtre à carburant,73114,MERCEDES,CLASSE C (W205),43 AMG 4-Matic,Essence,390,2018,
+9,Filtre à carburant,73444,MERCEDES,CLASSE C Coupé (C205),200 EQ Boost,Essence-Électrique,184,2018,
+9,Filtre à carburant,73460,MERCEDES,CLASSE C Coupé (C205),43 AMG 4-Matic,Essence,390,2018,
+9,Filtre à carburant,73483,MERCEDES,CLASSE C Break (S205),200 EQ Boost,Essence-Électrique,184,2018,
+9,Filtre à carburant,73502,MERCEDES,CLASSE C Break (S205),43 AMG 4-Matic,Essence,390,2018,
+9,Filtre à carburant,73700,MERCEDES,CLA Shooting Brake (X118),AMG CLA 35 4-matic (118.651),Essence,306,2019,
+9,Filtre à carburant,73703,MERCEDES,CLA Shooting Brake (X118),CLA 180 (118.684),Essence,136,2019,
+9,Filtre à carburant,73706,MERCEDES,CLA Shooting Brake (X118),CLA 200 (118.687),Essence,163,2019,
+9,Filtre à carburant,73715,MERCEDES,CLA Shooting Brake (X118),CLA 260 4-matic (118.647),Essence,224,2019,
+9,Filtre à carburant,75776,OPEL,CASCADA,1.6 16V,Essence,136,2018,2019
+9,Filtre à carburant,76683,PEUGEOT,108,1.0 VTI,Essence,69,2014,
+9,Filtre à carburant,76684,PEUGEOT,108,1.0 VTI,Essence,72,2018,
+9,Filtre à carburant,76685,PEUGEOT,108,1.2,Essence,82,2014,
+9,Filtre à carburant,76978,PORSCHE,PANAMERA (970),4.8 TURBO S,Essence,570,2013,2016
+9,Filtre à carburant,77539,RENAULT,KADJAR,1.2 TCe,Essence,130,2015,
+9,Filtre à carburant,77540,RENAULT,KADJAR,1.3 TCe,Essence,140,2018,
+9,Filtre à carburant,77542,RENAULT,KADJAR,1.3 TCe 160 (HLNC),Essence,160,2018,
+9,Filtre à carburant,77547,RENAULT,KADJAR,1.6 TCe,Essence,163,2016,
+9,Filtre à carburant,77665,RENAULT,TWINGO III,0.9 TCe 95,Essence,92,2019,
+9,Filtre à carburant,77667,RENAULT,TWINGO III,1.0 SCe 65 (BCMJ),Essence,65,2019,
+9,Filtre à carburant,77669,RENAULT,TWINGO III,1.0 SCe 75,Essence,73,2019,
+9,Filtre à carburant,77909,SEAT,ARONA,1.0 TSI,Essence,95,2017,
+9,Filtre à carburant,77910,SEAT,ARONA,1.0 TSI,Essence,115,2017,
+9,Filtre à carburant,77912,SEAT,ARONA,1.5 TSI,Essence,150,2017,
+9,Filtre à carburant,77916,SEAT,ATECA,1.0 TSI,Essence,115,2016,
+9,Filtre à carburant,77918,SEAT,ATECA,1.4 TSI,Essence,150,2016,
+9,Filtre à carburant,77919,SEAT,ATECA,1.4 TSI 4Drive,Essence,150,2016,
+9,Filtre à carburant,77920,SEAT,ATECA,1.5 TSI,Essence,150,2018,
+9,Filtre à carburant,77929,SEAT,ATECA,2.0 TSI 4Drive,Essence,190,2017,
+9,Filtre à carburant,77988,SEAT,LEON III,1.0 TSI,Essence,115,2015,
+9,Filtre à carburant,77989,SEAT,LEON III,1.2 TSI,Essence,110,2014,
+9,Filtre à carburant,77990,SEAT,LEON III,1.4 TGI,Essence-Gaz GNC,110,2013,
+9,Filtre à carburant,77991,SEAT,LEON III,1.4 TSI,Essence,125,2014,
+9,Filtre à carburant,77992,SEAT,LEON III,1.4 TSI,Essence,150,2014,
+9,Filtre à carburant,77994,SEAT,LEON III,1.5 TSI,Essence,130,2018,
+9,Filtre à carburant,77998,SEAT,LEON III,2.0 Cupra,Essence,280,2013,
+9,Filtre à carburant,77999,SEAT,LEON III,2.0 Cupra,Essence,265,2013,
+9,Filtre à carburant,78000,SEAT,LEON III,2.0 Cupra,Essence,290,2015,
+9,Filtre à carburant,78001,SEAT,LEON III,2.0 Cupra,Essence,300,2017,
+9,Filtre à carburant,78004,SEAT,LEON SC,1.0 TSI,Essence,115,2015,2018
+9,Filtre à carburant,78005,SEAT,LEON SC,1.2 TSI,Essence,110,2014,2018
+9,Filtre à carburant,78006,SEAT,LEON SC,1.4 TSI,Essence,125,2014,2018
+9,Filtre à carburant,78007,SEAT,LEON SC,1.4 TSI,Essence,150,2014,2018
+9,Filtre à carburant,78009,SEAT,LEON SC,2.0 Cupra,Essence,265,2013,2016
+9,Filtre à carburant,78010,SEAT,LEON SC,2.0 Cupra,Essence,280,2013,2016
+9,Filtre à carburant,78011,SEAT,LEON SC,2.0 Cupra,Essence,290,2015,2016
+9,Filtre à carburant,78012,SEAT,LEON SC,2.0 Cupra,Essence,300,2017,2018
+9,Filtre à carburant,78015,SEAT,LEON ST,1.0 TSI,Essence,115,2015,
+9,Filtre à carburant,78016,SEAT,LEON ST,1.2 TSI,Essence,110,2014,
+9,Filtre à carburant,78017,SEAT,LEON ST,1.4 TGI,Essence-Gaz GNC,110,2013,
+9,Filtre à carburant,78018,SEAT,LEON ST,1.4 TSI,Essence,125,2014,
+9,Filtre à carburant,78019,SEAT,LEON ST,1.4 TSI,Essence,150,2014,
+9,Filtre à carburant,78021,SEAT,LEON ST,1.5 TSI,Essence,130,2018,
+9,Filtre à carburant,78030,SEAT,LEON ST,2.0 Cupra,Essence,265,2013,
+9,Filtre à carburant,78031,SEAT,LEON ST,2.0 Cupra,Essence,280,2013,
+9,Filtre à carburant,78032,SEAT,LEON ST,2.0 Cupra,Essence,290,2015,
+9,Filtre à carburant,78033,SEAT,LEON ST,2.0 Cupra,Essence,300,2016,
+9,Filtre à carburant,78043,SEAT,TOLEDO IV,1.0 TSI,Essence,95,2017,2019
+9,Filtre à carburant,78166,SKODA,OCTAVIA III,1.0 TSI,Essence,115,2016,
+9,Filtre à carburant,78167,SKODA,OCTAVIA III,1.2 TSI,Essence,110,2015,2017
+9,Filtre à carburant,78168,SKODA,OCTAVIA III,1.4 TSI,Essence,150,2014,2020
+9,Filtre à carburant,78169,SKODA,OCTAVIA III,1.4 TSI G-TEC,Essence-Gaz GNC,110,2013,
+9,Filtre à carburant,78170,SKODA,OCTAVIA III,1.5 TSI,Essence,150,2017,
+9,Filtre à carburant,78171,SKODA,OCTAVIA III,1.6,Essence,110,2014,
+9,Filtre à carburant,78177,SKODA,OCTAVIA III,1.8 TSI 4x4,Essence,180,2014,
+9,Filtre à carburant,78182,SKODA,OCTAVIA III,2.0 TSI RS,Essence,230,2015,
+9,Filtre à carburant,78183,SKODA,OCTAVIA III,2.0 TSI RS,Essence,245,2017,
+9,Filtre à carburant,78184,SKODA,OCTAVIA III Combi,1.0 TSI,Essence,115,2016,
+9,Filtre à carburant,78185,SKODA,OCTAVIA III Combi,1.2 TSI,Essence,110,2015,2017
+9,Filtre à carburant,78186,SKODA,OCTAVIA III Combi,1.4 TSI,Essence,150,2014,2020
+9,Filtre à carburant,78187,SKODA,OCTAVIA III Combi,1.4 TSI G-TEC,Essence-Gaz GNC,110,2013,
+9,Filtre à carburant,78188,SKODA,OCTAVIA III Combi,1.5 TSI,Essence,150,2017,
+9,Filtre à carburant,78198,SKODA,OCTAVIA III Combi,2.0 TSI RS,Essence,230,2015,
+9,Filtre à carburant,78199,SKODA,OCTAVIA III Combi,2.0 TSI RS,Essence,245,2017,
+9,Filtre à carburant,78260,SKODA,SUPERB III,1.4 TSI,Essence,150,2015,
+9,Filtre à carburant,78261,SKODA,SUPERB III,1.4 TSI,Essence,125,2015,
+9,Filtre à carburant,78266,SKODA,SUPERB III,1.8 TSI,Essence,180,2015,
+9,Filtre à carburant,78275,SKODA,SUPERB III,2.0 TSI,Essence,220,2015,
+9,Filtre à carburant,78280,SKODA,SUPERB Break II,1.4 TSI,Essence,125,2015,
+9,Filtre à carburant,78281,SKODA,SUPERB Break II,1.4 TSI,Essence,150,2015,
+9,Filtre à carburant,78286,SKODA,SUPERB Break II,1.8 TSI,Essence,180,2015,
+9,Filtre à carburant,78295,SKODA,SUPERB Break II,2.0 TSI,Essence,220,2015,
+9,Filtre à carburant,78303,SKODA,KAROQ,1.0 TSI,Essence,115,2017,
+9,Filtre à carburant,78306,SKODA,KAROQ,1.5 TSI,Essence,150,2017,
+9,Filtre à carburant,78317,SKODA,KODIAQ,1.4 TSI,Essence,125,2016,
+9,Filtre à carburant,78318,SKODA,KODIAQ,1.4 TSI,Essence,150,2016,
+9,Filtre à carburant,78319,SKODA,KODIAQ,1.4 TSI 4x4,Essence,150,2016,
+9,Filtre à carburant,78320,SKODA,KODIAQ,1.5 TSI,Essence,150,2018,
+9,Filtre à carburant,78321,SKODA,KODIAQ,1.5 TSI 4x4,Essence,150,2018,
+9,Filtre à carburant,78329,SKODA,KODIAQ,2.0 TSI 4x4,Essence,180,2016,
+9,Filtre à carburant,78388,SKODA,SCALA (NW1),1.0 TSI,Essence,116,2019,
+9,Filtre à carburant,78391,SKODA,SCALA (NW1),1.5 TSI,Essence,150,2019,
+9,Filtre à carburant,82247,VOLKSWAGEN,ARTEON,1.5 TSI,Essence,150,2017,2019
+9,Filtre à carburant,82255,VOLKSWAGEN,ARTEON,2.0 TSI,Essence,190,2017,
+9,Filtre à carburant,82313,VOLKSWAGEN,GOLF SPORTSVAN VII,1.2 TSI,Essence,110,2014,
+9,Filtre à carburant,82314,VOLKSWAGEN,GOLF SPORTSVAN VII,1.2 TSI,Essence,86,2014,
+9,Filtre à carburant,82315,VOLKSWAGEN,GOLF SPORTSVAN VII,1.4 TSI,Essence,150,2014,
+9,Filtre à carburant,82316,VOLKSWAGEN,GOLF SPORTSVAN VII,1.4 TSI,Essence,125,2014,
+9,Filtre à carburant,82320,VOLKSWAGEN,GOLF SPORTSVAN VII,1.6,Essence,110,2014,
+9,Filtre à carburant,82335,VOLKSWAGEN,GOLF VII,1.0 TSI,Essence,115,2015,
+9,Filtre à carburant,82336,VOLKSWAGEN,GOLF VII,1.0 TSI,Essence,110,2016,
+9,Filtre à carburant,82337,VOLKSWAGEN,GOLF VII,1.0 TSI,Essence,86,2017,2018
+9,Filtre à carburant,82340,VOLKSWAGEN,GOLF VII,1.2 TSI,Essence,110,2014,
+9,Filtre à carburant,82342,VOLKSWAGEN,GOLF VII,1.4 TSI,Essence,125,2014,
+9,Filtre à carburant,82343,VOLKSWAGEN,GOLF VII,1.4 TSI,Essence,150,2014,
+9,Filtre à carburant,82347,VOLKSWAGEN,GOLF VII,1.5 TSI,Essence,150,2017,
+9,Filtre à carburant,82348,VOLKSWAGEN,GOLF VII,1.5 TSI,Essence,130,2017,2020
+9,Filtre à carburant,82349,VOLKSWAGEN,GOLF VII,1.6,Essence,110,2014,2017
+9,Filtre à carburant,82368,VOLKSWAGEN,GOLF VII Break,1.0 TSI,Essence,115,2015,2017
+9,Filtre à carburant,82369,VOLKSWAGEN,GOLF VII Break,1.0 TSI,Essence,110,2016,
+9,Filtre à carburant,82370,VOLKSWAGEN,GOLF VII Break,1.0 TSI,Essence,86,2017,2018
+9,Filtre à carburant,82371,VOLKSWAGEN,GOLF VII Break,1.2 TSI,Essence,110,2014,
+9,Filtre à carburant,82373,VOLKSWAGEN,GOLF VII Break,1.4 TSI,Essence,125,2014,2017
+9,Filtre à carburant,82374,VOLKSWAGEN,GOLF VII Break,1.4 TSI,Essence,150,2014,
+9,Filtre à carburant,82375,VOLKSWAGEN,GOLF VII Break,1.4 TSI MultiFuel,Essence-Éthanol,122,2013,2017
+9,Filtre à carburant,82376,VOLKSWAGEN,GOLF VII Break,1.4 TSI MultiFuel,Essence-Éthanol,125,2014,2017
+9,Filtre à carburant,82378,VOLKSWAGEN,GOLF VII Break,1.5 TSI,Essence,150,2017,
+9,Filtre à carburant,82379,VOLKSWAGEN,GOLF VII Break,1.5 TSI,Essence,130,2017,
+9,Filtre à carburant,82380,VOLKSWAGEN,GOLF VII Break,1.6,Essence,110,2014,2017
+9,Filtre à carburant,82609,VOLKSWAGEN,POLO VII,1.0,Essence,75,2017,
+9,Filtre à carburant,82610,VOLKSWAGEN,POLO VII,1.0,Essence,65,2017,
+9,Filtre à carburant,82612,VOLKSWAGEN,POLO VII,1.0 TGI,Essence-Gaz GNC,90,2017,
+9,Filtre à carburant,82613,VOLKSWAGEN,POLO VII,1.0 TSI,Essence,95,2017,
+9,Filtre à carburant,82614,VOLKSWAGEN,POLO VII,1.0 TSI,Essence,115,2017,
+9,Filtre à carburant,82625,VOLKSWAGEN,POLO VII,2.0 GTI,Essence,200,2017,
+9,Filtre à carburant,82644,VOLKSWAGEN,T-ROC,1.0 TSI,Essence,115,2017,
+9,Filtre à carburant,82658,VOLKSWAGEN,TIGUAN II,1.4 TSI,Essence,150,2016,2018
+9,Filtre à carburant,82692,VOLKSWAGEN,TIGUAN ALLSPACE,2.0 TSI 4Motion,Essence,180,2017,
+9,Filtre à carburant,82693,VOLKSWAGEN,TIGUAN ALLSPACE,2.0 TSI 4Motion,Essence,220,2017,
+9,Filtre à carburant,82794,VOLKSWAGEN,PASSAT VIII B8,1.4 TSI,Essence,150,2014,
+9,Filtre à carburant,82795,VOLKSWAGEN,PASSAT VIII B8,1.4 TSI,Essence,125,2014,
+9,Filtre à carburant,82797,VOLKSWAGEN,PASSAT VIII B8,1.5 TSI,Essence,150,2018,
+9,Filtre à carburant,82799,VOLKSWAGEN,PASSAT VIII B8,1.8 TSI,Essence,180,2015,
+9,Filtre à carburant,82811,VOLKSWAGEN,PASSAT VIII B8,2.0 TSI,Essence,220,2015,
+9,Filtre à carburant,82825,VOLKSWAGEN,PASSAT VIII B8 Break,1.4 TSI,Essence,150,2014,
+9,Filtre à carburant,82826,VOLKSWAGEN,PASSAT VIII B8 Break,1.4 TSI,Essence,125,2014,
+9,Filtre à carburant,82828,VOLKSWAGEN,PASSAT VIII B8 Break,1.5 TSI,Essence,150,2018,
+9,Filtre à carburant,82830,VOLKSWAGEN,PASSAT VIII B8 Break,1.8 TSI,Essence,180,2015,
+9,Filtre à carburant,82840,VOLKSWAGEN,PASSAT VIII B8 Break,2.0 TSI,Essence,220,2014,
+9,Filtre à carburant,83140,ABARTH,500,1.4 16V,Essence,145,2016,
+9,Filtre à carburant,83141,ABARTH,500,1.4 16V,Essence,165,2016,
+9,Filtre à carburant,83144,ABARTH,500 C,1.4 16V,Essence,145,2016,
+10,Courroie d'accessoire,54939,VOLKSWAGEN,GOLF IV Break,2.0 4Motion,Essence,120,1999,2006
+48,Butée d'embrayage,8754,CITROËN,XSARA,1.8 AUTOMATIQUE,Essence,101,1997,2000
+48,Butée d'embrayage,21483,CITROËN,XSARA Coupé,1.9 D,Diesel,75,1998,1999
+48,Butée d'embrayage,21501,PEUGEOT,206,1.1,Essence,54,1998,2000
+48,Butée d'embrayage,23538,PEUGEOT,306,1.6 XS,Essence,90,2000,2001
+48,Butée d'embrayage,27771,CITROËN,BERLINGO I (MF-GJK-GFK),1.4,Essence,72,2002,2005
+48,Butée d'embrayage,28186,CITROËN,SAXO,1.6,Essence,120,1996,2004
+107,Ampoule feu avant,14026,MERCEDES,CLASSE E Décapotable (A207),350,Essence,272,2010,2011
+107,Ampoule feu avant,27581,FORD,FOCUS I,1.6 Flexifuel,Essence-Éthanol,102,2002,2004
+107,Ampoule feu avant,57639,CHRYSLER,GRAND VOYAGER,4.0,Essence,254,2007,
+107,Ampoule feu avant,66024,FIAT,MULTIPLA,1.6 16V GPL,Essence-Gaz GPL,103,2001,2010
+107,Ampoule feu avant,70443,KIA,SOUL I,1.6 LPG,Essence-Gaz GPL,118,2011,2014
+107,Ampoule feu avant,76537,PEUGEOT,605,2.0,Essence,128,1989,1992
+107,Ampoule feu avant,77270,RENAULT,LATITUDE,2.0 dCi,Diesel,131,2013,
+111,Ampoule feu stop,4819,SKODA,OCTAVIA II Combi,2.0 TDI 4x4,Diesel,110,2011,2013
+111,Ampoule feu stop,4854,PORSCHE,911 (997),3.6 GT2 RS,Essence,620,2010,2012
+111,Ampoule feu stop,6799,SKODA,OCTAVIA II Combi,1.4,Essence,75,2004,2006
+111,Ampoule feu stop,6800,SKODA,OCTAVIA II Combi,1.8 TSI 4x4,Essence,152,2009,2013
+111,Ampoule feu stop,9375,CITROËN,JUMPER I (230P),2.8 D,Diesel,87,1999,2002
+111,Ampoule feu stop,11571,PORSCHE,911 (997),4.0 GT3 RS,Essence,500,2011,2012
+111,Ampoule feu stop,11795,PORSCHE,911 (997),3.8 TURBO S,Essence,530,2010,2012
+111,Ampoule feu stop,11796,PORSCHE,911 Décapotable (997),3.8 TURBO S,Essence,530,2010,2012
+111,Ampoule feu stop,19951,BMW,Série 3 Coupé (E46),318 Ci,Essence,150,2004,2006
+111,Ampoule feu stop,20281,PEUGEOT,605,3.0 24V,Essence,200,1989,1994
+111,Ampoule feu stop,20849,FIAT,DUCATO IV (244),2.8 TD 4x4,Diesel,122,2003,2006
+111,Ampoule feu stop,20850,FIAT,DUCATO IV Fourgon (244),2.8 TD,Diesel,122,2002,2006
+111,Ampoule feu stop,23857,FIAT,STRADA Pick-up (178),1.3 D Multijet,Diesel,95,2010,
+111,Ampoule feu stop,30325,BMW,Série 3 Coupé (E46),330 Ci,Essence,231,2000,2006
+111,Ampoule feu stop,61517,BMW,Série 3 (E46),318 i,Essence,136,2001,2005
+111,Ampoule feu stop,61570,BMW,Série 3 Coupé (E46),318 Ci,Essence,136,2000,2006
+111,Ampoule feu stop,76396,PEUGEOT,301,1.5 BlueHDI 100,Diesel,102,2018,
+111,Ampoule feu stop,76537,PEUGEOT,605,2.0,Essence,128,1989,1992
+111,Ampoule feu stop,77851,SAAB,9-3 II Décapotable,1.8,Essence,122,2004,2015
+111,Ampoule feu stop,77852,SAAB,9-3 II Décapotable,1.9 TID,Diesel,120,2004,2015
+111,Ampoule feu stop,78234,SKODA,FABIA III,1.4 TSI R5,Essence,125,2018,
+111,Ampoule feu stop,80874,TOYOTA,PROACE VERSO  (MPY),2.0 D4d (MPY3),Diesel,122,2019,
+112,Ampoule feu éclaireur de plaque,5260,FIAT,DOBLO Cargo I,1.3 JTD Multijet 16V,Diesel,84,2006,
+112,Ampoule feu éclaireur de plaque,5263,FIAT,DOBLO Cargo I,1.9 D Multijet,Diesel,120,2006,
+112,Ampoule feu éclaireur de plaque,9086,SUZUKI,SX4,1.6 VVT 4x4 (Phase 2),Essence,112,2009,
+112,Ampoule feu éclaireur de plaque,9695,OPEL,ASTRA G Coupé,1.6 16V,Essence,101,2000,2005
+112,Ampoule feu éclaireur de plaque,9956,OPEL,ASTRA H,1.4 16V,Essence,75,2004,2004
+112,Ampoule feu éclaireur de plaque,10431,VOLKSWAGEN,GOLF VI,2.0 GTI,Essence,200,2009,2013
+112,Ampoule feu éclaireur de plaque,11506,HONDA,CIVIC VI Fastback,1.6 VTI,Essence,160,1997,2001
+112,Ampoule feu éclaireur de plaque,12411,RENAULT,R21 Berline,1.4,Essence,69,1988,1993
+112,Ampoule feu éclaireur de plaque,16937,KIA,CARENS II,1.8,Essence,126,2002,
+112,Ampoule feu éclaireur de plaque,20637,SAAB,9-3 I Décapotable,2.3,Essence,230,1999,2002
+112,Ampoule feu éclaireur de plaque,20681,FIAT,MULTIPLA,1.6,Essence,92,2004,2005
+112,Ampoule feu éclaireur de plaque,20825,HYUNDAI,MATRIX,1.5 CRDI VGT,Diesel,110,2005,2010
+112,Ampoule feu éclaireur de plaque,20862,FORD,TRANSIT CONNECT I,1.8 TDCI,Diesel,110,2006,2013
+112,Ampoule feu éclaireur de plaque,23296,KIA,CERATO II,1.6 CRDI,Diesel,115,2005,2009
+112,Ampoule feu éclaireur de plaque,23297,KIA,CERATO II Hatchback,1.6 CRDI,Diesel,115,2005,2008
+112,Ampoule feu éclaireur de plaque,23848,FORD,TRANSIT VI Fourgon,2.4 TD,Diesel,75,2000,2003
+112,Ampoule feu éclaireur de plaque,27519,KIA,SORENTO I,3.3 V6 4WD,Essence,248,2007,
+112,Ampoule feu éclaireur de plaque,27581,FORD,FOCUS I,1.6 Flexifuel,Essence-Éthanol,102,2002,2004
+112,Ampoule feu éclaireur de plaque,27782,VOLKSWAGEN,TRANSPORTER IV Fourgon,2.8 VR6,Essence,204,2000,2003
+112,Ampoule feu éclaireur de plaque,27783,VOLKSWAGEN,TRANSPORTER IV Fourgon,2.8 VR6,Essence,140,1996,2000
+112,Ampoule feu éclaireur de plaque,27989,HYUNDAI,GETZ,1.6 (Phase 2),Essence,106,2005,2009
+112,Ampoule feu éclaireur de plaque,28307,RENAULT,R19 II,1.7,Essence,107,1992,1994
+112,Ampoule feu éclaireur de plaque,31133,HYUNDAI,MATRIX,1.6,Essence,90,2002,2005
+112,Ampoule feu éclaireur de plaque,54967,ALFA ROMEO,146,1.6 16V T.Spark,Essence,112,1997,2000
+112,Ampoule feu éclaireur de plaque,54968,ALFA ROMEO,145,1.6 16V T.Spark,Essence,112,1997,2000
+112,Ampoule feu éclaireur de plaque,61706,BMW,Série 4 Coupé (F32),420 i xDrive (Phase 2),Essence,163,2016,
+112,Ampoule feu éclaireur de plaque,61730,BMW,Série 4 Décapotable (F33-F83),420 i (Phase 2),Essence,163,2016,
+112,Ampoule feu éclaireur de plaque,61763,BMW,Série 4 Gran Coupé (F36),420 i (Phase 2),Essence,163,2016,
+112,Ampoule feu éclaireur de plaque,63845,CHEVROLET,CRUZE II (J300),1.6,Essence,117,2012,
+112,Ampoule feu éclaireur de plaque,66024,FIAT,MULTIPLA,1.6 16V GPL,Essence-Gaz GPL,103,2001,2010
+112,Ampoule feu éclaireur de plaque,66088,FIAT,PUNTO III,1.3 JTD Multijet,Diesel,90,2018,
+112,Ampoule feu éclaireur de plaque,70838,KIA,XCEE'D (CD),1.6 CRDi 115,Diesel,116,2019,
+112,Ampoule feu éclaireur de plaque,70840,KIA,XCEE'D (CD),1.6 CRDi 136,Diesel,136,2019,
+112,Ampoule feu éclaireur de plaque,75806,OPEL,ASTRA H CLASSIC,1.3 CDTI,Diesel,90,2009,
+112,Ampoule feu éclaireur de plaque,75808,OPEL,ASTRA H CLASSIC,1.6 16V,Essence,116,2009,
+112,Ampoule feu éclaireur de plaque,75809,OPEL,ASTRA H CLASSIC,1.7 CDTI,Diesel,125,2009,
+112,Ampoule feu éclaireur de plaque,75810,OPEL,ASTRA H CLASSIC,1.7 CDTI,Diesel,110,2009,
+112,Ampoule feu éclaireur de plaque,75822,OPEL,MOKKA-MOKKA X,1.6 CDTI 4x4 (_76),Diesel,110,2018,
+112,Ampoule feu éclaireur de plaque,75891,OPEL,INSIGNIA A Break,1.6 CDTI,Diesel,136,2015,2017
+112,Ampoule feu éclaireur de plaque,76559,PEUGEOT,PARTNER I,1.6 HDI 8V,Diesel,75,2005,2008
+112,Ampoule feu éclaireur de plaque,79182,SUZUKI,SX4,1.5 VVT 4x4 (Phase 2),Essence,112,2010,
+112,Ampoule feu éclaireur de plaque,80030,TOYOTA,COROLLA VII (E11),1.6 16V (Phase 1),Essence,110,1997,2000
+112,Ampoule feu éclaireur de plaque,81804,VOLVO,S40 I,1.8 LPG,Essence-Gaz GPL,122,1999,2004
+117,Ampoule éclairage intérieur,3251,MERCEDES,CLASSE CLS (C218),350,Essence,306,2011,2014
+117,Ampoule éclairage intérieur,3253,MERCEDES,CLASSE CLS (C218),250 CDI BlueTEC,Diesel,204,2011,2017
+117,Ampoule éclairage intérieur,3257,MERCEDES,CLASSE CLS (C218),350 CDI,Diesel,265,2011,2014
+117,Ampoule éclairage intérieur,4829,NISSAN,PRIMASTAR (X83),2.5 dCi,Diesel,114,2008,
+117,Ampoule éclairage intérieur,7475,MERCEDES,CLASSE CLS (C218),63 AMG,Essence,525,2011,2017
+117,Ampoule éclairage intérieur,7478,MERCEDES,CLASSE CLS (C218),500,Essence,408,2011,2017
+117,Ampoule éclairage intérieur,8509,CHRYSLER,300 C I,3.0 V6 CRD,Diesel,211,2010,2012
+117,Ampoule éclairage intérieur,9156,OPEL,ASTRA H Break,1.4 16V,Essence,75,2004,2010
+117,Ampoule éclairage intérieur,9593,CHRYSLER,300 C I,2.7,Essence,177,2007,2012
+117,Ampoule éclairage intérieur,11393,MERCEDES,CLASSE CLS (C218),500 4-Matic,Essence,408,2011,2017
+117,Ampoule éclairage intérieur,11394,MERCEDES,CLASSE CLS (C218),350 CDI 4-Matic,Diesel,265,2011,2014
+117,Ampoule éclairage intérieur,14920,MERCEDES,CLASSE CLS (C218),63 AMG,Essence,558,2011,2017
+117,Ampoule éclairage intérieur,30360,HONDA,LEGEND IV,3.7 VTEC V6 4WD,Essence,295,2008,2012
+117,Ampoule éclairage intérieur,31995,CITROËN,C2,1.4,Essence,75,2006,2009
+117,Ampoule éclairage intérieur,52207,BMW,X5 (E70),35 i xDrive,Essence,320,2012,2013
+117,Ampoule éclairage intérieur,55985,BMW,X5 (E70),M 50 d,Diesel,381,2011,2013
+117,Ampoule éclairage intérieur,56741,MERCEDES,CLASSE S (W221),280,Essence,231,2006,2013
+117,Ampoule éclairage intérieur,56742,MERCEDES,CLASSE S (W221),300,Essence,231,2006,2013
+117,Ampoule éclairage intérieur,56750,MERCEDES,CLASSE S (W221),320 CDI 4-Matic,Diesel,211,2005,2013
+117,Ampoule éclairage intérieur,57243,MERCEDES,CLASSE CLS Break (X218),350,Essence,306,2012,2014
+117,Ampoule éclairage intérieur,57244,MERCEDES,CLASSE CLS Break (X218),500,Essence,408,2012,2017
+117,Ampoule éclairage intérieur,57245,MERCEDES,CLASSE CLS Break (X218),500 4-Matic,Essence,408,2012,2017
+117,Ampoule éclairage intérieur,57246,MERCEDES,CLASSE CLS Break (X218),63 AMG,Essence,525,2012,2017
+117,Ampoule éclairage intérieur,57247,MERCEDES,CLASSE CLS Break (X218),250 CDI BlueTEC,Diesel,204,2012,2017
+117,Ampoule éclairage intérieur,57249,MERCEDES,CLASSE CLS Break (X218),350 CDI,Diesel,265,2012,2014
+117,Ampoule éclairage intérieur,57250,MERCEDES,CLASSE CLS Break (X218),350 CDI 4-Matic,Diesel,265,2012,2014
+117,Ampoule éclairage intérieur,58676,CITROËN,C5 II Break,2.2 HDi,Diesel,163,2006,
+117,Ampoule éclairage intérieur,58677,CITROËN,C5 III Break,2.0 HDi-BlueHDi,Diesel,150,2009,
+117,Ampoule éclairage intérieur,59014,MERCEDES,CLASSE CLS Break (X218),63 AMG,Essence,558,2013,2017
+117,Ampoule éclairage intérieur,59015,MERCEDES,CLASSE CLS Break (X218),63 AMG 4-Matic,Essence,558,2013,2017
+117,Ampoule éclairage intérieur,59016,MERCEDES,CLASSE CLS Break (X218),63 AMG 4-Matic,Essence,585,2013,2017
+117,Ampoule éclairage intérieur,59017,MERCEDES,CLASSE CLS (C218),63 AMG 4-Matic,Essence,558,2013,2017
+117,Ampoule éclairage intérieur,59018,MERCEDES,CLASSE CLS (C218),63 AMG 4-Matic,Essence,585,2013,2017
+117,Ampoule éclairage intérieur,59334,BMW,X5 (E70),30 d xDrive,Diesel,211,2008,2013
+117,Ampoule éclairage intérieur,59443,MERCEDES,CLASSE CLS (C218),63 AMG,Essence,585,2013,2017
+117,Ampoule éclairage intérieur,59446,MERCEDES,CLASSE CLS Break (X218),63 AMG,Essence,585,2013,2017
+117,Ampoule éclairage intérieur,59469,MERCEDES,CLASSE SLS ROADSTER (A197),6.2 AMG GT,Essence,592,2013,
+117,Ampoule éclairage intérieur,59483,MERCEDES,CLASSE CLS (C218),350 D BlueTEC,Diesel,252,2013,2017
+117,Ampoule éclairage intérieur,59484,MERCEDES,CLASSE CLS (C218),350 D BlueTEC 4-Matic,Diesel,252,2013,2017
+117,Ampoule éclairage intérieur,60772,AUDI,Q5 II,2.0 TDI,Diesel,150,2017,2020
+117,Ampoule éclairage intérieur,60773,AUDI,Q5 II,2.0 TDI,Diesel,136,2017,2020
+117,Ampoule éclairage intérieur,60774,AUDI,Q5 II,2.0 TDI Quattro,Diesel,163,2016,2018
+117,Ampoule éclairage intérieur,60775,AUDI,Q5 II,2.0 TDI Quattro,Diesel,190,2016,2018
+117,Ampoule éclairage intérieur,60776,AUDI,Q5 II,2.0 TFSI Quattro,Essence,249,2017,2020
+117,Ampoule éclairage intérieur,60777,AUDI,Q5 II,2.0 TFSI Quattro,Essence,252,2016,
+117,Ampoule éclairage intérieur,60794,AUDI,Q5 II,SQ5 3.0 TFSI Quattro,Essence,354,2016,
+117,Ampoule éclairage intérieur,60900,AUDI,Q7 II,2.0 TFSI Quattro,Essence,252,2015,
+117,Ampoule éclairage intérieur,60905,AUDI,Q7 II,3.0 TDI e-tron Quattro,Diesel-Électrique,258,2015,2019
+117,Ampoule éclairage intérieur,60906,AUDI,Q7 II,3.0 TDI Quattro,Diesel,272,2015,2019
+117,Ampoule éclairage intérieur,60907,AUDI,Q7 II,3.0 TDI Quattro,Diesel,249,2015,2019
+117,Ampoule éclairage intérieur,60908,AUDI,Q7 II,3.0 TDI Quattro,Diesel,218,2015,2019
+117,Ampoule éclairage intérieur,60909,AUDI,Q7 II,3.0 TDI Quattro,Diesel,211,2015,2019
+117,Ampoule éclairage intérieur,60910,AUDI,Q7 II,3.0 TDI Quattro,Diesel,258,2015,2019
+117,Ampoule éclairage intérieur,60911,AUDI,Q7 II,3.0 TFSI Quattro,Essence,333,2015,2019
+117,Ampoule éclairage intérieur,60918,AUDI,Q7 II,SQ7 4.0 TDI Quattro,Diesel,435,2016,2019
+117,Ampoule éclairage intérieur,65155,CITROËN,C5 II,2.2 HDi,Diesel,163,2006,
+117,Ampoule éclairage intérieur,65159,CITROËN,C5 III,2.0 HDi-BlueHDi,Diesel,150,2009,
+117,Ampoule éclairage intérieur,73321,MERCEDES,CLASSE CLS (C218),220 D BlueTEC,Diesel,163,2014,2017
+117,Ampoule éclairage intérieur,73322,MERCEDES,CLASSE CLS (C218),220 D BlueTEC,Diesel,170,2014,2017
+117,Ampoule éclairage intérieur,73323,MERCEDES,CLASSE CLS (C218),220 D BlueTEC,Diesel,177,2014,2017
+117,Ampoule éclairage intérieur,73324,MERCEDES,CLASSE CLS (C218),250 D BlueTEC 4-Matic,Diesel,204,2014,2017
+117,Ampoule éclairage intérieur,73328,MERCEDES,CLASSE CLS (C218),350 D 4-Matic,Diesel,258,2015,2017
+117,Ampoule éclairage intérieur,73329,MERCEDES,CLASSE CLS (C218),350 D BlueTEC,Diesel,258,2014,2017
+117,Ampoule éclairage intérieur,73330,MERCEDES,CLASSE CLS (C218),400,Essence,333,2014,2017
+117,Ampoule éclairage intérieur,73331,MERCEDES,CLASSE CLS (C218),400,Essence,333,2014,2017
+117,Ampoule éclairage intérieur,73332,MERCEDES,CLASSE CLS (C218),400 4-Matic,Essence,333,2014,2017
+117,Ampoule éclairage intérieur,73333,MERCEDES,CLASSE CLS (C218),400 4-Matic,Essence,333,2014,2017
+117,Ampoule éclairage intérieur,73337,MERCEDES,CLASSE CLS Break (X218),220 D BlueTEC,Diesel,163,2014,2017
+117,Ampoule éclairage intérieur,73338,MERCEDES,CLASSE CLS Break (X218),220 D BlueTEC,Diesel,170,2014,2017
+117,Ampoule éclairage intérieur,73339,MERCEDES,CLASSE CLS Break (X218),220 D BlueTEC,Diesel,177,2014,2017
+117,Ampoule éclairage intérieur,73340,MERCEDES,CLASSE CLS Break (X218),250 D BlueTEC 4-Matic,Diesel,204,2014,2017
+117,Ampoule éclairage intérieur,73341,MERCEDES,CLASSE CLS Break (X218),350 D 4-Matic,Diesel,258,2015,2017
+117,Ampoule éclairage intérieur,73342,MERCEDES,CLASSE CLS Break (X218),350 D BlueTEC,Diesel,258,2014,2017
+117,Ampoule éclairage intérieur,73343,MERCEDES,CLASSE CLS Break (X218),350 D BlueTEC 4-Matic,Diesel,252,2014,2017
+117,Ampoule éclairage intérieur,73344,MERCEDES,CLASSE CLS Break (X218),400 (218.961),Essence,333,2014,2017
+117,Ampoule éclairage intérieur,73345,MERCEDES,CLASSE CLS Break (X218),400 (218.965),Essence,333,2014,2017
+117,Ampoule éclairage intérieur,73346,MERCEDES,CLASSE CLS Break (X218),400 4-Matic (218.967),Essence,333,2014,2017
+117,Ampoule éclairage intérieur,73347,MERCEDES,CLASSE CLS Break (X218),400 4-Matic (218.968),Essence,333,2014,2017
+117,Ampoule éclairage intérieur,73531,MERCEDES,CALSSE GLC (X253),220 D 4-Matic,Diesel,170,2015,2019
+117,Ampoule éclairage intérieur,73534,MERCEDES,CALSSE GLC (X253),250 4-Matic,Essence,211,2015,2019
+117,Ampoule éclairage intérieur,73536,MERCEDES,CALSSE GLC (X253),250 D 4-Matic,Diesel,204,2015,2019
+117,Ampoule éclairage intérieur,73546,MERCEDES,CALSSE GLC (X253),350 D 4-Matic,Diesel,258,2016,2019
+117,Ampoule éclairage intérieur,73548,MERCEDES,CALSSE GLC (X253),350 e 4-Matic,Essence-Électrique,320,2016,2019
+117,Ampoule éclairage intérieur,73550,MERCEDES,CALSSE GLC (X253),43 AMG 4-Matic,Essence,367,2016,2019
+117,Ampoule éclairage intérieur,73551,MERCEDES,CALSSE GLC (X253),63 AMG 4-Matic+,Essence,476,2017,
+117,Ampoule éclairage intérieur,73552,MERCEDES,CALSSE GLC (X253),63S AMG 4-Matic+,Essence,510,2017,
+117,Ampoule éclairage intérieur,74851,NISSAN,GT-R,V6,Essence,570,2016,
+117,Ampoule éclairage intérieur,75901,OPEL,INSIGNIA B Break,1.5 16V,Essence,165,2017,
+117,Ampoule éclairage intérieur,75903,OPEL,INSIGNIA B Break,2.0 16V 4x4,Essence,260,2017,
+117,Ampoule éclairage intérieur,75904,OPEL,INSIGNIA B Break,2.0 CDTI,Diesel,170,2017,
+117,Ampoule éclairage intérieur,75905,OPEL,INSIGNIA B Break,2.0 CDTI 4x4,Diesel,170,2017,
+117,Ampoule éclairage intérieur,76525,PEUGEOT,508 I,1.6 BlueHDI,Diesel,120,2014,2018
+117,Ampoule éclairage intérieur,76526,PEUGEOT,508 I,1.6 HDI (Phase 2),Diesel,116,2014,2018
+117,Ampoule éclairage intérieur,76530,PEUGEOT,508 SW I,1.6 BlueHDI,Diesel,120,2014,2018
+117,Ampoule éclairage intérieur,76531,PEUGEOT,508 SW I,1.6 HDI (Phase 2),Diesel,116,2014,2018
+117,Ampoule éclairage intérieur,76904,PORSCHE,BOXSTER 718 (982),2.0,Essence,300,2016,
+117,Ampoule éclairage intérieur,76907,PORSCHE,BOXSTER 718 (982),2.5 S,Essence,350,2016,
+117,Ampoule éclairage intérieur,76972,PORSCHE,PANAMERA (970),3.0 D,Diesel,300,2013,2016
+117,Ampoule éclairage intérieur,76978,PORSCHE,PANAMERA (970),4.8 TURBO S,Essence,570,2013,2016
+146,Joint de boîte vitesse,1837,OPEL,CORSA B,1.5 D,Diesel,50,1993,2000
+146,Joint de boîte vitesse,1838,OPEL,CORSA B,1.5 TD,Diesel,67,1993,2000
+146,Joint de boîte vitesse,1842,OPEL,CORSA B,1.6 GSI 16V,Essence,109,1993,2000
+146,Joint de boîte vitesse,3876,OPEL,CORSA B,1.6 16V,Essence,106,1994,2000
+146,Joint de boîte vitesse,7863,OPEL,CORSA B,1.0 12V,Essence,54,1996,2000
+298,Balais d'essuie-glace,13888,TOYOTA,DYNA Platforme-Châssis (KD-LY-Y2-U3-U4),"4.0 D4d 4WD (XZU675, XZU685, XZU695, XZU775)",Diesel,150,2011,
+298,Balais d'essuie-glace,34078,IVECO,DAILY I Chassis cabine,2.5 D 40-10,Diesel,92,1985,1989
+298,Balais d'essuie-glace,34079,IVECO,DAILY I Fourgon,2.5 D 40-10 V,Diesel,92,1985,1989
+298,Balais d'essuie-glace,69192,HYUNDAI,PORTER II PickUp,2.5 D,Diesel,135,2012,
+298,Balais d'essuie-glace,74964,NISSAN,NV400 Camionnette (X62. X62B),dCi 180,Diesel,179,2020,
+298,Balais d'essuie-glace,75594,NISSAN,NV400 Platforme-Châssis (X62. X62B),dCi 180,Diesel,179,2020,
+307,Kit de distribution,11359,AUDI,A6 II,3.7 Quattro,Essence,260,1999,2005
+307,Kit de distribution,11360,AUDI,A6 II Break,3.7 Quattro,Essence,260,1999,2005
+307,Kit de distribution,15306,OPEL,VECTRA B Hatchback,2.2 16V,Essence,147,2000,2003
+307,Kit de distribution,69618,IVECO,DAILY VI,3.0 D 16V 35S21- 35C21- 40C21- 50C21- 65C21- 70C21,Diesel,205,2014,
+308,Galet tendeur de courroie de distribution,2328,PEUGEOT,205 II,1.9 GTI,Essence,102,1987,1989
+310,Galet tendeur de courroie d'accessoire,3393,MITSUBISHI,LANCER VIII,1.6 MIVEC,Essence,117,2010,
+310,Galet tendeur de courroie d'accessoire,7738,FIAT,DUCATO III Fourgon (230),1.9 D (Phase 1),Diesel,68,1994,2002
+310,Galet tendeur de courroie d'accessoire,7880,RENAULT,ESPACE II,2.2 4x4,Essence,108,1991,1996
+310,Galet tendeur de courroie d'accessoire,8437,VOLKSWAGEN,POLO IV Break,1.8,Essence,90,1997,2001
+310,Galet tendeur de courroie d'accessoire,54957,SUZUKI,VITARA II Cabriolet,2.0 HDI,Diesel,87,2002,2005
+310,Galet tendeur de courroie d'accessoire,65539,DACIA,SANDERO II,1.2 16V (Phase 2),Essence,73,2015,
+312,Galet enrouleur de courroie d'accessoire,11807,LANCIA,THEMA II,3.0 D,Diesel,190,2011,2014
+312,Galet enrouleur de courroie d'accessoire,11808,LANCIA,THEMA II,3.0 D,Diesel,239,2011,2014
+312,Galet enrouleur de courroie d'accessoire,76346,PEUGEOT,2008 I,1.2 PureTech,Essence,82,2018,2019
+313,Galet enrouleur de courroie de distribution,476,MITSUBISHI,OUTLANDER II,2.2 DID,Diesel,177,2006,2012
+313,Galet enrouleur de courroie de distribution,3844,MITSUBISHI,OUTLANDER II,2.2 DID 4WD,Diesel,140,2010,2012
+313,Galet enrouleur de courroie de distribution,5173,FORD,ESCORT VII,1.8 TD,Diesel,70,1995,1998
+313,Galet enrouleur de courroie de distribution,9375,CITROËN,JUMPER I (230P),2.8 D,Diesel,87,1999,2002
+313,Galet enrouleur de courroie de distribution,15306,OPEL,VECTRA B Hatchback,2.2 16V,Essence,147,2000,2003
+313,Galet enrouleur de courroie de distribution,15372,FORD,ESCORT CLASSIC,1.8 TD,Diesel,90,1998,2000
+313,Galet enrouleur de courroie de distribution,15375,FORD,ESCORT CLASSIC Break,1.8 TD,Diesel,90,1999,2000
+313,Galet enrouleur de courroie de distribution,31072,AUDI,TT II,2.0 TFSI Quattro,Essence,200,2008,2010
+424,Filtre d'habitacle,14924,BMW,Z3 Roadster (E36),3.0 i,Essence,231,2000,2003
+448,Condenseur de climatisation,27170,PEUGEOT,PARTNER I,1.4 (Phase 2),Essence,73,2002,2006
+448,Condenseur de climatisation,54941,VOLKSWAGEN,BORA I Break,2.0 4Motion,Essence,120,1999,2003
+458,Pompe à carburant,1396,AUDI,80 V,2.0,Essence,90,1991,1994
+458,Pompe à carburant,1411,AUDI,80 V,2.3 E Quattro,Essence,133,1991,1994
+458,Pompe à carburant,1438,AUDI,80 Break,2.0,Essence,90,1992,1996
+458,Pompe à carburant,1443,AUDI,80 Break,2.3 E,Essence,133,1992,1996
+458,Pompe à carburant,4667,AUDI,80 Break,2.3 E Quattro,Essence,133,1991,1994
+458,Pompe à carburant,5125,AUDI,A4 I B5,1.9 TDI,Diesel,110,1995,2000
+458,Pompe à carburant,5311,AUDI,A4 I B5 Break,1.9 TDI,Diesel,110,1996,2001
+458,Pompe à carburant,22491,MITSUBISHI,OUTLANDER II,2.0 DID,Diesel,140,2007,2012
+458,Pompe à carburant,58668,CITROËN,C8,2.2 HDi,Diesel,163,2007,
+458,Pompe à carburant,58770,PEUGEOT,301,1.6 HDI,Diesel,92,2012,
+458,Pompe à carburant,59287,AUDI,80 V,2.0 E 16V (Phase 1),Essence,137,1991,1992
+458,Pompe à carburant,59776,PEUGEOT,807,2.2 HDI,Diesel,163,2006,
+458,Pompe à carburant,65076,CITROËN,C ELYSEE,1.2 PureTech 82 (DDHMRP),Essence,83,2018,
+458,Pompe à carburant,65277,CITROËN,C3 AIRCROSS,1.2 PureTech,Essence,82,2017,
+458,Pompe à carburant,76346,PEUGEOT,2008 I,1.2 PureTech,Essence,82,2018,2019
+458,Pompe à carburant,76372,PEUGEOT,208 I,1.2,Essence,68,2016,
+458,Pompe à carburant,76375,PEUGEOT,208 I,1.2 PureTech,Essence,82,2018,
+458,Pompe à carburant,76376,PEUGEOT,208 I,1.2 THP,Essence,110,2013,
+458,Pompe à carburant,76377,PEUGEOT,208 I,1.4 GPL,Essence-Gaz GPL,95,2013,
+458,Pompe à carburant,76394,PEUGEOT,301,1.2 PureTech 82,Essence,83,2018,
+458,Pompe à carburant,76395,PEUGEOT,301,1.2 VTI,Essence,82,2014,
+458,Pompe à carburant,76540,PEUGEOT,807,2.2 HDI,Diesel,136,2004,2006
+458,Pompe à carburant,82480,VOLKSWAGEN,POLO III,1.6 4Motion,Essence,75,1995,1999
+467,Radiateur de chauffage,28307,RENAULT,R19 II,1.7,Essence,107,1992,1994
+467,Radiateur de chauffage,31154,CITROËN,ZX,1.9,Essence,126,1991,1997
+467,Radiateur de chauffage,54941,VOLKSWAGEN,BORA I Break,2.0 4Motion,Essence,120,1999,2003
+468,Intercooler,8460,VOLKSWAGEN,GOLF IV,1.6,Essence,100,1997,2004
+468,Intercooler,17871,VOLKSWAGEN,GOLF V,2.0 SDI,Diesel,75,2004,2008
+468,Intercooler,18667,VOLKSWAGEN,JETTA III,2.0 FSI,Essence,150,2005,2010
+470,Radiateur de refroidissement,14921,BMW,Série 3 Coupé (E46),330 xi,Essence,231,2000,2006
+470,Radiateur de refroidissement,16036,VOLKSWAGEN,PASSAT V B5.5 Break,4.0 W8 4Motion,Essence,275,2001,2004
+470,Radiateur de refroidissement,23538,PEUGEOT,306,1.6 XS,Essence,90,2000,2001
+470,Radiateur de refroidissement,27170,PEUGEOT,PARTNER I,1.4 (Phase 2),Essence,73,2002,2006
+470,Radiateur de refroidissement,27236,RENAULT,R21,2.0 TXi,Essence,136,1989,1993
+470,Radiateur de refroidissement,28307,RENAULT,R19 II,1.7,Essence,107,1992,1994
+470,Radiateur de refroidissement,28707,RENAULT,R21 Berline,2.0 (Phase 1),Essence,117,1986,1989
+470,Radiateur de refroidissement,82501,VOLKSWAGEN,POLO VI,1.6,Essence,110,2014,2017
+479,Kit d'embrayage,32823,CITROËN,C25 Camionnette,2.0,Essence,78,1981,1986
+655,Roulement de roue,62882,BMW,M3 (F30-F35),3.0 i,Essence,431,2014,2018
+655,Roulement de roue,62883,BMW,M3 (F30-F35),3.0 i Competition,Essence,450,2016,2018
+655,Roulement de roue,62884,BMW,M3 (F30-F35),3.0 i CS,Essence,460,2018,2018
+794,Pompe nettoyage des vitres,5792,FORD,MAVERICK I,2.4 12V,Essence,118,1996,1998
+794,Pompe nettoyage des vitres,5793,FORD,MAVERICK I,2.7 TD,Diesel,125,1996,1998
+794,Pompe nettoyage des vitres,9709,OPEL,VECTRA B,2.2 DTI,Diesel,120,2000,2002
+794,Pompe nettoyage des vitres,14692,TOYOTA,COROLLA VII (E11),1.4 16V,Essence,97,2000,2001
+794,Pompe nettoyage des vitres,19192,RENAULT,SYMBOL I,1.5 dCi (Phase 1),Diesel,82,2001,2009
+794,Pompe nettoyage des vitres,28868,CITROËN,C15 Break,1.4,Essence,67,1987,1992
+794,Pompe nettoyage des vitres,28869,CITROËN,C15 Break,1.4,Essence,60,1987,1992
+794,Pompe nettoyage des vitres,76492,PEUGEOT,406 Coupé,3.0 24V,Essence,194,1997,1999
+794,Pompe nettoyage des vitres,76493,PEUGEOT,406 Coupé,3.0 V6 (Phase 1),Essence,210,1999,2001
+794,Pompe nettoyage des vitres,82480,VOLKSWAGEN,POLO III,1.6 4Motion,Essence,75,1995,1999
+794,Pompe nettoyage des vitres,83147,ABARTH,PUNTO EVO,1.4 16V,Essence,163,2009,2012
+805,Pressostat d'huile,18616,PEUGEOT,607,2.7 HDI,Diesel,204,2004,2011
+805,Pressostat d'huile,22954,BMW,Série 1 (E81),120 i,Essence,170,2007,2012
+805,Pressostat d'huile,25481,BMW,Série 3 Touring (E91),325 xi,Essence,218,2007,2008
+805,Pressostat d'huile,25483,BMW,Série 3 Coupé (E92),325 i,Essence,218,2007,2013
+805,Pressostat d'huile,25484,BMW,Série 3 Coupé (E92),325 xi,Essence,218,2007,2008
+805,Pressostat d'huile,31028,BMW,Série 3 (E90),325 i xDrive,Essence,218,2008,2011
+805,Pressostat d'huile,31032,BMW,Série 3 Touring (E91),325 i xDrive,Essence,218,2008,2012
+805,Pressostat d'huile,31036,BMW,Série 3 Coupé (E92),325 i xDrive,Essence,218,2008,2013
+805,Pressostat d'huile,32173,BMW,Série 1 (E81),120 i,Essence,163,2007,2011
+805,Pressostat d'huile,32850,VOLVO,S80 II,2.4 D,Diesel,175,2010,2011
+805,Pressostat d'huile,58221,BMW,Série 1 (E87),120 i,Essence,163,2007,2011
+805,Pressostat d'huile,58224,BMW,Série 1 (E87),120 i,Essence,170,2007,2011
+806,Interrupteur des feux de freins,2266,CITROËN,XANTIA,1.6,Essence,88,1993,2001
+806,Interrupteur des feux de freins,9121,CITROËN,C25,1.9 TD,Diesel,82,1992,1994
+806,Interrupteur des feux de freins,9205,CITROËN,C25 Camionnette,2.0,Essence,84,1991,1994
+806,Interrupteur des feux de freins,9206,CITROËN,C25 Camionnette,2.0 E,Essence,79,1981,1994
+807,Contacteur feu de recul,12101,AUDI,A8 I D2,3.3 TDI Quattro,Diesel,224,2000,2002
+807,Contacteur feu de recul,27984,RENAULT,VEL SATIS,2.0 16V TURBO,Essence,147,2005,
+807,Contacteur feu de recul,31547,RENAULT,SCÉNIC III,2.0 dCi,Diesel,150,2009,
+1108,Poulie d'alternateur,3785,FIAT,ULYSSE I,2.0 TURBO,Essence,147,1994,2002
+1145,Vanne EGR,2904,SEAT,TOLEDO I,1.9 D,Diesel,68,1991,1999
+1145,Vanne EGR,3893,AUDI,A6 I,2.5 TDI,Diesel,140,1994,1997
+1145,Vanne EGR,3894,AUDI,A6 I Break,2.5 TDI,Diesel,140,1994,1997
+1145,Vanne EGR,4641,AUDI,A6 I,2.5 TDI,Diesel,116,1994,1997
+1145,Vanne EGR,4649,AUDI,A6 I Break,2.5 TDI,Diesel,116,1994,1997
+1145,Vanne EGR,5126,AUDI,A6 I Break,2.5 TDI Quattro,Diesel,140,1995,1997
+1145,Vanne EGR,5127,AUDI,A6 I,2.5 TDI Quattro,Diesel,140,1995,1997
+1145,Vanne EGR,8800,VOLKSWAGEN,GOLF IV,1.8,Essence,125,1997,2005
+1145,Vanne EGR,11250,RENAULT,TRAFIC I (TXX),1.9 D,Diesel,60,1997,2001
+1145,Vanne EGR,24380,FIAT,SCUDO II (270. 272),2.0 D Multijet 4x4,Diesel,128,2011,
+1145,Vanne EGR,66367,FIAT,SCUDO II Camionnette (270. 272),2.0 D Multijet 4x4,Diesel,128,2011,
+1145,Vanne EGR,76553,PEUGEOT,EXPERT II Tepee (VF3X),2.0 HDI 4x4,Diesel,130,2011,2016
+1260,Pompe à eau,13303,PEUGEOT,205 II,1.4,Essence,72,1987,1988
+1260,Pompe à eau,14496,FIAT,PALIO I,1.0,Essence,61,1996,2003
+1260,Pompe à eau,34080,IVECO,DAILY II Fourgon,2.5 D 40-10 V,Diesel,103,1990,1996
+1260,Pompe à eau,54939,VOLKSWAGEN,GOLF IV Break,2.0 4Motion,Essence,120,1999,2006
+1260,Pompe à eau,69598,IVECO,DAILY II Fourgon,2.5 D 2.5 4x4,Diesel,103,1989,1996
+1298,Valve de réglage du ralenti,27576,DACIA,SANDERO I,1.4,Essence,75,2008,
+1361,Serrure de porte,2111,RENAULT,EXPRESS (F40-G40),1.1,Essence,45,1985,1995
+1361,Serrure de porte,2113,RENAULT,EXPRESS (F40-G40),1.6 D,Diesel,55,1986,1998
+1361,Serrure de porte,2114,RENAULT,EXPRESS (F40-G40),1.9 D,Diesel,64,1991,1998
+1361,Serrure de porte,2115,RENAULT,EXPRESS (F40-G40),1.2 (Phase 1),Essence,55,1991,1998
+1361,Serrure de porte,2116,RENAULT,EXPRESS (F40-G40),1.4 CAT,Essence,58,1988,1998
+1361,Serrure de porte,2117,RENAULT,EXPRESS (F40-G40),1.4,Essence,75,1991,1998
+1361,Serrure de porte,2147,CITROËN,AX,1.0 E,Essence,41,1986,1988
+1361,Serrure de porte,2148,CITROËN,AX,1.0,Essence,45,1986,1998
+1361,Serrure de porte,2149,CITROËN,AX,1.1,Essence,54,1986,1994
+1361,Serrure de porte,2151,CITROËN,AX,1.3 Sport,Essence,95,1987,1988
+1361,Serrure de porte,2152,CITROËN,AX,1.4,Essence,60,1986,1988
+1361,Serrure de porte,2153,CITROËN,AX,1.4,Essence,85,1988,1992
+1361,Serrure de porte,2154,CITROËN,AX,1.4,Essence,67,1988,1989
+1361,Serrure de porte,2155,CITROËN,AX,1.4 D,Diesel,52,1988,1992
+1361,Serrure de porte,2156,CITROËN,AX,1.4 D,Diesel,50,1991,1997
+1361,Serrure de porte,2157,CITROËN,AX,1.1,Essence,60,1986,1997
+1361,Serrure de porte,2158,CITROËN,AX,1.4,Essence,75,1987,1997
+1361,Serrure de porte,2243,CITROËN,C15,1.1,Essence,48,1984,1996
+1361,Serrure de porte,2244,CITROËN,C15,1.4,Essence,67,1987,1996
+1361,Serrure de porte,2245,CITROËN,C15,1.8 D,Diesel,60,1986,2000
+1361,Serrure de porte,2246,CITROËN,C15,1.1,Essence,60,1988,1996
+1361,Serrure de porte,2247,CITROËN,C15,1.4,Essence,75,1991,1996
+1361,Serrure de porte,2258,CITROËN,ZX,1.9 D,Diesel,64,1991,1997
+1361,Serrure de porte,2260,CITROËN,ZX,1.4,Essence,75,1991,1997
+1361,Serrure de porte,2261,CITROËN,ZX,1.6,Essence,88,1991,1997
+1361,Serrure de porte,2262,CITROËN,ZX,1.8,Essence,101,1992,1997
+1361,Serrure de porte,2263,CITROËN,ZX,1.9,Essence,120,1991,1997
+1361,Serrure de porte,2264,CITROËN,ZX,2.0,Essence,121,1992,1997
+1361,Serrure de porte,2265,CITROËN,ZX,2.0 16V,Essence,152,1992,1994
+1361,Serrure de porte,2457,PEUGEOT,605,2.1 TD (Phase 1),Diesel,109,1989,1999
+1361,Serrure de porte,2458,PEUGEOT,605,2.0,Essence,121,1989,1999
+1361,Serrure de porte,2459,PEUGEOT,605,2.0 TURBO,Essence,141,1992,1999
+1361,Serrure de porte,2460,PEUGEOT,605,3.0 12V,Essence,167,1989,1999
+1361,Serrure de porte,2461,PEUGEOT,605,3.0 SV,Essence,200,1989,1999
+1361,Serrure de porte,2463,PEUGEOT,106 I,1.4 D,Diesel,50,1992,1996
+1361,Serrure de porte,2464,PEUGEOT,106 I,1.0,Essence,45,1991,1996
+1361,Serrure de porte,2465,PEUGEOT,106 I,1.1,Essence,60,1991,1996
+1361,Serrure de porte,2466,PEUGEOT,106 I,1.3,Essence,98,1993,1996
+1361,Serrure de porte,2467,PEUGEOT,106 I,1.4,Essence,75,1991,1996
+1361,Serrure de porte,2468,PEUGEOT,106 I,1.4,Essence,94,1991,1994
+1361,Serrure de porte,2469,PEUGEOT,106 I,1.6,Essence,88,1993,1996
+1361,Serrure de porte,3729,PEUGEOT,106 I,1.6,Essence,103,1994,1996
+1361,Serrure de porte,3755,PEUGEOT,605,2.0 TURBO,Essence,147,1991,1999
+1361,Serrure de porte,3756,PEUGEOT,605,2.0 16V,Essence,132,1994,1999
+1361,Serrure de porte,3757,PEUGEOT,605,2.5 TD,Diesel,129,1994,1999
+1361,Serrure de porte,3771,RENAULT,EXPRESS (F40-G40),1.9 D,Diesel,54,1994,1998
+1361,Serrure de porte,4030,CITROËN,ZX Break,1.9 D,Diesel,64,1993,1997
+1361,Serrure de porte,4031,CITROËN,ZX Break,1.8,Essence,101,1993,1997
+1361,Serrure de porte,4032,CITROËN,ZX Break,1.4,Essence,75,1993,1997
+1361,Serrure de porte,4033,CITROËN,ZX Break,1.9 TD,Diesel,90,1993,1997
+1361,Serrure de porte,4034,CITROËN,ZX Break,1.6,Essence,88,1993,1997
+1361,Serrure de porte,4048,CITROËN,ZX,1.9 D,Diesel,68,1993,1997
+1361,Serrure de porte,4049,CITROËN,ZX Break,1.9 D,Diesel,68,1994,1997
+1361,Serrure de porte,4050,CITROËN,EVASION,2.0 TURBO C.T,Essence,147,1994,2002
+1361,Serrure de porte,4051,CITROËN,EVASION,2.0,Essence,121,1994,2002
+1361,Serrure de porte,4054,CITROËN,AX,1.5 D,Diesel,54,1994,1997
+1361,Serrure de porte,4746,CITROËN,EVASION,1.9 TD,Diesel,90,1994,2002
+1361,Serrure de porte,5713,CITROËN,EVASION,2.1 TD,Diesel,109,1996,2002
+1361,Serrure de porte,5716,CITROËN,ZX,2.0 16V,Essence,163,1996,1997
+1361,Serrure de porte,6020,CITROËN,AX,1.1 CAT,Essence,54,1988,1989
+1361,Serrure de porte,6022,CITROËN,AX,1.4 GTi,Essence,90,1991,1996
+1361,Serrure de porte,6023,CITROËN,AX,1.4 GTi,Essence,94,1991,1996
+1361,Serrure de porte,6590,CITROËN,C15,1.4 E,Essence,60,1987,1996
+1361,Serrure de porte,7845,RENAULT,EXPRESS (F40-G40),1.4 (Phase 1),Essence,58,1985,1991
+1361,Serrure de porte,7948,RENAULT,TRAFIC I (TXX),1.7,Essence,68,1992,1994
+1361,Serrure de porte,7957,RENAULT,TRAFIC I (TXX),2.2,Essence,101,1994,1997
+1361,Serrure de porte,8242,PEUGEOT,106 I,1.0,Essence,50,1991,1996
+1361,Serrure de porte,8288,CITROËN,AX,1.0,Essence,50,1987,1998
+1361,Serrure de porte,8289,CITROËN,AX,1.5 D,Diesel,58,1994,1997
+1361,Serrure de porte,8582,PEUGEOT,106 I,1.5 D,Diesel,58,1994,1996
+1361,Serrure de porte,8597,PEUGEOT,605,2.0,Essence,114,1989,1999
+1361,Serrure de porte,8680,CITROËN,EVASION,1.8,Essence,99,1997,2002
+1361,Serrure de porte,9015,PEUGEOT,605,3.0 V6,Essence,190,1997,1999
+1361,Serrure de porte,9120,CITROËN,C15,1.4 E,Essence,55,1987,1996
+1361,Serrure de porte,10119,CITROËN,ZX,1.8 16V,Essence,110,1996,1997
+1361,Serrure de porte,10120,CITROËN,ZX Break,1.8 16V,Essence,110,1996,1998
+1361,Serrure de porte,10693,RENAULT,EXPRESS (F40-G40),1.0,Essence,37,1986,1992
+1361,Serrure de porte,10920,PEUGEOT,605,2.1 D,Diesel,82,1989,1995
+1361,Serrure de porte,11370,CITROËN,EVASION,2.0 16V,Essence,132,1998,2000
+1361,Serrure de porte,13745,RENAULT,TRAFIC I (TXX),2.2 4x4,Essence,101,1994,1997
+1361,Serrure de porte,13808,CITROËN,ZX,1.1,Essence,60,1991,1997
+1361,Serrure de porte,13817,CITROËN,ZX Break,1.8 D,Diesel,60,1993,1997
+1361,Serrure de porte,13862,CITROËN,EVASION,2.0 HDi,Diesel,109,1999,2002
+1361,Serrure de porte,14133,CITROËN,ZX,1.8 D,Diesel,60,1993,1997
+1361,Serrure de porte,14135,CITROËN,C15,1.0,Essence,45,1984,1997
+1361,Serrure de porte,15048,CITROËN,AX,1.4 GTi,Essence,100,1991,1992
+1361,Serrure de porte,15085,CITROËN,EVASION,2.0 16V,Essence,136,2000,2002
+1361,Serrure de porte,17427,CITROËN,C15,1.3,Essence,64,1987,1988
+1361,Serrure de porte,18017,CITROËN,C15,1.9 D,Diesel,60,2000,2005
+1361,Serrure de porte,18872,CITROËN,ZX,1.1,Essence,54,1991,1993
+1361,Serrure de porte,20268,CITROËN,C15,1.1,Essence,54,1988,1996
+1361,Serrure de porte,20281,PEUGEOT,605,3.0 24V,Essence,200,1989,1994
+1361,Serrure de porte,22443,PEUGEOT,106 I,1.4,Essence,69,1991,1996
+2066,Rotule de direction,65367,CITROËN,C4 III,"1.2 PureTech 130 (BAHNSA, BAHNSB)",Essence,130,2020,
+3219,Bride de liquide de refroidissement,2147,CITROËN,AX,1.0 E,Essence,41,1986,1988
+3219,Bride de liquide de refroidissement,2149,CITROËN,AX,1.1,Essence,54,1986,1994
+3219,Bride de liquide de refroidissement,2151,CITROËN,AX,1.3 Sport,Essence,95,1987,1988
+3219,Bride de liquide de refroidissement,2156,CITROËN,AX,1.4 D,Diesel,50,1991,1997
+3219,Bride de liquide de refroidissement,2243,CITROËN,C15,1.1,Essence,48,1984,1996
+3219,Bride de liquide de refroidissement,6020,CITROËN,AX,1.1 CAT,Essence,54,1988,1989
+3219,Bride de liquide de refroidissement,14135,CITROËN,C15,1.0,Essence,45,1984,1997
+3219,Bride de liquide de refroidissement,15600,CITROËN,XSARA,2.0 16V,Essence,136,2000,2005
+3219,Bride de liquide de refroidissement,17678,CITROËN,XSARA,1.4 HDi,Diesel,68,2003,2005
+3219,Bride de liquide de refroidissement,23371,RENAULT,LAGUNA III,1.5 dCi,Diesel,110,2007,2015
+3219,Bride de liquide de refroidissement,23376,RENAULT,LAGUNA III Break,1.5 dCi,Diesel,110,2007,2015
+3219,Bride de liquide de refroidissement,23386,PEUGEOT,207 SW,1.4 16V,Essence,95,2007,2013
+3219,Bride de liquide de refroidissement,26630,PEUGEOT,207,1.4 16V,Essence,95,2007,2013
+3219,Bride de liquide de refroidissement,34745,RENAULT,CLIO III Break,1.5 dCi,Diesel,75,2010,2012
+3219,Bride de liquide de refroidissement,34747,RENAULT,CLIO III Break,1.5 dCi,Diesel,88,2010,2012
+3219,Bride de liquide de refroidissement,34749,RENAULT,CLIO III Break,1.5 dCi,Diesel,65,2007,2012
+3219,Bride de liquide de refroidissement,59354,RENAULT,LATITUDE,1.5 dCi,Diesel,110,2010,
+3230,Biellette de barre stabilisatrice,71016,LADA,VESTA,1.6,Essence,106,2015,
+3230,Biellette de barre stabilisatrice,71037,LADA,VESTA SW,1.6,Essence,106,2015,
+3890,Electrovanne,63,BMW,Série 3 (E36),325 tds,Diesel,143,1993,1998
+3890,Electrovanne,143,ALFA ROMEO,155,1.9 TD,Diesel,90,1993,1997
+3890,Electrovanne,254,BMW,Série 5 Touring (E34),525 tds,Diesel,143,1991,1996
+3890,Electrovanne,1122,FORD,TRANSIT IV,2.5 DI,Diesel,70,1991,1994
+3890,Electrovanne,1154,FORD,TRANSIT IV,2.5 DI,Diesel,80,1991,1994
+3890,Electrovanne,1163,FORD,TRANSIT IV,2.5 TD,Diesel,85,1992,1994
+3890,Electrovanne,1170,FORD,TRANSIT IV,2.5 TD,Diesel,100,1991,1994
+3890,Electrovanne,1713,VOLKSWAGEN,PASSAT III B3-B4 (3A2. 35I),1.6 TD,Diesel,80,1988,1993
+3890,Electrovanne,1714,VOLKSWAGEN,PASSAT III B3-B4 (3A2. 35I),1.9 D,Diesel,68,1989,1993
+3890,Electrovanne,1715,VOLKSWAGEN,PASSAT III B3-B4 (3A2. 35I),1.9 TD,Diesel,75,1991,1996
+3890,Electrovanne,1763,VOLKSWAGEN,TRANSPORTER IV,2.4 D Syncro,Diesel,80,1992,1998
+3890,Electrovanne,1861,VOLKSWAGEN,TRANSPORTER IV,1.9 D,Diesel,60,1990,1995
+3890,Electrovanne,1862,VOLKSWAGEN,TRANSPORTER IV,1.9 TD,Diesel,68,1992,2003
+3890,Electrovanne,1863,VOLKSWAGEN,TRANSPORTER IV,2.4 D,Diesel,80,1990,1998
+3890,Electrovanne,1867,VOLKSWAGEN,GOLF III,1.9 TD GTD,Diesel,75,1991,1997
+3890,Electrovanne,1868,VOLKSWAGEN,GOLF III,1.9 TDI,Diesel,90,1993,1997
+3890,Electrovanne,1880,VOLKSWAGEN,VENTO,1.9 TD,Diesel,75,1991,1998
+3890,Electrovanne,1897,VOLKSWAGEN,GOLF III Break,1.9 TD,Diesel,75,1993,1999
+3890,Electrovanne,1911,VOLKSWAGEN,PASSAT III B3-B4 Break (3A2. 35I),1.6 TD,Diesel,80,1988,1993
+3890,Electrovanne,1912,VOLKSWAGEN,PASSAT III B3-B4 Break (3A2. 35I),1.9 D,Diesel,68,1989,1993
+3890,Electrovanne,1913,VOLKSWAGEN,PASSAT III B3-B4 Break (3A2. 35I),1.9 TD,Diesel,75,1991,1997
+3890,Electrovanne,2114,RENAULT,EXPRESS (F40-G40),1.9 D,Diesel,64,1991,1998
+3890,Electrovanne,2904,SEAT,TOLEDO I,1.9 D,Diesel,68,1991,1999
+3890,Electrovanne,2911,SEAT,IBIZA II,1.9 TD,Diesel,75,1993,1996
+3890,Electrovanne,3893,AUDI,A6 I,2.5 TDI,Diesel,140,1994,1997
+3890,Electrovanne,3894,AUDI,A6 I Break,2.5 TDI,Diesel,140,1994,1997
+3890,Electrovanne,3905,FORD,TRANSIT V,2.5 DI,Diesel,76,1994,2000
+3890,Electrovanne,3908,FORD,TRANSIT V,2.5 DI,Diesel,69,1994,2000
+3890,Electrovanne,3929,VOLKSWAGEN,GOLF III Break,1.9 TDI,Diesel,90,1994,1999
+3890,Electrovanne,3942,VOLKSWAGEN,GOLF III Cabriolet,1.9 TDI,Diesel,90,1995,1998
+3890,Electrovanne,3957,SEAT,CORDOBA II,1.9 D,Diesel,68,1993,1996
+3890,Electrovanne,3958,SEAT,CORDOBA II,1.9 TD,Diesel,75,1993,1996
+3890,Electrovanne,4626,BMW,Série 3 Touring (E36),325 tds,Diesel,143,1995,1999
+3890,Electrovanne,4633,BMW,Série 5 Touring (E34),525 td,Diesel,115,1993,1996
+3890,Electrovanne,4641,AUDI,A6 I,2.5 TDI,Diesel,116,1994,1997
+3890,Electrovanne,4649,AUDI,A6 I Break,2.5 TDI,Diesel,116,1994,1997
+3890,Electrovanne,4679,VOLKSWAGEN,POLO III,1.9 D,Diesel,64,1994,1999
+3890,Electrovanne,4681,VOLKSWAGEN,GOLF III Break,1.9 TDI Syncro,Diesel,90,1995,1999
+3890,Electrovanne,4754,ALFA ROMEO,146,1.9 TD,Diesel,90,1994,1999
+3890,Electrovanne,5053,BMW,Série 5 (E39),525 tds,Diesel,143,1996,2003
+3890,Electrovanne,5126,AUDI,A6 I Break,2.5 TDI Quattro,Diesel,140,1995,1997
+3890,Electrovanne,5127,AUDI,A6 I,2.5 TDI Quattro,Diesel,140,1995,1997
+3890,Electrovanne,5134,CHRYSLER,VOYAGER III,2.5 TD,Diesel,116,1995,2001
+3890,Electrovanne,5255,SEAT,TOLEDO I,1.9 TDI,Diesel,90,1995,1999
+3890,Electrovanne,5273,VOLKSWAGEN,GOLF III,1.9 TDI Syncro,Diesel,90,1995,1997
+3890,Electrovanne,5281,VOLKSWAGEN,TRANSPORTER IV,2.5 TDI,Diesel,102,1995,2003
+3890,Electrovanne,5285,FORD,TRANSIT V,2.5 TD,Diesel,85,1995,2000
+3890,Electrovanne,5286,FORD,TRANSIT V,2.5 TD,Diesel,100,1994,2000
+3890,Electrovanne,5292,FORD,TRANSIT V Fourgon,2.5 DI,Diesel,75,1994,2000
+3890,Electrovanne,5293,FORD,TRANSIT V Fourgon,2.5 TD,Diesel,85,1994,2000
+3890,Electrovanne,5294,FORD,TRANSIT V Fourgon,2.5 TDI,Diesel,100,1994,2000
+3890,Electrovanne,5300,VOLKSWAGEN,POLO CLASSIC II,1.9 SDI,Diesel,64,1995,1999
+3890,Electrovanne,5673,SEAT,CORDOBA II,1.9 SDI,Diesel,64,1996,1999
+3890,Electrovanne,5675,SEAT,ALHAMBRA I,1.9 TDI,Diesel,90,1996,2010
+3890,Electrovanne,5715,VOLKSWAGEN,GOLF III Cabriolet,1.9 TDI,Diesel,110,1996,1998
+3890,Electrovanne,5717,VOLKSWAGEN,GOLF III,1.9 TDI,Diesel,110,1996,1997
+3890,Electrovanne,5721,VOLKSWAGEN,GOLF III Break,1.9 TDI,Diesel,110,1996,1999
+3890,Electrovanne,5962,VOLKSWAGEN,TRANSPORTER IV,2.5 TDI Syncro,Diesel,102,1996,2003
+3890,Electrovanne,6317,VOLKSWAGEN,TRANSPORTER IV Fourgon,1.9 D,Diesel,61,1990,1995
+3890,Electrovanne,6318,VOLKSWAGEN,TRANSPORTER IV Fourgon,1.9 TD,Diesel,68,1992,2003
+3890,Electrovanne,6319,VOLKSWAGEN,TRANSPORTER IV Fourgon,2.4 D,Diesel,78,1990,1998
+3890,Electrovanne,6321,VOLKSWAGEN,TRANSPORTER IV Fourgon,2.4 D Syncro,Diesel,78,1992,1998
+3890,Electrovanne,7469,FORD,TRANSIT IV Fourgon,2.5 DI,Diesel,70,1991,1994
+3890,Electrovanne,7470,FORD,TRANSIT IV Fourgon,2.5 DI,Diesel,80,1991,1994
+3890,Electrovanne,7471,FORD,TRANSIT IV Fourgon,2.5 TD,Diesel,100,1991,1994
+3890,Electrovanne,7476,FORD,TRANSIT IV Fourgon,2.5 DI,Diesel,85,1992,1994
+3890,Electrovanne,7892,SEAT,IBIZA II,1.9 TDI,Diesel,90,1996,2002
+3890,Electrovanne,7893,SEAT,ALHAMBRA I,1.9 TDI,Diesel,110,1996,2000
+3890,Electrovanne,7897,SEAT,IBIZA II,1.9 TDI,Diesel,110,1997,2002
+3890,Electrovanne,7899,SEAT,IBIZA II,1.9 D,Diesel,64,1993,1996
+3890,Electrovanne,7901,SEAT,CORDOBA II,1.9 D,Diesel,64,1996,1996
+3890,Electrovanne,7974,VOLKSWAGEN,POLO CLASSIC II,1.9 TDI,Diesel,90,1996,2001
+3890,Electrovanne,8095,SEAT,TOLEDO I,1.9 D,Diesel,64,1995,1999
+3890,Electrovanne,8430,SEAT,CORDOBA II Break,1.9 SDI,Diesel,64,1996,1999
+3890,Electrovanne,8431,VOLKSWAGEN,POLO III,1.7 SDI,Diesel,60,1997,1999
+3890,Electrovanne,8443,VOLKSWAGEN,PASSAT IV B5,1.9 TDI Syncro 4Motion,Diesel,110,1997,2000
+3890,Electrovanne,8444,VOLKSWAGEN,PASSAT IV B5 Break,1.9 TDI Syncro 4Motion,Diesel,110,1997,2000
+3890,Electrovanne,8773,VOLKSWAGEN,TRANSPORTER IV Fourgon,2.5 TDI,Diesel,102,1995,2003
+3890,Electrovanne,8794,FORD,TRANSIT V Fourgon,2.5 DI,Diesel,70,1994,2000
+3890,Electrovanne,8850,VOLKSWAGEN,LT 28-35 II,2.5 SDI,Diesel,75,1996,2006
+3890,Electrovanne,8854,VOLKSWAGEN,LT 28-46 II Camionnette,2.5 SDI,Diesel,75,1996,2006
+3890,Electrovanne,8857,VOLKSWAGEN,LT 28-46 II Camionnette,2.8 TDI,Diesel,125,1997,2002
+3890,Electrovanne,9058,VOLKSWAGEN,POLO IV Break,1.9 TDI,Diesel,90,1997,2001
+3890,Electrovanne,9059,VOLKSWAGEN,POLO IV Break,1.7 SDI,Diesel,57,1997,2001
+3890,Electrovanne,9065,VOLKSWAGEN,POLO CLASSIC II,1.7 SDI,Diesel,57,1997,2001
+3890,Electrovanne,10003,VOLKSWAGEN,BORA I,1.9 TDI,Diesel,90,1998,2005
+3890,Electrovanne,10004,VOLKSWAGEN,BORA I,1.9 TDI,Diesel,110,1998,2001
+3890,Electrovanne,10579,BMW,Série 5 Touring (E39),525 tds,Diesel,143,1997,2004
+3890,Electrovanne,10960,VOLKSWAGEN,TRANSPORTER IV Fourgon,2.5 TDI Syncro,Diesel,102,1995,2003
+3890,Electrovanne,11364,AUDI,A4 I B5,1.9 TDI,Diesel,75,1995,2000
+3890,Electrovanne,11365,AUDI,A4 I B5 Break,1.9 TDI,Diesel,75,1996,2001
+3890,Electrovanne,11520,VOLKSWAGEN,POLO IV Break,1.9 TDI,Diesel,110,1998,2001
+3890,Electrovanne,11521,VOLKSWAGEN,POLO CLASSIC II,1.9 TDI,Diesel,110,1998,2002
+3890,Electrovanne,12104,VOLKSWAGEN,BORA I Break,1.9 TDI,Diesel,110,1999,2001
+3890,Electrovanne,13103,VOLKSWAGEN,BORA I,1.9 TDI 4Motion,Diesel,90,1998,2002
+3890,Electrovanne,13161,SEAT,LEON I,1.9 TDI,Diesel,90,1999,2006
+3890,Electrovanne,13162,SEAT,LEON I,1.9 TDI,Diesel,110,1999,2006
+3890,Electrovanne,14094,VOLKSWAGEN,LT 28-35 II,2.5 TDI,Diesel,90,1999,2006
+3890,Electrovanne,14095,VOLKSWAGEN,LT 28-35 II,2.5 TDI,Diesel,109,1999,2006
+3890,Electrovanne,14096,VOLKSWAGEN,LT 28-46 II Camionnette,2.5 TDI,Diesel,90,1999,2006
+3890,Electrovanne,14097,VOLKSWAGEN,LT 28-46 II Camionnette,2.5 TDI,Diesel,109,1999,2006
+3890,Electrovanne,14175,VOLKSWAGEN,POLO IV,1.7 SDI,Diesel,60,1999,2001
+3890,Electrovanne,14286,VOLKSWAGEN,POLO CLASSIC II,1.9 SDI,Diesel,68,1999,2002
+3890,Electrovanne,15410,VOLKSWAGEN,POLO III,1.9 SDI,Diesel,64,1996,1999
+3890,Electrovanne,15411,VOLKSWAGEN,CADDY II,1.9 D,Diesel,64,1995,2004
+3890,Electrovanne,16303,FORD,TRANSIT V,2.5 TD,Diesel,75,1994,2000
+3922,Sonde lambda,15494,VOLKSWAGEN,LUPO I,1.4 FSI,Essence,105,2001,2005
+3927,Débitmètre d'air,1306,FORD,MONDEO I,2.0 16V,Essence,136,1993,1996
+3927,Débitmètre d'air,1866,VOLKSWAGEN,GOLF III,1.9 D,Diesel,64,1991,1997
+3927,Débitmètre d'air,2910,SEAT,IBIZA II,1.9 SDI,Diesel,64,1996,1999
+3927,Débitmètre d'air,4679,VOLKSWAGEN,POLO III,1.9 D,Diesel,64,1994,1999
+3927,Débitmètre d'air,4712,FORD,MONDEO I Break,2.0 4x4 16V,Essence,132,1994,1996
+3927,Débitmètre d'air,4827,FORD,MONDEO I,2.0 4x4 16V,Essence,132,1994,1996
+3927,Débitmètre d'air,5628,PEUGEOT,BOXER I (230P),1.9 TD 4x4,Diesel,92,1996,2002
+3927,Débitmètre d'air,5673,SEAT,CORDOBA II,1.9 SDI,Diesel,64,1996,1999
+3927,Débitmètre d'air,7828,RENAULT,ESPACE III,2.0,Essence,114,1996,2000
+3927,Débitmètre d'air,8307,FORD,MONDEO I Break,2.0 16V,Essence,132,1993,1996
+3927,Débitmètre d'air,8430,SEAT,CORDOBA II Break,1.9 SDI,Diesel,64,1996,1999
+3927,Débitmètre d'air,9260,LANCIA,MUSA,1.4 LPG,Essence-Gaz GPL,78,2010,2012
+3927,Débitmètre d'air,10361,RENAULT,ESPACE III,2.0 16V,Essence,140,1998,2002
+3927,Débitmètre d'air,11403,VOLVO,S40 I,1.9 DI,Diesel,95,1999,2000
+3927,Débitmètre d'air,11404,VOLVO,V40 Break,1.9 DI,Diesel,95,1999,2000
+3927,Débitmètre d'air,14176,VOLKSWAGEN,POLO IV,1.9 D,Diesel,64,1999,2001
+3927,Débitmètre d'air,16085,FORD,FIESTA V,1.4 16V,Essence,80,2001,2008
+3927,Débitmètre d'air,17177,FORD,KA I,1.3,Essence,70,2002,2008
+3927,Débitmètre d'air,17627,FIAT,PANDA II,1.1,Essence,54,2003,
+3927,Débitmètre d'air,17923,PEUGEOT,BOXER I Fourgon (230L),2.0 HDI,Diesel,84,2001,2002
+3927,Débitmètre d'air,17973,SKODA,OCTAVIA II,1.6,Essence,102,2004,2013
+3927,Débitmètre d'air,18480,SKODA,OCTAVIA II Combi,2.0 FSI 4x4,Essence,150,2004,2009
+3927,Débitmètre d'air,22692,PEUGEOT,EXPERT II Tepee (VF3X),2.0 16V,Essence,140,2007,2016
+3927,Débitmètre d'air,22693,PEUGEOT,EXPERT II (VF3A-VF3X),2.0 16V,Essence,140,2007,2017
+3927,Débitmètre d'air,54941,VOLKSWAGEN,BORA I Break,2.0 4Motion,Essence,120,1999,2003
+3927,Débitmètre d'air,59291,FIAT,PANDA VAN II,1.1,Essence,54,2004,
+3927,Débitmètre d'air,66738,FORD,FOCUS III,2.0 TDCI,Diesel,150,2014,2017
+3927,Débitmètre d'air,77936,SEAT,ALHAMBRA II,2.0 TSI,Essence,220,2015,
+3927,Débitmètre d'air,82253,VOLKSWAGEN,ARTEON,2.0 TDI 4Motion,Diesel,240,2017,2020
+3927,Débitmètre d'air,82417,VOLKSWAGEN,CADDY ALLTRACK,1.6 TDI,Diesel,75,2015,2017
+3927,Débitmètre d'air,82455,VOLKSWAGEN,CRAFTER,2.0 TDI,Diesel,177,2016,
+3927,Débitmètre d'air,82671,VOLKSWAGEN,TIGUAN II,2.0 TDI 4Motion,Diesel,240,2016,2020
+3927,Débitmètre d'air,82688,VOLKSWAGEN,TIGUAN ALLSPACE,2.0 TDI 4Motion,Diesel,240,2017,2020
+3927,Débitmètre d'air,82808,VOLKSWAGEN,PASSAT VIII B8,2.0 TDI 4Motion,Diesel,240,2014,
+3927,Débitmètre d'air,82819,VOLKSWAGEN,PASSAT ALLTRACK II B8,2.0 TDI 4Motion,Diesel,240,2015,
+3927,Débitmètre d'air,82837,VOLKSWAGEN,PASSAT VIII B8 Break,2.0 TDI 4Motion,Diesel,240,2014,
+3927,Débitmètre d'air,82956,VOLKSWAGEN,CRAFTER Fourgon,2.0 TDI,Diesel,177,2016,
+3927,Débitmètre d'air,82957,VOLKSWAGEN,CRAFTER Fourgon,2.0 TDI 4Motion,Diesel,177,2017,
+3927,Débitmètre d'air,82965,VOLKSWAGEN,CRAFTER Platforme-Châssis,"2.0 TDI 4motion (SZB, SZC, SZH, SZI, SZO, SZP, SZU, SZV)",Diesel,177,2017,
+3927,Débitmètre d'air,82968,VOLKSWAGEN,CRAFTER Platforme-Châssis,"2.0 TDI FWD (SZB, SZC, SZH, SZI, SZJ, SZK, SZO, SZP, SZS...",Diesel,177,2016,
+3927,Débitmètre d'air,83124,VOLKSWAGEN,TRANSPORTER VI Platforme-Châssis,2.0 TDI,Diesel,204,2016,2019
+3927,Débitmètre d'air,83131,VOLKSWAGEN,TRANSPORTER VI Platforme-Châssis,2.0 TDI 4motion,Diesel,204,2016,2019
+3947,Capteur pression du tuyau d'admission,4750,LANCIA,DEDRA SW,1.6,Essence,90,1994,1999
+4175,Capteur pression et température d'huile,473,MERCEDES,CLASSE E (W124),280 ,Essence,193,1993,1995
+4175,Capteur pression et température d'huile,499,MERCEDES,CLASSE E Break (S124),300 D,Diesel,136,1993,1996
+4175,Capteur pression et température d'huile,517,MERCEDES,CLASSE E Break (S124),250 D,Diesel,113,1993,1996
+4175,Capteur pression et température d'huile,949,MERCEDES,CLASSE S (W140),350 TD,Diesel,150,1993,1998
+4175,Capteur pression et température d'huile,954,MERCEDES,CLASSE S (W140),400,Essence,286,1991,1998
+4175,Capteur pression et température d'huile,4754,ALFA ROMEO,146,1.9 TD,Diesel,90,1994,1999
+4175,Capteur pression et température d'huile,4834,MERCEDES,CLASSE E (W124),200 D,Diesel,75,1993,1995
+4175,Capteur pression et température d'huile,4836,MERCEDES,CLASSE E (W124),300 TD 4-Matic,Diesel,147,1993,1995
+4175,Capteur pression et température d'huile,4837,MERCEDES,CLASSE E (W124),300 TD,Diesel,147,1993,1995
+4175,Capteur pression et température d'huile,4839,MERCEDES,CLASSE E Break (S124),300 TD,Diesel,147,1993,1996
+4175,Capteur pression et température d'huile,4840,MERCEDES,CLASSE E Break (S124),300 4-Matic,Essence,180,1993,1996
+4175,Capteur pression et température d'huile,4841,MERCEDES,CLASSE E Break (S124),300 TD 4-Matic,Diesel,147,1993,1996
+4175,Capteur pression et température d'huile,5374,MERCEDES,CLASSE E (W210),420,Essence,279,1996,1997
+4175,Capteur pression et température d'huile,5375,MERCEDES,CLASSE E (W210),50 AMG,Essence,347,1996,1997
+4175,Capteur pression et température d'huile,5542,MERCEDES,CLASSE E Break (S210),420,Essence,279,1996,1997
+4175,Capteur pression et température d'huile,9128,SAAB,9-3 Break,2.8 TURBO V6,Essence,230,2005,2015
+4175,Capteur pression et température d'huile,9381,SAAB,9-3 I,2.3,Essence,150,1998,2002
+4175,Capteur pression et température d'huile,9386,SAAB,9-3 I Décapotable,2.3,Essence,150,1998,2003
+4175,Capteur pression et température d'huile,10009,ALFA ROMEO,166,2.4 JTD,Diesel,136,1998,2000
+4175,Capteur pression et température d'huile,10500,FIAT,MULTIPLA,1.9 JTD,Diesel,105,1999,2010
+4175,Capteur pression et température d'huile,11374,SAAB,9-3 I,2.0 TURBO,Essence,154,1998,2002
+4175,Capteur pression et température d'huile,11899,ALFA ROMEO,145,1.9 JTD,Diesel,105,1999,2001
+4175,Capteur pression et température d'huile,11985,IVECO,DAILY IV,2.3 D 16V 35S14-35S14 P,Diesel,136,2006,2011
+4175,Capteur pression et température d'huile,12242,ALFA ROMEO,146,1.9 JTD,Diesel,105,1999,2001
+4175,Capteur pression et température d'huile,15695,ALFA ROMEO,166,2.4 JTD,Diesel,140,2000,2007
+4175,Capteur pression et température d'huile,16584,ALFA ROMEO,156,1.9 JTD,Diesel,115,2001,2005
+4175,Capteur pression et température d'huile,16586,ALFA ROMEO,156 SportWagon,1.9 JTD,Diesel,115,2001,2006
+4175,Capteur pression et température d'huile,16808,ALFA ROMEO,166,2.4 JTD,Diesel,150,2002,2007
+4175,Capteur pression et température d'huile,19314,FIAT,BRAVO I,1.9 JTD,Diesel,100,2000,2001
+4175,Capteur pression et température d'huile,19315,FIAT,BRAVA,1.9 JTD,Diesel,100,2000,2001
+4175,Capteur pression et température d'huile,34289,IVECO,DAILY IV Chassis cabine,2.3 D 16V 29L14,Diesel,136,2006,2011
+4175,Capteur pression et température d'huile,34295,IVECO,DAILY IV Chassis cabine,2.3 D 16V 40C10,Diesel,95,2006,2011
+4175,Capteur pression et température d'huile,34296,IVECO,DAILY IV Chassis cabine,2.3 D 16V 40C12,Diesel,116,2006,2011
+4175,Capteur pression et température d'huile,34311,IVECO,DAILY IV Fourgon,2.3 D 16V 40C10 V,Diesel,95,2006,2011
+4175,Capteur pression et température d'huile,34312,IVECO,DAILY IV Fourgon,2.3 D 16V 40C12 V-40C14 V P,Diesel,116,2006,2011
+4175,Capteur pression et température d'huile,34453,IVECO,DAILY IV Fourgon,3.0 D 16V 40C14 V-40C14 V P,Diesel,140,2009,2011
+4175,Capteur pression et température d'huile,34457,IVECO,DAILY IV Fourgon,3.0 D 16V 40C17 V-40C17 V P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34458,IVECO,DAILY IV Fourgon,3.0 D 16V 60C17 V-60C17 V P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34459,IVECO,DAILY IV Fourgon,2.3 D 16V 40C13 V-40C13 V P,Diesel,126,2007,2011
+4175,Capteur pression et température d'huile,34462,IVECO,DAILY IV Fourgon,3.0 D 16V 45C17 V-45C17 V P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34463,IVECO,DAILY IV Fourgon,3.0 D 16V 65C17 V-65C17 V P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34464,IVECO,DAILY IV Fourgon,3.0 D 16V 65C14 V-65C14 V P,Diesel,140,2009,2011
+4175,Capteur pression et température d'huile,34467,IVECO,DAILY IV Fourgon,3.0 D 16V 70C14 V-70C14 V P,Diesel,140,2009,2011
+4175,Capteur pression et température d'huile,34468,IVECO,DAILY IV Fourgon,3.0 D 16V 70C17V-70C17 V P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34486,IVECO,DAILY IV Chassis cabine,3.0 D 16V 70C14-70C14 P,Diesel,140,2009,2011
+4175,Capteur pression et température d'huile,34487,IVECO,DAILY IV Chassis cabine,3.0 D 16V 70C17-70C17 P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34492,IVECO,DAILY IV Chassis cabine,3.0 D 16V 65C17-65C17 P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34494,IVECO,DAILY IV Chassis cabine,3.0 D 16V 65C14-65C14 P,Diesel,140,2009,2011
+4175,Capteur pression et température d'huile,34495,IVECO,DAILY IV Chassis cabine,3.0 D 16V 45C17-45C17 P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34497,IVECO,DAILY IV Chassis cabine,3.0 D 16V 45C14-45C14 P,Diesel,140,2009,2011
+4175,Capteur pression et température d'huile,34499,IVECO,DAILY IV Chassis cabine,2.3 D 16V 40C13-40C13 P,Diesel,126,2007,2011
+4175,Capteur pression et température d'huile,34500,IVECO,DAILY IV Chassis cabine,3.0 D 16V 40C17-40C17 P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34501,IVECO,DAILY IV Chassis cabine,3.0 D 16V 60C17-60C17 P,Diesel,170,2007,2011
+4175,Capteur pression et température d'huile,34504,IVECO,DAILY IV Chassis cabine,3.0 D 16V 40C14-40C14 P,Diesel,140,2009,2011
+4175,Capteur pression et température d'huile,34508,IVECO,DAILY IV Chassis cabine,3.0 D 16V 60C14-60C14 P,Diesel,140,2009,2011
+4175,Capteur pression et température d'huile,69637,IVECO,DAILY VI Chassis cabine,3.0 D 16V 35S17-55S17 4x4,Diesel,170,2014,

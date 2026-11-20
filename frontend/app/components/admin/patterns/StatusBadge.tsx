@@ -1,7 +1,7 @@
 /**
  * StatusBadge - Badge sémantique standardisé pour statuts
  *
- * @see packages/design-tokens/DESIGN-SYSTEM.automecanik.md Section 3
+ * @see .claude/skills/frontend-design/SKILL.md (règles UI) et packages/design-tokens/src/tokens.json (valeurs)
  *
  * Mapping automatique status → couleur + icône + label
  * Remplace les badges manuels incohérents dans le codebase
@@ -41,7 +41,7 @@ export interface StatusBadgeProps {
 
 /**
  * Configuration complète par status
- * Respecte DESIGN-SYSTEM.automecanik.md "Mapping Status → Couleurs"
+ * Mapping status → couleurs sémantiques (valeurs : packages/design-tokens/src/tokens.json)
  */
 interface StatusConfig {
   /** Classes Tailwind pour background + text */

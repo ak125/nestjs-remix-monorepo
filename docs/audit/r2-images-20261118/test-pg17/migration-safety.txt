@@ -1,0 +1,45 @@
+# Job « 🗄️ Migration Safety » (.github/workflows/ci.yml:681-824), toutes les étapes rejouées en local
+# le 18/11/2026 vers 21:34 UTC, sur l'arbre de travail du commit qui ajoute REVOKE/GRANT.
+# Seule différence avec la CI : le service pg17 est remplacé par le conteneur jetable mandat-co-pg17 (PG 17.11, base postgres vide).
+
+### Étape « Identify changed SQL migrations » (mode pull_request, base origin/main = 86086d6fb)
+all_files=backend/supabase/migrations/20261118_r2_images_bmp_extension.down.sql backend/supabase/migrations/20261118_r2_images_bmp_extension.sql
+files=backend/supabase/migrations/20261118_r2_images_bmp_extension.sql
+
+### Étape « Install squawk » : v2.52.1, binaire squawk-linux-x64 de la release sbdchd/squawk
+squawk 2.52.1
+
+### Étape « Run squawk on changed migrations »
+
+Found 0 issues in 1 file 🎉
+exit=0
+
+### Étape « Reconcile @non_transactional marker with statements »
+OK — @non_transactional reconciled on 1 file(s).
+exit=0
+
+### Étape « Compilation PL/pgSQL des blocs DO » (base postgres vide du conteneur jetable PG 17.11, à la place du service pg17 de la CI ; mêmes commandes)
+Ran 5 tests in 0.001s
+
+OK
+check-plpgsql-compile.test.py exit=0
+1 bloc(s) DO à compiler
+temoin.sql : bloc DO $t$, corps à partir de la ligne 1
+ERROR:  syntax error at end of input
+LINE 1: ...sql_chk$ BEGIN IF 1 IS DISTINCT FROM CASE 1 WHEN 1 THEN 1 EL...
+                                                             ^
+=> témoin négatif rejeté (attendu)
+check-plpgsql-compile.py exit=0 ; stderr : 0 bloc(s) DO à compiler
+psql exit=0
+
+### Étape « Tests de la garde DEFINER/anon »
+  ✓ P2  migration antérieure à la base — hors périmètre
+  ✓ P3  GRANT anon sur fonction allowlistée
+
+19 réussi(s), 0 échec(s).
+exit=0
+
+### Étape « Surface DEFINER/anon (ratchet privilèges) »
+
+OK — surface DEFINER/anon inchangée (49 migration(s) jugée(s) depuis 20260917, 35 fonction(s) dans l'ensemble fermé, 12 exception(s) motivée(s)).
+exit=0

@@ -1,12 +1,36 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Logger, Query, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import { getErrorMessage } from '@common/utils/error.utils';
+import { StrictZodQueryValidationPipe } from '@common/pipes/strict-zod-query-validation.pipe';
+import {
+  SEO_KPI_MOST_CRAWLED_URLS_MAX_LIMIT,
+  SEO_KPI_TIME_WINDOWS,
+  SEO_KPI_TOP_CRAWLERS_MAX_LIMIT,
+  SeoKpiCrawlRateQuerySchema,
+  SeoKpiMostCrawledUrlsQuerySchema,
+  SeoKpiTopCrawlersQuerySchema,
+  type SeoKpiCrawlRateQueryDto,
+  type SeoKpiMostCrawledUrlsQueryDto,
+  type SeoKpiTopCrawlersQueryDto,
+} from '../dto/seo-logs-query.schema';
 
-const execAsync = promisify(exec);
+// Paramètres de requête validés avant l'entrée dans la route : toute valeur
+// hors contrat reçoit un 400. Voir `../dto/seo-logs-query.schema.ts`.
+const crawlRateQueryPipe = new StrictZodQueryValidationPipe(
+  SeoKpiCrawlRateQuerySchema,
+);
+const topCrawlersQueryPipe = new StrictZodQueryValidationPipe(
+  SeoKpiTopCrawlersQuerySchema,
+);
+const mostCrawledUrlsQueryPipe = new StrictZodQueryValidationPipe(
+  SeoKpiMostCrawledUrlsQuerySchema,
+);
+
+// Délais bornés des appels sortants (cibles fixes, lues dans la configuration).
+const SITEMAP_FETCH_TIMEOUT_MS = 15_000;
+const LOKI_QUERY_TIMEOUT_MS = 30_000;
 
 interface LokiResultRow {
   metric: Record<string, string>;
@@ -30,13 +54,49 @@ interface CrawlerEntry {
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 @Controller('seo-logs/kpi')
 export class SeoKpiController {
+  private readonly logger = new Logger(SeoKpiController.name);
+
+  /**
+   * GET HTTP vers une cible fixe : délai borné, redirection non suivie.
+   * Un statut hors 2xx est une erreur, jamais un résultat vide.
+   */
+  private async fetchText(
+    target: URL,
+    label: string,
+    timeoutMs: number,
+  ): Promise<string> {
+    const response = await fetch(target, {
+      redirect: 'manual',
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!response.ok) {
+      throw new Error(`${label} : réponse HTTP ${response.status}`);
+    }
+    return response.text();
+  }
+
+  /**
+   * Requête instantanée Loki. L'hôte et le chemin viennent de la
+   * configuration (`LOKI_URL`) ; la requête LogQL part en paramètre d'URL
+   * encodé.
+   */
+  private async queryLoki(logqlQuery: string): Promise<LokiResultRow[]> {
+    const LOKI_URL = process.env.LOKI_URL || 'http://loki:3100';
+    const target = new URL(`${LOKI_URL}/loki/api/v1/query`);
+    target.searchParams.set('query', logqlQuery);
+    target.searchParams.set('time', String(Math.floor(Date.now() / 1000)));
+
+    const body = await this.fetchText(target, 'Loki', LOKI_QUERY_TIMEOUT_MS);
+    return JSON.parse(body).data?.result || [];
+  }
+
   /**
    * 🤖 KPI: Taux de crawl du sitemap
    *
    * Mesure le % d'URLs du sitemap crawlées dans une fenêtre de temps
    * Objectif: >80% des URLs crawlées en <72h
    *
-   * @param timeWindow Fenêtre de temps (ex: 72h, 7d, 30d)
+   * @param query.timeWindow Fenêtre de temps (24h, 72h, 7d, 30d)
    * @returns KPI de taux de crawl
    */
   @Get('crawl-rate')
@@ -48,32 +108,28 @@ export class SeoKpiController {
   @ApiQuery({
     name: 'timeWindow',
     required: false,
-    type: String,
-    description: 'Fenêtre de temps (72h, 7d, 30d)',
+    enum: SEO_KPI_TIME_WINDOWS,
+    description: 'Fenêtre de temps (liste fermée ; autre valeur : 400)',
     example: '72h',
   })
-  async getCrawlRate(@Query('timeWindow') timeWindow: string = '72h') {
-    const LOKI_URL = process.env.LOKI_URL || 'http://loki:3100';
+  async getCrawlRate(
+    @Query(crawlRateQueryPipe) { timeWindow }: SeoKpiCrawlRateQueryDto,
+  ) {
     const SITEMAP_URL =
       process.env.SITEMAP_URL || 'https://automecanik.fr/sitemap.xml';
 
     try {
       // 1. Récupérer les URLs du sitemap
-      const { stdout: sitemapXml } = await execAsync(
-        `curl -s "${SITEMAP_URL}"`,
+      const sitemapXml = await this.fetchText(
+        new URL(SITEMAP_URL),
+        'Sitemap',
+        SITEMAP_FETCH_TIMEOUT_MS,
       );
       const sitemapUrls = (sitemapXml.match(/<loc>/g) || []).length;
 
       // 2. Query Loki pour les URLs crawlées
       const logqlQuery = `count(count_over_time({job="caddy-access"} | json | bot != "" | __error__="" [${timeWindow}])) by (path)`;
-      const lokiUrl = `${LOKI_URL}/loki/api/v1/query`;
-
-      const { stdout: lokiResponse } = await execAsync(
-        `curl -s -G "${lokiUrl}" --data-urlencode "query=${logqlQuery}" --data-urlencode "time=$(date +%s)"`,
-      );
-
-      const lokiData = JSON.parse(lokiResponse);
-      const crawledUrls = lokiData.data?.result?.length || 0;
+      const crawledUrls = (await this.queryLoki(logqlQuery)).length;
 
       // 3. Calculer le KPI
       const crawlRate = sitemapUrls > 0 ? (crawledUrls / sitemapUrls) * 100 : 0;
@@ -122,6 +178,9 @@ export class SeoKpiController {
         },
       };
     } catch (error) {
+      this.logger.warn(
+        `KPI crawl-rate indisponible (${timeWindow}) : ${getErrorMessage(error)}`,
+      );
       return {
         success: false,
         error: getErrorMessage(error),
@@ -135,8 +194,8 @@ export class SeoKpiController {
    *
    * Liste les bots qui ont le plus crawlé le site
    *
-   * @param timeWindow Fenêtre de temps
-   * @param limit Nombre de bots à retourner
+   * @param query.timeWindow Fenêtre de temps (24h, 72h, 7d, 30d)
+   * @param query.limit Nombre de bots à retourner (1 à 50)
    * @returns Top N des bots crawlers
    */
   @Get('top-crawlers')
@@ -144,24 +203,28 @@ export class SeoKpiController {
     summary: 'Top des crawlers actifs',
     description: 'Liste les bots qui crawlent le plus activement le site',
   })
-  @ApiQuery({ name: 'timeWindow', required: false, example: '72h' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
+  @ApiQuery({
+    name: 'timeWindow',
+    required: false,
+    enum: SEO_KPI_TIME_WINDOWS,
+    example: '72h',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    minimum: 1,
+    maximum: SEO_KPI_TOP_CRAWLERS_MAX_LIMIT,
+    example: 10,
+  })
   async getTopCrawlers(
-    @Query('timeWindow') timeWindow: string = '72h',
-    @Query('limit') limit: number = 10,
+    @Query(topCrawlersQueryPipe)
+    { timeWindow, limit }: SeoKpiTopCrawlersQueryDto,
   ) {
-    const LOKI_URL = process.env.LOKI_URL || 'http://loki:3100';
-
     try {
       const logqlQuery = `topk(${limit}, sum by (bot) (count_over_time({job="caddy-access"} | json | bot != "" | __error__="" [${timeWindow}])))`;
-      const lokiUrl = `${LOKI_URL}/loki/api/v1/query`;
 
-      const { stdout: lokiResponse } = await execAsync(
-        `curl -s -G "${lokiUrl}" --data-urlencode "query=${logqlQuery}" --data-urlencode "time=$(date +%s)"`,
-      );
-
-      const lokiData = JSON.parse(lokiResponse);
-      const crawlers: CrawlerEntry[] = (lokiData.data?.result || []).map(
+      const crawlers: CrawlerEntry[] = (await this.queryLoki(logqlQuery)).map(
         (r: LokiResultRow, index: number) => ({
           name: r.metric.bot,
           rank: index + 1,
@@ -190,6 +253,9 @@ export class SeoKpiController {
         },
       };
     } catch (error) {
+      this.logger.warn(
+        `KPI top-crawlers indisponible (${timeWindow}) : ${getErrorMessage(error)}`,
+      );
       return {
         success: false,
         error: getErrorMessage(error),
@@ -207,24 +273,28 @@ export class SeoKpiController {
     summary: 'URLs les plus crawlées',
     description: "Pages qui attirent le plus l'attention des crawlers",
   })
-  @ApiQuery({ name: 'timeWindow', required: false, example: '72h' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  @ApiQuery({
+    name: 'timeWindow',
+    required: false,
+    enum: SEO_KPI_TIME_WINDOWS,
+    example: '72h',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    minimum: 1,
+    maximum: SEO_KPI_MOST_CRAWLED_URLS_MAX_LIMIT,
+    example: 20,
+  })
   async getMostCrawledUrls(
-    @Query('timeWindow') timeWindow: string = '72h',
-    @Query('limit') limit: number = 20,
+    @Query(mostCrawledUrlsQueryPipe)
+    { timeWindow, limit }: SeoKpiMostCrawledUrlsQueryDto,
   ) {
-    const LOKI_URL = process.env.LOKI_URL || 'http://loki:3100';
-
     try {
       const logqlQuery = `topk(${limit}, sum by (path) (count_over_time({job="caddy-access"} | json | bot != "" | __error__="" [${timeWindow}])))`;
-      const lokiUrl = `${LOKI_URL}/loki/api/v1/query`;
 
-      const { stdout: lokiResponse } = await execAsync(
-        `curl -s -G "${lokiUrl}" --data-urlencode "query=${logqlQuery}" --data-urlencode "time=$(date +%s)"`,
-      );
-
-      const lokiData = JSON.parse(lokiResponse);
-      const urls = (lokiData.data?.result || []).map(
+      const urls = (await this.queryLoki(logqlQuery)).map(
         (r: LokiResultRow, index: number) => ({
           rank: index + 1,
           path: r.metric.path,
@@ -241,6 +311,9 @@ export class SeoKpiController {
         },
       };
     } catch (error) {
+      this.logger.warn(
+        `KPI most-crawled-urls indisponible (${timeWindow}) : ${getErrorMessage(error)}`,
+      );
       return {
         success: false,
         error: getErrorMessage(error),

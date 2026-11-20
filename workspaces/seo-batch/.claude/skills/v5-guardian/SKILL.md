@@ -10,13 +10,13 @@ allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
 ## Démarcation
 
 - Ce skill **VÉRIFIE** la qualité et protège le contenu v5 (pollution, régression, scoring)
-- Pour la **GÉNÉRATION** de contenu → utiliser `content-gen`
-- Pour le **NETTOYAGE** des sections polluées → utiliser `surgical-cleaner` (chaîne : v5-guardian détecte → surgical-cleaner nettoie → content-gen regénère si besoin)
+- Pour la **PRODUCTION** de contenu → boucle `seo-content-loop` (RAW → WIKI → projection)
+- Pour le **NETTOYAGE** des sections polluées → utiliser `surgical-cleaner` (chaîne : v5-guardian détecte → surgical-cleaner nettoie → `seo-content-loop` reprend si besoin)
 - Pour l'**AUDIT ÉDITORIAL** approfondi (R2D2, E-E-A-T) → utiliser `content-audit`
 - Pour la **RELECTURE DE STYLE** d'un brouillon (proposition motivée, jamais d'écriture) → lire `.claude/prompts/_shared/editorial-review.md` (racine monorepo ; depuis ce workspace : `../../.claude/prompts/_shared/editorial-review.md`). Le texte relu repasse par ce skill comme un texte neuf
 - Pour l'**AUDIT SEO GLOBAL** (métriques R1-R8, maillage) → utiliser `seo-gamme-audit`
 - Pour la **MIGRATION** v4→v5 → utiliser `md-v5-migrator`
-- **Fusionne** : `pollution-scanner` (détection) + `content-quality-gate` (scoring) + guard pipeline-v5 (protection)
+- **Fusionne** : `pollution-scanner` (détection, skill retiré le 2026-11-15) + `content-quality-gate` (scoring) + guard pipeline-v5 (protection)
 
 ## Usage
 
@@ -24,7 +24,7 @@ allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
 - `/v5-guardian 82` — par pg_id
 - `/v5-guardian --batch` — scan les 241 gammes, rapport synthétique
 - `/v5-guardian --health` — health check global (stats agrégées, alertes)
-- `/v5-guardian filtre-a-huile --pre-write` — check avant écriture (appelé par content-gen)
+- `/v5-guardian filtre-a-huile --pre-write` — check avant écriture
 
 ## Base de données
 
@@ -68,13 +68,13 @@ ORDER BY sgc_section_type;
 | RAG_SCRAPING, NAV_SCRAPING, COMPETITOR_SCRAPING | CRITIQUE | Nettoyage immédiat proposé |
 | OEM_MARKETING, OEM_PRODUCT, BRAND_SCRAPING | HAUTE | Review + nettoyage |
 | BLOG_H2_INJECTED | MOYENNE | Review (peut être intentionnel) |
-| TOO_SHORT | BASSE | Gap à combler via content-gen |
+| TOO_SHORT | BASSE | Gap à combler via la boucle `seo-content-loop` |
 | CLEAN | OK | Rien à faire |
 
 ### Priorité de nettoyage (rapport)
 
 Priorité = **HAUTE** si S4_DEPOSE 100 % scrapé ou taille > 3000 chars, **MOYENNE** sinon.
-Pollution détectée → chaîne de nettoyage : `surgical-cleaner` (nettoyage) → `content-gen` (regénération si besoin).
+Pollution détectée → chaîne de nettoyage : `surgical-cleaner` (nettoyage) → boucle `seo-content-loop` (reprise si besoin).
 
 ### Scan grande échelle (--batch, toutes gammes)
 
@@ -210,9 +210,8 @@ dans le rapport. Ne jamais inventer ni « corriger » une valeur — signaler un
 Pour du contenu destiné à une page **R1** (routage gamme) : scanner contre les listes
 **FORBIDDEN VOCABULARY** (anglicismes interdits + vocabulaire cross-rôle R3/R4/R5/R6 +
 jargon accepté à ne pas flagger) définies dans
-`.claude/prompts/R1_ROUTER/editorial.md` §FORBIDDEN VOCABULARY (racine monorepo ;
-depuis ce workspace : `../../.claude/prompts/R1_ROUTER/editorial.md`). Ne PAS recopier
-la liste ici — la lire à chaque run (SoT unique).
+`references/r1-forbidden-vocabulary.md` (déplacée le 2026-11-15 depuis le prompt retiré
+`R1_ROUTER/editorial.md`). Ne PAS recopier la liste ici — la lire à chaque run (SoT unique).
 
 **Règle** : tout terme interdit détecté ⇒ **verdict plafonné à REVIEW**, avec les termes
 trouvés et leur rôle d'origine (R3 how-to, R5 diagnostic, R4 référence, R6 guide d'achat)
@@ -327,7 +326,7 @@ FROM "__seo_gamme_conseil";
 
 ## Workflow complet
 
-1. **Identifier** : résoudre pg_alias → pg_id (même logique que content-gen étape 0)
+1. **Identifier** : résoudre pg_alias → pg_id (lecture de `pieces_gamme.pg_alias`)
 2. **Scanner** : Module 1 (pollution) sur toutes les sections
 3. **Scorer** : Module 2 (qualité) sur toutes les sections
 4. **Protéger** : Module 3 (guard) — lister les sections protégées

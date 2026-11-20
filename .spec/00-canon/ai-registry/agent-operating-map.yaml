@@ -148,8 +148,25 @@ handoffs:
 # Machine SoT for structured fields here; narrative SoT stays
 # audit/automecanik-departments-map.md (Vue 5 report / Vue 6). `state` exposes
 # unused value. V1 seeds the commerce-loop core only; capabilities reference real
-# modules via `declared_capabilities` (never recopied). Warn-only — hard-fail
-# enforcement requires a vault ADR (same stance as the rest of this file).
+# modules via `declared_capabilities` (never recopied). Department contracts are
+# hard-failed in CI (décision 72) ; the other fields stay warn-only.
+department_contract_common:      # règles communes aux 24 contrats (décisions citées par numéro)
+  rapport:
+    regle: "Un rapport unique : issue GitHub mise à jour chaque jour à 7 h (heure de Paris), une ligne par département, « Gestes attendus de l'owner » en tête. Mail court seulement s'il y a un geste. Urgence : mail immédiat, une fois par incident."
+    decisions: [7, 67]
+  entree_kpi:
+    regle: "Un KPI entre au rapport seulement avec sa fiche de fiabilité : définition, source, recoupement, limites, confiance."
+    decisions: [8]
+  seuil_franchi:
+    regle: "Un seuil franchi ouvre une issue dept:NN avec le constat, des chiffres qualifiés et un mandat prêt, sans doublon."
+    decisions: [9]
+  donnee_absente:
+    regle: "Quand la donnée manque, la ligne affiche « pas de mesure »."
+    decisions: [24]
+  sources:
+    regle: "Principale : nos événements marqués humain/robot. Google : Search Console. GA4 en recoupement ; un écart de plus de 20 % est signalé. Fraîcheur affichée au rapport ; alerte au-delà de 3 jours."
+    decisions: [36, 68]
+
 departments:
   - id: supplier
     business_number: 12
@@ -163,6 +180,70 @@ departments:
     repo_domains: [D11, D13, D15]
     capabilities: [suppliers-service, supplier-truth]
     state: partial                   # activation runtime non verifiee par cette projection
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Lignes sans fournisseur confirmé ; ruptures après commande ; équivalences."
+      kpi:
+        definition: "Lignes sans fournisseur confirmé, ruptures après commande, équivalences."
+        producer_pending: "aucun producteur ; kpi_primary supplier_unavailability_cancellations sans producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Tarif price-import, suppliers.service, ___xtr_supplier, pri_dispo ; supplier-truth inerte tant que SUPPLIER_TRUTH_SYNC_ENABLED ne vaut pas true."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé."
+      ligne_rapport: "Lignes sans fournisseur confirmé, ruptures après commande, équivalences."
+      decisions: [50, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: supplier.suppliers-admin
+        name: "Référentiel des fournisseurs et fiches fournisseur"
+        owner: supplier-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "suppliers-service", from: "supplier" }
+        covers:
+          - { module: "suppliers" }
+          - { routes: "admin.suppliers" }
+        evidence:
+          - { path: "backend/src/modules/suppliers/suppliers.controller.ts" }
+          - { path: "backend/src/modules/suppliers/suppliers.service.ts" }
+        decisions: [50]
+        gaps:
+          - "Seul un test de gardes d'accès existe (backend/tests/unit/suppliers-routes-authz.test.ts)."
+      - id: supplier.supplier-truth
+        name: "Vérité fournisseur : disponibilité lue chez les fournisseurs (connecteurs CAL, DistriCash)"
+        owner: supplier-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "supplier-truth", from: "supplier" }
+        covers:
+          - { module: "supplier-truth" }
+        evidence:
+          - { path: "backend/src/modules/supplier-truth/supplier-truth.controller.ts" }
+          - { path: "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts" }
+          - { path: "backend/src/modules/supplier-truth/supplier-sync.flag.ts" }
+          - { pr: 2148, state: "merged" }
+        decisions: [50]
+        gaps:
+          - "Tests présents, mais activation en service non vérifiée (drapeau supplier-sync.flag.ts) : L2 non déclaré."
+      - id: supplier.price-load
+        name: "Chargement des tarifs fournisseurs"
+        owner: supplier-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "pricing-invariants", from: "pricing" }
+        skills: ["supplier-price-load"]
+        evidence:
+          - { path: ".claude/skills/supplier-price-load/SKILL.md" }
+      - id: supplier.service-rate
+        name: "Taux de service et délai par fournisseur"
+        owner: supplier-lead
+        status: missing
+        level: L0
+        justification: "Proposition, besoin déclaré sans décision : les ruptures après commande et les commandes payées annulées faute de disponibilité demandent de mesurer, par fournisseur, la part des lignes servies et le délai."
+        evidence:
+          - { absent: "aucun calcul de taux de service ni de délai fournisseur trouvé (recherche du 2026-11-18)" }
 
   - id: sales
     business_number: 13
@@ -176,6 +257,390 @@ departments:
     repo_domains: [D11]
     capabilities: [cart, orders, funnel-events]
     state: partial                   # funnel instrumentation partial (not all events emitted)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Commandes, paiements, commandes non payées (hors tests et doublons), annulations ; abandons à la page de paiement ; paiements par moyen."
+      kpi:
+        producer: "backend/src/modules/admin/services/command-center-kpi.service.ts"
+        rule: "toPaymentsKeptKpi"
+        definition: "Commandes, paiements, non payées hors tests et doublons, annulations (décision 2) ; abandons à la page de paiement et paiements par moyen (décision 76). toPaymentsKeptKpi ne produit que la part des paiements gardés."
+      source: "___xtr_order, cinq colonnes d'état et motif d'annulation, lecture seule, sans montant ni client."
+      seuil_action: "CRITICAL si aucune commande payée n'est gardée sur 30 jours ; WARNING si au moins une annulation après paiement ; OK sinon (toPaymentsKeptKpi, seuils repris de audit/sales-funnel-scorecard.md)."
+      ligne_rapport: "Commandes, paiements, non payées, annulations ; abandons au paiement ; paiements par moyen."
+      decisions: [2, 76, 72]
+    # Fonctions du département (mandat BX, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Chaque champ est sourcé
+    # (chemin et lignes, PR, run) ou dit « absent ». Relevé du 2026-11-18 vers 00:20 UTC sur main 6800cf093.
+    functions:
+      - id: sales.payments-kept
+        name: "Mesure des paiements gardés"
+        owner: sales-lead
+        status: operational
+        level: L2
+        inputs: ["___xtr_order : paiement, confirmation, annulation et motif d'annulation (cinq colonnes d'état, sans montant ni client)"]
+        outputs: ["KPI payments_kept (OK, WARNING, CRITICAL, UNKNOWN) dans le Command Center, mode complet"]
+        reads: [___xtr_order]
+        writes: []
+        trigger:
+          kind: request
+          ref: backend/src/modules/admin/controllers/command-center.controller.ts
+          wired: true
+          detail: "GET api/admin/command-center (lignes 98 et 115), calcul par command-center-reader.service.ts:124 ; à la demande, aucun calcul planifié"
+        check:
+          kind: test
+          ref: backend/tests/unit/command-center-kpi.service.test.ts
+          detail: "jest backend, exécuté en CI"
+        kpi_input:
+          - id: cancelled_after_payment
+            state: present
+            producer: backend/src/modules/admin/services/command-center-kpi.service.ts
+            rule: cancelledAfterPayment
+            note: "Nombre de commandes payées puis annulées ; le KPI résultat est kpi_primary payments_kept"
+        threshold:
+          rule: "CRITICAL si aucune commande payée n'est gardée sur 30 jours ; WARNING si au moins une annulation après paiement (toPaymentsKeptKpi)"
+          issue_label: "dept:13-sales"
+          wired: true
+          eval: { indicator: cancelled_after_payment, field: status, operator: in, value: [WARNING, CRITICAL], window_days: 30 }
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: orders, from: sales }
+        evidence:
+          - { path: backend/src/modules/admin/services/command-center-kpi.service.ts, lines: "135-159", note: "toPaymentsKeptKpi" }
+          - { path: backend/src/modules/admin/services/command-center-kpi.service.ts, lines: "356-374", note: "readPaymentsKept, lecture seule de ___xtr_order" }
+          - { path: backend/src/modules/admin/services/command-center-reader.service.ts, lines: "124" }
+          - { path: backend/src/modules/admin/controllers/command-center.controller.ts, lines: "98-115" }
+        decisions: [2, 72]
+        gaps:
+          - "Seuil branché au rapport du matin (mandat BZ, scripts/governance/registry-thresholds.sh) : issues en mode à blanc tant que THRESHOLD_ISSUES_MODE n'est pas write (« oui » distinct de l'owner) ; la lecture demande les dépendances du producteur dans le job (correctif 02)."
+          - "Service en DEV, PREPROD ou PROD non observé par ce mandat : L3 non prouvé."
+      - id: sales.unpaid-watch
+        name: "Veille des commandes non payées et du tunnel de paiement (rapport du matin)"
+        owner: sales-lead
+        status: non_operational
+        level: L1
+        inputs:
+          - "___xtr_order : commandes créées entre J-30 et J-1, toujours non payées"
+          - "RPC check_payment_tunnel_health, lue par scripts/monitoring/check-payment-tunnel.sh en mode CHECK_ONLY"
+        outputs: ["Lignes « Commandes non payées > 24 h » et « Tunnel de paiement » de l'issue du rapport du matin"]
+        reads: [___xtr_order, check_payment_tunnel_health]
+        writes: ["issue GitHub du rapport du matin"]
+        trigger:
+          kind: workflow
+          ref: .github/workflows/morning-health-digest.yml
+          wired: true
+          detail: "cron */15 * * * * (ligne 33)"
+        kpi_input:
+          - id: unpaid_orders_24h
+            state: present
+            producer: .github/scripts/morning-health-digest.sh
+            rule: "Commandes non payées > 24 h"
+        threshold:
+          rule: "Tunnel : règle CREATION, SUSTAINED ou BURST déclenchée = rouge. Non payées : ligne d'information, aucun seuil décidé."
+          issue_label: "dept:13-sales"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: orders, from: sales }
+        evidence:
+          - { path: .github/scripts/morning-health-digest.sh, lines: "349-400" }
+          - { path: .github/workflows/morning-health-digest.yml, lines: "33" }
+          - { run: 44205474359, workflow: .github/workflows/morning-health-digest.yml, conclusion: success, at: "2026-11-18T00:09:27Z", note: "main 6800cf093 ; contenu des deux lignes non relu" }
+        decisions: [2, 67]
+        gaps:
+          - "Aucun contrôle automatique : ni test de morning-health-digest.sh ni test de check-payment-tunnel.sh trouvé (recherche du 2026-11-18 00:20 UTC)."
+          - "Seuil non branché : aucune issue dept:13-sales ouverte (décision 9) ; la ligne « non payées » reste une information."
+      - id: sales.unpaid-relaunch
+        name: "Relance des paniers et commandes non payés, un mail à 1 h et un à 24 h"
+        owner: sales-lead
+        status: non_operational
+        level: L1
+        inputs:
+          - "Événement cart.activity (userId, sessionId)"
+          - "Consentement marketing du client (base légale du département 18)"
+        outputs: ["Mail de relance à 1 h", "Mail de relance à 24 h"]
+        reads: ["Redis abandoned-cart:candidates", "panier du client"]
+        writes: [__abandoned_cart_emails, "file Bull d'envoi de mail"]
+        trigger:
+          kind: event
+          ref: backend/src/modules/cart/services/cart-analytics.service.ts
+          wired: false
+          detail: "cart.activity n'est émis que par trackCartCreated (ligne 69), qui n'a aucun appelant ; écouté par abandoned-cart.service.ts:95"
+        check:
+          kind: test
+          ref: backend/tests/unit/abandoned-cart-cadence.test.ts
+          detail: "cadence 1 h et 24 h ; aussi abandoned-cart-delivery-truth.test.ts"
+        kpi_input:
+          - id: relaunch_sent
+            state: absent
+            note: "Aucun producteur ; aucun envoi tant que ABANDONED_CART_EMAIL_ENABLED=false"
+          - id: relaunch_recovered_orders
+            state: absent
+            note: "Aucun producteur de commandes reprises après relance"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: cart, from: sales }
+        evidence:
+          - { path: backend/src/modules/cart/services/abandoned-cart.service.ts, lines: "18-36", note: "seuil d'abandon et séquence 1 h, 24 h" }
+          - { path: backend/src/modules/cart/services/abandoned-cart.service.ts, lines: "189-231", note: "planification et envoi, drapeau relu à l'envoi" }
+          - { path: backend/src/modules/cart/services/cart-analytics.service.ts, lines: "41-72" }
+          - { path: backend/src/config/feature-flags.service.ts, lines: "284" }
+          - { path: backend/.env.example, lines: "210-219" }
+          - { path: backend/tests/unit/abandoned-cart-delivery-truth.test.ts }
+          - { path: backend/src/modules/orders/controllers/order-actions.controller.ts, lines: "419-442", note: "relance manuelle d'une commande non payée par l'administration, hors cadence" }
+          - { path: RAPPORT-MANDAT-AN-COMPLEMENT.md, lines: "27-51" }
+          - { pr: 2088, state: merged, at: "2026-11-17T01:07:13Z" }
+        decisions: [5, 61, 111]
+        gaps:
+          - "Déclencheur non branché : cart.activity n'a aucun émetteur appelé."
+          - "ABANDONED_CART_EMAIL_ENABLED=false par défaut (feature-flags.service.ts:284)."
+          - "Base légale du département 18 non établie : aucun consentement marketing recensé (décision 44, RAPPORT-MANDAT-AN-COMPLEMENT.md)."
+          - "La correction du flux de candidats touche le panier, zone STOP."
+      - id: sales.order-provenance
+        name: "Provenance des commandes (première visite)"
+        owner: sales-lead
+        status: operational
+        level: L2
+        inputs: ["Balise de première visite : source et page d'arrivée (frontend/app/utils/attribution-beacon.client.ts)"]
+        outputs: ["Colonnes landing_source, landing_path et landing_first_seen_at de la commande"]
+        reads: [session.landing]
+        writes: [___xtr_order.landing_source, ___xtr_order.landing_path, ___xtr_order.landing_first_seen_at, ___xtr_order.ga_client_id]
+        trigger:
+          kind: request
+          ref: backend/src/modules/analytics/controllers/landing-attribution.controller.ts
+          wired: true
+          detail: "POST api/attribution/landing (lignes 84-88), contrôleur monté par analytics.module.ts:32, balise importée par entry.client.tsx:19 ; copie dans la commande à sa création (orders.controller.ts:386-397)"
+        check:
+          kind: test
+          ref: backend/tests/unit/session-regenerate-keeps-landing.test.ts
+          detail: "la provenance survit à la régénération de session à la connexion"
+        kpi_input:
+          - id: order_provenance_share
+            state: absent
+            note: "Aucun producteur de la part des commandes avec provenance ; 10 sur 55 mesuré au mandat AN (RAPPORT-MANDAT-AN.md:373), avant #2115"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: analytics, from: data }
+          - { capability: orders, from: sales }
+        evidence:
+          - { path: backend/src/modules/orders/controllers/orders.controller.ts, lines: "386-397" }
+          - { path: backend/src/modules/analytics/analytics.module.ts, lines: "32" }
+          - { path: frontend/app/entry.client.tsx, lines: "19" }
+          - { pr: 1965, state: merged, at: "2026-11-06T22:52:08Z", note: "parcours invité" }
+          - { pr: 2115, state: merged, at: "2026-11-17T06:50:23Z", note: "parcours avec connexion (mandat BE)" }
+        decisions: [112]
+        gaps:
+          - "Indicateur de provenance sans producteur ; aucun seuil."
+          - "Effet de #2115 sur les commandes servies non mesuré par ce mandat."
+      - id: sales.payment-methods
+        name: "Moyens de paiement actifs et abandons à la page de paiement"
+        owner: sales-lead
+        status: non_operational
+        level: L0
+        inputs: ["Événements enregistrés par le site à la page de paiement (à créer)"]
+        outputs: ["Paiements par moyen ; abandons à la page de paiement"]
+        reads: []
+        writes: []
+        kpi_input:
+          - id: payments_by_method
+            state: absent
+            note: "Aucun producteur sur main"
+          - id: payment_page_abandons
+            state: absent
+            note: "Seuls les événements GA4 begin_checkout et add_payment_info existent (analytics.ts:366 et 386) ; GA4 sert au recoupement seulement (décision 36)"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        evidence:
+          - { path: frontend/app/utils/analytics.ts, lines: "364-387" }
+        decisions: [76]
+        gaps:
+          - "Décidée (contrat du 13, champ surveillance), aucun code sur main : ni événement du site, ni producteur, ni déclencheur."
+      - id: sales.shipping-fees
+        name: "Frais de port affichés avant paiement et repris dans la commande"
+        owner: sales-lead
+        status: operational
+        level: L2
+        inputs: ["Poids total du panier", "Sous-total TTC"]
+        outputs: ["Frais de port du récapitulatif de commande", "___xtr_order.ord_shipping_fee_ttc"]
+        reads: ["grille de shipping-calculator.service.ts"]
+        writes: [___xtr_order.ord_shipping_fee_ttc]
+        trigger:
+          kind: request
+          ref: backend/src/modules/cart/controllers/cart-shipping.controller.ts
+          wired: true
+          detail: "POST api/cart/shipping/calculate (ligne 38) ; recalcul à la création de commande (orders.service.ts:350 et 402)"
+        check:
+          kind: test
+          ref: backend/src/modules/cart/services/shipping-weight-authority.test.ts
+        kpi_input:
+          - id: shipping_fee_per_order
+            state: absent
+            note: "Aucun producteur"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        rights: { can_mutate: false, can_open_pr: false, can_trigger_pipeline: false }
+        uses:
+          - { capability: cart, from: sales }
+        evidence:
+          - { path: backend/src/modules/cart/services/shipping-calculator.service.ts, lines: "32-47", note: "grille ; port offert dès 150 €" }
+          - { path: backend/src/modules/cart/services/shipping-calculator.service.ts, lines: "177-185" }
+          - { path: backend/src/modules/orders/services/orders.service.ts, lines: "350-402" }
+          - { path: frontend/app/components/checkout/CheckoutOrderSummary.tsx, lines: "103-112" }
+          - { pr: 2143, state: draft, note: "mandat BJ, forfait proposé, non fusionné" }
+        decisions: [75]
+        gaps:
+          - "Décision 75 à reconfirmer : #2143 (mandat BJ, brouillon) propose 9,90 € et le port offert dès 100 €."
+          - "Zone (Corse, DOM-TOM) non prise en compte (RAPPORT-MANDAT-AN-COMPLEMENT.md)."
+      - id: sales.invoice
+        name: "Facture de la commande, avec le département 17"
+        owner: sales-lead
+        status: non_operational
+        level: L0
+        inputs: ["Commande payée, encaissement réel"]
+        outputs: ["Facture de la commande"]
+        reads: []
+        writes: []
+        kpi_input:
+          - id: invoices_issued
+            state: absent
+            note: "Aucun producteur"
+        threshold:
+          rule: "absent : aucun seuil décidé"
+          issue_label: "dept:13-sales"
+          wired: false
+        uses:
+          - { capability: invoices, from: finance }
+        evidence:
+          - { path: backend/src/modules/invoices/invoices.service.ts, lines: "28-154", note: "lecture seule : liste, détail, statistiques, cache ; aucune génération" }
+          - { pr: 2150, state: draft, note: "mandat BM" }
+          - { pr: 2159, state: draft, note: "mandat BT" }
+        decisions: [26, 64]
+        gaps:
+          - "Aucune génération de facture sur main."
+          - "#2150 (mandat BM) et #2159 (mandat BT) en brouillon. #2150 applique « D64 amendée : facture à l'expédition, après encaissement réel » ; le mandat BX la nomme « facture au paiement » : moment à confirmer par Marwane."
+      - id: sales.cart-to-order
+        name: "Panier, tunnel de commande et paiement (du panier à la commande)"
+        owner: sales-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/cart/controllers/cart-items.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/cart/controllers/cart-items.controller.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        uses:
+          - { capability: "cart", from: "sales" }
+          - { capability: "orders", from: "sales" }
+        covers:
+          - { module: "cart" }
+          - { module: "orders" }
+          - { module: "payments" }
+          - { route: "cart" }
+          - { route: "checkout" }
+          - { route: "checkout-payment" }
+          - { route: "checkout-payment-return" }
+          - { route: "api.cart" }
+          - { route: "orders.new" }
+          - { routes: "checkout.resume" }
+          - { routes: "orders.$id" }
+          - { routes: "panier" }
+          - { routes: "admin.payments" }
+          - { cron: "backend/src/modules/orders/services/order-cleanup.service.ts", note: "@Cron inactif : ScheduleModule désactivé (app.module.ts:114)" }
+        evidence:
+          - { path: "backend/src/modules/cart/controllers/cart-items.controller.ts" }
+          - { path: "backend/src/modules/orders" }
+          - { path: "backend/src/modules/payments", note: "zone STOP (CLAUDE.md, invariant 9) : citée, jamais modifiée" }
+          - { path: "backend/src/app.module.ts", lines: "114", note: "ScheduleModule.forRoot() commenté" }
+        decisions: [2]
+        gaps:
+          - "Les @Cron de order-cleanup.service.ts ne tournent pas : ScheduleModule désactivé."
+      - id: sales.order-admin-actions
+        name: "Actions de back-office sur une commande (valider, expédier, livrer, annuler, suppléments)"
+        owner: sales-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/orders/controllers/order-actions.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/orders/services/order-actions.line-supplier.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        uses:
+          - { capability: "orders", from: "sales" }
+        covers:
+          - { routes: "admin.orders" }
+          - { routes: "admin.commercial" }
+        evidence:
+          - { path: "backend/src/modules/orders/controllers/order-actions.controller.ts" }
+      - id: sales.order-substitution
+        name: "Rupture et équivalence sur une ligne de commande (proposer, accepter, refuser un équivalent)"
+        owner: sales-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "orders", from: "sales" }
+        skills: ["order-rupture-equivalence"]
+        evidence:
+          - { path: "backend/src/modules/orders/controllers/order-actions.controller.ts", note: "mark-rupture, accept-equivalent, reject-equivalent, supplier-proposal" }
+        gaps:
+          - "Frontière sales/supplier tranchée par Marwane le 2026-11-18 à 08:53 : les actions fournisseur des commandes (supplier-proposal, confirm-supplier, order-from-supplier) appartiennent à sales."
+      - id: sales.promo
+        name: "Codes promo : validation et application au panier"
+        owner: sales-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "promo" }
+        evidence:
+          - { path: "backend/src/modules/promo/promo.controller.ts" }
+          - { path: "backend/src/modules/cart/controllers/cart-promo.controller.ts" }
+        gaps:
+          - "Aucun test trouvé pour le module promo."
+      - id: sales.commercial-archives
+        name: "Espace commercial : archives, rapports et retours de commandes"
+        owner: sales-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "commercial" }
+          - { route: "commercial" }
+          - { route: "commercial._index" }
+          - { routes: "commercial.orders" }
+          - { routes: "commercial.reports" }
+          - { routes: "commercial.returns" }
+          - { cron: "backend/src/modules/commercial/archives/archives.service.ts", note: "@Cron commenté (ligne 121)" }
+        evidence:
+          - { path: "backend/src/modules/commercial/archives/archives.controller.ts" }
+          - { path: "backend/src/modules/commercial/archives/archives.service.ts", lines: "119-121" }
+        gaps:
+          - "Archivage automatique commenté dans archives.service.ts ; seul un test de gardes d'accès existe."
+      - id: sales.leads-quotes
+        name: "Demandes de devis et mini-CRM des prospects"
+        owner: sales-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { routes: "admin.leads" }
+        evidence:
+          - { path: "backend/src/modules/support/controllers/quote.controller.ts" }
+          - { path: "backend/src/modules/support/controllers/leads-admin.controller.ts" }
+        gaps:
+          - "Code dans le module support ; propriétaire sales, tranché par Marwane le 2026-11-18 à 08:53."
 
   - id: pricing
     business_number: 16
@@ -189,6 +654,48 @@ departments:
     repo_domains: [D11]
     capabilities: [pricing-invariants]
     state: partial                   # economic-governance system; invariants live, CP partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Pièces en attente de mise à jour, par fournisseur ; entrées et sorties de vente par lot ; arrêts du garde-fou ; pièces au-dessus ou en dessous du marché."
+      kpi:
+        definition: "Pièces en attente de mise à jour par fournisseur, entrées et sorties de vente par lot, arrêts du garde-fou (décision 51) ; pièces au-dessus ou en dessous du marché (décision 86)."
+        producer_pending: "aucun producteur ; kpi_primary margin_protected sans producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Module pricing et PricingInvariantsService ; imports de tarif par lot. Source du prix de marché non désignée."
+      seuil_action: "Garde-fou : un lot qui ferait sortir de la vente plus de 5 % des pièces vendables d'un fournisseur est arrêté (décision 51)."
+      ligne_rapport: "Mises à jour en attente, entrées et sorties par lot, arrêts du garde-fou, écarts au marché."
+      decisions: [51, 86, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: pricing.tariff-import-invariants
+        name: "Import de tarif par lot sous garde-fou (invariants de prix, jamais de vente à perte)"
+        owner: pricing-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/pricing/controllers/pricing-import.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/pricing/config/supplier-sale-rules.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        uses:
+          - { capability: "pricing-invariants", from: "pricing" }
+        covers:
+          - { module: "pricing" }
+        evidence:
+          - { path: "backend/src/modules/pricing/controllers/pricing-import.controller.ts" }
+          - { path: "backend/src/modules/pricing/services/pricing-invariants.service.ts" }
+        decisions: [51]
+      - id: pricing.market-price
+        name: "Écart au prix du marché par pièce"
+        owner: pricing-lead
+        status: missing
+        level: L0
+        justification: "Décidée (décision 86) : aucune source de prix de marché n'est désignée ni lue dans le dépôt."
+        evidence:
+          - { absent: "aucune source ni calcul de prix de marché (contrat pricing, champ source)" }
+        decisions: [86]
 
   - id: data
     business_number: 22
@@ -202,6 +709,95 @@ departments:
     repo_domains: [D10]
     capabilities: [analytics, cwv-beacon]
     state: partial                   # measurement exists; reliability gaps (funnel/CWV instrumentation)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Taille de la base, tables hors règle, copies expirées ; fraîcheur des sources."
+      kpi:
+        producer: "backend/src/modules/admin/services/command-center-kpi.service.ts"
+        rule: "command-center-action-rules/department-kpi.rules.ts, toMetricReliabilityKpi"
+        definition: "Taille de la base, tables hors règle, copies expirées (décision 84) ; fraîcheur des sources (décision 68). toMetricReliabilityKpi ne produit que le verdict d'intégrité du suivi des commandes."
+      source: "Verdict TrackingIntegrityService ; taille et tables de la base ; date de la dernière donnée de chaque source."
+      seuil_action: "Source de plus de 3 jours : alerte (décision 68) ; écart GA4 de plus de 20 % : signalé (décision 36) ; verdict TrackingIntegrityService : OK si CERTIFIED, CRITICAL si aucun contrôle ne passe, WARNING sinon, UNKNOWN sans verdict."
+      ligne_rapport: "Taille de la base, tables hors règle, copies expirées ; fraîcheur des sources."
+      decisions: [36, 68, 84, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: data.landing-attribution
+        name: "Attribution des visites (page d'arrivée, canal)"
+        owner: data-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/analytics/controllers/landing-attribution.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/analytics/controllers/landing-attribution.controller.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        uses:
+          - { capability: "analytics", from: "data" }
+        covers:
+          - { module: "analytics" }
+        evidence:
+          - { path: "backend/src/modules/analytics/controllers/landing-attribution.controller.ts" }
+        decisions: [36]
+      - id: data.cwv-beacon
+        name: "Collecte des Core Web Vitals réels (balise RUM)"
+        owner: data-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        uses:
+          - { capability: "cwv-beacon", from: "data" }
+        covers:
+          - { route: "admin.seo-hub.cwv" }
+        skills: ["web-vitals-audit"]
+        evidence:
+          - { path: "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts" }
+      - id: data.reporting
+        name: "Tableaux de bord et rapports d'administration"
+        owner: data-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "dashboard" }
+          - { route: "dashboard" }
+          - { routes: "admin.reports" }
+        evidence:
+          - { path: "backend/src/modules/dashboard/dashboard.controller.ts" }
+          - { path: "backend/src/modules/admin/controllers/reporting.controller.ts" }
+      - id: data.db-governance
+        name: "Gouvernance de la base : taille, tables hors règle, migrations"
+        owner: data-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { route: "admin.db-governance" }
+          - { workflow: ".github/workflows/apply-supabase-migrations.yml" }
+          - { workflow: ".github/workflows/migration-ledger-freshness.yml" }
+          - { workflow: ".github/workflows/spec-canon-sql-rule-r2-check.yml" }
+        skills: ["db-migration", "amk-supabase-postgres-best-practices", "supabase-postgres-best-practices", "runtime-truth-audit"]
+        evidence:
+          - { path: "backend/src/modules/admin/controllers/admin-db-governance.controller.ts" }
+        decisions: [84]
+      - id: data.source-freshness
+        name: "Fraîcheur des sources de mesure"
+        owner: data-lead
+        status: non_operational
+        level: L1
+        evidence:
+          - { path: "backend/src/modules/admin/services/command-center-action-rules/collection-freshness-action.rules.ts" }
+        decisions: [68]
+        gaps:
+          - "Règle trouvée dans le Command Center ; seuil de 3 jours (décision 68) non relu dans le code."
 
   - id: runtime
     business_number: 21
@@ -215,6 +811,157 @@ departments:
     repo_domains: [D10, D13]
     capabilities: [observability, health, rpc-alerts]
     state: partial                   # observability live; commerce-runtime plane (RCOP) partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Disponibilité du parcours d'achat simulé sur 24 h, temps par étape, 5xx réels ; âge des sauvegardes, dernière restauration réussie, disque."
+      kpi:
+        definition: "Disponibilité du parcours d'achat simulé sur 24 h, temps par étape, 5xx réels (décision 52) ; âge des sauvegardes, dernière restauration réussie, disque (décision 79)."
+        producer_pending: "aucun producteur ; kpi_primary runtime_health sans producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Parcours d'achat simulé (décision 52) ; /health ; sauvegardes et disque (décision 79)."
+      seuil_action: "Parcours simulé : alerte après deux échecs (décision 52). Sauvegarde de plus de 26 h, disque à 85 % : alerte (décision 79)."
+      ligne_rapport: "Disponibilité du parcours d'achat et 5xx ; sauvegardes, restauration, disque."
+      decisions: [52, 79, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: runtime.health-observability
+        name: "Santé du service et métriques (health, Prometheus)"
+        owner: runtime-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "observability", from: "runtime" }
+          - { capability: "health", from: "runtime" }
+        covers:
+          - { module: "health" }
+          - { module: "observability" }
+          - { module: "system" }
+          - { routes: "admin.system" }
+          - { routes: "admin.system-overview" }
+        evidence:
+          - { path: "backend/src/modules/observability/prometheus.controller.ts" }
+          - { path: "backend/src/modules/health/health.service.test.ts" }
+          - { path: "backend/src/modules/system/system-health.controller.ts" }
+        gaps:
+          - "health n'a pas de contrôleur propre ; déclencheur réel non relu, L2 non déclaré."
+      - id: runtime.rpc-alerts
+        name: "Bloc d'alertes du plan de contrôle SEO, lu depuis les RPC d'alertes (cache 5 min)"
+        owner: runtime-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "rpc-alerts", from: "runtime" }
+        evidence:
+          - { path: "backend/src/modules/admin/services/seo-control.service.ts" }
+      - id: runtime.bot-guard
+        name: "Filtrage des robots abusifs"
+        owner: runtime-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/bot-guard/bot-guard.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/bot-guard/bot-guard.metrics.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        covers:
+          - { module: "bot-guard" }
+        evidence:
+          - { path: "backend/src/modules/bot-guard/bot-guard.controller.ts" }
+      - id: runtime.platform
+        name: "Socle technique : configuration, session, fichiers envoyés, validation MCP"
+        owner: runtime-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "config" }
+          - { module: "session" }
+          - { module: "upload" }
+          - { module: "mcp-validation" }
+          - { module: "maintenance" }
+          - { routes: "admin.config" }
+          - { routes: "admin.system-config" }
+          - { routes: "admin.debug" }
+        evidence:
+          - { path: "backend/src/modules/config/controllers/simple-database-config.controller.ts" }
+          - { path: "backend/src/modules/session/session-store.test.ts" }
+          - { path: "backend/src/modules/upload/upload.controller.ts" }
+          - { path: "backend/src/modules/maintenance/maintenance.module.ts", note: "squelette, importé par aucun module" }
+        gaps:
+          - "Module maintenance (rattaché par Marwane le 2026-11-18 à 08:57) : aucun importeur trouvé, retrait à vérifier par un mandat."
+      - id: runtime.deploy-chain
+        name: "Chaîne de build et de déploiement (PREPROD sur main, PROD sur tag)"
+        owner: runtime-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/ci.yml" }
+          - { workflow: ".github/workflows/build.yml" }
+          - { workflow: ".github/workflows/release-prod.yml" }
+          - { workflow: ".github/workflows/deploy-monitoring-scripts.yml" }
+          - { workflow: ".github/workflows/esm-package-smoke.yml" }
+          - { workflow: ".github/workflows/cron-schedulemodule-guard.yml" }
+          - { workflow: ".github/workflows/validator-dev-safety-observe.yml" }
+          - { workflow: ".github/workflows/preprod-vocabulary-guard.yml" }
+        evidence:
+          - { path: ".github/workflows/ci.yml" }
+          - { path: ".github/workflows/release-prod.yml" }
+          - { path: ".claude/rules/deployment.md" }
+        gaps:
+          - "Un merge ou un tag ne prouve pas un déploiement réussi (CLAUDE.md, invariant 8)."
+      - id: runtime.prod-smoke
+        name: "Sondes de la PROD et rapport du matin"
+        owner: runtime-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/prod-smoke-tests.yml" }
+          - { workflow: ".github/workflows/morning-health-digest.yml" }
+        evidence:
+          - { path: ".github/workflows/prod-smoke-tests.yml" }
+          - { path: ".github/scripts/morning-health-digest.sh" }
+        decisions: [52]
+        gaps:
+          - "Le parcours d'achat simulé de la décision 52 (panier, commande, paiement) n'est pas relu dans prod-smoke-tests.yml."
+      - id: runtime.dependencies
+        name: "Dépendances : mises à jour, graphe, fraîcheur"
+        owner: runtime-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/dependabot-auto-merge.yml" }
+          - { workflow: ".github/workflows/dependabot-claude-review.yml" }
+          - { workflow: ".github/workflows/dependency-family-bump.yml" }
+          - { workflow: ".github/workflows/dependency-modernization-fresh.yml" }
+          - { workflow: ".github/workflows/dependency-registry-freshness.yml" }
+        evidence:
+          - { path: ".github/workflows/dependency-family-bump.yml" }
+      - id: runtime.dev-host
+        name: "Hôte DEV : runtime, disque, worktrees"
+        owner: runtime-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { crontab: 32, script: "scripts/cron/prune-merged-worktrees.sh" }
+          - { crontab: 33, script: "scripts/ops/sync-dev-runtime.sh" }
+          - { crontab: 39, script: "scripts/cron/disk-alert.sh" }
+          - { crontab: 42, script: "scripts/cron/dedup-worktree-node-modules.sh" }
+        evidence:
+          - { path: "scripts/ops/sync-dev-runtime.sh" }
+          - { path: "scripts/cron/disk-alert.sh" }
+        decisions: [79]
+        gaps:
+          - "Crontab DEV lue le 2026-11-18, non versionnée : la CI ne peut pas vérifier ces lignes."
+      - id: runtime.restore-test
+        name: "Test périodique de restauration des sauvegardes"
+        owner: runtime-lead
+        status: missing
+        level: L0
+        justification: "Décidée (décision 79) : la dernière restauration réussie doit être connue ; aucun test de restauration n'existe."
+        evidence:
+          - { absent: "aucun script de restauration (pg_restore, restore test) trouvé le 2026-11-18" }
+        decisions: [79]
 
   - id: wiki
     business_number: 9
@@ -228,6 +975,65 @@ departments:
     repo_domains: [D6]
     capabilities: [wiki-proposal-writer, rag-knowledge-bootstrap]
     state: partial                   # ADR-033 Phase 2 sas; readiness chain partial (wiki produces, consumers read)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "État de chaque gamme à fichier keyword, de 0 (pas de source RAW) à 6 (effet mesuré) ; couverture des questions des meilleurs contenus, par gamme."
+      kpi:
+        definition: "Gammes servies depuis le WIKI ; périmètre : gammes à fichier keyword."
+        producer_pending: "aucun producteur ; kpi_primary wiki_readiness sans producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Dépôt automecanik-wiki : fiches validées et wiki-readiness-check.py ; fichiers keyword des gammes."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé."
+      ligne_rapport: "Gammes par état (0 à 6) ; gammes servies depuis le WIKI ; couverture des questions."
+      decisions: [31, 42, 46, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: wiki.raw-to-wiki
+        name: "Passage RAW → WIKI : propositions, validation, forme"
+        owner: wiki-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "wiki-proposal-writer", from: "wiki" }
+        covers:
+          - { workflow: ".github/workflows/wiki-validate.yml" }
+          - { workflow: ".github/workflows/wiki-canon-shape-check.yml" }
+          - { workflow: ".github/workflows/wiki-readiness-check.yml" }
+          - { workflow: ".github/workflows/wiki-generators-tests.yml" }
+          - { workflow: ".github/workflows/rag-proposals-validate.yml" }
+        evidence:
+          - { path: ".github/workflows/wiki-validate.yml" }
+          - { path: "workspaces/wiki/.claude/skills/wiki-proposal-writer/SKILL.md" }
+      - id: wiki.exports
+        name: "Exports du WIKI vers SEO et diagnostic"
+        owner: wiki-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/wiki-exports-seo-generate.yml" }
+          - { workflow: ".github/workflows/wiki-exports-diagnostic-generate.yml" }
+          - { workflow: ".github/workflows/diag-canon-slugs-export.yml" }
+        evidence:
+          - { path: ".github/workflows/wiki-exports-seo-generate.yml" }
+          - { path: ".github/workflows/wiki-exports-diagnostic-generate.yml" }
+      - id: wiki.rag-ingest
+        name: "Ingestion du RAG depuis le WIKI et sauvegarde"
+        owner: wiki-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "rag-knowledge-bootstrap", from: "wiki" }
+        covers:
+          - { module: "rag-knowledge-bootstrap" }
+          - { routes: "admin.rag" }
+          - { workflow: ".github/workflows/rag-permissions-audit.yml" }
+          - { crontab: 11, script: "scripts/cron/rag-knowledge-backup.sh" }
+          - { crontab: 29, script: "scripts/cron/sync-rag-from-wiki.sh" }
+        evidence:
+          - { path: "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts" }
+          - { path: "scripts/cron/sync-rag-from-wiki.sh" }
+        gaps:
+          - "Le RAG reste un consommateur chatbot, sans autorité de contenu (ADR-031/046)."
 
   - id: seo
     business_number: 7
@@ -241,6 +1047,199 @@ departments:
     repo_domains: [D3]
     capabilities: [seo-pages, seo-roles, internal-linking, seo-gamme-audit]
     state: partial                   # pages live; ATC conversion gap (IMPROVE) — resolves wiki→seo handoff
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Pages indexables, soumises et indexées ; entrées et sorties du lot ; clics perdus. Pages lentes par type (Core Web Vitals réels). Pages orphelines, liens vers des pages en erreur ou non vendables, liens génériques."
+      kpi:
+        definition: "Pages indexables, soumises, indexées, entrées et sorties du lot, clics perdus (décision 48) ; pages lentes par type (décision 81) ; maillage (décision 82)."
+        producer_pending: "aucun producteur ; toPagesGeneratingAtcKpi produit pages_generating_atc (kpi_primary), qui n'est pas une mesure de la décision 48 ; fiche de fiabilité absente (décision 8)."
+      source: "Search Console pour Google (décision 36) ; Core Web Vitals réels et budget LCP/CLS/INP contrôlé en CI (décision 81)."
+      seuil_action: "Dépassement du budget LCP/CLS/INP en CI (décision 81 ; valeurs du budget non transmises). Indexation et maillage : aucun seuil fixé."
+      ligne_rapport: "Indexation et clics perdus ; pages lentes par type ; maillage (orphelines, liens en erreur, non vendables ou génériques)."
+      decisions: [36, 48, 81, 82, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: seo.pages
+        name: "Pages SEO servies : pièces, gammes, constructeurs, références, diagnostic (R0 à R8)"
+        owner: seo-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "seo-pages", from: "seo" }
+        covers:
+          - { module: "seo" }
+          - { module: "gamme-rest" }
+          - { module: "metadata" }
+          - { route: "_index" }
+          - { route: "depannage" }
+          - { routes: "pieces" }
+          - { routes: "gammes" }
+          - { routes: "constructeurs" }
+          - { routes: "reference-auto" }
+          - { routes: "diagnostic-auto" }
+        agents: ["r0-home-execution", "r0-home-validator", "r1-content-batch", "r1-router-validator", "r2-product-validator", "r4-content-batch", "r4-reference-execution", "r4-reference-validator", "r5-diagnostic-execution", "r5-diagnostic-validator", "r7-brand-execution", "r7-brand-rag-generator", "r7-brand-validator", "r8-vehicle-execution", "r8-vehicle-validator"]
+        evidence:
+          - { path: "backend/src/modules/seo/dynamic-seo.controller.ts" }
+          - { path: "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts" }
+        decisions: [48]
+      - id: seo.projection
+        name: "Projection des contenus validés vers les pages"
+        owner: seo-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/seo-projection/seo-projection-admin.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/seo-projection/projection-markdown.renderer.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        covers:
+          - { module: "seo-projection" }
+        evidence:
+          - { path: "backend/src/modules/seo-projection/seo-projection-writer.service.ts" }
+      - id: seo.roles-contracts
+        name: "Rôles SEO et contrats d'URL"
+        owner: seo-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "seo-roles", from: "seo" }
+        covers:
+          - { routes: "admin.page-role" }
+          - { workflow: ".github/workflows/seo-matrix-check.yml" }
+          - { workflow: ".github/workflows/seo-shadow-flag-guard.yml" }
+          - { workflow: ".github/workflows/seo-url-immutability.yml" }
+          - { workflow: ".github/workflows/served-content-write-ratchet.yml" }
+          - { workflow: ".github/workflows/replay-projection-regression.yml" }
+        evidence:
+          - { path: "packages/seo-roles" }
+          - { path: "packages/seo-role-contracts" }
+          - { path: ".spec/00-canon/role-matrix.md" }
+      - id: seo.url-status
+        name: "Statut des URL : 404, 410, redirections, page d'erreur"
+        owner: seo-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/errors/controllers/error.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/errors/services/error-status-population.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        covers:
+          - { module: "errors" }
+          - { route: "$" }
+          - { route: "404" }
+          - { route: "gone" }
+          - { route: "unauthorized" }
+          - { route: "api.errors.suggestions" }
+          - { route: "api.redirects.check" }
+        evidence:
+          - { path: "backend/src/modules/errors/controllers/error.controller.ts" }
+      - id: seo.sitemap
+        name: "Sitemaps, robots.txt et plan du site"
+        owner: seo-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { routes: "sitemaps" }
+          - { route: "robots[.]txt" }
+          - { route: "plan-du-site" }
+          - { workflow: ".github/workflows/sitemap-daily-regen.yml" }
+        evidence:
+          - { path: ".github/workflows/sitemap-daily-regen.yml" }
+      - id: seo.internal-linking
+        name: "Maillage interne"
+        owner: seo-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "internal-linking", from: "seo" }
+        evidence:
+          - { path: "backend/src/modules/seo/internal-linking.service.ts" }
+          - { path: "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts" }
+        decisions: [82]
+        gaps:
+          - "Test présent ; déclencheur non relu : L2 non déclaré."
+      - id: seo.gamme-audit
+        name: "Audit et pilotage SEO des gammes, V-Level"
+        owner: seo-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "seo-gamme-audit", from: "seo" }
+        covers:
+          - { routes: "admin.gammes-seo" }
+          - { routes: "admin.v-level-status" }
+          - { routes: "admin.seo-hub.gammes" }
+        agents: ["phase1-auditor"]
+        evidence:
+          - { path: "backend/src/modules/admin/controllers/admin-gammes-seo-list.controller.ts" }
+          - { path: "workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md" }
+      - id: seo.keyword-briefs
+        name: "Plans de mots-clés, clusters et briefs de page"
+        owner: seo-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { route: "admin.keyword-planner" }
+          - { routes: "admin.seo-hub.keyword-clusters" }
+          - { routes: "admin.seo-hub.page-briefs" }
+          - { routes: "admin.seo-content" }
+          - { routes: "admin.brands-seo" }
+          - { routes: "admin.optimization-summary" }
+          - { routes: "admin.prototype" }
+          - { routes: "admin.r1-images" }
+          - { routes: "admin.r1-qa" }
+        agents: ["keyword-planner", "r1-keyword-planner", "r2-keyword-planner", "r3-keyword-planner", "r3-keyword-plan-batch", "r4-keyword-planner", "r5-keyword-planner", "r6-keyword-planner", "r7-keyword-planner", "r8-keyword-planner", "brief-enricher", "research-agent", "r3-image-prompt", "r6-image-prompt", "agentic-planner", "agentic-solver", "agentic-critic"]
+        evidence:
+          - { path: "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts" }
+          - { path: "backend/src/modules/admin/controllers/admin-page-brief.controller.ts" }
+      - id: seo.monitoring
+        name: "Surveillance SEO : indexation, logs de crawl, observatoire, plan de contrôle"
+        owner: seo-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "seo-monitoring" }
+          - { module: "seo-control-plane" }
+          - { module: "seo-logs" }
+          - { module: "seo-shadow-observatory" }
+          - { route: "admin.seo" }
+          - { route: "admin.seo-hub" }
+          - { route: "admin.seo-hub._index" }
+          - { routes: "admin.seo-control" }
+          - { routes: "admin.seo-dashboard" }
+          - { routes: "admin.seo-hub.audit" }
+          - { routes: "admin.seo-hub.findings" }
+          - { routes: "admin.seo-hub.monitoring" }
+          - { routes: "admin.seo-hub.observability" }
+          - { routes: "admin.seo-hub.content" }
+        evidence:
+          - { path: "backend/src/modules/seo-logs/controllers/crawl-budget-audit.controller.ts" }
+          - { path: "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.test.ts" }
+        decisions: [48, 81]
+      - id: seo.substitution
+        name: "Substitution sémantique des URL (réponse 200 toujours, 404 et 410 dans le statut)"
+        owner: seo-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/substitution/controllers/substitution.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/substitution/services/substitution.service.light-mode.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        covers:
+          - { module: "substitution" }
+        evidence:
+          - { path: "backend/src/modules/substitution/controllers/substitution.controller.ts" }
 
   - id: catalog
     business_number: 10
@@ -254,6 +1253,99 @@ departments:
     repo_domains: [D1, D4]
     capabilities: [catalog-core, compatibility, catalog-integrity, vehicle-ops]   # vehicle-ops resolves via skills.registry
     state: partial                   # catalog live; displayed-vs-real availability gap (epicentre rupture, IMPROVE)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Anomalies sur le lot vendable ; part des commandes avec immatriculation ou référence ; incompatibilités trouvées avant envoi ; retours pour incompatibilité."
+      kpi:
+        definition: "Anomalies du lot vendable, part des commandes avec immatriculation ou référence, incompatibilités trouvées avant envoi, retours pour incompatibilité ; remplace compat_and_displayed_availability (décision 49)."
+        producer_pending: "aucun producteur ; kpi_primary vaut encore compat_and_displayed_availability, son remplacement attend un identifiant de KPI et un producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Modules catalog et vehicles, catalog-integrity ; commandes (immatriculation, référence). Source des retours non désignée."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé."
+      ligne_rapport: "Anomalies du lot vendable ; commandes identifiées ; incompatibilités avant envoi et retours."
+      decisions: [49, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: catalog.core
+        name: "Catalogue : produits, gammes, marques, couleurs"
+        owner: catalog-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "catalog-core", from: "catalog" }
+        covers:
+          - { module: "catalog" }
+          - { module: "products" }
+          - { module: "rm" }
+          - { routes: "products" }
+          - { routes: "admin.products" }
+          - { routes: "brands" }
+          - { routes: "_public+/catalogue" }
+          - { routes: "_public+/marques" }
+          - { routes: "admin.couleurs-constructeurs" }
+          - { routes: "admin.couleurs-familles" }
+          - { cron: "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts", note: "@Cron inactif : ScheduleModule désactivé" }
+        evidence:
+          - { path: "backend/src/modules/catalog/catalog.controller.ts" }
+          - { path: "backend/src/modules/catalog/services/accessory-products.service.test.ts" }
+          - { path: "backend/src/modules/rm/controllers/rm.controller.ts" }
+        decisions: [49]
+      - id: catalog.vehicles-compatibility
+        name: "Véhicules et compatibilité pièce-véhicule"
+        owner: catalog-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "compatibility", from: "catalog" }
+          - { capability: "vehicle-ops", from: "catalog" }
+        covers:
+          - { module: "vehicles" }
+          - { module: "vehicle-context" }
+          - { routes: "vehicles" }
+          - { routes: "enhanced-vehicle-catalog" }
+          - { routes: "commercial.vehicles" }
+        skills: ["vehicle-ops"]
+        evidence:
+          - { path: "backend/src/modules/catalog/services/compatibility.service.ts" }
+          - { path: "backend/src/modules/vehicles/vehicles.controller.ts" }
+        decisions: [49]
+      - id: catalog.search
+        name: "Recherche de pièces et de véhicules (texte, CNIT, type mine)"
+        owner: catalog-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "search" }
+          - { routes: "search" }
+          - { routes: "recherche" }
+          - { routes: "api.search" }
+        evidence:
+          - { path: "backend/src/modules/search/controllers/search.controller.ts" }
+          - { path: "backend/src/modules/search/controllers/pieces.controller.ts" }
+      - id: catalog.integrity
+        name: "Intégrité des données du catalogue et garde TecDoc"
+        owner: catalog-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "catalog-integrity", from: "catalog" }
+        covers:
+          - { workflow: ".github/workflows/tecdoc-api-surface-guard.yml" }
+          - { workflow: ".github/workflows/tecdoc-failclosed-guard.yml" }
+        evidence:
+          - { path: "backend/src/modules/catalog/services/catalog-data-integrity.service.ts" }
+      - id: catalog.stock
+        name: "Stock affiché (back-office et espace commercial)"
+        owner: catalog-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { routes: "admin.stock" }
+          - { routes: "commercial.stock" }
+        evidence:
+          - { path: "backend/src/modules/admin/controllers/stock.controller.ts" }
+        gaps:
+          - "Stock affiché : propriétaire catalog, tranché par Marwane le 2026-11-18 à 08:53 ; prix et stock runtime = zone STOP."
 
   - id: diagnostic
     business_number: 11
@@ -265,8 +1357,60 @@ departments:
     priority: P2                     # D7 = P2
     # kpi_primary absent : diagnostic_to_product relève de product (20) ; aucune mesure propre à l'expertise
     repo_domains: [D7]
-    capabilities: [diagnostic-engine, knowledge-graph, vehicle-ops]   # vehicle-ops via skills.registry
+    capabilities: [diagnostic-engine, knowledge-graph]   # vehicle-ops appartient à catalog (tranché par Marwane le 2026-11-18 à 08:53) ; consommé par uses
     state: partial                   # V1A.0 OFF; __diag_* peuplé, kg_* vides
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Passage des connaissances de « proposée » à « qualifiée » et contradictions trouvées ; cas du diagnostic validés sur le total ; désaccords en attente."
+      kpi:
+        definition: "Cas du diagnostic validés sur le total ; propositions qualifiées et contradictions trouvées."
+        producer_pending: "aucun producteur ; aucun kpi_primary (diagnostic_to_product est porté par le 20) ; fiche de fiabilité absente (décision 8)."
+      source:
+        pending_owner_decision: "Les décisions 31 et 54 ne désignent pas de source de mesure."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé."
+      ligne_rapport: "Propositions qualifiées et contradictions ; cas validés sur le total ; désaccords en attente."
+      decisions: [31, 54, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: diagnostic.engine
+        name: "Moteur de diagnostic : symptôme → vérifications, familles de pièces"
+        owner: diagnostic-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        uses:
+          - { capability: "diagnostic-engine", from: "diagnostic" }
+          - { capability: "vehicle-ops", from: "catalog" }
+        covers:
+          - { module: "diagnostic-engine" }
+          - { route: "diagnostic" }
+          - { routes: "admin.diagnostic-engine" }
+          - { routes: "admin.diagnostic" }
+        skills: ["diagnostic-orientation"]
+        evidence:
+          - { path: "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts" }
+      - id: diagnostic.knowledge-graph
+        name: "Graphe de connaissances (DEV seulement)"
+        owner: diagnostic-lead
+        status: non_operational
+        level: L0
+        uses:
+          - { capability: "knowledge-graph", from: "diagnostic" }
+        covers:
+          - { module: "knowledge-graph" }
+        evidence:
+          - { path: "backend/src/modules/knowledge-graph/kg.controller.ts" }
+          - { path: "backend/src/app.module.ts", lines: "72", note: "import commenté" }
+        gaps:
+          - "Module commenté dans app.module.ts ; tables kg_* vides."
 
   - id: marketing
     business_number: 4
@@ -280,6 +1424,75 @@ departments:
     repo_domains: [D12]
     capabilities: [marketing, marketing-backlinks]
     state: partial                   # ADR-036 Phase 1-2 (G1 agents)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Sessions humaines et commandes par canal ; ouvertures et clics des envois ; Shopping : produits approuvés et refusés, clics, commandes et coût par commande."
+      kpi:
+        definition: "Sessions humaines et commandes par canal ; ouvertures et clics des envois ; produits Shopping approuvés et refusés, clics, commandes et coût par commande Shopping."
+        producer_pending: "aucun producteur ; kpi_primary qualified_demands sans producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Nos événements marqués humain/robot (principal) et GA4 en recoupement (décision 36). Les sources des envois et de Shopping ne sont pas désignées."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé. Décisions 44 et 87 : mesures sans seuil."
+      ligne_rapport: "Sessions humaines et commandes par canal ; envois ; Shopping."
+      decisions: [36, 44, 87, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: marketing.backlinks-briefs
+        name: "Marketing : backlinks, briefs, feuille de route, réseaux sociaux"
+        owner: marketing-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "marketing", from: "marketing" }
+          - { capability: "marketing-backlinks", from: "marketing" }
+        covers:
+          - { module: "marketing" }
+          - { routes: "admin.marketing" }
+        agents: ["marketing-lead-agent", "local-business-agent", "customer-retention-agent"]
+        evidence:
+          - { path: "backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts" }
+          - { path: "backend/src/modules/marketing/marketing-scoring.config.test.ts" }
+      - id: marketing.merchant-feed
+        name: "Flux Google Shopping (Merchant Center)"
+        owner: marketing-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "merchant-center" }
+        evidence:
+          - { path: "backend/src/modules/merchant-center/controllers/merchant-center.controller.ts" }
+        gaps:
+          - "Aucun test trouvé ; propriétaire marketing, tranché par Marwane le 2026-11-18 à 08:53."
+      - id: marketing.trend-signals
+        name: "Signaux de tendance (rappels constructeurs publics)"
+        owner: marketing-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "trend-signals" }
+        evidence:
+          - { path: "backend/src/modules/trend-signals/trend-signals.service.ts" }
+          - { path: "backend/tests/unit/trend-signals/rappels-gouv-fr.fetcher.test.ts" }
+        gaps:
+          - "Propriétaire marketing (et non strategy), tranché par Marwane le 2026-11-18 à 08:53."
+      - id: marketing.newsletter
+        name: "Envoi de lettres d'information aux clients inscrits"
+        owner: marketing-lead
+        status: missing
+        level: L0
+        justification: "Décidée (décision 44) : le dépôt garde l'inscription des clients mais n'envoie rien ; le contrat compte les ouvertures et clics des envois."
+        evidence:
+          - { absent: "aucun envoi (Brevo, Mailchimp, sendNewsletter) trouvé le 2026-11-18" }
+        decisions: [44]
+      - id: marketing.shopping-ads
+        name: "Pilotage des campagnes Shopping payantes"
+        owner: marketing-lead
+        status: missing
+        level: L0
+        justification: "Décidée (décision 87) : le contrat suit clics, commandes et coût par commande Shopping ; seul le flux produit existe, aucune donnée de campagne n'est lue."
+        evidence:
+          - { absent: "aucune lecture de coût ou de campagne Google Ads trouvée le 2026-11-18" }
+        decisions: [87]
 
   - id: brand
     business_number: 5
@@ -293,6 +1506,51 @@ departments:
     repo_domains: [D12]
     capabilities: [brand-compliance-gate, fafa-brand-safety-reviewer]
     state: partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Nouveaux écarts au design system ; refus du contrôle de marque, avec leur motif."
+      kpi:
+        definition: "Nouveaux écarts au design system et refus du contrôle de marque avec motif ; remplace brand_trust (décision 45)."
+        producer_pending: "aucun producteur ; kpi_primary vaut encore brand_trust, son remplacement attend un identifiant de KPI et un producteur ; fiche de fiabilité absente (décision 8)."
+      source: "brand-compliance-gate (refus et motifs) et skill fafa-brand-safety-reviewer ; design system."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé."
+      ligne_rapport: "Nouveaux écarts au design system et refus du contrôle de marque."
+      decisions: [45, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: brand.compliance-gate
+        name: "Contrôle de marque des contenus"
+        owner: brand-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "brand-compliance-gate", from: "brand" }
+        covers:
+          - { workflow: ".github/workflows/marketing-voice-hash.yml" }
+        evidence:
+          - { path: "backend/src/modules/marketing/services/brand-compliance-gate.service.ts" }
+        decisions: [45]
+      - id: brand.safety-review
+        name: "Relecture de sécurité de marque Fafa"
+        owner: brand-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "fafa-brand-safety-reviewer", from: "brand" }
+        evidence:
+          - { path: "workspaces/marketing/.claude/skills/fafa-brand-safety-reviewer/SKILL.md" }
+      - id: brand.design-system
+        name: "Écarts au design system"
+        owner: brand-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/impeccable-ratchet.yml" }
+        evidence:
+          - { path: ".github/workflows/impeccable-ratchet.yml" }
+          - { path: "packages/design-tokens" }
+        decisions: [45]
 
   - id: content
     business_number: 6
@@ -306,6 +1564,50 @@ departments:
     repo_domains: [D5]
     capabilities: [blog, ai-content]
     state: partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Par gamme : article absent, à requalifier, aligné sur la fiche ou publié, avec la date."
+      kpi:
+        definition: "Gammes par état de l'article : absent, à requalifier, aligné sur la fiche WIKI, publié ; état daté."
+        producer_pending: "aucun producteur ; kpi_primary reusable_validated_content sans producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Modules blog et ai-content ; fiches WIKI (CLAUDE.md, invariant 4)."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé."
+      ligne_rapport: "Par gamme : état de l'article et date."
+      decisions: [46, 47, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: content.blog
+        name: "Blog, conseils et guides d'achat"
+        owner: content-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "blog", from: "content" }
+        covers:
+          - { module: "blog" }
+          - { routes: "blog-pieces-auto" }
+          - { routes: "admin.blog" }
+          - { routes: "admin.articles" }
+          - { routes: "admin.blog-analytics" }
+        agents: ["blog-hub-planner", "conseil-batch", "r3-conseils-validator", "r6-content-batch", "r6-guide-achat-validator", "r6-support-validator"]
+        evidence:
+          - { path: "backend/src/modules/blog/controllers/blog.controller.ts" }
+          - { path: "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts" }
+      - id: content.ai-content
+        name: "Génération de contenu assistée et gabarits"
+        owner: content-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "ai-content", from: "content" }
+        covers:
+          - { module: "ai-content" }
+          - { routes: "admin.ai-content" }
+        evidence:
+          - { path: "backend/src/modules/ai-content/ai-content.controller.ts" }
+        gaps:
+          - "Tout producteur RAG→contenu doit être re-sourcé WIKI (CLAUDE.md, invariant 4)."
 
   - id: media
     business_number: 8
@@ -319,6 +1621,44 @@ departments:
     repo_domains: [D12]
     capabilities: [fafa-media-factory, fafa-script-generator]
     state: partial                   # MANUAL mode; pilot (#805/#806)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Vidéos publiées, vues et clics vers le site, par gamme."
+      kpi:
+        definition: "Par gamme : vidéos publiées, vues, clics vers le site."
+        producer_pending: "aucun producteur ; kpi_primary demands_from_video sans producteur ; fiche de fiabilité absente (décision 8)."
+      source:
+        pending_owner_decision: "La décision 43 ne désigne pas la source des vues ni des clics vers le site ; Fafa factory et les skills fafa-* produisent les vidéos, pas leur mesure."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé."
+      ligne_rapport: "Par gamme : vidéos publiées, vues, clics vers le site."
+      decisions: [43, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: media.video-factory
+        name: "Fabrique vidéo : briefs, productions, exécutions, gabarits"
+        owner: media-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "fafa-media-factory", from: "media" }
+        covers:
+          - { module: "media-factory" }
+          - { routes: "admin.video-hub" }
+        evidence:
+          - { path: "backend/src/modules/media-factory/controllers/video-production.controller.ts" }
+          - { path: "workspaces/marketing/fafa-media-factory" }
+        gaps:
+          - "Drapeau media-factory.flag.ts ; activation en service non vérifiée."
+      - id: media.script-generator
+        name: "Scripts vidéo Fafa"
+        owner: media-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "fafa-script-generator", from: "media" }
+        evidence:
+          - { path: "workspaces/marketing/.claude/skills/fafa-script-generator/SKILL.md" }
 
   - id: support
     business_number: 14
@@ -332,6 +1672,125 @@ departments:
     repo_domains: [D11]
     capabilities: [support, customers]
     state: dormant                   # 0 panier abandonné capturé
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Demandes sans réponse au-delà de 24 h ouvrées ; avis négatifs à traiter."
+      kpi:
+        definition: "Demandes sans réponse au-delà de 24 h ouvrées ; avis négatifs à traiter."
+        producer_pending: "aucun producteur ; kpi_primary reactivation_satisfaction sans producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Module support (demandes et réponses). Source des avis non désignée."
+      seuil_action: "Alerte : demande sans réponse au-delà de 24 h ouvrées (décisions 25 et 62)."
+      ligne_rapport: "Demandes sans réponse au-delà de 24 h ouvrées ; avis négatifs à traiter."
+      decisions: [25, 62, 78, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: support.requests
+        name: "Demandes clients : contact, réclamations, tickets, FAQ"
+        owner: support-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "support", from: "support" }
+        covers:
+          - { module: "support" }
+          - { route: "contact" }
+          - { route: "support" }
+          - { routes: "tickets" }
+          - { routes: "account.claims" }
+          - { routes: "admin.claims" }
+        evidence:
+          - { path: "backend/src/modules/support/controllers/claim.controller.ts" }
+          - { path: "backend/src/modules/support/controllers/contact.controller.ts" }
+        decisions: [25, 62]
+      - id: support.reviews
+        name: "Avis clients"
+        owner: support-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { routes: "reviews" }
+        evidence:
+          - { path: "backend/src/modules/support/controllers/review.controller.ts" }
+          - { path: "backend/src/modules/support/services/review.verify-purchase.test.ts" }
+      - id: support.messages
+        name: "Messagerie client et notifications"
+        owner: support-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "messages" }
+          - { routes: "account.messages" }
+          - { routes: "admin.messages" }
+          - { routes: "api.notifications" }
+        evidence:
+          - { path: "backend/src/modules/messages/messages.controller.ts" }
+          - { path: "backend/tests/unit/message-data-service.test.ts" }
+      - id: support.customer-account
+        name: "Compte client : inscription, connexion, profil, adresses, commandes"
+        owner: support-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "customers", from: "support" }
+        covers:
+          - { module: "users" }
+          - { module: "customers" }
+          - { module: "auth" }
+          - { route: "account" }
+          - { route: "app" }
+          - { route: "logout" }
+          - { route: "forgot-password" }
+          - { route: "auth.register" }
+          - { route: "client.set-password" }
+          - { route: "_public+/_layout" }
+          - { route: "_public+/home" }
+          - { route: "_public+/login" }
+          - { route: "_public+/register" }
+          - { route: "_public+/aide" }
+          - { routes: "account.addresses" }
+          - { routes: "account.dashboard" }
+          - { routes: "account.orders" }
+          - { routes: "account.profile" }
+          - { routes: "account.security" }
+          - { routes: "account.settings" }
+          - { routes: "client.orders" }
+          - { routes: "reset-password" }
+          - { routes: "admin.users" }
+        evidence:
+          - { path: "backend/src/modules/users/controllers/addresses.controller.ts" }
+          - { path: "backend/src/modules/users/controllers/password.controller.ts" }
+        gaps:
+          - "Modules customers et auth : DTO seuls."
+      - id: support.ai-chat
+        name: "Assistant client (chatbot RAG)"
+        owner: support-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/rag-proxy/rag-proxy.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/tests/unit/rag-proxy.controller.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        covers:
+          - { module: "rag-proxy" }
+          - { route: "support.ai" }
+        evidence:
+          - { path: "backend/src/modules/rag-proxy/rag-proxy.controller.ts" }
+          - { path: "backend/src/modules/support/controllers/ai-support.controller.ts" }
+        gaps:
+          - "Frontière RAG tranchée par Marwane le 2026-11-18 à 08:53 : alimentation côté wiki, assistant côté support."
+      - id: support.satisfaction-survey
+        name: "Enquête de satisfaction après livraison"
+        owner: support-lead
+        status: missing
+        level: L0
+        justification: "Décidée (décision 78) : le contrat suit les avis négatifs ; aucune enquête n'est envoyée après livraison pour les obtenir de façon systématique."
+        evidence:
+          - { absent: "aucune enquête NPS ou satisfaction trouvée le 2026-11-18" }
+        decisions: [78]
 
   - id: logistics
     business_number: 15
@@ -345,6 +1804,42 @@ departments:
     repo_domains: [D11]
     capabilities: [shipping]
     state: partial                   # physique externe
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Délai entre le paiement et l'expédition."
+      kpi:
+        definition: "Délai entre le paiement et l'expédition."
+        producer_pending: "aucun producteur ; kpi_primary delays_and_returns sans producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Modules shipping et orders ; logistique physique externe."
+      seuil_action:
+        pending_owner_decision: "Alerte après N jours entre paiement et expédition : N reste à fixer (décision 27)."
+      ligne_rapport: "Délai paiement → expédition."
+      decisions: [27, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: logistics.shipping
+        name: "Expédition et suivi de colis"
+        owner: logistics-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "shipping", from: "logistics" }
+        covers:
+          - { module: "shipping" }
+          - { routes: "commercial.shipping" }
+        evidence:
+          - { path: "backend/src/modules/shipping/shipping.controller.ts" }
+          - { path: "backend/src/modules/cart/controllers/cart-shipping.controller.ts" }
+        gaps:
+          - "Seul un test de gardes d'accès existe."
+      - id: logistics.carrier-labels
+        name: "Étiquettes transporteur générées depuis la commande"
+        owner: logistics-lead
+        status: missing
+        level: L0
+        justification: "Proposition, besoin déclaré sans décision : le contrat mesure le délai paiement → expédition ; aucune étiquette ni échange avec un transporteur n'existe dans le dépôt."
+        evidence:
+          - { absent: "aucune génération d'étiquette trouvée le 2026-11-18 (seule mention : expedition-menu.service.ts)" }
 
   - id: finance
     business_number: 17
@@ -358,6 +1853,51 @@ departments:
     repo_domains: [D11]
     capabilities: [invoices]
     state: partial                   # distinct de pricing (Pricing ≠ Finance)
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Rapprochement entre paiement, commande et facture."
+      kpi:
+        definition: "Rapprochement paiement, commande, facture."
+        producer_pending: "aucun producteur ; kpi_primary billing_integrity sans producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Module invoices et comptabilité externe."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé."
+      ligne_rapport: "Rapprochement paiement, commande, facture."
+      decisions: [26, 64, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: finance.invoices
+        name: "Factures client"
+        owner: finance-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "invoices", from: "finance" }
+        covers:
+          - { module: "invoices" }
+          - { routes: "admin.invoices" }
+          - { route: "account.orders.$orderId.invoice" }
+        evidence:
+          - { path: "backend/src/modules/invoices/invoices.controller.ts" }
+        gaps:
+          - "Seul un test de gardes d'accès existe."
+      - id: finance.payment-reconciliation
+        name: "Rapprochement paiement, commande, facture"
+        owner: finance-lead
+        status: missing
+        level: L0
+        justification: "Décidée (décision 26) : c'est la surveillance du contrat finance ; aucun rapprochement entre encaissement, commande et facture n'est calculé."
+        evidence:
+          - { absent: "aucun rapprochement trouvé le 2026-11-18" }
+        decisions: [26]
+      - id: finance.accounting-export
+        name: "Export comptable (fichier des écritures)"
+        owner: finance-lead
+        status: missing
+        level: L0
+        justification: "Proposition, besoin déclaré sans décision : un vendeur en ligne remet ses écritures au comptable ; aucun export comptable n'existe."
+        evidence:
+          - { absent: "aucun export FEC ou comptable trouvé le 2026-11-18" }
 
   - id: people
     business_number: 24
@@ -371,6 +1911,62 @@ departments:
     repo_domains: [D8]
     capabilities: [staff]
     state: partial
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Contradictions ouvertes entre ce que lisent les agents et les décisions en vigueur, avec leur âge."
+      kpi:
+        definition: "Contradictions ouvertes et leur âge ; remplace staff_coverage (décision 40)."
+        producer_pending: "aucun producteur ; kpi_primary vaut encore staff_coverage, son remplacement attend un identifiant de KPI et un producteur ; fiche de fiabilité absente (décision 8)."
+      source: "Instructions lues par les agents (CLAUDE.md, AGENTS.md, .claude/rules, .claude/knowledge) confrontées au journal des principes et aux contrats ; relevé initial docs/audit/mandat-ar-20261116/contradictions.md."
+      seuil_action:
+        pending_owner_decision: "Aucun seuil d'action fixé par les décisions transmises le 2026-11-16 ; aucun seuil inventé."
+      ligne_rapport: "Contradictions ouvertes et leur âge."
+      decisions: [40, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: people.staff
+        name: "Personnel : comptes et droits du back-office"
+        owner: people-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "request"
+          ref: "backend/src/modules/staff/staff.controller.ts"
+          wired: true
+        check:
+          kind: "test"
+          ref: "backend/src/modules/staff/services/staff-data.service.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        uses:
+          - { capability: "staff", from: "people" }
+        covers:
+          - { module: "staff" }
+          - { routes: "admin.staff" }
+          - { routes: "staff" }
+        evidence:
+          - { path: "backend/src/modules/staff/staff.controller.ts" }
+      - id: people.documentation
+        name: "Documentation publiée et carte du dépôt"
+        owner: people-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/deploy-docs.yml" }
+          - { workflow: ".github/workflows/spec-canon-repo-map-drift.yml" }
+          - { workflow: ".github/workflows/spec-validation.yml" }
+        skills: ["session-log"]
+        evidence:
+          - { path: ".github/workflows/deploy-docs.yml" }
+          - { path: ".claude/knowledge/README.md" }
+      - id: people.contradictions
+        name: "Relevé des contradictions entre ce que lisent les agents et les décisions"
+        owner: people-lead
+        status: missing
+        level: L0
+        justification: "Décidée (décision 40) : le contrat compte les contradictions ouvertes et leur âge ; aucun producteur ne les relève."
+        evidence:
+          - { absent: "aucun relevé de contradictions trouvé le 2026-11-18" }
+        decisions: [40]
 
   - id: governance
     business_number: 2
@@ -384,6 +1980,80 @@ departments:
     repo_domains: [D15]
     capabilities: [governance-vault-ops]   # via skills.registry
     state: live                      # governance-vault actif
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Contrats de département en configuration, vérifiés par schéma en CI."
+      kpi:
+        definition: "Contrats incomplets et contradictions ouvertes, ces dernières comptées avec le département 24."
+        producer_pending: "scripts/governance/validate-agent-operating-map.js --contracts compte les contrats incomplets, aucun producteur ne compte les contradictions ouvertes ; kpi_primary limits_respected ne mesure pas ce KPI ; fiche de fiabilité absente (décision 8)."
+      source: "scripts/governance/validate-agent-operating-map.js --contracts ; relevé des contradictions docs/audit/mandat-ar-20261116/contradictions.md."
+      seuil_action: "Contrat incomplet : refusé par la CI (décision 72). Contradiction ouverte : aucun seuil fixé."
+      ligne_rapport: "Contrats incomplets et contradictions ouvertes."
+      decisions: [72, 73]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: governance.canon
+        name: "Canon et contrats : distribution, publication, schémas, dérives"
+        owner: governance-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "governance-vault-ops", from: "governance" }
+        covers:
+          - { workflow: ".github/workflows/canon-distribution.yml" }
+          - { workflow: ".github/workflows/canon-publish.yml" }
+          - { workflow: ".github/workflows/canon-registries-validate.yml" }
+          - { workflow: ".github/workflows/vault-canon-exists.yml" }
+          - { workflow: ".github/workflows/governance-checks.yml" }
+          - { workflow: ".github/workflows/governance-capture-tests.yml" }
+          - { workflow: ".github/workflows/agent-exit-contract-hash.yml" }
+          - { workflow: ".github/workflows/spec-canon-phase2-canon-enum-drift.yml" }
+          - { workflow: ".github/workflows/spec-canon-prompt-registry-drift.yml" }
+          - { workflow: ".github/workflows/contract-gate.yml" }
+          - { workflow: ".github/workflows/contract-drift-observatory.yml" }
+          - { workflow: ".github/workflows/contract-drift-ratchet.yml" }
+          - { workflow: ".github/workflows/commerce-runtime-canon-gate.yml" }
+          - { workflow: ".github/workflows/monorepo-invariants.yml" }
+          - { crontab: 26, script: "/home/deploy/bin/vault-sync.sh", note: "script hors dépôt" }
+        skills: ["governance-vault-ops"]
+        evidence:
+          - { path: "backend/src/modules/admin/controllers/governance-matrix.controller.ts" }
+          - { path: ".claude/governance/journal-des-principes.md" }
+        decisions: [72, 73]
+      - id: governance.merge-circuits
+        name: "Circuits de fusion, Definition of Done, hygiène des PR"
+        owner: governance-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/merge-circuits.yml" }
+          - { workflow: ".github/workflows/merge-circuits-relais.yml" }
+          - { workflow: ".github/workflows/pr-dod-gate.yml" }
+          - { workflow: ".github/workflows/pr-2e-readiness-gate.yml" }
+          - { workflow: ".github/workflows/stale.yml" }
+          - { workflow: ".github/workflows/weekly-pr-hygiene.yml" }
+          - { workflow: ".github/workflows/dependency-graph-validate.yml" }
+        evidence:
+          - { path: "scripts/ci/merge-circuit.mjs" }
+      - id: governance.repository-registry
+        name: "Repository Control Plane : registres L1/L2 et projection"
+        owner: governance-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/registry-build.yml" }
+          - { workflow: ".github/workflows/registry-fresh.yml" }
+          - { workflow: ".github/workflows/registry-new-file-gate.yml" }
+          - { workflow: ".github/workflows/registry-deps-self-heal.yml" }
+          - { workflow: ".github/workflows/orphan-files-ratchet.yml" }
+          - { workflow: ".github/workflows/automation-registry-coverage.yml" }
+          - { workflow: ".github/workflows/automation-registry-freshness.yml" }
+          - { workflow: ".github/workflows/automation-registry-no-auto-bump.yml" }
+          - { workflow: ".github/workflows/automation-registry-validate.yml" }
+          - { workflow: ".github/workflows/closure-t48h-slo-digest.yml" }
+          - { crontab: 36, script: "scripts/ops/registry-self-heal.sh" }
+        evidence:
+          - { path: "packages/registry/README.md" }
 
   - id: strategy
     business_number: 3
@@ -397,6 +2067,39 @@ departments:
     repo_domains: [D10]
     capabilities: [continuous-improvement-global]   # via skills.registry
     state: live
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Score des gammes, qualifié avant usage ; ordre de travail des départements 09, 11 et 07, recalculé chaque semaine ; critère de déclenchement du chantier pros."
+      kpi:
+        definition: "Score des gammes ; règle provisoire : ventes sur 12 mois, puis clics Google perdus de juillet à octobre."
+        producer_pending: "aucun producteur du score ; kpi_primary reuse_improve_create_verdicts ne mesure pas ce score ; fiche de fiabilité absente (décision 8)."
+      source: "Ventes sur 12 mois (commandes) ; clics perdus de juillet à octobre lus dans Search Console."
+      seuil_action:
+        pending_owner_decision: "La décision 80 prévoit un critère de déclenchement du chantier pros ; sa valeur n'a pas été transmise au dépôt. Aucun seuil sur le score."
+      ligne_rapport: "Chaque semaine : les 10 premières gammes et les changements de priorité."
+      decisions: [39, 80, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: strategy.improvement-check
+        name: "Bilan d'amélioration avant un changement de process"
+        owner: strategy-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "continuous-improvement-global", from: "strategy" }
+        skills: ["continuous-improvement-global"]
+        evidence:
+          - { path: ".claude/skills/continuous-improvement-global/SKILL.md" }
+      - id: strategy.gamme-score
+        name: "Score des gammes"
+        owner: strategy-lead
+        status: non_operational
+        level: L1
+        evidence:
+          - { path: "backend/src/modules/admin/services/quality-scoring-engine.service.ts" }
+          - { path: "backend/src/modules/admin/services/gamme-aggregator.service.ts" }
+        gaps:
+          - "Règle provisoire du contrat (ventes 12 mois, clics perdus) non relue dans ces services."
 
   # #23 of audit/automecanik-departments-map.md (Vue 1). Groundable but missed in
   # PR #848's seed — the agent-governance machinery (operating map + skills registry)
@@ -414,6 +2117,78 @@ departments:
     repo_domains: [D15]
     capabilities: [agent-operating-map, skills-registry]
     state: live                      # operating-map validator + skills registry are live, evidence-backed
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Gestes en attente de l'owner et état de chaque mandat ; agents ou tâches actifs hors du circuit des mandats ; PR ouvertes et leur âge ; worktrees orphelins ; disque DEV ; quota."
+      kpi:
+        definition: "Débit de mandats vérifiés."
+        producer_pending: "aucun producteur ; kpi_primary useful_capabilities_not_complexity n'est pas ce KPI. Ne citer un identifiant dans le service KPI qu'avec un producteur réel : sa présence ouvre la session pilote-file (ADR-128) ; fiche de fiabilité absente (décision 8)."
+      source: "Issues du monorepo (une issue = un mandat), PR et worktrees ; source du quota non désignée."
+      seuil_action: "Quota au-dessus de 80 % : alerte (décision 14). Agents ou tâches actifs hors du circuit des mandats : cible zéro (décision 69)."
+      ligne_rapport: "Gestes en attente de l'owner, état des mandats et débit vérifié ; hors circuit ; PR ouvertes et âge, worktrees orphelins, disque DEV."
+      decisions: [14, 69, 85, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: ia-agents.operating-map
+        name: "Carte des agents et contrats de département, vérifiés en CI"
+        owner: ia-agents-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "workflow"
+          ref: ".github/workflows/ci.yml"
+          wired: true
+          detail: "job 🛡️ ADR-010 Governance : --contracts et --self-test"
+        check:
+          kind: "ci_gate"
+          ref: "scripts/governance/validate-agent-operating-map.js"
+          detail: "--self-test"
+        uses:
+          - { capability: "agent-operating-map", from: "ia-agents" }
+        covers:
+          - { workflow: ".github/workflows/skills-canon-gate.yml" }
+          - { workflow: ".github/workflows/agents-md-validation.yml" }
+        evidence:
+          - { path: "scripts/governance/validate-agent-operating-map.js" }
+          - { path: ".spec/00-canon/ai-registry/agent-operating-map.yaml" }
+        decisions: [69]
+      - id: ia-agents.skills-registry
+        name: "Registre des skills"
+        owner: ia-agents-lead
+        status: non_operational
+        level: L1
+        uses:
+          - { capability: "skills-registry", from: "ia-agents" }
+        skills: ["capability-acceptance", "code-auto-review", "code-review"]
+        evidence:
+          - { path: "scripts/governance/build-skills-registry.js" }
+          - { path: ".spec/00-canon/ai-registry/skills.registry.json" }
+      - id: ia-agents.mandate-queue
+        name: "File des mandats et sessions d'agents"
+        owner: ia-agents-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/pilote-file.yml" }
+          - { crontab: 5, script: "scripts/claude-hooks/clean-settings-local.sh" }
+          - { crontab: 8, script: "scripts/claude-hooks/clean-orphan-claude.sh" }
+          - { module: "agentic-engine" }
+        evidence:
+          - { path: ".github/workflows/pilote-file.yml" }
+          - { pr: 2153, state: "merged" }
+          - { path: "backend/src/app.module.ts", lines: "194", note: "AgenticEngineModule archivé le 2026-04-02, import commenté" }
+        decisions: [69]
+        gaps:
+          - "Module agentic-engine (rattaché par Marwane le 2026-11-18 à 08:57) : archivé, commenté dans app.module.ts, retrait à vérifier par un mandat."
+      - id: ia-agents.quota-alert
+        name: "Alerte de quota des agents"
+        owner: ia-agents-lead
+        status: missing
+        level: L0
+        justification: "Décidée (décision 14) : alerte au-dessus de 80 % du quota ; aucune lecture de quota d'agent n'existe."
+        evidence:
+          - { absent: "aucune lecture de quota d'agent trouvée le 2026-11-18" }
+        decisions: [14]
 
   - id: direction
     business_number: 1
@@ -425,6 +2200,36 @@ departments:
     repo_domains: []
     capabilities: []
     state: dormant
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Gestes attendus de l'owner et décisions en attente."
+      kpi:
+        pending_owner_decision: "Les décisions 14 et 41 fixent la ligne de la Direction, produite par le département 23, sans KPI propre ni formule."
+      source: "Production du département 23 : gestes en attente de l'owner et état des mandats."
+      seuil_action: "Au moins un geste attendu de l'owner : mail court (décision 7)."
+      ligne_rapport: "En tête du rapport : gestes attendus de l'owner et décisions en attente, produite par le 23."
+      decisions: [7, 14, 41, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: direction.command-center
+        name: "Command Center : état des départements et gestes attendus de l'owner"
+        owner: direction-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "admin" }
+          - { route: "admin" }
+          - { route: "admin._index" }
+          - { route: "admin.menu" }
+          - { routes: "admin.command-center" }
+          - { routes: "admin.control-plane" }
+        skills: ["project-state-report"]
+        evidence:
+          - { path: "backend/src/modules/admin/controllers/command-center.controller.ts" }
+          - { path: ".github/scripts/morning-health-digest.sh", lines: "725-761", note: "gestes attendus et mail court" }
+        decisions: [7]
+        gaps:
+          - "Le module admin porte 39 contrôleurs de plusieurs départements ; module rattaché à direction, tranché par Marwane le 2026-11-18 à 08:53, à découper à l'approfondissement ; chaque contrôleur est cité par la fonction qui le sert."
 
   - id: legal
     business_number: 18
@@ -436,6 +2241,43 @@ departments:
     repo_domains: []
     capabilities: []
     state: dormant
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Changement d'une page légale ; chantier qui touche une obligation."
+      kpi:
+        none: "Pas de KPI : la ligne n'apparaît que sur événement (décision 38)."
+      source:
+        pending_owner_decision: "La décision 38 ne désigne pas de source pour détecter le changement d'une page légale."
+      seuil_action: "Une page légale change, ou un chantier touche une obligation (décision 38)."
+      ligne_rapport: "Seulement si une page légale change ou si un chantier touche une obligation."
+      decisions: [38, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: legal.legal-pages
+        name: "Pages légales : CGV, mentions, confidentialité, cookies"
+        owner: legal-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { routes: "legal" }
+          - { route: "mentions-legales" }
+          - { route: "conditions-generales-de-vente[.]html" }
+          - { route: "politique-confidentialite" }
+          - { route: "politique-cookies" }
+        evidence:
+          - { path: "backend/src/modules/support/controllers/legal.controller.ts" }
+        decisions: [38]
+        gaps:
+          - "Code dans le module support ; propriétaire legal, tranché par Marwane le 2026-11-18 à 08:53."
+      - id: legal.account-deletion
+        name: "Suppression du compte client à sa demande"
+        owner: legal-lead
+        status: non_operational
+        level: L1
+        evidence:
+          - { path: "frontend/app/routes/account.settings.tsx", lines: "112-126" }
+        gaps:
+          - "Export des données personnelles (droit d'accès) non trouvé."
 
   - id: risk-audit
     business_number: 19
@@ -447,6 +2289,65 @@ departments:
     repo_domains: []
     capabilities: []
     state: dormant
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Écarts à la base de référence des avis de sécurité ; nouvel avis ERROR ; alerte GitHub critique ; comptes au format de mot de passe faible."
+      kpi:
+        definition: "Écarts à la base de référence des avis de sécurité ; comptes au format de mot de passe faible, cible zéro."
+        producer_pending: "aucun producteur ; aucun kpi_primary ; fiche de fiabilité absente (décision 8)."
+      source: "Base de référence des avis de sécurité ; alertes de sécurité GitHub."
+      seuil_action: "Alerte immédiate pour un nouvel avis ERROR ou une alerte GitHub critique (décision 37) ; comptes au format de mot de passe faible : cible zéro (décision 88)."
+      ligne_rapport: "Écarts à la base de référence ; comptes au format de mot de passe faible."
+      decisions: [37, 88, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: risk-audit.security-scans
+        name: "Analyses de sécurité : CodeQL, secrets, gates d'audit"
+        owner: risk-audit-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/codeql.yml" }
+          - { workflow: ".github/workflows/secrets-history-audit.yml" }
+          - { workflow: ".github/workflows/audit.yml" }
+        evidence:
+          - { path: ".github/workflows/codeql.yml" }
+          - { path: ".github/workflows/secrets-history-audit.yml" }
+        decisions: [37]
+      - id: risk-audit.route-authz
+        name: "Gardes d'accès des routes backend"
+        owner: risk-audit-lead
+        status: operational
+        level: L2
+        trigger:
+          kind: "workflow"
+          ref: ".github/workflows/ci.yml"
+          wired: true
+          detail: "jest backend (ligne 246)"
+        check:
+          kind: "test"
+          ref: "backend/tests/unit/suppliers-routes-authz.test.ts"
+          detail: "jest backend, lancé par ci.yml (ligne 246)"
+        evidence:
+          - { path: "backend/tests/unit/order-backoffice-routes-authz.test.ts" }
+          - { path: "backend/tests/unit/admin-tools-routes-authz.test.ts" }
+      - id: risk-audit.incidents
+        name: "Fiches d'incident et fermeture contrôlée"
+        owner: risk-audit-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/incident-issue-gate.yml" }
+        evidence:
+          - { path: ".github/workflows/incident-issue-gate.yml" }
+      - id: risk-audit.order-fraud
+        name: "Filtrage des commandes à risque de fraude"
+        owner: risk-audit-lead
+        status: missing
+        level: L0
+        justification: "Proposition, besoin déclaré sans décision : seul le contrôle de la passerelle de paiement existe ; aucune règle côté commande (zone STOP, aucune action sans accord nominatif)."
+        evidence:
+          - { absent: "seule mention : payments/services/paybox-callback-gate.service.ts" }
 
   - id: product
     business_number: 20
@@ -459,10 +2360,60 @@ departments:
     repo_domains: []
     capabilities: []
     state: dormant
+    contract:                        # décision 72 ; champ absent = refusé, pending_owner_decision = trou déclaré
+      surveillance: "Entonnoir humain hebdomadaire : page pièce, panier, commande, paiement ; diagnostic : parcours menés au bout, abstentions, passages vers une liste, ajouts au panier."
+      kpi:
+        producer: "backend/src/modules/admin/services/command-center-kpi.service.ts"
+        rule: "command-center-action-rules/department-kpi.rules.ts, toDiagnosticToProductKpi"
+        definition: "Entonnoir humain hebdomadaire (décisions 28 et 53) et parcours du diagnostic (décision 56). toDiagnosticToProductKpi ne produit que le passage du diagnostic à un produit."
+      source: "__seo_event_log (session, date, page source), lecture seule, 30 jours glissants."
+      seuil_action: "CRITICAL si des sessions ont visité le diagnostic et qu'aucune n'a vu de produit ensuite, sinon UNKNOWN (toDiagnosticToProductKpi) ; aucun seuil fixé pour l'entonnoir."
+      ligne_rapport: "Entonnoir humain hebdomadaire ; parcours du diagnostic."
+      decisions: [28, 53, 56, 72]
+    # Fonctions du département (complément BX-2, 2026-11-18). Modèle et règles :
+    # .spec/00-canon/ai-registry/department-functions.md. Relevé du 2026-11-18 sur main 6800cf093.
+    functions:
+      - id: product.storefront-shell
+        name: "Gabarit du site : en-tête, pied, navigation, sections"
+        owner: product-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { module: "layout" }
+          - { module: "navigation" }
+        skills: ["frontend-design", "ui-ux-pro-max", "responsive-audit"]
+        evidence:
+          - { path: "backend/src/modules/layout/controllers/layout.controller.ts" }
+          - { path: "backend/src/modules/navigation/navigation.controller.ts" }
+      - id: product.quality-gates
+        name: "Gates de performance et de rendu visuel"
+        owner: product-lead
+        status: non_operational
+        level: L1
+        covers:
+          - { workflow: ".github/workflows/perf-gates.yml" }
+          - { workflow: ".github/workflows/visual-gate.yml" }
+        evidence:
+          - { path: ".github/workflows/perf-gates.yml" }
+          - { path: ".github/workflows/visual-gate.yml" }
+        decisions: [53]
+      - id: product.diagnostic-to-product
+        name: "Passage du diagnostic à un produit"
+        owner: product-lead
+        status: non_operational
+        level: L1
+        evidence:
+          - { path: "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts" }
+        decisions: [56]
 
 # Allowlist of capabilities that resolve to neither a registry skill nor a node
 # yet (modules/engines/services/signals). Keeps department.capabilities from being
 # ghost slugs; `owner` is the department id. Each commented with its real path.
+# Éléments du dépôt rattachés à aucune fonction, avec leur motif (complément BX-2).
+# Le validateur (--contracts) les retire du rapport de couverture. Liste vide depuis le
+# complément BX-3 (rattachements décidés par Marwane le 2026-11-18 à 08:57).
+function_coverage_unassigned: []
+
 declared_capabilities:
   # `evidence` (optional, additive in this PR) carries the real backing — scripts/paths
   # (existsSync-checked by the snapshot generator → BROKEN if absent), tables, runtime

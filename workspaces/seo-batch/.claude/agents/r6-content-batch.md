@@ -12,7 +12,7 @@ role: R6_GUIDE_ACHAT
 > 🚫 **NEUTRALISÉ** — cet agent est **inerte**. Son corps opératoire (lecture du keyword
 > plan `__seo_r6_keyword_plan` + du corpus RAG `rag/knowledge/gammes/*.md`, pipeline 7 prompts,
 > écriture `UPDATE __seo_gamme_purchase_guide` via MCP Supabase) a été **retiré**. C'était la
-> direction **RAG→source-de-contenu interdite** (ADR-031 / ADR-046, vault) : le RAG est un
+> direction **RAG→source-de-contenu interdite** (P11 du journal des principes ; origine ADR-031 / ADR-046) : le RAG est un
 > retrieval **chatbot uniquement**, jamais une source de contenu / SEO indexé.
 
 ## Écriture désactivée (défense en profondeur)

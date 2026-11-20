@@ -1283,12 +1283,12 @@ export default function CheckoutPage() {
       {/* Mini footer */}
       <footer className="border-t border-gray-200 bg-white py-4 text-center text-xs text-gray-500">
         <div className="mx-auto max-w-6xl px-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-          <Link to="/cgv" className="hover:text-gray-700 hover:underline">
+          <Link to="/legal/cgv" className="hover:text-gray-700 hover:underline">
             CGV
           </Link>
           <span>&middot;</span>
           <Link
-            to="/confidentialite"
+            to="/legal/privacy"
             className="hover:text-gray-700 hover:underline"
           >
             Confidentialite

@@ -1,0 +1,42 @@
+diff --git a/.github/CODEOWNERS b/.github/CODEOWNERS
+index 184473062..d65e35e5b 100644
+--- a/.github/CODEOWNERS
++++ b/.github/CODEOWNERS
+@@ -89,6 +89,5 @@
+ # Gouvernance : classification des risques, contrats, circuits de fusion
+ /.spec/00-canon/                                     @ak125
+ /scripts/ci/merge-circuit.mjs                        @ak125
+-/scripts/ci/merge-perimeter-gate.mjs                 @ak125
+ /scripts/registry/check-new-files.js                 @ak125
+ /scripts/governance/validate-agent-operating-map.js  @ak125
+diff --git a/.github/workflows/audit.yml b/.github/workflows/audit.yml
+index e0a3f0667..903d519a7 100644
+--- a/.github/workflows/audit.yml
++++ b/.github/workflows/audit.yml
+@@ -152,11 +152,6 @@ jobs:
+         # no workflow ran it: the citation was a YAML comment.
+         run: node --test scripts/ci/pr-dod-gate.test.mjs
+ 
+-      - name: 🚧 Merge perimeter gate — refusal cases unit proof (BLOCKING)
+-        # ADR-124: the gate refuses every case it cannot prove. Inert while the
+-        # vault policy is absent or not active.
+-        run: node --test scripts/ci/merge-perimeter-gate.test.mjs
+-
+       - name: 📦 Initial-load size verifier — fails on the states it exists to catch (BLOCKING)
+         # The npm script existed; no workflow called it.
+         run: npm run size:verify-paths:test
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 45802a4ba..1028e5170 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -107,8 +107,8 @@ devient une archive.
+   par schéma en CI. Un principe nouveau s'écrit au journal par PR ; pas de
+   nouvelle ADR.
+ - Fusion : trois circuits (`scripts/ci/merge-circuit.mjs`, workflow
+-  `🚦 Circuit de fusion`). Tant que l'owner ne les a pas activés, la porte
+-  ADR-124 s'applique. Un agent ne fusionne jamais et n'arme jamais l'auto-fusion.
++  `🚦 Circuit de fusion`) ; leur état d'application est dans P20 du journal.
++  Un agent ne fusionne jamais et n'arme jamais l'auto-fusion.
+ - `ak125/governance-vault` : archive en lecture seule après déplacement (décision
+   73, plan `docs/audit/mandat-ar-20261116/inventaire-vault-et-plan.md`). Une ADR
+   du vault explique une décision ; elle n'est plus normative par elle-même. Jusqu'à

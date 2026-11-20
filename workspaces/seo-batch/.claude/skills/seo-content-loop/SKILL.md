@@ -10,7 +10,9 @@ allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep, Bash
 
 # SEO Content Loop — la boucle canonique du contenu (NO-RAG)
 
-> **Skill = méthode opératoire, PAS canon.** La gouvernance vit au **vault** :
+> **Skill = méthode opératoire, PAS canon.** Les principes en vigueur sont au journal du monorepo
+> (`.claude/governance/journal-des-principes.md`, à la racine : P10, P11, P15). ADR d'origine, dans
+> l'archive du vault :
 > ADR-031 (raw/wiki/rag/seo separation) · ADR-046 (RAG = retrieval chatbot only) ·
 > ADR-059 (SEO Runtime Projection) · ADR-083 (tiered WIKI promotion) · ADR-086 (Content Excellence Contract).
 > Ce skill **pointe** vers eux, ne les réécrit jamais.
@@ -47,8 +49,9 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
      `automecanik-raw/sources/web-research/colonne-de-direction/` (pg 1211, 31 sources).
    - Le handoff `raw-to-wiki` (état **PARTIAL**, gate **`human_review_required`**, antérieur à ADR-119 et sans
      effet : aucune relecture humaine de fiche n'est une condition de promotion) est tracé dans la projection
-     **de référence** (non-canon) `.spec/00-canon/ai-registry/agent-operating-map.yaml` ; le **canon** est au
-     vault (**ADR-031** raw→wiki, **ADR-059** projection, **ADR-083** promotion tiered).
+     **de référence** (non-canon) `.spec/00-canon/ai-registry/agent-operating-map.yaml` ; la règle en vigueur est
+     P10 du journal des principes (origine, dans l'archive du vault : **ADR-031** raw→wiki, **ADR-059**
+     projection, **ADR-083** promotion tiered).
    - **Point de départ = besoin client** : les questions réelles de la gamme/motorisation (choix, compatibilité,
      symptômes, entretien, PAA), chacune rattachée à un `target_wiki_field`. La recherche répond à ces questions ;
      elle ne cherche pas à « saturer » le sujet.
@@ -80,9 +83,12 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
      - **Dédup + refresh** : chaque cible scrapée **une seule fois** (manifest type `app/audit/scrape-targets-*.md`) ;
        rafraîchir périodiquement. Sortie toujours **`.md`** par `target_wiki_field` (cf. ci-dessus).
    - **Mesure de la substance produite (complète l'étape 5) — ⚠️ SCORING EN TRANSITION + ⚠️ ÉTAT RUNTIME À VÉRIFIER SUR `origin/main`** :
-     - **Ne pas traiter ce skill comme une vérité runtime figée.** Les scorers + la porte de promotion du wiki
-       (`_scripts/compute-confidence-score.py`, `_scripts/promote.py` ADR-083 TIER A/B, `_scripts/shadow_score.py` ADR-088 6-dim
-       derrière flag `PROMOTE_GATE_ENGINE`, gate régression `compare-proposal-versions.py`) **évoluent vite et peuvent être
+     - **Ne pas traiter ce skill comme une vérité runtime figée.** Le décideur unique est
+       `_scripts/promotion_decision.py` (ADR-114 D2) ; `_scripts/promote.py` en est l'adaptateur CLI, exécuté chaque jour
+       par `knowledge-jobs.timer` (constat 2026-11-15, §« Carte du circuit »). `compute-confidence-score.py`,
+       `shadow_score.py` et la garde de régression `compare-proposal-versions.py` sont des composants lus par ce décideur.
+       Le moteur de tier actif est `legacy` (défaut de `PROMOTE_GATE_ENGINE`) ; le passage à `adr088_6dim` reste réservé
+       au propriétaire. Ces scripts **évoluent vite et peuvent être
        absents ou différents sur un checkout périmé** (incident 2026-07-02 : checkout wiki 31+ commits derrière `origin/main`).
        **AVANT de t'appuyer sur eux** : (1) lancer la garde de fraîcheur `scripts/ops/check-repo-freshness.sh <chemin-wiki> origin/main`
        (racine monorepo) — si `STALE`, ne conclus pas sur le vieux code ; (2) lire l'état réel via
@@ -124,8 +130,36 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
      les questions concernées, pas plus large), puis re-mesure. Arrêt dès que le seuil est atteint, qu'une reprise ne
      fait plus progresser la mesure, ou au maximum de reprises fixé par le brief : le lot est alors livré `à revoir`
      avec ses manques, pas relancé indéfiniment. Ne jamais relever une note, retirer un critère ni assouplir un seuil
-     pour passer. Une règle ou un seuil canonique change par son circuit de gouvernance (vault/ADR), jamais par une
+     pour passer. Une règle ou un seuil canonique change par son circuit de gouvernance (principe au journal ou contrat, par PR), jamais par une
      édition de ce skill ou d'un miroir.
+
+## Carte du circuit — une pièce canon par étape
+
+> **Carte unique** des pièces du circuit (mandat AD, 2026-11-15). Les règles en vigueur sont au journal des principes (origine : ADR-031/046/059/083/114/119, archive du vault) ;
+> cette carte nomme seulement la pièce qui exécute chaque étape. Les autres registres pointent ici :
+> `.claude/prompts/_registry/canon-registry.md`, `.spec/00-canon/prompt-registry.md`,
+> `.spec/00-canon/artefact-registry.md` et le handoff `raw-to-wiki` de `.spec/00-canon/ai-registry/agent-operating-map.yaml`
+> (correctifs propriétaire préparés). `audit/registry/canonical.json` reste une projection générée.
+> Preuves d'usage et pièces retirées : `audit/seo-content-circuit-2026-11-15.md`.
+
+| # | Étape | Pièce canon | Déclencheur réel | Preuve d'usage (2026-11-15) |
+|---|-------|-------------|------------------|-----------------------------|
+| 1 | Besoin et brief | file d'issues GitHub (ADR-128 D1), routine `pilote-file.yml` | cron horaire | run planifié vert 14:06Z |
+| 2 | Capture | `automecanik-raw/_scripts/auto-capture-runner.py` (allowlist `manifests/ingestion-allowlist.yaml`) + run `RUN_TARGETED_RAW_TO_WIKI` → `sources/web-research/<gamme>/` | session sous mandat | 5 exécutions tracées, dernière 14:42Z |
+| 3 | RAW | `automecanik-raw/_scripts/gates.py` (gates I/J), `regen-manifests.py` | pre-commit RAW + CI `raw-checksum-verify` | 18 exécutions tracées |
+| 4 | WIKI (proposition) | skill `workspaces/wiki/.claude/skills/wiki-proposal-writer` → `proposals/` | session sous mandat | lu 10 fois en sessions, dernière 14:04Z |
+| 5 | Contrôle WIKI | `_scripts/validate-frontmatter.py`, `_scripts/quality-gates.py`, `_scripts/gates/` | CI `lint` + `wiki-quality-gates` + `knowledge-jobs` | main : `lint` vert 11-14, `wiki-quality-gates` vert 11-04 ; run quotidien 07:00Z |
+| 6 | Étape 11 (qualification technique + contestation) | **aucune pièce câblée** : ADR-131 `proposed` (vault PR #413), condition `technical_qualification_pass` à lire par le décideur | — | mandat S en cours |
+| 7 | Promotion | `_scripts/promotion_decision.py` (décideur unique), via `_scripts/promote.py --apply` | `knowledge-jobs.timer` 08:00 Paris (hors dépôt) | run 07:00Z : 0 éligible, 13 bloquées |
+| 8 | Export | `_scripts/build_exports_seo.py` → `exports/seo` ; `exports/rag` pour le chatbot | `.github/workflows/wiki-exports-seo-generate.yml` 02:15 UTC | run planifié vert 02:20Z |
+| 9 | Projection DB | `backend/src/modules/seo-projection/` (feeder BullMQ → writer) → `__seo_content_blocks`, `__seo_entity_facts`, `__seo_projection_runs` | feeder planifié | 42 runs `succeeded`, dernier 02:00Z |
+| 10 | Consommation | `seo-projection-reader.service.ts` sous `SEO_PROJECTION_READ_V1` + `SEO_PROJECTION_READ_CANARY` | rendu SSR | flags OFF par défaut : projeté ≠ servi |
+| 11 | Chatbot (hors chaîne contenu) | `scripts/cron/sync-rag-from-wiki.sh` : `exports/rag` → `automecanik-rag/knowledge` | cron horaire | no-op 15:00Z ; dernier commit RAG 2026-07-19 |
+| 12 | Mesure | skills `v5-guardian` (lignes existantes), `seo-gamme-audit` (rendu), `content-audit` ; GSC/GA4 | session sous mandat | aucune invocation `Skill` tracée depuis 2026-10-03 |
+
+Point d'entrée unique de la boucle : non décidé. Le projet **ADR-136** (PR vault #418, jamais fusionnée) ne sera pas
+ratifié dans le vault, devenu archive : la décision revient à l'owner. Tant qu'elle n'est pas prise, aucune pièce de
+cette carte n'est créée ni activée au nom de la carte.
 
 ## Différenciation = réelle, sur le bon AXE (anti-bricolage)
 - **Jamais fabriquée** : si deux sœurs (ex. 105 std vs 105 4Motion) sont proches pour une gamme, l'assumer ;

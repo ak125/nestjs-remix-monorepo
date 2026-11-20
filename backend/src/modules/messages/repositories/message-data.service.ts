@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 // Interface pour le message moderne
 export interface ModernMessage {
@@ -62,17 +63,6 @@ function isFlagSet(value: unknown): boolean {
 }
 
 /**
- * Motif `ilike` « contient ce texte », cité pour la grammaire de filtre
- * PostgREST : le texte saisi ne peut ni fermer la valeur ni ajouter une
- * condition, et `%`, `_` et `\` y sont cherchés tels quels.
- */
-function containsPattern(term: string): string {
-  const literal = term.replace(/[\\%_]/g, '\\$&');
-  const quoted = `%${literal}%`.replace(/[\\"]/g, '\\$&');
-  return `"${quoted}"`;
-}
-
-/**
  * Mode de comptage : exact tant que le résultat reste sous le plafond de
  * lignes de l'API, estimation du planificateur au-delà. Un comptage exact de
  * la table entière la parcourt à chaque appel.
@@ -127,7 +117,7 @@ export class MessageDataService extends SupabaseBaseService {
       }
 
       if (search) {
-        const pattern = containsPattern(search);
+        const pattern = ilikeContains(search);
         query = query.or(
           `msg_subject.ilike.${pattern},msg_content.ilike.${pattern}`,
         );

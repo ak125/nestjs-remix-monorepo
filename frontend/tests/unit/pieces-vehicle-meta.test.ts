@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives";
+import { findGammeThumbnail } from "~/utils/pieces-loader.utils";
 import { buildPiecesVehicleMeta } from "~/utils/pieces-vehicle.meta";
-import type { NoProductsData } from "~/components/pieces/NoProductsAlternatives";
 
 const noProductsFixture: NoProductsData = {
   noProducts: true,
@@ -92,5 +93,104 @@ describe("buildPiecesVehicleMeta — soft-404 branch", () => {
       ?.content;
     expect(ogt).toBeTruthy();
     expect(ogd).toBeTruthy();
+  });
+});
+
+const storage =
+  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
+
+function productPage(gammeThumbnail: string | null) {
+  return {
+    canonicalPath:
+      "/pieces/plaquette-de-frein-402/audi-22/a8-i-22060/4-2-quattro-14557.html",
+    vehicle: { marque: "AUDI", marqueAlias: "audi", modele: "A8 I" },
+    gamme: { id: 402, name: "Plaquette de frein", alias: "plaquette-de-frein" },
+    pieces: [],
+    count: 0,
+    gammeThumbnail,
+    seo: {
+      title: "Plaquette de frein AUDI A8 I 4.2 Quattro",
+      description: "Plaquettes de frein compatibles.",
+    },
+  };
+}
+
+function og(meta: ReturnType<typeof buildPiecesVehicleMeta>, property: string) {
+  return (meta.find((m: any) => m.property === property) as any)?.content;
+}
+
+describe("buildPiecesVehicleMeta — og:image (canon image-matrix-v1, TRANSACTION)", () => {
+  it("dérive og:image de la vignette pg_img de la gamme", () => {
+    const meta = buildPiecesVehicleMeta(
+      productPage("plaquette-de-frein.webp"),
+      location,
+    );
+    expect(og(meta, "og:image")).toBe(
+      `https://www.automecanik.com/imgproxy/rs:fit:1200:630/q:85/plain/${storage}/uploads/articles/gammes-produits/catalogue/plaquette-de-frein.webp@webp`,
+    );
+    expect(og(meta, "og:image:width")).toBe("1200");
+    expect(og(meta, "og:image:height")).toBe("630");
+    expect(og(meta, "og:image:alt")).toBe(
+      "Plaquette de frein AUDI A8 I 4.2 Quattro",
+    );
+  });
+
+  it("sans vignette : asset statique de la classe TRANSACTION", () => {
+    const meta = buildPiecesVehicleMeta(productPage(null), location);
+    expect(og(meta, "og:image")).toBe(
+      "https://www.automecanik.com/images/og/transaction.webp",
+    );
+  });
+
+  it("page alternatives (noindex) : pas d'og:image ajoutée", () => {
+    const meta = buildPiecesVehicleMeta(noProductsFixture, location);
+    expect(og(meta, "og:image")).toBeUndefined();
+  });
+});
+
+describe("findGammeThumbnail", () => {
+  const hierarchy = {
+    catalog: {
+      families: [
+        {
+          mf_id: 1,
+          mf_name: "Freinage",
+          gammes: [
+            {
+              pg_id: 402,
+              pg_alias: "plaquette-de-frein",
+              pg_name: "Plaquette",
+              pg_img: "plaquette-de-frein.webp",
+            },
+            {
+              pg_id: 82,
+              pg_alias: "disque-de-frein",
+              pg_name: "Disque",
+              pg_img: "no.webp",
+            },
+            {
+              pg_id: 78,
+              pg_alias: "etrier-de-frein",
+              pg_name: "Étrier",
+              pg_img: null,
+            },
+          ],
+        },
+      ],
+    },
+  };
+
+  it("renvoie pg_img de la gamme", () => {
+    expect(findGammeThumbnail(hierarchy, 402)).toBe("plaquette-de-frein.webp");
+  });
+
+  it("null si vignette invalide ou absente, sans nom de fichier deviné", () => {
+    expect(findGammeThumbnail(hierarchy, 82)).toBeNull();
+    expect(findGammeThumbnail(hierarchy, 78)).toBeNull();
+  });
+
+  it("null si gamme hors hiérarchie ou hiérarchie indisponible", () => {
+    expect(findGammeThumbnail(hierarchy, 2066)).toBeNull();
+    expect(findGammeThumbnail(null, 402)).toBeNull();
   });
 });

@@ -14,8 +14,9 @@
  * transactional tail). Editorial surfaces (R3, R4, R6_*) keep `allowedLeakage`
  * empty by design — preserve the role purity required by the canon planners.
  *
- * Source : `.claude/prompts/R<role>/planner.md` rerouting rules and the matching
- * `contract.md` frontmatter `intent`. Hand-curated mirror; the future
+ * Source : the rerouting rules of the `.claude/prompts/R<role>/planner.md`
+ * prompts (all but R3/R5 retired on 2026-11-15; see Git history) and the
+ * matching `contract.md` frontmatter `intent`. Hand-curated mirror; the future
  * `canon.json` build pipeline (PR-A.bis) will derive this matrix from the
  * prompts directly.
  */

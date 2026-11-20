@@ -17,6 +17,7 @@ import {
 import {
   countDiagnosticToProduct,
   countPagesGeneratingAtc,
+  diagnosticQualificationNote,
   firstVisitBySession,
   toDiagnosticToProductKpi,
   toMetricReliabilityKpi,
@@ -208,6 +209,28 @@ describe('firstVisitBySession + countDiagnosticToProduct', () => {
     expect(
       toDiagnosticToProductKpi({ sessions: 5, reachedProduct: 0 }, 30).status,
     ).toBe('CRITICAL');
+  });
+
+  it('période non qualifiée (visites antérieures au classement) → UNKNOWN, non certifié, jamais CRITICAL', () => {
+    const counts = { sessions: 5, reachedProduct: 0, unclassifiedVisits: 40 };
+    expect(toDiagnosticToProductKpi(counts, 30)).toMatchObject({
+      value: 0,
+      status: 'UNKNOWN',
+      certified: false,
+    });
+    expect(diagnosticQualificationNote(counts)).toMatch(
+      /^Non qualifié : 40 visite\(s\) du diagnostic/,
+    );
+  });
+
+  it('période entièrement classée → certifiée, sans note', () => {
+    const counts = { sessions: 5, reachedProduct: 0, unclassifiedVisits: 0 };
+    expect(toDiagnosticToProductKpi(counts, 30)).toMatchObject({
+      status: 'CRITICAL',
+      certified: true,
+    });
+    expect(diagnosticQualificationNote(counts)).toBeNull();
+    expect(diagnosticQualificationNote(null)).toBeNull();
   });
 
   it('lecture illisible → UNKNOWN, pas zéro', () => {

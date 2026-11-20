@@ -12,7 +12,8 @@ dangereux (`exec`, `eval`, `innerHTML`, `dangerouslySetInnerHTML`, `os.system`,
   il ne devient pas un gate bloquant.
 - La source de vérité sécurité reste hors de ce plugin : les contrôles CI
   (CodeQL, gitleaks, ESLint flat, ast-grep, `block-new` ownership, tests) et la
-  Definition of Done canonique, règle vault `rules-engineering-definition-of-done`
+  Definition of Done canonique,
+  `.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md`
   (DoD2 amendée par ADR-120). Ce plugin n'ajoute ni ne retire aucune exigence
   de contrôle, de revue ou d'autorisation, zones STOP de CLAUDE.md comprises.
 - Recommandations, non bloquantes : les warnings de ce plugin et l'Improvement

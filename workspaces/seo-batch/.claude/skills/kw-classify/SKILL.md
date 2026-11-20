@@ -15,7 +15,7 @@ Ce skill classifie contextuellement chaque KW dans `R1/R3/R4/R6` ou l'exclut (po
 **Pourquoi skills-first :**
 - Regex = faux positifs ("filtre à huile hydraulique" classé R1 alors que c'est industriel)
 - Claude comprend le sens du KW + le contexte gamme (RAG) = classification de qualité
-- 1 run par gamme (post-import) → pré-classifie pour `/content-gen` → zéro charge répétée
+- 1 run par gamme (post-import) → pré-classifie pour `/seo-content-loop` → zéro charge répétée
 
 ## Usage
 
@@ -173,7 +173,7 @@ Raisons d'exclusion :
 - Confusion : 8 KW (filtre à air, filtre à carburant)
 - must_not_contain : 347 KW (climatisation, universel, accessoires...)
 
-Prochaine étape : /content-gen {pg_alias} --all
+Prochaine étape : /seo-content-loop {pg_alias}
 ```
 
 ---
@@ -201,9 +201,8 @@ Prochaine étape : /content-gen {pg_alias} --all
      → __seo_keywords (raw, sans role)
 3. Claude Code : /kw-classify {gamme}
      → __seo_keyword_results (classifié par role, vol percentile)
-4. Claude Code : /content-gen {gamme} --all
-     → lit __seo_keyword_results pré-classifié
-     → génère contenu R1/R3/R4/R6 + images
+4. Claude Code : /seo-content-loop {gamme}
+     → boucle RAW → WIKI → projection (le RAG n'est pas une source de contenu)
      → écrit en DB
 ```
 

@@ -156,8 +156,9 @@ Lancer la generation ciblee :
 
 ```
 keyword-planner targeted {pg_alias}    (P0 > P0.5 > P1 > P2-P9 > P10 > P11)
-conseil-batch {pg_alias}               (sections conseil avec sources)
 ```
+
+Contenu R3 : boucle `seo-content-loop` (RAW → WIKI → projection). L'agent `conseil-batch` est neutralise depuis le 2026-07-19.
 
 ### Etape 5 — Verifier (2 min)
 
@@ -176,9 +177,9 @@ Verifier :
 
 | Etat | RAG suffisant ? | Action |
 |------|----------------|--------|
-| FAIBLE (score < 70) | Oui | **REGENERER** : relancer `conseil-batch {slug}` (automatique) |
+| FAIBLE (score < 70) | Oui | **REGENERER** : boucle `seo-content-loop` (RAW → WIKI → projection) |
 | FAIBLE (score < 70) | Non | **DOC REQUISE** : fournir la doc (voir DOCUMENTATION A FOURNIR) |
-| MANQUANTE | Oui | **REGENERER** : creer via `conseil-batch {slug}` |
+| MANQUANTE | Oui | **REGENERER** : boucle `seo-content-loop` (RAW → WIKI → projection) |
 | MANQUANTE | Non | **DOC REQUISE** : enrichir le RAG d'abord (retour etape 2) |
 | BLOQUE (RAG insuffisant) | Non | **DOC REQUISE** : enrichir le RAG d'abord (retour etape 2) |
 
@@ -219,7 +220,7 @@ WHERE sgc_pg_id = '{pg_id}' AND sgc_section_type = '{section}'
 | `keyword-planner audit-only {slug}` | Audit P0 seul (SQL, 0 LLM) |
 | `keyword-planner targeted {slug}` | Pipeline complet cible |
 | `keyword-planner section-fix {slug} S3 S6` | Corriger sections specifiques |
-| `conseil-batch {slug}` | Generation sections conseil |
+| `/seo-content-loop {slug}` | Contenu R3 (RAW → WIKI → projection) |
 
 ### Scripts helper
 
@@ -272,7 +273,7 @@ FROM __seo_gamme_conseil WHERE sgc_pg_id = '{pg_id}' ORDER BY sgc_order;
 | `backend/src/config/keyword-plan.constants.ts` | Constantes pipeline (gates, thresholds, MediaSlot) |
 | `backend/src/config/conseil-pack.constants.ts` | Packs (standard/pro/eeat), scoring, phrases generiques |
 | `.claude/agents/keyword-planner.md` | Agent keyword-planner V4 |
-| `.claude/agents/conseil-batch.md` | Agent conseil-batch (generation contenu) |
+| `workspaces/seo-batch/.claude/skills/seo-content-loop/SKILL.md` | Boucle contenu RAW → WIKI → projection |
 | `.claude/agents/research-agent.md` | Agent research (briefs + clusters) |
 | `backend/src/modules/admin/services/keyword-plan-gates.service.ts` | Gates G1-G7 + audit GA1-GA6 |
 

@@ -1,0 +1,21 @@
+jobid,jobname,schedule,active,command,last_run,last_status
+1,refresh-gamme-aggregates,*/15 * * * *,t,SELECT refresh_gamme_aggregates(),2026-11-18 09:45:00.01551+00,succeeded
+11,error-logs-retention,0 3 * * *,t,DELETE FROM public.__error_logs WHERE err_created_at < now() - interval '30 days',2026-11-18 03:00:00.034905+00,succeeded
+14,refresh-stale-gamme-cache,*/10 * * * *,t,SELECT refresh_stale_gamme_cache(50),2026-11-18 09:50:00.015093+00,succeeded
+15,snapshot-partition-rotation,20 2 * * *,t,SELECT public.maintain_snapshot_partitions();,2026-11-18 02:20:00.023869+00,succeeded
+16,observability-partition-rotation,40 2 * * *,t,SELECT public.maintain_observability_partitions();,2026-11-18 02:40:00.01873+00,succeeded
+17,quality-history-partition-rotation,50 2 * * *,t,SELECT public.ensure_next_quality_history_partition();,2026-11-18 02:50:00.021948+00,succeeded
+18,cwv-raw-rotation,55 2 * * *,t,SELECT public.maintain_cwv_raw_partitions();,2026-11-18 02:55:00.014577+00,succeeded
+19,cwv-hourly-rotation,0 3 * * *,t,SELECT public.maintain_cwv_hourly_partitions();,2026-11-18 03:00:00.050451+00,succeeded
+20,cwv-daily-rum-rotation,10 3 * * 0,t,SELECT public.maintain_cwv_daily_rum_partitions();,2026-11-15 03:10:00.022928+00,succeeded
+21,cwv-trend-divergence-detection,0 4 * * *,t,SELECT public.detect_cwv_trend_divergence();,2026-11-18 04:00:00.028004+00,succeeded
+22,seo-ensure-monthly-partitions,0 3 1 * *,t,SELECT __seo_ensure_monthly_partitions(3),2026-11-01 03:00:00.037226+00,succeeded
+23,rls-reconcile-internal-tables,15 * * * *,t, SELECT public.__rls_reconcile_internal_tables(); ,2026-11-18 09:15:00.018362+00,succeeded
+24,pieces-price-history-partition-rotation,25 2 * * *,t,SELECT public.maintain_pieces_price_history_partitions();,2026-11-18 02:25:00.016105+00,succeeded
+25,pricing-decision-snapshot-partition-rotation,30 2 * * *,t,SELECT public.maintain_pricing_decision_snapshot_partitions();,2026-11-18 02:30:00.036197+00,succeeded
+26,supplier-offer-snapshot-partition-rotation,35 2 * * *,t,SELECT public.maintain_supplier_offer_snapshot_partitions();,2026-11-18 02:35:00.019674+00,succeeded
+27,cwv-hourly-aggregation,5 * * * *,t,"/* migration:20260626_seo_cwv_aggregation_cron */ SELECT public.aggregate_cwv_hourly(   date_trunc('hour', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' - make_interval(hours => h) ) FROM generate_series(1, 48) AS gs(h); ",2026-11-18 09:05:00.014932+00,succeeded
+28,cwv-daily-rum-aggregation,15 0 * * *,t,"/* migration:20260626_seo_cwv_aggregation_cron */ SELECT public.aggregate_cwv_daily_rum(((now() AT TIME ZONE 'UTC')::date - d)) FROM generate_series(1, 2) AS gs(d); ",2026-11-18 00:15:00.021375+00,succeeded
+29,cwv-aggregation-coverage-check,35 * * * *,t,SELECT public.detect_cwv_aggregation_coverage_gap();,2026-11-18 09:35:00.015109+00,succeeded
+31,soft-404-events-retention,20 3 * * *,t,/* migration:20260929_soft_404_events_retention_cron */ DELETE FROM public.__soft_404_events WHERE ts < now() - interval '90 days'; ,2026-11-18 03:20:00.017258+00,succeeded
+32,cron-job-run-details-retention,30 3 * * *,t,/* migration:20261001_cron_job_run_details_retention */ DELETE FROM cron.job_run_details WHERE start_time < now() - interval '90 days'   AND runid NOT IN (SELECT max(runid) FROM cron.job_run_details GROUP BY jobid); ,2026-11-18 03:30:00.023846+00,succeeded

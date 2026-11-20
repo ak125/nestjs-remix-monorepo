@@ -28,6 +28,8 @@ import {
 } from "react-router";
 import { toast } from "sonner";
 
+import { OrderLineSupplierPanel } from "~/components/admin/OrderLineSupplierPanel";
+import { SupplierOrderPreparationPanel } from "~/components/admin/SupplierOrderPreparationPanel";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -338,6 +340,31 @@ export default function CommercialOrderDetailPage() {
                   <p className="text-muted-foreground text-sm py-4">
                     Aucune ligne
                   </p>
+                )}
+
+                {/* Décision 50 + mandat BK : fournisseur par ligne, commande
+                    fournisseur préparée en mode essai (jamais envoyée) */}
+                {order.orderLines && order.orderLines.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm font-medium">Fournisseur par ligne</p>
+                    {order.orderLines.map((line: any) => (
+                      <div key={`spl-${line.orl_id}`}>
+                        <OrderLineSupplierPanel
+                          orderId={String(order.ord_id)}
+                          lineId={String(line.orl_id)}
+                          label={
+                            [line.orl_pm_name, line.orl_art_ref]
+                              .filter(Boolean)
+                              .join(" ") || String(line.orl_id)
+                          }
+                        />
+                        <SupplierOrderPreparationPanel
+                          orderId={String(order.ord_id)}
+                          lineId={String(line.orl_id)}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 )}
                 <Separator className="my-4" />
                 <div className="space-y-2 max-w-xs ml-auto">

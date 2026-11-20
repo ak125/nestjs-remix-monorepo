@@ -1,0 +1,19 @@
+measured_utc
+2026-11-18 10:09:11.719799
+parent_table,n_partitions,has_default,max_upper_bound,days_remaining,has_rotation_cron
+__seo_cwv_daily,11,f,2027-03-01,103,t
+__seo_cwv_daily_rum,10,f,2027-03-01,103,t
+__seo_cwv_hourly,18,f,2026-11-22,4,t
+__seo_cwv_raw,6,f,2026-11-22,4,t
+__seo_ga4_daily,11,f,2027-03-01,103,t
+__seo_gsc_daily,11,f,2027-03-01,103,t
+__seo_gsc_daily_page_totals,9,f,2027-03-01,103,t
+__seo_gsc_daily_pages,9,f,2027-03-01,103,t
+__seo_gsc_daily_property_total,9,f,2027-03-01,103,t
+__seo_gsc_daily_totals,9,f,2027-03-01,103,t
+__seo_quality_history,8,f,2027-01-01,44,t
+__seo_snapshot_cf_rum,105,f,2026-12-03,15,t
+__seo_snapshot_synthetic,105,f,2026-12-03,15,t
+pieces_price_history,9,t,2027-01-01,44,t
+pricing_decision_snapshot,9,t,2027-01-01,44,t
+supplier_offer_snapshot,9,t,2027-01-01,44,t

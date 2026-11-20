@@ -51,7 +51,7 @@ import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 
 import { AdminBuyingGuideController } from './controllers/admin-buying-guide.controller'; // 📖 Buying Guide RAG enrichment
 import { AdminR8VehicleController } from './controllers/admin-r8-vehicle.controller'; // 🚗 R8 Vehicle enrichment
 import { AdminR7BrandController } from './controllers/admin-r7-brand.controller'; // 🏭 R7 Brand enrichment
-// AdminContentRefreshController SUPPRIME — content-refresh pipeline remplace par skills /content-gen
+// AdminContentRefreshController SUPPRIME — content-refresh pipeline retire (contenu : boucle seo-content-loop)
 import { InternalEnrichController } from './controllers/internal-enrich.controller'; // 🔑 Internal enrichment (API key auth)
 import { AdminPageBriefController } from './controllers/admin-page-brief.controller'; // 📋 Page Briefs SEO
 import { AdminKeywordClustersController } from './controllers/admin-keyword-clusters.controller'; // 🔑 Keyword Clusters & Overlaps (read-only)
@@ -74,8 +74,8 @@ import {
   BuyingGuideQualityGatesService,
   BuyingGuideDbService,
 } from './services/buying-guide'; // 📖 RAG enrichment sub-services
-// R1ContentPipelineService SUPPRIME — pipeline Groq remplace par skills /content-gen
-// ContentRefreshService SUPPRIME — pipeline auto remplace par skills /content-gen
+// R1ContentPipelineService SUPPRIME — pipeline Groq retire (contenu : boucle seo-content-loop)
+// ContentRefreshService SUPPRIME — pipeline auto retire (contenu : boucle seo-content-loop)
 // ConseilEnricherService SUPPRIMÉ — producteur RAG→__seo_gamme_conseil retiré (B2/B6, ADR-027 §Correction + ADR-080)
 import { CanonObservabilityService } from './services/canon-observability.service'; // 🛡️ Canon violation Sentry emitter
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
@@ -101,7 +101,7 @@ import { AdminR3ImagePromptsController } from './controllers/admin-r3-image-prom
 import { AdminR1ImagePromptsController } from './controllers/admin-r1-image-prompts.controller'; // 🎨 R1 Image Briefs (brief-driven, 0-LLM)
 import { AdminFeatureFlagsController } from './controllers/admin-feature-flags.controller';
 // PipelineChainPollerService SUPPRIME — dependait de content-refresh queue
-// RagCatchupService SUPPRIME — catch-up auto remplace par skills /content-gen
+// RagCatchupService SUPPRIME — catch-up auto retire (contenu : boucle seo-content-loop)
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
 import { R1ImagePromptService } from './services/r1-image-prompt.service'; // 🎨 R1 Image Brief generator (brief-driven, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
@@ -135,7 +135,6 @@ import { SystemModule } from '../system/system.module';
 import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
 import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
 import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
-import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
 import { R4ContentEnricherService } from './services/r4-content-enricher.service'; // 🏗️ R4 Reference enricher (0-LLM audit + lint)
 import { R4LintGatesService } from './services/r4-lint-gates.service'; // 🚦 R4 content lint gates LG1-LG8
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
@@ -297,7 +296,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     RagProposalService, // 📝 ADR-022 L1 propose-before-write staging (__rag_proposals)
     // AdminSupplierStatsService — not ready for prod
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
-    R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
     R4ContentEnricherService, // 🏗️ R4 Reference enricher (0-LLM audit + lint gates)
     R4LintGatesService, // 🚦 R4 content lint gates LG1-LG8
     // PR-SBD-1 Task 4 — SEO Business Control Dashboard
