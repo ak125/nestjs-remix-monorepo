@@ -32,6 +32,7 @@ import { PricingService } from '../products/services/pricing.service';
 import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
 import { UnifiedPageDataService } from './services/unified-page-data.service';
 import { AccessoryProductsService } from './services/accessory-products.service';
+import { R2TitleCollisionService } from './services/r2-title-collision.service';
 import { SeoTemplateService } from './services/seo-template.service'; // ⚡ SEO processing NestJS (RPC V4)
 import { SeoPlaceholderEventsService } from '../seo/services/seo-placeholder-events.service';
 import { HomepageRpcService } from './services/homepage-rpc.service';
@@ -102,6 +103,8 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     // (comme PricingService) et non importé de SeoModule, qui importe déjà
     // CatalogModule : pas de cycle. Service sans état (ConfigService global).
     SeoPlaceholderEventsService,
+    // Code moteur des titres R2 en collision (complément 1 du mandat DW).
+    R2TitleCollisionService,
     // ⚡ UNIFIED PAGE DATA - RPC V4 (1 requête + SEO NestJS)
     UnifiedPageDataService,
     // 🏠 HOMEPAGE RPC - below-fold (brands/blog/equipementiers)

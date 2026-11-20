@@ -1,0 +1,21 @@
+roles_en_concurrence_sur_la_requete	nb_requetes	impressions_90j
+R2 soeurs	107	1574
+R2-autre	14	127
+R8	5	29
+R8+R2-autre	3	24
+R3	3	28
+R1+R3	2	415
+R2 soeurs+R2-autre	2	33
+R2 soeurs+R8+R2-autre	2	90
+R2 soeurs+R1+R3+R4+R6+R8+R2-autre+autre	2	1838
+R2 soeurs+autre	1	19
+R2 soeurs+R1+R3+R4+R6	1	428
+R2 soeurs+R1	1	18
+R1+R3+R6	1	7
+R1	1	4
+R2 soeurs+R1+R3+R4+R8+R2-autre+autre	1	139
+R1+R6	1	88
+R3+R2-autre	1	8
+R2 soeurs+R3	1	21
+R3+R8+R2-autre	1	8
+R2 soeurs+R1+R3+R8+R2-autre+autre	1	28
