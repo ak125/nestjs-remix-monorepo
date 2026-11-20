@@ -2942,6 +2942,7 @@
       ".github/workflows/pr-dod-gate.yml",
       ".github/workflows/preprod-vocabulary-guard.yml",
       ".github/workflows/prod-smoke-tests.yml",
+      ".github/workflows/purchase-path-probe.yml",
       ".github/workflows/rag-permissions-audit.yml",
       ".github/workflows/rag-proposals-validate.yml",
       ".github/workflows/registry-build.yml",
@@ -3088,7 +3089,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1672,
+  "runtime_files_count": 1673,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3139,6 +3140,7 @@
     ".github/workflows/pr-dod-gate.yml",
     ".github/workflows/preprod-vocabulary-guard.yml",
     ".github/workflows/prod-smoke-tests.yml",
+    ".github/workflows/purchase-path-probe.yml",
     ".github/workflows/rag-permissions-audit.yml",
     ".github/workflows/rag-proposals-validate.yml",
     ".github/workflows/registry-build.yml",

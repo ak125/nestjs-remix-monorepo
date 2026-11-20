@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+import { readBypassToken } from './probe-network';
 
 /**
  * Configuration dédiée à la sonde du parcours d'achat (mandat AU).
@@ -11,6 +12,9 @@ const baseURL = process.env.PURCHASE_PROBE_BASE_URL;
 if (!baseURL) {
   throw new Error('PURCHASE_PROBE_BASE_URL requis (ex. http://localhost:3000)');
 }
+// En-tête de passage Cloudflare (complément n° 2 du mandat EI) : sans jeton, arrêt
+// immédiat avec un message clair, avant tout navigateur. La valeur n'est jamais affichée.
+readBypassToken();
 
 export default defineConfig({
   testDir: '.',

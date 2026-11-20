@@ -966,8 +966,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 402,
-      "loc_total": 84536,
+      "files_count": 404,
+      "loc_total": 84907,
       "has_barrel": true
     },
     "upload": {
