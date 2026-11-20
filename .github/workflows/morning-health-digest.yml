@@ -22,7 +22,8 @@ name: 🌅 Morning health digest
 # Repository variables (optional, empty if unset):
 #   REPORT_CONFIG_PATH  path in the repo of a report-config.v1 JSON file (hook for
 #     the department contracts, mandat AR). Unset → the script defaults, declared.
-#   GARDE_PRIX_JSON_PATH  path of a garde-prix.v1 file (no producer yet).
+#   GARDE_PRIX_JSON_PATH  path of a garde-prix.v1 file; overrides the file of the
+#     producer below (mandat EI). Unset → the producer's file.
 #   THRESHOLD_ISSUES_MODE  off | dry-run | write (mandate BZ, decision 9): issues of
 #     the registry thresholds (scripts/governance/registry-thresholds.sh). Unset →
 #     dry-run: the report lists the issues it would open, nothing is written.
@@ -36,6 +37,13 @@ name: 🌅 Morning health digest
 # --ignore-scripts does not build them, so the step after the install builds the
 # backend's workspace dependencies (frontend excluded). Without it the reader
 # reports « MODULE_NOT_FOUND @repo/… » (mandate BZ, complement BZ-3).
+#
+# Price guard-rail (mandat EI, decisions 51 and 67): scripts/ops/garde-prix-read.ts
+# reads price_import_batches and pieces_price (read-only, ~426 pages) on the runs of
+# the daily window above, or on workflow_dispatch, and writes garde-prix.v1 inside
+# the job only: no cache, no artifact (public repository, the keys name a supplier
+# or a brand). The other runs, or a failed read, give the report a missing file:
+# « indisponible », open incidents kept, no mail repeated.
 #
 # Cron granularity: GitHub may start a scheduled run late; the 15-minute cadence
 # bounds the delay of the 7 h report and of an urgent mail to one or two slots.
@@ -100,6 +108,37 @@ jobs:
         continue-on-error: true
         run: npx --no-install turbo run build --filter='@fafa/backend^...' --filter='!@fafa/frontend'
 
+      - name: Read the price guard-rail (daily window, mandat EI)
+        id: garde_prix
+        if: steps.window.outputs.deps == '1'
+        continue-on-error: true
+        timeout-minutes: 10
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OUT: ${{ runner.temp }}/garde-prix.json
+        run: |
+          cd backend
+          timeout 540 ../node_modules/.bin/tsx ../scripts/ops/garde-prix-read.ts "$OUT"
+          echo "path=$OUT" >> "$GITHUB_OUTPUT"
+
+      - name: Price guard-rail input of the report (mandat EI)
+        id: garde_prix_input
+        env:
+          FORCED: ${{ vars.GARDE_PRIX_JSON_PATH }}
+          READ: ${{ steps.garde_prix.outputs.path }}
+          DEPS: ${{ steps.window.outputs.deps }}
+        run: |
+          if [ -n "$FORCED" ]; then p=$FORCED
+          elif [ -n "$READ" ] && [ -s "$READ" ]; then p=$READ
+          else
+            # Out of the window or read failed: a path that does not exist, so the
+            # report says « indisponible » and carries the open incidents over.
+            [ "$DEPS" = 1 ] && echo "::warning::garde-prix : lecture du jour en échec, rapport « indisponible »"
+            p=$RUNNER_TEMP/garde-prix.absent
+          fi
+          echo "path=$p" >> "$GITHUB_OUTPUT"
+
       - name: Collect signals and update the standing digest issue
         id: collect
         env:
@@ -114,7 +153,7 @@ jobs:
           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           REPORT_CONFIG: ${{ vars.REPORT_CONFIG_PATH }}
-          GARDE_PRIX_JSON: ${{ vars.GARDE_PRIX_JSON_PATH }}
+          GARDE_PRIX_JSON: ${{ steps.garde_prix_input.outputs.path }}
           THRESHOLD_ISSUES_MODE: ${{ vars.THRESHOLD_ISSUES_MODE || 'dry-run' }}
           EVENT: ${{ github.event_name }}
         run: |
