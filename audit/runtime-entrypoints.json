@@ -2890,6 +2890,8 @@
       "backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql",
       "backend/supabase/migrations/20261119_seo_r2_title_all_gammes.down.sql",
       "backend/supabase/migrations/20261119_seo_r2_title_all_gammes.sql",
+      "backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.down.sql",
+      "backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3086,7 +3088,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1670,
+  "runtime_files_count": 1672,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4414,6 +4416,8 @@
     "backend/supabase/migrations/20261119_pricing_klaxcar_sortie_vente.sql",
     "backend/supabase/migrations/20261119_seo_r2_title_all_gammes.down.sql",
     "backend/supabase/migrations/20261119_seo_r2_title_all_gammes.sql",
+    "backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.down.sql",
+    "backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",

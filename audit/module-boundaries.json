@@ -226,7 +226,7 @@
         "backend/src/modules/rm/utils"
       ],
       "files_count": 15,
-      "loc_total": 3634,
+      "loc_total": 3642,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -1468,6 +1468,11 @@
       "from": "backend-core",
       "to": "trend-signals",
       "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "uncategorized",
+      "count": 4
     },
     {
       "from": "backend-core",
