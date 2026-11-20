@@ -1,0 +1,15 @@
+[Unit]
+Description=Codex contrôleur : relecture en lecture seule des PR fusionnées sur main (département 23)
+Documentation=file:///home/deploy/codex-controleur/app/scripts/ops/codex-controleur/README.md
+
+[Service]
+Type=oneshot
+# Exécuté depuis le clone dédié %h/codex-controleur/app (dépôt GitHub public), jamais depuis le
+# checkout DEV partagé : fetch et worktree jetable se font dans ce clone. La consigne lue est celle
+# du clone (son sha256 est noté dans chaque meta.json). Codex et gh sont dans ~/.local/bin.
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=CODEX_CONTROLEUR_DEPOT=%h/codex-controleur/app
+ExecStart=/usr/bin/bash %h/codex-controleur/app/scripts/ops/codex-controleur/codex-controleur.sh quotidien
+# Plafond : 40 PR par passage (≈ 3 min chacune mesurées en CP) ; au-delà, arrêt par systemd.
+TimeoutStartSec=5h
+Nice=10

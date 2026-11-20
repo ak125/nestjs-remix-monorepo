@@ -1,0 +1,35 @@
+diff --git a/backend/src/modules/cart/controllers/cart-recovery.controller.ts b/backend/src/modules/cart/controllers/cart-recovery.controller.ts
+index 9a3a79a5f8..5eba3dc1a1 100644
+--- a/backend/src/modules/cart/controllers/cart-recovery.controller.ts
++++ b/backend/src/modules/cart/controllers/cart-recovery.controller.ts
+@@ -52,7 +52,7 @@ export class CartRecoveryController {
+   ): Promise<void> {
+     try {
+       if (!token || token.length !== 64) {
+-        res.redirect('/panier?error=invalid_token');
++        res.redirect('/cart?error=invalid_token');
+         return;
+       }
+ 
+@@ -61,7 +61,7 @@ export class CartRecoveryController {
+ 
+       if (!record) {
+         // Token invalid, expired, or already recovered
+-        res.redirect('/panier?error=already_recovered');
++        res.redirect('/cart?error=already_recovered');
+         return;
+       }
+ 
+@@ -92,10 +92,10 @@ export class CartRecoveryController {
+       this.logger.log(
+         `Cart recovered: ${restored}/${items.length} items for token ${token.substring(0, 8)}...`,
+       );
+-      res.redirect('/panier?recovered=1');
++      res.redirect('/cart?recovered=1');
+     } catch (error) {
+       this.logger.error('Recovery failed', error);
+-      res.redirect('/panier?error=recovery_failed');
++      res.redirect('/cart?error=recovery_failed');
+     }
+   }
+ 

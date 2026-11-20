@@ -15,7 +15,7 @@ import {
   ShoppingBag,
   Trash2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
@@ -265,15 +265,20 @@ export default function CartPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // localStorage backup: save cart items whenever they change
+  // localStorage backup: save cart items whenever they change.
+  // La sauvegarde n'est effacée que si le panier a été vidé sur cette page :
+  // un panier vide à l'arrivée (session perdue) ou un chargement en erreur
+  // doit au contraire la conserver, pour que la restauration soit proposée.
+  const hadItemsRef = useRef(false);
   useEffect(() => {
     if (cart?.items?.length) {
+      hadItemsRef.current = true;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Remix Jsonify adds null to array type
       saveCartToLocalStorage(cart.items.filter(Boolean) as any);
-    } else {
+    } else if (hadItemsRef.current && success && !error) {
       clearCartLocalStorage();
     }
-  }, [cart?.items]);
+  }, [cart?.items, success, error]);
 
   // Sync navbar after clear cart completes
   useEffect(() => {

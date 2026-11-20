@@ -150,6 +150,20 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Mandat DW et complément 1 (19/11/2026) : titre R2 sans prix, toutes gammes
+  # (gabarit __seo_gamme_car.sgc_title, 118 lignes). Couvre .sql + .down.sql.
+  - glob: backend/supabase/migrations/20261119_seo_r2_title_all_gammes*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # Mandat DW, complément 2 (19/11/2026) : noms d'affichage dans seo_context
+  # du RPC rm_get_page_complete_v2 (titre R2). Couvre .sql + .down.sql.
+  - glob: backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   # Fix get_page_quality_features 22023 (jsonb_array_length sur jsonb non-array) — débloque
   # le recompute du quality-scoring (de-RAG v2.2 #935). Owner GO session 2026-06-11. Glob exact.
   - glob: backend/supabase/migrations/20260611_fix_get_page_quality_features_jsonb_array_length_guard.sql
@@ -1888,6 +1902,51 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Mandat CH (PR #2174, 18/11/2026) : fiche fournisseur. Colonnes additives de
+  # ___xtr_supplier (type, statut, localisation validée par Marwane, contacts,
+  # conditions, nom du secret) et pourcentages par défaut de supplier_price_profiles.
+  # Tables lues et écrites par backend/src/modules/supplier-truth (D11, @ak125) et
+  # lues par backend/src/modules/pricing (D11, @ak125). Couvre .sql + .down.sql.
+  # Globs exacts : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261118_xtr_supplier_fiche_columns*.sql
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/20261118_supplier_price_profiles_default_pct*.sql
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Service de fiche et normalisation des noms (module suppliers, admin seul) ;
+  # même domaine et owner que supplier-truth, leur dépôt.
+  - glob: backend/src/modules/suppliers/supplier-card.service.ts
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/modules/suppliers/supplier-name.ts
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Complément CH-2 : règles de remise fournisseur × marque × famille /
+  # sous-famille, fonctions pures non branchées au calcul des prix.
+  - glob: backend/src/modules/suppliers/supplier-price-rule.ts
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Complément CH-4 (PR #2174, 18/11/2026) : tests unitaires ajoutés par la PR
+  # dans backend/src/modules/suppliers, non couverts par les globs exactes de
+  # l'extrait CH (constat ownership_gap du ratchet). Même domaine et owner que
+  # les fichiers qu'ils testent (D11, @ak125). Le fichier testé
+  # dto/supplier.schemas.ts reste hors de cet extrait (écart antérieur, en baseline).
+  - glob: backend/src/modules/suppliers/{supplier-card.service,supplier-name,supplier-price-rule,dto/supplier.schemas}.test.ts
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   # Mandat CO (18/11/2026) : les deux fonctions R2 servies reconnaissent .bmp
   # (get_pieces_for_type_gamme_v3, get_listing_products_extended_filtered).
   # Couvre .sql + .down.sql. Glob exact : les migrations ne sont pas auto-couvertes.
