@@ -1,0 +1,30 @@
+{
+  "url": "http://127.0.0.1:3029/pieces/filtre-a-huile-7.html",
+  "viewport": "1440x900",
+  "at": "2026-11-20T09:00:35.040Z",
+  "violations": [],
+  "incomplets": [],
+  "conformes": [
+    {
+      "cible": ".seo-internal-link[data-link-type=\"LinkGamme\"]:nth-child(1)",
+      "html": "<a href=\"/pieces/bouchon-de-vidange-593.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\">bouchon de vidange</a",
+      "messages": [
+        "Links can be distinguished from surrounding text by visual styling"
+      ]
+    },
+    {
+      "cible": "p:nth-child(3) > .seo-internal-link[data-link-type=\"LinkGamme\"][href$=\"filtre-a-air-8.html\"]",
+      "html": "<a href=\"/pieces/filtre-a-air-8.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\">filtre à air</a>",
+      "messages": [
+        "Links can be distinguished from surrounding text by visual styling"
+      ]
+    },
+    {
+      "cible": "p:nth-child(3) > a:nth-child(3)",
+      "html": "<a href=\"/blog-pieces-auto/conseils/filtre-a-huile\">Conseils : changer un filtre à huile étape par étape</a>",
+      "messages": [
+        "Links can be distinguished from surrounding text by visual styling"
+      ]
+    }
+  ]
+}

@@ -35,6 +35,12 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   pixel dans Chrome 153 avec un historique réel, au repos et au survol, à 390 et 1440 px, avec un lien
   témoin. L'écart entre 7,49 et 6,89:1 est expliqué, et deux chiffres des §15.1 et §15.6 sont
   rectifiés. Voir le §16 ; les autres sections ne changent pas.
+- **Complément n° 9** : la tête de #2210 est passée à `dad1abcbc8e0c633e4b51ce6d7ae855d082b620b`
+  (complément n° 8 de DS : liens du bloc éditorial de `#reference` soulignés, accord de Marwane du
+  20 novembre à 09:12). Le lien « Conseils » est revérifié au pixel dans Chrome 153 : au repos, au
+  survol, après une vraie visite et au focus clavier, à 390 et 1440 px. La portée est relevée sur les
+  123 pages R1, la cible est jugée au regard du 2.5.8, et le défaut signalé par DS sur `#emplacement`
+  est mesuré. Voir le §17 ; les autres sections ne changent pas.
 
 ## Verdict final
 
@@ -168,6 +174,29 @@ prête à valider par Marwane. Aucun défaut ouvert ne reste sur ce qui a été 
 diagnostic est conforme dans tous les états mesurés. Seul point en attente : le lien « Conseils :
 changer un filtre à huile étape par étape » de `#reference`, que le complément n° 5 signalait à 390 px
 (1.4.1). Il attend la décision de Marwane et n'a pas été rejugé ici.
+
+**Complément n° 9, tête `dad1abcbc` : lien « Conseils » conforme.**
+- Le lien est souligné au repos, à 390 et à 1440 px, dans tous les états. Le contraste contre le fond
+  est de 5,01:1 au repos, 8,43:1 au survol et 5,29:1 après visite ; l'indicateur de focus est à
+  15,89:1. Le critère 1.4.1 n'est plus en défaut, et axe ne signale plus ce lien (§17.1).
+- Le soulignement touche les 79 liens de ce bloc sur 30 pages R1. 38 étaient déjà soulignés par leur
+  propre classe et ne changent pas ; les 41 autres sont des liens de texte. Aucun bouton ni aucune
+  carte n'est concerné (§17.2).
+- La cible fait 18 px de haut, mais le lien est dans une phrase : l'exception « en ligne » du 2.5.8
+  s'applique. Le soulignement ne change pas la taille de la cible (§17.3).
+- Le défaut signalé par DS sur `#emplacement` est confirmé, et il est plus large : 153 liens de texte
+  sur 72 pages R1, dans les trois autres blocs éditoriaux de la page, ne sont distingués que par leur
+  couleur (1,44:1 contre le texte voisin). Ce défaut est antérieur à #2210 (§17.4).
+- Le diff est conforme à l'annonce de DS. Aucune nouvelle violation axe, typecheck et tests passent,
+  et la CI garde les mêmes échecs qu'avant (§17.5).
+
+**Verdict global sur l'apparence R1, hors éléments communs au site, à `dad1abcbc`.** L'apparence est
+prête à valider par Marwane pour tout ce que #2210 modifie : aucun défaut ouvert n'y reste, et la
+réserve du complément n° 5 est levée. Une réserve reste sur la page R1 elle-même, sans être une
+régression de #2210 : les liens des blocs `#bien-choisir`, `#qualite-prix` et `#emplacement` ne sont
+pas soulignés au repos (1.4.1). Tant qu'elle est ouverte, la page R1 ne peut pas être dite conforme au
+1.4.1. La correction tient en une classe sur les trois conteneurs de `pieces.$slug.tsx`, la même que
+celle de DS ; elle est décrite au §17.4 et n'est pas appliquée.
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -1210,3 +1239,159 @@ transparent. Elles ne voyaient donc pas que le reflet éclaircit aussi le texte.
   de Marwane. Il n'est pas jugé ici.
 - Le reste de la page n'est pas remesuré, en dehors de l'audit axe complet du §16.3.
 - Firefox et Safari ne sont pas mesurés.
+
+## 17. Complément n° 9 : lien « Conseils » souligné
+
+**Verdict : lien « Conseils » conforme.**
+
+- **Tête mesurée** : `dad1abcbc8e0c633e4b51ce6d7ae855d082b620b` (#2210, PR brouillon ouverte),
+  relevée avant les mesures et revérifiée avant la publication (`git ls-remote` et `gh`). Rien n'a
+  été modifié dans #2210.
+- **Correction de DS** : une seule ligne, `frontend/app/routes/pieces.$slug.tsx:848`. Le conteneur
+  `div.gamme-editorial` de `#reference` reçoit `[&_a]:underline [&_a]:underline-offset-2`.
+  `global.css` n'est pas touché.
+- **Rendu** : backend et frontend de `dad1abcbc` sur un port à moi, avec un Redis privé. Le service
+  DEV n'a pas servi. Le HTML servi contient bien la classe.
+- **Navigateur** : Chrome 153 complet, profil persistant, échelle 1. L'état « visité » est obtenu par
+  un vrai clic sur le lien, avec un lien témoin.
+- **Méthode** : styles calculés, puis contrôle au pixel. Le soulignement est cherché comme une rangée
+  de pixels de la couleur du lien couvrant au moins 80 % de sa largeur. La couleur réelle est lue sur
+  le lien agrandi. Le focus est obtenu au clavier (Tab), puis comparé à la même capture sans `outline`
+  ni `box-shadow`. Les rapports sont tronqués au centième.
+- Scripts `scripts/lien-du9.cjs`, `sonde-du9.cjs`, `axe-lien-du9.cjs`, `portee-du9.py`,
+  `portee2-du9.py` et `portee3-du9.py`. Mesures `mesures/c9-*`. Captures `captures/c9-*.png`.
+
+### 17.1 Lien « Conseils » : soulignement, contraste, focus
+
+Lien « Conseils : changer un filtre à huile étape par étape », dans un paragraphe de `#reference`,
+14 px, sur fond `#f8fafc`. Texte voisin `#45556c`.
+
+| État | Soulignement au pixel | Couleur réelle | Contre le fond (4,5:1) | Contre le texte voisin |
+|---|---|---|---|---|
+| Repos | oui (rangée 17 à 390, 16 à 1440) | `#155dfc` | 5,01 | 1,44 |
+| Survol | oui | `#193cb8` | 8,43 | 1,16 |
+| Après visite, repos | oui | `#9810fa` | 5,29 | 1,36 |
+| Après visite, survol | oui | `#9810fa` | 5,29 | 1,36 |
+| Focus clavier, avant et après visite | oui | `#155dfc` puis `#9810fa` | 5,01 puis 5,29 | 1,44 puis 1,36 |
+
+- Les valeurs sont identiques à 390 et à 1440 px.
+- Le soulignement suit la couleur du lien (`currentColor`), avec un décalage de 2 px.
+- Le lien témoin passe de `#020817` à `#9810fa` : la visite est donc réelle. Après visite, le survol
+  ne change plus la couleur, car la règle commune `a:visited` (`global.css:713`) l'emporte. Le
+  soulignement suffit à signaler le lien ; ce point relève du design commun, il n'est pas jugé ici.
+- Avec le soulignement, le faible écart avec le texte voisin n'est plus un défaut : le 1.4.1 demande
+  un indice autre que la couleur, et le soulignement en est un.
+- **Focus clavier** : `:focus-visible` actif, contour plein de 2 px `#0f1e38` décalé de 2 px, plus un
+  anneau `box-shadow` de la même couleur. Contre le fond : 15,89:1 (seuil 3:1). Surface de
+  l'indicateur : 804 pixels à 390 px, 364 à 1440 px.
+- **axe** : la règle `link-in-text-block` ne signale plus ce lien. Elle le classe comme conforme
+  (« distinguished … by visual styling »).
+- Je n'ai eu aucun délai dépassé, alors que DS en signale un à la première mesure après visite à
+  1440 px.
+
+Mes chiffres concordent avec ceux de DS sur les quatre états. Ils ont été obtenus séparément.
+
+### 17.2 Portée : quels liens reçoivent le soulignement
+
+Relevé sur les 123 pages R1 de `sitemap-categories.xml`, sans erreur (`mesures/c9-portee*.json`).
+
+- 51 pages ont le conteneur souligné. 30 d'entre elles y ont des liens, **79 au total**.
+- Les seules classes rencontrées sur ces liens sont « aucune » ou `seo-internal-link`. Aucun lien ne
+  contient d'élément : pas de bouton, de carte, d'image ni d'icône.
+
+| Liens du conteneur de `#reference` | Nombre | Effet du changement |
+|---|---|---|
+| `seo-internal-link` (38 liens, 21 pages) | 38 | Déjà soulignés par leur classe (`global.css:328`). Couleur du trait (`blue-400` à 50 %) et décalage (2 px) inchangés au calcul : aucun effet visible |
+| Sans classe, dans un paragraphe | 12 | Désormais soulignés. C'est le cas du lien « Conseils » |
+| Sans classe, seul dans un élément de liste | 27 | Désormais soulignés. Ce sont des listes « Fiche technique … » et « Guide d'achat … » |
+| Sans classe, dans un élément de liste avec du texte | 2 | Désormais soulignés |
+
+Aucun de ces liens n'en souffre. Ils sont tous des liens de texte, et le soulignement est le style
+attendu d'un lien dans du texte. Le conteneur ne reçoit que du HTML éditorial injecté : un bouton ou
+une carte ajouté plus tard dans ce bloc serait aussi souligné, ce qui n'est le cas d'aucune page
+aujourd'hui.
+
+Gammes contrôlées au rendu (styles et boîtes, `mesures/c9-sonde-*.json`) : `filtre-a-huile-7`,
+`kit-de-distribution-307` et `thermostat-316`.
+
+### 17.3 Cible : exception « en ligne » du 2.5.8
+
+- Le lien « Conseils » occupe deux boîtes de 18 px de haut : 170 × 18 et 150 × 18 px à 390 px,
+  61 × 18 et 259 × 18 px à 1440 px. La hauteur de ligne du paragraphe est 22,75 px.
+- Il est au milieu d'une phrase, après les liens « bouchon de vidange » et « filtre à air ». Sa
+  hauteur est imposée par la ligne de texte. C'est exactement le cas de l'exception « en ligne » du
+  2.5.8 : **elle s'applique**.
+- Le soulignement ne change ni la boîte ni la hauteur du lien. Le correctif n'a aucun effet sur le 2.5.8.
+- Dans les listes de liens seuls (`kit-de-distribution-307`), les lignes sont espacées de 29 px à
+  390 px et de 28 px à 1440 px. C'est plus de 24 px, donc l'exception d'espacement s'applique.
+- axe relève d'autres liens sous 24 px dans la page, par exemple « filtre à air » et « En savoir
+  plus ». Ils sont tous dans des phrases : même exception.
+
+### 17.4 Lien « En savoir plus sur le filtre à huile » de `#emplacement`
+
+**Défaut confirmé, antérieur à #2210, plus large que ce lien.**
+
+Lien dans un paragraphe de `#emplacement`, sur fond blanc.
+
+| État | Soulignement au pixel | Couleur réelle | Contre le fond | Contre le texte voisin (3:1 sans soulignement) |
+|---|---|---|---|---|
+| Repos | **non** | `#155dfc` | 5,24 | **1,44** |
+| Survol | oui | `#193cb8` | 8,82 | 1,16 |
+| Après visite, repos | **non** | `#9810fa` | 5,54 | **1,36** |
+| Focus clavier | non | `#155dfc` | 5,24 | 1,44 ; indicateur à 16,62:1 |
+
+- Au repos, rien d'autre que la couleur ne distingue le lien du texte, et l'écart de couleur est sous
+  3:1. Le 1.4.1 n'est pas respecté, à 390 comme à 1440 px.
+- axe ne l'évalue pas : le lien n'apparaît dans aucun résultat de `link-in-text-block`. La cause n'en
+  est pas établie. La mesure au pixel fait preuve.
+
+**Le même défaut existe dans les trois autres blocs éditoriaux de la page.** La règle
+`.gamme-editorial a` (`global.css:275`) ne souligne qu'au survol. Seul le conteneur de `#reference`
+reçoit la classe de DS.
+
+| Conteneur (`pieces.$slug.tsx`) | Liens non soulignés au repos | Pages R1 |
+|---|---|---|
+| `#bien-choisir` (ligne 911) | 28 | 21 |
+| `#qualite-prix` (ligne 968) | 81 | 56 |
+| `#emplacement` (ligne 1040) | 44 | 21 |
+| **Total** | **153** | **72** |
+
+- Liens `seo-internal-link` exclus : ils sont déjà soulignés par leur classe.
+- Le conteneur de `#emplacement` reçoit aussi les blocs éditoriaux non classés. Il porte donc les
+  liens « Guide d'achat » (18 des 44). Sur la page du filtre à huile, il contient deux liens non
+  soulignés : « En savoir plus sur le filtre à huile » et le lien du guide d'achat. Ce décompte
+  remplace celui que j'avais fait sur les seuls paragraphes de `#emplacement`.
+- Seul le lien « En savoir plus » est mesuré au pixel. Pour les autres, l'écart de 1,44:1 est
+  **calculé** : même règle CSS, même couleur de texte voisin (`text-slate-600`), et ce rapport ne
+  dépend pas du fond.
+
+**Est-ce que cela bloque mon verdict ?** Non pour ce que #2210 change : ce défaut existe sur `main`,
+#2210 ne l'aggrave pas et en corrige une partie. Oui pour une conformité complète de la page R1 au
+1.4.1 : tant que ces 153 liens restent sans soulignement, la page ne peut pas être dite conforme.
+
+**Correction possible, non appliquée.** Ajouter les mêmes classes `[&_a]:underline
+[&_a]:underline-offset-2` aux trois conteneurs des lignes 911, 968 et 1040. La correction reste dans
+`pieces.$slug.tsx` : elle ne touche ni `.gamme-editorial` ni le design commun du site. Corriger
+plutôt la règle `.gamme-editorial a` de `global.css` toucherait tous les usages de cette classe ;
+ce choix serait commun au site et revient à Marwane.
+
+### 17.5 Régressions
+
+| Contrôle | Résultat | Preuve |
+|---|---|---|
+| Diff `f1dbcf285` → `dad1abcbc` | OK | 40 fichiers, 1116 insertions, 3 suppressions. Côté code, une seule ligne : `pieces.$slug.tsx:848`, avec son commentaire. Le reste est le `README.md` de la maquette et les preuves de DS sous `complement-8/`. Le conteneur de `#emplacement` et `global.css` ne sont pas touchés. Texte, titre, H1, meta et URL ne changent pas |
+| HTML servi | OK | `[&amp;_a]:underline` présent sur le conteneur de `#reference`. La page répond 200 sur mon port |
+| axe 390 px | Mieux | `color-contrast` 9 et `region` 2, comme à `f1dbcf285`. `link-in-text-block` passe de 1 à 0 : le nœud disparu est le lien « Conseils ». Aucun nouveau nœud (`mesures/c9-page-390.json` contre `c8-page-390.json`) |
+| axe 1440 px | OK | `color-contrast` 5 et `region` 4, identique nœud pour nœud (`mesures/c9-page-1440.json`) |
+| axe, `link-in-text-block` seule | OK | 0 violation, 0 incomplet, 3 conformes aux deux largeurs, dont le lien « Conseils » (`mesures/c9-axe-liens-*.json`) |
+| Typecheck frontend | OK | Code de sortie 0, aucune erreur TS (`mesures/c9-typecheck-front.txt`) |
+| Tests | OK | vitest : 6 fichiers, 160 tests passent, dont ceux de la page R1 (`pieces-slug-*`, `sanitize-editorial-html`, `r1-images-meta`). DS n'a ajouté aucun test ; le soulignement est prouvé par la mesure du §17.1, pas par un test (`mesures/c9-vitest.txt`) |
+| CI du commit `dad1abcbc` | 34 réussis, 11 ignorés, 5 en échec | Les mêmes contrôles qu'à `f1dbcf285` : Circuit de fusion (brouillon), Deterministic gates, DoD self-evaluation (deux fois) et Registry freshness (avertissement seul). Le second DoD était « annulé » à `f1dbcf285`, il est « en échec » ici. Deterministic gates échoue pour la même cause : `depcruise` à 170 pour une base de 163, mêmes nombres qu'avant. Le diff ne touche aucun import (`mesures/c9-ci.txt`) |
+
+### 17.6 Hors périmètre
+
+- Aucune correction n'est faite, ni dans #2210 ni ailleurs.
+- La couleur des liens après visite et au survol après visite vient de la règle commune `a:visited`.
+  C'est le design commun du site : il n'est pas jugé ici.
+- Les autres conteneurs `.gamme-editorial` hors de la page R1 ne sont pas relevés.
+- Le reste du site, Firefox et Safari ne sont pas mesurés.

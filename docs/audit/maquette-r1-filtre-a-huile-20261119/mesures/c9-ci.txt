@@ -1,0 +1,73 @@
+# CI du commit dad1abcbc8e0c633e4b51ce6d7ae855d082b620b, relevée le 2026-11-20T09:13:32Z
+failure	🚦 Circuit de fusion	136175068439
+failure	🛡️ Deterministic gates	136174507482
+failure	🧾 DoD self-evaluation present	136174507406
+failure	🧾 DoD self-evaluation present	136174624927
+failure	Registry freshness (warn-only, Phase 1)	136174506723
+skipped	🔐 Armement de la fusion automatique (App)	136175125608
+skipped	auto-merge	136174525577
+skipped	🐳 build / 🐳 Build	136174509060
+skipped	🧪 Deploy PREPROD	136177269291
+skipped	🔍 Docker Image Scan	136174509691
+skipped	🎭 E2E Smoke Tests	136177268862
+skipped	🚦 Gate check (snapshots ≥ auto_types)	136174508113
+skipped	🔦 Lighthouse Performance Audit	136177269449
+skipped	🔔 Notify on Failure	136177269974
+skipped	review	136174560256
+skipped	🤖 Revue Claude (circuit moyen)	136175070836
+success	🛡️ ADR-010 Governance	136174508136
+success	🧪 Backend Tests	136174507906
+success	Block forbidden DEV/PREPROD/PROD formulations in .md	136174505949
+success	Block-new (owner + domain required)	136174507531
+success	Block new served-content write sinks	136174507327
+success	Block new / stale orphan files (G3)	136174507703
+success	Calcul du circuit	136174488047
+success	check-cart-conversion-r-role.sh (R-role invariant)	136174507543
+success	check-role-purity.ts (role-vocabulary purity, source comments)	136174507938
+success	CodeQL	136176844953
+success	🔬 CodeQL Scan (javascript-typescript)	136174506342
+success	🛡️ Contract Gate	136174507578
+success	🔒 Core Build Only	136174507887
+success	🔍 CWV Performance Check	136174507137
+success	Detect inert scheduling decorators	136174506763
+success	🔒 DEV Safety (Blocking)	136174507192
+success	🔍 DEV Safety (Observe)	136174506888
+success	⬣ ESLint	136174507631
+success	🧪 Frontend Tests	136174508171
+success	Impeccable count ≤ committed baseline	136174506659
+success	🛡️ Import Firewall	136174508024
+success	🗄️ Migration Safety	136174507979
+success	🕸️ No new deep PR-stacks	136174507461
+success	Refuser SEO_CHAIN_R*_MODE=on dans la config	136174506704
+success	Repo Map Drift Check	136174506838
+success	🛡️ RPC Safety Gate	136174507974
+success	🔐 Secrets Detection	136174508034
+success	🔒 Security Audit	136174507880
+success	ʦ TypeScript	136174507917
+success	url-immutability	136174506421
+success	validate-exploration-probe.sh (ADR-081 G10)	136174507876
+success	Validate Specifications	136174506999
+success	validate-top-priorities.sh (ADR-081)	136174507904
+success	Verify ADR canon references have vault backing	136174506624
+
+# Deterministic gates, job 136174507482 : lignes de comparaison à la référence
+✔ FAIL: a deleted writer path reappears (new-file vs refreshed baseline) (0.141209ms)
+✔ FAIL: a reduction without a baseline refresh (coverage loss must not masquerade as closure) (0.136943ms)
+✔ closure done right → refreshed baseline matches new scan → ok (0.105145ms)
+✔ committed baseline totals 10 findings across 3 files without R8, the R1 batch, R2, R4 or the router (0.235238ms)
+##[group]Run npm run audit:baseline:test
+npm run audit:baseline:test
+> nestjs-remix-monorepo@1.0.0 audit:baseline:test
+> node --test scripts/cleanup/audit-compare-baseline.test.js scripts/cleanup/audit-compare-baseline.integration.test.js
+✔ valid findings remain subject to baseline thresholds; regressions exit 1 (2.811141ms)
+✔ one unresolved import above the baseline is a regression at threshold 0 (0.944538ms)
+✔ a baseline without the unresolved import count is invalid evidence and never refreshes (1.338131ms)
+✔ valid findings exit codes do not turn ordinary baseline debt into tool failures (1.693396ms)
+✔ refresh writes only after all four valid analyses and preserves baseline metadata (1.14851ms)
+✔ invalid baseline counts or thresholds cannot make NaN compare green or refresh (11.019752ms)
+##[group]Run npm run audit:baseline
+npm run audit:baseline
+> nestjs-remix-monorepo@1.0.0 audit:baseline
+> node scripts/cleanup/audit-compare-baseline.js
+  depcruise.violations      163       170      +7     +5         REGRESSION
+  ast_grep.warnings         69        59       -10    +5         improved

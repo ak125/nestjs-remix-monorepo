@@ -1,0 +1,281 @@
+{
+  "base": "http://127.0.0.1:3029",
+  "viewport": "1440x900",
+  "at": "2026-11-20T08:53:05.462Z",
+  "res": [
+    {
+      "url": "/pieces/filtre-a-huile-7.html",
+      "liens": [
+        {
+          "texte": "bouchon de vidange",
+          "classe": "seo-internal-link",
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "decalage": "2px",
+          "graisse": "500",
+          "display": "inline",
+          "parent": "p",
+          "boites": [
+            {
+              "x": 667,
+              "y": 1054,
+              "w": 135,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 1052,
+            "h": 46
+          }
+        },
+        {
+          "texte": "filtre à air",
+          "classe": "seo-internal-link",
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "decalage": "2px",
+          "graisse": "500",
+          "display": "inline",
+          "parent": "p",
+          "boites": [
+            {
+              "x": 809,
+              "y": 1054,
+              "w": 63,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 1052,
+            "h": 46
+          }
+        },
+        {
+          "texte": "Conseils : changer un filtre à huile étape par étape",
+          "classe": null,
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklch(0.546 0.245 262.881)",
+          "decalage": "2px",
+          "graisse": "400",
+          "display": "inline",
+          "parent": "p",
+          "boites": [
+            {
+              "x": 1261,
+              "y": 1054,
+              "w": 61,
+              "h": 18
+            },
+            {
+              "x": 80,
+              "y": 1076,
+              "w": 262,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 1052,
+            "h": 46
+          }
+        }
+      ]
+    },
+    {
+      "url": "/pieces/kit-de-distribution-307.html",
+      "liens": [
+        {
+          "texte": "Courroie de distribution seule",
+          "classe": "seo-internal-link",
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "decalage": "2px",
+          "graisse": "500",
+          "display": "inline",
+          "parent": "li",
+          "boites": [
+            {
+              "x": 100,
+              "y": 1025,
+              "w": 197,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 1023,
+            "h": 23
+          }
+        },
+        {
+          "texte": "Pompe à eau",
+          "classe": "seo-internal-link",
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "decalage": "2px",
+          "graisse": "500",
+          "display": "inline",
+          "parent": "li",
+          "boites": [
+            {
+              "x": 100,
+              "y": 1054,
+              "w": 86,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 1052,
+            "h": 23
+          }
+        },
+        {
+          "texte": "Fiche technique kit de distribution",
+          "classe": null,
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklch(0.546 0.245 262.881)",
+          "decalage": "2px",
+          "graisse": "400",
+          "display": "inline",
+          "parent": "li",
+          "boites": [
+            {
+              "x": 100,
+              "y": 1112,
+              "w": 220,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 1110,
+            "h": 23
+          }
+        },
+        {
+          "texte": "Guide d'achat kit de distribution",
+          "classe": null,
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklch(0.546 0.245 262.881)",
+          "decalage": "2px",
+          "graisse": "400",
+          "display": "inline",
+          "parent": "li",
+          "boites": [
+            {
+              "x": 100,
+              "y": 1140,
+              "w": 208,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 1138,
+            "h": 23
+          }
+        }
+      ]
+    },
+    {
+      "url": "/pieces/thermostat-316.html",
+      "liens": [
+        {
+          "texte": "Pompe à eau",
+          "classe": "seo-internal-link",
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "decalage": "2px",
+          "graisse": "500",
+          "display": "inline",
+          "parent": "li",
+          "boites": [
+            {
+              "x": 100,
+              "y": 968,
+              "w": 86,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 966,
+            "h": 23
+          }
+        },
+        {
+          "texte": "Durite de refroidissement",
+          "classe": "seo-internal-link",
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "decalage": "2px",
+          "graisse": "500",
+          "display": "inline",
+          "parent": "li",
+          "boites": [
+            {
+              "x": 100,
+              "y": 997,
+              "w": 171,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 995,
+            "h": 23
+          }
+        },
+        {
+          "texte": "Radiateur",
+          "classe": "seo-internal-link",
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklab(0.707 -0.0437502 -0.159094 / 0.5)",
+          "decalage": "2px",
+          "graisse": "500",
+          "display": "inline",
+          "parent": "li",
+          "boites": [
+            {
+              "x": 100,
+              "y": 1025,
+              "w": 64,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 1023,
+            "h": 23
+          }
+        },
+        {
+          "texte": "Fiche technique thermostat",
+          "classe": null,
+          "couleur": "#155dfc",
+          "soulignement": "underline",
+          "couleurSoulignement": "oklch(0.546 0.245 262.881)",
+          "decalage": "2px",
+          "graisse": "400",
+          "display": "inline",
+          "parent": "li",
+          "boites": [
+            {
+              "x": 100,
+              "y": 1054,
+              "w": 178,
+              "h": 18
+            }
+          ],
+          "parentBoite": {
+            "y": 1052,
+            "h": 23
+          }
+        }
+      ]
+    }
+  ]
+}
