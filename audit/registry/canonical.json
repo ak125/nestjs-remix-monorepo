@@ -52616,7 +52616,9 @@
       "importedBy": [
         "backend/src/modules/pricing/config/supplier-sale-rules.test.ts",
         "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
-        "backend/src/modules/pricing/services/price-deactivation.service.ts"
+        "backend/src/modules/pricing/services/price-deactivation.service.ts",
+        "backend/src/modules/pricing/services/price-guard-signal.core.test.ts",
+        "backend/src/modules/pricing/services/price-guard-signal.core.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -53268,6 +53270,59 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/pricing/services/price-guard-signal.core.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/config/supplier-sale-rules.ts",
+        "backend/src/modules/pricing/services/price-guard-signal.core.ts",
+        "backend/src/modules/pricing/services/price-import.dry-run.ts"
+      ],
+      "kind": "test",
+      "loc": 245,
+      "owner": "@ak125",
+      "path": "backend/src/modules/pricing/services/price-guard-signal.core.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/pricing/services/price-guard-signal.core.ts",
+      "importedBy": [
+        "backend/src/modules/pricing/services/price-guard-signal.core.test.ts",
+        "backend/src/modules/pricing/services/price-import.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/pricing/config/supplier-sale-rules.ts",
+        "backend/src/modules/pricing/services/price-import.dry-run.ts",
+        "backend/src/modules/pricing/services/pricing-invariants.service.ts",
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "kind": "service",
+      "loc": 193,
+      "owner": "@ak125",
+      "path": "backend/src/modules/pricing/services/price-guard-signal.core.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -53275,6 +53330,8 @@
       "id": "backend/src/modules/pricing/services/price-import.dry-run.ts",
       "importedBy": [
         "backend/src/modules/pricing/services/__tests__/price-import.dry-run.test.ts",
+        "backend/src/modules/pricing/services/price-guard-signal.core.test.ts",
+        "backend/src/modules/pricing/services/price-guard-signal.core.ts",
         "backend/src/modules/pricing/services/price-import.service.test.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts"
@@ -53310,7 +53367,7 @@
         "backend/src/modules/supplier-truth/index.ts"
       ],
       "kind": "test",
-      "loc": 193,
+      "loc": 269,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/price-import.service.test.ts",
       "risk": "high",
@@ -53333,6 +53390,7 @@
         "backend/src/modules/pricing/services/price-import.service.test.ts"
       ],
       "imports": [
+        "backend/src/modules/pricing/services/price-guard-signal.core.ts",
         "backend/src/modules/pricing/services/price-import.dry-run.ts",
         "backend/src/modules/pricing/services/pricing-formula.service.ts",
         "backend/src/modules/pricing/services/pricing-strategy.service.ts",
@@ -53342,7 +53400,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 334,
+      "loc": 339,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/price-import.service.ts",
       "risk": "high",
@@ -53392,6 +53450,7 @@
       "importedBy": [
         "backend/src/modules/pricing/pricing.module.ts",
         "backend/src/modules/pricing/services/__tests__/pricing-invariants.test.ts",
+        "backend/src/modules/pricing/services/price-guard-signal.core.ts",
         "backend/src/modules/pricing/services/price-import.dry-run.ts"
       ],
       "imports": [],
@@ -53536,6 +53595,7 @@
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
         "backend/src/modules/pricing/services/price-deactivation.service.ts",
+        "backend/src/modules/pricing/services/price-guard-signal.core.ts",
         "backend/src/modules/pricing/services/price-import.service.test.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.service.ts"
@@ -53551,7 +53611,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 922,
+      "loc": 1045,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "high",
@@ -107951,6 +108011,26 @@
         "depcruise",
         "manual"
       ],
+      "domain": "D13",
+      "id": "scripts/ops/garde-prix-read.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 64,
+      "owner": "@ak125",
+      "path": "scripts/ops/garde-prix-read.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
       "domain": "D15",
       "id": "scripts/registry/build-canonical-registry.js",
       "importedBy": [],
@@ -110317,11 +110397,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4bd8407a831a3385f4c3e8845dd213a18f13ec99e6a3528a63160c01e78749ae",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "660ec69502438bafcbdda3fd429e049eedbb0a04cd54e6c65f2313101327e7e4",
+      "audit/registry/files.json": "928f67f5413acad32b5ecdc61b266d98a0bbafb2652db79ddc2289e6ba22638c",
       "audit/registry/rpc.json": "ae924a85483e215265b47c3f6c98988c62512b08260e003ab3ab96db651b6211",
       "audit/registry/runtime.json": "4950b9611ddfa67b77433a772064549b6a82173cb60b05cc2b24d34510d4a82d"
     },
-    "sotFingerprint": "813ff36b44d2"
+    "sotFingerprint": "b9445c21a509"
   },
   "runtime": [
     {
