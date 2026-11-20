@@ -1,0 +1,4 @@
+eslint rc=0
+Checking formatting...
+All matched files use Prettier code style!
+prettier rc=0

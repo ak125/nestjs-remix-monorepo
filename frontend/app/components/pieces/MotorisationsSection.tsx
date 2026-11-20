@@ -103,10 +103,11 @@ const MotorisationsSection = memo(function MotorisationsSection({
       )
     : motorisations.items;
 
-  // Limiter l'affichage pour éviter la dilution SEO
-  const vehiclesToDisplay = showAllVehicles
-    ? filteredItems
-    : filteredItems.slice(0, VISIBLE_LIMIT);
+  // Premier affichage limité à VISIBLE_LIMIT cartes ; les suivantes sont rendues côté serveur
+  // (vrai <a href> dans le HTML servi) mais masquées (`hidden`) jusqu'au clic sur « Voir les N
+  // autres compatibilités » (complément n° 12 au mandat DS).
+  const isCollapsed = (index: number) =>
+    !showAllVehicles && index >= VISIBLE_LIMIT;
   const hasMore = filteredItems.length > VISIBLE_LIMIT;
   const hiddenCount = filteredItems.length - VISIBLE_LIMIT;
 
@@ -178,11 +179,11 @@ const MotorisationsSection = memo(function MotorisationsSection({
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-          {vehiclesToDisplay.map((motorisation, index) => (
+          {filteredItems.map((motorisation, index) => (
             <Link
               key={index}
               to={motorisation.link}
-              className="group relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+              className={`${isCollapsed(index) ? "hidden " : ""}group relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0`}
             >
               {/* Bordure gradient au hover */}
               <div

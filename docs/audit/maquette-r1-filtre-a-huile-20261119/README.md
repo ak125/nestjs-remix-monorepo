@@ -1461,6 +1461,54 @@ Backend non touché par ce complément : son typecheck du complément n° 10 res
 - Hors périmètre : carburant, mois de début et de fin, donnée BMW E81 116d, V-Level,
   les 7 cartes sans lien, toute écriture en base.
 
+## Complément n° 12 — cartes véhicule R1 : un vrai lien dans le HTML servi (20 nov. 2026)
+
+Mandat : chaque carte affichée ou dépliable doit avoir un `<a href>` dans le HTML servi, vers la même cible, sans changer l'apparence validée (premier affichage, bouton « voir plus », ligne « Fabrication »). Constat d'origine : DU, `REFERENTIEL-EXTERNE.md` sur #2211 (7 cartes sur 19 sans lien). Tête de départ : `da7f091b761c2093836319eb49a41953400ecb3a`. Sorties : `complement-12/`.
+
+### Le défaut existait, et sa cause
+
+HTML servi (GET simple, sans JavaScript, `outils/ssr-c12.cjs`) sur la tête de départ :
+
+| Page | Cartes connues (données du loader) | `<a href>` de cartes | Sans lien |
+|---|---|---|---|
+| pg 7 filtre à huile | 19 | 12 | 7 |
+| pg 402 plaquettes de frein | 17 | 12 | 5 |
+
+Cause : ni un affichage différé ni un rendu côté navigateur. Le bouton « Voir les N autres compatibilités » de `MotorisationsSection.tsx` coupait la liste avant le rendu (`filteredItems.slice(0, 12)`) ; les cartes suivantes n'existaient qu'après le clic (`useState`, navigateur seulement).
+
+### Correction
+
+`frontend/app/components/pieces/MotorisationsSection.tsx` : toutes les cartes de `filteredItems` sont rendues ; celles au-delà de la 12ᵉ portent la classe `hidden` (`display:none`) tant que la liste n'est pas dépliée. Le bouton, son libellé, la recherche et la ligne « Fabrication » sont inchangés. Le composant n'a qu'un consommateur, `routes/pieces.$slug.tsx`, qui lui passe `variant="R1"` : aucune autre page n'est touchée.
+
+Pas de lien caché trompeur : une carte repliée est hors de l'ordre de tabulation (`display:none`) et le bouton visible la révèle ; après le clic, toutes les cartes sont visibles et focalisables (`outils/depli-c12.cjs` : 0 carte non atteignable sur les deux pages, à 390 et 1440 px). Sans JavaScript, le bouton ne déplie pas la liste : c'était déjà le cas avant, pour le bouton comme pour la recherche.
+
+### Mesures avant / après (même proxy, même données ; seul le build change)
+
+| Mesure | pg 7 avant | pg 7 après | pg 402 avant | pg 402 après |
+|---|---|---|---|---|
+| `<a href>` de cartes dans le HTML servi | 12 / 19 | **19 / 19** (12 visibles, 7 repliées) | 12 / 17 | **17 / 17** (12 visibles, 5 repliées) |
+| Taille du HTML (gzip) | 219 716 o (39 897) | 238 465 o (40 608) | 227 397 o (38 698) | 240 792 o (39 023) |
+| Premier affichage 390 px : cartes visibles, bouton, hauteur de section | 12, « Voir les 7 autres », 2 989 px | identique | 12, « Voir les 5 autres », 3 097 px | identique |
+| Capture de la section repliée à 390 px | — | identique à l'octet (sha256) | — | identique à l'octet (sha256) |
+| Déplié : cartes visibles / non atteignables | 19 / 0 | 19 / 0 | 17 / 0 | 17 / 0 |
+| LCP / CLS / INP 390 px, CPU ×4 (médiane de 5) | 3 856 / 0 / 80 | 3 900 / 0 / 72 | 400 / 0 / 64 | 372 / 0 / 48 |
+| LCP / CLS / INP 1440 px (médiane de 5) | 3 448 / 0,0223 / 56 | 3 444 / 0,0223 / 56 | 268 / 0,0223 / 40 | 284 / 0,0223 / 40 |
+| axe, section des cartes (390 et 1440) | aucune | aucune | aucune | aucune |
+
+Les écarts de LCP et d'INP restent dans la dispersion des cinq passages (fichiers `*-cwv.json`). Le HTML grossit de 18,7 ko bruts (0,7 ko gzip) sur pg 7 et de 13,4 ko (0,3 ko gzip) sur pg 402 : le balisage des cartes repliées. Leurs images ont `loading="lazy"` : une carte en `display:none` ne télécharge pas son image.
+
+Contrôles : nouveau test `frontend/tests/unit/r1-motorisation-ssr-links.test.tsx` (19 éléments rendus par `renderToString` : 19 `<a href>` dans l'ordre, 12 visibles et 7 repliées, bouton qui déplie puis replie) ; **rouge** sur da7f091b7 (2 échecs sur 3, 12 liens au lieu de 19, `vitest-rouge-da7f091b7.txt`), vert après correction. Tests R1 : 7 fichiers, 62 tests verts (`vitest.txt`) ; typecheck frontend vert (`typecheck-frontend.txt`) ; eslint et prettier verts sur les fichiers touchés (`eslint.txt`).
+
+### Décision 48 : les 36 cibles sont-elles vendables et indexables ?
+
+Règle en code : partiellement. `frontend/app/utils/seo/r2-indexability.ts` porte la règle « au moins 1 produit vendable, sinon `noindex, follow` », avec le prédicat `isSellable` (`price > 0` et disponibilité fournisseur confirmée, `pri_dispo` 1, 2 ou 3 : IN_STOCK, LOW_STOCK, PREORDER). Mais elle est **désactivée par défaut** (`SEO_R2_SELLABLE_NOINDEX_ENABLED`) ; la règle servie reste l'ancienne (`count >= 2`, ou 1 produit avec une qualité de données d'au moins 50). Le sitemap gamme+véhicule se génère encore depuis `__sitemap_p_link` (`sitemap-v10-pieces.service.ts`), pas depuis la règle de la décision 48. Que `pri_dispo` soit exactement la confirmation « par le système fournisseurs » des décisions 19 et 22 n'est pas vérifié ici.
+
+Relevé en SELECT seulement (`rm_get_page_complete_v2`, fonction STABLE, la RPC de la page, en transaction en lecture seule ; `decision-48-cibles.sql`, `decision-48-cibles.txt`) : **les 36 cibles ont au moins 10 produits vendables** (de 10 à 86). Elles sont toutes indexables au sens du prédicat en code, et selon la règle servie aujourd'hui.
+
+À signaler à Marwane (aucun lien créé ni retiré) : deux cibles visibles de pg 402 sont **absentes de `__sitemap_p_link`**, donc du sitemap actuel, bien que vendables : `renault-140/megane-iii-140049/1-5-dci-77310` (54 vendables) et `citroen-46/berlingo-ii-46007/1-6-bluehdi-65057` (39 vendables). Les 34 autres y figurent.
+
+Hors périmètre, non touché : règles de maillage, titre et description, V-Level, page véhicule Clio III, bulle de discussion, base de données.
+
 ## Limites propres au complément n° 5
 
 - Le rendu après est mesuré sur la page R1 isolée, avec la substitution
@@ -1512,6 +1560,8 @@ Backend non touché par ce complément : son typecheck du complément n° 10 res
 - `outils/cartes-c10.cjs` relève aussi « Début de fabrication : » et « Fin de fabrication : » depuis le complément n° 11.
 - `outils/bulle-c11.cjs` : `BULLE=chat|remonter URL_PATH=… node bulle-c11.cjs <base> <label> <dossier>` ; bouton flottant fixe à 390 px : lignes « Fabrication » dont l'étendue croise le bouton, preuve `elementFromPoint` ligne par ligne, captures recouverte / libre (complément n° 11).
 - `outils/coupure-c11.cjs` : `URL_PATH=… node coupure-c11.cjs <base> <label> <dossier>` ; lignes « Fabrication » coupées à 390 px, texte de chaque ligne affichée, capture de la carte (complément n° 11).
+- `outils/ssr-c12.cjs` : `URL_PATH=… node ssr-c12.cjs <base> <label> <dossier>` ; HTML servi sans JavaScript : cartes connues du loader, `<a href>` de cartes (visibles / repliées), cartes sans lien, taille du HTML (complément n° 12).
+- `outils/depli-c12.cjs` : `URL_PATH=… node depli-c12.cjs <base> <label> <dossier>` ; premier affichage, dépliage et repli des cartes à 390 et 1440 px, cartes non atteignables, capture de la section repliée (complément n° 12).
 - `outils/band-context.cjs` : `node band-context.cjs <base> <sortie.png>` ; bas du hero et bande à 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree
