@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: f47c1a63cad2f26b35224d3cfbc25cee83c72db5e02dc0def6edf73526811749
+source_sha256: a01c0773e172ac9a24af4bb0a4cba6abc3a5c4a13970ed80a3171f15f963abcf
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3263 |
+| Files (Layer 1) | 3267 |
 | DB tables (Layer 1) | 316 |
-| DB RPC (Layer 1) | 270 |
+| DB RPC (Layer 1) | 271 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1020 |
+| Runtime entrypoints (Layer 1) | 1021 |
 
-Source sotFingerprint: `3aed1a75f12a`.
+Source sotFingerprint: `382aa90e6329`.
 
 ## Comment l'utiliser
 
@@ -37,11 +37,11 @@ Source sotFingerprint: `3aed1a75f12a`.
 
 ### D1 — Catalog Core
 
-- **Files**: 88 (service=52, controller=21, test=11, config=4)
-- **Runtime entrypoints**: 59
-- **Top owners**: @ak125/catalog-team (88)
+- **Files**: 92 (service=53, controller=21, test=14, config=4)
+- **Runtime entrypoints**: 60
+- **Top owners**: @ak125/catalog-team (92)
 - **Knowledge prose**: [`catalog`](modules/catalog.md), [`gamme-rest`](modules/gamme-rest.md), [`products`](modules/products.md)
-- **Status**: LIVE=74, UNKNOWN=14
+- **Status**: LIVE=75, UNKNOWN=17
 
 ### D2 — Legacy/XTR Migration
 
@@ -165,7 +165,7 @@ Source sotFingerprint: `3aed1a75f12a`.
 
 - **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
 - **DB tables**: 316
-- **DB RPC**: 270
+- **DB RPC**: 271
 - **Runtime entrypoints**: 83
 - **Top owners**: __unassigned__ (243)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)

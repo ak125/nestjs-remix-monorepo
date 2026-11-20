@@ -8402,6 +8402,43 @@
           {
             "mode": "IN",
             "name": "p_gamme_id",
+            "type": "integer"
+          },
+          {
+            "mode": "IN",
+            "name": "p_vehicle_id",
+            "type": "bigint"
+          },
+          {
+            "mode": "IN",
+            "name": "p_limit",
+            "type": "integer"
+          }
+        ],
+        "definedInMigrations": [
+          "20261119_seo_r2_title_display_names_rpc.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.rm_get_page_complete_v2#sig:3cac04eb",
+        "language": "plpgsql",
+        "name": "rm_get_page_complete_v2",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": true,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_gamme_id",
             "type": "INT"
           },
           {
@@ -8419,7 +8456,7 @@
           "20260408_rm_page_v2_seo_extraction.sql"
         ],
         "domain": "UNKNOWN",
-        "id": "public.rm_get_page_complete_v2",
+        "id": "public.rm_get_page_complete_v2#sig:d2fcf588",
         "language": "plpgsql",
         "name": "rm_get_page_complete_v2",
         "owner": "__unassigned__",
@@ -42971,6 +43008,7 @@
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/catalog/services/oem-platform-mapping.service.ts",
         "backend/src/modules/catalog/services/popular-gammes.service.ts",
+        "backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "backend/src/modules/catalog/services/seo-template.service.ts",
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
         "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
@@ -42979,7 +43017,7 @@
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "service",
-      "loc": 166,
+      "loc": 169,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/catalog.module.ts",
       "risk": "high",
@@ -43294,19 +43332,64 @@
         "manual"
       ],
       "domain": "D1",
+      "id": "backend/src/modules/catalog/services/__tests__/r2-title-collision.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/catalog/services/r2-title-collision.service.ts"
+      ],
+      "kind": "test",
+      "loc": 394,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/catalog/services/__tests__/r2-title-collision.service.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
       "id": "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
       "importedBy": [],
       "imports": [
         "@cache/cache.service",
         "backend/src/modules/catalog/catalog.module.ts",
+        "backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "backend/src/modules/catalog/services/seo-template.service.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "test",
-      "loc": 58,
+      "loc": 61,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
+      "id": "backend/src/modules/catalog/services/__tests__/seo-template-r2-title-trial.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/catalog/services/seo-template.service.ts"
+      ],
+      "kind": "test",
+      "loc": 379,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/catalog/services/__tests__/seo-template-r2-title-trial.test.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -43326,7 +43409,7 @@
         "backend/src/modules/catalog/services/seo-template.service.ts"
       ],
       "kind": "test",
-      "loc": 417,
+      "loc": 418,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/services/__tests__/seo-template-residual-markers.test.ts",
       "risk": "high",
@@ -43782,10 +43865,40 @@
         "manual"
       ],
       "domain": "D1",
+      "id": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "importedBy": [
+        "backend/src/modules/catalog/catalog.module.ts",
+        "backend/src/modules/catalog/services/__tests__/r2-title-collision.service.test.ts",
+        "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+        "backend/src/modules/catalog/services/seo-template.service.ts"
+      ],
+      "imports": [
+        "@database/services/supabase-base.service",
+        "@repo/database-types",
+        "@repo/seo-types"
+      ],
+      "kind": "service",
+      "loc": 256,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
       "id": "backend/src/modules/catalog/services/seo-template.service.ts",
       "importedBy": [
         "backend/src/modules/catalog/catalog.module.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+        "backend/src/modules/catalog/services/__tests__/seo-template-r2-title-trial.test.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-residual-markers.test.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-switch.test.ts",
         "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
@@ -43795,11 +43908,12 @@
         "@cache/cache.service",
         "@repo/seo-types",
         "backend/src/config/seo-variations.config.ts",
+        "backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts",
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "service",
-      "loc": 672,
+      "loc": 770,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/services/seo-template.service.ts",
       "risk": "high",
@@ -54005,19 +54119,44 @@
         "manual"
       ],
       "domain": "D1",
+      "id": "backend/src/modules/products/services/__tests__/cross-selling-seo-r2-title.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/products/services/cross-selling-seo.service.ts",
+        "backend/src/modules/products/services/cross-selling.service.ts"
+      ],
+      "kind": "test",
+      "loc": 119,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/products/services/__tests__/cross-selling-seo-r2-title.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
       "id": "backend/src/modules/products/services/cross-selling-seo.service.ts",
       "importedBy": [
         "backend/src/modules/products/products.module.ts",
+        "backend/src/modules/products/services/__tests__/cross-selling-seo-r2-title.test.ts",
         "backend/src/modules/products/services/cross-selling.service.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@repo/seo-types",
         "backend/src/modules/products/services/cross-selling.service.ts",
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 284,
+      "loc": 322,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/products/services/cross-selling-seo.service.ts",
       "risk": "high",
@@ -54064,6 +54203,7 @@
       "importedBy": [
         "backend/src/modules/products/cross-selling.controller.ts",
         "backend/src/modules/products/products.module.ts",
+        "backend/src/modules/products/services/__tests__/cross-selling-seo-r2-title.test.ts",
         "backend/src/modules/products/services/cross-selling-seo.service.ts",
         "backend/src/modules/products/services/cross-selling-source.service.ts"
       ],
@@ -55612,7 +55752,7 @@
         "backend/src/modules/rm/services/rm-builder.service.ts"
       ],
       "kind": "test",
-      "loc": 267,
+      "loc": 268,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
       "risk": "medium",
@@ -55744,7 +55884,7 @@
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
       ],
       "kind": "service",
-      "loc": 996,
+      "loc": 1003,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-builder.service.ts",
       "risk": "medium",
@@ -62884,7 +63024,7 @@
         "backend/src/modules/seo/services/chain/seo-template-renderer.service.ts"
       ],
       "kind": "test",
-      "loc": 213,
+      "loc": 272,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/chain/__tests__/seo-template-renderer.service.test.ts",
       "risk": "high",
@@ -63161,10 +63301,11 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@repo/seo-role-contracts",
+        "@repo/seo-types",
         "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
-      "loc": 234,
+      "loc": 258,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/chain/seo-template-renderer.service.ts",
       "risk": "high",
@@ -74647,7 +74788,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 268,
+      "loc": 305,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo-template-interpolation.test.ts",
       "risk": "medium",
@@ -104375,7 +104516,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 230,
+      "loc": 608,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-types/src/vehicle-aware-label.test.ts",
       "risk": "medium",
@@ -104395,7 +104536,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 111,
+      "loc": 430,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-types/src/vehicle-aware-label.ts",
       "risk": "medium",
@@ -110032,15 +110173,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "4517d3dde23cbe1db2c9a0d063db63118d7787d8e3f4111591c99d1f8090fc1a",
+      ".spec/00-canon/repository-registry/ownership.yaml": "d7fe97dca7cd62e5ab49cc062cfe55a9534b263c69aa89a64e116f4c83feccc0",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "1ed628874b5caf86ae0ff2b61cd19a0d558f5c0ad81bd5b4bb7de175fa26c91e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "b346771d17423305e9ee89e1052279b9c63d3e8102713cd767696f495375f7ed",
-      "audit/registry/rpc.json": "97e3cd0bb46a7389c7780aab203f64b278b5fecd03997a96976efc301abf93e3",
-      "audit/registry/runtime.json": "d713efc440587e87193b79786b2ffd3d517eb643a00734c2f0d8d70a20e67e0e"
+      "audit/registry/files.json": "54b3023e0ef9f6095aadf039d72950774b9f83912ec8f3d4e40ba8a603a0dedf",
+      "audit/registry/rpc.json": "ae924a85483e215265b47c3f6c98988c62512b08260e003ab3ab96db651b6211",
+      "audit/registry/runtime.json": "4950b9611ddfa67b77433a772064549b6a82173cb60b05cc2b24d34510d4a82d"
     },
-    "sotFingerprint": "3aed1a75f12a"
+    "sotFingerprint": "382aa90e6329"
   },
   "runtime": [
     {
@@ -112592,6 +112733,7 @@
         "runtime:backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "runtime:backend/src/modules/catalog/services/oem-platform-mapping.service.ts",
         "runtime:backend/src/modules/catalog/services/popular-gammes.service.ts",
+        "runtime:backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "runtime:backend/src/modules/catalog/services/seo-template.service.ts",
         "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts",
         "runtime:backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
@@ -112832,7 +112974,17 @@
       "status": "LIVE"
     },
     {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
       "dependsOn": [
+        "runtime:backend/src/modules/catalog/services/r2-title-collision.service.ts",
         "runtime:backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "id": "runtime:backend/src/modules/catalog/services/seo-template.service.ts",
