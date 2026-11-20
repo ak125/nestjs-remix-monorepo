@@ -5,7 +5,7 @@
  * ajout au panier → panier → commande → section paiement, puis nettoyage.
  *
  * Lancement (config dédiée, hors de la suite tests/e2e) :
- *   PURCHASE_PROBE_BASE_URL=http://localhost:3000 \
+ *   PURCHASE_PROBE_BASE_URL=http://localhost:3000 PURCHASE_PROBE_BYPASS_TOKEN=<jeton> \
  *     npx playwright test -c frontend/tests/purchase-probe/playwright.config.ts
  *
  * Garanties, vérifiées à chaque passage :
@@ -19,6 +19,10 @@
  *   (POST /checkout → createCheckoutOrder) ne peut donc pas partir, et le bouton
  *   « Payer » n'est jamais cliqué. Les balises de mesure (funnel
  *   /api/seo/funnel/event, RUM, Sentry) sont refusées et comptées.
+ * - En-tête de passage Cloudflare (complément n° 2 du mandat EI) : X-AutoMecanik-Probe,
+ *   valeur PURCHASE_PROBE_BYPASS_TOKEN, envoyé à la seule origine sondée, jamais
+ *   écrit dans le résultat ni le journal (probe-network.ts). Sans la variable, la
+ *   sonde ne part pas.
  * - Nettoyage en fin de passage, même après un échec : DELETE /api/cart (supprime
  *   la clé Redis du panier) puis POST /auth/logout (détruit la session).
  *
@@ -28,7 +32,8 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { test, expect, type BrowserContext, type Page, type Route } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { apiOptions, guardWrites, readBypassToken, redact, watchRedirectLeaks } from './probe-network';
 
 export const PROBE_UA_TOKEN = 'AutoMecanik-PurchaseProbe-bot/1.0';
 
@@ -43,6 +48,7 @@ const STEPS = {
   commande: 'Page commande (livraison)',
   paiement: 'Section paiement (sans payer)',
   nettoyage: 'Nettoyage panier et session',
+  fuite_jeton: "Jeton de passage hors de l'origine (redirection)",
 } as const;
 type StepId = keyof typeof STEPS;
 
@@ -55,8 +61,9 @@ const VEHICLE = (process.env.PURCHASE_PROBE_VEHICLE ?? '44:2012:44088:57414').sp
 const GAMME_PREFIX = process.env.PURCHASE_PROBE_GAMME_PREFIX ?? '/pieces/plaquette-de-frein-402/';
 const RESULT_PATH = process.env.PURCHASE_PROBE_RESULT ?? 'test-results/purchase-path-probe.json';
 
-/** Écritures permises à la page : méthode + chemin exact. */
-const WRITE_ALLOWLIST = new Set(['POST /api/cart/items', 'POST /auth/check-email']);
+/** Jeton de l'en-tête de passage Cloudflare : absent ou mal formé, le chargement échoue ici. */
+const BYPASS_TOKEN = readBypassToken();
+const API = apiOptions(BYPASS_TOKEN);
 
 const PIECE_CARD = /^Voir .+ —/;
 const MAX_CARDS_TRIED = 5;
@@ -64,28 +71,12 @@ const MAX_CARDS_TRIED = 5;
 type StepResult = { step: StepId; label: string; ok: boolean; ms: number };
 
 function shortError(error: unknown): string {
-  const raw = error instanceof Error ? error.message : String(error);
+  // Jeton masqué d'abord : un journal d'appel Playwright liste les en-têtes envoyés.
+  const raw = redact(error instanceof Error ? error.message : String(error), BYPASS_TOKEN);
   // Codes couleur du terminal retirés, première ligne utile, longueur bornée.
   // eslint-disable-next-line no-control-regex
   const line = raw.replace(/\u001b\[[0-9;]*m/g, '').split('\n').find((l) => l.trim()) ?? raw;
   return line.trim().slice(0, 300);
-}
-
-/** Refuse toute écriture de la page hors liste blanche, et la compte. */
-async function guardWrites(context: BrowserContext, origin: string, blocked: Map<string, number>) {
-  await context.route('**/*', (route: Route) => {
-    const request = route.request();
-    const method = request.method();
-    if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') return route.continue();
-    const url = new URL(request.url());
-    const key = `${method} ${url.origin === origin ? url.pathname : `${url.origin}${url.pathname}`}`;
-    if (url.origin === origin && WRITE_ALLOWLIST.has(`${method} ${url.pathname}`)) return route.continue();
-    blocked.set(key, (blocked.get(key) ?? 0) + 1);
-    return route.abort('blockedbyclient');
-  });
-  // Les balises navigator.sendBeacon passent par ce routage (vérifié sous Chromium
-  // sur DEV : cwv/beacon et attribution/landing y sont refusées). Elles ne sont pas
-  // neutralisées dans la page, pour rester comptées dans blocked_writes.
 }
 
 /**
@@ -134,7 +125,9 @@ test.describe("Sonde du parcours d'achat", () => {
       extraHTTPHeaders: { 'Accept-Language': 'fr-FR,fr;q=0.9' },
     });
     const blocked = new Map<string, number>();
-    await guardWrites(context, origin, blocked);
+    const leaks = new Set<string>();
+    await guardWrites(context, origin, BYPASS_TOKEN, blocked);
+    watchRedirectLeaks(context, origin, leaks);
     const page = await context.newPage();
 
     const startedAt = new Date();
@@ -253,12 +246,12 @@ test.describe("Sonde du parcours d'achat", () => {
         const cleanupFailedBefore = failedStep;
         const t0 = Date.now();
         try {
-          const cleared = await context.request.delete('/api/cart');
+          const cleared = await context.request.delete('/api/cart', API);
           expect(cleared.status(), 'DELETE /api/cart').toBeLessThan(300);
-          const cart = await context.request.get('/api/cart');
+          const cart = await context.request.get('/api/cart', API);
           const items = ((await cart.json()) as { items?: unknown[] }).items ?? [];
           expect(items.length, 'panier vide après nettoyage').toBe(0);
-          const logout = await context.request.post('/auth/logout', { maxRedirects: 0 });
+          const logout = await context.request.post('/auth/logout', API);
           expect(logout.status(), 'POST /auth/logout').toBeLessThan(400);
           steps.push({ step: 'nettoyage', label: STEPS.nettoyage, ok: true, ms: Date.now() - t0 });
         } catch (error) {
@@ -270,6 +263,15 @@ test.describe("Sonde du parcours d'achat", () => {
         }
       }
       await context.close();
+
+      // Jeton parti vers une autre origine par une redirection : passage en échec,
+      // le jeton est à renouveler (seules les origines sont écrites). Un échec
+      // antérieur garde son étape ; la fuite passe en tête du message.
+      if (leaks.size > 0) {
+        const leak = `jeton parti par redirection vers ${[...leaks].join(', ')} : à renouveler`;
+        failure = (failedStep ? `${leak} ; ${failure}` : leak).slice(0, 300);
+        failedStep ??= 'fuite_jeton';
+      }
 
       const result = {
         schema: 'purchase-path-probe/v1',
@@ -284,11 +286,12 @@ test.describe("Sonde du parcours d'achat", () => {
         steps,
         total_ms: steps.reduce((sum, s) => sum + s.ms, 0),
         blocked_writes: [...blocked.entries()].map(([request, count]) => ({ request, count })),
+        bypass_header_leaks: [...leaks],
       };
       mkdirSync(dirname(RESULT_PATH), { recursive: true });
-      writeFileSync(RESULT_PATH, `${JSON.stringify(result, null, 2)}\n`);
+      writeFileSync(RESULT_PATH, `${redact(JSON.stringify(result, null, 2), BYPASS_TOKEN)}\n`);
     }
 
-    expect(failedStep, `étape en échec : ${failedStep} — ${failure}`).toBeNull();
+    expect(failedStep, redact(`étape en échec : ${failedStep} — ${failure}`, BYPASS_TOKEN)).toBeNull();
   });
 });
