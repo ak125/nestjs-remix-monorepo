@@ -1,0 +1,29 @@
+== 2026-11-19T23:55:30Z PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) jetable, migration à 173 lignes
+fixtures : 900 types du classement (tous verdicts) + fonction canonique mark_stale_with_followup_rebuild (20260425), rebuild_vehicle_page_cache simulée
+0-initial | 900 | cb458d04591620f7df33176dafa0dd9c | 0 | 0
+-- 1. application
+psql:<stdin>:263: NOTICE:  INC-2026-007: marked 173 rows stale (reason: mandat EE 2026-11-20 : correction de auto_type.type_name_meta (liste validée par Marwane)), rebuilt 173 synchronously
+psql:<stdin>:263: NOTICE:  mandat EE : 173 valeurs écrites, 173 pages R8 invalidées et reconstruites
+1-apres-up | 900 | 03192ada622454c31d93556f5a1fa821 | 173 | 0
+ecarts au controle 07 (attendu 0) : 0
+-- 2. rejeu
+psql:<stdin>:263: NOTICE:  mandat EE : déjà appliqué, 0 ligne écrite
+2-apres-rejeu | 900 | 03192ada622454c31d93556f5a1fa821 | 173 | 0
+-- 3. retour
+psql:<stdin>:263: NOTICE:  INC-2026-007: marked 173 rows stale (reason: retour du mandat EE 2026-11-20 : type_name_meta d'origine remis), rebuilt 173 synchronously
+psql:<stdin>:263: NOTICE:  mandat EE : 173 valeurs écrites, 173 pages R8 invalidées et reconstruites
+3-apres-down | 900 | cb458d04591620f7df33176dafa0dd9c | 346 | 0
+ecarts au controle d'origine (attendu 0) : 0
+-- 4. rejeu du retour
+psql:<stdin>:263: NOTICE:  mandat EE : déjà appliqué, 0 ligne écrite
+4-apres-rejeu-down | 900 | cb458d04591620f7df33176dafa0dd9c | 346 | 0
+-- 5. garde : une valeur modifiee entre-temps (type 74)
+5-avant | 900 | 1e64a965026cdcd381479afaa8a9775d | 346 | 0
+psql:<stdin>:263: ERROR:  mandat EE : valeur actuelle différente de la valeur relevée, rien n'est écrit. 74 : '1.6 EcoBoost'
+CONTEXT:  PL/pgSQL function inline_code_block line 201 at RAISE
+5-apres-refus | 900 | 1e64a965026cdcd381479afaa8a9775d | 346 | 0
+-- 6. garde : type absent (75)
+6-avant | 899 | e8ba3237626eae79ae16fb70626d45e6 | 346 | 0
+psql:<stdin>:263: ERROR:  mandat EE : valeur actuelle différente de la valeur relevée, rien n'est écrit. 75 : '<type absent>'
+CONTEXT:  PL/pgSQL function inline_code_block line 201 at RAISE
+6-apres-refus | 899 | e8ba3237626eae79ae16fb70626d45e6 | 346 | 0
