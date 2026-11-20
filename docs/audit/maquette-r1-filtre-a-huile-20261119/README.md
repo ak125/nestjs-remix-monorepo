@@ -902,7 +902,74 @@ sur les 36 cartes.
   `r1s_micro_seo_block` (créneaux R1), pas du switch.
 - `seo_fragments_3` (alias 3, pg 0) n'est pas utilisé par les cartes.
 
-### Limites propres au complément
+### Complément n° 6 — bouton « Lancer le diagnostic » : texte noir sur l'orange cta, bouton sorti du lien (20 nov. 2026)
+
+Mandat : variante B validée par Marwane le 20 nov. 2026 à 01:06 (Paris), sur le constat de DU
+(§14 de sa revue, #2211, `760532502`). Tête de #2210 relevée avant travail : `06feff968`.
+
+**Ce qui change**, dans `frontend/app/components/gamme/GammeDiagnosticCTA.tsx` seulement :
+
+- couleurs du bouton de l'accueil (`home/DiagnosticBanner.tsx`) : `bg-cta`, `text-black`,
+  `hover:bg-cta-hover`. Ce sont des jetons de `packages/design-tokens/src/tokens.json`
+  (`cta` = `#F97316`, `cta.hover` = `#EA580C`) ; le noir est `text-black`, comme à l'accueil ;
+- l'ombre `shadow-orange-500/25` (orange par défaut de Tailwind 4) devient `shadow-cta/25` ;
+- le `<button>` placé dans le `<Link>` est retiré : le lien est stylé en bouton. Même lien
+  `/diagnostic-auto`, même texte, même icône, même taille, mêmes classes de forme ;
+- reflet `animate-shimmer` gardé (voir mesures), toujours coupé en mouvement réduit.
+
+Hors périmètre, non touchés : la pastille de l'en-tête (dégradé `orange-500` → `orange-600`),
+les quatre autres fichiers à ce même dégradé (revue du design system par le 05), les composants
+partagés, la place du bouton, le reste de la page.
+
+**Mesures au pixel** (`outils/diag-c6.cjs`, méthode de DU : texte et icône rendus transparents,
+pire pixel de fond dans leur boîte avec 1 px de marge, échelle 1, mouvement non réduit, reflet figé
+à 24 positions, rapports tronqués au centième). Seuil texte 4,5:1 (15 et 14 px gras).
+
+| Mesure | Avant 390 | Avant 1440 | Après 390 | Après 1440 |
+|---|---|---|---|---|
+| Couleur du texte | `#ffffff` | `#ffffff` | `#000000` | `#000000` |
+| Bout gauche du bouton | 2,90 | 2,88 | 7,49 | 7,49 |
+| Bout droit du bouton | 3,54 | 3,56 | 7,49 | 7,49 |
+| Fond sous le texte, sans reflet | 3,03 | 3,11 | 7,49 | 7,49 |
+| Fond sous le texte, pire passage du reflet | **2,75** | 2,82 | **7,40** | 7,40 |
+| Icône du bouton, pire position | 2,70 | 2,83 | 7,40 | 7,45 |
+| Survol, sans reflet | — | 3,11 | — | 5,89 |
+| Survol, pire passage du reflet | — | 2,82 | — | 5,83 |
+| Icône blanche sur la pastille de l'en-tête (seuil 3:1) | 3,01 | 3,01 | 3,01 | 3,01 |
+| Élément cliquable | `<button>` 332×56 dans `<a>` | 1182×54 | `<a>` seul 332×56 | `<a>` seul 1182×54 |
+| Éléments interactifs dans le lien | 1 | 1 | 0 | 0 |
+
+Les mesures « avant » reproduisent celles de DU (2,75 à 390 px). Le survol se mesure à 1440 px
+seulement : il n'y a pas de survol au toucher.
+
+**Reflet.** Gardé : le pire rapport mesuré à son passage est 7,40:1, au-dessus de 4,5:1. Le reflet
+est un voile blanc ; sur fond clair et texte noir il éclaircit le fond, donc il ne peut pas faire
+baisser le contraste sous celui du fond nu (les 0,09 point d'écart viennent du lissage des bords
+du dégradé). `motion-reduce:animate-none!` est inchangé.
+
+**axe-core** (`outils/axe-c6.cjs`, règles WCAG 2.0 à 2.2 A et AA et bonnes pratiques, page entière
+et carte, 390 et 1440 px) :
+
+- page entière : violations identiques avant et après (même liste de règles, de nœuds et de
+  cibles) ; aucune ne vient de la carte ;
+- carte : aucune violation avant ni après. Avant, axe classait le contraste du bouton en
+  « incomplete » (fond en dégradé) ; après, rien n'est en suspens.
+
+**Vérifications** : typecheck du frontend OK ; ESLint et Prettier OK sur les deux fichiers ;
+nouveau test `frontend/tests/unit/gamme-diagnostic-cta-contrast.test.tsx` (un seul élément
+interactif vers `/diagnostic-auto`, jetons `bg-cta`, `hover:bg-cta-hover`, `text-black`, plus de
+`text-white` ni d'orange par défaut) : 2 tests passent.
+
+**Rendu.** Build du worktree servi par `react-router-serve` (:3018) derrière `outils/img-proxy.mjs`
+(:3017), loaders en GET sur le DEV partagé. « Avant » = build de `06feff968` ; pour axe « avant »,
+le composant de `06feff968` a été remis le temps d'un build, puis la version corrigée reconstruite.
+Le service DEV n'a été ni redémarré ni modifié. Rien n'est servi en DEV, PREPROD ou PROD.
+
+**Fichiers** (`complement-6/`) : `{avant,apres}-carte-390.png`, `{avant,apres}-carte-1440.png`,
+`{avant,apres}-carte-1440-survol.png`, `{avant,apres}-mesures.json` (24 positions du reflet
+comprises), `{avant,apres}-axe.json`.
+
+## Limites propres au complément
 
 - Le rendu après est mesuré sur la page R1 isolée, avec la substitution
   déclarée ci-dessus. Rien n'est intégré, activé ni servi en DEV, PREPROD ou PROD.
@@ -937,6 +1004,8 @@ sur les 36 cartes.
 - `outils/proxy-c5.mjs` : proxy :3017, GET seulement ; `SUBST=1 APRES=<calcul.json>` remplace la description des cartes de pg 7 et 402, `EMPTY=1` la vide (complément n° 5).
 - `outils/cartes-c5.cjs` : `URL_PATH=/pieces/... node cartes-c5.cjs <base> <label> <dossier>` ; texte et captures des cartes à 390 px.
 - `outils/calcul-c5.ts` et `outils/valide-rendu-c5.ts` : calcul des phrases par la méthode du builder et validateur R1 sur le rendu (tsx, depuis `backend/`).
+- `outils/diag-c6.cjs` : `node diag-c6.cjs <base> <label> <dossier>` ; contraste au pixel du bouton « Lancer le diagnostic » (bouts, reflet à 24 positions, survol, icônes, taille, imbrication), à 390 et 1440 px (complément n° 6).
+- `outils/axe-c6.cjs` : `node axe-c6.cjs <base> <label> <dossier>` ; axe sur la page et sur la carte « Diagnostic gratuit », à 390 et 1440 px (complément n° 6).
 - `outils/band-context.cjs` : `node band-context.cjs <base> <sortie.png>` ; bas du hero et bande à 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree

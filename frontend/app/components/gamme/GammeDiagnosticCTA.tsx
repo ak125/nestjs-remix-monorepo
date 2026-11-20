@@ -47,14 +47,15 @@ export default function GammeDiagnosticCTA() {
         </div>
 
         <div className="px-4 pb-4">
-          <Link to="/diagnostic-auto">
-            <button
-              type="button"
-              className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl text-white text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/[0.12] to-white/0 animate-shimmer motion-reduce:animate-none!" />
-              <SearchCheck size={18} /> Lancer le diagnostic
-            </button>
+          {/* Un seul élément interactif : le lien stylé en bouton (un <button> dans un <a> est invalide).
+              Couleurs du bouton « Lancer le diagnostic » de l'accueil (DiagnosticBanner) : fond cta,
+              texte noir, survol cta-hover — jetons du design system (complément 6). */}
+          <Link
+            to="/diagnostic-auto"
+            className="w-full py-4 bg-cta hover:bg-cta-hover rounded-xl text-black text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-cta/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/[0.12] to-white/0 animate-shimmer motion-reduce:animate-none!" />
+            <SearchCheck size={18} /> Lancer le diagnostic
           </Link>
         </div>
       </div>

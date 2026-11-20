@@ -1,0 +1,771 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "avant",
+  "at": "2026-11-20T00:10:39.330Z",
+  "methode": "pixel, pire pixel de fond sous la boîte (1 px de marge), échelle 1, reflet figé à 24 positions",
+  "vues": {
+    "390": {
+      "lien": {
+        "w": 332,
+        "h": 56
+      },
+      "bouton": {
+        "tag": "button",
+        "w": 332,
+        "h": 56
+      },
+      "interactifsDansLien": 1,
+      "couleurTexte": "rgb(255, 255, 255)",
+      "fond": "linear-gradient(to right, oklch(0.705 0.213 47.604) 0%, oklch(0.646 0.222 41.116) 100%)",
+      "couleurIconePastille": "rgb(255, 255, 255)",
+      "classes": "w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl text-white text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden",
+      "sansReflet": {
+        "texte": {
+          "ratio": 3.03,
+          "fond": "#ff6000",
+          "texte": "#ffffff"
+        },
+        "icone": {
+          "ratio": 3,
+          "fond": "#ff6200",
+          "texte": "#ffffff"
+        }
+      },
+      "bouts": {
+        "gauche": {
+          "ratio": 2.9,
+          "fond": "#ff6800",
+          "texte": "#ffffff"
+        },
+        "droit": {
+          "ratio": 3.54,
+          "fond": "#f64b00",
+          "texte": "#ffffff"
+        }
+      },
+      "reflet": {
+        "pireTexte": {
+          "t": 0.458,
+          "ratio": 2.75,
+          "fond": "#ff711e",
+          "texte": "#ffffff"
+        },
+        "pireIcone": {
+          "t": 0.417,
+          "ratio": 2.7,
+          "fond": "#ff741e",
+          "texte": "#ffffff"
+        },
+        "positions": [
+          {
+            "t": 0,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.042,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.083,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.125,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.167,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.208,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.25,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6201",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.292,
+            "texte": {
+              "ratio": 3.01,
+              "fond": "#ff6102",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.93,
+              "fond": "#ff6607",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.333,
+            "texte": {
+              "ratio": 2.95,
+              "fond": "#ff6509",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.86,
+              "fond": "#ff6a0e",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.375,
+            "texte": {
+              "ratio": 2.86,
+              "fond": "#ff6a10",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.8,
+              "fond": "#ff6e15",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.417,
+            "texte": {
+              "ratio": 2.78,
+              "fond": "#ff6f18",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.7,
+              "fond": "#ff741e",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.458,
+            "texte": {
+              "ratio": 2.75,
+              "fond": "#ff711e",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.75,
+              "fond": "#ff711a",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.5,
+            "texte": {
+              "ratio": 2.81,
+              "fond": "#ff6d18",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.83,
+              "fond": "#ff6c12",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.542,
+            "texte": {
+              "ratio": 2.91,
+              "fond": "#fe6813",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.93,
+              "fond": "#ff6609",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.583,
+            "texte": {
+              "ratio": 2.99,
+              "fond": "#ff6205",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.625,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.667,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.708,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.75,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.792,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.833,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.875,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.917,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.958,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#ff6000",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3,
+              "fond": "#ff6200",
+              "texte": "#ffffff"
+            }
+          }
+        ]
+      },
+      "pastille": {
+        "ratio": 3.01,
+        "fond": "#ff6100",
+        "texte": "#ffffff"
+      }
+    },
+    "1440": {
+      "lien": {
+        "w": 1182,
+        "h": 54.390625
+      },
+      "bouton": {
+        "tag": "button",
+        "w": 1182,
+        "h": 54.390625
+      },
+      "interactifsDansLien": 1,
+      "couleurTexte": "rgb(255, 255, 255)",
+      "fond": "linear-gradient(to right, oklch(0.705 0.213 47.604) 0%, oklch(0.646 0.222 41.116) 100%)",
+      "couleurIconePastille": "rgb(255, 255, 255)",
+      "classes": "w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl text-white text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden",
+      "sansReflet": {
+        "texte": {
+          "ratio": 3.11,
+          "fond": "#fe5c00",
+          "texte": "#ffffff"
+        },
+        "icone": {
+          "ratio": 3.11,
+          "fond": "#fe5c00",
+          "texte": "#ffffff"
+        }
+      },
+      "bouts": {
+        "gauche": {
+          "ratio": 2.88,
+          "fond": "#ff6900",
+          "texte": "#ffffff"
+        },
+        "droit": {
+          "ratio": 3.56,
+          "fond": "#f64a00",
+          "texte": "#ffffff"
+        }
+      },
+      "reflet": {
+        "pireTexte": {
+          "t": 0.5,
+          "ratio": 2.82,
+          "fond": "#fd6e1f",
+          "texte": "#ffffff"
+        },
+        "pireIcone": {
+          "t": 0.5,
+          "ratio": 2.83,
+          "fond": "#fe6d1b",
+          "texte": "#ffffff"
+        },
+        "positions": [
+          {
+            "t": 0,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.042,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.083,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.125,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.167,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.208,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.25,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.292,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.333,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.09,
+              "fond": "#fe5d02",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.375,
+            "texte": {
+              "ratio": 3.03,
+              "fond": "#fe6108",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.01,
+              "fond": "#fe620a",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.417,
+            "texte": {
+              "ratio": 2.94,
+              "fond": "#fe6610",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.93,
+              "fond": "#fe6712",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.458,
+            "texte": {
+              "ratio": 2.84,
+              "fond": "#fe6c19",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.84,
+              "fond": "#fe6c1a",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.5,
+            "texte": {
+              "ratio": 2.82,
+              "fond": "#fd6e1f",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.83,
+              "fond": "#fe6d1b",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.542,
+            "texte": {
+              "ratio": 2.91,
+              "fond": "#fe6813",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 2.93,
+              "fond": "#fe6712",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.583,
+            "texte": {
+              "ratio": 3.01,
+              "fond": "#fd630e",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.01,
+              "fond": "#fe620a",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.625,
+            "texte": {
+              "ratio": 3.09,
+              "fond": "#fe5d02",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.09,
+              "fond": "#fe5d02",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.667,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.708,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.75,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.792,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.833,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.875,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.917,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          },
+          {
+            "t": 0.958,
+            "texte": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            },
+            "icone": {
+              "ratio": 3.11,
+              "fond": "#fe5c00",
+              "texte": "#ffffff"
+            }
+          }
+        ]
+      },
+      "pastille": {
+        "ratio": 3.01,
+        "fond": "#ff6100",
+        "texte": "#ffffff"
+      },
+      "survol": {
+        "couleurs": {
+          "texte": "rgb(255, 255, 255)",
+          "fond": "linear-gradient(to right, oklch(0.705 0.213 47.604) 0%, oklch(0.646 0.222 41.116) 100%)"
+        },
+        "sansReflet": {
+          "ratio": 3.11,
+          "fond": "#fe5c00",
+          "texte": "#ffffff"
+        },
+        "pireReflet": {
+          "t": 0.5,
+          "ratio": 2.82,
+          "fond": "#fd6e1f",
+          "texte": "#ffffff"
+        }
+      }
+    }
+  }
+}
