@@ -53,28 +53,15 @@ R3 (Blog) pages educate users about automotive topics. They build trust and auth
 
 ### Colors
 
-```css
---r3-primary: #1D1D1F;
---r3-secondary: #636366;
---r3-accent: #007AFF;
---r3-background: #FFFFFF;
-```
+Colors come from `packages/design-tokens/src/tokens.json`, by role, never as raw values (P44 of `.claude/governance/journal-des-principes.md`). Navy and orange are the brand colors. Orange marks the one primary action per screen, with navy text; other actions are outlined. Red is for errors and destructive actions only.
 
 ### Typography
 
-```css
---r3-heading: 'Merriweather', serif;
---r3-body: 'Source Sans Pro', sans-serif;
---r3-mono: 'Fira Code', monospace;
-```
+Outfit for headings, DM Sans for body text, Roboto Mono for codes the user copies, from the tokens (P46). Every weight used is loaded.
 
 ### Reading Comfort
 
-```css
---r3-max-width: 720px;
---r3-line-height: 1.75;
---r3-paragraph-spacing: 1.5rem;
-```
+Maximum text width, line height and paragraph spacing come from the tokens (P46); none is hard-coded.
 
 ## Required Elements
 
