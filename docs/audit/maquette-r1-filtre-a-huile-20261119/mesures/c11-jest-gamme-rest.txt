@@ -1,0 +1,41 @@
+npm warn Unknown project config "puppeteer-skip-download". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+PASS src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ⌁ auth for agents [www.vestauth.com]
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+PASS src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ⌘ suppress logs { quiet: true }
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+[31m[Nest] 460114  - [39m20/11/2026 14:48:41 [31m  ERROR[39m [38;5;3m[GammeResponseBuilderService] [39m[31m[R1-GAMME-LINKS] pg_id=7 résolution en échec, liens sans identifiant servis sans lien, réponse non cachée : DatabaseException: Résolution des liens de gamme impossible : lecture en échec[39m
+PASS src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ◈ secrets for agents [www.dotenvx.com]
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+PASS src/modules/gamme-rest/utils/__tests__/r1-image-normalizer.test.ts
+  ● Console
+
+    console.log
+      ◇ injected env (0) from .env.test // tip: ⌁ auth for agents [www.vestauth.com]
+
+      at _log (../node_modules/dotenv/lib/main.js:131:11)
+
+
+Test Suites: 4 passed, 4 total
+Tests:       23 passed, 23 total
+Snapshots:   0 total
+Time:        5.579 s
+Ran all test suites matching /src\/modules\/gamme-rest/i.
+[33m[Nest] 460114  - [39m20/11/2026 14:48:41 [33m   WARN[39m [38;5;3m[InternalLinkingService] [39m[33m[gamme-links] 2 lien(s) éditorial(aux) sans gamme du catalogue correspondante — libellé servi sans lien[39m

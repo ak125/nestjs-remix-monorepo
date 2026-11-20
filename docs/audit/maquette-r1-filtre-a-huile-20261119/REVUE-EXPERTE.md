@@ -47,6 +47,12 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   revérifiés au pixel dans Chrome 153, à 390 et 1440 px. Le recensement des 123 pages R1, axe, le
   typecheck, les tests et la CI sont refaits. Une erreur du §17.4 est rectifiée. Voir le §18 ; les
   autres sections ne changent pas.
+- **Complément n° 11** : la tête de #2210 est passée à `31fa098f42ea5642d7aa10755fb842c2b18038a3`
+  (complément n° 10 de DS : ligne « Fabrication » à la place de la phrase générée des cartes
+  véhicule, accord de Marwane du 20 novembre à 13:47). Les années sont confrontées à la base et, sur
+  trois véhicules, à des fiches publiques ; les cartes sont mesurées au pixel à 390 et 1440 px sur deux
+  gammes ; le retrait du builder, la clé de cache, le contrat, axe, le typecheck, les tests et la CI
+  sont revérifiés. Voir le §19 ; les autres sections ne changent pas.
 
 ## Verdict final
 
@@ -235,6 +241,23 @@ page R1. Ce qui reste ouvert, hors de ce verdict ou à trancher par Marwane :
 - la validation de l'ordre des blocs et la régénération des images de référence `r1-gamme.png`, si
   l'ordre est retenu ;
 - les écarts antérieurs au contrat R1 décrits au §8 à §12, que #2210 ne prétend pas corriger.
+
+**Complément n° 11, tête `31fa098f4` : cartes véhicule : correction d'abord.**
+
+- Les années affichées sont exactes : 36 sur 36 identiques à `auto_type` sur les deux gammes, et
+  concordantes avec les fiches publiques pour la Clio III et la Golf IV (à un an près pour la fin de
+  la Golf). Aucune phrase de remplissage ne reste dans les cartes R1 (§19.1).
+- **Le cas « dès » est trompeur.** Sur les 123 pages R1, 185 cartes sur 891 (21 %) affichent
+  « Fabrication : dès AAAA ». Leurs 86 versions n'ont aucune date de fin en base et ont commencé entre
+  2001 et 2014 : presque toutes ne sont plus fabriquées. Exemple vérifié : Sandero I 1.5 dCi 68,
+  affichée « dès 2008 », alors que le modèle a été vendu de 2008 à 2012. La correction tient dans la
+  fonction `r1FabricationYears` ; elle est proposée au §19.5, pas appliquée.
+- Lisibilité conforme : 7,55:1 au pixel, plage d'années jamais coupée, cartes de hauteur régulière,
+  aucun trou. Chaque carte perd 34 à 149 px ; aucun décalage de mise en page ne vient des cartes
+  (§19.2).
+- Backend identique à `2462efde5`, clé `gamme:resp:v2` sans risque de mauvais format, contrat sans
+  fuite. Aucune nouvelle violation axe ; typecheck, lint et tests passent ; la CI n'a aucun échec
+  nouveau (§19.3, §19.4).
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -1583,3 +1606,223 @@ Ce que je n'ai pas vérifié :
 - Le contenu éditorial (emoji devant « Bruit … ») n'est pas jugé.
 - Les autres pages qui utilisent `.gamme-editorial`, la page véhicule, les pages R2, Firefox et Safari
   ne sont pas mesurés.
+
+## 19. Complément n° 11 : ligne « Fabrication » des cartes véhicule R1
+
+**Verdict : cartes véhicule : correction d'abord.** Les années sont exactes et la mise en page est
+saine, mais « dès AAAA » laisse croire qu'un véhicule est encore fabriqué alors que la base ne connaît
+simplement pas sa fin. Cela touche 185 cartes sur 891.
+
+- **Tête mesurée** : `31fa098f42ea5642d7aa10755fb842c2b18038a3` (#2210, PR brouillon ouverte),
+  relevée à 13:31 UTC avant les mesures, puis revérifiée avant la publication (`git ls-remote` et
+  `gh`). Rien n'a été modifié dans #2210.
+- **Rendu** : backend et frontend de `31fa098f4`, reconstruits dans mon worktree et servis sur un
+  port à moi, avec un Redis privé. Le service DEV n'a pas servi. Chrome 153 complet, 390×844 et
+  1440×900.
+- **Ce que DS a changé** (diff `318f405d3` → `31fa098f4`, hors documentation : 11 fichiers)
+  - `MotorisationsSection.tsx` : en R1, la carte affiche « Fabrication : » suivi des années, dans un
+    `span` insécable. Les années viennent de la fonction `r1FabricationYears` : « 2005–2012 »,
+    « 2011 » si le début et la fin sont égaux, « dès 2007 » s'il n'y a pas de fin, « jusqu'en 2010 »
+    s'il n'y a pas de début. Sans aucune date, la ligne n'est pas affichée. Hors R1, la carte est
+    inchangée.
+  - `gamme-page-contract.types.ts` : deux champs ajoutés, `type_year_from` et `type_year_to`, en
+    chaîne ou absents.
+  - Backend : 9 fichiers reviennent à leur état de `2462efde5`, dont le test du builder supprimé.
+
+### 19.1 Contenu des lignes
+
+**Années contre la base.** J'ai lu l'API de mon rendu, puis la table `auto_type` en lecture seule.
+
+| Gamme | Cartes | Années identiques à la base | Cas particuliers |
+|---|---|---|---|
+| Filtre à huile (pg 7) | 19 (12 visibles, 7 après le bouton) | 19 sur 19 | « dès 2007 » (Fiat 500 1.2), « dès 2008 » (Sandero I 1.5 dCi 68), « dès 2010 » (Swift IV), « dès 2012 » (Civic IX 2.2) |
+| Plaquette de frein (pg 402) | 17 (12 visibles, 5 après le bouton) | 17 sur 17 | « dès 2008 » (Berlingo B9), « dès 2013 » (Civic IX 1.6), « 2011 » seul (BMW E81 116d, début = fin) |
+
+Les deux champs arrivent en texte (`str`) dans l'API, comme dans la base, où `type_year_from` et
+`type_year_to` sont des colonnes `text` (`mesures/c11-base-annees.txt`).
+
+**Années contre des fiches publiques (décision 159).** Je n'ai pas trouvé le texte de la décision 159
+dans le dépôt ni dans le journal ; je l'applique au sens du mandat : trois véhicules confrontés à une
+source extérieure.
+
+| Véhicule | Base | Fiches publiques | Constat |
+|---|---|---|---|
+| Clio III 1.5 dCi 86 | 06/2005 – 12/2012 | phase I 2005–2009, phase II 2009–2012 ([auto-data, phase I](https://www.auto-data.net/en/renault-clio-iii-phase-i-5-door-1.5-dci-86hp-56126), [auto-data, phase II](https://auto-data.net/en/renault-clio-iii-phase-ii-2009-1.5-dci-86hp-24851)) | Concordant |
+| Golf IV 1.9 TDI 90 | 10/1997 – 05/2004 | berline 1997–2003 ([auto-data](https://auto-data.net/en/volkswagen-golf-iv-1.9-tdi-90hp-8673)) | Début concordant, fin à un an près ; les fiches divergent entre elles selon la carrosserie |
+| Sandero I 1.5 dCi 68 | 11/2008, sans fin → « dès 2008 » | version produite en 2009–2010 ([auto-data](https://www.auto-data.net/en/dacia-sandero-i-1.5-dci-68hp-46137), [carsart](https://carsart.net/en/cars/dacia/sandero/i/1500cc-dci-68hp)) ; 68 ch à partir de 12/2009 ([Auto Bild](https://www.autobild.de/marken-modelle/dacia/sandero/generation-1-2008/)) ; Sandero I vendue de juin 2008 à septembre 2012 ([L'argus](https://www.largus.fr/Dacia_Sandero_I-B90.html)) | **Trompeur** : la carte laisse croire à une fabrication en cours |
+
+Hors objet, à signaler seulement : la carte BMW Série 1 (E81) 116d porte 90 ch. Je ne trouve aucune
+fiche d'une 116d de 90 ch ; celle que j'ai lue donne 116 ch
+([autodata1](https://www.autodata1.com/en/car/bmw/1-series/1-series-hatchback-3dr-e81-116d-116-hp/m:amp)).
+La puissance vient de la base et n'est pas touchée par #2210.
+
+**Portée du cas « dès » sur les 123 pages R1** (API de mon rendu, `scripts/c11-portee.py`,
+`mesures/c11-portee.txt`) :
+
+- 57 pages ont des cartes véhicule. Sur les 66 autres, `motorisations` vaut `null` dans l'API : c'est
+  le comportement du backend de base, pas un effet de #2210.
+- 891 cartes : 703 avec une plage, 3 avec une seule année, **185 avec « dès » (21 %)**, aucune avec
+  « jusqu'en », aucune sans date.
+- Les 185 cartes en « dès » portent 86 versions distinctes. Une requête de lecture sur la base
+  (`scripts/c11-des.sql`, `mesures/c11-des.txt`) confirme que les 86 n'ont aucune fin : ni
+  `type_year_to`, ni `type_year_to_i`, ni `modele_year_to` du modèle. Leur début va de 2001 à 2014.
+- Autres exemples : C3 II 1.4 HDi « dès 2009 », Kangoo II 1.5 dCi « dès 2008 », Ypsilon II 1.3 D
+  Multijet « dès 2011 », Yaris III 1.4 D « dès 2011 », Fiat 500 1.3 D Multijet « dès 2007 ». Ce sont
+  des versions qui ne sont plus fabriquées.
+
+**Lexique R1 et remplissage.** La carte R1 ne contient plus que le titre (marque et modèle), les
+badges (version, puissance), la ligne « Fabrication : … » et le bouton. Aucun autre paragraphe dans
+les 36 cartes (`autresParagraphes` vide dans `mesures/c11-cartes-*.json`). « Fabrication » et « dès »
+ne figurent dans aucune liste de mots interdits de `packages/seo-role-contracts` ni de la matrice des
+rôles. Aucune phrase générée.
+
+**Lignes identiques sur une même page.** Aucune carte n'est identique à une autre en entier (marque,
+modèle, version, puissance et années). Des cartes partagent la même ligne « Fabrication » :
+
+- filtre à huile : 2 cartes sur 19 (Clio III et Yaris, 2005–2012) ;
+- plaquette de frein : 4 cartes sur 17 (deux A4 B7 en 2005–2006, deux Golf IV en 1997–2004) ;
+- sur les 123 pages : 147 cartes sur 37 pages, dont 59 parmi les 12 cartes visibles.
+
+Ce partage n'est pas un défaut : la ligne décrit le véhicule, et deux versions d'un même modèle ont
+souvent les mêmes années. Ce sont le modèle et la puissance qui les distinguent. Une piste pour les
+départager est au §19.5.
+
+### 19.2 Lisibilité et mise en page
+
+Mesures au pixel, `scripts/cartes-du11.cjs`, `mesures/c11-cartes-*.json`, captures
+`captures/c11-cartes-*.png` (quatre premières cartes) et `-agrandi.png` (ligne agrandie en place).
+
+| Contrôle | 390 px | 1440 px |
+|---|---|---|
+| Style de la ligne | `#4a5565` sur `#ffffff`, 14 px, graisse 500, interligne 20 px, marge basse 16 px | identique |
+| Contraste au pixel | **7,55:1**, à taille réelle et agrandi (1.4.3 : 4,5:1 requis) | **7,55:1** |
+| Ligne sur une seule ligne | 36 sur 36 | 36 sur 36 |
+| Plage d'années coupée | 0 | 0 |
+| Hauteur des cartes | 184 px pour la plupart ; 204 à 256 px quand le titre ou les badges passent sur deux lignes (noms longs) | toutes à 195 px, rangées de deux égales |
+| Vide sous le bouton | 21 ou 22 px partout | 26 px partout |
+| Cartes après le bouton « Voir les N autres » | 19 et 17, toutes avec la ligne | idem |
+
+**Cartes plus basses.** Pour mesurer l'écart, j'ai remis dans la même page, carte par carte, le
+contenu R1 de `318f405d3` : la ligne « 📅 période » et la phrase du builder, avec les classes du diff.
+Les phrases sont celles servies au complément n° 5 (`mesures/c5-cartes-*.json`). Le backend de la tête
+ne produit plus ces phrases ; c'est donc une reconstruction, pas un rendu de `318f405d3`
+(`scripts/avant-du11.cjs`, `mesures/c11-avant-*.json`).
+
+| Gamme, largeur | Carte avant | Carte à la tête | Perte par carte | Grille complète |
+|---|---|---|---|---|
+| pg 7, 390 px | 264 à 339 px | 184 à 236 px | 80 à 103 px | 5 655 → 3 948 px (−30 %) |
+| pg 7, 1440 px | 229 à 252 px | 195 px | 34 à 57 px | 2 713 → 2 161 px (−20 %) |
+| pg 402, 390 px | 287 à 405 px | 184 à 256 px | 103 à 149 px | 5 431 → 3 612 px (−33 %) |
+| pg 402, 1440 px | 252 à 275 px | 195 px | 57 à 80 px | 2 483 → 1 943 px (−22 %) |
+
+Les cartes sont plus basses et plus régulières. Je ne vois ni trou ni décalage gênant : à 1440 px,
+toutes les cartes ont la même hauteur ; à 390 px, les seules variations viennent des noms longs.
+
+**CLS** (fenêtres de session, maximum retenu) : 0 à 390 px ; **0,0223 à 1440 px** sur les deux pages,
+vers 280 ms. Les éléments qui bougent sont `section#reference` (rendu différé `cv-auto`), la barre
+de navigation et le bandeau du haut de page ; aucun ne vient des cartes. 0,0223 reste sous 0,05, le
+seuil de la constitution UX, mais au-dessus de 0, la cible du skill frontend-design. Je n'ai pas de
+mesure de référence à 1440 px sur `318f405d3`.
+
+### 19.3 Retrait du builder, clé de cache et contrat
+
+- **Backend identique à sa base** : `git diff 2462efde5 31fa098f4 -- backend` est vide. Le builder
+  de base transmet déjà `type_year_from` et `type_year_to` à chaque carte
+  (`gamme-response-builder.service.ts:682-683`) ; DS n'a eu besoin d'aucun code backend.
+  `backend/src/modules/gamme-rest` est aussi identique entre `2462efde5` et `main`.
+- **Clé `gamme:resp:v2`** : c'est la clé de `2462efde5` et de `main`
+  (`gamme-rpc.service.ts:96`). Seul `318f405d3` écrivait en `v3`. Une entrée `v2` ne peut donc venir
+  que du builder de base, celui que la tête sert : il n'existe pas d'entrée `v2` au format de
+  `318f405d3`. Dans mon Redis privé, les 123 entrées `gamme:resp:v2:r6c0:*` portent bien les deux
+  champs (pg 7 : 19 cartes, `type_year_from` « 2005 », `type_year_to` « 2012 »). Les entrées `v3`
+  laissées par `318f405d3` ne sont plus lues et expirent (1 h, et 24 h pour la copie de secours).
+- **Contrat** : `MotorisationsSchema` est un `z.object` ; zod retire les clés qu'il ne déclare pas.
+  Dans le HTML servi des deux pages, `type_year_from` et `type_year_to` apparaissent, mais
+  `engine_code`, `cgc_type_id`, `cgc_level`, `type_power_ps`, `marque_id`, `modele_id`, `content` et
+  `advice` n'apparaissent pas. Le champ ajouté ne fait passer que deux années en texte.
+- **Risque de format** : la validation de `motorisations` passe par `safeParse` ; en cas d'échec, toute
+  la section des cartes disparaîtrait (mode dégradé avec un avertissement). Une année reçue en nombre
+  ferait échouer `z.string()`. Ce n'est pas le cas aujourd'hui : les colonnes sont en `text` et la RPC
+  les renvoie telles quelles. Le risque n'existe que si la RPC changeait de colonnes.
+
+### 19.4 Régressions
+
+| Contrôle | Résultat | Preuve |
+|---|---|---|
+| Diff `318f405d3` → `31fa098f4` | 11 fichiers hors documentation : 2 frontend (`MotorisationsSection.tsx`, `gamme-page-contract.types.ts`), 9 backend revenus à `2462efde5`. Hors R1, la carte est inchangée ; le reste du diff frontend est un reformatage sans effet (badges et bouton sur une ligne) | `git diff` |
+| axe 4.12, page entière | Aucun nœud en défaut dans les cartes. pg 7 : mêmes violations qu'au n° 10 aux deux largeurs (`color-contrast` dans le pied de page et la barre mobile du bas, `region` dans le bandeau). pg 402 : mêmes violations communes au site ; pas de mesure n° 10 pour comparer | `mesures/c11-page-*.json` |
+| Typecheck frontend | Code de sortie 0 | `mesures/c11-typecheck-front.txt` |
+| Lint des deux fichiers modifiés | Code de sortie 0, aucun avertissement | `mesures/c11-lint.txt` |
+| vitest | 11 fichiers, 237 tests passent : les 10 du n° 10 et `pieces-family-contract.test.ts`. Aucun test ne couvre `r1FabricationYears` | `mesures/c11-vitest.txt` |
+| jest backend `gamme-rest` | 4 suites, 23 tests passent (backend de base) | `mesures/c11-jest-gamme-rest.txt` |
+| CI du commit `31fa098f4` | 31 réussis, 11 ignorés, 4 en échec, 1 annulé | `mesures/c11-ci.txt` |
+
+Sur la CI, comparée au n° 10 :
+
+- **Deterministic gates passe**, alors qu'il échouait à `318f405d3` (`depcruise` à 170 pour une base
+  de 163). Le diff ne touche plus le backend.
+- Restent en échec : Circuit de fusion (brouillon), DoD self-evaluation (un en échec, un annulé),
+  Registry freshness (avertissement seul) et CodeQL. CodeQL signale les mêmes trois alertes qu'au
+  n° 10 : deux « Incomplete multi-character sanitization » sur `pieces.$slug.tsx:723` et `:727`, du
+  code de mars que #2210 ne touche pas, et « Log injection » dans `outils/proxy-c5.mjs:41`.
+- Trois contrôles ne tournent plus : « Block new served-content write sinks », « Detect inert
+  scheduling decorators » et « Validate Specifications ». Les deux premiers ne se déclenchent que sur
+  `backend/src/**`, que le diff de la PR ne touche plus. « Validate Specifications » se déclenche
+  aussi sur `frontend/app/**/*.{ts,tsx}` ; je n'ai pas établi pourquoi il n'a pas tourné.
+- **Conclusion** : aucun échec nouveau.
+
+### 19.5 Avis d'expert UI/UX et SEO
+
+**La ligne aide-t-elle à choisir ?** Oui. Pour trouver sa version, un acheteur regarde le modèle, la
+motorisation, la puissance et l'année de sa carte grise. Le titre et les badges donnent les trois
+premiers ; la ligne « Fabrication » donne le dernier, en une ligne lisible d'un coup d'œil. La phrase
+qu'elle remplace répétait le nom de la pièce et un bénéfice générique, sans aider à choisir. Pour le
+SEO, la ligne est une donnée propre à chaque véhicule et vérifiable, à la place d'un gabarit répété sur
+891 cartes : moins de texte quasi identique d'une page à l'autre, et aucun mot-clé inventé. Le gain de
+classement attendu est faible ; le gain pour le visiteur est net.
+
+**Proposition requise avant validation (non appliquée)** :
+
+1. **Ne plus écrire « dès » quand la fin est inconnue.** « Dès 2008 » se lit « fabriquée depuis 2008,
+   et encore aujourd'hui ». Or l'absence de fin en base veut dire « fin non renseignée », pas « en
+   cours ». Je recommande « Début de fabrication : 2008 », qui dit exactement ce que la base sait.
+   Autre choix possible : masquer la ligne quand la fin manque, au prix de 185 cartes sans années.
+   À écarter : « 2008 » seul, qu'on confondrait avec le cas début = fin (BMW E81, « 2011 »). Le
+   changement tient dans `r1FabricationYears` et le libellé ; il mérite un test unitaire des cinq cas.
+
+**Pistes, à décider par Marwane (non appliquées)** :
+
+2. **Carburant** : la RPC renvoie déjà `type_fuel`, mais le builder ne le transmet pas aux cartes.
+   « Diesel » ou « Essence » à côté de la puissance départagerait des versions proches et répondrait à
+   la question que se pose l'acheteur d'un filtre ou de plaquettes. Il faudrait toucher le builder, le
+   contrat et la clé de cache.
+3. **Mois de début et de fin** : la RPC renvoie aussi `type_month_from` et `type_month_to`.
+   « 06/2005 – 12/2012 » départagerait les 147 cartes qui partagent leur ligne, et aiderait un acheteur
+   dont le véhicule est proche d'un changement de phase. Même coût que le carburant ; à peser contre
+   la lisibilité sur mobile.
+4. **Code moteur** : `engine_code` est `null` sur toutes les cartes mesurées ; la donnée manque en
+   base. Rien à proposer côté page.
+5. **Données de la base** : les 86 versions sans fin et la puissance de la BMW E81 116d sont à
+   signaler au responsable des données véhicule. Cela dépasse #2210.
+
+DS signale que les mots-clés rattachés à la plaquette de frein (pg 402) parlent surtout de « disque de
+frein ». Je le note ; ce n'est ni dans le périmètre ni dans les cartes.
+
+### 19.6 Ce que je n'ai pas vérifié, et hors périmètre
+
+- Le contenu du Redis DEV partagé : la lecture a été refusée par le contrôle des permissions de ma
+  session, car elle demandait son mot de passe. Je ne l'ai pas contournée. La preuve de l'absence
+  d'entrée `v2` au mauvais format repose sur le code (même builder à la base, sur `main` et à la tête)
+  et sur mon Redis privé.
+- Le CLS de `318f405d3` à 1440 px ; une reconstruction de cette tête n'aurait pas restitué ses
+  phrases sans son backend.
+- Les sources de la décision 159 ; les trois véhicules sont confrontés à des fiches publiques, qui
+  divergent parfois entre elles.
+- Firefox, Safari, la page véhicule et les pages R2.
+- Hors périmètre, sans jugement : le V-Level, les 7 cartes sans lien, le titre et la description de la
+  page. Aucune correction n'est faite, ni dans #2210 ni ailleurs.
+
+**Preuves** : `scripts/cartes-du11.cjs`, `scripts/avant-du11.cjs`, `scripts/c11-portee.py`,
+`scripts/c11-cartes.py`, `scripts/c11-des.sql` ; `mesures/c11-*` ; `captures/c11-cartes-*.png`.
+
+LIVRABLE COMPLÉMENT N° 11 DU
