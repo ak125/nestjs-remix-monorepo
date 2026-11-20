@@ -1,4 +1,4 @@
-# Options de couleurs en images — complément n° 2 au mandat DZ
+# Options de couleurs en images — compléments n° 2 et n° 3 au mandat DZ
 
 **Maquette par feuille injectée, pas une implémentation.** Rien n'est en vigueur. Les décisions 45, 55
 et 57 sont inchangées. Aucun fichier du frontend, des jetons ni de Tailwind n'est modifié : chaque
@@ -7,32 +7,33 @@ servie par DEV. Le choix entre les options appartient à l'owner et au chat 05.
 
 | | |
 |---|---|
-| Accord | Marwane, 20 nov. 2026 à 09:37 heure de Tunis (complément n° 2) |
+| Accord | Marwane, 20 nov. 2026 à 09:37 heure de Tunis (complément n° 2, options A et B) ; 10:13 heure de Tunis (complément n° 3, option C « bouton d'achat vert », page produit seulement) |
 | AVANT | DEV `http://127.0.0.1:3000`, servant `7f4dded37d068286e467ff69f0c4b2fcdacb0232` (origin/main) ; `frontend/` et `packages/design-tokens/` y sont identiques à la base de la PR `7368d72d` |
 | Pages | `r0-accueil` `/`, `r1-gamme` `/pieces/filtre-a-huile-7.html`, `r2-produit` `/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html`, `panier-vide` `/cart`, `connexion` `/login` ([`scripts/pages-options-dz.tsv`](scripts/pages-options-dz.tsv)) |
 | Tailles | 390×844 (mobile tactile) et 1440×900 |
-| Feuilles mesurées | [`option-a.css`](option-a.css) `2e00e790…ead3d`, [`option-b.css`](option-b.css) `2d63b7ca…ea5f570` (SHA-256 complets en fin de page), 63 règles chacune |
+| Feuilles mesurées | [`option-a.css`](option-a.css) `2e00e790…ead3d`, [`option-b.css`](option-b.css) `2d63b7ca…ea5f570` (SHA-256 complets en fin de page), 63 règles chacune ; [`option-c.css`](option-c.css) `07d5b10d…af0f93`, 63 règles, mesurée sur `r2-produit` seulement ([§ Option C](#option-c--bouton-dachat-vert-complément-n-3)) |
 | Fenêtre | AVANT 08:53Z → 09:03Z ; captures A/B 09:34Z → 09:45Z ; mesures A/B 09:34:33Z → 09:51:47Z (2026-11-20) |
 | Garde-fous | toute requête non GET abandonnée (journal dans chaque JSON), aucun clic ni saisie, aucun formulaire envoyé ; traceurs tiers bloqués |
 
-## Les deux options (jeu réduit)
+## Les options (jeu réduit)
 
-| Point | AVANT (main) | OPTION A | OPTION B |
-|---|---|---|---|
-| 1. Structure | navy `#0F1E38` et dégradés de marque (bandeau R2 noir → jaune) | navy `#0F1E38`, bandeau R2 navy | identique à A |
-| 2. Achat seul | « Ajouter » navy, « Panier » collant `#FF6900` texte noir, « Se connecter » `#F97316` texte noir | fond `#F97316`, texte navy, survol `#EA580C` | fond `#C2410C`, texte blanc, survol `#9A3412` |
-| 3. Orange ailleurs | orange, ambre, jaune décoratifs sur toutes les pages | retirés ; onglet actif de la barre mobile en navy, graisse 800 | identique à A |
-| 4. Liens, actions secondaires | bleus bruts (`blue-400` à `blue-900`, `semantic-action`) | `#0F4C81` ; bleu de surface → navy | identique à A |
-| 5. Texte | titres et textes de plusieurs gris (`slate-300` à `slate-500`) | titres navy, courant `#1F2937`, secondaire `#4B5563` ; sur navy ≥ `#9CA3AF` | identique à A |
-| 6. Bords de champ | `#E2E8F0` (1,23:1), `#E5E7EB` (1,24:1), `#50A2FF` (2,64:1) ; sur navy `#27354C` (1,35:1) | `#6B7280` (sur navy `#9CA3AF`) | identique à A |
-| 7. États | verts, rouges, ambres variés | succès `#1E8449`, erreur `#C0392B`, avertissement fond `#FEF3C7` **(valeur NOUVELLE, absente des jetons)**, texte `#1F2937` | identique à A |
-| 8. Focus | contour 1 px auto (ambre `#E59700` sur r2 390) ou absent | 2 px navy ; sur fond navy, 2 px blanc doublés d'un liseré navy | identique à A |
-| 9. Violets, roses, corail, vert vif | présents (dégradés, pastilles, filets au survol) | ramenés à navy, `#0F4C81` ou gris | identique à A |
+| Point | AVANT (main) | OPTION A | OPTION B | OPTION C (n° 3, r2 seulement) |
+|---|---|---|---|---|
+| 1. Structure | navy `#0F1E38` et dégradés de marque (bandeau R2 noir → jaune) | navy `#0F1E38`, bandeau R2 navy | identique à A | identique à A |
+| 2. Achat seul | « Ajouter » navy, « Panier » collant `#FF6900` texte noir, « Se connecter » `#F97316` texte noir | fond `#F97316`, texte navy, survol `#EA580C` | fond `#C2410C`, texte blanc, survol `#9A3412` | fond `#1E8449` (jeton semantic.success), texte blanc, survol `#196F3D` **(valeur NOUVELLE, absente des jetons : semantic.success n'a pas d'échelle)** |
+| 3. Orange ailleurs | orange, ambre, jaune décoratifs sur toutes les pages | retirés ; onglet actif de la barre mobile en navy, graisse 800 | identique à A | identique à A |
+| 4. Liens, actions secondaires | bleus bruts (`blue-400` à `blue-900`, `semantic-action`) | `#0F4C81` ; bleu de surface → navy | identique à A | identique à A |
+| 5. Texte | titres et textes de plusieurs gris (`slate-300` à `slate-500`) | titres navy, courant `#1F2937`, secondaire `#4B5563` ; sur navy ≥ `#9CA3AF` | identique à A | identique à A |
+| 6. Bords de champ | `#E2E8F0` (1,23:1), `#E5E7EB` (1,24:1), `#50A2FF` (2,64:1) ; sur navy `#27354C` (1,35:1) | `#6B7280` (sur navy `#9CA3AF`) | identique à A | identique à A |
+| 7. États | verts, rouges, ambres variés | succès `#1E8449`, erreur `#C0392B`, avertissement fond `#FEF3C7` **(valeur NOUVELLE, absente des jetons)**, texte `#1F2937` | identique à A | identique à A ; le succès garde `#1E8449`, la même couleur que le bouton d'achat, volontairement |
+| 8. Focus | contour 1 px auto (ambre `#E59700` sur r2 390) ou absent | 2 px navy ; sur fond navy, 2 px blanc doublés d'un liseré navy | identique à A | identique à A |
+| 9. Violets, roses, corail, vert vif | présents (dégradés, pastilles, filets au survol) | ramenés à navy, `#0F4C81` ou gris | identique à A | identique à A |
 
 Jetons repris de `packages/design-tokens/src/tokens.json` : navy `#0F1E38`, secondary/info `#0F4C81`,
 neutral.800 `#1F2937`, neutral.500 `#4B5563`, neutral.300 `#9CA3AF`, neutral.400 `#6B7280`,
 neutral.100 `#E5E7EB`, neutral.50 `#F5F7FA`, success `#1E8449`, danger `#C0392B`, cta.500 `#F97316`,
-cta.600 `#EA580C`, cta.700 `#C2410C`, cta.800 `#9A3412`. Seule valeur nouvelle : `#FEF3C7`.
+cta.600 `#EA580C`, cta.700 `#C2410C`, cta.800 `#9A3412`. Valeurs nouvelles : `#FEF3C7` (A, B, C) et `#196F3D`
+(survol de C seulement).
 
 ## Planches
 
@@ -194,6 +195,99 @@ texte rendus (`mesures/roles-*.json`, `mesures/inventaire-*.json`, `mesures/fond
 - Focus sur une surface sombre : la feuille ne connaît pas le fond réel autour de l'élément ; l'anneau
   blanc de 2 px est donc doublé d'un liseré navy de 2 px, visible sur les deux fonds.
 
+## Option C : bouton d'achat vert (complément n° 3)
+
+Accord : Marwane, 20 nov. 2026 à 10:13 heure de Tunis, « une option C "bouton d'achat vert" sur les
+planches, à côté de A et B, sur la page produit seulement ». **Périmètre : `r2-produit` seulement**, à
+390×844 et 1440×900. [`option-c.css`](option-c.css) = jeu réduit de A, sauf le point 2 : fond `#1E8449`
+(jeton semantic.success), texte blanc, survol `#196F3D` (**valeur NOUVELLE** : semantic.success n'a pas
+d'échelle dans les jetons). La feuille ne diffère de `option-a.css` que par son en-tête et la règle du
+point 2. Captures C : 2026-11-20 09:55:26Z → 09:56:39Z ; relevé des verts : 10:06:02Z → 10:06:50Z.
+
+### Planches
+
+| Taille | Premier écran AVANT / A / B / C | Bouton d'achat seul, agrandi 4×, A / B / C (repos, survol, focus, désactivé) |
+|---|---|---|
+| 390×844 | [`planches/r2-produit-390-abc.webp`](planches/r2-produit-390-abc.webp) | [`planches/bouton-r2-produit-390-ajouter-abc.webp`](planches/bouton-r2-produit-390-ajouter-abc.webp) |
+| 1440×900 | [`planches/r2-produit-1440-abc.webp`](planches/r2-produit-1440-abc.webp) | [`planches/bouton-r2-produit-1440-ajouter-abc.webp`](planches/bouton-r2-produit-1440-ajouter-abc.webp) |
+
+Captures C : `captures/r2-produit-<W>-c-ecran.webp`, `-c-page.webp` ; recadrages
+`captures/boutons/bouton-r2-produit-<W>-ajouter-c-<état>.webp`.
+
+### Ratios du bouton C
+
+| Bouton | Option | Repos (fond / texte : ratio) | Survol | Focus (anneau : ratio anneau/page) | Bouton / page au repos | Désactivé simulé |
+|---|---|---|---|---|---|---|
+| r2-produit-390 · Ajouter … au panier | A | `#F97316` / `#0F1E38` : 5,93 | `#EA580C` / `#0F1E38` : 4,67 | 2 px `#0F1E38` : 16,63 | 2,80 | identique au repos : 5,93 |
+| | B | `#C2410C` / blanc : 5,18 | `#9A3412` / blanc : 7,31 | 2 px `#0F1E38` : 16,63 | 5,18 | identique au repos : 5,18 |
+| | **C** | **`#1E8449` / blanc : 4,72** | **`#196F3D` / blanc : 6,21** | **2 px `#0F1E38` : 16,63** | **4,72** | **identique au repos : 4,72** |
+| r2-produit-390 · Panier (bouton collant) | C | `#1E8449` / blanc : 4,72 | `#196F3D` / blanc : 6,21 | 2 px `#0F1E38` : 16,63 | 4,72 | identique au repos : 4,72 |
+| r2-produit-1440 · Ajouter … au panier | C | `#1E8449` / blanc : 4,72 | `#196F3D` / blanc : 6,21 | 2 px `#0F1E38` : 16,63 | 4,72 | identique au repos : 4,72 |
+
+Les lignes A et B du bouton collant et du 1440 sont identiques à celles du 390 (tableau complet :
+[`mesures/synthese-option-c-dz.md`](mesures/synthese-option-c-dz.md)). Lecture :
+
+- Texte blanc sur `#1E8449` : 4,72:1, au-dessus du seuil de 4,5:1 mais de peu (A 5,93, B 5,18). Le
+  survol `#196F3D` monte à 6,21:1.
+- Contour du bouton sur la page blanche : 4,72:1 (A 2,80, B 5,18). Sur navy, `#1E8449` ne ferait que
+  3,52:1 ; aucun bouton d'achat de r2 n'est posé sur navy dans les captures.
+- Désactivé simulé : même rendu que le repos, comme pour A et B (la feuille ne prévoit pas d'état
+  désactivé ; le désactivé est simulé par l'attribut `disabled`).
+- Couleurs hors jeu en C : 0 au repos et 0 au survol forcé de 367 éléments, aux deux tailles.
+
+### Éléments verts visibles avec le bouton d'achat
+
+Critère : teinte de 75° à 170°, saturation ≥ 0,25, luminosité de 0,12 à 0,85, sur le texte, le fond, le
+dégradé, le bord, `fill` ou `stroke` ; élément visible et non recouvert en son centre ; couleurs lues
+par le navigateur (oklch de Tailwind 4 compris). Le premier écran de r2 à 1440 ne montre aucun bouton
+« Ajouter » ; à 390, seul le « Panier » collant est visible. D'où un second écran : le premier
+défilement où « Ajouter » est entier.
+
+| Passage · écran | Verts hors achat, AVANT | Verts hors achat, C | Toute la page, AVANT / C |
+|---|---|---|---|
+| r2-produit-390 · premier écran (défilement 0) | 2 | **1** | 53 / 1 |
+| r2-produit-390 · écran du bouton « Ajouter » (défilement 1079) | 11 | **1** | |
+| r2-produit-1440 · premier écran (défilement 0) | 8 | **1** | 56 / 1 |
+| r2-produit-1440 · écran du bouton « Ajouter » (défilement 708) | 16 | **1** | |
+
+**En C, le seul élément vert visible en même temps que le bouton d'achat est la pastille de 12×12 px du
+bouton de discussion** (`span.bg-green-500`, ramenée à `#1E8449` par le point 7), en bas à droite, aux
+deux tailles et sur les deux écrans. Captures annotées (cadres numérotés ; orange = achat, violet =
+autre vert) :
+
+| Taille | Premier écran | Écran du bouton « Ajouter » |
+|---|---|---|
+| 390, C | [`verts-r2-produit-390-c-premier-ecran-annote.webp`](captures/verts-r2-produit-390-c-premier-ecran-annote.webp) : « Panier » (achat), pastille | [`verts-r2-produit-390-c-ecran-du-bouton-ajouter-annote.webp`](captures/verts-r2-produit-390-c-ecran-du-bouton-ajouter-annote.webp) : 2 « Ajouter » et « Panier » (achat), pastille |
+| 1440, C | [`verts-r2-produit-1440-c-premier-ecran-annote.webp`](captures/verts-r2-produit-1440-c-premier-ecran-annote.webp) : pastille seule | [`verts-r2-produit-1440-c-ecran-du-bouton-ajouter-annote.webp`](captures/verts-r2-produit-1440-c-ecran-du-bouton-ajouter-annote.webp) : 3 « Ajouter » (achat), pastille |
+| 390, AVANT | [`verts-r2-produit-390-avant-premier-ecran-annote.webp`](captures/verts-r2-produit-390-avant-premier-ecran-annote.webp) | [`verts-r2-produit-390-avant-ecran-du-bouton-ajouter-annote.webp`](captures/verts-r2-produit-390-avant-ecran-du-bouton-ajouter-annote.webp) |
+| 1440, AVANT | [`verts-r2-produit-1440-avant-premier-ecran-annote.webp`](captures/verts-r2-produit-1440-avant-premier-ecran-annote.webp) | [`verts-r2-produit-1440-avant-ecran-du-bouton-ajouter-annote.webp`](captures/verts-r2-produit-1440-avant-ecran-du-bouton-ajouter-annote.webp) |
+
+Liste détaillée (élément, classes, couleur, position) : [`mesures/synthese-option-c-dz.md`](mesures/synthese-option-c-dz.md)
+et [`mesures/verts-r2-produit-<W>-<c|avant>.json`](mesures/).
+
+**Ce que la planche montre, et ce qu'elle ne peut pas montrer.** Sur r2, aucun état positif (« en
+stock », « compatible », « validé ») n'est rendu en vert par le jeu A, dont C hérite. Les verts d'AVANT
+(« Livré 24-48h » et son icône de camion, prix « 5,00 € », notes et barres de fiabilité, « Livraison
+gratuite dès 150€ », icônes euro et cadenas ; 53 éléments à 390, 56 à 1440, sur toute la page) sont ramenés à navy, `#1F2937`, `#0F4C81` ou blanc par les points 3, 4 et 9.
+Le bouton vert C se distingue donc sur r2 parce qu'il est le seul aplat vert de la page, à la pastille
+près. La confusion possible avec un état positif vert n'est pas observable sur cette page ; elle le
+serait sur une page qui affiche un succès `#1E8449` (non mesuré).
+
+**Remarque pour le chat 05 (vaut aussi pour A et B).** « Livré 24-48h » (`text-emerald-600`) devient
+`#0F4C81`, la couleur des liens, par la règle du point 4 (« texte bleu brut ») qui liste
+`text-emerald-600`. Couleur mesurée dans le navigateur : `rgb(15, 76, 129)` en C, contre
+`oklch(0.596 0.145 163)` en AVANT. Une information de livraison prend ainsi l'aspect d'un lien.
+
+### Limites propres à C
+
+- r2-produit seulement, deux tailles. C n'est pas passée par `mesure-option-dz.cjs` : pas de tableau de
+  défauts textes, bords, focus et axe pour C. Comme C ne diffère de A que par le point 2, ces défauts
+  devraient être ceux de A, sauf le bouton d'achat. C'est une déduction, non mesurée.
+- AVANT, A et B sont les captures du complément n° 2 (09:34Z → 09:45Z) ; C a été capturée à 09:55Z sur
+  le même DEV (`7f4dded3`), avec la même feuille (SHA-256 vérifié avant et après).
+- La pastille de discussion est un indicateur décoratif de 12 px. Le critère « vert » la compte comme
+  les autres éléments ; son poids visuel est faible.
+
 ## Limites
 
 - **Maquette par feuille injectée, pas une implémentation.** Une feuille à `!important` écrase les
@@ -217,11 +311,16 @@ texte rendus (`mesures/roles-*.json`, `mesures/inventaire-*.json`, `mesures/fond
 ```bash
 cd docs/audit/design-system-revue-20261119/options
 export NODE_PATH=/opt/automecanik/app/node_modules
-node scripts/genere-options-css-dz.cjs .                       # option-a.css, option-b.css
+node scripts/genere-options-css-dz.cjs .                       # option-a.css, option-b.css, option-c.css
 node scripts/mesure-option-dz.cjs <avant|a|b> <id> <chemin> <L> <H> <sortie>
 node scripts/options-captures-dz.cjs <id> <chemin> <L> <H> . <dossier-brut>
 bash scripts/planches-options-dz.sh <dossier-brut> .
 node scripts/condense-options-dz.cjs <dossier-mesures> .
+# Complément n° 3 (option C, r2-produit seulement) :
+node scripts/options-captures-dz.cjs r2-produit <chemin> <L> <H> . <dossier-brut> c
+node scripts/verts-option-c-dz.cjs r2-produit <chemin> <L> <H> . <dossier-brut> <c|avant>
+bash scripts/planches-option-c-dz.sh <dossier-brut> .
+node scripts/condense-option-c-dz.cjs .
 ```
 
 Inventaire préalable : `scripts/inventaire-options-dz.cjs`, `scripts/roles-options-dz.cjs`,
@@ -232,4 +331,5 @@ SHA-256 des feuilles mesurées :
 ```
 2e00e7903af39c8d1aa08616e5356fbc8f0a56d91886196706b6d8c56a9ead3d  option-a.css
 2d63b7ca0f7673e429a5d37bd0a27c471504f102e2d26f901eed58f474c5f570  option-b.css
+07d5b10de5a3ad538bcda022f455527bb11c6176ed2b5085769f30222aaf0f93  option-c.css
 ```

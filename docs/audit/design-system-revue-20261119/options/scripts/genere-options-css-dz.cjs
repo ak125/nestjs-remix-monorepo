@@ -7,6 +7,8 @@ const T = { navy: "#0F1E38", lien: "#0F4C81", texte: "#1F2937", texte2: "#4B5563
 const OPTIONS = {
   a: { nom: "OPTION A", fond: "#F97316", texte: T.navy, survol: "#EA580C", note: "fond cta.500 #F97316, texte navy ; survol cta.600 #EA580C (un ton plus foncé de la même échelle)" },
   b: { nom: "OPTION B", fond: "#C2410C", texte: T.blanc, survol: "#9A3412", note: "fond cta.700 #C2410C, texte blanc ; survol cta.800 #9A3412 (un ton plus foncé de la même échelle)" },
+  // Complément n° 3 : jeu réduit de A, sauf le bouton d'achat (r2-produit seulement sur les planches).
+  c: { nom: "OPTION C", complement: "n° 3", fond: "#1E8449", texte: T.blanc, survol: "#196F3D", note: "fond semantic.success #1E8449, texte blanc ; survol #196F3D (VALEUR NOUVELLE, absente des jetons : semantic.success n'a pas d'échelle). Les états positifs (en stock, compatible, validé) gardent #1E8449 (point 7), volontairement" },
 };
 const q = (c) => `[class~="${c.replace(/"/g, '\\"')}"]`;                 // classe rendue exacte
 const L = (...cs) => cs.map(q).join(",\n");
@@ -125,7 +127,7 @@ const NON_COUVERT = [
 ];
 for (const [k, o] of Object.entries(OPTIONS)) {
   const R = regles(o);
-  const head = `/* Complément n° 2 au mandat DZ — ${o.nom} (jeu réduit, 20 nov. 2026).
+  const head = `/* Complément ${o.complement || "n° 2"} au mandat DZ — ${o.nom} (jeu réduit, 20 nov. 2026).
  * MAQUETTE PAR FEUILLE INJECTÉE, PAS UNE IMPLÉMENTATION. Rien n'est en vigueur ; décisions 45, 55 et 57 inchangées.
  * Injectée par Playwright (page.addStyleTag) après le chargement de la page ; aucun fichier du frontend,
  * des jetons ni de Tailwind n'est modifié. Toutes les déclarations portent !important pour écraser les utilitaires.

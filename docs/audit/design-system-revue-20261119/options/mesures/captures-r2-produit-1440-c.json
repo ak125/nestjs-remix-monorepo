@@ -1,0 +1,160 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "1440x900",
+ "debut": "2026-11-20T09:56:06.038Z",
+ "variantes": {
+  "c": {
+   "debut": "2026-11-20T09:56:06.103Z",
+   "statut": 200,
+   "injection": [
+    {
+     "variante": "c",
+     "at": "2026-11-20T09:56:12.113Z",
+     "dejaPresente": false,
+     "presente": true,
+     "regles": 63,
+     "reinjectionsObservateur": 0
+    },
+    {
+     "etape": "avant captures",
+     "presente": true,
+     "variante": "c",
+     "regles": 63
+    },
+    {
+     "etape": "fin",
+     "presente": true,
+     "variante": "c",
+     "regles": 63
+    }
+   ],
+   "residus": {
+    "totalProprietes": 0,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 52,
+    "stylesEnLigneCouleur": 2,
+    "svgCouleurEnDur": 0
+   },
+   "residusSurvol": {
+    "elementsForces": 367,
+    "totalProprietes": 0,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 52,
+    "stylesEnLigneCouleur": 2,
+    "svgCouleurEnDur": 0
+   },
+   "boutons": [
+    {
+     "bouton": "Ajouter … au panier",
+     "selecteur": "button[aria-label^=\"Ajouter\"][aria-label$=\"au panier\"]",
+     "etats": [
+      {
+       "etat": "repos",
+       "texte": "Ajouter",
+       "fond": "#1E8449",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 4.72,
+       "ratioBoutonPage": 4.72,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": false,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-r2-produit-1440-ajouter-c-repos.png"
+      },
+      {
+       "etat": "survol",
+       "texte": "Ajouter",
+       "fond": "#196F3D",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 6.21,
+       "ratioBoutonPage": 6.21,
+       "opacite": "1",
+       "survol": true,
+       "focusVisible": false,
+       "desactive": false,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-r2-produit-1440-ajouter-c-survol.png"
+      },
+      {
+       "etat": "focus",
+       "texte": "Ajouter",
+       "fond": "#1E8449",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 4.72,
+       "ratioBoutonPage": 4.72,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": true,
+       "desactive": false,
+       "anneau": "2px solid #0F1E38",
+       "ratioAnneauPage": 16.63,
+       "ratioAnneauBouton": 3.52,
+       "capture": "bouton-r2-produit-1440-ajouter-c-focus.png"
+      },
+      {
+       "etat": "désactivé (simulé : attribut disabled posé dans le DOM)",
+       "texte": "Ajouter",
+       "fond": "#1E8449",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 4.72,
+       "ratioBoutonPage": 4.72,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": true,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-r2-produit-1440-ajouter-c-désactivé (simulé : attribut disabled posé dans le DOM).png"
+      }
+     ]
+    }
+   ],
+   "fin": "2026-11-20T09:56:39.312Z"
+  }
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/funnel/event",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T09:56:39.319Z"
+}

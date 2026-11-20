@@ -3,11 +3,12 @@
 // Sorties : <brut>/<id>-<W>-<v>-ecran.png et -page.png (sources des planches, hors dépôt), <brut>/bouton-*.png,
 //           <options>/mesures/captures-<id>-<W>.json (injection, résidus, ratios du bouton par état).
 // Lecture seule : les requêtes non GET sont abandonnées et consignées (lib-dz.cjs). Aucun clic, aucune saisie.
-// Usage (depuis options/) : node scripts/options-captures-dz.cjs <id> <chemin> <W> <H> <dossier-options> <dossier-brut>
+// Usage (depuis options/) : node scripts/options-captures-dz.cjs <id> <chemin> <W> <H> <dossier-options> <dossier-brut> [variantes]
+// [variantes] (complément n° 3) : liste séparée par des virgules, par défaut avant,a,b ; autre liste ⇒ sortie captures-<id>-<W>-<liste>.json.
 const fs = require("node:fs"); const path = require("node:path");
 const { chromium, BASE, newContext, settle, scrollThrough } = require("../../scripts/lib-dz.cjs");
 const { injecte, presence } = require("./injection-dz.cjs");
-const [, , id, route, Ws, Hs, optDir, brut] = process.argv; const W = +Ws, H = +Hs;
+const [, , id, route, Ws, Hs, optDir, brut, vlist = "avant,a,b"] = process.argv; const W = +Ws, H = +Hs; const VARIANTES = vlist.split(",");
 fs.mkdirSync(brut, { recursive: true });
 const ACHAT = [
   { nom: "Ajouter … au panier", sel: 'button[aria-label^="Ajouter"][aria-label$="au panier"]' },
@@ -29,7 +30,7 @@ async function residus(page) {
   return page.evaluate(([fnSrc, achatSels]) => {
     const { rgb, hex, hsl } = eval("(" + fnSrc + ")")();
     const OK = ["#0F1E38", "#0F4C81", "#1E8449", "#C0392B", "#FEF3C7"];
-    const ACH = ["#F97316", "#EA580C", "#C2410C", "#9A3412"];
+    const ACH = ["#F97316", "#EA580C", "#C2410C", "#9A3412", "#1E8449", "#196F3D"];
     const fam = (c) => { if (c.a < 0.35) return null; const x = hsl(c); if (x.s < 0.45 || x.l < 0.3 || x.l > 0.9) return null; const h = x.h;
       if (h >= 15 && h < 65) return "orange, ambre, jaune"; if (h >= 65 && h < 170) return "vert vif"; if (h >= 170 && h < 255) return "bleu, cyan"; if (h >= 255 && h < 340) return "violet, rose"; return "rouge, corail"; };
     const out = {}; const ex = {}; let n = 0;
@@ -94,7 +95,7 @@ async function bouton(page, a, v, crops) {
 }
 (async () => {
   const browser = await chromium.launch(); const aborted = []; const res = { id, route, viewport: `${W}x${H}`, debut: new Date().toISOString(), variantes: {} };
-  for (const v of ["avant", "a", "b"]) {
+  for (const v of VARIANTES) {
     const ctx = await newContext(browser, { width: W, height: H, aborted }); const p = await ctx.newPage();
     const r = { debut: new Date().toISOString() };
     const resp = await p.goto(BASE + route, { waitUntil: "load", timeout: 120000 }); r.statut = resp && resp.status();
@@ -112,7 +113,7 @@ async function bouton(page, a, v, crops) {
     res.variantes[v] = r; await ctx.close();
   }
   res.requetesAbandonnees = aborted; res.fin = new Date().toISOString();
-  fs.writeFileSync(path.join(optDir, "mesures", `captures-${id}-${W}.json`), JSON.stringify(res, null, 1));
+  fs.writeFileSync(path.join(optDir, "mesures", vlist === "avant,a,b" ? `captures-${id}-${W}.json` : `captures-${id}-${W}-${VARIANTES.join("")}.json`), JSON.stringify(res, null, 1));
   await browser.close();
   console.log(id, W, Object.entries(res.variantes).map(([v, r]) => `${v}: résidus ${r.residus.totalProprietes}, survol ${r.residusSurvol.totalProprietes}/${r.residusSurvol.elementsForces}, boutons ${r.boutons.length}, regles ${r.injection[r.injection.length - 1].regles}`).join(" | "));
 })().catch((e) => { console.error(e); process.exit(1); });
