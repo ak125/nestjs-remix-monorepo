@@ -1,14 +1,27 @@
-# Complément n° 13 au mandat DS — page R8 de la Clio III 1.5 dCi : rôle, contrat, existant
+# Compléments n° 13 et 14 au mandat DS — page R8 de la Clio III 1.5 dCi : rôle, contrat, existant, ordre des blocs
 
 Date : 2026-11-20. Relevé seul : aucune page, aucun code et aucune donnée de la base n'est modifié
 (requêtes SELECT seulement). #2210 n'est pas touchée. Pas de maquette dans ce complément.
 
+**Complément n° 14 (même date)** : relevé corrigé (fil d'Ariane, §3.1, §5, §6), ordre des blocs proposé et
+appliqué en maquette sur la route R8 seulement, mesures avant / après : **§7**.
+
 Page étudiée : fiche véhicule R8, `/constructeurs/<marque>/<modele>/<type>.html`
 (Marwane, 20 nov. 21:43 : « page véhicule Clio III 1.5 dCi est une page r8 »).
 
-**Actes réservés à Marwane : choix de la version prototype, fusion, tag, toute décision de design commune au site.**
+**Actes réservés à Marwane : choix de la version prototype, validation de l'ordre des blocs, fusion, tag, toute décision de design commune au site.**
 
 ## En bref
+
+**Complément n° 14** (§7) :
+- Fil d'Ariane sans niveau modèle : **voulu** (Marwane, 20 nov. 22:57 : « j'ai sauté la page clio 3 pour éviter un clic inutile »). Retiré des écarts.
+  L'ancienne page modèle `/constructeurs/renault-140/clio-iii-140004.html` répond **410**, `noindex`, absente des sitemaps, sans lien entrant relevé : pas de page indexable orpheline.
+- Ordre proposé : fil d'Ariane > titre > **identité véhicule (image + fiche technique, remontée)** > **accès catalogue (introduction, recherche, catalogue)** >
+  contexte de compatibilité > 5 emplacements marqués (pièces les plus recherchées, points d'usure, spécificités, liens R1/R5/outil, FAQ) > réassurance > retour R7.
+- Retirés du rendu : « Pièces auto RENAULT les plus vendues » (aucune donnée de vente, prix et délais interdits en R8), « Comment choisir sans se tromper » (redite), badges « 100% compatible / Vérif VIN / Livraison / Retour ».
+- Mesures (rendu isolé, médiane de 5) : LCP 316 → 320 ms à 390 px, 172 → 172 ms à 1440 ; CLS inchangé ; INP 56 → 64 / 56 → 48 ms ; page 17 073 → 13 584 px à 390. axe : mêmes violations avant / après, toutes dans l'en-tête et le pied de page communs.
+- À arbitrer : à 390 px, la recherche de gamme quitte le premier écran (757 → 1 473 px) ; deux liens R2 disparaissent avec le bloc « plus vendues » (gammes repliées, étape suivante).
+
 
 - **Version proposée : type 19052, 1.5 dCi 86 ch (« dCi 85 », K9K 766, 2005-2012).**
   - C'est la page R8 Clio III 1.5 dCi la plus vue dans Search Console : 143 impressions sur 2026-06-01 → 2026-11-17.
@@ -143,7 +156,7 @@ Le CNIT (`__cnit_raw`) de 19052 est cohérent : 14 fiches « 1.5dCi (85ch) », 8
 ### 2.2 Contradictions
 
 1. **Cibles de sortie.**
-   - `role-matrix.md:195` donne R1/R3/R5/R6.
+   - `role-matrix.md:194` donne R1/R3/R5/R6 (numéro de ligne corrigé au complément n° 14 : `:195` porte les sorties interdites).
    - `:211` donne R1/R2/R5/outil, et l'autre liste R1/R2/R3/R4/R5.
 2. **R7.** Le handoff vers R7 est prévu, alors que « devenir une page marque R7 » est interdit. Un lien de retour est compatible avec l'interdit, à condition que le contrat le dise.
 3. **Transaction.**
@@ -183,7 +196,7 @@ Outils : [`outils/ssr-r8.cjs`](outils/ssr-r8.cjs), [`outils/compare-r8.cjs`](out
 | Description | « Catalogue pièces détachées pour RENAULT CLIO III 1.5 dCi 86 ch de 2005 à 2012 neuves et équipements » | même modèle, 68 ch |
 | Canonical | l'URL elle-même | idem |
 | JSON-LD | `Car` (puissance 86, Diesel, 2005-2012) + `BreadcrumbList` | idem |
-| Fil d'Ariane (visible et JSON-LD) | Accueil → RENAULT → 1.5 dCi 86 ch | idem, **sans le niveau CLIO III** |
+| Fil d'Ariane (visible et JSON-LD) | Accueil → RENAULT → 1.5 dCi 86 ch | idem. Pas de niveau CLIO III : **voulu** (Marwane, 20 nov. 22:57 ; §7.1) |
 | HTML (www) | 199 995 o, gzip 28 651 | 198 759 o, gzip 28 425 |
 
 DEV et www servent le même title, le même H1, la même description, le même JSON-LD et le même ordre de blocs.
@@ -324,9 +337,11 @@ Ce sont des constats, sans maquette. Ils sont classés par gravité dans chaque 
    - il est identique d'un type à l'autre hormis ce suffixe, sans puissance ni « dCi 85 ».
    - La demande mesurée porte sur des requêtes de pièce, pas sur des requêtes de fiche (§1.2).
    - Le title est un contrat SEO optimisé : toute modification demande l'accord de Marwane (règle « meta/H1 optimisés »).
-5. **Fil d'Ariane sans le niveau du modèle** (CLIO III), à l'écran comme dans le `BreadcrumbList`.
-6. **Données erronées en base** : mot-clé « dCi 85 » rattaché au 68 ch, fiches CNIT mal rattachées, fiche technique mêlant 84 et 86 cv (§1.3).
-7. FAQ et S_COMPAT_CHECK prévus au plan, absents du rendu.
+5. **Données erronées en base** : mot-clé « dCi 85 » rattaché au 68 ch, fiches CNIT mal rattachées, fiche technique mêlant 84 et 86 cv (§1.3).
+6. FAQ et S_COMPAT_CHECK prévus au plan, absents du rendu.
+
+*Retiré au complément n° 14* : « fil d'Ariane sans le niveau du modèle ». Ce n'est pas un écart : la page modèle Clio III
+est retirée du parcours volontairement (Marwane, 20 nov. 2026 à 22:57 Paris, « oui, par contre j'ai saute la page clio 3 ou eviter un clic inutile »). Constat sur l'ancienne URL : §7.1.
 
 ### Conversion vers les bonnes pièces
 
@@ -368,8 +383,226 @@ Ce sont des constats, sans maquette. Ils sont classés par gravité dans chaque 
 - **Inconnues** :
   - le parc roulant réel par version (aucune donnée en base) ;
   - la vérification des promesses « Garantie 1 an », « Livraison 24-48h » et « Retour 30 jours » ;
-  - les mesures www de laboratoire ;
-  - l'existence d'une page modèle publique pour compléter le fil d'Ariane (non vérifiée).
+  - les mesures www de laboratoire.
+- *Levée au complément n° 14* : l'ancienne page modèle n'est plus publique (410, §7.1), et le fil d'Ariane sans modèle est voulu.
+
+## 7. Complément n° 14 : ordre des blocs de la page R8 (type 19052)
+
+Couvert par Marwane le 20 nov. 2026 :
+- à 22:57 Paris : « oui, par contre j'ai saute la page clio 3 ou eviter un clic inutile » ;
+- à 22:59 Paris : « oui » (proposition de DS, vérification par l'expert, puis présentation).
+
+Décisions appliquées : 55 (page R validée séparément), 57 (validation de l'apparence et de l'ordre des blocs du type de page), 82 (liens calculés par des règles, pas écrits à la main) et 157 (croiser avec les requêtes réellement tapées ; Google friendly).
+
+### 7.1 Fil d'Ariane et ancienne page modèle (constat seulement)
+
+Le fil d'Ariane `Accueil → RENAULT → 1.5 dCi 86 ch` n'a pas de niveau modèle. C'est **voulu** : la page modèle Clio III est retirée du parcours. Ce point sort de la liste des écarts (§3.1, §5).
+
+L'ancienne URL modèle `/constructeurs/renault-140/clio-iii-140004.html` (GET, DEV et www) :
+
+| Contrôle | Constat |
+|---|---|
+| Code HTTP | **410 Gone**, sur DEV comme sur www ; pas de redirection |
+| Robots | en-tête `x-robots-tag: noindex, follow` ; meta `noindex, nofollow` ; title « Page non trouvée » ; pas de canonical |
+| Sitemaps | 0 occurrence dans les 10 sous-sitemaps ; aucune URL `/constructeurs/<marque>/<modèle>.html` |
+| robots.txt | `Allow: /constructeurs/` (la page reste explorable, donc son 410 et son `noindex` sont lus) |
+| Liens entrants relevés | aucun depuis la page R7 Renault, aucun depuis la page 19052 |
+
+Conclusion : **ce n'est pas une page indexable orpheline.** Inconnue : des liens externes ou d'autres pages du site qui pointeraient encore vers cette URL (pas d'exploration complète).
+
+### 7.2 Demande réelle (décision 157)
+
+[`requetes/demande-gammes-clio3-dci.sql`](requetes/demande-gammes-clio3-dci.sql) → [`releves/c14/demande-gammes-clio3-dci.txt`](releves/c14/demande-gammes-clio3-dci.txt) : requêtes de `__seo_keywords` contenant « clio 3 / clio iii » et « dci », regroupées par gamme.
+
+| Gamme | Mots-clés | Volume | Lien `/pieces/…` dans le HTML (avant → après) |
+|---|---|---|---|
+| Filtre à huile (7) | 12 | 1 400 | 1 → 1 |
+| Filtre à carburant (9) | 6 | 1 200 | 1 → 1 |
+| Courroie de distribution (306) | 5 | 700 | 1 → 1 |
+| Kit de distribution (307) | 5 | 250 | 1 → 1 |
+| Filtre d'habitacle (424) | 2 | 100 | 1 → 1 |
+| Filtre à air (8) | 2 | 100 | 1 → 1 |
+| Courroie d'accessoire (10) | 2 | 100 | 2 → 1 |
+| Plaquette de frein (402) | 3 | 50 | 1 → 1 |
+| Disque de frein (82) | 3 | 50 | 1 → 1 |
+
+Ce qu'on en tire pour l'ordre :
+- Toute la demande porte sur des **pièces** ; aucune requête « fiche technique » ou « motorisation ». La page doit donc mener vite au catalogue.
+- La Search Console (§1.2) montre aussi des requêtes d'**identification** : type mine « br1f0h », références OE, « moteur clio 3 1.5 dci ». La fiche technique doit donc être visible tôt, et non plus en bas de page.
+- Aucune de ces 9 gammes ne perd son lien. Le lien « Courroie d'accessoire » en double venait du bloc « plus vendues » retiré.
+
+### 7.3 Ordre proposé (validation réservée à Marwane)
+
+Rôle R8 (`role-matrix.md:211`) :
+- **contenu** : identité véhicule, génération, motorisations, points d'usure, familles de pièces, spécificités véhicule, accès catalogue ;
+- **sorties** : R1 / R2 / R5 / outil ;
+- **interdits** : devenir R7, R2, R3, R4, ou un diagnostic personnalisé.
+
+| # | Bloc (`data-section`) | Ce qu'il apporte au visiteur | Donnée qui le nourrit (existante) | Verdict |
+|---|---|---|---|---|
+| 1 | Fil d'Ariane (`S_BREADCRUMB`) | savoir où il est, revenir à la marque | route + `vehicle` | **garder** (sans niveau modèle, voulu) |
+| 2 | Titre (`S_HERO`) | confirmer en une ligne : modèle, motorisation, puissance, années | `vehicle` (H1 inchangé) | **garder** |
+| 3 | Identité véhicule (`S_IDENTITY` + `S_SAFE_TABLE`) | vérifier que c'est bien sa voiture : image, motorisation, puissance, carburant, carrosserie, période, types mines, CNIT | `vehicle`, `mine_codes`, `cnit` (payload `page-data-rpc`) | **fusionner et remonter** : la fiche technique passe de y = 13 818 à 551 px (390) ; les badges de preuve sont retirés |
+| 4 | Accès catalogue (`S_SEO_INTRO` → `S_FAST_ACCESS` → `S_CATALOG`) | trouver sa pièce : introduction, recherche de gamme, raccourcis, 19 familles / 116 gammes | `seo`, `catalogFamilies` | **fusionner** en un seul bloc ; l'introduction passe avant la recherche pour que le filtre reste collé à ses résultats. Sortie R2. |
+| 5 | Erreurs fréquentes (`S_ANTI_ERRORS`) | contexte de compatibilité : ce qui distingue cette version des voisines | composant existant, données `vehicle` | **garder** |
+| 6 | Pièces les plus recherchées (`S_PLACEHOLDER_TOP_PARTS`) | accès direct aux gammes les plus demandées (§7.2) | volumes `__seo_keywords`, **non branchés au loader** | **ajouter** en emplacement marqué |
+| 7 | Contenu R8 enrichi (`R8EnrichedSection`) | blocs rédigés de la boucle, quand ils existent | `r8_content` (**null** pour 19052) | **garder** (rien ne s'affiche pour 19052) |
+| 8 | Points d'usure (`S_PLACEHOLDER_MAINTENANCE`) | repères d'entretien de cette motorisation | bloc `maintenance_context` de `r8_content`, absent | **ajouter** en emplacement ; masqué si le bloc existe |
+| 9 | Spécificités et variantes (`S_PLACEHOLDER_VARIANTS`) | ce qui distingue cette version des autres de la même motorisation | bloc `variant_difference`, absent | **ajouter** en emplacement ; masqué si le bloc existe |
+| 10 | Liens R1 / R5 / outil (`S_PLACEHOLDER_LINKS`) | guides gamme, diagnostic, outil de vérification | règles de liens par rôle (décision 82), non configurées | **ajouter** en emplacement (aucun lien écrit à la main) |
+| 11 | FAQ (`S_FAQ` ou `S_PLACEHOLDER_FAQ`) | questions propres au véhicule | bloc `dedicated_faq`, absent | **garder** le bloc FAQ existant ; emplacement si vide (pas de FAQ de secours) |
+| 12 | Réassurance (`S_TRUST`) | garanties du site | composant commun | **garder en bas** ; design commun au site, à arbitrer par Marwane |
+| 13 | Retour marque (CTA R7) | remonter vers la marque | route | **garder** (lien de retour seulement) |
+| 14 | Barre collante, pied de page | — | communs | **inchangés** |
+
+**Retirés du rendu** (le code des composants n'est pas modifié) :
+
+| Bloc | Raison |
+|---|---|
+| « Pièces auto RENAULT les plus vendues » (`S_BESTSELLERS`) | Titre inexact : la liste est triée par `cgc_pg_id`, sans donnée de vente (§1.2 : une seule commande payée en 12 mois). Elle porte des signaux prix et délai, interdits en R8 (`forbidden_dominant_signals` : `stock_pricing`). Elle répète le catalogue. Remplacée par l'emplacement n° 6, fondé sur la demande. |
+| « Comment choisir sans se tromper » (`HowtoSection`) | Redite du bloc « Erreurs fréquentes » et du catalogue. Elle tire vers la procédure (R3). |
+| Badges « 100 % compatible / Vérif VIN / Livraison / Retour » | La promesse « Vérif VIN » renvoie à un outil absent de la page. Les badges font doublon avec `S_TRUST`. |
+
+### 7.4 Contradictions du contrat (§2.2) tranchées par la lecture la plus fidèle au canon
+
+1. **Sorties**
+   - `role-matrix.md:194` (fiche R8) liste « liens R1/R3/R5/R6 ».
+   - `:211` (tableau canonique) liste « R1 / R2 / R5 / outil », admet aussi des « accès R1/R2/R3/R4/R5 contextualisés » et interdit de « devenir procédure détaillée R3 » ou « glossaire R4 ».
+   - **Retenu : `:211`**, ligne du tableau canonique des entrées / sorties / interdits, la seule qui énumère aussi les interdits ; elle est cohérente avec son propre interdit R3. Les liens R3 / R4 / R6 ne sont pas ajoutés par la maquette ; un accès R3 / R4 contextualisé reste admis s'il vient des règles de la décision 82.
+2. **R7** : la sortie « besoin = explorer marque » (`:197`) est gardée comme **lien de retour seulement**. « devenir page marque R7 » est interdit, donc pas de navigation marque dominante.
+3. **Transaction**
+   - Prix, panier et stock sont interdits (`:195`, `:345`).
+   - Les liens vers R2 sont admis (`:211`), donc le catalogue reste.
+   - Le title porte encore des mots d'achat : étape suivante, hors complément.
+4. **S_COMPAT_CHECK** : c'est un **outil** (sortie « outil » de `:211`). R8 y renvoie par l'emplacement n° 10 et ne l'embarque pas. Ce n'est pas un diagnostic personnalisé.
+5. **Sections du contrat `r8.ts`** : cet ordre, une fois validé, devient la référence à reporter dans `r8.ts`, à une étape suivante. `r8.ts` n'est pas modifié ici.
+6. **Termes interdits** : aucun texte n'est ajouté. La liste unique sera fixée à l'étape `r8.ts`. Le relevé SSR après maquette ne trouve aucun terme interdit.
+7. **Schéma** : `Car` est un sous-type de `Vehicle` (schema.org), donc compatible avec le contrat. Inchangé.
+
+### 7.5 Maquette appliquée
+
+Un seul fichier de code modifié : `frontend/app/routes/constructeurs.$brand.$model.$type.tsx`. Les autres types de pages sont inchangés. Pas de nouveau composant partagé, pas de texte rédigé.
+
+- **Ordre JSX** : identité (l. 555) avec la fiche technique (l. 585) → introduction (l. 709) → recherche (l. 713) → catalogue (l. 777) → erreurs (l. 986) → emplacements et blocs enrichis (l. 990-1093) → réassurance (l. 1109) → CTA R7 (l. 1111).
+- **`EmplacementMaquette`** (l. 457) : cadre en pointillés qui affiche seulement « Emplacement maquette », le nom du bloc et la source attendue.
+  - Le nom du bloc est un paragraphe, pas un titre, pour n'ajouter aucun faux h2 au plan.
+  - Ces emplacements sont **à remplir ou à retirer avant toute fusion**.
+- **`hasR8Block`** (l. 543) : un emplacement n'apparaît que si le bloc `r8_content` correspondant manque.
+
+**Blocs servis (SSR, rendu isolé)**
+
+| Avant | Après |
+|---|---|
+| S_BREADCRUMB | S_BREADCRUMB |
+| S_HERO | S_HERO |
+| S_IDENTITY (image + badges) | S_IDENTITY (image + **S_SAFE_TABLE**) |
+| S_FAST_ACCESS | S_SEO_INTRO |
+| S_SEO_INTRO | S_FAST_ACCESS |
+| S_CATALOG | S_CATALOG |
+| S_BESTSELLERS | S_ANTI_ERRORS |
+| S_SAFE_TABLE | S_PLACEHOLDER_TOP_PARTS |
+| S_ANTI_ERRORS | S_PLACEHOLDER_MAINTENANCE |
+| S_HOWTO | S_PLACEHOLDER_VARIANTS |
+| S_TRUST | S_PLACEHOLDER_LINKS |
+| | S_PLACEHOLDER_FAQ |
+| | S_TRUST |
+
+Inchangés : title, H1, description, canonical, robots, JSON-LD (`Car` + `BreadcrumbList`).
+
+H2 après : Fiche technique, Accès rapide, Catalogue de pièces auto, Erreurs fréquentes à éviter.
+
+**Liens**
+
+| | Avant | Après |
+|---|---|---|
+| Liens par rôle | R2 81, R7 3, ancres 7, autres 46, externes 12 | R2 **73**, R7 3, ancres 6, autres 45, externes 12 |
+| Gammes avec `<a href>` | 74 | **72** |
+| Gammes sans lien | 43 | 43 (étape suivante) |
+| HTML | 193 991 o (gzip 26 604) | 156 745 o (gzip 24 683) |
+
+**Effet à signaler** : deux gammes perdent leur lien R2, parce qu'elles n'étaient liées que depuis le bloc « plus vendues » :
+- `/pieces/cable-de-frein-a-main-124/renault-140/clio-iii-140004/1-5-dci-19052.html` ;
+- `/pieces/rotule-de-suspension-2462/renault-140/clio-iii-140004/1-5-dci-19052.html`.
+
+Elles font partie des familles repliées et reviendront avec le traitement des 43 gammes sans lien (étape suivante). Les autres liens R2 perdus sont des doublons de liens présents dans le catalogue.
+
+### 7.6 Captures
+
+| Vue | Avant | Après |
+|---|---|---|
+| 390 px | [`iso-avant-…-390.jpg`](releves/c14/iso-avant-1-5-dci-19052-390.jpg) | [`iso-apres-…-390.jpg`](releves/c14/iso-apres-1-5-dci-19052-390.jpg) |
+| 1440 px | [`iso-avant-…-1440.jpg`](releves/c14/iso-avant-1-5-dci-19052-1440.jpg) | [`iso-apres-…-1440.jpg`](releves/c14/iso-apres-1-5-dci-19052-1440.jpg) |
+
+Rendu isolé : build de la branche servi en local (`127.0.0.1:3027`, proxy en lecture seule vers l'API DEV). « Avant » = build de la tête `980d371a2`, sans changement frontend par rapport à `main`.
+
+### 7.7 Mesures
+
+**CWV de laboratoire**
+- Conditions : rendu isolé, médiane de 5 passages, après une chauffe de 3 requêtes. Le CPU est ralenti ×4 à 390 px.
+- Fichiers : `releves/c14/iso-*-vue.json`.
+
+| Vue | LCP ms | CLS | INP ms | TTFB ms | Hauteur de page px |
+|---|---|---|---|---|---|
+| 390 avant | 316 | 0 | 56 | 33 | 17 073 |
+| 390 après | 320 | 0 | 64 | 43 | 13 584 |
+| 1440 avant | 172 | 0,0001 | 56 | 39 | 6 828 |
+| 1440 après | 172 | 0,0001 | 48 | 35 | 6 091 |
+
+Les écarts de LCP et d'INP restent dans le bruit de mesure (± 10 ms). Aucun débordement horizontal.
+
+**Positions** (y en px, `releves/c14/*-positions.json`)
+
+| Élément | 390 avant | 390 après | 1440 avant | 1440 après |
+|---|---|---|---|---|
+| Fiche technique | 13 818 | **551** | 4 685 | **345** |
+| Recherche de gamme | 757 | 1 473 | 615 | 1 045 |
+| Catalogue | 1 468 | 1 823 | 919 | 1 192 |
+| Erreurs fréquentes | 14 301 | 10 146 | — | — |
+
+La colonne « 390 avant » vient du service DEV (`:3000`), dont le code de la route est identique à la branche avant le complément n° 14.
+
+**Compromis à arbitrer par Marwane** : à 390 px, la recherche de gamme quitte le premier écran (844 px). Elle passe de 757 à 1 473 px, sous la fiche technique.
+- Option possible : replier la fiche technique au-delà des premières lignes.
+- Rien n'est tranché ici : c'est un choix de design.
+
+**axe-core** (`outils/axe-r8.cjs`, WCAG 2.0 / 2.1 / 2.2 A et AA + bonnes pratiques)
+- Deux états mesurés : page servie, puis familles dépliées.
+- **Résultats identiques avant / après.** Toutes les violations sont dans l'en-tête et le pied de page communs au site :
+  - 390 px : contraste ×10 ; `link-name` ×1 (lien de la barre collante vers `#catalogue`) ; `region` ×2 ;
+  - 1440 px : contraste ×7 ; `region` ×4.
+- Aucune violation dans les blocs déplacés ni dans les emplacements.
+
+**Contrôles statiques et tests**
+
+| Contrôle | Résultat |
+|---|---|
+| typecheck (`react-router typegen` + `tsc --noEmit`) | 0 erreur |
+| ESLint (route) | 0 erreur, 0 avertissement |
+| prettier (route) | conforme |
+| vitest : `r8-hero-h1-parity`, `r8-mine-codes-country-not-rendered`, `r8-schema`, `constructeurs-html-wrapper-noindex` | 4 fichiers, **39 / 39** |
+
+Le premier passage des tests a donné 15 échecs : l'emplacement FAQ affichait un h2 « Questions fréquentes », contraire à la garde « pas de FAQ de secours ». Le libellé est devenu un paragraphe « FAQ dédiée au véhicule ». Le test n'a pas été modifié.
+
+### 7.8 Couverture, exclusions, inconnues (complément n° 14)
+
+- **Couvert** :
+  - page 19052 en rendu isolé, à 390 et 1440 px ;
+  - SSR, CWV de laboratoire, positions et axe ;
+  - URL modèle 140004 sur DEV et www (GET).
+- **Non couvert** :
+  - les autres types R8, rendus avec le même code mais non mesurés ;
+  - la mesure de terrain ;
+  - le rendu sur www.
+- **Exclu** (étapes suivantes ou hors périmètre) :
+  - les 43 familles sans lien ;
+  - le title, la meta et le contrat `r8.ts` ;
+  - la page R2, le V-Level, la page R1 (#2210) ;
+  - toute écriture en base ;
+  - toute fusion.
+- **Inconnues** :
+  - liens externes vers l'ancienne URL modèle ;
+  - effet réel sur le comportement des visiteurs (aucune mesure de terrain avant déploiement).
+- **État** : maquette implémentée sur la branche et vérifiée en rendu isolé. Elle n'est ni intégrée, ni servie en DEV, ni en PROD.
 
 ## Fichiers
 
@@ -377,7 +610,10 @@ Ce sont des constats, sans maquette. Ils sont classés par gravité dans chaque 
 - `outils/compare-r8.cjs` : comparaison bloc par bloc de deux relevés.
 - `outils/gammes-r8.cjs` : gammes avec ou sans lien dans le HTML serveur.
 - `outils/vue-r8.cjs` : captures et CWV de laboratoire (Playwright et web-vitals pris dans le worktree de #2210, en lecture ; aucune installation ici).
-- `requetes/*.sql` : ventes, Search Console, CWV de terrain (SELECT seulement).
-- `releves/` : relevés JSON, captures, sortie RUM, preuve du défi Cloudflare.
+- `outils/proxy-r8.mjs` : proxy local en lecture seule (GET/HEAD) entre le rendu isolé et l'API DEV.
+- `outils/axe-r8.cjs` : axe-core à 390 et 1440 px, page servie puis familles dépliées (complément n° 14).
+- `outils/positions-r8.cjs` : position verticale de chaque `data-section`, de la recherche de gamme et hauteur de page (complément n° 14).
+- `requetes/*.sql` : ventes, Search Console, CWV de terrain, demande « clio 3 dci » par gamme (SELECT seulement).
+- `releves/` : relevés JSON, captures, sortie RUM, preuve du défi Cloudflare ; `releves/c14/` : relevés avant / après du complément n° 14.
 
-**Actes réservés à Marwane : choix de la version prototype, fusion, tag, toute décision de design commune au site.**
+**Actes réservés à Marwane : choix de la version prototype, validation de l'ordre des blocs, fusion, tag, toute décision de design commune au site.**

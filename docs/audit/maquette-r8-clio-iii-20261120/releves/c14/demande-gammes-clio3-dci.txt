@@ -1,0 +1,13 @@
+ pg_id |         pg_name          |         pg_alias         | mots_cles | volume |                                                                       exemples                                                                        
+-------+--------------------------+--------------------------+-----------+--------+-------------------------------------------------------------------------------------------------------------------------------------------------------
+     7 | Filtre à huile           | filtre-a-huile           |        12 |   1400 | {"filtre huile clio 3 1.5 dci","filtre à huile clio 3 1.5 dci","filtre à huile clio 3 dci"}
+     9 | Filtre à carburant       | filtre-a-carburant       |         6 |   1200 | {"filtre à gasoil clio 3 1.5 dci","filtre gasoil clio 3 1.5 dci","filtre a gasoil clio 3 dci"}
+   306 | Courroie de distribution | courroie-de-distribution |         5 |    700 | {"courroie de distribution clio 3 1.5 dci","courroie distribution clio 3 1.5 dci","prix changement courroie de distribution clio 3 dci chez renault"}
+   307 | Kit de distribution      | kit-de-distribution      |         5 |    250 | {"kit distribution clio 3 1.5 dci","prix kit distribution clio 3 1.5 dci","kit distribution clio 3 1.5 dci 85"}
+   424 | Filtre d'habitacle       | filtre-d-habitacle       |         2 |    100 | {"filtre habitacle clio 3 dci","filtre habitacle clio 3 1.5 dci"}
+     8 | Filtre à air             | filtre-a-air             |         2 |    100 | {"filtre a air clio 3 dci","filtre a air clio 3 1.5 dci"}
+    10 | Courroie d'accessoire    | courroie-d-accessoire    |         2 |    100 | {"courroie d accessoire clio 3 1.5 dci","courroie accessoire clio 3 1.5 dci"}
+   402 | Plaquette de frein       | plaquette-de-frein       |         3 |     50 | {"disque de frein clio 3 1.5 dci","plaquette de frein clio iii 1.5 dci","plaquette de frein clio iii break 1.5 dci"}
+    82 | Disque de frein          | disque-de-frein          |         3 |     50 | {"disque de frein clio 3 1.5 dci","disque de frein clio iii 1.5 dci","disque de frein clio iii break 1.5 dci"}
+(9 rows)
+

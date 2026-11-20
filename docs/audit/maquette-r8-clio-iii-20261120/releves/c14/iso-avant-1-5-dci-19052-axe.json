@@ -1,0 +1,143 @@
+{
+  "url": "http://127.0.0.1:3027/constructeurs/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "label": "iso-avant",
+  "at": "2026-11-20T22:05:43.580Z",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22aa",
+    "best-practice"
+  ],
+  "vues": {
+    "390": {
+      "servi": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "noeuds": 10,
+          "cibles": [
+            ".hover\\:text-gray-700",
+            ".text-white\\/40.text-\\[12px\\].mt-1",
+            "div:nth-child(1) > .text-white\\/25.uppercase.tracking-widest",
+            "div:nth-child(2) > .text-white\\/25.uppercase.tracking-widest",
+            ".text-white\\/20.text-\\[10px\\]",
+            ".gap-0\\.5.text-slate-400[href=\"/\"]",
+            ".gap-0\\.5.text-slate-400[href$=\"/#catalogue\"]",
+            ".gap-0\\.5.text-slate-400[href$=\"diagnostic-auto\"]"
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "noeuds": 1,
+          "cibles": [
+            ".hover\\:brightness-110.bg-brand[href$=\"#catalogue\"]"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "noeuds": 2,
+          "cibles": [
+            ".text-emerald-300",
+            ".text-white\\/40.whitespace-nowrap:nth-child(3)"
+          ]
+        }
+      ],
+      "deplie": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "noeuds": 10,
+          "cibles": [
+            ".hover\\:text-gray-700",
+            ".text-white\\/40.text-\\[12px\\].mt-1",
+            "div:nth-child(1) > .text-white\\/25.uppercase.tracking-widest",
+            "div:nth-child(2) > .text-white\\/25.uppercase.tracking-widest",
+            ".text-white\\/20.text-\\[10px\\]",
+            ".gap-0\\.5.text-slate-400[href=\"/\"]",
+            ".gap-0\\.5.text-slate-400[href$=\"/#catalogue\"]",
+            ".gap-0\\.5.text-slate-400[href$=\"diagnostic-auto\"]"
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "noeuds": 1,
+          "cibles": [
+            ".hover\\:brightness-110.bg-brand[href$=\"#catalogue\"]"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "noeuds": 2,
+          "cibles": [
+            ".text-emerald-300",
+            ".text-white\\/40.whitespace-nowrap:nth-child(3)"
+          ]
+        }
+      ],
+      "boutonsDeplies": 9
+    },
+    "1440": {
+      "servi": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "noeuds": 7,
+          "cibles": [
+            ".hover\\:text-gray-700",
+            ".sm\\:inline",
+            ".mt-3 > .text-\\[12px\\].text-white\\/30",
+            ".md\\:flex-row.justify-between.gap-4 > .text-\\[12px\\].text-white\\/30",
+            ".text-white\\/30.no-style[href$=\"cgv\"]",
+            ".text-white\\/30.no-style[href$=\"privacy\"]",
+            ".text-white\\/30:nth-child(5)"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "noeuds": 4,
+          "cibles": [
+            ".text-emerald-300",
+            ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+            ".lg\\:inline",
+            ".text-white\\/40.whitespace-nowrap.lg\\:flex"
+          ]
+        }
+      ],
+      "deplie": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "noeuds": 7,
+          "cibles": [
+            ".hover\\:text-gray-700",
+            ".sm\\:inline",
+            ".mt-3 > .text-\\[12px\\].text-white\\/30",
+            ".md\\:flex-row.justify-between.gap-4 > .text-\\[12px\\].text-white\\/30",
+            ".text-white\\/30.no-style[href$=\"cgv\"]",
+            ".text-white\\/30.no-style[href$=\"privacy\"]",
+            ".text-white\\/30:nth-child(5)"
+          ]
+        },
+        {
+          "id": "region",
+          "impact": "moderate",
+          "noeuds": 4,
+          "cibles": [
+            ".text-emerald-300",
+            ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+            ".lg\\:inline",
+            ".text-white\\/40.whitespace-nowrap.lg\\:flex"
+          ]
+        }
+      ],
+      "boutonsDeplies": 9
+    }
+  }
+}

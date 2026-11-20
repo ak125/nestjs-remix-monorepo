@@ -1,0 +1,144 @@
+{
+  "url": "http://127.0.0.1:3027/constructeurs/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "label": "iso-apres",
+  "at": "2026-11-20T22:15:36.158Z",
+  "passages": 5,
+  "captures": {
+    "390": {
+      "fichier": "iso-apres-1-5-dci-19052-390.jpg",
+      "hauteurPage": 13584,
+      "debordementHorizontal": false
+    },
+    "1440": {
+      "fichier": "iso-apres-1-5-dci-19052-1440.jpg",
+      "hauteurPage": 6091,
+      "debordementHorizontal": false
+    }
+  },
+  "vues": {
+    "390": {
+      "cpu": 4,
+      "runs": [
+        {
+          "LCP": 316,
+          "CLS": 0,
+          "INP": 48,
+          "FCP": 316,
+          "TTFB": 23,
+          "elementLCP": "img.h-full.object-cover.w-full",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": null
+        },
+        {
+          "LCP": 324,
+          "CLS": 0,
+          "INP": 64,
+          "FCP": 324,
+          "TTFB": 56,
+          "elementLCP": "img.h-full.object-cover.w-full",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": null
+        },
+        {
+          "LCP": 320,
+          "CLS": 0,
+          "INP": 56,
+          "FCP": 320,
+          "TTFB": 43,
+          "elementLCP": "img.h-full.object-cover.w-full",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": null
+        },
+        {
+          "LCP": 284,
+          "CLS": 0,
+          "INP": 72,
+          "FCP": 284,
+          "TTFB": 31,
+          "elementLCP": "img.h-full.object-cover.w-full",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": null
+        },
+        {
+          "LCP": 360,
+          "CLS": 0,
+          "INP": 64,
+          "FCP": 360,
+          "TTFB": 48,
+          "elementLCP": "img.h-full.object-cover.w-full",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": null
+        }
+      ],
+      "mediane": {
+        "LCP": 320,
+        "CLS": 0,
+        "INP": 64,
+        "FCP": 320,
+        "TTFB": 43
+      }
+    },
+    "1440": {
+      "cpu": 1,
+      "runs": [
+        {
+          "LCP": 156,
+          "CLS": 0.0001,
+          "INP": 56,
+          "FCP": 156,
+          "TTFB": 30,
+          "elementLCP": "div.max-w-7xl.mx-auto.px-4.py-8>div.bg-white.mb-8.p-6.rounded-lg.shadow-sm>div.max-w-none.prose>div",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": "div.gap-1.hidden.items-center.lg:flex.min-w-0.shrink"
+        },
+        {
+          "LCP": 288,
+          "CLS": 0.0001,
+          "INP": 48,
+          "FCP": 288,
+          "TTFB": 156,
+          "elementLCP": "div.max-w-7xl.mx-auto.px-4.py-8>div.bg-white.mb-8.p-6.rounded-lg.shadow-sm>div.max-w-none.prose>div",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": "div.gap-1.hidden.items-center.lg:flex.min-w-0.shrink"
+        },
+        {
+          "LCP": 160,
+          "CLS": 0.0002,
+          "INP": 48,
+          "FCP": 160,
+          "TTFB": 26,
+          "elementLCP": "div.max-w-7xl.mx-auto.px-4.py-8>div.bg-white.mb-8.p-6.rounded-lg.shadow-sm>div.max-w-none.prose>div",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": "div.gap-1.hidden.items-center.lg:flex.min-w-0.shrink"
+        },
+        {
+          "LCP": 184,
+          "CLS": 0.0001,
+          "INP": 48,
+          "FCP": 184,
+          "TTFB": 35,
+          "elementLCP": "div.max-w-7xl.mx-auto.px-4.py-8>div.bg-white.mb-8.p-6.rounded-lg.shadow-sm>div.max-w-none.prose>div",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": "div.gap-1.hidden.items-center.lg:flex.min-w-0.shrink"
+        },
+        {
+          "LCP": 172,
+          "CLS": 0.0001,
+          "INP": 48,
+          "FCP": 172,
+          "TTFB": 45,
+          "elementLCP": "div.max-w-7xl.mx-auto.px-4.py-8>div.bg-white.mb-8.p-6.rounded-lg.shadow-sm>div.max-w-none.prose>div",
+          "cibleINP": "button.border.border-gray-200.flex.font-medium.gap-1.5.hover:bg-gray-50.hover:border-gray-300.items-center.justify-center.px-3.py-2.rounded-lg.text-gray-600.text-xs.transition-colors.w-full",
+          "cibleCLS": "div.gap-1.hidden.items-center.lg:flex.min-w-0.shrink"
+        }
+      ],
+      "mediane": {
+        "LCP": 172,
+        "CLS": 0.0001,
+        "INP": 48,
+        "FCP": 172,
+        "TTFB": 35
+      }
+    }
+  }
+}
