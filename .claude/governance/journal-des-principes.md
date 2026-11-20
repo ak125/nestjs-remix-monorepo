@@ -290,9 +290,18 @@ hors admin sauf mention.
   (l. 28) fixe `THRESH_CLS=0.1`, planification non vérifiée. `.github/workflows/visual-gate.yml`
   (déclenchement manuel) mesure à 390 × 844 et 1920 × 1080 ;
   `frontend/tests/e2e/mobile-audit-complete.spec.ts` contrôle le débordement à 320 px, hors CI.
-  Écarts : CLS après défilement de 0,92 sur la page produit à 390 px (audit #2215, §h : 0,9179 ;
-  0,5814 à 1440 px ; gamme 0,4103 à 1440 px) ; 55 `<img>` sur 108 sans dimensions (audit, §h) ;
+  Écarts : les CLS après défilement de l'audit #2215 (§h : 0,9179 et 0,5814 sur la page produit,
+  0,4103 sur la gamme) sont un artefact de mesure : la sonde force puis retire
+  `content-visibility` (`scripts/mesure-dz.cjs`, l. 256 et 269). À la molette, aucune des cinq
+  pages ne dépasse 0,0177 après défilement (`options/mesures/cls-causes-dz.md`, PR #2215, tête
+  `8d7ba709c`, non fusionnée). Restent deux décalages réels au chargement, sous 0,1 : gamme
+  0,0175 à 390 px et 0,0226 à 1440 px, image du haut déclarée carrée et servie en 3:2
+  (`GammeHero.tsx`, l. 107-112) ; page produit 0,0199 à 0,0602 à 390 px et 0 à 0,0247 à 1440 px,
+  cartes à réserve de 360 px rendues visibles par un glissement (`PiecesGroupedDisplay.tsx`,
+  l. 197 ; `global.css`, l. 411-414). 55 `<img>` sur 108 sans dimensions (audit, §h) ;
   `frontend/lighthouse-budget.json` (l. 9) admet un CLS de 0,25 ; aucune mesure à 360 px trouvée.
+  La méthode de mesure du CLS reste à fixer avant tout contrôle bloquant : session à part,
+  défilement à la molette, plus grande fenêtre de session.
 
 ## Changements, revue et fusion
 
