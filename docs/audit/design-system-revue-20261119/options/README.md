@@ -475,6 +475,28 @@ Planches :
 
 A3 a été mesurée de 11:40Z à 12:20Z. Le DEV a redémarré deux fois pendant les passages (11:50:31Z et 12:10:38Z), sans action de cette session ; l'étape touchée a été relancée.
 
+## Cause du CLS après défilement (complément n° 6)
+
+Accord : Marwane, 20 nov. 2026 à 22:18 Paris, seuil à 0,1 au chargement et après défilement. Rapport complet :
+[`mesures/cls-causes-dz.md`](mesures/cls-causes-dz.md). Tableaux générés :
+[`mesures/cls-tableaux-dz.md`](mesures/cls-tableaux-dz.md). Données brutes : `mesures/cls-brut/` (60 passages,
+4 chronologies, 24 passages de démonstration).
+
+- **Les chiffres de la section h viennent de la sonde.** r2 0,9179 / 0,5814 et r1 0,0581 / 0,4103 sont dus au
+  retrait de la feuille `content-visibility` forcée (`scripts/mesure-dz.cjs:256` puis `:269`), compté par une somme
+  cumulée (`scripts/lib-dz.cjs:119`). Ce retrait vaut à lui seul 0,082 à 1.
+- **En défilement progressif à la molette**, le CLS après défilement est au plus de 0,0177 sur les cinq pages, en 390
+  et 1440, sous AVANT et sous A3. Les cinq types de page passent 0,1.
+- **Deux décalages réels au chargement, sous 0,1** :
+  - r1 : image du haut déclarée carrée et servie en 3:2 (`GammeHero.tsx:107-112`), 0,0175 / 0,0226 ;
+  - r2 : glissement du groupe de cartes (`PiecesGroupedDisplay.tsx:197`) pendant que les cartes quittent leur réserve
+    de 360 px (`global.css:411-414`), 0 à 0,0602.
+- **Correctifs proposés, non appliqués** : `mesures/cls-correctifs/c1-*.css` et `c2-*.css`, écrits dans le HTML,
+  ramènent ces décalages à 0 dans 12 passages sur 12.
+
+Scripts : `scripts/cls-causes-dz.cjs`, `scripts/chronologie-chargement-dz.cjs`, `scripts/condense-cls-dz.cjs`.
+Commandes en fin de `mesures/cls-causes-dz.md`. Mesuré de 21:25Z à 22:03Z sur le DEV (`1210455cd`, serveur Vite).
+
 ## Limites
 
 - **Maquette par feuille injectée, pas une implémentation.** Une feuille à `!important` écrase les

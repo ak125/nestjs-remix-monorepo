@@ -1,0 +1,691 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "variante": "a3",
+ "methode": "parcours",
+ "correctif": null,
+ "debut": "2026-11-20T21:31:20.632Z",
+ "fin": "2026-11-20T21:31:51.075Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:31:26.553Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {
+  "centrage": 90
+ },
+ "cls": {
+  "total": {
+   "somme": 0.8437,
+   "officiel": 0.8437,
+   "n": 1,
+   "nSaisie": 2
+  },
+  "horsInjection": {
+   "somme": 0.8437,
+   "officiel": 0.8437,
+   "n": 1,
+   "nSaisie": 2
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "defilement": {
+   "somme": 0.8437,
+   "officiel": 0.8437,
+   "n": 1,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 2
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "tabulation": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "centrage": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-forcee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-retiree": {
+    "somme": 0.8437,
+    "officiel": 0.8437,
+    "n": 1,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 545.8,
+   "v": 0.01289,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "loading",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile WIX FILTERS — 10.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      363,
+      177,
+      348
+     ],
+     "apres": [
+      13,
+      345,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 10.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      6,
+      177,
+      348
+     ],
+     "apres": [
+      13,
+      0,
+      177,
+      335
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile BLUE PRINT — 10.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      6,
+      177,
+      348
+     ],
+     "apres": [
+      200,
+      0,
+      177,
+      335
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  },
+  {
+   "t": 588.4,
+   "v": 0.03979,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "loading",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile MGA — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      221,
+      177,
+      348
+     ],
+     "apres": [
+      13,
+      184,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      221,
+      177,
+      348
+     ],
+     "apres": [
+      200,
+      184,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile WIX FILTERS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      579,
+      177,
+      265
+     ],
+     "apres": [
+      200,
+      542,
+      177,
+      302
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile NPS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      579,
+      177,
+      265
+     ],
+     "apres": [
+      13,
+      542,
+      177,
+      302
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile MISFAT — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      0,
+      177,
+      212
+     ],
+     "apres": [
+      200,
+      0,
+      177,
+      175
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  },
+  {
+   "t": 28500.3,
+   "v": 0.84367,
+   "input": false,
+   "phase": "cv-retiree",
+   "y": 2317,
+   "yRappel": 2317,
+   "etat": "complete",
+   "feuilles": 5,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "div.animate-in.fade-in > div.grid.grid-cols-2 > div[aria-label=\"Voir Filtre à huile COOPERS FIAAM — 9.00\"] > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.rounded-xl.ring-1.ring-inset.ring-slate-200/80",
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      203,
+      501,
+      171,
+      342
+     ]
+    },
+    {
+     "sel": "div.animate-in.fade-in > div.grid.grid-cols-2 > div[aria-label=\"Voir Filtre à huile MISFAT — 9.00\"] > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.rounded-xl.ring-1.ring-inset.ring-slate-200/80",
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      203,
+      144,
+      171,
+      342
+     ]
+    },
+    {
+     "sel": "div.animate-in.fade-in > div.grid.grid-cols-2 > div[aria-label=\"Voir Filtre à huile MGA — 9.00\"] > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.rounded-xl.ring-1.ring-inset.ring-slate-200/80",
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      16,
+      501,
+      171,
+      342
+     ]
+    },
+    {
+     "sel": "div.animate-in.fade-in > div.grid.grid-cols-2 > div[aria-label=\"Voir Filtre à huile MISFAT — 8.00\"] > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.rounded-xl.ring-1.ring-inset.ring-slate-200/80",
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      16,
+      144,
+      171,
+      342
+     ]
+    },
+    {
+     "sel": "div.animate-in.fade-in > div.grid.grid-cols-2 > div[aria-label=\"Voir Filtre à huile MGA — 8.00\"] > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.rounded-xl.ring-1.ring-inset.ring-slate-200/80",
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      203,
+      0,
+      171,
+      128
+     ]
+    }
+   ],
+   "poussoirs": [
+    {
+     "type": "taille",
+     "t": 28500.6,
+     "dh": -112,
+     "dw": 0,
+     "h": 11593,
+     "yDoc": 844,
+     "contientSource": true,
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.max-w-7xl.mx-auto",
+     "texte": "RENAULT CLIO III 1.5 dCi Changer 22 Nom (A-Z) Prix croissant",
+     "trace": [
+      "div.max-w-7xl.mx-auto.px-4.py-8.relative.z-10",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "profondeur": 7,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 28500.6,
+     "dh": -112,
+     "dw": 0,
+     "h": 12395,
+     "yDoc": 162,
+     "contientSource": true,
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > main.grow.flex",
+     "texte": "Filtre à huile RENAULT CLIO III 1.5 dCi 86 ch protéger le mo",
+     "trace": [
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "profondeur": 4,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 28500.6,
+     "dh": -112,
+     "dw": 0,
+     "h": 12395,
+     "yDoc": 162,
+     "contientSource": true,
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > main.grow.flex > div.grow",
+     "texte": "Filtre à huile RENAULT CLIO III 1.5 dCi 86 ch protéger le mo",
+     "trace": [
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "profondeur": 4,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 28500.6,
+     "dh": -112,
+     "dw": 0,
+     "h": 12395,
+     "yDoc": 162,
+     "contientSource": true,
+     "sel": "div.min-h-screen.flex > main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50",
+     "texte": "Filtre à huile RENAULT CLIO III 1.5 dCi 86 ch protéger le mo",
+     "trace": [
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "profondeur": 4,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 28500.6,
+     "dh": -112,
+     "dw": 0,
+     "h": 12395,
+     "yDoc": 162,
+     "contientSource": false,
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "profondeur": 4,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 28500.6,
+     "dh": -112,
+     "dw": 0,
+     "h": 13312,
+     "yDoc": 0,
+     "contientSource": true,
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex",
+     "texte": "AUTOMECANIK Livraison gratuite dès 150€ · Retours 30j Filtre",
+     "trace": [
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "profondeur": 3,
+     "repercute": false
+    },
+    {
+     "t": 28446.8,
+     "type": "retrait",
+     "tag": "style",
+     "cls": "",
+     "sel": "html.h-full > head",
+     "texte": "Filtre à huile Renault Clio III 1.5 dCi 86 ch{\"@context\":\"ht",
+     "trace": [
+      "head",
+      "html.h-full"
+     ],
+     "position": "static"
+    }
+   ],
+   "poussoirsTotal": 7
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 5305,
+   "y": 0
+  },
+  {
+   "p": "tabulation",
+   "t": 6965.7,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 14368.2,
+   "y": 0
+  },
+  {
+   "p": "centrage",
+   "t": 16940.6,
+   "y": 0
+  },
+  {
+   "p": "cv-forcee",
+   "t": 28057.4,
+   "y": 2317
+  },
+  {
+   "p": "cv-retiree",
+   "t": 28444.6,
+   "y": 2317
+  },
+  {
+   "p": "fin",
+   "t": 28750.2,
+   "y": 2317
+  }
+ ],
+ "scrollDebut": [
+  [
+   7787.2,
+   2
+  ],
+  [
+   7804,
+   12
+  ],
+  [
+   7829.1,
+   36
+  ],
+  [
+   7839.4,
+   91
+  ],
+  [
+   7890.9,
+   166
+  ],
+  [
+   7921.2,
+   272
+  ],
+  [
+   7926.3,
+   290
+  ],
+  [
+   7936.7,
+   303
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 642,
+  "load": 792
+ },
+ "fonts": [
+  {
+   "t": 510.7,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800",
+    "Roboto Mono 400"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 196,
+ "scrollHeight": 13310,
+ "erreurObs": null,
+ "requetesAbandonnees": 7,
+ "nonGet": 7
+}

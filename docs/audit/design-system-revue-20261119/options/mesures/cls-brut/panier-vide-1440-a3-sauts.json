@@ -1,0 +1,178 @@
+{
+ "id": "panier-vide",
+ "route": "/cart",
+ "viewport": "1440x900",
+ "variante": "a3",
+ "methode": "sauts",
+ "correctif": null,
+ "debut": "2026-11-20T21:42:17.580Z",
+ "fin": "2026-11-20T21:42:27.275Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:42:23.127Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {},
+ "cls": {
+  "total": {
+   "somme": 0.0022,
+   "officiel": 0.0022,
+   "n": 1,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0.0022,
+   "officiel": 0.0022,
+   "n": 1,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0.0022,
+   "officiel": 0.0022,
+   "n": 1,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0.0022,
+    "officiel": 0.0022,
+    "n": 1,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 6796.6,
+   "v": 0.0022,
+   "input": false,
+   "phase": "sauts",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > main.grow.flex",
+     "texte": "Votre panier est vide Trouvez la bonne pièce en quelques cli",
+     "trace": [
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      110,
+      1440,
+      791
+     ],
+     "apres": [
+      0,
+      106,
+      1440,
+      794
+     ]
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 4967.2,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 6544.3,
+   "y": 0
+  },
+  {
+   "p": "fin",
+   "t": 7978.7,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   6661.7,
+   113
+  ],
+  [
+   6674.4,
+   115
+  ],
+  [
+   6719.6,
+   114
+  ],
+  [
+   6745.9,
+   113
+  ],
+  [
+   6764.4,
+   111
+  ],
+  [
+   6776,
+   0
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 252,
+  "load": 448
+ },
+ "fonts": [
+  {
+   "t": 255.8,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 6,
+ "scrollHeight": 1013,
+ "erreurObs": null,
+ "requetesAbandonnees": 3,
+ "nonGet": 3
+}

@@ -1,0 +1,195 @@
+{
+ "id": "r0-accueil",
+ "route": "/",
+ "viewport": "390x844",
+ "variante": "a3",
+ "methode": "parcours",
+ "correctif": null,
+ "debut": "2026-11-20T21:36:14.596Z",
+ "fin": "2026-11-20T21:36:44.965Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:36:20.556Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {
+  "centrage": 90
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "tabulation": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "centrage": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-forcee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-retiree": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 5320.1,
+   "y": 0
+  },
+  {
+   "p": "tabulation",
+   "t": 6970.8,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 14272.6,
+   "y": 0
+  },
+  {
+   "p": "centrage",
+   "t": 16863.1,
+   "y": 0
+  },
+  {
+   "p": "cv-forcee",
+   "t": 27986.5,
+   "y": 2679
+  },
+  {
+   "p": "cv-retiree",
+   "t": 28359,
+   "y": 2679
+  },
+  {
+   "p": "fin",
+   "t": 28664.7,
+   "y": 2679
+  }
+ ],
+ "scrollDebut": [
+  [
+   8511,
+   2
+  ],
+  [
+   8527.6,
+   12
+  ],
+  [
+   8548.4,
+   37
+  ],
+  [
+   8563.4,
+   93
+  ],
+  [
+   8578.1,
+   165
+  ],
+  [
+   8597.3,
+   214
+  ],
+  [
+   8611.5,
+   245
+  ],
+  [
+   8628.1,
+   268
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 563,
+  "load": 802
+ },
+ "fonts": [
+  {
+   "t": 564.1,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 199,
+ "scrollHeight": 8352,
+ "erreurObs": null,
+ "requetesAbandonnees": 4,
+ "nonGet": 4
+}

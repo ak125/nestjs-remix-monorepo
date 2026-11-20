@@ -1,0 +1,571 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "390x844",
+ "variante": "a3",
+ "methode": "parcours",
+ "correctif": null,
+ "debut": "2026-11-20T21:26:21.064Z",
+ "fin": "2026-11-20T21:26:52.477Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:26:26.794Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {
+  "centrage": 90
+ },
+ "cls": {
+  "total": {
+   "somme": 1,
+   "officiel": 1,
+   "n": 1,
+   "nSaisie": 1
+  },
+  "horsInjection": {
+   "somme": 1,
+   "officiel": 1,
+   "n": 1,
+   "nSaisie": 1
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 1
+  },
+  "defilement": {
+   "somme": 1,
+   "officiel": 1,
+   "n": 1,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 1
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "tabulation": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "centrage": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-forcee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-retiree": {
+    "somme": 1,
+    "officiel": 1,
+    "n": 1,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 405.1,
+   "v": 0.01747,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "interactive",
+   "feuilles": 3,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.flex.flex-col > div.flex-1.flex > div.relative > div.relative.border",
+     "texte": "Sélectionnez votre véhicule Véhicule Type Mine Marque Sélect",
+     "trace": [
+      "div.relative.rounded-[28px].border.border-white/60.bg-white/95.p-2.5",
+      "div.relative.lg:hidden",
+      "div.flex-1.flex.flex-col",
+      "div.flex.flex-col.lg:flex-row.lg:items-stretch.lg:gap-8",
+      "div.max-w-7xl.mx-auto.px-page.pb-5.lg:pb-8"
+     ],
+     "position": "relative",
+     "avant": [
+      0,
+      527,
+      390,
+      317
+     ],
+     "apres": [
+      0,
+      492,
+      390,
+      352
+     ]
+    },
+    {
+     "sel": "div.space-y-3 > div.grid.grid-cols-2 > label.block > select.w-full.h-12",
+     "texte": "Sélectionner",
+     "trace": [
+      "select.w-full.h-12.rounded-2xl.border.px-3.text-[15px]",
+      "label.block",
+      "div.grid.grid-cols-2.gap-2.5",
+      "div.space-y-3",
+      "div.rounded-[24px].border.border-slate-200.bg-white.px-4.pb-4"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      37,
+      811,
+      156,
+      33
+     ]
+    },
+    {
+     "sel": "div.space-y-3 > div.grid.grid-cols-2 > label.block > select.w-full.h-12",
+     "texte": "Sélectionner",
+     "trace": [
+      "select.w-full.h-12.rounded-2xl.border.px-3.text-[15px]",
+      "label.block",
+      "div.grid.grid-cols-2.gap-2.5",
+      "div.space-y-3",
+      "div.rounded-[24px].border.border-slate-200.bg-white.px-4.pb-4"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      197,
+      811,
+      156,
+      33
+     ]
+    }
+   ],
+   "poussoirs": [
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 243,
+     "yDoc": 302,
+     "contientSource": false,
+     "sel": "div.flex.flex-col > div.flex > div.mx-0.mb-4 > picture.block.w-full",
+     "texte": "",
+     "trace": [
+      "picture.block.w-full.h-full",
+      "div.mx-0.mb-4.lg:mb-0.w-full.max-h-[280px].bg-gradient-to-br",
+      "div.lg:w-[280px].lg:shrink-0.flex",
+      "div.flex.flex-col.lg:flex-row.lg:items-stretch.lg:gap-8",
+      "div.max-w-7xl.mx-auto.px-page.pb-5.lg:pb-8"
+     ],
+     "position": "static",
+     "profondeur": 12,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 243,
+     "yDoc": 302,
+     "contientSource": false,
+     "sel": "div.flex > div.mx-0.mb-4 > picture.block.w-full > img.block.w-full",
+     "texte": "",
+     "trace": [
+      "img.block.w-full.h-full.object-cover",
+      "picture.block.w-full.h-full",
+      "div.mx-0.mb-4.lg:mb-0.w-full.max-h-[280px].bg-gradient-to-br",
+      "div.lg:w-[280px].lg:shrink-0.flex",
+      "div.flex.flex-col.lg:flex-row.lg:items-stretch.lg:gap-8"
+     ],
+     "position": "static",
+     "profondeur": 12,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 245,
+     "yDoc": 301,
+     "contientSource": false,
+     "sel": "div.max-w-7xl.mx-auto > div.flex.flex-col > div.flex > div.mx-0.mb-4",
+     "texte": "",
+     "trace": [
+      "div.mx-0.mb-4.lg:mb-0.w-full.max-h-[280px].bg-gradient-to-br",
+      "div.lg:w-[280px].lg:shrink-0.flex",
+      "div.flex.flex-col.lg:flex-row.lg:items-stretch.lg:gap-8",
+      "div.max-w-7xl.mx-auto.px-page.pb-5.lg:pb-8",
+      "section.bg-gradient-to-b.from-navy.to-navy-light"
+     ],
+     "position": "static",
+     "profondeur": 11,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 261,
+     "yDoc": 301,
+     "contientSource": false,
+     "sel": "section.bg-gradient-to-b.from-navy > div.max-w-7xl.mx-auto > div.flex.flex-col > div.flex",
+     "texte": "",
+     "trace": [
+      "div.lg:w-[280px].lg:shrink-0.flex",
+      "div.flex.flex-col.lg:flex-row.lg:items-stretch.lg:gap-8",
+      "div.max-w-7xl.mx-auto.px-page.pb-5.lg:pb-8",
+      "section.bg-gradient-to-b.from-navy.to-navy-light",
+      "div.min-h-screen.bg-neutral-50.font-body"
+     ],
+     "position": "static",
+     "profondeur": 10,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 703,
+     "yDoc": 301,
+     "contientSource": true,
+     "sel": "div.min-h-screen.bg-neutral-50 > section.bg-gradient-to-b.from-navy > div.max-w-7xl.mx-auto > div.flex.flex-col",
+     "texte": "Sélectionnez votre véhicule Véhicule Type Mine Marque Sélect",
+     "trace": [
+      "div.flex.flex-col.lg:flex-row.lg:items-stretch.lg:gap-8",
+      "div.max-w-7xl.mx-auto.px-page.pb-5.lg:pb-8",
+      "section.bg-gradient-to-b.from-navy.to-navy-light",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow"
+     ],
+     "position": "static",
+     "profondeur": 9,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 723,
+     "yDoc": 301,
+     "contientSource": true,
+     "sel": "div.grow > div.min-h-screen.bg-neutral-50 > section.bg-gradient-to-b.from-navy > div.max-w-7xl.mx-auto",
+     "texte": "Sélectionnez votre véhicule Véhicule Type Mine Marque Sélect",
+     "trace": [
+      "div.max-w-7xl.mx-auto.px-page.pb-5.lg:pb-8",
+      "section.bg-gradient-to-b.from-navy.to-navy-light",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col"
+     ],
+     "position": "static",
+     "profondeur": 8,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 865,
+     "yDoc": 160,
+     "contientSource": true,
+     "sel": "main.grow.flex > div.grow > div.min-h-screen.bg-neutral-50 > section.bg-gradient-to-b.from-navy",
+     "texte": "Accueil Pièces Auto Filtre à huile Filtre à huile compatible",
+     "trace": [
+      "section.bg-gradient-to-b.from-navy.to-navy-light",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "static",
+     "profondeur": 7,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 8075,
+     "yDoc": 160,
+     "contientSource": true,
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > main.grow.flex",
+     "texte": "Aller au contenu principal Accueil Pièces Auto Filtre à huil",
+     "trace": [
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "profondeur": 4,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 8075,
+     "yDoc": 160,
+     "contientSource": true,
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > main.grow.flex > div.grow",
+     "texte": "Aller au contenu principal Accueil Pièces Auto Filtre à huil",
+     "trace": [
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "profondeur": 4,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 8075,
+     "yDoc": 160,
+     "contientSource": true,
+     "sel": "div.min-h-screen.flex > main.grow.flex > div.grow > div.min-h-screen.bg-neutral-50",
+     "texte": "Aller au contenu principal Accueil Pièces Auto Filtre à huil",
+     "trace": [
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "profondeur": 4,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 405.4,
+     "dh": -35,
+     "dw": 0,
+     "h": 8235,
+     "yDoc": 0,
+     "contientSource": true,
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex",
+     "texte": "AUTOMECANIK Livraison gratuite dès 150€ · Retours 30j Aller ",
+     "trace": [
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "profondeur": 3,
+     "repercute": false
+    }
+   ],
+   "poussoirsTotal": 11
+  },
+  {
+   "t": 29464.5,
+   "v": 1,
+   "input": false,
+   "phase": "cv-retiree",
+   "y": 4475,
+   "yRappel": 4475,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "section#qualite-prix > div.mx-auto",
+     "texte": "",
+     "trace": [
+      "div.max-w-[1280px].mx-auto",
+      "section#qualite-prix.py-10.px-4.sm:px-6.bg-slate-50.cv-auto",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      0,
+      0,
+      390,
+      844
+     ]
+    }
+   ],
+   "poussoirs": [
+    {
+     "t": 29397.2,
+     "type": "retrait",
+     "tag": "style",
+     "cls": "",
+     "sel": "html.h-full > head",
+     "texte": "Filtre à huile | Trouvez la référence compatible | AutoMeca…",
+     "trace": [
+      "head",
+      "html.h-full"
+     ],
+     "position": "static"
+    }
+   ],
+   "poussoirsTotal": 1
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 5129.8,
+   "y": 0
+  },
+  {
+   "p": "tabulation",
+   "t": 6747.9,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 14132,
+   "y": 74
+  },
+  {
+   "p": "centrage",
+   "t": 17924.2,
+   "y": 0
+  },
+  {
+   "p": "cv-forcee",
+   "t": 29025.2,
+   "y": 4475
+  },
+  {
+   "p": "cv-retiree",
+   "t": 29396,
+   "y": 4475
+  },
+  {
+   "p": "fin",
+   "t": 29699.4,
+   "y": 4475
+  }
+ ],
+ "scrollDebut": [
+  [
+   8007.7,
+   4
+  ],
+  [
+   8024,
+   24
+  ],
+  [
+   8047.1,
+   33
+  ],
+  [
+   8058.6,
+   36
+  ],
+  [
+   8074.5,
+   38
+  ],
+  [
+   8190.9,
+   40
+  ],
+  [
+   8540.5,
+   42
+  ],
+  [
+   8557.6,
+   51
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 385,
+  "load": 612
+ },
+ "fonts": [
+  {
+   "t": 404.6,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  },
+  {
+   "t": 1136.5,
+   "polices": [
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 292,
+ "scrollHeight": 16322,
+ "erreurObs": null,
+ "requetesAbandonnees": 4,
+ "nonGet": 4
+}
