@@ -208,9 +208,16 @@ export class PricingRepository extends SupabaseBaseService {
       if (cursor) {
         const id = keysetValue(cursor.id);
         const type = keysetValue(cursor.type);
-        q = q.or(
-          `pri_piece_id.gt.${id},and(pri_piece_id.eq.${id},pri_type.gt.${type})`,
-        );
+        // gte = condition d'index (pieces_price_pkey) ; sans elle le OR seul est
+        // un filtre et chaque page reparcourt l'index depuis le début
+        // (EXPLAIN 2026-11-20 : ~285 ms par page au lieu de 1 à 5 ms).
+        q = q
+          // Valeur brute : keysetValue l'a validée, sans caractère réservé à
+          // PostgREST ; les guillemets ne servent qu'à l'intérieur du or().
+          .gte('pri_piece_id', cursor.id)
+          .or(
+            `pri_piece_id.gt.${id},and(pri_piece_id.eq.${id},pri_type.gt.${type})`,
+          );
       }
       const { data, error } = await q
         .order('pri_piece_id', { ascending: true })
