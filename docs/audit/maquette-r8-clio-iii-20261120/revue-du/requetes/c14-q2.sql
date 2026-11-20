@@ -1,0 +1,6 @@
+-- Complément n° 14 DU. SELECT seulement. Demande __seo_keywords rattachée au type 19052, par gamme, croisée avec les liens R2 servis avant/après.
+select k.pg_id, (select pg_name from pieces_gamme where pg_id::int=k.pg_id) nom, sum(coalesce(k.volume,0)) vol_tot, count(*) nb_req,
+ (array_agg(k.keyword order by k.volume desc nulls last))[1] top_kw, max(k.volume) top_vol,
+ k.pg_id = any('{2,4,7,8,9,10,13,39,40,48,50,70,78,82,107,124,138,141,158,170,183,188,191,193,234,243,247,249,259,273,274,277,285,289,295,298,300,306,307,310,312,316,318,321,402,424,429,447,448,458,468,470,475,479,577,620,624,655,805,807,809,817,830,851,854,1145,1182,1260,1269,1270,1289,1367,1385,2462}'::int[]) lien_avant, k.pg_id = any('{2,4,7,8,9,10,13,39,40,48,50,70,78,82,107,138,141,158,170,183,188,191,193,234,243,247,249,259,273,274,277,285,289,295,298,300,306,307,310,312,316,318,321,402,424,429,447,448,458,468,470,475,479,577,620,624,655,805,807,809,817,830,851,854,1145,1182,1260,1269,1270,1289,1367,1385}'::int[]) lien_apres
+from __seo_keywords k where k.type_id=19052 group by k.pg_id order by vol_tot desc nulls last limit 30;
+select count(*) req_19052, count(distinct pg_id) gammes, sum(coalesce(volume,0)) vol from __seo_keywords where type_id=19052;

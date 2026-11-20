@@ -1,0 +1,5 @@
+ gammes_liees | gammes_vendables | vendables_lien_avant | vendables_lien_apres | liens_apres_non_vendables 
+--------------+------------------+----------------------+----------------------+---------------------------
+          363 |              130 |                   67 |                   65 |                         7
+(1 row)
+

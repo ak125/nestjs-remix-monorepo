@@ -1,0 +1,302 @@
+{
+ "largeur": 390,
+ "hauteur": 844,
+ "docH": 13584,
+ "sections": [
+  {
+   "s": "S_BREADCRUMB",
+   "y": 160,
+   "h": 45
+  },
+  {
+   "s": "S_HERO",
+   "y": 205,
+   "h": 170
+  },
+  {
+   "s": "S_IDENTITY",
+   "y": 375,
+   "h": 636
+  },
+  {
+   "s": "S_SAFE_TABLE",
+   "y": 551,
+   "h": 435
+  },
+  {
+   "s": "S_SEO_INTRO",
+   "y": 1043,
+   "h": 330
+  },
+  {
+   "s": "S_FAST_ACCESS",
+   "y": 1404,
+   "h": 387
+  },
+  {
+   "s": "S_CATALOG",
+   "y": 1823,
+   "h": 8259
+  },
+  {
+   "s": "S_ANTI_ERRORS",
+   "y": 10146,
+   "h": 437
+  },
+  {
+   "s": "S_PLACEHOLDER_TOP_PARTS",
+   "y": 10631,
+   "h": 196
+  },
+  {
+   "s": "S_PLACEHOLDER_MAINTENANCE",
+   "y": 10875,
+   "h": 176
+  },
+  {
+   "s": "S_PLACEHOLDER_VARIANTS",
+   "y": 11099,
+   "h": 176
+  },
+  {
+   "s": "S_PLACEHOLDER_LINKS",
+   "y": 11323,
+   "h": 204
+  },
+  {
+   "s": "S_PLACEHOLDER_FAQ",
+   "y": 11575,
+   "h": 148
+  },
+  {
+   "s": "S_TRUST",
+   "y": 11771,
+   "h": 464
+  }
+ ],
+ "recherche": [
+  {
+   "ph": "Rechercher une gamme (ex: plaquettes, filtre a huile...)",
+   "y": 1473,
+   "lab": null
+  }
+ ],
+ "premierLienR2": {
+  "href": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "y": 2345
+ },
+ "liensR2VisiblesPremierEcran": 0,
+ "liensR2Visibles": 73,
+ "titres": [
+  {
+   "t": "H1",
+   "txt": "RENAULT CLIO III 1.5 dCi 86 ch de 2005 à 2012",
+   "y": 225,
+   "sec": "S_HERO"
+  },
+  {
+   "t": "H2",
+   "txt": "Fiche technique",
+   "y": 576,
+   "sec": "S_SAFE_TABLE"
+  },
+  {
+   "t": "H2",
+   "txt": "Acces rapide",
+   "y": 1429,
+   "sec": "S_FAST_ACCESS"
+  },
+  {
+   "t": "H2",
+   "txt": "Catalogue de pieces auto",
+   "y": 1823,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Système de filtration",
+   "y": 2296,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Système de freinage",
+   "y": 2701,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Courroie, galet, poulie et chaîne",
+   "y": 3178,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Préchauffage et allumage",
+   "y": 3655,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Direction et liaison au sol",
+   "y": 3946,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Amortisseur et suspension",
+   "y": 4423,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Support moteur",
+   "y": 4790,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Embrayage",
+   "y": 5119,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Transmission",
+   "y": 5616,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Système électrique",
+   "y": 5983,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Capteurs",
+   "y": 6350,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Système d'alimentation",
+   "y": 6793,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Moteur",
+   "y": 7160,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Refroidissement",
+   "y": 7657,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Climatisation",
+   "y": 8154,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Echappement",
+   "y": 8631,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Eclairage",
+   "y": 8980,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Accessoires",
+   "y": 9457,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H3",
+   "txt": "Turbo",
+   "y": 9934,
+   "sec": "S_CATALOG"
+  },
+  {
+   "t": "H2",
+   "txt": "Erreurs fréquentes à éviter",
+   "y": 10171,
+   "sec": "S_ANTI_ERRORS"
+  },
+  {
+   "t": "H3",
+   "txt": "Garantie 1 an",
+   "y": 11856,
+   "sec": "S_TRUST"
+  },
+  {
+   "t": "H3",
+   "txt": "Livraison 24-48h",
+   "y": 11856,
+   "sec": "S_TRUST"
+  },
+  {
+   "t": "H3",
+   "txt": "Conseil expert",
+   "y": 12096,
+   "sec": "S_TRUST"
+  },
+  {
+   "t": "H3",
+   "txt": "Retour 30 jours",
+   "y": 12096,
+   "sec": "S_TRUST"
+  },
+  {
+   "t": "H4",
+   "txt": "Navigation",
+   "y": 12445,
+   "sec": "footer"
+  },
+  {
+   "t": "H4",
+   "txt": "Informations véhicule",
+   "y": 12554,
+   "sec": "footer"
+  },
+  {
+   "t": "H4",
+   "txt": "Assistance",
+   "y": 12712,
+   "sec": "footer"
+  },
+  {
+   "t": "H3",
+   "txt": "À propos",
+   "y": 0,
+   "sec": "footer"
+  },
+  {
+   "t": "H3",
+   "txt": "Liens utiles",
+   "y": 0,
+   "sec": "footer"
+  },
+  {
+   "t": "H3",
+   "txt": "Informations légales",
+   "y": 0,
+   "sec": "footer"
+  },
+  {
+   "t": "H3",
+   "txt": "Contact",
+   "y": 0,
+   "sec": "footer"
+  }
+ ]
+}

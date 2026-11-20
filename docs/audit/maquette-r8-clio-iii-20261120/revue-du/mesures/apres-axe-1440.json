@@ -1,0 +1,268 @@
+{
+  "url": "http://localhost:3029/constructeurs/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "status": 200,
+  "viewport": "1440x900",
+  "reducedMotion": true,
+  "axe": "4.12.1",
+  "at": "2026-11-20T23:01:43.013Z",
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "count": 6,
+      "nodes": [
+        {
+          "target": ".hover\\:text-gray-700",
+          "zone": "R1 main",
+          "text": "Compact",
+          "data": {
+            "fg": "#6a7282",
+            "bg": "#f3f4f6",
+            "ratio": 4.39,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".mt-3 > .text-\\[12px\\].text-white\\/30",
+          "zone": "GLOBAL pied de page",
+          "text": "Service client disponibleLun-Ven 9h-18h, Sam 9h-13",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".md\\:flex-row.gap-4.justify-between > .text-\\[12px\\].text-white\\/30",
+          "zone": "GLOBAL pied de page",
+          "text": "© 2026 AutoMecanik. Tous droits réservés.",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30.no-style[href$=\"cgv\"]",
+          "zone": "GLOBAL pied de page",
+          "text": "CGV",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30.no-style[href$=\"privacy\"]",
+          "zone": "GLOBAL pied de page",
+          "text": "Confidentialité",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        },
+        {
+          "target": ".text-white\\/30:nth-child(5)",
+          "zone": "GLOBAL pied de page",
+          "text": "Paiement sécurisé · Livraison 24-48h",
+          "data": {
+            "fg": "#576174",
+            "bg": "#0f1e38",
+            "ratio": 2.66,
+            "size": "9.0pt (12px)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "count": 4,
+      "nodes": [
+        {
+          "target": ".text-emerald-300",
+          "zone": "R1 body",
+          "text": "Livraison gratuite dès 150€"
+        },
+        {
+          "target": ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+          "zone": "R1 body",
+          "text": "Retours 30j"
+        },
+        {
+          "target": ".lg\\:inline",
+          "zone": "R1 body",
+          "text": "·"
+        },
+        {
+          "target": ".text-white\\/40.whitespace-nowrap.lg\\:flex",
+          "zone": "R1 body",
+          "text": "01 48 47 96 27"
+        }
+      ]
+    }
+  ],
+  "colorContrastIncomplete": 36,
+  "contrasteDirect": [],
+  "cibles": {
+    "sous24": [
+      {
+        "zone": "R1 body",
+        "tag": "a",
+        "text": "01 48 47 96 27",
+        "w": 101,
+        "h": 16,
+        "display": "flex",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hidden lg:flex items-center gap-1.5 text-white/40 hover:text-white transition-co",
+        "distanceCentreVoisin": 101
+      },
+      {
+        "zone": "R1 nav[Fil d'Ariane]",
+        "tag": "a",
+        "text": "Accueil",
+        "w": 48,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hover:underline text-brand",
+        "distanceCentreVoisin": 81
+      },
+      {
+        "zone": "R1 nav[Fil d'Ariane]",
+        "tag": "a",
+        "text": "RENAULT",
+        "w": 58,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hover:underline text-brand",
+        "distanceCentreVoisin": 81
+      },
+      {
+        "zone": "R1 main",
+        "tag": "button",
+        "text": "",
+        "w": 22,
+        "h": 22,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "p-1 hover:bg-gray-100 rounded transition-colors",
+        "distanceCentreVoisin": 397
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "Accueil",
+        "w": 47,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hover:text-blue-300",
+        "distanceCentreVoisin": 42
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "Modèles RENAULT",
+        "w": 116,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hover:text-blue-300",
+        "distanceCentreVoisin": 42
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "Contact",
+        "w": 52,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hover:text-blue-300",
+        "distanceCentreVoisin": 27
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "Aide",
+        "w": 29,
+        "h": 18,
+        "display": "inline",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "hover:text-blue-300",
+        "distanceCentreVoisin": 27
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "01 48 47 96 27",
+        "w": 86,
+        "h": 20.8,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-[13px] text-white/60 hover:text-white transition-colors",
+        "distanceCentreVoisin": 52
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "contact@automecanik.com",
+        "w": 166,
+        "h": 20.8,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "text-[13px] text-white/60 hover:text-white transition-colors",
+        "distanceCentreVoisin": 52
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "CGV",
+        "w": 26,
+        "h": 19.2,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "no-style no-visited text-white/30 hover:text-white transition-colors",
+        "distanceCentreVoisin": 90
+      },
+      {
+        "zone": "GLOBAL pied de page",
+        "tag": "a",
+        "text": "Confidentialité",
+        "w": 85,
+        "h": 19.2,
+        "display": "block",
+        "dansUnePhrase": false,
+        "srOnly": false,
+        "classes": "no-style no-visited text-white/30 hover:text-white transition-colors",
+        "distanceCentreVoisin": 90
+      }
+    ],
+    "de24a44": 101,
+    "total": 128
+  },
+  "animations": [],
+  "boucles": [],
+  "htmlScrollBehavior": "smooth",
+  "defilementNavRapide": {
+    "error": "locator.innerText: Timeout 30000ms exceeded."
+  }
+}
