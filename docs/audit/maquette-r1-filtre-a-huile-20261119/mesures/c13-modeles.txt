@@ -1,0 +1,13 @@
+ modele_id |              modele_name               | modele_display | modele_marque_id | marque_name | marque_display | lignes_sitemap_modele 
+-----------+----------------------------------------+----------------+------------------+-------------+----------------+-----------------------
+     46007 | BERLINGO II - BERLINGO MULTISPACE (B9) |              1 |               46 | CITROËN     |              1 |                   702
+    140003 | CLIO II                                |              1 |              140 | RENAULT     |              1 |                   957
+    140049 | MEGANE III                             |              1 |              140 | RENAULT     |              1 |                   872
+(3 rows)
+
+ pg_id |      pg_name       | pg_display | pg_level 
+-------+--------------------+------------+----------
+     7 | Filtre à huile     | 1          | 1
+   402 | Plaquette de frein | 1          | 1
+(2 rows)
+

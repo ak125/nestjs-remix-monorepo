@@ -60,6 +60,13 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   le recouvrement par les boutons flottants est mesuré avant et après, axe, le typecheck, les tests et
   la CI sont refaits. Une erreur du §19.4 est rectifiée. Voir le §20 ; les autres sections ne changent
   pas.
+- **Complément n° 13** : la tête de #2210 est passée à `6e765498dcef1b378be0ce06755680fde0a6af04`
+  (complément n° 12 de DS : toutes les cartes véhicule rendues dans le HTML servi, celles après la
+  12e repliées, accord de Marwane du 20 novembre à 17:12). Les liens sont comptés dans le HTML sans
+  JavaScript sur deux gammes, la conformité est confrontée aux pages Google citées, le clavier et
+  l'arbre d'accessibilité sont mesurés, l'apparence est comparée au pixel à 390 et 1440 px avant et
+  après le clic, les 36 cibles sont vérifiées en base, axe, le typecheck, les tests et la CI sont
+  revérifiés. Voir le §21 ; les autres sections ne changent pas.
 
 ## Verdict final
 
@@ -280,6 +287,21 @@ page R1. Ce qui reste ouvert, hors de ce verdict ou à trancher par Marwane :
   site, il ne bloque pas ce verdict (§20.3).
 - Diff limité au composant et à son test ; axe, typecheck, lint et tests passent ; la CI n'a aucun
   échec nouveau (§20.4).
+
+**Complément n° 13, tête `6e765498d` : liens des cartes conformes.**
+
+- Toutes les cartes ont un vrai lien dans le HTML servi : 19 sur 19 (pg 7) et 17 sur 17 (pg 402),
+  contre 12 avant ; mêmes cibles qu'avant, 12 visibles d'abord (§21.1).
+- Contenu replié derrière un bouton visible, liens `<a href>` présents sans clic : conforme aux
+  pages Google sur l'indexation mobile d'abord, les liens explorables et le texte caché (§21.2).
+- Cartes repliées hors du clavier et de l'arbre d'accessibilité tant qu'elles sont masquées ; le
+  bouton n'annonce pas son état (`aria-expanded` absent, avant comme après), réserve non bloquante
+  (§21.2).
+- 0 pixel différent avant et après le clic à 390 et 1440 px ; images repliées non demandées avant le
+  clic ; moins de 0,6 Ko de plus en transfert ; CWV inchangés (§21.3).
+- 36 cibles vendables et indexables ; 2 absentes de la table du sitemap pour toutes leurs gammes,
+  signalées sans correction ; aucune carte repliée ne correspond à une requête rattachée (§21.4).
+  Aucun échec nouveau dans le code servi (§21.5).
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -2029,3 +2051,222 @@ tête.
 `scripts/c12-portee.py`, `scripts/c12-base.sql` ; `mesures/c12-*` ; `captures/c12-cartes-*.png`.
 
 LIVRABLE COMPLÉMENT N° 12 DU
+
+## 21. Complément n° 13 : liens des cartes véhicule R1 dans le HTML servi
+
+**Verdict : liens des cartes conformes.** Chaque carte véhicule a maintenant un vrai lien dans le
+HTML servi, y compris les cartes repliées. Le premier affichage ne change pas. Les cartes repliées
+restent hors du clavier et du lecteur d'écran tant qu'elles sont masquées. Les 36 cibles sont
+vendables et indexables. Une réserve, non bloquante et antérieure à la correction : le bouton
+« Voir les N autres compatibilités » n'annonce pas son état (§21.2).
+
+- **Tête mesurée** : `6e765498dcef1b378be0ce06755680fde0a6af04` (#2210, PR brouillon ouverte, mise à
+  jour à 16:35:59 UTC). Relevée à 16:56 UTC avant les mesures, revérifiée à 17:20 UTC (`gh` et
+  `git ls-remote` concordent). Rien n'a été modifié dans #2210.
+- **Rendu** : frontend reconstruit dans mon worktree, à `da7f091b7` puis à `6e765498d`, backend
+  identique (le diff ne touche pas `backend/`). Servi sur un port à moi avec un Redis privé ; le
+  service DEV n'a pas servi. Chrome 153 complet, 390×844 et 1440×900. Deux gammes : filtre à huile
+  (pg 7) et plaquette de frein (pg 402).
+- **Ce que DS a changé** (diff `da7f091b7` → `6e765498d`) : 43 fichiers, dont 2 hors documentation.
+  - `MotorisationsSection.tsx` : le `slice(0, 12)` disparaît ; toutes les cartes sont rendues, celles
+    après la 12e reçoivent la classe `hidden` tant que la liste n'est pas dépliée.
+  - `frontend/tests/unit/r1-motorisation-ssr-links.test.tsx` (nouveau, 3 tests).
+  - Les 41 autres fichiers sont les preuves de DS (`docs/audit/…/complement-12/`, deux outils).
+
+### 21.1 HTML servi sans JavaScript
+
+Page demandée par une simple requête HTTP, sans navigateur, puis comptée par
+`scripts/cartes-ssr-du13.py` (carte = `<a href>` qui contient un `<h3>` et « Voir les pièces »).
+
+| Page | `da7f091b7` : cartes / `<a href>` | `6e765498d` : cartes / `<a href>` | Visibles | Repliées (`hidden`) |
+|---|---|---|---|---|
+| Filtre à huile (pg 7) | 12 / 12 | 19 / 19 | 12 | 7 |
+| Plaquette de frein (pg 402) | 12 / 12 | 17 / 17 | 12 | 5 |
+
+- Les 12 premiers liens sont les mêmes, dans le même ordre, avant et après.
+- La liste complète des liens à la tête est identique à celle des cartes affichées après le clic sur
+  l'ancien rendu, et à la liste de l'API relevée au n° 12. Aucune cible ne change, aucune n'est
+  ajoutée hors de la liste.
+- Le reste du HTML ne bouge pas : le diff du HTML normalisé ne montre que l'insertion des cartes et
+  deux artefacts de build (un `modulepreload` en moins, l'horodatage des données du loader).
+
+### 21.2 Conformité Google, clavier et lecteur d'écran
+
+**Ce que dit Google** (Google Search Central, pages lues le 20 novembre 2026, sans date de mise à
+jour affichée) :
+
+- Indexation mobile d'abord
+  (`developers.google.com/search/docs/crawling-indexing/mobile/mobile-sites-mobile-first-indexing`) :
+  « Instead of removing content, consider moving content into accordions or tabs to save space. »
+  La même page met en garde : « Google won't load content that requires user interactions (for
+  example, swiping, clicking, or typing) to load. »
+- Liens explorables (`developers.google.com/search/docs/crawling-indexing/links-crawlable`) :
+  « Generally, Google can only crawl your link if it's an `<a>` HTML element (also known as *anchor
+  element*) with an `href` attribute. »
+- Règles anti-spam, section « Hidden text and link abuse »
+  (`developers.google.com/search/docs/essentials/spam-policies#hidden-text-and-links`) : le texte ou
+  les liens cachés sont un abus s'ils sont placés « solely to manipulate search engines and not to
+  be easily viewable by human visitors ». La page précise que ces éléments « don't violate our
+  policies: Accordion or tabbed content that toggle between hiding and showing additional content ».
+
+**Mon avis.** La correction est conforme à ces trois règles :
+
+- les liens repliés sont dans le HTML dès la réponse du serveur ; aucun clic n'est nécessaire pour
+  les charger, ce qui était justement le défaut d'avant (les 7 et 5 liens n'existaient qu'après le
+  clic) ;
+- ce sont des `<a href>` ordinaires, avec le même texte que les cartes visibles ;
+- ils sont repliés derrière un bouton visible qui dit combien de véhicules il montre, et le clic les
+  affiche tels quels : c'est le cas « accordion » que Google cite comme conforme. Rien n'est caché
+  par une couleur, une taille nulle ou une position hors écran.
+
+**Clavier et lecteur d'écran** (`scripts/liens-du13.cjs`, 2 gammes × 2 largeurs) :
+
+| Contrôle | pg 7 | pg 402 |
+|---|---|---|
+| Tab depuis le haut de page : cartes visibles atteintes | 12 | 12 |
+| Tab : cartes repliées atteintes avant le clic | 0 | 0 |
+| Élément atteint juste après la 12e carte | le bouton | le bouton |
+| Nombre d'appuis jusqu'au bouton, avant et après la correction (390 px) | 37 et 37 | 34 et 34 |
+| Entrée sur le bouton | 19 cartes affichées, focus reste sur le bouton | 17, idem |
+| Maj+Tab après Entrée | dernière carte révélée (KIA PICANTO II) | dernière carte révélée (HONDA CIVIC IX) |
+| Espace sur le bouton | les 7 cartes se replient | les 5 se replient |
+| Liens dans l'arbre d'accessibilité, replié puis déplié | 12 puis 19 | 12 puis 17 |
+
+- Les cartes repliées sont en `display: none`. Elles ne sont donc ni focalisables ni lues par un
+  lecteur d'écran tant qu'elles sont masquées, sans `tabindex` ni `aria-hidden` à gérer.
+- L'ordre du focus ne change pas : même nombre d'appuis jusqu'au bouton avant et après.
+- **Réserve, non bloquante, antérieure à la correction.** Le bouton n'a ni `aria-expanded`, ni
+  `aria-controls`, ni `type="button"`, avant comme après. Un lecteur d'écran lit bien le nouveau texte
+  (« Voir les 7 autres compatibilités » puis « Masquer les véhicules »), mais n'annonce pas « réduit »
+  ou « développé ». Ajouter `aria-expanded={showAllVehicles}` et `type="button"` serait une petite
+  amélioration ; elle ne change pas les liens et ne bloque pas ce verdict.
+
+### 21.3 Apparence, images, poids et CWV
+
+**Apparence.** Captures de la section avant et après la correction, sur le même jeu de données, les
+images des cartes masquées pour écarter leur chargement variable (`MASK=1`), comparées au pixel
+(`scripts/cmp-png-du13.cjs`) :
+
+| Page | 390 px avant clic | 390 px après clic | 1440 px avant clic | 1440 px après clic |
+|---|---|---|---|---|
+| pg 7 | 0 pixel différent | 0 | 0 | 0 |
+| pg 402 | 0 | 0 | 0 | 0 |
+
+Hauteurs identiques des deux côtés (par exemple pg 7 à 390 px : 2950 px replié, 4466 px déplié).
+Sans le masque, les seuls écarts viennent du moment où les images arrivent, et changent d'un passage
+à l'autre sur le même build.
+
+**Images des cartes repliées.** Les images des cartes sont en `loading="lazy"` et la carte repliée
+est en `display: none` : le navigateur ne les demande pas (images comptées par le navigateur).
+
+| Page | Images propres aux cartes repliées | Demandées avant le clic | Demandées après le clic |
+|---|---|---|---|
+| pg 7 | 7 | 0 | 7 |
+| pg 402 | 4 (une 5e image sert aussi à une carte visible, donc déjà chargée) | 0 | 4 |
+
+**Poids du HTML.**
+
+| Page | Brut | gzip -9 | Brotli servi |
+|---|---|---|---|
+| pg 7 | 221 064 → 239 643 octets (+18 579) | 39 701 → 40 366 (+665) | 36 439 → 36 998 (+559) |
+| pg 402 | 228 744 → 241 970 (+13 226) | 38 480 → 38 760 (+280) | 35 908 → 36 177 (+269) |
+
+Le transfert réel augmente de moins de 0,6 Ko par page. Le DOM gagne 140 nœuds sur pg 7
+(1288 → 1428) et 100 sur pg 402 (1338 → 1438).
+
+**CWV** (`scripts/cwv-du13.cjs`, 3 chargements par cas, sans cache) :
+
+- LCP : mêmes valeurs des deux côtés. Sur pg 7, l'élément le plus grand est l'image principale,
+  chargée tantôt vers 6,5 s, tantôt vers 0,3 s, avant comme après : c'est le chargement de l'image
+  en local, pas la correction. Sur pg 402, le H1 ou un paragraphe, entre 0,2 et 0,3 s.
+- CLS : 0 à 390 px ; à 1440 px, 0,0223 avant et entre 0,0001 et 0,0223 après. Aucun décalage
+  ne vient des cartes repliées, qui n'occupent aucune place.
+
+### 21.4 Cibles : vendables, indexables, sitemap
+
+Requête en lecture seule (`scripts/c13-cibles.sql`), une ligne par cible, avec la définition unique
+de « vendable » de `backend/src/database/services/vendable.ts` : `pri_dispo` dans '1', '2', '3', ligne
+non gelée, pièce affichée, prix TTC > 0.
+
+- **Vendables** : les 36 cibles ont des pièces vendables. pg 7 : de 10 à 24 pièces vendables par
+  cible (7 repliées : de 10 à 24). pg 402 : de 34 à 87 (5 repliées : de 36 à 65). DS annonçait 10
+  à 86 ; mon maximum est 87 (cible 15903), un écart d'une pièce qui vient sans doute de la façon de
+  compter (je compte les pièces qui ont au moins une ligne de prix vendable), sans effet sur le verdict.
+- **Indexables** : `frontend/app/utils/seo/r2-indexability.ts` renvoie `index, follow` si la page
+  compte au moins 2 produits (`count >= 2`, règle historique ; le drapeau
+  `SEO_R2_SELLABLE_NOINDEX_ENABLED` est désactivé). Avec au moins 10 pièces vendables par cible, la
+  règle historique et la règle par produits vendables donnent toutes deux `index, follow`. Véhicules
+  affichés (`type_display = 1`) pour les 36 ; gammes 7 et 402 affichées.
+- **Sitemap** (`__sitemap_p_link`) : 34 cibles sur 36 y sont, chacune sur une ligne.
+  Absentes : **77310** (RENAULT MEGANE III 1.5 dCi, 2013–2015) et **65057** (CITROËN BERLINGO II
+  1.6 HDi-BlueHDi, depuis 2008), les deux premières cartes de pg 402, donc visibles sans clic.
+
+**Avis sur les deux absentes** (`scripts/c13-sitemap.sql`, `scripts/c13-modeles.sql`) :
+
+- ce n'est pas un trou propre à la gamme : ces deux véhicules n'ont **aucune** ligne dans la table du
+  sitemap, toutes gammes confondues, alors qu'ils sont liés à 311 et 349 gammes ;
+- leurs modèles y sont bien (872 lignes pour MEGANE III, 702 pour BERLINGO II), et d'autres véhicules
+  plus récents y figurent (identifiant maximal 134362) : ce n'est donc pas une coupure par numéro ;
+- l'absence du sitemap n'expose à aucune pénalité ; Google trouve ces pages par les liens internes,
+  dont ces deux cartes visibles. Mais la table du sitemap ne suit pas tous les véhicules affichés. À
+  signaler au chantier du sitemap ; je n'ai rien corrigé et je n'ai pas cherché combien d'autres
+  véhicules sont dans ce cas.
+
+**Croisement avec les requêtes les plus tapées (décision 157)** (`scripts/c13-requetes.sql`, table
+`__seo_keywords`, requêtes rattachées à un véhicule pour les gammes 7 et 402) :
+
+- la correction ne choisit aucune cible : elle rend les liens d'une liste qui existait déjà, dans le
+  même ordre. Elle ne peut donc ni gagner ni perdre une requête par rapport à l'affichage après clic
+  d'avant ;
+- sur les 36 cartes, 4 seulement correspondent à un véhicule qui a une requête rattachée, toutes
+  parmi les 12 visibles (pg 7 : FIESTA V 1.4 TDCi, 50 recherches ; pg 402 : CLIO II 1.5 dCi, 307
+  1.6 HDi et 307 2.0 HDi, de 50 à 250). Aucune des 12 cartes repliées n'a de requête rattachée : les
+  replier ne cache aucun véhicule demandé ;
+- à l'inverse, les véhicules les plus demandés de la gamme n'ont pas de carte (pg 7 : CLIO III
+  1.2 16V, 550 ; TWINGO I 1.2, 500 ; 207 1.6 HDi 16V, 300. pg 402 : CLIO IV 1.5 dCi, 2300 ; CLIO III
+  1.5 dCi, 1750 ; MEGANE III 1.5 dCi, 1450). Noms relus dans `auto_type` (`scripts/c13-noms.sql`). Le choix des véhicules affichés relève des règles de maillage, hors de ce complément : je le
+  signale sans le juger ;
+- limites : seules les requêtes rattachées à un véhicule sont comptées (154 véhicules pour pg 7, 661
+  pour pg 402) ; le rattachement de la gamme 402 mêle des requêtes « disque de frein » à « plaquette
+  de frein ». Ces chiffres mesurent la demande brute, ils ne définissent aucun terme.
+
+### 21.5 Régressions
+
+| Contrôle | Résultat | Preuve |
+|---|---|---|
+| Diff hors documentation | 2 fichiers : le composant (+7 −6 lignes de code) et le nouveau test ; `backend/` et `packages/` inchangés | `git diff --stat da7f091b7 6e765498d` |
+| Nouveau test sur le composant de `da7f091b7` | 2 tests sur 3 échouent (19 liens attendus, révélation au clic) : le test détecte bien le défaut | `mesures/c13-vitest-test-sur-ancien-composant.txt` |
+| vitest à la tête | 14 fichiers, 247 tests passent : les 13 du n° 12 et le nouveau (3) | `mesures/c13-vitest.txt` |
+| Lint des deux fichiers | Code de sortie 0, aucun avertissement | `mesures/c13-lint.txt` |
+| Typecheck frontend | 0 erreur | `mesures/c13-typecheck.txt` |
+| axe, 2 gammes × 2 largeurs | Mêmes violations qu'au n° 12, aucune nouvelle (pg 7 à 390 px : `color-contrast` 9, `region` 2) | `mesures/c13-axe-*` |
+| CI du commit `6e765498d` | 31 réussis, 11 ignorés, 4 en échec, 1 annulé : mêmes contrôles et mêmes conclusions qu'à `da7f091b7` | `mesures/c13-ci.txt` |
+
+Sur la CI : Deterministic gates, ESLint, TypeScript et Frontend Tests passent. Restent en échec, comme
+au n° 12 : Circuit de fusion (brouillon), DoD self-evaluation (un en échec, un annulé), Registry
+freshness (avertissement seul) et CodeQL. **CodeQL a 4 alertes de plus** qu'au n° 12, toutes dans
+`docs/audit/maquette-r1-filtre-a-huile-20261119/outils/ssr-c12.cjs`, l'outil de mesure de DS (analyse
+du HTML par expressions régulières, écriture dans un fichier de données reçues du réseau). Ce script
+n'est pas servi et ne tourne pas sur le site ; aucune alerte ne touche le composant ni le test. Les
+trois alertes anciennes (`pieces.$slug.tsx:723` et `:727`, `outils/proxy-c5.mjs:41`) restent.
+**Aucun échec nouveau dans le code servi.**
+
+### 21.6 Ce que je n'ai pas vérifié, et hors périmètre
+
+- L'exploration réelle par Googlebot (outil d'inspection d'URL de la Search Console) : je n'y ai pas
+  accès ; la conformité repose sur le HTML servi et sur les pages Google citées.
+- Firefox, Safari, d'autres largeurs que 390 et 1440 px ; un vrai lecteur d'écran (NVDA, VoiceOver) :
+  j'ai mesuré l'arbre d'accessibilité de Chrome, pas une synthèse vocale.
+- Les autres pages R1 que pg 7 et pg 402 : le composant est le même, mais je n'ai mesuré que ces deux.
+- Combien d'autres véhicules affichés manquent dans `__sitemap_p_link`.
+- Le Redis DEV partagé (lecture refusée au n° 11, non contournée).
+- Hors périmètre, sans jugement : nouvelles règles de maillage, sitemap, titre et description,
+  V-Level. Aucune correction n'est faite, ni dans #2210 ni ailleurs.
+
+**Preuves** : `scripts/cartes-ssr-du13.py`, `scripts/liens-du13.cjs`, `scripts/cmp-png-du13.cjs`,
+`scripts/zones-png-du13.cjs`, `scripts/cwv-du13.cjs`, `scripts/c13-resume.py`,
+`scripts/c13-cibles.sql`, `scripts/c13-sitemap.sql`, `scripts/c13-modeles.sql`,
+`scripts/c13-requetes.sql`, `scripts/c13-noms.sql` ; `mesures/c13-*` ;
+`captures/c13-apres-masque-*.png`.
+
+LIVRABLE COMPLÉMENT N° 13 DU

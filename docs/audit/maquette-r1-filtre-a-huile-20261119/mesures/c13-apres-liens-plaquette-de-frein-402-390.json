@@ -1,0 +1,207 @@
+{
+  "base": "http://127.0.0.1:3029",
+  "R1": "/pieces/plaquette-de-frein-402.html",
+  "W": 390,
+  "H": 844,
+  "js": true,
+  "http": 200,
+  "avant": {
+    "cartes": 17,
+    "visibles": 12,
+    "masquees": 5,
+    "classeHidden": 5,
+    "displayMasquees": [
+      "none"
+    ],
+    "hrefs": [
+      "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html",
+      "/pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html",
+      "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html",
+      "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html",
+      "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html",
+      "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html",
+      "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html",
+      "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html",
+      "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html",
+      "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html",
+      "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html",
+      "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html",
+      "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html",
+      "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html",
+      "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html",
+      "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html",
+      "/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html"
+    ],
+    "imgMasquees": [
+      "/img/uploads/constructeurs-automobiles/marques-modeles/volkswagen/golf-4.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/bmw/serie-1-e81.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/bmw/serie-1-e81.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/bmw/serie-1-e81.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/honda/civic-9.webp"
+    ],
+    "imgVisibles": [
+      "/img/uploads/constructeurs-automobiles/marques-modeles/renault/megane-3.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/citroen/berlingo-2.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/renault/clio-2.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/renault/clio-2.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/peugeot/307.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/peugeot/307.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/peugeot/307.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/audi/a4-3.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/audi/a4-3.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/audi/a4-3.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/volkswagen/golf-4.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/volkswagen/golf-4.webp"
+    ],
+    "bouton": {
+      "texte": "Voir les 5 autres compatibilités",
+      "type": null,
+      "ariaExpanded": null,
+      "ariaControls": null
+    }
+  },
+  "imagesMasqueesAvantClic": {
+    "uniquesAuxMasquees": 4,
+    "demandees": 0,
+    "partageesAvecVisibles": 1
+  },
+  "requetesImagesAvantClic": 27,
+  "cls": 0,
+  "lcp": {
+    "t": 252,
+    "size": 25152,
+    "el": "H1.text-[28px] lg:text-[42px] font-extrabold leading-"
+  },
+  "tab": {
+    "appuis": 34,
+    "focusCartesVisibles": 12,
+    "focusCartesMasquees": 0,
+    "boutonAtteint": true,
+    "ordreAutourBouton": {
+      "avantBouton": "carte VOLKSWAGEN GOLF IV",
+      "appuisJusquAuBouton": 34
+    }
+  },
+  "boutonFocalise": "BUTTON Voir les 5 autres compatibilités",
+  "apresEntree": {
+    "cartes": 17,
+    "visibles": 17,
+    "masquees": 0,
+    "classeHidden": 0,
+    "displayMasquees": [],
+    "hrefs": [
+      "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html",
+      "/pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html",
+      "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html",
+      "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html",
+      "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html",
+      "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html",
+      "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html",
+      "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html",
+      "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html",
+      "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html",
+      "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html",
+      "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html",
+      "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html",
+      "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html",
+      "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html",
+      "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html",
+      "/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html"
+    ],
+    "imgMasquees": [],
+    "imgVisibles": [
+      "/img/uploads/constructeurs-automobiles/marques-modeles/renault/megane-3.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/citroen/berlingo-2.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/renault.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/renault.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/peugeot.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/peugeot.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/peugeot.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/audi.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/audi.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/audi.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/volkswagen.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/volkswagen.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/volkswagen.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/bmw.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/bmw.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/bmw.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/honda.webp"
+    ],
+    "bouton": {
+      "texte": "Masquer les véhicules",
+      "type": null,
+      "ariaExpanded": null,
+      "ariaControls": null
+    }
+  },
+  "focusApresEntree": "BUTTON Masquer les véhicules",
+  "shiftTabApresEntree": "carte HONDA CIVIC IX | href=/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html",
+  "ariaSection": {
+    "apres": "- img\n- paragraph: Trouvez les freinages adaptées à votre véhicule\n- img\n- text: 1801 motorisations\n- img\n- textbox \"Rechercher marque ou modèle…\"\n- 'link \"RENAULT MEGANE III RENAULT MEGANE III 1.5 dCi 95 ch Fabrication : 2013–2015 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html\n  - img \"RENAULT MEGANE III\"\n  - heading \"RENAULT MEGANE III\" [level=3]\n  - text: 1.5 dCi 95 ch\n  - paragraph: \"Fabrication : 2013–2015\"\n  - text: Voir les pièces\n  - img\n- 'link \"CITROËN BERLINGO II - BERLINGO MULTISPACE (B9) CITROËN BERLINGO II - BERLINGO MULTISPACE (B9) 1.6 HDi-BlueHDi 75 ch Début de fabrication : 2008 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html\n  - img \"CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)\"\n  - heading \"CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)\" [level=3]\n  - text: 1.6 HDi-BlueHDi 75 ch\n  - paragraph: \"Début de fabrication : 2008\"\n  - text: Voir les pièces\n  - img\n- 'link \"RENAULT CLIO II RENAULT CLIO II 1.5 dCi 65 ch Fabrication : 2001–2009 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html\n  - img \"RENAULT CLIO II\"\n  - heading \"RENAULT CLIO II\" [level=3]\n  - text: 1.5 dCi 65 ch\n  - paragraph: \"Fabrication : 2001–2009\"\n  - text: Voir les pièces\n  - img\n- 'link \"RENAULT CLIO II RENAULT CLIO II 1.5 dCi CAMPUS 84 ch Fabrication : 2007–2009 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html\n  - img \"RENAULT CLIO II\"\n  - heading \"RENAULT CLIO II\" [level=3]\n  - text: 1.5 dCi CAMPUS 84 ch\n  - paragraph: \"Fabrication : 2007–2009\"\n  - text: Voir les pièces\n  - img\n- 'link \"PEUGEOT 307 PEUGEOT 307 1.6 HDI 90 ch Fabrication : 2005–2009 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html\n  - img \"PEUGEOT 307\"\n  - heading \"PEUGEOT 307\" [level=3]\n  - text: 1.6 HDI 90 ch\n  - paragraph: \"Fabrication : 2005–2009\"\n  - text: Voir les pièces\n  - img\n- 'link \"PEUGEOT 307 PEUGEOT 307 1.6 HDI 109 ch Fabrication : 2004–2009 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html\n  - img \"PEUGEOT 307\"\n  - heading \"PEUGEOT 307\" [level=3]\n  - text: 1.6 HDI 109 ch\n  - paragraph: \"Fabrication : 2004–2009\"\n  - text: Voir les pièces\n  - img\n- 'link \"PEUGEOT 307 PEUGEOT 307 2.0 HDI 90 ch Fabrication : 2000–2007 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html\n  - img \"PEUGEOT 307\"\n  - heading \"PEUGEOT 307\" [level=3]\n  - text: 2.0 HDI 90 ch\n  - paragraph: \"Fabrication : 2000–2007\"\n  - text: Voir les pièces\n  - img\n- 'link \"AUDI A4 III B7 AUDI A4 III B7 1.9 TDI 116 ch Fabrication : 2004–2008 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html\n  - img \"AUDI A4 III B7\"\n  - heading \"AUDI A4 III B7\" [level=3]\n  - text: 1.9 TDI 116 ch\n  - paragraph: \"Fabrication : 2004–2008\"\n  - text: Voir les pièces\n  - img\n- 'link \"AUDI A4 III B7 AUDI A4 III B7 2.0 TDI 121 ch Fabrication : 2005–2006 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html\n  - img \"AUDI A4 III B7\"\n  - heading \"AUDI A4 III B7\" [level=3]\n  - text: 2.0 TDI 121 ch\n  - paragraph: \"Fabrication : 2005–2006\"\n  - text: Voir les pièces\n  - img\n- 'link \"AUDI A4 III B7 AUDI A4 III B7 2.0 TDI 126 ch Fabrication : 2005–2006 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html\n  - img \"AUDI A4 III B7\"\n  - heading \"AUDI A4 III B7\" [level=3]\n  - text: 2.0 TDI 126 ch\n  - paragraph: \"Fabrication : 2005–2006\"\n  - text: Voir les pièces\n  - img\n- 'link \"VOLKSWAGEN GOLF IV VOLKSWAGEN GOLF IV 1.9 TDI 90 ch Fabrication : 1997–2004 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html\n  - img \"VOLKSWAGEN GOLF IV\"\n  - heading \"VOLKSWAGEN GOLF IV\" [level=3]\n  - text: 1.9 TDI 90 ch\n  - paragraph: \"Fabrication : 1997–2004\"\n  - text: Voir les pièces\n  - img\n- 'link \"VOLKSWAGEN GOLF IV VOLKSWAGEN GOLF IV 1.9 TDI 110 ch Fabrication : 1997–2004 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html\n  - img \"VOLKSWAGEN GOLF IV\"\n  - heading \"VOLKSWAGEN GOLF IV\" [level=3]\n  - text: 1.9 TDI 110 ch\n  - paragraph: \"Fabrication : 1997–2004\"\n  - text: Voir les pièces\n  - img\n- 'link \"VOLKSWAGEN GOLF IV VOLKSWAGEN GOLF IV 1.9 TDI 115 ch Fabrication : 1998–2001 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html\n  - img \"VOLKSWAGEN GOLF IV\"\n  - heading \"VOLKSWAGEN GOLF IV\" [level=3]\n  - text: 1.9 TDI 115 ch\n  - paragraph: \"Fabrication : 1998–2001\"\n  - text: Voir les pièces\n  - img\n- 'link \"BMW Série 1 (E81) BMW Série 1 (E81) 116 d 90 ch Fabrication : 2011 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html\n  - img \"BMW Série 1 (E81)\"\n  - heading \"BMW Série 1 (E81)\" [level=3]\n  - text: 116 d 90 ch\n  - paragraph: \"Fabrication : 2011\"\n  - text: Voir les pièces\n  - img\n- 'link \"BMW Série 1 (E81) BMW Série 1 (E81) 116 d 116 ch Fabrication : 2008–2011 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html\n  - img \"BMW Série 1 (E81)\"\n  - heading \"BMW Série 1 (E81)\" [level=3]\n  - text: 116 d 116 ch\n  - paragraph: \"Fabrication : 2008–2011\"\n  - text: Voir les pièces\n  - img\n- 'link \"BMW Série 1 (E81) BMW Série 1 (E81) 118 d 136 ch Fabrication : 2006–2011 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html\n  - img \"BMW Série 1 (E81)\"\n  - heading \"BMW Série 1 (E81)\" [level=3]\n  - text: 118 d 136 ch\n  - paragraph: \"Fabrication : 2006–2011\"\n  - text: Voir les pièces\n  - img\n- 'link \"HONDA CIVIC IX HONDA CIVIC IX 1.6 DTEC 120 ch Début de fabrication : 2013 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html\n  - img \"HONDA CIVIC IX\"\n  - heading \"HONDA CIVIC IX\" [level=3]\n  - text: 1.6 DTEC 120 ch\n  - paragraph: \"Début de fabrication : 2013\"\n  - text: Voir les pièces\n  - img\n- button \"Masquer les véhicules\":\n  - img\n  - text: Masquer les véhicules",
+    "avant": "- img\n- paragraph: Trouvez les freinages adaptées à votre véhicule\n- img\n- text: 1801 motorisations\n- img\n- textbox \"Rechercher marque ou modèle…\"\n- 'link \"RENAULT MEGANE III RENAULT MEGANE III 1.5 dCi 95 ch Fabrication : 2013–2015 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html\n  - img \"RENAULT MEGANE III\"\n  - heading \"RENAULT MEGANE III\" [level=3]\n  - text: 1.5 dCi 95 ch\n  - paragraph: \"Fabrication : 2013–2015\"\n  - text: Voir les pièces\n  - img\n- 'link \"CITROËN BERLINGO II - BERLINGO MULTISPACE (B9) CITROËN BERLINGO II - BERLINGO MULTISPACE (B9) 1.6 HDi-BlueHDi 75 ch Début de fabrication : 2008 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html\n  - img \"CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)\"\n  - heading \"CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)\" [level=3]\n  - text: 1.6 HDi-BlueHDi 75 ch\n  - paragraph: \"Début de fabrication : 2008\"\n  - text: Voir les pièces\n  - img\n- 'link \"RENAULT CLIO II RENAULT CLIO II 1.5 dCi 65 ch Fabrication : 2001–2009 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html\n  - img \"RENAULT CLIO II\"\n  - heading \"RENAULT CLIO II\" [level=3]\n  - text: 1.5 dCi 65 ch\n  - paragraph: \"Fabrication : 2001–2009\"\n  - text: Voir les pièces\n  - img\n- 'link \"RENAULT CLIO II RENAULT CLIO II 1.5 dCi CAMPUS 84 ch Fabrication : 2007–2009 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html\n  - img \"RENAULT CLIO II\"\n  - heading \"RENAULT CLIO II\" [level=3]\n  - text: 1.5 dCi CAMPUS 84 ch\n  - paragraph: \"Fabrication : 2007–2009\"\n  - text: Voir les pièces\n  - img\n- 'link \"PEUGEOT 307 PEUGEOT 307 1.6 HDI 90 ch Fabrication : 2005–2009 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html\n  - img \"PEUGEOT 307\"\n  - heading \"PEUGEOT 307\" [level=3]\n  - text: 1.6 HDI 90 ch\n  - paragraph: \"Fabrication : 2005–2009\"\n  - text: Voir les pièces\n  - img\n- 'link \"PEUGEOT 307 PEUGEOT 307 1.6 HDI 109 ch Fabrication : 2004–2009 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html\n  - img \"PEUGEOT 307\"\n  - heading \"PEUGEOT 307\" [level=3]\n  - text: 1.6 HDI 109 ch\n  - paragraph: \"Fabrication : 2004–2009\"\n  - text: Voir les pièces\n  - img\n- 'link \"PEUGEOT 307 PEUGEOT 307 2.0 HDI 90 ch Fabrication : 2000–2007 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html\n  - img \"PEUGEOT 307\"\n  - heading \"PEUGEOT 307\" [level=3]\n  - text: 2.0 HDI 90 ch\n  - paragraph: \"Fabrication : 2000–2007\"\n  - text: Voir les pièces\n  - img\n- 'link \"AUDI A4 III B7 AUDI A4 III B7 1.9 TDI 116 ch Fabrication : 2004–2008 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html\n  - img \"AUDI A4 III B7\"\n  - heading \"AUDI A4 III B7\" [level=3]\n  - text: 1.9 TDI 116 ch\n  - paragraph: \"Fabrication : 2004–2008\"\n  - text: Voir les pièces\n  - img\n- 'link \"AUDI A4 III B7 AUDI A4 III B7 2.0 TDI 121 ch Fabrication : 2005–2006 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html\n  - img \"AUDI A4 III B7\"\n  - heading \"AUDI A4 III B7\" [level=3]\n  - text: 2.0 TDI 121 ch\n  - paragraph: \"Fabrication : 2005–2006\"\n  - text: Voir les pièces\n  - img\n- 'link \"AUDI A4 III B7 AUDI A4 III B7 2.0 TDI 126 ch Fabrication : 2005–2006 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html\n  - img \"AUDI A4 III B7\"\n  - heading \"AUDI A4 III B7\" [level=3]\n  - text: 2.0 TDI 126 ch\n  - paragraph: \"Fabrication : 2005–2006\"\n  - text: Voir les pièces\n  - img\n- 'link \"VOLKSWAGEN GOLF IV VOLKSWAGEN GOLF IV 1.9 TDI 90 ch Fabrication : 1997–2004 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html\n  - img \"VOLKSWAGEN GOLF IV\"\n  - heading \"VOLKSWAGEN GOLF IV\" [level=3]\n  - text: 1.9 TDI 90 ch\n  - paragraph: \"Fabrication : 1997–2004\"\n  - text: Voir les pièces\n  - img\n- 'link \"VOLKSWAGEN GOLF IV VOLKSWAGEN GOLF IV 1.9 TDI 110 ch Fabrication : 1997–2004 Voir les pièces\"':\n  - /url: /pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html\n  - img \"VOLKSWAGEN GOLF IV\"\n  - heading \"VOLKSWAGEN GOLF IV\" [level=3]\n  - text: 1.9 TDI 110 ch\n  - paragraph: \"Fabrication : 1997–2004\"\n  - text: Voir les pièces\n  - img\n- button \"Voir les 5 autres compatibilités\":\n  - img\n  - text: Voir les 5 autres compatibilités",
+    "avantLiens": 12,
+    "avantBouton": "- button \"Voir les 5 autres compatibilités\":",
+    "apresLiens": 17,
+    "apresBouton": "- button \"Masquer les véhicules\":"
+  },
+  "imagesMasqueesApresClic": {
+    "demandees": 4,
+    "sur": 4
+  },
+  "apresEspace": {
+    "cartes": 17,
+    "visibles": 12,
+    "masquees": 5,
+    "classeHidden": 5,
+    "displayMasquees": [
+      "none"
+    ],
+    "hrefs": [
+      "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html",
+      "/pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html",
+      "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html",
+      "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html",
+      "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html",
+      "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html",
+      "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html",
+      "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html",
+      "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html",
+      "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html",
+      "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html",
+      "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html",
+      "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html",
+      "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html",
+      "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html",
+      "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html",
+      "/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html"
+    ],
+    "imgMasquees": [
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/volkswagen.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/bmw.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/bmw.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/bmw.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/honda.webp"
+    ],
+    "imgVisibles": [
+      "/img/uploads/constructeurs-automobiles/marques-modeles/renault/megane-3.webp",
+      "/img/uploads/constructeurs-automobiles/marques-modeles/citroen/berlingo-2.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/renault.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/renault.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/peugeot.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/peugeot.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/peugeot.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/audi.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/audi.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/audi.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/volkswagen.webp",
+      "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/constructeurs-automobiles/marques-logos/volkswagen.webp"
+    ],
+    "bouton": {
+      "texte": "Voir les 5 autres compatibilités",
+      "type": null,
+      "ariaExpanded": null,
+      "ariaControls": null
+    }
+  }
+}
