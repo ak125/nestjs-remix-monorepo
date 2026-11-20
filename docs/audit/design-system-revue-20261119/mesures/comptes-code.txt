@@ -1,0 +1,25 @@
+HEAD 7368d72d051cf2005ed9f07a6e5e1acb718f60fe  2026-11-19T22:04:30Z
+text-gray-400 : 342 occurrences / 162 fichiers ; tout préfixe gray-400 : 382
+text-slate-400 : 95
+focus:ring-blue-500 : 175 / 52 fichiers
+font-extrabold : 25 ; font-black : 13
+text-cta : 93 ; text-orange-500 : 23 ; text-orange-600 : 93
+variant= yellow 1 green 11 orange 10 destructive 68
+behavior: "smooth" : 23 / 20 fichiers
+--- @font-face (plages de graisse déclarées) dans frontend/app/global.css
+24:  font-family: 'Outfit';
+26:  font-weight: 400 800;
+32:  font-family: 'Outfit';
+34:  font-weight: 400 800;
+42:  font-family: 'DM Sans';
+44:  font-weight: 400 700;
+50:  font-family: 'DM Sans';
+52:  font-weight: 400 700;
+60:  font-family: 'Roboto Mono';
+62:  font-weight: 400;
+68:  font-family: 'Roboto Mono';
+70:  font-weight: 400;
+--- scroll-behavior en CSS (frontend/app, design-tokens/src, tailwind config)
+--- activation d'un thème sombre (classList 'dark', setTheme, data-theme) hors utilitaires dark:
+--- <img> sans width ET height ni aspect- dans la balise (heuristique, .tsx seuls, spread {...} exclu)
+balises <img> : 108 ; sans dimensions : 55 ; fichiers : 37

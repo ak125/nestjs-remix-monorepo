@@ -1,0 +1,80 @@
+{
+ "variante": "a3",
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "1440x900",
+ "journal": [
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:46:45.091Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:46:49.848Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:47:21.932Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:47:25.691Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:47:29.292Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:47:32.552Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:47:33.693Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:47:36.954Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  }
+ ]
+}

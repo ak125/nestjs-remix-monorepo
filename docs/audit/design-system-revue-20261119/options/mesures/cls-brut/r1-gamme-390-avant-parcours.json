@@ -1,0 +1,327 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "390x844",
+ "variante": "avant",
+ "methode": "parcours",
+ "correctif": null,
+ "debut": "2026-11-20T21:25:50.898Z",
+ "fin": "2026-11-20T21:26:20.668Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {
+  "centrage": 90
+ },
+ "cls": {
+  "total": {
+   "somme": 1,
+   "officiel": 1,
+   "n": 1,
+   "nSaisie": 1
+  },
+  "horsInjection": {
+   "somme": 1,
+   "officiel": 1,
+   "n": 1,
+   "nSaisie": 1
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 1
+  },
+  "defilement": {
+   "somme": 1,
+   "officiel": 1,
+   "n": 1,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 1
+   },
+   "tabulation": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "centrage": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-forcee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-retiree": {
+    "somme": 1,
+    "officiel": 1,
+    "n": 1,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 409.3,
+   "v": 0.01747,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "interactive",
+   "feuilles": 3,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.flex.flex-col > div.flex-1.flex > div.relative > div.relative.border",
+     "texte": "Sélectionnez votre véhicule Véhicule Type Mine Marque Sélect",
+     "trace": [
+      "div.relative.rounded-[28px].border.border-white/60.bg-white/95.p-2.5",
+      "div.relative.lg:hidden",
+      "div.flex-1.flex.flex-col",
+      "div.flex.flex-col.lg:flex-row.lg:items-stretch.lg:gap-8",
+      "div.max-w-7xl.mx-auto.px-page.pb-5.lg:pb-8"
+     ],
+     "position": "relative",
+     "avant": [
+      0,
+      527,
+      390,
+      317
+     ],
+     "apres": [
+      0,
+      492,
+      390,
+      352
+     ]
+    },
+    {
+     "sel": "div.space-y-3 > div.grid.grid-cols-2 > label.block > select.w-full.h-12",
+     "texte": "Sélectionner",
+     "trace": [
+      "select.w-full.h-12.rounded-2xl.border.px-3.text-[15px]",
+      "label.block",
+      "div.grid.grid-cols-2.gap-2.5",
+      "div.space-y-3",
+      "div.rounded-[24px].border.border-slate-200.bg-white.px-4.pb-4"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      37,
+      811,
+      156,
+      33
+     ]
+    },
+    {
+     "sel": "div.space-y-3 > div.grid.grid-cols-2 > label.block > select.w-full.h-12",
+     "texte": "Sélectionner",
+     "trace": [
+      "select.w-full.h-12.rounded-2xl.border.px-3.text-[15px]",
+      "label.block",
+      "div.grid.grid-cols-2.gap-2.5",
+      "div.space-y-3",
+      "div.rounded-[24px].border.border-slate-200.bg-white.px-4.pb-4"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      197,
+      811,
+      156,
+      33
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  },
+  {
+   "t": 27784.2,
+   "v": 1,
+   "input": false,
+   "phase": "cv-retiree",
+   "y": 4432,
+   "yRappel": 4432,
+   "etat": "complete",
+   "feuilles": 3,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "section#qualite-prix > div.mx-auto",
+     "texte": "",
+     "trace": [
+      "div.max-w-[1280px].mx-auto",
+      "section#qualite-prix.py-10.px-4.sm:px-6.bg-slate-50.cv-auto",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      0,
+      0,
+      390,
+      844
+     ]
+    }
+   ],
+   "poussoirs": [
+    {
+     "t": 27744,
+     "type": "retrait",
+     "tag": "style",
+     "cls": "",
+     "sel": "html.h-full > head",
+     "texte": "Filtre à huile | Trouvez la référence compatible | AutoMeca…",
+     "trace": [
+      "head",
+      "html.h-full"
+     ],
+     "position": "static"
+    }
+   ],
+   "poussoirsTotal": 1
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "tabulation",
+   "t": 5167.1,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 12437.7,
+   "y": 70
+  },
+  {
+   "p": "centrage",
+   "t": 16253.3,
+   "y": 0
+  },
+  {
+   "p": "cv-forcee",
+   "t": 27370.5,
+   "y": 4432
+  },
+  {
+   "p": "cv-retiree",
+   "t": 27741.6,
+   "y": 4432
+  },
+  {
+   "p": "fin",
+   "t": 28046.8,
+   "y": 4432
+  }
+ ],
+ "scrollDebut": [
+  [
+   6868.5,
+   2
+  ],
+  [
+   6885,
+   11
+  ],
+  [
+   6904.1,
+   30
+  ],
+  [
+   6929.7,
+   68
+  ],
+  [
+   6941.2,
+   142
+  ],
+  [
+   6959.1,
+   238
+  ],
+  [
+   6968.9,
+   311
+  ],
+  [
+   6985.7,
+   361
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 409,
+  "load": 657
+ },
+ "fonts": [
+  {
+   "t": 421.1,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  },
+  {
+   "t": 1251.5,
+   "polices": [
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 272,
+ "scrollHeight": 16322,
+ "erreurObs": null,
+ "requetesAbandonnees": 4,
+ "nonGet": 4
+}

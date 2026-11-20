@@ -1,0 +1,413 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "1440x900",
+ "variante": "avant",
+ "methode": "sauts",
+ "correctif": null,
+ "debut": "2026-11-20T21:34:19.179Z",
+ "fin": "2026-11-20T21:34:28.584Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {},
+ "cls": {
+  "total": {
+   "somme": 0.0061,
+   "officiel": 0.0061,
+   "n": 3,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0.0061,
+   "officiel": 0.0061,
+   "n": 3,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0.0061,
+   "officiel": 0.0061,
+   "n": 3,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0.0061,
+    "officiel": 0.0061,
+    "n": 3,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 5704.9,
+   "v": 0.00013,
+   "input": false,
+   "phase": "sauts",
+   "y": 1392,
+   "yRappel": 1391,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      179,
+      16,
+      657,
+      40
+     ],
+     "apres": [
+      174,
+      15,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      616,
+      6,
+      240,
+      80
+     ],
+     "apres": [
+      611,
+      5,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      860,
+      12,
+      221,
+      48
+     ],
+     "apres": [
+      855,
+      11,
+      226,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 6657,
+   "v": 0.00211,
+   "input": false,
+   "phase": "sauts",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      101,
+      1440,
+      799
+     ],
+     "apres": [
+      0,
+      105,
+      1440,
+      795
+     ]
+    },
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > div.bg-gradient-to-b.from-navy",
+     "texte": "Livraison gratuite dès 150€ · Retours 30j · 01 48 47 96 27",
+     "trace": [
+      "div.bg-gradient-to-b.from-navy.to-navy-light.border-b.border-white/[0.06]",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      68,
+      1440,
+      33
+     ],
+     "apres": [
+      0,
+      72,
+      1440,
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "t": 6697.3,
+   "v": 0.00389,
+   "input": false,
+   "phase": "sauts",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      105,
+      1440,
+      795
+     ],
+     "apres": [
+      0,
+      108,
+      1440,
+      792
+     ]
+    },
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > div.bg-gradient-to-b.from-navy",
+     "texte": "Livraison gratuite dès 150€ · Retours 30j · 01 48 47 96 27",
+     "trace": [
+      "div.bg-gradient-to-b.from-navy.to-navy-light.border-b.border-white/[0.06]",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      72,
+      1440,
+      33
+     ],
+     "apres": [
+      0,
+      75,
+      1440,
+      33
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      175,
+      16,
+      657,
+      40
+     ],
+     "apres": [
+      181,
+      18,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      612,
+      6,
+      240,
+      80
+     ],
+     "apres": [
+      618,
+      8,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      856,
+      12,
+      225,
+      48
+     ],
+     "apres": [
+      862,
+      14,
+      219,
+      48
+     ]
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 5372.7,
+   "y": 0
+  },
+  {
+   "p": "fin",
+   "t": 7732.8,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   5492.3,
+   700
+  ],
+  [
+   5531,
+   702
+  ],
+  [
+   5609.8,
+   1400
+  ],
+  [
+   5646.1,
+   1397
+  ],
+  [
+   5676.4,
+   1394
+  ],
+  [
+   5704.9,
+   1392
+  ],
+  [
+   5753.8,
+   2099
+  ],
+  [
+   5806.6,
+   2098
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 678,
+  "load": 861
+ },
+ "fonts": [
+  {
+   "t": 591.5,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700",
+    "Roboto Mono 400"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 15,
+ "scrollHeight": 10320,
+ "erreurObs": null,
+ "requetesAbandonnees": 6,
+ "nonGet": 6
+}

@@ -1,0 +1,80 @@
+{
+ "variante": "a3",
+ "id": "panier-vide",
+ "route": "/cart",
+ "viewport": "1440x900",
+ "journal": [
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:53:53.748Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:53:58.512Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:54:16.067Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:54:19.826Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:54:22.100Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:54:25.359Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:54:26.163Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T11:54:29.420Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  }
+ ]
+}

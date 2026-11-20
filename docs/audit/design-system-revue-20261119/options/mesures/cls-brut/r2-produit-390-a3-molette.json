@@ -1,0 +1,435 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "variante": "a3",
+ "methode": "molette",
+ "correctif": null,
+ "debut": "2026-11-20T21:32:45.123Z",
+ "fin": "2026-11-20T21:33:18.391Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:32:51.058Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {
+  "pasDescente": 141,
+  "pasRemontee": 141
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 2
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-descente": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-remontee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 488.8,
+   "v": 0.02043,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "loading",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 10.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      174,
+      177,
+      348
+     ],
+     "apres": [
+      13,
+      155,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile BLUE PRINT — 10.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      174,
+      177,
+      348
+     ],
+     "apres": [
+      200,
+      155,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile BLUE PRINT — 11.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      531,
+      177,
+      313
+     ],
+     "apres": [
+      200,
+      513,
+      177,
+      331
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile WIX FILTERS — 10.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      531,
+      177,
+      313
+     ],
+     "apres": [
+      13,
+      513,
+      177,
+      331
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile WIX FILTERS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      0,
+      177,
+      164
+     ],
+     "apres": [
+      200,
+      0,
+      177,
+      146
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  },
+  {
+   "t": 544.2,
+   "v": 0.03979,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "loading",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile MGA — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      220,
+      177,
+      348
+     ],
+     "apres": [
+      13,
+      183,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      220,
+      177,
+      348
+     ],
+     "apres": [
+      200,
+      183,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile WIX FILTERS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      578,
+      177,
+      266
+     ],
+     "apres": [
+      200,
+      541,
+      177,
+      303
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile NPS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      578,
+      177,
+      266
+     ],
+     "apres": [
+      13,
+      541,
+      177,
+      303
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile MISFAT — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      0,
+      177,
+      211
+     ],
+     "apres": [
+      200,
+      0,
+      177,
+      174
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 5231,
+   "y": 0
+  },
+  {
+   "p": "molette-descente",
+   "t": 6937.1,
+   "y": 0
+  },
+  {
+   "p": "molette-remontee",
+   "t": 19989.4,
+   "y": 12580
+  },
+  {
+   "p": "fin",
+   "t": 31552.4,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   6967.5,
+   100
+  ],
+  [
+   6991,
+   102
+  ],
+  [
+   7066.7,
+   202
+  ],
+  [
+   7150.7,
+   302
+  ],
+  [
+   7234.3,
+   402
+  ],
+  [
+   7334.8,
+   502
+  ],
+  [
+   7418.2,
+   602
+  ],
+  [
+   7501.4,
+   702
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 645,
+  "load": 721
+ },
+ "fonts": [
+  {
+   "t": 437.6,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800",
+    "Roboto Mono 400"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 253,
+ "scrollHeight": 13422,
+ "erreurObs": null,
+ "requetesAbandonnees": 6,
+ "nonGet": 6
+}

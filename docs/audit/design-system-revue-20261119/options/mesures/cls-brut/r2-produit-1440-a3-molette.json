@@ -1,0 +1,915 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "1440x900",
+ "variante": "a3",
+ "methode": "molette",
+ "correctif": null,
+ "debut": "2026-11-20T21:35:07.195Z",
+ "fin": "2026-11-20T21:35:35.240Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:35:13.274Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {
+  "pasDescente": 105,
+  "pasRemontee": 106
+ },
+ "cls": {
+  "total": {
+   "somme": 0.0424,
+   "officiel": 0.0247,
+   "n": 5,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0.0424,
+   "officiel": 0.0247,
+   "n": 5,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0.0247,
+   "officiel": 0.0247,
+   "n": 1,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0.0177,
+   "officiel": 0.0092,
+   "n": 4,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0.0247,
+    "officiel": 0.0247,
+    "n": 1,
+    "nSaisie": 0
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-descente": {
+    "somme": 0.0085,
+    "officiel": 0.0085,
+    "n": 2,
+    "nSaisie": 0
+   },
+   "molette-remontee": {
+    "somme": 0.0092,
+    "officiel": 0.0092,
+    "n": 2,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 731.3,
+   "v": 0.02467,
+   "input": false,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "interactive",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile WIX FILTERS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      1056,
+      374,
+      291,
+      451
+     ],
+     "apres": [
+      1056,
+      459,
+      291,
+      441
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      445,
+      374,
+      291,
+      451
+     ],
+     "apres": [
+      445,
+      459,
+      291,
+      441
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MGA | FH1005 9 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      1056,
+      0,
+      291,
+      360
+     ],
+     "apres": [
+      1056,
+      0,
+      291,
+      445
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "MI 7 MISFAT | Z691 8 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      445,
+      0,
+      291,
+      360
+     ],
+     "apres": [
+      445,
+      0,
+      291,
+      445
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 10.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      445,
+      839,
+      291,
+      61
+     ],
+     "apres": [
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ],
+   "poussoirs": [
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 445,
+     "yDoc": -933,
+     "contientSource": false,
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "8 BOSCH | F 026 407 022 11 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "profondeur": 15,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 445,
+     "yDoc": -933,
+     "contientSource": false,
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "8 BOSCH | 0 451 103 336 13 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "profondeur": 15,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 445,
+     "yDoc": -933,
+     "contientSource": false,
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MECAFILTER | ELH4391 5 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "profondeur": 15,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 3235,
+     "yDoc": -933,
+     "contientSource": true,
+     "sel": "div.transition-opacity.duration-150 > div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2",
+     "texte": "8 BOSCH | F 026 407 022 11 ,00€ Livré 24-48h Ajouter 8 BOSCH",
+     "trace": [
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150",
+      "div.space-y-6"
+     ],
+     "position": "static",
+     "profondeur": 14,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 3406,
+     "yDoc": -995,
+     "contientSource": true,
+     "sel": "div.space-y-6 > div.transition-opacity.duration-150 > div.space-y-8 > div.animate-in.fade-in",
+     "texte": "Filtre à huile CLIO III (22 articles) 8 BOSCH | F 026 407 02",
+     "trace": [
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150",
+      "div.space-y-6",
+      "main.flex-1.min-w-0"
+     ],
+     "position": "static",
+     "profondeur": 13,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 3406,
+     "yDoc": 895,
+     "contientSource": true,
+     "sel": "div.flex.flex-col > main.flex-1.min-w-0 > div.space-y-6 > div.transition-opacity.duration-150",
+     "texte": "Filtre à huile CLIO III (22 articles) 8 BOSCH | F 026 407 02",
+     "trace": [
+      "div.transition-opacity.duration-150",
+      "div.space-y-6",
+      "main.flex-1.min-w-0",
+      "div.flex.flex-col.lg:flex-row.gap-8",
+      "div.max-w-7xl.mx-auto.px-4.py-8.relative.z-10"
+     ],
+     "position": "static",
+     "profondeur": 11,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 3406,
+     "yDoc": 895,
+     "contientSource": true,
+     "sel": "main.flex-1.min-w-0 > div.space-y-6 > div.transition-opacity.duration-150 > div.space-y-8",
+     "texte": "Filtre à huile CLIO III (22 articles) 8 BOSCH | F 026 407 02",
+     "trace": [
+      "div.space-y-8",
+      "div.transition-opacity.duration-150",
+      "div.space-y-6",
+      "main.flex-1.min-w-0",
+      "div.flex.flex-col.lg:flex-row.gap-8"
+     ],
+     "position": "static",
+     "profondeur": 11,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 4420,
+     "yDoc": 629,
+     "contientSource": true,
+     "sel": "div.grow > div.bg-gradient-to-br.from-slate-50 > div.max-w-7xl.mx-auto > div.flex.flex-col",
+     "texte": "Filtres Affiner la recherche 22résultats Fiabilité Tous 5+ 7",
+     "trace": [
+      "div.flex.flex-col.lg:flex-row.gap-8",
+      "div.max-w-7xl.mx-auto.px-4.py-8.relative.z-10",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col"
+     ],
+     "position": "static",
+     "profondeur": 8,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 4420,
+     "yDoc": 629,
+     "contientSource": false,
+     "sel": "div.bg-gradient-to-br.from-slate-50 > div.max-w-7xl.mx-auto > div.flex.flex-col > aside.shrink-0.space-y-6",
+     "texte": "Filtres Affiner la recherche 22résultats Fiabilité Tous 5+ 7",
+     "trace": [
+      "aside.lg:w-80.shrink-0.space-y-6.lg:animate-in.lg:fade-in.lg:slide-in-from-left",
+      "div.flex.flex-col.lg:flex-row.gap-8",
+      "div.max-w-7xl.mx-auto.px-4.py-8.relative.z-10",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow"
+     ],
+     "position": "static",
+     "profondeur": 8,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 4420,
+     "yDoc": 629,
+     "contientSource": true,
+     "sel": "div.bg-gradient-to-br.from-slate-50 > div.max-w-7xl.mx-auto > div.flex.flex-col > main.flex-1.min-w-0",
+     "texte": "22 pièces Dès 5,00 € Grille Liste Comparer Pas sûr de la com",
+     "trace": [
+      "main.flex-1.min-w-0",
+      "div.flex.flex-col.lg:flex-row.gap-8",
+      "div.max-w-7xl.mx-auto.px-4.py-8.relative.z-10",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow"
+     ],
+     "position": "static",
+     "profondeur": 8,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 4420,
+     "yDoc": 629,
+     "contientSource": true,
+     "sel": "div.max-w-7xl.mx-auto > div.flex.flex-col > main.flex-1.min-w-0 > div.space-y-6",
+     "texte": "22 pièces Dès 5,00 € Grille Liste Comparer Pas sûr de la com",
+     "trace": [
+      "div.space-y-6",
+      "main.flex-1.min-w-0",
+      "div.flex.flex-col.lg:flex-row.gap-8",
+      "div.max-w-7xl.mx-auto.px-4.py-8.relative.z-10",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative"
+     ],
+     "position": "static",
+     "profondeur": 8,
+     "repercute": false
+    },
+    {
+     "type": "taille",
+     "t": 731.8,
+     "dh": 85,
+     "dw": 0,
+     "h": 5282,
+     "yDoc": 499,
+     "contientSource": true,
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.max-w-7xl.mx-auto",
+     "texte": "Véhicule sélectionné RENAULT CLIO III 1.5 dCi Changer Filtre",
+     "trace": [
+      "div.max-w-7xl.mx-auto.px-4.py-8.relative.z-10",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "profondeur": 7,
+     "repercute": false
+    }
+   ],
+   "poussoirsTotal": 17
+  },
+  {
+   "t": 7398.1,
+   "v": 0.00375,
+   "input": false,
+   "phase": "molette-descente",
+   "y": 200,
+   "yRappel": 200,
+   "etat": "complete",
+   "feuilles": 5,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      1440,
+      900
+     ],
+     "apres": [
+      0,
+      0,
+      1440,
+      900
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      623,
+      10,
+      240,
+      80
+     ],
+     "apres": [
+      618,
+      7,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      867,
+      16,
+      210,
+      48
+     ],
+     "apres": [
+      862,
+      13,
+      215,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 7452,
+   "v": 0.00474,
+   "input": false,
+   "phase": "molette-descente",
+   "y": 200,
+   "yRappel": 200,
+   "etat": "complete",
+   "feuilles": 5,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      1440,
+      900
+     ],
+     "apres": [
+      0,
+      0,
+      1440,
+      900
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      618,
+      7,
+      240,
+      80
+     ],
+     "apres": [
+      611,
+      5,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      862,
+      13,
+      215,
+      48
+     ],
+     "apres": [
+      855,
+      11,
+      222,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 24939.8,
+   "v": 0.00592,
+   "input": false,
+   "phase": "molette-remontee",
+   "y": 18,
+   "yRappel": 18,
+   "etat": "complete",
+   "feuilles": 5,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      85,
+      1440,
+      815
+     ],
+     "apres": [
+      0,
+      90,
+      1440,
+      810
+     ]
+    },
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > div.bg-gradient-to-b.from-navy",
+     "texte": "Livraison gratuite dès 150€ · Retours 30j · 01 48 47 96 27",
+     "trace": [
+      "div.bg-gradient-to-b.from-navy.to-navy-light.border-b.border-white/[0.06]",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      50,
+      1440,
+      33
+     ],
+     "apres": [
+      0,
+      55,
+      1440,
+      33
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      173,
+      14,
+      657,
+      40
+     ],
+     "apres": [
+      181,
+      17,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      610,
+      4,
+      240,
+      80
+     ],
+     "apres": [
+      618,
+      7,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      854,
+      10,
+      223,
+      48
+     ],
+     "apres": [
+      862,
+      13,
+      215,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 25037,
+   "v": 0.00327,
+   "input": false,
+   "phase": "molette-remontee",
+   "y": 18,
+   "yRappel": 0,
+   "etat": "complete",
+   "feuilles": 5,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      108,
+      1440,
+      792
+     ],
+     "apres": [
+      0,
+      114,
+      1440,
+      786
+     ]
+    },
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > div.bg-gradient-to-b.from-navy",
+     "texte": "Livraison gratuite dès 150€ · Retours 30j · 01 48 47 96 27",
+     "trace": [
+      "div.bg-gradient-to-b.from-navy.to-navy-light.border-b.border-white/[0.06]",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      73,
+      1440,
+      33
+     ],
+     "apres": [
+      0,
+      79,
+      1440,
+      33
+     ]
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 5388.1,
+   "y": 0
+  },
+  {
+   "p": "molette-descente",
+   "t": 7080.5,
+   "y": 0
+  },
+  {
+   "p": "molette-remontee",
+   "t": 17493.6,
+   "y": 8918
+  },
+  {
+   "p": "fin",
+   "t": 26308.5,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   7131.9,
+   100
+  ],
+  [
+   7272.6,
+   200
+  ],
+  [
+   7588.6,
+   300
+  ],
+  [
+   7738.6,
+   400
+  ],
+  [
+   7829.7,
+   500
+  ],
+  [
+   7906.2,
+   600
+  ],
+  [
+   7989.3,
+   700
+  ],
+  [
+   8072.9,
+   800
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 682,
+  "load": 877
+ },
+ "fonts": [
+  {
+   "t": 560.3,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700",
+    "Roboto Mono 400"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 180,
+ "scrollHeight": 9828,
+ "erreurObs": null,
+ "requetesAbandonnees": 6,
+ "nonGet": 6
+}

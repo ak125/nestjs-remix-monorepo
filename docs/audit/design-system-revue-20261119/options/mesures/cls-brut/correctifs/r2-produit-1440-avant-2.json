@@ -1,0 +1,549 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "1440x900",
+ "variante": "avant",
+ "methode": "molette",
+ "correctif": null,
+ "debut": "2026-11-20T22:00:21.922Z",
+ "fin": "2026-11-20T22:00:48.066Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {
+  "pasDescente": 105,
+  "pasRemontee": 105
+ },
+ "cls": {
+  "total": {
+   "somme": 0.0196,
+   "officiel": 0.0104,
+   "n": 5,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0.0196,
+   "officiel": 0.0104,
+   "n": 5,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0.0196,
+   "officiel": 0.0104,
+   "n": 5,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-descente": {
+    "somme": 0.0104,
+    "officiel": 0.0104,
+    "n": 3,
+    "nSaisie": 0
+   },
+   "molette-remontee": {
+    "somme": 0.0093,
+    "officiel": 0.0093,
+    "n": 2,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 5695.3,
+   "v": 0.00266,
+   "input": false,
+   "phase": "molette-descente",
+   "y": 200,
+   "yRappel": 200,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      1440,
+      900
+     ],
+     "apres": [
+      0,
+      0,
+      1440,
+      900
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      623,
+      10,
+      240,
+      80
+     ],
+     "apres": [
+      619,
+      8,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      867,
+      16,
+      214,
+      48
+     ],
+     "apres": [
+      863,
+      14,
+      218,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 5749.6,
+   "v": 0.00541,
+   "input": false,
+   "phase": "molette-descente",
+   "y": 200,
+   "yRappel": 200,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      1440,
+      900
+     ],
+     "apres": [
+      0,
+      0,
+      1440,
+      900
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      619,
+      8,
+      240,
+      80
+     ],
+     "apres": [
+      611,
+      6,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      863,
+      14,
+      218,
+      48
+     ],
+     "apres": [
+      855,
+      12,
+      226,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 5845.4,
+   "v": 0.00228,
+   "input": false,
+   "phase": "molette-descente",
+   "y": 200,
+   "yRappel": 300,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      0,
+      1440,
+      900
+     ],
+     "apres": [
+      0,
+      0,
+      1440,
+      900
+     ]
+    }
+   ]
+  },
+  {
+   "t": 23123.2,
+   "v": 0.00592,
+   "input": false,
+   "phase": "molette-remontee",
+   "y": 18,
+   "yRappel": 18,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      85,
+      1440,
+      815
+     ],
+     "apres": [
+      0,
+      90,
+      1440,
+      810
+     ]
+    },
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > div.bg-gradient-to-b.from-navy",
+     "texte": "Livraison gratuite dès 150€ · Retours 30j · 01 48 47 96 27",
+     "trace": [
+      "div.bg-gradient-to-b.from-navy.to-navy-light.border-b.border-white/[0.06]",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      50,
+      1440,
+      33
+     ],
+     "apres": [
+      0,
+      55,
+      1440,
+      33
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      173,
+      14,
+      657,
+      40
+     ],
+     "apres": [
+      181,
+      17,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      610,
+      4,
+      240,
+      80
+     ],
+     "apres": [
+      618,
+      7,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      854,
+      10,
+      227,
+      48
+     ],
+     "apres": [
+      862,
+      13,
+      219,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 23211.9,
+   "v": 0.00334,
+   "input": false,
+   "phase": "molette-remontee",
+   "y": 18,
+   "yRappel": 18,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.bg-gradient-to-br.from-slate-50 > div.absolute.inset-0",
+     "texte": "",
+     "trace": [
+      "div.absolute.inset-0.bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')].opacity-40.pointer-events-none",
+      "div.min-h-[100dvh].bg-gradient-to-br.from-slate-50.via-blue-50/30./50.relative",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "absolute",
+     "avant": [
+      0,
+      90,
+      1440,
+      810
+     ],
+     "apres": [
+      0,
+      96,
+      1440,
+      804
+     ]
+    },
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > div.bg-gradient-to-b.from-navy",
+     "texte": "Livraison gratuite dès 150€ · Retours 30j · 01 48 47 96 27",
+     "trace": [
+      "div.bg-gradient-to-b.from-navy.to-navy-light.border-b.border-white/[0.06]",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      55,
+      1440,
+      33
+     ],
+     "apres": [
+      0,
+      61,
+      1440,
+      33
+     ]
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "molette-descente",
+   "t": 5388.3,
+   "y": 0
+  },
+  {
+   "p": "molette-remontee",
+   "t": 15709.3,
+   "y": 8918
+  },
+  {
+   "p": "fin",
+   "t": 24442.5,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   5450,
+   100
+  ],
+  [
+   5586.2,
+   200
+  ],
+  [
+   5845.9,
+   300
+  ],
+  [
+   5986.5,
+   400
+  ],
+  [
+   6074.2,
+   500
+  ],
+  [
+   6154.8,
+   600
+  ],
+  [
+   6237.8,
+   700
+  ],
+  [
+   6320.6,
+   800
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 595,
+  "load": 875
+ },
+ "fonts": [
+  {
+   "t": 552.1,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700",
+    "Roboto Mono 400"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 180,
+ "scrollHeight": 9828,
+ "erreurObs": null,
+ "requetesAbandonnees": 6,
+ "nonGet": 6
+}
