@@ -24,7 +24,7 @@
 #                        signal→department map, AU source. Hook for the department
 #                        contracts (mandat AR); absent → the script defaults, declared.
 #   PARCOURS_ACHAT_JSON  file, schema parcours-achat.v1 (mandat AU)
-#   GARDE_PRIX_JSON      file, schema garde-prix.v1 (no producer as of 2026-11-16)
+#   GARDE_PRIX_JSON      file, schema garde-prix.v1 (producer scripts/ops/garde-prix-read.ts)
 #   GMAIL_* , ALERT_EMAIL_TO, EMAIL_FROM  mail channel (report-mail.py); else declared
 #                        « indisponible » in the issue and the run log.
 #   THRESHOLD_ISSUES_MODE  off | dry-run | write (mandate BZ, default dry-run): issues of
@@ -178,17 +178,22 @@ pg_get() {
 
 # ---- Simulated purchase path (mandat AU) ----
 # Input: PARCOURS_ACHAT_JSON, or the artifact of the last completed run of the AU
-# workflow named in the configuration (parcours_achat.workflow + .artefact).
+# workflow (parcours_achat.workflow + .artefact of the configuration; defaults: the
+# producer delivered by mandat AU, .github/workflows/purchase-path-probe.yml).
+# Alert after 2 consecutive failures (decision 67): last_run.consecutive_failures,
+# written by scripts/ops/purchase-path-probe.sh report; a single failure is orange.
 # Schema parcours-achat.v1: generated_at, window_hours, availability_pct, runs_total,
 # runs_ok, steps[{name, p50_ms, p95_ms, last_ms, ok}], last_run{at, ok, failed_step}.
 PA_SRC="parcours d'achat simulé (mandat AU), format parcours-achat.v1"
 PA_FILE="${PARCOURS_ACHAT_JSON:-}"
-PA_WF=$(cfg_str '.parcours_achat.workflow' '')
-PA_ART=$(cfg_str '.parcours_achat.artefact' '')
+PA_WF=$(cfg_str '.parcours_achat.workflow' 'purchase-path-probe.yml')
+PA_ART=$(cfg_str '.parcours_achat.artefact' 'purchase-path-probe-result')
 PA_WHY=""
 if [ -z "$PA_FILE" ] && [ -n "$PA_WF" ] && [ -n "$PA_ART" ]; then
   PA_DIR=$(mktemp -d)
-  PA_RUN=$(gh run list --workflow="$PA_WF" --repo "$REPO" --status completed --limit 1 \
+  # main only, as purchase-path-probe.sh reads its own runs: a run dispatched on
+  # another branch must not answer for the probe.
+  PA_RUN=$(gh run list --workflow="$PA_WF" --repo "$REPO" --branch main --status completed --limit 1 \
     --json databaseId --jq '.[0].databaseId // empty' 2>/dev/null || true)
   PA_FILE="$PA_DIR/$(cfg_str '.parcours_achat.fichier' 'parcours-achat.json')"
   if [ -z "$PA_RUN" ]; then
@@ -213,12 +218,16 @@ elif ! jq -e "$PA_VALID" "$PA_FILE" >/dev/null 2>&1; then
 else
   PA=$(jq -c '{w: (.window_hours // 24), pct: .availability_pct, ok: .runs_ok, n: .runs_total,
                last_ok: .last_run.ok, last_at: (.last_run.at // ""),
+               cf: ((.last_run.consecutive_failures | numbers | floor) // null),
                failed: ((.last_run.failed_step // "?") | tostring | gsub("[`|\n\r<>]"; "") | .[0:60]),
                gen: .generated_at}' "$PA_FILE")
   PA_GEN=$(iso "$(jq -r .gen <<< "$PA")")
   PA_V="disponibilité $(jq -r '"\(.w) h : \(.pct) % (\(.ok)/\(.n) passages réussis)"' <<< "$PA")"
-  if [ "$(jq -r .last_ok <<< "$PA")" = "false" ]; then
-    PA_V="EN PANNE : étape « $(jq -r .failed <<< "$PA") » en échec au dernier passage ($(jq -r .last_at <<< "$PA")) ; $PA_V"
+  PA_CF=$(jq -r '.cf // empty' <<< "$PA")
+  if [ "$(jq -r .last_ok <<< "$PA")" = "false" ] && is_int "$PA_CF" && [ "$PA_CF" -lt 2 ]; then
+    signal parcours "Parcours d'achat simulé" orange "1er échec : étape « $(jq -r .failed <<< "$PA") » au dernier passage ($(jq -r .last_at <<< "$PA")), alerte au 2e échec consécutif (décision 67) ; $PA_V" "$PA_SRC" "$Q_NON" "$PA_GEN"
+  elif [ "$(jq -r .last_ok <<< "$PA")" = "false" ]; then
+    PA_V="EN PANNE : étape « $(jq -r .failed <<< "$PA") » en échec au dernier passage ($(jq -r .last_at <<< "$PA"))${PA_CF:+, $PA_CF échecs consécutifs} ; $PA_V"
     signal parcours "Parcours d'achat simulé" rouge "$PA_V" "$PA_SRC" "$Q_NON" "$PA_GEN"
     urgent parcours "Parcours d'achat en panne (étape $(jq -r .failed <<< "$PA"))" "$RUN_URL"
   elif [ -n "$PA_MIN_PCT" ] && jq -e --argjson m "$PA_MIN_PCT" '.pct < $m' <<< "$PA" >/dev/null; then
@@ -281,13 +290,14 @@ else
 fi
 
 # ---- Price guard-rail triggered ----
-# No producer persists a trigger as of 2026-11-16: PricingInvariantError and
-# assertValidPriceChain have no consumer in backend/src, and the command-center
-# action `sell_at_loss` is a hard-coded 0. Hook: GARDE_PRIX_JSON, schema garde-prix.v1
+# Producer: scripts/ops/garde-prix-read.ts (mandat EI), run by the workflow in its
+# daily window: invariants:<supplier> (import rows refused by the guard-rail),
+# arret51:<supplier> (decision-51 halt waiting for the owner), perte:pm<brand>
+# (sellable rows below the purchase price). Input GARDE_PRIX_JSON, schema garde-prix.v1
 # {schema, generated_at, declenchements: [{cle, at}]}; each `cle` is one incident.
 PRIX_SRC="déclenchements du garde-fou des prix, format garde-prix.v1"
 if [ -z "${GARDE_PRIX_JSON:-}" ]; then
-  signal prix "Garde-fou des prix" nonbranche "non branché : aucun producteur ne persiste un déclenchement (PricingInvariantError sans consommateur dans backend/src ; sell_at_loss écrit 0 en dur dans command-center-actions.service.ts)" "$PRIX_SRC" "$Q_NON" ""
+  signal prix "Garde-fou des prix" nonbranche "non branché : entrée GARDE_PRIX_JSON vide (producteur scripts/ops/garde-prix-read.ts, lancé par le workflow)" "$PRIX_SRC" "$Q_NON" ""
 elif ! jq -e '.schema == "garde-prix.v1" and (.generated_at | type == "string") and (.declenchements | type == "array") and all(.declenchements[]; .cle | type == "string")' "$GARDE_PRIX_JSON" >/dev/null 2>&1; then
   signal prix "Garde-fou des prix" indisponible "entrée absente ou format invalide (attendu garde-prix.v1)" "$PRIX_SRC" "$Q_NON" ""
   URG_UNREAD="$URG_UNREAD prix:"
