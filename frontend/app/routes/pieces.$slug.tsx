@@ -908,7 +908,7 @@ export default function PiecesDetailPage() {
               </div>
             )}
             {editorialBlocks.chooseSection.length > 0 && (
-              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
+              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2">
                 {editorialBlocks.chooseSection.map((block, i) => (
                   <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
                 ))}
@@ -965,7 +965,7 @@ export default function PiecesDetailPage() {
               </div>
             )}
             {editorialBlocks.priceSection.length > 0 && (
-              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
+              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2">
                 {editorialBlocks.priceSection.map((block, i) => (
                   <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
                 ))}
@@ -1037,7 +1037,7 @@ export default function PiecesDetailPage() {
                   </div>
                 )}
                 {hasLocationText && (
-                  <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
+                  <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2">
                     {editorialBlocks.locationSection.map((block, i) => (
                       <div
                         key={i}

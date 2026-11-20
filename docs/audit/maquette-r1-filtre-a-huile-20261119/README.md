@@ -1120,6 +1120,145 @@ section `#emplacement`, dans un autre bloc `.gamme-editorial` de la même route,
 couleur pour signe (axe `link-in-text-block` à 1440 px). Le traiter relève d'une décision de Marwane
 ou de la revue du design system par 05.
 
+## Complément n° 9 — liens soulignés dans #bien-choisir, #qualite-prix et #emplacement (20 nov. 2026)
+
+Mandat : critère WCAG 1.4.1. Marwane a répondu « Oui » le 20 nov. 2026 à 10:23, heure de Paris :
+souligner maintenant les liens de ces trois blocs des pages R1, et confier la règle commune à la
+revue du design system par 05. Constat de DU : §17 de `REVUE-EXPERTE.md` (#2211, commit
+`506004e64`, mesuré sur `dad1abcbc`). Tête de #2210 relevée avant travail : `dad1abcbc`.
+
+**Correction.** `[&_a]:underline [&_a]:underline-offset-2`, la forme du complément n° 8, est
+ajoutée aux trois conteneurs éditoriaux de `app/routes/pieces.$slug.tsx`, et à rien d'autre :
+- `#bien-choisir` : `editorialBlocks.chooseSection` ;
+- `#qualite-prix` : `editorialBlocks.priceSection` ;
+- `#emplacement` : `locationSection` et `unmatched`, dans le même conteneur.
+
+Ne sont pas touchés :
+- `.gamme-editorial`, partagée dans `global.css` ;
+- la règle globale des liens et `a:visited` (règle commune, confiée à 05) ;
+- le texte, les cibles et les couleurs.
+
+**Recensement** (`outils/recensement-c9.cjs`). Il porte sur les 123 pages R1 de
+`sitemap-categories.xml`. Le HTML servi est lu avec jsdom, en GET seulement.
+
+| Bloc | Pages avec le conteneur | Liens | Déjà `seo-internal-link` | **Liens soulignés par le correctif** | Pages concernées |
+|---|---|---|---|---|---|
+| `#bien-choisir` | 51 | 30 | 2 | **28** | 21 |
+| `#qualite-prix` | 83 | 134 | 53 | **81** | 56 |
+| `#emplacement` | 118 | 47 | 3 | **44** | 21 |
+| **Trois blocs** | | 211 | 58 | **153** | **72** |
+
+- Ces chiffres sont ceux de DU (153 liens sur 72 pages).
+- Les 153 liens n'ont pas de classe et sont tous dans un paragraphe (`<p>`).
+- Cibles des 153 liens :
+  - `#bien-choisir` : 14 fiches `/reference-auto`, 10 gammes et 4 guides d'achat ;
+  - `#qualite-prix` : 48 fiches, 27 gammes et 6 guides ;
+  - `#emplacement` : 18 guides d'achat, 15 pages `/diagnostic-auto`, 6 fiches et 5 gammes.
+- **Aucun bouton, aucune carte, aucune image.** Le script a cherché :
+  - un élément enfant (`img`, `svg`, `picture`, `button`…) ;
+  - un `role="button"` ;
+  - une classe `btn`, `button`, `card`, `carte` ou `bg-*`.
+
+  Il n'a trouvé aucun cas dans les trois blocs. Rien n'est donc exclu.
+- Les 58 liens `seo-internal-link` étaient déjà soulignés avec le même décalage de 2 px. Leurs
+  pixels de soulignement sont identiques avant et après, et leur trait atténué est conservé.
+- Les liens sont identiques avant et après (diff des deux recensements) : seule la classe des
+  conteneurs change. Après correctif, les 252 conteneurs portent le soulignement (51 + 83 + 118).
+
+**Mesures au pixel** (`outils/liens-c9.cjs`).
+- Pages : le filtre à huile (`filtre-a-huile-7`), puis `ressort-de-suspension-188`, seule gamme
+  du sitemap à avoir des liens sans classe dans les trois blocs.
+- Conditions : 390×844 (échelle 2) et 1440×900, mouvement réduit.
+- Chaque lien est centré à l'écran avant d'être mesuré, car les sections portent `cv-auto`.
+- Fond : la couleur dominante de chaque ligne du lien. Rapports tronqués au centième.
+
+| Lien (bloc) | Pixels du soulignement, avant → après (390 / 1440) | Lien / texte voisin | Repos | Survol 1440 |
+|---|---|---|---|---|
+| Filtre à huile : « Guide d'achat filtre à huile… » (`#qualite-prix`) | 0 → 1 786 / 0 → 452 | 1,44 | 5,01 sur `#f8fafc` | 8,43 |
+| Filtre à huile : « En savoir plus sur le filtre à huile » (`#emplacement`) | 0 → 812 / 0 → 199 | 1,44 | 5,24 sur `#ffffff` | 8,82 |
+| Filtre à huile : « filtre à air », « filtre à carburant » (`#bien-choisir`, `seo-internal-link`) | 252 et 428 / 63 et 111, inchangés | 1,44 | 5,24 | 8,82 |
+| Ressort : « amortisseur » (`#bien-choisir`) | 0 → 304 / 0 → 76 | 1,44 | 5,24 sur `#ffffff` | 8,82 |
+| Ressort : 4 liens de `#qualite-prix` (fiche technique, amortisseurs, butées, guide d'achat) | 0 → 944, 332, 540, 878 / 0 → 240, 83, 135, 219 | 1,44 | 5,01 sur `#f8fafc` | 8,43 |
+| Ressort : « amortisseur » (`#emplacement`) | 0 → 304 / 0 → 76 | 1,44 | 5,24 sur `#ffffff` | 8,82 |
+
+- Avant le correctif, `text-decoration-line` valait `none` sur les 8 liens sans classe mesurés.
+  Après, il vaut `underline`, avec un décalage de 2 px, aux deux largeurs.
+- Le rapport de 1,44 entre le lien et le texte reste le même. C'est le soulignement qui distingue
+  désormais le lien du texte.
+- Au survol, les couleurs ne changent pas (`#193cb8`). Le soulignement est présent au repos comme
+  au survol.
+- **État visité** (`outils/visite-lien-c9.cjs`, même méthode qu'aux compléments n° 7 et 8) :
+  - Chrome 153 complet, profil persistant, visite réelle par clic sur le lien, puis retour sur la
+    page R1 ;
+  - un lien témoin prouve que `:visited` est actif : il passe à `#9810fa` après la visite ;
+  - liens mesurés :
+    - « En savoir plus » (`#emplacement`, filtre à huile) : 5,24 au repos et 8,82 au survol avant
+      visite ; 5,54 au repos comme au survol après visite (`#9810fa` sur `#ffffff`) ;
+    - « guide d'achat ressort de suspension » (`#qualite-prix`) : 5,01 et 8,43 avant visite ; 5,29
+      après visite (`#9810fa` sur `#f8fafc`) ;
+  - chiffres identiques avant et après correctif, aux deux largeurs ;
+  - le soulignement reste après la visite
+    (`apres-historique-*-apres-visite-repos.png`) ;
+  - le violet est hors périmètre : c'est la règle commune.
+- **Focus clavier.** Mesuré par Tab depuis l'élément focalisable précédent, sur les 10 liens par
+  largeur. Tous prennent `:focus-visible`, avec un contour `2px solid #0f1e38`, avant comme après.
+- **Cible.** Hauteur de ligne de 18 px, et l'exception « en ligne » du critère 2.5.8 s'applique,
+  comme au complément n° 8. Les cibles ne sont pas modifiées.
+
+**axe** (`outils/axe-c9.cjs`, mêmes règles qu'au complément n° 8). axe a tourné sur la page
+entière, puis sur chaque section, avec le premier lien du conteneur centré à l'écran.
+
+| | Filtre à huile, avant | Filtre à huile, après | Ressort, avant | Ressort, après |
+|---|---|---|---|---|
+| Page 390 | `color-contrast`×9, `region`×2 | identique | `color-contrast`×9, `region`×2 | identique |
+| Page 1440 | `color-contrast`×5, **`link-in-text-block`×1**, `region`×4 | `color-contrast`×5, `region`×4 | `color-contrast`×5, **`link-in-text-block`×1**, `region`×4, `target-size`×1 | `color-contrast`×5, `region`×4, `target-size`×1 |
+| `#bien-choisir` | 2 liens passent | 2 passent | **1 violation** | 1 passe |
+| `#qualite-prix` | **1 violation** | 1 passe | **4 violations** | 4 passent |
+| `#emplacement` | **1 violation** | 1 passe | **1 violation** | 1 passe |
+
+Les sections ont le même résultat à 390 et à 1440 px.
+- **Aucune violation nouvelle.** Les 7 `link-in-text-block` des sections disparaissent : 1 + 1 sur
+  le filtre à huile, 1 + 4 + 1 sur le ressort.
+- Le `link-in-text-block` de la page entière à 1440 px disparaît aussi. C'était le lien « En
+  savoir plus », signalé hors périmètre au complément n° 8.
+- Les `color-contrast` « à vérifier » de `#bien-choisir` sont inchangés.
+- Le `target-size`×1 du ressort vise `.hover:text-cta-800`, hors des trois blocs. Il est identique
+  avant et après.
+
+**Vérifications.**
+- Typecheck du frontend OK (`typecheck-front.txt`).
+- ESLint et Prettier OK sur la route (`eslint.txt`).
+- Vitest : 7 fichiers, 76 tests réussis (`vitest.txt`). Ce sont les mêmes tests qu'au complément
+  n° 8.
+- Aucun test unitaire ajouté, pour la même raison qu'au complément n° 8 : les liens viennent du
+  HTML éditorial et les tests de la route ne rendent que le loader. La preuve est le pixel, axe et
+  le recensement du HTML servi.
+
+**Rendu.**
+- Le build du worktree est servi par `react-router-serve` (:3018) derrière `outils/img-proxy.mjs`
+  (:3017), avec des loaders en GET sur le DEV partagé.
+- « Avant » est le build de `dad1abcbc`, « après » le build avec la correction.
+- Les captures « avant » ont été refaites sur un build reconstruit depuis le fichier de `dad1abcbc`,
+  puis le fichier corrigé a été remis. La première série de captures des conteneurs entiers était
+  vide : un conteneur plus haut que la vue n'est pas peint, à cause de `cv-auto`. Elle a été
+  remplacée par la capture du paragraphe de chaque lien.
+- Le service DEV n'a été ni redémarré ni modifié. Rien n'est servi en DEV, PREPROD ou PROD.
+
+**Fichiers** (`complement-9/`) :
+- `{avant,apres}-recensement.json` ;
+- `{avant,apres}-{filtre-a-huile-7,ressort-de-suspension-188}-liens.json` ;
+- `{avant,apres}-<gamme>-<bloc>-<n° de conteneur>-<n° de lien>-{390,1440}.png`, le paragraphe de
+  chaque lien au repos ;
+- `{avant,apres}-historique-<gamme>-<bloc>-{390,1440}.json`, avec les captures de la première
+  ligne du lien `…-{avant,apres}-visite-{repos,survol}.png` (préfixe = état du correctif, suffixe =
+  état de l'historique) ;
+- `{avant,apres}-<gamme>-axe.json`, `typecheck-front.txt`, `eslint.txt`, `vitest.txt`.
+
+**Hors périmètre.**
+- Le violet des liens visités et la règle `.gamme-editorial a` partagée, qui relèvent de la règle
+  commune confiée à 05.
+- Le reste de la page.
+
 ## Limites propres au complément n° 5
 
 - Le rendu après est mesuré sur la page R1 isolée, avec la substitution
@@ -1161,6 +1300,10 @@ ou de la revue du design system par 05.
 - `outils/lien-c8.cjs` : `node lien-c8.cjs <base> <label> <dossier>` ; lien « Conseils » de `#reference` : soulignement, contrastes repos et survol, focus clavier, cible, à 390 et 1440 px (complément n° 8).
 - `outils/visite-lien-c8.cjs` : `CHROME=/usr/bin/google-chrome node visite-lien-c8.cjs <base> <largeur> <hauteur> <profil> <sortie.json>` ; même lien avant et après visite réelle (complément n° 8).
 - `outils/axe-c8.cjs` : `node axe-c8.cjs <base> <label> <dossier>` ; axe sur la page et sur `#reference`, lien centré (complément n° 8).
+- `outils/recensement-c9.cjs` : `node recensement-c9.cjs <base> <sitemap.xml> <sortie.json>` ; liens des conteneurs éditoriaux des pages R1 du sitemap, par bloc, avec la recherche de bouton, carte ou image (complément n° 9).
+- `outils/liens-c9.cjs` : `URL_PATH=… node liens-c9.cjs <base> <label> <dossier>` ; chaque lien de `#bien-choisir`, `#qualite-prix` et `#emplacement` : soulignement, contrastes repos et survol, focus clavier, capture du paragraphe, à 390 et 1440 px (complément n° 9).
+- `outils/visite-lien-c9.cjs` : `URL_PATH=… SEL=… HREF=… CHROME=/usr/bin/google-chrome node visite-lien-c9.cjs <base> <largeur> <hauteur> <profil> <sortie.json>` ; un lien avant et après visite réelle (complément n° 9).
+- `outils/axe-c9.cjs` : `URL_PATH=… node axe-c9.cjs <base> <label> <dossier>` ; axe sur la page et sur chacune des trois sections, lien centré (complément n° 9).
 - `outils/band-context.cjs` : `node band-context.cjs <base> <sortie.png>` ; bas du hero et bande à 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree
