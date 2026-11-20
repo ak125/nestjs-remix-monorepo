@@ -153,7 +153,7 @@ type_id	marque	modele	verdict	type_name_avant	type_name_apres	meta_avant	meta_ap
 66841	FORD	TOURNEO COURIER Combi	nom d'affichage faux, nom d'origine juste	1.0 EcoBoost	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	affichage	
 66884	FORD	TRANSIT COURIER	nom d'affichage faux, nom d'origine juste	1.0 EcoBoost	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	affichage	
 66889	FORD	TRANSIT COURIER Combi	nom d'affichage faux, nom d'origine juste	1.0 EcoBoost	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	affichage	
-66951	FORD	FIESTA VI Berline	nom d'affichage faux, nom d'origine juste	1.0 Titanium Plus EcoBoost	1.0 Titanium Plus EcoBoost	1.0 Econetic	1.0 Titanium Plus EcoBoost	affichage	
+66951	FORD	FIESTA VI Berline	nom d'origine faux aussi	1.0 Titanium Plus EcoBoost	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	origine	
 66959	FORD	GALAXY IV	nom d'affichage faux, nom d'origine juste	1.5 EcoBoost 16V	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	affichage	
 66967	FORD	GALAXY IV	nom d'affichage faux, nom d'origine juste	2.0 EcoBoost 16V	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V	affichage	
 67007	FORD	MONDEO V Berline	nom d'affichage faux, nom d'origine juste	1.0 EcoBoost	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	affichage	

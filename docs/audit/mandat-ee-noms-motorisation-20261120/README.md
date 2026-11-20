@@ -7,12 +7,12 @@ Relevés du 2026-11-19 et du 2026-11-20 (UTC), base `dd1975f4a602d7966aadbb68b13
 - Migration écrite et testée sur une PostgreSQL 17 jetable.
 - **Rien n'est appliqué à la base, rien n'est déployé.**
 
-**Restriction par le mandat EH (2026-11-20).** Les 205 erreurs ont été vérifiées sur sources extérieures (`../mandat-eh-sources-noms-motorisation-20261120/`). La migration EE ne garde que les **164** cas « nom d'affichage faux, nom d'origine juste ». Elle retire 9 cas :
+**Restriction par le mandat EH (2026-11-20).** Les 205 erreurs ont été vérifiées sur sources extérieures (`../mandat-eh-sources-noms-motorisation-20261120/`). La migration EE ne garde que les **163** cas « nom d'affichage faux, nom d'origine juste » (164 après le mandat EH, 163 après le mandat EK). Elle retire 10 cas :
 - 4 « les deux justes » : 5260, 13620, 28249, 62033 ;
 - 1 « incertain » : 29807 ;
-- 4 noms d'origine faux, corrigés par la migration distincte du mandat EH : 33063, 33593, 60342, 73442.
+- 5 noms d'origine faux, corrigés par la migration distincte du mandat EH : 33063, 33593, 60342, 73442, et 66951 (Fiesta VI Berline, ajouté par le mandat EK sur décision de Marwane du 20/11/2026, 11:58 heure de Tunis).
 
-Les comptes de 173 et les sorties de test ci-dessous décrivent l'état EE avant cette restriction. L'état actuel et ses tests sont dans le README du mandat EH.
+Les comptes de 173 et les sorties de test ci-dessous décrivent l'état EE avant cette restriction. L'état actuel et ses tests sont dans le README du mandat EH (mis à jour par le mandat EK).
 
 Actes réservés à Marwane :
 - valider la liste ;
@@ -29,7 +29,7 @@ Chaque cas reçoit un verdict :
 | Verdict | Nombre | Fichier |
 |---|---:|---|
 | erreur | 205 | `erreurs.tsv` |
-| — dont correction retenue dans la migration | 173 (164 après le mandat EH) | `../mandat-eh-sources-noms-motorisation-20261120/decisions.tsv` |
+| — dont correction retenue dans la migration | 173 (164 après le mandat EH, 163 après le mandat EK) | `../mandat-eh-sources-noms-motorisation-20261120/decisions.tsv` |
 | — dont correction écartée par le contrôle 6.6 (à arbitrer) | 32 | colonne `migration`, motif dans `exclusions-6-6.tsv` |
 | incertain (preuve manquante, aucune correction) | 63 | `incertains.tsv` |
 | précision juste | 632 | `precisions-justes.tsv` |

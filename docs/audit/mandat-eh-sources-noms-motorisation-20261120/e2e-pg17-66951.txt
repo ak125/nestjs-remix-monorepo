@@ -1,0 +1,20 @@
+== 2026-11-20T11:09:34Z PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) jetable
+fixtures : 900 types de classement.tsv (mandat EE), mark_stale_with_followup_rebuild 20260425
+-- A. migrations de la branche : EE ne touche plus 66951, EH le corrige, retours
+A0-initial : 66951 = 1.0 Titanium Plus EcoBoost / 1.0 Econetic
+mandat EE : 163 valeurs écrites
+A1-apres-ee : 66951 = 1.0 Titanium Plus EcoBoost / 1.0 Econetic
+mandat EH : 5 types corrigés
+A2-apres-eh : 66951 = 1.0 EcoBoost / 1.0 EcoBoost
+mandat EH : 5 types corrigés
+A3-apres-retour-eh : 66951 = 1.0 Titanium Plus EcoBoost / 1.0 Econetic
+mandat EE : 163 valeurs écrites
+A4-apres-retour-ee : 66951 = 1.0 Titanium Plus EcoBoost / 1.0 Econetic
+-- B. EE de 30704d234 (qui écrivait 66951) appliquée avant EH : la garde EH doit refuser sans rien écrire
+mandat EE : 164 valeurs écrites
+B1-apres-ee-ancienne : 66951 = 1.0 Titanium Plus EcoBoost / 1.0 Titanium Plus EcoBoost
+B1-avant-eh : 900 types, empreinte 4d52ee5570e9295cf062db6dbd5d1ff6
+ERROR:  mandat EH : valeur actuelle différente de la valeur relevée, rien n'est écrit. 66951 : '1.0 Titanium Plus EcoBoost' / '1.0 Titanium Plus EcoBoost'
+CONTEXT:  PL/pgSQL function inline_code_block line 38 at RAISE
+B2-apres-refus-eh : 900 types, empreinte 4d52ee5570e9295cf062db6dbd5d1ff6
+B2-apres-refus-eh : 66951 = 1.0 Titanium Plus EcoBoost / 1.0 Titanium Plus EcoBoost

@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Migration : RETOUR — remettre type_name_meta d'origine (mandat EE)
 -- Date      : 2026-11-20 (mandat EE, « 07 Pages et SEO »)
--- Scope     : public.auto_type.type_name_meta de 164 types affichés, et rien
+-- Scope     : public.auto_type.type_name_meta de 163 types affichés, et rien
 --             d'autre. Ni type_name, ni modele_name_meta, ni marque_name_meta,
 --             ni URL, ni alias. Aucun DELETE, aucun DDL.
 -- Généré par docs/audit/mandat-ee-noms-motorisation-20261120/06-generer-migration.py
@@ -13,7 +13,7 @@
 --
 -- POURQUOI : type_name_meta alimente le <title>, la description et les mots-clés
 -- des pages R8 (frontend/app/components/vehicle/r8/r8-transform.ts:133-148 et
--- build_vehicle_page_payload). Ces 164 valeurs nomment une autre motorisation
+-- build_vehicle_page_payload). Ces 163 valeurs nomment une autre motorisation
 -- ou changent la désignation du moteur (EcoBoost -> Econetic, VVTi -> VTi,
 -- 520 i -> 523 i…). Preuves par ligne : classement.tsv (mandat EE) et, pour les
 -- sources extérieures, docs/audit/mandat-eh-sources-noms-motorisation-20261120/verdicts-sources.tsv.
@@ -171,7 +171,6 @@ BEGIN
     (66841, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | TOURNEO COURIER Combi | brut « 1.0 EcoBoost » | R7
     (66884, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | TRANSIT COURIER | brut « 1.0 EcoBoost » | R7
     (66889, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | TRANSIT COURIER Combi | brut « 1.0 EcoBoost » | R7
-    (66951, '1.0 Econetic', '1.0 Titanium Plus EcoBoost'),  -- FORD | FIESTA VI Berline | brut « 1.0 Titanium Plus EcoBoost » | R7
     (66959, '1.5 Econetic', '1.5 EcoBoost 16V'),  -- FORD | GALAXY IV | brut « 1.5 EcoBoost 16V » | R7
     (66967, '2.0 Econetic', '2.0 EcoBoost 16V'),  -- FORD | GALAXY IV | brut « 2.0 EcoBoost 16V » | R7
     (67007, '1.0 Econetic', '1.0 EcoBoost'),  -- FORD | MONDEO V Berline | brut « 1.0 EcoBoost » | R7

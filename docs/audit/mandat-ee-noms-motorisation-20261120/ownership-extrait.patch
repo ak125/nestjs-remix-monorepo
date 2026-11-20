@@ -4,7 +4,7 @@
      owner: '@ak125/catalog-team'
      sourceConfidence: high
      risk: medium
-+  # Mandat EE (20/11/2026), restreint par le mandat EH : 164 type_name_meta
++  # Mandat EE (20/11/2026), restreint par les mandats EH et EK : 163 type_name_meta
 +  # d'auto_type remis au nom brut (title R8), migration gardée. Couvre .sql +
 +  # .down.sql. Glob exact : les migrations ne sont pas auto-couvertes.
 +  - glob: backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee*.sql
@@ -12,7 +12,7 @@
 +    owner: '@ak125/vehicle-team'
 +    sourceConfidence: high
 +    risk: medium
-+  # Mandat EH (20/11/2026) : 4 type_name d'auto_type (nom d'origine faux selon
++  # Mandat EH (20/11/2026), complété par EK : 5 type_name d'auto_type (nom d'origine faux selon
 +  # sources extérieures) corrigés, migration gardée. Couvre .sql + .down.sql.
 +  # Glob exact : les migrations ne sont pas auto-couvertes.
 +  - glob: backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh*.sql

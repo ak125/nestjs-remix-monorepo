@@ -122,7 +122,6 @@ with attendu(type_id, valeur_erronee, valeur_corrigee) as (values
   (66841, '1.0 Econetic', '1.0 EcoBoost'),
   (66884, '1.0 Econetic', '1.0 EcoBoost'),
   (66889, '1.0 Econetic', '1.0 EcoBoost'),
-  (66951, '1.0 Econetic', '1.0 Titanium Plus EcoBoost'),
   (66959, '1.5 Econetic', '1.5 EcoBoost 16V'),
   (66967, '2.0 Econetic', '2.0 EcoBoost 16V'),
   (67007, '1.0 Econetic', '1.0 EcoBoost'),

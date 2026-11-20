@@ -1,4 +1,4 @@
-== 2026-11-20T09:28:17Z Migration Safety (étapes de ci.yml rejouées en local), HEAD 926c91cda
+== 2026-11-20T11:08:06Z Migration Safety (étapes de ci.yml rejouées en local), HEAD 30704d234
 -- 1. squawk 2.52.1 (les .down.sql sont exclus, comme en CI)
 
 Found 0 issues in 2 files 🎉
@@ -10,7 +10,7 @@ exit=0
 serveur : 17.11 (Debian 17.11-1.pgdg13+2)
 .....
 ----------------------------------------------------------------------
-Ran 5 tests in 0.002s
+Ran 5 tests in 0.001s
 
 OK
 auto-test exit=0

@@ -1,14 +1,14 @@
 -- =============================================================================
 -- Migration : RETOUR — remettre type_name et type_name_meta relevés (mandat EH)
 -- Date      : 2026-11-20 (mandat EH, « 07 Pages et SEO »)
--- Scope     : public.auto_type.type_name de 4 types (et type_name_meta quand
+-- Scope     : public.auto_type.type_name de 5 types (et type_name_meta quand
 --             il est faux aussi), rien d'autre. Ni type_name_url, ni type_alias,
 --             ni URL, ni modèle, ni marque. Aucun DELETE, aucun DDL.
 -- Généré par docs/audit/mandat-eh-sources-noms-motorisation-20261120/12-generer-migration-origine.py
 -- depuis decisions.tsv (migration = « origine ») : ne pas éditer à la main, régénérer.
 -- =============================================================================
 --
--- POURQUOI : pour ces 4 types, le nom d'origine (TecDoc ou base ancienne)
+-- POURQUOI : pour ces 5 types, le nom d'origine (TecDoc ou base ancienne)
 -- nomme une autre motorisation que celle décrite par le code moteur, la
 -- puissance, la cylindrée et les années du type. Valeur juste et URL des
 -- sources par ligne : verdicts-sources.tsv et la PR du mandat EH.
@@ -25,7 +25,7 @@
 -- (rejeu). Toute autre valeur lève une exception avant toute écriture : rien
 -- n'est écrit.
 -- REJOUABLE : au second passage, 0 ligne écrite, 0 page invalidée.
--- URL : aucune. Les URL des types lisent type_alias, renseigné pour ces 4
+-- URL : aucune. Les URL des types lisent type_alias, renseigné pour ces 5
 -- types et jamais réécrit ici ; le repli sur type_name
 -- (packages/seo-url-contract/src/url-rules.ts:40-49) ne s'applique à aucun.
 -- RÉIMPORT : scripts/tecdoc-pipeline/create-vehicles-p4a.py n'insère que des
@@ -59,6 +59,7 @@ BEGIN
     (33063, '350 BlueTEC 4-Matic', '350 BlueTEC 4Matic', '320 CDI 4-Matic', '320 CDI 350 BlueTEC 4Matic'),  -- MERCEDES | CLASSE GL (X164) | nom d'origine faux aussi
     (33593, '2.2 D Multijet', '2.2 D Multijet', '2.0 D Multijet', '2.0 JTD'),  -- LANCIA | PHEDRA | nom d'origine faux aussi
     (60342, '2.0 TFSI', '2.0 TFSI', '2.0 45 TFSI', '2.0 TFSI'),  -- AUDI | A3 III Sportback | nom d'origine faux (nom d'affichage juste)
+    (66951, '1.0 EcoBoost', '1.0 EcoBoost', '1.0 Titanium Plus EcoBoost', '1.0 Econetic'),  -- FORD | FIESTA VI Berline | nom d'origine faux aussi
     (73442, '220 D', '220 d', '200 D', '220 d')  -- MERCEDES | CLASSE C Coupé (C205) | nom d'origine faux (nom d'affichage juste)
     ;
 

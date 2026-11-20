@@ -2,4 +2,5 @@ type_id	type_name_apres	meta_apres	regle
 33063	350 BlueTEC 4-Matic	350 BlueTEC 4Matic	GL 350 CDI BlueTEC 211 ch (OM 642.820) ; forme de la base : type_name « 350 BlueTEC 4-Matic » (type 12310, ML W166), meta « … 4Matic » comme les voisins GL
 33593	2.2 D Multijet	2.2 D Multijet	Phedra 2.2 Multijet 170 ch, 2179 cm³ ; forme TecDoc FR de la base « X.X D Multijet » (23358 voisin, 8 types « 2.2 D Multijet ») ; meta = type_name comme les cas affichage
 60342	2.0 TFSI	2.0 TFSI	A3 8V 2.0 TFSI 220 ch 2015-2016, badge 45 introduit en 2017 ; forme de la base « 2.0 TFSI » (60343) ; meta déjà juste, inchangée
+66951	1.0 EcoBoost	1.0 EcoBoost	Fiesta 1.0 EcoBoost 125 ch (M1JE/M1JH), auto-data ; « Titanium Plus » est une finition, pas un moteur ; forme de type_name_url de la base « 1.0 EcoBoost » ; décision de Marwane du 20/11/2026 11:58 heure de Tunis (mandat EK)
 73442	220 D	220 d	C 220 d coupé C205 163 ch (OM 651.921) ; forme de la base « 220 D » (73446, 73447) ; meta « 220 d » déjà juste, inchangée
