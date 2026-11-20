@@ -75480,6 +75480,26 @@
         "depcruise",
         "manual"
       ],
+      "domain": "D15",
+      "id": "docs/audit/mandat-ee-noms-motorisation-20261120/09-collisions.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 102,
+      "owner": "@ak125",
+      "path": "docs/audit/mandat-ee-noms-motorisation-20261120/09-collisions.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
       "domain": "D5",
       "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-assets.cjs",
       "importedBy": [],
@@ -110036,11 +110056,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "1ed628874b5caf86ae0ff2b61cd19a0d558f5c0ad81bd5b4bb7de175fa26c91e",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "b346771d17423305e9ee89e1052279b9c63d3e8102713cd767696f495375f7ed",
+      "audit/registry/files.json": "2a4cd0263229e7690ddfbfeebb89fc8a6efb6c064f0d2ffe408fcbdb894cb145",
       "audit/registry/rpc.json": "97e3cd0bb46a7389c7780aab203f64b278b5fecd03997a96976efc301abf93e3",
       "audit/registry/runtime.json": "d713efc440587e87193b79786b2ffd3d517eb643a00734c2f0d8d70a20e67e0e"
     },
-    "sotFingerprint": "3aed1a75f12a"
+    "sotFingerprint": "698bafe084d4"
   },
   "runtime": [
     {
