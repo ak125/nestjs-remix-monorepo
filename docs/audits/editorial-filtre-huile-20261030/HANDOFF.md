@@ -1,7 +1,8 @@
 # Mission Claude CLI — intégration du lot filtre à huile (pg_id 7)
 
 Révision 3, 30/10/2026. Remplace la liste de raccordements de la révision 2. Révision 4 du dossier (31/10) : § 1
-(note) et § 2 mis à jour par Claude Code Desktop ; § 3 à § 6 inchangés. Seuls les raccordements du dossier
+(note) et § 2 mis à jour par Claude Code Desktop ; § 3 à § 6 inchangés. Révision 5 (31/10, après-midi) : § 1 et § 2
+par Claude Code Desktop ; § 6 (Claude CLI) inchangé. Seuls les raccordements du dossier
 filtre à huile : les 13 besoins du dossier plaquettes ne sont pas des prérequis (FH-5 compteur et FH-11 `stages` les
 recoupent parce que le filtre à huile en a besoin pour son compte).
 
@@ -25,16 +26,34 @@ publication, préparé et non exécuté. Aucune ligne du dossier ne demande plus
 | État | Statut au 30/10 | Preuve ou motif |
 |---|---|---|
 | rédigé | oui | `integration/` (4 fichiers, plus `gsc-baseline.json` ajouté au § 6), `assets/` (8 visuels + sources SVG), `tools/`, `PROMPTS.md`, ce fichier |
-| accessible | oui | branche poussée sur `origin` ; PR brouillon de revue [ak125/nestjs-remix-monorepo#1935](https://github.com/ak125/nestjs-remix-monorepo/pull/1935), à ne pas fusionner. Glob `docs/audits/editorial-*/**` ajouté au registre L2 (D5, `@ak125/content-team`) pour la garde des nouveaux fichiers |
+| accessible | oui | révisions 1 à 4 : [ak125/nestjs-remix-monorepo#1935](https://github.com/ak125/nestjs-remix-monorepo/pull/1935), fusionnée dans `main` le 31/10 (`9d1d82207`) ; révision 5 : nouvelle branche issue de `main` (CHECKPOINT). Glob `docs/audits/editorial-*/**` ajouté au registre L2 (D5, `@ak125/content-team`) pour la garde des nouveaux fichiers |
 | transmis | oui | consigne reçue le 30/10 par une session Claude Code ouverte sur le dépôt |
 | pris en charge | oui | session Claude Code des 30 et 31/10 ; code sur la PR brouillon [ak125/nestjs-remix-monorepo#1936](https://github.com/ak125/nestjs-remix-monorepo/pull/1936), dossier sur #1935 |
-| intégré et vérifié en DEV | vérifié en DEV, non intégré | code : #1936 en brouillon, non fusionnée, absente de PREPROD et de PROD ; lot : rendu DEV vérifié par une surcouche de lecture, rien d'écrit en base (§ 6) |
+| intégré et vérifié en DEV | code fusionné ; lot vérifié en DEV, non écrit | code : #1936 fusionnée dans `main` le 31/10 (`7d3f30237`), déploiement PREPROD et PROD non vérifié ; lot : rendu DEV vérifié par une surcouche de lecture, rien d'écrit en base (§ 6, rédigé avant les deux fusions) |
 
-Révision 4 (31/10) : rédigée ; accessible sur #1935 une fois poussée (SHA dans la description de la PR). Transmise à
-Claude CLI : non, aucun envoi observable depuis Claude Code Desktop. Prise en charge : non. Ce qui change pour
-l'intégration : S2_DIAG (4 lignes au lieu de 3), une fiche par champ et par bloc dans `integration/r1.json` et
-`r3.json`, trois propositions de libellés codés (décisions de l'owner), un bloc candidat S2_DIAG, trois pictogrammes
-vidéo pour `SequencesCourtes`.
+Révision 4 (31/10) : prise en charge par Claude CLI le 31/10 (§ 6, banc sur `67f7ce304`) ; la mention « transmise :
+non » de la version précédente de ce paragraphe est caduque. Ce qui change pour l'intégration : S2_DIAG (4 lignes au
+lieu de 3), une fiche par champ et par bloc dans `integration/r1.json` et `r3.json`, trois propositions de libellés
+codés (décisions de l'owner), un bloc candidat S2_DIAG, trois pictogrammes vidéo pour `SequencesCourtes`.
+
+Révision 5 (31/10, après-midi), recentrage du mandat : Claude CLI organise le point d'entrée commun et l'intégration ;
+Claude Code Desktop termine les productions éditoriales et médias. Pour l'intégration, rien ne change dans `r1.json`,
+`r3.json`, `assets.json` ni `publication-batch.json`. Changent :
+
+- `integration/candidats.json` : F-C4, F-C9, F-C10 et F-C11 vérifiés le 31/10 (sources internes au fichier) ; bloc
+  S4_REPOSE avec les joints neufs de cartouche (F-C9) ; phrase « huile et filtre usagés » de S6 corrigée (toutes les
+  déchèteries ne reprennent pas le filtre). Toujours non admis : aucun bloc n'est servable.
+- `integration/social.json`, `SOCIAL.md`, `assets/social/` (13 diapositives, 5 couvertures), `tools/build-srt.cjs` (sous-titres de C1 à C4) :
+  hors pages, rien à raccorder.
+- `tools/lint-integration.cjs` couvre aussi les blocs candidats, les textes sociaux et les courts.
+
+Relevé de Claude Code Desktop pour l'environnement isolé, transmis à Claude CLI sans action de sa part : aucun
+environnement isolé fourni par le projet ; aucun accès PROD sur ce poste, si bien qu'une application lancée ici ne
+peut pas écrire en PROD ; la reconstruction de la RPC de la page lit 15 tables ; images Docker `postgres:17` présentes
+sous WSL, mais PostgREST, storage-api, Redis et imgproxy (versions épinglées) restent à télécharger ; 8,3 Go libres
+sur `C:`, juste pour un `npm ci` et les builds, et aucun `node_modules` conforme au lockfile ; URL d'images codées en
+dur vers `www.automecanik.com/imgproxy` dans le frontend ; préconditions de `publication-batch.json` lues, non
+exécutées.
 
 ## 2. Ce qui est livré
 
@@ -42,11 +61,13 @@ vidéo pour `SequencesCourtes`.
 |---|---|---|
 | `integration/r1.json` | champs `r1s_*` (hero, sélecteur, 4 badges, intros, tableau de vérification, FAQ au format `{question, answer}`, bloc micro-SEO 1 570 caractères après FH-12) ; `sg_content` en 5 blocs H2 routés vers choose, price, location, reference ; ancien → nouveau par bloc. Révision 4 : `fiche` par champ et `fiche_par_bloc` (cible, question résolue, preuve interne, portée véhicule, statut d'admission, dépendance, image) ; `propositions_libelles_codes` : H2 « Qualité, prix et marques », texte et badge de `EquipementiersSection.tsx` | auto-revu (lint, banc DEV) ; non écrit, écriture en zone STOP. Badge et accroche retirés par `67f7ce304` (#1936) ; H2 « Qualité, prix et marques » : décision nominative (SEO indexé) |
 | `integration/r3.json` | 12 sections `__seo_gamme_conseil` par `sgc_id`, titres, HTML conforme aux composants de rendu, provenance proposée, image par section ; META conservée. Révision 4 : `fiche` par section ; S2_DIAG en 4 lignes (la dernière répond aux intentions R5 fuite, bruit, odeur et vibration, consolidées sur `#diagnostic-rapide`, sans désigner le filtre) ; proposition de slogan R3 (`visual-intent.ts:186`) | auto-revu (lint, banc DEV) ; non écrit, écriture en zone STOP. Slogan R3 vidé par `67f7ce304` (#1936) |
-| `integration/candidats.json` | F-C1 à F-C11 et blocs prêts après admission (S4, S5, S6, huile et filtre usagés ; révision 4 : ligne S2_DIAG « fuite juste après remplacement », F-C3 et F-C4) | non servables avant admission |
+| `integration/candidats.json` | F-C1 à F-C11 et blocs prêts après admission (S4, S5, S6, huile et filtre usagés ; révision 4 : ligne S2_DIAG « fuite juste après remplacement », F-C3 et F-C4 ; révision 5 : F-C4, F-C9, F-C10, F-C11 vérifiés, S4_REPOSE avec joints de cartouche, S6 corrigé) | non servables avant admission |
+| `integration/social.json`, `SOCIAL.md`, `assets/social/`, `tools/build-social.cjs` | révision 5 : carrousels Instagram A (6) et B (7), posts Facebook, légende de C4, titres et tags YouTube, couvertures V1 et C1 à C4 ; UTM par campagne | proposition, hors pages ; rien à raccorder |
+| `tools/build-srt.cjs` | révision 5 : sous-titres de C1 à C4 tirés de MEDIA.md § 7, écrits dans `subtitles/`, non versionné (`.gitignore` : sous-titres avec les rendus, hors dépôt) | à recaler sur la voix enregistrée |
 | `integration/assets.json` | 8 visuels de page et 4 pictogrammes vidéo : slot, `rip_id`, fichier, alt, légende, mécanisme, état de vérification ; révision 4 : droits, portée et affichage attendu par visuel, consommateur `SequencesCourtes` (#1936) pour les pictogrammes ; LOCATION à désélectionner | fichiers produits |
 | `PROMPTS.md` | images et scènes manquantes, moyen réel pour chacune | manques |
 | `tools/build-assets.cjs`, `tools/build-pictos.cjs` | reproduction des visuels (sharp) depuis `assets/sources/` ; sortie identique octet pour octet, vérifiée le 30/10 ; `build-pictos.cjs` produit les 4 pictogrammes depuis le 31/10, témoin inchangé à l'octet près | — |
-| `tools/lint-integration.cjs` | contrôle du texte public : gardes R1 du dépôt (`R1_FORBIDDEN_TERMS`, `isR3R5Content`), bornes du contrat R1, JSON-LD FAQPage, motifs `anti_source`, noms de sources, promesses commerciales, statut candidat servi | PASS le 30/10 après FH-12 et le 31/10 après la révision 4 (68 unités, 0 constat) |
+| `tools/lint-integration.cjs` | contrôle du texte public : gardes R1 du dépôt (`R1_FORBIDDEN_TERMS`, `isR3R5Content`), bornes du contrat R1, JSON-LD FAQPage, motifs `anti_source`, noms de sources, promesses commerciales, statut candidat servi ; révision 5 : blocs candidats, textes sociaux et courts (`FORBIDDEN_PATTERNS_SOCLE` et `_SHORT`), règles de canal du seed de marque | PASS le 30/10 après FH-12, le 31/10 après la révision 4 (68 unités) et après la révision 5 (158 unités, 0 constat ; 34 contrôles de canal) |
 | `tools/build-preview.cjs`, `preview/` | simulation non intégrée : `extractEditorialBlocks`, `extractSummaryPoints`, `normalizeStepHtml` et `deriveDifficulty` (backend, avec les libellés de `buildHeroBadges`) exécutés sur les textes du lot, lus dans le checkout désigné par `FH_REPO` ; captures 375 et 1 280 px ; `preview/rapport.json` ; régénérés le 31/10 avec les fonctions de la branche de correction (`e3d644a04`) : badge « Sécurité » seul | pas un rendu DEV |
 | `integration/gsc-baseline.json` | baseline Search Console de FH-13 : une ligne par rôle, aux colonnes de `__seo_gamme_gsc_baseline` | mesurée le 30/10, non insérée |
 | `verification-dev/` | captures du rendu DEV (branche de correction, surcouche de lecture) : R1 et R3 en 375 et 1 280 px | rendu DEV, rien d'écrit |
