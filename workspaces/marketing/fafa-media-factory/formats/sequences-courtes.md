@@ -15,7 +15,7 @@ filtre vissé). Le nombre de séquences et leur durée viennent du script.
 | # | Séquence | Durée | Contenu |
 |---|---|---|---|
 | 1 | **Question** | 3 s | la question du court, texte à l'écran court ; visuel facultatif |
-| 2 | **Identité** | 4-6 s | « Moi c'est Fafa, le mécano IA d'AutoMecanik. » + premier élément de réponse |
+| 2 | **Identité** | 4-6 s | « Moi, c'est Fafa, le mécano expert automobile d'AutoMecanik. » + premier élément de réponse |
 | 3 à n-1 | **Réponse** | 6-13 s chacune | une étape, un critère ou un rôle par séquence ; plusieurs textes à l'écran possibles |
 | n | **Destination** | 4-6 s | la page AutoMecanik qui prolonge la réponse, sans prix ni promo |
 

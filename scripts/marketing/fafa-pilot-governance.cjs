@@ -209,19 +209,35 @@ function evaluateDossier(dir, options) {
     evidencePack: accepted.map((entry) => ({ docId: entry.doc_id, heading: '', charRange: [0, entry.excerpt.length], rawExcerpt: entry.excerpt, confidence: entry.confidence })),
   });
   const claimsReady = blockingClaimIds.length === 0 && gates.every((gate) => gate.verdict !== 'FAIL');
+  // Brand gate G3 with the Fafa signature (decisions 145 and 147): every dossier of this
+  // factory is a Fafa media. script.json is optional; without it only the AI notice is checked.
+  const scriptFile = path.join(dir, 'script.json');
+  const script = fs.existsSync(scriptFile) ? read(scriptFile) : null;
+  if (script && script.video_id !== claims.video_id) throw new Error('DOSSIER_ID_MISMATCH');
+  const brandGate = gateService.runBrandGate({
+    brief: { mode: String(brief.mode ?? '').toLowerCase() || undefined },
+    scriptText: typeof script?.script_voice === 'string' ? script.script_voice : undefined,
+    disclaimerPlan: disclaimer,
+    persona: 'fafa',
+  });
+  const brandFailed = brandGate.verdict === 'FAIL';
+  const ready = claimsReady && !brandFailed;
   return {
     videoId: claims.video_id,
-    readiness: claimsReady ? 'CLAIMS_ONLY' : 'NOT_READY',
+    readiness: ready ? 'CLAIMS_ONLY' : 'NOT_READY',
     claimsReady,
     reason: blockingClaimIds.length
       ? (options ? 'Referenced WIKI evidence was not admitted by the current authority check.' : 'Referenced WIKI evidence has unresolved admission; canonical admission verification is not connected.')
-      : claimsReady ? 'Claim gates only; render, remaining gates and approvals are not validated here.' : 'Unsupported claims or missing human validation; D17 source review required.',
+      : !claimsReady ? 'Unsupported claims or missing human validation; D17 source review required.'
+      : brandFailed ? 'Brand gate G3 failed: Fafa signature or AI notice; see brandGate.'
+      : 'Claim gates and brand gate G3 only; render, remaining gates and approvals are not validated here.',
     wikiAdmission,
     artefactCheck,
     claimGates: gates,
+    brandGate,
     acceptedEvidenceIds: [...acceptedIds],
     approvalsComplete: ['content_approved', 'render_approved', 'publish_approved'].every((key) => approval.approval[key] === true),
-    canPublishEligible: claimsReady ? null : false,
+    canPublishEligible: ready ? null : false,
     actorAuthenticated: false,
   };
 }

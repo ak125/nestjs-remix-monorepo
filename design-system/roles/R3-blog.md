@@ -15,7 +15,7 @@ R3 (Blog) pages educate users about automotive topics. They build trust and auth
 1. **Article Header**
    - Title (H1)
    - Reading time
-   - Author name + avatar
+   - Author: the organization Automecanik + logo (no person, no AI named as author — P41)
    - Publication date
    - Category tag
 
@@ -41,8 +41,8 @@ R3 (Blog) pages educate users about automotive topics. They build trust and auth
    - "Pièces mentionnées dans cet article"
    - 2-3 product cards max
 
-6. **Author Bio**
-   - Name, photo, credentials
+6. **About the Author**
+   - The organization Automecanik: name, logo, short presentation
    - Link to other articles
 
 7. **Related Articles**
@@ -80,7 +80,7 @@ R3 (Blog) pages educate users about automotive topics. They build trust and auth
 
 - [ ] Clear H1 title
 - [ ] Reading time estimate
-- [ ] Author attribution
+- [ ] Author attribution: the organization Automecanik (P41)
 - [ ] Publication date
 - [ ] Proper heading hierarchy
 
@@ -106,7 +106,7 @@ R3 (Blog) pages educate users about automotive topics. They build trust and auth
 {
   "@type": "Article",
   "headline": "...",
-  "author": { "@type": "Person", "name": "..." },
+  "author": { "@type": "Organization", "name": "Automecanik" },
   "datePublished": "...",
   "publisher": { "@type": "Organization", "name": "Automecanik" }
 }
@@ -121,5 +121,5 @@ R3 (Blog) pages educate users about automotive topics. They build trust and auth
 
 ## Version
 
-- **Version:** 2.0.0
-- **Last Updated:** 2026-01-28
+- **Version:** 2.0.1
+- **Last Updated:** 2026-11-17 (author = organization Automecanik, P41 of `.claude/governance/journal-des-principes.md`)

@@ -5,6 +5,8 @@ import {
   MODE_CONSTRAINTS,
   FORBIDDEN_PATTERNS_SOCLE,
   FORBIDDEN_PATTERNS_SHORT,
+  FAFA_OLD_SIGNATURE_PATTERN,
+  FAFA_AI_NOTICE,
   type VideoGateName,
   type GateVerdict,
   type VideoMode,
@@ -175,6 +177,14 @@ export class VideoGatesService {
     return [this.g1Truth(input), this.g2Safety(input)];
   }
 
+  /**
+   * G3 seule, pour un dossier lu sur fichier : le validateur
+   * `scripts/marketing/fafa-pilot-governance.cjs` rejoue ainsi la même gate.
+   */
+  runBrandGate(input: BrandGateInput): VideoGateResult {
+    return this.g3Brand(input);
+  }
+
   private g1Truth(
     input: Pick<VideoGateInput, 'claims' | 'evidencePack'>,
   ): VideoGateResult {
@@ -248,11 +258,24 @@ export class VideoGatesService {
 
   // ── G3: Brand Gate ──
 
-  private g3Brand(input: VideoGateInput): VideoGateResult {
+  private g3Brand(input: BrandGateInput): VideoGateResult {
     const { scriptText, brief } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.brand_violations;
+    // Signature Fafa : un seul écart suffit au FAIL, quel que soit le seuil.
+    const fafaViolations = this.fafaSignatureViolations(input);
 
     if (!scriptText) {
+      if (fafaViolations.length > 0) {
+        return this.makeResult(
+          'brand',
+          'FAIL',
+          fafaViolations.length,
+          warn,
+          fail,
+          [`${fafaViolations.length} Fafa signature violations found`],
+          fafaViolations,
+        );
+      }
       return this.notMeasured('brand', warn, fail, 'No script text to check');
     }
 
@@ -287,15 +310,68 @@ export class VideoGatesService {
       });
     }
 
+    violations.push(...fafaViolations);
+
     return this.makeResult(
       'brand',
-      this.thresholdVerdict(violations.length, warn, fail),
+      fafaViolations.length > 0
+        ? 'FAIL'
+        : this.thresholdVerdict(violations.length, warn, fail),
       violations.length,
       warn,
       fail,
-      [`${violations.length} brand/mode violations found`],
+      [
+        `${violations.length} brand/mode violations found`,
+        ...(fafaViolations.length > 0
+          ? [`${fafaViolations.length} Fafa signature violations (FAIL)`]
+          : []),
+      ],
       violations,
     );
+  }
+
+  /**
+   * Signature Fafa (canon `workspaces/marketing/fafa-media-factory/personas/fafa.md`,
+   * § « Amendement du 17 nov. 2026 » ; décisions 145 et 147).
+   * (a) Le texte de voix ne dit pas « mécano IA » (ancienne phrase), pour tout média.
+   * (b) Un média déclaré Fafa (`persona: 'fafa'`) porte une surimpression
+   *     `ai_generated_notice` non vide et continue. C'est la part
+   *     d'`identity_disclosed` mesurable avant publication ; l'étiquette IA de la
+   *     plateforme reste vérifiée par la revue de publication du département 08.
+   */
+  private fafaSignatureViolations(
+    input: BrandGateInput,
+  ): Array<{ location: string; issue: string }> {
+    const violations: Array<{ location: string; issue: string }> = [];
+    const lines = (input.scriptText ?? '').split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (FAFA_OLD_SIGNATURE_PATTERN.test(lines[i])) {
+        violations.push({
+          location: `line:${i + 1}`,
+          issue: `ancienne_signature: « mécano IA » dans la voix: "${lines[i].trim().slice(0, 80)}"`,
+        });
+      }
+    }
+    if (input.persona !== 'fafa') return violations;
+    // Le dossier suit `governance/disclaimer-plan.schema.json`, dont le
+    // vocabulaire diffère du `DisclaimerType` du pipeline backend.
+    const notices = (input.disclaimerPlan?.disclaimers ?? []).filter(
+      (d) => (d.type as string) === FAFA_AI_NOTICE.type && !!d.text?.trim(),
+    );
+    if (notices.length === 0) {
+      violations.push({
+        location: 'disclaimer_plan',
+        issue: `ai_notice_absent: aucun disclaimer ${FAFA_AI_NOTICE.type} non vide (identity_disclosed faux)`,
+      });
+    } else if (
+      !notices.some((d) => (d.position as string) === FAFA_AI_NOTICE.position)
+    ) {
+      violations.push({
+        location: 'disclaimer_plan',
+        issue: `ai_notice_not_continuous: ${FAFA_AI_NOTICE.type} sans position ${FAFA_AI_NOTICE.position} (identity_disclosed faux)`,
+      });
+    }
+    return violations;
   }
 
   // ── G4: Platform Gate ──
@@ -539,6 +615,11 @@ export interface VideoGateInput {
   approvalRecord: ApprovalRecord | ApprovalDossierRecord;
   /** Full script text (for brand gate) */
   scriptText?: string;
+  /**
+   * Persona du média. `'fafa'` fait exiger par G3 la surimpression
+   * `ai_generated_notice` continue (canon Fafa, décision 147).
+   */
+  persona?: 'fafa';
   /** Actual rendered duration in seconds (for platform gate) */
   actualDurationSec?: number;
   /** Similarity score vs existing productions (0-1) */
@@ -550,3 +631,9 @@ export interface VideoGateInput {
     usedAs: string;
   }>;
 }
+
+/** Entrées lues par G3 `brand`. */
+export type BrandGateInput = Pick<
+  VideoGateInput,
+  'brief' | 'scriptText' | 'disclaimerPlan' | 'persona'
+>;

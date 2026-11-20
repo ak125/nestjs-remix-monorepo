@@ -34485,7 +34485,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 267,
+      "loc": 284,
       "owner": "@ak125",
       "path": "backend/src/config/video-quality.constants.ts",
       "risk": "medium",
@@ -49990,7 +49990,7 @@
         "backend/src/modules/media-factory/types/video.types.ts"
       ],
       "kind": "service",
-      "loc": 553,
+      "loc": 640,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/services/video-gates.service.ts",
       "risk": "medium",
@@ -75568,7 +75568,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 781,
+      "loc": 874,
       "owner": "@ak125",
       "path": "backend/tests/unit/video-gates.service.test.ts",
       "risk": "medium",
@@ -107616,7 +107616,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 272,
+      "loc": 288,
       "owner": "@ak125",
       "path": "scripts/marketing/fafa-pilot-governance.cjs",
       "risk": "low",
@@ -107636,7 +107636,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 709,
+      "loc": 793,
       "owner": "@ak125",
       "path": "scripts/marketing/fafa-pilot-governance.test.cjs",
       "risk": "low",
@@ -110317,11 +110317,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4bd8407a831a3385f4c3e8845dd213a18f13ec99e6a3528a63160c01e78749ae",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "9324b2a59a58ad2a8db4b5a631a8922d95c7273a1abc39c974e864d2e4879095",
+      "audit/registry/files.json": "660ec69502438bafcbdda3fd429e049eedbb0a04cd54e6c65f2313101327e7e4",
       "audit/registry/rpc.json": "ae924a85483e215265b47c3f6c98988c62512b08260e003ab3ab96db651b6211",
       "audit/registry/runtime.json": "4950b9611ddfa67b77433a772064549b6a82173cb60b05cc2b24d34510d4a82d"
     },
-    "sotFingerprint": "f3fe3f510c44"
+    "sotFingerprint": "813ff36b44d2"
   },
   "runtime": [
     {
