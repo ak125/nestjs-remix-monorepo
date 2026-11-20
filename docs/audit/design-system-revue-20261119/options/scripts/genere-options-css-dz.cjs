@@ -14,6 +14,12 @@ const OPTIONS = {
   a2: { nom: "OPTION A2", complement: "n° 4", fond: "#F97316", texte: T.navy, survol: "#EA580C", principales: true,
         desactive: { fond: "#FED7AA", texte: T.navy }, logo: "#F97316",
         note: "action principale de chaque page (achat, « Rechercher des pièces », « Trouver une pièce », « Se connecter ») : fond cta.500 #F97316, texte navy ; survol cta.600 #EA580C ; désactivé fond cta.200 #FED7AA, texte navy, opacité 1. Logo « MECANIK » cta.500 #F97316 sur navy. Fil d'Ariane sur navy : neutral.300 #9CA3AF, page courante blanc" },
+  // Complément n° 5 : A3 = A2 + règles ajoutées après celles d'A2 (A2 retenue par Marwane, 20 nov. 2026 12:03 Tunis).
+  // Seules différences : « Ajouter » des cartes R2 en contour navy (une seule action orange par écran), « Inscription » en
+  // contour blanc sur navy, marges de défilement sous les barres fixes, bords et badges sous seuil corrigés.
+  a3: { nom: "OPTION A3", complement: "n° 5", fond: "#F97316", texte: T.navy, survol: "#EA580C", principales: true, a3: true,
+        desactive: { fond: "#FED7AA", texte: T.navy }, logo: "#F97316",
+        note: "comme A2 (fond cta.500 #F97316, texte navy ; survol cta.600 #EA580C ; désactivé #FED7AA, texte navy, opacité 1), sauf « Ajouter » des cartes de la liste R2 : contour navy 2 px, fond transparent, texte navy ; survol fond navy à 8 % ; désactivé fond neutral.50 #F5F7FA, contour et texte neutral.500 #4B5563 en pointillé. Une seule action orange par écran : « Panier » de la barre collante (390) ou l'achat principal de la fiche" },
 };
 const q = (c) => `[class~="${c.replace(/"/g, '\\"')}"]`;                 // classe rendue exacte
 const L = (...cs) => cs.map(q).join(",\n");
@@ -130,6 +136,7 @@ function regles(o) {
     r(2, `action principale — ${o.nom} : survol, un ton plus foncé (${o.survol})`, `${PRINCIPALE}:hover`, `background-color:${o.survol}`);
     r(2, `action principale — ${o.nom} : désactivé, fond orange clair ${o.desactive.fond} (cta.200), texte ${o.desactive.texte}, opacité 1 (au lieu de l'opacité 0,4)`, join(`${PRINCIPALE}:disabled`, `${PRINCIPALE}:disabled:hover`), `background-image:none;background-color:${o.desactive.fond};color:${o.desactive.texte};border-color:${o.desactive.fond};opacity:1;box-shadow:none;cursor:not-allowed`);
     r(8, "action principale : anneau de focus navy de 2 px, hors du bouton (fond clair)", `${PRINCIPALE}:focus-visible`, `outline:2px solid ${T.navy};outline-offset:2px`);
+    if (o.a3) a3(r);
     return R;
   }
   // ---------- 2 : action d'achat seule ----------
@@ -138,6 +145,30 @@ function regles(o) {
   r(2, `action d'achat — ${o.nom} : survol, un ton plus foncé (${o.survol})`, `${ACHAT}:hover`, `background-color:${o.survol}`);
   r(8, "action d'achat : anneau de focus navy de 2 px, hors du bouton (fond clair)", `${ACHAT}:focus-visible`, `outline:2px solid ${T.navy};outline-offset:2px`);
   return R;
+}
+// ---------- complément n° 5 : règles A3, placées après celles d'A2 ; deux :not(#…) pour l'emporter sur PRINCIPALE (un seul :not(#…)) ----------
+const X = ":not(#dz-a3):not(#dz-a3b)";
+const CARTE = `button[aria-label^="Ajouter"][aria-label$="au panier"]:not([role="toolbar"] *)${X}`;   // « Ajouter » des cartes, hors barre collante
+const INSCRIPTION = `nav a[href="/register"]${q("bg-cta")}${X}`;
+function a3(r) {
+  r(2, "« Ajouter » des cartes de la liste R2 : action secondaire, contour navy 2 px, fond transparent, texte et icône navy (complément n° 5, point 1)", CARTE, `background-image:none;background-color:transparent;color:${T.navy};border:2px solid ${T.navy};box-shadow:none;--tw-shadow-color:transparent`);
+  r(2, "« Ajouter » des cartes : texte et icône intérieurs navy", `${CARTE} *`, `color:${T.navy}`);
+  r(2, "« Ajouter » des cartes : survol, fond navy à 8 % sur blanc (#EDEEF1), texte navy", `${CARTE}:hover`, `background-color:rgba(15,30,56,.08);color:${T.navy}`);
+  r(8, "« Ajouter » des cartes : focus, anneau navy de 2 px hors du bouton", `${CARTE}:focus-visible`, `outline:2px solid ${T.navy};outline-offset:2px`);
+  r(2, `« Ajouter » des cartes : désactivé, fond ${T.neutre50}, contour pointillé et texte ${T.texte2}, opacité 1`, join(`${CARTE}:disabled`, `${CARTE}:disabled:hover`), `background-color:${T.neutre50};color:${T.texte2};border:2px dashed ${T.texte2};opacity:1;cursor:not-allowed`);
+  r(2, `« Ajouter » des cartes : désactivé, texte et icône intérieurs ${T.texte2}`, `${CARTE}:disabled *`, `color:${T.texte2}`);
+  r(2, "« Inscription » de l'en-tête (≥ 1024 px) : action secondaire sur navy, contour blanc 2 px, fond transparent, texte blanc ; pas d'orange (complément n° 5, point 6)", join(INSCRIPTION, `${INSCRIPTION} *`), `background-image:none;background-color:transparent;color:${T.blanc};border:2px solid ${T.blanc}`);
+  r(2, "« Inscription » : survol, fond blanc à 12 % sur navy, texte blanc", `${INSCRIPTION}:hover`, `background-color:rgba(255,255,255,.12);color:${T.blanc}`);
+  // Marges de défilement limitées au mobile : en 1440, aucune barre fixe ne masquait le focus sous A2, et une marge basse
+  // de 152 px faisait défiler la colonne collante R2 (PiecesVehicleContent.tsx:327) jusqu'au bas de son conteneur (1re passe A3).
+  r(8, "< 768 px : marges de défilement ; un élément atteint au clavier ou par ancre ne passe plus sous l'en-tête collant (Navbar.tsx:156, --navbar-height posée par Navbar.tsx:117, 123 px mesurés en 390) ni sous la barre mobile (BottomNav.tsx:68), la barre d'actions R2 (MobileBottomBar.tsx:66), la bulle d'aide (ChatWidget.tsx:210, bottom-24, 56 px) et le retour en haut (root.tsx:363, bottom-40, 48 px) : bas 160 + 48 + 8 = 216 px (complément n° 5, points 3 et 5)", "html", "scroll-padding-top:calc(var(--navbar-height, 64px) + 8px);scroll-padding-bottom:216px", "(max-width: 767.98px)");
+  r(8, "< 768 px, page à barre d'outils R2 collante (PiecesToolbar.tsx:75, sticky top-24, 126 px de haut mesurés en 390, bas à 222 px) : marge haute 222 + 8 = 230 px (complément n° 5, point 5)", `html:has(div[translate="no"]${q("sticky")}${q("top-24")})`, "scroll-padding-top:230px", "(max-width: 767.98px)");
+  r(8, "< 768 px, page courte sans barre mobile (connexion) : la bulle d'aide (ChatWidget.tsx:210, bottom-24 + 56 px = 152 px du bas) couvre les derniers liens, que le défilement ne peut plus dégager en bas de page ; espace réservé de 152 + 8 = 160 px après le contenu (complément n° 5, point 5). Étendue à toutes les pages à bulle, elle corrigeait le lien téléphone du panier mais ajoutait sur gamme 390 un arrêt masqué par la barre mobile et 3 nœuds axe (mesure du 20 nov. 12:00Z, écartée)", 'html:has(button[aria-label="Ouvrir le chat"]):not(:has([data-bottom-nav])) body::after', 'content:"";display:block;height:160px', "(max-width: 767.98px)");
+  r(6, "case de sélection des cartes R2 (PiecesGridView.tsx:263, border-slate-200 #E2E8F0 = 1,23:1 sur blanc) → bord neutral.400 #6B7280 (complément n° 5, point 5)", join(`button[aria-label^="Sélectionner "]${q("w-6")}${q("h-6")}${X}`, `button[aria-label^="Sélectionner "]${q("w-6")}${q("h-6")}:hover${X}`), `border-color:${T.bord}`);
+  r(5, "badge « 5 min » posé sur photo (BlogCarousel.tsx:47 et 134, fond neutral-900 à 20 % sur image) → fond navy opaque, texte blanc (complément n° 5, point 5)", join(`${q("bg-neutral-900/20")}${q("backdrop-blur")}${X}`, `${q("bg-neutral-900/20")}${q("backdrop-blur")} *`), `background-color:${T.navy};color:${T.blanc};-webkit-backdrop-filter:none;backdrop-filter:none`);
+  r(5, "pastille de résultats sur l'en-tête sombre du filtre (PiecesFilterSidebar.tsx:115, fond blanc à 15 %, « résultats » blanc à 60 %) → fond navy opaque, textes blancs (complément n° 5, point 5)", join(`${q("bg-white/15")}${q("backdrop-blur-xs")}${q("rounded-full")}${X}`, `${q("bg-white/15")}${q("backdrop-blur-xs")}${q("rounded-full")} span`), `background-color:${T.navy};color:${T.blanc};border-color:${T.texte2Sombre};-webkit-backdrop-filter:none;backdrop-filter:none`);
+  r(5, "en-tête OEM (PiecesOemSection.tsx:53, dégradé slate-800 → slate-700) → navy plein, sous-titre (ligne 70) blanc : fond réel déterminable, texte à 16,6:1 (complément n° 5, point 5)", `${q("from-slate-800")}${q("to-slate-700")}${X}`, `background-image:none;background-color:${T.navy}`);
+  r(5, "en-tête OEM : sous-titre text-slate-300 → blanc", `${q("from-slate-800")}${q("to-slate-700")} p${q("text-slate-300")}${X}`, `color:${T.blanc}`);
 }
 const NON_COUVERT = [
   "images matricielles (photos de pièces, logos de marques, bannières) : leurs couleurs ne sont pas modifiables par une feuille",

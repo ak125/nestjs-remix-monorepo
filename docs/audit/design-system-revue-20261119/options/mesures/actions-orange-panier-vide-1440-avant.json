@@ -1,0 +1,88 @@
+{
+ "id": "panier-vide",
+ "route": "/cart",
+ "viewport": "1440x900",
+ "variante": "avant",
+ "debut": "2026-11-20T11:59:24.818Z",
+ "critere": "bouton ou lien visible, fond calculé orange (teinte 15°–45°, saturation ≥ 0,45, luminosité 0,3–0,9), non recouvert en son centre",
+ "ecrans": [
+  {
+   "ecran": 0,
+   "scrollY": 0,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Inscription (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 1,
+   "scrollY": 103,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Inscription (collant) #F97316"
+   ]
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "fin",
+   "presente": false,
+   "variante": null,
+   "regles": 0
+  }
+ ],
+ "toutePage": {
+  "nombre": 1,
+  "actions": [
+   {
+    "texte": "Inscription",
+    "balise": "a",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": true,
+    "rect": [
+     1292,
+     20,
+     116,
+     40
+    ]
+   }
+  ]
+ },
+ "premierEcran": {
+  "ecran": 0,
+  "scrollY": 0,
+  "entieres": 1,
+  "partielles": 0,
+  "textes": [
+   "Inscription (collant) #F97316"
+  ]
+ },
+ "ecransAPlusieurs": 0,
+ "maxParEcran": 1,
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T11:59:33.385Z"
+}

@@ -1,4 +1,4 @@
-# Options de couleurs en images — compléments n° 2, n° 3 et n° 4 au mandat DZ
+# Options de couleurs en images — compléments n° 2 à n° 5 au mandat DZ
 
 **Maquette par feuille injectée, pas une implémentation.** Rien n'est en vigueur. Les décisions 45, 55
 et 57 sont inchangées. Aucun fichier du frontend, des jetons ni de Tailwind n'est modifié : chaque
@@ -7,11 +7,11 @@ servie par DEV. Le choix entre les options appartient à l'owner et au chat 05.
 
 | | |
 |---|---|
-| Accord | Marwane, 20 nov. 2026 à 09:37 heure de Tunis (complément n° 2, options A et B) ; 10:13 heure de Tunis (complément n° 3, option C « bouton d'achat vert », page produit seulement) ; 11:06 heure de Tunis (complément n° 4, option A2 : logo orange, action principale de chaque page en orange) |
+| Accord | Marwane, 20 nov. 2026 à 09:37 heure de Tunis (complément n° 2, options A et B) ; 10:13 heure de Tunis (complément n° 3, option C « bouton d'achat vert », page produit seulement) ; 11:06 heure de Tunis (complément n° 4, option A2 : logo orange, action principale de chaque page en orange) ; 12:03 heure de Tunis (complément n° 5, option A3 : « A2 mais continue les améliorations ») |
 | AVANT | DEV `http://127.0.0.1:3000`, servant `7f4dded37d068286e467ff69f0c4b2fcdacb0232` (origin/main) ; `frontend/` et `packages/design-tokens/` y sont identiques à la base de la PR `7368d72d` |
 | Pages | `r0-accueil` `/`, `r1-gamme` `/pieces/filtre-a-huile-7.html`, `r2-produit` `/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html`, `panier-vide` `/cart`, `connexion` `/login` ([`scripts/pages-options-dz.tsv`](scripts/pages-options-dz.tsv)) |
 | Tailles | 390×844 (mobile tactile) et 1440×900 |
-| Feuilles mesurées | [`option-a.css`](option-a.css) `2e00e790…ead3d`, [`option-b.css`](option-b.css) `2d63b7ca…ea5f570` (SHA-256 complets en fin de page), 63 règles chacune ; [`option-c.css`](option-c.css) `07d5b10d…af0f93`, 63 règles, mesurée sur `r2-produit` seulement ([§ Option C](#option-c--bouton-dachat-vert-complément-n-3)) ; [`option-a2.css`](option-a2.css) `1bef7ff9…630a64`, 67 règles, cinq pages ([§ Option A2](#option-a2--logo-et-action-principale-en-orange-complément-n-4)) |
+| Feuilles mesurées | [`option-a.css`](option-a.css) `2e00e790…ead3d`, [`option-b.css`](option-b.css) `2d63b7ca…ea5f570` (SHA-256 complets en fin de page), 63 règles chacune ; [`option-c.css`](option-c.css) `07d5b10d…af0f93`, 63 règles, mesurée sur `r2-produit` seulement ([§ Option C](#option-c--bouton-dachat-vert-complément-n-3)) ; [`option-a2.css`](option-a2.css) `1bef7ff9…630a64`, 67 règles, cinq pages ([§ Option A2](#option-a2--logo-et-action-principale-en-orange-complément-n-4)) ; [`option-a3.css`](option-a3.css) `b3737013…dae9f9`, 83 règles, cinq pages ([§ Option A3](#option-a3--a2-et-améliorations-complément-n-5)) |
 | Fenêtre | AVANT 08:53Z → 09:03Z ; captures A/B 09:34Z → 09:45Z ; mesures A/B 09:34:33Z → 09:51:47Z (2026-11-20) |
 | Garde-fous | toute requête non GET abandonnée (journal dans chaque JSON), aucun clic ni saisie, aucun formulaire envoyé ; traceurs tiers bloqués |
 
@@ -445,6 +445,36 @@ la page est parcourue écran par écran (défilement d'une hauteur d'écran). Sc
 - AVANT, A et B sont les mesures et captures du n° 2 (09:34Z → 09:51Z) ; A2 a été mesurée à 10:22Z →
   10:38Z sur le même DEV, sans rien lancer en parallèle.
 
+## Option A3 : A2 et améliorations (complément n° 5)
+
+Accord : Marwane, 20 nov. 2026 à 12:03 heure de Tunis, « A2 mais continue les améliorations ».
+[`option-a3.css`](option-a3.css) (`b3737013…dae9f9`, 83 règles) part d'`option-a2.css`, qui reste inchangée.
+Synthèse complète, points 1 à 7 un par un : [`mesures/synthese-option-a3-dz.md`](mesures/synthese-option-a3-dz.md).
+
+| Défaut (10 passages) | AVANT | A2 | A3 |
+|---|---|---|---|
+| Textes sous seuil | 466 | 11 | 2 (faux positif de mesure) |
+| Bords sous 3:1 | 61 | 40 | 0 |
+| Focus invisible ou masqué | 75 | 34 | 3 (changement de code nécessaire) |
+| axe `color-contrast` (nœuds) | 134 | 1 | 0 |
+
+- **« Ajouter » des cartes R2.** Contour navy 2 px, fond transparent, texte navy (16,63:1). Désactivé en pointillé gris (7,04:1). Sous A3, aucun écran des dix passages n'a plus d'une action orange. Sur r2-produit 390, le maximum par écran passe de 2 (AVANT) et 5 (A2) à 1 : « Panier » collant.
+- **« Inscription » en 1440.** Contour blanc sur navy, sans orange : texte et contour à 16,63:1, survol 11,61:1.
+- **Défilement mobile.** Sous 768 px, `scroll-padding` haut et bas. « Rechercher des pièces » (gamme 390) passe de 46 px masqués par la barre mobile, ou 48 px par l'en-tête, à 0 px.
+- **Bords et badges sous seuil.** Corrigés : case « Sélectionner » des cartes, badge « 5 min », pastille de filtre, en-tête OEM.
+- **Code nécessaire, non simulé.**
+  - Pas de « Rechercher » en 1440 : le mode `compact` de `VehicleSelector.tsx` n'en rend pas.
+  - Le point devant « Ajouter » est l'icône « + » écrasée, faute de `shrink-0` (`PiecesGridView.tsx:355`).
+  - 3 arrêts de focus restent recouverts : colonne collante R2 en 1440 et bulle d'aide du panier en 390.
+
+Planches :
+- `planches/<page>-<largeur>-a3.webp`, AVANT / A2 / A3 ;
+- `planches/actions-principales-secondaires-a3-{390,1440}.webp`, repos / survol / focus / désactivé ;
+- `captures/recouvrement-rechercher-r1-gamme-390-avant-a2-a3.webp` ;
+- `captures/point-ajouter-r2-produit-390-avant-a2-a3.webp`.
+
+A3 a été mesurée de 11:40Z à 12:20Z. Le DEV a redémarré deux fois pendant les passages (11:50:31Z et 12:10:38Z), sans action de cette session ; l'étape touchée a été relancée.
+
 ## Limites
 
 - **Maquette par feuille injectée, pas une implémentation.** Une feuille à `!important` écrase les
@@ -484,6 +514,18 @@ node scripts/mesure-option-dz.cjs a2 <id> <chemin> <L> <H> <dossier-mesures>/a2
 node scripts/actions-orange-a2-dz.cjs <id> <chemin> <L> <H> . a2
 bash scripts/planches-option-a2-dz.sh <dossier-brut> .
 node scripts/condense-option-a2-dz.cjs <dossier-mesures> .
+# Complément n° 5 (option A3, cinq pages) :
+node scripts/genere-options-css-dz.cjs .                       # ajoute option-a3.css
+node scripts/options-captures-dz.cjs <id> <chemin> <L> <H> . <dossier-brut> a3
+node scripts/mesure-option-dz.cjs a3 <id> <chemin> <L> <H> <dossier-mesures>/a3
+node scripts/actions-orange-a2-dz.cjs <id> <chemin> <L> <H> . a3      # puis la même commande avec avant
+node scripts/sonde-collants-a3-dz.cjs <id> <chemin> <L> <H> a3
+node scripts/sonde-recouvrement-a3-dz.cjs r1-gamme <chemin> 390 844 <avant|a2|a3> . <dossier-brut>
+BRUT=<dossier-brut> node scripts/sonde-point-ajouter-a3-dz.cjs . <chemin-r2> 390 844 <avant|a2|a3>
+node scripts/sonde-rechercher-1440-a3-dz.cjs . <chemin> 1440 900 a3
+bash scripts/planches-option-a3-dz.sh <dossier-brut> .
+node scripts/condense-option-a3-dz.cjs <dossier-mesures> .
+node scripts/etats-vert-rouge-a3-dz.cjs <dossier-mesures> mesures/etats-vert-rouge-avant-a2-a3.json
 ```
 
 Inventaire préalable : `scripts/inventaire-options-dz.cjs`, `scripts/roles-options-dz.cjs`,
@@ -496,4 +538,5 @@ SHA-256 des feuilles mesurées :
 2d63b7ca0f7673e429a5d37bd0a27c471504f102e2d26f901eed58f474c5f570  option-b.css
 07d5b10de5a3ad538bcda022f455527bb11c6176ed2b5085769f30222aaf0f93  option-c.css
 1bef7ff971c110d914355120e44e3e23807e4b160119485fa873251cc0630a64  option-a2.css
+b373701378a49d5ce4413138a0bbc6ddc649e737e466e1bfc3b4624ab8dae9f9  option-a3.css
 ```

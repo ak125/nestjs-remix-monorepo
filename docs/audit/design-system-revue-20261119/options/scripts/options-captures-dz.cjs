@@ -19,7 +19,11 @@ const ACHAT = [
 // des n° 2 et 3 restent reproductibles à l'identique). « Rechercher des pièces » est réellement désactivé tant
 // qu'aucun véhicule n'est choisi : ses états actifs sont mesurés en retirant l'attribut disabled dans le DOM
 // (simulation locale, aucun clic ni saisie), puis l'attribut est remis pour l'état désactivé réel.
-const A2 = VARIANTES.includes("a2");
+const A2 = VARIANTES.includes("a2") || VARIANTES.includes("a3");
+// Complément n° 5 (A3) : « Inscription » de l'en-tête (≥ 1024 px), action secondaire en contour blanc sur navy ; le contour
+// est relevé (couleur composée sur le fond de la page, ratio contour / page) pour toutes les actions quand la liste contient a3.
+const A3 = VARIANTES.includes("a3");
+if (A3) ACHAT.push({ nom: "Inscription (en-tête, action secondaire)", sel: 'nav a[href="/register"][class~="bg-cta"]', cle: "inscription" });
 if (A2) ACHAT.push(
   { nom: "Rechercher des pièces (sélecteur véhicule)", sel: 'button[class~="bg-cta"][class~="disabled:opacity-40"]', cle: "rechercher", activerSimule: true },
   { nom: "Trouver une pièce (panier vide)", sel: 'a[class~="bg-blue-600"][class~="h-12"][class~="px-8"]', cle: "trouver" });
@@ -78,15 +82,16 @@ async function bouton(page, a, v, crops) {
   const loc = page.locator(a.sel).filter({ visible: true }).first();
   if (!(await loc.count())) return null;
   const lire = async (etat) => {
-    const d = await loc.evaluate((e, fnSrc) => {
+    const d = await loc.evaluate((e, [fnSrc, A3x]) => {
       const { rgb, hex, ratio, blend, fondDe } = eval("(" + fnSrc + ")")();
       const cs = getComputedStyle(e); const fondPage = fondDe(e.parentElement); const bg0 = rgb(cs.backgroundColor); const bg = blend(bg0, fondPage); const fg = blend(rgb(cs.color), bg);
       const out = { texte: (e.innerText || e.getAttribute("aria-label") || "").trim().replace(/\s+/g, " "), fond: hex(bg), texteCouleur: hex(fg), fondPage: hex(fondPage), ratioTexte: ratio(fg, bg), ratioBoutonPage: ratio(bg, fondPage), opacite: cs.opacity, survol: e.matches(":hover"), focusVisible: e.matches(":focus-visible"), desactive: e.disabled };
+      if (A3x && parseFloat(cs.borderTopWidth) > 0 && cs.borderTopStyle !== "none") { const bc = blend(rgb(cs.borderTopColor), fondPage); Object.assign(out, { contour: `${cs.borderTopWidth} ${cs.borderTopStyle} ${hex(bc)}`, ratioContourPage: ratio(bc, fondPage) }); }
       if (cs.outlineStyle !== "none" && parseFloat(cs.outlineWidth) > 0) { const oc = blend(rgb(cs.outlineColor), fondPage); Object.assign(out, { anneau: `${cs.outlineWidth} ${cs.outlineStyle} ${hex(oc)}`, ratioAnneauPage: ratio(oc, fondPage), ratioAnneauBouton: ratio(oc, bg) }); }
       else if (cs.boxShadow && cs.boxShadow !== "none") out.ombreOuAnneau = cs.boxShadow.slice(0, 120);
       if (+cs.opacity < 1) { const op = +cs.opacity; const bgE = blend({ ...bg, a: op }, fondPage), fgE = blend({ ...fg, a: op }, fondPage); Object.assign(out, { fondEffectif: hex(bgE), texteEffectif: hex(fgE), ratioTexteEffectif: ratio(fgE, bgE), ratioBoutonPageEffectif: ratio(bgE, fondPage), noteOpacite: `opacité ${op} : ratios effectifs = couleurs composées avec le fond de page` }); }
       return out;
-    }, PAGE_FN.toString());
+    }, [PAGE_FN.toString(), A3]);
     const bb = await loc.boundingBox();
     if (bb && crops) { const f = path.join(brut, `bouton-${id}-${W}-${a.cle || (a.sel.includes("aria-label") ? "ajouter" : a.sel.includes("rounded-xl") ? "panier" : "connexion")}-${v}-${etat}.png`); await page.screenshot({ path: f, clip: { x: Math.max(0, bb.x - 12), y: Math.max(0, bb.y - 12), width: bb.width + 24, height: bb.height + 24 }, animations: "disabled" }); d.capture = path.basename(f); }
     return { etat, ...d };
