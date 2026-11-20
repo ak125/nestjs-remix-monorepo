@@ -1,0 +1,14 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index c79485267a..359a508ffd 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -27,6 +27,9 @@ imports ou le chargement des `.claude/rules/` de Claude Code.
+   Un skill ne lève ni une zone STOP ni une permission système.
+ - Relecture française : `.claude/prompts/_shared/editorial-review.md`.
+ - Chargement et limites par agent : `.claude/knowledge/workspaces.md`.
++- Contrôle après fusion : la consigne permanente de Codex contrôleur est
++  `scripts/ops/codex-controleur/consigne.md`. La routine du même dossier la
++  donne à chaque passage ; hors de ce passage, elle ne s'applique pas.
+ 
+ ## Skills de la racine (`.claude/skills/`)
+ 
