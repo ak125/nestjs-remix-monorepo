@@ -5,6 +5,8 @@ Documentation des agents du Tech Squad - Excellence technique, architecture et g
 **Budget Total Squad** : ~€236K
 **Agents** : 15 agents (IA-CTO, IA-DevOps, IA-Legal, A-CARTO, A2, A3, A4, F6, G2, G3, G7, G11, G13, G14, G18)
 
+> Note historique (2026-11-14) : les agents d'analyse Python cités ici (A2, A3, A4, A5, A7) appartenaient à `ai-agents-python/`, prototype retiré par #1821 le 2026-10-17 à 23:44 UTC (18 octobre, heure de Paris). Code consultable dans l'historique Git. Aucun appelant trouvé le 2026-11-14 sur `main` `f5906975f` (fichiers suivis : code, scripts, workflows GitHub, fichiers Docker) ni sur la machine DEV (crontab, timers systemd, processus, conteneurs Docker). `cto-agent.service.ts` et le pont `pythonBridge` (`python-bridge.service.ts`) sont absents de l'historique des branches et tags consultés le 2026-11-14 (`git log --all`). Les workflows qui exécutent ces agents décrivent un fonctionnement prévu, pas installé.
+
 ---
 
 ## Navigation
@@ -774,7 +776,7 @@ L'**A2** (Chasseur Fichiers Massifs) est un **Agent Analyse du Tech Squad**, sp�
 #### 1. Détection Fichiers Massifs (CRITICAL)
 
 **Classe** : `MassiveFilesDetector`
-**Fichier** : `ai-agents-python/agents/analysis/a2_massive_files.py`
+**Fichier** : `ai-agents-python/agents/analysis/a2_massive_files.py` — prototype retiré par #1821 le 2026-10-17 à 23:44 UTC (18 octobre, heure de Paris), consultable dans l'historique Git
 
 **Analyse multi-catégories** :
 ```python
@@ -854,7 +856,7 @@ L'**A3** (Détecteur Doublons) est un **Agent Analyse du Tech Squad**, spéciali
 #### 1. Tokenization Parallèle (PERFORMANCE)
 
 **Classe** : `DuplicationDetector`
-**Fichier** : `ai-agents-python/agents/analysis/a3_duplications.py`
+**Fichier** : `ai-agents-python/agents/analysis/a3_duplications.py` — prototype retiré par #1821 le 2026-10-17 à 23:44 UTC (18 octobre, heure de Paris), consultable dans l'historique Git
 
 **Optimisations** :
 ```python
@@ -935,7 +937,7 @@ L'**A4** (Détecteur Dead Code) est un **Agent Analyse du Tech Squad**, spécial
 #### 1. Construction Graphe Imports (CRITICAL)
 
 **Classe** : `DeadCodeDetector`
-**Fichier** : `ai-agents-python/agents/analysis/a4_dead_code.py`
+**Fichier** : `ai-agents-python/agents/analysis/a4_dead_code.py` — prototype retiré par #1821 le 2026-10-17 à 23:44 UTC (18 octobre, heure de Paris), consultable dans l'historique Git
 
 **Extraction imports** (regex patterns) :
 ```python
