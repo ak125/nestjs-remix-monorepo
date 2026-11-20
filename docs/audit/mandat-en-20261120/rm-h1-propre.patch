@@ -1,0 +1,179 @@
+diff -ruN a/backend/src/modules/rm/rm.types.ts b/backend/src/modules/rm/rm.types.ts
+--- a/backend/src/modules/rm/rm.types.ts	2026-11-20 23:22:46.898518120 +0100
++++ b/backend/src/modules/rm/rm.types.ts	2026-11-20 23:23:23.594560062 +0100
+@@ -227,6 +227,12 @@
+    * SEO_PRICE_VARIATIONS local. Voir `@repo/seo-types pickH1Suffix`.
+    */
+   compSwitch2?: string[];
++  /**
++   * H1 R2 propre (mandat EN) : `R2TitleCollisionService.buildHeading`.
++   * Absent (cache antérieur, RPC sans `seo_context`) : le frontend garde le
++   * H1 historique `buildR2H1Emitted`.
++   */
++  h1Display?: string;
+ }
+ 
+ /**
+diff -ruN a/backend/src/modules/rm/services/rm-builder.service.ts b/backend/src/modules/rm/services/rm-builder.service.ts
+--- a/backend/src/modules/rm/services/rm-builder.service.ts	2026-11-20 23:22:46.892518113 +0100
++++ b/backend/src/modules/rm/services/rm-builder.service.ts	2026-11-20 23:23:23.594560062 +0100
+@@ -8,6 +8,7 @@
+   type SeoTemplates,
+ } from '../../catalog/services/seo-template.service';
+ import { pickGammeKeywordModifier } from '../../catalog/services/vehicle-aware-description.composer';
++import { R2TitleCollisionService } from '../../catalog/services/r2-title-collision.service';
+ import { SeoShadowObservatory } from '../../seo-shadow-observatory/seo-shadow-observatory.service';
+ import {
+   CACHE_STRATEGIES,
+@@ -99,6 +100,7 @@
+     private readonly seoTemplateService: SeoTemplateService,
+     rpcGate: RpcGateService,
+     private readonly shadowObservatory: SeoShadowObservatory,
++    private readonly r2TitleCollision: R2TitleCollisionService,
+   ) {
+     super();
+     this.rpcGate = rpcGate;
+@@ -731,6 +733,27 @@
+           this.fireShadowObservation(ctx, legacySeo);
+         }
+ 
++        // H1 R2 propre (mandat EN, format validé le 2026-11-20) : gamme +
++        // marque + modèle + version en noms d'affichage, puissance seulement
++        // si un autre type servi de la gamme a le même H1, sinon libellé du
++        // titre. Indépendant du gabarit : les 8 gammes sans `__seo_gamme_car`
++        // le reçoivent aussi. Une erreur de lecture est levée (même contrat
++        // que le titre) : jamais de H1 dégradé mis en cache.
++        if (seoCtx && result.seo) {
++          result.seo.h1Display = await this.r2TitleCollision.buildHeading({
++            pgId: Number(seoCtx.pg_id),
++            typeId: Number(seoCtx.type_id),
++            gammeName: result.gamme?.pg_name || '',
++            marqueName: seoCtx.marque_name || '',
++            modeleName: seoCtx.modele_name || '',
++            modeleNameMeta: seoCtx.modele_name_meta ?? null,
++            typeName: seoCtx.type_name || '',
++            typeNameMeta: seoCtx.type_name_meta ?? null,
++            powerPs: seoCtx.type_power_ps || null,
++            fuel: result.vehicleInfo?.typeFuel ?? null,
++          });
++        }
++
+         // Clean internal fields before caching
+         delete (raw as Record<string, unknown>).seo_raw;
+         delete (raw as Record<string, unknown>).seo_context;
+diff -ruN a/backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts b/backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts
+--- a/backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts	2026-11-20 23:23:23.535559993 +0100
++++ b/backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts	2026-11-20 23:23:31.260568952 +0100
+@@ -45,6 +45,7 @@
+     dummy, // SeoTemplateService — branche SEO non exercée (pas de seo_raw)
+     dummy, // RpcGateService — callRpc est mocké
+     dummy, // SeoShadowObservatory
++    dummy, // R2TitleCollisionService — branche H1 non exercée (pas de seo_context)
+   );
+   const callRpc = jest.fn();
+   (service as any).callRpc = callRpc;
+diff -ruN a/backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts b/backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts
+--- a/backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts	2026-11-20 23:23:23.521559977 +0100
++++ b/backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts	2026-11-20 23:23:43.748583516 +0100
+@@ -20,7 +20,10 @@
+  * `SeoTemplateService` dans les champs dédiés aux marqueurs legacy — et
+  * n'alimente PAS `fuel` / `motor_codes`, qui changeraient aussi h1/title.
+  */
+-function buildService(processTemplates: jest.Mock) {
++function buildService(
++  processTemplates: jest.Mock,
++  buildHeading: jest.Mock = jest.fn().mockResolvedValue('H1 propre'),
++) {
+   const dummy = {} as never;
+   const cache = {
+     get: jest.fn().mockResolvedValue(null),
+@@ -32,13 +35,14 @@
+     { processTemplates } as never, // SeoTemplateService
+     dummy, // RpcGateService — callRpc est mocké
+     dummy, // SeoShadowObservatory — fireShadowObservation est mocké
++    { buildHeading } as never, // R2TitleCollisionService
+   );
+   const callRpc = jest.fn();
+   (service as any).callRpc = callRpc;
+   (service as any).loadSeoCtxSwitches = jest.fn().mockResolvedValue({});
+   const fireShadowObservation = jest.fn();
+   (service as any).fireShadowObservation = fireShadowObservation;
+-  return { service, callRpc, cache, fireShadowObservation };
++  return { service, callRpc, cache, fireShadowObservation, buildHeading };
+ }
+ 
+ const seoRaw = {
+@@ -265,3 +269,62 @@
+     expect(templateCache.get).toHaveBeenCalledTimes(1);
+   });
+ });
++
++describe('RmBuilderService.getPageCompleteV2 — H1 R2 propre (mandat EN)', () => {
++  const params = { gamme_id: 1795, vehicle_id: 19354 };
++
++  it('seo.h1Display = buildHeading(seo_context, carburant de vehicleInfo)', async () => {
++    const { service, callRpc, buildHeading } = buildService(
++      jest.fn().mockResolvedValue(processedSeo),
++    );
++    callRpc.mockResolvedValue({
++      data: rpcData({ typeFuel: 'Diesel' }),
++      error: null,
++    });
++
++    const result = await service.getPageCompleteV2(params);
++
++    expect(result.seo.h1Display).toBe('H1 propre');
++    expect(result.seo.h1).toBe('h'); // sgc_h1 traité, inchangé
++    expect(buildHeading).toHaveBeenCalledWith({
++      pgId: 1795,
++      typeId: 19354,
++      gammeName: 'Pompe à injection',
++      marqueName: 'Volkswagen',
++      modeleName: 'Golf IV',
++      modeleNameMeta: null,
++      typeName: '1.9 TDI',
++      typeNameMeta: null,
++      powerPs: '90',
++      fuel: 'Diesel',
++    });
++  });
++
++  it('gamme sans gabarit (seo_raw null) : H1 propre servi quand même', async () => {
++    const processTemplates = jest.fn();
++    const { service, callRpc } = buildService(processTemplates);
++    callRpc.mockResolvedValue({
++      data: { ...rpcData({}), seo: { h1: '' }, seo_raw: null },
++      error: null,
++    });
++
++    const result = await service.getPageCompleteV2(params);
++
++    expect(processTemplates).not.toHaveBeenCalled();
++    expect(result.seo.h1Display).toBe('H1 propre');
++  });
++
++  it('erreur de lecture du H1 : pas de H1 dégradé, rien en cache', async () => {
++    const { service, callRpc, cache } = buildService(
++      jest.fn().mockResolvedValue(processedSeo),
++      jest.fn().mockRejectedValue(new Error('auto_type unavailable')),
++    );
++    callRpc.mockResolvedValue({ data: rpcData({}), error: null });
++
++    const result = await service.getPageCompleteV2(params);
++
++    expect(result.success).toBe(false);
++    expect(result.seo?.h1Display).toBeUndefined();
++    expect(cache.set).not.toHaveBeenCalled();
++  });
++});
+diff -ruN a/backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts b/backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts
+--- a/backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts	2026-11-20 23:23:23.551560012 +0100
++++ b/backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts	2026-11-20 23:23:31.260568952 +0100
+@@ -19,6 +19,7 @@
+       dummy, // SeoTemplateService
+       dummy, // RpcGateService
+       observatory as unknown as SeoShadowObservatory,
++      dummy, // R2TitleCollisionService
+     );
+   }
+ 

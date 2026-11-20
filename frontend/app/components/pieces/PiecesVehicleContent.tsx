@@ -256,6 +256,7 @@ export function PiecesVehicleContent() {
           minPrice={data.minPrice}
           performance={data.performance}
           compSwitch2={data.seo?.compSwitch2}
+          h1Display={data.seo?.h1Display}
         />
       </div>
       {/* Fil d'ariane SEO optimise - Reutilisation composant Breadcrumbs */}

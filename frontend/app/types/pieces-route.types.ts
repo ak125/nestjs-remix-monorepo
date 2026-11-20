@@ -158,6 +158,8 @@ export interface SEOInfo {
   /** Per-pg_id technique variations (`__seo_gamme_car_switch.sgcs_alias=2`)
    * pour rotation H1 suffix dans PiecesHeader via @repo/seo-types pickH1Suffix. */
   compSwitch2?: readonly string[];
+  /** H1 R2 propre (mandat EN) : prioritaire sur le H1 historique quand présent. */
+  h1Display?: string;
 }
 
 export interface CatalogueItem {

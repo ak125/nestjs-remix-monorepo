@@ -33,6 +33,11 @@ interface PiecesHeaderProps {
    * pg_id=307 kit-distribution). Rotation déterministe par (typeId+pgId)
    * via @repo/seo-types pickH1Suffix. Vide → fallback SEO_PRICE_VARIATIONS. */
   compSwitch2?: readonly string[];
+  /** H1 R2 propre (mandat EN, format validé le 2026-11-20) calculé par le
+   * backend : gamme + marque + modèle + version, puissance ou libellé du
+   * titre seulement pour départager. Vide ou absent (réponse d'avant le
+   * déploiement backend, encore en cache) → H1 historique `buildR2H1Emitted`. */
+  h1Display?: string;
   performance?: PerformanceInfo;
 }
 
@@ -47,6 +52,7 @@ export const PiecesHeader = memo(function PiecesHeader({
   minPrice,
   prixPasCherText,
   compSwitch2,
+  h1Display,
   performance,
 }: PiecesHeaderProps) {
   const [imageError, setImageError] = useState(false);
@@ -98,17 +104,18 @@ export const PiecesHeader = memo(function PiecesHeader({
               <header>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight mb-3 tracking-tight">
                   <span className="text-foreground from-white via-white to-white/90 drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                    {buildR2H1Emitted({
-                      gammeName: gamme.name,
-                      marque: vehicle.marque,
-                      modele: vehicle.modele,
-                      typeName: vehicle.typeName || vehicle.type,
-                      typePowerPs: vehicle.typePowerPs,
-                      typeFuel: vehicle.typeFuel,
-                      ctx: { typeId: vehicle.typeId, pgId: gamme.id },
-                      compSwitch2,
-                      literalFallback: prixPasCherText,
-                    })}
+                    {h1Display?.trim() ||
+                      buildR2H1Emitted({
+                        gammeName: gamme.name,
+                        marque: vehicle.marque,
+                        modele: vehicle.modele,
+                        typeName: vehicle.typeName || vehicle.type,
+                        typePowerPs: vehicle.typePowerPs,
+                        typeFuel: vehicle.typeFuel,
+                        ctx: { typeId: vehicle.typeId, pgId: gamme.id },
+                        compSwitch2,
+                        literalFallback: prixPasCherText,
+                      })}
                   </span>
                 </h1>
               </header>

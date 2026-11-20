@@ -136,6 +136,7 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     CatalogHierarchyService, // 🏗️ Single source of truth hiérarchie catalogue
     CompatibilityService, // 🎯 Exporté pour Pack Confiance V2
     PopularGammesService, // 🔗 Exporté pour VehiclesModule (maillage SEO)
+    R2TitleCollisionService, // H1 R2 propre (mandat EN), lu par RmBuilderService
   ],
 })
 export class CatalogModule {

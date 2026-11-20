@@ -707,6 +707,8 @@ export async function piecesVehicleLoader({
           // suffix côté PiecesHeader (audit 2026-05-26 : "au meilleur prix"
           // figé partout, restaurer le pattern legacy PHP #CompSwitch_2#).
           compSwitch2: rmV2Response.seo?.compSwitch2 ?? [],
+          // H1 R2 propre (mandat EN) ; absent → H1 historique dans PiecesHeader.
+          h1Display: rmV2Response.seo?.h1Display || undefined,
         },
         performance: {
           loadTime: Math.round(performance.now() - startTime),

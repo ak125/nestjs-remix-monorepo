@@ -1,0 +1,20 @@
+mesure	servables	indexables
+pages	373005	101097
+niveau_0	147089	39294
+niveau_1	218279	59782
+niveau_2	7637	2021
+parite_h1_actuel_crawl	45502/45520	
+doublons_h1_actuel_pages	6445	1552
+doublons_h1_actuel_groupes	3177	865
+doublons_h1_actuel_sans_accroche_pages	50175	12463
+doublons_h1_actuel_sans_accroche_groupes	20908	5864
+doublons_titre_2212_pages	6139	1334
+doublons_titre_2212_groupes	2539	614
+doublons_h1_propose_pages	0	0
+doublons_h1_propose_groupes	0	0
+h1_propose_egal_titre_2212	125390	36203
+longueur_h1_actuel	min 40 | médiane 79 | p90 95 | max 156 | ≤40 1 | 41-60 11755 | 61-70 71145 | 71-80 127856 | >80 162248	min 44 | médiane 76 | p90 90 | max 141 | ≤40 0 | 41-60 3261 | 61-70 23583 | 71-80 39766 | >80 34487
+longueur_h1_propose	min 18 | médiane 50 | p90 64 | max 126 | ≤40 59587 | 41-60 252916 | 61-70 46191 | 71-80 11674 | >80 2637	min 20 | médiane 47 | p90 59 | max 106 | ≤40 20600 | 41-60 72222 | 61-70 6766 | 71-80 1286 | >80 223
+cannibalisation_egalite_R1_R3_R8_avant	0	
+cannibalisation_egalite_R1_R3_R8_apres	0	
+textes_autres_roles	1212	1031
