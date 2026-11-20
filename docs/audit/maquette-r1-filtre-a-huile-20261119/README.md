@@ -969,6 +969,57 @@ Le service DEV n'a été ni redémarré ni modifié. Rien n'est servi en DEV, PR
 `{avant,apres}-carte-1440-survol.png`, `{avant,apres}-mesures.json` (24 positions du reflet
 comprises), `{avant,apres}-axe.json`.
 
+## Complément n° 7 — bouton « Lancer le diagnostic » : texte noir après visite (20 nov. 2026)
+
+Mandat : fin de la variante B (validée par Marwane le 20 nov. 2026 à 01:06, Paris), sur le constat
+de DU (§15.4 de sa revue, #2211, `648222c1c`). Tête de #2210 relevée avant travail : `06dcea7bc`.
+
+**Cause.** `frontend/app/global.css` applique `text-purple-600` à `a:visited:not(.no-visited)`, plus
+spécifique que `text-black`. Depuis le complément n° 6, le libellé est porté par le lien lui-même :
+une fois `/diagnostic-auto` visité, le texte et l'icône passent au violet sur l'orange.
+
+**Correction.** Ajout de la classe `no-visited` au lien de `GammeDiagnosticCTA.tsx`, rien d'autre
+dans ce fichier. C'est la convention du site, déjà employée ailleurs. La règle globale `a:visited` et
+les styles partagés ne sont pas touchés. Le test `gamme-diagnostic-cta-contrast.test.tsx` vérifie la
+présence de la classe : sans elle, il échoue (`complement-7/vitest-sans-no-visited.txt`, 1 échec
+sur 3) ; avec elle, 3 tests passent (`vitest-apres.txt`).
+
+**Mesure** (`outils/visite-c7.cjs`, méthode de DU, `scripts/visite2-du7.cjs` de #2211, complétée par
+le survol) :
+- Chrome 153 complet, profil persistant temporaire, donc historique réel. Le Chromium réduit de
+  Playwright n'applique pas `:visited` ;
+- page R1 chargée, mesure, clic sur le bouton (navigation vers `/diagnostic-auto`), page R1
+  rechargée, mesure ; au repos puis pointeur sur le lien ;
+- rapport = pixel du texte le plus éloigné du fond dominant, contre ce fond, tronqué au centième ;
+- lien témoin sans classe de couleur vers `/diagnostic-auto` : il passe au violet `#9810fa` après la
+  visite, preuve que l'état « visité » est actif ;
+- échelle 1, mouvement réduit (reflet arrêté), comme DU. Seuil 4,5:1.
+
+| Mesure | Sans `no-visited` 390 | Sans 1440 | Avec `no-visited` 390 | Avec 1440 |
+|---|---|---|---|---|
+| Avant visite, repos | 7,34 | 6,89 | 7,34 | 6,89 |
+| Avant visite, survol | 5,85 | 5,55 | 5,85 | 5,55 |
+| **Après visite, repos** | **2,00** (`#9d1df9`) | **1,98** (`#a128f9`) | **7,34** (`#0e0e0e`) | **6,89** (`#1a1a1a`) |
+| **Après visite, survol** | **1,60** | **1,60** | **5,85** | **5,55** |
+| Témoin après visite | `#9810fa` | `#9810fa` | `#9810fa` | `#9810fa` |
+
+Les rapports sont lus sur les pixels du texte, lissage compris. Ils ne se comparent donc pas aux
+7,49:1 du complément n° 6, mesurés sur le fond seul. Les chiffres « sans » reproduisent ceux de DU
+(2,00 et 1,98).
+
+**Vérifications** : typecheck du frontend OK (`typecheck-front.txt`) ; ESLint et Prettier OK sur
+les deux fichiers.
+
+**Rendu.** Build du worktree servi par `react-router-serve` (:3018) derrière `outils/img-proxy.mjs`
+(:3017), loaders en GET sur le DEV partagé ; « sans » = build de `06dcea7bc`, « avec » = build après
+correction. Le service DEV n'a été ni redémarré ni modifié. Rien n'est servi en DEV, PREPROD ou PROD.
+
+**Fichiers** (`complement-7/`) : `{sans,avec}-no-visited-{390,1440}.json` et leurs captures du
+libellé `…-{avant,apres}-visite-{repos,survol}.png`.
+
+Hors périmètre : le lien « Conseils : changer un filtre à huile étape par étape » (décision de
+Marwane en attente), le reste de la page.
+
 ## Limites propres au complément
 
 - Le rendu après est mesuré sur la page R1 isolée, avec la substitution
@@ -1006,6 +1057,7 @@ comprises), `{avant,apres}-axe.json`.
 - `outils/calcul-c5.ts` et `outils/valide-rendu-c5.ts` : calcul des phrases par la méthode du builder et validateur R1 sur le rendu (tsx, depuis `backend/`).
 - `outils/diag-c6.cjs` : `node diag-c6.cjs <base> <label> <dossier>` ; contraste au pixel du bouton « Lancer le diagnostic » (bouts, reflet à 24 positions, survol, icônes, taille, imbrication), à 390 et 1440 px (complément n° 6).
 - `outils/axe-c6.cjs` : `node axe-c6.cjs <base> <label> <dossier>` ; axe sur la page et sur la carte « Diagnostic gratuit », à 390 et 1440 px (complément n° 6).
+- `outils/visite-c7.cjs` : `CHROME=/usr/bin/google-chrome node visite-c7.cjs <base> <largeur> <hauteur> <profil> <sortie.json>` ; bouton du diagnostic avant et après visite réelle, au repos et au survol (complément n° 7).
 - `outils/band-context.cjs` : `node band-context.cjs <base> <sortie.png>` ; bas du hero et bande à 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree

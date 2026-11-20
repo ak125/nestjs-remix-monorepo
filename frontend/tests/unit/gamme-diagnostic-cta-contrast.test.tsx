@@ -49,4 +49,14 @@ describe("GammeDiagnosticCTA — bouton du diagnostic", () => {
     expect(link.className).not.toMatch(/\btext-white\b/);
     expect(link.className).not.toMatch(/\b(from|to|shadow)-orange-\d+/);
   });
+
+  it("garde le texte noir après visite : porte la classe no-visited", () => {
+    // global.css applique text-purple-600 à `a:visited:not(.no-visited)`, plus spécifique que
+    // text-black : sans cette classe, une fois /diagnostic-auto visité, le libellé passe au violet
+    // sur l'orange (2,00:1 mesuré dans Chrome avec un historique réel, complément 7).
+    renderCta();
+
+    const link = screen.getByRole("link", { name: /lancer le diagnostic/i });
+    expect(link.classList.contains("no-visited")).toBe(true);
+  });
 });
