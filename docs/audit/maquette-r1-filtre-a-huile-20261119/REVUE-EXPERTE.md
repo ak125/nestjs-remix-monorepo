@@ -26,6 +26,10 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
 - **Complément n° 6** : contraste du bouton « Lancer le diagnostic » (`GammeDiagnosticCTA`), mesuré
   au pixel sur un rendu propre de la tête `06feff968`, inchangée. Voir le §14 ; les autres sections
   ne changent pas.
+- **Complément n° 7** : la tête de #2210 est passée à `06dcea7bc21ede689cb8fd932b0c6973489fac11`
+  (complément n° 6 de DS, variante B validée par Marwane : texte noir sur l'orange `cta`). Le bouton
+  est revérifié au pixel sur un rendu propre de cette tête : contraste, focus, structure, jetons,
+  mouvement réduit et régressions. Voir le §15 ; les autres sections ne changent pas.
 
 ## Verdict final
 
@@ -125,6 +129,22 @@ Je les ai mesurés au pixel.
 **Complément n° 6, tête `06feff968` : bouton diagnostic : correction d'abord.** Le texte blanc du
 bouton descend à 2,75:1 (seuil 4,5:1). Le défaut est antérieur à #2210. La correction proposée à DS
 est locale aux pages R1 et reste dans les jetons `cta` (§14).
+
+**Complément n° 7, tête `06dcea7bc` : bouton diagnostic : correction d'abord.**
+- Le texte noir sur l'orange `cta` tient partout : 7,40:1 au pire au passage du reflet et 5,83:1 au
+  survol. L'anneau de focus est à 16,62:1 sur la carte. Il reste un seul lien, nommé « Lancer le
+  diagnostic », de 54 px de haut au minimum. En mouvement réduit, rien ne bouge. axe, typecheck et
+  CI ne montrent rien de nouveau.
+- **Mais** le bouton est devenu un lien. La règle commune `a:visited` le recolore en violet après
+  une visite de `/diagnostic-auto`, à 2,00:1 mesuré.
+- La correction tient en une ligne locale : ajouter `no-visited` au lien. Elle est vérifiée en
+  simulation (§15.4).
+- Les couleurs sont celles du bouton de l'accueil, mais la forme et le reflet diffèrent (§15.5).
+
+**Verdict global sur l'apparence R1, hors éléments communs au site, à `06dcea7bc`.** L'apparence sera
+prête à valider par Marwane une fois `no-visited` ajouté au bouton diagnostic. Aucun autre défaut
+nouveau n'est relevé. La réserve du complément n° 5 reste : le lien « Conseils : changer un filtre à
+huile étape par étape » de `#reference` n'est distingué que par sa couleur à 390 px (1.4.1).
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -834,3 +854,210 @@ Captures `captures/c6-diag-390-bouton.png` (actuel), `captures/c6-sim-A-cta700-8
   `components/navbar/CartSidebarSimple.tsx` (panier, zone STOP) et
   `routes/admin.optimization-summary.tsx`. Non mesurés, hors périmètre. Le même écart de jeton peut
   y exister.
+
+## 15. Complément n° 7 : revérification du bouton « Lancer le diagnostic » (variante B)
+
+**Verdict : bouton diagnostic : correction d'abord.**
+
+Une ligne suffit : ajouter `no-visited` au lien. Sinon, une fois `/diagnostic-auto` visité, le texte
+et l'icône passent au violet sur l'orange, à 2,00:1 (§15.4). Toutes les autres mesures sont conformes.
+
+- **Tête mesurée** : `06dcea7bc21ede689cb8fd932b0c6973489fac11` (#2210, PR brouillon ouverte,
+  mise à jour le 20 nov. 2026 à 00:18 UTC). Relevée par `gh` et `git ls-remote` avant les mesures,
+  puis revérifiée avant la publication. Rien n'a été modifié dans #2210.
+- **Rendu** : frontend de `06dcea7bc` reconstruit, et backend de la branche (inchangé dans le diff),
+  sur un port à moi avec un Redis privé. Le service DEV n'a pas servi.
+  - Navigateur : Chromium de Playwright, échelle 1.
+  - Pour l'état « visité » seulement : Chrome 153 complet, avec un profil temporaire (§15.4).
+- **Méthode** : celle du §14, que j'ai reprise sans utiliser les chiffres de DS.
+  - Texte rendu transparent, transition coupée ; fond capturé dans la boîte du texte.
+  - Reflet mis en pause à 24 positions du cycle de 3 s.
+  - Rapports tronqués au centième.
+  - Le texte est noir : le pire cas est donc le pixel de fond **le plus sombre**. Le script prend
+    le minimum entre le pixel le plus clair et le plus sombre.
+- **Seuils** :
+  - texte de 15 px (390) et 14 px (1440) en gras 700 : 4,5:1 (1.4.3) ;
+  - anneau de focus et éléments graphiques : 3:1 (1.4.11) ;
+  - focus visible (2.4.7) ;
+  - cible : 24 px en AA, 44 px visés (2.5.8).
+- **Fichiers** :
+  - scripts : `scripts/diag-du7.cjs`, `scripts/cmp-accueil-du7.cjs` et `scripts/visite2-du7.cjs` ;
+  - mesures : `mesures/c7-*` ;
+  - captures : `captures/c7-*`.
+
+### 15.1 Contraste du texte et de l'icône (seuil 4,5:1)
+
+| Mesure | 390 px | 1440 px |
+|---|---|---|
+| Bouts gauche et droit du bouton, sans reflet | 7,49 / 7,49 | 7,49 / 7,49 |
+| Fond sous le texte, sans reflet | 7,49 | 7,49 |
+| Fond sous le texte, pire des 24 positions du reflet | **7,40** (t = 0,29) | 7,40 (t = 0,33) |
+| Icône loupe, pire position | 7,40 | 7,45 |
+| Survol (fond `#ea580c`), sans reflet | 5,89 | 5,89 |
+| Survol, pire position du reflet (texte / icône) | **5,83** / 5,83 | 5,83 / 5,86 |
+| Focus clavier, pire position du reflet | 7,40 | 7,40 |
+
+Couleurs calculées :
+- texte `rgb(0, 0, 0)`, sur une ligne aux deux largeurs ;
+- fond `#f97316` au repos, `#ea580c` au survol ;
+- aucune image de fond, ni dégradé sur le lien lui-même.
+
+Le pire rapport de toutes les positions et de tous les états est 5,83:1, au survol. Il dépasse le seuil
+de 4,5:1 de 1,33 point. Au survol, le bouton monte aussi de 2 px (`translate: 0 -2px`).
+
+Mes valeurs rejoignent celles annoncées par DS (pire 7,40, survol 5,83), mais elles ont été mesurées à
+part. Captures : `captures/c7-diag-{390,1440}{,-hover,-focus}-bouton.png`.
+
+### 15.2 Focus clavier (2.4.7 et 1.4.11)
+
+Le focus est donné par la touche Tab, depuis l'élément focalisable qui précède. `:focus-visible` est
+vrai aux deux largeurs.
+
+| | 390 px | 1440 px |
+|---|---|---|
+| Contour calculé | `2px solid #0f1e38`, décalage 2 px | idem |
+| Pixels changés autour du lien | 2 601 | 8 408 |
+| Étendue de l'anneau | 4 px de chaque côté | 4 px de chaque côté |
+| Couleur dominante de l'anneau | `#0f1e38` | `#0f1e38` |
+| Anneau / fond voisin (carte `#ffffff`) | **16,62** | 16,62 |
+| Anneau / bouton (`#f97316`) | 5,93 | 5,93 |
+
+L'anneau ne vient pas d'une classe du composant. Il vient de la règle commune au site
+`a:focus-visible` (`frontend/app/global.css:707-710`, contour et anneau `primary`), qui s'applique
+désormais parce que le bouton est un lien. Avant, le `<button>` dans le lien n'était pas atteint par
+cette règle.
+
+L'anneau est visible et dépasse 3:1, aussi bien contre le fond voisin que contre le bouton. Capture :
+`captures/c7-diag-{390,1440}-focus-anneau.png`.
+
+### 15.3 Un seul élément interactif, nom accessible, cible
+
+- **Élément** : `<a href="/diagnostic-auto">`, sans attribut `role`, focalisable (`tabIndex` 0).
+- **Imbrications** :
+  - zéro élément interactif dans le lien ;
+  - aucun ancêtre interactif ;
+  - dans la carte, le lien est le seul élément interactif.
+  - Le HTML servi ne contient plus de `<button>` dans ce lien.
+  - Le `<div>` du reflet dans le lien est autorisé : un lien peut contenir du contenu de flux non
+    interactif.
+- **Arbre d'accessibilité** : `link "Lancer le diagnostic"` → `/diagnostic-auto`.
+  - `getByRole("link", { name: "Lancer le diagnostic", exact: true })` trouve exactement un élément.
+  - La page compte 6 liens vers `/diagnostic-auto`, dont un seul dans cette carte.
+- **Remarque mineure, hors verdict** : l'icône `SearchCheck` n'a pas `aria-hidden`. Elle apparaît
+  comme une image sans nom dans l'arbre. Le nom du lien reste juste et axe ne relève rien.
+- **Cible** : 332 × 56 px à 390 px et 1182 × 54 px à 1440 px. C'est au-dessus des 44 px visés.
+
+### 15.4 Lien déjà visité : texte violet sur orange (défaut)
+
+`frontend/app/global.css:712-715`, règle commune au site :
+
+```css
+/* Liens visités (SEO) */
+a:visited:not(.no-visited) {
+  @apply text-purple-600;
+}
+```
+
+**Pourquoi elle l'emporte sur `text-black`.**
+- Dans le CSS construit, `a:visited:not(.no-visited)` et `.text-black` sont tous deux dans
+  `@layer utilities`.
+- La règle des liens visités est plus spécifique : (0,2,1) contre (0,1,0).
+- Tant que le libellé était dans un `<button>` qui portait sa propre couleur, la règle restait sans
+  effet. Depuis que le lien porte lui-même `text-black`, elle s'applique.
+
+**Mesure**, dans Chrome 153 avec un profil temporaire qui garde l'historique, sur la tête et le
+port à moi :
+1. page R1 chargée ;
+2. clic sur le bouton (navigation vers `/diagnostic-auto`) ;
+3. page R1 rechargée ;
+4. pixels du libellé relevés.
+
+| | 390 px | 1440 px |
+|---|---|---|
+| Avant toute visite (pixel le plus foncé du texte / fond) | 7,34 | 6,89 |
+| **Après la visite** (pixel du texte : `#9d1df9` / `#a128f9`) | **2,00** | **1,98** |
+| Lien témoin ajouté sans couleur, après la visite | `#9810fa` (violet) | `#9810fa` |
+| Calcul : `purple-600` `#9810fa` sur `#f97316` / sur `#ea580c` (survol) | 1,97 / 1,55 | idem |
+
+- Les valeurs de cette colonne sont lues sur les pixels du texte, anticrénelage compris. Elles ne se
+  comparent pas aux 7,49:1 du §15.1, mesurés sur le fond seul.
+- Le texte **et** l'icône passent au violet. Captures :
+  `captures/c7-visite-390-apres-visite.png` et `captures/c7-visite-1440-apres-visite.png`.
+- **Qui est touché** : tout visiteur dont le navigateur marque `/diagnostic-auto` comme visité, par
+  exemple après avoir suivi ce lien.
+  - Chrome n'enregistre ce statut que pour un lien suivi depuis le même site.
+  - Firefox et Safari ne sont pas mesurés.
+- **Pourquoi les mesures automatiques ne le voient pas** :
+  - Le Chromium réduit de Playwright et ses contextes éphémères n'appliquent pas `:visited`. Mon
+    premier essai, comme les captures de DS, ne le montre donc pas (`scripts/visite2-du7.cjs`,
+    commentaire d'en-tête).
+  - axe ne teste pas cet état.
+  - Le test ajouté vérifie les classes, mais pas l'absence de `no-visited`.
+- **Introduit par `06dcea7bc`** : à `06feff968`, la couleur du libellé était portée par le `<button>`.
+
+**Correction proposée à DS (non appliquée)** : une ligne dans `GammeDiagnosticCTA.tsx:55`. Ajouter
+`no-visited` à la `className` du `<Link>`.
+- C'est la convention du site : 30 emplois dans `frontend/app`, dont `GammeHero.tsx:59`, `Footer`,
+  `Navbar` et `BottomNav`.
+- Aucun fichier partagé n'est touché.
+- Le test pourrait vérifier la présence de cette classe.
+- **Simulation**, la classe étant posée dans mon seul navigateur, après la même visite : le texte
+  reste noir, 7,34 (390) et 6,89:1 (1440), le même rapport qu'avant visite. Le lien témoin, lui,
+  reste violet, ce qui prouve que l'état « visité » était bien actif. Fichiers :
+  `mesures/c7-sim-novisited-*.json` et `captures/c7-sim-novisited-*`.
+
+La règle `a:visited` elle-même est un élément commun au site. Elle n'est pas en cause ici, et la
+modifier relève de Marwane.
+
+### 15.5 Jetons servis et comparaison avec l'accueil
+
+**Jetons dans le CSS construit** (`build/client/assets/global-*.css`, tête `06dcea7bc`) :
+
+| Classe | Valeur servie |
+|---|---|
+| `bg-cta` | `#f97316` |
+| `hover:bg-cta-hover` | `#ea580c` |
+| `text-black` | `var(--color-black)`, résolu en `#000` au rendu |
+| `shadow-cta/25` | `--tw-shadow-color: #f9731640` |
+
+Ce sont bien les jetons `cta` du site, et non les couleurs `orange-*` par défaut de Tailwind relevées
+au §14.1.
+
+**Comparaison avec le bouton de l'accueil** (`DiagnosticBanner`), mesurée sur la même construction
+(`mesures/c7-accueil-vs-r1.json`) :
+
+| Propriété calculée | Accueil | R1 |
+|---|---|---|
+| Élément | `<button>` | `<a>` |
+| Fond / survol | `#f97316` / `#ea580c` | `#f97316` / `#ea580c` |
+| Texte / survol | noir / noir | noir / noir |
+| Taille, graisse | 15 px, 600 | 15 px (390) et 14 px (1440), 700 |
+| Hauteur, arrondi | 48 px, 16 px | 56 et 54 px, 12 px |
+| Reflet animé | non | oui |
+
+**Couleurs identiques, bouton non identique.** La forme, la graisse et le reflet diffèrent. Ces écarts
+existaient déjà et ne sont pas demandés par le complément. L'accueil, qui est un `<button>`, n'est pas
+touché par la règle `:visited` du §15.4.
+
+### 15.6 Mouvement réduit
+
+Mesures avec `reducedMotion: "reduce"`, à 390 et 1440 px :
+- **reflet** : aucune animation (`getAnimations()` vide, `animation: none`) ;
+- **icônes** : celle du bouton n'a pas d'animation, et celle de la pastille n'a plus la sienne ;
+- **carte entière** : trois captures, à 0, 900 et 1 600 ms, ne diffèrent d'**aucun** octet.
+
+Le reflet et les icônes restent donc immobiles. Au survol, le soulèvement de 2 px reste, avec une
+transition de 0,2 s : c'est un mouvement déclenché par l'utilisateur, non exigé en AA (2.3.3 est AAA).
+Sans reflet animé, le texte est à 7,79 (390) et 8,11:1 (1440). Capture :
+`captures/c7-diag-{390,1440}-reduce-carte.png`.
+
+### 15.7 Régressions
+
+| Contrôle | Résultat | Preuve |
+|---|---|---|
+| Diff `06feff968` → `06dcea7bc` | OK | Un commit, 15 fichiers. Le code se limite aux 2 fichiers annoncés : `GammeDiagnosticCTA.tsx` (17 lignes, le seul bloc du bouton) et `tests/unit/gamme-diagnostic-cta-contrast.test.tsx`. Les 13 autres fichiers sont les preuves de DS dans le dossier de la maquette (`README.md`, `complement-6/`, `outils/`). Lien et libellé inchangés : `to="/diagnostic-auto"`, « Lancer le diagnostic ». Aucun titre, H1, meta, canonical, `id`, donnée structurée ni composant partagé n'est touché |
+| Tête de page servie | OK | Title, H1 « Filtre à huile compatible avec votre véhicule », canonical, et 1 bloc JSON-LD. Le diff n'a aucune ligne qui touche à la tête de page |
+| axe 390 / 1440 px | OK | Identique à `06feff968`, nœud pour nœud : 390 px `color-contrast` 9, `link-in-text-block` 1, `region` 2 ; 1440 px `color-contrast` 5, `region` 4. Aucun nœud dans la carte (`mesures/c7-page-{390,1440}.json` contre `c5-page-*`) |
+| Typecheck frontend | OK | `npm run typecheck`, code de sortie 0 (`mesures/c7-typecheck-front.txt`) |
+| Test ajouté | OK, mais incomplet | vitest : 2 tests sur 2 passent (`mesures/c7-vitest.txt`). Il ne couvre pas l'état visité (§15.4) |
+| CI du commit `06dcea7bc` | 34 réussis, 11 ignorés, 5 en échec | Les 5 échecs sont **les mêmes qu'à `06feff968`** : Circuit de fusion (brouillon, aucune approbation), Deterministic gates (`depcruise.violations` 170 pour une base de 163, déjà 170 avant), DoD self-evaluation ×2 et Registry freshness (projections du registre en retard sur leurs sources). ESLint, Frontend Tests, Backend Tests et Core Build réussissent ; Build et E2E sont ignorés. Rien de nouveau n'est introduit |
