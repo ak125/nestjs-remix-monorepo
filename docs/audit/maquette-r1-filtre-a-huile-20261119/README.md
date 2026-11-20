@@ -1020,7 +1020,107 @@ libellé `…-{avant,apres}-visite-{repos,survol}.png`.
 Hors périmètre : le lien « Conseils : changer un filtre à huile étape par étape » (décision de
 Marwane en attente), le reste de la page.
 
-## Limites propres au complément
+## Complément n° 8 — lien « Conseils » souligné au repos (20 nov. 2026)
+
+Mandat : critère WCAG 1.4.1 (information portée par la seule couleur). Marwane a validé le
+soulignement le 20 nov. 2026 à 09:12, heure de Paris. Constat de DU : axe `link-in-text-block`
+(#2211). Tête de #2210 relevée avant travail : `f1dbcf285`.
+
+**Où est rendu le lien.** Aucun composant ne porte ce lien. Son texte vient du HTML éditorial de la
+gamme : `editorialBlocks.referenceSection`, découpé par `app/utils/editorial-parser.ts`. Ce HTML est
+injecté dans le `div.gamme-editorial` de la section `#reference` de `app/routes/pieces.$slug.tsx`.
+Cette route ne sert que `/pieces/:slug`, c'est-à-dire les pages R1. La correction s'applique donc au
+bloc éditorial `#reference` de toutes les pages R1, puisqu'elles partagent ce gabarit, et à aucune
+autre route.
+
+La classe `.gamme-editorial` (`global.css`, lignes 253 à 290) est partagée. Elle sert aussi les trois
+autres blocs éditoriaux de la route et `GammeContent.tsx`. Elle n'est pas modifiée.
+
+**Avant.** Le lien était en `#155dfc` et le texte voisin en `#45556c`, soit 1,44:1 entre les deux
+couleurs (il faudrait 3:1 pour se passer d'un autre signe). Aucun soulignement au repos, à 390 comme
+à 1440 px. Le soulignement n'apparaissait qu'au survol, à la souris, absent sur un écran tactile. La
+couleur était donc le seul signe aux deux largeurs : le lien est souligné aux deux largeurs.
+
+**Correction.** Ajout de `[&_a]:underline [&_a]:underline-offset-2` sur ce seul conteneur.
+- Ce sont des utilitaires Tailwind existants, avec la syntaxe déjà employée par
+  `R6FaqAccordion.tsx:49`.
+- Le décalage de 2 px est celui de `.seo-internal-link`. Les deux liens `seo-internal-link` du même
+  paragraphe étaient déjà soulignés avec ce décalage : leur rendu ne change pas, et leur
+  soulignement atténué est conservé (captures).
+- Le texte, la cible et la couleur ne changent pas.
+- La règle globale des liens, `a:visited` et les styles partagés ne sont pas touchés.
+
+**Mesures.** Outils `outils/lien-c8.cjs` (Chromium Playwright, mouvement réduit) et
+`outils/visite-lien-c8.cjs` (méthode du complément n° 7 : Chrome 153 complet, profil persistant,
+visite réelle par clic, lien témoin). Seuil 4,5:1. Rapports tronqués au centième.
+
+| Mesure | Avant 390 | Avant 1440 | Après 390 | Après 1440 |
+|---|---|---|---|---|
+| Soulignement au repos (`text-decoration-line`) | aucun | aucun | **souligné, décalage 2 px** | **souligné, décalage 2 px** |
+| Pixels du soulignement (diff. avec `text-decoration:none` forcé) | 0 | 0 | 1 210 (échelle 2) | 304 (échelle 1) |
+| Lien / texte voisin | 1,44 | 1,44 | 1,44 (inchangé, le soulignement porte la différence) | 1,44 |
+| Repos, lien sur `#f8fafc` | 5,01 | 5,01 | 5,01 | 5,01 |
+| Survol (`#193cb8`) | sans objet (tactile) | 8,43 | sans objet (tactile) | 8,43 |
+| Après visite, repos (`#9810fa`) | 5,29 | 5,29 | 5,29 | 5,29 |
+| Après visite, survol | 5,29 | 5,29 | 5,29 | 5,29 |
+| Témoin après visite | `#9810fa` | `#9810fa` | `#9810fa` | `#9810fa` |
+
+- **État visité.** Le violet vient de la règle globale `a:visited`, maintenue : c'est la
+  convention du site pour les liens dans le texte, et elle tient 5,29:1. Le soulignement reste
+  après la visite (`apres-historique-390-apres-visite-repos.png`).
+- **Focus clavier.** Mesuré par Tab depuis l'élément focalisable précédent. Le lien prend
+  `:focus-visible`, avec un contour `2px solid #0f1e38` (15,89:1 sur le fond), avant comme après
+  (`apres-focus-{390,1440}.png`).
+- **Cible.** Le lien tient sur deux lignes de 18 px : 171×18 + 152×18 à 390 px, 61×18 + 262×18 à
+  1440 px. Ces 18 px sont en dessous de 24 px. L'exception « en ligne » du critère 2.5.8
+  s'applique : la cible est dans une phrase et sa hauteur est celle de la ligne. Le mandat demande
+  la même cible : elle n'est pas modifiée.
+- **axe** (`outils/axe-c8.cjs`, mêmes règles qu'au complément n° 6) :
+  - Les violations de la page entière sont identiques avant et après : `color-contrast`×9 et
+    `region`×2 à 390 px ; `color-contrast`×5, `link-in-text-block`×1 et `region`×4 à 1440 px.
+  - Le `link-in-text-block` de 1440 px vise un autre lien, « En savoir plus sur le filtre à
+    huile » (`/reference-auto/filtre-a-huile`, section `#emplacement`). Il est hors périmètre et
+    signalé ci-dessous.
+  - La section `#reference` porte `cv-auto` (`content-visibility:auto`). Elle n'est analysée
+    qu'une fois le lien centré à l'écran, sinon elle n'est pas rendue.
+  - Résultat sur `#reference` : avant, le lien « Conseils » est classé « à vérifier »
+    (`incomplete`) ; après, il **passe** aux deux largeurs. Aucune violation dans la section.
+  - DU l'avait relevé comme violation à 390 px. Dans cet environnement, axe le laissait « à
+    vérifier » ; la mesure au pixel ci-dessus confirme le défaut.
+
+**Vérifications.**
+- Typecheck du frontend OK (`typecheck-front.txt`).
+- ESLint et Prettier OK sur la route (`eslint.txt`).
+- Vitest : 7 fichiers, 76 tests réussis (`vitest.txt`). Ce sont les tests de `pieces.$slug` et le
+  test du complément n° 7.
+- Aucun test unitaire ajouté. Le lien vient du HTML éditorial, et les tests de la route ne rendent
+  que le loader. La preuve du correctif est le pixel et axe.
+- La première mesure de l'état visité à 1440 px s'est arrêtée sur un `TimeoutError` de
+  navigation, de cause non établie. La seconde exécution est allée au bout, et ses chiffres sont
+  ceux du tableau.
+
+**Rendu.**
+- Le build du worktree est servi par `react-router-serve` (:3018) derrière `outils/img-proxy.mjs`
+  (:3017), avec des loaders en GET sur le DEV partagé.
+- « Avant » est le build de `f1dbcf285`, « après » le build avec la correction. axe « avant » a été
+  relancé sur un build reconstruit depuis le fichier de `f1dbcf285`, puis le fichier corrigé a été
+  remis.
+- Le service DEV n'a été ni redémarré ni modifié. Rien n'est servi en DEV, PREPROD ou PROD.
+
+**Fichiers** (`complement-8/`) :
+- `{avant,apres}-lien.json`, `{avant,apres}-paragraphe-{390,1440}.png` et
+  `{avant,apres}-focus-{390,1440}.png` ;
+- `{avant,apres}-historique-{390,1440}.json` et les captures de la première ligne du lien
+  `…-{avant,apres}-visite-{repos,survol}.png` (préfixe = état du correctif, suffixe = état de
+  l'historique) ;
+- `{avant,apres}-axe.json`, `typecheck-front.txt`, `eslint.txt`, `vitest.txt`.
+
+**Hors périmètre, signalé et non corrigé.** Le lien « En savoir plus sur le filtre à huile » de la
+section `#emplacement`, dans un autre bloc `.gamme-editorial` de la même route, n'a lui aussi que la
+couleur pour signe (axe `link-in-text-block` à 1440 px). Le traiter relève d'une décision de Marwane
+ou de la revue du design system par 05.
+
+## Limites propres au complément n° 5
 
 - Le rendu après est mesuré sur la page R1 isolée, avec la substitution
   déclarée ci-dessus. Rien n'est intégré, activé ni servi en DEV, PREPROD ou PROD.
@@ -1058,6 +1158,9 @@ Marwane en attente), le reste de la page.
 - `outils/diag-c6.cjs` : `node diag-c6.cjs <base> <label> <dossier>` ; contraste au pixel du bouton « Lancer le diagnostic » (bouts, reflet à 24 positions, survol, icônes, taille, imbrication), à 390 et 1440 px (complément n° 6).
 - `outils/axe-c6.cjs` : `node axe-c6.cjs <base> <label> <dossier>` ; axe sur la page et sur la carte « Diagnostic gratuit », à 390 et 1440 px (complément n° 6).
 - `outils/visite-c7.cjs` : `CHROME=/usr/bin/google-chrome node visite-c7.cjs <base> <largeur> <hauteur> <profil> <sortie.json>` ; bouton du diagnostic avant et après visite réelle, au repos et au survol (complément n° 7).
+- `outils/lien-c8.cjs` : `node lien-c8.cjs <base> <label> <dossier>` ; lien « Conseils » de `#reference` : soulignement, contrastes repos et survol, focus clavier, cible, à 390 et 1440 px (complément n° 8).
+- `outils/visite-lien-c8.cjs` : `CHROME=/usr/bin/google-chrome node visite-lien-c8.cjs <base> <largeur> <hauteur> <profil> <sortie.json>` ; même lien avant et après visite réelle (complément n° 8).
+- `outils/axe-c8.cjs` : `node axe-c8.cjs <base> <label> <dossier>` ; axe sur la page et sur `#reference`, lien centré (complément n° 8).
 - `outils/band-context.cjs` : `node band-context.cjs <base> <sortie.png>` ; bas du hero et bande à 1440 px.
 
 Ces scripts chargent Playwright et sharp depuis le `node_modules` d'un worktree

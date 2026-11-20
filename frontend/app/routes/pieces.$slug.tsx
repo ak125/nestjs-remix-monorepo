@@ -841,9 +841,11 @@ export default function PiecesDetailPage() {
             Trouver la bonne référence pour votre véhicule
           </h2>
 
-          {/* Contenu éditorial "référence/commande" */}
+          {/* Contenu éditorial "référence/commande". Liens soulignés au repos : sans soulignement, le
+              lien « Conseils : … » ne se distinguait du texte que par sa couleur (1,44:1, WCAG 1.4.1,
+              complément 8). Même décalage que .seo-internal-link ; .gamme-editorial (partagée) intacte. */}
           {editorialBlocks.referenceSection.length > 0 && (
-            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8">
+            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8 [&_a]:underline [&_a]:underline-offset-2">
               {editorialBlocks.referenceSection.map((block, i) => (
                 <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
               ))}
