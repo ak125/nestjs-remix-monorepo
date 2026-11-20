@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 105,
-      "loc_total": 25201,
+      "loc_total": 25218,
       "has_barrel": true
     },
     "customers": {
@@ -441,7 +441,7 @@
         "backend/src/modules/media-factory/types"
       ],
       "files_count": 23,
-      "loc_total": 4989,
+      "loc_total": 5076,
       "has_barrel": false
     },
     "merchant-center": {
@@ -706,7 +706,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 229,
-      "loc_total": 55538,
+      "loc_total": 55638,
       "has_barrel": true
     },
     "search": {
@@ -967,7 +967,7 @@
         "tests/registry"
       ],
       "files_count": 402,
-      "loc_total": 84443,
+      "loc_total": 84536,
       "has_barrel": true
     },
     "upload": {
