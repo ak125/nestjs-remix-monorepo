@@ -161,7 +161,11 @@ Preuves :
   - `--lint-markers` : OK ;
   - compilation PL/pgSQL des deux fichiers sur PostgreSQL 17, avec auto-test et témoin négatif : OK ;
   - surface DEFINER/anon : inchangée.
-- Ownership : `.github/CODEOWNERS:66` place déjà `backend/supabase/migrations/` sous `@ak125`. Aucune règle de `ownership.yaml` ne vise ce fichier. Pas d'extrait à appliquer.
+- Ownership :
+  - la garde « Block-new » refuse les deux fichiers de migration (`missing_both`), car `ownership.yaml` ne couvre pas les migrations automatiquement ;
+  - `.spec/00-canon/**` est une zone gardée, réservée à l'owner. L'extrait est donc fourni **non appliqué** dans `ownership-extrait.patch` : une entrée D4, `@ak125/vehicle-team`, risque `medium`, sur le modèle de `20261003_auto_modele_fill_empty_alias` ;
+  - essai dans un clone jetable : sans le patch, 22 fichiers sur 24 passent (`missing_both` = 2) ; avec le patch, 24 sur 24 passent, code de sortie 0 ;
+  - geste réservé à Marwane : `git apply -p1 docs/audit/mandat-ee-noms-motorisation-20261120/ownership-extrait.patch`, depuis la racine du dépôt.
 
 ## 6.6 Noms R8 et titres R2 identiques
 
