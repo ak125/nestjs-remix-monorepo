@@ -264,6 +264,36 @@
     },
     {
       "actual_mode": "SCRIPT_ONLY",
+      "automation_id": "garde-prix-read",
+      "domain": "D11",
+      "drift_note": "Essais 2026-11-20 sur un faux PostgREST local seulement. failed_rows valait 0 sur les 15 lots existants, faute d'écrivain : l'historique des refus avant cette PR est inconnu.",
+      "evidence": [
+        {
+          "excerpt": "../node_modules/.bin/tsx ../scripts/ops/garde-prix-read.ts",
+          "line": 122,
+          "note": "Mandat EI (décisions 51, 67) : lu dans la fenêtre quotidienne (7-10 h Paris) ou sur dispatch ; ni cache ni artefact",
+          "path": ".github/workflows/morning-health-digest.yml"
+        },
+        {
+          "note": "CLI : PricingRepository + readGardePrix ; lecture ratée = code 1, aucun fichier, le rapport écrit « indisponible »",
+          "path": "scripts/ops/garde-prix-read.ts"
+        },
+        {
+          "note": "Clés invariants:<fournisseur> (refus du dernier import), arret51:<fournisseur> (arrêt décision 51), perte:pm<marque>",
+          "path": "backend/src/modules/pricing/services/price-guard-signal.core.ts"
+        }
+      ],
+      "executor": "github-actions-schedule",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-11-20",
+      "last_verified_by": "@ak125",
+      "last_verified_method": "manual-inspection",
+      "missing_step": "Aucun passage CI prouvé. Reste : fusion de la PR du producteur, patch du workflow signé, puis un run workflow_dispatch dont le rapport date le signal.",
+      "owner_action": "Passer à ACTIVE en citant en runtime_evidence un run du digest en success sur main dont l'étape « Read the price guard-rail » a écrit le fichier et le rapport qui le lit.",
+      "risk": "medium"
+    },
+    {
+      "actual_mode": "SCRIPT_ONLY",
       "automation_id": "pr-687-sitemap-freshness-alert",
       "domain": "D3",
       "drift_note": "2026-11-10 : heartbeat sitemap_generation_complete 152 rows, last 03:07Z ; dashboard_view 0 row ever (enum value exists, insert shape valid) — alert computed, no read recorded.",
@@ -312,6 +342,36 @@
       "missing_step": "add the check to branch-protection required-status-checks (Etape 3)",
       "owner_action": "ops decision : promote to required check",
       "risk": "low"
+    },
+    {
+      "actual_mode": "SCRIPT_ONLY",
+      "automation_id": "purchase-path-probe",
+      "domain": "D10",
+      "drift_note": "Preuve DEV:3000 seulement (2 parcours complets, 2026-11-16). Un blocage des IP GitHub par Cloudflare ou BotGuard ne se verra qu'au premier run PROD.",
+      "evidence": [
+        {
+          "excerpt": "- cron: \"7,22,37,52 * * * *\"",
+          "line": 25,
+          "note": "Mandat AU (décision 52) : parcours d'achat PROD toutes les 15 min jusqu'à la section paiement, sans payer ; robot déclaré",
+          "path": ".github/workflows/purchase-path-probe.yml"
+        },
+        {
+          "note": "Sonde Playwright : écritures refusées hors liste blanche ; panier vidé et session fermée à chaque passage",
+          "path": "frontend/tests/purchase-probe/purchase-path.probe.ts"
+        },
+        {
+          "note": "alert : issue à l'owner au 2e échec consécutif (décision 67) ; report : agrégat parcours-achat.v1 lu par le digest (mandat AM)",
+          "path": "scripts/ops/purchase-path-probe.sh"
+        }
+      ],
+      "executor": "github-actions-schedule",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-11-20",
+      "last_verified_by": "@ak125",
+      "last_verified_method": "manual-inspection",
+      "missing_step": "Aucun passage PROD prouvé. Reste : fusion sur main, run workflow_dispatch, puis passages planifiés lus par le digest du mandat AM.",
+      "owner_action": "Passer à ACTIVE en citant en runtime_evidence un run planifié en success sur main, son artefact purchase-path-probe-result et le digest qui le lit.",
+      "risk": "medium"
     },
     {
       "actual_mode": "INTENDED_PHASED",
@@ -97860,9 +97920,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 35,
+      "loc": 39,
       "owner": "@ak125",
       "path": "frontend/tests/purchase-probe/playwright.config.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/purchase-probe/probe-network.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 161,
+      "owner": "@ak125",
+      "path": "frontend/tests/purchase-probe/probe-network.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -97880,7 +97960,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 295,
+      "loc": 298,
       "owner": "@ak125",
       "path": "frontend/tests/purchase-probe/purchase-path.probe.ts",
       "risk": "medium",
@@ -100343,6 +100423,26 @@
       "loc": 60,
       "owner": "@ak125",
       "path": "frontend/tests/unit/products-private-cache.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/purchase-probe-network.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 203,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/purchase-probe-network.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -110390,18 +110490,18 @@
     "generatedAt": "1970-01-01T00:00:00.000Z",
     "generatorVersion": "1.0.0",
     "inputHashes": {
-      ".spec/00-canon/repository-registry/automation-reality.yaml": "185e7bd5d536d0c3130ecc0e9a40b01dced6ab16b78125f5c481a199ba5776c6",
+      ".spec/00-canon/repository-registry/automation-reality.yaml": "1cd20550d93394ddf7f84782f938c76d3ed1225afcc9b7ac2aced6d052e0b4f3",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "d7fe97dca7cd62e5ab49cc062cfe55a9534b263c69aa89a64e116f4c83feccc0",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4bd8407a831a3385f4c3e8845dd213a18f13ec99e6a3528a63160c01e78749ae",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "928f67f5413acad32b5ecdc61b266d98a0bbafb2652db79ddc2289e6ba22638c",
+      "audit/registry/files.json": "ff22e9e9fb2b0965f132bf69707dd1592cbc633e4dcaf2af678ed4594781e054",
       "audit/registry/rpc.json": "ae924a85483e215265b47c3f6c98988c62512b08260e003ab3ab96db651b6211",
       "audit/registry/runtime.json": "4950b9611ddfa67b77433a772064549b6a82173cb60b05cc2b24d34510d4a82d"
     },
-    "sotFingerprint": "b9445c21a509"
+    "sotFingerprint": "a09a2c4ed279"
   },
   "runtime": [
     {
