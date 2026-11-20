@@ -1,0 +1,49 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/plaquette-de-frein-402.html",
+  "label": "avant",
+  "at": "2026-11-20T16:17:10.601Z",
+  "vues": {
+    "390": {
+      "premierAffichage": {
+        "dom": 12,
+        "visibles": 12,
+        "bouton": "Voir les 5 autres compatibilités",
+        "hauteurSection": 3097
+      },
+      "deplie": {
+        "dom": 17,
+        "visibles": 17,
+        "bouton": "Masquer les véhicules",
+        "hauteurSection": 4133
+      },
+      "nonAtteignables": [],
+      "replie": {
+        "dom": 12,
+        "visibles": 12,
+        "bouton": "Voir les 5 autres compatibilités",
+        "hauteurSection": 3097
+      }
+    },
+    "1440": {
+      "premierAffichage": {
+        "dom": 12,
+        "visibles": 12,
+        "bouton": "Voir les 5 autres compatibilités",
+        "hauteurSection": 1636
+      },
+      "deplie": {
+        "dom": 17,
+        "visibles": 17,
+        "bouton": "Masquer les véhicules",
+        "hauteurSection": 2292
+      },
+      "nonAtteignables": [],
+      "replie": {
+        "dom": 12,
+        "visibles": 12,
+        "bouton": "Voir les 5 autres compatibilités",
+        "hauteurSection": 1636
+      }
+    }
+  }
+}

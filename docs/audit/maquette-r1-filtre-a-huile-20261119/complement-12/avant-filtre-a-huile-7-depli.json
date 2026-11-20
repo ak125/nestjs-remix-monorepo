@@ -1,0 +1,49 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "avant",
+  "at": "2026-11-20T16:15:47.211Z",
+  "vues": {
+    "390": {
+      "premierAffichage": {
+        "dom": 12,
+        "visibles": 12,
+        "bouton": "Voir les 7 autres compatibilités",
+        "hauteurSection": 2989
+      },
+      "deplie": {
+        "dom": 19,
+        "visibles": 19,
+        "bouton": "Masquer les véhicules",
+        "hauteurSection": 4505
+      },
+      "nonAtteignables": [],
+      "replie": {
+        "dom": 12,
+        "visibles": 12,
+        "bouton": "Voir les 7 autres compatibilités",
+        "hauteurSection": 2989
+      }
+    },
+    "1440": {
+      "premierAffichage": {
+        "dom": 12,
+        "visibles": 12,
+        "bouton": "Voir les 7 autres compatibilités",
+        "hauteurSection": 1636
+      },
+      "deplie": {
+        "dom": 19,
+        "visibles": 19,
+        "bouton": "Masquer les véhicules",
+        "hauteurSection": 2510
+      },
+      "nonAtteignables": [],
+      "replie": {
+        "dom": 12,
+        "visibles": 12,
+        "bouton": "Voir les 7 autres compatibilités",
+        "hauteurSection": 1636
+      }
+    }
+  }
+}

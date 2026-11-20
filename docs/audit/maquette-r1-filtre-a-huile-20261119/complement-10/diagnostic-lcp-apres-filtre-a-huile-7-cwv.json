@@ -1,0 +1,92 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "diagnostic-lcp-apres",
+  "at": "2026-11-20T13:12:22.621Z",
+  "passages": 3,
+  "vues": {
+    "390": {
+      "cpu": 4,
+      "runs": [
+        {
+          "LCP": 3928,
+          "CLS": 0,
+          "INP": 72,
+          "FCP": 332,
+          "TTFB": 112,
+          "elementLCP": "div>figure.my-6.rounded-2xl>picture>img.aspect-[4/3].object-contain.rounded-xl.w-full",
+          "cibleINP": "#_R_13d9j5_",
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3764,
+          "CLS": 0,
+          "INP": 72,
+          "FCP": 364,
+          "TTFB": 107,
+          "elementLCP": "div>figure.my-6.rounded-2xl>picture>img.aspect-[4/3].object-contain.rounded-xl.w-full",
+          "cibleINP": "span",
+          "cibleCLS": null
+        },
+        {
+          "LCP": 3824,
+          "CLS": 0,
+          "INP": 64,
+          "FCP": 388,
+          "TTFB": 139,
+          "elementLCP": "div>figure.my-6.rounded-2xl>picture>img.aspect-[4/3].object-contain.rounded-xl.w-full",
+          "cibleINP": "span",
+          "cibleCLS": null
+        }
+      ],
+      "mediane": {
+        "LCP": 3824,
+        "CLS": 0,
+        "INP": 72,
+        "FCP": 364,
+        "TTFB": 112
+      }
+    },
+    "1440": {
+      "cpu": 1,
+      "runs": [
+        {
+          "LCP": 3472,
+          "CLS": 0.0223,
+          "INP": 48,
+          "FCP": 276,
+          "TTFB": 118,
+          "elementLCP": "div>figure.my-6.rounded-2xl>picture>img.aspect-[4/3].object-contain.rounded-xl.w-full",
+          "cibleINP": "#_R_13d9j5_",
+          "cibleCLS": "#reference"
+        },
+        {
+          "LCP": 3432,
+          "CLS": 0.0223,
+          "INP": 40,
+          "FCP": 268,
+          "TTFB": 109,
+          "elementLCP": "div>figure.my-6.rounded-2xl>picture>img.aspect-[4/3].object-contain.rounded-xl.w-full",
+          "cibleINP": "span",
+          "cibleCLS": "#reference"
+        },
+        {
+          "LCP": 3412,
+          "CLS": 0.0223,
+          "INP": 32,
+          "FCP": 248,
+          "TTFB": 96,
+          "elementLCP": "div>figure.my-6.rounded-2xl>picture>img.aspect-[4/3].object-contain.rounded-xl.w-full",
+          "cibleINP": "span",
+          "cibleCLS": "#reference"
+        }
+      ],
+      "mediane": {
+        "LCP": 3432,
+        "CLS": 0.0223,
+        "INP": 40,
+        "FCP": 268,
+        "TTFB": 109
+      }
+    }
+  }
+}

@@ -1,0 +1,636 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/ressort-de-suspension-188.html",
+  "label": "apres",
+  "at": "2026-11-20T09:40:27.995Z",
+  "vues": {
+    "390": {
+      "conteneurs": {
+        "bien-choisir": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2",
+        "qualite-prix": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2",
+        "emplacement": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2"
+      },
+      "liens": [
+        {
+          "id": "bien-choisir-0-0",
+          "bloc": "bien-choisir",
+          "texte": "amortisseur",
+          "href": "/pieces/amortisseur-854.html",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 184,
+            "y": 412.6875,
+            "w": 76,
+            "h": 18
+          },
+          "rects": [
+            "76×18"
+          ],
+          "lignes": [
+            {
+              "x": 184,
+              "y": 412.6875,
+              "w": 76,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 304,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 2620
+          }
+        },
+        {
+          "id": "qualite-prix-0-0",
+          "bloc": "qualite-prix",
+          "texte": "fiche technique ressort de suspension",
+          "href": "/reference-auto/ressort-de-suspension",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 16,
+            "y": 409.1875,
+            "w": 309,
+            "h": 40.75
+          },
+          "rects": [
+            "32×18",
+            "212×18"
+          ],
+          "lignes": [
+            {
+              "x": 293,
+              "y": 409.1875,
+              "w": 32,
+              "h": 18
+            },
+            {
+              "x": 16,
+              "y": 431.9375,
+              "w": 212,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 944,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 15679
+          }
+        },
+        {
+          "id": "qualite-prix-0-1",
+          "bloc": "qualite-prix",
+          "texte": "amortisseurs",
+          "href": "/pieces/amortisseur-854.html",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 128,
+            "y": 413.4375,
+            "w": 83,
+            "h": 18
+          },
+          "rects": [
+            "83×18"
+          ],
+          "lignes": [
+            {
+              "x": 128,
+              "y": 413.4375,
+              "w": 83,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 332,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 4882
+          }
+        },
+        {
+          "id": "qualite-prix-0-2",
+          "bloc": "qualite-prix",
+          "texte": "butées de suspension",
+          "href": "/pieces/kit-de-butee-de-suspension-1632.html",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 16,
+            "y": 401.4375,
+            "w": 310,
+            "h": 40.75
+          },
+          "rects": [
+            "66×18",
+            "73×18"
+          ],
+          "lignes": [
+            {
+              "x": 260,
+              "y": 401.4375,
+              "w": 66,
+              "h": 18
+            },
+            {
+              "x": 16,
+              "y": 424.1875,
+              "w": 73,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 540,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 3184
+          }
+        },
+        {
+          "id": "qualite-prix-0-3",
+          "bloc": "qualite-prix",
+          "texte": "guide d'achat ressort de suspension",
+          "href": "/blog-pieces-auto/guide-achat/ressort-de-suspension",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 16,
+            "y": 401.9375,
+            "w": 343,
+            "h": 40.75
+          },
+          "rects": [
+            "137×18",
+            "94×18"
+          ],
+          "lignes": [
+            {
+              "x": 222,
+              "y": 401.9375,
+              "w": 137,
+              "h": 18
+            },
+            {
+              "x": 16,
+              "y": 424.6875,
+              "w": 94,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 878,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 4656
+          }
+        },
+        {
+          "id": "emplacement-0-0",
+          "bloc": "emplacement",
+          "texte": "amortisseur",
+          "href": "/pieces/amortisseur-854.html",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 21,
+            "y": 413.3125,
+            "w": 76,
+            "h": 18
+          },
+          "rects": [
+            "76×18"
+          ],
+          "lignes": [
+            {
+              "x": 21,
+              "y": 413.3125,
+              "w": 76,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 304,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "21, 93, 252",
+            "decoration": "underline",
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 2956
+          }
+        }
+      ]
+    },
+    "1440": {
+      "conteneurs": {
+        "bien-choisir": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2",
+        "qualite-prix": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2",
+        "emplacement": "gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2"
+      },
+      "liens": [
+        {
+          "id": "bien-choisir-0-0",
+          "bloc": "bien-choisir",
+          "texte": "amortisseur",
+          "href": "/pieces/amortisseur-854.html",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 607,
+            "y": 441.15625,
+            "w": 76,
+            "h": 18
+          },
+          "rects": [
+            "76×18"
+          ],
+          "lignes": [
+            {
+              "x": 607,
+              "y": 441.15625,
+              "w": 76,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 76,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.82,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 672
+          }
+        },
+        {
+          "id": "qualite-prix-0-0",
+          "bloc": "qualite-prix",
+          "texte": "fiche technique ressort de suspension",
+          "href": "/reference-auto/ressort-de-suspension",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 95,
+            "y": 448.546875,
+            "w": 248,
+            "h": 18
+          },
+          "rects": [
+            "248×18"
+          ],
+          "lignes": [
+            {
+              "x": 95,
+              "y": 448.546875,
+              "w": 248,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 240,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.43,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 1532
+          }
+        },
+        {
+          "id": "qualite-prix-0-1",
+          "bloc": "qualite-prix",
+          "texte": "amortisseurs",
+          "href": "/pieces/amortisseur-854.html",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 519,
+            "y": 442.9375,
+            "w": 83,
+            "h": 18
+          },
+          "rects": [
+            "83×18"
+          ],
+          "lignes": [
+            {
+              "x": 519,
+              "y": 442.9375,
+              "w": 83,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 83,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.43,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 452
+          }
+        },
+        {
+          "id": "qualite-prix-0-2",
+          "bloc": "qualite-prix",
+          "texte": "butées de suspension",
+          "href": "/pieces/kit-de-butee-de-suspension-1632.html",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 80,
+            "y": 429.9375,
+            "w": 616,
+            "h": 40.75
+          },
+          "rects": [
+            "45×18",
+            "94×18"
+          ],
+          "lignes": [
+            {
+              "x": 651,
+              "y": 429.9375,
+              "w": 45,
+              "h": 18
+            },
+            {
+              "x": 80,
+              "y": 452.6875,
+              "w": 94,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 135,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.43,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 796
+          }
+        },
+        {
+          "id": "qualite-prix-0-3",
+          "bloc": "qualite-prix",
+          "texte": "guide d'achat ressort de suspension",
+          "href": "/blog-pieces-auto/guide-achat/ressort-de-suspension",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 80,
+            "y": 429.6875,
+            "w": 581,
+            "h": 40.75
+          },
+          "rects": [
+            "36×18",
+            "195×18"
+          ],
+          "lignes": [
+            {
+              "x": 625,
+              "y": 429.6875,
+              "w": 36,
+              "h": 18
+            },
+            {
+              "x": 80,
+              "y": 452.4375,
+              "w": 195,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 219,
+          "repos": {
+            "ratio": 5.01,
+            "fond": "#f8fafc"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.43,
+            "fond": "#f8fafc"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 1164
+          }
+        },
+        {
+          "id": "emplacement-0-0",
+          "bloc": "emplacement",
+          "texte": "amortisseur",
+          "href": "/pieces/amortisseur-854.html",
+          "classe": "",
+          "couleur": "21, 93, 252",
+          "texteVoisin": "69, 85, 108",
+          "decoration": "underline",
+          "decalage": "2px",
+          "couleurTrait": "21, 93, 252",
+          "alphaTrait": "oklch(0.546 0.245 262.881)",
+          "boite": {
+            "x": 457,
+            "y": 440.890625,
+            "w": 76,
+            "h": 18
+          },
+          "rects": [
+            "76×18"
+          ],
+          "lignes": [
+            {
+              "x": 457,
+              "y": 440.890625,
+              "w": 76,
+              "h": 18
+            }
+          ],
+          "rapportLienTexteVoisin": 1.44,
+          "pixelsDuSoulignement": 76,
+          "repos": {
+            "ratio": 5.24,
+            "fond": "#ffffff"
+          },
+          "survol": {
+            "couleur": "25, 60, 184",
+            "decoration": "underline",
+            "ratio": 8.82,
+            "fond": "#ffffff"
+          },
+          "focus": {
+            "actif": true,
+            "focusVisible": true,
+            "contour": "2px solid rgb(15, 30, 56)",
+            "pixelsChanges": 529
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,5262 @@
+{
+  "base": "http://127.0.0.1:3017",
+  "sitemap": "c9-sitemap.xml",
+  "pages": 123,
+  "at": "2026-11-20T09:33:15.142Z",
+  "erreurs": [],
+  "parPage": [
+    {
+      "loc": "/pieces/agregat-de-freinage-415.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/agregat-de-freinage",
+                "texte": "en savoir plus sur agregat de freinage",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/agregat-de-freinage",
+                "texte": "Guide d'achat agregat de freinage : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-agregat-de-freinage",
+                "texte": "Bruit Agregat de freinage : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/alternateur-4.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/courroie-d-accessoire-10.html",
+                "texte": "courroie d'accessoire",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/poulie-d-alternateur-1108.html",
+                "texte": "poulie d'alternateur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/alternateur",
+                "texte": "fiche technique alternateur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/demarreur-2.html",
+                "texte": "démarreur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/alternateur",
+                "texte": "guide d'achat alternateur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/amortisseur-854.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/ressort-de-suspension-188.html",
+                "texte": "ressorts de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/kit-de-butee-de-suspension-1632.html",
+                "texte": "butées de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/amortisseur",
+                "texte": "fiche technique amortisseur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/ressort-de-suspension-188.html",
+                "texte": "ressort de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/amortisseur",
+                "texte": "guide d'achat amortisseur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/arbre-a-came-566.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/poussoir-de-soupape-1216.html",
+                "texte": "poussoirs",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/arbre-a-came",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/bague-d-etancheite-cardan-624.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/soufflet-de-cardan-193.html",
+                "texte": "soufflet de cardan",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/bague-d-etancheite-cardan",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/bagues-d-etancheite-moteur-3874.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/balais-d-essuie-glace-298.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/balais-d-essuie-glace",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/barre-de-direction-285.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/cremailliere-de-direction-286.html",
+                "texte": "crémaillère",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/soufflet-de-direction-191.html",
+                "texte": "soufflets",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/barre-de-direction",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/barre-stabilisatrice-274.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/barre-stabilisatrice",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/bobine-d-allumage-689.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/bougie-d-allumage-686.html",
+                "texte": "Bougie d'allumage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/bobine-d-allumage",
+                "texte": "Fiche technique bobine d'allumage",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/bobine-d-allumage",
+                "texte": "Guide d'achat bobine d'allumage",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/boitier-de-prechauffage-1750.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/bouchon-de-vidange-593.html",
+      "blocs": {
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/bouchon-de-vidange",
+                "texte": "en savoir plus sur bouchon de vidange",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/bouchon-de-vidange",
+                "texte": "Guide d'achat bouchon de vidange : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-bouchon-de-vidange",
+                "texte": "Bruit Bouchon de vidange : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/bougie-d-allumage-686.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/bobine-d-allumage-689.html",
+                "texte": "Bobine d'allumage",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/bougie-d-allumage",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/bougie-de-prechauffage-243.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/bobine-d-allumage-689.html",
+                "texte": "Bobine d'allumage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/bougie-de-prechauffage",
+                "texte": "Fiche technique bougie de préchauffage",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/bouteille-deshydratante-851.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/compresseur-de-climatisation-447.html",
+                "texte": "compresseur",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/condenseur-de-climatisation-448.html",
+                "texte": "condenseur",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/bouteille-deshydratante",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/bras-de-suspension-273.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/amortisseur-854.html",
+                "texte": "amortisseur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/ressort-de-suspension-188.html",
+                "texte": "ressort de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/barre-stabilisatrice-274.html",
+                "texte": "barre stabilisatrice",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/cremailliere-de-direction-286.html",
+                "texte": "crémaillère de direction",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/bras-de-suspension",
+                "texte": "guide d'achat bras de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/bras-de-suspension",
+                "texte": "spécifications techniques du bras de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/rotule-de-suspension-2462.html",
+                "texte": "rotules de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/bride-de-liquide-de-refroidissement-3219.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/butee-d-embrayage-48.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-d-embrayage-479.html",
+                "texte": "Kit d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/emetteur-d-embrayage-234.html",
+                "texte": "Émetteur d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/butee-d-embrayage",
+                "texte": "Fiche technique butée d'embrayage",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-d-embrayage-479.html",
+                "texte": "kit d'embrayage complet",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/cable-d-embrayage-478.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-d-embrayage-479.html",
+                "texte": "Kit d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/cable-d-embrayage",
+                "texte": "Fiche technique câble d'embrayage",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/cable-de-frein-a-main-124.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/machoires-de-frein-70.html",
+                "texte": "mâchoires de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/etrier-de-frein-78.html",
+                "texte": "étrier arrière",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/capteur-abs-412.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/roulement-de-roue-655.html",
+                "texte": "roulement de roue",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/capteur-abs",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/capteur-de-cognement-3921.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/capteur-de-pedale-d-accelerateur-3908.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/capteur-de-pression-common-rail-3996.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/capteur-niveau-d-huile-moteur-1289.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/capteur-niveau-d-huile-moteur",
+                "texte": "en savoir plus sur capteur niveau d'huile moteur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/capteur-niveau-d-huile-moteur",
+                "texte": "Guide d'achat capteur niveau d'huile moteur : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-capteur-niveau-d-huile-moteur",
+                "texte": "Bruit Capteur niveau d'huile moteur : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/capteur-pression-de-carburant-817.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/capteur-pression-de-carburant",
+                "texte": "en savoir plus sur capteur pression de carburant",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/capteur-pression-de-carburant",
+                "texte": "Guide d'achat capteur pression de carburant : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-capteur-pression-de-carburant",
+                "texte": "Bruit Capteur pression de carburant : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/capteur-pression-de-gaz-d-echappement-4272.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/capteur-temperature-d-air-admission-3939.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/cardan-13.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/conseils/cardan",
+                "texte": "guide conseils cardan",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/cardan",
+                "texte": "guide d'achat cardan",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/cardan",
+                "texte": "fiche technique cardan",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/soufflet-de-cardan-193.html",
+                "texte": "soufflet de cardan",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/bague-d-etancheite-cardan-624.html",
+                "texte": "bague d'étanchéité cardan",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/carter-d-huile-592.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/joint-de-carter-d-huile-455.html",
+                "texte": "joint de carter",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/bouchon-de-vidange-593.html",
+                "texte": "bouchon de vidange",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/carter-d-huile",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/catalyseur-429.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/sonde-lambda-3922.html",
+                "texte": "sondes lambda",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/fap-1256.html",
+                "texte": "FAP (filtre à particules)",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/catalyseur",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/chaine-de-distribution-1123.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-de-chaine-de-distribution-1389.html",
+                "texte": "kit complet",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/chaine-de-distribution",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/colonne-de-direction-1211.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/colonne-de-direction",
+                "texte": "en savoir plus sur colonne de direction",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/colonne-de-direction",
+                "texte": "Guide d'achat colonne de direction : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-colonne-de-direction",
+                "texte": "Bruit Colonne de direction : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/commande-d-eclairage-809.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/commande-d-eclairage",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/commande-de-ventilation-1385.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/commande-de-ventilation",
+                "texte": "en savoir plus sur commande de ventilation",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/commande-de-ventilation",
+                "texte": "Guide d'achat commande de ventilation : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-commande-de-ventilation",
+                "texte": "Bruit Commande de ventilation : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/compresseur-de-climatisation-447.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/condenseur-de-climatisation-448.html",
+                "texte": "Condenseur",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/filtre-d-habitacle-424.html",
+                "texte": "Filtre d'habitacle",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/compresseur-de-climatisation",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/condenseur-de-climatisation-448.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/compresseur-de-climatisation-447.html",
+                "texte": "Compresseur",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/filtre-d-habitacle-424.html",
+                "texte": "Filtre d'habitacle",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/condenseur-de-climatisation",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/contacteur-de-feu-de-recul-807.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/contacteur-de-feu-de-recul",
+                "texte": "en savoir plus sur contacteur feu de recul",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/contacteur-de-feu-de-recul",
+                "texte": "Guide d'achat contacteur feu de recul : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-contacteur-de-feu-de-recul",
+                "texte": "Bruit Contacteur feu de recul : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/corps-papillon-158.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/debitmetre-d-air-3927.html",
+                "texte": "Débitmètre d'air",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/vanne-egr-1145.html",
+                "texte": "Vanne EGR",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/corps-papillon",
+                "texte": "Fiche technique boîtier papillon",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/corps-papillon",
+                "texte": "Guide d'achat boîtier papillon",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/courroie-d-accessoire-10.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/galet-tendeur-de-courroie-d-accessoire-310.html",
+                "texte": "Galet tendeur de courroie d'accessoire",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html",
+                "texte": "Galet enrouleur",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/courroie-d-accessoire",
+                "texte": "Fiche technique courroie d'accessoire",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/courroie-d-accessoire",
+                "texte": "Guide d'achat courroie d'accessoire",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/courroie-de-distribution-306.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-de-distribution-307.html",
+                "texte": "Kit de distribution",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/pompe-a-eau-1260.html",
+                "texte": "Pompe à eau",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/courroie-de-distribution",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-de-distribution-307.html",
+                "texte": "kit de distribution complet",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/cremailliere-de-direction-286.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/rotule-de-direction-2066.html",
+                "texte": "Rotule de direction",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/pompe-de-direction-assistee-12.html",
+                "texte": "Pompe de direction assistée",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/soufflet-de-direction-191.html",
+                "texte": "Soufflet de direction",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/cremailliere-de-direction",
+                "texte": "Fiche technique crémaillère",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/culbuteur-432.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/culbuteur",
+                "texte": "en savoir plus sur culbuteur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/culbuteur",
+                "texte": "Guide d'achat culbuteur : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-culbuteur",
+                "texte": "Bruit Culbuteur : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/cylindre-de-roue-277.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/machoires-de-frein-70.html",
+                "texte": "mâchoires",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/tambour-de-frein-123.html",
+                "texte": "tambour",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/cylindre-de-roue",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/debitmetre-d-air-3927.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/demarreur-2.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/conseils/demarreur",
+                "texte": "guide conseils démarreur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/alternateur-4.html",
+                "texte": "alternateur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/demarreur",
+                "texte": "fiche technique démarreur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/courroie-d-accessoire-10.html",
+                "texte": "courroie d'accessoire",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/demarreur",
+                "texte": "guide d'achat démarreur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/detendeur-de-climatisation-183.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/detendeur-de-climatisation",
+                "texte": "en savoir plus sur détendeur de climatisation",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/detendeur-de-climatisation",
+                "texte": "Guide d'achat détendeur de climatisation : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-detendeur-de-climatisation",
+                "texte": "Bruit Détendeur de climatisation : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/disque-de-frein-82.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/etrier-de-frein-78.html",
+                "texte": "étrier de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/flexible-de-frein-83.html",
+                "texte": "flexible de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/machoires-de-frein-70.html",
+                "texte": "tambour de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/plaquette-de-frein-402.html",
+                "texte": "plaquette de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/disque-de-frein",
+                "texte": "guide d'achat disques de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/disque-de-frein",
+                "texte": "spécifications techniques du disque de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/plaquette-de-frein-402.html",
+                "texte": "plaquettes de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/durite-de-refroidissement-475.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/radiateur-de-refroidissement-470.html",
+                "texte": "Radiateur de refroidissement",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/thermostat-316.html",
+                "texte": "Thermostat",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/pompe-a-eau-1260.html",
+                "texte": "Pompe à eau",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/durite-de-refroidissement",
+                "texte": "Fiche technique durite de refroidissement",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/durite-de-refroidissement",
+                "texte": "Guide d'achat durite de refroidissement",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/emetteur-d-embrayage-234.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/recepteur-d-embrayage-620.html",
+                "texte": "récepteur d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/recepteur-d-embrayage-620.html",
+                "texte": "Récepteur d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/kit-d-embrayage-479.html",
+                "texte": "Kit d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/emetteur-d-embrayage",
+                "texte": "Fiche technique émetteur d'embrayage",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/etrier-de-frein-78.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/flexible-de-frein-83.html",
+                "texte": "flexible de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/plaquette-de-frein-402.html",
+                "texte": "plaquettes de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/disque-de-frein-82.html",
+                "texte": "disques de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/flexible-de-frein-83.html",
+                "texte": "flexibles de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/etrier-de-frein",
+                "texte": "fiche technique étrier de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/maitre-cylindre-de-frein-258.html",
+                "texte": "maître-cylindre",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/cylindre-de-roue-277.html",
+                "texte": "cylindre de roue",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/etrier-de-frein",
+                "texte": "guide d'achat étrier de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/evaporateur-de-climatisation-471.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/evaporateur-de-climatisation",
+                "texte": "en savoir plus sur evaporateur de climatisation",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/evaporateur-de-climatisation",
+                "texte": "Guide d'achat evaporateur de climatisation : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-evaporateur-de-climatisation",
+                "texte": "Bruit Evaporateur de climatisation : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/faisceau-d-allumage-685.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/bougie-d-allumage-686.html",
+                "texte": "bougies",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/bobine-d-allumage-689.html",
+                "texte": "bobine",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/faisceau-d-allumage",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/fap-1256.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/catalyseur-429.html",
+                "texte": "Catalyseur",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/vanne-egr-1145.html",
+                "texte": "Vanne EGR",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/fap",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/feu-arriere-290.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/feu-arriere",
+                "texte": "Fiche technique feu arrière",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/feu-avant-259.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/feu-avant",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/feu-clignotant-62.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/feu-clignotant",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/filtre-a-air-8.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/filtre-a-air",
+                "texte": "En savoir plus sur le fonctionnement du filtre à air",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/filtre-a-huile-7.html",
+                "texte": "filtre à huile",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/filtre-a-carburant-9.html",
+                "texte": "filtre à carburant",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/filtre-a-carburant-9.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/filtre-a-air-8.html",
+                "texte": "Filtre à air",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/filtre-a-huile-7.html",
+                "texte": "Filtre à huile",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/filtre-a-carburant",
+                "texte": "Fiche technique filtre à carburant",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/filtre-a-huile-7.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/bouchon-de-vidange-593.html",
+                "texte": "bouchon de vidange",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/filtre-a-air-8.html",
+                "texte": "filtre à air",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/conseils/filtre-a-huile",
+                "texte": "Conseils : changer un filtre à huile étape par étape",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/filtre-a-air-8.html",
+                "texte": "filtre à air",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/filtre-a-carburant-9.html",
+                "texte": "filtre à carburant",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/filtre-a-huile",
+                "texte": "Guide d'achat filtre à huile : critères, budget et marques recommandées",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/filtre-a-huile",
+                "texte": "En savoir plus sur le filtre à huile",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/filtre-d-habitacle-424.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/filtre-d-habitacle",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/flexible-de-frein-83.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/plaquette-de-frein-402.html",
+                "texte": "plaquettes",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/disque-de-frein-82.html",
+                "texte": "disques",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/etrier-de-frein-78.html",
+                "texte": "étrier",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/galet-tendeur-de-courroie-d-accessoire-310.html",
+                "texte": "galet tendeur",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/courroie-d-accessoire-10.html",
+                "texte": "courroie",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/galet-tendeur-de-courroie-d-accessoire-310.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html",
+                "texte": "galet enrouleur",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/courroie-d-accessoire-10.html",
+                "texte": "Courroie d'accessoire",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/injecteur-3902.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/intercooler-468.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/intercooler",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/interrupteur-des-feux-de-freins-806.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/interrupteur-des-feux-de-freins",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/interrupteur-position-de-marche-2197.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/jauge-de-niveau-d-huile-599.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/jauge-de-niveau-d-huile",
+                "texte": "en savoir plus sur jauge de niveau d'huile",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/jauge-de-niveau-d-huile",
+                "texte": "Guide d'achat jauge de niveau d'huile : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-jauge-de-niveau-d-huile",
+                "texte": "Bruit Jauge de niveau d'huile : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/joint-carter-de-distribution-568.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/joint-carter-de-distribution",
+                "texte": "en savoir plus sur joint carter de distribution",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/joint-carter-de-distribution",
+                "texte": "Guide d'achat joint carter de distribution : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-joint-carter-de-distribution",
+                "texte": "Bruit Joint carter de distribution : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/joint-d-injecteur-3894.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/joint-de-cache-culbuteurs-321.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/joint-de-culasse-318.html",
+                "texte": "Joint de culasse",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/joint-de-cache-culbuteurs",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/joint-de-carter-d-huile-455.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/joint-de-carter-d-huile",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/joint-de-collecteur-40.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/joint-de-collecteur",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/joint-de-culasse-318.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/joint-de-culasse",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/kit-d-embrayage-479.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/cable-d-embrayage-478.html",
+                "texte": "câble d'embrayage",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/emetteur-d-embrayage-234.html",
+                "texte": "émetteur d'embrayage",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/recepteur-d-embrayage-620.html",
+                "texte": "récepteur d'embrayage",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/kit-d-embrayage",
+                "texte": "fiche technique kit d'embrayage",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/butee-d-embrayage-48.html",
+                "texte": "butée d'embrayage",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/volant-moteur-577.html",
+                "texte": "volant moteur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/kit-d-embrayage",
+                "texte": "guide d'achat kit d'embrayage",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/kit-de-butee-de-suspension-1632.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/kit-de-chaine-de-distribution-1389.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-de-distribution-307.html",
+                "texte": "Kit courroie de distribution",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/kit-de-chaine-de-distribution",
+                "texte": "Fiche technique kit de chaîne",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/kit-de-distribution-307.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/courroie-de-distribution-306.html",
+                "texte": "Courroie de distribution seule",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/pompe-a-eau-1260.html",
+                "texte": "Pompe à eau",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/kit-de-distribution",
+                "texte": "Fiche technique kit de distribution",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/kit-de-distribution",
+                "texte": "Guide d'achat kit de distribution",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/kit-de-freins-arriere-3859.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/leve-vitre-1561.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/machoires-de-frein-70.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/tambour-de-frein-123.html",
+                "texte": "tambour de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/cylindre-de-roue-277.html",
+                "texte": "cylindre de roue",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/maitre-cylindre-de-frein-258.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/flexible-de-frein-83.html",
+                "texte": "flexibles",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/maitre-cylindre-de-frein",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/moyeu-de-roue-653.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/roulement-de-roue-655.html",
+                "texte": "roulement de roue",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/capteur-abs-412.html",
+                "texte": "capteur ABS",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/moyeu-de-roue",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/plaquette-de-frein-402.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/disque-de-frein-82.html",
+                "texte": "disque de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/machoires-de-frein-70.html",
+                "texte": "mâchoire de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/plaquette-de-frein",
+                "texte": "guide d'achat plaquettes de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/plaquette-de-frein",
+                "texte": "spécifications techniques des plaquettes de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/disque-de-frein-82.html",
+                "texte": "disques de frein",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/pompe-a-carburant-458.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/filtre-a-carburant-9.html",
+                "texte": "Filtre à carburant",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/pompe-a-carburant",
+                "texte": "Fiche technique pompe à carburant",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/pompe-a-eau-1260.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-de-distribution-307.html",
+                "texte": "Kit de distribution",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/thermostat-316.html",
+                "texte": "Thermostat",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/durite-de-refroidissement-475.html",
+                "texte": "Durite de refroidissement",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/pompe-a-eau",
+                "texte": "Fiche technique pompe à eau",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/pompe-a-injection-3904.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/pompe-a-vide-de-freinage-387.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/pompe-a-vide-de-freinage",
+                "texte": "en savoir plus sur pompe à vide de freinage",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/pompe-a-vide-de-freinage",
+                "texte": "Guide d'achat pompe à vide de freinage : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-pompe-a-vide-de-freinage",
+                "texte": "Bruit Pompe à vide de freinage : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/pompe-de-direction-assistee-12.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/cremailliere-de-direction-286.html",
+                "texte": "Crémaillère de direction",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/pompe-de-direction-assistee",
+                "texte": "Fiche technique pompe de direction",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/soufflet-de-direction-191.html",
+                "texte": "soufflets",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/cremailliere-de-direction-286.html",
+                "texte": "crémaillère",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/poulie-d-alternateur-1108.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/alternateur-4.html",
+                "texte": "alternateur",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/courroie-d-accessoire-10.html",
+                "texte": "courroie",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/poulie-d-alternateur",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/poulie-d-arbre-a-came-1067.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/poulie-d-arbre-a-came",
+                "texte": "en savoir plus sur poulie d'arbre à came",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/poulie-d-arbre-a-came",
+                "texte": "Guide d'achat poulie d'arbre à came : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-poulie-d-arbre-a-came",
+                "texte": "Bruit Poulie d'arbre à came : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/poulie-vilebrequin-3213.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/poussoir-de-soupape-1216.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/poussoir-de-soupape",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/pressostat-d-huile-805.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/pressostat-d-huile",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/pulseur-d-air-d-habitacle-2669.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/radiateur-d-huile-469.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/radiateur-d-huile",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/radiateur-de-chauffage-467.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/thermostat-316.html",
+                "texte": "thermostat",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/radiateur-de-chauffage",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/radiateur-de-refroidissement-470.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/pompe-a-eau-1260.html",
+                "texte": "pompe à eau",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/thermostat-316.html",
+                "texte": "thermostat",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/durite-de-refroidissement-475.html",
+                "texte": "durits de refroidissement",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/recepteur-d-embrayage-620.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/emetteur-d-embrayage-234.html",
+                "texte": "Émetteur d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/kit-d-embrayage-479.html",
+                "texte": "Kit d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/recepteur-d-embrayage",
+                "texte": "Fiche technique récepteur d'embrayage",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-d-embrayage-479.html",
+                "texte": "kit d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/ressort-de-suspension-188.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/amortisseur-854.html",
+                "texte": "amortisseur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/ressort-de-suspension",
+                "texte": "fiche technique ressort de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/amortisseur-854.html",
+                "texte": "amortisseurs",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/kit-de-butee-de-suspension-1632.html",
+                "texte": "butées de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/ressort-de-suspension",
+                "texte": "guide d'achat ressort de suspension",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/amortisseur-854.html",
+                "texte": "amortisseur",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/retroviseur-exterieur-50.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/rotule-de-direction-2066.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/rotule-de-suspension-2462.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/roulement-de-roue-655.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/disque-de-frein-82.html",
+                "texte": "Disque de frein",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/roulement-de-roue",
+                "texte": "Fiche technique roulement de roue",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/roulement-de-roue",
+                "texte": "Guide d'achat roulement de roue",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/sonde-de-refroidissement-830.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/thermostat-316.html",
+                "texte": "thermostat",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/durite-de-refroidissement-475.html",
+                "texte": "durites",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/sonde-lambda-3922.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/soufflet-de-cardan-193.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/cardan-13.html",
+                "texte": "Cardan complet",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/soufflet-de-cardan",
+                "texte": "Fiche technique soufflet de cardan",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/soufflet-de-direction-191.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/rotule-de-direction-2066.html",
+                "texte": "rotules",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/barre-de-direction-285.html",
+                "texte": "barres de direction",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/soufflet-de-direction",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/soupape-d-admission-1269.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/soupape-d-admission",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/soupape-d-echappement-1270.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/soupape-d-echappement",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/sphere-de-suspension-1718.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/support-moteur-247.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/support-moteur",
+                "texte": "Fiche technique support moteur",
+                "classe": "",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/support-moteur",
+                "texte": "Guide d'achat support moteur",
+                "classe": "",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/tambour-de-frein-123.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/machoires-de-frein-70.html",
+                "texte": "mâchoires",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/cylindre-de-roue-277.html",
+                "texte": "cylindres de roue",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/cable-de-frein-a-main-124.html",
+                "texte": "câble de frein à main",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/tambour-de-frein",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/tambour-de-frein",
+                "texte": "Guide d'achat",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/temoin-d-usure-407.html",
+      "blocs": {
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/plaquette-de-frein-402.html",
+                "texte": "plaquettes",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/temoin-d-usure",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/thermostat-316.html",
+      "blocs": {
+        "reference": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/pompe-a-eau-1260.html",
+                "texte": "Pompe à eau",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/durite-de-refroidissement-475.html",
+                "texte": "Durite de refroidissement",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/radiateur-de-refroidissement-470.html",
+                "texte": "Radiateur",
+                "classe": "seo-internal-link",
+                "contexte": "liste avec texte",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/thermostat",
+                "texte": "Fiche technique thermostat",
+                "classe": "",
+                "contexte": "liste seul",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/turbo-2234.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/valve-de-reglage-du-ralenti-1298.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/reference-auto/valve-de-reglage-du-ralenti",
+                "texte": "en savoir plus sur valve de réglage du ralenti",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/blog-pieces-auto/guide-achat/valve-de-reglage-du-ralenti",
+                "texte": "Guide d'achat valve de réglage du ralenti : comment choisir la bonne référence",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/diagnostic-auto/bruit-valve-de-reglage-du-ralenti",
+                "texte": "Bruit Valve de réglage du ralenti : causes et diagnostic",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/vanne-egr-1145.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/corps-papillon-158.html",
+                "texte": "corps papillon",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/fap-1256.html",
+                "texte": "FAP",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/vanne-egr",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/blog-pieces-auto/guide-achat/vanne-egr",
+                "texte": "Guide d'achat",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/vase-d-expansion-397.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/durite-de-refroidissement-475.html",
+                "texte": "Durite",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/thermostat-316.html",
+                "texte": "Thermostat",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/vase-d-expansion",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/ventilateur-de-refroidissement-508.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/radiateur-de-refroidissement-470.html",
+                "texte": "Radiateur",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/pieces/sonde-de-refroidissement-830.html",
+                "texte": "Sonde de température",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/ventilateur-de-refroidissement",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/vis-de-culasse-1533.html",
+      "blocs": {
+        "bien-choisir": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": []
+          }
+        ]
+      }
+    },
+    {
+      "loc": "/pieces/volant-moteur-577.html",
+      "blocs": {
+        "qualite-prix": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-d-embrayage-479.html",
+                "texte": "Kit d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              },
+              {
+                "href": "/reference-auto/volant-moteur",
+                "texte": "Fiche technique",
+                "classe": "",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ],
+        "emplacement": [
+          {
+            "souligne": true,
+            "liens": [
+              {
+                "href": "/pieces/kit-d-embrayage-479.html",
+                "texte": "kit d'embrayage",
+                "classe": "seo-internal-link",
+                "contexte": "paragraphe",
+                "elements": [],
+                "role": "",
+                "boutonOuCarte": false
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "synthese": {
+    "reference": {
+      "pagesAvecConteneur": 51,
+      "conteneursSoulignes": 51,
+      "conteneursNonSoulignes": 0,
+      "pagesAvecLiens": 30,
+      "liens": 79,
+      "seoInternalLink": 38,
+      "sansClasse": 41,
+      "autresClasses": {},
+      "contextes": {
+        "liste seul": 27,
+        "paragraphe": 12,
+        "liste avec texte": 2
+      },
+      "avecElements": [],
+      "boutonsOuCartes": [],
+      "pagesAvecLienSansClasse": 30
+    },
+    "bien-choisir": {
+      "pagesAvecConteneur": 51,
+      "conteneursSoulignes": 51,
+      "conteneursNonSoulignes": 0,
+      "pagesAvecLiens": 22,
+      "liens": 30,
+      "seoInternalLink": 2,
+      "sansClasse": 28,
+      "autresClasses": {},
+      "contextes": {
+        "paragraphe": 28
+      },
+      "avecElements": [],
+      "boutonsOuCartes": [],
+      "pagesAvecLienSansClasse": 21
+    },
+    "qualite-prix": {
+      "pagesAvecConteneur": 83,
+      "conteneursSoulignes": 83,
+      "conteneursNonSoulignes": 0,
+      "pagesAvecLiens": 62,
+      "liens": 134,
+      "seoInternalLink": 53,
+      "sansClasse": 81,
+      "autresClasses": {},
+      "contextes": {
+        "paragraphe": 81
+      },
+      "avecElements": [],
+      "boutonsOuCartes": [],
+      "pagesAvecLienSansClasse": 56
+    },
+    "emplacement": {
+      "pagesAvecConteneur": 118,
+      "conteneursSoulignes": 118,
+      "conteneursNonSoulignes": 0,
+      "pagesAvecLiens": 23,
+      "liens": 47,
+      "seoInternalLink": 3,
+      "sansClasse": 44,
+      "autresClasses": {},
+      "contextes": {
+        "paragraphe": 44
+      },
+      "avecElements": [],
+      "boutonsOuCartes": [],
+      "pagesAvecLienSansClasse": 21
+    },
+    "troisBlocs": {
+      "liensSansClasse": 153,
+      "liens": 211,
+      "pagesAvecLienSansClasse": 72
+    }
+  }
+}

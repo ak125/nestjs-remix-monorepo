@@ -778,7 +778,7 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
       {/* Hero secondaire — Réassurance compacte + liens utiles (1 seul bloc, pas de redondance) */}
-      <div className="py-4 px-4 sm:px-6 bg-slate-50 border-b border-slate-100">
+      <div className="relative py-4 px-4 sm:px-6 bg-slate-50 border-b border-slate-100">
         <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3">
           {/* Trust badges — texte compact inline */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500">
@@ -805,7 +805,7 @@ export default function PiecesDetailPage() {
             {data.content?.buyingGuideHref && (
               <a
                 href={data.content.buyingGuideHref}
-                className="text-blue-600 hover:text-blue-800 transition-colors"
+                className="inline-flex items-center min-h-6 text-blue-600 hover:text-blue-800 transition-colors"
               >
                 Guide d&apos;achat
               </a>
@@ -813,14 +813,14 @@ export default function PiecesDetailPage() {
             {data.content?.conseilsHref && (
               <a
                 href={data.content.conseilsHref}
-                className="text-emerald-600 hover:text-emerald-800 transition-colors"
+                className="inline-flex items-center min-h-6 text-success hover:text-emerald-800 transition-colors"
               >
                 Conseils entretien
               </a>
             )}
             <a
               href="/reference-auto"
-              className="text-foreground hover:text-foreground transition-colors"
+              className="inline-flex items-center min-h-6 text-foreground hover:text-foreground transition-colors"
             >
               Fiche technique
             </a>
@@ -828,9 +828,56 @@ export default function PiecesDetailPage() {
         </div>
       </div>
       <GammeQuickNav />
-      <GammeDiagnosticCTA />
       {/* ═══════════════════════════════════════════════════════
-           H2 #1 — Bien choisir votre {gamme}
+           H2 #1 — Trouver la bonne référence (maquette R1, mandat DS)
+           Achat d'abord : compatibilités et motorisations → pages R2
+           ═══════════════════════════════════════════════════════ */}
+      <section
+        id="reference"
+        className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto"
+      >
+        <div className="max-w-[1280px] mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Trouver la bonne référence pour votre véhicule
+          </h2>
+
+          {/* Contenu éditorial "référence/commande". Liens soulignés au repos : sans soulignement, le
+              lien « Conseils : … » ne se distinguait du texte que par sa couleur (1,44:1, WCAG 1.4.1,
+              complément 8). Même décalage que .seo-internal-link ; .gamme-editorial (partagée) intacte. */}
+          {editorialBlocks.referenceSection.length > 0 && (
+            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8 [&_a]:underline [&_a]:underline-offset-2">
+              {editorialBlocks.referenceSection.map((block, i) => (
+                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
+              ))}
+            </div>
+          )}
+
+          {/* Motorisations — composant premium avec search, logos, advice */}
+          <Suspense
+            fallback={
+              <div className="h-96 bg-white/50 animate-pulse rounded-2xl" />
+            }
+          >
+            <Await resolve={data.motorisations}>
+              {(motorisations) => (
+                <MotorisationsSection
+                  motorisations={motorisations ?? undefined}
+                  totalCount={data.performance?.motorisations_count}
+                  hideTitle
+                  compatibilitiesIntro={
+                    data.sectionPack?.sections.motorisations.data
+                      .compatibilitiesIntro ?? undefined
+                  }
+                  familleName={data.famille?.mf_name}
+                  variant="R1"
+                />
+              )}
+            </Await>
+          </Suspense>
+        </div>
+      </section>
+      {/* ═══════════════════════════════════════════════════════
+           H2 #2 — Bien choisir votre {gamme}
            Types, critères, vérifications, erreurs à éviter
            ═══════════════════════════════════════════════════════ */}
       <section
@@ -861,7 +908,7 @@ export default function PiecesDetailPage() {
               </div>
             )}
             {editorialBlocks.chooseSection.length > 0 && (
-              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
+              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2">
                 {editorialBlocks.chooseSection.map((block, i) => (
                   <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
                 ))}
@@ -888,7 +935,7 @@ export default function PiecesDetailPage() {
         </div>
       </section>
       {/* ═══════════════════════════════════════════════════════
-           H2 #2 — Qualité, prix et marques
+           H2 #3 — Qualité, prix et marques
            Image PRICE, marques, fiche technique
            ═══════════════════════════════════════════════════════ */}
       <section
@@ -918,7 +965,7 @@ export default function PiecesDetailPage() {
               </div>
             )}
             {editorialBlocks.priceSection.length > 0 && (
-              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
+              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2">
                 {editorialBlocks.priceSection.map((block, i) => (
                   <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
                 ))}
@@ -957,7 +1004,7 @@ export default function PiecesDetailPage() {
         </div>
       </section>
       {/* ═══════════════════════════════════════════════════════
-           H2 #3 — Où se trouve et quand remplacer
+           H2 #4 — Où se trouve et quand remplacer
            Image LOCATION, rôle, symptômes, entretien
            ═══════════════════════════════════════════════════════ */}
       <section id="emplacement" className="py-10 px-4 sm:px-6 bg-white cv-auto">
@@ -990,7 +1037,7 @@ export default function PiecesDetailPage() {
                   </div>
                 )}
                 {hasLocationText && (
-                  <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
+                  <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 [&_a]:underline [&_a]:underline-offset-2">
                     {editorialBlocks.locationSection.map((block, i) => (
                       <div
                         key={i}
@@ -1011,55 +1058,9 @@ export default function PiecesDetailPage() {
         </div>
       </section>
       {/* ═══════════════════════════════════════════════════════
-           H2 #4 — Trouver la bonne référence
-           Compatibilités, motorisations, commande
-           ═══════════════════════════════════════════════════════ */}
-      <section
-        id="reference"
-        className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto"
-      >
-        <div className="max-w-[1280px] mx-auto">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">
-            Trouver la bonne référence pour votre véhicule
-          </h2>
-
-          {/* Contenu éditorial "référence/commande" */}
-          {editorialBlocks.referenceSection.length > 0 && (
-            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8">
-              {editorialBlocks.referenceSection.map((block, i) => (
-                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
-              ))}
-            </div>
-          )}
-
-          {/* Motorisations — composant premium avec search, logos, advice */}
-          <Suspense
-            fallback={
-              <div className="h-96 bg-white/50 animate-pulse rounded-2xl" />
-            }
-          >
-            <Await resolve={data.motorisations}>
-              {(motorisations) => (
-                <MotorisationsSection
-                  motorisations={motorisations ?? undefined}
-                  totalCount={data.performance?.motorisations_count}
-                  hideTitle
-                  compatibilitiesIntro={
-                    data.sectionPack?.sections.motorisations.data
-                      .compatibilitiesIntro ?? undefined
-                  }
-                  familleName={data.famille?.mf_name}
-                  variant="R1"
-                />
-              )}
-            </Await>
-          </Suspense>
-        </div>
-      </section>
-      {/* ═══════════════════════════════════════════════════════
            H2 #5 — Questions fréquentes (UNE SEULE)
            ═══════════════════════════════════════════════════════ */}
-      <section id="faq" className="py-10 px-4 sm:px-6 bg-white cv-auto">
+      <section id="faq" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
         <div className="max-w-[1280px] mx-auto">
           <GammeFaq
             items={mergedFaq}
@@ -1067,13 +1068,15 @@ export default function PiecesDetailPage() {
           />
         </div>
       </section>
+      {/* Liens de sortie (décision 82) : diagnostic, puis R3 / famille / R2 */}
+      <GammeDiagnosticCTA />
       {/* ═══════════════════════════════════════════════════════
            H2 #6 — Aller plus loin
            Maillage, famille, guide CTA
            ═══════════════════════════════════════════════════════ */}
       <section
         id="aller-plus-loin"
-        className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto"
+        className="py-10 px-4 sm:px-6 bg-white cv-auto"
       >
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">

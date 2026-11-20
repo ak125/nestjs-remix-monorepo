@@ -1,0 +1,376 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "apres",
+  "at": "2026-11-19T20:54:22.123Z",
+  "viewport": "390x844 DPR2",
+  "axeVersion": "4.12.1",
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "count": 9,
+      "nodes": [
+        {
+          "target": ".text-white\\/40.mt-1.text-\\[12px\\]",
+          "where": "footer",
+          "text": "Pièces auto de qualité · Livraison rapide",
+          "cls": "text-[12px] text-white/40 mt-1",
+          "data": {
+            "fg": "#6f7888",
+            "bg": "#0f1e38",
+            "ratio": 3.73,
+            "expected": "4.5:1",
+            "size": "9.0pt (12px)",
+            "weight": "normal"
+          }
+        },
+        {
+          "target": "div:nth-child(1) > .uppercase.tracking-widest.text-white\\/25",
+          "where": "footer",
+          "text": "NAVIGATION",
+          "cls": "text-xs font-bold text-white/25 uppercase tracking-widest mb-1",
+          "data": {
+            "fg": "#4b566a",
+            "bg": "#0f1e38",
+            "ratio": 2.24,
+            "expected": "4.5:1",
+            "size": "9.0pt (12px)",
+            "weight": "bold"
+          }
+        },
+        {
+          "target": "div:nth-child(2) > .uppercase.tracking-widest.text-white\\/25",
+          "where": "footer",
+          "text": "INFORMATIONS",
+          "cls": "text-xs font-bold text-white/25 uppercase tracking-widest mb-1",
+          "data": {
+            "fg": "#4b566a",
+            "bg": "#0f1e38",
+            "ratio": 2.24,
+            "expected": "4.5:1",
+            "size": "9.0pt (12px)",
+            "weight": "bold"
+          }
+        },
+        {
+          "target": ".text-white\\/20.text-\\[10px\\]",
+          "where": "footer",
+          "text": "© 2026 AutoMecanik · Paiement sécurisé · Livraison 24-48h",
+          "cls": "text-[10px] text-white/20",
+          "data": {
+            "fg": "#3f4b60",
+            "bg": "#0f1e38",
+            "ratio": 1.88,
+            "expected": "4.5:1",
+            "size": "7.5pt (10px)",
+            "weight": "normal"
+          }
+        },
+        {
+          "target": ".gap-0\\.5.text-slate-400[href=\"/\"]",
+          "where": "nav[Navigation mobile]",
+          "text": "Accueil",
+          "cls": "no-style no-visited flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-all relative text-slate-400",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "expected": "4.5:1",
+            "size": "7.5pt (10px)",
+            "weight": "normal"
+          }
+        },
+        {
+          "target": "a[aria-current=\"page\"]",
+          "where": "nav[Navigation mobile]",
+          "text": "Catalogue",
+          "cls": "no-style no-visited flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-all relative text-cta",
+          "data": {
+            "fg": "#f97316",
+            "bg": "#ffffff",
+            "ratio": 2.8,
+            "expected": "4.5:1",
+            "size": "7.5pt (10px)",
+            "weight": "normal"
+          }
+        },
+        {
+          "target": ".gap-0\\.5.text-slate-400[href$=\"diagnostic-auto\"]",
+          "where": "nav[Navigation mobile]",
+          "text": "Diagnostic",
+          "cls": "no-style no-visited flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-all relative text-slate-400",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "expected": "4.5:1",
+            "size": "7.5pt (10px)",
+            "weight": "normal"
+          }
+        },
+        {
+          "target": "a[href$=\"dashboard\"]",
+          "where": "nav[Navigation mobile]",
+          "text": "Compte",
+          "cls": "no-style no-visited flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-all relative text-slate-400",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "expected": "4.5:1",
+            "size": "7.5pt (10px)",
+            "weight": "normal"
+          }
+        },
+        {
+          "target": "button[aria-label=\"Ouvrir le panier\"]",
+          "where": "nav[Navigation mobile]",
+          "text": "Panier",
+          "cls": "flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-all relative text-slate-400",
+          "data": {
+            "fg": "#90a1b9",
+            "bg": "#ffffff",
+            "ratio": 2.63,
+            "expected": "4.5:1",
+            "size": "7.5pt (10px)",
+            "weight": "normal"
+          }
+        }
+      ]
+    },
+    {
+      "id": "link-in-text-block",
+      "impact": "serious",
+      "count": 1,
+      "nodes": [
+        {
+          "target": "p:nth-child(3) > a:nth-child(3)",
+          "where": "#reference",
+          "text": "Conseils : changer un filtre à huile étape par étape",
+          "cls": "",
+          "data": {
+            "ratio": 1.44
+          }
+        }
+      ]
+    },
+    {
+      "id": "region",
+      "impact": "moderate",
+      "count": 2,
+      "nodes": [
+        {
+          "target": ".text-emerald-300",
+          "where": "body",
+          "text": "Livraison gratuite dès 150€",
+          "cls": "flex items-center gap-1.5 text-emerald-300 whitespace-nowrap",
+          "data": {}
+        },
+        {
+          "target": ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+          "where": "body",
+          "text": "Retours 30j",
+          "cls": "text-white/40 whitespace-nowrap",
+          "data": {}
+        }
+      ]
+    }
+  ],
+  "incomplete": [
+    {
+      "id": "color-contrast",
+      "count": 18
+    }
+  ],
+  "smallTargets": [
+    {
+      "tag": "input",
+      "w": 358,
+      "h": 40.8,
+      "under24": false,
+      "text": "Rechercher une pièce auto",
+      "where": "nav[Navigation principale]",
+      "cls": "w-full py-2 pl-9 pr-8 bg-white/10 border border-white/10 rounded-xl text-sm text-white outline-none placeholder:text-white/35 transition-all focus:bg-white/15 f"
+    },
+    {
+      "tag": "a",
+      "w": 1,
+      "h": 1,
+      "under24": true,
+      "text": "Aller au contenu principal",
+      "where": "body",
+      "cls": "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-blue-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:sha"
+    },
+    {
+      "tag": "a",
+      "w": 36,
+      "h": 24,
+      "under24": false,
+      "text": "Accueil",
+      "where": "body",
+      "cls": "inline-flex items-center min-h-6 hover:text-white/50 transition-colors"
+    },
+    {
+      "tag": "a",
+      "w": 58,
+      "h": 24,
+      "under24": false,
+      "text": "Pièces Auto",
+      "where": "body",
+      "cls": "inline-flex items-center min-h-6 hover:text-white/50 transition-colors"
+    },
+    {
+      "tag": "a",
+      "w": 80,
+      "h": 24,
+      "under24": false,
+      "text": "Guide d'achat",
+      "where": "body",
+      "cls": "inline-flex items-center min-h-6 text-blue-600 hover:text-blue-800 transition-colors"
+    },
+    {
+      "tag": "a",
+      "w": 104,
+      "h": 24,
+      "under24": false,
+      "text": "Conseils entretien",
+      "where": "body",
+      "cls": "inline-flex items-center min-h-6 text-success hover:text-emerald-800 transition-colors"
+    },
+    {
+      "tag": "a",
+      "w": 92,
+      "h": 24,
+      "under24": false,
+      "text": "Fiche technique",
+      "where": "body",
+      "cls": "inline-flex items-center min-h-6 text-foreground hover:text-foreground transition-colors"
+    },
+    {
+      "tag": "a",
+      "w": 344,
+      "h": 40.8,
+      "under24": false,
+      "text": "bouchon de vidange",
+      "where": "#reference",
+      "cls": "seo-internal-link"
+    },
+    {
+      "tag": "a",
+      "w": 63,
+      "h": 18,
+      "under24": true,
+      "text": "filtre à air",
+      "where": "#reference",
+      "cls": "seo-internal-link"
+    },
+    {
+      "tag": "a",
+      "w": 347,
+      "h": 40.8,
+      "under24": false,
+      "text": "Conseils : changer un filtre à huile étape par éta",
+      "where": "#reference",
+      "cls": ""
+    },
+    {
+      "tag": "a",
+      "w": 63,
+      "h": 18,
+      "under24": true,
+      "text": "",
+      "where": "#bien-choisir",
+      "cls": "seo-internal-link"
+    },
+    {
+      "tag": "a",
+      "w": 299,
+      "h": 40.8,
+      "under24": false,
+      "text": "",
+      "where": "#bien-choisir",
+      "cls": "seo-internal-link"
+    },
+    {
+      "tag": "a",
+      "w": 207,
+      "h": 18,
+      "under24": true,
+      "text": "",
+      "where": "#emplacement",
+      "cls": ""
+    },
+    {
+      "tag": "button",
+      "w": 48,
+      "h": 24,
+      "under24": false,
+      "text": "",
+      "where": "#aller-plus-loin",
+      "cls": "inline-flex items-center min-h-6 text-xs text-cta-700 hover:text-cta-800 mt-1 font-medium"
+    },
+    {
+      "tag": "a",
+      "w": 284,
+      "h": 43.6,
+      "under24": false,
+      "text": "",
+      "where": "section[related-resources]",
+      "cls": "group block"
+    },
+    {
+      "tag": "a",
+      "w": 284,
+      "h": 43.6,
+      "under24": false,
+      "text": "",
+      "where": "section[related-resources]",
+      "cls": "group block"
+    },
+    {
+      "tag": "a",
+      "w": 284,
+      "h": 43.6,
+      "under24": false,
+      "text": "",
+      "where": "section[related-resources]",
+      "cls": "group block"
+    },
+    {
+      "tag": "a",
+      "w": 284,
+      "h": 43.6,
+      "under24": false,
+      "text": "",
+      "where": "section[related-resources]",
+      "cls": "group block"
+    },
+    {
+      "tag": "a",
+      "w": 26,
+      "h": 44,
+      "under24": false,
+      "text": "CGV",
+      "where": "footer",
+      "cls": "no-style no-visited inline-flex items-center min-h-[44px] text-xs text-white/55 hover:text-white transition-colors"
+    },
+    {
+      "tag": "button",
+      "w": 24,
+      "h": 24,
+      "under24": false,
+      "text": "Retour en haut",
+      "where": "body",
+      "cls": "fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-center bg-cta hover:bg-cta-hover text-black"
+    }
+  ],
+  "reduce": {
+    "infiniteAnimations": [],
+    "quickNavScroll": {
+      "faqTop": 12923,
+      "scrollYAt60ms": 12805,
+      "scrollYEnd": 12805,
+      "instant": true
+    }
+  }
+}

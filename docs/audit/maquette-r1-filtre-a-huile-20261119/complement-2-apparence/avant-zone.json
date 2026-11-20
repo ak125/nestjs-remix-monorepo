@@ -1,0 +1,319 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "avant",
+  "at": "2026-11-19T19:17:30.746Z",
+  "viewports": {
+    "390": {
+      "dpr": 2,
+      "quickNavTargets": [
+        {
+          "tag": "button",
+          "text": "Compatibilité",
+          "width": 132,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "Bien choisir",
+          "width": 119,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "Prix & Marques",
+          "width": 140,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "Emplacement",
+          "width": 133,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "FAQ",
+          "width": 76,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "Voir aussi",
+          "width": 107,
+          "height": 37.2
+        }
+      ],
+      "contrast": [
+        {
+          "element": "en-tete-intro",
+          "textColors": [
+            "oklab(0.999994 0.0000455677 0.0000200868 / 0.8)"
+          ],
+          "worstTextColor": "oklab(0.999994 0.0000455677 0.0000200868 / 0.8)",
+          "contrastMin": 1.64,
+          "contrastMax": 5.99,
+          "worstBackground": "rgb(186,191,206)",
+          "size": "248x100"
+        },
+        {
+          "element": "en-tete-compteur",
+          "textColors": [
+            "rgb(255, 255, 255)",
+            "oklab(0.999994 0.0000455678 0.0000200868 / 0.9)"
+          ],
+          "worstTextColor": "oklab(0.999994 0.0000455678 0.0000200868 / 0.9)",
+          "contrastMin": 1.55,
+          "contrastMax": 2.57,
+          "worstBackground": "rgb(199,203,215)",
+          "size": "204x50"
+        },
+        {
+          "element": "carte1-pastille-moteur",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.48,
+          "contrastMax": 7.9,
+          "worstBackground": "rgb(209,212,221)",
+          "size": "61x24"
+        },
+        {
+          "element": "carte1-pastille-puissance",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 2.44,
+          "contrastMax": 3.27,
+          "worstBackground": "rgb(0,191,87)",
+          "size": "57x24"
+        },
+        {
+          "element": "carte1-bouton-voir-les-pieces",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.7,
+          "contrastMax": 10.84,
+          "worstBackground": "rgb(195,198,211)",
+          "size": "154x40"
+        },
+        {
+          "element": "carte2-pastille-moteur",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.48,
+          "contrastMax": 7.9,
+          "worstBackground": "rgb(209,212,221)",
+          "size": "61x24"
+        },
+        {
+          "element": "carte2-pastille-puissance",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 2.44,
+          "contrastMax": 3.27,
+          "worstBackground": "rgb(0,191,87)",
+          "size": "57x24"
+        },
+        {
+          "element": "carte2-bouton-voir-les-pieces",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.7,
+          "contrastMax": 10.84,
+          "worstBackground": "rgb(195,198,211)",
+          "size": "154x40"
+        },
+        {
+          "element": "bouton-autres-compatibilites",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.65,
+          "contrastMax": 5.04,
+          "worstBackground": "rgb(197,201,213)",
+          "size": "308x72"
+        }
+      ]
+    },
+    "1440": {
+      "dpr": 1,
+      "quickNavTargets": [
+        {
+          "tag": "button",
+          "text": "Compatibilité",
+          "width": 132,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "Bien choisir",
+          "width": 119,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "Prix & Marques",
+          "width": 140,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "Emplacement",
+          "width": 133,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "FAQ",
+          "width": 76,
+          "height": 37.2
+        },
+        {
+          "tag": "button",
+          "text": "Voir aussi",
+          "width": 107,
+          "height": 37.2
+        }
+      ],
+      "contrast": [
+        {
+          "element": "en-tete-intro",
+          "textColors": [
+            "oklab(0.999994 0.0000455677 0.0000200868 / 0.8)"
+          ],
+          "worstTextColor": "oklab(0.999994 0.0000455677 0.0000200868 / 0.8)",
+          "contrastMin": 1.85,
+          "contrastMax": 5.39,
+          "worstBackground": "rgb(173,178,195)",
+          "size": "934x40"
+        },
+        {
+          "element": "en-tete-compteur",
+          "textColors": [
+            "rgb(255, 255, 255)",
+            "oklab(0.999994 0.0000455678 0.0000200868 / 0.9)"
+          ],
+          "worstTextColor": "oklab(0.999994 0.0000455678 0.0000200868 / 0.9)",
+          "contrastMin": 1.42,
+          "contrastMax": 1.83,
+          "worstBackground": "rgb(211,212,223)",
+          "size": "204x50"
+        },
+        {
+          "element": "carte1-pastille-moteur",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.5,
+          "contrastMax": 7.75,
+          "worstBackground": "rgb(208,211,221)",
+          "size": "61x24"
+        },
+        {
+          "element": "carte1-pastille-puissance",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 2.47,
+          "contrastMax": 3.27,
+          "worstBackground": "rgb(0,190,88)",
+          "size": "57x24"
+        },
+        {
+          "element": "carte1-bouton-voir-les-pieces",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.71,
+          "contrastMax": 10.68,
+          "worstBackground": "rgb(194,198,211)",
+          "size": "154x40"
+        },
+        {
+          "element": "carte2-pastille-moteur",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.51,
+          "contrastMax": 7.77,
+          "worstBackground": "rgb(207,210,220)",
+          "size": "61x24"
+        },
+        {
+          "element": "carte2-pastille-puissance",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 2.44,
+          "contrastMax": 3.27,
+          "worstBackground": "rgb(0,191,88)",
+          "size": "57x24"
+        },
+        {
+          "element": "carte2-bouton-voir-les-pieces",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.71,
+          "contrastMax": 10.81,
+          "worstBackground": "rgb(194,198,211)",
+          "size": "154x40"
+        },
+        {
+          "element": "bouton-autres-compatibilites",
+          "textColors": [
+            "rgb(255, 255, 255)"
+          ],
+          "worstTextColor": "rgb(255, 255, 255)",
+          "contrastMin": 1.15,
+          "contrastMax": 8.91,
+          "worstBackground": "rgb(238,239,242)",
+          "size": "320x48"
+        }
+      ]
+    }
+  },
+  "motion": {
+    "no-preference": {
+      "shimmer": {
+        "animationName": "shimmer"
+      },
+      "hover": {
+        "carte": "translate=0px -4px scale=none transform=none",
+        "image": "translate=none scale=1.1 transform=none",
+        "bouton": "translate=none scale=1.05 transform=none",
+        "fleche": "translate=4px scale=none transform=none",
+        "navigationRapide": "translate=0px -2px scale=none transform=none"
+      }
+    },
+    "reduce": {
+      "shimmer": {
+        "animationName": "shimmer"
+      },
+      "hover": {
+        "carte": "translate=0px -4px scale=none transform=none",
+        "image": "translate=none scale=1.1 transform=none",
+        "bouton": "translate=none scale=1.05 transform=none",
+        "fleche": "translate=4px scale=none transform=none",
+        "navigationRapide": "translate=0px -2px scale=none transform=none"
+      }
+    }
+  }
+}

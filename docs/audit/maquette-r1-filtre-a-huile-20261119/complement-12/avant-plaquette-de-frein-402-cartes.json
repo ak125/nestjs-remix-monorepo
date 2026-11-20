@@ -1,0 +1,1029 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/plaquette-de-frein-402.html",
+  "label": "avant",
+  "at": "2026-11-20T16:17:30.908Z",
+  "vues": {
+    "390": {
+      "cartesAvantClic": 12,
+      "cartes": 17,
+      "hauteur": {
+        "min": 184,
+        "max": 276,
+        "moyenne": 202
+      },
+      "largeurs": [
+        308
+      ],
+      "doublonsFaits": {
+        "distinctes": 15,
+        "cartesAvecLigne": 17,
+        "cartesAvecLigneIdentiqueAUneAutre": 4,
+        "groupes": [
+          {
+            "ligne": "Fabrication : 2005–2006",
+            "cartes": 2
+          },
+          {
+            "ligne": "Fabrication : 1997–2004",
+            "cartes": 2
+          }
+        ]
+      },
+      "doublonsPhrase": {
+        "distinctes": 0,
+        "cartesAvecLigne": 0,
+        "cartesAvecLigneIdentiqueAUneAutre": 0,
+        "groupes": []
+      },
+      "liste": [
+        {
+          "href": "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html",
+          "titre": "RENAULT MEGANE III",
+          "badges": [
+            "1.5 dCi",
+            "95 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "0-0",
+              "texte": "Fabrication : 2013–2015",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2013–2015",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html",
+          "titre": "CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)",
+          "badges": [
+            "1.6 HDi-BlueHDi",
+            "75 ch"
+          ],
+          "taille": "308×276",
+          "largeur": 308,
+          "hauteur": 276,
+          "paragraphes": [
+            {
+              "id": "1-0",
+              "texte": "Début de fabrication : 2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html",
+          "titre": "RENAULT CLIO II",
+          "badges": [
+            "1.5 dCi",
+            "65 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "2-0",
+              "texte": "Fabrication : 2001–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2001–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html",
+          "titre": "RENAULT CLIO II",
+          "badges": [
+            "1.5 dCi CAMPUS",
+            "84 ch"
+          ],
+          "taille": "308×216",
+          "largeur": 308,
+          "hauteur": 216,
+          "paragraphes": [
+            {
+              "id": "3-0",
+              "texte": "Fabrication : 2007–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2007–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html",
+          "titre": "PEUGEOT 307",
+          "badges": [
+            "1.6 HDI",
+            "90 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "4-0",
+              "texte": "Fabrication : 2005–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html",
+          "titre": "PEUGEOT 307",
+          "badges": [
+            "1.6 HDI",
+            "109 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "5-0",
+              "texte": "Fabrication : 2004–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Fabrication : 2004–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html",
+          "titre": "PEUGEOT 307",
+          "badges": [
+            "2.0 HDI",
+            "90 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "6-0",
+              "texte": "Fabrication : 2000–2007",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2000–2007",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html",
+          "titre": "AUDI A4 III B7",
+          "badges": [
+            "1.9 TDI",
+            "116 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "7-0",
+              "texte": "Fabrication : 2004–2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Fabrication : 2004–2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html",
+          "titre": "AUDI A4 III B7",
+          "badges": [
+            "2.0 TDI",
+            "121 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "8-0",
+              "texte": "Fabrication : 2005–2006",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2006",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html",
+          "titre": "AUDI A4 III B7",
+          "badges": [
+            "2.0 TDI",
+            "126 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "9-0",
+              "texte": "Fabrication : 2005–2006",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2006",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html",
+          "titre": "VOLKSWAGEN GOLF IV",
+          "badges": [
+            "1.9 TDI",
+            "90 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "10-0",
+              "texte": "Fabrication : 1997–2004",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 1997–2004",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html",
+          "titre": "VOLKSWAGEN GOLF IV",
+          "badges": [
+            "1.9 TDI",
+            "110 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "11-0",
+              "texte": "Fabrication : 1997–2004",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 1997–2004",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html",
+          "titre": "VOLKSWAGEN GOLF IV",
+          "badges": [
+            "1.9 TDI",
+            "115 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "12-0",
+              "texte": "Fabrication : 1998–2001",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 1998–2001",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html",
+          "titre": "BMW Série 1 (E81)",
+          "badges": [
+            "116 d",
+            "90 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "13-0",
+              "texte": "Fabrication : 2011",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2011",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html",
+          "titre": "BMW Série 1 (E81)",
+          "badges": [
+            "116 d",
+            "116 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "14-0",
+              "texte": "Fabrication : 2008–2011",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2008–2011",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html",
+          "titre": "BMW Série 1 (E81)",
+          "badges": [
+            "118 d",
+            "136 ch"
+          ],
+          "taille": "308×184",
+          "largeur": 308,
+          "hauteur": 184,
+          "paragraphes": [
+            {
+              "id": "15-0",
+              "texte": "Fabrication : 2006–2011",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2006–2011",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html",
+          "titre": "HONDA CIVIC IX",
+          "badges": [
+            "1.6 DTEC",
+            "120 ch"
+          ],
+          "taille": "308×204",
+          "largeur": 308,
+          "hauteur": 204,
+          "paragraphes": [
+            {
+              "id": "16-0",
+              "texte": "Début de fabrication : 2013",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 2
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2013",
+          "phrase": null
+        }
+      ]
+    },
+    "1440": {
+      "cartesAvantClic": 12,
+      "cartes": 17,
+      "hauteur": {
+        "min": 195,
+        "max": 195,
+        "moyenne": 195
+      },
+      "largeurs": [
+        595
+      ],
+      "doublonsFaits": {
+        "distinctes": 15,
+        "cartesAvecLigne": 17,
+        "cartesAvecLigneIdentiqueAUneAutre": 4,
+        "groupes": [
+          {
+            "ligne": "Fabrication : 2005–2006",
+            "cartes": 2
+          },
+          {
+            "ligne": "Fabrication : 1997–2004",
+            "cartes": 2
+          }
+        ]
+      },
+      "doublonsPhrase": {
+        "distinctes": 0,
+        "cartesAvecLigne": 0,
+        "cartesAvecLigneIdentiqueAUneAutre": 0,
+        "groupes": []
+      },
+      "liste": [
+        {
+          "href": "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html",
+          "titre": "RENAULT MEGANE III",
+          "badges": [
+            "1.5 dCi",
+            "95 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "0-0",
+              "texte": "Fabrication : 2013–2015",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2013–2015",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/citroen-46/berlingo-ii-46007/1-6-bluehdi-65057.html",
+          "titre": "CITROËN BERLINGO II - BERLINGO MULTISPACE (B9)",
+          "badges": [
+            "1.6 HDi-BlueHDi",
+            "75 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "1-0",
+              "texte": "Début de fabrication : 2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-16108.html",
+          "titre": "RENAULT CLIO II",
+          "badges": [
+            "1.5 dCi",
+            "65 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "2-0",
+              "texte": "Fabrication : 2001–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2001–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/renault-140/clio-ii-140003/1-5-dci-campus-30936.html",
+          "titre": "RENAULT CLIO II",
+          "badges": [
+            "1.5 dCi CAMPUS",
+            "84 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "3-0",
+              "texte": "Fabrication : 2007–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2007–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-19341.html",
+          "titre": "PEUGEOT 307",
+          "badges": [
+            "1.6 HDI",
+            "90 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "4-0",
+              "texte": "Fabrication : 2005–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/1-6-hdi-17989.html",
+          "titre": "PEUGEOT 307",
+          "badges": [
+            "1.6 HDI",
+            "109 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "5-0",
+              "texte": "Fabrication : 2004–2009",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2004–2009",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/peugeot-128/307-128035/2-0-hdi-15903.html",
+          "titre": "PEUGEOT 307",
+          "badges": [
+            "2.0 HDI",
+            "90 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "6-0",
+              "texte": "Fabrication : 2000–2007",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2000–2007",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/1-9-tdi-18400.html",
+          "titre": "AUDI A4 III B7",
+          "badges": [
+            "1.9 TDI",
+            "116 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "7-0",
+              "texte": "Fabrication : 2004–2008",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2004–2008",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-26547.html",
+          "titre": "AUDI A4 III B7",
+          "badges": [
+            "2.0 TDI",
+            "121 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "8-0",
+              "texte": "Fabrication : 2005–2006",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2006",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/audi-22/a4-iii-22042/2-0-tdi-27326.html",
+          "titre": "AUDI A4 III B7",
+          "badges": [
+            "2.0 TDI",
+            "126 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "9-0",
+              "texte": "Fabrication : 2005–2006",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2005–2006",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8456.html",
+          "titre": "VOLKSWAGEN GOLF IV",
+          "badges": [
+            "1.9 TDI",
+            "90 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "10-0",
+              "texte": "Fabrication : 1997–2004",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 1997–2004",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html",
+          "titre": "VOLKSWAGEN GOLF IV",
+          "badges": [
+            "1.9 TDI",
+            "110 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "11-0",
+              "texte": "Fabrication : 1997–2004",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 1997–2004",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html",
+          "titre": "VOLKSWAGEN GOLF IV",
+          "badges": [
+            "1.9 TDI",
+            "115 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "12-0",
+              "texte": "Fabrication : 1998–2001",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 1998–2001",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-58963.html",
+          "titre": "BMW Série 1 (E81)",
+          "badges": [
+            "116 d",
+            "90 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "13-0",
+              "texte": "Fabrication : 2011",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2011",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-116-d-31672.html",
+          "titre": "BMW Série 1 (E81)",
+          "badges": [
+            "116 d",
+            "116 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "14-0",
+              "texte": "Fabrication : 2008–2011",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2008–2011",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/bmw-33/serie-1-e81-33017/2-0-118-d-32172.html",
+          "titre": "BMW Série 1 (E81)",
+          "badges": [
+            "118 d",
+            "136 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "15-0",
+              "texte": "Fabrication : 2006–2011",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Fabrication : 2006–2011",
+          "phrase": null
+        },
+        {
+          "href": "/pieces/plaquette-de-frein-402/honda-74/civic-ix-74048/1-6-i-dtec-58791.html",
+          "titre": "HONDA CIVIC IX",
+          "badges": [
+            "1.6 DTEC",
+            "120 ch"
+          ],
+          "taille": "595×195",
+          "largeur": 595,
+          "hauteur": 195,
+          "paragraphes": [
+            {
+              "id": "16-0",
+              "texte": "Début de fabrication : 2013",
+              "classe": "text-sm text-gray-600 mb-4 font-medium",
+              "couleur": "74, 85, 101",
+              "taille": "14px",
+              "graisse": "500",
+              "contraste": {
+                "ratio": 7.55,
+                "fond": "#ffffff"
+              },
+              "nLignes": 1
+            }
+          ],
+          "ligneFaits": "Début de fabrication : 2013",
+          "phrase": null
+        }
+      ]
+    }
+  }
+}

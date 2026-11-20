@@ -1,0 +1,193 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/filtre-a-huile-7.html",
+  "label": "apres",
+  "at": "2026-11-20T09:35:18.259Z",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22aa",
+    "best-practice"
+  ],
+  "vues": {
+    "390": {
+      "page": {
+        "violations": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "noeuds": 9,
+            "cibles": [
+              ".text-white\\/40.mt-1.text-\\[12px\\]",
+              "div:nth-child(1) > .uppercase.tracking-widest.text-white\\/25",
+              "div:nth-child(2) > .uppercase.tracking-widest.text-white\\/25",
+              ".text-white\\/20.text-\\[10px\\]",
+              ".gap-0\\.5.text-slate-400[href=\"/\"]"
+            ]
+          },
+          {
+            "id": "region",
+            "impact": "moderate",
+            "noeuds": 2,
+            "cibles": [
+              ".text-emerald-300",
+              ".text-white\\/40.whitespace-nowrap:nth-child(3)"
+            ]
+          }
+        ],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "noeuds": 19,
+            "cibles": [
+              ".text-emerald-300",
+              ".text-white\\/15[aria-hidden=\"true\"]",
+              ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+              ".text-neutral-300.min-h-6[href=\"/\"]",
+              "a[href$=\"pieces\"]"
+            ]
+          }
+        ]
+      },
+      "sections": {
+        "bien-choisir": {
+          "violations": [],
+          "incomplete": [
+            {
+              "id": "color-contrast",
+              "noeuds": 5,
+              "cibles": [
+                ".motion-safe\\:animate-reveal-up:nth-child(1) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]",
+                ".motion-safe\\:animate-reveal-up:nth-child(2) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]",
+                ".motion-safe\\:animate-reveal-up:nth-child(3) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]",
+                ".motion-safe\\:animate-reveal-up:nth-child(4) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]",
+                ".motion-safe\\:animate-reveal-up:nth-child(5) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]"
+              ]
+            }
+          ],
+          "linkInTextBlock": {
+            "passes": [
+              "p:nth-child(4) > .seo-internal-link[data-link-type=\"LinkGamme\"][href$=\"filtre-a-air-8.html\"]",
+              ".seo-internal-link[data-link-type=\"LinkGamme\"]:nth-child(3)"
+            ],
+            "violations": [],
+            "incomplete": []
+          }
+        },
+        "qualite-prix": {
+          "violations": [],
+          "incomplete": [],
+          "linkInTextBlock": {
+            "passes": [
+              "div:nth-child(2) > p:nth-child(4) > a"
+            ],
+            "violations": [],
+            "incomplete": []
+          }
+        },
+        "emplacement": {
+          "violations": [],
+          "incomplete": [],
+          "linkInTextBlock": {
+            "passes": [
+              "p:nth-child(2) > a[href$=\"filtre-a-huile\"]"
+            ],
+            "violations": [],
+            "incomplete": []
+          }
+        }
+      }
+    },
+    "1440": {
+      "page": {
+        "violations": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "noeuds": 5,
+            "cibles": [
+              ".mt-3 > .text-white\\/30.text-\\[12px\\]",
+              ".md\\:flex-row > .text-white\\/30.text-\\[12px\\]",
+              ".text-white\\/30.no-style[href$=\"cgv\"]",
+              ".text-white\\/30.no-style[href$=\"privacy\"]",
+              ".text-white\\/30:nth-child(5)"
+            ]
+          },
+          {
+            "id": "region",
+            "impact": "moderate",
+            "noeuds": 4,
+            "cibles": [
+              ".text-emerald-300",
+              ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+              ".lg\\:inline",
+              ".text-white\\/40.lg\\:flex[href=\"tel:+33148479627\"]"
+            ]
+          }
+        ],
+        "incomplete": [
+          {
+            "id": "color-contrast",
+            "noeuds": 25,
+            "cibles": [
+              ".ring-cta-light\\/30 > .relative:nth-child(3)",
+              ".bg-white\\/20.rounded-md.px-1\\.5",
+              ".text-emerald-300",
+              ".text-white\\/15[aria-hidden=\"true\"]",
+              ".text-white\\/40.whitespace-nowrap:nth-child(3)"
+            ]
+          }
+        ]
+      },
+      "sections": {
+        "bien-choisir": {
+          "violations": [],
+          "incomplete": [
+            {
+              "id": "color-contrast",
+              "noeuds": 5,
+              "cibles": [
+                ".motion-safe\\:animate-reveal-up:nth-child(1) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]",
+                ".motion-safe\\:animate-reveal-up:nth-child(2) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]",
+                ".motion-safe\\:animate-reveal-up:nth-child(3) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]",
+                ".motion-safe\\:animate-reveal-up:nth-child(4) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]",
+                ".motion-safe\\:animate-reveal-up:nth-child(5) > .p-3\\.5.bg-slate-50\\/50.hover\\:shadow-sm > .-top-1\\.5.-left-1\\.5.text-\\[9px\\]"
+              ]
+            }
+          ],
+          "linkInTextBlock": {
+            "passes": [
+              "p:nth-child(4) > .seo-internal-link[data-link-type=\"LinkGamme\"][href$=\"filtre-a-air-8.html\"]",
+              ".seo-internal-link[data-link-type=\"LinkGamme\"]:nth-child(3)"
+            ],
+            "violations": [],
+            "incomplete": []
+          }
+        },
+        "qualite-prix": {
+          "violations": [],
+          "incomplete": [],
+          "linkInTextBlock": {
+            "passes": [
+              "div:nth-child(2) > p:nth-child(4) > a"
+            ],
+            "violations": [],
+            "incomplete": []
+          }
+        },
+        "emplacement": {
+          "violations": [],
+          "incomplete": [],
+          "linkInTextBlock": {
+            "passes": [
+              "p:nth-child(2) > a[href$=\"filtre-a-huile\"]"
+            ],
+            "violations": [],
+            "incomplete": []
+          }
+        }
+      }
+    }
+  }
+}

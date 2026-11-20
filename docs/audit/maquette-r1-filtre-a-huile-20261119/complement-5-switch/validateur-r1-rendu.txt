@@ -1,0 +1,4 @@
+avant-pg7    cartes=19 distinctes=1 répétitionMax=19 violationsValidateur+canon+mandat=0 gateFront=[]
+apres-pg7    cartes=19 distinctes=19 répétitionMax=1 violationsValidateur+canon+mandat=0 gateFront=[]
+avant-pg402  cartes=17 distinctes=1 répétitionMax=17 violationsValidateur+canon+mandat=0 gateFront=[]
+apres-pg402  cartes=17 distinctes=17 répétitionMax=1 violationsValidateur+canon+mandat=0 gateFront=[5,9]

@@ -1,0 +1,80 @@
+{
+  "url": "http://127.0.0.1:3017/pieces/plaquette-de-frein-402.html",
+  "label": "apres",
+  "at": "2026-11-20T14:28:27.096Z",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21a",
+    "wcag21aa",
+    "wcag22aa",
+    "best-practice"
+  ],
+  "vues": {
+    "390": {
+      "page": {
+        "violations": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "noeuds": 9,
+            "cibles": [
+              ".text-white\\/40.mt-1.text-\\[12px\\]",
+              "div:nth-child(1) > .uppercase.tracking-widest.text-white\\/25",
+              "div:nth-child(2) > .uppercase.tracking-widest.text-white\\/25",
+              ".text-white\\/20.text-\\[10px\\]",
+              ".gap-0\\.5.text-slate-400[href=\"/\"]",
+              "a[aria-current=\"page\"]",
+              ".gap-0\\.5.text-slate-400[href$=\"diagnostic-auto\"]",
+              "a[href$=\"dashboard\"]"
+            ]
+          },
+          {
+            "id": "region",
+            "impact": "moderate",
+            "noeuds": 2,
+            "cibles": [
+              ".text-emerald-300",
+              ".text-white\\/40.whitespace-nowrap:nth-child(3)"
+            ]
+          }
+        ]
+      },
+      "sectionCartes": {
+        "violations": []
+      }
+    },
+    "1440": {
+      "page": {
+        "violations": [
+          {
+            "id": "color-contrast",
+            "impact": "serious",
+            "noeuds": 5,
+            "cibles": [
+              ".mt-3 > .text-white\\/30.text-\\[12px\\]",
+              ".md\\:flex-row > .text-white\\/30.text-\\[12px\\]",
+              ".text-white\\/30.no-style[href$=\"cgv\"]",
+              ".text-white\\/30.no-style[href$=\"privacy\"]",
+              ".text-white\\/30:nth-child(5)"
+            ]
+          },
+          {
+            "id": "region",
+            "impact": "moderate",
+            "noeuds": 4,
+            "cibles": [
+              ".text-emerald-300",
+              ".text-white\\/40.whitespace-nowrap:nth-child(3)",
+              ".lg\\:inline",
+              ".text-white\\/40.lg\\:flex[href=\"tel:+33148479627\"]"
+            ]
+          }
+        ]
+      },
+      "sectionCartes": {
+        "violations": []
+      }
+    }
+  }
+}
