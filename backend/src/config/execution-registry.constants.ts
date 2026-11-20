@@ -22,26 +22,16 @@ export const EXECUTION_REGISTRY_VERSION = '1.0.0';
 // ── Registry ──
 
 export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
-  [RoleId.R2_PRODUCT]: {
-    roleId: RoleId.R2_PRODUCT,
-    pageType: 'R2_product',
-    contractSchemaRef: 'r2-content-contract.schema',
-    enricherServiceKey: 'R2EnricherService',
-    agentFiles: ['r2-keyword-planner.md'],
-    promptChain: [
-      'audit_finder',
-      'keyword_intent',
-      'section_keyword_map',
-      'section_content_gen',
-      'micro_specs',
-      'qa_gatekeeper',
-    ],
-    allowedModes: ['create', 'regenerate', 'refresh_full', 'qa_only'],
-    defaultWriteMode: 'draft_write',
-    stopPolicy: { maxRetries: 1, timeoutMs: 120_000 },
-    escalationPolicy: { onGateFail: 'block', onTimeout: 'hold' },
-    requiredUpstreamPhases: [],
-  },
+  // R2_PRODUCT: executable enrichment entry removed (mandat BI, tranche B3 — P11,
+  // ADR-031/046). R2EnricherService read the RAG gamme file and wrote
+  // __seo_r2_keyword_plan with RAG provenance; the write gate has refused that write
+  // since #1587 (rag_provenance_refused), so the path produced nothing (0 row in the
+  // table on 2026-11-17) while still reading the RAG. The producer is DELETED, not
+  // gated. No replacement wired here — a future R2 producer reads the WIKI projection
+  // (separate, owner-gated). Same surface as the R1_ROUTER and R3_CONSEILS precedents
+  // below: any R2_PRODUCT dispatch fails explicitly with "No registry entry for role"
+  // (blocked_no_write) — never a silent skip. R2 pages are served by the catalogue
+  // read path, which never read this table. Do NOT re-add a RAG-fed entry.
 
   // R1_ROUTER: executable enrichment entry removed (Tranche-B R1 — ADR-031/046 +
   // memory feedback_rag_zero_content_write_authority_remove_not_secure). R1EnricherService

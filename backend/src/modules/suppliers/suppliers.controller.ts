@@ -2,15 +2,37 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Param,
   Body,
   Query,
   Logger,
+  ParseIntPipe,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import { User } from '@common/decorators/user.decorator';
+import { ZodValidationPipe } from '@common/pipes/zod-validation.pipe';
 import { SuppliersService } from './suppliers.service';
+import { SupplierCardService } from './supplier-card.service';
+import {
+  CreatePriceRuleSchema,
+  CreateSupplierCardSchema,
+  UpdateSupplierCardSchema,
+  type CreatePriceRuleDto,
+  type CreateSupplierCardDto,
+  type UpdateSupplierCardDto,
+} from './dto/supplier.schemas';
+
+/** Auteur d'une écriture de fiche : l'id de l'admin connecté, jamais un nom codé. */
+function actorOf(userId: unknown): string {
+  const id =
+    userId === null || userId === undefined ? '' : String(userId).trim();
+  if (!id) throw new UnauthorizedException('Utilisateur non identifié');
+  return id;
+}
 
 /**
  * Fournisseurs : routes réservées aux administrateurs (lecture, bon de
@@ -22,7 +44,72 @@ import { SuppliersService } from './suppliers.service';
 export class SuppliersController {
   private readonly logger = new Logger(SuppliersController.name);
 
-  constructor(private readonly suppliersService: SuppliersService) {}
+  constructor(
+    private readonly suppliersService: SuppliersService,
+    private readonly supplierCards: SupplierCardService,
+  ) {}
+
+  // ===== FICHE FOURNISSEUR (mandat CH) =====
+  // Écritures sous AuthenticatedGuard + IsAdminGuard (classe). Aucune route ne
+  // lit ni ne sert la valeur d'un secret : la fiche porte le nom et l'état.
+
+  @Get(':id/card')
+  getCard(@Param('id') id: string) {
+    return this.supplierCards.getCard(id);
+  }
+
+  @Post('card')
+  createCard(
+    @Body(new ZodValidationPipe(CreateSupplierCardSchema))
+    body: CreateSupplierCardDto,
+    @User('id') userId: unknown,
+  ) {
+    return this.supplierCards.createCard(body, actorOf(userId));
+  }
+
+  @Put(':id/card')
+  updateCard(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(UpdateSupplierCardSchema))
+    body: UpdateSupplierCardDto,
+    @User('id') userId: unknown,
+  ) {
+    return this.supplierCards.updateCard(id, body, actorOf(userId));
+  }
+
+  /** Validation humaine de la localisation (jamais automatique). */
+  @Post(':id/location-validation')
+  async validateLocation(@Param('id') id: string, @User('id') userId: unknown) {
+    await this.supplierCards.validateLocation(id, actorOf(userId));
+    return { success: true, id };
+  }
+
+  /**
+   * Règle de remise / marge fournisseur × marque × famille ou sous-famille
+   * (complément CH-2). Écrite dans supplier_price_profiles comme ligne
+   * 'condition' (complément CH-3), non lue par le calcul des prix
+   * (branchement : mandat séparé).
+   */
+  @Post(':id/price-rules')
+  createPriceRule(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(CreatePriceRuleSchema))
+    body: CreatePriceRuleDto,
+    @User('id') userId: unknown,
+  ) {
+    return this.supplierCards.createPriceRule(id, body, actorOf(userId));
+  }
+
+  /** Retrait d'une règle : active = false, sans suppression. */
+  @Post(':id/price-rules/:ruleId/retire')
+  async retirePriceRule(
+    @Param('id') id: string,
+    @Param('ruleId', ParseIntPipe) ruleId: number,
+    @User('id') userId: unknown,
+  ) {
+    await this.supplierCards.retirePriceRule(id, ruleId, actorOf(userId));
+    return { success: true, id: ruleId };
+  }
 
   /**
    * Test global du service fournisseurs
@@ -124,25 +211,20 @@ export class SuppliersController {
   }
 
   /**
-   * Désactiver un fournisseur
+   * Retirer un fournisseur : `spl_status = 'archive'` et `spl_display = '0'`
+   * (sans DELETE ; liens et prix intacts). 404 si l'id n'existe pas.
    */
   @Post(':id/deactivate')
-  async deactivateSupplier(@Param('id') supplierId: string) {
-    try {
-      await this.suppliersService.deactivateSupplier(parseInt(supplierId));
-      return {
-        success: true,
-        message: 'Fournisseur désactivé avec succès',
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error('Error deactivating supplier:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString(),
-      };
-    }
+  async deactivateSupplier(
+    @Param('id') supplierId: string,
+    @User('id') userId: unknown,
+  ) {
+    await this.supplierCards.deactivateSupplier(supplierId, actorOf(userId));
+    return {
+      success: true,
+      message: 'Fournisseur archivé',
+      timestamp: new Date().toISOString(),
+    };
   }
 
   @Get(':id/details')

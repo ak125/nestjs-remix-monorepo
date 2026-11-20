@@ -1,0 +1,12 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -572,6 +572,9 @@
+         run: |
+           node scripts/governance/validate-agent-operating-map.js --contracts
+           node scripts/governance/validate-agent-operating-map.js --self-test
++          node scripts/governance/validate-db-retention.js
++          node scripts/governance/validate-db-retention.js --self-test
++          node --test scripts/governance/__tests__/validate-db-retention.test.mjs
+ 
+       - name: 🚦 Classeur des circuits de fusion (tests)
+         run: node --test scripts/ci/merge-circuit.test.mjs

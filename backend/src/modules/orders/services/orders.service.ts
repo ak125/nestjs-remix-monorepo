@@ -333,15 +333,18 @@ export class OrdersService extends SupabaseBaseService {
         );
       }
 
+      // Prix et consigne : ceux du tarif en vigueur, jamais ceux de la requête.
+      const lignes = await this.lignesAuTarifEnVigueur(orderData.orderLines);
+
       // Générer numéro unique de commande
       const orderNumber = await this.generateOrderNumber();
 
       // Calculer frais de port basé sur le poids réel (Colissimo 2026)
-      const subtotalForShipping = orderData.orderLines.reduce(
+      const subtotalForShipping = lignes.reduce(
         (sum, line) => sum + line.quantity * line.unitPrice,
         0,
       );
-      const orderItems = orderData.orderLines.map((line) => ({
+      const orderItems = lignes.map((line) => ({
         productId: line.productId,
         quantity: line.quantity,
       }));
@@ -355,7 +358,7 @@ export class OrdersService extends SupabaseBaseService {
       // Calculer totaux
       // ✅ Phase 5: Les prix sont TTC, donc taxRate = 0 (pas de TVA supplémentaire)
       const totals = await this.calculationService.calculateOrderTotal(
-        orderData.orderLines,
+        lignes,
         shippingCost,
         0, // discountAmount
         0, // taxRate = 0 car les prix sont déjà TTC
@@ -422,7 +425,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // Enrichir les lignes de commande (ref/marque) AVANT l'insert atomique
       const orderLines = await Promise.all(
-        orderData.orderLines.map(async (line, index) => {
+        lignes.map(async (line, index) => {
           let productName = line.productName;
           let productRef = line.productReference || null;
           let productBrand = line.productBrand || null;
@@ -437,8 +440,9 @@ export class OrdersService extends SupabaseBaseService {
             );
           }
 
-          // Re-lookup DB si ref ou marque manquante
-          if (productId && (!productRef || !productBrand)) {
+          // Identité de l'article : celle du catalogue, lue pour chaque ligne.
+          // Référence et nom suivent les mêmes replis que le panier.
+          if (productId) {
             try {
               const pieceId = parseInt(String(productId), 10);
               if (!isNaN(pieceId)) {
@@ -448,10 +452,11 @@ export class OrdersService extends SupabaseBaseService {
                   .eq('piece_id', pieceId)
                   .single();
                 if (piece) {
-                  productRef = productRef || piece.piece_ref || null;
-                  productName = productName || piece.piece_name || 'Produit';
+                  productRef = piece.piece_ref || String(piece.piece_id);
+                  productName = piece.piece_name || 'Produit';
                   productId = String(piece.piece_id);
-                  if (!productBrand && piece.piece_pm_id) {
+                  productBrand = null;
+                  if (piece.piece_pm_id) {
                     const { data: brand } = await this.supabase
                       .from(TABLES.pieces_marque)
                       .select('pm_name')
@@ -576,6 +581,86 @@ export class OrdersService extends SupabaseBaseService {
       this.logger.error('Erreur createOrder:', error);
       throw error;
     }
+  }
+
+  /**
+   * Lignes de commande au tarif en vigueur.
+   *
+   * La requête dit quels articles et combien. Le prix et la consigne sont lus
+   * dans le tarif vendable (`PiecePriceDataService`, autorité P35) : c'est le
+   * total écrit ici que le paiement débite. Le montant annoncé par la requête
+   * ne sert qu'à refuser la commande quand le tarif en vigueur le dépasse : le
+   * client ne paie jamais plus que ce que son panier affichait.
+   *
+   * Ne relit pas le panier (invariant F2). Aucun prix de repli : un article
+   * sans tarif vendable refuse la commande, une lecture en échec remonte.
+   *
+   * Publique pour le parcours invité, qui l'appelle avant de créer le compte.
+   */
+  async lignesAuTarifEnVigueur(
+    lines: CreateOrderData['orderLines'],
+  ): Promise<CreateOrderData['orderLines']> {
+    if (!Array.isArray(lines)) {
+      throw new BadRequestException('Lignes de commande invalides.');
+    }
+    const demandes = lines.map((line) => {
+      const article = String(line?.productId ?? '').trim();
+      const pieceId = /^\d+$/.test(article) ? Number(article) : NaN;
+      if (!Number.isSafeInteger(pieceId) || pieceId <= 0) {
+        throw new BadRequestException('Article de commande invalide.');
+      }
+      if (
+        typeof line.quantity !== 'number' ||
+        !Number.isSafeInteger(line.quantity) ||
+        line.quantity <= 0
+      ) {
+        throw new BadRequestException('Quantité de commande invalide.');
+      }
+      const consigneAnnoncee = line.consigne_unit ?? 0;
+      if (
+        [line.unitPrice, consigneAnnoncee].some(
+          (m) => typeof m !== 'number' || !Number.isFinite(m) || m < 0,
+        )
+      ) {
+        throw new BadRequestException('Montant de commande invalide.');
+      }
+      return {
+        line,
+        pieceId,
+        annonceCentimes: Math.round((line.unitPrice + consigneAnnoncee) * 100),
+      };
+    });
+
+    const tarifs = await this.piecePriceData.findSellablePrices([
+      ...new Set(demandes.map((d) => d.pieceId)),
+    ]);
+
+    return demandes.map(({ line, pieceId, annonceCentimes }) => {
+      const tarif = tarifs.get(pieceId);
+      const prixCentimes = Math.round(Number(tarif?.pri_vente_ttc_n) * 100);
+      if (!tarif || !Number.isFinite(prixCentimes) || prixCentimes <= 0) {
+        throw new ConflictException(
+          "Un article de votre panier n'est plus disponible à la vente. Retirez-le du panier pour poursuivre.",
+        );
+      }
+      // Même lecture que le panier : une consigne absente ou illisible vaut 0.
+      const consigneCentimes = Math.max(
+        0,
+        Math.round(Number(tarif.pri_consigne_ttc_n) * 100) || 0,
+      );
+      if (prixCentimes + consigneCentimes > annonceCentimes) {
+        throw new ConflictException(
+          "Le prix d'un article de votre panier a changé. Retirez-le du panier puis ajoutez-le de nouveau pour voir le prix à jour.",
+        );
+      }
+      return {
+        ...line,
+        productId: String(pieceId),
+        unitPrice: prixCentimes / 100,
+        consigne_unit: consigneCentimes / 100,
+        has_consigne: consigneCentimes > 0,
+      };
+    });
   }
 
   /**
@@ -758,6 +843,19 @@ export class OrdersService extends SupabaseBaseService {
             `Transition ${fromStatus} → ${updateData.status} invalide pour la commande ${orderId}.`,
           );
         }
+        // Une commande payée ne s'annule pas ici : le canon permet '3' → '2'
+        // et '4' → '2', or le paiement pose '3'. Même lecture du paiement que
+        // `getCustomerCancelRefusal` ; `cancel_order_atomic` la refuse aussi.
+        if (
+          updateData.status === OrderStatus.CANCELLED &&
+          (String(existing.ord_is_pay) === '1' ||
+            (existing.ord_date_pay != null &&
+              String(existing.ord_date_pay).trim() !== ''))
+        ) {
+          throw new ConflictException(
+            `Commande ${orderId} payée : son annulation passe par un remboursement, pas par un changement de statut.`,
+          );
+        }
         dataToUpdate.ord_ords_id = updateData.status;
       }
 
@@ -771,8 +869,8 @@ export class OrdersService extends SupabaseBaseService {
       }
 
       // Append audit event AFTER successful UPDATE (RPC validates correlation_id).
-      // Note: status changes during paid-order cancellation are blocked above by the
-      // `'2'` terminal guard + isValidTransition (5 → 2 forbidden in @repo/domain-commerce).
+      // Note: cancelling a paid order is blocked above by the payment guard; the
+      // canon alone does not block it (3 → 2 and 4 → 2 are valid transitions).
       if (updateData.status !== undefined && updateData.status !== fromStatus) {
         await this.statusService.appendOrderEvent({
           ordId: orderId,

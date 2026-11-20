@@ -3,7 +3,10 @@
 #
 #   pilote-file.sh controle --sortie DIR            lecture seule : constats + empreinte → DIR/etat.json
 #   pilote-file.sh session  --sortie DIR            session Claude seulement si l'empreinte a changé
-#                                                   et si le producteur du KPI du rôle est présent (D2)
+#                                                   et si le producteur du KPI du rôle est présent (D2) :
+#                                                   le code définit ce KPI (`id: '<kpi>'` ou
+#                                                   `const id = '<kpi>'`, détecté par ast-grep), une
+#                                                   simple mention ne suffit pas
 #   pilote-file.sh publier  --sortie DIR [--a-blanc]
 #                                                   issue de pilotage + commentaires bornés ;
 #                                                   --a-blanc : n'écrit rien sur GitHub
@@ -13,6 +16,7 @@
 # Le coût (sessions ouvertes, jetons, USD) est écrit dans DIR/cout.json à chaque exécution.
 #
 # Environnement : REPO (owner/nom, obligatoire) ; gh authentifié (GH_TOKEN en CI) ;
+# pour `controle`, ast-grep dans PATH à la version épinglée de package.json (@ast-grep/cli) ;
 # pour `session`, CLAUDE_CODE_OAUTH_TOKEN (jeton d'abonnement Claude, `claude setup-token`) ou, à
 # défaut, ANTHROPIC_API_KEY ; un seul des deux est transmis à la CLI, aucun à gh, aucun affiché.
 set -euo pipefail
@@ -20,8 +24,15 @@ set -euo pipefail
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RACINE="$(cd "$ICI/../.." && pwd)"
 CARTE="$RACINE/.spec/00-canon/ai-registry/agent-operating-map.yaml"
-# ADR-128 D2 : producteur « présent » = l'identifiant du KPI figure dans ce fichier du code.
-SOURCE_KPI="backend/src/modules/admin/services/command-center-kpi.service.ts"
+# ADR-128 D2 : producteur « présent » = l'un des deux fichiers où vivent les producteurs définit le
+# KPI : objet `{ id: '<kpi>' }` du service, ou `const id = '<kpi>'` d'une règle. Détection par
+# ast-grep (règles versionnées dans REGLE_PRODUCTEUR), jamais par recherche de texte : l'identifiant
+# cité en commentaire, dans une liste ou dans une chaîne ne compte pas.
+SOURCES_KPI=(
+  "backend/src/modules/admin/services/command-center-kpi.service.ts"
+  "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts"
+)
+REGLE_PRODUCTEUR="$ICI/pilote-file.producteur-kpi.yml"
 
 : "${REPO:?REPO (owner/nom) manquant}"
 TITRE="${PILOTE_TITRE:-Pilotage de la file (pilote-file, ADR-128 D6)}"
@@ -93,10 +104,43 @@ for v in carte.values() if isinstance(carte, dict) else []:
 PY
 )"
   [[ -n "$kpi" ]] || die "kpi_primary du département $DEPARTEMENT introuvable dans la carte"
-  gh api "repos/$REPO/contents/$SOURCE_KPI?ref=$REF" -H 'Accept: application/vnd.github.raw' \
-    > "$SORTIE/brut/source-kpi.txt" || die "lecture de $SOURCE_KPI impossible"
-  [[ -s "$SORTIE/brut/source-kpi.txt" ]] || die "$SOURCE_KPI vide"
-  grep -qF "$kpi" "$SORTIE/brut/source-kpi.txt" && producteur=présent
+  # ast-grep à la version épinglée du dépôt ; absent ou d'une autre version ⇒ arrêt, jamais « absent ».
+  local v_ag ag
+  v_ag="$(jq -r '.devDependencies["@ast-grep/cli"] // .dependencies["@ast-grep/cli"] // empty' \
+          "$RACINE/package.json")" || die "lecture de package.json impossible : producteur non évalué"
+  [[ -n "$v_ag" ]] || die "version de @ast-grep/cli absente de package.json : producteur non évalué"
+  ag="$(command -v ast-grep)" \
+    || die "ast-grep absent du PATH (version épinglée $v_ag, package.json) : producteur non évalué"
+  [[ "$("$ag" --version 2>&1)" == "ast-grep $v_ag" ]] \
+    || die "ast-grep trouvé « $("$ag" --version 2>&1 | head -n1) », version épinglée $v_ag : producteur non évalué"
+  # Les deux fichiers sont lus à la même version du code (REF).
+  # Chemins absolus : ast-grep rend `./x` sous la forme `x`, la comparaison de .file en dépend.
+  local src f n=0 fichiers=() brut; brut="$(cd "$SORTIE/brut" && pwd)"
+  for src in "${SOURCES_KPI[@]}"; do
+    n=$((n + 1)); f="$brut/source-kpi-$n.ts"
+    gh api "repos/$REPO/contents/$src?ref=$REF" -H 'Accept: application/vnd.github.raw' \
+      > "$f" || die "lecture de $src impossible"
+    [[ -s "$f" ]] || die "$src vide"
+    fichiers+=("$f")
+  done
+  local res="$SORTIE/brut/producteur-kpi.jsonl" err="$SORTIE/brut/producteur-kpi.stderr"
+  "$ag" scan --rule "$REGLE_PRODUCTEUR" --json=stream "${fichiers[@]}" > "$res" 2> "$err" \
+    || die "ast-grep en échec : $(head -n1 "$err") : producteur non évalué"
+  [[ ! -s "$err" ]] || die "ast-grep : $(head -n1 "$err") : producteur non évalué"
+  n=0
+  for src in "${SOURCES_KPI[@]}"; do
+    f="${fichiers[$n]}"; n=$((n + 1))
+    jq -se --arg f "$f" 'any(.[]; .ruleId == "pilote-file-fichier-lu" and .file == $f)' "$res" > /dev/null \
+      || die "$src non analysé par ast-grep (encodage ?) : producteur non évalué"
+    local ligne
+    ligne="$(jq -sr --arg f "$f" 'map(select(.ruleId == "pilote-file-erreur-syntaxe" and .file == $f))
+                                  | first | .range.start.line // empty' "$res")"
+    [[ -z "$ligne" ]] || die "$src : erreur de syntaxe ligne $((ligne + 1)) : producteur non évalué"
+  done
+  if jq -se --arg kpi "$kpi" 'any(.[]; .ruleId == "pilote-file-producteur-kpi"
+        and (.metaVariables.single.KPI.text | .[1:-1]) == $kpi)' "$res" > /dev/null; then
+    producteur=présent
+  fi
 
   jq -n --slurpfile i "$SORTIE/brut/issues.json" --slurpfile p "$SORTIE/brut/prs.json" \
     --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson jours "$JOURS" --arg titre "$TITRE" \
@@ -108,7 +152,7 @@ PY
                | sha256sum | cut -d' ' -f1)"
   precedente="$(corps_pilote | grep -o 'pilote-file:empreinte:[0-9a-f]\{64\}' | head -n1 | cut -d: -f3 || true)"
   jq --arg e "$empreinte" --arg p "$precedente" --slurpfile d "$SORTIE/brut/departements.json" \
-    --arg kpi "$kpi" --arg prod "$producteur" --arg src "$SOURCE_KPI@$REF" \
+    --arg kpi "$kpi" --arg prod "$producteur" --arg src "$(IFS=,; echo "${SOURCES_KPI[*]}")@$REF" \
     '. + {empreinte: $e, empreinte_precedente: (if $p == "" then null else $p end),
           nouveau: ($e != $p), departements: $d[0],
           kpi: {id: $kpi, producteur: $prod, source: $src}}' "$SORTIE/etat.json" > "$SORTIE/etat.tmp"

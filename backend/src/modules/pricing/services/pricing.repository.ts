@@ -60,6 +60,17 @@ export interface CommitRowPayload {
   marge: number;
   vente_ht: number;
   vente_ttc: number;
+  /**
+   * Real supplier of the tariff (`___xtr_supplier.spl_name`, e.g. 'DCA'), written
+   * to `pieces_price.pri_frs` on the committed row only.
+   */
+  frs: string;
+  /**
+   * Tariff effective date, ISO `YYYY-MM-DDT00:00:00.000Z` (format of the
+   * historical `pieces_price.pri_date_from` text values), written on the
+   * committed row only.
+   */
+  date_from: string;
 }
 
 @Injectable()
@@ -774,10 +785,14 @@ export class PricingRepository extends SupabaseBaseService {
   }
 
   async fetchProfiles(supplierId: string): Promise<SupplierPriceProfile[]> {
+    // Profils d'import seulement : une condition de remise de la fiche
+    // fournisseur (profile_kind 'condition', complément CH-3) n'est jamais
+    // un profil d'import.
     const { data, error } = await this.supabase
       .from('supplier_price_profiles')
       .select('*')
       .eq('supplier_id', supplierId)
+      .eq('profile_kind', 'import')
       .eq('active', true);
     if (error) throw error;
     return (data ?? []).map((r) => ({

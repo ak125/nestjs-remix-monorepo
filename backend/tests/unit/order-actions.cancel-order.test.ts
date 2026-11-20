@@ -134,6 +134,7 @@ describe('OrderActionsController.cancelOrder', () => {
       mailService as never,
       {} as never, // ordersService — hors du chemin de l'annulation
       {} as never, // lineSupplier — hors du chemin de l'annulation
+      {} as never, // supplierOrderPreparation — hors du chemin de l'annulation
     );
 
     await expect(

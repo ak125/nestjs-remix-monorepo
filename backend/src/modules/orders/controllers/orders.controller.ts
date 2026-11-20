@@ -33,6 +33,7 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { DomainConflictException, ErrorCodes } from '@common/exceptions';
 import { Request as ExpressRequest } from 'express';
@@ -90,6 +91,72 @@ type AuthenticatedRequest = ExpressRequest & {
 function getUserId(req: AuthenticatedRequest): string | undefined {
   const session = req.session as unknown as PassportSession | undefined;
   return req.user?.id || session?.passport?.user?.id;
+}
+
+/** Colonnes d'une commande rendues à son client : celles que ses écrans lisent. */
+const CUSTOMER_ORDER_FIELDS = [
+  'ord_id',
+  'ord_ords_id',
+  'ord_is_pay',
+  'ord_date',
+  'ord_amount_ht',
+  'ord_amount_ttc',
+  'ord_tva',
+  'ord_shipping_fee_ttc',
+  'ord_total_ttc',
+  'ord_tracking',
+  'ord_tracking_url',
+] as const;
+
+/** Colonnes d'une ligne de commande rendues au client. */
+const CUSTOMER_LINE_FIELDS = [
+  'orl_id',
+  'orl_pg_id',
+  'orl_pg_name',
+  'orl_art_ref',
+  'orl_art_quantity',
+  'orl_art_price_sell_unit_ttc',
+  'orl_art_price_sell_ttc',
+  'orl_orls_id',
+] as const;
+
+function pickFields(
+  source: unknown,
+  fields: readonly string[],
+): Record<string, unknown> {
+  const row = (source ?? {}) as Record<string, unknown>;
+  const picked: Record<string, unknown> = {};
+  for (const field of fields) {
+    if (field in row) picked[field] = row[field];
+  }
+  return picked;
+}
+
+/**
+ * Vue d'une commande pour son client.
+ *
+ * `OrdersService.getOrderById` et `listOrders` lisent toutes les colonnes :
+ * c'est la lecture de l'administration. Les routes du client rendent cette
+ * liste fermée (une colonne ajoutée en base n'y entre pas d'elle-même) :
+ * champs lus par `frontend/app/services/orders.server.ts` et, pour le
+ * paiement, par `frontend/app/services/order.server.ts` (`ord_id`,
+ * `ord_total_ttc`, `ord_is_pay`, `customer.cst_mail`).
+ */
+function toCustomerOrderView(order: unknown): Record<string, unknown> {
+  const source = (order ?? {}) as Record<string, unknown>;
+  const view = pickFields(source, CUSTOMER_ORDER_FIELDS);
+  if (Array.isArray(source.lines)) {
+    view.lines = source.lines.map((line) =>
+      pickFields(line, CUSTOMER_LINE_FIELDS),
+    );
+  }
+  const mail = (source.customer as Record<string, unknown> | null | undefined)
+    ?.cst_mail;
+  if (mail) view.customer = { cst_mail: mail };
+  if (Array.isArray(source.statusHistory)) {
+    view.statusHistory = source.statusHistory;
+  }
+  return view;
 }
 
 @ApiTags('orders')
@@ -263,7 +330,8 @@ export class OrdersController {
         limit: query.limit ? parseInt(query.limit) : 10,
       };
 
-      return await this.ordersService.listOrders(filters);
+      const { data, pagination } = await this.ordersService.listOrders(filters);
+      return { data: data.map(toCustomerOrderView), pagination };
     } catch (error) {
       this.logger.error('Error listing user orders:', error);
       throw error;
@@ -312,12 +380,13 @@ export class OrdersController {
         throw new NotFoundException('Commande non trouvée');
       }
 
+      const data: Record<string, unknown> = {
+        ...toCustomerOrderView(order),
+        customer_can_cancel: getCustomerCancelRefusal(order) === null,
+      };
       return {
         success: true,
-        data: {
-          ...order,
-          customer_can_cancel: getCustomerCancelRefusal(order) === null,
-        },
+        data,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
@@ -365,7 +434,7 @@ export class OrdersController {
           const existingOrder = await this.ordersService.getOrderById(
             existing.existing,
           );
-          return { ...existingOrder, resumeToken };
+          return { ...toCustomerOrderView(existingOrder), resumeToken };
         }
       }
 
@@ -412,7 +481,7 @@ export class OrdersController {
         resumeToken = await this.generateResumeToken(orderId as string);
       }
 
-      return { ...(order as object), resumeToken };
+      return { ...toCustomerOrderView(order), resumeToken };
     } catch (error) {
       this.logger.error('Error creating order:', error);
       if (idempotencyKey) {
@@ -485,7 +554,7 @@ export class OrdersController {
           const existingOrder = await this.ordersService.getOrderById(
             existing.existing,
           );
-          return { ...existingOrder, resumeToken };
+          return { ...toCustomerOrderView(existingOrder), resumeToken };
         }
       }
 
@@ -502,6 +571,11 @@ export class OrdersController {
             'Un compte existe déjà avec cet email. Connectez-vous pour finaliser votre commande.',
         });
       }
+
+      // Lignes vérifiées AVANT la création du compte : une commande refusée
+      // (article, quantité, tarif) ne doit pas laisser un compte sans commande,
+      // qui renverrait ensuite ce client vers la connexion.
+      await this.ordersService.lignesAuTarifEnVigueur(orderData.orderLines);
 
       // Nouveau client : compte créé avec un mot de passe aléatoire, activé
       // par le lien envoyé à l'adresse saisie. Aucune session n'est ouverte
@@ -616,7 +690,7 @@ export class OrdersController {
       // tout le nécessaire au redirect Paybox (ord_total_ttc + customer.cst_mail,
       // déjà présents via getOrderById) — aucun GET /api/orders/:id authentifié
       // ne peut suivre (INC tunnel paiement 2026-05→07).
-      return { ...(order as object), resumeToken };
+      return { ...toCustomerOrderView(order), resumeToken };
     } catch (error) {
       this.logger.error('Error in guest checkout:', error);
       if (idempotencyKey) {
@@ -641,25 +715,45 @@ export class OrdersController {
   @ApiResponse({ status: 404, description: 'Commande non trouvée' })
   async updateOrder(
     @Param('id', ParseIntPipe) orderId: number,
-    @Body() updateData: { status?: number; comment?: string },
+    @Body() updateData: { comment?: string },
     @Req() req: AuthenticatedRequest,
   ) {
     try {
       const userId = getUserId(req);
+      if (!userId) {
+        this.logger.warn(`Update denied: no user for order ${orderId}`);
+        throw new NotFoundException('Commande non trouvée');
+      }
       this.logger.log(`Updating order ${orderId} by user ${userId}`);
 
-      // TODO: Vérifier que l'utilisateur possède cette commande
+      // Propriétaire seulement — même réponse que GET et DELETE /api/orders/:id.
+      const order = await this.ordersService.getOrderById(String(orderId));
+      if (!order.ord_cst_id || String(order.ord_cst_id) !== String(userId)) {
+        this.logger.warn(
+          `Update denied: user ${userId} tried to update order ${orderId} owned by ${order.ord_cst_id}`,
+        );
+        throw new NotFoundException('Commande non trouvée');
+      }
 
-      // Convert legacy numeric status to canonical OrderStatusCode (1..5).
-      // Vault #301 PR-C: UpdateOrderData.status is now OrderStatusCode (string).
-      return await this.ordersService.updateOrder(String(orderId), {
-        status:
-          updateData.status !== undefined
-            ? (String(updateData.status) as OrderStatusCode)
-            : undefined,
-        customerNote: updateData.comment,
-        userId: userId ? Number(userId) : undefined,
+      // Un client ne change pas le statut de sa commande ici : l'annulation
+      // passe par DELETE /api/orders/:id (règle `getCustomerCancelRefusal`),
+      // les autres statuts sont posés par le paiement ou par l'administration
+      // (PATCH /api/orders/admin/:id/status).
+      const body = (updateData ?? {}) as Record<string, unknown>;
+      if ('status' in body) {
+        throw new ForbiddenException(
+          "Le statut d'une commande ne se modifie pas depuis l'espace client.",
+        );
+      }
+      if (body.comment !== undefined && typeof body.comment !== 'string') {
+        throw new BadRequestException('Commentaire invalide');
+      }
+
+      const updated = await this.ordersService.updateOrder(String(orderId), {
+        customerNote: body.comment as string | undefined,
+        userId: Number(userId),
       });
+      return toCustomerOrderView(updated);
     } catch (error) {
       this.logger.error(`Error updating order ${orderId}:`, error);
       throw error;

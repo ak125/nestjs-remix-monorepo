@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "767 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "780 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
     "8 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
@@ -13,16 +13,16 @@
     "tables_with_callsites": 214,
     "candidate_orphan_tables": 75,
     "partitions": 27,
-    "rpc_seen": 259,
+    "rpc_seen": 261,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 215,
-    "dynamic_from_callsites": 767,
+    "candidate_orphan_rpc": 217,
+    "dynamic_from_callsites": 780,
     "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 444,
-    "backend_files_scanned": 1538
+    "migrations_scanned": 462,
+    "backend_files_scanned": 1572
   },
   "tables": {
     "___config": {
@@ -116,9 +116,10 @@
     },
     "___xtr_supplier": {
       "used_by": [
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -126,9 +127,10 @@
     },
     "___xtr_supplier_link_pm": {
       "used_by": [
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -149,9 +151,10 @@
     "__admin_audit_log": {
       "used_by": [
         "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
-        "backend/src/modules/orders/listeners/order-audit.listener.ts"
+        "backend/src/modules/orders/listeners/order-audit.listener.ts",
+        "backend/src/modules/orders/services/supplier-order-preparation.service.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 3,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -2181,9 +2184,9 @@
     },
     "__sitemap_p_link": {
       "used_by": [
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts"
       ],
       "used_by_count": 4,
@@ -2287,9 +2290,10 @@
     "__vehicle_page_cache": {
       "used_by": [
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 3,
       "in_migrations": [
         "20260420_vehicle_page_cache_schema.sql"
       ],
@@ -2958,7 +2962,6 @@
         "backend/src/modules/admin/services/image-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
@@ -2983,7 +2986,7 @@
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 38,
+      "used_by_count": 37,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -3025,9 +3028,10 @@
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
-        "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
+        "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts"
       ],
-      "used_by_count": 5,
+      "used_by_count": 6,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -3483,9 +3487,10 @@
     },
     "supplier_price_profiles": {
       "used_by": [
-        "backend/src/modules/pricing/services/pricing.repository.ts"
+        "backend/src/modules/pricing/services/pricing.repository.ts",
+        "backend/src/modules/supplier-truth/supplier-card.repository.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [
         "20260522_pricing_control_plane_v1.sql"
       ],
@@ -4364,6 +4369,15 @@
       ],
       "is_trigger_function": false
     },
+    "get_listing_products_extended_filtered": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261118_r2_images_bmp_extension.down.sql",
+        "20261118_r2_images_bmp_extension.sql"
+      ],
+      "is_trigger_function": false
+    },
     "get_listing_products_for_build": {
       "called_by": [],
       "called_by_count": 0,
@@ -4402,7 +4416,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260324_fix_ghost_pieces_rpc_v3.sql"
+        "20260324_fix_ghost_pieces_rpc_v3.sql",
+        "20261118_r2_images_bmp_extension.down.sql",
+        "20261118_r2_images_bmp_extension.sql"
       ],
       "is_trigger_function": false
     },
@@ -5287,7 +5303,9 @@
       "defined_in_migrations": [
         "20260522_pricing_control_plane_v1_functions.sql",
         "20260604_pricing_commit_chunk_import_pending_mode.sql",
-        "20260608_pricing_commit_chunk_persist_pri_ref.sql"
+        "20260608_pricing_commit_chunk_persist_pri_ref.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.down.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
       ],
       "is_trigger_function": false
     },
@@ -5319,7 +5337,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260522_pricing_control_plane_v1_functions.sql"
+        "20260522_pricing_control_plane_v1_functions.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.down.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
       ],
       "is_trigger_function": false
     },
@@ -5479,7 +5499,9 @@
       "defined_in_migrations": [
         "20260118_rm_get_page_complete_v2.sql",
         "20260120_rm_page_v2_optimized.sql",
-        "20260408_rm_page_v2_seo_extraction.sql"
+        "20260408_rm_page_v2_seo_extraction.sql",
+        "20261119_seo_r2_title_display_names_rpc.down.sql",
+        "20261119_seo_r2_title_display_names_rpc.sql"
       ],
       "is_trigger_function": false
     },
@@ -5612,6 +5634,14 @@
         "20260523_pricing_decision_snapshot_and_offers.sql"
       ],
       "is_trigger_function": true
+    },
+    "supplier_price_condition_put": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261118_supplier_price_profiles_default_pct.sql"
+      ],
+      "is_trigger_function": false
     },
     "sync_entity_health_from_scores": {
       "called_by": [],
@@ -8628,6 +8658,23 @@
       ]
     },
     {
+      "name": "get_listing_products_extended_filtered",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261118_r2_images_bmp_extension.down.sql",
+        "20261118_r2_images_bmp_extension.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "get_listing_products_for_build",
       "confidence": "medium",
       "derived_from": [
@@ -8701,7 +8748,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260324_fix_ghost_pieces_rpc_v3.sql"
+        "20260324_fix_ghost_pieces_rpc_v3.sql",
+        "20261118_r2_images_bmp_extension.down.sql",
+        "20261118_r2_images_bmp_extension.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -10270,7 +10319,9 @@
       "defined_in_migrations": [
         "20260522_pricing_control_plane_v1_functions.sql",
         "20260604_pricing_commit_chunk_import_pending_mode.sql",
-        "20260608_pricing_commit_chunk_persist_pri_ref.sql"
+        "20260608_pricing_commit_chunk_persist_pri_ref.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.down.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -10334,7 +10385,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260522_pricing_control_plane_v1_functions.sql"
+        "20260522_pricing_control_plane_v1_functions.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.down.sql",
+        "20261117_pricing_commit_chunk_frs_date_from.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -10630,7 +10683,9 @@
       "defined_in_migrations": [
         "20260118_rm_get_page_complete_v2.sql",
         "20260120_rm_page_v2_optimized.sql",
-        "20260408_rm_page_v2_seo_extraction.sql"
+        "20260408_rm_page_v2_seo_extraction.sql",
+        "20261119_seo_r2_title_display_names_rpc.down.sql",
+        "20261119_seo_r2_title_display_names_rpc.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -10865,6 +10920,22 @@
       ],
       "defined_in_migrations": [
         "20260107_clean_html_from_seo_descriptions.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "supplier_price_condition_put",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261118_supplier_price_profiles_default_pct.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -11350,7 +11421,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/r4-content-enricher.service.ts",
-      "line": 197,
+      "line": 190,
       "form": "IDENT",
       "resolved_table": "__seo_reference",
       "refusal": null
@@ -12644,6 +12715,48 @@
       "refusal": "import-outside-scanned-corpus"
     },
     {
+      "file": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "line": 95,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "line": 105,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "line": 114,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "line": 145,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "line": 212,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/catalog/services/r2-title-collision.service.ts",
+      "line": 230,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
       "file": "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
       "line": 387,
       "form": "OBJ.KEY",
@@ -13366,84 +13479,56 @@
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 445,
+      "line": 449,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 455,
+      "line": 460,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 540,
+      "line": 545,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 589,
+      "line": 674,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 594,
+      "line": 679,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 610,
+      "line": 695,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 645,
+      "line": 730,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 764,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 961,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 982,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 1028,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 1048,
+      "line": 862,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13457,14 +13542,56 @@
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 1109,
+      "line": 1080,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 1221,
+      "line": 1126,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1146,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1157,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1207,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1319,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+      "line": 329,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/supplier-order-preparation.service.ts",
+      "line": 341,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13688,21 +13815,21 @@
     },
     {
       "file": "backend/src/modules/products/services/cross-selling-seo.service.ts",
-      "line": 39,
+      "line": 43,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/cross-selling-seo.service.ts",
-      "line": 198,
+      "line": 236,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/products/services/cross-selling-seo.service.ts",
-      "line": 210,
+      "line": 248,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -14577,42 +14704,42 @@
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 226,
+      "line": 275,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 272,
+      "line": 321,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 619,
+      "line": 668,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 643,
+      "line": 692,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 835,
+      "line": 883,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
-      "line": 880,
+      "line": 930,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -14647,7 +14774,7 @@
     },
     {
       "file": "backend/src/modules/seo/services/chain/seo-template-renderer.service.ts",
-      "line": 98,
+      "line": 103,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "binding-not-literal"
@@ -14884,6 +15011,55 @@
       "refusal": "import-outside-scanned-corpus"
     },
     {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 174,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 185,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 208,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier_link_pm",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 267,
+      "form": "IDENT",
+      "resolved_table": "supplier_price_profiles",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 329,
+      "form": "IDENT",
+      "resolved_table": "supplier_price_profiles",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 354,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
+      "line": 422,
+      "form": "IDENT",
+      "resolved_table": "___xtr_supplier",
+      "refusal": null
+    },
+    {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "line": 122,
       "form": "IDENT",
@@ -14955,77 +15131,63 @@
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 248,
+      "line": 274,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 273,
+      "line": 298,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 310,
+      "line": 403,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 334,
+      "line": 437,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 439,
+      "line": 472,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 473,
+      "line": 492,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 508,
+      "line": 536,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 528,
+      "line": 589,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 572,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 625,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 635,
+      "line": 599,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -16410,7 +16572,7 @@
       "method": "from",
       "reason": "supabase-storage-bucket",
       "file": "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
-      "line": 66,
+      "line": 67,
       "receiver": "this.supabase.storage"
     },
     {
@@ -16418,7 +16580,7 @@
       "method": "from",
       "reason": "supabase-storage-bucket",
       "file": "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
-      "line": 81,
+      "line": 82,
       "receiver": "this.supabase.storage"
     }
   ],

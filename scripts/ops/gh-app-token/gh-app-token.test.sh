@@ -9,7 +9,8 @@
 #    dépôts ou de forme du jeton doit être refusé (égalité stricte).
 # 3. Wrapper : faux sudo ; un échec du délivreur doit sortir en erreur, porter sa cause sur stderr
 #    et dans le rapport cron_report, et laisser hosts.yml intact.
-# 4. Unités : ExecStart vise le wrapper installé, le minuteur renouvelle avant l'expiration (1 h).
+# 4. Unités : ExecStart vise le wrapper installé, le minuteur renouvelle avant l'expiration (1 h)
+#    et repart avec le gestionnaire utilisateur (OnStartupSec=, jamais OnBootSec= : 18/11/2026).
 set -uo pipefail
 
 ICI="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -177,6 +178,21 @@ else ko "service : ExecStart inattendu"; fi
 iv=$(sed -n 's/^OnUnitActiveSec=\([0-9]*\)min$/\1/p' "$ICI/automecanik-gh-app-token-refresh.timer")
 if [ -n "$iv" ] && [ "$iv" -lt 60 ]; then ok "minuteur : toutes les ${iv} min, avant l'expiration du jeton (60 min)"
 else ko "minuteur : intervalle « $iv »"; fi
+
+# Unité du gestionnaire utilisateur : OnBootSec= se compte depuis le boot de la machine et n'a pas
+# relancé le minuteur après la relance du gestionnaire le 18/11/2026 (mandat CS) ; OnStartupSec= oui.
+garde_timer() { # fichier → 0 si OnStartupSec= est présent et OnBootSec= absent
+  grep -qE '^[[:space:]]*OnStartupSec=[^[:space:]]' "$1" && ! grep -qE '^[[:space:]]*OnBootSec=' "$1"
+}
+TIMER="$ICI/automecanik-gh-app-token-refresh.timer"
+if garde_timer "$TIMER"; then ok "minuteur : OnStartupSec=, sans OnBootSec= (repart avec le gestionnaire utilisateur)"
+else ko "minuteur : OnStartupSec= absent ou OnBootSec= présent (ne repart pas après une relance du gestionnaire)"; fi
+sed 's/^OnStartupSec=/OnBootSec=/' "$TIMER" >"$W/timer-boot"
+sed '/^OnStartupSec=/a OnBootSec=1min' "$TIMER" >"$W/timer-les-deux"
+for m in timer-boot timer-les-deux; do
+  if ! cmp -s "$TIMER" "$W/$m" && ! garde_timer "$W/$m"; then ok "garde mordante : minuteur muté ($m) refusé"
+  else ko "minuteur muté ($m) : mutation sans effet ou garde muette"; fi
+done
 
 echo "$pass/$((pass + fail)) attendus"
 [ "$fail" = 0 ]

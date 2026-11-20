@@ -1,0 +1,15 @@
+/opt/automecanik/automecanik-wiki/_meta/schema/entity-data/diagnostic.schema.json
+/opt/automecanik/data/tecdoc/populate-linkages-genartnr.py
+/opt/automecanik/rag/app/admin/kp_service.py
+/opt/automecanik/rag/scripts/tools/kp_prompt_generator.py
+/opt/automecanik/data/tecdoc/project-core-v2.py
+/opt/automecanik/data/tecdoc/populate-source-linkages.v2.py
+/opt/automecanik/rag/scripts/tools/kp_import.py
+/opt/automecanik/data/tecdoc/project-linkages-v3.py
+/opt/automecanik/data/tecdoc/fix-vehicles-massdoc.py
+/opt/automecanik/data/tecdoc/load-all-suppliers-v3.py
+/opt/automecanik/data/tecdoc/load-all-suppliers.py
+/opt/automecanik/data/tecdoc/project-new-data.py
+/opt/automecanik/data/tecdoc/load-all-suppliers-v2.py
+/opt/automecanik/data/tecdoc/load-t400-active.py
+/opt/automecanik/data/tecdoc/register-and-create-pieces.py

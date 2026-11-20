@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automecanik.local/config/db-retention/retention-rules.schema.json",
+  "title": "Règles de conservation des tables de massdoc",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "title", "inventory", "status", "decided_by", "decided_on", "archive_target_schema", "protected", "families", "partitions"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "database": { "type": "string" },
+    "owner_departments": { "type": "array", "items": { "type": "string", "pattern": "^(0[1-9]|1[0-9]|2[0-4]) [a-z-]+$" } },
+    "inventory": { "type": "string", "pattern": "^audit/massdoc-table-inventory-\\d{4}-\\d{2}-\\d{2}\\.json$" },
+    "status": { "$ref": "#/$defs/global_status" },
+    "decided_by": { "type": ["string", "null"] },
+    "decided_on": { "type": ["string", "null"], "format": "date" },
+    "decision_ref": { "type": ["string", "null"] },
+    "archive_target_schema": { "const": "_archive" },
+    "protected": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["pattern", "reason"],
+        "properties": {
+          "pattern": { "type": "string", "format": "regex", "minLength": 2 },
+          "reason": { "type": "string", "minLength": 10 }
+        }
+      }
+    },
+    "families": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "allOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "match", "proposed_retention_days", "after_retention", "rule", "status", "decided_by", "decided_on"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z][a-z_]+$" },
+              "label": { "type": "string", "minLength": 1 },
+              "match": { "type": "string", "minLength": 1 },
+              "proposed_retention_days": { "type": ["integer", "null"], "minimum": 1 },
+              "after_retention": { "enum": ["archiver", "purger_lignes", "supprimer_tranche", "aucune"] },
+              "rule": { "type": "string", "minLength": 10 },
+              "status": { "$ref": "#/$defs/status" },
+              "decided_by": { "type": ["string", "null"] },
+              "decided_on": { "type": ["string", "null"], "format": "date" },
+              "decision_ref": { "type": ["string", "null"] }
+            }
+          },
+          { "$ref": "#/$defs/decision" }
+        ]
+      }
+    },
+    "partitions": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["parent", "in_service", "proposed_drop_after_days", "status", "decided_by", "decided_on"],
+            "properties": {
+              "parent": { "type": "string", "pattern": "^[a-z_][a-z0-9_]*$" },
+              "in_service": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["function", "cron", "lookahead", "drop_after_days"],
+                "properties": {
+                  "function": { "type": ["string", "null"] },
+                  "cron": { "type": ["integer", "null"] },
+                  "lookahead": { "type": ["string", "null"] },
+                  "drop_after_days": { "type": ["integer", "null"], "minimum": 1 }
+                }
+              },
+              "proposed_drop_after_days": { "type": ["integer", "null"], "minimum": 1 },
+              "note": { "type": "string" },
+              "status": { "$ref": "#/$defs/status" },
+              "decided_by": { "type": ["string", "null"] },
+              "decided_on": { "type": ["string", "null"], "format": "date" },
+              "decision_ref": { "type": ["string", "null"] }
+            }
+          },
+          { "$ref": "#/$defs/decision" }
+        ]
+      }
+    }
+  },
+  "allOf": [{ "$ref": "#/$defs/decision" }],
+  "$defs": {
+    "status": { "enum": ["proposé", "décidé"] },
+    "global_status": { "enum": ["proposé", "partiellement décidé", "décidé"] },
+    "decision": {
+      "if": { "properties": { "status": { "enum": ["décidé", "partiellement décidé"] } }, "required": ["status"] },
+      "then": {
+        "required": ["decided_by", "decided_on", "decision_ref"],
+        "properties": {
+          "decided_by": { "type": "string", "minLength": 1 },
+          "decided_on": { "type": "string", "format": "date" },
+          "decision_ref": { "type": "string", "minLength": 10 }
+        }
+      },
+      "else": {
+        "properties": { "decided_by": { "const": null }, "decided_on": { "const": null } }
+      }
+    }
+  }
+}

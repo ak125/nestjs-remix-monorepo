@@ -1,0 +1,60 @@
+fichiers joués :
+02489097ac0469d3c41f9db5cee53b7b0b73cdb159c464a89cc9143eb0852d32  up.sql
+3a185840b9e16b521c036ac85899ac592fc1997629483f27330db21193b091e2  down.sql
+== banc : PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu ; 2026-11-19T06:45:09Z
+KLAXCAR total/affichées/masquées = 9610 / 8128 / 1482
+journal lot cb9bd8ac = 0
+journal total = 9316
+== migration (enveloppée BEGIN/COMMIT comme l'engine) 2026-11-19T06:45:11Z
+psql:up.sql:200: NOTICE:  pré-condition sortie de vente KLAXCAR : OK (8487 lignes, 8487 à l'état relevé, 0 déjà sorties)
+psql:up.sql:254: NOTICE:  pré-condition affichage KLAXCAR : état relevé (8128 affichées, 1482 masquées, lot vide)
+psql:up.sql:314: NOTICE:  sortie de vente KLAXCAR : 8487 ligne(s) écrite(s) maintenant (0 = rejeu), 8487/8487 à pri_dispo 0 et FROZEN
+psql:up.sql:378: NOTICE:  affichage KLAXCAR : 8128 pièce(s) masquée(s) maintenant (0 = rejeu), 0 affichée sur 9610, lot cb9bd8ac-1e4e-4e94-9c6e-a660608795a3 = 8128 lignes
+KLAXCAR total/affichées/masquées = 9610 / 0 / 9610
+journal lot cb9bd8ac = 8128
+journal total = 17444
+== rejeu de la migration 2026-11-19T06:45:15Z
+psql:up.sql:200: NOTICE:  pré-condition sortie de vente KLAXCAR : OK (8487 lignes, 0 à l'état relevé, 8487 déjà sorties)
+psql:up.sql:254: NOTICE:  pré-condition affichage KLAXCAR : déjà masquées par ce fichier (lot de 8128, rejeu)
+psql:up.sql:314: NOTICE:  sortie de vente KLAXCAR : 0 ligne(s) écrite(s) maintenant (0 = rejeu), 8487/8487 à pri_dispo 0 et FROZEN
+psql:up.sql:378: NOTICE:  affichage KLAXCAR : 0 pièce(s) masquée(s) maintenant (0 = rejeu), 0 affichée sur 9610, lot cb9bd8ac-1e4e-4e94-9c6e-a660608795a3 = 8128 lignes
+KLAXCAR total/affichées/masquées = 9610 / 0 / 9610
+journal lot cb9bd8ac = 8128
+journal total = 17444
+  apres.etat.csv = rejeu.etat.csv (identique octet pour octet)
+  apres.journal.csv = rejeu.journal.csv (identique octet pour octet)
+  apres.servi.csv = rejeu.servi.csv (identique octet pour octet)
+== down 2026-11-19T06:45:19Z
+psql:down.sql:58: NOTICE:  rollback sortie de vente KLAXCAR : 8487 / 8487 ligne(s) remise(s) à l'état relevé ; 0 ligne(s) portent encore la source (modifiées depuis, conservées)
+psql:down.sql:122: NOTICE:  rollback affichage KLAXCAR : 8128 pièce(s) réaffichée(s) maintenant (0 = rejeu) ; 8128 affichées, 1482 masquées comme relevé
+ pri_dispo | pricing_state | lignes | sans_trace 
+-----------+---------------+--------+------------
+ 0         | ACTIVE        |     15 |         15
+ 1         | ACTIVE        |   8189 |       8189
+ 3         | ACTIVE        |    283 |        283
+(3 rows)
+
+ piece_display | pieces | au_lot 
+---------------+--------+--------
+ f             |   1482 |      0
+ t             |   8128 |   8128
+(2 rows)
+
+KLAXCAR total/affichées/masquées = 9610 / 8128 / 1482
+journal lot cb9bd8ac = 8128
+journal total = 17444
+== rejeu de la down 2026-11-19T06:45:22Z
+psql:down.sql:58: NOTICE:  rollback sortie de vente KLAXCAR : 0 / 8487 ligne(s) remise(s) à l'état relevé ; 0 ligne(s) portent encore la source (modifiées depuis, conservées)
+psql:down.sql:122: NOTICE:  rollback affichage KLAXCAR : 0 pièce(s) réaffichée(s) maintenant (0 = rejeu) ; 8128 affichées, 1482 masquées comme relevé
+KLAXCAR total/affichées/masquées = 9610 / 8128 / 1482
+journal lot cb9bd8ac = 8128
+journal total = 17444
+== comparaisons avant / restauré
+  avant.etat.csv = restaure.etat.csv (identique octet pour octet)
+  avant.servi.csv = restaure.servi.csv (identique octet pour octet)
+  avant.page.csv = restaure.page.csv (identique octet pour octet)
+  restaure.etat.csv = restaure2.etat.csv (identique octet pour octet)
+  journal : 9316 lignes avant, 17444 après la down ; lignes ajoutées par le lot conservées :
+  les 9316 lignes antérieures sont inchangées
+  search_vector NULL avant / après down (KLAXCAR et autres) :
+1421

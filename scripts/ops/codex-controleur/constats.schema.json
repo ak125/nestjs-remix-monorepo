@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["findings", "files_read", "notes"],
+  "properties": {
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "line", "severity", "category", "title", "evidence", "proposed_fix", "confidence"],
+        "properties": {
+          "file": {"type": "string"},
+          "line": {"type": "integer"},
+          "severity": {"type": "string", "enum": ["critical", "high", "medium", "low", "info"]},
+          "category": {"type": "string", "enum": ["bug", "security", "regression", "rule-violation", "test-gap", "robustness", "other"]},
+          "title": {"type": "string"},
+          "evidence": {"type": "string"},
+          "proposed_fix": {"type": "string"},
+          "confidence": {"type": "string", "enum": ["high", "medium", "low"]}
+        }
+      }
+    },
+    "files_read": {"type": "array", "items": {"type": "string"}},
+    "notes": {"type": "string"}
+  }
+}

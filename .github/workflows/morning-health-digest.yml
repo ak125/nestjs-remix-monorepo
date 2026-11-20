@@ -17,12 +17,25 @@ name: 🌅 Morning health digest
 #     read-only PostgREST counts, else database signals « indisponible ».
 #   GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN, GMAIL_USER_EMAIL,
 #   ALERT_EMAIL_TO, EMAIL_FROM  same names as scripts/monitoring/check-payment-tunnel.sh;
-#     to be created as repository secrets by the owner, else the mail is written
+#     environment secrets of report-mail (branch main only), set by the owner, else the mail is written
 #     « canal indisponible » in the issue and the run log.
 # Repository variables (optional, empty if unset):
 #   REPORT_CONFIG_PATH  path in the repo of a report-config.v1 JSON file (hook for
 #     the department contracts, mandat AR). Unset → the script defaults, declared.
 #   GARDE_PRIX_JSON_PATH  path of a garde-prix.v1 file (no producer yet).
+#   THRESHOLD_ISSUES_MODE  off | dry-run | write (mandate BZ, decision 9): issues of
+#     the registry thresholds (scripts/governance/registry-thresholds.sh). Unset →
+#     dry-run: the report lists the issues it would open, nothing is written.
+#     write = a separate « oui » of the owner.
+#
+# Registry thresholds read their indicator from the producer declared in the
+# registry (backend service, through tsx): the npm install below runs only in the
+# daily window (7-10 h Europe/Paris) or on workflow_dispatch, never on the
+# 15-minute urgent runs. Outside it the indicators are written « non mesuré ».
+# The backend imports internal packages (@repo/*) through their dist/: npm ci
+# --ignore-scripts does not build them, so the step after the install builds the
+# backend's workspace dependencies (frontend excluded). Without it the reader
+# reports « MODULE_NOT_FOUND @repo/… » (mandate BZ, complement BZ-3).
 #
 # Cron granularity: GitHub may start a scheduled run late; the 15-minute cadence
 # bounds the delay of the 7 h report and of an urgent mail to one or two slots.
@@ -47,12 +60,45 @@ jobs:
   digest:
     name: Urgent checks, daily report on the standing issue
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    # Mail secrets live in the report-mail environment (main only), not at repository
+    # level; deployment: false = no deployment record per 15-minute run.
+    environment:
+      name: report-mail
+      deployment: false
     steps:
       - name: Checkout (shallow)
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
+
+      - name: Daily window (producer dependencies of the registry thresholds)
+        id: window
+        env:
+          EVENT: ${{ github.event_name }}
+          TMODE: ${{ vars.THRESHOLD_ISSUES_MODE }}
+        run: |
+          h=$((10#$(TZ=Europe/Paris date +%H)))
+          if [ "$TMODE" != off ] && { [ "$EVENT" = workflow_dispatch ] || { [ "$h" -ge 7 ] && [ "$h" -lt 10 ]; }; }; then
+            echo "deps=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node (registry thresholds)
+        if: steps.window.outputs.deps == '1'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install (no scripts, ADR-030; registry thresholds)
+        if: steps.window.outputs.deps == '1'
+        continue-on-error: true
+        run: npm ci --ignore-scripts
+
+      - name: Build backend workspace packages (registry thresholds)
+        if: steps.window.outputs.deps == '1'
+        continue-on-error: true
+        run: npx --no-install turbo run build --filter='@fafa/backend^...' --filter='!@fafa/frontend'
 
       - name: Collect signals and update the standing digest issue
         id: collect
@@ -69,6 +115,7 @@ jobs:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           REPORT_CONFIG: ${{ vars.REPORT_CONFIG_PATH }}
           GARDE_PRIX_JSON: ${{ vars.GARDE_PRIX_JSON_PATH }}
+          THRESHOLD_ISSUES_MODE: ${{ vars.THRESHOLD_ISSUES_MODE || 'dry-run' }}
           EVENT: ${{ github.event_name }}
         run: |
           if [ "$EVENT" = "workflow_dispatch" ]; then

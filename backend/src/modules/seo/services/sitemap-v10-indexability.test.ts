@@ -9,6 +9,8 @@
  *   - sitemap-vehicules.xml laisse les URLs marque à sitemap-brands.xml ;
  *     source marque indisponible (≠ vide) ⇒ brands non écrit, vehicules garde
  *     les URLs marque : ni répétition ni perte dans l'index
+ *   - sitemap-vehicules.xml porte les R8 servies `index, follow` (mandat DR) ;
+ *     sélection R8 non vide ⇒ le fichier est listé par l'index
  *
  * Pas d'I/O réseau : client Supabase factice, OUTPUT_DIR temporaire.
  */
@@ -19,25 +21,75 @@ import * as path from 'path';
 import {
   excludeUrlsOwnedElsewhere,
   SitemapV10StaticService,
+  VehiculesCollectionError,
 } from './sitemap-v10-static.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
+import { invalidateValidTypeIdsCache } from '../helpers/auto-type-valid-ids.helper';
 import { SitemapV10Service } from './sitemap-v10.service';
 import { STATIC_PAGES, type SitemapUrl } from './sitemap-v10.types';
 
 type Result = { data: unknown; error: { message: string } | null };
 
-/** Chaîne PostgREST minimale : enregistre les filtres, résout `result`. */
-function fakeQuery(result: Result, calls: string[]) {
+/**
+ * Chaîne PostgREST minimale : enregistre les filtres, résout `result`.
+ * Table non fournie ⇒ lecture saine vide (sources R8 comprises).
+ */
+function fakeQuery(result: Result | undefined, calls: string[]) {
   const q: Record<string, unknown> = {};
-  for (const m of ['select', 'eq', 'neq', 'in', 'order']) {
+  for (const m of ['select', 'eq', 'neq', 'in', 'order', 'gt', 'range']) {
     q[m] = (...args: unknown[]) => {
       calls.push(`${m}:${JSON.stringify(args)}`);
       return q;
     };
   }
-  q.then = (resolve: (r: Result) => unknown) => resolve(result);
+  q.then = (resolve: (r: Result) => unknown) =>
+    resolve(result ?? { data: [], error: null });
   return q;
 }
+
+/** index type → modèle mis en cache 10 min par le helper : remis à zéro. */
+beforeEach(() => invalidateValidTypeIdsCache());
+
+/**
+ * Sources R8 factices : `__sitemap_p_link`, `auto_type`, `__vehicle_page_cache`.
+ * Chaque R8 = renault-140 / clio-iii-140004 / <alias>-<typeId>.
+ */
+interface FakeR8 {
+  typeId: number;
+  alias?: string;
+  /** absent ⇒ pas de ligne de cache page */
+  cache?: { stale: boolean; is_indexable: unknown };
+  /** false ⇒ type absent d'auto_type (orphelin) */
+  displayed?: boolean;
+}
+const R8_SRC = (r8s: FakeR8[]): Record<string, Result> => ({
+  __sitemap_p_link: {
+    data: r8s.map((r) => ({
+      map_marque_alias: 'renault',
+      map_marque_id: 140,
+      map_modele_alias: 'clio-iii',
+      map_modele_id: 140004,
+      map_type_alias: r.alias ?? '1-5-dci',
+      map_type_id: r.typeId,
+    })),
+    error: null,
+  },
+  auto_type: {
+    data: r8s
+      .filter((r) => r.displayed !== false)
+      .map((r) => ({ type_id_i: r.typeId, type_modele_id: '140004' })),
+    error: null,
+  },
+  __vehicle_page_cache: {
+    data: r8s
+      .filter((r) => r.cache)
+      .map((r) => ({ type_id: r.typeId, ...r.cache })),
+    error: null,
+  },
+});
+const r8Path = (typeId: number, alias = '1-5-dci') =>
+  `/constructeurs/renault-140/clio-iii-140004/${alias}-${typeId}.html`;
+const INDEXABLE = { stale: false, is_indexable: true };
 
 function buildService(
   tables: Record<string, Result>,
@@ -202,12 +254,6 @@ describe('SitemapV10StaticService — génération isolée', () => {
               priority: 0.7,
               changefreq: 'weekly',
             },
-            {
-              niveau: 2,
-              url: '/constructeurs/renault-140/clio-iii-140004.html',
-              priority: 0.6,
-              changefreq: 'monthly',
-            },
           ],
           error: null,
         },
@@ -215,22 +261,21 @@ describe('SitemapV10StaticService — génération isolée', () => {
       outDir,
       {},
     );
-    // count(head) : le faux client renvoie `count` via data=null → on force 3
+    // count(head) : le faux client renvoie `count` via data=null → on force 2
+    const r8 = R8_SRC([{ typeId: 12345, cache: INDEXABLE }]);
     Object.assign(svc as unknown as Record<string, unknown>, {
       supabase: {
         from: (t: string) =>
           t === '__sitemap_vehicules'
-            ? fakeQuery({ data: null, error: null, count: 3 } as never, [])
-            : fakeQuery(brandsOk[t], []),
+            ? fakeQuery({ data: null, error: null, count: 2 } as never, [])
+            : fakeQuery(brandsOk[t] ?? r8[t], []),
       },
     });
     const vehFile = await svc.generateVehiculesSitemap();
     const brandFile = await svc.generateBrandsSitemap();
     const veh = await locs(vehFile as string);
     const brands = await locs(brandFile as string);
-    expect(veh).toEqual([
-      'https://example.test/constructeurs/renault-140/clio-iii-140004.html',
-    ]);
+    expect(veh).toEqual([`https://example.test${r8Path(12345)}`]);
     expect(brands).toEqual([
       'https://example.test/constructeurs/renault-140.html',
       'https://example.test/constructeurs/peugeot-128.html',
@@ -240,6 +285,7 @@ describe('SitemapV10StaticService — génération isolée', () => {
 
   it('source marque indisponible ⇒ brands absent, vehicules garde les marques', async () => {
     const svc = buildService({}, outDir, {});
+    const r8 = R8_SRC([{ typeId: 12345, cache: INDEXABLE }]);
     Object.assign(svc as unknown as Record<string, unknown>, {
       supabase: {
         from: (t: string) =>
@@ -247,7 +293,7 @@ describe('SitemapV10StaticService — génération isolée', () => {
             ? fakeQuery({ data: null, error: null, count: 1 } as never, [])
             : t === 'auto_marque'
               ? fakeQuery({ data: null, error: { message: 'timeout' } }, [])
-              : fakeQuery({ data: [], error: null }, []),
+              : fakeQuery(r8[t] ?? { data: [], error: null }, []),
       },
       dataService: {
         fetchWithPagination: async () => [
@@ -256,12 +302,6 @@ describe('SitemapV10StaticService — génération isolée', () => {
             url: '/constructeurs/renault-140.html',
             priority: 0.7,
             changefreq: 'weekly',
-          },
-          {
-            niveau: 2,
-            url: '/constructeurs/renault-140/clio-iii-140004.html',
-            priority: 0.6,
-            changefreq: 'monthly',
           },
         ],
       },
@@ -275,7 +315,7 @@ describe('SitemapV10StaticService — génération isolée', () => {
     ).rejects.toThrow();
     expect(await locs(vehFile as string)).toEqual([
       'https://example.test/constructeurs/renault-140.html',
-      'https://example.test/constructeurs/renault-140/clio-iii-140004.html',
+      `https://example.test${r8Path(12345)}`,
     ]);
   });
 
@@ -330,6 +370,104 @@ describe('SitemapV10StaticService — génération isolée', () => {
     expect(await svc.generateVehiculesSitemap()).toBeNull();
   });
 
+  /** Vue réelle depuis ADR-084 : marques seules ; R8 depuis leur source. */
+  function brandsViewWithR8(r8s: FakeR8[], over: Record<string, Result> = {}) {
+    const svc = buildService({}, outDir, {});
+    const r8 = { ...R8_SRC(r8s), ...over };
+    const logger = { log: jest.fn(), warn: jest.fn(), error: jest.fn() };
+    Object.assign(svc as unknown as Record<string, unknown>, {
+      logger,
+      supabase: {
+        from: (t: string) =>
+          t === '__sitemap_vehicules'
+            ? fakeQuery({ data: null, error: null, count: 2 } as never, [])
+            : fakeQuery(brandsOk[t] ?? r8[t], []),
+      },
+      dataService: {
+        fetchWithPagination: async () =>
+          [
+            '/constructeurs/renault-140.html',
+            '/constructeurs/peugeot-128.html',
+          ].map((url) => ({
+            niveau: 1,
+            url,
+            priority: 0.8,
+            changefreq: 'monthly',
+          })),
+      },
+    });
+    return { svc, logger };
+  }
+
+  it('vue marques + R8 ⇒ fichier écrit, R8 seules, aucune URL marque', async () => {
+    const { svc, logger } = brandsViewWithR8([
+      { typeId: 12345, cache: INDEXABLE },
+      { typeId: 12345, cache: INDEXABLE }, // doublon de __sitemap_p_link
+      { typeId: 12346, cache: { stale: false, is_indexable: false } },
+      { typeId: 70000, cache: INDEXABLE }, // release gate TecDoc [60000, 83456]
+      { typeId: 12347 }, // pas de cache page
+      { typeId: 12348, cache: { stale: true, is_indexable: true } },
+      { typeId: 12349, cache: INDEXABLE, displayed: false }, // orphelin
+    ]);
+    const brandUrls = await svc.collectBrandUrls();
+    const brandFile = await svc.generateBrandsSitemap(brandUrls);
+    const vehFile = await svc.generateVehiculesSitemap(brandUrls, [], true);
+    const veh = await locs(vehFile as string);
+    const brands = await locs(brandFile as string);
+    expect(veh).toEqual([`https://example.test${r8Path(12345)}`]);
+    expect(veh.filter((l) => /\/constructeurs\/[^/]+\.html$/.test(l))).toEqual(
+      [],
+    );
+    expect(veh.filter((l) => brands.includes(l))).toEqual([]);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('2 R8 sans cache page frais'),
+    );
+  });
+
+  it('vue marques + sélection R8 vide ⇒ pas de fichier, avertissement explicite', async () => {
+    const { svc, logger } = brandsViewWithR8([
+      { typeId: 12346, cache: { stale: false, is_indexable: false } },
+    ]);
+    await fs.writeFile(path.join(outDir, 'sitemap-vehicules.xml'), 'ancien');
+    const brandUrls = await svc.collectBrandUrls();
+    expect(await svc.generateVehiculesSitemap(brandUrls, [], true)).toBeNull();
+    await expect(
+      fs.access(path.join(outDir, 'sitemap-vehicules.xml')),
+    ).rejects.toThrow();
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Sélection R8 vide'),
+    );
+  });
+
+  it.each([
+    ['__sitemap_p_link', '__sitemap_p_link en erreur'],
+    ['auto_type', 'auto_type read failed'],
+    ['__vehicle_page_cache', '__vehicle_page_cache read failed'],
+  ])(
+    'lecture R8 %s en échec ⇒ VehiculesCollectionError, fichier existant intact',
+    async (table, message) => {
+      const { svc } = brandsViewWithR8([{ typeId: 12345, cache: INDEXABLE }], {
+        [table]: { data: null, error: { message: 'timeout' } },
+      });
+      await fs.writeFile(path.join(outDir, 'sitemap-vehicules.xml'), 'ancien');
+      const brandUrls = await svc.collectBrandUrls();
+      const error = await svc
+        .generateVehiculesSitemap(brandUrls, [], true)
+        .then(
+          () => null,
+          (e: unknown) => e,
+        );
+      expect(error).toBeInstanceOf(VehiculesCollectionError);
+      expect((error as VehiculesCollectionError).message).toContain(message);
+      expect((error as VehiculesCollectionError).keptFilePath).toBe(
+        path.join(outDir, 'sitemap-vehicules.xml'),
+      );
+      expect(
+        await fs.readFile(path.join(outDir, 'sitemap-vehicules.xml'), 'utf8'),
+      ).toBe('ancien');
+    },
+  );
+
   it('pages : aucune répétition avec racine ni diagnostic', async () => {
     const svc = buildService({}, outDir, {});
     const pages = await locs((await svc.generatePagesSitemap()) as string);
@@ -357,7 +495,8 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
     '/constructeurs/renault-140.html',
     '/constructeurs/peugeot-128.html',
   ];
-  const MODEL = '/constructeurs/renault-140/clio-iii-140004.html';
+  // Page R8 servie index (sélection __sitemap_p_link + cache page indexable).
+  const MODEL = r8Path(12345);
   const abs = (u: string) => `https://example.test${u}`;
 
   function buildOrchestrator(
@@ -368,19 +507,20 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
       rows?: unknown[];
       fetch?: () => Promise<unknown>;
       r7?: Result;
+      /** sources R8 ; défaut : MODEL seule, servie index */
+      r8?: FakeR8[];
     } = {},
   ) {
     const svc = buildService({}, outDir, {});
     const ok: Result = { data: [], error: null };
-    const viewRows = [
-      ...BRANDS.map((url) => ({
-        niveau: 1,
-        url,
-        priority: 0.7,
-        changefreq: 'weekly',
-      })),
-      { niveau: 2, url: MODEL, priority: 0.6, changefreq: 'monthly' },
-    ];
+    const r8 = R8_SRC(vue.r8 ?? [{ typeId: 12345, cache: INDEXABLE }]);
+    // Vue réelle depuis ADR-084 : niveau 1 (marques) seul.
+    const viewRows = BRANDS.map((url) => ({
+      niveau: 1,
+      url,
+      priority: 0.7,
+      changefreq: 'weekly',
+    }));
     Object.assign(svc as unknown as Record<string, unknown>, {
       supabase: {
         from: (t: string) =>
@@ -395,7 +535,7 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
                 ? brandSource
                 : t === '__seo_r7_pages'
                   ? (vue.r7 ?? ok)
-                  : ok,
+                  : (r8[t] ?? ok),
             [],
           ),
       },
@@ -490,6 +630,41 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
     );
   });
 
+  it('sélection R8 non vide ⇒ l’index liste sitemap-vehicules.xml (R8 seules)', async () => {
+    const { orchestrator } = buildOrchestrator(brandsAvailable, {
+      r8: [
+        { typeId: 12345, cache: INDEXABLE },
+        { typeId: 22222, alias: '2-0-hdi', cache: INDEXABLE },
+      ],
+    });
+    const result = await orchestrator.generateAll();
+    const indexLocs = await locs(result.indexPath as string);
+    // Garde : si sitemap-vehicules.xml quitte l'index, les R8 ne sont plus soumises.
+    expect(indexLocs).toContain('https://example.test/sitemap-vehicules.xml');
+    const idx = await readIndex(result.indexPath as string);
+    expect(idx['sitemap-vehicules.xml']).toEqual(
+      [MODEL, r8Path(22222, '2-0-hdi')].map(abs),
+    );
+    expect(result.success).toBe(true);
+  });
+
+  it('sélection R8 vide ⇒ sitemap-vehicules.xml hors index, avertissement', async () => {
+    await seedOldVehicules([...BRANDS, MODEL]);
+    const { orchestrator } = buildOrchestrator(brandsAvailable, { r8: [] });
+    const result = await orchestrator.generateAll();
+    const idx = await readIndex(result.indexPath as string);
+    expect(idx['sitemap-vehicules.xml']).toBeUndefined();
+    await expect(fs.stat(path.join(outDir, OLD_VEH))).rejects.toThrow();
+    const staticLogger = (
+      orchestrator as unknown as {
+        staticService: { logger: { warn: jest.Mock } };
+      }
+    ).staticService.logger;
+    expect(staticLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('Sélection R8 vide'),
+    );
+  });
+
   it('écriture brands en échec après lecture saine : URLs gardées, index valide, run en échec', async () => {
     await fs.mkdir(path.join(outDir, 'sitemap-brands.xml'));
     const { orchestrator, logger } = buildOrchestrator(brandsAvailable);
@@ -560,7 +735,7 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
     const idx = await readIndex(result.indexPath as string);
     expect(result.success).toBe(false);
     expect(idx['sitemap-brands.xml']).toBeUndefined();
-    expect(idx['sitemap-vehicules.xml']).toEqual(KNOWN.map(abs));
+    expect(idx['sitemap-vehicules.xml']).toEqual([MODEL, ...KNOWN].map(abs));
   });
 
   it('défaut 1 — count > 0 puis liste vide = lecture en échec : rien inventé, run en échec', async () => {
@@ -604,7 +779,7 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
     const idx = await readIndex(result.indexPath as string);
     expect(result.success).toBe(false);
     expect(idx['sitemap-brands.xml']).toBeUndefined();
-    expect(idx['sitemap-vehicules.xml']).toEqual(KNOWN.map(abs));
+    expect(idx['sitemap-vehicules.xml']).toEqual([MODEL, ...KNOWN].map(abs));
     const all = Object.values(idx).flat();
     expect(new Set(all).size).toBe(all.length);
     expect(logger.error).toHaveBeenCalledWith(
@@ -672,20 +847,21 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
 
   it.each([
     ['retrait', []],
-    ['écriture', [MODEL]],
-  ] as [string, string[]][])(
+    ['écriture', [{ typeId: 12345, cache: INDEXABLE }]],
+  ] as [string, FakeR8[]][])(
     'marques publiées + %s de sitemap-vehicules.xml en échec : run en échec',
-    async (_label, extra) => {
+    async (_label, r8) => {
       // Répertoire non vide à la place du fichier : vrai EISDIR/ENOTEMPTY.
       await fs.mkdir(path.join(outDir, OLD_VEH, 'x'), { recursive: true });
       const { orchestrator, logger } = buildOrchestrator(brandsAvailable, {
-        count: BRANDS.length + extra.length,
-        rows: [...BRANDS, ...extra].map((url) => ({
-          niveau: url === MODEL ? 2 : 1,
+        count: BRANDS.length,
+        rows: BRANDS.map((url) => ({
+          niveau: 1,
           url,
           priority: 0.7,
           changefreq: 'weekly',
         })),
+        r8,
       });
       const result = await orchestrator.generateAll();
       const idx = await readIndex(result.indexPath as string);
@@ -788,6 +964,7 @@ describe('SitemapV10Service.generateAll — publication des URLs marque', () => 
           count: view.length,
           rows: view,
           r7: r7Source,
+          r8: [], // cas marques seules : aucune R8 servie
         });
         const result = await orchestrator.generateAll();
         const idx = await readIndex(result.indexPath as string);
