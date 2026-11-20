@@ -2,10 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { TABLES } from '@repo/database-types';
 import {
+  buildR2CleanH1,
+  buildR2H1VehicleLabel,
   buildR2TitleTypeLabel,
   pickR2TitleMotorCode,
   pickVehicleDisplayName,
   r2TitleCollisionKey,
+  resolveR2H1Level,
+  type R2H1Level,
+  type R2H1Vehicle,
 } from '@repo/seo-types';
 
 /** Départage du `<title>` R2 d'une page (gamme, type). */
@@ -18,6 +23,31 @@ export interface R2TitleResolution {
    * autre que les codes moteur ne départagent pas.
    */
   rawNames: boolean;
+}
+
+const NO_TITLE_RESOLUTION: R2TitleResolution = {
+  motorCode: '',
+  rawNames: false,
+};
+
+/** Niveau du H1 R2 propre et, au niveau 2, départage repris du titre. */
+export interface R2HeadingResolution {
+  level: R2H1Level;
+  title: R2TitleResolution;
+}
+
+/** Page R2 dont on construit le H1 (`seo_context` du RPC de page). */
+export interface R2HeadingInput {
+  pgId: number;
+  typeId: number;
+  gammeName: string;
+  marqueName: string;
+  modeleName: string;
+  modeleNameMeta?: string | null;
+  typeName: string;
+  typeNameMeta?: string | null;
+  powerPs?: string | null;
+  fuel?: string | null;
 }
 
 interface TypeRow {
@@ -91,7 +121,95 @@ export class R2TitleCollisionService extends SupabaseBaseService {
     typeId: number,
     displayNames = false,
   ): Promise<R2TitleResolution> {
-    const none: R2TitleResolution = { motorCode: '', rawNames: false };
+    const context = await this.loadContext(pgId, typeId, displayNames);
+    if (context === null) return NO_TITLE_RESOLUTION;
+    return this.resolveInContext(context, displayNames);
+  }
+
+  /**
+   * Niveau du H1 R2 propre d'une page (mandat EN, 2026-11-20) : le plus bas
+   * qui la distingue des autres types affichés ayant des pièces dans la
+   * gamme (`resolveR2H1Level`). Comparaison sur les noms d'affichage, entre
+   * les modèles de la marque de même nom brut ou d'affichage, comme le titre.
+   * Au niveau 2, `title` porte le départage du titre (code moteur, noms
+   * bruts) : le H1 reprend alors la partie véhicule du `<title>`.
+   *
+   * Mêmes lectures et même contrat d'erreur que `resolveTitle` : une erreur
+   * de lecture est levée, aucun H1 dégradé n'est produit.
+   */
+  async resolveHeading(
+    pgId: number,
+    typeId: number,
+  ): Promise<R2HeadingResolution> {
+    const context = await this.loadContext(pgId, typeId, true);
+    if (context === null) return { level: 0, title: NO_TITLE_RESOLUTION };
+    const vehicle = (t: TypeRow): R2H1Vehicle => {
+      const m = context.models.get(String(t.type_modele_id));
+      return {
+        typeId: t.type_id,
+        marqueName: '',
+        modeleName: m?.modele_name ?? '',
+        modeleNameMeta: m?.modele_name_meta,
+        typeName: t.type_name ?? '',
+        typeNameMeta: t.type_name_meta,
+        powerPs: t.type_power_ps,
+        fuel: t.type_fuel,
+      };
+    };
+    const own = vehicle(context.own);
+    const key0 = (v: R2H1Vehicle) =>
+      r2TitleCollisionKey(buildR2H1VehicleLabel(v, 0));
+    const same = context.siblings.filter((t) => key0(vehicle(t)) === key0(own));
+    await this.loadServed(context, same);
+    const level = resolveR2H1Level(
+      own,
+      same.filter((t) => context.served.get(t.type_id)).map(vehicle),
+    );
+    return {
+      level,
+      title:
+        level === 2
+          ? await this.resolveInContext(context, true)
+          : NO_TITLE_RESOLUTION,
+    };
+  }
+
+  /**
+   * H1 R2 propre complet de la page (`buildR2CleanH1`), au niveau donné par
+   * `resolveHeading`. Les noms viennent du `seo_context` du RPC de page.
+   */
+  async buildHeading(input: R2HeadingInput): Promise<string> {
+    const { level, title } = await this.resolveHeading(
+      input.pgId,
+      input.typeId,
+    );
+    return buildR2CleanH1(
+      input.gammeName,
+      {
+        typeId: String(input.typeId),
+        marqueName: input.marqueName,
+        modeleName: input.modeleName,
+        modeleNameMeta: input.modeleNameMeta,
+        typeName: input.typeName,
+        typeNameMeta: input.typeNameMeta,
+        powerPs: input.powerPs,
+        fuel: input.fuel,
+      },
+      level,
+      title,
+    );
+  }
+
+  /**
+   * Type de la page, modèles de la marque et types affichés des modèles de
+   * même nom (brut, ou d'affichage si `displayNames`). `null` : type sans
+   * modèle connu, rien à départager.
+   */
+  private async loadContext(
+    pgId: number,
+    typeId: number,
+    displayNames: boolean,
+  ): Promise<CollisionContext | null> {
     const own = await this.supabase
       .from(TABLES.auto_type)
       .select(
@@ -100,7 +218,7 @@ export class R2TitleCollisionService extends SupabaseBaseService {
       .eq('type_id', String(typeId))
       .maybeSingle<TypeRow>();
     if (own.error) throw own.error;
-    if (!own.data?.type_modele_id) return none;
+    if (!own.data?.type_modele_id) return null;
 
     const ownModel = await this.supabase
       .from(TABLES.auto_modele)
@@ -108,7 +226,7 @@ export class R2TitleCollisionService extends SupabaseBaseService {
       .eq('modele_id', Number(own.data.type_modele_id))
       .maybeSingle<ModelRow>();
     if (ownModel.error) throw ownModel.error;
-    if (!ownModel.data) return none;
+    if (!ownModel.data) return null;
 
     // Modèles affichés de la marque (au plus 684 le 2026-11-19).
     const brand = await this.supabase
@@ -158,7 +276,7 @@ export class R2TitleCollisionService extends SupabaseBaseService {
       );
     }
 
-    const context: CollisionContext = {
+    return {
       pgId,
       typeId,
       own: own.data,
@@ -167,8 +285,16 @@ export class R2TitleCollisionService extends SupabaseBaseService {
       served: new Map(),
       codes: new Map(),
     };
+  }
+
+  /** Départage du titre dans un contexte chargé (`resolveTitle`). */
+  private async resolveInContext(
+    context: CollisionContext,
+    displayNames: boolean,
+  ): Promise<R2TitleResolution> {
+    const { pgId, typeId } = context;
     const first = await this.collide(context, displayNames);
-    if (first === null) return none;
+    if (first === null) return NO_TITLE_RESOLUTION;
     if (first.code !== null) return { motorCode: first.code, rawNames: false };
     if (displayNames) {
       const raw = await this.collide(context, false);
@@ -178,7 +304,22 @@ export class R2TitleCollisionService extends SupabaseBaseService {
       return { motorCode: '', rawNames: true };
     }
     this.warnUnresolved(pgId, typeId, first.colliding);
-    return none;
+    return NO_TITLE_RESOLUTION;
+  }
+
+  /** Lit, une fois par type, si des pièces le relient à la gamme. */
+  private async loadServed(c: CollisionContext, types: TypeRow[]) {
+    for (const t of types) {
+      if (c.served.has(t.type_id)) continue;
+      const r = await this.supabase
+        .from(TABLES.pieces_relation_type)
+        .select('rtp_type_id')
+        .eq('rtp_pg_id', c.pgId)
+        .eq('rtp_type_id', Number(t.type_id))
+        .limit(1);
+      if (r.error) throw r.error;
+      c.served.set(t.type_id, (r.data ?? []).length > 0);
+    }
   }
 
   /**
@@ -207,17 +348,7 @@ export class R2TitleCollisionService extends SupabaseBaseService {
     const same = c.siblings.filter((t) => title(t) === ownTitle);
     if (same.length === 0) return null;
 
-    for (const t of same) {
-      if (c.served.has(t.type_id)) continue;
-      const r = await this.supabase
-        .from(TABLES.pieces_relation_type)
-        .select('rtp_type_id')
-        .eq('rtp_pg_id', c.pgId)
-        .eq('rtp_type_id', Number(t.type_id))
-        .limit(1);
-      if (r.error) throw r.error;
-      c.served.set(t.type_id, (r.data ?? []).length > 0);
-    }
+    await this.loadServed(c, same);
     const colliding = same
       .map((t) => t.type_id)
       .filter((id) => c.served.get(id));

@@ -379,6 +379,120 @@ describe('R2TitleCollisionService (complément 1 DW)', () => {
     });
   });
 
+  describe('H1 R2 propre (mandat EN)', () => {
+    // Modèle 113009 (MINI PACEMAN (R61)) et types relevés le 2026-11-20.
+    const PACEMAN_MODEL: Row = {
+      modele_id: 113009,
+      modele_marque_id: 113,
+      modele_name: 'PACEMAN (R61)',
+      modele_name_meta: 'PACEMAN (R61)',
+      modele_display: 1,
+    };
+    const p = (
+      id: string,
+      name: string,
+      meta: string,
+      power: string,
+      fuel: string,
+    ): Row => ({
+      type_id: id,
+      type_modele_id: '113009',
+      type_name: name,
+      type_name_meta: meta,
+      type_power_ps: power,
+      type_fuel: fuel,
+      type_display: '1',
+    });
+    const PACEMAN: Tables = {
+      auto_modele: [PACEMAN_MODEL],
+      auto_type: [
+        p('53236', 'Cooper D ALL4', '2.0 Cooper D ALL4', '112', 'Diesel'),
+        p('58881', 'Cooper D ALL4', '1.6 Cooper D ALL4', '112', 'Diesel'),
+        p('74084', 'Cooper', '1.6 Cooper', '120', 'Essence'),
+        p('58868', 'Cooper', '1.6 Cooper', '122', 'Essence'),
+        p('74085', 'Cooper ALL4', 'Cooper ALL4', '122', 'Essence'),
+        p('74086', 'Cooper ALL4', 'Cooper ALL4', '122', 'Essence'),
+      ],
+      pieces_relation_type: [53236, 58881, 74084, 58868, 74085, 74086].map(
+        (id) => ({ rtp_pg_id: 402, rtp_type_id: id }),
+      ),
+      auto_type_motor_code: [
+        { tmc_type_id: '74085', tmc_code: 'N16 B16 A' },
+        { tmc_type_id: '74086', tmc_code: 'N18 B16 A' },
+      ],
+    };
+    const heading = (svc: R2TitleCollisionService, t: Row) =>
+      svc.buildHeading({
+        pgId: 402,
+        typeId: Number(t.type_id),
+        gammeName: 'Plaquette de frein',
+        marqueName: 'MINI',
+        modeleName: 'PACEMAN (R61)',
+        modeleNameMeta: 'PACEMAN (R61)',
+        typeName: String(t.type_name),
+        typeNameMeta: String(t.type_name_meta),
+        powerPs: String(t.type_power_ps),
+        fuel: String(t.type_fuel),
+      });
+    const row = (id: string) =>
+      PACEMAN.auto_type.find((t) => t.type_id === id)!;
+
+    it("niveau 0 : nom d'affichage du type, sans puissance", async () => {
+      const { svc } = build(PACEMAN);
+      expect(await heading(svc, row('53236'))).toBe(
+        'Plaquette de frein Mini Paceman (R61) 2.0 Cooper D ALL4',
+      );
+      expect(await heading(svc, row('58881'))).toBe(
+        'Plaquette de frein Mini Paceman (R61) 1.6 Cooper D ALL4',
+      );
+    });
+
+    it('niveau 1 : même version servie, puissance ajoutée', async () => {
+      const { svc } = build(PACEMAN);
+      expect(await heading(svc, row('74084'))).toBe(
+        'Plaquette de frein Mini Paceman (R61) 1.6 Cooper 120 ch',
+      );
+      expect(await svc.resolveHeading(402, 58868)).toEqual({
+        level: 1,
+        title: { motorCode: '', rawNames: false },
+      });
+    });
+
+    it('voisin sans pièces dans la gamme : niveau 0', async () => {
+      const { svc } = build({
+        ...PACEMAN,
+        pieces_relation_type: PACEMAN.pieces_relation_type.filter(
+          (r) => r.rtp_type_id !== 58868,
+        ),
+      });
+      expect(await heading(svc, row('74084'))).toBe(
+        'Plaquette de frein Mini Paceman (R61) 1.6 Cooper',
+      );
+    });
+
+    it('niveau 2 : puissance insuffisante, départage du titre repris', async () => {
+      const { svc, warn } = build(PACEMAN);
+      expect(await heading(svc, row('74085'))).toBe(
+        'Plaquette de frein Mini Paceman (R61) Cooper ALL4 Essence 122 ch N16 B16 A',
+      );
+      expect(await heading(svc, row('74086'))).toBe(
+        'Plaquette de frein Mini Paceman (R61) Cooper ALL4 Essence 122 ch N18 B16 A',
+      );
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('erreur de lecture : levée, pas de H1 dégradé', async () => {
+      for (const table of [
+        'auto_modele',
+        'auto_type',
+        'pieces_relation_type',
+      ] as const) {
+        const { svc } = build(PACEMAN, table);
+        await expect(heading(svc, row('74084'))).rejects.toThrow('unavailable');
+      }
+    });
+  });
+
   it('erreur de lecture : levée, pas de titre dégradé', async () => {
     for (const table of [
       'auto_modele',

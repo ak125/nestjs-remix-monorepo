@@ -178,6 +178,7 @@ function mapSeoInfo(rmV2: RmPageV2Response): SEOInfo {
     h1: seo.h1 || "",
     description: seo.description || "",
     compSwitch2: seo.compSwitch2 ?? [],
+    h1Display: seo.h1Display || undefined,
   };
 }
 
