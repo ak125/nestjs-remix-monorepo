@@ -30,6 +30,11 @@ Rien n'a été modifié dans #2210, ni dans son code ni dans ses maquettes.
   (complément n° 6 de DS, variante B validée par Marwane : texte noir sur l'orange `cta`). Le bouton
   est revérifié au pixel sur un rendu propre de cette tête : contraste, focus, structure, jetons,
   mouvement réduit et régressions. Voir le §15 ; les autres sections ne changent pas.
+- **Complément n° 8** : la tête de #2210 est passée à `f1dbcf2852b0d19575081feb659bfb6b24663adf`
+  (complément n° 7 de DS : classe `no-visited` sur le lien). L'état « déjà visité » est revérifié au
+  pixel dans Chrome 153 avec un historique réel, au repos et au survol, à 390 et 1440 px, avec un lien
+  témoin. L'écart entre 7,49 et 6,89:1 est expliqué, et deux chiffres des §15.1 et §15.6 sont
+  rectifiés. Voir le §16 ; les autres sections ne changent pas.
 
 ## Verdict final
 
@@ -145,6 +150,24 @@ est locale aux pages R1 et reste dans les jetons `cta` (§14).
 prête à valider par Marwane une fois `no-visited` ajouté au bouton diagnostic. Aucun autre défaut
 nouveau n'est relevé. La réserve du complément n° 5 reste : le lien « Conseils : changer un filtre à
 huile étape par étape » de `#reference` n'est distingué que par sa couleur à 390 px (1.4.1).
+
+**Complément n° 8, tête `f1dbcf285` : bouton diagnostic conforme.**
+- Après une vraie visite de `/diagnostic-auto`, le libellé reste noir : 7,49:1 au repos et 5,89:1 au
+  survol, aux deux largeurs. Le lien témoin passe au violet, ce qui prouve que l'état « visité » est
+  actif. En mouvement réduit, le pire est 5,37:1 au survol. Les valeurs sont identiques avant et après
+  visite (§16.1).
+- L'écart avec les 6,89:1 de DS vient du mouvement réduit. Le reflet immobile pose un voile blanc à
+  12 % devant le texte **et** le fond. Les deux chiffres sont justes. Mes chiffres « sous le reflet »
+  des §15.1 et §15.6 ignoraient ce voile sur le texte : le pire calculé est 6,60:1 au repos et 5,32:1
+  au survol, toujours conforme (§16.2).
+- Le diff se limite à la classe et au test. axe, typecheck et tests ne montrent rien de nouveau. La CI
+  garde les mêmes échecs qu'avant (§16.3).
+
+**Verdict global sur l'apparence R1, hors éléments communs au site, à `f1dbcf285`.** L'apparence est
+prête à valider par Marwane. Aucun défaut ouvert ne reste sur ce qui a été vérifié, et le bouton
+diagnostic est conforme dans tous les états mesurés. Seul point en attente : le lien « Conseils :
+changer un filtre à huile étape par étape » de `#reference`, que le complément n° 5 signalait à 390 px
+(1.4.1). Il attend la décision de Marwane et n'a pas été rejugé ici.
 
 **Conformité au rôle et au contrat (complément n° 1, §8 à §12).** La maquette ne crée aucun nouvel
 écart au contrat R1 : le diff déplace des blocs sans changer un seul texte. Elle rapproche la page de
@@ -1048,7 +1071,7 @@ Mesures avec `reducedMotion: "reduce"`, à 390 et 1440 px :
 
 Le reflet et les icônes restent donc immobiles. Au survol, le soulèvement de 2 px reste, avec une
 transition de 0,2 s : c'est un mouvement déclenché par l'utilisateur, non exigé en AA (2.3.3 est AAA).
-Sans reflet animé, le texte est à 7,79 (390) et 8,11:1 (1440). Capture :
+Sans reflet animé, le texte est à 7,79 (390) et 8,11:1 (1440) (rectifié au §16.2 : à l'écran, 7,34 et 6,89:1). Capture :
 `captures/c7-diag-{390,1440}-reduce-carte.png`.
 
 ### 15.7 Régressions
@@ -1061,3 +1084,129 @@ Sans reflet animé, le texte est à 7,79 (390) et 8,11:1 (1440). Capture :
 | Typecheck frontend | OK | `npm run typecheck`, code de sortie 0 (`mesures/c7-typecheck-front.txt`) |
 | Test ajouté | OK, mais incomplet | vitest : 2 tests sur 2 passent (`mesures/c7-vitest.txt`). Il ne couvre pas l'état visité (§15.4) |
 | CI du commit `06dcea7bc` | 34 réussis, 11 ignorés, 5 en échec | Les 5 échecs sont **les mêmes qu'à `06feff968`** : Circuit de fusion (brouillon, aucune approbation), Deterministic gates (`depcruise.violations` 170 pour une base de 163, déjà 170 avant), DoD self-evaluation ×2 et Registry freshness (projections du registre en retard sur leurs sources). ESLint, Frontend Tests, Backend Tests et Core Build réussissent ; Build et E2E sont ignorés. Rien de nouveau n'est introduit |
+
+## 16. Complément n° 8 : bouton « Lancer le diagnostic » après visite (classe `no-visited`)
+
+**Verdict : bouton diagnostic conforme.**
+
+Après une vraie visite de `/diagnostic-auto`, le libellé reste noir, au repos comme au survol, aux
+deux largeurs. Le lien témoin, lui, passe au violet : l'état « visité » est donc bien actif. Le pire
+rapport mesuré est 5,37:1, au survol en mouvement réduit, pour un seuil de 4,5:1.
+
+- **Tête mesurée** : `f1dbcf2852b0d19575081feb659bfb6b24663adf` (#2210, PR brouillon ouverte, mise à
+  jour le 20 nov. 2026 à 01:18 UTC). Relevée par `git ls-remote` et `gh` avant les mesures, puis
+  revérifiée avant la publication. Rien n'a été modifié dans #2210.
+- **Rendu** : frontend de `f1dbcf285` reconstruit, et backend de la branche (absent du diff), sur un
+  port à moi avec un Redis privé. Le HTML servi contient bien `no-visited` sur ce lien. Le service DEV
+  n'a pas servi.
+- **Navigateur** : Chrome 153 complet, avec un profil temporaire qui garde l'historique, à l'échelle 1.
+  Le profil est supprimé après chaque passage.
+- **Déroulé**, pour chaque largeur (390 × 844 et 1440 × 900) et chaque réglage de mouvement :
+  1. état avant visite, au repos puis au survol ;
+  2. clic réel sur le bouton depuis R1, arrivée sur `/diagnostic-auto` ;
+  3. R1 rechargée, état après visite, au repos puis au survol.
+  - Le bouton est centré à l'écran par un défilement immédiat. Le défilement de la page est progressif
+    (`scroll-behavior: smooth`) : sans cela, au premier essai, le survol de Playwright avait placé le
+    bouton sous l'en-tête collant à 390 px, et la capture montrait l'en-tête. Cet essai est écarté.
+    Dans les mesures retenues, l'élément au centre du libellé est bien le lien, dans les 16 états.
+  - Le survol se fait en déplaçant réellement la souris sur le bouton.
+- **Trois mesures par état** :
+  - **au pixel** : pixel du libellé le plus éloigné du fond, contre le fond dominant de la capture,
+    anticrénelage compris. C'est la méthode de DS ;
+  - **couleur réelle du texte** : le même lien, dans le même état, avec le libellé agrandi (26 px à
+    390, 64 px à 1440, sur une ligne). On relève la couleur des pixels pleins du texte, contre le fond
+    plein qui l'entoure ;
+  - **fond seul** : texte rendu transparent, pixels le plus clair et le plus sombre sous le libellé.
+- **Seuils** : texte de 15 px (390) et 14 px (1440) en gras 700, donc 4,5:1 (1.4.3). Rapports tronqués
+  au centième.
+- **Fichiers** :
+  - script : `scripts/visite-du8.cjs` (`MODE=reduce` pour le mouvement réduit) ;
+  - mesures : `mesures/c8-visite-{390,1440}{,-reduce}.json` ;
+  - captures : `captures/c8-visite-*` (libellé à sa taille, et agrandi).
+
+### 16.1 État « déjà visité » au pixel
+
+**Mouvement non réduit, reflet arrêté et masqué** (le passage du reflet est traité au §16.2) :
+
+| État | 390 px | 1440 px | Lien témoin |
+|---|---|---|---|
+| Avant visite, repos | 7,49 (`#000000` / `#f97316`) | 7,49 | `#020817` (non visité) |
+| Avant visite, survol | 5,89 (`#000000` / `#ea580c`) | 5,89 | `#020817` |
+| **Après visite, repos** | **7,49** (`#000000` / `#f97316`) | **7,49** | **`#9810fa`** (violet) |
+| **Après visite, survol** | **5,89** (`#000000` / `#ea580c`) | **5,89** | `#9810fa` |
+
+**Mouvement réduit** (`reducedMotion: "reduce"`, reflet immobile et visible, réglage de DS) :
+
+| État | 390 px au pixel | 1440 px au pixel | Couleur réelle, 390 / 1440 | Lien témoin |
+|---|---|---|---|---|
+| Avant visite, repos | 7,34 (`#0e0e0e` / `#f97d27`) | 6,89 (`#1a1a1a` / `#f98331`) | 7,15 / 6,67 | `#020817` |
+| Avant visite, survol | 5,85 (`#0e0e0e` / `#eb641e`) | 5,55 (`#1a1a1a` / `#ec6b28`) | 6,07 / 5,37 | `#020817` |
+| **Après visite, repos** | **7,34** | **6,89** | 7,15 / 6,67 | **`#9810fa`** |
+| **Après visite, survol** | **5,85** | **5,55** | 6,07 / **5,37** | `#9810fa` |
+
+- Chaque valeur après visite est identique à la valeur avant visite, au pixel près. La classe
+  `no-visited` est présente sur le lien dans les 16 états relevés.
+- Le lien témoin (ajouté sans couleur, vers `/diagnostic-auto`) passe de `#020817` à `#9810fa`, le
+  `purple-600` de la règle `a:visited`. L'état « visité » est donc bien appliqué par le navigateur ;
+  seul le bouton y échappe.
+- Les colonnes « au pixel » rejoignent exactement les chiffres annoncés par DS (7,34 et 6,89 au repos,
+  5,85 et 5,55 au survol). Elles ont été mesurées ici à part, sans reprendre ses fichiers.
+- Captures : `captures/c8-visite-{390,1440}-apres-{repos,survol}.png` et leurs versions `-reduce`.
+
+### 16.2 Écart entre 7,49:1 et 6,89:1 à 1440 px au repos
+
+L'écart persiste, et il a une cause unique : **le réglage du mouvement**. Ce n'est pas un effet de
+l'état visité, puisque les valeurs avant et après visite sont identiques.
+
+- **Mes 7,49:1** (§15.1 et §16.1) sont mesurés en mouvement non réduit, sans reflet sur le libellé :
+  `#000000` sur `#f97316`. Le libellé compte 194 pixels noirs purs à 1440 px.
+- **Les 6,89:1 de DS** sont mesurés en mouvement réduit. Dans ce mode, `motion-reduce:animate-none!`
+  arrête le reflet mais le laisse affiché. C'est une bande `from-white/0 via-white/[0.12] to-white/0`,
+  posée en `absolute inset-0`. Sa partie la plus claire reste au milieu du bouton, donc sur le libellé.
+- **Ce voile passe devant le texte**, pas seulement devant le fond. Le calque est positionné et le
+  texte ne l'est pas, donc le navigateur le peint après le texte. Preuve : en mouvement réduit, le
+  libellé n'a plus **aucun** pixel noir pur (0 contre 194).
+  - Le texte devient `#1a1a1a` au pixel le plus sombre, ou `#1d1d1d` dans ses parties pleines.
+  - Le fond devient `#f98331`.
+- **Calcul** (formule WCAG, tronqué) :
+
+| Couple | Rapport | Ce qu'il représente |
+|---|---|---|
+| `#000000` / `#f97316` | 7,49 | couleurs déclarées, sans voile |
+| `#000000` / `#f98331` | 8,31 | fond voilé seul, texte noir (la méthode « fond seul » du §15.6) |
+| `#1a1a1a` / `#f97316` | 6,20 | texte voilé contre fond non voilé : couple impossible à l'écran |
+| **`#1a1a1a` / `#f98331`** | **6,89** | texte et fond sous le même voile : la mesure de DS |
+| `#1d1d1d` / `#f98331` | 6,67 | partie pleine du texte sous le voile |
+
+- À 390 px, le voile sur le libellé est plus faible (texte `#0e0e0e`), d'où 7,34.
+- **Les deux chiffres sont justes**, chacun pour son réglage. Le bon chiffre à retenir pour un
+  visiteur en mouvement réduit est celui de DS, ou le mien en couleur réelle (6,67). Tous deux
+  dépassent largement 4,5:1.
+
+**Rectification de mes compléments n° 6 et n° 7.** Mes mesures « fond seul » rendaient le texte
+transparent. Elles ne voyaient donc pas que le reflet éclaircit aussi le texte.
+- Le « 7,79 (390) et 8,11:1 (1440) » du §15.6 compare un texte noir pur au fond voilé. À l'écran, en
+  mouvement réduit, le libellé est à 7,34 et 6,89:1 au pixel (§16.1).
+- Le pire « au passage du reflet » du §15.1 (7,40 au repos, 5,83 au survol) ne compte pas le voile
+  sur le texte. Le pire possible, quand le centre du voile (12 % de blanc) passe sur le libellé, est
+  calculé à **6,60:1 au repos** (`#1f1f1f` / `#fa8432`) et **5,32:1 au survol** (`#1f1f1f` /
+  `#ed6c29`). C'est un calcul, non mesuré en animation. Il reste au-dessus de 4,5:1.
+- Le verdict du §15 ne change pas sur ce point : le contraste tient dans tous les cas.
+
+### 16.3 Régressions
+
+| Contrôle | Résultat | Preuve |
+|---|---|---|
+| Diff `06dcea7bc` → `f1dbcf285` | OK | Un commit, 27 fichiers. Côté code, 2 fichiers seulement : `GammeDiagnosticCTA.tsx`, avec 1 ligne changée (`no-visited ` ajouté en tête de la `className` du `<Link>`, rien d'autre dans le fichier), et `tests/unit/gamme-diagnostic-cta-contrast.test.tsx`, avec 10 lignes ajoutées (un troisième test). Les 25 autres fichiers sont des documents de DS dans le dossier de la maquette : `README.md`, 23 preuves sous `complement-7/` et `outils/visite-c7.cjs`. Lien, libellé, titre, H1, meta, canonical et composants partagés ne sont pas touchés |
+| HTML servi | OK | `no-visited w-full py-4 bg-cta` présent sur le lien. La page répond 200 sur mon port |
+| axe 390 / 1440 px | OK | Identique à `06dcea7bc`, nœud pour nœud : 390 px `color-contrast` 9, `link-in-text-block` 1, `region` 2 ; 1440 px `color-contrast` 5, `region` 4 (`mesures/c8-page-{390,1440}.json` contre `c7-page-*`). Aucune nouvelle violation |
+| Typecheck frontend | OK | `npm run typecheck`, code de sortie 0 (`mesures/c8-typecheck-front.txt`) |
+| Tests du composant | OK | vitest : 3 tests sur 3 passent, dont le nouveau, qui exige `no-visited` (`mesures/c8-vitest.txt`). Le test vérifie la classe, pas le rendu après visite ; le rendu est couvert par la mesure du §16.1 |
+| CI du commit `f1dbcf285` | 34 réussis, 11 ignorés, 4 en échec, 1 annulé | Mêmes contrôles en échec qu'à `06dcea7bc` : Circuit de fusion (brouillon), Deterministic gates, DoD self-evaluation et Registry freshness. Le second contrôle DoD est « annulé » au lieu d'« en échec ». Deterministic gates échoue pour la même cause qu'avant : `depcruise` à 170 dépendances signalées pour une base de 163, les mêmes nombres dans les deux journaux. Le diff ne touche aucun import. Rien de nouveau n'est introduit (`mesures/c8-ci.txt`) |
+
+### 16.4 Hors périmètre
+
+- Le lien « Conseils : changer un filtre à huile étape par étape » de `#reference` attend la décision
+  de Marwane. Il n'est pas jugé ici.
+- Le reste de la page n'est pas remesuré, en dehors de l'audit axe complet du §16.3.
+- Firefox et Safari ne sont pas mesurés.

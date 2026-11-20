@@ -1,0 +1,51 @@
+# check-runs du commit f1dbcf2852b0d19575081feb659bfb6b24663adf (#2210), relevés le 2026-11-20T01:51Z
+cancelled	🧾 DoD self-evaluation present
+failure	🚦 Circuit de fusion
+failure	🛡️ Deterministic gates
+failure	🧾 DoD self-evaluation present
+failure	Registry freshness (warn-only, Phase 1)
+skipped	🔐 Armement de la fusion automatique (App)
+skipped	auto-merge
+skipped	🐳 build / 🐳 Build
+skipped	🧪 Deploy PREPROD
+skipped	🔍 Docker Image Scan
+skipped	🎭 E2E Smoke Tests
+skipped	🚦 Gate check (snapshots ≥ auto_types)
+skipped	🔦 Lighthouse Performance Audit
+skipped	🔔 Notify on Failure
+skipped	review
+skipped	🤖 Revue Claude (circuit moyen)
+success	🛡️ ADR-010 Governance
+success	🧪 Backend Tests
+success	Block forbidden DEV/PREPROD/PROD formulations in .md
+success	Block-new (owner + domain required)
+success	Block new served-content write sinks
+success	Block new / stale orphan files (G3)
+success	Calcul du circuit
+success	check-cart-conversion-r-role.sh (R-role invariant)
+success	check-role-purity.ts (role-vocabulary purity, source comments)
+success	CodeQL
+success	🔬 CodeQL Scan (javascript-typescript)
+success	🛡️ Contract Gate
+success	🔒 Core Build Only
+success	🔍 CWV Performance Check
+success	Detect inert scheduling decorators
+success	🔒 DEV Safety (Blocking)
+success	🔍 DEV Safety (Observe)
+success	⬣ ESLint
+success	🧪 Frontend Tests
+success	Impeccable count ≤ committed baseline
+success	🛡️ Import Firewall
+success	🗄️ Migration Safety
+success	🕸️ No new deep PR-stacks
+success	Refuser SEO_CHAIN_R*_MODE=on dans la config
+success	Repo Map Drift Check
+success	🛡️ RPC Safety Gate
+success	🔐 Secrets Detection
+success	🔒 Security Audit
+success	ʦ TypeScript
+success	url-immutability
+success	validate-exploration-probe.sh (ADR-081 G10)
+success	Validate Specifications
+success	validate-top-priorities.sh (ADR-081)
+success	Verify ADR canon references have vault backing
