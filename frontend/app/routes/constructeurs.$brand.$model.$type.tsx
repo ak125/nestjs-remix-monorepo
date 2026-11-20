@@ -5,21 +5,14 @@
 // .spec/00-canon/role-matrix.md §R8 et @repo/seo-roles forbidden-overlap.ts.
 
 import {
-  Award,
   Car,
-  CheckCircle,
   ChevronDown,
   ChevronUp,
   Copy,
-  FileText,
   HeadphonesIcon,
   Info,
   Package,
-  RotateCcw,
   Search,
-  Shield,
-  Star,
-  Truck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -47,7 +40,6 @@ import {
   FAMILY_MICRO_DESCRIPTIONS,
   generateVehicleSchema,
   HeroSection,
-  HowtoSection,
   R8EnrichedSection,
   SeoIntroSection,
   transformRpcToLoaderData,
@@ -457,6 +449,35 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: rawData }) => {
   return result;
 };
 
+/**
+ * Maquette C14 (mandat DS) : emplacement marqué d'un bloc dont la donnée n'existe pas encore.
+ * Libellé du bloc (paragraphe, pas un titre : aucun faux h2 dans le plan) et source attendue seulement,
+ * aucun texte rédigé. À remplir ou retirer avant toute fusion.
+ */
+function EmplacementMaquette({
+  section,
+  bloc,
+  source,
+}: {
+  section: string;
+  bloc: string;
+  source: string;
+}) {
+  return (
+    <div
+      data-section={section}
+      data-maquette="emplacement"
+      className="mb-12 rounded-2xl border-2 border-dashed border-gray-300 bg-white p-6"
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-600">
+        Emplacement maquette
+      </p>
+      <p className="mt-1 text-lg font-bold text-gray-900">{bloc}</p>
+      <p className="mt-2 text-sm text-gray-600">Source attendue : {source}</p>
+    </div>
+  );
+}
+
 // 🎨 Composant principal avec logique PHP intégrée
 export default function VehicleDetailPage() {
   const data = useLoaderData<LoaderData>();
@@ -483,7 +504,6 @@ export default function VehicleDetailPage() {
   const {
     vehicle,
     catalogFamilies,
-    popularParts,
     seo,
     breadcrumb,
     modelContentV1,
@@ -520,6 +540,8 @@ export default function VehicleDetailPage() {
   }
 
   const faqItems = r8FaqParsed.length >= 2 ? r8FaqParsed : [];
+  const hasR8Block = (type: string) =>
+    r8Content?.blocks.some((b) => b.type === type) ?? false;
 
   return (
     <div
@@ -528,7 +550,8 @@ export default function VehicleDetailPage() {
     >
       <BreadcrumbSection vehicle={vehicle} breadcrumb={breadcrumb} />
       <HeroSection vehicle={vehicle} />
-      {/* Vehicle image + specs (hors hero — SELECTION = gradient-only) */}
+      {/* Maquette C14 (mandat DS) — bloc 3 « Identité véhicule » : image du modèle + fiche technique
+          (S_IDENTITY et S_SAFE_TABLE fusionnés et remontés sous le titre). Badges de preuve retirés. */}
       <section className="bg-white border-b" data-section="S_IDENTITY">
         <div className="container mx-auto px-4 max-w-7xl py-6">
           <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -558,26 +581,133 @@ export default function VehicleDetailPage() {
               </div>
             </div>
 
-            {/* Proof bar */}
-            <div className="flex flex-wrap gap-3">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-sm font-medium text-green-700">
-                <CheckCircle className="w-4 h-4" /> 100% compatible
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700">
-                <FileText className="w-4 h-4" /> Vérif VIN / CNIT
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted border border-indigo-200 rounded-lg text-sm font-medium text-foreground">
-                <Truck className="w-4 h-4" /> Livraison 24-48h
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700">
-                <RotateCcw className="w-4 h-4" /> Retour 30 jours
-              </span>
+            <div className="w-full min-w-0 flex-1">
+              <div data-section="S_SAFE_TABLE">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white/10 rounded-lg">
+                        <Info size={24} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold">Fiche technique</h2>
+                        <p className="text-gray-300 text-sm">
+                          {vehicle.marque_name} {vehicle.modele_name}{" "}
+                          {vehicle.type_name}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <table className="w-full text-sm">
+                      <tbody className="divide-y divide-gray-100">
+                        <tr>
+                          <td className="py-3 pr-4 font-medium text-gray-500 w-1/3">
+                            Motorisation
+                          </td>
+                          <td className="py-3 font-semibold text-gray-900">
+                            {vehicle.type_name}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-3 pr-4 font-medium text-gray-500">
+                            Puissance
+                          </td>
+                          <td className="py-3 font-semibold text-gray-900">
+                            {vehicle.type_power_ps} ch
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-3 pr-4 font-medium text-gray-500">
+                            Carburant
+                          </td>
+                          <td className="py-3 font-semibold text-gray-900">
+                            {vehicle.type_fuel || "Non spécifié"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-3 pr-4 font-medium text-gray-500">
+                            Carrosserie
+                          </td>
+                          <td className="py-3 font-semibold text-gray-900">
+                            {vehicle.type_body || "Non spécifié"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="py-3 pr-4 font-medium text-gray-500">
+                            Période
+                          </td>
+                          <td className="py-3 font-semibold text-gray-900">
+                            {vehicle.type_year_from} -{" "}
+                            {vehicle.type_year_to || "aujourd'hui"}
+                          </td>
+                        </tr>
+                        {vehicle.motor_codes_formatted && (
+                          <tr>
+                            <td className="py-3 pr-4 font-medium text-gray-500">
+                              Code moteur
+                            </td>
+                            <td className="py-3 font-semibold text-gray-900">
+                              {vehicle.motor_codes_formatted}
+                            </td>
+                          </tr>
+                        )}
+                        {vehicle.cnit_codes_formatted && (
+                          <tr>
+                            <td className="py-3 pr-4 font-medium text-gray-500">
+                              Références d’identification
+                            </td>
+                            <td className="py-3 font-semibold text-gray-900 flex items-center gap-2">
+                              <span className="truncate max-w-[200px]">
+                                {vehicle.cnit_codes_formatted}
+                              </span>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(
+                                    vehicle.cnit_codes_formatted ?? "",
+                                  );
+                                }}
+                                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                title="Copier"
+                              >
+                                <Copy size={14} className="text-gray-400" />
+                              </button>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* R8 technical_specs overlay (RAG motorisations) */}
+                  {r8Content?.blocks
+                    .filter((b) => b.type === "technical_specs")
+                    .map((block) => (
+                      <div
+                        key={block.id}
+                        className="p-6 border-t border-gray-200 bg-gray-50"
+                      >
+                        <h3 className="font-semibold text-gray-900 mb-2">
+                          {block.title}
+                        </h3>
+                        <div className="prose prose-sm max-w-none text-gray-700">
+                          <HtmlContent
+                            html={block.renderedText}
+                            trackLinks={true}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
       {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Maquette C14 — bloc 4 « Accès catalogue » : introduction, puis recherche et puces, puis catalogue (sortie R2). */}
+        <SeoIntroSection r8Content={r8Content} seo={seo} />
+
         {/* Acces rapide + Recherche */}
         {catalogFamilies.length > 0 && (
           <div data-section="S_FAST_ACCESS" className="mb-8">
@@ -625,8 +755,6 @@ export default function VehicleDetailPage() {
             </div>
           </div>
         )}
-
-        <SeoIntroSection r8Content={r8Content} seo={seo} />
 
         {/* 📦 CATALOGUE PRINCIPAL - Design inspiré de la page index */}
         {catalogFamilies.length > 0 &&
@@ -854,263 +982,38 @@ export default function VehicleDetailPage() {
             );
           })()}
 
-        {/* 🔥 Pièces populaires - Design moderne amélioré */}
-        {popularParts.length > 0 && (
-          <div className="mb-12" data-section="S_BESTSELLERS">
-            {/* Header moderne avec gradient et stats */}
-            <div className="bg-gradient-to-r from-blue-50 rounded-2xl p-8 mb-8 border border-blue-100 shadow-sm">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl shadow-lg bg-brand">
-                    <Award size={32} strokeWidth={2} className="text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
-                      Pièces auto {vehicle.marque_name} les plus vendues
-                    </h2>
-                    <p className="text-gray-600 text-sm mt-1">
-                      Top {popularParts.length} pièces certifiées pour{" "}
-                      {vehicle.modele_name} {vehicle.type_name}
-                    </p>
-                  </div>
-                </div>
-                {/* Stats rapides */}
-                <div className="flex gap-4">
-                  <div className="text-center bg-white/70 backdrop-blur px-4 py-2 rounded-lg">
-                    <div className="text-2xl font-bold text-brand">
-                      {popularParts.length}
-                    </div>
-                    <div className="text-xs text-gray-500">Best-sellers</div>
-                  </div>
-                  <div className="text-center bg-white/70 backdrop-blur px-4 py-2 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      1 an
-                    </div>
-                    <div className="text-xs text-gray-500">Garantie</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Maquette C14 — bloc 5 « Contexte de compatibilité ». */}
+        <AntiErrorsSection vehicle={vehicle} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {popularParts.map((part, index) => (
-                <div
-                  key={part.cgc_pg_id}
-                  className="group bg-white rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300 overflow-hidden relative"
-                >
-                  {/* Badge ranking */}
-                  <div className="absolute top-3 left-3 z-20">
-                    <div
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-lg ${
-                        index === 0
-                          ? "bg-gradient-to-r from-yellow-400 to-amber-500"
-                          : index === 1
-                            ? "bg-gradient-to-r from-gray-400 to-slate-500"
-                            : index === 2
-                              ? "bg-gradient-to-r from-orange-400 to-amber-600"
-                              : "bg-gray-600"
-                      }`}
-                    >
-                      <Star size={12} fill="currentColor" />
-                      <span>#{index + 1}</span>
-                    </div>
-                  </div>
-
-                  {/* Badge "Populaire" */}
-                  <div className="absolute top-3 right-3 z-10">
-                    <div className="px-2.5 py-1 rounded-full text-xs font-semibold text-white shadow-md flex items-center gap-1 bg-brand">
-                      <CheckCircle size={12} />
-                      <span>Compatible</span>
-                    </div>
-                  </div>
-
-                  {/* Image gamme */}
-                  <div className="p-6 bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
-                    {isValidImagePath(part.pg_img) ? (
-                      <img
-                        src={`/img/uploads/articles/gammes-produits/catalogue/${part.pg_img}`}
-                        alt={part.pg_name_meta}
-                        className="w-full h-36 object-contain rounded-lg group-hover:scale-110 transition-transform duration-500"
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.style.display = "none";
-                          const fallback = e.currentTarget
-                            .nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = "flex";
-                        }}
-                      />
-                    ) : null}
-                    {/* eslint-disable-next-line no-restricted-syntax -- Intentional hidden fallback */}
-                    <div className="hidden flex-col items-center justify-center w-full h-36 text-gray-400">
-                      <Package size={48} strokeWidth={1.5} />
-                      <span className="text-xs mt-2 text-gray-500">
-                        Image indisponible
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Contenu */}
-                  <div className="p-5 border-t border-gray-100">
-                    <h3 className="font-bold text-gray-900 mb-2 text-base line-clamp-2 min-h-[3rem] group-hover:text-blue-600 transition-colors">
-                      {part.pg_name}
-                    </h3>
-
-                    <div className="text-sm text-gray-500 mb-4 line-clamp-2 min-h-[2.5rem]">
-                      <HtmlContent
-                        html={part.addon_content}
-                        trackLinks={true}
-                      />
-                    </div>
-
-                    {/* Badges de confiance mini */}
-                    <div className="flex items-center gap-2 mb-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-1 rounded-full">
-                        <Truck size={12} /> 24-48h
-                      </span>
-                      <span className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                        <Shield size={12} /> Garanti
-                      </span>
-                    </div>
-
-                    {/* CTA moderne */}
-                    <a
-                      href={`/pieces/${part.pg_alias}-${part.cgc_pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg group-hover:scale-[1.02] active:scale-[0.98] bg-brand"
-                    >
-                      <span>Voir les pièces</span>
-                      <span className="group-hover:translate-x-1 transition-transform">
-                        →
-                      </span>
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Fiche technique du vehicule */}
-        <div className="mb-12" data-section="S_SAFE_TABLE">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/10 rounded-lg">
-                  <Info size={24} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">Fiche technique</h2>
-                  <p className="text-gray-300 text-sm">
-                    {vehicle.marque_name} {vehicle.modele_name}{" "}
-                    {vehicle.type_name}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="p-6">
-              <table className="w-full text-sm">
-                <tbody className="divide-y divide-gray-100">
-                  <tr>
-                    <td className="py-3 pr-4 font-medium text-gray-500 w-1/3">
-                      Motorisation
-                    </td>
-                    <td className="py-3 font-semibold text-gray-900">
-                      {vehicle.type_name}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 pr-4 font-medium text-gray-500">
-                      Puissance
-                    </td>
-                    <td className="py-3 font-semibold text-gray-900">
-                      {vehicle.type_power_ps} ch
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 pr-4 font-medium text-gray-500">
-                      Carburant
-                    </td>
-                    <td className="py-3 font-semibold text-gray-900">
-                      {vehicle.type_fuel || "Non spécifié"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 pr-4 font-medium text-gray-500">
-                      Carrosserie
-                    </td>
-                    <td className="py-3 font-semibold text-gray-900">
-                      {vehicle.type_body || "Non spécifié"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 pr-4 font-medium text-gray-500">
-                      Période
-                    </td>
-                    <td className="py-3 font-semibold text-gray-900">
-                      {vehicle.type_year_from} -{" "}
-                      {vehicle.type_year_to || "aujourd'hui"}
-                    </td>
-                  </tr>
-                  {vehicle.motor_codes_formatted && (
-                    <tr>
-                      <td className="py-3 pr-4 font-medium text-gray-500">
-                        Code moteur
-                      </td>
-                      <td className="py-3 font-semibold text-gray-900">
-                        {vehicle.motor_codes_formatted}
-                      </td>
-                    </tr>
-                  )}
-                  {vehicle.cnit_codes_formatted && (
-                    <tr>
-                      <td className="py-3 pr-4 font-medium text-gray-500">
-                        Références d’identification
-                      </td>
-                      <td className="py-3 font-semibold text-gray-900 flex items-center gap-2">
-                        <span className="truncate max-w-[200px]">
-                          {vehicle.cnit_codes_formatted}
-                        </span>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(
-                              vehicle.cnit_codes_formatted ?? "",
-                            );
-                          }}
-                          className="p-1 hover:bg-gray-100 rounded transition-colors"
-                          title="Copier"
-                        >
-                          <Copy size={14} className="text-gray-400" />
-                        </button>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            {/* R8 technical_specs overlay (RAG motorisations) */}
-            {r8Content?.blocks
-              .filter((b) => b.type === "technical_specs")
-              .map((block) => (
-                <div
-                  key={block.id}
-                  className="p-6 border-t border-gray-200 bg-gray-50"
-                >
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    {block.title}
-                  </h3>
-                  <div className="prose prose-sm max-w-none text-gray-700">
-                    <HtmlContent html={block.renderedText} trackLinks={true} />
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
+        {/* Maquette C14 — blocs 6 à 9 : données absentes pour ce type ⇒ emplacements marqués, aucun texte rédigé. */}
+        <EmplacementMaquette
+          section="S_PLACEHOLDER_TOP_PARTS"
+          bloc="Pièces les plus recherchées pour ce véhicule"
+          source="volumes de __seo_keywords pour ce véhicule, non branchés au loader"
+        />
 
         {/* R8 enriched sections — variant_difference + maintenance_context */}
         <R8EnrichedSection r8Content={r8Content} />
 
-        <AntiErrorsSection vehicle={vehicle} />
-
-        <HowtoSection vehicle={vehicle} />
+        {!hasR8Block("maintenance_context") && (
+          <EmplacementMaquette
+            section="S_PLACEHOLDER_MAINTENANCE"
+            bloc="Points d’usure et repères d’entretien"
+            source="bloc r8Content maintenance_context, absent pour ce type"
+          />
+        )}
+        {!hasR8Block("variant_difference") && (
+          <EmplacementMaquette
+            section="S_PLACEHOLDER_VARIANTS"
+            bloc="Spécificités et variantes de la motorisation"
+            source="bloc r8Content variant_difference, absent pour ce type"
+          />
+        )}
+        <EmplacementMaquette
+          section="S_PLACEHOLDER_LINKS"
+          bloc="Liens vers les guides gamme (R1), le diagnostic (R5) et l’outil de vérification"
+          source="règles de liens par rôle (décision 82), non configurées"
+        />
 
         {/* FAQ éditoriale : même contenu visible et structuré, sans fallback. */}
         {faqItems.length > 0 && (
@@ -1184,6 +1087,13 @@ export default function VehicleDetailPage() {
               </div>
             </div>
           </div>
+        )}
+        {faqItems.length === 0 && (
+          <EmplacementMaquette
+            section="S_PLACEHOLDER_FAQ"
+            bloc="FAQ dédiée au véhicule"
+            source="bloc r8Content dedicated_faq, absent pour ce type"
+          />
         )}
 
         {/* 📚 Contenu V1 - Guide encyclopédique du modèle (APRÈS catalogue et FAQ) */}

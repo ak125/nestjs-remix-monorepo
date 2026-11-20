@@ -1,0 +1,95 @@
+{
+  "a": "https://www.automecanik.com/constructeurs/renault-140/clio-iii-140004/1-5-dci-19052.html",
+  "b": "https://www.automecanik.com/constructeurs/renault-140/clio-iii-140004/1-5-dci-19051.html",
+  "blocs": [
+    {
+      "id": "S_BREADCRUMB",
+      "motsA": 8,
+      "motsB": 8,
+      "etat": "identique hors faits du type",
+      "phrasesA": 1,
+      "phrasesCommunes": 0
+    },
+    {
+      "id": "S_HERO",
+      "motsA": 25,
+      "motsB": 25,
+      "etat": "identique hors faits du type",
+      "phrasesA": 2,
+      "phrasesCommunes": 1
+    },
+    {
+      "id": "S_IDENTITY",
+      "motsA": 11,
+      "motsB": 11,
+      "etat": "identique",
+      "phrasesA": 1,
+      "phrasesCommunes": 1
+    },
+    {
+      "id": "S_FAST_ACCESS",
+      "motsA": 24,
+      "motsB": 24,
+      "etat": "identique",
+      "phrasesA": 1,
+      "phrasesCommunes": 1
+    },
+    {
+      "id": "S_SEO_INTRO",
+      "motsA": 61,
+      "motsB": 61,
+      "etat": "identique hors faits du type",
+      "phrasesA": 5,
+      "phrasesCommunes": 4
+    },
+    {
+      "id": "S_CATALOG",
+      "motsA": 326,
+      "motsB": 322,
+      "etat": "différent",
+      "phrasesA": 2,
+      "phrasesCommunes": 1
+    },
+    {
+      "id": "S_BESTSELLERS",
+      "motsA": 220,
+      "motsB": 224,
+      "etat": "différent",
+      "phrasesA": 9,
+      "phrasesCommunes": 1
+    },
+    {
+      "id": "S_SAFE_TABLE",
+      "motsA": 69,
+      "motsB": 62,
+      "etat": "différent",
+      "phrasesA": 1,
+      "phrasesCommunes": 0
+    },
+    {
+      "id": "S_ANTI_ERRORS",
+      "motsA": 61,
+      "motsB": 61,
+      "etat": "identique",
+      "phrasesA": 4,
+      "phrasesCommunes": 4
+    },
+    {
+      "id": "S_HOWTO",
+      "motsA": 46,
+      "motsB": 46,
+      "etat": "identique hors faits du type",
+      "phrasesA": 1,
+      "phrasesCommunes": 0
+    },
+    {
+      "id": "S_TRUST",
+      "motsA": 184,
+      "motsB": 184,
+      "etat": "identique hors faits du type",
+      "phrasesA": 6,
+      "phrasesCommunes": 5
+    }
+  ],
+  "titleIdentiqueHorsSuffixe": true
+}
