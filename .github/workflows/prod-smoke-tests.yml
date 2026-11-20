@@ -37,6 +37,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
+          package-manager-cache: false
 
       - name: 🏥 Health endpoint
         id: health-check
@@ -905,6 +906,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
+          package-manager-cache: false
 
       - name: 🔭 Observation report
         run: nice -n 19 node --max-old-space-size=256 scripts/ci/prod-observation-report.mjs

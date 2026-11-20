@@ -6,6 +6,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DISPOS_VENDABLES } from '@database/services/vendable';
 import { eurToCents } from './pricing-formula.service';
 import { normalizeSupplierReference } from '../utils/normalize-supplier-reference';
 import type { CatalogPiece, ExistingPriceRow } from './price-import.dry-run';
@@ -26,13 +27,26 @@ export interface DeactivationScopeRow {
   dispo: string | null;
   state: string;
   stateReason: string | null;
+  /** `pri_frs` — supplier label of the row (freshness rule, decision 51). */
+  supplierLabel: string | null;
 }
 
-/** The storefront isSellable inputs of one pieces_price row. */
+/** The sellability inputs of one pieces_price row (decision 51 + quarantine). */
 export interface SellabilityRow {
   priType: string;
   dispo: string | null;
   venteTtc: number | null;
+  /** `pricing_state` (a FROZEN row is never sellable). */
+  state: string | null;
+}
+
+/** Summary of one price_import_batches row (guard-fou acknowledgement check). */
+export interface BatchSummary {
+  batchId: string;
+  status: string;
+  supplierId: string | null;
+  operation: string | null;
+  failedRows: number | null;
 }
 
 export interface CommitRowPayload {
@@ -46,6 +60,17 @@ export interface CommitRowPayload {
   marge: number;
   vente_ht: number;
   vente_ttc: number;
+  /**
+   * Real supplier of the tariff (`___xtr_supplier.spl_name`, e.g. 'DCA'), written
+   * to `pieces_price.pri_frs` on the committed row only.
+   */
+  frs: string;
+  /**
+   * Tariff effective date, ISO `YYYY-MM-DDT00:00:00.000Z` (format of the
+   * historical `pieces_price.pri_date_from` text values), written on the
+   * committed row only.
+   */
+  date_from: string;
 }
 
 @Injectable()
@@ -321,7 +346,7 @@ export class PricingRepository extends SupabaseBaseService {
       const { data, error } = await this.supabase
         .from('pieces_price')
         .select(
-          'pri_ref, pri_piece_id_i, pri_type, pri_dispo, pricing_state, pricing_state_reason',
+          'pri_ref, pri_piece_id_i, pri_type, pri_dispo, pricing_state, pricing_state_reason, pri_frs',
         )
         .eq('pri_pm_id', supplier)
         .in('pri_ref', chunk)
@@ -342,6 +367,7 @@ export class PricingRepository extends SupabaseBaseService {
           dispo: (r.pri_dispo as string | null) ?? null,
           state: String(r.pricing_state ?? ''),
           stateReason: (r.pricing_state_reason as string | null) ?? null,
+          supplierLabel: (r.pri_frs as string | null) ?? null,
         });
         out.set(ref, list);
       }
@@ -361,14 +387,19 @@ export class PricingRepository extends SupabaseBaseService {
   ): Promise<{
     rows: Map<number, SellabilityRow[]>;
     visibleBrand: Map<number, boolean>;
+    /** piece_display, any brand — the decision-51 « not masked » input. */
+    displayed: Map<number, boolean>;
   }> {
     const rows = new Map<number, SellabilityRow[]>();
     const visibleBrand = new Map<number, boolean>();
+    const displayed = new Map<number, boolean>();
     for (let i = 0; i < pieceIds.length; i += SCOPE_CHUNK) {
       const chunk = pieceIds.slice(i, i + SCOPE_CHUNK);
       const { data, error } = await this.supabase
         .from('pieces_price')
-        .select('pri_piece_id_i, pri_type, pri_dispo, pri_vente_ttc_n')
+        .select(
+          'pri_piece_id_i, pri_type, pri_dispo, pri_vente_ttc_n, pricing_state',
+        )
         .eq('pri_pm_id', supplier)
         .in('pri_piece_id_i', chunk)
         .limit(PAGE);
@@ -387,6 +418,7 @@ export class PricingRepository extends SupabaseBaseService {
           dispo: (r.pri_dispo as string | null) ?? null,
           venteTtc:
             r.pri_vente_ttc_n == null ? null : Number(r.pri_vente_ttc_n),
+          state: (r.pricing_state as string | null) ?? null,
         });
         rows.set(pieceId, list);
       }
@@ -397,13 +429,65 @@ export class PricingRepository extends SupabaseBaseService {
         .limit(PAGE);
       if (piecesError) throw piecesError;
       for (const p of (pieces ?? []) as Array<Record<string, unknown>>) {
+        displayed.set(Number(p.piece_id), p.piece_display === true);
         visibleBrand.set(
           Number(p.piece_id),
           p.piece_display === true && String(p.piece_pm_id) === supplier,
         );
       }
     }
-    return { rows, visibleBrand };
+    return { rows, visibleBrand, displayed };
+  }
+
+  /**
+   * Denominator of the 5 % guard (decision 51): sellable rows of a brand —
+   * pri_dispo '1', '2' or '3' (decision 118, same set as estVendable), not
+   * FROZEN, priced, piece displayed. Head count (no rows transferred). Counts
+   * ROWS: on 2026-11-17, 417 470 sellable pieces and 68 pieces with more than
+   * one sellable row, so the ratio is read as a share of pieces.
+   */
+  async countSellablePieces(supplier: string): Promise<number> {
+    const { count, error } = await this.supabase
+      .from('pieces_price')
+      .select(
+        'pri_piece_id_i, pieces!fk_pieces_price_piece_i!inner(piece_display)',
+        {
+          count: 'exact',
+          head: true,
+        },
+      )
+      .eq('pri_pm_id', supplier)
+      .in('pri_dispo', [...DISPOS_VENDABLES])
+      .or('pricing_state.is.null,pricing_state.neq.FROZEN')
+      .gt('pri_vente_ttc_n', 0)
+      .eq('pieces.piece_display', true)
+      // head request: no row is transferred; PostgREST's exact count ignores
+      // the limit, which only states the bounded intent (1000-row cap rule).
+      .limit(1);
+    if (error) throw error;
+    if (count == null) {
+      throw new Error(`countSellablePieces: no count returned for ${supplier}`);
+    }
+    return count;
+  }
+
+  /** One batch, for checking an owner acknowledgement of a guard halt. */
+  async getBatchSummary(batchId: string): Promise<BatchSummary | null> {
+    const { data, error } = await this.supabase
+      .from('price_import_batches')
+      .select('batch_id, status, supplier_id, operation, failed_rows')
+      .eq('batch_id', batchId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    const r = data as Record<string, unknown>;
+    return {
+      batchId: String(r.batch_id),
+      status: String(r.status),
+      supplierId: (r.supplier_id as string | null) ?? null,
+      operation: (r.operation as string | null) ?? null,
+      failedRows: r.failed_rows == null ? null : Number(r.failed_rows),
+    };
   }
 
   /**
@@ -701,10 +785,14 @@ export class PricingRepository extends SupabaseBaseService {
   }
 
   async fetchProfiles(supplierId: string): Promise<SupplierPriceProfile[]> {
+    // Profils d'import seulement : une condition de remise de la fiche
+    // fournisseur (profile_kind 'condition', complément CH-3) n'est jamais
+    // un profil d'import.
     const { data, error } = await this.supabase
       .from('supplier_price_profiles')
       .select('*')
       .eq('supplier_id', supplierId)
+      .eq('profile_kind', 'import')
       .eq('active', true);
     if (error) throw error;
     return (data ?? []).map((r) => ({

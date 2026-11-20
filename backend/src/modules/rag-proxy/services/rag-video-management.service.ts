@@ -22,10 +22,22 @@ import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { Response } from 'express';
+import { resolveConfinedPath } from '../utils/rag-paths.util';
 
 const execFileAsync = promisify(execFile);
 
 const VIDEO_EXTS = new Set(['.mp4', '.webm', '.mkv', '.mov', '.m4v']);
+
+/**
+ * Nom d'un fichier vidéo servi : empreinte SHA-256 du contenu (64 caractères
+ * hexadécimaux en minuscules) suivie de l'extension. C'est le nom qu'écrit
+ * `ingestVideoUrl` (`${sha256}${ext}`) ; l'extension doit en plus appartenir
+ * à `VIDEO_EXTS`, la liste que sert `listVideos`.
+ */
+const VIDEO_FILE_NAME = /^[a-f0-9]{64}(\.[a-z0-9]+)$/;
+
+/** Empreinte seule, telle que la reçoivent les routes d'administration. */
+const VIDEO_HASH = /^[a-f0-9]{64}$/;
 
 export interface VideoMeta {
   hash: string;
@@ -126,15 +138,32 @@ export class RagVideoManagementService {
   }
 
   /**
+   * Chemin réel d'un fichier vidéo servi, ou `null` si le nom n'a pas le
+   * format attendu, si le fichier n'existe pas, n'est pas un fichier
+   * ordinaire, ou si son chemin réel (liens symboliques suivis) n'est pas
+   * dans le répertoire des vidéos.
+   */
+  private resolveVideoFile(fileName: string): string | null {
+    if (typeof fileName !== 'string') return null;
+    const match = VIDEO_FILE_NAME.exec(fileName);
+    if (!match || !VIDEO_EXTS.has(match[1])) return null;
+
+    const dir = path.resolve(this.videoDir);
+    if (path.dirname(path.resolve(dir, fileName)) !== dir) return null;
+
+    return resolveConfinedPath(dir, fileName);
+  }
+
+  /**
    * Stream a video file to the HTTP response.
    * Supports Range requests for seeking.
+   * Tout nom refusé ou introuvable donne la même réponse 404.
    */
   streamVideo(hashWithExt: string, res: Response): void {
-    const dir = this.videoDir;
-    const filePath = path.join(dir, hashWithExt);
+    const filePath = this.resolveVideoFile(hashWithExt);
 
-    if (!existsSync(filePath)) {
-      throw new NotFoundException(`Video not found: ${hashWithExt}`);
+    if (!filePath) {
+      throw new NotFoundException('Video not found');
     }
 
     const stat = statSync(filePath);
@@ -194,10 +223,20 @@ export class RagVideoManagementService {
    * Enrich .prompt.md sidecars: replace `gamme: null` with detected gamme.
    */
   enrichVideoPrompts(hashes: string[], gamme: string): number {
+    if (
+      !Array.isArray(hashes) ||
+      !hashes.every((hash) => VIDEO_HASH.test(hash))
+    ) {
+      throw new BadRequestException(
+        'Invalid hash format (expected 64 hex chars)',
+      );
+    }
+
     const dir = this.videoDir;
     let enriched = 0;
     for (const hash of hashes) {
-      const promptPath = path.join(dir, `${hash}.prompt.md`);
+      const promptPath = resolveConfinedPath(dir, `${hash}.prompt.md`);
+      if (!promptPath) continue;
       try {
         let content = readFileSync(promptPath, 'utf-8');
         if (content.includes('gamme: null')) {

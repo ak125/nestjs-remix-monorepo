@@ -29,17 +29,15 @@ Fichier source : `.claude/skills/wiki-proposal-writer/`.
 | `automecanik-wiki/proposals/_index.md` + `_manifest.json` | ✅ Oui | ADR-031 D19 |
 | Documentation interne workspace (ce fichier, README, CLAUDE.md) | ✅ Oui | Standard workspace |
 | `automecanik-wiki/wiki/<entity_type>/*` direct (sans passer par proposals) | ❌ Non | ADR-031 D20 (sync-from-wiki lit `wiki/exports/rag/` uniquement, jamais `wiki/<entity_type>/`) |
-| `governance-vault/` | ❌ Non | ADR-060 invariant 5 |
+| `governance-vault/` | ❌ Non | Archive en lecture seule (décision 73) ; interdit d'écriture d'ADR-060 invariant 5 |
 | `automecanik-raw/` | ❌ Non | ADR-060 invariant 3 |
 | `automecanik-rag/knowledge/` | ❌ Non | ADR-060 invariant 4 + ADR-031 D22 |
 
 ## Canon mirrors (read-only)
 
-`.claude/canon-mirrors/` contient au 2026-05-14 :
+`.claude/canon-mirrors/` contient encore `agent-exit-contract.md` (AEC v1.0.0, du 2026-05-04). Cette copie n'est déclarée dans aucun manifeste ni contrôlée par hash, et l'AEC en vigueur est plus récent : **elle ne fait pas foi** (contradiction D16, mandat AR-4). L'étape 2 du plan de sortie du vault est fusionnée sans y toucher : son retrait ou sa déclaration reste une décision de l'owner (question D16, `docs/audit/mandat-bc-20261116/etape-2.md`).
 
-- `agent-exit-contract.md` — contrat de sortie agentique commun (mirror vault)
-
-Synchronisation : cron VPS DEV (`scripts/cron/sync_canon_mirrors.py`, cf. [[ADR-061-workspace-governance]] §3 + vault PR #268). **Toute modification manuelle est interdite** et bloquée par `.husky/pre-commit` (cf. monorepo PR #495).
+Le contrat en vigueur est `.claude/canon-mirrors/agent-exit-contract.md` à la racine du monorepo. C'est une copie déclarée, générée depuis sa source et contrôlée par hash (`agent-exit-contract-hash.yml`). **Toute modification manuelle est interdite** : on corrige la source, jamais la copie.
 
 ## Lifecycle workspace
 

@@ -1,0 +1,63 @@
+diff --git a/.github/workflows/canon-distribution.yml b/.github/workflows/canon-distribution.yml
+new file mode 100644
+index 0000000..1ed4e94
+--- /dev/null
++++ b/.github/workflows/canon-distribution.yml
+@@ -0,0 +1,57 @@
++name: canon-distribution
++
++# Canons distribués (AEC, voix de marque) : le manifeste
++# .spec/00-canon/canon-distribution/canon-hashes.json et les copies du monorepo
++# doivent être conformes aux sources du même dossier.
++# Contrôle local, sans réseau : scripts/canon/compute-canon-hashes.py --check.
++# Source : AEC §« Distribution canonique ». Étape 1 de la sortie du vault
++# (docs/audit/mandat-ar-20261116/inventaire-vault-et-plan.md §2).
++
++on:
++  push:
++    branches: [main]
++    paths:
++      - ".spec/00-canon/canon-distribution/**"
++      - "scripts/canon/compute-canon-hashes.py"
++      - "scripts/canon/test_compute_canon_hashes.py"
++      - ".claude/canon-mirrors/**"
++      - "workspaces/*/.claude/canon-mirrors/**"
++      - ".github/workflows/canon-distribution.yml"
++  pull_request:
++    paths:
++      - ".spec/00-canon/canon-distribution/**"
++      - "scripts/canon/compute-canon-hashes.py"
++      - "scripts/canon/test_compute_canon_hashes.py"
++      - ".claude/canon-mirrors/**"
++      - "workspaces/*/.claude/canon-mirrors/**"
++      - ".github/workflows/canon-distribution.yml"
++  workflow_dispatch:
++
++permissions:
++  contents: read
++
++# Chaque étape `run:` s'exécute en `bash --noprofile --norc -eo pipefail {0}`.
++defaults:
++  run:
++    shell: bash
++
++jobs:
++  check:
++    name: canon-distribution (manifeste et copies)
++    runs-on: ubuntu-latest
++    steps:
++      - uses: actions/checkout@v7
++
++      - name: Setup Python
++        uses: actions/setup-python@v7
++        with:
++          python-version: "3.12"
++
++      - name: Manifeste et copies conformes aux sources
++        run: python3 scripts/canon/compute-canon-hashes.py --check
++
++      - name: Install pytest
++        run: python3 -m pip install --quiet 'pytest>=7.4,<9'
++
++      - name: Tests du générateur
++        run: python3 -m pytest scripts/canon/test_compute_canon_hashes.py -v --tb=short

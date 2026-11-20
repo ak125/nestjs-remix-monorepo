@@ -55,7 +55,7 @@ Un claim `mileage`, `dimension`, `percentage` ou `norm` non `verified`, ou sans 
 
 ## Stabilité V1
 
-Cette persona est **figée pour les 10 pilotes V1**. Toute évolution = PR vault dédiée + ADR addendum, jamais ad-hoc.
+Cette persona est **figée pour les 10 pilotes V1**. Toute évolution = PR dédiée dans le monorepo, sur décision de l'owner, jamais ad-hoc.
 
 ## Voir aussi
 

@@ -87,6 +87,55 @@ const GAMME_ALIAS_RE = /^[a-z0-9-]+$/;
 /** Marqueur d'un nom de gamme rendu sans lien, faute de page à servir. */
 export const UNRESOLVED_GAMME_LINK_ATTR = 'data-gamme-link="unresolved"';
 
+/**
+ * Pages de gamme qu'un lien éditorial peut viser.
+ * - `catalogue` : toute gamme principale (`pg_level` 1 ou 2), règle des guides R3.
+ * - `indexable` : seulement une page R1 affichée et indexable, la règle de
+ *   `sitemap-categories.xml` (`pg_display`, `pg_relfollow` et `pg_level` à '1',
+ *   sitemap-v10-static.service.ts) ; le rendu R1 sert `noindex` hors
+ *   `pg_level` '1'.
+ */
+export type GammeLinkTargets = 'catalogue' | 'indexable';
+
+/**
+ * Cible d'un lien `/pieces/…` éditorial : identifiant (lien canonique ou jeton
+ * `#LinkGamme_N#`) ou alias écrit sans identifiant. `null` : lien hors champ
+ * (page véhicule `…/….html`), laissé tel quel.
+ */
+function gammeLinkCandidate(
+  target: string,
+  label: string,
+): { alias: string | null; pgId: number | null } | null {
+  const canonical = CANONICAL_GAMME_TARGET_RE.exec(target);
+  if (canonical) return { alias: null, pgId: parseInt(canonical[1], 10) };
+  if (target.includes('/') && target.endsWith('.html')) return null;
+  const token = LINK_GAMME_TOKEN_RE.exec(`${target} ${label}`);
+  if (token) return { alias: null, pgId: parseInt(token[1], 10) };
+  const alias = target.replace(/\/$/, '').replace(/\.html$/, '');
+  return { alias: GAMME_ALIAS_RE.test(alias) ? alias : null, pgId: null };
+}
+
+const unresolvedGammeLabel = (rawLabel: string): string =>
+  `<span ${UNRESOLVED_GAMME_LINK_ATTR}>${rawLabel.replace(/\s*#LinkGamme_\d+#/g, '').trim()}</span>`;
+
+/**
+ * Retire, sans lecture en base, le lien de chaque cible de gamme écrite sans
+ * identifiant (`/pieces/{alias}`, qui répond 410) ; le libellé reste. Les liens
+ * canoniques `{alias}-{id}.html` et les pages véhicule sont laissés tels quels.
+ * Repli de `resolveGammeAliasLinks` quand la lecture des gammes échoue.
+ */
+export function unlinkGammeAliasLinks(content: string): string {
+  if (!content || !content.includes('href="/pieces/')) return content;
+  return content.replace(
+    EDITORIAL_PIECES_LINK_RE,
+    (anchor: string, target: string, rawLabel: string) => {
+      const candidate = gammeLinkCandidate(target, rawLabel);
+      if (!candidate || CANONICAL_GAMME_TARGET_RE.test(target)) return anchor;
+      return unresolvedGammeLabel(rawLabel);
+    },
+  );
+}
+
 /** Lien `<a href="/blog-pieces-auto/conseils/…">` d'un contenu éditorial : cible puis libellé. */
 const EDITORIAL_CONSEILS_LINK_RE =
   /<a\s[^>]*?href="\/blog-pieces-auto\/conseils\/([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
@@ -675,37 +724,36 @@ export class InternalLinkingService implements OnModuleInit {
    *
    * Une lecture en échec lève : l'appelant ne doit pas servir, ni mettre en
    * cache, un contenu dont les liens n'ont pas pu être vérifiés.
+   *
+   * `targets` restreint les pages visées (`GammeLinkTargets`) ; par défaut,
+   * toute gamme du catalogue.
    */
-  async resolveGammeAliasLinks(content: string): Promise<string> {
+  async resolveGammeAliasLinks(
+    content: string,
+    targets: GammeLinkTargets = 'catalogue',
+  ): Promise<string> {
     if (!content || !content.includes('href="/pieces/')) return content;
-
-    type Candidate = { alias: string | null; pgId: number | null };
-    const candidateOf = (target: string, label: string): Candidate | null => {
-      const canonical = CANONICAL_GAMME_TARGET_RE.exec(target);
-      if (canonical) return { alias: null, pgId: parseInt(canonical[1], 10) };
-      if (target.includes('/') && target.endsWith('.html')) return null;
-      const token = LINK_GAMME_TOKEN_RE.exec(`${target} ${label}`);
-      if (token) return { alias: null, pgId: parseInt(token[1], 10) };
-      const alias = target.replace(/\/$/, '').replace(/\.html$/, '');
-      return { alias: GAMME_ALIAS_RE.test(alias) ? alias : null, pgId: null };
-    };
 
     const aliases = new Set<string>();
     const pgIds = new Set<number>();
     for (const match of content.matchAll(EDITORIAL_PIECES_LINK_RE)) {
-      const candidate = candidateOf(match[1], match[2]);
+      const candidate = gammeLinkCandidate(match[1], match[2]);
       if (candidate?.alias) aliases.add(candidate.alias);
       if (candidate?.pgId != null) pgIds.add(candidate.pgId);
     }
 
-    const byAlias = await this.fetchCatalogueGammes('pg_alias', [...aliases]);
-    const byId = await this.fetchCatalogueGammes('pg_id', [...pgIds]);
+    const byAlias = await this.fetchCatalogueGammes(
+      'pg_alias',
+      [...aliases],
+      targets,
+    );
+    const byId = await this.fetchCatalogueGammes('pg_id', [...pgIds], targets);
 
     let unresolved = 0;
     const processed = content.replace(
       EDITORIAL_PIECES_LINK_RE,
       (anchor: string, target: string, rawLabel: string) => {
-        const candidate = candidateOf(target, rawLabel);
+        const candidate = gammeLinkCandidate(target, rawLabel);
         if (!candidate) return anchor;
 
         const label = rawLabel.replace(/\s*#LinkGamme_\d+#/g, '').trim();
@@ -718,7 +766,7 @@ export class InternalLinkingService implements OnModuleInit {
 
         if (!gamme) {
           unresolved++;
-          return `<span ${UNRESOLVED_GAMME_LINK_ATTR}>${label}</span>`;
+          return unresolvedGammeLabel(rawLabel);
         }
 
         const url = buildGammeUrl(gamme.pg_alias, gamme.pg_id);
@@ -861,12 +909,14 @@ export class InternalLinkingService implements OnModuleInit {
   /**
    * 📥 Gammes du catalogue pour une liste d'alias ou d'identifiants, indexées
    * par la valeur demandée. Seules les gammes principales (`pg_level` 1 ou 2)
-   * ont une page ; `pg_display` n'en décide pas. Une valeur portée par
-   * plusieurs gammes est écartée : elle ne désigne pas une page.
+   * ont une page ; `pg_display` n'en décide pas. Avec `indexable`, seules les
+   * pages R1 affichées et indexables (`GammeLinkTargets`). Une valeur portée
+   * par plusieurs gammes est écartée : elle ne désigne pas une page.
    */
   private async fetchCatalogueGammes(
     column: 'pg_alias' | 'pg_id',
     values: Array<string | number>,
+    targets: GammeLinkTargets = 'catalogue',
   ): Promise<Map<string, GammeInfo>> {
     const found = new Map<string, GammeInfo>();
     if (values.length === 0) return found;
@@ -877,11 +927,18 @@ export class InternalLinkingService implements OnModuleInit {
       });
     }
 
-    const { data, error } = await this.supabase
+    let query = this.supabase
       .from(TABLES.pieces_gamme)
       .select('pg_id, pg_name, pg_alias')
       .in('pg_level', CATALOGUE_GAMME_LEVELS)
       .in(column, values);
+    if (targets === 'indexable') {
+      query = query
+        .eq('pg_display', '1')
+        .eq('pg_relfollow', '1')
+        .eq('pg_level', '1');
+    }
+    const { data, error } = await query;
 
     if (error) {
       throw new DatabaseException({

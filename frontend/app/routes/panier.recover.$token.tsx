@@ -1,16 +1,22 @@
 /**
  * Recovery route for abandoned cart emails.
- * Redirects to the backend recovery endpoint which restores the cart
- * and redirects back to /panier.
+ * Redirects to the backend recovery endpoint which restores the cart,
+ * then back to the cart page.
+ *
+ * La page du panier est servie sur /cart : aucune route /panier n'existe.
+ * Le backend répond encore par une redirection vers /panier?… ; seuls ses
+ * paramètres (recovered, error) sont repris, la destination est fixée ici.
  */
 
 import { redirect, type LoaderFunctionArgs } from "react-router";
+
+const CART_PATH = "/cart";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const token = params.token;
 
   if (!token || token.length !== 64) {
-    return redirect("/panier?error=invalid_token");
+    return redirect(`${CART_PATH}?error=invalid_token`);
   }
 
   // Forward cookies so the backend can identify the session
@@ -30,12 +36,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     // The backend responds with a redirect to /panier?recovered=1
     const location = response.headers.get("Location");
     if (location) {
-      return redirect(location);
+      const { search } = new URL(location, "http://internal");
+      return redirect(`${CART_PATH}${search}`);
     }
 
-    return redirect("/panier?recovered=1");
+    return redirect(`${CART_PATH}?recovered=1`);
   } catch {
-    return redirect("/panier?error=recovery_failed");
+    return redirect(`${CART_PATH}?error=recovery_failed`);
   }
 }
 

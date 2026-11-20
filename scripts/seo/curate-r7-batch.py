@@ -31,10 +31,12 @@ Usage:
   python3 scripts/seo/curate-r7-batch.py --all --dry-run
   python3 scripts/seo/curate-r7-batch.py --all --skip-enrich
 
-Env vars (all optional) :
-  R7_BASE_URL       default http://localhost:3000
-  R7_ADMIN_EMAIL    default superadmin@autoparts.com
-  R7_ADMIN_PASSWORD default SuperAdmin2025! (override in secure env)
+Env vars :
+  R7_BASE_URL        optional, default http://localhost:3000
+  R7_ADMIN_EMAIL     required (except --dry-run), no default
+  R7_ADMIN_PASSWORD  required (except --dry-run), no default
+  Credentials are never written in this file: set them in the shell
+  environment. The script stops with exit code 2 if one is missing.
 
 Produced by session 2026-04-22-session-r7-full-curation — captures the
 orchestration that was first executed as ad-hoc scripts in /tmp/wave{N}-drafts.py
@@ -58,8 +60,6 @@ except ImportError:
 
 DRAFTS_DIR = Path("/opt/automecanik/rag/knowledge/web/brands")
 BASE_URL = os.environ.get("R7_BASE_URL", "http://localhost:3000")
-ADMIN_EMAIL = os.environ.get("R7_ADMIN_EMAIL", "superadmin@autoparts.com")
-ADMIN_PASSWORD = os.environ.get("R7_ADMIN_PASSWORD", "SuperAdmin2025!")
 
 DECISION_ICONS = {
     "PUBLISH": "✅",
@@ -89,12 +89,27 @@ def discover_drafts() -> list[tuple[str, int, dict, Path]]:
     return out
 
 
+def require_env(name: str) -> str:
+    """Return a required environment variable or stop with a clear message."""
+    value = os.environ.get(name, "").strip()
+    if not value:
+        print(
+            f"❌ Missing environment variable {name} (no default by design). "
+            "Export it in the shell before running without --dry-run.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    return value
+
+
 def login() -> requests.Session:
     """Create an authenticated session with the admin backend."""
+    admin_email = require_env("R7_ADMIN_EMAIL")
+    admin_password = require_env("R7_ADMIN_PASSWORD")
     sess = requests.Session()
     resp = sess.post(
         f"{BASE_URL}/auth/login",
-        json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
+        json={"email": admin_email, "password": admin_password},
         timeout=15,
     )
     try:

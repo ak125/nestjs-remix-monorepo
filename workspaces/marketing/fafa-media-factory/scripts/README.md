@@ -15,9 +15,9 @@ Chaque vidéo Fafa traverse 8 statuts. Le dossier reflète le statut courant.
 
 Les documents de la zone ne décrivent pas tous ce flux de la même façon (relevé du 18/10) :
 
-- **Qui pose `content_approved`** : l'owner, comme le dit cette table. La règle AI2 du vault (`ledger/rules/rules-ai-cos.md` :
-  « L'IA propose, analyse, recommande. L'humain valide, decide, engage. »), à laquelle renvoie ADR-036 (`accepted`), réserve la
-  validation à un humain ; le manifeste du pilote réserve de même `render_approved` à l'owner (« render_approved reste false tant
+- **Qui pose `content_approved`** : l'owner, comme le dit cette table. Le principe P31 du journal des principes
+  (`.claude/governance/journal-des-principes.md`, qui reprend AI2 de `rules-ai-cos` par ADR-129 : « un agent IA propose, analyse et
+  recommande ; il ne s'accorde jamais lui-même une validation ») réserve cette validation à l'owner (contradiction E19, mandat AR-4) ; le manifeste du pilote réserve de même `render_approved` à l'owner (« render_approved reste false tant
   que l'owner n'a pas inspecté ce MP4 exact », `manifests/renders/fafa-plaquettes-frein-001.json:8`). Depuis son réalignement du
   18/10, `fafa-brand-safety-reviewer` rend une proposition et ne pose aucun drapeau ; la description du schéma (l.45) le dit aussi.
   Le schéma n'exige qu'une chaîne non vide dans `content_approved_by` (`governance/approval-record.schema.json:79-86`) : il ne

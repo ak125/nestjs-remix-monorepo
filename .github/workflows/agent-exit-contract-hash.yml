@@ -1,13 +1,20 @@
 name: agent-exit-contract-hash
 
-# Verify the two monorepo AEC copies match the canonical distribution_sha256
-# published by ak125/governance-vault in 99-meta/canon-hashes.json (key `aec`).
-# Source: AEC §"Distribution canonique".
+# Copies de l'AEC dans le monorepo : chacune est déclarée au manifeste
+# .spec/00-canon/canon-distribution/canon-hashes.json (clé `aec`) et conforme à sa
+# source du même dossier. Contrôle local, sans réseau : scripts/ci/check-aec-hash.sh
+# appelle scripts/canon/compute-canon-hashes.py --check.
+# Ni cron ni repository_dispatch : la source, le manifeste et les copies sont dans ce
+# dépôt, un écart ne peut naître que d'un commit, que `push` et `pull_request` voient.
+# Source : AEC §« Distribution canonique ». Étape 2 de la sortie du vault
+# (docs/audit/mandat-ar-20261116/inventaire-vault-et-plan.md §2).
 
 on:
   push:
     branches: [main]
     paths:
+      - ".spec/00-canon/canon-distribution/**"
+      - "scripts/canon/compute-canon-hashes.py"
       - ".claude/canon-mirrors/agent-exit-contract.md"
       - "workspaces/seo-batch/.claude/canon-mirrors/agent-exit-contract.md"
       - "workspaces/marketing/.claude/canon-mirrors/agent-exit-contract.md"
@@ -15,16 +22,13 @@ on:
       - ".github/workflows/agent-exit-contract-hash.yml"
   pull_request:
     paths:
+      - ".spec/00-canon/canon-distribution/**"
+      - "scripts/canon/compute-canon-hashes.py"
       - ".claude/canon-mirrors/agent-exit-contract.md"
       - "workspaces/seo-batch/.claude/canon-mirrors/agent-exit-contract.md"
       - "workspaces/marketing/.claude/canon-mirrors/agent-exit-contract.md"
       - "scripts/ci/check-aec-hash.sh"
       - ".github/workflows/agent-exit-contract-hash.yml"
-  schedule:
-    # Daily at 03:30 UTC — catch drift between merges.
-    - cron: "30 3 * * *"
-  repository_dispatch:
-    types: [canon-updated]
   workflow_dispatch:
 
 permissions:

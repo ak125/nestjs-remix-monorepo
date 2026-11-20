@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
+import { assertGammeAlias, resolveConfinedPath } from '../utils/rag-paths.util';
 
 /**
  * Merge-patch structure for enriching an existing RAG .md file.
@@ -55,6 +55,8 @@ export class PdfRagClassifierService {
     truthLevel: string,
     sourceRef: string,
   ): Promise<RagMergePatch> {
+    assertGammeAlias(pgAlias);
+
     const apiKey = this.config.get<string>('GROQ_API_KEY');
     if (!apiKey) {
       this.logger.log(
@@ -66,9 +68,9 @@ export class PdfRagClassifierService {
       this.config.get<string>('GROQ_MODEL') || 'llama-3.3-70b-versatile';
 
     // Load existing RAG .md YAML frontmatter as schema reference (internal file only)
-    const ragPath = join(this.RAG_GAMMES_DIR, `${pgAlias}.md`);
+    const ragPath = resolveConfinedPath(this.RAG_GAMMES_DIR, `${pgAlias}.md`);
     let existingYaml = '';
-    if (existsSync(ragPath)) {
+    if (ragPath) {
       const raw = readFileSync(ragPath, 'utf-8');
       const yamlEnd = raw.indexOf('\n---', 4);
       existingYaml =

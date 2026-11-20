@@ -82,10 +82,10 @@ export const EDITORIAL_AUTHORITY_SINKS: readonly EditorialAuthoritySink[] = [
   },
   {
     table: "__seo_r2_keyword_plan",
-    writer: "R2EnricherService",
-    evidence: "in_app_writer",
+    writer: "",
+    evidence: "no_in_app_writer",
     servedRatchetTracked: false,
-    note: "B3 — the exact table the served ratchet excludes by design.",
+    note: "B3 CLOSED (mandat BI) — R2EnricherService deleted, no in-app writer left. The exact table the served ratchet excludes by design.",
   },
   {
     table: "__seo_r3_keyword_plan",

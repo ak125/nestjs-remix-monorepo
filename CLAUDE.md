@@ -2,7 +2,8 @@
 
 Contrat commun du dépôt ; `AGENTS.md` guide les agents qui ne le chargent pas
 nativement. Les règles plus proches précisent leur seul périmètre. La gouvernance
-canonique reste dans le dépôt séparé `ak125/governance-vault`.
+vit dans ce dépôt (décision 72, voir §Gouvernance) ; `ak125/governance-vault`
+devient une archive.
 
 ## Contrat d'exécution — 9 invariants
 
@@ -99,17 +100,28 @@ canonique reste dans le dépôt séparé `ak125/governance-vault`.
 
 ## Gouvernance
 
-- Vault séparé : `/opt/automecanik/governance-vault/`. Aucune nouvelle ADR, rule,
-  policy ou evidence-pack canonique dans ce monorepo ; ne jamais écrire dans
-  `app/.local/governance-vault/`. Changement vault = PR signée, fusion humaine.
-- ADR normative seulement si `accepted` et non remplacée. Un écart avec le code
-  est à signaler ; le code observé n'accorde pas une dérogation de sécurité.
+- Le monorepo est la seule source (décision 72 ; ADR-138 du vault, PR
+  ak125/governance-vault#422). En vigueur = fusionné sur `main` :
+  `.claude/governance/journal-des-principes.md` (#2093, #2107) et les contrats de
+  département de `.spec/00-canon/ai-registry/agent-operating-map.yaml`, vérifiés
+  par schéma en CI. Un principe nouveau s'écrit au journal par PR ; pas de
+  nouvelle ADR.
+- Fusion : trois circuits (`scripts/ci/merge-circuit.mjs`, workflow
+  `🚦 Circuit de fusion`) ; leur état d'application est dans P20 du journal.
+  Un agent ne fusionne jamais et n'arme jamais l'auto-fusion.
+- `ak125/governance-vault` : archive en lecture seule après déplacement (décision
+  73, plan `docs/audit/mandat-ar-20261116/inventaire-vault-et-plan.md`). Une ADR
+  du vault explique une décision ; elle n'est plus normative par elle-même. Jusqu'à
+  l'archivage, ses PR restent signées et fusionnées par l'owner ; ne jamais écrire
+  dans `app/.local/governance-vault/`. Un écart entre une règle et le code est à
+  signaler ; le code observé n'accorde pas une dérogation de sécurité.
 - Repository Control Plane : L1 `audit/registry/*.json` + L2
   `.spec/00-canon/repository-registry/*.yaml` = sources ; L3 canonical = projection.
   Voir `packages/registry/README.md`. Les documents legacy voisins ne deviennent
   pas normatifs par proximité. L'AI Operating Map
-  `.spec/00-canon/ai-registry/agent-operating-map.yaml` est une référence, pas un
-  orchestrateur ni une preuve de capacités actives.
+  `.spec/00-canon/ai-registry/agent-operating-map.yaml` : ses contrats de
+  département sont en vigueur ; elle n'est ni un orchestrateur ni une preuve de
+  capacités actives.
 - Gardes existantes : `.ast-grep/rules/`, `.husky/pre-commit`,
   `scripts/agents/validate-agents-md.sh`. Ne pas inscrire IP, identifiant sensible
   ou clé dans les instructions d'agents.

@@ -15,39 +15,37 @@ if [ -e "$GIT_DIR_RESOLVED/MERGE_HEAD" ] \
   exit 0
 fi
 
-# Block manual edits to canon mirrors (ADR-061 §3 — canon mirrors are READ-ONLY).
-# Canon mirrors (`.claude/canon-mirrors/<canon>.md` + workspaces) are synced by
-# cron VPS DEV (governance-vault/_scripts/cron-sync-canon-mirrors.sh). Manual edits
-# break the SoT contract — vault canon must remain the only source of truth.
+# Block manual edits to canon copies (journal des principes, P30).
+# Each distributed canon (AEC, brand voice) has one editable source, under
+# `.spec/00-canon/canon-distribution/`. Its manifest and its copies
+# (`.claude/canon-mirrors/<canon>.md` + workspaces) are generated from that source by
+# `scripts/canon/compute-canon-hashes.py --write`, in the PR that edits the source.
+# A copy is never edited by hand: fix the source, then regenerate.
 #
-# Le hook est self-consistent : il appelle `sync_canon_mirrors.py --check` qui
-# compare les fichiers staged à la distribution canon vault. Si match (cas cron :
-# le --write vient juste d'aligner), le check pass. Si manuel (différent du canon),
-# le check fail et le commit est bloqué.
+# The hook runs the check CI runs (canon-distribution.yml), local and without
+# network: `--check` compares the manifest and the copies of the working tree to the
+# sources. A regenerated copy passes; a hand-edited one fails and the commit is
+# blocked. It reads the working tree, not the index: stage what you checked.
 #
-# Tolérance : si vault inaccessible localement (`$GOVERNANCE_VAULT_PATH`),
-# warn-only (CI authoritatif).
-CANON_MIRRORS_CHANGED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(^|/)\.claude/canon-mirrors/.+\.md$' || true)
-if [ -n "$CANON_MIRRORS_CHANGED" ]; then
-  VAULT_PATH="${GOVERNANCE_VAULT_PATH:-/opt/automecanik/governance-vault}"
-  if [ ! -f "$VAULT_PATH/_scripts/sync_canon_mirrors.py" ]; then
-    echo "WARNING: canon-mirrors edits staged but vault sync script not found at $VAULT_PATH."
-    echo "Cannot verify locally — CI will run the authoritative check."
-  else
-    if ! python3 "$VAULT_PATH/_scripts/sync_canon_mirrors.py" --check --monorepo . >/dev/null 2>&1; then
-      echo ""
-      echo "ERROR (ADR-061 §3): canon-mirrors content drift detected vs vault canon."
-      echo ""
-      echo "Canon mirrors are READ-ONLY. Manual edits are forbidden."
-      echo "To update a canon, edit the vault source (ledger/rules/rules-*.md) and run:"
-      echo "  bash $VAULT_PATH/_scripts/cron-sync-canon-mirrors.sh"
-      echo ""
-      echo "Files staged:"
-      echo "$CANON_MIRRORS_CHANGED" | sed 's|^|  - |'
-      echo ""
-      echo "See https://github.com/ak125/governance-vault/blob/main/ledger/decisions/adr/ADR-061-workspace-governance.md §3"
-      exit 1
-    fi
+# Tolerance: without python3 on the machine, warn only (CI is authoritative).
+CANON_CHANGED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(^|/)\.claude/canon-mirrors/.+\.md$|^\.spec/00-canon/canon-distribution/|^scripts/canon/compute-canon-hashes\.py$' || true)
+if [ -n "$CANON_CHANGED" ]; then
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "WARNING: canon files staged but python3 not found."
+    echo "Cannot verify locally — CI (canon-distribution) will run the authoritative check."
+  elif ! CANON_CHECK_OUT=$(python3 scripts/canon/compute-canon-hashes.py --check 2>&1); then
+    echo ""
+    echo "ERROR: canon manifest or copies differ from their sources (journal des principes, P30)."
+    echo ""
+    echo "$CANON_CHECK_OUT" | sed 's|^|  |'
+    echo ""
+    echo "Canon copies are READ-ONLY. Manual edits are forbidden."
+    echo "To update a canon, edit its source under .spec/00-canon/canon-distribution/ and run:"
+    echo "  python3 scripts/canon/compute-canon-hashes.py --write"
+    echo ""
+    echo "Files staged:"
+    echo "$CANON_CHANGED" | sed 's|^|  - |'
+    exit 1
   fi
 fi
 
@@ -68,15 +66,15 @@ fi
 BLOCKED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(\.local/)?governance-vault/' || true)
 if [ -n "$BLOCKED" ]; then
   echo ""
-  echo "ERROR (ADR-015): Staged files under governance-vault/ (canon lives in a separate repo)"
+  echo "ERROR: Staged files under governance-vault/ (a copy of the vault is never committed here)"
   echo ""
-  echo "Governance vault canonical path: /opt/automecanik/governance-vault/"
-  echo "Repo: https://github.com/ak125/governance-vault"
+  echo "The vault is a separate repository, kept as an archive: https://github.com/ak125/governance-vault"
+  echo "Governance lives in this repo: .claude/governance/journal-des-principes.md (CLAUDE.md, Gouvernance)"
   echo ""
-  echo "Move these files to the canonical vault and commit there:"
+  echo "Unstage these files. A new principle goes to the journal, by PR:"
   echo "$BLOCKED" | sed 's/^/  - /'
   echo ""
-  echo "See ADR-015: ak125/governance-vault/ledger/decisions/adr/ADR-015-vault-single-source-of-truth.md"
+  echo "Origin of this guard: ADR-015 (vault archive)."
   exit 1
 fi
 

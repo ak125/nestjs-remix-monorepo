@@ -15,6 +15,7 @@ import {
   DomainValidationException,
   ErrorCodes,
 } from '@common/exceptions';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 /**
  * 📦 BlogArticleDataService - Accès aux données articles
@@ -352,7 +353,7 @@ export class BlogArticleDataService {
       // Filtre par recherche si spécifié
       if (options.search) {
         query = query.or(
-          `ba_title.ilike.%${options.search}%,ba_content.ilike.%${options.search}%`,
+          `ba_title.ilike.${ilikeContains(options.search)},ba_content.ilike.${ilikeContains(options.search)}`,
         );
       }
 
@@ -514,7 +515,7 @@ export class BlogArticleDataService {
         .from(TABLES.blog_advice)
         .select('*', { count: 'exact' })
         .or(
-          `ba_title.ilike.%${query}%,ba_content.ilike.%${query}%,ba_preview.ilike.%${query}%`,
+          `ba_title.ilike.${ilikeContains(query)},ba_content.ilike.${ilikeContains(query)},ba_preview.ilike.${ilikeContains(query)}`,
         )
         .range(offset, offset + limit - 1);
 

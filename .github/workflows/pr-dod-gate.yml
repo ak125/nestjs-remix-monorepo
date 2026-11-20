@@ -1,7 +1,8 @@
 name: 🧾 PR Definition-of-Done gate
 
-# Enforces the canonical Engineering Definition of Done (vault rule
-# rules-engineering-definition-of-done, PR #299) at the PR boundary: a PR must
+# Enforces the canonical Engineering Definition of Done
+# (.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md) at the
+# PR boundary: a PR must
 # carry the DoD self-evaluation section with all 9 invariants (DoD1..DoD9)
 # checked `[x]` or marked `N/A`. Escape hatch: label `dod-skip-justified` with
 # >= 2 approvals (Patch 6 of the Repository Control Plane Operational plan).
@@ -49,6 +50,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
+          package-manager-cache: false
 
       - name: 🔢 Count APPROVED reviews
         id: approvals

@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { ilikeContains } from '@common/utils/postgrest-filter.util';
 
 /** Typed row returned by Supabase for xtr_supplier table */
 interface SupplierRow {
@@ -62,7 +63,7 @@ export class SuppliersService extends SupabaseBaseService {
       // Appliquer le filtre de recherche sur les colonnes réelles
       if (search) {
         query = query.or(
-          `spl_name.ilike.%${search}%,spl_alias.ilike.%${search}%`,
+          `spl_name.ilike.${ilikeContains(search)},spl_alias.ilike.${ilikeContains(search)}`,
         );
       }
 
@@ -221,42 +222,6 @@ export class SuppliersService extends SupabaseBaseService {
       }));
     } catch (error) {
       this.logger.error('Erreur récupération fournisseurs produit:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Désactiver un fournisseur et ses liaisons
-   */
-  async deactivateSupplier(id: number): Promise<void> {
-    this.logger.log(`Désactivation fournisseur ${id}`);
-
-    try {
-      // Désactiver le fournisseur
-      const { error: supplierError } = await this.supabase
-        .from(TABLES.xtr_supplier)
-        .update({
-          is_active: false,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('spl_id', id);
-
-      if (supplierError) throw supplierError;
-
-      // Désactiver ses liaisons
-      const { error: linkError } = await this.supabase
-        .from(TABLES.xtr_supplier_link_pm)
-        .update({
-          is_active: false,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('supplier_id', id);
-
-      if (linkError) throw linkError;
-
-      this.logger.log(`Fournisseur ${id} désactivé avec succès`);
-    } catch (error) {
-      this.logger.error('Erreur désactivation fournisseur:', error);
       throw error;
     }
   }

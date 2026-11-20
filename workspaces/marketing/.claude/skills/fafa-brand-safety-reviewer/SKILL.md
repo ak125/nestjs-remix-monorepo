@@ -12,7 +12,7 @@ description: Use when checking a Fafa video folder (brief, script, claims, evide
 > lecture ci-dessous). `.spec/00-canon/video-governance-p0.md` est un document legacy : contexte seulement, jamais une seconde règle.
 >
 > Le skill rend une proposition. Il ne pose aucun drapeau d'approbation et ne déplace aucun dossier : l'owner seul pose
-> `content_approved` (règle AI2 du vault, `ledger/rules/rules-ai-cos.md`, renvoyée par ADR-036 ; `fafa-media-factory/scripts/README.md`).
+> `content_approved` (principe P31 de `.claude/governance/journal-des-principes.md`, qui reprend AI2 de `rules-ai-cos` par ADR-129 ; table de `fafa-media-factory/scripts/README.md`) (contradiction E19, mandat AR-4).
 
 Chemins : `backend/…` et `frontend/…` depuis la racine du monorepo ; `fafa-media-factory/…` depuis ce workspace.
 

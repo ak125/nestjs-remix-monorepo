@@ -82,10 +82,13 @@ export class GammeRestRpcV2Controller {
 
       const result = await this.responseBuilder.buildRpcV2Response(pgId);
 
-      // Cache the fully-built response
-      this.cacheService
-        .set(cacheKey, result, this.RESPONSE_CACHE_TTL)
-        .catch(() => {});
+      // Cache the fully-built response — sauf liens de gamme non vérifiés
+      // (repli de la résolution) : la requête suivante les résout à nouveau.
+      if (result.performance?.gamme_links_degraded !== 1) {
+        this.cacheService
+          .set(cacheKey, result, this.RESPONSE_CACHE_TTL)
+          .catch(() => {});
+      }
 
       const cacheInfo = '🔄 RPC';
       this.logger.log(

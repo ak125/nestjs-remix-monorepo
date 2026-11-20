@@ -18,15 +18,40 @@
  * these batches (PricingRepository.rollbackBatch). Prices are never mutated.
  *
  * The eligibility (classifyDeactivationRow) mirrors the SQL function's guards and
- * the impact projection (projectQuarantineImpact) mirrors the storefront and
- * quarantine predicates; both are pure, unit-tested functions (no DB).
+ * the impact projection (projectQuarantineImpact) mirrors the quarantine predicate;
+ * both are pure, unit-tested functions (no DB).
+ *
+ * Decision 51 (owner, 2026-11-15/16), amended by decision 118 (2026-11-17),
+ * on top of the SQL guards:
+ *  - « losing sale » is measured with the single definition of sellable
+ *    (`@database/services/vendable`: dispo '1', '2' or '3', not FROZEN, piece
+ *    displayed, priced) — the 5 % guard and the reports count the same thing
+ *    as the cart;
+ *  - freshness: a DISCONTINUED_TARIFF row whose supplier (pri_frs) has not had
+ *    its first complete update only ALERTS (never committed), see
+ *    `../config/supplier-sale-rules.ts`;
+ *  - guard: a lot that would take more than 5 % of the brand's sellable pieces
+ *    out of sale stops (recorded FAILED batch, operation
+ *    DISPO_DEACTIVATION_GUARD_HALT) and waits for the owner's acknowledgement.
  */
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
+import { estVendable } from '@database/services/vendable';
 import {
   DISPO_DEACTIVATION_OPERATION,
   PricingRepository,
   type SellabilityRow,
 } from './pricing.repository';
+import {
+  OPERATION_ARRET_GARDE_FOU,
+  evaluerGardeFou,
+  fraicheurActive,
+  type GardeFouSortie,
+} from '../config/supplier-sale-rules';
 
 export const DEACTIVATION_REASONS = [
   'DISCONTINUED_TARIFF',
@@ -43,6 +68,16 @@ export interface DeactivationRequest {
   supplierId: string;
   rows: { ref: string; reason: DeactivationReason }[];
   operator?: string | null;
+}
+
+/**
+ * Owner acknowledgement of a guard halt (decision 51 : « s'arrête et attend
+ * Marwane »). Accepted only if it names the FAILED halt batch of the same brand
+ * recorded for the SAME number of pieces leaving sale as the current projection.
+ */
+export interface GuardAcknowledgement {
+  haltBatchId: string;
+  approvedBy: string;
 }
 
 export type DeactivationOutcome =
@@ -78,7 +113,12 @@ export function classifyDeactivationRow(
 
 const rowKey = (pieceId: number, priType: string) => `${pieceId}:${priType}`;
 
-/** Storefront isSellable for one row: priced AND pri_dispo IN ('1','2','3'). */
+/**
+ * Served quarantine/storefront predicate for one row: priced AND pri_dispo IN
+ * ('1','2','3'), whatever the FROZEN state or piece_display. Kept ONLY to mirror
+ * catalog_display_quarantine (SQL, unchanged); « losing sale » uses the single
+ * definition (estVendable, decisions 51 and 118).
+ */
 function isSellableRow(r: SellabilityRow): boolean {
   return (
     r.venteTtc != null &&
@@ -96,7 +136,7 @@ function isQuarantinable(rows: SellabilityRow[]): boolean {
 }
 
 export interface QuarantineImpact {
-  /** Pieces sellable today that no row keeps sellable after the withdrawal. */
+  /** Pieces sellable today (decision 51) that no row keeps sellable after the withdrawal. */
   piecesLosingSale: number;
   /** Visible brand pieces that catalog_display_quarantine would newly hide. */
   newlyQuarantinable: number;
@@ -104,12 +144,14 @@ export interface QuarantineImpact {
 
 /**
  * Pure projection of the withdrawal's catalog effect: applies pri_dispo '0' to the
- * withdrawn rows and compares each piece's state before/after.
+ * withdrawn rows and compares each piece's state before/after. `displayed` is
+ * piece_display (any brand), input of the decision-51 sellable definition.
  */
 export function projectQuarantineImpact(
   rowsByPiece: Map<number, SellabilityRow[]>,
   visibleBrand: Map<number, boolean>,
   withdrawn: Set<string>,
+  displayed: Map<number, boolean>,
 ): QuarantineImpact {
   const impact: QuarantineImpact = {
     piecesLosingSale: 0,
@@ -119,7 +161,14 @@ export function projectQuarantineImpact(
     const after = before.map((r) =>
       withdrawn.has(rowKey(pieceId, r.priType)) ? { ...r, dispo: '0' } : r,
     );
-    if (before.some(isSellableRow) && !after.some(isSellableRow))
+    const sellable = (r: SellabilityRow) =>
+      estVendable({
+        dispo: r.dispo,
+        etatTarif: r.state,
+        venteTtc: r.venteTtc,
+        pieceAffichee: displayed.get(pieceId),
+      });
+    if (before.some(sellable) && !after.some(sellable))
       impact.piecesLosingSale++;
     if (
       visibleBrand.get(pieceId) === true &&
@@ -144,6 +193,17 @@ export interface DeactivationReport {
   skippedStateReason: number;
   rowsWithoutPiece: number;
   piecesAffected: number;
+  /**
+   * DISCONTINUED_TARIFF rows held back because their supplier's freshness
+   * condition is not active yet (decision 51 : alert only), per pri_frs label.
+   */
+  freshnessAlerts: { supplierLabel: string; rows: number }[];
+}
+
+export interface DeactivationAssessment {
+  report: DeactivationReport;
+  impact: QuarantineImpact;
+  guard: GardeFouSortie;
 }
 
 interface DeactivationCommitRow {
@@ -186,7 +246,9 @@ export class PriceDeactivationService {
       skippedStateReason: 0,
       rowsWithoutPiece: 0,
       piecesAffected: 0,
+      freshnessAlerts: [],
     };
+    const alerts = new Map<string, number>();
 
     // First occurrence of a ref wins; a bad reason is rejected before any read.
     const wanted = new Map<string, DeactivationReason>();
@@ -223,6 +285,14 @@ export class PriceDeactivationService {
             const key = rowKey(row.pieceId, row.priType);
             if (seen.has(key)) break;
             seen.add(key);
+            if (
+              reason === 'DISCONTINUED_TARIFF' &&
+              !fraicheurActive(row.supplierLabel)
+            ) {
+              const label = row.supplierLabel ?? '(sans libellé)';
+              alerts.set(label, (alerts.get(label) ?? 0) + 1);
+              break;
+            }
             report.eligible++;
             // explicit keys (no dynamic property-name write from a remote value)
             if (reason === 'DISCONTINUED_TARIFF')
@@ -252,13 +322,16 @@ export class PriceDeactivationService {
       }
     }
     report.piecesAffected = new Set(commitRows.map((r) => r.piece_id_i)).size;
+    report.freshnessAlerts = [...alerts]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([supplierLabel, rows]) => ({ supplierLabel, rows }));
     return { report, commitRows };
   }
 
-  /** Read-only projection, including the catalog effect. NO write. */
-  async dryRun(
+  /** Classification + catalog effect + 5 % guard. Reads only. */
+  private async assess(
     req: DeactivationRequest,
-  ): Promise<{ report: DeactivationReport; impact: QuarantineImpact }> {
+  ): Promise<DeactivationAssessment & { commitRows: DeactivationCommitRow[] }> {
     const { report, commitRows } = await this.project(req);
     const pieceIds = [...new Set(commitRows.map((r) => r.piece_id_i))];
     const scope = await this.repo.fetchSellabilityScope(
@@ -269,7 +342,26 @@ export class PriceDeactivationService {
       scope.rows,
       scope.visibleBrand,
       new Set(commitRows.map((r) => rowKey(r.piece_id_i, r.pri_type))),
+      scope.displayed,
     );
+    const guard = evaluerGardeFou(
+      impact.piecesLosingSale,
+      impact.piecesLosingSale > 0
+        ? await this.repo.countSellablePieces(req.supplierId)
+        : 0,
+    );
+    return { report, impact, guard, commitRows };
+  }
+
+  /** Read-only projection, including the catalog effect and the guard. NO write. */
+  async dryRun(req: DeactivationRequest): Promise<DeactivationAssessment> {
+    const { report, impact, guard } = await this.assess(req);
+    for (const a of report.freshnessAlerts) {
+      this.logger.warn(
+        `[PRICING_DEACTIVATE] fraîcheur inactive supplier=${req.supplierId} frs=${a.supplierLabel} ` +
+          `rows=${a.rows} : alerte seulement (décision 51)`,
+      );
+    }
     this.logger.log(
       `[PRICING_DEACTIVATE] dry-run supplier=${req.supplierId} refs=${report.requestedRefs} ` +
         `eligibleRows=${report.eligible} (discontinued=${report.byReason.DISCONTINUED_TARIFF} ` +
@@ -277,13 +369,54 @@ export class PriceDeactivationService {
         `losingSale=${impact.piecesLosingSale} newlyQuarantinable=${impact.newlyQuarantinable} ` +
         `skipFM=${report.skippedFrozenManual} skipNotSellable=${report.skippedNotSellable} ` +
         `skipReason=${report.skippedStateReason} missing=${report.missingRefs} ` +
-        `rejected=${report.rejectedRefs} dup=${report.duplicateRefs}`,
+        `rejected=${report.rejectedRefs} dup=${report.duplicateRefs} ` +
+        `guard=${guard.sortantes}/${guard.vendablesAvant} halt=${guard.arret}`,
     );
-    return { report, impact };
+    return { report, impact, guard };
+  }
+
+  /**
+   * Accept an owner acknowledgement only if it names the halt batch recorded for
+   * this brand and this exact projection (a changed lot needs a new halt).
+   */
+  private async checkAcknowledgement(
+    req: DeactivationRequest,
+    guard: GardeFouSortie,
+    ack: GuardAcknowledgement | undefined,
+  ): Promise<boolean> {
+    if (!ack) return false;
+    if (
+      typeof ack.haltBatchId !== 'string' ||
+      typeof ack.approvedBy !== 'string' ||
+      !ack.approvedBy.trim()
+    ) {
+      throw new BadRequestException(
+        'guardAcknowledgement requires haltBatchId and approvedBy',
+      );
+    }
+    const halt = await this.repo.getBatchSummary(ack.haltBatchId);
+    if (
+      !halt ||
+      halt.operation !== OPERATION_ARRET_GARDE_FOU ||
+      halt.status !== 'FAILED' ||
+      halt.supplierId !== req.supplierId ||
+      halt.failedRows !== guard.sortantes
+    ) {
+      throw new ConflictException(
+        `guardAcknowledgement: batch ${ack.haltBatchId} is not the guard halt of this lot ` +
+          `(brand ${req.supplierId}, ${guard.sortantes} pieces leaving sale) — re-run the commit to record a new halt`,
+      );
+    }
+    return true;
   }
 
   /** Commit (owner-gated by `confirm:true`): dispo-only withdrawal, chunked, reversible. */
-  async commit(req: DeactivationRequest & { confirm?: boolean }): Promise<{
+  async commit(
+    req: DeactivationRequest & {
+      confirm?: boolean;
+      guardAcknowledgement?: GuardAcknowledgement;
+    },
+  ): Promise<{
     batchId: string;
     totals: {
       deactivated: number;
@@ -292,13 +425,53 @@ export class PriceDeactivationService {
       rejected: number;
     };
     report: DeactivationReport;
+    impact: QuarantineImpact;
+    guard: GardeFouSortie;
+    acknowledgedBy: string | null;
   }> {
     if (req.confirm !== true) {
       throw new BadRequestException(
         'deactivation commit requires confirm:true',
       );
     }
-    const { report, commitRows } = await this.project(req);
+    const { report, impact, guard, commitRows } = await this.assess(req);
+    let acknowledgedBy: string | null = null;
+    if (guard.arret) {
+      if (
+        await this.checkAcknowledgement(req, guard, req.guardAcknowledgement)
+      ) {
+        acknowledgedBy = req.guardAcknowledgement!.approvedBy;
+        this.logger.warn(
+          `[PRICING_DEACTIVATE] garde-fou levé par ${acknowledgedBy} (lot arrêté ` +
+            `${req.guardAcknowledgement!.haltBatchId}) supplier=${req.supplierId} ` +
+            `sortantes=${guard.sortantes}/${guard.vendablesAvant}`,
+        );
+      } else {
+        const haltBatchId = await this.repo.createActivationBatch({
+          supplierId: req.supplierId,
+          operator: req.operator ?? null,
+          operation: OPERATION_ARRET_GARDE_FOU,
+        });
+        await this.repo.setBatchStatus(haltBatchId, 'FAILED', {
+          failed_rows: guard.sortantes,
+          committed_rows: 0,
+          completed_at: new Date().toISOString(),
+        });
+        this.logger.warn(
+          `[PRICING_DEACTIVATE] ARRÊT garde-fou supplier=${req.supplierId} haltBatchId=${haltBatchId} ` +
+            `sortantes=${guard.sortantes}/${guard.vendablesAvant} (${(guard.part * 100).toFixed(2)} % > ` +
+            `${(guard.seuil * 100).toFixed(0)} %) — attend l'accord de l'owner`,
+        );
+        throw new ConflictException({
+          message:
+            `garde-fou décision 51 : ce lot ferait sortir ${guard.sortantes} pièces sur ` +
+            `${guard.vendablesAvant} vendables (> ${(guard.seuil * 100).toFixed(0)} %) ; ` +
+            `lot arrêté, accord de l'owner requis (guardAcknowledgement)`,
+          haltBatchId,
+          guard,
+        });
+      }
+    }
     const batchId = await this.repo.createActivationBatch({
       supplierId: req.supplierId,
       operator: req.operator ?? null,
@@ -348,7 +521,7 @@ export class PriceDeactivationService {
       );
       throw e;
     }
-    return { batchId, totals, report };
+    return { batchId, totals, report, impact, guard, acknowledgedBy };
   }
 
   /** LIFO, dispo-only rollback of a withdrawal batch (restores prior pri_dispo, clears the reason). */

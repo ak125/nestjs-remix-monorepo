@@ -1,0 +1,153 @@
+name: canon-publish
+
+# Annonce aux dépôts consommateurs (wiki, raw) qu'un canon distribué a changé sur `main`.
+# Ils relancent alors leur contrôle `agent-exit-contract-hash` (événement
+# `repository_dispatch`, type `canon-updated`) et passent au rouge jusqu'à la PR qui
+# met leur copie à jour.
+#
+# Porté de ak125/governance-vault, .github/workflows/canon-publish.yml (main
+# b2e712791bee). Étape 3 de la sortie du vault
+# (docs/audit/mandat-ar-20261116/inventaire-vault-et-plan.md §2). Trois différences :
+#   - le monorepo ne s'annonce rien à lui-même : ses copies sont contrôlées sur place
+#     par canon-distribution.yml ;
+#   - les annonces sont tirées du manifeste : un couple (canon, dépôt) n'est annoncé
+#     que si son `distribution_sha256` a changé depuis le commit précédent de `main`
+#     (scripts/canon/compute-canon-hashes.py --dispatch-plan) ;
+#   - le contrôle de PR n'est pas repris ici : c'est canon-distribution.yml.
+#
+# Identifiants : CANON_APP_ID et CANON_APP_PRIVATE_KEY, ceux d'une GitHub App installée
+# sur chaque dépôt consommateur avec la permission `Contents: write` (exigée par
+# POST /repos/{owner}/{repo}/dispatches). Lus dans l'environnement `canon-publish`,
+# à restreindre à `main` ; des secrets de dépôt du même nom conviennent aussi. Sans
+# eux, le job d'annonce ÉCHOUE : il ne se saute pas en silence.
+#
+# Lancement manuel : annonce le canon nommé à tous ses dépôts, sans regarder le diff.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".spec/00-canon/canon-distribution/**"
+  workflow_dispatch:
+    inputs:
+      canon:
+        description: "Clé du canon à annoncer à tous ses dépôts consommateurs"
+        required: true
+        default: aec
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canon-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+# Chaque étape `run:` s'exécute en `bash --noprofile --norc -eo pipefail {0}`.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  plan:
+    name: canon-publish (plan)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      targets: ${{ steps.plan.outputs.targets }}
+    steps:
+      - name: Seulement depuis main
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          if [ "${REF}" != "refs/heads/main" ]; then
+            echo "::error::canon-publish ne s'exécute que sur main (référence : ${REF})."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Manifeste et copies conformes aux sources
+        run: python3 scripts/canon/compute-canon-hashes.py --check
+
+      - name: Annonces à envoyer
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          CANON_INPUT: ${{ inputs.canon }}
+          MANIFEST: .spec/00-canon/canon-distribution/canon-hashes.json
+        run: |
+          if [ "${EVENT}" = "workflow_dispatch" ]; then
+            targets="$(python3 scripts/canon/compute-canon-hashes.py --dispatch-plan --canon "${CANON_INPUT}")"
+          else
+            git fetch --no-tags --depth=1 origin "${BEFORE}"
+            if git cat-file -e "${BEFORE}:${MANIFEST}" 2>/dev/null; then
+              git show "${BEFORE}:${MANIFEST}" > "${RUNNER_TEMP}/manifest-before.json"
+            else
+              # Le commit précédent n'avait pas de manifeste : tout canon est nouveau.
+              echo '{"canons": {}}' > "${RUNNER_TEMP}/manifest-before.json"
+            fi
+            targets="$(python3 scripts/canon/compute-canon-hashes.py --dispatch-plan --before "${RUNNER_TEMP}/manifest-before.json")"
+          fi
+          echo "targets=${targets}" >> "$GITHUB_OUTPUT"
+          echo "Annonces à envoyer : ${targets}" | tee -a "$GITHUB_STEP_SUMMARY"
+
+  dispatch:
+    name: canon-publish (${{ matrix.target.canon }} vers ${{ matrix.target.repo }})
+    needs: plan
+    if: needs.plan.outputs.targets != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: canon-publish
+    permissions: {}
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.plan.outputs.targets) }}
+    steps:
+      - name: Identifiants de l'App présents
+        env:
+          APP_ID: ${{ secrets.CANON_APP_ID }}
+          APP_KEY: ${{ secrets.CANON_APP_PRIVATE_KEY }}
+          TARGET_REPO: ${{ matrix.target.repo }}
+        run: |
+          if [ -z "${APP_ID}" ] || [ -z "${APP_KEY}" ]; then
+            echo "::error::CANON_APP_ID ou CANON_APP_PRIVATE_KEY absent : annonce canon-updated impossible vers ${TARGET_REPO}."
+            exit 1
+          fi
+
+      - name: Nom court du dépôt consommateur
+        id: parse
+        env:
+          TARGET_REPO: ${{ matrix.target.repo }}
+        run: echo "name=${TARGET_REPO##*/}" >> "$GITHUB_OUTPUT"
+
+      - name: Jeton d'installation (1 h, ce seul dépôt)
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.CANON_APP_ID }}
+          private-key: ${{ secrets.CANON_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ steps.parse.outputs.name }}
+          permission-contents: write
+
+      - name: Annonce canon-updated
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TARGET_REPO: ${{ matrix.target.repo }}
+          CANON: ${{ matrix.target.canon }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          gh api "repos/${TARGET_REPO}/dispatches" \
+            -f event_type=canon-updated \
+            -f "client_payload[canon]=${CANON}" \
+            -f "client_payload[commit]=${COMMIT}" \
+            -f "client_payload[source]=${GITHUB_REPOSITORY}"
+          echo "Annoncé : ${CANON} vers ${TARGET_REPO} (commit ${COMMIT})"

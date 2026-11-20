@@ -34,18 +34,19 @@ Relecture éditoriale française : `../../.claude/prompts/_shared/editorial-revi
 | Briefs structurés en DB (table `__marketing_brief`) | ✅ Oui | ADR-036 (pas de `.md` flottants wiki) |
 | Documentation interne workspace (ce fichier, README, CLAUDE.md) | ✅ Oui | Standard workspace |
 | `automecanik-wiki/` (direct ou via proposals) | ❌ Non | ADR-031 + ADR-036 (wiki = connaissance validée, briefs ne sont pas connaissance) |
-| `governance-vault/` | ❌ Non | ADR-060 invariant 5 (vault décide, pas d'écriture métier) |
+| `governance-vault/` | ❌ Non | Archive en lecture seule (décision 73) ; l'interdit d'écriture d'ADR-060 invariant 5 demeure |
 | `automecanik-raw/` | ❌ Non | ADR-060 invariant 3 (monorepo n'écrit pas dans raw) |
 | `automecanik-rag/knowledge/` | ❌ Non | ADR-060 invariant 4 (rag mirror jamais source) |
 
 ## Canon mirrors (read-only)
 
-`.claude/canon-mirrors/` contient au 2026-05-14 :
+`.claude/canon-mirrors/` contient deux copies déclarées au manifeste
+`.spec/00-canon/canon-distribution/canon-hashes.json` :
 
-- `agent-exit-contract.md` — contrat de sortie agentique commun (mirror vault)
-- `marketing-voice.md` — canon voice marketing (mirror `governance-vault/ledger/rules/rules-marketing-voice.md` statut `canon`)
+- `agent-exit-contract.md` — contrat de sortie agentique commun (source : `.spec/00-canon/canon-distribution/rules-agent-exit-contract.md`)
+- `marketing-voice.md` — canon voice marketing (source : `.spec/00-canon/canon-distribution/rules-marketing-voice.md`)
 
-Synchronisation : cron VPS DEV (`scripts/cron/sync_canon_mirrors.py`, cf. [[ADR-061-workspace-governance]] §3 + vault PR #268). **Toute modification manuelle est interdite** et bloquée par `.husky/pre-commit` (cf. monorepo PR #495).
+Les sources sont dans le monorepo (journal des principes, P30). Les copies sont générées par `scripts/canon/compute-canon-hashes.py --write`, dans la PR qui modifie la source. **Toute modification manuelle d'une copie est interdite** : `.husky/pre-commit` et le contrôle CI `canon-distribution.yml` la refusent.
 
 ## Lifecycle workspace
 
@@ -58,5 +59,5 @@ Phase 3 future : agents G2 (additional verticals) sous ADR dédié si besoin.
 - [[ADR-036-marketing-operating-layer]] (workspace marketing canon, accepted 2026-05-13 PR vault #263)
 - [[ADR-060-repository-roles-doctrine]] (5 acteurs canon, accepted 2026-05-13 PR vault #264)
 - [[ADR-061-workspace-governance]] (7 invariants workspace governance, accepted 2026-05-13 PR vault #265)
-- `governance-vault/ledger/rules/rules-marketing-voice.md` (status `canon`)
+- `.spec/00-canon/canon-distribution/rules-marketing-voice.md` (source de la voix de marque)
 - README.md de ce workspace (rôle + Phase 0-3)

@@ -3,10 +3,10 @@
 // PR Definition-of-Done gate — body-based machine check.
 // =============================================================================
 // Consumed by .github/workflows/pr-dod-gate.yml. Enforces the canonical
-// Engineering Definition of Done (vault rule rules-engineering-definition-of-done,
-// PR #299) at the PR boundary: a PR must carry the DoD self-evaluation section
-// with all 9 invariants (DoD1..DoD9) either checked `[x]` or explicitly marked
-// `N/A`.
+// Engineering Definition of Done
+// (.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md) at the
+// PR boundary: a PR must carry the DoD self-evaluation section with all 9
+// invariants (DoD1..DoD9) either checked `[x]` or explicitly marked `N/A`.
 //
 // Escape hatch (Patch 6): label `dod-skip-justified` bypasses the checklist, but
 // ONLY with >= 2 human approvals (the audit-trail row in __governance_event_log
@@ -65,7 +65,7 @@ const OWNERSHIP_MIN_APPROVALS = 1;
 const DEPENDABOT_LOGIN = "dependabot[bot]";
 
 // List item whose first token is the id, optionally boxed and bold:
-// `- [x] DoD1 — …` (vault template), `- [x] **DoD1** …`, `- DoD4 — N/A : …`.
+// `- [x] DoD1 — …` (rule template), `- [x] **DoD1** …`, `- DoD4 — N/A : …`.
 // `\b` keeps DoD1 != DoD10.
 const checklistLine = (id) =>
   new RegExp(
@@ -215,7 +215,7 @@ function renderReport(result) {
   const body = result.reasons.map((r) => `- ${r}`).join("\n") + advisory;
   const footer = result.pass
     ? ""
-    : `\n\n> Add the DoD self-evaluation section to the PR body (template in vault \`rules-engineering-definition-of-done.md\`), or apply \`${SKIP_LABEL}\` with >= ${SKIP_MIN_APPROVALS} approvals.`;
+    : `\n\n> Add the DoD self-evaluation section to the PR body (template in \`.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md\`), or apply \`${SKIP_LABEL}\` with >= ${SKIP_MIN_APPROVALS} approvals.`;
   return `${head}\n${body}${footer}\n`;
 }
 

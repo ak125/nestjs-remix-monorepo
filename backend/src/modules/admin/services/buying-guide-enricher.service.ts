@@ -370,8 +370,7 @@ export class BuyingGuideEnricherService {
    * sourced from legacy RAG gamme docs (ADR-031/046): they must never reach the
    * served `__seo_gamme_purchase_guide` table. The write is stamped
    * `provenance = RAG_LEGACY`, which the gate refuses (0 rows) — there is no
-   * direct-update fallback (writeGate is a required dependency). Same shape as
-   * R2EnricherService.persistR2KeywordPlan.
+   * direct-update fallback (writeGate is a required dependency).
    */
   private persistBuyingGuide(
     pgId: string,

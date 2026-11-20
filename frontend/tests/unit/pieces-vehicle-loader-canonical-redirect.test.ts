@@ -47,7 +47,8 @@ vi.mock("~/services/pieces/pieces-route.service", () => ({
 vi.mock("~/utils/fetch.utils", () => ({
   fetchJsonOrNull: vi.fn(() => Promise.resolve(null)),
 }));
-vi.mock("~/utils/pieces-loader.utils", () => ({
+vi.mock("~/utils/pieces-loader.utils", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   buildCataloguePromise: vi.fn(() => Promise.resolve(null)),
 }));
 vi.mock("~/utils/seo/catalog-gammes.server", () => ({

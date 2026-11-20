@@ -4,17 +4,15 @@
  * Contrôleur principal consolidé pour toutes les opérations liées aux commandes.
  * Remplace 6 contrôleurs obsolètes pour une architecture claire et maintenable.
  *
- * Architecture organisée en 4 sections :
+ * Architecture organisée en 2 sections :
  * 1. Routes CLIENT  : Authentification utilisateur (AuthenticatedGuard)
  * 2. Routes ADMIN   : Authentification + privilèges admin (IsAdminGuard)
- * 3. Routes LEGACY  : Compatibilité rétroactive (@deprecated)
- * 4. Routes TEST    : Endpoints de développement et tests
  *
  * Routes :
  * - Client  : /api/orders/* (AuthenticatedGuard)
  * - Admin   : /api/orders/admin/* (AuthenticatedGuard + IsAdminGuard)
- * - Legacy  : /api/orders/legacy/* (Compatibilité - à déprécier)
- * - Test    : /api/orders/test/* (Développement uniquement)
+ *
+ * Classification exhaustive des accès : backend/tests/unit/orders-routes-authz.test.ts
  */
 
 import {
@@ -35,6 +33,7 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { DomainConflictException, ErrorCodes } from '@common/exceptions';
 import { Request as ExpressRequest } from 'express';
@@ -92,6 +91,72 @@ type AuthenticatedRequest = ExpressRequest & {
 function getUserId(req: AuthenticatedRequest): string | undefined {
   const session = req.session as unknown as PassportSession | undefined;
   return req.user?.id || session?.passport?.user?.id;
+}
+
+/** Colonnes d'une commande rendues à son client : celles que ses écrans lisent. */
+const CUSTOMER_ORDER_FIELDS = [
+  'ord_id',
+  'ord_ords_id',
+  'ord_is_pay',
+  'ord_date',
+  'ord_amount_ht',
+  'ord_amount_ttc',
+  'ord_tva',
+  'ord_shipping_fee_ttc',
+  'ord_total_ttc',
+  'ord_tracking',
+  'ord_tracking_url',
+] as const;
+
+/** Colonnes d'une ligne de commande rendues au client. */
+const CUSTOMER_LINE_FIELDS = [
+  'orl_id',
+  'orl_pg_id',
+  'orl_pg_name',
+  'orl_art_ref',
+  'orl_art_quantity',
+  'orl_art_price_sell_unit_ttc',
+  'orl_art_price_sell_ttc',
+  'orl_orls_id',
+] as const;
+
+function pickFields(
+  source: unknown,
+  fields: readonly string[],
+): Record<string, unknown> {
+  const row = (source ?? {}) as Record<string, unknown>;
+  const picked: Record<string, unknown> = {};
+  for (const field of fields) {
+    if (field in row) picked[field] = row[field];
+  }
+  return picked;
+}
+
+/**
+ * Vue d'une commande pour son client.
+ *
+ * `OrdersService.getOrderById` et `listOrders` lisent toutes les colonnes :
+ * c'est la lecture de l'administration. Les routes du client rendent cette
+ * liste fermée (une colonne ajoutée en base n'y entre pas d'elle-même) :
+ * champs lus par `frontend/app/services/orders.server.ts` et, pour le
+ * paiement, par `frontend/app/services/order.server.ts` (`ord_id`,
+ * `ord_total_ttc`, `ord_is_pay`, `customer.cst_mail`).
+ */
+function toCustomerOrderView(order: unknown): Record<string, unknown> {
+  const source = (order ?? {}) as Record<string, unknown>;
+  const view = pickFields(source, CUSTOMER_ORDER_FIELDS);
+  if (Array.isArray(source.lines)) {
+    view.lines = source.lines.map((line) =>
+      pickFields(line, CUSTOMER_LINE_FIELDS),
+    );
+  }
+  const mail = (source.customer as Record<string, unknown> | null | undefined)
+    ?.cst_mail;
+  if (mail) view.customer = { cst_mail: mail };
+  if (Array.isArray(source.statusHistory)) {
+    view.statusHistory = source.statusHistory;
+  }
+  return view;
 }
 
 @ApiTags('orders')
@@ -265,7 +330,8 @@ export class OrdersController {
         limit: query.limit ? parseInt(query.limit) : 10,
       };
 
-      return await this.ordersService.listOrders(filters);
+      const { data, pagination } = await this.ordersService.listOrders(filters);
+      return { data: data.map(toCustomerOrderView), pagination };
     } catch (error) {
       this.logger.error('Error listing user orders:', error);
       throw error;
@@ -314,12 +380,13 @@ export class OrdersController {
         throw new NotFoundException('Commande non trouvée');
       }
 
+      const data: Record<string, unknown> = {
+        ...toCustomerOrderView(order),
+        customer_can_cancel: getCustomerCancelRefusal(order) === null,
+      };
       return {
         success: true,
-        data: {
-          ...order,
-          customer_can_cancel: getCustomerCancelRefusal(order) === null,
-        },
+        data,
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
@@ -367,7 +434,7 @@ export class OrdersController {
           const existingOrder = await this.ordersService.getOrderById(
             existing.existing,
           );
-          return { ...existingOrder, resumeToken };
+          return { ...toCustomerOrderView(existingOrder), resumeToken };
         }
       }
 
@@ -414,7 +481,7 @@ export class OrdersController {
         resumeToken = await this.generateResumeToken(orderId as string);
       }
 
-      return { ...(order as object), resumeToken };
+      return { ...toCustomerOrderView(order), resumeToken };
     } catch (error) {
       this.logger.error('Error creating order:', error);
       if (idempotencyKey) {
@@ -487,7 +554,7 @@ export class OrdersController {
           const existingOrder = await this.ordersService.getOrderById(
             existing.existing,
           );
-          return { ...existingOrder, resumeToken };
+          return { ...toCustomerOrderView(existingOrder), resumeToken };
         }
       }
 
@@ -504,6 +571,11 @@ export class OrdersController {
             'Un compte existe déjà avec cet email. Connectez-vous pour finaliser votre commande.',
         });
       }
+
+      // Lignes vérifiées AVANT la création du compte : une commande refusée
+      // (article, quantité, tarif) ne doit pas laisser un compte sans commande,
+      // qui renverrait ensuite ce client vers la connexion.
+      await this.ordersService.lignesAuTarifEnVigueur(orderData.orderLines);
 
       // Nouveau client : compte créé avec un mot de passe aléatoire, activé
       // par le lien envoyé à l'adresse saisie. Aucune session n'est ouverte
@@ -618,7 +690,7 @@ export class OrdersController {
       // tout le nécessaire au redirect Paybox (ord_total_ttc + customer.cst_mail,
       // déjà présents via getOrderById) — aucun GET /api/orders/:id authentifié
       // ne peut suivre (INC tunnel paiement 2026-05→07).
-      return { ...(order as object), resumeToken };
+      return { ...toCustomerOrderView(order), resumeToken };
     } catch (error) {
       this.logger.error('Error in guest checkout:', error);
       if (idempotencyKey) {
@@ -643,25 +715,45 @@ export class OrdersController {
   @ApiResponse({ status: 404, description: 'Commande non trouvée' })
   async updateOrder(
     @Param('id', ParseIntPipe) orderId: number,
-    @Body() updateData: { status?: number; comment?: string },
+    @Body() updateData: { comment?: string },
     @Req() req: AuthenticatedRequest,
   ) {
     try {
       const userId = getUserId(req);
+      if (!userId) {
+        this.logger.warn(`Update denied: no user for order ${orderId}`);
+        throw new NotFoundException('Commande non trouvée');
+      }
       this.logger.log(`Updating order ${orderId} by user ${userId}`);
 
-      // TODO: Vérifier que l'utilisateur possède cette commande
+      // Propriétaire seulement — même réponse que GET et DELETE /api/orders/:id.
+      const order = await this.ordersService.getOrderById(String(orderId));
+      if (!order.ord_cst_id || String(order.ord_cst_id) !== String(userId)) {
+        this.logger.warn(
+          `Update denied: user ${userId} tried to update order ${orderId} owned by ${order.ord_cst_id}`,
+        );
+        throw new NotFoundException('Commande non trouvée');
+      }
 
-      // Convert legacy numeric status to canonical OrderStatusCode (1..5).
-      // Vault #301 PR-C: UpdateOrderData.status is now OrderStatusCode (string).
-      return await this.ordersService.updateOrder(String(orderId), {
-        status:
-          updateData.status !== undefined
-            ? (String(updateData.status) as OrderStatusCode)
-            : undefined,
-        customerNote: updateData.comment,
-        userId: userId ? Number(userId) : undefined,
+      // Un client ne change pas le statut de sa commande ici : l'annulation
+      // passe par DELETE /api/orders/:id (règle `getCustomerCancelRefusal`),
+      // les autres statuts sont posés par le paiement ou par l'administration
+      // (PATCH /api/orders/admin/:id/status).
+      const body = (updateData ?? {}) as Record<string, unknown>;
+      if ('status' in body) {
+        throw new ForbiddenException(
+          "Le statut d'une commande ne se modifie pas depuis l'espace client.",
+        );
+      }
+      if (body.comment !== undefined && typeof body.comment !== 'string') {
+        throw new BadRequestException('Commentaire invalide');
+      }
+
+      const updated = await this.ordersService.updateOrder(String(orderId), {
+        customerNote: body.comment as string | undefined,
+        userId: Number(userId),
       });
+      return toCustomerOrderView(updated);
     } catch (error) {
       this.logger.error(`Error updating order ${orderId}:`, error);
       throw error;
@@ -1000,232 +1092,6 @@ export class OrdersController {
         `Error getting orders for customer ${customerId}:`,
         error,
       );
-      throw error;
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // 🟡 SECTION 3: ROUTES LEGACY (Compatibilité - À déprécier)
-  // ═══════════════════════════════════════════════════════════════════════
-
-  /**
-   * 📋 Liste legacy (compatibilité)
-   * GET /api/orders/legacy
-   */
-  @Get('legacy/list')
-  @ApiOperation({
-    summary: 'Liste commandes (Legacy - à déprécier)',
-    deprecated: true,
-  })
-  @ApiResponse({ status: 200, description: 'Liste legacy' })
-  async listOrdersLegacy(@Query() query: OrderListQuery) {
-    try {
-      this.logger.warn('LEGACY endpoint called: GET /api/orders/legacy/list');
-
-      const filters: OrderFilters = {
-        page: query.page ? parseInt(query.page) : 1,
-        limit: query.limit ? parseInt(query.limit) : 20,
-      };
-
-      return await this.ordersService.listOrders(filters);
-    } catch (error) {
-      this.logger.error('Error in legacy list:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 📖 Détail legacy
-   * GET /api/orders/legacy/:id/details
-   */
-  @Get('legacy/:id/details')
-  @ApiOperation({
-    summary: 'Détail commande (Legacy - à déprécier)',
-    deprecated: true,
-  })
-  @ApiParam({ name: 'id', description: 'ID de la commande' })
-  @ApiResponse({ status: 200, description: 'Détails legacy' })
-  async getOrderDetailsLegacy(@Param('id', ParseIntPipe) orderId: number) {
-    try {
-      this.logger.warn(
-        `LEGACY endpoint called: GET /api/orders/legacy/${orderId}/details`,
-      );
-      return await this.ordersService.getOrderById(String(orderId));
-    } catch (error) {
-      this.logger.error(`Error in legacy detail for ${orderId}:`, error);
-      throw error;
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // 🔧 SECTION 4: ROUTES DE TEST (Développement uniquement)
-  // ═══════════════════════════════════════════════════════════════════════
-
-  /**
-   * 🧪 Endpoint de test - Créer commande mock
-   * POST /api/orders/test/create
-   */
-  @Post('test/create')
-  @ApiOperation({ summary: 'Créer commande de test (DEV)' })
-  @ApiResponse({ status: 201, description: 'Commande test créée' })
-  async testCreateOrder(@Body() testData?: { customerId?: string | number }) {
-    try {
-      // Utiliser customerId fourni ou celui de monia123@gmail.com par défaut
-      const customerId = testData?.customerId || 'usr_1759774640723_njikmiz59';
-
-      this.logger.log(
-        `Creating test order with mock data for customer ${customerId}`,
-      );
-
-      const mockOrderData: CreateOrderData = {
-        customerId: String(customerId),
-        orderLines: [
-          {
-            productId: 'TEST001',
-            productName: 'Produit Test Phase 3',
-            productReference: 'REF-P3-001',
-            quantity: 2,
-            unitPrice: 49.99,
-            vatRate: 20,
-            discount: 0,
-          },
-          {
-            productId: 'TEST002',
-            productName: 'Produit Test Phase 3 - 2',
-            productReference: 'REF-P3-002',
-            quantity: 1,
-            unitPrice: 29.99,
-            vatRate: 20,
-            discount: 10,
-          },
-        ],
-        billingAddress: {
-          firstName: 'Test',
-          lastName: 'Phase3',
-          address: '123 rue Consolidation',
-          zipCode: '75001',
-          city: 'Paris',
-          country: 'France',
-        },
-        shippingAddress: {
-          firstName: 'Test',
-          lastName: 'Phase3',
-          address: '123 rue Consolidation',
-          zipCode: '75001',
-          city: 'Paris',
-          country: 'France',
-        },
-        customerNote: 'Commande test Phase 3 - Consolidation contrôleurs',
-        shippingMethod: 'standard',
-      };
-
-      const result = await this.ordersService.createOrder(mockOrderData);
-
-      return {
-        message: '✅ Commande test Phase 3 créée avec succès',
-        order: result,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error('Error creating test order:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 🆕 Phase 5: Créer commande test AVEC CONSIGNES
-   * POST /api/orders/test/create-with-consignes
-   */
-  @Post('test/create-with-consignes')
-  @ApiOperation({ summary: 'Créer commande test avec consignes (Phase 5)' })
-  @ApiResponse({ status: 201, description: 'Commande avec consignes créée' })
-  async testCreateOrderWithConsignes(
-    @Body() testData?: { customerId?: string | number },
-  ) {
-    try {
-      const customerId = testData?.customerId || 'usr_1759774640723_njikmiz59';
-
-      this.logger.log(
-        `✅ Phase 5: Creating test order WITH CONSIGNES for customer ${customerId}`,
-      );
-
-      const mockOrderData: CreateOrderData = {
-        customerId: String(customerId),
-        orderLines: [
-          {
-            productId: '3047339',
-            productName: 'Alternateur CEVAM',
-            productReference: '4561',
-            quantity: 2,
-            unitPrice: 168.59,
-            vatRate: 20,
-            discount: 0,
-            consigne_unit: 72, // ✅ Consigne unitaire
-            has_consigne: true, // ✅ Produit avec consigne
-          },
-        ],
-        billingAddress: {
-          firstName: 'Test',
-          lastName: 'Phase5',
-          address: '123 rue Consignes',
-          zipCode: '75001',
-          city: 'Paris',
-          country: 'France',
-        },
-        shippingAddress: {
-          firstName: 'Test',
-          lastName: 'Phase5',
-          address: '123 rue Consignes',
-          zipCode: '75001',
-          city: 'Paris',
-          country: 'France',
-        },
-        customerNote:
-          '✅ Phase 5: Test commande avec consignes alternateur (2x 72€ = 144€)',
-        shippingMethod: 'standard',
-      };
-
-      const result = await this.ordersService.createOrder(mockOrderData);
-
-      return {
-        message: '✅ Phase 5: Commande avec consignes créée avec succès',
-        order: result,
-        consignes_info: {
-          consigne_unit: 72,
-          quantity: 2,
-          consigne_total: 144,
-          note: 'Les consignes sont stockées dans ord_deposit_ttc',
-        },
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error('Error creating test order with consignes:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 📊 Statistiques rapides (test)
-   * GET /api/orders/test/stats
-   */
-  @Get('test/stats')
-  @ApiOperation({ summary: 'Statistiques de test (DEV)' })
-  @ApiResponse({ status: 200, description: 'Stats de test' })
-  async testStats() {
-    try {
-      this.logger.log('Getting test stats');
-
-      const allOrders = await this.ordersService.listOrders({ limit: 1000 });
-
-      return {
-        message: '✅ Stats Phase 3',
-        total: allOrders.pagination.total,
-        retrieved: allOrders.data.length,
-        pagination: allOrders.pagination,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error('Error getting test stats:', error);
       throw error;
     }
   }

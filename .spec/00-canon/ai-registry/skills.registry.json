@@ -1,12 +1,34 @@
 {
-  "compliantCount": 17,
-  "generatedAt": "2026-11-12T21:56:28.177Z",
+  "compliantCount": 18,
+  "generatedAt": "2026-11-17T16:48:37.967Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
     {
-      "checksum": "sha256:3b17d01ff6673e0ac513a43e4874db2370affe55d15abecd94afcd5735438e44",
+      "checksum": "sha256:336ba50decc644fe54af99a6c74fcaeb10d9b663068b82f12c3f60fda2fcbb1f",
+      "domain": "D15",
+      "last_verified": "2026-11-16",
+      "llm_safe": true,
+      "name": "amk-supabase-postgres-best-practices",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/amk-supabase-postgres-best-practices/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "tags": [
+        "p40",
+        "postgres",
+        "read-only",
+        "supabase",
+        "third-party-wrapper"
+      ],
+      "type": "discipline"
+    },
+    {
+      "checksum": "sha256:728c2f3a0d94380c3ef6bb628c3a20b702a0010dd53e04e12567ddb11cbdd8a9",
       "domain": "D15",
       "last_verified": "2026-10-26",
       "llm_safe": true,
@@ -166,14 +188,14 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:fe58fcff72bf8acd08bed086cd390aff7506eb694e935a70de04192828869956",
+      "checksum": "sha256:04bf7067e43889c3c0ce7f8198386c7af4f9ab158d59d7efaebaa34fdb7441a0",
       "domain": "D15",
-      "last_verified": "2026-10-01",
+      "last_verified": "2026-11-17",
       "llm_safe": false,
       "metadata": {
-        "adr_references": "ADR-015, ADR-061, ADR-101, ADR-102",
+        "adr_references": "ADR-015, ADR-101, ADR-102, ADR-138",
         "spec": "agentskills.io/specification v1",
-        "version": "2.0"
+        "version": "3.0"
       },
       "name": "governance-vault-ops",
       "owners": [
@@ -184,18 +206,17 @@
       "spec_compliant": true,
       "status": "stable",
       "tags": [
-        "adr-101",
-        "adr-102",
+        "adr-138",
+        "archive",
         "audit",
         "governance",
-        "ledger",
-        "ssh-signing",
+        "read-only",
         "vault"
       ],
       "type": "discipline"
     },
     {
-      "checksum": "sha256:6c3d50c41f625ef5b198c294c6eb67684d4bf7f9a03b56a07cbfb134b09db176",
+      "checksum": "sha256:309fc1fee8930da0c7a4f1d85670df7ba43d4b498435245659017718fb3ce462",
       "domain": "D11",
       "last_verified": "2026-10-21",
       "llm_safe": false,
@@ -321,7 +342,25 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:7728548d46c9bae06f38a259981984e99ef4c83141ebda0acd54d4641cd47306",
+      "checksum": "sha256:ad65e776f45e761bafc609d3f506c77c1032225aa65e0c4c02f241b8071e5855",
+      "lock": {
+        "ref": "c9be0e931b7930f7d02126d04774d904c381e7d7",
+        "source": "supabase/agent-skills"
+      },
+      "metadata": {
+        "abstract": "Comprehensive Postgres performance optimization guide for developers using Supabase and Postgres. Contains performance rules across 8 categories, prioritized by impact from critical (query performance, connection management) to incremental (advanced features). Each rule includes detailed explanations, incorrect vs. correct SQL examples, query plan analysis, and specific performance metrics to guide automated optimization and code generation.",
+        "author": "supabase",
+        "date": "January 2026",
+        "organization": "Supabase",
+        "version": "1.1.1"
+      },
+      "name": "supabase-postgres-best-practices",
+      "origin": "third_party",
+      "path": ".claude/skills/supabase-postgres-best-practices/SKILL.md",
+      "spec_compliant": false
+    },
+    {
+      "checksum": "sha256:50ede647a720871c38e83483d4241789694523022e11f7880d9d91c8eac09fbf",
       "domain": "D15",
       "last_verified": "2026-06-10",
       "llm_safe": false,
@@ -350,7 +389,7 @@
       "type": "discipline"
     },
     {
-      "checksum": "sha256:a646c1678300f72d47c7fddaaa0cb4bf328f80286d9607a71042f85e9107902e",
+      "checksum": "sha256:bc661c64c500b5dc14e5ee9bcd621d54d15390fa7233770b8cedae8119de9b50",
       "domain": "D15",
       "last_verified": "2026-05-18",
       "llm_safe": true,
@@ -434,5 +473,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 17
+  "totalSkills": 19
 }

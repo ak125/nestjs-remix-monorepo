@@ -41,7 +41,7 @@ Chaque section reçoit un score 0-100 basé sur des critères objectifs.
 | Critère | Points | Mesure |
 |---------|--------|--------|
 | **Longueur** | 0-15 | <50 chars = 0, 50-150 = 5, 150-400 = 10, 400-1500 = 15, >3000 = 10 (pénalité verbosité) |
-| **Absence pollution** | 0-20 | Les 15+ regex pollution-scanner : 0 match = 20, 1 match = 5, 2+ = 0 |
+| **Absence pollution** | 0-20 | Les 15+ regex de pollution (`v5-guardian`, module 1) : 0 match = 20, 1 match = 5, 2+ = 0 |
 | **Structure HTML** | 0-15 | Présence `<b>`, `<ul>`, `<li>`, `<br>` appropriés = 15, texte brut sans structure = 5, HTML cassé = 0 |
 | **Spécificité pièce** | 0-20 | Mentionne la pièce/gamme par nom + détails techniques = 20, générique = 5, hors-sujet = 0 |
 | **Cohérence section** | 0-15 | Le contenu correspond au type de section (S1=fonction, S2=quand, S3=choix, etc.) |

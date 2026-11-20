@@ -4,7 +4,7 @@
  * 8 générateurs de sitemaps indépendants:
  * 1. Racine (homepage, 1 URL)
  * 2. Catégories/Gammes INDEX (~123 URLs)
- * 3. Véhicules fusionnés (~13.8k URLs)
+ * 3. Véhicules : pages R8 indexables (marques → sitemap-brands.xml)
  * 4. Véhicules par marque (~30 files)
  * 5. Blog (~109 URLs)
  * 6. Pages statiques (~9 URLs)
@@ -19,6 +19,10 @@ import * as path from 'path';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import {
+  collectR8VehicleUrls,
+  filterR8ByServedRobots,
+} from '../helpers/r8-vehicle-selection.helper';
 import { isR6GuideAchatSurface } from '../types/page-role.types';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
@@ -157,7 +161,10 @@ export class SitemapV10StaticService extends SupabaseBaseService {
   }
 
   /**
-   * 🚗 Génère sitemap-vehicules.xml (marques + modèles + motorisations)
+   * 🚗 Génère sitemap-vehicules.xml : pages R8 servies `index, follow`
+   * (sélection commune avec le hub constructeurs, puis règle robots de la
+   * page servie, voir `filterR8ByServedRobots`), plus les URLs de la vue
+   * `__sitemap_vehicules` non portées par sitemap-brands.xml.
    *
    * Les URLs marque appartiennent à sitemap-brands.xml : elles sont retirées
    * d'ici quand la même lecture les y place. `brandUrls` = résultat de
@@ -216,13 +223,14 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         throw new Error(`liste absente ou vide pour count ${totalCount}`);
       }
 
-      const allUrls: SitemapUrl[] = vehicules.map((v) => ({
+      const viewUrls: SitemapUrl[] = vehicules.map((v) => ({
         url: v.url,
         page_type: 'vehicule',
         changefreq: v.changefreq || 'monthly',
         priority: v.priority.toString(),
         last_modified_at: null,
       }));
+      const allUrls = [...viewUrls, ...(await this.collectIndexableR8Urls())];
 
       // Source marque indisponible (≠ vide) : sitemap-brands.xml n'est pas
       // écrit pour ce run, les URLs marque restent donc déclarées ici
@@ -243,9 +251,14 @@ export class SitemapV10StaticService extends SupabaseBaseService {
       );
       // <loc> finale : une R7 absolue et un repli relatif peuvent coïncider ;
       // la première occurrence (ordre de collecte) est gardée.
-      const present = new Set(kept.map((u) => toLoc(u.url)));
+      const present = new Set<string>();
       urls = [
-        ...kept,
+        ...kept.filter((u) => {
+          const loc = toLoc(u.url);
+          if (present.has(loc)) return false;
+          present.add(loc);
+          return true;
+        }),
         ...unpublishedBrandUrls.filter((b) => {
           const loc = toLoc(b.url);
           if (present.has(loc)) return false;
@@ -294,6 +307,48 @@ export class SitemapV10StaticService extends SupabaseBaseService {
     await this.xmlService.writeStaticSitemapFile(filePath, urls);
     this.logger.log(`   ✅ sitemap-vehicules.xml: ${urls.length} URLs`);
     return filePath;
+  }
+
+  /**
+   * R8 de sitemap-vehicules.xml : sélection du hub constructeurs
+   * (`collectR8VehicleUrls`) gardée si la page est servie `index, follow`
+   * (`filterR8ByServedRobots`). Toute lecture en échec est levée (liste
+   * partielle jamais publiée). Sélection vide : avertissement explicite.
+   */
+  private async collectIndexableR8Urls(): Promise<SitemapUrl[]> {
+    const selection = await collectR8VehicleUrls(
+      this.supabase,
+      this.xmlService.BASE_URL,
+    );
+    if (selection.readError) {
+      throw new Error(
+        `__sitemap_p_link en erreur à l'offset ${selection.readError.offset} : ${selection.readError.message}`,
+      );
+    }
+    const { kept, excluded } = await filterR8ByServedRobots(
+      this.supabase,
+      selection.entries,
+    );
+    this.logger.log(
+      `   🚗 R8 : ${selection.entries.length} sélectionnée(s), ${kept.length} servie(s) index ; écartées : ${excluded.not_indexable} noindex (is_indexable), ${excluded.tecdoc_gate} release gate TecDoc, ${excluded.no_cache} sans cache page, ${excluded.stale_cache} cache périmé`,
+    );
+    if (excluded.no_cache + excluded.stale_cache > 0) {
+      this.logger.warn(
+        `   ⚠️ ${excluded.no_cache + excluded.stale_cache} R8 sans cache page frais : non déclarées (robots de la page non lisible)`,
+      );
+    }
+    if (kept.length === 0) {
+      this.logger.warn(
+        `   ⚠️ Sélection R8 vide (${selection.entries.length} lue(s), ${selection.scannedRows} ligne(s) de __sitemap_p_link) : aucune page R8 dans sitemap-vehicules.xml`,
+      );
+    }
+    return kept.map((e) => ({
+      url: e.url,
+      page_type: 'vehicule',
+      changefreq: 'monthly',
+      priority: '0.6',
+      last_modified_at: null,
+    }));
   }
 
   /**
@@ -424,8 +479,13 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
+      // Alias vide = hub du blog. Son adresse canonique n'a pas de barre
+      // finale : `/blog-pieces-auto/` est servie avec un canonical vers
+      // `/blog-pieces-auto`, seule forme à déclarer.
       const allUrls: SitemapUrl[] = articles.map((a) => ({
-        url: `/blog-pieces-auto/${a.map_alias}`,
+        url: a.map_alias
+          ? `/blog-pieces-auto/${a.map_alias}`
+          : '/blog-pieces-auto',
         page_type: 'blog',
         changefreq: 'monthly',
         priority: '0.6',
