@@ -16,7 +16,10 @@ const SECTIONS = [
   { id: "aller-plus-loin", label: "Voir aussi", icon: BookOpen },
 ];
 
-export default function GammeQuickNav() {
+/** `withPrice` false : la section qualité ne parle pas de prix (voir son H2). */
+export default function GammeQuickNav({
+  withPrice = true,
+}: { withPrice?: boolean } = {}) {
   return (
     <nav
       aria-label="Navigation rapide"
@@ -37,7 +40,10 @@ export default function GammeQuickNav() {
                 }}
                 className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-blue-900 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all cursor-pointer"
               >
-                <Icon size={13} /> {s.label}
+                <Icon size={13} />{" "}
+                {s.id === "qualite-prix" && !withPrice
+                  ? "Qualité & Marques"
+                  : s.label}
               </button>
             );
           })}

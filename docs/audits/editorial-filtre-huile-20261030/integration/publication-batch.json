@@ -1,5 +1,5 @@
 {
-  "objet": "Lot de publication filtre à huile (pg 7) : cibles, diff avant/après, sauvegarde, rollback et contrôles. Préparé en lecture seule ; rien n'a été écrit.",
+  "objet": "Lot de publication filtre à huile (pg 7) : cibles, diff avant/après, migrations A (textes) et C (images), dépôt des objets, retour arrière et contrôles. Préparé et prouvé sur données isolées ; rien n'a été écrit sur une ressource partagée avec la PROD.",
   "statut": "PRÉPARÉ, NON EXÉCUTÉ. Écriture PROD sur des pages indexées (zone STOP) : exécution sur accord nominatif de l'owner seulement.",
   "lu_a": "2026-10-31T06:59:46Z",
   "lecture": "sweep-psql.sh, transaction en lecture seule ; hash = sha256 de la valeur castée en text (UTF-8) ; valeurs après calculées par la base, cast au type de la colonne et trigger d'accents appliqué",
@@ -7,8 +7,8 @@
   "prealables": [
     {
       "point": "code servi",
-      "condition": "#1936 servi en PROD avant l'écriture des textes",
-      "motif": "les textes ont été vérifiés avec ce code (banc DEV sur 67f7ce304 ; le delta jusqu'à la tête ne touche pas les gabarits R1/R3). Sans d1e39811e (FH-2), restoreAccents réécrit les URL du texte, dont les liens /pieces/ de S7 ; sans 8bc63c059 (FH-15), le FAQPage ne suit pas la FAQ affichée"
+      "condition": "#1936 servi en PROD avant A ; règle du H2 « Qualité et marques » (pieces.$slug.tsx, GammeQuickNav.tsx, editorial-parser.ts, même PR que ce lot) servie en PROD avant A ; correctif de la grille #emplacement (pieces.$slug.tsx, même PR) servi en PROD avant C",
+      "motif": "les textes ont été vérifiés avec le code de #1936 (banc DEV sur 67f7ce304 ; le delta jusqu'à la tête ne touche pas les gabarits R1/R3). Sans d1e39811e (FH-2), restoreAccents réécrit les URL du texte, dont les liens /pieces/ de S7 ; sans 8bc63c059 (FH-15), le FAQPage ne suit pas la FAQ affichée. Sans le correctif de grille, C retire l'image LOCATION et la section #emplacement garde deux colonnes dès 1 024 px, la droite vide. Sans la règle du H2, A retire le bloc de prix de pg 7 et la section #qualite-prix garde le H2 « Qualité, prix et marques » sans aucun prix"
     },
     {
       "point": "admission WIKI",
@@ -16,14 +16,24 @@
       "motif": "auto-review de sens ADR-119 ABSENT pour cette fiche : consultative hors sécurité (D3), elle ne bloque pas l'écriture et ne prouve pas le sens ; HANDOFF § 6, « Admission WIKI »"
     },
     {
-      "point": "voie d'écriture des textes",
-      "condition": "une des deux voies de « Raccordement des textes (FH-3) »",
-      "motif": "writeToTarget ne déclare ni r1s_arg1..4_content ni r1s_faq, ne promeut pas sg_content et n'adresse pas __seo_gamme_conseil par sgc_id ; une migration SQL ajoute un écrivain servi au ratchet"
+      "point": "accents (α)",
+      "condition": "20261031_accents_protected_segments (#1941) appliquée avant A",
+      "motif": "A et sa descente vérifient le corps de restore_french_accents et refusent toute autre version ; au contrôle préalable réel, c'est le seul pin en écart"
     },
     {
-      "point": "périmètre d'écriture",
-      "condition": "exécutant sans en-tête x-agent-id, ou agent dont le scope autorise UPDATE sur les trois tables",
-      "motif": "enforce_agent_write_scope : sans x-agent-id le scope est NULL et l'écriture passe ; avec un agent sans règle, 42501 et une ligne write_scope_violations"
+      "point": "voie d'écriture",
+      "condition": "migrations 20261031_editorial_filtre_huile_pg7_textes (A : 50 cellules) et 20261031_editorial_filtre_huile_pg7_images (C : R1 31 à 34, R3 13 et 14), appliquées par le moteur du dépôt avec only_ids ; R3 adressé par sgc_id (11 sections), R1 par r1s_pg_id, __seo_gamme par sg_id",
+      "motif": "writeToTarget ne déclare ni r1s_arg1..4_content ni r1s_faq, ne promeut pas sg_content et n'adresse pas __seo_gamme_conseil par sgc_id ; A et C sont deux écrivains servis ajoutés au ratchet, déclarés dans la PR"
+    },
+    {
+      "point": "identité d'écriture",
+      "condition": "agent SEO-Content, retrouvé par son nom : une seule ligne, scope seo_content_tables autorisant UPDATE sur chaque table écrite. La migration pose son en-tête x-agent-id par set_config local à la transaction, vérifie que resolve_agent_write_scope() rend ce scope, puis restaure l'en-tête",
+      "motif": "aucune écriture sans identité : chaque migration et chaque descente refusent si l'agent manque, est en double, n'a pas ce scope ou n'est pas résolu. Le passage d'un scope NULL dans check_agent_write_allowed reste un constat technique hors lot"
+    },
+    {
+      "point": "objets avant C",
+      "condition": "5 objets déposés et relus par tools/deposer-objets.cjs --execute avant C",
+      "motif": "C refuse tant qu'un objet manque, est en double, n'est pas en image/webp, n'a pas la taille, le md5 ou le cache-control du plan, ou qu'un ancien objet R1 a changé"
     }
   ],
   "cibles_texte": [
@@ -383,7 +393,7 @@
       "apres": {
         "longueur": 67,
         "sha256": "9efb9ddf9d48dd25fd9a79703d852c82894608cb65883ebac3ebcee69b576776",
-        "source": "r3.json#/sections/0/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -437,7 +447,7 @@
       "apres": {
         "longueur": 67,
         "sha256": "fe0d8475afca82411c2dd55c80bea37d4b627860430e3bda7139c7efe6dd7fc7",
-        "source": "r3.json#/sections/1/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -491,7 +501,7 @@
       "apres": {
         "longueur": 72,
         "sha256": "dfd5e223990a44068310068533739928c268047b53e1970ac935c9dc3ceee388",
-        "source": "r3.json#/sections/2/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -545,7 +555,7 @@
       "apres": {
         "longueur": 67,
         "sha256": "e116a5052927ba76aeca46ddc9dfe7310c6d974f3eb4290c4d47308ca637a68b",
-        "source": "r3.json#/sections/3/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -599,7 +609,7 @@
       "apres": {
         "longueur": 74,
         "sha256": "d940be41db32ef5dcf2a24c34e859be95dc2b51bb55b8a807df88fab8ff9645f",
-        "source": "r3.json#/sections/4/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -653,7 +663,7 @@
       "apres": {
         "longueur": 74,
         "sha256": "6933916fc212ff0b35a40e51f90dd130006f704ffdd7b9188894bb129062a039",
-        "source": "r3.json#/sections/5/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -707,7 +717,7 @@
       "apres": {
         "longueur": 67,
         "sha256": "25081e8020745de2cf6e88e668412d0ebb9323272ddb26c0d58e9e0d0aef3f04",
-        "source": "r3.json#/sections/6/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -761,7 +771,7 @@
       "apres": {
         "longueur": 67,
         "sha256": "32a51154d5d2de72fea590be711ec1466af224dd9b9ffa161f1941a035a721d4",
-        "source": "r3.json#/sections/7/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -815,7 +825,7 @@
       "apres": {
         "longueur": 73,
         "sha256": "c60686004163541050e449009da2ab203cf0ddb8ddb5fb1fc4a885ac33a2cb87",
-        "source": "r3.json#/sections/8/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -869,7 +879,7 @@
       "apres": {
         "longueur": 67,
         "sha256": "cd12309cf574f4d8df9897025722147457659a6042bbeb4e20c8e47179e94ba4",
-        "source": "r3.json#/sections/9/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     },
@@ -923,7 +933,7 @@
       "apres": {
         "longueur": 67,
         "sha256": "54c99ccf9fd15dc03c2e2de49255e596a27384d3d259388c888962f6d0bd07ac",
-        "source": "r3.json#/sections/10/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
+        "source": "r3.json#/provenance_proposee_sgc_sources (<section> = sgc_section_type)"
       },
       "trigger_accents": "colonne hors trigger"
     }
@@ -962,201 +972,348 @@
     }
   ],
   "images": {
+    "principe": "Chaque image nouvelle part à un chemin neuf versionné (-v20261031) : l'objet servi aujourd'hui n'est jamais réécrit, et l'URL change, donc aucun cache d'image n'a à être purgé. C forme rip_image_url du préfixe lu sur la ligne R1 HERO (rip_id 31) et du chemin, écrit alt, légende, statut et sélection, sous la condition que chaque ligne soit encore à l'état relevé (sinon DERIVE et arrêt).",
     "r1": [
       {
         "rip_id": 31,
         "slot": "HERO",
-        "objet": "uploads : articles/gammes-produits/r1/filtre-a-huile.webp",
+        "voie": "20261031_editorial_filtre_huile_pg7_images (C)",
         "avant": {
-          "octets": 2369854,
-          "mimetype": "image/png",
-          "etag": "c41bb7189cbad0d5f5c035ad344b8513",
-          "maj": "2026-03-25T00:58:52Z"
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile.webp",
+          "alt": "Filtre à huile — pièce automobile neuve",
+          "legende": "Filtre à huile — vue détaillée",
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "octets": 2369854,
+            "md5": "c41bb7189cbad0d5f5c035ad344b8513",
+            "type": "image/png",
+            "cache_control": "max-age=3600"
+          },
+          "maj_ligne": "2026-03-25T01:51:24.179+00:00"
         },
         "apres": {
-          "fichier": "assets/r1-hero-filtre-visse-usage.webp",
-          "octets": 61176,
-          "sha256": "3bcaaf5c71acbd4a139b1a26e84e263a449e1c9cb27e4abadd0c77cf0215955f",
-          "type": "image/webp",
-          "dimensions": "720×720"
-        },
-        "mecanisme": "POST /api/admin/r1-image-prompts/31/upload (garde admin), fichier en image/webp, sans forceSelect",
-        "effet_ligne": "uploadAndSetImage réécrit l'objet au même chemin (upsert), puis setImageUrl : même URL, statut approved, selected true (aucune autre ligne active sur le slot, relevé 06:59Z) ; le trigger trg_gpc_invalidate_image_prompts marque __gamme_page_cache du pg 7 périmé"
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile-v20261031.webp",
+          "alt": "Filtre à huile vissé usagé, tenu d'une main gantée pendant une vidange",
+          "legende": null,
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "fichier": "assets/r1-hero-filtre-visse-usage.webp",
+            "octets": 61176,
+            "md5": "1d7788595e6187b328d1a4efbb11dd16",
+            "sha256": "3bcaaf5c71acbd4a139b1a26e84e263a449e1c9cb27e4abadd0c77cf0215955f",
+            "type": "image/webp",
+            "cache_control": "max-age=31536000",
+            "dimensions": "720×720"
+          }
+        }
       },
       {
         "rip_id": 32,
         "slot": "TYPES",
-        "objet": "uploads : articles/gammes-produits/r1/filtre-a-huile-2.webp",
+        "voie": "20261031_editorial_filtre_huile_pg7_images (C)",
         "avant": {
-          "octets": 1880806,
-          "mimetype": "image/png",
-          "etag": "8b22b05554133f412ce3691c05bcafdb",
-          "maj": "2026-03-23T13:07:11Z"
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile-2.webp",
+          "alt": "Types de filtre à huile — comparatif visuel",
+          "legende": "Comment distinguer les types de filtre à huile",
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "octets": 1880806,
+            "md5": "8b22b05554133f412ce3691c05bcafdb",
+            "type": "image/png",
+            "cache_control": "max-age=3600"
+          },
+          "maj_ligne": "2026-03-25T01:51:24.179+00:00"
         },
         "apres": {
-          "fichier": "assets/r1-types-visse-cartouche.webp",
-          "octets": 59616,
-          "sha256": "31a919f7805c44c05177dbb9512ac5ac35efc51da35ba0ac8d913d50fc4ce1f6",
-          "type": "image/webp",
-          "dimensions": "1200×900"
-        },
-        "mecanisme": "POST /api/admin/r1-image-prompts/32/upload (garde admin), fichier en image/webp, sans forceSelect",
-        "effet_ligne": "uploadAndSetImage réécrit l'objet au même chemin (upsert), puis setImageUrl : même URL, statut approved, selected true (aucune autre ligne active sur le slot, relevé 06:59Z) ; le trigger trg_gpc_invalidate_image_prompts marque __gamme_page_cache du pg 7 périmé"
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile-2-v20261031.webp",
+          "alt": "Schéma comparant un filtre à huile vissé, changé en bloc, et une cartouche logée dans un boîtier démontable",
+          "legende": "Schéma de principe. La présence et la position des clapets varient selon le filtre et le moteur.",
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "fichier": "assets/r1-types-visse-cartouche.webp",
+            "octets": 59616,
+            "md5": "ee910bed34055380e6e9eb3875269733",
+            "sha256": "31a919f7805c44c05177dbb9512ac5ac35efc51da35ba0ac8d913d50fc4ce1f6",
+            "type": "image/webp",
+            "cache_control": "max-age=31536000",
+            "dimensions": "1200×900"
+          }
+        }
       },
       {
         "rip_id": 33,
         "slot": "PRICE",
-        "objet": "uploads : articles/gammes-produits/r1/filtre-a-huile-3.webp",
+        "voie": "20261031_editorial_filtre_huile_pg7_images (C)",
         "avant": {
-          "octets": 2255662,
-          "mimetype": "image/png",
-          "etag": "c9ed766385e7b871359414c9aaedbd1f",
-          "maj": "2026-03-25T01:13:24Z"
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile-3.webp",
+          "alt": "Filtre à huile — comparatif qualité par gamme",
+          "legende": "Différences de qualité filtre à huile",
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "octets": 2255662,
+            "md5": "c9ed766385e7b871359414c9aaedbd1f",
+            "type": "image/png",
+            "cache_control": "max-age=3600"
+          },
+          "maj_ligne": "2026-03-25T01:51:24.179+00:00"
         },
         "apres": {
-          "fichier": "assets/r1-price-caracteristiques-qualite.webp",
-          "octets": 37152,
-          "sha256": "29a6fa8daf41fbe2c3b257c5bb51c1f4e96ffc3990cb39810bd2448618ba16b7",
-          "type": "image/webp",
-          "dimensions": "1200×900"
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile-3-v20261031.webp",
+          "alt": "Schéma des caractéristiques de qualité d'un filtre à huile : clapet anti-retour, papier filtrant, clapet de dérivation",
+          "legende": "Un filtre ne fonctionne correctement que s'il a été bien monté.",
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "fichier": "assets/r1-price-caracteristiques-qualite.webp",
+            "octets": 37152,
+            "md5": "0df31d1f3e6e96d87f474b23d667036d",
+            "sha256": "29a6fa8daf41fbe2c3b257c5bb51c1f4e96ffc3990cb39810bd2448618ba16b7",
+            "type": "image/webp",
+            "cache_control": "max-age=31536000",
+            "dimensions": "1200×900"
+          }
+        }
+      },
+      {
+        "rip_id": 34,
+        "slot": "LOCATION",
+        "voie": "20261031_editorial_filtre_huile_pg7_images (C)",
+        "avant": {
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile-4.webp",
+          "alt": "Emplacement du filtre à huile sur le véhicule",
+          "legende": "Où se trouve le filtre à huile sur le véhicule",
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "octets": 2044795,
+            "md5": "268671cd769bf78eff6488a3ef5e4d0e",
+            "type": "image/png",
+            "cache_control": "max-age=3600"
+          },
+          "maj_ligne": "2026-03-25T01:51:24.18+00:00"
         },
-        "mecanisme": "POST /api/admin/r1-image-prompts/33/upload (garde admin), fichier en image/webp, sans forceSelect",
-        "effet_ligne": "uploadAndSetImage réécrit l'objet au même chemin (upsert), puis setImageUrl : même URL, statut approved, selected true (aucune autre ligne active sur le slot, relevé 06:59Z) ; le trigger trg_gpc_invalidate_image_prompts marque __gamme_page_cache du pg 7 périmé"
+        "apres": {
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile-4.webp",
+          "alt": "Emplacement du filtre à huile sur le véhicule",
+          "legende": "Où se trouve le filtre à huile sur le véhicule",
+          "statut": "pending",
+          "selectionnee": false,
+          "objet": null
+        }
       },
       {
         "rip_id": 35,
         "slot": "OG",
-        "objet": "uploads : articles/gammes-produits/r1/filtre-a-huile-og.webp",
+        "voie": "20261031_editorial_filtre_huile_pg7_og (C-og), accord distinct : alimente og:image",
         "avant": {
-          "octets": 1968574,
-          "mimetype": "image/png",
-          "etag": "eb3919e020fd6a64621b3e7b313d9f5d",
-          "maj": "2026-03-25T01:51:34Z"
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile-og.webp",
+          "alt": "Filtre à huile — AutoMecanik",
+          "legende": null,
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "octets": 1968574,
+            "md5": "eb3919e020fd6a64621b3e7b313d9f5d",
+            "type": "image/png",
+            "cache_control": "max-age=3600"
+          },
+          "maj_ligne": "2026-03-25T01:51:34.497+00:00"
         },
         "apres": {
-          "fichier": "assets/r1-og-filtre-a-huile.webp",
-          "octets": 65806,
-          "sha256": "e2e41bc369bab8b12d9b780a1baadba89d25357317177b4bc68caffa7870d8cf",
-          "type": "image/webp",
-          "dimensions": "1200×630"
-        },
-        "mecanisme": "POST /api/admin/r1-image-prompts/35/upload (garde admin), fichier en image/webp, sans forceSelect",
-        "effet_ligne": "uploadAndSetImage réécrit l'objet au même chemin (upsert), puis setImageUrl : même URL, statut approved, selected true (aucune autre ligne active sur le slot, relevé 06:59Z) ; le trigger trg_gpc_invalidate_image_prompts marque __gamme_page_cache du pg 7 périmé"
-      }
-    ],
-    "r1_hors_mecanisme": [
-      {
-        "rip_id": 34,
-        "slot": "LOCATION",
-        "constat": "aucun mécanisme de désélection ou de retrait ; l'objet r1/filtre-a-huile-4.webp (2 044 795 octets, image/png) reste servi"
-      },
-      {
-        "champs": "rip_alt_text, rip_caption (R1)",
-        "constat": "aucun endpoint n'écrit ces champs ; og:image:alt R1 suit l'alt du slot OG"
+          "chemin": "articles/gammes-produits/r1/filtre-a-huile-og-v20261031.webp",
+          "alt": "Filtre à huile : vissé ou cartouche, la référence se choisit selon la motorisation",
+          "legende": null,
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "fichier": "assets/r1-og-filtre-a-huile.webp",
+            "octets": 65806,
+            "md5": "3dd982f8619fa41032a2b98b01a20c1a",
+            "sha256": "e2e41bc369bab8b12d9b780a1baadba89d25357317177b4bc68caffa7870d8cf",
+            "type": "image/webp",
+            "cache_control": "max-age=31536000",
+            "dimensions": "1200×630"
+          }
+        }
       }
     ],
     "r3": [
       {
         "rip_id": 12,
+        "slot": "HERO_IMAGE",
         "section": "HERO",
-        "objet": "uploads : articles/gammes-produits/r3/filtre-a-huile-hero.webp",
-        "avant": "objet absent (0 objet sous r3/ au relevé) ; ligne pending, selected, rip_image_url NULL",
-        "apres": {
-          "fichier": "assets/r3-hero-filtre-visse-usage.webp",
-          "octets": 80490,
-          "sha256": "d62265064a5fd0c7a5b6ba5431fd449a92eecbc07267ec2bcced88d215cd3e4b",
-          "type": "image/webp",
-          "dimensions": "1280×720"
+        "voie": "20261031_editorial_filtre_huile_pg7_og (C-og), accord distinct : alimente og:image",
+        "avant": {
+          "chemin": null,
+          "alt": "Filtre à huile : guide complet",
+          "legende": "Filtre à huile neuf — vue studio",
+          "statut": "pending",
+          "selectionnee": true,
+          "objet": null
         },
-        "mecanisme": "dépôt du fichier hors application (aucun endpoint d'upload R3), puis PATCH /api/admin/r3-image-prompts/12/set-image-url et PATCH /api/admin/r3-image-prompts/12/approve (garde admin)"
+        "apres": {
+          "chemin": "articles/gammes-produits/r3/filtre-a-huile-hero-v20261031.webp",
+          "alt": "Filtre à huile vissé usagé retiré pendant une vidange",
+          "legende": "Filtre à huile neuf — vue studio",
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "fichier": "assets/r3-hero-filtre-visse-usage.webp",
+            "octets": 80490,
+            "md5": "5f5ddf5b184815f7151d2cf602ffb319",
+            "sha256": "d62265064a5fd0c7a5b6ba5431fd449a92eecbc07267ec2bcced88d215cd3e4b",
+            "type": "image/webp",
+            "cache_control": "max-age=31536000",
+            "dimensions": "1280×720"
+          }
+        }
       },
       {
         "rip_id": 13,
+        "slot": "S2_SYMPTOM_IMAGE",
         "section": "S2",
-        "objet": "uploads : articles/gammes-produits/r3/filtre-a-huile-s2.webp",
-        "avant": "objet absent (0 objet sous r3/ au relevé) ; ligne pending, selected, rip_image_url NULL",
-        "apres": {
-          "fichier": "assets/r3-s2-filtre-colmate-by-pass.webp",
-          "octets": 53278,
-          "sha256": "9ea6d3825a334ecdc1fa68281809e9ed12b0c0ce7633393f6029b49ae3bb20d7",
-          "type": "image/webp",
-          "dimensions": "1280×720"
+        "voie": "20261031_editorial_filtre_huile_pg7_images (C)",
+        "avant": {
+          "chemin": null,
+          "alt": "Symptomes usure Filtre à huile : usure visible",
+          "legende": "Filtre à huile use — usure visible",
+          "statut": "pending",
+          "selectionnee": true,
+          "objet": null
         },
-        "mecanisme": "dépôt du fichier hors application (aucun endpoint d'upload R3), puis PATCH /api/admin/r3-image-prompts/13/set-image-url et PATCH /api/admin/r3-image-prompts/13/approve (garde admin)"
+        "apres": {
+          "chemin": "articles/gammes-produits/r3/filtre-a-huile-s2-v20261031.webp",
+          "alt": "Schéma : filtre en bon état, puis filtre colmaté dont le clapet de dérivation laisse passer une huile non filtrée",
+          "legende": "Schéma de principe. La pression d'ouverture du clapet de dérivation dépend du moteur.",
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "fichier": "assets/r3-s2-filtre-colmate-by-pass.webp",
+            "octets": 53278,
+            "md5": "5662a4bd68fd817bdc87450cb2af6e59",
+            "sha256": "9ea6d3825a334ecdc1fa68281809e9ed12b0c0ce7633393f6029b49ae3bb20d7",
+            "type": "image/webp",
+            "cache_control": "max-age=31536000",
+            "dimensions": "1280×720"
+          }
+        }
       },
       {
         "rip_id": 14,
+        "slot": "S3_SCHEMA_IMAGE",
         "section": "S3",
-        "objet": "uploads : articles/gammes-produits/r3/filtre-a-huile-s3.webp",
-        "avant": "objet absent (0 objet sous r3/ au relevé) ; ligne pending, selected, rip_image_url NULL",
-        "apres": {
-          "fichier": "assets/r3-s3-coupe-filtre-visse.webp",
-          "octets": 57884,
-          "sha256": "2a004ef1222abcd28cc01a61e302bb98b636da9f212ee912bb05311366e735c5",
-          "type": "image/webp",
-          "dimensions": "1200×900"
+        "voie": "20261031_editorial_filtre_huile_pg7_images (C)",
+        "avant": {
+          "chemin": null,
+          "alt": "Schema comparatif Filtre à huile",
+          "legende": "Filtre à huile vs filtre-a-air — schema comparatif",
+          "statut": "pending",
+          "selectionnee": true,
+          "objet": null
         },
-        "mecanisme": "dépôt du fichier hors application (aucun endpoint d'upload R3), puis PATCH /api/admin/r3-image-prompts/14/set-image-url et PATCH /api/admin/r3-image-prompts/14/approve (garde admin)"
+        "apres": {
+          "chemin": "articles/gammes-produits/r3/filtre-a-huile-s3-v20261031.webp",
+          "alt": "Vue en coupe de principe d'un filtre à huile vissé : joint, plaque de base, clapet anti-retour, média filtrant, tube central, clapet anti-siphon, clapet de dérivation",
+          "legende": "Schéma de principe. La présence, le nombre et la position des clapets varient selon le filtre et le moteur.",
+          "statut": "approved",
+          "selectionnee": true,
+          "objet": {
+            "fichier": "assets/r3-s3-coupe-filtre-visse.webp",
+            "octets": 57884,
+            "md5": "c0595ede74c043ea47f4cbbe94a4264b",
+            "sha256": "2a004ef1222abcd28cc01a61e302bb98b636da9f212ee912bb05311366e735c5",
+            "type": "image/webp",
+            "cache_control": "max-age=31536000",
+            "dimensions": "1200×900"
+          }
+        }
       }
     ],
-    "r3_hors_mecanisme": [
-      {
-        "champs": "rip_alt_text, rip_caption (R3)",
-        "constat": "la clôture B5 (r3-image-prompt.b5-closure.test.ts:49) n'admet en écriture que rip_image_url et rip_status ; l'alt du hero affiché est page.title"
-      }
-    ]
+    "location": "R1 34 passe à pending et n'est plus sélectionnée ; chemin, alt et légende restent. Le statut pending est nécessaire : la sélection d'images R1 ne lit que les lignes approved (gamme-response-builder.service.ts:286-294), et le normaliseur se replie sur une ligne approved non sélectionnée (r1-image-normalizer.test.ts, test 2). Aucun emplacement universel n'est vrai pour le filtre à huile.",
+    "b5": "La clôture B5 (r3-image-prompt.b5-closure.test.ts:49) n'admet en écriture applicative que rip_image_url et rip_status sur les images R3 ; C écrit aussi rip_alt_text et rip_caption de R3 13 et 14. Le test ne porte que sur backend/src : écart technique déclaré, sans effet sur la clôture du code."
   },
   "execution": [
-    "1. Relire chaque cible et comparer longueur et sha256 à « avant » : un écart arrête le lot sans écriture.",
-    "2. Sauvegarder les lignes complètes (__seo_r1_gamme_slots r1s_pg_id='7', __seo_gamme sg_pg_id='7', les 11 lignes __seo_gamme_conseil) et télécharger les 4 objets R1 ; vérifier taille et eTag contre « images.r1[].avant ».",
-    "3. Textes : une transaction ; chaque UPDATE porte la clé et la condition sha256(colonne::text) = avant ; 1 ligne affectée par UPDATE, sinon ROLLBACK. Les champs protégés ne sont pas dans les SET.",
-    "4. Images R1 31, 32, 33, 35 : upload un par un ; images R3 12, 13, 14 : dépôt, set-image-url, approve.",
-    "5. Caches : voir « invalidation ».",
-    "6. Contrôles : voir « controles_post_ecriture »."
+    "1. Fusion de #1941 (α), puis moteur « 🗄️ Apply Supabase migrations (manual) » : dry_run, puis confirm = APPLY, only_ids = 20261031_accents_protected_segments.",
+    "2. Fusion de cette PR et de #1942 (γ) ; code servi en PROD (#1936, règle du H2, grille #emplacement, gardes de cache) avant A et C.",
+    "3. Contrôle préalable en lecture seule : node tools/build-publication-migration.cjs --precheck <fichier>, joué en transaction READ ONLY. Attendu : pins OK (α comprise), cibles AVANT, 7 objets nouveaux absents, 5 anciens conformes, caches de pg 7 frais. Un écart arrête le lot sans écriture.",
+    "4. Dépôt : tools/deposer-objets.cjs --execute (5 objets C). Sortie 0 ; un chemin occupé par d'autres octets sort 1 avant tout dépôt.",
+    "5. Nouveau contrôle préalable : les 5 objets C présents et conformes.",
+    "6. A, puis C, par le moteur : dry_run, puis confirm = APPLY, only_ids = 20261031_editorial_filtre_huile_pg7_textes, puis only_ids = 20261031_editorial_filtre_huile_pg7_images. Chaque migration verrouille ses lignes, écrit sous l'identité SEO-Content, relit chaque écriture et invalide les caches de pg 7 dans sa transaction.",
+    "7. Caches : voir « invalidation ».",
+    "8. Contrôles : voir « controles_post_ecriture ».",
+    "Sauvegarde : les descentes embarquent les valeurs relevées (textes et lignes image) et les anciens objets ne sont jamais réécrits ; aucune sauvegarde manuelle n'est requise."
   ],
   "invalidation": [
     {
-      "cache": "__gamme_page_cache pg 7",
-      "mecanisme": "trigger trg_gpc_invalidate_seo_gamme (UPDATE de __seo_gamme) et trg_gpc_invalidate_image_prompts (upload R1) : stale = true ; reconstruit à la lecture suivante par get_gamme_page_data_cached, ou par rebuildDbCache(7)"
+      "cache": "__gamme_page_cache et cache de réponse R1 en base, pg 7",
+      "mecanisme": "dans la transaction de chaque migration : triggers trg_gpc_invalidate_seo_gamme (A) et trg_gpc_invalidate_image_prompts (C, lignes R1), puis invalidate_r1_caches(7, …) ('both' pour A, 'gpc' pour C) ; la migration refuse de valider si le cache reste frais. Reconstruits à la lecture suivante"
     },
     {
-      "cache": "__seo_r1_gamme_slots",
-      "mecanisme": "aucun trigger d'invalidation ; ces champs passent par le cache Redis de la réponse R1"
-    },
-    {
-      "cache": "Redis R1 (gamme RPC et gamme:resp:v2:r6c0:7, gamme:resp:v2:r6c1:7, TTL 1 h)",
-      "mecanisme": "POST /api/gamme-rest/7/cache/invalidate"
+      "cache": "Redis R1 (gamme RPC, gamme:resp:v2:r6c0:7, gamme:resp:v2:r6c1:7, TTL 1 h)",
+      "mecanisme": "POST /api/gamme-rest/7/cache/invalidate, garde admin ajoutée par #1942 ; sinon délai de 1 h"
     },
     {
       "cache": "Redis R3 (r3-guide:v3:r6c0:filtre-a-huile, r3-guide:v3:r6c1:filtre-a-huile, TTL 24 h)",
-      "mecanisme": "aucun endpoint ; l'invalidation @OnEvent n'a pas d'émetteur câblé (r3-guide.service.ts:107). Suppression des 2 clés, sinon délai de 24 h"
+      "mecanisme": "POST /api/r3-guide/filtre-a-huile/cache/invalidate, route admin ajoutée par #1942 ; sinon délai de 24 h"
     },
     {
       "cache": "HTML R1 en périphérie",
-      "mecanisme": "s-maxage=86400 (pieces.$slug.tsx:555) : purge CDN de l'URL R1, sinon délai de 24 h"
+      "mecanisme": "s-maxage=86400 (pieces.$slug.tsx:555) : purge CDN de l’URL R1, sinon délai de 24 h"
     },
     {
-      "cache": "images R1 via /imgproxy/",
-      "mecanisme": "Caddy sert Cache-Control « public, max-age=31536000, immutable » (Caddyfile:68) ; l'upload réécrit au même chemin, donc la même URL : purge CDN des URL imgproxy servies ; les caches navigateur gardent l'ancienne image jusqu'à un an. Changer de chemin changerait rip_image_url et l'URL og:image R1 (balise protégée)"
+      "cache": "HTML R3 en périphérie",
+      "mecanisme": "public, max-age=300, stale-while-revalidate=3600, sans s-maxage (blog-pieces-auto.conseils.$pg_alias.tsx:266) : délai de 5 min, plus 1 h de revalidation au plus ; purge CDN facultative"
+    },
+    {
+      "cache": "images (/imgproxy/, max-age=31536000, immutable)",
+      "mecanisme": "chemins versionnés, donc URL nouvelles : aucune purge d'image. Les anciennes URL restent servies à l'identique et redeviennent celles des pages après un retour arrière"
     }
   ],
   "controles_post_ecriture": [
-    "Relire les 50 cibles : longueur et sha256 = « apres ».",
+    "Relire les 50 cibles : longueur et sha256 = « apres » (A les relit déjà dans sa transaction ; relecture après validation en lecture seule).",
     "Relire « champs_proteges_inchanges » : hash identiques.",
-    "__gamme_page_cache pg 7 : stale = false, built_at postérieur à l'écriture, payload.sg_content de hash « apres ».",
-    "Objets R1 et R3 : taille et sha256 du fichier téléchargé = « images.*.apres », type image/webp ; URL servies en 200.",
-    "Rendu servi (DEV ou PREPROD, même base) en 375 et 1 280 px : comptes et lint du HANDOFF § 6 identiques au banc (FAQ R1 affichée 5 = FAQPage 5 ; « combustion chamber » 0 ; liens /pièces/ 0 ; liens /diagnostic-auto/ vides 0) ; title, meta description, H1 et canonical R1 et R3 identiques à l'avant.",
-    "R3 : og:image = r3/filtre-a-huile-hero.webp ; R1 : og:image inchangée en URL."
+    "__gamme_page_cache pg 7 : stale = false après reconstruction, built_at postérieur à l’écriture, payload.sg_content de hash « apres ».",
+    "Lignes image : rip_image_url = préfixe + chemin « apres », alt, légende, statut et sélection = « images.*.apres » ; R1 34 pending et non sélectionnée.",
+    "Objets : tools/deposer-objets.cjs --execute en rejeu ne dépose rien et relit 5 fois « md5 conforme » ; URL servies en 200, image/webp.",
+    "Rendu servi en 375 et 1 280 px : comptes et lint du HANDOFF § 6 identiques au banc (FAQ R1 affichée 5 = FAQPage 5 ; « combustion chamber » 0 ; liens /pièces/ 0 ; liens /diagnostic-auto/ vides 0) ; #emplacement sur une colonne, sans colonne vide ; H2 de #qualite-prix « Qualité et marques » et bouton de navigation « Qualité & Marques », ancre inchangée ; title, meta description, H1 et canonical R1 et R3 identiques à l’avant.",
+    "og:image et og:image:alt R1 et R3 identiques à l’avant : C ne touche ni R1 35 ni R3 12 (C-og)."
   ],
   "rollback": {
-    "textes": "une transaction : restaurer la sauvegarde de l'étape 2 avec la condition sha256(colonne::text) = « apres » (une valeur modifiée depuis n'est pas écrasée) ; triggers et invalidations identiques à l'écriture",
-    "images_r1": "ré-uploader les 4 objets sauvegardés au même chemin ; ils sont en image/png : l'upload reprend le type envoyé",
-    "images_r3": "aucun endpoint ne remet rip_image_url à NULL ni le statut à pending : retour par SQL (rip_image_url NULL, rip_status pending), même zone STOP, puis suppression des 3 objets",
-    "caches": "mêmes invalidations qu'à l'écriture, purge CDN comprise"
+    "ordre": "inverse de l’écriture : C-og si elle a été appliquée, puis C, puis A",
+    "lancement": "les descentes .down.sql se lancent à la main, le moteur étant forward-only ; chacune porte son BEGIN / COMMIT et ses SET LOCAL, et refait les contrôles et l'identité SEO-Content de la montée",
+    "textes": "chaque cellule encore à l'état APRES revient à sa valeur relevée ; une cellule modifiée depuis arrête tout (DERIVE). Le trigger d'accents repasse : r1s_arg1_content et r1s_arg2_content reviennent sous leur forme accentuée (état RETOUR, mesuré au banc), sans retour à l'octet possible sans désactiver un trigger. r1s_updated_at prend la date du retour. Le bloc de prix de pg 7 revient avec sg_content, et le H2 de #qualite-prix redevient « Qualité, prix et marques » sans autre action (règle calculée sur le contenu servi)",
+    "images": "lignes remises à l'état relevé (chemin, alt, légende, statut, sélection et, en R1, rip_updated_at), sous la même condition DERIVE ; la descente refuse si un ancien objet R1 manque ou a changé. Les anciens objets n'ont jamais été réécrits et redeviennent servis tels quels ; R3 13 et 14 repassent à pending sans image",
+    "objets": "les objets versionnés restent dans le bucket, sans effet sur les pages servies ; leur suppression est une étape distincte, hors lot",
+    "caches": "mêmes invalidations qu'à l'écriture : en base dans la transaction de la descente, Redis R1 et R3 par les deux routes admin, purge CDN de l'URL R1",
+    "preuve": "banc scripts/db/test-editorial-filtre-huile-lot.sh, sections 4, 6, 7 et 8 : écriture, relecture, retour, rejeu du retour, nouvelle montée, lot complet et retours dans l’ordre inverse"
   },
   "hors_lot": [
-    "H2 « Qualité, prix et marques » (pieces.$slug.tsx:900) : libellé du gabarit servi sur une page indexée, hors données du lot ; le lot y range un bloc de sg_content. Le modifier demande une décision nominative.",
-    "LOCATION 34, alt et légendes R1/R3 : sans mécanisme (« images »).",
-    "Meta description R1 « pas cher dès 5€… » : protégée, non modifiée."
-  ]
+    "H2 des autres gammes : la règle du H2 se calcule sur le contenu servi (aucune écriture en base). Relevé du 2026-10-31 en lecture seule avec priceSectionMentionsPrice, sur 168 gammes affichées : 93 sections avec un bloc de prix, aucune avec des blocs sans prix, 75 sans bloc. La règle ne change donc aucun H2 aujourd’hui, et seulement celui de pg 7 après A. Les 75 sections sans bloc gardent « Qualité, prix et marques » (titre historique) : constat déclaré, non traité dans ce lot.",
+    "C-og (R1 35, R3 12) : og:image et og:image:alt, balises protégées ; migration générée hors dépôt (--og --out-dir), objets par deposer-objets.cjs --og, sur accord distinct.",
+    "Meta description R1 « pas cher dès 5€… » : protégée, non modifiée.",
+    "Suppression des anciens objets R1 et des objets versionnés : jamais dans ce lot."
+  ],
+  "controle_prealable_reel": {
+    "a": "2026-10-31T16:32:49Z",
+    "lecture": "sweep-psql.sh, transaction READ ONLY, SQL produit par --precheck",
+    "resultat": [
+      "pins de fonctions conformes, sauf restore_french_accents (version ancienne : α à appliquer d’abord)",
+      "14 triggers conformes",
+      "agent SEO-Content : 1 ligne, scope seo_content_tables, UPDATE autorisé sur les 5 tables du lot",
+      "lignes : __seo_r1_gamme_slots 1, __seo_gamme 1 (sg_id 4), __seo_gamme_conseil 12 sections dont les 11 du lot",
+      "50 cellules à l’état AVANT ; 5 champs protégés conformes ; préfixe d’URL conforme ; 8 lignes image à l’état AVANT",
+      "7 objets nouveaux absents ; 5 anciens objets R1 conformes",
+      "caches __gamme_page_cache et réponse R1 de pg 7 : 1 ligne fraîche chacun"
+    ]
+  },
+  "preuves": {
+    "banc": "scripts/db/test-editorial-filtre-huile-lot.sh : 110 PASS, 0 FAIL (PostgreSQL 17.11, conteneur sans réseau, identifiants fictifs) ; écriture, relecture, retour, rejeu, refus et contrôle préalable sur données isolées",
+    "depot": "tools/deposer-objets.test.cjs : 9/9 contre un faux Storage local (en-têtes, rejeu, chemin occupé, erreur d’accès, panne, relecture fausse, jeu C-og)",
+    "generateur": "tools/build-publication-migration.cjs --check : les 4 migrations et le banc sont conformes au dossier"
+  }
 }
