@@ -184,42 +184,17 @@ V3 champions tries par volume :
 
 ---
 
-### V5 — Vehicules en base, pas dans le CSV
+### V5 — Déclinaisons catalogue sans recherche propre pour la gamme
 
-Vehicules qui existent dans la base (`auto_type`) mais ne sont PAS dans le CSV Google.
+Pour une requête Ads qui cite la gamme et le modèle, conserver le modèle quel que soit le volume. Si la requête omet la carrosserie, le rapprochement avec Google France et le catalogue permet de retenir une fiche représentative. Un choix validé pour un modèle porte sur cette fiche et cette gamme.
 
-**Regles :**
-- Leur **modele** (via `modele_parent` dans `auto_modele`) a des V3/V4 dans cette gamme
-- **Meme generation seulement** : les freres ayant le meme `modele_parent` (pas toute la branche)
-- Si `modele_parent = 0` : le modele est un root, pas de siblings
-- Seulement les types avec `type_display = '1'` (vehicules affichables)
-- **Toutes energies** : si un V3 diesel declenche un V5, les siblings essence du meme parent sont aussi V5
-- Crees automatiquement avec volume = 0
-- **Recalcules** a chaque import/recalcul (supprimes puis recrees)
+Le niveau de la représentante suit l’élection V2/V3/V4. Une autre carrosserie affichable de la même génération relève de V5 lorsqu’elle appartient à la famille catalogue et qu’aucune recherche propre à cette gamme ne lui donne un niveau V2/V3/V4. Une requête qui nomme explicitement le break ou le coupé se traite pour cette carrosserie. Un même `type_id` a un seul niveau par gamme, avec priorité au niveau issu de la recherche.
 
-**Exemple avec la hierarchie auto_modele :**
-```
-auto_modele :
-  Clio       (modele_id=1, modele_parent=0)   <- root (PAS de siblings car parent=0)
-  Clio II    (modele_id=4, modele_parent=1)   <- generation 1 (enfant de Clio)
-  Clio III   (modele_id=5, modele_parent=1)   <- generation 1 (enfant de Clio)
-  Clio IV    (modele_id=7, modele_parent=1)   <- generation 1 (enfant de Clio)
-  Clio III Estate (modele_id=6, modele_parent=5) <- generation 2 (enfant de Clio III)
-```
+Pour retrouver la famille, examiner les modèles frères **et** les enfants directs, y compris les enfants d’une représentante dont `modele_parent = 0`. Vérifier la génération avant de retenir un frère. Pour identifier une déclinaison de carrosserie d’une motorisation précise, vérifier aussi le moteur et la puissance. Ces contrôles complètent la règle des autres motorisations du même modèle.
 
-**Scenario :** Le CSV a "disque frein clio 3 1.5 dci" (V3, type_id=12345, modele=Clio III, modele_id=5)
+**Cas vérifié — filtre à huile, Mégane III 1.6 dCi 130.** La berline `15146` est la représentante choisie pour la requête sans carrosserie et figure en V4. Le break `15283` et le coupé `15189` sont des enfants directs du modèle `140049`, affichables avec le même moteur et la même puissance. Ils relèvent de V5 pour cette gamme en l’absence de demande propre observée. Le coupé-cabriolet `15234`, déjà V4 dans la table véhicule, nécessite une revue de l’origine du niveau avant toute modification.
 
-```
-1. Clio III a modele_parent=1 (pas 0, donc on peut chercher des siblings)
-2. Siblings = SELECT * FROM auto_modele WHERE modele_parent=1 AND modele_id != 5
-   -> Clio II (id=4) et Clio IV (id=7)
-   -> PAS Clio III Estate (id=6) car son parent est 5, pas 1
-3. Tous les auto_type de Clio II et Clio IV avec type_display='1'
-4. Exclure ceux deja dans le CSV
-5. Les restants = V5 (volume=0)
-```
-
-**Resultat :** Les vehicules Clio II et Clio IV de la meme generation sont V5, mais pas Clio III Estate (qui est un sous-modele).
+Le calcul V5 exprime un lien de catalogue. Il ne constitue pas une mesure de volume. Le service admin calcule sa liste à la lecture. Le script historique d’import parcourt les modèles frères et peut encore créer des mots-clés synthétiques. Ces chemins divergent du contrat sur le périmètre familial. Voir les invariants et les écarts répertoriés dans [`vlevel-invariants.ts`](../../packages/seo-roles/src/vlevel-invariants.ts).
 
 ---
 
@@ -260,7 +235,7 @@ Phase MATCH : attribution type_id (RPC backfill_seo_keywords_type_ids)
 Phase V :
     V3/V4  (par groupe [gamme+modele+energie])
     -> V2   (top 10 des V3, dedup par [modele+energie])
-    -> V5   (siblings en base via modele_parent, meme generation)
+    -> V5   (famille catalogue de la même génération (frères et enfants directs))
     -> V1   (DEFERRED — inter-gammes, >= 30% des G1)
     -> V6   (DEFERRED — orphelins globaux)
 ```
@@ -275,7 +250,7 @@ Phase V :
 | Volume | **Le plus recent** du CSV remplace l'ancien |
 | V3/V4 | **Recalcules** — un V4 peut devenir V3 si son nouveau volume est plus eleve |
 | V2 | **Recalcules** — top 10 recalcule avec les nouveaux volumes |
-| V5 | **Supprimes et recrees** — recalcules a partir des nouveaux V3/V4 |
+| V5 | Famille à réévaluer après résolution V2/V3/V4. Une proposition V5 respecte les niveaux recherchés déjà établis. |
 
 ---
 
@@ -305,18 +280,18 @@ Phase V :
 | **V6** | **Reporte** |
 | **type_id** | **Garanti par le pipeline** (MATCH avant V) |
 | **Reimport CSV** | **Fusion** — merge avec l'existant, volume = le plus recent |
-| **V5 au reimport** | **Recalcules** — supprimes et recrees |
+| **V5 au reimport** | Voir la section V5 et les limites des calculateurs. |
 | **Tri public** | **Volume Google DESC** a l'interieur d'un meme V-level |
 | **Gammes universelles** | **Liste fixe** : essuie-glaces, ampoules, tapis (+ ajout futur) |
 | **Limite V2** | **Toujours 10** (pas configurable) |
-| **V5 profondeur** | **Meme generation** (meme parent), PAS toute la branche |
+| **V5 profondeur** | Même génération • frères et enfants directs, y compris pour un modèle racine. |
 | **V5 toutes energies** | Oui — un V3 essence declenche des V5 diesel du meme modele |
 | **V5 type_display** | Seulement `type_display = '1'` (vehicules affichables) |
 | **V3 solo** | Seul dans le groupe = V3 automatique (meme volume=0) |
 | **V3 tous a zero** | Groupe tout a volume=0 = premier du CSV = V3 |
 | **score_seo** | **Supprime** — on utilise directement le champ volume |
 | **Multi-gamme** | **Non** — T2 garantit 1 keyword = 1 seule gamme |
-| **Recalcul admin** | **Tout** : V2/V3/V4 recalcules + V5 supprimes et recrees |
+| **Recalcul admin** | V2/V3/V4 recalculés. Le service admin calcule les V5 à la lecture. |
 | **T2 exclusion** | **Inchange** |
 | **T3 categorisation** | **Inchange** |
 
