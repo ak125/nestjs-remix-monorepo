@@ -1,0 +1,850 @@
+page,query,famille,impressions,clics,ctr_pct,position,ctr_attendu_site_pct,clics_attendus,ecart_clics
+arbre-a-came,arbre a came,nue,5987,0,0.0,3.5,0.79,47.3,47.3
+corps-papillon,corps papillon,nue,1234,0,0.0,2.2,2.13,26.3,26.3
+arbre-a-came,arbre a cam,autre,458,0,0.0,1.9,2.13,9.8,9.8
+colonne-de-direction,colonne de direction,nue,1325,2,0.15,6.2,0.78,10.3,8.3
+carter-d-huile,un carter,nue,558,0,0.0,4.2,1.07,6.0,6.0
+arbre-a-came,l'arbre à came,nue,272,0,0.0,2.3,2.13,5.8,5.8
+capteur-abs,capteur esp,autre,1155,4,0.35,6.4,0.78,9.0,5.0
+cable-d-embrayage,câble d'embrayage,nue,632,0,0.0,5.8,0.78,4.9,4.9
+arbre-a-came,arbre à came,nue,512,0,0.0,5.8,0.78,4.0,4.0
+arbre-a-came,l'arbre a came,nue,146,0,0.0,2.5,2.13,3.1,3.1
+carter-d-huile,carter d'huile,nue,1224,0,0.0,10.4,0.25,3.1,3.1
+arbre-a-came,arbre à cames,nue,323,0,0.0,9.1,0.7,2.3,2.3
+colonne-de-direction,colonne de direction voiture,nue,189,0,0.0,4.3,1.07,2.0,2.0
+colonne-de-direction,colone de direction,nue,259,0,0.0,5.6,0.78,2.0,2.0
+cylindre-de-roue,cylindre de roue arrière,nue,776,0,0.0,10.4,0.25,1.9,1.9
+colonne-de-direction,colonne direction,nue,367,0,0.0,8.1,0.51,1.9,1.9
+colonne-de-direction,la colonne de direction,nue,81,0,0.0,1.9,2.13,1.7,1.7
+arbre-a-came,arbre a cames,nue,297,0,0.0,6.8,0.55,1.6,1.6
+arbre-a-came,abre a came,nue,47,0,0.0,2.2,2.13,1.0,1.0
+arbre-a-came,arbre came,nue,120,0,0.0,5.8,0.78,0.9,0.9
+arbre-a-came,l'arbre à cames,nue,108,0,0.0,3.2,0.79,0.9,0.9
+cable-d-embrayage,câble embrayage,nue,109,0,0.0,9.3,0.7,0.8,0.8
+galet-tendeur-de-courroie-d-accessoire,comment changer le galet tendeur courroie accessoires,question,75,0,0.0,4.9,0.98,0.7,0.7
+faisceau-d-allumage,faisceaux d'allumage,nue,89,0,0.0,8.8,0.7,0.6,0.6
+carter-d-huile,cartere d'huile,nue,208,1,0.48,6.1,0.78,1.6,0.6
+arbre-a-came,arbre a camme,nue,29,0,0.0,2.5,2.13,0.6,0.6
+contacteur-de-feu-de-recul,mano feu de recul,autre,26,0,0.0,1.7,2.13,0.6,0.6
+colonne-de-direction,axe de direction,autre,26,0,0.0,1.8,2.13,0.6,0.6
+colonne-de-direction,colonne de direction symptôme,question,48,0,0.0,4.1,1.07,0.5,0.5
+galet-tendeur-de-courroie-d-accessoire,galets tendeurs courroie d'accessoires,nue,72,0,0.0,9.0,0.7,0.5,0.5
+galet-tendeur-de-courroie-d-accessoire,changer un galet tendeur de courroie accessoire,question,91,0,0.0,7.0,0.55,0.5,0.5
+arbre-a-came,larbre a came,nue,23,0,0.0,2.0,2.13,0.5,0.5
+faisceau-d-allumage,changement faisceau allumage,question,56,0,0.0,6.5,0.78,0.4,0.4
+arbre-a-came,came arbre,nue,39,0,0.0,1.0,1.04,0.4,0.4
+galet-tendeur-de-courroie-d-accessoire,galet enrouleur de courroie d'accessoire,autre,72,0,0.0,6.6,0.55,0.4,0.4
+colonne-de-direction,collone de direction,autre,18,0,0.0,2.3,2.13,0.4,0.4
+carter-d-huile,le carter d'huile,nue,67,0,0.0,7.2,0.55,0.4,0.4
+cable-d-embrayage,symptôme câble embrayage hs,question,45,0,0.0,6.1,0.78,0.4,0.4
+contacteur-de-feu-de-recul,ou se trouve le contacteur de feux de recul,autre,59,0,0.0,7.1,0.55,0.3,0.3
+arbre-a-came,arbre a cale,nue,31,0,0.0,1.0,1.04,0.3,0.3
+carter-d-huile,changer carter d'huile,question,46,0,0.0,8.5,0.7,0.3,0.3
+arbre-a-came,l arbre a came,nue,30,0,0.0,4.3,1.07,0.3,0.3
+galet-tendeur-de-courroie-d-accessoire,tendeur de courroie d'accessoires,nue,32,0,0.0,5.3,0.98,0.3,0.3
+rotule-de-direction,les rotules de direction,nue,39,0,0.0,2.9,0.79,0.3,0.3
+galet-tendeur-de-courroie-d-accessoire,galet tendeur de courroie,nue,28,0,0.0,3.5,1.07,0.3,0.3
+capteur-abs,où se trouve le capteur esp,autre,38,0,0.0,5.8,0.78,0.3,0.3
+cremailliere-de-direction,cremailliere,nue,27,0,0.0,4.0,1.07,0.3,0.3
+arbre-a-came,arbre à cam,autre,29,0,0.0,5.2,0.98,0.3,0.3
+arbre-a-came,l’arbre a came,nue,27,0,0.0,1.0,1.04,0.3,0.3
+contacteur-de-feu-de-recul,feux de recul,nue,13,0,0.0,1.9,2.13,0.3,0.3
+joint-de-cache-culbuteurs,où puis-je trouver le joint de cache-culbuteurs pour ma berline 2026 ?,autre,50,0,0.0,6.9,0.55,0.3,0.3
+carter-d-huile,carter d’huile,nue,50,0,0.0,6.7,0.55,0.3,0.3
+galet-tendeur-de-courroie-d-accessoire,tendeur automatique courroie accessoire,autre,28,0,0.0,4.7,0.98,0.3,0.3
+cable-d-embrayage,cable d’embrayage,nue,24,0,0.0,3.7,1.07,0.3,0.3
+colonne-de-direction,la colonne de direction voiture,nue,12,0,0.0,1.9,2.13,0.3,0.3
+arbre-a-came,arbe a came,nue,32,0,0.0,2.5,0.79,0.3,0.3
+joint-de-cache-culbuteurs,joint de cache-culbuteurs,nue,49,0,0.0,8.4,0.51,0.2,0.2
+joint-de-cache-culbuteurs,joint cache,nue,31,0,0.0,2.8,0.79,0.2,0.2
+colonne-de-direction,colon de direction,autre,11,0,0.0,1.7,2.13,0.2,0.2
+arbre-a-came,abre a cam,autre,29,0,0.0,2.5,0.79,0.2,0.2
+galet-tendeur-de-courroie-d-accessoire,roulement courroie accessoire,autre,23,0,0.0,5.4,0.98,0.2,0.2
+filtre-de-boite-auto,filtre de boite automatique,autre,32,0,0.0,9.4,0.7,0.2,0.2
+galet-tendeur-de-courroie-d-accessoire,remplacer galet tendeur courroie accessoire,question,28,0,0.0,5.5,0.78,0.2,0.2
+arbre-a-came,l'arbre a cames,nue,20,0,0.0,4.3,1.07,0.2,0.2
+carter-d-huile,un cartere,nue,10,0,0.0,2.1,2.13,0.2,0.2
+galet-tendeur-de-courroie-d-accessoire,galet de courroie d'accessoire,nue,37,0,0.0,7.3,0.55,0.2,0.2
+joint-de-cache-culbuteurs,is it où puis-je trouver le joint de cache-culbuteurs pour ma berline 2026 ?,autre,38,0,0.0,8.0,0.51,0.2,0.2
+carter-d-huile,changement carter d'huile,question,77,0,0.0,10.1,0.25,0.2,0.2
+support-moteur,symptômes support moteur usé,question,77,0,0.0,10.5,0.25,0.2,0.2
+cylindre-de-roue,cylindre roue arriere,nue,36,0,0.0,7.7,0.51,0.2,0.2
+cylindre-de-roue,etrier cylindre de roue,autre,23,0,0.0,6.1,0.78,0.2,0.2
+colonne-de-direction,auto colonne,nue,17,0,0.0,1.4,1.04,0.2,0.2
+capteur-abs,capteur abs esp,autre,17,0,0.0,4.9,0.98,0.2,0.2
+faisceau-d-allumage,les faisceaux de bougie,autre,66,0,0.0,9.7,0.25,0.2,0.2
+contacteur-de-feu-de-recul,réparer contacteur feux de recul,autre,31,0,0.0,7.5,0.51,0.2,0.2
+capteur-abs,capteur eps,achat,20,0,0.0,5.5,0.78,0.2,0.2
+galet-tendeur-de-courroie-d-accessoire,galet courroie alternateur,autre,20,0,0.0,6.0,0.78,0.2,0.2
+support-moteur,support moteur hs,question,22,0,0.0,8.6,0.7,0.2,0.2
+joint-de-cache-culbuteurs,joint cache soupape,autre,30,0,0.0,7.6,0.51,0.2,0.2
+galet-tendeur-de-courroie-d-accessoire,un galet voiture,nue,14,0,0.0,3.8,1.07,0.1,0.1
+arbre-a-came,arbre acam,autre,7,0,0.0,2.0,2.13,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,réglage galet tendeur courroie accessoire,question,15,0,0.0,4.8,0.98,0.1,0.1
+arbre-a-came,arbres à cames,nue,14,0,0.0,1.1,1.04,0.1,0.1
+faisceau-d-allumage,faisceaux de bougies voitures,autre,26,0,0.0,6.9,0.55,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,galet d'accessoire,nue,26,0,0.0,7.2,0.55,0.1,0.1
+arbre-a-came,arbre acame,nue,18,0,0.0,2.7,0.79,0.1,0.1
+joint-de-cache-culbuteurs,joint de cache,nue,18,0,0.0,6.2,0.78,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,galet pour courroie accessoire,nue,14,0,0.0,5.4,0.98,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,changer tendeur courroie accessoire,question,25,0,0.0,7.9,0.51,0.1,0.1
+arbre-a-came,arbreacam,autre,13,0,0.0,4.7,0.98,0.1,0.1
+arbre-a-came,combien de temps pour changer un arbre à came,question,16,0,0.0,5.8,0.78,0.1,0.1
+colonne-de-direction,colonne de direction volant,autre,12,0,0.0,1.2,1.04,0.1,0.1
+poulie-d-arbre-a-came,poulie abracam,autre,17,0,0.0,9.0,0.7,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,comment tendre un galet tendeur automatique,question,23,0,0.0,7.9,0.51,0.1,0.1
+contacteur-de-feu-de-recul,feu de recul,nue,14,0,0.0,3.1,0.79,0.1,0.1
+cable-d-embrayage,réglage du câble d'embrayage,question,14,0,0.0,2.6,0.79,0.1,0.1
+cylindre-de-roue,cylindre de roue arrière qui fuit,question,142,1,0.7,5.9,0.78,1.1,0.1
+rotule-de-direction,la rotule de direction,nue,5,0,0.0,1.8,2.13,0.1,0.1
+butee-d-embrayage,butée d'embrayage symptôme,question,15,0,0.0,9.2,0.7,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,galet detendeur,autre,13,0,0.0,5.5,0.78,0.1,0.1
+corps-papillon,papillon d'admission,autre,13,0,0.0,5.7,0.78,0.1,0.1
+joint-de-cache-culbuteurs,"quel est le meilleur jeu de joints de couvre-culasse pour un moteur 2026, disponible en france et affiché en € ?",question,40,0,0.0,10.5,0.25,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,tendeur de courroie d'accessoire,nue,18,0,0.0,7.2,0.55,0.1,0.1
+carter-d-huile,le carter,nue,18,0,0.0,7.3,0.55,0.1,0.1
+ventilateur-de-refroidissement,ventilateur de refroidissement,nue,18,0,0.0,6.8,0.55,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,tendeur courroie d'accessoire,nue,10,0,0.0,5.0,0.98,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,courroie accessoire et galet tendeur,nue,19,0,0.0,8.3,0.51,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,tendeur de courroie d accessoires,nue,12,0,0.0,6.3,0.78,0.1,0.1
+arbre-a-came,les arbres à cames,nue,9,0,0.0,1.0,1.04,0.1,0.1
+filtre-de-boite-auto,filtre de boite de vitesse,autre,8,0,0.0,4.5,1.07,0.1,0.1
+arbre-a-came,l’arbre à cames,nue,8,0,0.0,3.8,1.07,0.1,0.1
+cable-d-embrayage,photo,autre,4,0,0.0,1.8,2.13,0.1,0.1
+cylindre-de-roue,fuite cylindre de roue,question,4,0,0.0,2.5,2.13,0.1,0.1
+faisceau-d-allumage,faisceau d'allumage symptômes,question,15,0,0.0,7.3,0.55,0.1,0.1
+pompe-a-carburant,site:automecanik.com,autre,16,0,0.0,8.0,0.51,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,tendeur courroie accessoir,nue,10,0,0.0,3.0,0.79,0.1,0.1
+galet-tendeur-de-courroie-d-accessoire,courroie accessoire et galet,nue,8,0,0.0,4.6,0.98,0.1,0.1
+galet-enrouleur-de-courroie-d-accessoire,galet tendeur et galet enrouleur,autre,10,0,0.0,6.0,0.78,0.1,0.1
+machoires-de-frein,machoires de frein arrière,nue,11,0,0.0,9.0,0.7,0.1,0.1
+capteur-abs,esp asr voiture,autre,30,0,0.0,9.9,0.25,0.1,0.1
+arbre-a-came,arbe a cam,autre,7,0,0.0,4.1,1.07,0.1,0.1
+corps-papillon,papillon moteur,autre,7,0,0.0,1.0,1.04,0.1,0.1
+faisceau-d-allumage,symptôme faisceau allumage hs,question,13,0,0.0,7.2,0.55,0.1,0.1
+galet-enrouleur-de-courroie-d-accessoire,enrouleur de courroie,nue,14,0,0.0,7.6,0.51,0.1,0.1
+capteur-abs,site:www.automecanik.com,autre,28,0,0.0,9.6,0.25,0.1,0.1
+arbre-a-came,l'arbre a cam,autre,7,0,0.0,4.6,0.98,0.1,0.1
+faisceau-d-allumage,cable bougie allumage,autre,3,0,0.0,2.0,2.13,0.1,0.1
+cardan,site:www.automecanik.com,autre,9,0,0.0,8.7,0.7,0.1,0.1
+arbre-a-came,arbracame,autre,6,0,0.0,5.0,0.98,0.1,0.1
+galet-enrouleur-de-courroie-d-accessoire,poulie enrouleur,autre,23,0,0.0,9.6,0.25,0.1,0.1
+faisceau-d-allumage,faisceau d'allumage bougie,autre,8,0,0.0,8.8,0.7,0.1,0.1
+arbre-a-came,arbres a cames,nue,7,0,0.0,2.6,0.79,0.1,0.1
+faisceau-d-allumage,faisceau bobine d'allumage,autre,22,0,0.0,9.6,0.25,0.1,0.1
+commande-de-ventilation,commande de ventilation,nue,21,0,0.0,10.1,0.25,0.1,0.1
+arbre-a-came,abre a cames,nue,5,0,0.0,1.0,1.04,0.1,0.1
+filtre-de-boite-auto,filtre atf,autre,5,0,0.0,5.2,0.98,0.0,0.0
+commande-de-ventilation,commande de vitesse de ventilation voiture,autre,19,0,0.0,10.2,0.25,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,galet tendeur automatique courroie accessoire,autre,19,0,0.0,10.4,0.25,0.0,0.0
+capteur-abs,cible capteur abs,autre,6,0,0.0,6.2,0.78,0.0,0.0
+disque-de-frein,changement frein,question,6,0,0.0,6.2,0.78,0.0,0.0
+cardan,risque-t-on de se tromper de cardan entre deux finitions d'un même modèle ?,autre,6,0,0.0,5.8,0.78,0.0,0.0
+support-moteur,support boîte de vitesse symptôme,question,9,0,0.0,7.8,0.51,0.0,0.0
+cylindre-de-roue,cylindre de frein arrière,autre,9,0,0.0,8.4,0.51,0.0,0.0
+support-moteur,oui,autre,4,0,0.0,4.5,1.07,0.0,0.0
+faisceau-d-allumage,faisceau électrique voiture,autre,2,0,0.0,2.5,2.13,0.0,0.0
+rotule-de-direction,rotule direction voiture,nue,2,0,0.0,2.5,2.13,0.0,0.0
+capteur-abs,capture abs,autre,2,0,0.0,1.5,2.13,0.0,0.0
+cardan,c'est quoi cette pièce,question,2,0,0.0,2.0,2.13,0.0,0.0
+capteur-abs,capteur de frein abs,autre,2,0,0.0,2.0,2.13,0.0,0.0
+radiateur-de-chauffage,radiateur chauffage polo 5,autre,2,0,0.0,1.5,2.13,0.0,0.0
+faisceau-d-allumage,connecteur bobine allumage,autre,2,0,0.0,2.5,2.13,0.0,0.0
+faisceau-d-allumage,faisceau pompe a essence,autre,2,0,0.0,2.5,2.13,0.0,0.0
+support-moteur,support moteur 207,vehicule,2,0,0.0,2.0,2.13,0.0,0.0
+faisceau-d-allumage,faisceau moteur,autre,2,0,0.0,2.5,2.13,0.0,0.0
+contacteur-de-feu-de-recul,les feux de recul,nue,2,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,oui,autre,2,0,0.0,1.5,2.13,0.0,0.0
+joint-de-cache-culbuteurs,صور,autre,2,0,0.0,2.5,2.13,0.0,0.0
+emetteur-d-embrayage,photos,autre,2,0,0.0,1.5,2.13,0.0,0.0
+cylindre-de-roue,cylindre tambour arriere,autre,2,0,0.0,2.0,2.13,0.0,0.0
+cylindre-de-roue,remplacement cylindre de roue arrière,question,2,0,0.0,2.0,2.13,0.0,0.0
+faisceau-d-allumage,faisceaux électriques,autre,2,0,0.0,2.5,2.13,0.0,0.0
+pompe-de-direction-assistee,pompe assiste,nue,4,0,0.0,1.0,1.04,0.0,0.0
+capteur-abs,esp obd,autre,4,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,support moteur bruit,question,8,0,0.0,8.4,0.51,0.0,0.0
+contacteur-de-feu-de-recul,contacteur de recul,nue,8,0,0.0,8.0,0.51,0.0,0.0
+machoires-de-frein,machoire arriere voiture,nue,16,0,0.0,9.7,0.25,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,tendeur galet courroie,nue,5,0,0.0,5.6,0.78,0.0,0.0
+joint-de-cache-culbuteurs,cache-culbuteurs,nue,5,0,0.0,6.4,0.78,0.0,0.0
+cable-d-embrayage,cable d'embrayage cassé,autre,7,0,0.0,7.9,0.51,0.0,0.0
+poulie-d-arbre-a-came,pouli arbre came,nue,5,0,0.0,8.8,0.7,0.0,0.0
+contacteur-de-feu-de-recul,contacteur de marche arrière,autre,14,0,0.0,10.2,0.25,0.0,0.0
+pompe-a-carburant,site:www.automecanik.com,autre,5,0,0.0,9.0,0.7,0.0,0.0
+boitier-de-prechauffage,changer boitier prechauffage clio 3,question,5,0,0.0,8.8,0.7,0.0,0.0
+radiateur-de-chauffage,radiateur chauffage,nue,6,0,0.0,7.3,0.55,0.0,0.0
+colonne-de-direction,tige de direction voiture,autre,3,0,0.0,4.3,1.07,0.0,0.0
+contacteur-de-feu-de-recul,feux recul,nue,3,0,0.0,1.0,1.04,0.0,0.0
+colonne-de-direction,axe de direction voiture,autre,4,0,0.0,6.0,0.78,0.0,0.0
+joint-de-cache-culbuteurs,joint de cache soupape,autre,4,0,0.0,6.5,0.78,0.0,0.0
+machoires-de-frein,les mâchoires de frein,nue,4,0,0.0,6.2,0.78,0.0,0.0
+arbre-a-came,abracame,autre,3,0,0.0,1.3,1.04,0.0,0.0
+cremailliere-de-direction,crémaillère c'est quoi,question,4,0,0.0,6.5,0.78,0.0,0.0
+colonne-de-direction,colonne voiture,nue,3,0,0.0,1.3,1.04,0.0,0.0
+tambour-de-frein,tambour roue,autre,4,0,0.0,5.5,0.78,0.0,0.0
+colonne-de-direction,tube de direction,autre,3,0,0.0,1.0,1.04,0.0,0.0
+emetteur-d-embrayage,comment savoir si l'émetteur d'embrayage est mort,question,3,0,0.0,1.0,1.04,0.0,0.0
+arbre-a-came,décalage arbre à came,autre,6,0,0.0,7.5,0.51,0.0,0.0
+kit-d-embrayage,deux kits d'embrayage donnés compatibles avec la même voiture : lequel est le bon ?,autre,6,0,0.0,7.5,0.51,0.0,0.0
+cable-d-embrayage,câble d'embrayage qui lâche symptôme,question,12,0,0.0,9.5,0.25,0.0,0.0
+cremailliere-de-direction,reference cremaillere de direction,autre,12,0,0.0,9.5,0.25,0.0,0.0
+commande-d-eclairage,commande hauteur des feux,autre,3,0,0.0,5.0,0.98,0.0,0.0
+cable-d-embrayage,cable embrayage voiture,nue,3,0,0.0,5.0,0.98,0.0,0.0
+contacteur-de-feu-de-recul,changer contacteur de marche arrière,question,3,0,0.0,4.7,0.98,0.0,0.0
+arbre-a-came,arbre à came prix réparation,achat,3,0,0.0,5.3,0.98,0.0,0.0
+butee-d-embrayage,la buté d'embrayage,nue,4,0,0.0,8.8,0.7,0.0,0.0
+cable-d-embrayage,câble d’embrayage,nue,5,0,0.0,7.0,0.55,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,comment choisir le bon kit de galets tendeurs pour sa voiture,question,5,0,0.0,6.6,0.55,0.0,0.0
+carter-d-huile,carter d,nue,5,0,0.0,8.4,0.51,0.0,0.0
+cable-d-embrayage,cable embrayage cassé,autre,5,0,0.0,8.4,0.51,0.0,0.0
+poulie-d-arbre-a-came,poulie arbre à came,nue,5,0,0.0,8.4,0.51,0.0,0.0
+capteur-abs,obd abs,autre,5,0,0.0,8.2,0.51,0.0,0.0
+courroie-d-accessoire,achat courroie,achat,5,0,0.0,8.2,0.51,0.0,0.0
+capteur-abs,site:automecanik.com,autre,10,0,0.0,9.7,0.25,0.0,0.0
+faisceau-d-allumage,faisceau électrique,autre,3,0,0.0,3.0,0.79,0.0,0.0
+carter-d-huile,un cartère,nue,3,0,0.0,5.7,0.78,0.0,0.0
+kit-d-embrayage,embrayage à changer,question,3,0,0.0,6.0,0.78,0.0,0.0
+carter-d-huile,changer un carter d'huile,question,3,0,0.0,6.3,0.78,0.0,0.0
+joint-de-cache-culbuteurs,joint de cache moteur,autre,3,0,0.0,6.0,0.78,0.0,0.0
+pompe-a-carburant,pompe a essence,autre,3,0,0.0,6.0,0.78,0.0,0.0
+butee-d-embrayage,butée d embrayage symptome,question,9,0,0.0,10.1,0.25,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,galet de tendeur,nue,4,0,0.0,7.2,0.55,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,le galet tendeur,nue,4,0,0.0,6.8,0.55,0.0,0.0
+thermostat,thermostat 208 1.6 hdi,vehicule,2,0,0.0,4.0,1.07,0.0,0.0
+pulseur-d-air-d-habitacle,oui,autre,2,0,0.0,4.5,1.07,0.0,0.0
+flexible-de-frein,tarif changement flexible de frein,question,2,0,0.0,4.0,1.07,0.0,0.0
+durite-de-refroidissement,ou se trouve la durite,autre,2,0,0.0,4.0,1.07,0.0,0.0
+poulie-d-arbre-a-came,oui,autre,2,0,0.0,3.5,1.07,0.0,0.0
+capteur-abs,frein esp,autre,2,0,0.0,4.0,1.07,0.0,0.0
+cable-d-embrayage,2,autre,1,0,0.0,2.0,2.13,0.0,0.0
+arbre-a-came,l'arbre à cam,autre,1,0,0.0,2.0,2.13,0.0,0.0
+colonne-de-direction,arbre de colonne de direction,autre,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-collecteur,joint pot echappement,autre,1,0,0.0,2.0,2.13,0.0,0.0
+poulie-d-arbre-a-came,poulie arbre a came 1.9 dci,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,des photos svp,autre,1,0,0.0,2.0,2.13,0.0,0.0
+colonne-de-direction,gx3,autre,1,0,0.0,2.0,2.13,0.0,0.0
+corps-papillon,essence,autre,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-cache-culbuteurs,joint cache culbuteur peugeot 308,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+corps-papillon,non,autre,1,0,0.0,2.0,2.13,0.0,0.0
+corps-papillon,le boîtier papillon,nue,1,0,0.0,2.0,2.13,0.0,0.0
+capteur-abs,pas de code,autre,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-collecteur,رائحة,autre,1,0,0.0,2.0,2.13,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,montre en photo,autre,1,0,0.0,2.0,2.13,0.0,0.0
+capteur-abs,je peux avoir une photo ?,autre,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,pompe embrayage 207,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+radiateur-de-chauffage,le radiateur,nue,1,0,0.0,2.0,2.13,0.0,0.0
+pulseur-d-air-d-habitacle,ou est la résistance,autre,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,peugeot 407,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+poulie-d-arbre-a-came,comment l’enlever,question,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,رينو,autre,1,0,0.0,2.0,2.13,0.0,0.0
+corps-papillon,donne moi les photos,autre,1,0,0.0,2.0,2.13,0.0,0.0
+capteur-abs,gap,autre,1,0,0.0,2.0,2.13,0.0,0.0
+corps-papillon,ralenti instable,autre,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,support moteur 206,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-cache-culbuteurs,1.2,autre,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-collecteur,شكلو,autre,1,0,0.0,2.0,2.13,0.0,0.0
+commande-de-ventilation,commande vitesse de ventilation,autre,1,0,0.0,2.0,2.13,0.0,0.0
+faisceau-d-allumage,symptômes module allumage hs 205 gti,question,1,0,0.0,2.0,2.13,0.0,0.0
+durite-de-refroidissement,durite metal liquide refroidissement,autre,1,0,0.0,2.0,2.13,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,les parametre,autre,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,cardan neuf,achat,1,0,0.0,2.0,2.13,0.0,0.0
+cardan,couple serrage,autre,1,0,0.0,2.0,2.13,0.0,0.0
+pulseur-d-air-d-habitacle,photo,autre,1,0,0.0,2.0,2.13,0.0,0.0
+colonne-de-direction,colonne de voiture,nue,1,0,0.0,2.0,2.13,0.0,0.0
+faisceau-d-allumage,quelle est la durée de vie ?,question,1,0,0.0,2.0,2.13,0.0,0.0
+colonne-de-direction,bague de direction,autre,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,mecanisme embrayage,autre,1,0,0.0,2.0,2.13,0.0,0.0
+contacteur-de-feu-de-recul,couple de serrage,autre,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,émetteur d'embrayage 207,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,2.0 tdi 140ch,achat,1,0,0.0,2.0,2.13,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,photos,autre,1,0,0.0,2.0,2.13,0.0,0.0
+detendeur-de-climatisation,mécanique,autre,1,0,0.0,2.0,2.13,0.0,0.0
+faisceau-d-allumage,compatibilité exacte,autre,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,pomp embrayage,autre,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,émetteur embrayage duster 1.5 dci,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+cable-d-embrayage,صورة لهذه القطعة,autre,1,0,0.0,2.0,2.13,0.0,0.0
+faisceau-d-allumage,calculateur twingo 1,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,série?,autre,1,0,0.0,2.0,2.13,0.0,0.0
+cable-d-embrayage,trouve moi cette pièce,autre,1,0,0.0,2.0,2.13,0.0,0.0
+arbre-a-came,chaîne arbre à came 1.5 hdi,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,peugeot 308 sw.,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+pulseur-d-air-d-habitacle,étape détaillée,autre,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,recepteur embrayage 308,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+feu-clignotant,oui,autre,1,0,0.0,2.0,2.13,0.0,0.0
+bras-de-suspension,tu peux me montrer des photos.,autre,1,0,0.0,2.0,2.13,0.0,0.0
+detendeur-de-climatisation,2018,autre,1,0,0.0,2.0,2.13,0.0,0.0
+cremailliere-de-direction,une crémaillère c'est quoi,question,1,0,0.0,2.0,2.13,0.0,0.0
+rotule-de-direction,une rotule de direction,nue,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,biellette de reprise de couple,autre,1,0,0.0,2.0,2.13,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,galet de courroie,nue,1,0,0.0,2.0,2.13,0.0,0.0
+carter-d-huile,photos,autre,1,0,0.0,2.0,2.13,0.0,0.0
+contacteur-de-feu-de-recul,ou se trouve le contacteur de feux de recul polo,autre,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,ford focus c max 2005,achat,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-collecteur,joint d'admission,autre,1,0,0.0,2.0,2.13,0.0,0.0
+capteur-abs,spark chevrolet,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,t3,autre,1,0,0.0,2.0,2.13,0.0,0.0
+compresseur-de-climatisation,cylindres climatisation autobaraka.com,autre,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,laguna 3,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+contacteur-de-feu-de-recul,alors ici,autre,1,0,0.0,2.0,2.13,0.0,0.0
+pompe-a-eau,oui,autre,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,2000,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,emetteur embrayage ford fiesta,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-cache-culbuteurs,verifier,question,1,0,0.0,2.0,2.13,0.0,0.0
+faisceau-d-allumage,que se passe-t-il,autre,1,0,0.0,2.0,2.13,0.0,0.0
+thermostat,procédure de démontage,question,1,0,0.0,2.0,2.13,0.0,0.0
+capteur-abs,esp sensor,autre,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,en son,autre,1,0,0.0,2.0,2.13,0.0,0.0
+corps-papillon,boitier papilon,nue,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,image,autre,1,0,0.0,2.0,2.13,0.0,0.0
+capteur-abs,capteur anomalie chaquevolantcompte.fr,autre,1,0,0.0,2.0,2.13,0.0,0.0
+rotule-de-direction,2.0 tdi 140,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+corps-papillon,c est une essence,question,1,0,0.0,2.0,2.13,0.0,0.0
+bras-de-suspension,image,autre,1,0,0.0,2.0,2.13,0.0,0.0
+arbre-a-came,rappel c3 arbre a came,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+contacteur-de-feu-de-recul,oui aider moi,autre,1,0,0.0,2.0,2.13,0.0,0.0
+contacteur-de-feu-de-recul,remplacement,question,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,émetteur embrayage megane 3,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,support moteur golf 6,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-collecteur,quelle moteur,question,1,0,0.0,2.0,2.13,0.0,0.0
+pulseur-d-air-d-habitacle,quelle marque choisir,question,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,diesel 3 cylindres,autre,1,0,0.0,2.0,2.13,0.0,0.0
+capteur-abs,capteur esp megane 3,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+carter-d-huile,bac a huile,autre,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,émetteur embrayage 208 prix,achat,1,0,0.0,2.0,2.13,0.0,0.0
+pompe-a-carburant,procédure,autre,1,0,0.0,2.0,2.13,0.0,0.0
+contacteur-de-feu-de-recul,2016,autre,1,0,0.0,2.0,2.13,0.0,0.0
+carter-d-huile,boîte dsg,autre,1,0,0.0,2.0,2.13,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,en photo,autre,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,support moteur peugeot partner,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+thermostat,essence 1.6,autre,1,0,0.0,2.0,2.13,0.0,0.0
+colonne-de-direction,colonne de direction megane 2,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-cache-culbuteurs,joint cache culbuteur 1.6 hdi,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+emetteur-d-embrayage,montre moi une photo,autre,1,0,0.0,2.0,2.13,0.0,0.0
+arbre-a-came,arbre a came peugeot,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+cable-d-embrayage,photo de tout,autre,1,0,0.0,2.0,2.13,0.0,0.0
+radiateur-de-chauffage,radiateur de chauffage 308,vehicule,1,0,0.0,2.0,2.13,0.0,0.0
+bougie-de-prechauffage,11v,autre,1,0,0.0,2.0,2.13,0.0,0.0
+support-moteur,support de boite de vitesse,autre,1,0,0.0,2.0,2.13,0.0,0.0
+interrupteur-des-feux-de-freins,de 2007,autre,1,0,0.0,2.0,2.13,0.0,0.0
+cylindre-de-roue,cylindre de frein,autre,1,0,0.0,2.0,2.13,0.0,0.0
+faisceau-d-allumage,antiparasite bougie,autre,1,0,0.0,2.0,2.13,0.0,0.0
+filtre-de-boite-auto,مكانها,autre,1,0,0.0,2.0,2.13,0.0,0.0
+radiateur-de-chauffage,interieur,autre,1,0,0.0,2.0,2.13,0.0,0.0
+joint-de-cache-culbuteurs,demontion,autre,1,0,0.0,2.0,2.13,0.0,0.0
+boitier-de-prechauffage,changer boîtier de préchauffage,question,3,0,0.0,8.7,0.7,0.0,0.0
+boitier-de-prechauffage,boîtier préchauffage,nue,3,0,0.0,9.0,0.7,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,changement tendeur courroie accessoire,question,3,0,0.0,9.3,0.7,0.0,0.0
+colonne-de-direction,tige de direction,autre,2,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,roulement tendeur,autre,2,0,0.0,1.0,1.04,0.0,0.0
+rotule-de-direction,routine direction,autre,2,0,0.0,1.0,1.04,0.0,0.0
+joint-de-cache-culbuteurs,site:automecanik.com,autre,4,0,0.0,7.5,0.51,0.0,0.0
+machoires-de-frein,machoir arriere,nue,4,0,0.0,8.0,0.51,0.0,0.0
+support-moteur,essence,autre,2,0,0.0,5.0,0.98,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,un galet tendeur,nue,7,0,0.0,10.4,0.25,0.0,0.0
+carter-d-huile,carter de huile,nue,3,0,0.0,7.3,0.55,0.0,0.0
+capteur-abs,ou se trouve le capteur esp xsara picasso,vehicule,3,0,0.0,7.3,0.55,0.0,0.0
+boitier-de-prechauffage,boîtier de préchauffage 1.5 dci,vehicule,3,0,0.0,7.0,0.55,0.0,0.0
+poulie-d-arbre-a-came,poulie d'arbre à came,nue,3,0,0.0,7.3,0.55,0.0,0.0
+emetteur-d-embrayage,émetteur embrayage clio 4,vehicule,2,0,0.0,3.0,0.79,0.0,0.0
+filtre-de-boite-auto,oui,autre,2,0,0.0,3.0,0.79,0.0,0.0
+pompe-a-carburant,oui,autre,2,0,0.0,3.0,0.79,0.0,0.0
+kit-de-chaine-de-distribution,schéma calage distribution n47,question,2,0,0.0,3.0,0.79,0.0,0.0
+support-moteur,claquement,autre,2,0,0.0,3.0,0.79,0.0,0.0
+poulie-vilebrequin,la poulie de vilebrequin,nue,2,0,0.0,3.0,0.79,0.0,0.0
+demarreur,site:www.automecanik.com,autre,2,0,0.0,5.5,0.78,0.0,0.0
+butee-d-embrayage,fourchette embrayage hs,question,2,0,0.0,6.5,0.78,0.0,0.0
+cylindre-de-roue,cylindre frein arriere,autre,2,0,0.0,6.5,0.78,0.0,0.0
+capteur-abs,contacteur abs,autre,2,0,0.0,6.0,0.78,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,galet de renvoi,autre,2,0,0.0,6.5,0.78,0.0,0.0
+interrupteur-des-feux-de-freins,feux de stop allumés en permanence,autre,3,0,0.0,8.3,0.51,0.0,0.0
+filtre-de-boite-auto,filtre de boite,nue,3,0,0.0,7.7,0.51,0.0,0.0
+faisceau-d-allumage,fuseau de bougie,autre,3,0,0.0,7.7,0.51,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,galet rouleur,autre,6,0,0.0,10.0,0.25,0.0,0.0
+butee-d-embrayage,butée d'embrayage schéma,question,6,0,0.0,10.3,0.25,0.0,0.0
+cardan,role du cardan voiture,question,2,0,0.0,9.0,0.7,0.0,0.0
+boitier-de-prechauffage,boite de prechauffage,autre,2,0,0.0,9.0,0.7,0.0,0.0
+pompe-de-direction-assistee,vue eclatee pompe direction assistée,autre,2,0,0.0,9.0,0.7,0.0,0.0
+poulie-vilebrequin,site:automecanik.com,autre,2,0,0.0,9.0,0.7,0.0,0.0
+capteur-abs,mecaniquesportive.fr capteur abs,autre,2,0,0.0,9.0,0.7,0.0,0.0
+plaquette-de-frein,changer plaquettes de freins,question,2,0,0.0,9.0,0.7,0.0,0.0
+commande-de-ventilation,bouton ventilation,autre,2,0,0.0,9.0,0.7,0.0,0.0
+cremailliere-de-direction,schema cremaillere de direction,question,2,0,0.0,9.0,0.7,0.0,0.0
+filtre-de-boite-auto,filtre boite,nue,5,0,0.0,9.6,0.25,0.0,0.0
+contacteur-de-feu-de-recul,ou se trouve le contacteur de feux de recul clio 2,vehicule,5,0,0.0,10.0,0.25,0.0,0.0
+alternateur,site:www.automecanik.com,autre,5,0,0.0,9.6,0.25,0.0,0.0
+colonne-de-direction,guidedestravaux.fr colonne circuit,autre,5,0,0.0,10.0,0.25,0.0,0.0
+arbre-a-came,remplacement arbre a came,question,5,0,0.0,10.4,0.25,0.0,0.0
+poulie-d-arbre-a-came,poulie aac,autre,2,0,0.0,7.0,0.55,0.0,0.0
+boitier-de-prechauffage,720053 euros,achat,2,0,0.0,7.0,0.55,0.0,0.0
+cardan,site:automecanik.com,autre,2,0,0.0,7.0,0.55,0.0,0.0
+detendeur-de-climatisation,demontage,question,1,0,0.0,4.0,1.07,0.0,0.0
+thermostat,ok,autre,1,0,0.0,4.0,1.07,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,donne moi la photo,autre,1,0,0.0,4.0,1.07,0.0,0.0
+carter-d-huile,audi q7,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+temoin-d-usure,site:automecanik.com,autre,1,0,0.0,4.0,1.07,0.0,0.0
+pulseur-d-air-d-habitacle,pulseur habitacle,nue,1,0,0.0,4.0,1.07,0.0,0.0
+machoires-de-frein,prix pour changer frein arriere,question,1,0,0.0,4.0,1.07,0.0,0.0
+support-moteur,clio 2 1.5 dci,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+emetteur-d-embrayage,1.5 dci,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+support-moteur,bruit?,question,1,0,0.0,4.0,1.07,0.0,0.0
+cylindre-de-roue,peugeot 208 hdi 2014,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+joint-de-cache-culbuteurs,combien de temps,question,1,0,0.0,4.0,1.07,0.0,0.0
+contacteur-de-feu-de-recul,capteur marche arriere clio 3,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+alternateur,site:automecanik.com,autre,1,0,0.0,4.0,1.07,0.0,0.0
+capteur-abs,voyant parking,question,1,0,0.0,4.0,1.07,0.0,0.0
+pulseur-d-air-d-habitacle,propulseur d'air,autre,1,0,0.0,4.0,1.07,0.0,0.0
+joint-de-collecteur,نعم,autre,1,0,0.0,4.0,1.07,0.0,0.0
+radiateur-de-chauffage,passat b7,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+support-moteur,skoda octavia 3,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+radiateur-de-chauffage,remplacement radiateur de chauffage golf 7,question,1,0,0.0,4.0,1.07,0.0,0.0
+support-moteur,montre moi en image,autre,1,0,0.0,4.0,1.07,0.0,0.0
+pompe-a-carburant,w203,autre,1,0,0.0,4.0,1.07,0.0,0.0
+tambour-de-frein,oui,autre,1,0,0.0,4.0,1.07,0.0,0.0
+arbre-a-came,palier d arbre a came,autre,1,0,0.0,4.0,1.07,0.0,0.0
+cylindre-de-roue,cylindre de roue peugeot 203,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+cable-d-embrayage,اعطيني صورة توضيحية,autre,1,0,0.0,4.0,1.07,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,roleur,autre,1,0,0.0,4.0,1.07,0.0,0.0
+maitre-cylindre-de-frein,audi a3 2020,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+detendeur-de-climatisation,plus de précisions,autre,1,0,0.0,4.0,1.07,0.0,0.0
+joint-de-cache-culbuteurs,نعم,autre,1,0,0.0,4.0,1.07,0.0,0.0
+bougie-de-prechauffage,bougie de prechauffage liquide de refroidissement,autre,1,0,0.0,4.0,1.07,0.0,0.0
+contacteur-de-feu-de-recul,contacteur marche arriere megane 2,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+bobine-d-allumage,bobine allumage moteur essence,autre,1,0,0.0,4.0,1.07,0.0,0.0
+support-moteur,vibration,autre,1,0,0.0,4.0,1.07,0.0,0.0
+colonne-de-direction,colon direction,autre,1,0,0.0,4.0,1.07,0.0,0.0
+contacteur-de-feu-de-recul,boite 5 vitesse,autre,1,0,0.0,4.0,1.07,0.0,0.0
+cylindre-de-roue,changer cylindre de roue arrière,question,1,0,0.0,4.0,1.07,0.0,0.0
+poulie-d-arbre-a-came,2.0 16v,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+detendeur-de-climatisation,detendeur voiture,nue,1,0,0.0,4.0,1.07,0.0,0.0
+support-moteur,boite auto,autre,1,0,0.0,4.0,1.07,0.0,0.0
+cylindre-de-roue,cylindre de roue clio 2,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+boitier-de-prechauffage,boitier,nue,1,0,0.0,4.0,1.07,0.0,0.0
+emetteur-d-embrayage,motorisation ford,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+pompe-a-carburant,ses quoi ca,question,1,0,0.0,4.0,1.07,0.0,0.0
+feu-clignotant,répétiteur clignotant contrôle technique,question,1,0,0.0,4.0,1.07,0.0,0.0
+arbre-a-came,ordre de montage,question,1,0,0.0,4.0,1.07,0.0,0.0
+poulie-d-arbre-a-came,scenic 3 1.9 dci,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+contacteur-de-feu-de-recul,"1,7 dci",vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+poulie-d-arbre-a-came,ما دوره,autre,1,0,0.0,4.0,1.07,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,galet,nue,1,0,0.0,4.0,1.07,0.0,0.0
+support-moteur,2008,vehicule,1,0,0.0,4.0,1.07,0.0,0.0
+cable-d-embrayage,quelque photos,autre,1,0,0.0,1.0,1.04,0.0,0.0
+arbre-a-came,arbre à came symptôme,question,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,support moteur defectueux symptome,question,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,bruit,question,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,les couples de serrage,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,met moi une image,autre,1,0,0.0,1.0,1.04,0.0,0.0
+radiateur-de-chauffage,165 ch,autre,1,0,0.0,1.0,1.04,0.0,0.0
+contacteur-de-feu-de-recul,video,autre,1,0,0.0,1.0,1.04,0.0,0.0
+butee-d-embrayage,symptome butee d embrayage,question,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,biellette anti couple symptôme,question,1,0,0.0,1.0,1.04,0.0,0.0
+emetteur-d-embrayage,image svp,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,peux-tu m'envoyer une photo ?,autre,1,0,0.0,1.0,1.04,0.0,0.0
+emetteur-d-embrayage,2016,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,une photo svp,autre,1,0,0.0,1.0,1.04,0.0,0.0
+faisceau-d-allumage,fiabilite,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,une photo,autre,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,au ralenti,autre,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,a quoi ca ressemble ?,question,1,0,0.0,1.0,1.04,0.0,0.0
+rotule-de-direction,photo,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,pedale dure,autre,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,silent bloc moteur,autre,1,0,0.0,1.0,1.04,0.0,0.0
+carter-d-huile,image,autre,1,0,0.0,1.0,1.04,0.0,0.0
+contacteur-de-feu-de-recul,couple de serage,autre,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,tendeur de voiture,nue,1,0,0.0,1.0,1.04,0.0,0.0
+capteur-abs,panne abs,question,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,le kit complet,autre,1,0,0.0,1.0,1.04,0.0,0.0
+arbre-a-came,صورة,autre,1,0,0.0,1.0,1.04,0.0,0.0
+colonne-de-direction,colonne de direction assistée,autre,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,show me in pictures,autre,1,0,0.0,1.0,1.04,0.0,0.0
+contacteur-de-feu-de-recul,foto,autre,1,0,0.0,1.0,1.04,0.0,0.0
+corps-papillon,ممكن صورة,autre,1,0,0.0,1.0,1.04,0.0,0.0
+pompe-a-carburant,270000,achat,1,0,0.0,1.0,1.04,0.0,0.0
+detendeur-de-climatisation,as tu des photos,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,صور,autre,1,0,0.0,1.0,1.04,0.0,0.0
+capteur-abs,abs diagnostic,autre,1,0,0.0,1.0,1.04,0.0,0.0
+joint-de-collecteur,2,autre,1,0,0.0,1.0,1.04,0.0,0.0
+detendeur-de-climatisation,les images,autre,1,0,0.0,1.0,1.04,0.0,0.0
+emetteur-d-embrayage,je peut voir,autre,1,0,0.0,1.0,1.04,0.0,0.0
+colonne-de-direction,moteur colonne de direction,autre,1,0,0.0,1.0,1.04,0.0,0.0
+faisceau-d-allumage,cable de bougie d allumage,autre,1,0,0.0,1.0,1.04,0.0,0.0
+faisceau-d-allumage,clio 2 1.2 essence,vehicule,1,0,0.0,1.0,1.04,0.0,0.0
+corps-papillon,manda foto,autre,1,0,0.0,1.0,1.04,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,ou se trouve le galet tendeur,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cardan,en photo,autre,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,je souhaite avoir une photo,autre,1,0,0.0,1.0,1.04,0.0,0.0
+disque-de-frein,disque,nue,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,image,autre,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,montre une phot,autre,1,0,0.0,1.0,1.04,0.0,0.0
+contacteur-de-feu-de-recul,manuelle diesel,autre,1,0,0.0,1.0,1.04,0.0,0.0
+joint-de-cache-culbuteurs,صور لهم,autre,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,images,autre,1,0,0.0,1.0,1.04,0.0,0.0
+rotule-de-direction,une rotule,nue,1,0,0.0,1.0,1.04,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,galet courroie accessoire,nue,1,0,0.0,1.0,1.04,0.0,0.0
+joint-de-cache-culbuteurs,joint cage,autre,1,0,0.0,1.0,1.04,0.0,0.0
+boitier-de-prechauffage,boitier de préchauffage,nue,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,un cable,nue,1,0,0.0,1.0,1.04,0.0,0.0
+capteur-abs,capteur abr de roue,autre,1,0,0.0,1.0,1.04,0.0,0.0
+emetteur-d-embrayage,1.9 dci,vehicule,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,ford fiesta,vehicule,1,0,0.0,1.0,1.04,0.0,0.0
+detendeur-de-climatisation,où se trouve-t-il,autre,1,0,0.0,1.0,1.04,0.0,0.0
+butee-d-embrayage,embrayage qui siffle quand j'embraye,question,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,automatique,autre,1,0,0.0,1.0,1.04,0.0,0.0
+maitre-cylindre-de-frein,remplacement,question,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,tendeur automatique courroie,autre,1,0,0.0,1.0,1.04,0.0,0.0
+joint-de-cache-culbuteurs,image,autre,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,comment le démonter,question,1,0,0.0,1.0,1.04,0.0,0.0
+capteur-abs,renault symbol 2017,vehicule,1,0,0.0,1.0,1.04,0.0,0.0
+bras-de-suspension,bras de guidage,autre,1,0,0.0,1.0,1.04,0.0,0.0
+capteur-abs,photo,autre,1,0,0.0,1.0,1.04,0.0,0.0
+contacteur-de-feu-de-recul,2007,autre,1,0,0.0,1.0,1.04,0.0,0.0
+rotule-de-direction,photos,autre,1,0,0.0,1.0,1.04,0.0,0.0
+colonne-de-direction,puis je avoir des photos ?,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,pédale dure,autre,1,0,0.0,1.0,1.04,0.0,0.0
+filtre-de-boite-auto,filtre a huile transmission automatique,autre,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,pâte moteur,autre,1,0,0.0,1.0,1.04,0.0,0.0
+contacteur-de-feu-de-recul,2008 diesel,vehicule,1,0,0.0,1.0,1.04,0.0,0.0
+radiateur-de-refroidissement,est-ce grave de se tromper de liquide de refroidissement ?,autre,1,0,0.0,1.0,1.04,0.0,0.0
+pompe-a-eau,courroie pompe a eau,autre,1,0,0.0,1.0,1.04,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,tension correct,autre,1,0,0.0,1.0,1.04,0.0,0.0
+thermostat,thermostat 306,vehicule,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,essence ou diesel ?,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,montre moi une image,autre,1,0,0.0,1.0,1.04,0.0,0.0
+rotule-de-direction,en permanence,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,خفيفة,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,أرني شكله,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,tu as des photos ?,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,ممكن صورة,autre,1,0,0.0,1.0,1.04,0.0,0.0
+pompe-a-carburant,module complet,autre,1,0,0.0,1.0,1.04,0.0,0.0
+cable-d-embrayage,possible d avoir une photo,autre,1,0,0.0,1.0,1.04,0.0,0.0
+capteur-abs,photo de position,autre,1,0,0.0,1.0,1.04,0.0,0.0
+capteur-abs,bloc esp,autre,1,0,0.0,1.0,1.04,0.0,0.0
+ventilateur-de-refroidissement,moteur ventilateur,autre,1,0,0.0,1.0,1.04,0.0,0.0
+support-moteur,côté chauffeur,autre,1,0,0.0,1.0,1.04,0.0,0.0
+corps-papillon,2005,autre,1,0,0.0,1.0,1.04,0.0,0.0
+joint-de-cache-culbuteurs,صورة لع,autre,1,0,0.0,1.0,1.04,0.0,0.0
+pompe-a-carburant,quand faut-il changer la pompe à essence ?,question,1,0,0.0,1.0,1.04,0.0,0.0
+kit-de-chaine-de-distribution,kit chaîne de distribution,nue,2,0,0.0,8.5,0.51,0.0,0.0
+leve-vitre,cable leve vitre,autre,2,0,0.0,8.0,0.51,0.0,0.0
+cable-d-embrayage,câble d'embrayage prix,achat,2,0,0.0,8.5,0.51,0.0,0.0
+support-moteur,probleme support moteur,question,2,0,0.0,7.5,0.51,0.0,0.0
+pulseur-d-air-d-habitacle,pulseur d'air d'habitacle,nue,2,0,0.0,8.5,0.51,0.0,0.0
+capteur-abs,capteur abs roue avant,autre,2,0,0.0,8.5,0.51,0.0,0.0
+bougie-de-prechauffage,démarrage difficile à froid : bougies de préchauffage ou autre chose ?,autre,2,0,0.0,7.5,0.51,0.0,0.0
+radiateur-de-chauffage,radiateur de chauffage,nue,2,0,0.0,8.0,0.51,0.0,0.0
+courroie-d-accessoire,autobaraka.com conduite courroie,autre,2,0,0.0,8.0,0.51,0.0,0.0
+support-moteur,site:www.automecanik.com,autre,4,0,0.0,9.5,0.25,0.0,0.0
+capteur-abs,abs voyant signification,question,4,0,0.0,9.5,0.25,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,quand changer galet tendeur courroie accessoire,question,4,0,0.0,10.0,0.25,0.0,0.0
+kit-de-chaine-de-distribution,comment vérifier qu'un kit de distribution correspond bien à sa motorisation exacte ?,question,4,0,0.0,10.2,0.25,0.0,0.0
+contacteur-de-feu-de-recul,boite manuel,autre,1,0,0.0,5.0,0.98,0.0,0.0
+emetteur-d-embrayage,هيدروليك,autre,1,0,0.0,5.0,0.98,0.0,0.0
+courroie-de-distribution,chaine ou courroie comment savoir,question,1,0,0.0,5.0,0.98,0.0,0.0
+arbre-a-came,chapeau de palier arbre a came,autre,1,0,0.0,5.0,0.98,0.0,0.0
+support-moteur,picanto pop 2013,vehicule,1,0,0.0,5.0,0.98,0.0,0.0
+joint-de-collecteur,joint sortie collecteur echappement,autre,1,0,0.0,5.0,0.98,0.0,0.0
+support-moteur,كزارا,autre,1,0,0.0,5.0,0.98,0.0,0.0
+support-moteur,uniquement en roulant,autre,1,0,0.0,5.0,0.98,0.0,0.0
+faisceau-d-allumage,circuit électrique voiture,autre,1,0,0.0,5.0,0.98,0.0,0.0
+emetteur-d-embrayage,annee 2024,autre,1,0,0.0,5.0,0.98,0.0,0.0
+temoin-d-usure,verifier garniture,question,1,0,0.0,5.0,0.98,0.0,0.0
+capteur-abs,renault 403713,achat,1,0,0.0,5.0,0.98,0.0,0.0
+thermostat,où se trouve le,autre,1,0,0.0,5.0,0.98,0.0,0.0
+machoires-de-frein,freins arrière,nue,1,0,0.0,5.0,0.98,0.0,0.0
+contacteur-de-feu-de-recul,elle est de 2006,autre,1,0,0.0,5.0,0.98,0.0,0.0
+support-moteur,اعراضه,autre,1,0,0.0,5.0,0.98,0.0,0.0
+support-moteur,support moteur audi a4 b6,vehicule,1,0,0.0,5.0,0.98,0.0,0.0
+etrier-de-frein,oui,autre,1,0,0.0,5.0,0.98,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,tendeur automatique,autre,1,0,0.0,5.0,0.98,0.0,0.0
+vanne-egr,p0403 recyclage des gaz d'échappement - panne du circuit,question,1,0,0.0,5.0,0.98,0.0,0.0
+debitmetre-d-air,devimetre,autre,1,0,0.0,5.0,0.98,0.0,0.0
+bobine-d-allumage,durée de vie faisceau allumage,question,1,0,0.0,5.0,0.98,0.0,0.0
+joint-de-cache-culbuteurs,référence ?,autre,1,0,0.0,5.0,0.98,0.0,0.0
+cylindre-de-roue,cylindre de roue twingo 1,vehicule,1,0,0.0,5.0,0.98,0.0,0.0
+contacteur-de-feu-de-recul,je veux video,autre,1,0,0.0,5.0,0.98,0.0,0.0
+contacteur-de-feu-de-recul,dacia logan mcv diesel,vehicule,1,0,0.0,5.0,0.98,0.0,0.0
+corps-papillon,produits,autre,1,0,0.0,5.0,0.98,0.0,0.0
+contacteur-de-feu-de-recul,1.9 dci,vehicule,1,0,0.0,5.0,0.98,0.0,0.0
+capteur-abs,الحل,autre,1,0,0.0,5.0,0.98,0.0,0.0
+detendeur-de-climatisation,detendeur evaporateur,autre,1,0,0.0,5.0,0.98,0.0,0.0
+contacteur-de-feu-de-recul,emplacement du capteur,question,1,0,0.0,5.0,0.98,0.0,0.0
+maitre-cylindre-de-frein,pédale molle,autre,1,0,0.0,5.0,0.98,0.0,0.0
+cable-de-frein-a-main,frein à main qui lâche sur un parking,question,1,0,0.0,5.0,0.98,0.0,0.0
+joint-de-collecteur,sens montage joint collecteur echappement,question,1,0,0.0,5.0,0.98,0.0,0.0
+capteur-abs,207,vehicule,1,0,0.0,5.0,0.98,0.0,0.0
+cylindre-de-roue,صورة لها,autre,1,0,0.0,5.0,0.98,0.0,0.0
+pompe-a-carburant,peugeot 206+ 2010,vehicule,1,0,0.0,5.0,0.98,0.0,0.0
+carter-d-huile,schema carter moteur,question,1,0,0.0,5.0,0.98,0.0,0.0
+arbre-a-came,étanchéité carter de palier arbre à cames,autre,1,0,0.0,3.0,0.79,0.0,0.0
+arbre-a-came,came changer,question,1,0,0.0,3.0,0.79,0.0,0.0
+colonne-de-direction,roulement de colonne de direction moto,autre,1,0,0.0,3.0,0.79,0.0,0.0
+cable-d-embrayage,le câble,nue,1,0,0.0,3.0,0.79,0.0,0.0
+emetteur-d-embrayage,hyundai i30 2009,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+machoires-de-frein,nécessaire de frein,autre,1,0,0.0,3.0,0.79,0.0,0.0
+colonne-de-direction,module de colonne de direction,autre,1,0,0.0,3.0,0.79,0.0,0.0
+thermostat,je veux voir,autre,1,0,0.0,3.0,0.79,0.0,0.0
+support-moteur,clio 5,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+courroie-d-accessoire,schéma courroie mercedes classe a 180,question,1,0,0.0,3.0,0.79,0.0,0.0
+arbre-a-came,remplacement arbre à came 2.0 tdi 140,question,1,0,0.0,3.0,0.79,0.0,0.0
+support-moteur,reference ?,autre,1,0,0.0,3.0,0.79,0.0,0.0
+cremailliere-de-direction,grincement quand je tourne le volant à droite,question,1,0,0.0,3.0,0.79,0.0,0.0
+thermostat,boitier eau 1.6 hdi,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+ventilateur-de-refroidissement,sous le capot,autre,1,0,0.0,3.0,0.79,0.0,0.0
+joint-de-collecteur,fuite joint collecteur échappement,question,1,0,0.0,3.0,0.79,0.0,0.0
+poulie-d-arbre-a-came,comment enlever le bruit,question,1,0,0.0,3.0,0.79,0.0,0.0
+contacteur-de-feu-de-recul,go 1,autre,1,0,0.0,3.0,0.79,0.0,0.0
+cable-d-embrayage,peugeot 107,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+rotule-de-direction,sonacome k120,autre,1,0,0.0,3.0,0.79,0.0,0.0
+joint-de-collecteur,échappement,autre,1,0,0.0,3.0,0.79,0.0,0.0
+arbre-a-came,problème arbre à came peugeot 3008,question,1,0,0.0,3.0,0.79,0.0,0.0
+support-moteur,support moteur boîte de vitesse,autre,1,0,0.0,3.0,0.79,0.0,0.0
+ventilateur-de-refroidissement,la sonde,autre,1,0,0.0,3.0,0.79,0.0,0.0
+rotule-de-direction,les rotule de direction,nue,1,0,0.0,3.0,0.79,0.0,0.0
+contacteur-de-feu-de-recul,c4 picasso de 2012,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+cylindre-de-roue,طريقة تركيب,autre,1,0,0.0,3.0,0.79,0.0,0.0
+faisceau-d-allumage,allumage transistorisé sans rupteur,autre,1,0,0.0,3.0,0.79,0.0,0.0
+cremailliere-de-direction,defaut cremaillere de direction,question,1,0,0.0,3.0,0.79,0.0,0.0
+faisceau-d-allumage,réparation faisceau électrique voiture,autre,1,0,0.0,3.0,0.79,0.0,0.0
+joint-de-cache-culbuteurs,matiere,autre,1,0,0.0,3.0,0.79,0.0,0.0
+cylindre-de-roue,tambour,autre,1,0,0.0,3.0,0.79,0.0,0.0
+alternateur,1.6 idtec honda,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+thermostat,changer thermostat berlingo 1.6 hdi,question,1,0,0.0,3.0,0.79,0.0,0.0
+cable-d-embrayage,manuel ou automatique,autre,1,0,0.0,3.0,0.79,0.0,0.0
+boitier-de-prechauffage,الارقام,autre,1,0,0.0,3.0,0.79,0.0,0.0
+faisceau-d-allumage,fil d allumage bougie,autre,1,0,0.0,3.0,0.79,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,en image ?,autre,1,0,0.0,3.0,0.79,0.0,0.0
+cremailliere-de-direction,tarif changement crémaillère de direction norauto,question,1,0,0.0,3.0,0.79,0.0,0.0
+feu-clignotant,clignotant retroviseur controle technique,question,1,0,0.0,3.0,0.79,0.0,0.0
+contacteur-de-feu-de-recul,il est de 2000,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+ventilateur-de-refroidissement,remplacement ventilateur refroidissement,question,1,0,0.0,3.0,0.79,0.0,0.0
+faisceau-d-allumage,fils de bougies faisceau d allumage,autre,1,0,0.0,3.0,0.79,0.0,0.0
+colonne-de-direction,joint colonne de direction,autre,1,0,0.0,3.0,0.79,0.0,0.0
+maitre-cylindre-de-frein,maitre cylindre servo frein,autre,1,0,0.0,3.0,0.79,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,courroie et galet tendeur,nue,1,0,0.0,3.0,0.79,0.0,0.0
+contacteur-de-feu-de-recul,contacteur marche arriere clio 3,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+cylindre-de-roue,cylindre de roue 206,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+contacteur-de-feu-de-recul,rifter peugeot,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+rotule-de-direction,deux coté,autre,1,0,0.0,3.0,0.79,0.0,0.0
+interrupteur-des-feux-de-freins,chery arrizo 5,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+pulseur-d-air-d-habitacle,ou se trouve t'il,autre,1,0,0.0,3.0,0.79,0.0,0.0
+cable-d-embrayage,avec photos,autre,1,0,0.0,3.0,0.79,0.0,0.0
+faisceau-d-allumage,pas d'étincelle à la bougie moteur 4 temps,autre,1,0,0.0,3.0,0.79,0.0,0.0
+thermostat,boîtier thermostat 1.6 hdi,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+cremailliere-de-direction,cremaillere,nue,1,0,0.0,3.0,0.79,0.0,0.0
+carter-d-huile,aluminium ?,autre,1,0,0.0,3.0,0.79,0.0,0.0
+carter-d-huile,faw v70,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+butee-d-embrayage,اين تقع,autre,1,0,0.0,3.0,0.79,0.0,0.0
+arbre-a-came,capteur arbre a came,autre,1,0,0.0,3.0,0.79,0.0,0.0
+emetteur-d-embrayage,megane 2 1.4 16v,vehicule,1,0,0.0,3.0,0.79,0.0,0.0
+colonne-de-direction,joint de colonne de direction,autre,1,0,0.0,3.0,0.79,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,oui,autre,1,0,0.0,3.0,0.79,0.0,0.0
+support-moteur,support moteur usé,autre,1,0,0.0,3.0,0.79,0.0,0.0
+machoires-de-frein,compatibilité,autre,1,0,0.0,3.0,0.79,0.0,0.0
+boitier-de-prechauffage,كيف اركبها,autre,1,0,0.0,3.0,0.79,0.0,0.0
+capteur-abs,arrière droit,autre,1,0,0.0,3.0,0.79,0.0,0.0
+faisceau-d-allumage,probleme d allumage voiture essence,question,1,0,0.0,3.0,0.79,0.0,0.0
+detendeur-de-climatisation,détendeur climatiseur split,autre,1,0,0.0,3.0,0.79,0.0,0.0
+support-moteur,en accelerant,autre,1,0,0.0,3.0,0.79,0.0,0.0
+bougie-de-prechauffage,620056 euros,achat,1,0,0.0,6.0,0.78,0.0,0.0
+debitmetre-d-air,débitmètre : est-ce que la référence dépend de l'année ou de la motorisation ?,autre,1,0,0.0,6.0,0.78,0.0,0.0
+carter-d-huile,carter da,autre,1,0,0.0,6.0,0.78,0.0,0.0
+interrupteur-des-feux-de-freins,الحساس جديد,autre,1,0,0.0,6.0,0.78,0.0,0.0
+arbre-a-came,arbre a came moto,autre,1,0,0.0,6.0,0.78,0.0,0.0
+demarreur,site:automecanik.com,autre,1,0,0.0,6.0,0.78,0.0,0.0
+contacteur-de-feu-de-recul,موقه,autre,1,0,0.0,6.0,0.78,0.0,0.0
+maitre-cylindre-de-frein,maitre cylindre de frein defectueux symptome,question,1,0,0.0,6.0,0.78,0.0,0.0
+courroie-de-distribution,entretien courroie de distribution,question,1,0,0.0,6.0,0.78,0.0,0.0
+courroie-d-accessoire,changer une courroie,question,1,0,0.0,6.0,0.78,0.0,0.0
+support-moteur,moteur 1l,autre,1,0,0.0,6.0,0.78,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,courroie d'accessoire et galet,nue,1,0,0.0,6.0,0.78,0.0,0.0
+capteur-abs,peugeot landtrek,vehicule,1,0,0.0,6.0,0.78,0.0,0.0
+joint-de-cache-culbuteurs,acora,autre,1,0,0.0,6.0,0.78,0.0,0.0
+joint-de-cache-culbuteurs,cache soupapes,autre,1,0,0.0,6.0,0.78,0.0,0.0
+joint-de-culasse,schéma joint de culasse,question,1,0,0.0,6.0,0.78,0.0,0.0
+ventilateur-de-refroidissement,changement ventilateur voiture,question,1,0,0.0,6.0,0.78,0.0,0.0
+cable-d-embrayage,oui,autre,1,0,0.0,6.0,0.78,0.0,0.0
+emetteur-d-embrayage,émetteur d’embrayage,nue,1,0,0.0,6.0,0.78,0.0,0.0
+capteur-abs,detecteur abs,autre,1,0,0.0,6.0,0.78,0.0,0.0
+support-moteur,skoda yeti 2.0 tdi,vehicule,1,0,0.0,6.0,0.78,0.0,0.0
+contacteur-de-feu-de-recul,contacteur feu de recul clio 2,vehicule,1,0,0.0,6.0,0.78,0.0,0.0
+joint-de-cache-culbuteurs,1.5 tdci,vehicule,1,0,0.0,6.0,0.78,0.0,0.0
+radiateur-de-chauffage,c3 iii,vehicule,1,0,0.0,6.0,0.78,0.0,0.0
+support-moteur,support moteur clio 2,vehicule,1,0,0.0,6.0,0.78,0.0,0.0
+etrier-de-frein,graisse pour coulisseau étrier de frein,autre,1,0,0.0,6.0,0.78,0.0,0.0
+joint-de-cache-culbuteurs,remplacement joint cache culbuteur clio 2 1.2 16v,question,1,0,0.0,6.0,0.78,0.0,0.0
+boitier-de-prechauffage,boitier prechauffage 205 diesel,vehicule,1,0,0.0,6.0,0.78,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,photo,autre,1,0,0.0,6.0,0.78,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,reference,autre,1,0,0.0,6.0,0.78,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,more detail,autre,1,0,0.0,6.0,0.78,0.0,0.0
+disque-de-frein,remplacer jeu de disques et plaquettes de frein,question,1,0,0.0,6.0,0.78,0.0,0.0
+pulseur-d-air-d-habitacle,pulseur d’air,nue,1,0,0.0,6.0,0.78,0.0,0.0
+courroie-de-distribution,courroie de distribution entretien,question,1,0,0.0,6.0,0.78,0.0,0.0
+interrupteur-des-feux-de-freins,schéma d'installation,question,1,0,0.0,6.0,0.78,0.0,0.0
+cylindre-de-roue,cylindre de roue 2cv,autre,1,0,0.0,6.0,0.78,0.0,0.0
+filtre-de-boite-auto,filtre a huile de boite automatique,autre,3,0,0.0,10.0,0.25,0.0,0.0
+machoires-de-frein,machoirs de frein,nue,3,0,0.0,9.7,0.25,0.0,0.0
+machoires-de-frein,mâchoire de frein arrière prix,achat,3,0,0.0,10.3,0.25,0.0,0.0
+cable-d-embrayage,câble d'embrayage usé symptômes,question,3,0,0.0,10.0,0.25,0.0,0.0
+capteur-abs,renault dtc403697,achat,3,0,0.0,10.0,0.25,0.0,0.0
+kit-d-embrayage,un embrayage,nue,1,0,0.0,9.0,0.7,0.0,0.0
+machoires-de-frein,kit machoire arriere,autre,1,0,0.0,9.0,0.7,0.0,0.0
+butee-d-embrayage,bute dembrayage,nue,1,0,0.0,9.0,0.7,0.0,0.0
+support-moteur,support moteur hs symptôme,question,1,0,0.0,9.0,0.7,0.0,0.0
+etrier-de-frein,l'étrier de frein,nue,1,0,0.0,9.0,0.7,0.0,0.0
+temoin-d-usure,plaquettes de frein usées,autre,1,0,0.0,9.0,0.7,0.0,0.0
+capteur-abs,renault dtc403713,achat,1,0,0.0,9.0,0.7,0.0,0.0
+bougie-de-prechauffage,site:automecanik.com,autre,1,0,0.0,9.0,0.7,0.0,0.0
+bougie-de-prechauffage,duree vie bougie prechauffage,question,1,0,0.0,9.0,0.7,0.0,0.0
+flexible-de-frein,tuyaux et câbles du système de frein,autre,1,0,0.0,9.0,0.7,0.0,0.0
+disque-de-frein,site:www.automecanik.com,autre,1,0,0.0,9.0,0.7,0.0,0.0
+roulement-de-roue,le roulement de roue,nue,1,0,0.0,9.0,0.7,0.0,0.0
+kit-d-embrayage,l’embrayage permet-il de démarrer progressivement ?,autre,1,0,0.0,9.0,0.7,0.0,0.0
+contacteur-de-feu-de-recul,renault koleos,vehicule,1,0,0.0,9.0,0.7,0.0,0.0
+emetteur-d-embrayage,emmeteur embrayage,autre,1,0,0.0,9.0,0.7,0.0,0.0
+condenseur-de-climatisation,site:automecanik.com,autre,1,0,0.0,9.0,0.7,0.0,0.0
+filtre-de-boite-auto,filtre à huile boîte de vitesse automatique,autre,1,0,0.0,9.0,0.7,0.0,0.0
+cremailliere-de-direction,bras climayeur,autre,1,0,0.0,9.0,0.7,0.0,0.0
+support-moteur,photos,autre,1,0,0.0,9.0,0.7,0.0,0.0
+joint-de-cache-culbuteurs,joint cache culbuteur 1.2 puretech,vehicule,1,0,0.0,9.0,0.7,0.0,0.0
+cremailliere-de-direction,creme a air de direction,autre,1,0,0.0,9.0,0.7,0.0,0.0
+corps-papillon,site:automecanik.com,autre,1,0,0.0,9.0,0.7,0.0,0.0
+capteur-abs,كيفية حل هذه المشكلة,autre,1,0,0.0,9.0,0.7,0.0,0.0
+pulseur-d-air-d-habitacle,remplacement pulseur d'air peugeot 2008,question,1,0,0.0,9.0,0.7,0.0,0.0
+butee-d-embrayage,la butée voiture,nue,1,0,0.0,9.0,0.7,0.0,0.0
+joint-de-culasse,role du joint de culasse,question,1,0,0.0,9.0,0.7,0.0,0.0
+joint-de-collecteur,joint collector,autre,1,0,0.0,9.0,0.7,0.0,0.0
+capteur-abs,système asr esp défaillant,question,1,0,0.0,9.0,0.7,0.0,0.0
+flexible-de-frein,changer flexible de frein sans purger,question,1,0,0.0,9.0,0.7,0.0,0.0
+radiateur-de-chauffage,signe chauffage voiture,question,1,0,0.0,9.0,0.7,0.0,0.0
+joint-de-collecteur,quel est le prix de cette pièce,question,1,0,0.0,9.0,0.7,0.0,0.0
+rotule-de-direction,tester rotule de direction,question,1,0,0.0,9.0,0.7,0.0,0.0
+etrier-de-frein,etrier grippé symptome,question,1,0,0.0,9.0,0.7,0.0,0.0
+pompe-a-carburant,durée de vie pompe à carburant diesel,question,1,0,0.0,9.0,0.7,0.0,0.0
+pulseur-d-air-d-habitacle,ford fiesta 2002,vehicule,1,0,0.0,7.0,0.55,0.0,0.0
+support-moteur,support moteur cote boite de vitesse,autre,1,0,0.0,7.0,0.55,0.0,0.0
+support-moteur,support balancier moteur,autre,1,0,0.0,7.0,0.55,0.0,0.0
+demarreur,tension basse symptome,question,1,0,0.0,7.0,0.55,0.0,0.0
+etrier-de-frein,réparation d'étrier de frein,autre,1,0,0.0,7.0,0.55,0.0,0.0
+thermostat,site:www.automecanik.com,autre,1,0,0.0,7.0,0.55,0.0,0.0
+thermostat,le thermostat,nue,1,0,0.0,7.0,0.55,0.0,0.0
+support-moteur,où se trouve le support moteur,autre,1,0,0.0,7.0,0.55,0.0,0.0
+cremailliere-de-direction,cremailere,autre,1,0,0.0,7.0,0.55,0.0,0.0
+contacteur-de-feu-de-recul,c2 1.1 essence,vehicule,1,0,0.0,7.0,0.55,0.0,0.0
+cremailliere-de-direction,ford puma,vehicule,1,0,0.0,7.0,0.55,0.0,0.0
+capteur-abs,système esp/asr,autre,1,0,0.0,7.0,0.55,0.0,0.0
+faisceau-d-allumage,faisceau de bougie 1.2 16v,vehicule,1,0,0.0,7.0,0.55,0.0,0.0
+support-moteur,رونو سنيك,autre,1,0,0.0,7.0,0.55,0.0,0.0
+cremailliere-de-direction,climaire de direction,autre,1,0,0.0,7.0,0.55,0.0,0.0
+contacteur-de-feu-de-recul,نعم,autre,1,0,0.0,7.0,0.55,0.0,0.0
+colonne-de-direction,jeux volant,autre,1,0,0.0,7.0,0.55,0.0,0.0
+cardan,et trw,achat,1,0,0.0,7.0,0.55,0.0,0.0
+faisceau-d-allumage,كيف اعرف انه هو,autre,1,0,0.0,7.0,0.55,0.0,0.0
+demarreur,demareur,nue,1,0,0.0,7.0,0.55,0.0,0.0
+disque-de-frein,quand changer disque frein,question,1,0,0.0,7.0,0.55,0.0,0.0
+emetteur-d-embrayage,بيجو 207,vehicule,1,0,0.0,7.0,0.55,0.0,0.0
+courroie-d-accessoire,accessoire courroie,nue,1,0,0.0,7.0,0.55,0.0,0.0
+support-moteur,site:automecanik.com,autre,1,0,0.0,7.0,0.55,0.0,0.0
+capteur-abs,abs/esp,autre,1,0,0.0,7.0,0.55,0.0,0.0
+cable-d-embrayage,câble d'embrayage qui casse souvent,question,1,0,0.0,7.0,0.55,0.0,0.0
+carter-d-huile,en tole,autre,1,0,0.0,7.0,0.55,0.0,0.0
+corps-papillon,وهي واقفة,autre,1,0,0.0,7.0,0.55,0.0,0.0
+kit-de-freins-arriere,freinage arriere,autre,1,0,0.0,7.0,0.55,0.0,0.0
+support-moteur,support moteur gauche,nue,1,0,0.0,7.0,0.55,0.0,0.0
+thermostat,prix changement thermostat voiture,question,1,0,0.0,7.0,0.55,0.0,0.0
+capteur-abs,abs esp light,autre,1,0,0.0,7.0,0.55,0.0,0.0
+retroviseur-exterieur,démontage rétroviseur extérieur électrique,question,1,0,0.0,7.0,0.55,0.0,0.0
+support-moteur,رونو كليو 4,autre,1,0,0.0,7.0,0.55,0.0,0.0
+corps-papillon,classe b,autre,1,0,0.0,7.0,0.55,0.0,0.0
+galet-enrouleur-de-courroie-d-accessoire,galet enrouleur courroie distribution,autre,1,0,0.0,7.0,0.55,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,galet tender,nue,1,0,0.0,7.0,0.55,0.0,0.0
+capteur-abs,capteur abs défaillant,question,1,0,0.0,7.0,0.55,0.0,0.0
+machoires-de-frein,jeu de mâchoires de frein arrière,autre,1,0,0.0,8.0,0.51,0.0,0.0
+ventilateur-de-refroidissement,moteur ventilateur bloqué,question,1,0,0.0,8.0,0.51,0.0,0.0
+contacteur-de-feu-de-recul,peugeot 208,vehicule,1,0,0.0,8.0,0.51,0.0,0.0
+radiateur-de-chauffage,quel est le rôle du radiateur,question,1,0,0.0,8.0,0.51,0.0,0.0
+joint-de-collecteur,joint du collecteur d'admission,autre,1,0,0.0,8.0,0.51,0.0,0.0
+capteur-abs,donne moi une photo,autre,1,0,0.0,8.0,0.51,0.0,0.0
+disque-de-frein,comment savoir si le disque de frein est mort ?,question,1,0,0.0,8.0,0.51,0.0,0.0
+support-moteur,motorisation essence,autre,1,0,0.0,8.0,0.51,0.0,0.0
+support-moteur,symptômes support boîte de vitesse hs,question,1,0,0.0,8.0,0.51,0.0,0.0
+pompe-de-direction-assistee,roulement pompe direction assistée,autre,1,0,0.0,8.0,0.51,0.0,0.0
+courroie-de-distribution,conseil entretien remplacement courroie distribution,question,1,0,0.0,8.0,0.51,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,detendre galet tendeur courroie accessoire,autre,1,0,0.0,8.0,0.51,0.0,0.0
+joint-de-collecteur,les deux,autre,1,0,0.0,8.0,0.51,0.0,0.0
+pompe-a-carburant,مضخة الوقود,autre,1,0,0.0,8.0,0.51,0.0,0.0
+butee-d-embrayage,remplacement butée d'embrayage,question,1,0,0.0,8.0,0.51,0.0,0.0
+joint-de-culasse,guide culasse,autre,1,0,0.0,8.0,0.51,0.0,0.0
+courroie-d-accessoire,courroies accessoires,nue,1,0,0.0,8.0,0.51,0.0,0.0
+capteur-abs,والحل,autre,1,0,0.0,8.0,0.51,0.0,0.0
+faisceau-d-allumage,faisceau électrique mbk 51,autre,1,0,0.0,8.0,0.51,0.0,0.0
+cable-d-embrayage,بيجو 405,vehicule,1,0,0.0,8.0,0.51,0.0,0.0
+capteur-abs,abs vs esp,autre,1,0,0.0,8.0,0.51,0.0,0.0
+carter-d-huile,carter vidange,autre,1,0,0.0,8.0,0.51,0.0,0.0
+flexible-de-frein,site:automecanik.com,autre,1,0,0.0,8.0,0.51,0.0,0.0
+interrupteur-des-feux-de-freins,feux stop,autre,1,0,0.0,8.0,0.51,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,remplacement galet tendeur courroie accessoire,question,2,0,0.0,10.0,0.25,0.0,0.0
+filtre-de-boite-auto,site:automecanik.com,autre,2,0,0.0,10.0,0.25,0.0,0.0
+cremailliere-de-direction,climayeur de direction,autre,2,0,0.0,9.5,0.25,0.0,0.0
+etrier-de-frein,quel diagnostic demander pour un freinage qui manque de mordant ?,question,2,0,0.0,10.0,0.25,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,remplacement tendeur courroie accessoire,question,2,0,0.0,10.0,0.25,0.0,0.0
+detendeur-de-climatisation,détendeur clim auto bouché,autre,2,0,0.0,10.0,0.25,0.0,0.0
+boitier-de-prechauffage,boitier bougie prechauffage,autre,2,0,0.0,10.0,0.25,0.0,0.0
+galet-tendeur-de-courroie-d-accessoire,remplacement courroie d'accessoires et galets,question,2,0,0.0,9.5,0.25,0.0,0.0
+kit-de-freins-arriere,garniture frein arriere,autre,2,0,0.0,9.5,0.25,0.0,0.0
+durite-de-refroidissement,la durite de refroidissement,nue,1,0,0.0,10.0,0.25,0.0,0.0
+capteur-abs,renault c12500,achat,1,0,0.0,10.0,0.25,0.0,0.0
+faisceau-d-allumage,câble bougie allumage,autre,1,0,0.0,10.0,0.25,0.0,0.0
+capteur-abs,capteur abs arrière droit,nue,1,0,0.0,10.0,0.25,0.0,0.0
+cable-d-embrayage,cable embrayage 106,vehicule,1,0,0.0,10.0,0.25,0.0,0.0
+support-moteur,avec le support,nue,1,0,0.0,10.0,0.25,0.0,0.0
+contacteur-de-feu-de-recul,comment tester un contacteur de marche arrière,question,1,0,0.0,10.0,0.25,0.0,0.0
+bobine-d-allumage,site:automecanik.com,autre,1,0,0.0,10.0,0.25,0.0,0.0
+kit-d-embrayage,pédale d'embrayage dure : comment éviter de changer le kit pour rien ?,question,1,0,0.0,10.0,0.25,0.0,0.0
+detendeur-de-climatisation,changer détendeur clim scénic 3,question,1,0,0.0,10.0,0.25,0.0,0.0
+roulement-de-roue,bruit voiture roulement,question,1,0,0.0,10.0,0.25,0.0,0.0
+cardan,cardan pneu,autre,1,0,0.0,10.0,0.25,0.0,0.0
+emetteur-d-embrayage,emeteure d'embrayage,autre,1,0,0.0,10.0,0.25,0.0,0.0
+radiateur-de-chauffage,2012,autre,1,0,0.0,10.0,0.25,0.0,0.0
+faisceau-d-allumage,cable bobine allumage,autre,1,0,0.0,10.0,0.25,0.0,0.0
+pulseur-d-air-d-habitacle,pulseur ventilation,autre,1,0,0.0,10.0,0.25,0.0,0.0
+roulement-de-roue,roulement usé,autre,1,0,0.0,10.0,0.25,0.0,0.0
+capteur-abs,defaut abs esp,question,1,0,0.0,10.0,0.25,0.0,0.0
+filtre-de-boite-auto,filter oil boite automatique,autre,1,0,0.0,10.0,0.25,0.0,0.0
+boitier-de-prechauffage,boîtier préchauffage 1.5 dci,vehicule,1,0,0.0,10.0,0.25,0.0,0.0
+condenseur-de-climatisation,role du condenseur de climatisation,question,1,0,0.0,10.0,0.25,0.0,0.0
+support-moteur,tarif changement support moteur,question,1,0,0.0,10.0,0.25,0.0,0.0
+support-moteur,silent bloc boîte de vitesse symptôme,question,1,0,0.0,10.0,0.25,0.0,0.0
+joint-de-cache-culbuteurs,kit joint cache culbuteur,autre,1,0,0.0,10.0,0.25,0.0,0.0
+kit-d-embrayage,volant moteur bi masse hs symptome,question,1,0,0.0,10.0,0.25,0.0,0.0
+cable-d-embrayage,كيف اتحقق,autre,1,0,0.0,10.0,0.25,0.0,0.0
+cylindre-de-roue,nettoyage,question,1,0,0.0,10.0,0.25,0.0,0.0
+detendeur-de-climatisation,le détendeur de climatisation,nue,1,0,0.0,10.0,0.25,0.0,0.0
+emetteur-d-embrayage,récepteur hydraulique d'embrayage,autre,1,0,0.0,10.0,0.25,0.0,0.0
+ventilateur-de-refroidissement,moto ventilateur,autre,1,0,0.0,10.0,0.25,0.0,0.0
+butee-d-embrayage,butee de debattement,autre,1,0,0.0,10.0,0.25,0.0,0.0
+boitier-de-prechauffage,emplacement boitier prechauffage clio 3,question,1,0,0.0,10.0,0.25,0.0,0.0
+courroie-de-distribution,moteur distribution,autre,1,0,0.0,10.0,0.25,0.0,0.0
+corps-papillon,site:www.automecanik.com,autre,1,0,0.0,10.0,0.25,0.0,0.0
+courroie-d-accessoire,courroie changement,question,1,0,0.0,10.0,0.25,0.0,0.0
+courroie-d-accessoire,site:automecanik.com,autre,1,0,0.0,10.0,0.25,0.0,0.0
+temoin-d-usure,cable temoin usure plaquette,autre,1,0,0.0,10.0,0.25,0.0,0.0
+filtre-de-boite-auto,filtre boite automatique,autre,126,1,0.79,9.3,0.7,0.9,-0.1
+galet-tendeur-de-courroie-d-accessoire,comment changer un galet tendeur de courroie accessoire,question,59,1,1.69,5.4,0.98,0.6,-0.4
+capteur-abs,capteur esp voiture,autre,44,1,2.27,4.6,0.98,0.4,-0.6
+capteur-abs,capteurs esp,autre,34,1,2.94,8.8,0.7,0.2,-0.8
+faisceau-d-allumage,durée de vie faisceau allumage,question,28,1,3.57,2.8,0.79,0.2,-0.8
+colonne-de-direction,colone direction,nue,17,1,5.88,1.2,1.04,0.2,-0.8
+contacteur-de-feu-de-recul,oui,autre,8,1,12.5,4.1,1.07,0.1,-0.9
+galet-tendeur-de-courroie-d-accessoire,photos,autre,3,1,33.33,1.7,2.13,0.1,-0.9
+joint-de-cache-culbuteurs,oui,autre,5,1,20.0,4.2,1.07,0.1,-0.9
+carter-d-huile,carter d'un moteur,autre,6,1,16.67,6.5,0.78,0.0,-1.0
+detendeur-de-climatisation,oui,autre,2,1,50.0,2.0,2.13,0.0,-1.0
+contacteur-de-feu-de-recul,boite manuelle,autre,3,1,33.33,4.7,0.98,0.0,-1.0
+detendeur-de-climatisation,schéma,question,1,1,100.0,2.0,2.13,0.0,-1.0
+galet-tendeur-de-courroie-d-accessoire,oui,autre,1,1,100.0,4.0,1.07,0.0,-1.0
+emetteur-d-embrayage,nissan pulsar 2015,vehicule,1,1,100.0,4.0,1.07,0.0,-1.0
+filtre-de-boite-auto,où se trouve-t-il,autre,1,1,100.0,4.0,1.07,0.0,-1.0
+boitier-de-prechauffage,le démarreur tourne bien,autre,1,1,100.0,1.0,1.04,0.0,-1.0
+support-moteur,la qualité de cette marque,autre,1,1,100.0,1.0,1.04,0.0,-1.0
+capteur-abs,nissan navara,vehicule,1,1,100.0,3.0,0.79,0.0,-1.0
+detendeur-de-climatisation,bmw z3m coupé,vehicule,1,1,100.0,9.0,0.7,0.0,-1.0

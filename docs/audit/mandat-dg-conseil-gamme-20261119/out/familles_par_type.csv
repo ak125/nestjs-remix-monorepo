@@ -1,0 +1,13 @@
+famille,ptype,requetes,impressions,clics,ctr_pct,position
+nue,conseil,735,41360,7,0.02,28.5
+nue,R1,319,7661,1,0.01,62.1
+question,conseil,1598,11437,6,0.05,35.1
+question,R1,24,38,2,5.26,35.6
+achat,conseil,101,775,2,0.26,25.7
+achat,R1,221,2059,2,0.1,38.4
+vehicule,conseil,115,167,4,2.4,21.1
+vehicule,R1,37,184,1,0.54,45.0
+autre,conseil,1494,14810,21,0.14,29.7
+autre,R1,337,3746,6,0.16,43.2
+exclue,conseil,0,0,0,,
+exclue,R1,0,0,0,,

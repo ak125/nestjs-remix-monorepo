@@ -1,0 +1,448 @@
+pg_id,pg_alias,query,famille,imp_conseil,pos_conseil,clics_conseil,imp_r1,pos_r1,clics_r1,devant
+566,arbre-a-came,arbre a came,nue,5987,3.5,0,24,60.2,0,conseil
+1211,colonne-de-direction,colonne de direction,nue,1325,6.2,2,104,85.7,0,conseil
+158,corps-papillon,corps papillon,nue,1234,2.2,0,95,16.2,0,conseil
+592,carter-d-huile,carter d'huile,nue,1224,10.4,0,1,9.0,0,R1
+247,support-moteur,support moteur,nue,603,58.1,0,335,79.4,1,conseil
+412,capteur-abs,capteur abs,nue,766,30.8,0,8,78.6,0,conseil
+243,bougie-de-prechauffage,bougie de préchauffage,nue,767,28.3,0,1,7.0,0,R1
+321,joint-de-cache-culbuteurs,joint cache culbuteur,nue,485,31.4,0,221,72.1,0,conseil
+4,alternateur,alternateur,nue,487,77.6,0,188,66.1,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur,nue,379,51.7,0,293,66.0,0,conseil
+478,cable-d-embrayage,câble d'embrayage,nue,632,5.8,0,2,48.5,0,conseil
+478,cable-d-embrayage,cable d'embrayage,nue,588,10.8,0,17,45.2,0,conseil
+685,faisceau-d-allumage,faisceau de bougie,autre,222,14.6,1,324,10.1,0,R1
+566,arbre-a-came,arbre à came,nue,512,5.8,0,1,46.0,0,conseil
+13,cardan,cardan voiture,nue,222,89.3,0,282,50.0,0,R1
+13,cardan,cardan,nue,248,73.0,0,224,51.8,0,R1
+234,emetteur-d-embrayage,emetteur embrayage,nue,372,23.3,0,71,62.6,0,conseil
+312,galet-enrouleur-de-courroie-d-accessoire,galet enrouleur,nue,286,12.8,0,131,45.8,0,conseil
+1211,colonne-de-direction,colonne direction,nue,367,8.1,0,28,77.0,0,conseil
+234,emetteur-d-embrayage,emetteur recepteur embrayage,autre,378,19.6,0,16,63.7,0,conseil
+40,joint-de-collecteur,joint collecteur,nue,223,17.6,0,161,22.2,0,conseil
+475,durite-de-refroidissement,durite de refroidissement,nue,65,38.4,0,309,28.9,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur courroie accessoire,nue,238,26.6,0,133,54.0,0,conseil
+321,joint-de-cache-culbuteurs,joint de cache culbuteurs,nue,230,23.7,0,129,78.0,0,conseil
+321,joint-de-cache-culbuteurs,joint de cache culbuteur,nue,244,29.9,0,105,77.3,0,conseil
+318,joint-de-culasse,joint de culasse,nue,346,53.1,0,2,28.5,0,R1
+685,faisceau-d-allumage,faisceau bougie,autre,150,25.6,0,183,13.0,0,R1
+321,joint-de-cache-culbuteurs,joint culbuteur,nue,181,34.7,0,134,74.0,0,conseil
+158,corps-papillon,boîtier papillon,nue,237,43.4,0,77,96.1,0,conseil
+10,courroie-d-accessoire,courroie accessoire,nue,208,68.0,0,103,74.7,0,conseil
+321,joint-de-cache-culbuteurs,joint de culbuteur,nue,164,35.9,0,146,64.8,0,conseil
+258,maitre-cylindre-de-frein,maitre cylindre de frein,nue,187,66.1,0,113,32.3,0,R1
+286,cremailliere-de-direction,cremaillere de direction,nue,253,79.7,0,44,108.4,0,conseil
+1211,colonne-de-direction,colone de direction,nue,259,5.6,0,26,23.6,0,conseil
+40,joint-de-collecteur,joint de collecteur,nue,188,24.3,0,92,73.5,0,conseil
+566,arbre-a-came,l'arbre à came,nue,272,2.3,0,2,77.0,0,conseil
+12,pompe-de-direction-assistee,pompe direction assistée,nue,258,77.3,0,10,88.3,0,conseil
+321,joint-de-cache-culbuteurs,cache culbuteur,nue,247,37.1,0,8,66.5,0,conseil
+40,joint-de-collecteur,joint collecteur échappement,autre,177,24.0,0,77,25.8,0,conseil
+470,radiateur-de-refroidissement,radiateur de refroidissement,nue,93,62.3,0,157,28.6,0,R1
+40,joint-de-collecteur,joint de collecteur d échappement,autre,161,24.8,0,87,27.7,0,conseil
+40,joint-de-collecteur,joint collecteur echappement,autre,227,18.8,0,17,1.8,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,tendeur courroie accessoire,nue,134,37.4,0,109,69.2,0,conseil
+306,courroie-de-distribution,courroie de distribution,nue,241,73.1,0,1,76.0,0,conseil
+685,faisceau-d-allumage,faisceau allumage,nue,215,12.1,0,23,47.9,0,conseil
+158,corps-papillon,boitier papillon,nue,206,19.9,0,27,78.6,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet enrouleur,autre,132,42.5,0,99,83.3,0,conseil
+40,joint-de-collecteur,joint de collecteur d'échappement,autre,226,21.0,0,5,3.6,0,R1
+685,faisceau-d-allumage,faisceau de bougies,autre,170,16.0,0,55,12.1,0,R1
+286,cremailliere-de-direction,crémaillère de direction,nue,155,72.6,0,63,104.4,0,conseil
+807,contacteur-de-feu-de-recul,contacteur feu de recul,nue,154,36.0,0,60,82.5,0,conseil
+13,cardan,cardan moteur,autre,107,57.0,0,104,47.1,0,R1
+471,evaporateur-de-climatisation,evaporateur clim voiture,nue,121,56.0,0,89,90.5,0,conseil
+247,support-moteur,support moteur voiture,nue,133,52.1,0,77,73.5,0,conseil
+1145,vanne-egr,vanne egr,nue,207,69.1,0,1,38.0,0,R1
+312,galet-enrouleur-de-courroie-d-accessoire,galet enrouleur courroie accessoire,nue,138,17.7,0,61,91.6,0,conseil
+4,alternateur,cite mon alternateur,autre,193,42.6,0,3,86.0,0,conseil
+1211,colonne-de-direction,colonne de direction voiture,nue,189,4.3,0,6,64.2,0,conseil
+2669,pulseur-d-air-d-habitacle,pulseur d'air habitacle,nue,124,19.4,0,69,74.9,0,conseil
+258,maitre-cylindre-de-frein,maitre cylindre frein,nue,116,79.7,0,77,65.7,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet enrouleur courroie accessoire,autre,113,22.7,0,78,79.5,0,conseil
+286,cremailliere-de-direction,crémaillère voiture,nue,145,68.1,0,41,104.7,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur courroie,nue,83,59.2,0,102,83.6,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet courroie accessoire,nue,103,34.0,0,82,69.0,0,conseil
+4,alternateur,vite mon alternateur,autre,3,45.3,0,180,51.6,0,conseil
+13,cardan,cardan de voiture,nue,86,97.0,0,94,52.3,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur de courroie d accessoires,nue,93,31.7,0,86,66.5,0,conseil
+234,emetteur-d-embrayage,émetteur embrayage,nue,155,15.0,0,22,33.1,0,conseil
+13,cardan,cardan boite de vitesse,autre,86,73.2,0,88,53.2,0,R1
+471,evaporateur-de-climatisation,evaporateur de clim,nue,102,64.7,0,71,100.8,0,conseil
+13,cardan,cardan auto,nue,93,93.3,0,77,81.5,0,R1
+316,thermostat,thermostat voiture,nue,101,77.5,0,63,69.2,0,R1
+10,courroie-d-accessoire,courroie d accessoire,nue,98,67.3,0,64,73.1,0,conseil
+318,joint-de-culasse,joint culasse,nue,157,61.0,0,1,57.0,0,R1
+286,cremailliere-de-direction,cremaillere direction,nue,137,72.7,0,20,106.3,0,conseil
+448,condenseur-de-climatisation,condenseur clim,nue,154,32.8,0,2,49.5,0,conseil
+685,faisceau-d-allumage,faisceau d allumage,nue,87,14.1,0,69,39.9,0,conseil
+183,detendeur-de-climatisation,détendeur clim,nue,85,35.2,0,70,96.9,0,conseil
+4,alternateur,alternateur voiture,nue,152,84.9,0,1,2.0,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet enrouleur de courroie d accessoires,autre,81,45.1,0,72,67.7,0,conseil
+3927,debitmetre-d-air,débitmètre d'air,nue,78,61.2,0,75,76.9,0,conseil
+13,cardan,cardans,nue,60,72.3,0,92,39.2,0,R1
+685,faisceau-d-allumage,faisceau d'allumage,nue,146,10.9,0,4,34.8,0,conseil
+234,emetteur-d-embrayage,emetteur d embrayage,nue,113,25.8,0,35,96.2,0,conseil
+183,detendeur-de-climatisation,détendeur de clim,nue,79,34.6,0,68,86.8,0,conseil
+2066,rotule-de-direction,rotule direction,nue,43,33.4,0,101,65.3,0,conseil
+685,faisceau-d-allumage,faisceaux d allumage,nue,98,18.3,0,42,43.2,0,conseil
+13,cardan,cardan roue,autre,75,54.0,0,62,55.8,0,conseil
+416,filtre-de-boite-auto,filtre boite automatique,autre,126,9.3,1,8,25.5,0,conseil
+158,corps-papillon,corps de papillon,nue,90,17.5,0,43,24.9,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,kit galet tendeur courroie accessoire,autre,60,45.1,0,68,46.4,0,conseil
+10,courroie-d-accessoire,courroie de direction,autre,66,75.2,0,62,71.0,0,R1
+2669,pulseur-d-air-d-habitacle,pulseur d'air,nue,75,29.1,0,51,69.8,0,conseil
+258,maitre-cylindre-de-frein,maitre cylindre,nue,99,53.5,0,23,59.6,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,changement galet tendeur courroie accessoire,question,120,15.3,0,1,50.0,0,conseil
+566,arbre-a-came,arbre came,nue,120,5.8,0,1,58.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,tendeur accessoire,nue,43,12.1,0,77,11.3,0,R1
+478,cable-d-embrayage,cable d embrayage,nue,115,26.2,0,2,15.5,0,R1
+471,evaporateur-de-climatisation,évaporateur climatisation,nue,84,88.8,0,32,116.1,0,conseil
+10,courroie-d-accessoire,courroie d'accessoire,nue,76,60.5,0,39,65.1,0,conseil
+286,cremailliere-de-direction,crémaillère direction,nue,91,78.5,0,21,108.5,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur de courroie d'accessoire,nue,80,12.2,0,28,19.1,0,conseil
+258,maitre-cylindre-de-frein,maître cylindre de frein,nue,80,55.2,0,27,62.1,0,conseil
+13,cardan,roulement de cardan,autre,80,57.2,0,23,77.9,0,conseil
+13,cardan,cardan de transmission,autre,2,80.0,0,101,70.0,0,R1
+3927,debitmetre-d-air,debimetre air,nue,84,76.8,0,17,90.7,0,conseil
+258,maitre-cylindre-de-frein,cylindre de frein,nue,87,56.0,0,14,42.2,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet enrouleur de courroie d'accessoire,autre,72,6.6,0,29,9.9,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galets tendeurs,nue,73,15.8,0,28,60.8,0,conseil
+312,galet-enrouleur-de-courroie-d-accessoire,galet enrouleur de courroie d accessoires,nue,88,22.9,0,8,77.9,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur de courroie d accessoire,nue,78,14.4,0,18,58.4,0,conseil
+685,faisceau-d-allumage,faisceaux d'allumage,nue,89,8.8,0,1,7.0,0,R1
+234,emetteur-d-embrayage,emetteur d'embrayage,nue,68,16.7,0,20,26.3,0,conseil
+4,alternateur,alternateur casse auto,autre,42,58.9,0,40,79.6,0,conseil
+321,joint-de-cache-culbuteurs,prix joint cache culbuteur,achat,74,18.3,0,7,51.1,0,conseil
+158,corps-papillon,site:www.automecanik.com,autre,1,10.0,0,79,7.4,0,R1
+234,emetteur-d-embrayage,émetteur d'embrayage,nue,63,17.4,0,16,47.2,0,conseil
+183,detendeur-de-climatisation,detendeur clim,nue,74,19.2,0,5,72.8,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galets tendeurs courroie d'accessoires,nue,72,9.0,0,7,26.9,0,conseil
+234,emetteur-d-embrayage,prix emetteur recepteur embrayage,achat,72,21.0,0,6,26.7,0,conseil
+475,durite-de-refroidissement,durite liquide de refroidissement,autre,31,27.1,0,47,50.5,0,conseil
+13,cardan,cardan avant droit,nue,73,69.4,0,4,79.5,0,conseil
+40,joint-de-collecteur,joint collecteur d'échappement,autre,54,10.9,0,23,2.8,0,R1
+247,support-moteur,support moteur voiture villefranche sur saone,autre,6,85.7,0,62,37.2,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,tendeur courroie,nue,31,41.5,0,34,67.4,0,conseil
+1385,commande-de-ventilation,commandes de ventilation,nue,62,19.7,0,1,94.0,0,conseil
+471,evaporateur-de-climatisation,évaporateur de climatisation,nue,33,69.8,0,26,87.8,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet de courroie d'accessoire,nue,37,7.3,0,21,7.5,0,conseil
+321,joint-de-cache-culbuteurs,joint de cache-culbuteurs,nue,49,8.4,0,9,59.2,0,conseil
+70,machoires-de-frein,tambours et mâchoires de frein,autre,49,19.7,0,8,80.2,0,conseil
+234,emetteur-d-embrayage,émetteur récepteur embrayage,autre,53,15.1,0,3,72.3,0,conseil
+306,courroie-de-distribution,courroie de distribution diesel,autre,25,76.3,0,29,85.3,0,conseil
+316,thermostat,thermostat liquide de refroidissement,autre,51,34.9,0,1,61.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet voiture,nue,20,44.5,0,30,40.7,0,R1
+13,cardan,un cardan,nue,35,30.7,0,14,39.7,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,tendeur de courroie,nue,15,33.5,0,33,61.3,0,conseil
+10,courroie-d-accessoire,courroie d accessoires,nue,38,71.5,0,10,73.8,0,conseil
+70,machoires-de-frein,mâchoires de frein,nue,46,13.3,0,1,85.0,0,conseil
+471,evaporateur-de-climatisation,evaporateur clim,nue,34,50.7,0,13,86.6,0,conseil
+1211,colonne-de-direction,prix colonne de direction,achat,44,17.1,0,3,82.3,0,conseil
+1389,kit-de-chaine-de-distribution,kit chaine distribution,nue,1,14.0,0,45,68.6,0,conseil
+685,faisceau-d-allumage,faisceaux de bougies voitures,autre,26,6.9,0,19,9.0,0,conseil
+475,durite-de-refroidissement,durite de liquide de refroidissement,autre,8,23.1,0,37,56.5,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,tendeur de courroie d'accessoires,nue,32,5.3,0,13,11.8,0,conseil
+3927,debitmetre-d-air,débitmètre d air,nue,17,61.5,0,27,82.1,0,conseil
+3927,debitmetre-d-air,debimetre voiture,nue,42,74.0,0,1,83.0,0,conseil
+258,maitre-cylindre-de-frein,maître-cylindre de frein,nue,31,53.1,0,12,29.6,0,R1
+183,detendeur-de-climatisation,detendeur clim voiture,nue,25,22.5,0,16,76.2,0,conseil
+316,thermostat,thermostat auto,nue,28,69.9,0,13,43.9,0,R1
+286,cremailliere-de-direction,crémallière de direction,nue,27,74.6,0,14,83.0,0,conseil
+471,evaporateur-de-climatisation,evaporateur climatisation,nue,34,50.8,0,6,92.3,0,conseil
+158,corps-papillon,site:automecanik.com,autre,1,9.0,0,39,6.3,0,R1
+2066,rotule-de-direction,rotules de direction,nue,23,19.6,0,17,55.0,0,conseil
+258,maitre-cylindre-de-frein,cylindre frein,nue,27,43.6,0,12,45.1,0,conseil
+807,contacteur-de-feu-de-recul,contacteur de feu de recul,nue,22,14.3,0,17,67.8,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet accessoire,nue,20,21.5,0,18,63.6,0,conseil
+416,filtre-de-boite-auto,filtre de boite automatique,autre,32,9.4,0,5,1.6,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur alternateur,autre,19,41.4,0,18,71.7,0,conseil
+412,capteur-abs,capteurs abs,nue,35,25.8,0,2,84.5,0,conseil
+286,cremailliere-de-direction,crémaillère direction assistée,autre,28,66.7,0,8,92.9,0,conseil
+566,arbre-a-came,arbre à cames et pièces,nue,29,38.4,0,4,34.8,0,R1
+316,thermostat,thermostat automobile,nue,24,75.1,0,9,52.3,0,R1
+10,courroie-d-accessoire,courroie direction assistée,autre,32,78.6,0,1,59.0,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet alternateur,autre,15,32.5,0,18,60.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet pour courroie accessoire,nue,14,5.4,0,18,8.3,0,conseil
+234,emetteur-d-embrayage,émetteur-récepteur embrayage prix,achat,31,20.1,0,1,64.0,0,conseil
+321,joint-de-cache-culbuteurs,joint cache soupape,autre,30,7.6,0,1,71.0,0,conseil
+183,detendeur-de-climatisation,detendeur clim auto,nue,24,17.7,0,7,49.9,0,conseil
+2669,pulseur-d-air-d-habitacle,pulseur d air habitacle,nue,14,24.1,0,17,66.9,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur courroie alternateur,autre,18,14.3,0,12,75.0,0,conseil
+306,courroie-de-distribution,courroie de,nue,1,74.0,0,29,90.6,0,conseil
+685,faisceau-d-allumage,faisceau bobine d'allumage,autre,22,9.6,0,7,10.6,0,conseil
+3927,debitmetre-d-air,débitmètre voiture,nue,22,70.3,0,7,70.9,0,conseil
+48,butee-d-embrayage,prix butée d'embrayage,achat,27,27.2,0,1,24.0,0,R1
+471,evaporateur-de-climatisation,evaporateur voiture,nue,20,49.2,0,8,60.5,0,conseil
+286,cremailliere-de-direction,crémaillère de direction assistée,autre,27,60.4,0,1,93.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,tendeur alternateur,autre,22,48.0,0,6,76.3,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet courroie,nue,13,26.4,0,15,60.5,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur courroie d'accessoire,nue,20,11.1,0,8,19.5,0,conseil
+471,evaporateur-de-climatisation,évaporateur clim voiture,nue,25,28.0,0,3,45.3,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,tendeur de courroie d accessoire,nue,15,30.5,0,12,54.2,0,conseil
+13,cardan,cardans voiture,nue,8,87.5,0,19,41.9,0,R1
+10,courroie-d-accessoire,courroi de direction,autre,7,65.3,0,19,73.3,0,conseil
+321,joint-de-cache-culbuteurs,joint de couvre culasse,autre,21,21.0,0,4,57.8,0,conseil
+286,cremailliere-de-direction,cremaillere voiture,nue,18,54.6,0,7,89.7,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,courroie accessoire et galet tendeur,nue,19,8.3,0,6,8.5,0,conseil
+13,cardan,cardan echange standard,autre,13,39.3,0,11,70.2,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,roulement courroie accessoire,autre,23,5.4,0,1,1.0,0,R1
+158,corps-papillon,boitier de papillon,nue,13,68.4,0,11,79.8,0,conseil
+316,thermostat,thermostat radiateur voiture,autre,10,55.1,0,13,54.8,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet courroie alternateur,autre,20,6.0,0,3,7.7,0,conseil
+234,emetteur-d-embrayage,emetteur hydraulique embrayage,autre,21,31.0,0,2,58.0,0,conseil
+13,cardan,le cardan d une voiture,nue,13,73.7,0,10,56.9,0,R1
+321,joint-de-cache-culbuteurs,joint de cache,nue,18,6.2,0,5,61.8,0,conseil
+471,evaporateur-de-climatisation,évaporateur voiture,nue,19,47.5,0,4,70.5,0,conseil
+247,support-moteur,support moteur inferieur,autre,19,34.8,0,4,77.2,0,conseil
+234,emetteur-d-embrayage,embrayage emetteur recepteur,autre,21,21.2,0,1,67.0,0,conseil
+807,contacteur-de-feu-de-recul,contacteur feux de recul,nue,18,18.3,0,4,65.8,0,conseil
+416,filtre-de-boite-auto,filtre boite de vitesse automatique,autre,19,15.0,0,3,89.3,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,tendeur de courroie d'accessoire,nue,18,7.2,0,4,29.8,0,conseil
+685,faisceau-d-allumage,fuseau de bougie,autre,3,7.7,0,19,6.8,0,R1
+2066,rotule-de-direction,rotule auto,nue,8,22.9,0,13,12.8,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur courroie accessoires,nue,17,15.0,0,4,60.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet moteur,autre,6,19.7,0,15,66.9,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur automatique courroie accessoire,autre,19,10.4,0,1,40.0,0,conseil
+4,alternateur,alternateur diesel,autre,9,38.2,0,11,79.7,0,conseil
+13,cardan,cardon voiture,nue,9,78.8,0,11,54.4,0,R1
+13,cardan,cardan gauche,nue,18,83.2,0,2,76.5,0,R1
+158,corps-papillon,boitier papillon vanne egr,autre,11,58.9,0,9,42.1,0,R1
+234,emetteur-d-embrayage,emetteur et recepteur d'embrayage,autre,10,28.6,0,9,77.3,0,conseil
+4,alternateur,reference alternateur,autre,9,77.8,0,10,40.4,0,R1
+685,faisceau-d-allumage,faisceaux allumage,nue,15,11.1,0,4,49.0,0,conseil
+3927,debitmetre-d-air,débitmètre air,nue,8,35.8,0,11,78.3,0,conseil
+183,detendeur-de-climatisation,détendeur climatisation,nue,15,28.1,0,4,61.8,0,conseil
+416,filtre-de-boite-auto,filtre boite de vitesse,autre,16,18.1,0,2,86.0,0,conseil
+458,pompe-a-carburant,site:automecanik.com,autre,16,8.0,0,2,3.5,0,R1
+321,joint-de-cache-culbuteurs,joint de couvre-culasse,autre,13,15.4,0,4,58.2,0,conseil
+48,butee-d-embrayage,buté d embrayage prix,achat,10,43.5,0,7,21.4,0,R1
+4,alternateur,alternateur utilitaire,autre,2,83.0,0,15,72.5,0,R1
+247,support-moteur,support moteur hydraulique,autre,8,28.9,0,9,22.8,0,R1
+13,cardan,auto cardan,nue,10,79.1,0,7,51.7,0,R1
+321,joint-de-cache-culbuteurs,joints cache culbuteur,nue,13,30.8,0,4,72.5,0,conseil
+4,alternateur,puissance alternateur voiture,autre,16,59.9,0,1,18.0,0,R1
+234,emetteur-d-embrayage,emetteur pedale embrayage,autre,12,34.1,0,5,84.8,0,conseil
+321,joint-de-cache-culbuteurs,joint couvre culbuteurs,autre,9,32.2,0,8,64.5,0,conseil
+321,joint-de-cache-culbuteurs,couvre-culasse,autre,14,24.5,0,2,74.0,0,conseil
+258,maitre-cylindre-de-frein,met cylindre,autre,14,56.6,0,2,67.5,0,conseil
+286,cremailliere-de-direction,cremaillere boitier de direction,autre,13,64.5,0,3,91.7,0,conseil
+247,support-moteur,supports moteur,nue,8,65.6,0,8,66.9,0,conseil
+1211,colonne-de-direction,colonne de direction prix,achat,12,20.2,0,4,62.2,0,conseil
+234,emetteur-d-embrayage,émetteur-récepteur embrayage,autre,15,19.3,0,1,85.0,0,conseil
+4,alternateur,puissance alternateur,autre,9,43.3,0,7,40.0,0,R1
+10,courroie-d-accessoire,courroie d'accessoires,nue,13,57.7,0,3,53.0,0,R1
+258,maitre-cylindre-de-frein,maître-cylindre frein,nue,7,63.0,0,8,52.8,0,R1
+471,evaporateur-de-climatisation,evaporateur climatisation voiture,nue,13,27.1,0,2,79.0,0,conseil
+321,joint-de-cache-culbuteurs,joint du cache culbuteur,nue,10,22.7,0,5,69.0,0,conseil
+321,joint-de-cache-culbuteurs,joint cache culbuteur prix,achat,10,23.8,0,5,56.0,0,conseil
+258,maitre-cylindre-de-frein,maitre cylindre freinage,autre,14,52.6,0,1,39.0,0,R1
+258,maitre-cylindre-de-frein,maitre cylindre de frein voiture,nue,6,60.3,0,9,65.3,0,conseil
+183,detendeur-de-climatisation,détendeur de climatisation,nue,11,26.1,0,4,68.2,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,tendeur de courroie d accessoires,nue,12,6.3,0,3,2.0,0,R1
+4,alternateur,alternateur moteur,autre,14,62.4,0,1,45.0,0,R1
+321,joint-de-cache-culbuteurs,joint cache moteur,autre,10,13.2,0,4,60.5,0,conseil
+478,cable-d-embrayage,cable dembrayage,nue,13,31.5,0,1,52.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,courroie galet tendeur,nue,9,16.7,0,5,60.0,0,conseil
+158,corps-papillon,papillon voiture,nue,6,65.3,0,8,57.4,0,R1
+158,corps-papillon,corp papillon,nue,6,92.2,0,8,30.9,0,R1
+475,durite-de-refroidissement,durites de refroidissement,nue,2,42.5,0,12,65.3,0,conseil
+158,corps-papillon,corps papillon voiture,nue,9,55.1,0,5,69.0,0,conseil
+312,galet-enrouleur-de-courroie-d-accessoire,galet enrouleur de courroie de distribution,autre,1,28.0,0,13,18.6,0,R1
+258,maitre-cylindre-de-frein,maître cylindre de frein voiture,nue,10,45.2,0,4,27.2,0,R1
+158,corps-papillon,papillon d'admission,autre,13,5.7,0,1,73.0,0,conseil
+234,emetteur-d-embrayage,prix emetteur embrayage,achat,11,22.1,0,3,48.0,0,conseil
+258,maitre-cylindre-de-frein,maître cylindre frein,nue,6,32.0,0,8,41.6,0,conseil
+158,corps-papillon,boitier papillon voiture,nue,9,62.4,0,4,27.5,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,tendeur de courroie alternateur,autre,9,30.8,0,4,57.5,0,conseil
+158,corps-papillon,boite papillon voiture,autre,7,66.4,0,6,56.8,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,tendeur courroie alternateur,autre,6,30.7,0,7,73.9,0,conseil
+4,alternateur,alternateur neuf,achat,6,81.0,0,7,42.9,0,R1
+13,cardan,site:www.automecanik.com,autre,9,8.7,0,3,5.7,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galet courroie d accessoire,nue,9,20.9,0,3,64.0,0,conseil
+316,thermostat,thermostat moteur,autre,7,56.4,0,5,53.0,0,R1
+234,emetteur-d-embrayage,émetteur recepteur embrayage,autre,11,24.1,0,1,23.0,0,R1
+807,contacteur-de-feu-de-recul,contacteur de feux de recul,nue,10,13.2,0,2,69.5,0,conseil
+286,cremailliere-de-direction,crémaillère auto,nue,10,62.2,0,2,95.5,0,conseil
+247,support-moteur,biellette support moteur,autre,4,19.5,0,7,18.9,0,R1
+566,arbre-a-came,arbre à came moteur,autre,10,45.5,0,1,60.0,0,conseil
+1211,colonne-de-direction,colonne de direction camion,autre,2,30.5,0,9,43.0,0,conseil
+158,corps-papillon,corps de papillon voiture,nue,6,46.8,0,5,67.4,0,conseil
+306,courroie-de-distribution,courroie moteur,autre,2,73.0,0,9,87.8,0,conseil
+470,radiateur-de-refroidissement,radiateur de refroidissement moteur,autre,5,55.4,0,6,5.0,0,R1
+258,maitre-cylindre-de-frein,maitre cylindre de freins,nue,7,51.1,0,4,46.2,0,R1
+13,cardan,cardan de boite de vitesse,autre,6,51.8,0,5,38.0,0,R1
+475,durite-de-refroidissement,durite circuit refroidissement,autre,1,42.0,0,10,46.8,0,conseil
+807,contacteur-de-feu-de-recul,capteur de feux de recul,autre,9,11.6,0,2,67.5,0,conseil
+183,detendeur-de-climatisation,detendeur climatisation,nue,8,16.5,0,3,79.0,0,conseil
+312,galet-enrouleur-de-courroie-d-accessoire,galet enrouleur de courroie d'accessoire,nue,9,13.7,0,2,74.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,courroie accessoire galet tendeur,nue,9,11.4,0,2,58.0,0,conseil
+183,detendeur-de-climatisation,détendeur clim voiture,nue,7,17.6,0,4,77.2,0,conseil
+258,maitre-cylindre-de-frein,maître-cylindre de frein voiture,nue,6,73.5,0,4,55.2,0,R1
+13,cardan,cardan coté boite,autre,8,55.1,0,2,78.0,0,conseil
+470,radiateur-de-refroidissement,radiateur voiture,nue,8,48.9,0,2,11.5,0,R1
+3927,debitmetre-d-air,débitmètre,nue,9,79.3,0,1,95.0,0,conseil
+316,thermostat,thermostat de refroidissement,autre,4,38.5,0,6,50.2,0,conseil
+247,support-moteur,silent bloc support moteur,autre,4,68.8,0,6,83.8,0,conseil
+312,galet-enrouleur-de-courroie-d-accessoire,galet moteur,autre,2,52.0,0,8,80.6,0,conseil
+13,cardan,le cardan,nue,9,33.6,0,1,57.0,0,conseil
+286,cremailliere-de-direction,cremaillère de direction,nue,9,75.3,0,1,96.0,0,conseil
+183,detendeur-de-climatisation,détendeur climatisation voiture,nue,8,17.8,0,2,68.0,0,conseil
+234,emetteur-d-embrayage,emetteur recepteur embrayage prix,achat,9,29.1,0,1,44.0,0,conseil
+10,courroie-d-accessoire,courroie d'accessoire et courroie de distribution,autre,6,66.5,0,4,66.0,0,R1
+247,support-moteur,support de moteur,nue,7,38.0,0,2,87.5,0,conseil
+48,butee-d-embrayage,prix butee d embrayage,achat,6,35.5,0,3,18.3,0,R1
+247,support-moteur,suport moteur,nue,6,52.0,0,3,80.3,0,conseil
+258,maitre-cylindre-de-frein,met cylindre frein,autre,4,79.8,0,5,53.6,0,R1
+258,maitre-cylindre-de-frein,met cylindre de frein,autre,4,77.5,0,5,53.6,0,R1
+412,capteur-abs,sonde abs,autre,8,20.1,0,1,85.0,0,conseil
+234,emetteur-d-embrayage,emetteur boite de vitesse,autre,6,19.7,0,3,63.0,0,conseil
+566,arbre-a-came,arbre à cames voiture,nue,8,61.2,0,1,25.0,0,R1
+316,thermostat,thermostat moteur diesel,autre,5,45.8,0,4,79.5,0,conseil
+3927,debitmetre-d-air,débitmètre voiture diesel,autre,5,47.2,0,4,65.5,0,conseil
+3927,debitmetre-d-air,débimetre d air,nue,2,63.5,0,7,75.4,0,conseil
+316,thermostat,thermostat moteur voiture,autre,4,80.8,0,5,53.2,0,R1
+471,evaporateur-de-climatisation,évaporateur clim,nue,6,61.3,0,3,86.3,0,conseil
+321,joint-de-cache-culbuteurs,joint cache culbuteurs,nue,4,27.2,0,4,71.2,0,conseil
+321,joint-de-cache-culbuteurs,joint culbuteur prix,achat,6,23.0,0,2,21.5,0,R1
+158,corps-papillon,papillon piece voiture,nue,4,67.2,0,4,45.8,0,R1
+158,corps-papillon,clapet papillon,autre,5,49.8,0,3,21.0,0,R1
+416,filtre-de-boite-auto,filtre boite,nue,5,9.6,0,3,1.0,0,R1
+158,corps-papillon,boîtier de papillon,nue,4,69.2,0,4,82.0,0,conseil
+158,corps-papillon,corp de papillon,nue,3,91.7,0,5,25.0,0,R1
+247,support-moteur,support bloc moteur,autre,4,73.0,0,4,58.5,0,R1
+286,cremailliere-de-direction,crémaillère #voiture,nue,7,55.3,0,1,79.0,0,conseil
+158,corps-papillon,bloc papillon,autre,4,94.2,0,4,27.2,0,R1
+310,galet-tendeur-de-courroie-d-accessoire,galets voiture,nue,3,43.0,0,5,57.0,0,conseil
+321,joint-de-cache-culbuteurs,joint couvre culbuteur,autre,6,30.7,0,2,69.0,0,conseil
+306,courroie-de-distribution,courroie de voiture,nue,1,91.0,0,7,93.6,0,conseil
+412,capteur-abs,abs capteur,nue,7,23.4,0,1,98.0,0,conseil
+1389,kit-de-chaine-de-distribution,kit chaine de distribution,nue,2,16.5,0,6,67.0,0,conseil
+13,cardan,cardan cote boite,autre,5,56.8,0,3,65.7,0,conseil
+689,bobine-d-allumage,bobine d'allumage diesel,autre,4,31.5,0,3,74.0,0,conseil
+471,evaporateur-de-climatisation,évaporateur climatisation voiture,nue,4,55.2,0,3,67.0,0,conseil
+3927,debitmetre-d-air,débitmètre d'air voiture,nue,3,69.0,0,4,85.0,0,conseil
+10,courroie-d-accessoire,croix d'accessoire,autre,3,64.0,0,4,56.2,0,R1
+158,corps-papillon,boitier a papillon,nue,4,82.8,0,3,89.7,0,conseil
+13,cardan,les cardan,nue,5,28.0,0,2,53.5,0,conseil
+2669,pulseur-d-air-d-habitacle,pulseur d air,nue,4,38.0,0,3,66.3,0,conseil
+158,corps-papillon,papillon de voiture,nue,5,63.2,0,2,67.5,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,tendeur galet courroie,nue,5,5.6,0,2,55.5,0,conseil
+158,corps-papillon,volet papillon voiture,autre,6,48.3,0,1,76.0,0,conseil
+685,faisceau-d-allumage,les fiso de bougie,autre,4,10.8,0,3,4.0,0,R1
+3927,debitmetre-d-air,debimetre air voiture,nue,4,40.8,0,3,78.3,0,conseil
+10,courroie-d-accessoire,courroie d accessoire voiture,nue,3,65.0,0,4,46.2,0,R1
+158,corps-papillon,moteur papillon,autre,6,74.5,0,1,86.0,0,conseil
+13,cardan,cardan pour voiture,nue,1,83.0,0,6,52.8,0,R1
+458,pompe-a-carburant,site:www.automecanik.com,autre,5,9.0,0,2,10.0,0,conseil
+13,cardan,cardan automobile,nue,2,83.0,0,5,66.6,0,R1
+158,corps-papillon,boitier papillon motorisé,autre,3,83.3,0,4,54.0,0,R1
+4,alternateur,alternateur essence,autre,2,57.0,0,4,58.8,0,conseil
+234,emetteur-d-embrayage,l'émetteur d'embrayage,nue,5,19.2,0,1,83.0,0,conseil
+13,cardan,cardan droit,nue,3,72.0,0,3,70.3,0,R1
+321,joint-de-cache-culbuteurs,joint de cache-culbuteur,nue,4,17.8,0,2,58.5,0,conseil
+13,cardan,automobile cardan,nue,1,92.0,0,5,56.2,0,R1
+13,cardan,cardan de la voiture,nue,3,86.0,0,3,61.7,0,R1
+158,corps-papillon,papillon moteur voiture,autre,4,69.2,0,2,79.0,0,conseil
+247,support-moteur,support de moteur anomalie de fixation,autre,5,30.6,0,1,66.0,0,conseil
+306,courroie-de-distribution,diesel courroie de distribution,autre,4,69.5,0,2,87.0,0,conseil
+10,courroie-d-accessoire,courroie accessoire voiture,nue,4,67.0,0,2,58.0,0,R1
+13,cardan,echange standard cardan,autre,3,21.0,0,3,58.3,0,conseil
+273,bras-de-suspension,bras de suspension avant droit,nue,5,49.4,0,1,3.0,0,R1
+807,contacteur-de-feu-de-recul,capteur de feu de recul,autre,5,11.8,0,1,75.0,0,conseil
+13,cardan,cardan avant droite,nue,3,64.3,0,3,82.0,0,conseil
+158,corps-papillon,schema boitier papillon,question,3,37.7,0,3,69.0,0,conseil
+247,support-moteur,oui,autre,4,4.5,0,2,2.5,0,R1
+2669,pulseur-d-air-d-habitacle,pulseur d'air d'habitacle,nue,2,8.5,0,4,68.2,0,conseil
+321,joint-de-cache-culbuteurs,oui,autre,5,4.2,1,1,1.0,0,R1
+321,joint-de-cache-culbuteurs,joint de cache soupape,autre,4,6.5,0,1,58.0,0,conseil
+10,courroie-d-accessoire,courroies accessoires,nue,1,8.0,0,4,49.2,0,conseil
+48,butee-d-embrayage,butée d embrayage prix,achat,3,39.3,0,2,22.0,0,R1
+807,contacteur-de-feu-de-recul,capteur feux de recul,autre,4,11.5,0,1,64.0,0,conseil
+13,cardan,les cardans,nue,4,50.0,0,1,44.0,0,R1
+448,condenseur-de-climatisation,site:www.automecanik.com,autre,2,14.5,0,3,9.3,0,R1
+321,joint-de-cache-culbuteurs,joints de cache culbuteur,nue,3,15.3,0,2,74.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galets courroie accessoire,nue,4,18.5,0,1,55.0,0,conseil
+247,support-moteur,site:www.automecanik.com,autre,4,9.5,0,1,9.0,0,R1
+10,courroie-d-accessoire,courroies d'accessoires,nue,4,53.8,0,1,54.0,0,conseil
+158,corps-papillon,papillon voiture essence,autre,4,60.0,0,1,85.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galet tendeur accessoire,nue,3,42.0,0,2,68.0,0,conseil
+183,detendeur-de-climatisation,détendeur clim auto,nue,4,16.0,0,1,70.0,0,conseil
+416,filtre-de-boite-auto,filtre de boite,nue,3,7.7,0,2,1.0,0,R1
+158,corps-papillon,boite à papillon voiture,autre,4,82.5,0,1,67.0,0,R1
+183,detendeur-de-climatisation,detendeur de clim,nue,3,30.3,0,2,68.0,0,conseil
+448,condenseur-de-climatisation,condenseur climatisation deutz fahr,autre,2,20.0,0,3,60.3,0,conseil
+10,courroie-d-accessoire,courroie accessoires,nue,3,63.0,0,2,74.0,0,conseil
+13,cardan,cardan mécanique,autre,3,38.7,0,1,75.0,0,conseil
+2066,rotule-de-direction,rotule direction voiture,nue,2,2.5,0,2,1.0,0,R1
+316,thermostat,thermostat pour voiture,nue,2,72.5,0,2,53.5,0,R1
+312,galet-enrouleur-de-courroie-d-accessoire,galet voiture,nue,3,42.3,0,1,91.0,0,conseil
+247,support-moteur,support moteur anomalie de fixation,autre,2,38.5,0,2,58.5,0,conseil
+13,cardan,un cardan de voiture,nue,2,87.5,0,2,45.0,0,R1
+183,detendeur-de-climatisation,ou se trouve le détendeur climatisation,autre,3,10.7,0,1,50.0,0,conseil
+10,courroie-d-accessoire,courrois d'accessoire,nue,3,58.3,0,1,45.0,0,R1
+4,alternateur,alternateur pour voiture,nue,2,68.0,0,2,63.5,0,R1
+183,detendeur-de-climatisation,detendeur climatisation voiture,nue,2,21.0,0,2,72.0,0,conseil
+13,cardan,cardan boîte de vitesse,autre,2,68.5,0,2,55.0,0,R1
+258,maitre-cylindre-de-frein,maître-cylindre voiture,nue,3,61.0,0,1,94.0,0,conseil
+10,courroie-d-accessoire,courroie des accessoires,nue,2,58.5,0,2,69.5,0,conseil
+1211,colonne-de-direction,colonne voiture,nue,3,1.3,0,1,1.0,0,R1
+10,courroie-d-accessoire,courroie d accessoire et courroie de distribution,autre,2,80.0,0,2,54.0,0,R1
+48,butee-d-embrayage,butée embrayage prix,achat,3,33.3,0,1,11.0,0,R1
+316,thermostat,thermostat chauffage voiture,autre,2,81.5,0,2,60.0,0,R1
+10,courroie-d-accessoire,accessoire courroie,nue,1,7.0,0,3,55.7,0,conseil
+470,radiateur-de-refroidissement,radiateur de refroidissement voiture,nue,2,63.0,0,2,11.5,0,R1
+10,courroie-d-accessoire,courroie d'accessoire voiture,nue,3,63.3,0,1,54.0,0,R1
+321,joint-de-cache-culbuteurs,cache culbuteur joint,nue,3,21.7,0,1,46.0,0,conseil
+10,courroie-d-accessoire,courroi d'accessoire,nue,2,70.5,0,2,76.5,0,conseil
+471,evaporateur-de-climatisation,évaporateur clim automobile,nue,2,56.0,0,2,80.5,0,conseil
+1389,kit-de-chaine-de-distribution,kit de chaine de distribution,nue,3,51.0,0,1,84.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,galette tendeur,autre,2,50.5,0,1,67.0,0,conseil
+316,thermostat,site:www.automecanik.com,autre,1,7.0,0,2,2.5,0,R1
+3927,debitmetre-d-air,débitmètre d air voiture,nue,2,64.5,0,1,76.0,0,conseil
+2669,pulseur-d-air-d-habitacle,pulseur voiture,nue,1,35.0,0,2,66.0,0,conseil
+258,maitre-cylindre-de-frein,main cylindre frein,autre,2,56.5,0,1,77.0,0,conseil
+310,galet-tendeur-de-courroie-d-accessoire,tendeur voiture,nue,1,51.0,0,2,60.5,0,conseil
+158,corps-papillon,boîtier papillon voiture,nue,1,35.0,0,2,14.0,0,R1
+13,cardan,meilleur marque cardan,autre,2,37.0,0,1,24.0,0,R1
+13,cardan,cardan droite,nue,1,68.0,0,2,80.5,0,conseil
+13,cardan,catdan,nue,2,90.5,0,1,48.0,0,R1
+13,cardan,le cardan voiture,nue,1,73.0,0,2,55.5,0,R1
+1389,kit-de-chaine-de-distribution,kit chaîne de distribution,nue,2,8.5,0,1,54.0,0,conseil
+321,joint-de-cache-culbuteurs,kit joint cache culbuteur,autre,1,10.0,0,2,7.5,0,R1
+316,thermostat,thermostat car,autre,2,63.0,0,1,31.0,0,R1
+4,alternateur,alternateur a 13 n219,autre,1,44.0,0,2,86.0,0,conseil
+2669,pulseur-d-air-d-habitacle,pulseur d'air voiture,nue,2,40.0,0,1,47.0,0,conseil
+458,pompe-a-carburant,oui,autre,2,3.0,0,1,2.0,0,R1
+258,maitre-cylindre-de-frein,maître cylindre voiture,nue,2,36.5,0,1,71.0,0,conseil
+247,support-moteur,site:automecanik.com,autre,1,7.0,0,2,5.5,0,R1
+10,courroie-d-accessoire,courroie accesoire,nue,2,71.5,0,1,75.0,0,conseil
+566,arbre-a-came,arbre came moteur,autre,1,51.0,0,1,29.0,0,R1
+13,cardan,cardans de direction,autre,1,84.0,0,1,65.0,0,R1
+807,contacteur-de-feu-de-recul,capteur feu de recul,autre,1,20.0,0,1,68.0,0,conseil
+13,cardan,cardan échange standard,autre,1,31.0,0,1,77.0,0,conseil
+2,demarreur,demareur,nue,1,7.0,0,1,2.0,0,R1
+13,cardan,cardans auto,nue,1,74.0,0,1,51.0,0,R1
+2669,pulseur-d-air-d-habitacle,pulseur dair,autre,1,35.0,0,1,73.0,0,conseil
+10,courroie-d-accessoire,croix d accessoire,autre,1,68.0,0,1,75.0,0,conseil
+10,courroie-d-accessoire,courroie accessoir,nue,1,56.0,0,1,100.0,0,conseil
+10,courroie-d-accessoire,couroie d'accessoire,nue,1,71.0,0,1,79.0,0,conseil
+13,cardan,cardan roulement,autre,1,75.0,0,1,61.0,0,R1
+158,corps-papillon,boitier papillion,nue,1,83.0,0,1,97.0,0,conseil
+316,thermostat,bloc thermostat,autre,1,41.0,0,1,54.0,0,conseil
+158,corps-papillon,a quoi sert boitier papillon,question,1,39.0,0,1,46.0,0,conseil
+2066,rotule-de-direction,photo,autre,1,1.0,0,1,17.0,0,conseil
+82,disque-de-frein,site:www.automecanik.com,autre,1,9.0,0,1,10.0,0,conseil
+689,bobine-d-allumage,site:automecanik.com,autre,1,10.0,0,1,6.0,0,R1
+13,cardan,articulation mecanique cardan,autre,1,62.0,0,1,79.0,0,conseil
+10,courroie-d-accessoire,courroie d'accessoir,nue,1,66.0,0,1,75.0,0,conseil
+10,courroie-d-accessoire,croix d'accessoires,autre,1,64.0,0,1,75.0,0,conseil
+10,courroie-d-accessoire,couroie accessoire,nue,1,65.0,0,1,62.0,0,R1
+686,bougie-d-allumage,d allumage,nue,1,21.0,0,1,92.0,0,conseil
+13,cardan,combien de cardan sur une voiture,question,1,87.0,0,1,53.0,0,R1
+13,cardan,transmission cardan voiture,autre,1,65.0,0,1,36.0,0,R1
+10,courroie-d-accessoire,couroi accessoir,autre,1,54.0,0,1,70.0,0,conseil
+13,cardan,cardant,nue,1,85.0,0,1,44.0,0,R1
+10,courroie-d-accessoire,site:automecanik.com,autre,1,10.0,0,1,9.0,0,R1
+689,bobine-d-allumage,site:www.automecanik.com,autre,1,14.0,0,1,8.0,0,R1
+306,courroie-de-distribution,courroi moteur,autre,1,78.0,0,1,85.0,0,conseil

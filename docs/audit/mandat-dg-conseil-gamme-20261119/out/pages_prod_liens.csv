@@ -1,0 +1,330 @@
+groupe,alias,page_type,cible,href,rang_lien,liens_total,texte_avant_pct,libelle,data_link_type,classe
+best,arbre-a-came,conseil,R1_meme_gamme,/pieces/arbre-a-came-566.html,33,88,6.2,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,arbre-a-came,conseil,R1_meme_gamme,/pieces/arbre-a-came-566.html,34,88,22.9,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,arbre-a-came,conseil,R1_meme_gamme,/pieces/arbre-a-came-566.html,35,88,35.5,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,arbre-a-came,conseil,R1_autre_gamme,/pieces/courroie-d-accessoire-10.html,37,88,37.4,courroie d'accessoires,,
+best,arbre-a-came,conseil,R1_autre_gamme,/pieces/vanne-egr-1145.html,38,88,38.3,vanne EGR,,
+best,arbre-a-came,conseil,R1_autre_gamme,/pieces/pompe-a-vide-de-freinage-387.html,39,88,40.3,pompe à vide de freinage,,
+best,arbre-a-came,conseil,R1_autre_gamme,/pieces/filtre-a-carburant-9.html,40,88,40.6,filtre àcarburant,,
+best,arbre-a-came,conseil,R1_autre_gamme,/pieces/bagues-d-etancheite-moteur-3874.html,41,88,43.4,bague d'étanchéité,,
+best,arbre-a-came,conseil,R1_autre_gamme,/pieces/courroie-de-distribution-306.html,42,88,69.3,Courroie ou chaîne de distribution,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,arbre-a-came,conseil,R1_autre_gamme,/pieces/filtre-a-huile-7.html,43,88,69.9,Filtre à huile et huile moteur,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,arbre-a-came,conseil,R1_meme_gamme,/pieces/arbre-a-came-566.html,44,88,70.3,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,arbre-a-came,conseil,R1_meme_gamme,/pieces/arbre-a-came-566.html,45,88,74.5,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/bougie-d-allumage,46,88,79.2,Article précédentChanger une bougie d'allumage : guide complet [2026]Une bougie d'allumage,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+best,arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/carter-d-huile,47,88,80.4,Article suivantChanger un carter d'huile : guide complet [2026]Un carter d'huile défectueu,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/courroie-de-distribution,52,88,82.2,Changer une courroie de distribution : guide complet [2026]Une courroie de distribution us,,
+best,arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/kit-de-distribution,53,88,84.1,Changer un kit de distribution : guide complet [2026]Le kit de distribution est l'ensemble,,
+best,arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/poulie-d-arbre-a-came,54,88,85.7,Changer une poulie arbre à cames : guide complet [2026]Une poulie d'arbre à cames défailla,,
+best,arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/kit-de-chaine-de-distribution,55,88,87.7,Changer un kit chaîne de distribution : guide complet [2026]Un kit chaîne de distribution ,,
+best,arbre-a-came,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/arbre-a-came,21,74,14.8,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,arbre-a-came,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/arbre-a-came,26,74,51.5,"Guide complet : Arbre à cameCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+best,colonne-de-direction,conseil,R1_meme_gamme,/pieces/colonne-de-direction-1211.html,33,97,5.6,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/barre-de-direction-285.html,34,97,7.5,barres de direction,,
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/cardan-13.html,35,97,8.8,Cardan,LinkGamme,seo-internal-link
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/commande-d-eclairage-809.html,36,97,9.9,commande d'éclairage,,
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/commande-d-essuie-glace-751.html,37,97,10.1,commandes d'essuie-glace,,
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/neiman-1367.html,38,97,10.6,neiman,LinkGamme,seo-internal-link
+best,colonne-de-direction,conseil,R1_meme_gamme,/pieces/colonne-de-direction-1211.html,41,97,22.1,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,colonne-de-direction,conseil,R1_meme_gamme,/pieces/colonne-de-direction-1211.html,42,97,42.3,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/neiman-1367.html,44,97,45.7,démontez le neiman,LinkGamme,seo-internal-link
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/cardan-13.html,45,97,46.9,Cardan,LinkGamme,seo-internal-link
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/pompe-de-direction-assistee-12.html,46,97,49.7,fonctionnement de lapompe de direction assistée,,
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/cremailliere-de-direction-286.html,47,97,50.1,fonctionnement de lacrémaillère de direction,,
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/neiman-1367.html,48,97,51.1,Remontez le neiman,LinkGamme,seo-internal-link
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/cremailliere-de-direction-286.html,51,97,72.3,crémaillère de direction,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/pompe-de-direction-assistee-12.html,52,97,72.5,pompe de direction assistée,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,colonne-de-direction,conseil,R1_autre_gamme,/pieces/rotule-de-direction-2066.html,53,97,72.6,rotule de direction,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,colonne-de-direction,conseil,R1_meme_gamme,/pieces/colonne-de-direction-1211.html,54,97,72.7,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,colonne-de-direction,conseil,R1_meme_gamme,/pieces/colonne-de-direction-1211.html,55,97,78.6,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,colonne-de-direction,conseil,conseil_autre,/blog-pieces-auto/conseils/alternateur,56,97,83.2,Article précédentChanger votre alternateur : guide complet [2026]Un alternateur défaillant,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+best,colonne-de-direction,conseil,conseil_autre,/blog-pieces-auto/conseils/demarreur,57,97,84.7,Article suivantChanger un démarreur : guide complet [2026]Un démarreur défaillant ne va pl,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,colonne-de-direction,conseil,conseil_autre,/blog-pieces-auto/conseils/cremailliere-de-direction,62,97,85.8,Changer une crémaillère de direction : guide complet [2026]Une crémaillère de direction dé,,
+best,colonne-de-direction,conseil,conseil_autre,/blog-pieces-auto/conseils/pompe-de-direction-assistee,63,97,87.0,Changer une pompe de direction assistée : guide complet [2026]Une pompe de direction assis,,
+best,colonne-de-direction,conseil,conseil_autre,/blog-pieces-auto/conseils/rotule-de-direction,64,97,88.6,Changer une rotule de direction : guide complet [2026]Une rotule de direction usée va amen,,
+best,colonne-de-direction,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/colonne-de-direction,21,74,15.3,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,colonne-de-direction,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/colonne-de-direction,26,74,56.7,"Guide complet : Colonne de directionCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+best,poulie-d-arbre-a-came,conseil,R1_meme_gamme,/pieces/poulie-d-arbre-a-came-1067.html,33,96,5.5,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/courroie-de-distribution-306.html,34,96,6.9,,,
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/courroie-de-distribution-306.html,35,96,6.9,Courroie de distribution,LinkGamme,seo-internal-link
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/chaine-de-distribution-1123.html,36,96,7.1,,,
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/chaine-de-distribution-1123.html,37,96,7.1,Chaîne de distribution,LinkGamme,seo-internal-link
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/soupape-d-admission-1269.html,38,96,7.6,soupapes d'admission,,
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/soupape-d-echappement-1270.html,39,96,7.7,soupapes d'échappement,,
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/arbre-a-came-566.html,40,96,8.8,arbres à cames,,
+best,poulie-d-arbre-a-came,conseil,R1_meme_gamme,/pieces/poulie-d-arbre-a-came-1067.html,43,96,18.9,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,poulie-d-arbre-a-came,conseil,R1_meme_gamme,/pieces/poulie-d-arbre-a-came-1067.html,44,96,30.0,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/courroie-de-distribution-306.html,45,96,44.2,Courroie de distribution,LinkGamme,seo-internal-link
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/arbre-a-came-566.html,47,96,45.3,Arbre à came,LinkGamme,seo-internal-link
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/arbre-a-came-566.html,48,96,76.5,arbre a came,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/capteur-impulsion-4813.html,49,96,76.6,capteur impulsion,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/chaine-de-distribution-1123.html,50,96,76.7,chaine de distribution,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/courroie-de-distribution-306.html,51,96,76.8,courroie de distribution,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/kit-de-chaine-de-distribution-1389.html,52,96,76.9,kit de chaine de distribution,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,poulie-d-arbre-a-came,conseil,R1_autre_gamme,/pieces/kit-de-distribution-307.html,53,96,77.1,kit de distribution,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,poulie-d-arbre-a-came,conseil,R1_meme_gamme,/pieces/poulie-d-arbre-a-came-1067.html,54,96,77.2,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,poulie-d-arbre-a-came,conseil,R1_meme_gamme,/pieces/poulie-d-arbre-a-came-1067.html,55,96,82.4,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,poulie-d-arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/turbo,56,96,87.5,Article suivantChanger un turbocompresseur : guide complet [2026]Un turbocompresseur défai,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,poulie-d-arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/kit-de-distribution,61,96,89.0,Changer un kit de distribution : guide complet [2026]Le kit de distribution est l'ensemble,,
+best,poulie-d-arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/pompe-a-eau,62,96,90.4,Changer une pompe à eau : guide complet [2026]Une fuite de pompe à eau peut amener à l'éch,,
+best,poulie-d-arbre-a-came,conseil,conseil_autre,/blog-pieces-auto/conseils/kit-de-chaine-de-distribution,63,96,91.8,Changer un kit chaîne de distribution : guide complet [2026]Un kit chaîne de distribution ,,
+best,poulie-d-arbre-a-came,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/poulie-d-arbre-a-came,21,75,14.3,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,poulie-d-arbre-a-came,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/poulie-d-arbre-a-came,26,75,53.2,"Guide complet : Poulie d'arbre à cameCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+best,filtre-de-boite-auto,conseil,R1_meme_gamme,/pieces/filtre-de-boite-auto-416.html,33,76,4.1,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,filtre-de-boite-auto,conseil,R1_meme_gamme,/pieces/filtre-de-boite-auto-416.html,34,76,16.5,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,filtre-de-boite-auto,conseil,R1_meme_gamme,/pieces/filtre-de-boite-auto-416.html,35,76,34.4,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,filtre-de-boite-auto,conseil,R1_meme_gamme,/pieces/filtre-de-boite-auto-416.html,36,76,77.2,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,filtre-de-boite-auto,conseil,R1_meme_gamme,/pieces/filtre-de-boite-auto-416.html,37,76,86.6,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,filtre-de-boite-auto,conseil,conseil_autre,/blog-pieces-auto/conseils/kit-de-freins-arriere,38,76,89.9,Article précédentChanger un kit de frein arrière : guide complet [2026]Le kit de frein arr,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+best,filtre-de-boite-auto,conseil,conseil_autre,/blog-pieces-auto/conseils/retroviseur-exterieur,39,76,91.0,Article suivantChanger un rétroviseur : guide complet [2026]Un rétroviseur défaillant ne v,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,filtre-de-boite-auto,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/filtre-de-boite-auto,21,75,14.2,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,filtre-de-boite-auto,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/filtre-de-boite-auto,25,75,55.5,"Guide complet : Filtre de boîte autoCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+best,faisceau-d-allumage,conseil,R1_meme_gamme,/pieces/faisceau-d-allumage-685.html,33,87,5.0,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,faisceau-d-allumage,conseil,R1_autre_gamme,/pieces/bobine-d-allumage-689.html,34,87,6.4,bobines d'allumage,,
+best,faisceau-d-allumage,conseil,R1_meme_gamme,/pieces/faisceau-d-allumage-685.html,37,87,17.3,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,faisceau-d-allumage,conseil,R1_meme_gamme,/pieces/faisceau-d-allumage-685.html,38,87,42.3,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,faisceau-d-allumage,conseil,R1_autre_gamme,/pieces/filtre-a-air-8.html,40,87,44.5,filtre àair,,
+best,faisceau-d-allumage,conseil,R1_autre_gamme,/pieces/bobine-d-allumage-689.html,41,87,47.5,fonctionnement desbobines d'allumage,,
+best,faisceau-d-allumage,conseil,R1_autre_gamme,/pieces/bougie-d-allumage-686.html,42,87,48.0,bougies d'allumage sont usées,,
+best,faisceau-d-allumage,conseil,R1_meme_gamme,/pieces/faisceau-d-allumage-685.html,44,87,76.2,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,faisceau-d-allumage,conseil,R1_meme_gamme,/pieces/faisceau-d-allumage-685.html,45,87,81.8,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,faisceau-d-allumage,conseil,conseil_autre,/blog-pieces-auto/conseils/filtre-a-air,46,87,86.3,Article précédentChanger un filtre à air : guide complet [2026]Lors du remplacement d'un f,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+best,faisceau-d-allumage,conseil,conseil_autre,/blog-pieces-auto/conseils/contacteur-de-feu-de-recul,47,87,87.2,Article suivantChanger un contacteur de feu de recul : guide complet [2026]Un contacteur d,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,faisceau-d-allumage,conseil,conseil_autre,/blog-pieces-auto/conseils/demarreur,52,87,88.8,Changer un démarreur : guide complet [2026]Un démarreur défaillant ne va plus démarrer le ,,
+best,faisceau-d-allumage,conseil,conseil_autre,/blog-pieces-auto/conseils/bougie-d-allumage,53,87,89.4,Changer une bougie d'allumage : guide complet [2026]Une bougie d'allumage usée va causer u,,
+best,faisceau-d-allumage,conseil,conseil_autre,/blog-pieces-auto/conseils/bobine-d-allumage,54,87,90.3,Changer une bobine d'allumage : guide complet [2026]Une bobine d'allumage usé va empêcher ,,
+best,faisceau-d-allumage,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/faisceau-d-allumage,21,68,19.1,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,faisceau-d-allumage,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/faisceau-d-allumage,27,68,66.4,"Guide complet : Faisceau d'allumageCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+best,commande-de-ventilation,conseil,R1_meme_gamme,/pieces/commande-de-ventilation-1385.html,33,92,5.6,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/pulseur-d-air-d-habitacle-2669.html,34,92,7.2,,,
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/pulseur-d-air-d-habitacle-2669.html,35,92,7.2,Pulseur d'air d'habitacle,LinkGamme,seo-internal-link
+best,commande-de-ventilation,conseil,R1_meme_gamme,/pieces/commande-de-ventilation-1385.html,38,92,21.9,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,commande-de-ventilation,conseil,R1_meme_gamme,/pieces/commande-de-ventilation-1385.html,39,92,30.6,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/pulseur-d-air-d-habitacle-2669.html,40,92,39.2,Pulseur d'air d'habitacle,LinkGamme,seo-internal-link
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/compresseur-de-climatisation-447.html,42,92,72.0,compresseur de climatisation,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/condenseur-de-climatisation-448.html,43,92,72.2,condenseur de climatisation,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/detendeur-de-climatisation-183.html,44,92,72.3,detendeur de climatisation,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/evaporateur-de-climatisation-471.html,45,92,72.5,evaporateur de climatisation,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/filtre-d-habitacle-424.html,46,92,72.7,filtre d habitacle,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/pulseur-d-air-d-habitacle-2669.html,47,92,72.8,pulseur d air d habitacle,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,commande-de-ventilation,conseil,R1_autre_gamme,/pieces/radiateur-de-chauffage-467.html,48,92,72.9,radiateur de chauffage,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,commande-de-ventilation,conseil,R1_meme_gamme,/pieces/commande-de-ventilation-1385.html,49,92,73.1,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,commande-de-ventilation,conseil,R1_meme_gamme,/pieces/commande-de-ventilation-1385.html,50,92,78.7,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,commande-de-ventilation,conseil,conseil_autre,/blog-pieces-auto/conseils/temoin-d-usure,51,92,83.4,Article précédentChanger un témoin d'usure : guide complet [2026]Le capteur du témoin d'us,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+best,commande-de-ventilation,conseil,conseil_autre,/blog-pieces-auto/conseils/disque-de-frein,52,92,84.7,Article suivantChanger un disque de frein : guide complet [2026]Guide complet pour remplac,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,commande-de-ventilation,conseil,conseil_autre,/blog-pieces-auto/conseils/pulseur-d-air-d-habitacle,57,92,86.5,Changer un pulseur d'air d'habitacle : guide complet [2026]Un pulseur d'air d'habitacle dé,,
+best,commande-de-ventilation,conseil,conseil_autre,/blog-pieces-auto/conseils/filtre-d-habitacle,58,92,87.5,Changer un filtre d’habitacle : guide complet [2026]Le filtre d'habitacle nommé aussi filt,,
+best,commande-de-ventilation,conseil,conseil_autre,/blog-pieces-auto/conseils/radiateur-de-chauffage,59,92,88.6,Changer un radiateur de chauffage : guide complet [2026]Un radiateur de chauffage défailla,,
+best,commande-de-ventilation,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/commande-de-ventilation,21,71,16.6,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,commande-de-ventilation,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/commande-de-ventilation,26,71,61.0,"Guide complet : Commande de ventilationCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+best,pompe-a-carburant,conseil,R1_meme_gamme,/pieces/pompe-a-carburant-458.html,33,80,3.7,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,pompe-a-carburant,conseil,R1_meme_gamme,/pieces/pompe-a-carburant-458.html,34,80,23.0,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,pompe-a-carburant,conseil,R1_meme_gamme,/pieces/pompe-a-carburant-458.html,35,80,40.0,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,pompe-a-carburant,conseil,R1_autre_gamme,/pieces/filtre-a-carburant-9.html,36,80,75.5,Filtre à carburant,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,pompe-a-carburant,conseil,R1_autre_gamme,/pieces/capteur-pression-de-carburant-817.html,37,80,75.6,Capteur de pression carburant,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,pompe-a-carburant,conseil,R1_meme_gamme,/pieces/pompe-a-carburant-458.html,38,80,76.1,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,pompe-a-carburant,conseil,R1_meme_gamme,/pieces/pompe-a-carburant-458.html,39,80,86.8,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,pompe-a-carburant,conseil,conseil_autre,/blog-pieces-auto/conseils/bobine-d-allumage,40,80,89.5,Article précédentChanger une bobine d'allumage : guide complet [2026]Une bobine d'allumage,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+best,pompe-a-carburant,conseil,conseil_autre,/blog-pieces-auto/conseils/roulement-de-roue,41,80,90.6,Article suivantChanger un roulement de roue : guide complet [2026]Un roulement de roue usé,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,pompe-a-carburant,conseil,conseil_autre,/blog-pieces-auto/conseils/injecteur,46,80,91.9,Changer vos injecteurs : guide complet [2026]Un injecteur défaillant ne va plus permettre ,,
+best,pompe-a-carburant,conseil,conseil_autre,/blog-pieces-auto/conseils/filtre-a-carburant,47,80,92.7,Changer un filtre à carburant : guide complet [2026]Le filtre à carburant consiste à reten,,
+best,pompe-a-carburant,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/pompe-a-carburant,21,83,11.8,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,pompe-a-carburant,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/pompe-a-carburant,26,83,56.1,"Guide complet : Pompe à carburantCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+best,contacteur-de-feu-de-recul,conseil,R1_meme_gamme,/pieces/contacteur-de-feu-de-recul-807.html,33,86,5.1,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,contacteur-de-feu-de-recul,conseil,R1_meme_gamme,/pieces/contacteur-de-feu-de-recul-807.html,34,86,23.9,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,contacteur-de-feu-de-recul,conseil,R1_meme_gamme,/pieces/contacteur-de-feu-de-recul-807.html,35,86,29.4,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,contacteur-de-feu-de-recul,conseil,R1_autre_gamme,/pieces/feu-de-recul-292.html,37,86,30.3,Feu de recul,LinkGamme,seo-internal-link
+best,contacteur-de-feu-de-recul,conseil,R1_autre_gamme,/pieces/filtre-a-air-8.html,38,86,31.7,,,
+best,contacteur-de-feu-de-recul,conseil,R1_autre_gamme,/pieces/filtre-a-air-8.html,39,86,31.7,Filtre à air,LinkGamme,seo-internal-link
+best,contacteur-de-feu-de-recul,conseil,R1_autre_gamme,/pieces/ampoule-feu-arriere-115.html,40,86,75.7,ampoule feu arrière,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,contacteur-de-feu-de-recul,conseil,R1_autre_gamme,/pieces/commande-d-eclairage-809.html,41,86,75.8,commande d eclairage,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,contacteur-de-feu-de-recul,conseil,R1_autre_gamme,/pieces/feu-arriere-290.html,42,86,75.9,feu arrière,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,contacteur-de-feu-de-recul,conseil,R1_autre_gamme,/pieces/feu-avant-259.html,43,86,76.0,feu avant,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,contacteur-de-feu-de-recul,conseil,R1_autre_gamme,/pieces/feu-clignotant-62.html,44,86,76.0,feu clignotant,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,contacteur-de-feu-de-recul,conseil,R1_meme_gamme,/pieces/contacteur-de-feu-de-recul-807.html,45,86,76.1,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,contacteur-de-feu-de-recul,conseil,R1_meme_gamme,/pieces/contacteur-de-feu-de-recul-807.html,46,86,82.5,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,contacteur-de-feu-de-recul,conseil,conseil_autre,/blog-pieces-auto/conseils/faisceau-d-allumage,47,86,87.6,Article précédentChanger un faisceau d'allumage : guide complet [2026]Un faisceau d'alluma,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+best,contacteur-de-feu-de-recul,conseil,conseil_autre,/blog-pieces-auto/conseils/servo-frein,48,86,89.2,Article suivantChanger un servo-frein : guide complet [2026]Le servofrein fait parti du sy,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,contacteur-de-feu-de-recul,conseil,conseil_autre,/blog-pieces-auto/conseils/feu-arriere,53,86,90.7,Changer un feu arrière : guide complet [2026]Un feu arrière défaillant ne va plus assurer ,,
+best,contacteur-de-feu-de-recul,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/contacteur-de-feu-de-recul,21,76,17.0,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,contacteur-de-feu-de-recul,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/contacteur-de-feu-de-recul,26,76,62.4,"Guide complet : Contacteur feu de reculCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+best,cable-d-embrayage,conseil,R1_meme_gamme,/pieces/cable-d-embrayage-478.html,33,98,5.3,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/butee-d-embrayage-48.html,34,98,7.5,,,
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/butee-d-embrayage-48.html,35,98,7.5,Butée d'embrayage,LinkGamme,seo-internal-link
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/mecanisme-d-embrayage-261.html,36,98,8.1,Mécanisme d'embrayage,LinkGamme,seo-internal-link
+best,cable-d-embrayage,conseil,conseil_meme_gamme,/blog-pieces-auto/conseils/cable-d-embrayage,39,98,16.4,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/butee-d-embrayage-48.html,40,98,18.2,Butée d'embrayage,LinkGamme,seo-internal-link
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/fourchette-d-embrayage-3419.html,41,98,18.4,fourchetted'embrayage,,
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/kit-d-embrayage-479.html,42,98,18.6,Kit d'embrayage,LinkGamme,seo-internal-link
+best,cable-d-embrayage,conseil,R1_meme_gamme,/pieces/cable-d-embrayage-478.html,45,98,47.4,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/filtre-a-air-8.html,47,98,49.5,,,
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/filtre-a-air-8.html,48,98,49.5,Filtre à air,LinkGamme,seo-internal-link
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/butee-d-embrayage-48.html,49,98,52.5,Butée d'embrayage,LinkGamme,seo-internal-link
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/kit-d-embrayage-479.html,50,98,52.9,Kit d'embrayage,LinkGamme,seo-internal-link
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/butee-d-embrayage-48.html,53,98,75.4,Butée d'embrayage,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/kit-d-embrayage-479.html,54,98,75.5,Kit d'embrayage,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,cable-d-embrayage,conseil,R1_autre_gamme,/pieces/volant-moteur-577.html,55,98,75.6,Volant moteur,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,cable-d-embrayage,conseil,R1_meme_gamme,/pieces/cable-d-embrayage-478.html,56,98,75.6,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,cable-d-embrayage,conseil,conseil_meme_gamme,/blog-pieces-auto/conseils/cable-d-embrayage,57,98,82.6,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,cable-d-embrayage,conseil,conseil_autre,/blog-pieces-auto/conseils/pompe-a-eau,58,98,87.2,Article précédentChanger une pompe à eau : guide complet [2026]Une fuite de pompe à eau pe,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+best,cable-d-embrayage,conseil,conseil_autre,/blog-pieces-auto/conseils/flexible-de-frein,59,98,88.6,Article suivantChanger un flexible de frein : guide complet [2026]Le flexible de frein va ,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,cable-d-embrayage,conseil,conseil_autre,/blog-pieces-auto/conseils/kit-d-embrayage,64,98,90.3,Changer un kit d'embrayage et volant moteur : guide complet [2026]Un kit d’embrayage usé n,,
+best,cable-d-embrayage,conseil,conseil_autre,/blog-pieces-auto/conseils/butee-d-embrayage,65,98,91.8,Symptômes butée d'embrayage hs : guide complet [2026]La butée d’embrayage est un composant,,
+best,cable-d-embrayage,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/cable-d-embrayage,21,82,11.6,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,cable-d-embrayage,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/cable-d-embrayage,26,82,52.5,"Guide complet : Câble d'embrayageCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html,33,96,4.0,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/courroie-d-accessoire-10.html,34,96,5.6,Courroie d'accessoire,LinkGamme,seo-internal-link
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html,37,96,19.7,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/courroie-d-accessoire-10.html,38,96,20.4,Courroie d'accessoires qui siffle,,
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/courroie-d-accessoire-10.html,39,96,20.6,Courroie d'accessoires détendu,,
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/courroie-d-accessoire-10.html,40,96,21.2,Rupture de la courroie d'accessoires,,
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/poulie-vilebrequin-3213.html,41,96,21.5,poulie de vilebrequin,,
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/alternateur-4.html,42,96,21.6,poulie d'alternateur,LinkGamme,seo-internal-link
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/compresseur-de-climatisation-447.html,43,96,21.8,poulie de,,
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/compresseur-de-climatisation-447.html,44,96,21.8,Compresseur de climatisation,LinkGamme,seo-internal-link
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/pompe-de-direction-assistee-12.html,45,96,21.9,poulie de la,,
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/pompe-de-direction-assistee-12.html,46,96,22.0,Pompe de direction assistée,LinkGamme,seo-internal-link
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html,48,96,36.8,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/courroie-d-accessoire-10.html,49,96,70.9,Courroie d'accessoire,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/galet-tendeur-de-courroie-d-accessoire-310.html,50,96,71.0,Poulie tendeur de courroie d'accessoire,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html,52,96,71.4,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html,53,96,83.4,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/balais-d-essuie-glace,54,96,87.2,Article précédentChanger des balais d'essuie-glace : guide complet [2026]Des balais d'essu,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/bougie-d-allumage,55,96,88.2,Article suivantChanger une bougie d'allumage : guide complet [2026]Une bougie d'allumage u,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/poulie-vilebrequin,60,96,89.2,Changer une poulie de vilebrequin : guide complet [2026]Une poulie de vilebrequin doit êtr,,
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/pompe-a-eau,61,96,90.2,Changer une pompe à eau : guide complet [2026]Une fuite de pompe à eau peut amener à l'éch,,
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/courroie-d-accessoire,62,96,91.2,Changer une courroie d'accessoires : guide complet [2026]La courroie d'accessoire est un é,,
+best,galet-enrouleur-de-courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/galet-tendeur-de-courroie-d-accessoire,63,96,92.3,Changer un galet tendeur d'accessoires : guide complet [2026]Le galet tendeur d'accessoire,,
+best,galet-enrouleur-de-courroie-d-accessoire,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/galet-enrouleur-de-courroie-d-accessoire,21,75,13.8,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+best,galet-enrouleur-de-courroie-d-accessoire,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/galet-enrouleur-de-courroie-d-accessoire,26,75,55.2,"Guide complet : Galet enrouleur de courroie d'accessoireCritères de choix, budget, marques",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+worst,vanne-egr,conseil,R1_meme_gamme,/pieces/vanne-egr-1145.html,33,85,4.5,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+worst,vanne-egr,conseil,R1_meme_gamme,/pieces/vanne-egr-1145.html,36,85,16.2,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+worst,vanne-egr,conseil,R1_meme_gamme,/pieces/vanne-egr-1145.html,37,85,43.4,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+worst,vanne-egr,conseil,R1_autre_gamme,/pieces/sonde-lambda-3922.html,39,85,76.9,Sonde lambda (amont FAP),,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,vanne-egr,conseil,R1_meme_gamme,/pieces/vanne-egr-1145.html,40,85,77.1,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+worst,vanne-egr,conseil,R1_meme_gamme,/pieces/vanne-egr-1145.html,41,85,82.0,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+worst,vanne-egr,conseil,conseil_autre,/blog-pieces-auto/conseils/filtre-d-habitacle,44,85,86.3,Article précédentChanger un filtre d’habitacle : guide complet [2026]Le filtre d'habitacle,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+worst,vanne-egr,conseil,conseil_autre,/blog-pieces-auto/conseils/bras-de-suspension,45,85,87.2,Article suivantChanger un bras de suspension : guide complet [2026]Un bras de suspension a,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+worst,vanne-egr,conseil,conseil_autre,/blog-pieces-auto/conseils/corps-papillon,50,85,88.9,Symptômes du boîtier papillon défectueux : guide complet [2026]Un boîtier papillon usé n’a,,
+worst,vanne-egr,conseil,conseil_autre,/blog-pieces-auto/conseils/injecteur,51,85,90.3,Changer vos injecteurs : guide complet [2026]Un injecteur défaillant ne va plus permettre ,,
+worst,vanne-egr,conseil,conseil_autre,/blog-pieces-auto/conseils/debitmetre-d-air,52,85,91.3,Changer un débitmètre d'air : guide complet [2026]Un débitmètre d'air défaillant va causer,,
+worst,vanne-egr,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/vanne-egr,21,87,11.2,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+worst,vanne-egr,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/vanne-egr,27,87,54.3,"Guide complet : Vanne EGRCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+worst,alternateur,conseil,R1_meme_gamme,/pieces/alternateur-4.html,33,95,5.3,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+worst,alternateur,conseil,R1_autre_gamme,/pieces/courroie-d-accessoire-10.html,34,95,6.1,courroie accessoire,,
+worst,alternateur,conseil,R1_autre_gamme,/pieces/poulie-vilebrequin-3213.html,35,95,6.3,poulie de vilebrequin,,
+worst,alternateur,conseil,R1_meme_gamme,/pieces/alternateur-4.html,38,95,17.3,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+worst,alternateur,conseil,R1_meme_gamme,/pieces/alternateur-4.html,39,95,27.6,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+worst,alternateur,conseil,R1_autre_gamme,/pieces/compresseur-de-climatisation-447.html,40,95,41.3,,,
+worst,alternateur,conseil,R1_autre_gamme,/pieces/compresseur-de-climatisation-447.html,41,95,41.3,Compresseur de climatisation,LinkGamme,seo-internal-link
+worst,alternateur,conseil,R1_autre_gamme,/pieces/pompe-de-direction-assistee-12.html,42,95,41.4,,,
+worst,alternateur,conseil,R1_autre_gamme,/pieces/pompe-de-direction-assistee-12.html,43,95,41.4,Pompe de direction assistée,LinkGamme,seo-internal-link
+worst,alternateur,conseil,R1_autre_gamme,/pieces/galet-tendeur-de-courroie-d-accessoire-310.html,44,95,41.8,galet tendeur,,
+worst,alternateur,conseil,R1_autre_gamme,/pieces/courroie-d-accessoire-10.html,46,95,72.2,courroie d accessoire,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,alternateur,conseil,R1_autre_gamme,/pieces/demarreur-2.html,47,95,72.3,demarreur,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,alternateur,conseil,R1_autre_gamme,/pieces/galet-enrouleur-de-courroie-d-accessoire-312.html,48,95,72.4,galet enrouleur de courroie d accessoire,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,alternateur,conseil,R1_autre_gamme,/pieces/galet-tendeur-de-courroie-d-accessoire-310.html,49,95,72.6,galet tendeur de courroie d accessoire,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,alternateur,conseil,R1_autre_gamme,/pieces/poulie-d-alternateur-1108.html,50,95,72.8,poulie d alternateur,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,alternateur,conseil,R1_autre_gamme,/pieces/poulie-vilebrequin-3213.html,51,95,72.9,poulie vilebrequin,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,alternateur,conseil,R1_meme_gamme,/pieces/alternateur-4.html,52,95,73.0,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+worst,alternateur,conseil,R1_meme_gamme,/pieces/alternateur-4.html,53,95,79.3,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+worst,alternateur,conseil,conseil_autre,/blog-pieces-auto/conseils/filtre-a-carburant,54,95,83.7,Article précédentChanger un filtre à carburant : guide complet [2026]Le filtre à carburant,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+worst,alternateur,conseil,conseil_autre,/blog-pieces-auto/conseils/colonne-de-direction,55,95,84.9,Article suivantChanger une colonne de direction : guide complet [2026]Une colonne de direc,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+worst,alternateur,conseil,conseil_autre,/blog-pieces-auto/conseils/poulie-vilebrequin,60,95,86.5,Changer une poulie de vilebrequin : guide complet [2026]Une poulie de vilebrequin doit êtr,,
+worst,alternateur,conseil,conseil_autre,/blog-pieces-auto/conseils/courroie-d-accessoire,61,95,87.9,Changer une courroie d'accessoires : guide complet [2026]La courroie d'accessoire est un é,,
+worst,alternateur,conseil,conseil_autre,/blog-pieces-auto/conseils/galet-tendeur-de-courroie-d-accessoire,62,95,89.5,Changer un galet tendeur d'accessoires : guide complet [2026]Le galet tendeur d'accessoire,,
+worst,alternateur,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/alternateur,21,84,7.4,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+worst,alternateur,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/alternateur,28,84,72.0,"Guide complet : AlternateurCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+worst,courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/courroie-d-accessoire-10.html,33,90,4.5,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+worst,courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/courroie-d-accessoire-10.html,34,90,17.6,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+worst,courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/courroie-d-accessoire-10.html,35,90,36.1,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+worst,courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/pompe-de-direction-assistee-12.html,37,90,40.4,Pompe de direction assistée,LinkGamme,seo-internal-link
+worst,courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/poulie-d-alternateur-1108.html,38,90,42.3,Poulie d'alternateur,LinkGamme,seo-internal-link
+worst,courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/alternateur-4.html,39,90,42.4,Alternateur,LinkGamme,seo-internal-link
+worst,courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/pompe-de-direction-assistee-12.html,41,90,75.7,Pompe de direction assistée,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/alternateur-4.html,42,90,75.8,Alternateur,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/poulie-d-alternateur-1108.html,43,90,75.8,Poulie découpleur d'alternateur,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,courroie-d-accessoire,conseil,R1_autre_gamme,/pieces/pompe-a-eau-1260.html,44,90,76.0,Pompe à eau (si entraînée par la courroie d'accessoire),,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/courroie-d-accessoire-10.html,45,90,76.3,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+worst,courroie-d-accessoire,conseil,R1_meme_gamme,/pieces/courroie-d-accessoire-10.html,46,90,81.1,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+worst,courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/feu-arriere,47,90,85.2,Article précédentChanger un feu arrière : guide complet [2026]Un feu arrière défaillant ne,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+worst,courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/radiateur-de-refroidissement,48,90,86.1,Article suivantChanger un radiateur de refroidissement moteur : guide complet [2026]Un rad,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+worst,courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/poulie-vilebrequin,53,90,87.8,Changer une poulie de vilebrequin : guide complet [2026]Une poulie de vilebrequin doit êtr,,
+worst,courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/galet-enrouleur-de-courroie-d-accessoire,54,90,88.9,Changer un galet enrouleur de courroie d'accessoires : guide complet [2026]Le galet enroul,,
+worst,courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/pompe-a-eau,55,90,90.0,Changer une pompe à eau : guide complet [2026]Une fuite de pompe à eau peut amener à l'éch,,
+worst,courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/alternateur,56,90,91.2,Changer votre alternateur : guide complet [2026]Un alternateur défaillant ne peut plus rec,,
+worst,courroie-d-accessoire,conseil,conseil_autre,/blog-pieces-auto/conseils/galet-tendeur-de-courroie-d-accessoire,57,90,92.3,Changer un galet tendeur d'accessoires : guide complet [2026]Le galet tendeur d'accessoire,,
+worst,courroie-d-accessoire,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/courroie-d-accessoire,21,88,8.1,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+worst,courroie-d-accessoire,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/courroie-d-accessoire,27,88,59.2,"Guide complet : Courroie d'accessoireCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+worst,cardan,conseil,R1_meme_gamme,/pieces/cardan-13.html,33,89,5.6,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+worst,cardan,conseil,R1_autre_gamme,/pieces/soufflet-de-cardan-193.html,34,89,9.6,soufflet de cardan,,
+worst,cardan,conseil,R1_meme_gamme,/pieces/cardan-13.html,37,89,24.9,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+worst,cardan,conseil,R1_meme_gamme,/pieces/cardan-13.html,38,89,37.9,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+worst,cardan,conseil,R1_autre_gamme,/pieces/bras-de-suspension-273.html,40,89,41.8,bras desuspension,,
+worst,cardan,conseil,R1_meme_gamme,/pieces/cardan-13.html,42,89,66.6,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+worst,cardan,conseil,R1_meme_gamme,/pieces/cardan-13.html,43,89,72.7,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+worst,cardan,conseil,conseil_autre,/blog-pieces-auto/conseils/emetteur-d-embrayage,45,89,77.5,Article précédentChanger un émetteur ou récepteur d'embrayage : guide complet [2026]Avec u,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+worst,cardan,conseil,conseil_autre,/blog-pieces-auto/conseils/detendeur-de-climatisation,46,89,80.1,Article suivantChanger un détendeur de climatisation : guide complet [2026]Un détendeur de,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+worst,cardan,conseil,conseil_autre,/blog-pieces-auto/conseils/support-moteur,51,89,81.7,Symptômes support moteur et boîte vitesse hs : guide complet [2026]En changeant le support,,
+worst,cardan,conseil,conseil_autre,/blog-pieces-auto/conseils/bras-de-suspension,52,89,83.2,Changer un bras de suspension : guide complet [2026]Un bras de suspension abîmé va amener ,,
+worst,cardan,conseil,conseil_autre,/blog-pieces-auto/conseils/rotule-de-direction,53,89,84.9,Changer une rotule de direction : guide complet [2026]Une rotule de direction usée va amen,,
+worst,cardan,conseil,conseil_autre,/blog-pieces-auto/conseils/rotule-de-suspension,54,89,86.0,Changer une rotule de suspension : guide complet [2026]Une rotule de suspension usée va am,,
+worst,cardan,conseil,conseil_autre,/blog-pieces-auto/conseils/roulement-de-roue,55,89,87.2,Changer un roulement de roue : guide complet [2026]Un roulement de roue usé ou abîmé va em,,
+worst,cardan,conseil,conseil_autre,/blog-pieces-auto/conseils/disque-de-frein,56,89,88.9,Changer un disque de frein : guide complet [2026]Guide complet pour remplacer vos disques ,,
+worst,cardan,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/cardan,21,81,8.5,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+worst,cardan,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/cardan,28,81,66.5,guide conseils cardan,,
+worst,cardan,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/cardan,29,81,69.8,"Guide complet : CardanCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+worst,pompe-de-direction-assistee,conseil,R1_meme_gamme,/pieces/pompe-de-direction-assistee-12.html,33,85,4.8,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+worst,pompe-de-direction-assistee,conseil,R1_meme_gamme,/pieces/pompe-de-direction-assistee-12.html,34,85,22.4,Voir les pièces compatibles,,inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium roun
+worst,pompe-de-direction-assistee,conseil,R1_meme_gamme,/pieces/pompe-de-direction-assistee-12.html,35,85,40.8,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+worst,pompe-de-direction-assistee,conseil,R1_autre_gamme,/pieces/colonne-de-direction-1211.html,36,85,75.6,colonne de direction,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,pompe-de-direction-assistee,conseil,R1_autre_gamme,/pieces/courroie-d-accessoire-10.html,37,85,75.7,courroie d accessoire,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,pompe-de-direction-assistee,conseil,R1_autre_gamme,/pieces/cremailliere-de-direction-286.html,38,85,75.8,crémaillère de direction,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,pompe-de-direction-assistee,conseil,R1_autre_gamme,/pieces/poulie-vilebrequin-3213.html,39,85,75.9,poulie vilebrequin,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,pompe-de-direction-assistee,conseil,R1_autre_gamme,/pieces/rotule-de-direction-2066.html,40,85,76.0,rotule de direction,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,pompe-de-direction-assistee,conseil,R1_autre_gamme,/pieces/rotule-de-suspension-2462.html,41,85,76.1,rotule de suspension,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+worst,pompe-de-direction-assistee,conseil,R1_meme_gamme,/pieces/pompe-de-direction-assistee-12.html,42,85,76.2,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+worst,pompe-de-direction-assistee,conseil,R1_meme_gamme,/pieces/pompe-de-direction-assistee-12.html,43,85,81.5,pièce compatible avec votre véhicule,,font-medium text-emerald-600 hover:text-emerald-800 underline
+worst,pompe-de-direction-assistee,conseil,conseil_autre,/blog-pieces-auto/conseils/cylindre-de-roue,44,85,86.1,Article précédentChanger un cylindre de roue : guide complet [2026]Le cylindre de roue fai,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+worst,pompe-de-direction-assistee,conseil,conseil_autre,/blog-pieces-auto/conseils/cremailliere-de-direction,49,85,87.2,Changer une crémaillère de direction : guide complet [2026]Une crémaillère de direction dé,,
+worst,pompe-de-direction-assistee,conseil,conseil_autre,/blog-pieces-auto/conseils/poulie-vilebrequin,50,85,88.2,Changer une poulie de vilebrequin : guide complet [2026]Une poulie de vilebrequin doit êtr,,
+worst,pompe-de-direction-assistee,conseil,conseil_autre,/blog-pieces-auto/conseils/colonne-de-direction,51,85,89.4,Changer une colonne de direction : guide complet [2026]Une colonne de direction usée ne pe,,
+worst,pompe-de-direction-assistee,conseil,conseil_autre,/blog-pieces-auto/conseils/courroie-d-accessoire,52,85,90.5,Changer une courroie d'accessoires : guide complet [2026]La courroie d'accessoire est un é,,
+worst,pompe-de-direction-assistee,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/pompe-de-direction-assistee,21,88,10.5,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+worst,pompe-de-direction-assistee,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/pompe-de-direction-assistee,28,88,49.8,"Guide complet : Pompe de direction assistéeCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+achat,filtre-a-huile,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/filtre-a-huile,21,87,6.8,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+achat,filtre-a-huile,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/filtre-a-huile,29,87,66.9,Conseils : changer un filtre à huile étape par étape,,
+achat,filtre-a-huile,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/filtre-a-huile,30,87,69.8,"Guide complet : Filtre à huileCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+achat,corps-papillon,conseil,R1_meme_gamme,/pieces/corps-papillon-158.html,33,97,4.6,Voir les pièces compatibles →,,inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white tra
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/filtre-a-air-8.html,34,97,5.3,,,
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/filtre-a-air-8.html,35,97,5.3,Filtre à air,LinkGamme,seo-internal-link
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/injecteur-3902.html,38,97,15.8,Usure des injecteurs,LinkGamme,seo-internal-link
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/vanne-egr-1145.html,39,97,15.9,Usure de la,,
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/vanne-egr-1145.html,40,97,16.0,Vanne EGR,LinkGamme,seo-internal-link
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/fap-1256.html,41,97,16.0,Usure du FAP,,
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/catalyseur-429.html,42,97,16.1,Usure du catalyseur,,
+achat,corps-papillon,conseil,R1_meme_gamme,/pieces/corps-papillon-158.html,45,97,40.9,Vérifier la compatibilité avec votre véhicule,,inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/filtre-a-air-8.html,47,97,41.9,Démontez le,,
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/filtre-a-air-8.html,48,97,41.9,Filtre à air,LinkGamme,seo-internal-link
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/capteur-position-papillon-3940.html,49,97,82.4,capteur position papillon,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/capteur-de-cognement-3921.html,50,97,82.5,capteur de cognement,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/capteur-temperature-d-air-admission-3939.html,51,97,82.6,capteur temperature d air admission,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+achat,corps-papillon,conseil,R1_meme_gamme,/pieces/corps-papillon-158.html,52,97,82.8,corps papillon,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/injecteur-3902.html,53,97,82.8,injecteur,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+achat,corps-papillon,conseil,R1_autre_gamme,/pieces/valve-de-reglage-du-ralenti-1298.html,54,97,82.9,valve de reglage du ralenti,,group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-
+achat,corps-papillon,conseil,R1_meme_gamme,/pieces/corps-papillon-158.html,55,97,83.0,Voir toutes les pièces compatibles,,inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 fon
+achat,corps-papillon,conseil,conseil_autre,/blog-pieces-auto/conseils/kit-de-distribution,56,97,88.8,Article précédentChanger un kit de distribution : guide complet [2026]Le kit de distributi,,group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-
+achat,corps-papillon,conseil,conseil_autre,/blog-pieces-auto/conseils/kit-d-embrayage,57,97,90.0,Article suivantChanger un kit d'embrayage et volant moteur : guide complet [2026]Un kit d’,,group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pi
+achat,corps-papillon,conseil,conseil_autre,/blog-pieces-auto/conseils/injecteur,62,97,91.7,Changer vos injecteurs : guide complet [2026]Un injecteur défaillant ne va plus permettre ,,
+achat,corps-papillon,conseil,conseil_autre,/blog-pieces-auto/conseils/filtre-a-air,63,97,92.6,"Changer un filtre à air : guide complet [2026]Lors du remplacement d'un filtre à air, vous",,
+achat,corps-papillon,conseil,conseil_autre,/blog-pieces-auto/conseils/vanne-egr,64,97,93.4,Changer une vanne EGR : guide complet [2026]Une vanne EGR défaillante ne va plus réduire l,,
+achat,corps-papillon,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/corps-papillon,21,87,10.3,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+achat,corps-papillon,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/corps-papillon,27,87,60.8,"Guide complet : Boîtier papillonCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+achat,plaquette-de-frein,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/plaquette-de-frein,21,88,6.1,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+achat,plaquette-de-frein,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/plaquette-de-frein,28,88,68.6,"Guide complet : Plaquette de freinCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+achat,catalyseur,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/catalyseur,21,68,17.6,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+achat,catalyseur,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/catalyseur,27,68,74.0,"Guide complet : CatalyseurCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+achat,kit-d-embrayage,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/kit-d-embrayage,21,87,7.7,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+achat,kit-d-embrayage,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/kit-d-embrayage,30,87,67.9,"Guide complet : Kit d'embrayageCritères de choix, budget, marques recommandées",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
+achat,compresseur-de-climatisation,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/compresseur-de-climatisation,21,84,11.5,Conseils entretien,,text-emerald-600 hover:text-emerald-800 transition-colors
+achat,compresseur-de-climatisation,R1,conseil_meme_gamme,/blog-pieces-auto/conseils/compresseur-de-climatisation,27,84,52.0,"Guide complet : Compresseur de climatisationCritères de choix, budget, marques recommandée",,flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4
