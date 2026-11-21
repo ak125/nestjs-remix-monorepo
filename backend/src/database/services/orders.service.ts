@@ -3,6 +3,25 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '@cache/cache.service';
+import {
+  IMPLAUSIBLE_TTC_ENV,
+  ORDER_LINE_QUEUE_COLUMNS,
+  ORDER_STATS_COLUMNS,
+  type OrderLineQueueRow,
+  type OrderStatsPeriod,
+  type OrderStatsRow,
+  type OrderTiles,
+  type PaidUnprocessed,
+  computeOrderTiles,
+  computePaidUnprocessed,
+  fetchAllOrderStatsRows,
+  resolveImplausibleThreshold,
+  selectPaidUnprocessedCandidates,
+} from './order-stats-tiles';
+import { fournisseurPose } from '../../modules/orders/services/order-line-supplier.service';
+
+/** Taille des lots d'identifiants de commande lus par `.in()`. */
+const QUEUE_ORDER_ID_CHUNK = 200;
 // Services de délégation (optionnels pour compatibilité)
 // import { OrderCalculationService } from '../../modules/orders/services/order-calculation.service';
 // import { OrderStatusService } from '../../modules/orders/services/order-status.service';
@@ -358,49 +377,126 @@ export class OrdersService extends SupabaseBaseService {
   }
 
   /**
-   * Calcule les statistiques des commandes
+   * Calcule les statistiques des commandes sur TOUTE la base (lecture paginée
+   * au-delà du plafond de 1 000 lignes de supabase-js).
+   *
+   * Les champs historiques portent sur toute la base ; `tiles` porte sur la
+   * période demandée (voir `order-stats-tiles.ts`). Toute somme exclut les
+   * montants au-delà du seuil `ORDERS_STATS_IMPLAUSIBLE_TTC_EUR`, relevés dans
+   * `tiles.excluded`.
    */
-  async getOrdersStats(userId?: string): Promise<{
+  async getOrdersStats(
+    userId?: string,
+    options: { period?: OrderStatsPeriod; now?: Date } = {},
+  ): Promise<{
     totalOrders: number;
     paidOrders: number;
     pendingOrders: number;
     totalRevenue: number;
     averageOrderValue: number;
+    tiles: OrderTiles & { paidUnprocessed: PaidUnprocessed };
   }> {
     try {
-      let query = this.supabase
-        .from(TABLES.xtr_order)
-        .select('ord_is_pay, ord_total_ttc, ord_date');
+      const period = options.period ?? 'all';
+      const now = options.now ?? new Date();
+      const implausibleThresholdTtc = resolveImplausibleThreshold(
+        this.configService?.get<string>(IMPLAUSIBLE_TTC_ENV),
+      );
 
-      if (userId) {
-        query = query.eq('ord_cst_id', userId);
+      const orders = await fetchAllOrderStatsRows((from, to) => {
+        let query = this.supabase
+          .from(TABLES.xtr_order)
+          .select(ORDER_STATS_COLUMNS)
+          .order('ord_id', { ascending: true })
+          .range(from, to);
+        if (userId) {
+          query = query.eq('ord_cst_id', userId);
+        }
+        return query as unknown as Promise<{
+          data: OrderStatsRow[] | null;
+          error: unknown;
+        }>;
+      });
+
+      const allTiles = computeOrderTiles(orders, {
+        now,
+        period: 'all',
+        implausibleThresholdTtc,
+      });
+      const tiles =
+        period === 'all'
+          ? allTiles
+          : computeOrderTiles(orders, { now, period, implausibleThresholdTtc });
+
+      const paidUnprocessed = await this.computePaidUnprocessedQueue(
+        orders,
+        period,
+        now,
+      );
+
+      if (allTiles.excluded.orders.length > 0) {
+        this.logger.warn(
+          `Statistiques commandes : ${allTiles.excluded.orders.length} commande(s) exclue(s) des sommes (seuil ${implausibleThresholdTtc} € TTC) : ${allTiles.excluded.orders
+            .map((o) => `${o.ordId}/${o.reason}`)
+            .join(', ')}`,
+        );
       }
 
-      const { data: orders, error } = await query;
-
-      if (error) throw error;
-
-      const stats = {
-        totalOrders: orders?.length || 0,
-        paidOrders: orders?.filter((o) => o.ord_is_pay === '1').length || 0,
-        pendingOrders: orders?.filter((o) => o.ord_is_pay === '0').length || 0,
-        totalRevenue:
-          orders
-            ?.filter((o) => o.ord_is_pay === '1')
-            .reduce((sum, o) => sum + parseFloat(o.ord_total_ttc || '0'), 0) ||
-          0,
-        averageOrderValue: 0,
+      return {
+        totalOrders: orders.length,
+        paidOrders: orders.filter((o) => o.ord_is_pay === '1').length,
+        pendingOrders: orders.filter((o) => o.ord_is_pay === '0').length,
+        totalRevenue: allTiles.paid.revenue,
+        averageOrderValue: allTiles.paid.averageBasket,
+        tiles: { ...tiles, paidUnprocessed },
       };
-
-      if (stats.paidOrders > 0) {
-        stats.averageOrderValue = stats.totalRevenue / stats.paidOrders;
-      }
-
-      return stats;
     } catch (error) {
       this.logger.error('Failed to calculate order stats:', error);
       throw error;
     }
+  }
+
+  /**
+   * File « Payées non traitées depuis plus de 24 h » (complément au mandat
+   * BN, 18/11/2026), sur la période des tuiles. Lit les seules lignes des
+   * commandes candidates, par lots et page par page ; une erreur fait échouer
+   * le calcul entier, jamais de file partielle. L'état d'encaissement de BM
+   * (`__order_capture_state`, PR #2150) n'existe pas encore en base : il
+   * n'est pas lu, ce que signale `captureStateRead: false`.
+   */
+  private async computePaidUnprocessedQueue(
+    orders: readonly OrderStatsRow[],
+    period: OrderStatsPeriod,
+    now: Date,
+  ): Promise<PaidUnprocessed> {
+    const candidates = selectPaidUnprocessedCandidates(orders, {
+      now,
+      period,
+    });
+    const lines: OrderLineQueueRow[] = [];
+    for (let i = 0; i < candidates.length; i += QUEUE_ORDER_ID_CHUNK) {
+      const ids = candidates
+        .slice(i, i + QUEUE_ORDER_ID_CHUNK)
+        .map((c) => c.ordId);
+      const chunk = await fetchAllOrderStatsRows<OrderLineQueueRow>(
+        (from, to) =>
+          this.supabase
+            .from(TABLES.xtr_order_line)
+            .select(ORDER_LINE_QUEUE_COLUMNS)
+            .in('orl_ord_id', ids)
+            .order('orl_id', { ascending: true })
+            .range(from, to) as unknown as Promise<{
+            data: OrderLineQueueRow[] | null;
+            error: unknown;
+          }>,
+      );
+      lines.push(...chunk);
+    }
+    return computePaidUnprocessed(candidates, lines, {
+      now,
+      captureStateRead: false,
+      supplierSet: fournisseurPose,
+    });
   }
 
   /**

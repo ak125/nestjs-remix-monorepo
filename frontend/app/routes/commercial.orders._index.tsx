@@ -22,8 +22,15 @@ import { getOptionalUser } from "../auth/unified.server";
 import { OrderEditForm } from "../components/orders/OrderEditForm";
 import { OrderExportButtons } from "../components/orders/OrderExportButtons";
 import { OrdersFilters } from "../components/orders/OrdersFilters";
-import { OrdersStats } from "../components/orders/OrdersStats";
 import { OrdersTable } from "../components/orders/OrdersTable";
+import {
+  OrdersTiles,
+  PAID_UNPROCESSED_QUEUE,
+  PaidUnprocessedList,
+  parseTilesPeriod,
+  type OrderTilesPeriod,
+  type OrderTilesState,
+} from "../components/orders/OrdersTiles";
 import { Separator } from "../components/ui/separator";
 
 import { type ActionData, type Order } from "../types/orders.types";
@@ -118,14 +125,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
 // ========================================
 interface LoaderData {
   orders: Order[];
-  stats: {
-    totalOrders: number;
-    totalRevenue: number;
-    monthRevenue: number;
-    averageBasket: number;
-    unpaidAmount: number;
-    pendingOrders: number;
-  };
+  tiles: OrderTilesState;
   filters: {
     search: string;
     orderStatus: string;
@@ -140,6 +140,34 @@ interface LoaderData {
   user: { level: number; email: string; role: ReturnType<typeof getUserRole> };
 }
 
+/**
+ * Tuiles calculées par le serveur sur TOUTE la base (complément n° 1 au
+ * mandat BN), jamais sur la page affichée. La route /stats exige
+ * `canSeeFinancials` : sans elle, aucun appel n'est fait. Un échec reste
+ * visible (« unavailable »), jamais remplacé par des zéros.
+ */
+async function loadOrderTiles(
+  cookie: string,
+  period: OrderTilesPeriod,
+  canSeeFinancials: boolean,
+): Promise<OrderTilesState> {
+  if (!canSeeFinancials) return { status: "forbidden", period };
+  try {
+    const res = await fetch(
+      `http://127.0.0.1:3000/api/legacy-orders/stats?period=${period}`,
+      { headers: { Cookie: cookie } },
+    );
+    if (res.status === 403) return { status: "forbidden", period };
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const body = await res.json();
+    if (!body?.data?.tiles) throw new Error("champ tiles absent");
+    return { status: "ok", period, data: body.data.tiles };
+  } catch (error) {
+    logger.error("[commercial.orders] tuiles indisponibles:", error);
+    return { status: "unavailable", period };
+  }
+}
+
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getOptionalUser({ context });
   if (!user || !user.level || user.level < 3) {
@@ -151,9 +179,15 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     request.headers.get("Cookie") ?? undefined,
   );
   const userRole = getUserRole(user.level);
+  const url = new URL(request.url);
+  const cookie = request.headers.get("Cookie") || "";
+  const tilesPromise = loadOrderTiles(
+    cookie,
+    parseTilesPeriod(url.searchParams.get("period")),
+    permissions.canSeeFinancials === true,
+  );
 
   try {
-    const url = new URL(request.url);
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "25");
     const search = url.searchParams.get("search") || "";
@@ -170,7 +204,6 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     if (orderStatus) apiParams.set("orderStatus", orderStatus);
     if (paymentStatus) apiParams.set("paymentStatus", paymentStatus);
 
-    const cookie = request.headers.get("Cookie") || "";
     const ordersResponse = await fetch(
       `http://127.0.0.1:3000/api/legacy-orders?${apiParams.toString()}`,
       { headers: { Cookie: cookie } },
@@ -191,25 +224,11 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       customerEmail: order.customer?.cst_mail || "",
     }));
 
-    const totalRevenue = orders.reduce(
-      (sum: number, o: Order) => sum + parseFloat(o.ord_total_ttc || "0"),
-      0,
-    );
-
-    const stats = {
-      totalOrders: totalFromApi,
-      totalRevenue,
-      monthRevenue: 0,
-      averageBasket: orders.length > 0 ? totalRevenue / orders.length : 0,
-      unpaidAmount: 0,
-      pendingOrders: 0,
-    };
-
     const totalPages = Math.ceil(totalFromApi / limit);
 
     return {
       orders,
-      stats,
+      tiles: await tilesPromise,
       filters: {
         search,
         orderStatus,
@@ -227,14 +246,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     logger.error("Loader error:", error);
     return {
       orders: [],
-      stats: {
-        totalOrders: 0,
-        totalRevenue: 0,
-        monthRevenue: 0,
-        averageBasket: 0,
-        unpaidAmount: 0,
-        pendingOrders: 0,
-      },
+      tiles: await tilesPromise,
       filters: {
         search: "",
         orderStatus: "",
@@ -296,6 +308,24 @@ export default function CommercialOrdersPage() {
   const resetAllFilters = useCallback(() => {
     navigate("/commercial/orders", { replace: true });
   }, [navigate]);
+
+  const handleTilesPeriodChange = (period: OrderTilesPeriod) => {
+    const params = new URLSearchParams(searchParams);
+    if (period === "all") params.delete("period");
+    else params.set("period", period);
+    navigate(`?${params.toString()}`, { replace: true });
+  };
+
+  // Filtre « Payées non traitées depuis plus de 24 h » : `?queue=…`.
+  const queueActive = searchParams.get("queue") === PAID_UNPROCESSED_QUEUE;
+  const queueHref = (() => {
+    const params = new URLSearchParams(searchParams);
+    params.delete("page");
+    if (queueActive) params.delete("queue");
+    else params.set("queue", PAID_UNPROCESSED_QUEUE);
+    const qs = params.toString();
+    return qs ? `?${qs}` : "/commercial/orders";
+  })();
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams);
@@ -404,8 +434,8 @@ export default function CommercialOrdersPage() {
               Gestion des Commandes
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {data.stats.totalOrders} commande
-              {data.stats.totalOrders > 1 ? "s" : ""} {data.user.role.badge}{" "}
+              {data.total} commande
+              {data.total > 1 ? "s" : ""} {data.user.role.badge}{" "}
               {data.user.role.label}
             </p>
           </div>
@@ -423,44 +453,59 @@ export default function CommercialOrdersPage() {
           </Alert>
         )}
 
-        {/* Stats */}
-        <OrdersStats stats={data.stats} />
-
-        <Separator className="my-6" />
-
-        {/* Filtres */}
-        <OrdersFilters
-          filters={activeFilters}
-          onFilterChange={setActiveFilters}
-          onReset={resetAllFilters}
+        {/* Tuiles : toute la base, par période (calcul serveur) */}
+        <OrdersTiles
+          tiles={data.tiles}
+          onPeriodChange={handleTilesPeriodChange}
+          queueHref={queueHref}
+          queueActive={queueActive}
         />
 
-        {/* Export */}
-        <div className="mt-4">
-          <OrderExportButtons
-            filters={activeFilters}
-            selectedOrders={[]}
-            allOrders={data.orders}
-          />
-        </div>
-
         <Separator className="my-6" />
 
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <OrdersTable
-            orders={data.orders}
-            permissions={data.permissions}
-            currentPage={data.currentPage}
-            totalPages={data.totalPages}
-            onPageChange={handlePageChange}
-            onEditOrder={handleEditOrder}
-            onMarkPaid={handleMarkPaid}
-            onShip={handleShip}
-            onCancel={handleCancel}
+        {queueActive && data.tiles.status === "ok" ? (
+          <PaidUnprocessedList
+            queue={data.tiles.data.paidUnprocessed}
             basePath="/commercial/orders"
+            clearHref={queueHref}
           />
-        </div>
+        ) : (
+          <>
+            {/* Filtres */}
+            <OrdersFilters
+              filters={activeFilters}
+              onFilterChange={setActiveFilters}
+              onReset={resetAllFilters}
+            />
+
+            {/* Export */}
+            <div className="mt-4">
+              <OrderExportButtons
+                filters={activeFilters}
+                selectedOrders={[]}
+                allOrders={data.orders}
+              />
+            </div>
+
+            <Separator className="my-6" />
+
+            {/* Table */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <OrdersTable
+                orders={data.orders}
+                permissions={data.permissions}
+                currentPage={data.currentPage}
+                totalPages={data.totalPages}
+                onPageChange={handlePageChange}
+                onEditOrder={handleEditOrder}
+                onMarkPaid={handleMarkPaid}
+                onShip={handleShip}
+                onCancel={handleCancel}
+                basePath="/commercial/orders"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Edit Form Modal */}
