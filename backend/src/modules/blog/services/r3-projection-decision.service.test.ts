@@ -396,7 +396,7 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
         fallback_reason: 'PROJECTION_ABSENT',
         mapped_count: 0,
         invalid_count: 0,
-        render_contract_version: '1.0.0',
+        render_contract_version: '1.1.0',
       }),
     );
     logSpy.mockRestore();

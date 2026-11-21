@@ -121,6 +121,14 @@ function renderInline(text: string): string {
   return out;
 }
 
+/**
+ * Rend un fragment Markdown INLINE (une ligne : question de FAQ, libellé) avec la même grammaire
+ * et le même échappement que les paragraphes — sans bloc englobant. Pure et déterministe.
+ */
+export function renderProjectionInline(text: string): string {
+  return text ? renderInline(text.replace(/\s+/g, ' ').trim()) : '';
+}
+
 const HEADING_3 = /^##\s+(.+?)\s*$/;
 const HEADING_4 = /^###\s+(.+?)\s*$/;
 const UNORDERED_ITEM = /^[-*]\s+(.*)$/;

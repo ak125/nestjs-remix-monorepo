@@ -120,6 +120,34 @@ describe('mapExportBlockToDbBlock', () => {
     expect(row.contentHash).toBe('authoritative-hash');
   });
 
+  it('copie les paires qa verbatim (ADR-107 D2), sans clé qa ni changement de hash quand absentes', () => {
+    const qa = [
+      {
+        question: 'Quand changer le filtre à huile ?',
+        answer_md: 'Aux échéances du constructeur.',
+        source_ids: ['oem:mahle-1'],
+      },
+    ];
+    const withQa = mapExportBlockToDbBlock(
+      'gamme:filtre-a-huile',
+      baseBlock({ section: 'faq', qa }),
+      0,
+    );
+    expect(withQa.content.qa).toEqual(qa);
+
+    const without = mapExportBlockToDbBlock('gamme:x', baseBlock(), 0);
+    expect(without.content).not.toHaveProperty('qa');
+    const withoutExplicit = mapExportBlockToDbBlock(
+      'gamme:x',
+      baseBlock({ qa: undefined }),
+      0,
+    );
+    expect(withoutExplicit.contentHash).toBe(without.contentHash);
+    expect(
+      mapExportBlockToDbBlock('gamme:x', baseBlock({ qa }), 0).contentHash,
+    ).not.toBe(without.contentHash);
+  });
+
   it('passe confidence_base si numérique, sinon null', () => {
     expect(
       mapExportBlockToDbBlock('e', baseBlock({ confidence_base: 0.84 }), 0)
