@@ -7,6 +7,14 @@ process.env.SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key';
 
 import { SeoMonitorProcessor } from '../seo-monitor.processor';
+import { getTypeModelIndex } from '../../../modules/seo/helpers/auto-type-valid-ids.helper';
+
+jest.mock('../../../modules/seo/helpers/auto-type-valid-ids.helper', () => ({
+  ...jest.requireActual(
+    '../../../modules/seo/helpers/auto-type-valid-ids.helper',
+  ),
+  getTypeModelIndex: jest.fn(),
+}));
 
 /**
  * Contrat de la sonde `checkUrl` (A1, plan massdoc 2026-09-02).
@@ -134,5 +142,221 @@ describe('SeoMonitorProcessor.checkUrl — sonde de présence bornée (A1)', () 
     expect(result.status).toBe('error');
     expect(result.piecesCount).toBe(-1);
     expect(result.message).toMatch(/Erreur DB: connection reset/);
+  });
+});
+
+/**
+ * Échantillon aléatoire (incident #2144). Avant : appel à la RPC
+ * `get_random_vehicle_gamme_combinations`, absente de la base ; l'erreur était
+ * convertie en liste vide et le job se terminait en succès sans tester une
+ * seule page. Après : tirage dans `__sitemap_p_link` (table du sitemap pièces),
+ * filtrage des types périmés, et échec du job si l'échantillon est vide ou
+ * illisible.
+ */
+type TableResult = {
+  data?: unknown[] | null;
+  error?: { message: string } | null;
+};
+
+function linkRow(mapId: number, typeId: number, modeleId = 100) {
+  return {
+    map_id: mapId,
+    map_pg_alias: 'filtre-a-huile',
+    map_pg_id: 7,
+    map_marque_alias: 'peugeot',
+    map_marque_id: 128,
+    map_modele_alias: 'partner-i',
+    map_modele_id: modeleId,
+    map_type_alias: '1-4',
+    map_type_id: typeId,
+  };
+}
+
+/** Client Supabase factice : une file de réponses par table. */
+function tableMock(queues: Record<string, TableResult[]>) {
+  const calls: Array<{ table: string; ops: Array<[string, unknown[]]> }> = [];
+  const from = jest.fn((table: string) => {
+    const call = { table, ops: [] as Array<[string, unknown[]]> };
+    calls.push(call);
+    const builder: Record<string, unknown> = {};
+    for (const m of ['select', 'eq', 'gte', 'order', 'limit', 'range', 'in']) {
+      builder[m] = (...args: unknown[]) => {
+        call.ops.push([m, args]);
+        return builder;
+      };
+    }
+    builder.then = (
+      resolve: (v: TableResult) => unknown,
+      reject: (e: unknown) => unknown,
+    ) => {
+      const queue = queues[table] ?? [];
+      const next = queue.length > 1 ? queue.shift()! : queue[0];
+      return Promise.resolve(next ?? { data: [], error: null }).then(
+        resolve,
+        reject,
+      );
+    };
+    return builder;
+  });
+  return { client: { from }, from, calls };
+}
+
+function buildSampleProcessor(queues: Record<string, TableResult[]>) {
+  const configService = { get: (k: string) => process.env[k] } as never;
+  const jobHealth = {
+    recordSuccess: jest.fn().mockResolvedValue(undefined),
+    recordFailure: jest.fn().mockResolvedValue(undefined),
+  };
+  const processor = new SeoMonitorProcessor(
+    configService,
+    {} as never,
+    jobHealth as never,
+  );
+  const mock = tableMock(queues);
+  (processor as unknown as { supabase: unknown }).supabase = mock.client;
+  const callRpc = jest.fn();
+  (processor as unknown as { callRpc: unknown }).callRpc = callRpc;
+  const job = {
+    id: 'test-1',
+    data: { taskType: 'check-random-sample', triggeredBy: 'api' },
+    progress: jest.fn().mockResolvedValue(undefined),
+  };
+  const run = () =>
+    processor.handleMonitoring(job as never) as Promise<{
+      totalChecked: number;
+      okCount: number;
+    }>;
+  return { processor, mock, jobHealth, callRpc, run, job };
+}
+
+describe('SeoMonitorProcessor — échantillon aléatoire (#2144)', () => {
+  const mockedIndex = getTypeModelIndex as jest.MockedFunction<
+    typeof getTypeModelIndex
+  >;
+
+  beforeEach(() => {
+    mockedIndex.mockReset();
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('tire dans __sitemap_p_link, écarte les types périmés et teste les pages restantes', async () => {
+    // type 10 vivant (modèle 100), type 20 orphelin, type 30 rattaché ailleurs
+    mockedIndex.mockResolvedValue(
+      new Map<number, number | null>([
+        [10, 100],
+        [30, 999],
+      ]),
+    );
+    const { mock, jobHealth, callRpc, run } = buildSampleProcessor({
+      __sitemap_p_link: [
+        { data: [{ map_id: 1000 }], error: null },
+        { data: [linkRow(11, 10)], error: null },
+        { data: [linkRow(12, 20)], error: null },
+        { data: [linkRow(13, 30)], error: null },
+        { data: [linkRow(11, 10)], error: null }, // doublon, puis répété
+      ],
+      pieces_relation_type: [{ data: rows(5), error: null }],
+    });
+
+    const result = await run();
+
+    expect(callRpc).not.toHaveBeenCalled();
+    const sampleCalls = mock.calls.filter(
+      (c) => c.table === '__sitemap_p_link',
+    );
+    // 1 lecture de la borne + 20 tirages
+    expect(sampleCalls).toHaveLength(21);
+    expect(sampleCalls[0].ops).toContainEqual([
+      'order',
+      ['map_id', { ascending: false }],
+    ]);
+    // Math.random = 0.5, max = 1000 → point de départ 501
+    expect(sampleCalls[1].ops).toContainEqual(['gte', ['map_id', 501]]);
+    expect(sampleCalls[1].ops).toContainEqual(['limit', [1]]);
+
+    const probes = mock.calls.filter((c) => c.table === 'pieces_relation_type');
+    expect(probes).toHaveLength(1);
+    expect(probes[0].ops).toContainEqual(['eq', ['rtp_type_id', 10]]);
+    expect(probes[0].ops).toContainEqual(['eq', ['rtp_pg_id', 7]]);
+    expect(result.totalChecked).toBe(1);
+    expect(result.okCount).toBe(1);
+    expect(jobHealth.recordSuccess).toHaveBeenCalledTimes(1);
+  });
+
+  it('lecture de la borne en erreur → le job échoue, aucun succès enregistré', async () => {
+    const { jobHealth, run } = buildSampleProcessor({
+      __sitemap_p_link: [{ data: null, error: { message: 'timeout' } }],
+    });
+
+    await expect(run()).rejects.toThrow(/__sitemap_p_link.*timeout/);
+    expect(jobHealth.recordSuccess).not.toHaveBeenCalled();
+  });
+
+  it('table vide → le job échoue', async () => {
+    const { jobHealth, run } = buildSampleProcessor({
+      __sitemap_p_link: [{ data: [], error: null }],
+    });
+
+    await expect(run()).rejects.toThrow(/est vide/);
+    expect(jobHealth.recordSuccess).not.toHaveBeenCalled();
+  });
+
+  it('tirage en erreur → le job échoue', async () => {
+    const { jobHealth, run } = buildSampleProcessor({
+      __sitemap_p_link: [
+        { data: [{ map_id: 1000 }], error: null },
+        { data: null, error: { message: 'connection reset' } },
+      ],
+    });
+
+    await expect(run()).rejects.toThrow(/tirage.*connection reset/);
+    expect(jobHealth.recordSuccess).not.toHaveBeenCalled();
+  });
+
+  it('aucune page servie après filtrage → le job échoue (jamais 0 page en succès)', async () => {
+    mockedIndex.mockResolvedValue(new Map<number, number | null>());
+    const { jobHealth, run, mock } = buildSampleProcessor({
+      __sitemap_p_link: [
+        { data: [{ map_id: 1000 }], error: null },
+        { data: [linkRow(12, 20)], error: null },
+      ],
+    });
+
+    await expect(run()).rejects.toThrow(/Échantillon aléatoire vide/);
+    expect(jobHealth.recordSuccess).not.toHaveBeenCalled();
+    expect(
+      mock.calls.filter((c) => c.table === 'pieces_relation_type'),
+    ).toHaveLength(0);
+  });
+
+  it('auto_type illisible → le job échoue', async () => {
+    mockedIndex.mockRejectedValue(new Error('auto_type read failed'));
+    const { jobHealth, run } = buildSampleProcessor({
+      __sitemap_p_link: [
+        { data: [{ map_id: 1000 }], error: null },
+        { data: [linkRow(11, 10)], error: null },
+      ],
+    });
+
+    await expect(run()).rejects.toThrow(/auto_type read failed/);
+    expect(jobHealth.recordSuccess).not.toHaveBeenCalled();
+  });
+
+  it("un job échoué alimente l'alerte existante (recordFailure)", () => {
+    const { processor, jobHealth } = buildSampleProcessor({});
+
+    processor.handleFailedJob(
+      { id: 'test-1', attemptsMade: 2 } as never,
+      new Error('Échantillon aléatoire vide'),
+    );
+
+    expect(jobHealth.recordFailure).toHaveBeenCalledWith(
+      'seo-monitor',
+      'Échantillon aléatoire vide',
+    );
   });
 });

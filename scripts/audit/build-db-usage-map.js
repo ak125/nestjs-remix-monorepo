@@ -539,9 +539,11 @@ function scanCallSites(ts) {
 // `CREATE TABLE` cité dans un commentaire français fabriquait la table `sont`.
 // Les CINQ familles de regex sont dépouillées, pas seulement les tables :
 // n'en traiter qu'une partie recréerait l'asymétrie qui a causé le défaut.
-function scanMigrations() {
+// `dir` : paramètre optionnel, utilisé par les tests de
+// check-rpc-declared-ratchet.ts ; sans argument, le répertoire et la sortie
+// sont inchangés.
+function scanMigrations(dir = path.join(REPO_ROOT, 'backend', 'supabase', 'migrations')) {
   log('[build-db-usage-map] scanning supabase migrations …');
-  const dir = path.join(REPO_ROOT, 'backend', 'supabase', 'migrations');
   const lastCreateTable = new Map(); const lastDropTable = new Map(); const createdInTable = new Map();
   const lastCreateFn = new Map();    const lastDropFn = new Map();    const createdInFn = new Map();
   const rlsTables = new Set();
