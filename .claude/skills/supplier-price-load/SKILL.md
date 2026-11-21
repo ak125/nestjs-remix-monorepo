@@ -184,7 +184,19 @@ le lot pour passer sous le seuil. Rapport :
 `POST /api/admin/pricing/{import,activate,deactivate,display,display/quarantine}/rollback`
 `{ batchId, supplierId }` → LIFO restore (dispo / prix / `piece_display`).
 
+### 10 bis. Images des pièces vendables (règle de Marwane, 19/11/2026 — proposé, à ratifier)
+Après la **1re mise à jour complète du tarif** (décision 51) : rapport à blanc
+`python3 scripts/recover-tecdoc-images.py --marque <pm_id> --rapport <dossier>`
+(lecture seule) → présenter à l'owner → exécution réelle **par Marwane seul**
+(`--marque <pm_id> --commit`, un fournisseur à la fois, Bosch d'abord). Sélection
+par `scripts/recover-tecdoc-images.sql` (appelle `public.piece_est_vendable`,
+PR #2191 ; aucune condition recopiée). L'agent ne pose ni ne lit les identifiants
+TecDoc, ne lance jamais `--commit`. Détail : procédure §6 bis.
+
 ### 11. MAJ suivantes : **INCRÉMENTAL — nouvelles réfs only**, même profil.
+Puis **contrôle des images manquantes** : rapport à blanc du même script pour la
+marque ; s'il en manque, étape 10 bis. Même requête que la ligne « pièce sans
+image » du contrôle quotidien du lot vendable (décision 49).
 
 ---
 

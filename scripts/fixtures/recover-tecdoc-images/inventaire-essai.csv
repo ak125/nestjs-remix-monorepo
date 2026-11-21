@@ -1,0 +1,12 @@
+piece_id,pm_id,piece_ref,images_affichables,images_presentes,classe,pmi_folder,pmi_name
+SET
+1001,730,0 986 494 001,2,1,image_absente,30,0986494001_1.JPG
+1002,730,0 986 494 002,0,0,sans_image_affichable,,
+1003,730,"F 026 400 1,2",3,0,image_absente,30,F026400_A.JPG
+1003,730,"F 026 400 1,2",3,0,image_absente,30,F026400_B.BMP
+1003,730,"F 026 400 1,2",3,0,image_absente,30,F026400_C.gif
+1004,730,,1,0,image_absente,30,1987432_2.jpg
+1005,730,MS902.0,1,0,image_absente,30,MS902.0 [TEC DOC].JPG
+2001,4900,VP-1,1,0,image_absente,,VP1.JPG
+2002,4900,VP-2,1,0,image_absente,357,VP2.JPG
+3001,1780,FE-1,0,0,sans_image_affichable,,

@@ -1,0 +1,4 @@
+pm_id,marque,dossier_registre,pieces_vendables_sans_image_servie,dont_sans_image_affichable,images_manquantes,deja_recuperees,echecs_definitifs_ignores,nom_invalide_storage,dossier_vide,images_a_chercher,articles_a_chercher
+730,BOSCH,30,4,1,6,0,0,1,0,5,3
+4900,VENEPORTE,357,2,0,2,0,0,0,1,1,1
+1780,FEBI,101,1,1,0,0,0,0,0,0,0
