@@ -14,7 +14,7 @@
  *   Interdiction canonique : ne jamais mapper `CGC_LEVEL n → Vn`.
  *
  * @see audit/levels-doctrine-cgc-vs-vlevel-2026-06-04.md (doctrine de référence)
- * @see .spec/features/g-v-classification.md (spec v5.0, à aligner sur l'union V5 — owner)
+ * @see .spec/features/g-v-classification.md (section V5 et cas Mégane III)
  * @see governance-vault/ledger/rules/rules-seo-vlevel.md (canon — actuellement stale v3.0)
  */
 
@@ -382,7 +382,7 @@ export const V_LEVEL_INVARIANTS: readonly VLevelInvariant[] = [
   {
     id: "V5",
     meaning:
-      "Famille NON cherchée du véhicule = SIBLINGS + ENFANTS (union, owner 2026-06-05). Précédence : niveau cherché > V5 ; 1 type_id = 1 seul niveau.",
+      "Famille NON cherchée du véhicule = SIBLINGS + ENFANTS de la même génération, y compris les enfants directs d’un modèle racine. Une autre carrosserie sans recherche propre à la gamme relève de V5. Précédence : niveau cherché > V5 ; 1 type_id = 1 seul niveau par gamme.",
     built: true,
   },
   {
