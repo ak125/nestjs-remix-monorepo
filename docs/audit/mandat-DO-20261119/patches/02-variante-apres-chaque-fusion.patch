@@ -1,0 +1,34 @@
+diff --git a/.github/workflows/registry-deps-self-heal.yml b/.github/workflows/registry-deps-self-heal.yml
+index a39eb7cdb..c0759a153 100644
+--- a/.github/workflows/registry-deps-self-heal.yml
++++ b/.github/workflows/registry-deps-self-heal.yml
+@@ -96,6 +96,29 @@ name: ♻️ Registry deps self-heal (main)
+ # WHERE: runs-on ubuntu-latest = GitHub cloud runner (works with DEV off).
+ 
+ on:
++  # Variante « après chaque fusion » (mandat DO, option B) : régénère après chaque
++  # push sur main, sauf la fusion du robot elle-même (paths-ignore → pas de boucle).
++  # Coût : chaque fusion du robot remet en retard les PR prêtes du train.
++  push:
++    branches: [main]
++    paths-ignore:
++      - "audit/cycle-map.json"
++      - "audit/db-usage-map.json"
++      - "audit/dead-code-candidates.json"
++      - "audit/duplicate-map.json"
++      - "audit/dynamic-import-edges.json"
++      - "audit/module-boundaries.json"
++      - "audit/runtime-entrypoints.json"
++      - "audit/registry/files.json"
++      - "audit/registry/runtime.json"
++      - "audit/registry/deps.json"
++      - "audit/registry/db.json"
++      - "audit/registry/rpc.json"
++      - "audit/registry/canonical.json"
++      - ".claude/knowledge/REPO_MAP.md"
++      - "audit/cleanup/pr-8-controlled-cleanup-candidates.json"
++      - "audit/cleanup/pr-8-deletion-proof.md"
++      - "audit/dependencies/dependency-modernization-inventory.json"
+   schedule:
+     # Mandat DO : passage unique de la nuit, train de fusion à l'arrêt.
+     # Après diag-canon (02:00) / wiki-exports (02:15).

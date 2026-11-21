@@ -1,0 +1,541 @@
+diff --git a/.github/workflows/audit.yml b/.github/workflows/audit.yml
+index 29577b2123..a2893050c7 100644
+--- a/.github/workflows/audit.yml
++++ b/.github/workflows/audit.yml
+@@ -26,6 +26,7 @@ on:
+       - ".github/workflows/**"   # ci-test-wiring reads EVERY workflow; prod-seo-*-env tests assert release-prod.yml wiring
+       - ".spec/00-canon/repository-registry/**"   # ALL L2 overlays the contract suite reads (was architecture+db only)
+       - "audit/registry/**"                        # L1 projections the contract tests assert against
++      - "backend/supabase/migrations/**"           # mandat DO : sources de db.json/rpc.json, plus portés par la PR
+       - ".dependency-cruiser.generated.cjs"
+ 
+ permissions:
+@@ -40,7 +41,7 @@ jobs:
+   audit:
+     name: 🛡️ Deterministic gates
+     runs-on: ubuntu-latest
+-    timeout-minutes: 10
++    timeout-minutes: 14
+     env:
+       NODE_OPTIONS: "--max-old-space-size=4096"
+ 
+@@ -254,6 +255,12 @@ jobs:
+       #
+       # If a future PR breaks any registry contract test → CI fails red → PR
+       # blocked until fix. Industry-standard CI ratchet pattern (warm-up → blocking).
++      # Mandat DO : projections calculées depuis l'arbre de la PR avant les tests
++      # de contrats (la PR ne les porte plus ; le checkout contient celles de main).
++      - name: 🧮 Calculer les projections depuis l'arbre de la PR (mandat DO)
++        if: always()
++        run: npm run registry:regenerate
++
+       - name: 📋 @repo/registry contract tests (5 contracts, BLOCKING)
+         if: always()
+         run: npm -w @repo/registry test
+diff --git a/.github/workflows/contract-drift-observatory.yml b/.github/workflows/contract-drift-observatory.yml
+index a4cafabc88..bdb8d84d19 100644
+--- a/.github/workflows/contract-drift-observatory.yml
++++ b/.github/workflows/contract-drift-observatory.yml
+@@ -22,6 +22,19 @@ on:
+       - "scripts/audit/build-drift-dashboard.test.ts"
+       - "scripts/audit/__fixtures__/**"
+       - ".github/workflows/contract-drift-observatory.yml"
++      # Mandat DO : les PR ne portent plus les projections générées ; les sources
++      # qui les font bouger déclenchent donc désormais cette garde directement.
++      - "backend/src/**"
++      - "frontend/app/**"
++      - "packages/**"
++      - "backend/supabase/migrations/**"
++      - "scripts/registry/**"
++      - "scripts/audit/build-deep-inventory.js"
++      - "scripts/audit/build-db-usage-map.js"
++      - "knip.json"
++      - ".dependency-cruiser.cjs"
++      - "**/package.json"
++      - "package-lock.json"
+   push:
+     branches: [main]
+     paths:
+@@ -70,6 +83,10 @@ jobs:
+           set -uo pipefail
+           npm run audit:drift-dashboard:check || echo "::warning::smoke tests failed (observatory still warn-only — surfacing in summary)"
+ 
++      # Mandat DO : projections calculées depuis l'arbre courant (voir ratchet).
++      - name: Calculer les projections depuis l'arbre courant (mandat DO)
++        run: npm run registry:regenerate || echo "::warning::régénération en échec (observatoire warn-only)"
++
+       - name: Run drift dashboard aggregator
+         id: drift
+         run: |
+diff --git a/.github/workflows/contract-drift-ratchet.yml b/.github/workflows/contract-drift-ratchet.yml
+index 19e55e5541..1ba9ba952c 100644
+--- a/.github/workflows/contract-drift-ratchet.yml
++++ b/.github/workflows/contract-drift-ratchet.yml
+@@ -21,6 +21,19 @@ on:
+       - "scripts/audit/__fixtures__/**"
+       - "audit/baselines/contract-drift-baseline.json"
+       - ".github/workflows/contract-drift-ratchet.yml"
++      # Mandat DO : les PR ne portent plus les projections générées ; les sources
++      # qui les font bouger déclenchent donc désormais cette garde directement.
++      - "backend/src/**"
++      - "frontend/app/**"
++      - "packages/**"
++      - "backend/supabase/migrations/**"
++      - "scripts/registry/**"
++      - "scripts/audit/build-deep-inventory.js"
++      - "scripts/audit/build-db-usage-map.js"
++      - "knip.json"
++      - ".dependency-cruiser.cjs"
++      - "**/package.json"
++      - "package-lock.json"
+   push:
+     branches: [main]
+     paths:
+@@ -44,7 +57,7 @@ jobs:
+   ratchet:
+     name: Block new contract-drift findings
+     runs-on: ubuntu-latest
+-    timeout-minutes: 6
++    timeout-minutes: 10
+     steps:
+       - name: Checkout
+         uses: actions/checkout@v7
+@@ -61,6 +74,11 @@ jobs:
+       - name: Comparator unit tests (must pass)
+         run: npm run audit:contract-drift-ratchet:test
+ 
++      # Mandat DO : le tableau lit audit/registry/** (dont le constat
++      # canonical_stale) ; la PR ne le porte plus, on le calcule depuis son arbre.
++      - name: Calculer les projections depuis l'arbre courant (mandat DO)
++        run: npm run registry:regenerate
++
+       - name: Regenerate observatory dashboard
+         # PR-6 aggregator. Always exits 0 (warn-only observer), so we explicitly
+         # require the JSON output file to be present.
+diff --git a/.github/workflows/contract-gate.yml b/.github/workflows/contract-gate.yml
+index 6330a2ed9a..71399a1b91 100644
+--- a/.github/workflows/contract-gate.yml
++++ b/.github/workflows/contract-gate.yml
+@@ -30,9 +30,13 @@ jobs:
+   contract-gate:
+     name: 🛡️ Contract Gate
+     runs-on: ubuntu-latest
+-    timeout-minutes: 8
++    timeout-minutes: 12
+     steps:
+       - uses: actions/checkout@v7
++        with:
++          # Commit de fusion + son premier parent (la base) : portée `pr` du
++          # contrôle des projections générées (mandat DO).
++          fetch-depth: 2
+ 
+       - name: Setup Node.js
+         uses: actions/setup-node@v7
+@@ -48,8 +52,20 @@ jobs:
+       - name: Build @repo/seo-roles
+         run: npm run build --workspace=@repo/seo-roles
+ 
++      # Mandat DO : la PR ne porte plus les projections L1 ; on les calcule depuis
++      # son arbre avant de tester les contrats L1 ↔ L2. Sans ce step, les tests
++      # liraient les projections de main et ignoreraient les changements de la PR.
++      - name: 🧮 Calculer les projections depuis l'arbre de la PR (mandat DO)
++        run: npm run registry:regenerate
++
+       - name: 📋 Registry contracts — L1 vs L2 (incl. dep-governance subset)
+         run: npm -w @repo/registry test
+ 
++      # Transition (mandat DO, étape 4 du plan) : avertissement seul. Une PR qui
++      # modifie une projection générée (≠ version de la base) est signalée ; le
++      # passage au blocage retire `--warn`, après installation du patch resync-pr.sh.
++      - name: 🧾 Projections générées — la PR n'en modifie aucune (avertissement)
++        run: node scripts/registry/generated-projections.js check --scope pr --base HEAD^1 --warn
++
+       - name: 🛡️ SEO agent-matrix determinism
+         run: npm run audit:seo-matrix:check
+diff --git a/.github/workflows/dependency-family-bump.yml b/.github/workflows/dependency-family-bump.yml
+index 6f38becdcf..c9bcdac2b8 100644
+--- a/.github/workflows/dependency-family-bump.yml
++++ b/.github/workflows/dependency-family-bump.yml
+@@ -103,6 +103,17 @@ jobs:
+         if: ${{ !inputs.dry_run }}
+         run: bash scripts/governance/check-family-pr-scope.sh --base origin/main
+ 
++      # Mandat DO : les régénérations ci-dessus prouvent que les builders passent
++      # avec la famille montée ; la PR, elle, ne porte aucune projection générée
++      # (main les régénère). On reprend donc la version de main avant la PR.
++      - name: Mandat DO — reprendre les projections générées de main
++        if: ${{ !inputs.dry_run }}
++        run: |
++          set -euo pipefail
++          mapfile -t GEN < <(node scripts/registry/generated-projections.js list)
++          git checkout origin/main -- "${GEN[@]}"
++          git --no-pager diff --stat origin/main -- "${GEN[@]}"
++
+       - name: ✅ Verify — lint
+         if: ${{ !inputs.dry_run }}
+         run: npx turbo run lint 2>&1 | tee /tmp/verify-lint.log
+diff --git a/.github/workflows/dependency-modernization-fresh.yml b/.github/workflows/dependency-modernization-fresh.yml
+index fb1f7c1fd9..b55607a9f7 100644
+--- a/.github/workflows/dependency-modernization-fresh.yml
++++ b/.github/workflows/dependency-modernization-fresh.yml
+@@ -26,6 +26,10 @@ on:
+       - "scripts/audit/dependency-modernization.schema.ts"
+       - "package-lock.json"
+       - ".github/workflows/dependency-modernization-fresh.yml"
++      # Mandat DO : la PR ne porte plus deps.json ; ses manifestes déclenchent.
++      - "**/package.json"
++      - "scripts/registry/build-deps-registry.js"
++      - "scripts/registry/lib/**"
+   push:
+     branches: [main]
+     paths:
+@@ -63,6 +67,13 @@ jobs:
+       - name: Install deps
+         run: npm ci
+ 
++      # Mandat DO : sur une PR, deps.json et l'inventaire sont calculés depuis
++      # l'arbre de la PR (elle ne les porte plus) ; le --check ci-dessous devient
++      # une seconde passe (déterminisme). Sur main : inchangé (état commité).
++      - name: PR — calculer deps.json + inventaire depuis l'arbre de la PR (mandat DO)
++        if: github.event_name == 'pull_request'
++        run: npm run registry:build:deps && npm run audit:pr-9-modernization-inventory
++
+       - name: Determinism check (committed vs regenerated)
+         # --check mode rebuilds the artifact in a tmp file and compares its sha256
+         # against the committed file. Exits 1 on any drift; prints the regenerator
+diff --git a/.github/workflows/dependency-registry-freshness.yml b/.github/workflows/dependency-registry-freshness.yml
+index f09fd22111..7a3337eacf 100644
+--- a/.github/workflows/dependency-registry-freshness.yml
++++ b/.github/workflows/dependency-registry-freshness.yml
+@@ -101,7 +101,23 @@ jobs:
+       - name: Rebuild L1 deps registry from live manifests
+         run: npm run registry:build:deps
+ 
++      # Mandat DO : sur une PR, deps.json n'est plus commité par la branche ; il
++      # est calculé (step ci-dessus : le builder doit réussir) et main le
++      # régénère la nuit. La comparaison à l'état commité ne s'applique qu'à main
++      # (push) : un rouge y signale le retard de main jusqu'à la régénération.
++      - name: PR — deps.json calculé depuis les manifestes (information)
++        if: github.event_name == 'pull_request'
++        run: |
++          {
++            echo "### deps.json calculé depuis les manifestes de la PR (mandat DO)"
++            echo '```'
++            git --no-pager diff --stat -- audit/registry/deps.json || true
++            echo '```'
++            echo "main le régénère après fusion ; la PR ne le commite pas."
++          } >> "$GITHUB_STEP_SUMMARY"
++
+       - name: Assert committed deps.json is fresh (fail on drift)
++        if: github.event_name != 'pull_request'
+         run: |
+           if git diff --exit-code -- audit/registry/deps.json; then
+             echo "✓ audit/registry/deps.json matches a fresh build from the workspace manifests."
+diff --git a/.github/workflows/orphan-files-ratchet.yml b/.github/workflows/orphan-files-ratchet.yml
+index b68ff50e29..d0b8c4bf02 100644
+--- a/.github/workflows/orphan-files-ratchet.yml
++++ b/.github/workflows/orphan-files-ratchet.yml
+@@ -26,6 +26,10 @@ on:
+       - "frontend/app/**"
+       - "packages/**"
+       - "audit/dead-code-candidates.json"
++      # Mandat DO : entrées de l'inventaire calculé ci-dessous.
++      - "scripts/audit/build-deep-inventory.js"
++      - "knip.json"
++      - ".dependency-cruiser.cjs"
+       - "audit/baselines/orphan-files-baseline.json"
+       - "scripts/audit/check-orphan-files-ratchet.ts"
+       - "scripts/audit/check-orphan-files-ratchet.test.ts"
+@@ -52,7 +56,7 @@ jobs:
+   ratchet:
+     name: Block new / stale orphan files (G3)
+     runs-on: ubuntu-latest
+-    timeout-minutes: 8
++    timeout-minutes: 10
+     steps:
+       - name: Checkout
+         uses: actions/checkout@v7
+@@ -95,6 +99,12 @@ jobs:
+       - name: Comparator unit tests (must pass)
+         run: npm run audit:orphan-ratchet:test
+ 
++      # Mandat DO : dead-code-candidates.json n'est plus porté par la PR. On le
++      # calcule depuis l'arbre courant, sinon un orphelin ajouté par la PR
++      # échapperait au ratchet (il lirait l'inventaire de main).
++      - name: Calculer l'inventaire profond depuis l'arbre courant (mandat DO)
++        run: npm run audit:inventory
++
+       - name: Run ratchet (BLOCKING — exit 1 on any finding)
+         run: npm run audit:orphan-ratchet
+ 
+diff --git a/.github/workflows/registry-build.yml b/.github/workflows/registry-build.yml
+index bfcda77902..faa4dfb471 100644
+--- a/.github/workflows/registry-build.yml
++++ b/.github/workflows/registry-build.yml
+@@ -119,6 +119,9 @@ jobs:
+       - name: "Run REPO_MAP generator tests (every domain carrying data rendered, no data loss)"
+         run: npm run registry:test:llm-map
+ 
++      - name: "Run generated-projections list + checks tests (mandat DO)"
++        run: npm run registry:test:generated-projections
++
+       - name: Validate outputs against @repo/registry Zod schemas
+         run: npm run registry:validate:zod
+ 
+diff --git a/.github/workflows/registry-deps-self-heal.yml b/.github/workflows/registry-deps-self-heal.yml
+index 26c2d313b1..a39eb7cdbf 100644
+--- a/.github/workflows/registry-deps-self-heal.yml
++++ b/.github/workflows/registry-deps-self-heal.yml
+@@ -1,5 +1,31 @@
+ name: ♻️ Registry deps self-heal (main)
+ 
++# MANDAT DO (2026-11-19) — RÉGÉNÉRATION DE TOUTES LES PROJECTIONS SUR MAIN
++# -------------------------------------------------------------------------
++# Ce workflow est désormais le SEUL écrivain des 17 projections générées listées
++# par `scripts/registry/generated-projections.js` (inventaire profond, registry
++# L1 + L3, REPO_MAP, inventaire PR-8, inventaire de modernisation). Une PR
++# ordinaire n'en modifie plus aucun : ses contrôles les recalculent depuis son
++# propre arbre (`npm run registry:regenerate`), et main les régénère ici.
++#   - Cadence : nuit (02:30 UTC, train de fusion à l'arrêt) + déclenchement manuel.
++#     Pas de déclenchement à chaque push : chaque fusion du robot remettrait en
++#     retard (BEHIND, protection « à jour » stricte) toutes les PR prêtes du train.
++#     Variante « après chaque fusion » : patch séparé, voir
++#     docs/audit/mandat-DO-20261119/README.md §Cadence.
++#   - Pas de boucle : aucun déclencheur `push`, donc la fusion de la PR du robot ne
++#     relance rien.
++#   - Idempotent : arbre identique → aucun commit, aucune PR (status=identical).
++#   - Portée bornée : la régénération ne doit écrire QUE des projections listées
++#     (`check --scope worktree`), sinon arrêt sans PR.
++#   - Déterminisme : deux passes ; une différence entre elles arrête le job sans PR.
++#   - Fusion : ce workflow n'arme plus la fusion automatique. `merge-circuits.yml`
++#     classe la PR (circuit faible une fois l'extrait d'ownership appliqué) et arme
++#     lui-même ; sinon la PR attend l'owner. Une seule autorité d'armement (P20).
++#   - Le cron DEV `scripts/ops/registry-self-heal.sh` (*/30, même branche) doit être
++#     retiré quand ce patch est en place, sinon deux écrivains se disputent la branche.
++# Le texte ci-dessous décrit la version précédente (4 fichiers) ; ses raisons
++# (identité App, pas de push direct, supply-chain) restent valables.
++
+ # ADR-058/062 Repository Control Plane — the HEALING counterpart to the DETECTION
+ # freshness gates (dependency-registry-freshness.yml + dependency-modernization-fresh.yml).
+ #
+@@ -70,23 +96,9 @@ name: ♻️ Registry deps self-heal (main)
+ # WHERE: runs-on ubuntu-latest = GitHub cloud runner (works with DEV off).
+ 
+ on:
+-  push:
+-    branches: [main]
+-    paths:
+-      - "package.json"
+-      - "backend/package.json"
+-      - "frontend/package.json"
+-      - "packages/*/package.json"
+-      - "package-lock.json"
+-      - "scripts/registry/build-deps-registry.js"
+-      - "scripts/registry/lib/**"
+-      - "scripts/audit/build-dependency-modernization-inventory.ts"
+-      - "scripts/audit/dependency-modernization.schema.ts"
+-      - "audit/dependencies/family-overlay.yaml"
+   schedule:
+-    # Daily 02:30 UTC backstop — catches drift the push trigger missed (e.g.
+-    # Dependabot auto-merges landed via GITHUB_TOKEN, which does not re-trigger
+-    # push workflows). After diag-canon (02:00) / wiki-exports (02:15).
++    # Mandat DO : passage unique de la nuit, train de fusion à l'arrêt.
++    # Après diag-canon (02:00) / wiki-exports (02:15).
+     - cron: "30 2 * * *"
+   workflow_dispatch:
+ 
+@@ -101,9 +113,9 @@ concurrency:
+ 
+ jobs:
+   self-heal:
+-    name: Regenerate deps.json + modernization inventory, open auto-merge PR
++    name: Régénérer les projections générées de main, ouvrir la PR du robot
+     runs-on: ubuntu-latest
+-    timeout-minutes: 10
++    timeout-minutes: 20
+     # App key lives only in this environment (deployment branch: main).
+     environment: app-actions
+     steps:
+@@ -121,49 +133,45 @@ jobs:
+       - name: Install (no lifecycle scripts — supply-chain safe)
+         run: npm ci --ignore-scripts
+ 
+-      - name: Regenerate L1 deps registry from live manifests
+-        run: npm run registry:build:deps
+-
+-      - name: Regenerate PR-9 modernization inventory
+-        run: npm run audit:pr-9-modernization-inventory
++      # Chaîne complète, dans l'ordre des dépendances (inventaire → registry →
++      # modernisation → PR-8) : liste unique dans package.json.
++      - name: Régénérer les 17 projections (npm run registry:regenerate)
++        run: npm run registry:regenerate
+ 
+-      # deps.json is an input of canonical.json (meta.inputHashes). Healing the
+-      # input without reprojecting leaves L3 stale — see header §WHY.
+-      - name: Reproject L3 canonical + LLM repo map (deps.json is one of its inputs)
+-        run: npm run registry:build:canonical && npm run registry:build:llm-map
++      - name: Valider les projections régénérées (invariants, Zod, PR-8, modernisation)
++        run: npm run registry:regenerate:verify
+ 
+-      - name: Scope-guard + detect drift
+-        id: stage
++      - name: Déterminisme — une seconde passe doit donner les mêmes octets
+         run: |
+           set -euo pipefail
+-          DEPS="audit/registry/deps.json"
+-          INV="audit/dependencies/dependency-modernization-inventory.json"
+-          CANON="audit/registry/canonical.json"
+-          MAP=".claude/knowledge/REPO_MAP.md"
+-
+-          CHANGED="$(git diff --name-only HEAD -- . | sort -u)"
+-          UNEXPECTED="$(printf '%s\n' "$CHANGED" \
+-            | grep -vE '^(audit/registry/deps\.json|audit/dependencies/dependency-modernization-inventory\.json|audit/registry/canonical\.json|\.claude/knowledge/REPO_MAP\.md)$' \
+-            || true)"
+-          if [ -n "$UNEXPECTED" ]; then
+-            {
+-              echo "## ❌ Registry self-heal touched unexpected files"
+-              echo ""
+-              echo "Regeneration must change ONLY the four allowlisted projections. Unexpected:"
+-              echo '```'
+-              printf '%s\n' "$UNEXPECTED"
+-              echo '```'
+-            } >> "$GITHUB_STEP_SUMMARY"
+-            echo "::error::self-heal changed files outside the two allowlisted projections — aborting."
++          mapfile -t GEN < <(node scripts/registry/generated-projections.js list)
++          sha256sum "${GEN[@]}" > "$RUNNER_TEMP/pass1.sha"
++          npm run registry:regenerate
++          sha256sum "${GEN[@]}" > "$RUNNER_TEMP/pass2.sha"
++          if ! diff -u "$RUNNER_TEMP/pass1.sha" "$RUNNER_TEMP/pass2.sha"; then
++            echo "::error::régénération non déterministe — aucune PR ouverte."
+             exit 1
+           fi
+ 
+-          if git diff --quiet -- "$DEPS" "$INV" "$CANON" "$MAP"; then
++      - name: Garde de portée + détection d'écart
++        id: stage
++        run: |
++          set -euo pipefail
++          # La régénération ne doit écrire QUE des projections listées (fichiers
++          # suivis, non suivis compris). Sinon arrêt, rien n'est commité.
++          node scripts/registry/generated-projections.js check --scope worktree
++          mapfile -t GEN < <(node scripts/registry/generated-projections.js list)
++          {
++            echo "paths<<__GEN__"
++            printf '%s\n' "${GEN[@]}"
++            echo "__GEN__"
++          } >> "$GITHUB_OUTPUT"
++          if git diff --quiet -- "${GEN[@]}"; then
+             echo "status=identical" >> "$GITHUB_OUTPUT"
+-            echo "✓ deps.json + inventory + canonical + repo map already fresh — idempotent no-op."
++            echo "✓ projections de main déjà à jour — aucune PR (idempotent)."
+           else
+             echo "status=changed" >> "$GITHUB_OUTPUT"
+-            git --no-pager diff --stat -- "$DEPS" "$INV" "$CANON" "$MAP"
++            git --no-pager diff --stat -- "${GEN[@]}"
+           fi
+ 
+       - name: Resolve bot identity (App preferred, user token fallback)
+@@ -202,40 +210,28 @@ jobs:
+           token: ${{ steps.app-token.outputs.token || secrets.SELF_HEAL_TOKEN }}
+           base: main
+           branch: chore/registry-self-heal
+-          add-paths: |
+-            audit/registry/deps.json
+-            audit/dependencies/dependency-modernization-inventory.json
+-            audit/registry/canonical.json
+-            .claude/knowledge/REPO_MAP.md
+-          commit-message: "chore(registry): self-heal deps.json + modernization inventory + L3 reprojection"
+-          title: "chore(registry): self-heal deps.json + modernization inventory + L3 reprojection"
++          add-paths: ${{ steps.stage.outputs.paths }}
++          commit-message: "chore(registry): régénération des projections générées sur main"
++          title: "chore(registry): régénération des projections générées sur main"
+           labels: dependencies
+           body: |
+-            Auto-generated by `.github/workflows/registry-deps-self-heal.yml`.
++            Ouverte par `.github/workflows/registry-deps-self-heal.yml` (mandat DO).
+ 
+-            Regenerates the two deterministic L1 projections from the live workspace
+-            manifests (`npm run registry:build:deps` +
+-            `npm run audit:pr-9-modernization-inventory`) after a dependency bump
+-            landed on main without them — **then reprojects L3**
+-            (`registry:build:canonical` + `registry:build:llm-map`), because
+-            `deps.json` is one of `canonical.meta.inputHashes` and healing it
+-            without reprojecting leaves canonical stale by construction.
++            Régénère sur main les projections listées par
++            `scripts/registry/generated-projections.js` (`npm run registry:regenerate`),
++            validées (`npm run registry:regenerate:verify`), stables sur deux passes,
++            et rien d'autre (garde de portée `check --scope worktree`).
+ 
+-            Deterministic, scope-guarded (4 files), derived from `package.json`
+-            (ADR-058/062) — safe to auto-merge.
++            Les PR ordinaires ne modifient plus ces fichiers : leurs contrôles les
++            recalculent depuis leur propre arbre. Cette PR est le seul chemin par
++            lequel ils changent sur main.
+ 
+-            Scope note: a green run means "the projection matches its inputs on
+-            main", NOT "the registry matches the live source tree" — that is
+-            `registry-fresh.yml`'s job.
++            Fusion : armée par `merge-circuits.yml` si le circuit est faible ;
++            sinon, approbation de l'owner. Ce workflow n'arme rien.
+ 
+-            DO NOT EDIT manually.
++            Ne pas modifier à la main.
+ 
+-      - name: Enable auto-merge on the self-heal PR
+-        if: steps.cpr.outputs.pull-request-number != '' && steps.identity.outputs.mode != 'none'
+-        env:
+-          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.SELF_HEAL_TOKEN }}
+-          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+-        run: gh pr merge "$PR_NUMBER" --auto --squash
++      # Fusion automatique : armée par merge-circuits.yml (circuit faible), plus ici.
+ 
+       # ---- No identity configured: report drift loudly, do not fail ----
+       - name: Notice — drift detected but no self-heal identity configured
+@@ -250,10 +246,9 @@ jobs:
+             echo ""
+             echo "**Manual heal:** run"
+             echo '```'
+-            echo "npm run registry:build:deps && npm run audit:pr-9-modernization-inventory \\"
+-            echo "  && npm run registry:build:canonical && npm run registry:build:llm-map"
++            echo "npm run registry:regenerate && npm run registry:regenerate:verify"
+             echo '```'
+-            echo "then open a PR with the four changed files (e.g. as in #1242)."
++            echo "then open a PR with the changed projections only (generated-projections.js list)."
+           } >> "$GITHUB_STEP_SUMMARY"
+           echo "::warning::registry drift on main; no self-heal identity configured — manual heal required."
+ 
+diff --git a/.github/workflows/registry-fresh.yml b/.github/workflows/registry-fresh.yml
+index ca89f82636..e3035410cf 100644
+--- a/.github/workflows/registry-fresh.yml
++++ b/.github/workflows/registry-fresh.yml
+@@ -150,6 +150,30 @@ jobs:
+       - name: Install
+         run: npm ci
+ 
++      # MANDAT DO (2026-11-19) — CALCULER AU LIEU DE COMPARER.
++      # Une PR ne modifie plus les projections générées : celles de son checkout
++      # sont celles de main. Sur pull_request et push, on les CALCULE d'abord
++      # depuis l'arbre courant, puis on les INDEXE. Chaque garde ci-dessous valide
++      # alors l'état calculé (I6, PR-8, déterminisme cross-machine), et chaque
++      # `git diff` (arbre vs index) compare deux passes de régénération : la
++      # « fraîcheur » devient une preuve de déterminisme, plus une exigence de
++      # commit. workflow_dispatch garde la comparaison à l'état COMMITÉ de main
++      # (diagnostic du retard de main entre deux régénérations).
++      - name: Calculer les projections depuis l'arbre courant (mandat DO)
++        id: compute
++        if: ${{ !cancelled() && github.event_name != 'workflow_dispatch' }}
++        run: |
++          set -euo pipefail
++          npm run registry:regenerate
++          mapfile -t GEN < <(node scripts/registry/generated-projections.js list)
++          {
++            echo "### Projections que main régénérera après fusion (information)"
++            echo '```'
++            git --no-pager diff --stat -- "${GEN[@]}" || true
++            echo '```'
++          } >> "$GITHUB_STEP_SUMMARY"
++          git add -- "${GEN[@]}"
++
+       # ⚠️ CE STEP DOIT RESTER AVANT TOUT REBUILD — c'est le seul endroit où I6
+       # peut dire quelque chose.
+       #

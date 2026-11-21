@@ -163,6 +163,16 @@ if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^audit/registry/
   fi
 fi
 
+# Projections générées (mandat DO) : main les régénère après fusion ; une branche
+# ne les modifie plus, elle peut seulement reprendre la version de origin/main.
+# Liste unique : scripts/registry/generated-projections.js. Avertissement seul tant
+# que resync-pr.sh commite encore ces fichiers (passage au blocage : étape 4 du
+# plan, docs/audit/mandat-DO-20261119/README.md).
+if [ -f scripts/registry/generated-projections.js ] && command -v node >/dev/null 2>&1; then
+  node scripts/registry/generated-projections.js check --scope staged --base origin/main --warn \
+    || echo "AVERTISSEMENT (mandat DO) : contrôle des projections générées non exécuté (base origin/main illisible ?)."
+fi
+
 # Command Center snapshot (projection of the AI Operating Map) — staleness guard.
 # When the canon, schema, or generator changes, the committed snapshot must match.
 # We --check (no autostage): the hyphenated filename is outside the no-manual-edit
