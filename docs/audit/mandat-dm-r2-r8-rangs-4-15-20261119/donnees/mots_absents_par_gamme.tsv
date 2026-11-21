@@ -1,0 +1,21 @@
+gamme	mot	couples
+(R8 sans gamme)	piece	3
+(R8 sans gamme)	detachees	2
+(R8 sans gamme)	moteur	2
+(R8 sans gamme)	essence	1
+(R8 sans gamme)	1	1
+(R8 sans gamme)	diesel	1
+(R8 sans gamme)	2l	1
+(R8 sans gamme)	catalogue	1
+(R8 sans gamme)	accessoires	1
+courroie-d-accessoire	alternateur	3
+courroie-d-accessoire	reference	2
+courroie-d-accessoire	3	1
+courroie-d-accessoire	schema	1
+courroie-d-accessoire	5	1
+joint-de-cache-culbuteurs	culbuteur	2
+joint-de-cache-culbuteurs	6	1
+pompe-a-eau	essence	2
+pompe-a-eau	mpi	1
+filtre-a-huile	5	1
+bougie-d-allumage	5	1

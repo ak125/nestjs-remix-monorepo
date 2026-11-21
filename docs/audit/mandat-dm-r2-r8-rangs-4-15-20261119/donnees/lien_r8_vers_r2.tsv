@@ -1,0 +1,41 @@
+groupe	path	pg_id	type_id	cache_r8_present	stale	gamme_dans_catalogue_r8	n_familles	rang_dans_famille
+G	/pieces/capteur-temperature-d-air-admission-3939/renault-140/modus-140053/1-5-dci-18314.html	3939	18314	t	f	f	19	
+G	/pieces/carter-d-huile-592/volkswagen-173/golf-iv-173039/1-9-tdi-13100.html	592	13100	t	f	t	19	7
+G	/pieces/courroie-d-accessoire-10/peugeot-128/partner-i-128093/1-9-d-7979.html	10	7979	t	f	t	18	1
+G	/pieces/courroie-d-accessoire-10/renault-140/clio-iv-140006/1-2-16v-57284.html	10	57284	t	f	t	19	1
+G	/pieces/courroie-d-accessoire-10/renault-140/megane-ii-140046/1-9-dci-16920.html	10	16920	t	f	t	19	1
+G	/pieces/courroie-d-accessoire-10/renault-140/symbol-i-140092/1-4-16553.html	10	16553	t	f	t	18	1
+G	/pieces/galet-tendeur-de-courroie-d-accessoire-310/peugeot-128/207-128018/1-6-hdi-19352.html	310	19352	t	f	t	19	2
+G	/pieces/joint-d-injecteur-3894/volkswagen-173/tiguan-173138/2-0-tdi-29997.html	3894	29997	t	f	f	19	
+G	/pieces/pompe-de-direction-assistee-12/dacia-47/logan-i-47017/1-5-dci-24490.html	12	24490	t	f	t	19	7
+G	/pieces/pompe-de-direction-assistee-12/renault-140/master-iii-140039/2-3-dci-77283.html	12	77283	t	f	t	19	6
+G	/pieces/poulie-vilebrequin-3213/renault-140/megane-ii-140046/1-5-dci-18791.html	3213	18791	t	f	f	19	
+G	/pieces/poulie-vilebrequin-3213/renault-140/scenic-ii-140088/1-9-dci-32682.html	3213	32682	t	f	f	19	
+G	/pieces/radiateur-de-chauffage-467/peugeot-128/partner-i-128093/1-9-d-4x4-18497.html	467	18497	t	f	t	18	7
+G	/pieces/servo-frein-74/volkswagen-173/golf-iv-173039/1-9-tdi-8461.html	74	8461	t	f	f	19	
+G	/pieces/support-moteur-247/peugeot-128/406-128054/2-0-hdi-9981.html	247	9981	t	f	t	19	1
+G	/pieces/support-moteur-247/peugeot-128/boxer-iii-fourgon-128143/2-2-hdi-11112.html	247	11112	t	f	t	19	1
+G	/pieces/support-moteur-247/renault-140/express-140014/1-6-d-2113.html	247	2113	t	f	t	17	1
+G	/pieces/support-moteur-247/renault-140/master-ii-140038/2-5-dci-23077.html	247	23077	t	f	t	19	1
+G	/pieces/support-moteur-247/renault-140/megane-i-140041/1-9-dti-8418.html	247	8418	t	f	t	19	1
+G	/pieces/support-moteur-247/renault-140/trafic-ii-140096/1-9-dci-15716.html	247	15716	t	f	t	19	1
+S	/pieces/ampoule-feu-arriere-115/peugeot-128/3008-suv-128098/2-0-bluehdi-phase-2-76594.html	115	76594	t	f	t	19	4
+S	/pieces/bobine-d-allumage-689/peugeot-128/107-128005/1-0-18586.html	689	18586	t	f	t	18	2
+S	/pieces/bobine-d-allumage-689/peugeot-128/206-128014/1-1-i-9465.html	689	9465	t	f	t	18	2
+S	/pieces/capteur-abs-412/fiat-58/ducato-iv-244-58223/2-8-jtd-23831.html	412	23831	t	f	t	19	7
+S	/pieces/cardan-13/peugeot-128/206-128014/1-1-21501.html	13	21501	t	f	t	18	1
+S	/pieces/corps-papillon-158/mercedes-benz-108/sprinter-3-5-t-907-108021/319-cdi-traction-integrale-72988.html	158	72988	t	f	t	19	3
+S	/pieces/filtre-a-huile-7/renault-140/clio-v-140174/1-0-tce-90-77699.html	7	77699	t	f	t	19	1
+S	/pieces/filtre-a-huile-7/volkswagen-173/caddy-v-173294/2-0-tdi-bmt-82921.html	7	82921	t	f	t	19	1
+S	/pieces/plaquette-de-frein-402/peugeot-128/208-128021/1-2-puretech-76375.html	402	76375	t	f	t	18	1
+S	/pieces/pompe-a-carburant-458/citroen-46/berlingo-i-46006/1-9-d-10227.html	458	10227	t	f	t	18	2
+S	/pieces/pompe-a-carburant-458/peugeot-128/2008-128006/1-2-puretech-76346.html	458	76346	t	f	t	18	1
+S	/pieces/pompe-a-eau-1260/renault-140/clio-v-140174/1-0-tce-90-77699.html	1260	77699	t	f	t	19	1
+S	/pieces/pompe-a-eau-1260/renault-140/symbol-i-140092/1-2-16v-19676.html	1260	19676	t	f	t	18	1
+S	/pieces/sonde-lambda-3922/peugeot-128/206-128014/1-1-21501.html	3922	21501	t	f	f	18	
+S	/pieces/support-de-boite-vitesse-249/dacia-47/duster-47014/1-6-sce-65483.html	249	65483	t	f	t	18	2
+S	/pieces/support-moteur-247/dacia-47/duster-47014/1-5-dci-5377.html	247	5377	t	f	t	19	1
+S	/pieces/support-moteur-247/peugeot-128/206-128014/1-4-i-9466.html	247	9466	t	f	t	18	1
+S	/pieces/support-moteur-247/renault-140/express-140014/1-2-2115.html	247	2115	t	f	t	18	1
+S	/pieces/thermostat-316/peugeot-128/206-128014/1-4-hdi-30091.html	316	30091	t	f	t	19	3
+S	/pieces/thermostat-316/volkswagen-173/golf-v-173044/2-0-tdi-19961.html	316	19961	t	f	t	19	3

@@ -1,0 +1,79 @@
+role	groupe	n	indicateur	moyenne	mediane	min	max
+R2	G	20	ld_product	14.4	15.5	3	21
+R2	G	20	ld_offer	14.4	15.5	3	21
+R2	G	20	ld_faq	0.0	0.0	0	0
+R2	G	20	ld_availability	0.0	0.0	0	0
+R2	G	20	pieces_listees	19.1	15.0	4	55
+R2	G	20	prix_affiches	30.9	26.0	15	52
+R2	G	20	dispo_texte	3.2	2.0	1	7
+R2	G	20	img_total	25.8	25.0	8	46
+R2	G	20	img_piece	16.1	13.5	1	36
+R2	G	20	img_placeholder	0.0	0.0	0	0
+R2	G	20	mots_visibles	1394.1	1429.5	832	1838
+R2	G	20	mots_propres	519.1	529.5	349	782
+R2	G	20	part_commune_pct	58.7	58.2	45.8	70.9
+R2	G	20	liens_entrants_r2_releves	0.0	0.0	0	0
+R2	G	20	liens_entrants_r8_releves	0.1	0.0	0	1
+R2	G	20	liens_sortants_r2	0.0	0.0	0	0
+R2	G	20	robots_meta	"{""index, follow"": 20}"			
+R2	G	20	canonical_self	"{""oui"": 20}"			
+R2	G	20	lien_depuis_r1	"{""non"": 17, ""oui"": 3}"			
+R2	G	20	statut	"{""200"": 20}"			
+R2	S	20	ld_product	10.1	10.0	0	21
+R2	S	20	ld_offer	10.1	10.0	0	21
+R2	S	20	ld_faq	0.0	0.0	0	0
+R2	S	20	ld_availability	0.0	0.0	0	0
+R2	S	20	pieces_listees	15.4	10.0	1	51
+R2	S	20	prix_affiches	24.8	25.0	2	54
+R2	S	20	dispo_texte	4.8	3.5	1	21
+R2	S	20	img_total	22.2	20.5	0	58
+R2	S	20	img_piece	10.8	9.0	0	39
+R2	S	20	img_placeholder	0.0	0.0	0	0
+R2	S	20	mots_visibles	1205.8	1242.5	309	2072
+R2	S	20	mots_propres	415.3	311.5	104	1176
+R2	S	20	part_commune_pct	63.4	64.5	36.7	79.2
+R2	S	20	liens_entrants_r2_releves	0.0	0.0	0	0
+R2	S	20	liens_entrants_r8_releves	0.1	0.0	0	1
+R2	S	20	liens_sortants_r2	0.0	0.0	0	0
+R2	S	20	robots_meta	"{""index, follow"": 19, ""noindex, follow"": 1}"			
+R2	S	20	canonical_self	"{""oui"": 19, ""absent"": 1}"			
+R2	S	20	lien_depuis_r1	"{""non"": 20}"			
+R2	S	20	statut	"{""200"": 20}"			
+R8	G	5	ld_product	0.0	0.0	0	0
+R8	G	5	ld_offer	0.0	0.0	0	0
+R8	G	5	ld_faq	0.0	0.0	0	0
+R8	G	5	ld_availability	0.0	0.0	0	0
+R8	G	5	prix_affiches	2.0	2.0	2	2
+R8	G	5	dispo_texte	3.4	2.0	1	9
+R8	G	5	img_total	21.8	21.0	18	28
+R8	G	5	img_piece	0.0	0.0	0	0
+R8	G	5	img_placeholder	0.0	0.0	0	0
+R8	G	5	mots_visibles	951.4	914.0	844	1131
+R8	G	5	mots_propres	228.0	224.0	163	321
+R8	G	5	part_commune_pct	75.5	74.9	69.9	80
+R8	G	5	liens_entrants_r2_releves	1.2	0.0	0	5
+R8	G	5	liens_entrants_r8_releves	0.0	0.0	0	0
+R8	G	5	liens_sortants_r2	70.2	73.0	59	78
+R8	G	5	robots_meta	"{""index, follow"": 5}"			
+R8	G	5	canonical_self	"{""oui"": 5}"			
+R8	G	5	lien_depuis_r1	"{""(vide)"": 5}"			
+R8	G	5	statut	"{""200"": 5}"			
+R8	S	10	ld_product	0.0	0.0	0	0
+R8	S	10	ld_offer	0.0	0.0	0	0
+R8	S	10	ld_faq	0.0	0.0	0	0
+R8	S	10	ld_availability	0.0	0.0	0	0
+R8	S	10	prix_affiches	2.0	2.0	2	2
+R8	S	10	dispo_texte	4.2	3.0	1	9
+R8	S	10	img_total	21.8	21.5	14	28
+R8	S	10	img_piece	0.0	0.0	0	0
+R8	S	10	img_placeholder	0.0	0.0	0	0
+R8	S	10	mots_visibles	949.3	916.0	769	1129
+R8	S	10	mots_propres	268.0	253.0	183	401
+R8	S	10	part_commune_pct	70.7	71.7	58.4	78.3
+R8	S	10	liens_entrants_r2_releves	0.1	0.0	0	1
+R8	S	10	liens_entrants_r8_releves	0.0	0.0	0	0
+R8	S	10	liens_sortants_r2	66.1	69.5	45	75
+R8	S	10	robots_meta	"{""index, follow"": 10}"			
+R8	S	10	canonical_self	"{""oui"": 10}"			
+R8	S	10	lien_depuis_r1	"{""(vide)"": 10}"			
+R8	S	10	statut	"{""200"": 10}"			

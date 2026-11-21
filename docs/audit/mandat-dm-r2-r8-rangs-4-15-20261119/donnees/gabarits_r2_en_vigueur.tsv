@@ -1,0 +1,20 @@
+sgc_pg_id	sgc_title	sgc_h1
+10	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Courroie d'accessoire #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+12	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Pompe de direction assistée #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+1260	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Pompe à eau #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+13	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Cardan #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+158	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Corps papillon #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+247	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Support moteur #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+310	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Galet tendeur de courroie d'accessoire #VMarque# #VModele# #VType# #CompSwitch_2#
+316	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Thermostat #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+402	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Plaquette de frein pour #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+412	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Capteur ABS #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+458	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Pompe à carburant #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+467	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Radiateur de chauffage #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+592	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Carter d'huile #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+686	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Bougie d'allumage #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+689	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Bobine d'allumage #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+7	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Filtre à huile #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+74	#Gamme# #VMarque# #VModele# #VType# #MinPrice# #PrixPasCher#.	Servo frein #VMarque# #VModele# #VType# #VNbCh# ch #VAnnee# #CompSwitch_2#
+gammes_avec_gabarit	avec_prix	avec_carburant
+118	118	0
