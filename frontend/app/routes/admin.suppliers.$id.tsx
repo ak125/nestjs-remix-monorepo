@@ -29,6 +29,7 @@ import {
 import {
   ACCESS_STATE_LABELS,
   centsToEuros,
+  FALLBACK_MODE_LABELS,
   labelOf,
   ORDER_MODE_LABELS,
   priceRuleFormToBody,
@@ -302,6 +303,10 @@ export default function AdminSupplierCard() {
                 value={labelOf(SUPPLY_MODE_LABELS, loc.supplyMode)}
               />
               <Row
+                label="Repli hors dépôt"
+                value={labelOf(FALLBACK_MODE_LABELS, loc.fallbackMode)}
+              />
+              <Row
                 label="Validation"
                 value={
                   loc.validatedAt ? (
@@ -405,7 +410,9 @@ export default function AdminSupplierCard() {
         <CardHeader>
           <CardTitle>Marques liées ({card.brands.length})</CardTitle>
           <CardDescription>
-            Liens ___xtr_supplier_link_pm ; un lien masqué reste listé.
+            Liens ___xtr_supplier_link_pm ; un lien masqué reste listé. Une
+            marque ouvre ses sources d'achat ordonnées (rang affiché si ce lien
+            est classé).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -418,7 +425,17 @@ export default function AdminSupplierCard() {
                   key={b.linkId}
                   variant={b.linkDisplayed ? "secondary" : "outline"}
                 >
-                  {b.brandName ?? `pm_id ${b.pmId ?? "?"}`}
+                  {b.pmId === null ? (
+                    (b.brandName ?? "pm_id ?")
+                  ) : (
+                    <Link
+                      className="underline-offset-2 hover:underline"
+                      to={`/admin/suppliers/marques/${b.pmId}`}
+                    >
+                      {b.brandName ?? `pm_id ${b.pmId}`}
+                    </Link>
+                  )}
+                  {b.sourceRank === null ? "" : ` · rang ${b.sourceRank}`}
                   {b.linkDisplayed ? "" : " (masqué)"}
                 </Badge>
               ))}
