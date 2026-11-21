@@ -1,5 +1,8 @@
 # Prompts — images et scènes manquantes, filtre à huile
 
+Brief commun du programme (règles, skills, responsables, état d'intégration) :
+[AUDIT.md § 0](AUDIT.md#0-brief-commun-du-programme-éditorial).
+
 Révision 4, 31/10/2026. Chaque entrée est un **manque du lot** tant que le fichier n'existe pas : un prompt n'est pas
 une image livrée. Les visuels déjà produits et vérifiés sont dans [integration/assets.json](integration/assets.json).
 

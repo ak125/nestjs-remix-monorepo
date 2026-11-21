@@ -1,5 +1,8 @@
 # Mission Claude CLI — intégration du lot filtre à huile (pg_id 7)
 
+Brief commun du programme (règles, skills, responsables, état d'intégration) :
+[AUDIT.md § 0](AUDIT.md#0-brief-commun-du-programme-éditorial).
+
 Révision 3, 30/10/2026. Remplace la liste de raccordements de la révision 2. Révision 4 du dossier (31/10) : § 1
 (note) et § 2 mis à jour par Claude Code Desktop ; § 3 à § 6 inchangés. Seuls les raccordements du dossier
 filtre à huile : les 13 besoins du dossier plaquettes ne sont pas des prérequis (FH-5 compteur et FH-11 `stages` les
@@ -12,8 +15,8 @@ publication, préparé et non exécuté. Aucune ligne du dossier ne demande plus
 
 ## Consigne de démarrage
 
-> Lis `docs/audits/editorial-filtre-huile-20261030/HANDOFF.md` sur la branche
-> `docs/editorial-filtre-huile-dossier-20261030` et exécute la mission : vérifie le code et les contrats cités,
+> Lis `docs/audits/editorial-filtre-huile-20261030/HANDOFF.md` sur `main` (dossier fusionné par #1935, branche
+> d'origine supprimée) et exécute la mission : vérifie le code et les contrats cités,
 > traite FH-1 à FH-16 dans l'ordre du § 3, raccorde les textes (`integration/r1.json`, `integration/r3.json`) et les
 > images (`integration/assets.json`) aux mécanismes existants, puis vérifie le rendu DEV en mobile et en bureau.
 > Aucune écriture en base partagée avec la PROD, aucun déploiement, aucune modification d'URL, de title, de meta ni de
@@ -141,7 +144,7 @@ Le 30/10 : `filtre-habitacle` et `filtre-boite-auto` (`pg_pic`) 400 ; `filtre-d-
 
 ### Compte rendu de Claude CLI
 
-Session Claude Code ouverte sur le dépôt, 30 et 31/10/2026. Code : PR brouillon #1936, branche
+Session Claude Code ouverte sur le dépôt, 30 et 31/10/2026. Mise à jour du 31/10 à 20:40Z : #1936 est fusionnée (`7d3f30237`) et déployée en PREPROD sur `8145263e6`, sans tag PROD ; ADR-120 (vault #389) et #1941 (`88a12fe40`) sont fusionnées ; les lignes qui suivent décrivent l'état à la tête de la PR, sauf mention contraire. Code : PR #1936, branche
 `fix/editorial-filtre-huile-fh-20261030`, tête `bbc7e8ed8`, merge-base avec `main` `2a49166e2`. Dossier : #1935. Rien
 n'est fusionné, déployé ni écrit en base.
 
@@ -150,8 +153,8 @@ n'est fusionné, déployé ni écrit en base.
 | État | Statut au 31/10 | Preuve |
 |---|---|---|
 | implémenté | oui | code de FH-2, 4, 5, 6, 7, 9, 10, 11, 14, 15 et 16 dans #1936, plus `67f7ce304` (libellés R1 et R3), `da17a3814` et `6e57bb6c7` (gates et score vidéo), `573c022b4` et `500e9c4fd` (skills seo-batch), `c0a6c7d96` (consignes) ; textes du dossier pour FH-1, 12 et 13 (`integration/`) ; lot de publication préparé (`integration/publication-batch.json`) |
-| intégré | non | #1936 en brouillon, non fusionnée : absente de `main`, de PREPROD et de PROD. Textes et images du lot non écrits |
-| vérifié | en DEV, par surcouche de lecture | critères du § 3 ci-dessous ; banc de la révision 4 sur `67f7ce304` ; CI de #1936 verte sur `bbc7e8ed8` (43 contrôles réussis, 9 ignorés, 0 échec) |
+| intégré | code oui, lot non | #1936 fusionnée le 31/10 (`7d3f30237`) : dans `main` et en PREPROD (`8145263e6`), absente de PROD (dernier tag du 30/10, `980b2f8a7`). Textes et images du lot non écrits |
+| vérifié | code : CI et PREPROD ; lot : en DEV, par surcouche de lecture | critères du § 3 ci-dessous ; banc de la révision 4 sur `67f7ce304` ; CI de #1936 verte sur `bbc7e8ed8` (43 contrôles réussis, 9 ignorés, 0 échec) ; run 41213749868 sur `8145263e6` : déploiement PREPROD, E2E et Lighthouse verts. Aucun rejeu des critères du § 3 sur PREPROD n'est consigné |
 | opérationnel | non | aucun visiteur ne voit ces changements |
 | bloqué | écriture des textes et des images | base, stockage et imgproxy partagés avec la PROD, pages indexées : zone STOP (« Restant ») |
 
@@ -159,11 +162,11 @@ n'est fusionné, déployé ni écrit en base.
 
 | Périmètre | Constat au 31/10 | Ce qui manque |
 |---|---|---|
-| Auto-review technique | #1936 : revue indépendante par un sous-agent sur `e3d644a04` (5 constats corrigés dans `b9009d913`, 10 rapportés ; un plantage réfuté, son résidu rapporté ; un constat réfuté ; un confirmé, qui est la limite PREPROD de FH-6) ; Codex sur `ee70555b0` (1 constat, corrigé par `6e57bb6c7` avec 2 tests), puis sur le delta de `6e57bb6c7` (0 constat) ; `6e57bb6c7..bbc7e8ed8` ne change que des projections. C'est le niveau B que propose ADR-120. #1935 : niveau A (lint PASS, JSON valides) | ADR-120 (vault #389) n'est pas fusionnée : DoD2 v1.0.0 exige encore une approbation humaine, la case reste non cochée. Aucune approbation GitHub n'est tirée de ces revues |
+| Auto-review technique | #1936 : revue indépendante par un sous-agent sur `e3d644a04` (5 constats corrigés dans `b9009d913`, 10 rapportés ; un plantage réfuté, son résidu rapporté ; un constat réfuté ; un confirmé, qui est la limite PREPROD de FH-6) ; Codex sur `ee70555b0` (1 constat, corrigé par `6e57bb6c7` avec 2 tests), puis sur le delta de `6e57bb6c7` (0 constat) ; `6e57bb6c7..bbc7e8ed8` ne change que des projections. C'est le niveau B que propose ADR-120. #1935 : niveau A (lint PASS, JSON valides) | ADR-120 (vault #389) fusionnée le 31/10 : DoD2 v1.1.0 remplace l'approbation humaine par un enregistrement de revue lié à la tête. #1936 fusionnée le 31/10. Aucune approbation GitHub n'est tirée de ces revues |
 | Auto-review et admission WIKI | fiche `gamme/filtre-a-huile` promue TIER A par son décideur (`a478334`) ; auto-review de sens ADR-119 ABSENT, consultative hors sécurité (D3) | exécuteur isolé (lacune technique) ; captures RAW de F-C1 à F-C11 (lacune probatoire) ; détail ci-dessous |
-| Décision de gouvernance | ADR-120 (#389) ouverte, non ratifiée ; ADR-107 D5 demande une « validation owner » pour modifier une fiche promue, et ADR-119 ne l'amende pas | fusion de #389 ; arbitrage de la divergence D5 au vault |
+| Décision de gouvernance | ADR-120 (#389) fusionnée le 31/10 ; ADR-107 D5 demande une « validation owner » pour modifier une fiche promue, et ADR-119 ne l'amende pas | arbitrage de la divergence D5 au vault |
 | Autorisation de mutation PROD | aucune | accord nominatif sur l'écriture du lot (`integration/publication-batch.json`) et sur le H2 « Qualité, prix et marques » ; GO de tag pour le code |
-| Intégration et observation réelles | aucune. La surcouche DEV prouve le rendu, pas la persistance | fusion de #1935 et #1936, PREPROD, tag, écriture du lot, puis observation en PROD |
+| Intégration et observation réelles | #1935 et #1936 fusionnées ; code de #1936 en PREPROD (`8145263e6`), pas en PROD ; lot non écrit. La surcouche DEV prouve le rendu, pas la persistance | application de α (#1941, fusionnée), fusion de #1942 et #1944, tag PROD, écriture du lot, puis observation en PROD |
 
 Rôles : Desktop prépare et relit les contenus selon les méthodes applicables ; Claude CLI corrige et intègre ; Codex
 contre-vérifie sur un SHA figé ; Hermes suit les preuves et les relais. Aucun de ces rôles n'attend une relecture
@@ -324,7 +327,7 @@ Les deux écrivent en PROD sur des pages indexées.
 
 #### Section technique (Claude CLI, 31/10)
 
-Commits de #1936 après `b9009d913`, hors resync des projections. Rien n'est fusionné ni déployé ; le code ne dépend
+Commits de #1936 après `b9009d913`, hors resync des projections. Fusionnés depuis dans `main` (`7d3f30237`), déployés en PREPROD, pas en PROD ; le code ne dépend
 pas de #1935.
 
 | SHA | Objet | Preuve |
@@ -400,7 +403,7 @@ Constats du lot :
 | code | R1 : `mergeFaqBlocks` ne lit que les `<h3>`. 61 lignes `__seo_gamme` sur 177 ont un H2 de FAQ, toutes en `<details><summary>`, `pg_id` 7 compris avant le lot : le titre de section est affiché comme une question. Défaut antérieur à #1936 | correctif dans une PR à part |
 | code | invalidation Redis R1 sans garde d'authentification (« Lot de publication ») | correctif dans une PR à part |
 | champ protégé | meta description R1 : « …pas cher dès 5€… En stock, livraison 24-48h. » | non modifiée : meta protégée, prix et stock en zone STOP |
-| code | sous-titre R3 « Tout savoir sur les filtre-a-huile » : alias brut (route conseils l.510, `visual-intent.ts:186`) | corrigé par `67f7ce304` pour tous les guides ; servi en PROD tant que #1936 n'est pas déployée |
-| gouvernance | #1936 : FH-16 retire « Difficulté » et « Temps estimé » de tous les guides R3 ; les autres changements touchent tous les gabarits listés dans la PR | auto-review de niveau B enregistrée (« Cinq périmètres ») ; ADR-120 (#389) non fusionnée, donc DoD2 v1.0.0 reste un écart. Fusion par l'owner ; déploiement hors mandat |
+| code | sous-titre R3 « Tout savoir sur les filtre-a-huile » : alias brut (route conseils l.510, `visual-intent.ts:186`) | corrigé par `67f7ce304` pour tous les guides ; servi en PROD tant que #1936 n'y est pas déployée (fusionnée, en PREPROD seulement) |
+| gouvernance | #1936 : FH-16 retire « Difficulté » et « Temps estimé » de tous les guides R3 ; les autres changements touchent tous les gabarits listés dans la PR | auto-review de niveau B enregistrée (« Cinq périmètres ») ; ADR-120 (#389) fusionnée depuis, DoD2 v1.1.0 en vigueur. #1936 fusionnée le 31/10 ; tag PROD hors mandat |
 | gouvernance | modifier la fiche promue : ADR-107 D5 (« validation owner ») contre ADR-119 D1 | arbitrage au vault |
 | code | `scripts/wiki-generators/auto_review_wiki_proposal.py:82`, `:540-555` émet `HUMAN_SPOT_CHECK` pour une proposition de sécurité à source forte, contre ADR-119 D1. Aucun appelant dans le dépôt : seuls son test, `.gitignore`, `ownership.yaml` et `audit/wiki-auto-review-2026-05-29.md` le citent | à aligner sur la décision WIKI (`promotion_decision.py`, `SAFETY_AUTO_APPROVAL_ADR` à `None`) ou à retirer, dans une PR à part |
