@@ -23,6 +23,7 @@ SCRIPTS = [
     "test-diag-link-provenance.sh",
     "test-kg-maintenance-schedule-fuel-filter.sh",
     "test-seo-gsc-page-totals-migrations.sh",
+    "test-soft-404-alternatives-sargable.sh",
     "test-tecdoc-api-surface-lockdown.sh",
     "test-vehicle-cache-trigger-observable.sh",
 ]
