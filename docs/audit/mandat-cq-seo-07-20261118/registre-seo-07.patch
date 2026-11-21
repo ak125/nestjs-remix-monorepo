@@ -1,0 +1,113 @@
+--- a/.spec/00-canon/ai-registry/agent-operating-map.yaml	2026-11-18 19:38:37.713654560 +0100
++++ b/.spec/00-canon/ai-registry/agent-operating-map.yaml	2026-11-18 19:39:35.110710881 +0100
+@@ -1124,7 +1124,7 @@
+         level: L2
+         trigger:
+           kind: "request"
+-          ref: "backend/src/modules/errors/controllers/error.controller.ts"
++          ref: "backend/src/api/errors-api.controller.ts"
+           wired: true
+         check:
+           kind: "test"
+@@ -1139,12 +1139,22 @@
+           - { route: "api.errors.suggestions" }
+           - { route: "api.redirects.check" }
+         evidence:
++          - { path: "backend/src/api/errors-api.controller.ts" }
+           - { path: "backend/src/modules/errors/controllers/error.controller.ts" }
+       - id: seo.sitemap
+         name: "Sitemaps, robots.txt et plan du site"
+         owner: seo-lead
+-        status: non_operational
+-        level: L1
++        status: operational
++        level: L2
++        trigger:
++          kind: "workflow"
++          ref: ".github/workflows/sitemap-daily-regen.yml"
++          wired: true
++          detail: "0 3 * * * ; POST /api/sitemap/v10/generate-all (sitemap-v10.controller.ts:93), file seo-monitor"
++        check:
++          kind: "test"
++          ref: "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts"
++          detail: "jest backend, lancé par ci.yml (étape « Run backend tests »)"
+         covers:
+           - { routes: "sitemaps" }
+           - { route: "robots[.]txt" }
+@@ -1152,19 +1162,31 @@
+           - { workflow: ".github/workflows/sitemap-daily-regen.yml" }
+         evidence:
+           - { path: ".github/workflows/sitemap-daily-regen.yml" }
++          - { path: "backend/src/modules/seo/controllers/sitemap-v10.controller.ts" }
++        decisions: [48]
++        gaps:
++          - "Sélection des URL R2 par __sitemap_p_link.map_has_item > seuil (20 par défaut), table figée : la règle vendable de la décision 48 n'est pas appliquée."
+       - id: seo.internal-linking
+         name: "Maillage interne"
+         owner: seo-lead
+-        status: non_operational
+-        level: L1
++        status: operational
++        level: L2
+         uses:
+           - { capability: "internal-linking", from: "seo" }
++        trigger:
++          kind: "request"
++          ref: "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts"
++          wired: true
++        check:
++          kind: "test"
++          ref: "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts"
++          detail: "jest backend, lancé par ci.yml (étape « Run backend tests »)"
+         evidence:
+           - { path: "backend/src/modules/seo/internal-linking.service.ts" }
+           - { path: "backend/src/modules/seo/internal-linking.service.conseils-links.test.ts" }
+         decisions: [82]
+         gaps:
+-          - "Test présent ; déclencheur non relu : L2 non déclaré."
++          - "Aucune cible de lien n'est filtrée sur le caractère vendable ou indexable (décision 82) ; liens sans identifiant servis en 410 depuis __seo_gamme.sg_content."
+       - id: seo.gamme-audit
+         name: "Audit et pilotage SEO des gammes, V-Level"
+         owner: seo-lead
+@@ -1177,6 +1199,10 @@
+           - { routes: "admin.v-level-status" }
+           - { routes: "admin.seo-hub.gammes" }
+         agents: ["phase1-auditor"]
++        check:
++          kind: "test"
++          ref: "backend/src/modules/admin/services/gamme-seo-badges.vlevel-stats.test.ts"
++          detail: "jest backend, lancé par ci.yml (étape « Run backend tests »)"
+         evidence:
+           - { path: "backend/src/modules/admin/controllers/admin-gammes-seo-list.controller.ts" }
+           - { path: "workspaces/seo-batch/.claude/skills/seo-gamme-audit/SKILL.md" }
+@@ -1222,7 +1248,10 @@
+         evidence:
+           - { path: "backend/src/modules/seo-logs/controllers/crawl-budget-audit.controller.ts" }
+           - { path: "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.test.ts" }
++          - { path: "backend/src/modules/admin/controllers/seo-control.controller.ts" }
+         decisions: [48, 81]
++        gaps:
++          - "__seo_gsc_links_weekly, __seo_crawl_log, __seo_index_history et __seo_cwv_daily vides au 18/11/2026 : collecteur absent, non branché ou drapeau éteint."
+       - id: seo.substitution
+         name: "Substitution sémantique des URL (réponse 200 toujours, 404 et 410 dans le statut)"
+         owner: seo-lead
+--- a/.spec/00-canon/ai-registry/department-functions.md	2026-11-18 19:39:35.116710887 +0100
++++ b/.spec/00-canon/ai-registry/department-functions.md	2026-11-18 19:39:35.159710930 +0100
+@@ -28,7 +28,7 @@
+ | 04  | Marketing & Acquisition (`marketing`)         | 0   | 3      | 2     | `backlinks-briefs` L1, `merchant-feed` L1, `trend-signals` L1, `newsletter` manquante, `shopping-ads` manquante                                                                                                                                                            |
+ | 05  | Brand & Communication (`brand`)               | 0   | 3      | 0     | `compliance-gate` L1, `safety-review` L1, `design-system` L1                                                                                                                                                                                                               |
+ | 06  | Contenu éditorial (`content`)                 | 0   | 2      | 0     | `blog` L1, `ai-content` L1                                                                                                                                                                                                                                                 |
+-| 07  | Production Pages & SEO (`seo`)                | 3   | 7      | 0     | `pages` L1, `projection` L2, `roles-contracts` L1, `url-status` L2, `sitemap` L1, `internal-linking` L1, `gamme-audit` L1, `keyword-briefs` L1, `monitoring` L1, `substitution` L2                                                                                         |
++| 07  | Production Pages & SEO (`seo`)                | 5   | 5      | 0     | `pages` L1, `projection` L2, `roles-contracts` L1, `url-status` L2, `sitemap` L2, `internal-linking` L2, `gamme-audit` L1, `keyword-briefs` L1, `monitoring` L1, `substitution` L2                                                                                         |
+ | 08  | Media & Fafa (`media`)                        | 0   | 2      | 0     | `video-factory` L1, `script-generator` L1                                                                                                                                                                                                                                  |
+ | 09  | Knowledge RAW & WIKI (`wiki`)                 | 0   | 3      | 0     | `raw-to-wiki` L1, `exports` L1, `rag-ingest` L1                                                                                                                                                                                                                            |
+ | 10  | Catalogue & Compatibilité (`catalog`)         | 0   | 5      | 0     | `core` L1, `vehicles-compatibility` L1, `search` L1, `integrity` L1, `stock` L1                                                                                                                                                                                            |
+@@ -47,7 +47,7 @@
+ | 23  | IA, Agents & Automatisation (`ia-agents`)     | 1   | 2      | 1     | `operating-map` L2, `skills-registry` L1, `mandate-queue` L1, `quota-alert` manquante                                                                                                                                                                                      |
+ | 24  | People, Formation & Doc (`people`)            | 1   | 1      | 1     | `staff` L2, `documentation` L1, `contradictions` manquante                                                                                                                                                                                                                 |
+ 
+-Total : 98 fonctions, dont 17 `operational` (toutes L2), 69 `non_operational` et
++Total : 98 fonctions, dont 19 `operational` (toutes L2), 67 `non_operational` et
+ 12 `missing`. Aucune fonction n'est déclarée L3 ou L4 : aucune n'a été observée
+ en service par ce relevé.
+ 
