@@ -1,0 +1,191 @@
+diff --git a/.claude/rules/deployment.md b/.claude/rules/deployment.md
+index 3e5afa38b0..8d8ef6483d 100644
+--- a/.claude/rules/deployment.md
++++ b/.claude/rules/deployment.md
+@@ -98,12 +98,6 @@ feature (sinon DEV:3000 sert du code périmé).
+    ses alertes passent l'issue du tick en `warn`, que le hook SessionStart affiche. Détail : PR #1424.
+    (alerte)
+ 
+-Hors de ces axes, le même tick recharge le **cache npm hors ligne des missions Hermes d'écriture**
+-quand le lockfile de `main` n'y est pas encore chargé (`refresh_hermes_npm_cache()`, empreinte
+-`hermes-npm-cache.lock-sha256` dans le répertoire d'état des crons) : sans lui, leur préparation
+-échoue en `ENOTCACHED` dès qu'une dépendance change (2026-10-28). Mission en cours → essai au tick
+-suivant ; échec → alerte à chaque tick, nouvel essai au plus une fois par heure. (auto)
+-
+ ## Mécanique du tag Docker `:preprod` (alias flottant)
+ 
+ - Le tag `:preprod` est **réécrit à chaque merge sur `main`** (workflow `ci.yml` → step `build`).
+diff --git a/scripts/ops/sync-dev-runtime.sh b/scripts/ops/sync-dev-runtime.sh
+index cac37ca691..634d66f6a0 100755
+--- a/scripts/ops/sync-dev-runtime.sh
++++ b/scripts/ops/sync-dev-runtime.sh
+@@ -396,53 +396,6 @@ sync_submodules() {
+   return "$drift"
+ }
+ 
+-# Cache npm hors ligne des missions Hermes d'écriture. Leur préparation installe les
+-# dépendances SANS réseau (`npm ci --offline`) depuis un cache que seul le script de
+-# rechargement Hermes remplit. Rien ne le relançait quand le lockfile changeait : le
+-# 2026-10-28, une mission d'écriture a échoué à la préparation (ENOTCACHED sur une
+-# dépendance montée par #1871), et rien ne l'avait signalé avant.
+-#
+-# Rechargement seulement quand le lockfile de HEAD n'a pas encore été chargé (empreinte
+-# dans le répertoire d'état des crons) ou que le cache a disparu. Pendant le rechargement
+-# (~1 min), le contrôleur refuse une mission lancée au même moment (« à relancer », sans
+-# effet de bord). Une mission en cours fait refuser le rechargement : nouvel essai au tick
+-# suivant. Un échec est signalé à chaque tick, et retenté au plus une fois par heure.
+-#
+-# ALERT-ONLY, comme sync_submodules : appelée sur les deux chemins (no-op et resync).
+-# Machine sans Hermes (ni script ni cache) : rien.
+-HERMES_NPM_CACHE="${HERMES_NPM_CACHE:-$HOME/.local/share/hermes-codex/npm-cache}"
+-HERMES_NPM_WARM="${HERMES_NPM_WARM:-$HOME/hermes-npm-cache-20261005/controller/warm-hermes-npm-cache.sh}"
+-refresh_hermes_npm_cache() {
+-  [ -f "$HERMES_NPM_WARM" ] || [ -d "$HERMES_NPM_CACHE" ] || return 0
+-  git cat-file -e HEAD:package-lock.json 2>/dev/null || return 0
+-  local state_dir stamp lock_sha out
+-  state_dir="${CRON_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/automecanik/cron}"
+-  stamp="$state_dir/hermes-npm-cache.lock-sha256"
+-  lock_sha=$(git show HEAD:package-lock.json | sha256sum | cut -d' ' -f1)
+-  [ "$(cat "$stamp" 2>/dev/null)" = "$lock_sha" ] && [ -d "$HERMES_NPM_CACHE/_cacache" ] && return 0
+-  if [ ! -f "$HERMES_NPM_WARM" ]; then
+-    alert "cache npm Hermes à recharger (lockfile ${lock_sha:0:12}) mais $HERMES_NPM_WARM introuvable — les missions d'écriture échoueront à la préparation"
+-    return 1
+-  fi
+-  if [ "$(cat "$stamp.failed" 2>/dev/null)" = "$lock_sha" ] && [ -n "$(find "$stamp.failed" -mmin -60 2>/dev/null)" ]; then
+-    alert "cache npm Hermes : rechargement échoué il y a moins d'1 h (lockfile ${lock_sha:0:12}) — les missions d'écriture échoueront à la préparation d'ici le prochain essai"
+-    return 1
+-  fi
+-  mkdir -p "$state_dir"
+-  if out=$(bash "$HERMES_NPM_WARM" "$(git rev-parse HEAD)" 2>&1); then
+-    printf '%s\n' "$lock_sha" > "$stamp"
+-    rm -f "$stamp.failed"
+-    log "cache npm Hermes rechargé pour le lockfile ${lock_sha:0:12}"
+-  elif printf '%s\n' "$out" | grep -qx 'refused: mission active'; then
+-    log "cache npm Hermes : mission en cours, rechargement au prochain tick"
+-  else
+-    printf '%s\n' "$out" | tail -5 >&2
+-    printf '%s\n' "$lock_sha" > "$stamp.failed"
+-    alert "cache npm Hermes : rechargement échoué (lockfile ${lock_sha:0:12}) — les missions d'écriture échoueront à la préparation (nouvel essai dans 1 h)"
+-    return 1
+-  fi
+-}
+-
+ # 0. Sonde de topologie runtime (6e axe) — AVANT les gardes git, alert-only.
+ #    Voir l'en-tête de check_dev_runtime_topology pour le « pourquoi avant ».
+ check_dev_runtime_topology || true
+@@ -467,8 +420,6 @@ remote_sha=$(git rev-parse origin/main)
+ if [ "$local_sha" = "$remote_sha" ]; then
+   # Rattrape un sous-module resté en retard sur son pin (échec d'un tick précédent).
+   sync_submodules || true
+-  # Idem pour le cache npm Hermes (lockfile pas encore chargé, essai précédent refusé ou échoué).
+-  refresh_hermes_npm_cache || true
+   # Pas de sync git — mais on probe quand même l'intégrité workspaces. Un drift
+   # ici (symlink supprimé, dist effacé entre 2 ticks cron, install manuel
+   # interrompu) doit être visible AVANT que nodemon redémarre et crashe.
+@@ -617,7 +568,5 @@ if [ "$healthy" != "1" ]; then
+ fi
+ 
+ log "✅ DEV:3000 sain sur $remote_sha"
+-# 9. Cache npm Hermes sur le lockfile que le ff vient d'amener. Après la santé : DEV d'abord.
+-refresh_hermes_npm_cache || true
+ report_done "{\"action\":\"synced\",\"from\":\"$local_sha\",\"to\":\"$remote_sha\"}"
+ exit 0
+diff --git a/scripts/test-claude-hooks.sh b/scripts/test-claude-hooks.sh
+index 4cd9937311..58406237fd 100755
+--- a/scripts/test-claude-hooks.sh
++++ b/scripts/test-claude-hooks.sh
+@@ -359,11 +359,9 @@ chmod +x "$SB/fake/"*
+ # à terre (cas 4).
+ # GIT_CONFIG_* : le sous-module du bac à sable (cas 10+) est un dépôt local, que git refuse
+ # de cloner par défaut (protocol.file) — autorisé pour ces seuls ticks, jamais en config globale.
+-# HERMES_NPM_* : jamais le cache ni le script Hermes de la machine ; absents jusqu'au cas 16.
+ run_sync() {
+   APP_DIR="$SB/app" HEALTH_URL="${SB_HEALTH_URL:-file://$SB/app/package.json}" CRASH_DIR="$SB/crash" \
+     CRON_STATE_DIR="$SB/state" TMPDIR="$SB/tmp" \
+-    HERMES_NPM_WARM="${SB_WARM:-$SB/absent-warm}" HERMES_NPM_CACHE="${SB_HCACHE:-$SB/absent-cache}" \
+     SYSTEMCTL="$SB/fake/systemctl" JOURNALCTL="$SB/fake/journalctl" \
+     GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=protocol.file.allow GIT_CONFIG_VALUE_0=always \
+     bash "$SB/app/scripts/ops/sync-dev-runtime.sh" >"$SB/out" 2>"$SB/err"
+@@ -604,82 +602,6 @@ run_sync
+ assert_contains "dépôt wiki de retour → aligné au tick suivant" "^$(pin_sha)$" "$(head_sha)"
+ assert_contains "dépôt wiki de retour → ok" '"ok"' "$(sync_state '.status')"
+ 
+-# Cache npm hors ligne des missions Hermes d'écriture : rechargé quand le lockfile de HEAD
+-# n'a pas encore été chargé (2026-10-28 : mission en échec ENOTCACHED après un bump de
+-# dépendance). Faux script de rechargement : note ses appels ; $SB/warm-mode le fait
+-# échouer (fail) ou refuser comme pendant une mission (busy).
+-HSTAMP="$SB/state/hermes-npm-cache.lock-sha256"
+-assert_contains "cache Hermes : machine sans Hermes (cas 1 à 15) → aucune empreinte" "^absente$" \
+-  "$([ -e "$HSTAMP" ] && echo présente || echo absente)"
+-cat > "$SB/fake/warm" <<EOF
+-#!/bin/sh
+-echo "\$1" >> "$SB/warm-calls"
+-case "\$(cat "$SB/warm-mode" 2>/dev/null)" in
+-  fail) echo "NOT OK: online install failed" >&2; exit 1 ;;
+-  busy) echo "refused: mission active" >&2; exit 1 ;;
+-esac
+-mkdir -p "$SB/hcache/_cacache"
+-echo "OK npm cache warm for \$1"
+-EOF
+-SB_WARM="$SB/fake/warm" SB_HCACHE="$SB/hcache"
+-LOCK_SHA=$(git -C "$SB/app" show HEAD:package-lock.json | sha256sum | cut -d' ' -f1)
+-warm_calls() { cat "$SB/warm-calls" 2>/dev/null | wc -l | tr -d ' '; }
+-
+-# 16. Lockfile jamais chargé, tick no-op → rechargé sur le commit de HEAD, empreinte posée
+-run_sync; EXIT=$?
+-assert_exit "cache Hermes : premier tick → tick au bout (exit 0)" "0" "$EXIT"
+-assert_contains "cache Hermes : rechargé sur le commit exact de HEAD" "^$(git -C "$SB/app" rev-parse HEAD)$" "$(cat "$SB/warm-calls" 2>/dev/null)"
+-assert_contains "cache Hermes : empreinte du lockfile posée" "^$LOCK_SHA$" "$(cat "$HSTAMP" 2>/dev/null)"
+-assert_contains "cache Hermes : rechargement réussi → ok" '"ok"' "$(sync_state '.status')"
+-
+-# 17. Même lockfile → pas de nouveau rechargement
+-run_sync
+-assert_contains "cache Hermes : lockfile déjà chargé → pas de rechargement" "^1$" "$(warm_calls)"
+-
+-# 18. Lockfile non chargé sur le chemin de synchro → rechargé après la santé, même tick
+-echo stale > "$HSTAMP"
+-( cd "$SB/up" && echo x > hermes-trigger.txt && git add -A && commit_sb "commit amont" && git push -q origin main )
+-run_sync
+-assert_contains "cache Hermes : chemin de synchro → rechargé sur le nouveau HEAD" \
+-  "^$(git -C "$SB/up" rev-parse HEAD)$" "$(tail -n 1 "$SB/warm-calls" 2>/dev/null)"
+-assert_contains "cache Hermes : chemin de synchro → rechargé après la santé de DEV" \
+-  "DEV:3000 sain.*cache npm Hermes rechargé" "$(tr '\n' ' ' < "$SB/out")"
+-
+-# 19. Rechargement en échec → warn, puis pas de nouvel essai avant 1 h, toujours signalé
+-echo stale > "$HSTAMP"
+-echo fail > "$SB/warm-mode"
+-run_sync; EXIT=$?
+-assert_exit "cache Hermes : rechargement en échec → tick au bout (alert-only, exit 0)" "0" "$EXIT"
+-assert_contains "cache Hermes : rechargement en échec → warn" '"warn".*cache npm Hermes : rechargement échoué' "$(sync_state '[.status,.summary]')"
+-assert_contains "cache Hermes : sortie du script remontée dans le log" "NOT OK: online install failed" "$(cat "$SB/err")"
+-run_sync
+-assert_contains "cache Hermes : échec il y a moins d'1 h → pas de nouvel essai" "^3$" "$(warm_calls)"
+-assert_contains "cache Hermes : échec il y a moins d'1 h → toujours signalé" '"warn".*moins d.1 h' "$(sync_state '[.status,.summary]')"
+-
+-# 20. Mission en cours (verrou du contrôleur pris) → pas d'alerte, nouvel essai au tick suivant
+-touch -d '2 hours ago' "$HSTAMP.failed"
+-echo busy > "$SB/warm-mode"
+-run_sync
+-assert_contains "cache Hermes : mission en cours → ok, pas d'alerte" '"ok"' "$(sync_state '.status')"
+-assert_contains "cache Hermes : mission en cours → rechargement reporté" "mission en cours" "$(cat "$SB/out")"
+-rm -f "$SB/warm-mode"
+-run_sync
+-assert_contains "cache Hermes : mission terminée → rechargé au tick suivant" "^$LOCK_SHA$" "$(cat "$HSTAMP" 2>/dev/null)"
+-assert_contains "cache Hermes : succès → marque d'échec effacée" "^absente$" \
+-  "$([ -e "$HSTAMP.failed" ] && echo présente || echo absente)"
+-
+-# 21. Cache effacé → rechargé même si le lockfile est déjà chargé
+-rm -rf "$SB/hcache/_cacache"
+-run_sync
+-assert_contains "cache Hermes : cache effacé → rechargé" "^6$" "$(warm_calls)"
+-
+-# 22. Script de rechargement introuvable alors que le cache est à recharger → warn
+-echo stale > "$HSTAMP"
+-SB_WARM="$SB/absent-warm"
+-run_sync
+-assert_contains "cache Hermes : script introuvable → warn" '"warn".*introuvable' "$(sync_state '[.status,.summary]')"
+-unset SB_WARM SB_HCACHE
+-
+ # npm ci de la synchro et stack DEV (incident 2026-11-15 : `npm ci` dans le checkout servi,
+ # stack en marche → recompilation sur un node_modules vide, 5 sorties sur stock_dto_1).
+ # Vrai `npm ci`, hors ligne, sur un lockfile écrit à la main ; postinstall et build notent
