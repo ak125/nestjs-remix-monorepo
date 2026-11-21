@@ -286,8 +286,9 @@ check_dev_runtime_topology() {
   #     laissent sinon aucune trace hors du journal.
   #     Unit non installée : le stack est supervisé par son terminal, état connu,
   #     journalisé sans alerte (bascule : install-dev-service.sh switch).
-  local unit_state load="" active="" sub="" unit_cg="" key val
-  if ! unit_state=$("$SYSTEMCTL" --user show "$DEV_UNIT" -p LoadState -p ActiveState -p SubState -p ControlGroup 2>&1); then
+  local unit_state load="" active="" sub="" unit_cg="" unit_file="" main_code="" main_status="" fragment="" key val
+  if ! unit_state=$("$SYSTEMCTL" --user show "$DEV_UNIT" -p LoadState -p ActiveState -p SubState -p ControlGroup \
+      -p UnitFileState -p ExecMainCode -p ExecMainStatus -p FragmentPath 2>&1); then
     alert "état du service $DEV_UNIT illisible ($(echo "$unit_state" | head -1)) — supervision du stack DEV non vérifiée"
     drift=1
   else
@@ -295,6 +296,8 @@ check_dev_runtime_topology() {
       case "$key" in
         LoadState) load=$val ;; ActiveState) active=$val ;;
         SubState) sub=$val ;; ControlGroup) unit_cg=$val ;;
+        UnitFileState) unit_file=$val ;; ExecMainCode) main_code=$val ;;
+        ExecMainStatus) main_status=$val ;; FragmentPath) fragment=$val ;;
       esac
     done <<< "$unit_state"
     if [ "$load" != "loaded" ]; then
@@ -305,6 +308,26 @@ check_dev_runtime_topology() {
         drift=1
       elif [ "$sub" = "auto-restart" ]; then
         alert "service $DEV_UNIT en attente de redémarrage après échec du stack. Cause : journalctl --user -u $DEV_UNIT -n 100 --no-pager"
+        drift=1
+      elif [ "$active" = "inactive" ] && [ "$unit_file" = "enabled" ]; then
+        # Incident #2158 (2026-11-17) : earlyoom a tué `npm run dev` par SIGTERM, sortie
+        # propre pour systemd, unit inactive sans état failed — seule l'alerte
+        # « runtime DOWN » le signalait, et la resync conseillait env/migrations/Node.
+        # Ce contrôle s'exécute avant tout arrêt de l'unit par ce script (npm ci).
+        local last_exit
+        case "$main_code" in
+          2|3) last_exit="processus principal tué par le signal $main_status" ;;
+          1)   last_exit="processus principal sorti en code $main_status" ;;
+          *)   last_exit="aucun processus principal relevé" ;;
+        esac
+        alert "service $DEV_UNIT activé mais arrêté ($last_exit) — DEV:3000 n'est plus relancé. Signal 15 sans arrêt demandé = earlyoom (mémoire) : sudo journalctl -u earlyoom. Relance : systemctl --user start $DEV_UNIT"
+        drift=1
+      fi
+      # Unit installée ≠ unit du dépôt : un correctif fusionné n'est pas actif tant que
+      # install-dev-service.sh install n'a pas recopié l'unit (présent ≠ activé).
+      if [ -n "$fragment" ] && [ -f "$fragment" ] && [ -f "$APP_DIR/scripts/ops/$DEV_UNIT" ] \
+          && ! cmp -s "$fragment" "$APP_DIR/scripts/ops/$DEV_UNIT"; then
+        alert "unit installée $fragment différente de scripts/ops/$DEV_UNIT du dépôt — mise à jour : bash $APP_DIR/scripts/ops/install-dev-service.sh install, puis systemctl --user restart $DEV_UNIT"
         drift=1
       fi
       local outside=() root_cg

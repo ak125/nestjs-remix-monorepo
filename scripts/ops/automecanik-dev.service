@@ -17,7 +17,12 @@ ExecStart=/usr/bin/npm run dev
 # Ici : la sortie du stack lui-même (tsc, run-p, nodemon introuvable, node_modules
 # purgé par le `npm ci` de sync-dev-runtime). Délai de 5 s porté progressivement à
 # 5 min : une panne durable ne fait pas tourner tsc en boucle.
-Restart=on-failure
+# always et non on-failure (incident #2158, 2026-11-17 20:45:14 UTC) : earlyoom envoie
+# SIGTERM au processus principal (`npm run dev`) quand la mémoire manque ; pour
+# on-failure, une mort par SIGTERM est une sortie propre, et DEV:3000 est resté arrêté
+# 2 h 10. Un `systemctl --user stop` (sync-dev-runtime.sh, install-dev-service.sh)
+# n'est jamais suivi d'une relance, quelle que soit cette valeur.
+Restart=always
 RestartSec=5s
 RestartSteps=6
 RestartMaxDelaySec=5min
@@ -27,6 +32,12 @@ RestartMaxDelaySec=5min
 KillMode=control-group
 KillSignal=SIGTERM
 TimeoutStopSec=20
+# Le gestionnaire utilisateur donne 200 par défaut (DefaultOOMScoreAdjust) : chaque
+# processus du stack, même de 3 Mo, passait avant un tsc de 3 Go lancé depuis tmux
+# (ajustement 0), et earlyoom tuait le stack processus par processus (13 crashs et
+# 4 relances en 24 h avant l'arrêt du 2026-11-17). 100 = plancher accepté pour une
+# unit utilisateur (une valeur plus basse est ramenée à 100 sans droits root).
+OOMScoreAdjust=100
 SyslogIdentifier=automecanik-dev
 
 [Install]
