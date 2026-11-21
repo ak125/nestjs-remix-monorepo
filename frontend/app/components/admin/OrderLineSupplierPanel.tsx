@@ -10,6 +10,7 @@ import { AlertTriangle, CheckCircle2, Loader2, Truck } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { RuptureEquivalentsPanel } from "./RuptureEquivalentsPanel";
 
 type MotifEcart =
   | "PRIX_ACHAT_ABSENT"
@@ -252,6 +253,8 @@ export function OrderLineSupplierPanel({ orderId, lineId, label }: Props) {
           )}
         </div>
       )}
+
+      {data?.statutLigne === "4" && <RuptureEquivalentsPanel base={base} />}
 
       {(p?.statut === "RUPTURE" || data?.statutLigne === "4") && (
         <p className="text-muted-foreground">
