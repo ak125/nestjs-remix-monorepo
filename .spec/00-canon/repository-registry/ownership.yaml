@@ -1971,3 +1971,23 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+  # Mandat DQ (19/11/2026) : sources d'achat ordonnées par marque. Colonnes
+  # additives de ___xtr_supplier_link_pm (rang, point de livraison, nature, surcoût,
+  # auteur) et repli spl_fallback_mode de ___xtr_supplier, fonction d'écriture
+  # supplier_brand_sources_put (service_role). Tables lues et écrites par
+  # backend/src/modules/supplier-truth (D11, @ak125). Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261119_xtr_supplier_link_pm_sources*.sql
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Fonction pure de classement des sources d'une marque et son test ; non
+  # branchée au calcul des prix. Même domaine et owner que supplier-card.service.
+  # L'écran frontend et son test restent couverts par frontend/app/routes/admin.**
+  # et frontend/tests/**, comme les écrans du mandat CH.
+  - glob: backend/src/modules/suppliers/supplier-brand-source{,.test}.ts
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
