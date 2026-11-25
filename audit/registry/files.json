@@ -4000,6 +4000,8 @@
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.test.ts",
         "backend/src/modules/seo-projection/seo-projection-writer.service.ts",
+        "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
+        "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
@@ -4010,7 +4012,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 559,
+      "loc": 576,
       "owner": "__unassigned__",
       "path": "backend/src/config/feature-flags.service.ts",
       "risk": "low",
@@ -30481,21 +30483,50 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "backend/src/modules/seo/controllers/reference.controller.ts",
-      "importedBy": [
-        "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
-        "backend/src/modules/seo/seo.module.ts"
-      ],
+      "id": "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
+      "importedBy": [],
       "imports": [
-        "@auth/is-admin.guard",
-        "backend/src/modules/catalog/utils/image-urls.utils.ts",
+        "backend/src/config/feature-flags.service.ts",
+        "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
+      "kind": "test",
+      "loc": 243,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/controllers/reference.controller.ts",
+      "importedBy": [
+        "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
+        "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
+        "backend/src/modules/seo/seo.module.ts"
+      ],
+      "imports": [
+        "@auth/is-admin.guard",
+        "backend/src/config/feature-flags.service.ts",
+        "backend/src/modules/catalog/utils/image-urls.utils.ts",
+        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
+        "backend/src/modules/seo/services/r4-noindex.config.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+        "backend/src/modules/seo/services/reference.service.ts",
+        "backend/src/modules/seo/validation/diagnostic.service.ts"
+      ],
       "kind": "controller",
-      "loc": 490,
+      "loc": 508,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/controllers/reference.controller.ts",
       "risk": "low",
@@ -33961,10 +33992,12 @@
       "importedBy": [
         "backend/src/modules/seo/controllers/diagnostic.controller.ts",
         "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
+        "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/r4-consolidation-policy.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
@@ -34019,7 +34052,8 @@
       "id": "backend/src/modules/seo/services/r4-consolidation.config.ts",
       "importedBy": [
         "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.test.ts"
+        "backend/src/modules/seo/services/r4-consolidation-policy.test.ts",
+        "backend/src/modules/seo/services/r4-noindex.config.test.ts"
       ],
       "imports": [],
       "kind": "config",
@@ -34082,6 +34116,53 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/services/r4-noindex.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/r4-consolidation.config.ts",
+        "backend/src/modules/seo/services/r4-noindex.config.ts"
+      ],
+      "kind": "test",
+      "loc": 75,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/services/r4-noindex.config.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/services/r4-noindex.config.ts",
+      "importedBy": [
+        "backend/src/modules/seo/controllers/reference.controller.ts",
+        "backend/src/modules/seo/services/r4-noindex.config.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 107,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/services/r4-noindex.config.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
       "importedBy": [
         "backend/src/modules/blog/services/blog.service.test.ts",
@@ -34091,6 +34172,7 @@
         "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
+        "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
@@ -34145,6 +34227,7 @@
       "importedBy": [
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+        "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
@@ -34808,6 +34891,33 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
+        "backend/src/modules/seo/services/r4-noindex.config.ts",
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
+        "fs/promises",
+        "os",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 158,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
       "importedBy": [],
       "imports": [
@@ -34819,7 +34929,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 129,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
       "risk": "low",
@@ -34915,6 +35025,7 @@
         "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
@@ -34924,6 +35035,7 @@
         "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
+        "backend/src/modules/seo/services/r4-noindex.config.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.types.ts",
@@ -34932,7 +35044,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 772,
+      "loc": 784,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "low",
@@ -34952,6 +35064,7 @@
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
@@ -35321,6 +35434,7 @@
       "importedBy": [
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/seo/controllers/diagnostic.controller.ts",
+        "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/validation/diagnostic.service.filter-published-slugs.test.ts"
@@ -63731,7 +63845,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1318,
+      "loc": 1327,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/reference-auto.$slug.tsx",
       "risk": "low",
@@ -70261,6 +70375,25 @@
       "loc": 346,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/reference-auto-loader-parallel.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/reference-auto-r4-noindex.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 147,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/reference-auto-r4-noindex.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

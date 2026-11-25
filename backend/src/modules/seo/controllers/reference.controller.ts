@@ -19,6 +19,11 @@ import {
   ReferenceAuditResult,
 } from '../services/reference.service';
 import { buildGammeImageUrl } from '../../catalog/utils/image-urls.utils';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import {
+  R4_NOINDEX_ROBOTS,
+  r4NoindexRobots,
+} from '../services/r4-noindex.config';
 import {
   R6GuideLinkPolicyService,
   applyGuideLinkRuleToHtml,
@@ -73,6 +78,11 @@ interface ReferenceResponse {
   commonQuestions: { q: string; a: string }[] | null;
   contaminationFlags: string[] | null;
   updatedAt: string;
+  /**
+   * `noindex, follow` pour une fiche de la liste fermée (mandat EW), présent
+   * seulement drapeau SEO_R4_NOINDEX_ENABLED allumé.
+   */
+  robots?: typeof R4_NOINDEX_ROBOTS;
 }
 
 /**
@@ -111,6 +121,7 @@ export class ReferenceController {
 
   constructor(
     private readonly referenceService: ReferenceService,
+    private readonly featureFlags: FeatureFlagsService,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
     private readonly diagnosticService: DiagnosticService,
     private readonly r4Consolidation: R4ConsolidationPolicyService,
@@ -381,6 +392,13 @@ export class ReferenceController {
     }
 
     const response = this.mapToResponse(reference);
+
+    // Fiche publiée de la liste fermée (mandat EW) : servie, hors index.
+    const robots = r4NoindexRobots(
+      reference.slug,
+      this.featureFlags.seoR4NoindexEnabled,
+    );
+    if (robots) response.robots = robots;
 
     // Liens vers les guides d'achat (ADR-103 D5). Les liens conseils de la
     // carte « Guides et articles » sont toujours rendus : ils comptent comme liés.

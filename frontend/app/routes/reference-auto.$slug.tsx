@@ -222,6 +222,8 @@ interface Reference {
   contaminationFlags: string[] | null;
   sectionOverrides: Record<string, string> | null;
   updatedAt: string;
+  /** `noindex, follow` : fiche de la liste fermée du mandat EW, drapeau allumé. */
+  robots?: string;
 }
 
 /** Résout le titre d'une section R4 : override DB > fallback hardcodé */
@@ -276,7 +278,14 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
     { title: reference.title },
     { name: "description", content: description },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
-    { name: "robots", content: "index, follow" },
+    // Le backend porte la liste fermée et le drapeau (mandat EW).
+    {
+      name: "robots",
+      content:
+        reference.robots === "noindex, follow"
+          ? reference.robots
+          : "index, follow",
+    },
     // Open Graph
     { property: "og:title", content: reference.title },
     { property: "og:description", content: description },

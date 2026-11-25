@@ -31,6 +31,7 @@ import {
 } from './r4-consolidation-policy.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { type SitemapUrl, STATIC_PAGES } from './sitemap-v10.types';
+import { excludeR4NoindexReferences } from './r4-noindex.config';
 
 /**
  * Retire la surface R6 guide-achat (hub + pages détail) d'une liste d'URLs de
@@ -598,7 +599,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
    */
   async generateReferenceSitemap(): Promise<string | null> {
     try {
-      const { data: references, error } = await this.supabase
+      const { data: publishedReferences, error } = await this.supabase
         .from('__seo_reference')
         .select('slug, updated_at')
         .eq('is_published', true)
@@ -609,6 +610,17 @@ export class SitemapV10StaticService extends SupabaseBaseService {
           `❌ Error fetching references for sitemap: ${error.message}`,
         );
         return null;
+      }
+
+      // Fiches R4 servies en `noindex, follow` (mandat EW) : hors sitemap.
+      let references = publishedReferences;
+      if (this.featureFlags.seoR4NoindexEnabled && publishedReferences) {
+        const { kept, excludedCount } =
+          excludeR4NoindexReferences(publishedReferences);
+        references = kept;
+        this.logger.log(
+          `   🔇 R4 noindex ON: ${excludedCount} URL(s) référence exclue(s) de sitemap-reference.xml`,
+        );
       }
 
       if (!references || references.length === 0) {
