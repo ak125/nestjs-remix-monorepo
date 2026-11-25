@@ -6,6 +6,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  BrandSourcesConflictError,
+  BrandSourcesRejectedError,
   PriceRuleConflictError,
   SupplierCardRepository,
   SupplierIdConflictError,
@@ -18,9 +20,11 @@ import type {
   SupplierPriceProfileRow,
 } from '../supplier-truth';
 import {
+  BRAND_PM_ID_PARAM_PATTERN,
   LOCATION_FIELDS,
   SUPPLIER_CARD_FIELD_TO_COLUMN,
   type CreatePriceRuleDto,
+  type PutBrandSourcesDto,
   type CreateSupplierCardDto,
   type SupplierCardField,
   type UpdateSupplierCardDto,
@@ -30,6 +34,11 @@ import {
   slugifySupplierAlias,
   type DuplicateMatch,
 } from './supplier-name';
+import {
+  orderBrandSources,
+  type BrandSourceIssue,
+  type ResolvedBrandSource,
+} from './supplier-brand-source';
 import {
   isDatedRule,
   priceRuleStatus,
@@ -58,6 +67,8 @@ export interface SupplierCardView {
     city: string | null;
     country: string | null;
     supplyMode: string | null;
+    /** Repli si la pièce n'est pas au dépôt (mandat DQ). */
+    fallbackMode: string | null;
     validatedAt: string | null;
     validatedBy: string | null;
   };
@@ -117,6 +128,33 @@ interface SupplierPriceProfileView {
   /** Retrait d'une condition : date et auteur, ou null. */
   retiredAt: string | null;
   retiredBy: string | null;
+}
+
+/**
+ * Sources d'achat d'une marque, dans l'ordre (mandat DQ). Les remises restent
+ * dans les profils de prix de chaque fournisseur : rien n'est recopié ici.
+ */
+export interface BrandSourcesView {
+  pmId: number;
+  brandName: string | null;
+  sources: ResolvedBrandSource[];
+  /** Anomalies de la donnée lue, signalées sans correction. */
+  issues: BrandSourceIssue[];
+  /** Liens de la marque non classés (candidats à classer). */
+  unrankedLinks: Array<{
+    linkId: string;
+    splId: string;
+    name: string | null;
+    displayed: boolean;
+  }>;
+  /** Fiches actives : choix d'une source ou d'un point de livraison. */
+  activeSuppliers: Array<{
+    splId: string;
+    name: string | null;
+    type: string | null;
+    supplyMode: string | null;
+    fallbackMode: string | null;
+  }>;
 }
 
 export interface SupplierCardWriteResult {
@@ -346,6 +384,89 @@ export class SupplierCardService {
     );
   }
 
+  /**
+   * Sources d'achat de la marque, classées par `orderBrandSources` (rang
+   * croissant, point de livraison, nature, surcoût, repli). Lecture seule.
+   */
+  async getBrandSources(pmIdParam: string): Promise<BrandSourcesView> {
+    const pmId = parseBrandPmId(pmIdParam);
+    const brand = await this.cards.getBrand(pmId);
+    if (!brand) throw new NotFoundException(`Marque ${pmId} introuvable`);
+    const [links, summaries] = await Promise.all([
+      this.cards.getBrandLinks(pmId),
+      this.cards.listSummaries(),
+    ]);
+    const { sources, issues } = orderBrandSources(links, summaries);
+    const names = new Map(summaries.map((c) => [c.splId, c.name]));
+    return {
+      pmId,
+      brandName: brand.name,
+      sources,
+      issues,
+      unrankedLinks: links
+        .filter((l) => l.rank === null)
+        .map((l) => ({
+          linkId: l.linkId,
+          splId: l.splId,
+          name: names.get(l.splId) ?? null,
+          displayed: l.displayed,
+        }))
+        .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+      activeSuppliers: summaries
+        .filter((c) => c.status === 'actif')
+        .map(({ splId, name, type, supplyMode, fallbackMode }) => ({
+          splId,
+          name,
+          type,
+          supplyMode,
+          fallbackMode,
+        }))
+        .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? '')),
+    };
+  }
+
+  /**
+   * Remplace la liste ordonnée des sources de la marque (rang = position),
+   * en une transaction (`supplier_brand_sources_put`), avec l'auteur. Les
+   * contrôles (source et point de livraison actifs, lien affiché, surcoût
+   * ≥ 0, rang unique) sont tenus par la fonction et par la table.
+   */
+  async putBrandSources(
+    pmIdParam: string,
+    dto: PutBrandSourcesDto,
+    by: string,
+  ): Promise<{
+    pmId: number;
+    written: Array<{ linkId: string; rank: number; created: boolean }>;
+  }> {
+    const pmId = parseBrandPmId(pmIdParam);
+    try {
+      const written = await this.cards.putBrandSources(
+        pmId,
+        dto.sources.map((s) => ({
+          splId: s.splId,
+          linkId: s.linkId ?? null,
+          deliverySplId: s.deliverySplId ?? null,
+          stockKind: s.stockKind,
+          surchargeCents: s.surchargeCents,
+        })),
+        by,
+      );
+      const created = written.filter((w) => w.created).map((w) => w.linkId);
+      this.logger.log(
+        `Sources de la marque ${pmId} : ${written.length} classée(s) par ${by}` +
+          (created.length ? `, lien(s) créé(s) ${created.join(', ')}` : ''),
+      );
+      return { pmId, written };
+    } catch (error) {
+      if (error instanceof BrandSourcesRejectedError)
+        throw new BadRequestException(error.message);
+      if (error instanceof BrandSourcesConflictError)
+        throw new ConflictException(error.message);
+      throw error;
+    }
+  }
+
   private assertNoExactDuplicate(
     name: string | null,
     alias: string | null,
@@ -408,6 +529,7 @@ function toView(
       city: str(row.spl_city),
       country: str(row.spl_country),
       supplyMode: str(row.spl_supply_mode),
+      fallbackMode: str(row.spl_fallback_mode),
       validatedAt: str(row.spl_location_validated_at),
       validatedBy: str(row.spl_location_validated_by),
     },
@@ -426,6 +548,13 @@ function toView(
     updatedAt: str(row.spl_updated_at),
     updatedBy: str(row.spl_updated_by),
   };
+}
+
+/** Paramètre de route → pm_id entier (même motif que la fonction SQL). */
+function parseBrandPmId(value: string): number {
+  if (!BRAND_PM_ID_PARAM_PATTERN.test(value))
+    throw new BadRequestException('Identifiant de marque numérique attendu');
+  return Number(value);
 }
 
 /** 'AAAA-MM-JJ' → début du jour UTC (ISO), ou null. */

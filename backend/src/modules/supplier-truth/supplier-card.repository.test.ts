@@ -163,12 +163,24 @@ describe('SupplierCardRepository.listIdentities', () => {
 });
 
 describe('SupplierCardRepository.getLinkedBrands', () => {
-  it('joint les noms pieces_marque et garde les liens retirés', async () => {
+  it('joint les noms pieces_marque, garde les liens retirés, lit rang et livraison (DQ)', async () => {
     const { repo, calls } = repoWith({
       ___xtr_supplier_link_pm: {
         data: [
-          { slpm_id: '1', slpm_pm_id: '20', slpm_display: '1' },
-          { slpm_id: '2', slpm_pm_id: '10', slpm_display: '0' },
+          {
+            slpm_id: '1',
+            slpm_pm_id: '20',
+            slpm_display: '1',
+            slpm_rank: '2',
+            slpm_delivery_spl_id: '21',
+          },
+          {
+            slpm_id: '2',
+            slpm_pm_id: '10',
+            slpm_display: '0',
+            slpm_rank: null,
+            slpm_delivery_spl_id: null,
+          },
         ],
         error: null,
       },
@@ -181,8 +193,22 @@ describe('SupplierCardRepository.getLinkedBrands', () => {
       },
     });
     await expect(repo.getLinkedBrands('71')).resolves.toEqual([
-      { linkId: '2', pmId: 10, brandName: 'BOSCH', linkDisplayed: false },
-      { linkId: '1', pmId: 20, brandName: 'VALEO', linkDisplayed: true },
+      {
+        linkId: '2',
+        pmId: 10,
+        brandName: 'BOSCH',
+        linkDisplayed: false,
+        sourceRank: null,
+        deliverySplId: null,
+      },
+      {
+        linkId: '1',
+        pmId: 20,
+        brandName: 'VALEO',
+        linkDisplayed: true,
+        sourceRank: 2,
+        deliverySplId: '21',
+      },
     ]);
     expect(op(calls[1], 'in')).toEqual(['in', 'pm_id', [20, 10]]);
   });

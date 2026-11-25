@@ -37,6 +37,7 @@ export const SUPPLIER_CARD_COLUMNS = [
   'spl_city',
   'spl_country',
   'spl_supply_mode',
+  'spl_fallback_mode',
   'spl_location_validated_at',
   'spl_location_validated_by',
   'spl_payment_terms',
@@ -89,6 +90,62 @@ export interface SupplierLinkedBrand {
   brandName: string | null;
   /** `slpm_display = '1'` : lien actif ; '0' = marque retirée (sans DELETE). */
   linkDisplayed: boolean;
+  /** Rang de ce lien parmi les sources d'achat de la marque (mandat DQ), ou null. */
+  sourceRank: number | null;
+  /** Point de livraison quand il diffère du fournisseur (mandat DQ), ou null. */
+  deliverySplId: string | null;
+}
+
+/**
+ * Lien marque × fournisseur avec ses colonnes de source d'achat (mandat DQ,
+ * migration 20261119_xtr_supplier_link_pm_sources.sql). Rang null = lien
+ * non classé, sans autre colonne de source.
+ */
+export interface SupplierBrandLinkRow {
+  linkId: string;
+  splId: string;
+  displayed: boolean;
+  rank: number | null;
+  deliverySplId: string | null;
+  stockKind: string | null;
+  surchargeCents: number | null;
+  updatedAt: string | null;
+  updatedBy: string | null;
+}
+
+/** Résumé d'une fiche, pour résoudre source et point de livraison. */
+export interface SupplierSummary {
+  splId: string;
+  name: string | null;
+  type: string | null;
+  status: string | null;
+  supplyMode: string | null;
+  fallbackMode: string | null;
+}
+
+/** Une source à écrire, dans l'ordre : rang = position dans la liste. */
+export interface SupplierBrandSourcePut {
+  splId: string;
+  linkId: string | null;
+  deliverySplId: string | null;
+  stockKind: string;
+  surchargeCents: number;
+}
+
+/** Liste refusée par `supplier_brand_sources_put` (code 22023) : rien n'est écrit. */
+export class BrandSourcesRejectedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BrandSourcesRejectedError';
+  }
+}
+
+/** Rang déjà pris (index unique) : écriture concurrente, rien n'est écrit. */
+export class BrandSourcesConflictError extends Error {
+  constructor() {
+    super('Sources de la marque modifiées entre-temps : recharger');
+    this.name = 'BrandSourcesConflictError';
+  }
 }
 
 export interface SupplierPriceProfileRow {
@@ -207,7 +264,9 @@ export class SupplierCardRepository extends SupabaseBaseService {
   async getLinkedBrands(splId: string): Promise<SupplierLinkedBrand[]> {
     const { data, error } = await this.supabase
       .from(T_LINK)
-      .select('slpm_id, slpm_pm_id, slpm_display')
+      .select(
+        'slpm_id, slpm_pm_id, slpm_display, slpm_rank, slpm_delivery_spl_id',
+      )
       .eq('slpm_spl_id', splId)
       .limit(ROW_CAP);
     if (error) throw new Error(`getLinkedBrands failed: ${error.message}`);
@@ -215,6 +274,8 @@ export class SupplierCardRepository extends SupabaseBaseService {
       slpm_id: string;
       slpm_pm_id: string | null;
       slpm_display: string | null;
+      slpm_rank: number | string | null;
+      slpm_delivery_spl_id: string | null;
     }[];
     if (links.length >= ROW_CAP) {
       throw new Error(`getLinkedBrands: ${ROW_CAP}-row cap reached`);
@@ -253,9 +314,133 @@ export class SupplierCardRepository extends SupabaseBaseService {
           pmId: valid ? pmId : null,
           brandName: valid ? (names.get(pmId) ?? null) : null,
           linkDisplayed: l.slpm_display === '1',
+          sourceRank: l.slpm_rank == null ? null : Number(l.slpm_rank),
+          deliverySplId: l.slpm_delivery_spl_id ?? null,
         };
       })
       .sort((a, b) => (a.brandName ?? '').localeCompare(b.brandName ?? ''));
+  }
+
+  /** Nom de la marque (`pieces_marque`), null si la marque est inconnue. */
+  async getBrand(pmId: number): Promise<{ name: string | null } | null> {
+    const { data, error } = await this.supabase
+      .from('pieces_marque')
+      .select('pm_id, pm_name')
+      .eq('pm_id', pmId)
+      .maybeSingle();
+    if (error) throw new Error(`getBrand failed: ${error.message}`);
+    if (!data) return null;
+    const row = data as { pm_name: string | null };
+    return { name: row.pm_name ?? null };
+  }
+
+  /**
+   * Liens de la marque avec leurs colonnes de source d'achat (mandat DQ),
+   * classés et non classés, affichés et masqués : l'ordre et les contrôles
+   * sont posés par la fonction pure `orderBrandSources` (module suppliers).
+   */
+  async getBrandLinks(pmId: number): Promise<SupplierBrandLinkRow[]> {
+    const { data, error } = await this.supabase
+      .from(T_LINK)
+      .select(
+        'slpm_id, slpm_spl_id, slpm_display, slpm_rank, slpm_delivery_spl_id, ' +
+          'slpm_stock_kind, slpm_surcharge_cents, slpm_updated_at, slpm_updated_by',
+      )
+      .eq('slpm_pm_id', String(pmId))
+      .limit(ROW_CAP);
+    if (error) throw new Error(`getBrandLinks failed: ${error.message}`);
+    const rows = (data ?? []) as unknown as {
+      slpm_id: string;
+      slpm_spl_id: string | null;
+      slpm_display: string | null;
+      slpm_rank: number | string | null;
+      slpm_delivery_spl_id: string | null;
+      slpm_stock_kind: string | null;
+      slpm_surcharge_cents: number | string | null;
+      slpm_updated_at: string | null;
+      slpm_updated_by: string | null;
+    }[];
+    if (rows.length >= ROW_CAP) {
+      throw new Error(`getBrandLinks: ${ROW_CAP}-row cap reached`);
+    }
+    return rows.map((r) => ({
+      linkId: String(r.slpm_id),
+      splId: String(r.slpm_spl_id ?? ''),
+      displayed: r.slpm_display === '1',
+      rank: r.slpm_rank == null ? null : Number(r.slpm_rank),
+      deliverySplId: r.slpm_delivery_spl_id ?? null,
+      stockKind: r.slpm_stock_kind ?? null,
+      surchargeCents:
+        r.slpm_surcharge_cents == null ? null : Number(r.slpm_surcharge_cents),
+      updatedAt: r.slpm_updated_at ?? null,
+      updatedBy: r.slpm_updated_by ?? null,
+    }));
+  }
+
+  /**
+   * Résumé de toutes les fiches (statut, type, mode d'approvisionnement,
+   * repli) : résolution des sources et choix du point de livraison.
+   */
+  async listSummaries(): Promise<SupplierSummary[]> {
+    const { data, error } = await this.supabase
+      .from(T_SUPPLIER)
+      .select(
+        'spl_id, spl_name, spl_type, spl_status, spl_supply_mode, spl_fallback_mode',
+      )
+      .limit(ROW_CAP);
+    if (error) throw new Error(`listSummaries failed: ${error.message}`);
+    const rows = (data ?? []) as Record<string, unknown>[];
+    if (rows.length >= ROW_CAP) {
+      throw new Error(`listSummaries: ${ROW_CAP}-row cap reached`);
+    }
+    const text = (v: unknown): string | null =>
+      v === null || v === undefined ? null : String(v);
+    return rows.map((r) => ({
+      splId: String(r.spl_id),
+      name: text(r.spl_name),
+      type: text(r.spl_type),
+      status: text(r.spl_status),
+      supplyMode: text(r.spl_supply_mode),
+      fallbackMode: text(r.spl_fallback_mode),
+    }));
+  }
+
+  /**
+   * Remplace la liste ordonnée des sources de la marque par
+   * `supplier_brand_sources_put`, en une transaction sous verrou par marque :
+   * déclassement des sources précédentes, puis classement dans l'ordre reçu
+   * (rang = position). Un lien manquant est créé, aucun n'est supprimé.
+   * En cas de refus, rien n'est écrit.
+   */
+  async putBrandSources(
+    pmId: number,
+    sources: SupplierBrandSourcePut[],
+    by: string,
+  ): Promise<Array<{ linkId: string; rank: number; created: boolean }>> {
+    const { data, error } = await this.callRpc<
+      Array<{ link_id: string; source_rank: number; created: boolean }>
+    >('supplier_brand_sources_put', {
+      p_pm_id: String(pmId),
+      p_sources: sources.map((s) => ({
+        spl_id: s.splId,
+        link_id: s.linkId,
+        delivery_spl_id: s.deliverySplId,
+        stock_kind: s.stockKind,
+        surcharge_cents: s.surchargeCents,
+      })),
+      p_by: by,
+    });
+    if (error) {
+      const code = 'code' in error ? error.code : undefined;
+      if (code === '22023') throw new BrandSourcesRejectedError(error.message);
+      if (code === '23505') throw new BrandSourcesConflictError();
+      throw new Error(`putBrandSources failed: ${error.message}`);
+    }
+    return (Array.isArray(data) ? data : []).map((r) => ({
+      linkId: String(r.link_id),
+      rank: Number(r.source_rank),
+      created: r.created === true,
+    }));
   }
 
   /**

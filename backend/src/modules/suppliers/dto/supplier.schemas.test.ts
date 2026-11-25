@@ -2,9 +2,13 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
   ACCESS_STATES,
+  BRAND_SOURCE_MAX_COUNT,
+  BRAND_SOURCE_MAX_SURCHARGE_CENTS,
   CreatePriceRuleSchema,
   CreateSupplierCardSchema,
+  FALLBACK_MODES,
   ORDER_MODES,
+  PutBrandSourcesSchema,
   SUPPLIER_CARD_FIELD_TO_COLUMN,
   SUPPLIER_STATUSES,
   SUPPLIER_TYPES,
@@ -12,14 +16,19 @@ import {
   UpdateSupplierCardSchema,
 } from './supplier.schemas';
 import { SUPPLIER_CARD_COLUMNS } from '../../supplier-truth';
+import { BRAND_SOURCE_STOCK_KINDS } from '../supplier-brand-source';
 
-const MIGRATION = readFileSync(
-  join(
-    __dirname,
-    '../../../../supabase/migrations/20261118_xtr_supplier_fiche_columns.sql',
-  ),
-  'utf8',
+const migration = (file: string) =>
+  readFileSync(
+    join(__dirname, '../../../../supabase/migrations', file),
+    'utf8',
+  );
+/** Fiche (mandat CH) puis sources d'achat par marque (mandat DQ). */
+const SOURCES_MIGRATION = migration(
+  '20261119_xtr_supplier_link_pm_sources.sql',
 );
+const MIGRATION =
+  migration('20261118_xtr_supplier_fiche_columns.sql') + SOURCES_MIGRATION;
 
 /** Valeurs du CHECK `IN (...)` d'une colonne dans la migration. */
 function sqlEnum(column: string): string[] {
@@ -36,6 +45,8 @@ describe('alignement schémas ↔ migration', () => {
     ['spl_supply_mode', SUPPLY_MODES],
     ['spl_order_mode', ORDER_MODES],
     ['spl_access_state', ACCESS_STATES],
+    ['spl_fallback_mode', FALLBACK_MODES],
+    ['slpm_stock_kind', BRAND_SOURCE_STOCK_KINDS],
   ])('%s : mêmes valeurs que le CHECK SQL', (column, values) => {
     expect(sqlEnum(column)).toEqual([...values]);
   });
@@ -47,6 +58,99 @@ describe('alignement schémas ↔ migration', () => {
         expect(MIGRATION).toContain(`ADD COLUMN IF NOT EXISTS ${column} `);
       }
     }
+  });
+});
+
+describe('PutBrandSourcesSchema (mandat DQ)', () => {
+  it('plafonds alignés sur les CHECK de la migration', () => {
+    expect(SOURCES_MIGRATION).toContain(
+      `slpm_surcharge_cents <= ${BRAND_SOURCE_MAX_SURCHARGE_CENTS})`,
+    );
+    expect(SOURCES_MIGRATION).toContain(
+      `slpm_rank <= ${BRAND_SOURCE_MAX_COUNT})`,
+    );
+  });
+
+  it('accepte MEAT & DORIA : OTTOGO puis M&D livré chez CS + 300 c', () => {
+    expect(
+      PutBrandSourcesSchema.parse({
+        sources: [
+          { splId: 52, stockKind: 'stock', surchargeCents: 0 },
+          {
+            splId: '45',
+            linkId: '97',
+            deliverySplId: '21',
+            stockKind: 'commande',
+            surchargeCents: '300',
+          },
+        ],
+      }).sources,
+    ).toEqual([
+      { splId: '52', stockKind: 'stock', surchargeCents: 0 },
+      {
+        splId: '45',
+        linkId: '97',
+        deliverySplId: '21',
+        stockKind: 'commande',
+        surchargeCents: 300,
+      },
+    ]);
+  });
+
+  it('accepte SASIC deux fois avec deux points de livraison (BG, DCA)', () => {
+    expect(
+      PutBrandSourcesSchema.safeParse({
+        sources: [
+          {
+            splId: '59',
+            deliverySplId: '15',
+            stockKind: 'stock',
+            surchargeCents: 0,
+          },
+          {
+            splId: '59',
+            deliverySplId: '71',
+            stockKind: 'stock',
+            surchargeCents: 0,
+          },
+        ],
+      }).success,
+    ).toBe(true);
+  });
+
+  it('accepte une liste vide (déclasse toutes les sources)', () => {
+    expect(PutBrandSourcesSchema.parse({ sources: [] })).toEqual({
+      sources: [],
+    });
+  });
+
+  const one = { splId: '52', stockKind: 'stock', surchargeCents: 0 };
+  it.each([
+    ['surcoût négatif', [{ ...one, surchargeCents: -1 }]],
+    ['surcoût décimal', [{ ...one, surchargeCents: 2.5 }]],
+    ['surcoût au-delà du plafond', [{ ...one, surchargeCents: 100_001 }]],
+    ['nature hors liste', [{ ...one, stockKind: 'flux' }]],
+    ['fournisseur non numérique', [{ ...one, splId: 'OTTOGO' }]],
+    ['clé inconnue (remise recopiée)', [{ ...one, remisePct: 10 }]],
+    ['rang saisi (rang = position)', [{ ...one, rank: 1 }]],
+    ['même fournisseur et même livraison deux fois', [one, { ...one }]],
+    [
+      'livraison égale à la source = doublon de la source seule',
+      [one, { ...one, deliverySplId: '52' }],
+    ],
+    [
+      'même lien deux fois',
+      [
+        { ...one, linkId: '9' },
+        { ...one, splId: '45', linkId: '9' },
+      ],
+    ],
+    [
+      'plus de 50 sources',
+      Array.from({ length: 51 }, (_, i) => ({ ...one, splId: String(i + 1) })),
+    ],
+  ])('refuse : %s', (_label, sources) => {
+    expect(PutBrandSourcesSchema.safeParse({ sources }).success).toBe(false);
   });
 });
 

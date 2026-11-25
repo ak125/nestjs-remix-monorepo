@@ -17,6 +17,7 @@
  */
 
 import { z } from 'zod';
+import { BRAND_SOURCE_STOCK_KINDS } from '../supplier-brand-source';
 
 export const SUPPLIER_TYPES = ['plateforme', 'marque_directe'] as const;
 export const SUPPLIER_STATUSES = [
@@ -30,6 +31,12 @@ export const SUPPLY_MODES = [
   'livraison_france',
   'import',
 ] as const;
+/**
+ * Repli quand la pièce n'est pas au dépôt (mandat DQ, migration
+ * 20261119_xtr_supplier_link_pm_sources.sql) : MGA, RCA, PROCODIS sont en
+ * flux tendu, sinon transporteur ; 'aucun' = pas de repli.
+ */
+export const FALLBACK_MODES = ['transporteur', 'aucun'] as const;
 export const ORDER_MODES = [
   'portail',
   'email',
@@ -95,6 +102,7 @@ const cardFields = {
     }, z.string().regex(COUNTRY_PATTERN, 'Code pays ISO à 2 lettres').nullable())
     .optional(),
   supplyMode: optionalEnum(SUPPLY_MODES),
+  fallbackMode: optionalEnum(FALLBACK_MODES),
   paymentTerms: optionalText(300),
   /** Franco de port HT en centimes (l'écran saisit des euros et convertit). */
   francoHtCents: optionalCount(100_000_000),
@@ -220,6 +228,92 @@ export const CreatePriceRuleSchema = z
 
 export type CreatePriceRuleDto = z.infer<typeof CreatePriceRuleSchema>;
 
+// ===== SOURCES D'ACHAT PAR MARQUE (mandat DQ) =====
+// Alignées sur 20261119_xtr_supplier_link_pm_sources.sql (CHECK et contrôles
+// de supplier_brand_sources_put ; test d'alignement dans supplier.schemas.test.ts).
+
+const SUPPLIER_ID_PATTERN = /^[0-9]{1,10}$/;
+export const BRAND_PM_ID_PARAM_PATTERN = /^[0-9]{1,9}$/;
+/** Plafond du CHECK `slpm_surcharge_cents` (1 000 €). */
+export const BRAND_SOURCE_MAX_SURCHARGE_CENTS = 100_000;
+/** Plafond du CHECK `slpm_rank` : une liste de 50 sources au plus. */
+export const BRAND_SOURCE_MAX_COUNT = 50;
+
+const supplierIdField = z.preprocess(
+  (v) => (typeof v === 'number' ? String(v) : blankToNull(v)),
+  z.string().regex(SUPPLIER_ID_PATTERN, 'Identifiant fournisseur attendu'),
+);
+
+const BrandSourceItemSchema = z.strictObject({
+  splId: supplierIdField,
+  /** Lien existant à classer ; absent = lien affiché réutilisé ou créé. */
+  linkId: z
+    .preprocess(
+      (v) => (typeof v === 'number' ? String(v) : blankToNull(v)),
+      z
+        .string()
+        .regex(SUPPLIER_ID_PATTERN, 'Identifiant de lien attendu')
+        .nullable(),
+    )
+    .optional(),
+  /** Fiche où la pièce arrive (ex. CS) ; absent = la source elle-même. */
+  deliverySplId: z
+    .preprocess(
+      (v) => (typeof v === 'number' ? String(v) : blankToNull(v)),
+      z
+        .string()
+        .regex(SUPPLIER_ID_PATTERN, 'Identifiant fournisseur attendu')
+        .nullable(),
+    )
+    .optional(),
+  stockKind: z.enum(BRAND_SOURCE_STOCK_KINDS),
+  /** Surcoût fixe en centimes (300 = 3 €), entier ≥ 0. */
+  surchargeCents: z.coerce
+    .number()
+    .int('Surcoût en centimes entiers')
+    .min(0, 'Surcoût ≥ 0')
+    .max(BRAND_SOURCE_MAX_SURCHARGE_CENTS),
+});
+
+/**
+ * Liste ordonnée des sources d'une marque : rang = position (1, 2, …), donc
+ * unique par construction. Une liste vide déclasse toutes les sources.
+ * Une même fiche peut figurer deux fois avec deux points de livraison
+ * distincts (SASIC : stock chez BG et chez DCA), jamais deux fois à
+ * l'identique.
+ */
+export const PutBrandSourcesSchema = z
+  .strictObject({
+    sources: z.array(BrandSourceItemSchema).max(BRAND_SOURCE_MAX_COUNT),
+  })
+  .superRefine((v, ctx) => {
+    const seenPairs = new Set<string>();
+    const seenLinks = new Set<string>();
+    v.sources.forEach((s, i) => {
+      const delivery =
+        s.deliverySplId && s.deliverySplId !== s.splId ? s.deliverySplId : '';
+      const pair = `${s.splId}>${delivery}`;
+      if (seenPairs.has(pair))
+        ctx.addIssue({
+          code: 'custom',
+          path: ['sources', i],
+          message: 'Même fournisseur et même point de livraison déjà classés',
+        });
+      seenPairs.add(pair);
+      if (s.linkId) {
+        if (seenLinks.has(s.linkId))
+          ctx.addIssue({
+            code: 'custom',
+            path: ['sources', i, 'linkId'],
+            message: 'Lien déjà classé dans cette liste',
+          });
+        seenLinks.add(s.linkId);
+      }
+    });
+  });
+
+export type PutBrandSourcesDto = z.infer<typeof PutBrandSourcesSchema>;
+
 /**
  * Correspondance champ → colonne. Une seule table : le dépôt ne connaît que
  * les colonnes, l'API que les champs.
@@ -238,6 +332,7 @@ export const SUPPLIER_CARD_FIELD_TO_COLUMN = {
   city: 'spl_city',
   country: 'spl_country',
   supplyMode: 'spl_supply_mode',
+  fallbackMode: 'spl_fallback_mode',
   paymentTerms: 'spl_payment_terms',
   francoHtCents: 'spl_franco_ht_cents',
   deliveryDelayDays: 'spl_delivery_delay_days',
