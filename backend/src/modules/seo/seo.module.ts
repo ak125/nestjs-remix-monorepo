@@ -91,6 +91,7 @@ import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces
 // ═══════════════════════════════════════════════════════════════════════════
 import { ReferenceService } from './services/reference.service';
 import { R6GuideLinkPolicyService } from './services/r6-guide-link-policy.service';
+import { R4ConsolidationPolicyService } from './services/r4-consolidation-policy.service';
 import { DiagnosticService } from './validation/diagnostic.service';
 import { SeoGeneratorService } from './services/seo-generator.service';
 import { SeoTitleEngineService } from './services/seo-title-engine.service';
@@ -262,6 +263,7 @@ import { R2V2Module } from './r2/r2-v2.module';
     // Content
     ReferenceService,
     R6GuideLinkPolicyService, // ADR-103 D5 — règle des liens vers les guides d'achat
+    R4ConsolidationPolicyService, // mandat ER — consolidation R4 → R3 (liste close de 43 pages)
     DiagnosticService,
     SeoGeneratorService,
     SeoTitleEngineService,
@@ -338,6 +340,7 @@ import { R2V2Module } from './r2/r2-v2.module';
     // Content
     ReferenceService,
     R6GuideLinkPolicyService, // ADR-103 D5 — règle des liens vers les guides d'achat
+    R4ConsolidationPolicyService, // mandat ER — consolidation R4 → R3 (liste close de 43 pages)
     DiagnosticService,
     SeoGeneratorService,
     SeoTitleEngineService,

@@ -25,6 +25,10 @@ import {
 } from '../helpers/r8-vehicle-selection.helper';
 import { isR6GuideAchatSurface } from '../types/page-role.types';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
+import {
+  R4ConsolidationPolicyService,
+  withoutR4Redirected,
+} from './r4-consolidation-policy.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { type SitemapUrl, STATIC_PAGES } from './sitemap-v10.types';
 
@@ -78,6 +82,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
     private readonly dataService: SitemapV10DataService,
     private readonly xmlService: SitemapV10XmlService,
     private readonly featureFlags: FeatureFlagsService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
   ) {
     super(configService);
     this.rpcGate = rpcGate;
@@ -611,7 +616,37 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
-      const urls: SitemapUrl[] = references.map(
+      const filePath = path.join(
+        this.xmlService.OUTPUT_DIR,
+        'sitemap-reference.xml',
+      );
+
+      // Pages redirigées vers leur page conseils (mandat ER) : hors sitemap.
+      const r4Snapshot = await this.r4Consolidation.getSnapshot();
+      if (r4Snapshot.degraded) {
+        // Garde en panne : rien n'est figé. Le dernier fichier reste servi et
+        // déclaré ; sans fichier, la liste publiée est écrite entière (ces
+        // pages répondent 200 tant que la garde est en panne).
+        const previous = await fs.stat(filePath).then(
+          (s) => (s.isFile() ? filePath : null),
+          () => null,
+        );
+        this.logger.warn(
+          `⚠️ sitemap-reference.xml : garde R4 non vérifiable, ${previous ? 'fichier existant gardé' : 'aucun fichier existant, liste publiée écrite sans exclusion'}`,
+        );
+        if (previous) return previous;
+      }
+      const { kept, excluded } = withoutR4Redirected(
+        references as { slug: string; updated_at: string }[],
+        r4Snapshot,
+      );
+      if (excluded > 0) {
+        this.logger.log(
+          `   🔀 R4 consolidation ON: ${excluded} URL(s) référence exclue(s) du sitemap (301 → conseils)`,
+        );
+      }
+
+      const urls: SitemapUrl[] = kept.map(
         (r: { slug: string; updated_at: string }) => ({
           url: `/reference-auto/${r.slug}`,
           page_type: 'reference',
@@ -621,10 +656,6 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         }),
       );
 
-      const filePath = path.join(
-        this.xmlService.OUTPUT_DIR,
-        'sitemap-reference.xml',
-      );
       await this.xmlService.writeStaticSitemapFile(filePath, urls);
       this.logger.log(`   ✅ sitemap-reference.xml: ${urls.length} URLs (R4)`);
       return filePath;

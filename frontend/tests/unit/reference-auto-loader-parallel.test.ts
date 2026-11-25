@@ -10,10 +10,14 @@
  * l'app, 5xx, coupure réseau) en 404 sur une URL indexée — risque de
  * désindexation. Le contrat est désormais explicite par statut : 404 = absence
  * réelle, tout le reste = 503 + Retry-After.
+ *
+ * Mandat ER (2026-11-25) : un 3e appel parallèle, `/redirect/{slug}`, porte la
+ * consolidation R4 → R3. Cible conseils → 301 ; null, erreur ou cible hors
+ * `/blog-pieces-auto/conseils/` → page R4 servie comme aujourd'hui.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { loader } from "~/routes/reference-auto.$slug";
+import { headers, loader } from "~/routes/reference-auto.$slug";
 
 vi.mock("~/utils/logger", () => ({
   logger: { log: vi.fn(), error: vi.fn(), warn: vi.fn(), info: vi.fn() },
@@ -50,22 +54,31 @@ afterEach(() => {
 });
 
 describe("reference-auto.$slug loader — parallélise le fetch principal + /related", () => {
-  it("dispatche les DEUX fetch avant que le principal ne résolve (parallélisme)", async () => {
+  it("dispatche les fetch avant que le principal ne résolve (parallélisme)", async () => {
     const main = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
     fetchMock.mockImplementation((url: string) =>
       url.endsWith("/related")
         ? Promise.resolve(okJson({ related: [] }))
-        : main.promise,
+        : url.includes("/redirect/")
+          ? Promise.resolve(okJson({ redirect_to: null, pg_alias: null }))
+          : main.promise,
     );
 
     const p = call(); // principal encore pending
     await Promise.resolve();
 
     // Cœur de la régression : en séquentiel, seul le fetch principal est parti.
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls.some(([u]) => String(u).endsWith("/related"))).toBe(
-      true,
-    );
+    // 3 appels : principal, /related, /redirect (mandat ER).
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(
+      fetchMock.mock.calls.some(([u]) => String(u).endsWith("/related")),
+    ).toBe(true);
+    expect(
+      fetchMock.mock.calls.some(
+        ([u]) =>
+          String(u) === `http://internal/api/seo/reference/redirect/${SLUG}`,
+      ),
+    ).toBe(true);
 
     main.resolve(okJson({ slug: SLUG, title: "Soupape" }));
     await p;
@@ -105,7 +118,11 @@ describe("reference-auto.$slug loader — parallélise le fetch principal + /rel
   };
 
   it("principal 404 → 404 (absence réelle)", async () => {
-    const thrown = await throwsFor({ ok: false, status: 404, json: async () => ({}) });
+    const thrown = await throwsFor({
+      ok: false,
+      status: 404,
+      json: async () => ({}),
+    });
     expect(thrown).toBeInstanceOf(Response);
     expect(thrown?.status).toBe(404);
   });
@@ -115,7 +132,11 @@ describe("reference-auto.$slug loader — parallélise le fetch principal + /rel
   it.each([429, 500, 502, 503])(
     "principal %i → 503 + Retry-After (transitoire, jamais 404)",
     async (status) => {
-      const thrown = await throwsFor({ ok: false, status, json: async () => ({}) });
+      const thrown = await throwsFor({
+        ok: false,
+        status,
+        json: async () => ({}),
+      });
       expect(thrown).toBeInstanceOf(Response);
       expect(thrown?.status).toBe(503);
       expect(thrown?.headers.get("Retry-After")).toBe("60");
@@ -146,5 +167,179 @@ describe("reference-auto.$slug loader — parallélise le fetch principal + /rel
     ).data;
     expect(body.reference).toEqual({ slug: SLUG, title: "Soupape" });
     expect(body.relatedRefs).toEqual([]);
+  });
+});
+
+describe("reference-auto.$slug loader — consolidation R4 → R3 (mandat ER)", () => {
+  const route = (redirect: () => Promise<unknown>) =>
+    fetchMock.mockImplementation((url: string) =>
+      url.includes("/redirect/")
+        ? redirect()
+        : url.endsWith("/related")
+          ? Promise.resolve(okJson({ related: [] }))
+          : Promise.resolve(okJson({ slug: SLUG, title: "Soupape" })),
+    );
+
+  it("cible conseils → 301 en un saut vers la page conseils", async () => {
+    route(() =>
+      Promise.resolve(
+        okJson({
+          redirect_to: "/blog-pieces-auto/conseils/thermostat",
+          pg_alias: "thermostat",
+        }),
+      ),
+    );
+    const res = (await call()) as Response;
+    expect(res).toBeInstanceOf(Response);
+    expect(res.status).toBe(301);
+    expect(res.headers.get("Location")).toBe(
+      "/blog-pieces-auto/conseils/thermostat",
+    );
+  });
+
+  it("301 → Cache-Control explicite et court (no-store), retour arrière immédiat", async () => {
+    route(() =>
+      Promise.resolve(
+        okJson({
+          redirect_to: "/blog-pieces-auto/conseils/thermostat",
+          pg_alias: "thermostat",
+        }),
+      ),
+    );
+    const res = (await call()) as Response;
+    expect(res.status).toBe(301);
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it("drapeau éteint (sonde null) → en-têtes de la fiche inchangés", async () => {
+    const FICHE =
+      "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400";
+    route(() => Promise.resolve(okJson({ redirect_to: null, pg_alias: null })));
+    const res = (await call()) as {
+      init: { status?: number; headers: Record<string, string> };
+    };
+    expect(res.init.status).toBeUndefined();
+    expect(res.init.headers).toEqual({ "Cache-Control": FICHE });
+    expect(
+      headers({
+        loaderHeaders: new Headers(res.init.headers),
+        parentHeaders: new Headers(),
+        actionHeaders: new Headers(),
+        errorHeaders: undefined,
+      } as never),
+    ).toEqual({ "Cache-Control": FICHE });
+  });
+
+  it.each([
+    [
+      "null",
+      () => Promise.resolve(okJson({ redirect_to: null, pg_alias: null })),
+    ],
+    [
+      "HTTP 500",
+      () => Promise.resolve({ ok: false, status: 500, json: async () => ({}) }),
+    ],
+    ["panne réseau", () => Promise.reject(new Error("ECONNRESET"))],
+    [
+      "JSON invalide",
+      () =>
+        Promise.resolve({
+          ok: true,
+          json: async () => {
+            throw new SyntaxError("x");
+          },
+        }),
+    ],
+    [
+      "cible hors conseils",
+      () => Promise.resolve(okJson({ redirect_to: "https://evil.example/x" })),
+    ],
+  ])("redirection %s → page R4 servie", async (_l, redirect) => {
+    route(redirect);
+    const body = (
+      (await call()) as { data: { reference: unknown; relatedRefs: unknown } }
+    ).data;
+    expect(body.reference).toEqual({ slug: SLUG, title: "Soupape" });
+  });
+
+  it("liens liés : href du backend si présent, absent sinon", async () => {
+    fetchMock.mockImplementation((url: string) =>
+      url.includes("/redirect/")
+        ? Promise.resolve(okJson({ redirect_to: null }))
+        : url.endsWith("/related")
+          ? Promise.resolve(
+              okJson({
+                related: [
+                  {
+                    slug: "a",
+                    title: "A",
+                    href: "/blog-pieces-auto/conseils/a",
+                  },
+                  { slug: "b", title: "B" },
+                ],
+              }),
+            )
+          : Promise.resolve(okJson({ slug: SLUG, title: "Soupape" })),
+    );
+    const body = ((await call()) as { data: { relatedRefs: unknown } }).data;
+    expect(body.relatedRefs).toEqual([
+      { slug: "a", title: "A", href: "/blog-pieces-auto/conseils/a" },
+      { slug: "b", title: "B" },
+    ]);
+  });
+
+  // C7 (contre-vérification EV) : sonde bornée par un délai court, annulée à
+  // l'échéance ; la page R4 est alors servie comme sur une panne de la sonde.
+  it("sonde muette → appel annulé à l'échéance, page R4 servie", async () => {
+    let probeSignal: AbortSignal | undefined;
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      if (url.includes("/redirect/")) {
+        probeSignal = init?.signal ?? undefined;
+        return new Promise((_resolve, reject) => {
+          probeSignal?.addEventListener("abort", () =>
+            reject(probeSignal?.reason),
+          );
+        });
+      }
+      return url.endsWith("/related")
+        ? Promise.resolve(okJson({ related: [] }))
+        : Promise.resolve(okJson({ slug: SLUG, title: "Soupape" }));
+    });
+
+    const p = call();
+    expect(probeSignal).toBeInstanceOf(AbortSignal);
+    const body = ((await p) as { data: { reference: unknown } }).data;
+    expect(probeSignal?.aborted).toBe(true);
+    expect(body.reference).toEqual({ slug: SLUG, title: "Soupape" });
+  }, 5000);
+
+  // C8 : la promesse principale a un gestionnaire de rejet dès sa création ;
+  // un rejet pendant l'attente de la sonde n'est pas une rejection non gérée.
+  it("principal rejeté pendant l'attente de la sonde → aucune rejection non gérée, 503", async () => {
+    const probe = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
+    const unhandled = vi.fn();
+    process.on("unhandledRejection", unhandled);
+    try {
+      // Fonction nue, pas vi.fn : le suivi des résultats de vi.fn attache un
+      // gestionnaire à la promesse rendue et masquerait la rejection.
+      vi.stubGlobal("fetch", (url: string) =>
+        url.includes("/redirect/")
+          ? probe.promise
+          : url.endsWith("/related")
+            ? Promise.resolve(okJson({ related: [] }))
+            : Promise.reject(new Error("ECONNRESET")),
+      );
+
+      const p = call().catch((e: unknown) => e);
+      await new Promise((r) => setTimeout(r, 20));
+      expect(unhandled).not.toHaveBeenCalled();
+
+      probe.resolve(okJson({ redirect_to: null }));
+      const thrown = (await p) as Response;
+      expect(thrown).toBeInstanceOf(Response);
+      expect(thrown.status).toBe(503);
+    } finally {
+      process.off("unhandledRejection", unhandled);
+    }
   });
 });

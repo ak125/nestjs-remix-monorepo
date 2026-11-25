@@ -16,6 +16,7 @@ import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
 import { CacheService } from '@cache/cache.service';
 import { R6GuideLinkPolicyService } from '../seo/services/r6-guide-link-policy.service';
+import { R4ConsolidationPolicyService } from '../seo';
 
 /** Réponse construite d'une page gamme, telle qu'elle est mise en cache. */
 type GammePageResponse = Awaited<
@@ -54,6 +55,7 @@ export class GammeRestRpcV2Controller {
     private readonly rpcService: GammeRpcService,
     private readonly cacheService: CacheService,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
   ) {}
 
   /**
@@ -69,7 +71,10 @@ export class GammeRestRpcV2Controller {
       // 🚀 LCP V9: Check response cache (skips ~300-500ms builder processing)
       const cacheKey = this.rpcService.getResponseCacheKey(
         pgId,
-        this.guideLinkPolicy.cacheKeySegment(),
+        // Segment R6, suffixé drapeau R4 allumé (mandat ER) : clé inchangée sinon.
+        this.r4Consolidation.cacheKeySegment(
+          this.guideLinkPolicy.cacheKeySegment(),
+        ),
       );
       const cached = await this.cacheService.get<GammePageResponse>(cacheKey);
       if (cached) {
