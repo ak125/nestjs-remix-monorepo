@@ -1,0 +1,80 @@
+{
+ "variante": "a",
+ "id": "r0-accueil",
+ "route": "/",
+ "viewport": "390x844",
+ "journal": [
+  {
+   "etape": "avant attente",
+   "variante": "a",
+   "at": "2026-11-20T09:34:35.287Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 63,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a",
+   "at": "2026-11-20T09:34:40.049Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 63,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a",
+   "at": "2026-11-20T09:35:16.368Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 63,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a",
+   "at": "2026-11-20T09:35:20.127Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 63,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a",
+   "at": "2026-11-20T09:35:23.792Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 63,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a",
+   "at": "2026-11-20T09:35:27.056Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 63,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a",
+   "at": "2026-11-20T09:35:28.454Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 63,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a",
+   "at": "2026-11-20T09:35:31.712Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 63,
+   "reinjectionsObservateur": 0
+  }
+ ]
+}

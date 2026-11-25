@@ -1,0 +1,195 @@
+{
+ "id": "panier-vide",
+ "route": "/cart",
+ "viewport": "390x844",
+ "variante": "a3",
+ "methode": "parcours",
+ "correctif": null,
+ "debut": "2026-11-20T21:40:23.810Z",
+ "fin": "2026-11-20T21:40:44.633Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:40:29.359Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {
+  "centrage": 26
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "tabulation": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "centrage": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-forcee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-retiree": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 4946.5,
+   "y": 0
+  },
+  {
+   "p": "tabulation",
+   "t": 6532.9,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 13818.9,
+   "y": 0
+  },
+  {
+   "p": "centrage",
+   "t": 15252.7,
+   "y": 0
+  },
+  {
+   "p": "cv-forcee",
+   "t": 18463.5,
+   "y": 257
+  },
+  {
+   "p": "cv-retiree",
+   "t": 18788.5,
+   "y": 257
+  },
+  {
+   "p": "fin",
+   "t": 19092.9,
+   "y": 257
+  }
+ ],
+ "scrollDebut": [
+  [
+   7578.3,
+   3
+  ],
+  [
+   7594.8,
+   13
+  ],
+  [
+   7611.5,
+   42
+  ],
+  [
+   7628.8,
+   104
+  ],
+  [
+   7645.4,
+   155
+  ],
+  [
+   7661.6,
+   185
+  ],
+  [
+   7678.5,
+   206
+  ],
+  [
+   7695.1,
+   220
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 219,
+  "load": 429
+ },
+ "fonts": [
+  {
+   "t": 227.7,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 57,
+ "scrollHeight": 1099,
+ "erreurObs": null,
+ "requetesAbandonnees": 4,
+ "nonGet": 4
+}

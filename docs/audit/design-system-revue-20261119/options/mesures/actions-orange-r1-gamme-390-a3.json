@@ -1,0 +1,205 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "390x844",
+ "variante": "a3",
+ "debut": "2026-11-20T12:13:28.184Z",
+ "critere": "bouton ou lien visible, fond calculé orange (teinte 15°–45°, saturation ≥ 0,45, luminosité 0,3–0,9), non recouvert en son centre",
+ "ecrans": [
+  {
+   "ecran": 0,
+   "scrollY": 0,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 1,
+   "scrollY": 846,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 2,
+   "scrollY": 1688,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 3,
+   "scrollY": 2532,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 4,
+   "scrollY": 3376,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 5,
+   "scrollY": 4220,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 6,
+   "scrollY": 5064,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 7,
+   "scrollY": 5908,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 8,
+   "scrollY": 6752,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 9,
+   "scrollY": 7596,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 10,
+   "scrollY": 8440,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 11,
+   "scrollY": 9284,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 12,
+   "scrollY": 10128,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 13,
+   "scrollY": 10972,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 14,
+   "scrollY": 11816,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 15,
+   "scrollY": 12660,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 16,
+   "scrollY": 13504,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 17,
+   "scrollY": 14348,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 18,
+   "scrollY": 15192,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "a3",
+   "at": "2026-11-20T12:13:33.681Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "fin",
+   "presente": true,
+   "variante": "a3",
+   "regles": 83
+  }
+ ],
+ "toutePage": {
+  "nombre": 1,
+  "actions": [
+   {
+    "texte": "Rechercher des pièces",
+    "balise": "button",
+    "fond": "#FED7AA",
+    "desactive": true,
+    "collant": false,
+    "rect": [
+     40,
+     873,
+     310,
+     48
+    ]
+   }
+  ]
+ },
+ "premierEcran": {
+  "ecran": 0,
+  "scrollY": 0,
+  "entieres": 0,
+  "partielles": 0,
+  "textes": []
+ },
+ "ecransAPlusieurs": 0,
+ "maxParEcran": 0,
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T12:13:47.178Z"
+}

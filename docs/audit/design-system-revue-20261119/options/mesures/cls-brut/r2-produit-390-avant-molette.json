@@ -1,0 +1,322 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "variante": "avant",
+ "methode": "molette",
+ "correctif": null,
+ "debut": "2026-11-20T21:32:13.030Z",
+ "fin": "2026-11-20T21:32:44.692Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {
+  "pasDescente": 141,
+  "pasRemontee": 141
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 2
+   },
+   "molette-descente": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-remontee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 684.8,
+   "v": 0.01334,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "interactive",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MANN FILTER | W 79 7 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      311,
+      177,
+      348
+     ],
+     "apres": [
+      13,
+      293,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MGA | FH1001 8 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      311,
+      177,
+      348
+     ],
+     "apres": [
+      200,
+      293,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile MISFAT — 8.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      669,
+      177,
+      175
+     ],
+     "apres": [
+      13,
+      650,
+      177,
+      194
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile MISFAT — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      669,
+      177,
+      175
+     ],
+     "apres": [
+      200,
+      650,
+      177,
+      194
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  },
+  {
+   "t": 723,
+   "v": 0.00658,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "interactive",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MECAFILTER | ELH4391 5 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      575,
+      177,
+      269
+     ],
+     "apres": [
+      13,
+      557,
+      177,
+      287
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MANN FILTER | W 75/3 6 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      575,
+      177,
+      269
+     ],
+     "apres": [
+      200,
+      557,
+      177,
+      287
+     ]
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "molette-descente",
+   "t": 5385.4,
+   "y": 0
+  },
+  {
+   "p": "molette-remontee",
+   "t": 18406.5,
+   "y": 12580
+  },
+  {
+   "p": "fin",
+   "t": 29954.8,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   5418.3,
+   100
+  ],
+  [
+   5517.9,
+   200
+  ],
+  [
+   5601.8,
+   300
+  ],
+  [
+   5684.6,
+   400
+  ],
+  [
+   5769.1,
+   500
+  ],
+  [
+   5852.4,
+   600
+  ],
+  [
+   5936,
+   700
+  ],
+  [
+   6018.4,
+   800
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 681,
+  "load": 875
+ },
+ "fonts": [
+  {
+   "t": 567.7,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800",
+    "Roboto Mono 400"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 252,
+ "scrollHeight": 13422,
+ "erreurObs": null,
+ "requetesAbandonnees": 6,
+ "nonGet": 6
+}

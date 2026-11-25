@@ -1,0 +1,136 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "390x844",
+ "variante": "a2",
+ "debut": "2026-11-20T12:00:02.452Z",
+ "positions": [
+  {
+   "mode": "premier-ecran",
+   "scrollY": 0,
+   "scrollPaddingTop": "auto",
+   "scrollPaddingBottom": "auto",
+   "bouton": [
+    40,
+    873,
+    310,
+    48
+   ],
+   "dansFenetre": false,
+   "centreCouvertPar": "nav.fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-",
+   "recouvrementMaxPx": 0,
+   "fixes": []
+  },
+  {
+   "mode": "end",
+   "scrollY": 77,
+   "scrollPaddingTop": "auto",
+   "scrollPaddingBottom": "auto",
+   "bouton": [
+    40,
+    798,
+    310,
+    48
+   ],
+   "dansFenetre": false,
+   "centreCouvertPar": "a.no-style no-visited flex-1 flex flex-col items-center gap-0.",
+   "recouvrementMaxPx": 46,
+   "fixes": [
+    {
+     "tag": "nav",
+     "position": "fixed",
+     "zIndex": "50",
+     "classes": "fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-lg shadow-black/5 flex lg:hidden",
+     "aria": "Navigation mobile",
+     "rect": [
+      0,
+      781,
+      390,
+      63
+     ],
+     "recouvrementPx": [
+      310,
+      46
+     ]
+    }
+   ]
+  },
+  {
+   "mode": "center",
+   "scrollY": 477,
+   "scrollPaddingTop": "auto",
+   "scrollPaddingBottom": "auto",
+   "bouton": [
+    40,
+    398,
+    310,
+    48
+   ],
+   "dansFenetre": true,
+   "centreCouvertPar": "div.space-y-3",
+   "recouvrementMaxPx": 0,
+   "fixes": []
+  },
+  {
+   "mode": "start",
+   "scrollY": 875,
+   "scrollPaddingTop": "auto",
+   "scrollPaddingBottom": "auto",
+   "bouton": [
+    40,
+    0,
+    310,
+    48
+   ],
+   "dansFenetre": false,
+   "centreCouvertPar": "span.text-cta",
+   "recouvrementMaxPx": 48,
+   "fixes": [
+    {
+     "tag": "nav",
+     "position": "sticky",
+     "zIndex": "50",
+     "classes": "sticky top-0 z-50 bg-navy text-white transition-all duration-300 shadow-lg shadow-black/20",
+     "aria": "Navigation principale",
+     "rect": [
+      0,
+      0,
+      390,
+      123
+     ],
+     "recouvrementPx": [
+      310,
+      48
+     ]
+    }
+   ]
+  }
+ ],
+ "statut": 200,
+ "injection": {
+  "variante": "a2",
+  "at": "2026-11-20T12:00:07.976Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 67,
+  "reinjectionsObservateur": 0
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T12:00:11.198Z"
+}

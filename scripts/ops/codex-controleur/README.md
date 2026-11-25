@@ -21,7 +21,7 @@ partagé `/opt/automecanik/app` (décision de Marwane du 2026-11-19).
 1. Refuse de partir si le dépôt de travail est le checkout partagé `/opt/automecanik/app` (code 2,
    avant toute écriture), si le curseur manque (code 6), si un passage tourne déjà (code 7) ou si
    `codex --version` n'est pas exactement `codex-cli 0.170.0` (code 4, rien relu).
-2. Liste les PR fusionnées sur `main` depuis le curseur (`gh pr list --state merged`), moins
+2. Liste les PR fusionnées sur `main` depuis le curseur (`gh -R <origin du clone> pr list --state merged`), moins
    celles déjà relues ou ignorées, de la plus ancienne à la plus récente.
 3. Met à jour le clone dédié (`git fetch origin main`) et y crée un worktree jetable, détaché sur
    `origin/main`, sous le dossier d'état ; il est retiré à la sortie, quelle qu'elle soit.
@@ -123,7 +123,9 @@ retirés, aucun serveur MCP, `package-lock.json` retiré du diff, `--max`, éche
 `ignorer`, mode `lot` (curseur intact, fichier absent, quota), garde des données sensibles
 (constat retenu hors du résumé, autres lots intacts), droits `700` du dossier des constats bruts (y compris sur un dossier d'état déjà présent en `755`),
 verrou (7), worktrees retirés, unités livrées (script et dépôt du clone dédié), checkout partagé
-refusé (2, rien créé). Résultat au 2026-11-19 : 89 contrôles, 0 en échec.
+refusé (2, rien créé), lancement depuis un répertoire hors dépôt avec un faux `gh` qui, comme le
+vrai, échoue sans dépôt nommé : chaque appel `gh` porte `-R <origin du dépôt de travail>` (mandat
+EF). Résultat au 2026-11-20 : 91 contrôles, 0 en échec.
 
 ## Installer et activer
 

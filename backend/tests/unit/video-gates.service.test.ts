@@ -557,6 +557,99 @@ describe('VideoGatesService', () => {
       const g3 = result.gates.find((g) => g.gate === 'brand')!;
       expect(g3.measured).toBeGreaterThan(0);
     });
+
+    // Canon Fafa, § « Amendement du 17 nov. 2026 » ; décisions 145 et 147.
+    describe('Fafa signature', () => {
+      const newVoice =
+        "Moi, c'est Fafa, le mécano expert automobile d'AutoMecanik. Ton filtre à huile empêche les impuretés d'entrer.";
+      const oldVoice =
+        "Moi c'est Fafa, le mécano IA d'AutoMecanik. Ton filtre à huile empêche les impuretés d'entrer.";
+      const notice = {
+        type: 'ai_generated_notice',
+        text: "Fafa est un mécano IA d'AutoMecanik.",
+        position: 'overlay_continuous',
+      };
+      const plan = (
+        ...disclaimers: Array<{ type: string; text: string; position: string }>
+      ) => ({ disclaimers }) as unknown as VideoGateInput['disclaimerPlan'];
+      const brand = (input: VideoGateInput) =>
+        service.runAllGates(input).gates.find((g) => g.gate === 'brand')!;
+
+      it('accepts the new spoken phrase with a continuous AI notice', () => {
+        const g3 = brand(
+          makeInput({
+            persona: 'fafa',
+            scriptText: newVoice,
+            disclaimerPlan: plan(notice),
+          }),
+        );
+        expect(g3).toMatchObject({ verdict: 'PASS', measured: 0 });
+      });
+
+      it.each([
+        oldVoice,
+        'Salut, ici Fafa, ton mecano IA.',
+        'Fafa, MÉCANO I.A. de la marque.',
+      ])(
+        'refuses « mécano IA » in the voice below the count threshold: %s',
+        (scriptText) => {
+          const g3 = brand(
+            makeInput({
+              persona: 'fafa',
+              scriptText,
+              disclaimerPlan: plan(notice),
+            }),
+          );
+          expect(g3).toMatchObject({ verdict: 'FAIL', measured: 1 });
+          expect(g3.triggerItems?.[0].issue).toMatch(/^ancienne_signature/);
+        },
+      );
+
+      it('refuses « mécano IA » in the voice without a declared persona', () => {
+        expect(brand(makeInput({ scriptText: oldVoice })).verdict).toBe('FAIL');
+      });
+
+      it.each([
+        ['absent', plan({ ...notice, type: 'informational' })],
+        ['empty', plan({ ...notice, text: '   ' })],
+      ])(
+        'refuses a Fafa media whose AI notice is %s',
+        (_label, disclaimerPlan) => {
+          const g3 = brand(
+            makeInput({
+              persona: 'fafa',
+              scriptText: newVoice,
+              disclaimerPlan,
+            }),
+          );
+          expect(g3.verdict).toBe('FAIL');
+          expect(g3.triggerItems?.[0].issue).toMatch(/^ai_notice_absent/);
+        },
+      );
+
+      it('refuses a Fafa media whose AI notice is not continuous', () => {
+        const g3 = brand(
+          makeInput({
+            persona: 'fafa',
+            scriptText: newVoice,
+            disclaimerPlan: plan({ ...notice, position: 'outro' }),
+          }),
+        );
+        expect(g3.verdict).toBe('FAIL');
+        expect(g3.triggerItems?.[0].issue).toMatch(/^ai_notice_not_continuous/);
+      });
+
+      it('refuses a missing AI notice even without script text', () => {
+        const g3 = brand(
+          makeInput({ persona: 'fafa', disclaimerPlan: plan() }),
+        );
+        expect(g3).toMatchObject({ verdict: 'FAIL', measured: 1 });
+      });
+
+      it('does not require the AI notice when no persona is declared', () => {
+        expect(brand(makeInput({ scriptText: newVoice })).verdict).toBe('PASS');
+      });
+    });
   });
 
   // ── G4: Platform Gate ──

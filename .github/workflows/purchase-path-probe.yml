@@ -1,0 +1,106 @@
+name: 🛒 Parcours d'achat PROD (sonde 15 min)
+
+# Mandat AU (décision 52) : toutes les 15 minutes, un robot parcourt la PROD de
+# l'extérieur comme un client — accueil, choix du véhicule, page gamme, fiche
+# produit, ajout au panier, panier, page commande — jusqu'à la section paiement,
+# SANS JAMAIS PAYER, puis vide son panier et ferme sa session.
+#
+# - Sonde : frontend/tests/purchase-probe/ (config dédiée, aucune relance).
+# - Robot déclaré (décision 36) : UA « HeadlessChrome … AutoMecanik-PurchaseProbe-bot/1.0 ».
+# - Aucune écriture hors liste blanche : la sonde refuse dans le navigateur toute
+#   requête autre que GET/HEAD/OPTIONS, sauf l'ajout au panier (Redis) et la
+#   vérification d'e-mail invité (lecture seule). Aucune commande n'est créée.
+# - Alerte (décision 67) : scripts/ops/purchase-path-probe.sh alert — une issue
+#   assignée à l'owner (donc un e-mail) au 2e échec consécutif, une seule par
+#   incident, fermée au premier passage réussi.
+# - Rapport unique (mandat AM) : purchase-path-probe.sh report écrit l'agrégat des 24 h
+#   (parcours-achat.json, format parcours-achat.v1) dans l'artefact de chaque passage ;
+#   .github/scripts/morning-health-digest.sh télécharge celui du dernier run terminé.
+#
+# Runner GitHub (ubuntu-latest) : passe par Internet, Cloudflare et Caddy comme un
+# client ; aucune charge sur l'hôte PROD ni sur son runner self-hosted.
+# Minutes 7/22/37/52 : décalées des quarts d'heure pleins, très chargés chez GitHub.
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: purchase-path-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Accueil → paiement (sans payer)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+      actions: read
+    env:
+      PURCHASE_PROBE_BASE_URL: https://www.automecanik.com
+    steps:
+      - name: Checkout (sonde et script d'alerte seulement)
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            frontend/tests/purchase-probe
+            frontend/package.json
+            scripts/ops/purchase-path-probe.sh
+          sparse-checkout-cone-mode: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Installer Playwright (version de frontend/package.json) et Chromium sans tête
+        run: |
+          PW_VERSION=$(jq -r '.devDependencies["@playwright/test"]' frontend/package.json)
+          [[ "$PW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::version Playwright non épinglée : $PW_VERSION"; exit 1; }
+          PROBE_DIR="$RUNNER_TEMP/purchase-probe"
+          mkdir -p "$PROBE_DIR"
+          cp frontend/tests/purchase-probe/*.ts "$PROBE_DIR/"
+          cd "$PROBE_DIR"
+          echo '{"private":true}' > package.json
+          npm install --no-audit --no-fund --ignore-scripts "@playwright/test@$PW_VERSION"
+          npx playwright install --with-deps --only-shell chromium
+
+      - name: Parcours d'achat (PROD, sans payer)
+        env:
+          PURCHASE_PROBE_RESULT: ${{ runner.temp }}/purchase-probe-out/result.json
+          PURCHASE_PROBE_BYPASS_TOKEN: ${{ secrets.PURCHASE_PROBE_BYPASS_TOKEN }}
+        working-directory: ${{ runner.temp }}/purchase-probe
+        run: npx playwright test -c playwright.config.ts
+
+      - name: Agrégat 24 h pour le rapport unique (parcours-achat.v1)
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/purchase-probe-out"
+          bash scripts/ops/purchase-path-probe.sh report "$RUNNER_TEMP/purchase-probe-out/result.json" "$RUNNER_TEMP/purchase-probe-out/parcours-achat.json"
+
+      - name: Résultat et agrégat (artefact lu par le rapport unique)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: purchase-path-probe-result
+          path: |
+            ${{ runner.temp }}/purchase-probe-out/result.json
+            ${{ runner.temp }}/purchase-probe-out/parcours-achat.json
+          retention-days: 3
+          if-no-files-found: warn
+
+      - name: Alerte (2 échecs consécutifs, une fois par incident)
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: bash scripts/ops/purchase-path-probe.sh alert "$RUNNER_TEMP/purchase-probe-out/result.json"

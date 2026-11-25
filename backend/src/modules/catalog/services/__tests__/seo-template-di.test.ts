@@ -10,6 +10,7 @@ import { CatalogModule } from '../../catalog.module';
 import { SeoModule } from '../../../seo/seo.module';
 import { SeoPlaceholderEventsService } from '../../../seo/services/seo-placeholder-events.service';
 import { SeoTemplateService } from '../seo-template.service';
+import { R2TitleCollisionService } from '../r2-title-collision.service';
 
 /**
  * Câblage DI de la garde des marqueurs (2026-09-11). `SeoTemplateService`
@@ -34,6 +35,7 @@ describe('SeoTemplateService — câblage DI', () => {
 
     expect(providers).toContain(SeoTemplateService);
     expect(providers).toContain(SeoPlaceholderEventsService);
+    expect(providers).toContain(R2TitleCollisionService);
     expect(imports).not.toContain(SeoModule);
   });
 
@@ -44,6 +46,7 @@ describe('SeoTemplateService — câblage DI', () => {
         SeoTemplateService,
         SeoPlaceholderEventsService,
         { provide: CacheService, useValue: {} },
+        { provide: R2TitleCollisionService, useValue: {} },
       ],
     }).compile();
 

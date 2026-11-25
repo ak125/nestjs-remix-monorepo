@@ -56,31 +56,17 @@ R1 (Router) pages help users find the right product category or refine their sel
 
 ## Design Tokens
 
-### Colors (Pack Urgence)
+### Colors
 
-```css
---r1-primary: #1A1A1A;
---r1-secondary: #FF9500;
---r1-cta: #FF3B30;
---r1-background: #F5F5F5;
---r1-accent: #FF6B35;
-```
+Colors come from `packages/design-tokens/src/tokens.json`, by role, never as raw values (P44 of `.claude/governance/journal-des-principes.md`). Navy and orange are the brand colors. Orange marks the one primary action per screen, with navy text; other actions are outlined. Red is for errors and destructive actions only.
 
 ### Typography
 
-```css
---r1-heading: 'Archivo Black', sans-serif;
---r1-body: 'Source Sans Pro', sans-serif;
---r1-mono: 'JetBrains Mono', monospace;
-```
+Outfit for headings, DM Sans for body text, Roboto Mono for codes the user copies, from the tokens (P46). Every weight used is loaded.
 
 ### Key Dimensions
 
-```css
---r1-filter-width: 280px; /* Desktop sidebar */
---r1-card-min-width: 160px;
---r1-card-gap: 16px;
-```
+Desktop sidebar width, minimum card width and card gap come from the tokens (P46); none is hard-coded.
 
 ## Components
 
@@ -112,14 +98,14 @@ R1 (Router) pages help users find the right product category or refine their sel
 
 ## Effects
 
+Every effect below stops when the user asks for reduced motion (`prefers-reduced-motion: reduce`, P45). Durations and shadows come from the tokens (P46).
+
 ### Pulse CTA (Urgence)
-```css
-animation: pulse-cta 1.5s infinite;
-```
+A pulse on the primary action, with its duration from the tokens.
 
 ### Fast Transitions
 ```css
-transition: all 150ms ease-out;
+transition: all var(--transition-fast) ease-out;
 ```
 
 ### Hover Scale

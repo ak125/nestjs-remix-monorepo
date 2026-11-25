@@ -1,0 +1,180 @@
+{
+ "id": "panier-vide",
+ "route": "/cart",
+ "viewport": "390x844",
+ "variante": "avant",
+ "methode": "parcours",
+ "correctif": null,
+ "debut": "2026-11-20T21:40:04.300Z",
+ "fin": "2026-11-20T21:40:23.451Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {
+  "centrage": 26
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "tabulation": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "centrage": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-forcee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-retiree": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "tabulation",
+   "t": 4931.8,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 12174.3,
+   "y": 0
+  },
+  {
+   "p": "centrage",
+   "t": 13607.7,
+   "y": 0
+  },
+  {
+   "p": "cv-forcee",
+   "t": 16814.1,
+   "y": 257
+  },
+  {
+   "p": "cv-retiree",
+   "t": 17161.5,
+   "y": 257
+  },
+  {
+   "p": "fin",
+   "t": 17466.7,
+   "y": 257
+  }
+ ],
+ "scrollDebut": [
+  [
+   6636.8,
+   6
+  ],
+  [
+   6653.3,
+   10
+  ],
+  [
+   6670,
+   11
+  ],
+  [
+   6786.8,
+   13
+  ],
+  [
+   6953.5,
+   16
+  ],
+  [
+   6970.6,
+   26
+  ],
+  [
+   6987.4,
+   57
+  ],
+  [
+   7003.9,
+   118
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 235,
+  "load": 416
+ },
+ "fonts": [
+  {
+   "t": 244.2,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 28,
+ "scrollHeight": 1099,
+ "erreurObs": null,
+ "requetesAbandonnees": 4,
+ "nonGet": 4
+}

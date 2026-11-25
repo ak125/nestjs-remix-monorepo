@@ -1,0 +1,905 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "variante": "c",
+ "debut": "2026-11-20T10:06:03.196Z",
+ "critere": "teinte 75°–170°, saturation ≥ 0,25, luminosité 0,12–0,85 ; élément visible, non recouvert en son centre ; texte, fond, dégradé, bord, fill, stroke",
+ "ecrans": [
+  {
+   "ecran": "premier-ecran",
+   "scrollY": 0,
+   "boutonsAchat": [
+    {
+     "texte": "Ajouter",
+     "rect": [
+      102,
+      1668,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      289,
+      1668,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      102,
+      2025,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      289,
+      2025,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      102,
+      2383,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      289,
+      2383,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      2740,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      2740,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      3098,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      3098,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      3456,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      3456,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      3813,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      3813,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      4171,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      4171,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      4528,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      4528,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      4886,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      4886,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Panier",
+     "rect": [
+      16,
+      738,
+      109,
+      50
+     ],
+     "entierementVisible": true
+    }
+   ],
+   "verts": [
+    {
+     "tag": "button",
+     "texte": "Panier",
+     "classes": "relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-black rounded-xl font-bold flex items-center gap-2 transition-",
+     "props": [
+      [
+       "fond",
+       "#1E8449"
+      ]
+     ],
+     "rect": [
+      16,
+      738,
+      109,
+      50
+     ],
+     "docY": 738,
+     "achat": true
+    },
+    {
+     "tag": "span",
+     "texte": "",
+     "classes": "absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white",
+     "props": [
+      [
+       "fond",
+       "#1E8449"
+      ]
+     ],
+     "rect": [
+      362,
+      692,
+      12,
+      12
+     ],
+     "docY": 692,
+     "achat": false
+    }
+   ],
+   "nombreVertsHorsAchat": 1,
+   "capture": "verts-r2-produit-390-c-premier-ecran-annote"
+  },
+  {
+   "ecran": "ecran-du-bouton-ajouter",
+   "scrollY": 1079,
+   "boutonsAchat": [
+    {
+     "texte": "Ajouter",
+     "rect": [
+      102,
+      591,
+      75,
+      44
+     ],
+     "entierementVisible": true
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      289,
+      591,
+      75,
+      44
+     ],
+     "entierementVisible": true
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      102,
+      948,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      289,
+      948,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      102,
+      1306,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      289,
+      1306,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      102,
+      1663,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      289,
+      1663,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      102,
+      2021,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      289,
+      2021,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      102,
+      2379,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      289,
+      2379,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      2736,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      2736,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      3094,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      3094,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      3451,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      3451,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      102,
+      3809,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      289,
+      3809,
+      75,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Panier",
+     "rect": [
+      16,
+      738,
+      109,
+      50
+     ],
+     "entierementVisible": true
+    }
+   ],
+   "verts": [
+    {
+     "tag": "button",
+     "texte": "Ajouter",
+     "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+     "props": [
+      [
+       "fond",
+       "#1E8449"
+      ]
+     ],
+     "rect": [
+      102,
+      591,
+      75,
+      44
+     ],
+     "docY": 1670,
+     "achat": true
+    },
+    {
+     "tag": "button",
+     "texte": "Ajouter",
+     "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+     "props": [
+      [
+       "fond",
+       "#1E8449"
+      ]
+     ],
+     "rect": [
+      289,
+      591,
+      75,
+      44
+     ],
+     "docY": 1670,
+     "achat": true
+    },
+    {
+     "tag": "button",
+     "texte": "Panier",
+     "classes": "relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-black rounded-xl font-bold flex items-center gap-2 transition-",
+     "props": [
+      [
+       "fond",
+       "#1E8449"
+      ]
+     ],
+     "rect": [
+      16,
+      738,
+      109,
+      50
+     ],
+     "docY": 1817,
+     "achat": true
+    },
+    {
+     "tag": "span",
+     "texte": "",
+     "classes": "absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white",
+     "props": [
+      [
+       "fond",
+       "#1E8449"
+      ]
+     ],
+     "rect": [
+      362,
+      692,
+      12,
+      12
+     ],
+     "docY": 1771,
+     "achat": false
+    }
+   ],
+   "nombreVertsHorsAchat": 1,
+   "capture": "verts-r2-produit-390-c-ecran-du-bouton-ajouter-annote"
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "c",
+   "at": "2026-11-20T10:06:08.932Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 63,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "fin",
+   "presente": true,
+   "variante": "c",
+   "regles": 63
+  }
+ ],
+ "toutePage": {
+  "verts": [
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 1670,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 1670,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 2027,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 2027,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 2385,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 2385,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 2742,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 2742,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 3100,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 3100,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 3458,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 3458,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter Filtre à huile au panier",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 3815,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter Filtre à huile au panier",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 3815,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter Filtre à huile au panier",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 4173,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter Filtre à huile au panier",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 4173,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter Filtre à huile au panier",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 4530,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter Filtre à huile au panier",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 4530,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter Filtre à huile au panier",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 4888,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Ajouter Filtre à huile au panier",
+    "classes": "flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold t",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 4888,
+    "achat": true
+   },
+   {
+    "tag": "button",
+    "texte": "Panier",
+    "classes": "relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-black rounded-xl font-bold flex items-center gap-2 transition-",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 1817,
+    "achat": true
+   },
+   {
+    "tag": "span",
+    "texte": "",
+    "classes": "absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white",
+    "props": [
+     [
+      "fond",
+      "#1E8449"
+     ]
+    ],
+    "docY": 1771,
+    "achat": false
+   }
+  ],
+  "nombreHorsAchat": 1
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/funnel/event",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T10:06:14.448Z"
+}
