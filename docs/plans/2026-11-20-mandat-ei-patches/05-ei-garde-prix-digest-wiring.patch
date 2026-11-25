@@ -1,0 +1,107 @@
+diff --git a/.github/scripts/morning-health-digest.sh b/.github/scripts/morning-health-digest.sh
+index 495bf10985..b63d0fb692 100755
+--- a/.github/scripts/morning-health-digest.sh
++++ b/.github/scripts/morning-health-digest.sh
+@@ -24,7 +24,7 @@
+ #                        signal→department map, AU source. Hook for the department
+ #                        contracts (mandat AR); absent → the script defaults, declared.
+ #   PARCOURS_ACHAT_JSON  file, schema parcours-achat.v1 (mandat AU)
+-#   GARDE_PRIX_JSON      file, schema garde-prix.v1 (no producer as of 2026-11-16)
++#   GARDE_PRIX_JSON      file, schema garde-prix.v1 (producer scripts/ops/garde-prix-read.ts)
+ #   GMAIL_* , ALERT_EMAIL_TO, EMAIL_FROM  mail channel (report-mail.py); else declared
+ #                        « indisponible » in the issue and the run log.
+ #   THRESHOLD_ISSUES_MODE  off | dry-run | write (mandate BZ, default dry-run): issues of
+@@ -290,13 +290,14 @@ else
+ fi
+ 
+ # ---- Price guard-rail triggered ----
+-# No producer persists a trigger as of 2026-11-16: PricingInvariantError and
+-# assertValidPriceChain have no consumer in backend/src, and the command-center
+-# action `sell_at_loss` is a hard-coded 0. Hook: GARDE_PRIX_JSON, schema garde-prix.v1
++# Producer: scripts/ops/garde-prix-read.ts (mandat EI), run by the workflow in its
++# daily window: invariants:<supplier> (import rows refused by the guard-rail),
++# arret51:<supplier> (decision-51 halt waiting for the owner), perte:pm<brand>
++# (sellable rows below the purchase price). Input GARDE_PRIX_JSON, schema garde-prix.v1
+ # {schema, generated_at, declenchements: [{cle, at}]}; each `cle` is one incident.
+ PRIX_SRC="déclenchements du garde-fou des prix, format garde-prix.v1"
+ if [ -z "${GARDE_PRIX_JSON:-}" ]; then
+-  signal prix "Garde-fou des prix" nonbranche "non branché : aucun producteur ne persiste un déclenchement (PricingInvariantError sans consommateur dans backend/src ; sell_at_loss écrit 0 en dur dans command-center-actions.service.ts)" "$PRIX_SRC" "$Q_NON" ""
++  signal prix "Garde-fou des prix" nonbranche "non branché : entrée GARDE_PRIX_JSON vide (producteur scripts/ops/garde-prix-read.ts, lancé par le workflow)" "$PRIX_SRC" "$Q_NON" ""
+ elif ! jq -e '.schema == "garde-prix.v1" and (.generated_at | type == "string") and (.declenchements | type == "array") and all(.declenchements[]; .cle | type == "string")' "$GARDE_PRIX_JSON" >/dev/null 2>&1; then
+   signal prix "Garde-fou des prix" indisponible "entrée absente ou format invalide (attendu garde-prix.v1)" "$PRIX_SRC" "$Q_NON" ""
+   URG_UNREAD="$URG_UNREAD prix:"
+diff --git a/.github/workflows/morning-health-digest.yml b/.github/workflows/morning-health-digest.yml
+index cd04725f1a..940c23e061 100644
+--- a/.github/workflows/morning-health-digest.yml
++++ b/.github/workflows/morning-health-digest.yml
+@@ -22,7 +22,8 @@ name: 🌅 Morning health digest
+ # Repository variables (optional, empty if unset):
+ #   REPORT_CONFIG_PATH  path in the repo of a report-config.v1 JSON file (hook for
+ #     the department contracts, mandat AR). Unset → the script defaults, declared.
+-#   GARDE_PRIX_JSON_PATH  path of a garde-prix.v1 file (no producer yet).
++#   GARDE_PRIX_JSON_PATH  path of a garde-prix.v1 file; overrides the file of the
++#     producer below (mandat EI). Unset → the producer's file.
+ #   THRESHOLD_ISSUES_MODE  off | dry-run | write (mandate BZ, decision 9): issues of
+ #     the registry thresholds (scripts/governance/registry-thresholds.sh). Unset →
+ #     dry-run: the report lists the issues it would open, nothing is written.
+@@ -37,6 +38,13 @@ name: 🌅 Morning health digest
+ # backend's workspace dependencies (frontend excluded). Without it the reader
+ # reports « MODULE_NOT_FOUND @repo/… » (mandate BZ, complement BZ-3).
+ #
++# Price guard-rail (mandat EI, decisions 51 and 67): scripts/ops/garde-prix-read.ts
++# reads price_import_batches and pieces_price (read-only, ~426 pages) on the runs of
++# the daily window above, or on workflow_dispatch, and writes garde-prix.v1 inside
++# the job only: no cache, no artifact (public repository, the keys name a supplier
++# or a brand). The other runs, or a failed read, give the report a missing file:
++# « indisponible », open incidents kept, no mail repeated.
++#
+ # Cron granularity: GitHub may start a scheduled run late; the 15-minute cadence
+ # bounds the delay of the 7 h report and of an urgent mail to one or two slots.
+ # Replaces Claude Desktop routine `trig_017ywezN156yjiVW8BRVcYi6` (disabled
+@@ -100,6 +108,37 @@ jobs:
+         continue-on-error: true
+         run: npx --no-install turbo run build --filter='@fafa/backend^...' --filter='!@fafa/frontend'
+ 
++      - name: Read the price guard-rail (daily window, mandat EI)
++        id: garde_prix
++        if: steps.window.outputs.deps == '1'
++        continue-on-error: true
++        timeout-minutes: 10
++        env:
++          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
++          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
++          OUT: ${{ runner.temp }}/garde-prix.json
++        run: |
++          cd backend
++          timeout 540 ../node_modules/.bin/tsx ../scripts/ops/garde-prix-read.ts "$OUT"
++          echo "path=$OUT" >> "$GITHUB_OUTPUT"
++
++      - name: Price guard-rail input of the report (mandat EI)
++        id: garde_prix_input
++        env:
++          FORCED: ${{ vars.GARDE_PRIX_JSON_PATH }}
++          READ: ${{ steps.garde_prix.outputs.path }}
++          DEPS: ${{ steps.window.outputs.deps }}
++        run: |
++          if [ -n "$FORCED" ]; then p=$FORCED
++          elif [ -n "$READ" ] && [ -s "$READ" ]; then p=$READ
++          else
++            # Out of the window or read failed: a path that does not exist, so the
++            # report says « indisponible » and carries the open incidents over.
++            [ "$DEPS" = 1 ] && echo "::warning::garde-prix : lecture du jour en échec, rapport « indisponible »"
++            p=$RUNNER_TEMP/garde-prix.absent
++          fi
++          echo "path=$p" >> "$GITHUB_OUTPUT"
++
+       - name: Collect signals and update the standing digest issue
+         id: collect
+         env:
+@@ -114,7 +153,7 @@ jobs:
+           ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+           REPORT_CONFIG: ${{ vars.REPORT_CONFIG_PATH }}
+-          GARDE_PRIX_JSON: ${{ vars.GARDE_PRIX_JSON_PATH }}
++          GARDE_PRIX_JSON: ${{ steps.garde_prix_input.outputs.path }}
+           THRESHOLD_ISSUES_MODE: ${{ vars.THRESHOLD_ISSUES_MODE || 'dry-run' }}
+           EVENT: ${{ github.event_name }}
+         run: |

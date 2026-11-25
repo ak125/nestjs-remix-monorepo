@@ -1,0 +1,30 @@
+diff --git a/.spec/00-canon/repository-registry/automation-reality.yaml b/.spec/00-canon/repository-registry/automation-reality.yaml
+index 976454749..dfa11463f 100644
+--- a/.spec/00-canon/repository-registry/automation-reality.yaml
++++ b/.spec/00-canon/repository-registry/automation-reality.yaml
+@@ -481,3 +481,25 @@ entries:
+     risk: "medium"
+     owner_action: "Passer à ACTIVE en citant en runtime_evidence un run planifié en success sur main, son artefact purchase-path-probe-result et le digest qui le lit."
+     drift_note: "Preuve DEV:3000 seulement (2 parcours complets, 2026-11-16). Un blocage des IP GitHub par Cloudflare ou BotGuard ne se verra qu'au premier run PROD."
++
++  - automation_id: "garde-prix-read"
++    domain: "D11"
++    intended_mode: "ACTIVE"
++    actual_mode: "SCRIPT_ONLY"
++    executor: "github-actions-schedule"
++    evidence:
++      - path: ".github/workflows/morning-health-digest.yml"
++        line: 122
++        excerpt: "../node_modules/.bin/tsx ../scripts/ops/garde-prix-read.ts"
++        note: "Mandat EI (décisions 51, 67) : lu dans la fenêtre quotidienne (7-10 h Paris) ou sur dispatch ; ni cache ni artefact"
++      - path: "scripts/ops/garde-prix-read.ts"
++        note: "CLI : PricingRepository + readGardePrix ; lecture ratée = code 1, aucun fichier, le rapport écrit « indisponible »"
++      - path: "backend/src/modules/pricing/services/price-guard-signal.core.ts"
++        note: "Clés invariants:<fournisseur> (refus du dernier import), arret51:<fournisseur> (arrêt décision 51), perte:pm<marque>"
++    last_verified_at: "2026-11-20"
++    last_verified_by: "@ak125"
++    last_verified_method: "manual-inspection"
++    missing_step: "Aucun passage CI prouvé. Reste : fusion de la PR du producteur, patch du workflow signé, puis un run workflow_dispatch dont le rapport date le signal."
++    risk: "medium"
++    owner_action: "Passer à ACTIVE en citant en runtime_evidence un run du digest en success sur main dont l'étape « Read the price guard-rail » a écrit le fichier et le rapport qui le lit."
++    drift_note: "Essais 2026-11-20 sur un faux PostgREST local seulement. failed_rows valait 0 sur les 15 lots existants, faute d'écrivain : l'historique des refus avant cette PR est inconnu."

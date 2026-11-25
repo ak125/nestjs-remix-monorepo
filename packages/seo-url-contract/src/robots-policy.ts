@@ -291,7 +291,7 @@ Disallow: /
 # 📍 SITEMAPS
 # ===========================================
 # Index principal unique (contient tous les sitemaps thématiques)
-# V6: sitemap-vehicules.xml inclut marques + modèles + types
+# Marques : sitemap-brands.xml ; pages véhicule : sitemap-vehicules.xml
 Sitemap: ${baseUrl}/sitemap.xml
 
 # ===========================================

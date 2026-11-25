@@ -25,7 +25,7 @@ R2 (Product) pages are the conversion engine. The user has already selected a pr
 
 3. **Sticky CTA Bar**
    - Price (prominent)
-   - Add to cart button (verified green)
+   - Add to cart button (orange primary action, P44)
    - Quantity selector
 
 ### Below Fold
@@ -50,32 +50,17 @@ R2 (Product) pages are the conversion engine. The user has already selected a pr
 
 ## Design Tokens
 
-### Colors (Pack Confiance)
+### Colors
 
-```css
---r2-primary: #1D1D1F;
---r2-secondary: #007AFF;
---r2-cta: #34C759;
---r2-background: #FAFAFA;
---r2-accent: #FF6B35;
-```
+Colors come from `packages/design-tokens/src/tokens.json`, by role, never as raw values (P44 of `.claude/governance/journal-des-principes.md`). Navy and orange are the brand colors. Orange marks the one primary action per screen, with navy text; other actions are outlined. Red is for errors and destructive actions only.
 
 ### Typography
 
-```css
---r2-heading: 'Montserrat', sans-serif;
---r2-body: 'DM Sans', sans-serif;
---r2-mono: 'JetBrains Mono', monospace;
-```
+Outfit for headings, DM Sans for body text, Roboto Mono for codes the user copies, from the tokens (P46). Every weight used is loaded.
 
 ### Key Dimensions
 
-```css
---r2-hero-height: auto; /* Content-driven */
---r2-sticky-height: 72px;
---r2-card-radius: 12px;
---r2-badge-radius: 6px;
-```
+Hero height follows the content. Sticky bar height comes from the tokens. Cards use the 12 px radius; badges use a radius role from the tokens: 8 px, 12 px, 16 px or the pill (P46).
 
 ## Components (V2)
 
@@ -106,21 +91,23 @@ R2 (Product) pages are the conversion engine. The user has already selected a pr
 
 ## Effects
 
+Every effect below stops when the user asks for reduced motion (`prefers-reduced-motion: reduce`, P45). Durations and shadows come from the tokens (P46).
+
 ### Verified Animation
 ```css
-animation: verified-appear 200ms ease-out;
+animation: verified-appear var(--transition-base) ease-out;
 ```
 
 ### Compatibility Check
 ```css
 /* On verify button click */
-animation: shake-verify 150ms ease;
+animation: shake-verify var(--transition-fast) ease;
 ```
 
 ### Hover States
+A shadow from the tokens, never a raw value.
 ```css
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-transition: box-shadow 200ms ease-out;
+transition: box-shadow var(--transition-base) ease-out;
 ```
 
 ## Performance Targets

@@ -3,7 +3,9 @@
 Codex relit après coup chaque PR fusionnée sur `main`, avec une consigne permanente et une sortie
 sous schéma. Il ne bloque aucune fusion et n'écrit rien : ni dans le dépôt, ni sur GitHub. Les
 constats restent sur la machine DEV ; leur suite (tri, issues, corrections) est une décision
-humaine. Le cadre d'exécution reprend celui de l'essai CP (PR #2185).
+humaine. Le cadre d'exécution reprend celui de l'essai CP (PR #2185). La routine vit dans un clone dédié du
+dépôt public, `/home/deploy/codex-controleur/app` : elle n'écrit jamais dans le checkout DEV
+partagé `/opt/automecanik/app` (décision de Marwane du 2026-11-19).
 
 | Fichier | Rôle |
 |---|---|
@@ -11,17 +13,18 @@ humaine. Le cadre d'exécution reprend celui de l'essai CP (PR #2185).
 | `constats.schema.json` | Schéma de sortie imposé à Codex (`--output-schema`), copie de celui de CP. |
 | `codex-controleur.sh` | La routine : `init`, `quotidien`, `lot`, `ignorer`, `commande`. |
 | `codex-controleur.test.sh` | Tests sans réseau ni Codex réel (faux `codex`, faux `gh`, dépôt d'origine local). |
-| `automecanik-codex-controleur.service` | Unité utilisateur `oneshot` qui lance `codex-controleur.sh quotidien`. Livrée, non installée. |
-| `automecanik-codex-controleur.timer` | Un passage par jour à 05:30 UTC, rattrapé au démarrage s'il a été manqué. Livré, non installé. |
+| `automecanik-codex-controleur.service` | Unité utilisateur `oneshot` qui lance `codex-controleur.sh quotidien` depuis le clone dédié (`CODEX_CONTROLEUR_DEPOT=%h/codex-controleur/app`). |
+| `automecanik-codex-controleur.timer` | Un passage par jour à 05:30 UTC, rattrapé au démarrage s'il a été manqué. |
 
 ## Ce que fait un passage `quotidien`
 
-1. Refuse de partir si le curseur manque (code 6), si un passage tourne déjà (code 7) ou si
+1. Refuse de partir si le dépôt de travail est le checkout partagé `/opt/automecanik/app` (code 2,
+   avant toute écriture), si le curseur manque (code 6), si un passage tourne déjà (code 7) ou si
    `codex --version` n'est pas exactement `codex-cli 0.170.0` (code 4, rien relu).
-2. Liste les PR fusionnées sur `main` depuis le curseur (`gh pr list --state merged`), moins
+2. Liste les PR fusionnées sur `main` depuis le curseur (`gh -R <origin du clone> pr list --state merged`), moins
    celles déjà relues ou ignorées, de la plus ancienne à la plus récente.
-3. Crée un worktree jetable, détaché sur `origin/main` à jour, sous le dossier d'état ; il est
-   retiré à la sortie, quelle qu'elle soit.
+3. Met à jour le clone dédié (`git fetch origin main`) et y crée un worktree jetable, détaché sur
+   `origin/main`, sous le dossier d'état ; il est retiré à la sortie, quelle qu'elle soit.
 4. Pour chaque PR, dans l'ordre : diff du commit de fusion (fichiers générés retirés ; au-delà de
    400 000 octets, la seule liste des fichiers), puis un passage `codex exec` en lecture seule.
    Une PR n'est marquée relue que si la sortie est présente et conforme au schéma.
@@ -53,7 +56,7 @@ effort `high`. Codex lit `AGENTS.md` du worktree ; la consigne est jointe au pro
 
 | Variable | Défaut |
 |---|---|
-| `CODEX_CONTROLEUR_DEPOT` | dépôt qui contient le script (`/opt/automecanik/app` une fois installé) |
+| `CODEX_CONTROLEUR_DEPOT` | dépôt qui contient le script ; l'unité le fixe au clone dédié `%h/codex-controleur/app`. `/opt/automecanik/app` est refusé (code 2) |
 | `CODEX_CONTROLEUR_ETAT` | `${XDG_STATE_HOME:-~/.local/state}/automecanik/codex-controleur` |
 | `CODEX_CONTROLEUR_BIN` / `_VERSION` | `codex` / `0.170.0` |
 | `CODEX_CONTROLEUR_MODELE` / `_EFFORT` | `gpt-6.2-astra` / `high` |
@@ -94,19 +97,21 @@ correction de `server.js` puis une nouvelle vérification, et une décision de M
 
 ### Limites connues
 
-- Le worktree jetable écrit ses métadonnées sous `.git/worktrees/` du checkout DEV le temps du
-  passage, puis les retire ; `git fetch origin main` met à jour la référence distante.
+- Le worktree jetable écrit ses métadonnées sous `.git/worktrees/` du clone dédié le temps du
+  passage, puis les retire ; `git fetch origin main` met à jour la référence distante du clone.
+  Rien n'est écrit dans `/opt/automecanik/app`.
 - La détection du quota repose sur les codes d'erreur relevés dans le binaire 0.170.0
   (`usage_limit_reached`, `rate_limit_exceeded`, `quota_exceeded`, `credits_depleted`…). Une autre
   version de Codex est refusée avant tout passage, ce qui oblige à revoir cette liste.
-- La consigne lue est celle du checkout DEV ; le sha256 du texte réellement joint au prompt est
-  noté dans chaque `meta.json` (version 1 : `777e6718d94d3ae3d1023d44f594926b62f2424aead9726bf90efd83416b9c00`).
+- La consigne et le script lus sont ceux de la copie de travail du clone, au commit installé ; le
+  fetch quotidien ne la déplace pas (mise à jour : geste d'installation, ci-dessous). Le sha256 du texte
+  réellement joint au prompt est noté dans chaque `meta.json` (version 1 : `777e6718d94d3ae3d1023d44f594926b62f2424aead9726bf90efd83416b9c00`).
 - `codex exec` ne renvoie aucun quota restant : la consommation se lit en tokens par passage.
 
 ## Contrôles
 
 ```bash
-cd /opt/automecanik/app
+cd /home/deploy/codex-controleur/app    # ou tout checkout du dépôt
 bash scripts/ops/codex-controleur/codex-controleur.test.sh    # sans réseau ni Codex réel
 bash scripts/ops/codex-controleur/codex-controleur.sh commande
 ```
@@ -117,43 +122,59 @@ quota lus dans un fichier sans arrêt, rien de neuf, cadre de lecture seule et j
 retirés, aucun serveur MCP, `package-lock.json` retiré du diff, `--max`, échec générique (1),
 `ignorer`, mode `lot` (curseur intact, fichier absent, quota), garde des données sensibles
 (constat retenu hors du résumé, autres lots intacts), droits `700` du dossier des constats bruts (y compris sur un dossier d'état déjà présent en `755`),
-verrou (7), worktrees retirés, unités livrées. Résultat au 2026-11-19 : 83 contrôles, 0 en échec.
+verrou (7), worktrees retirés, unités livrées (script et dépôt du clone dédié), checkout partagé
+refusé (2, rien créé), lancement depuis un répertoire hors dépôt avec un faux `gh` qui, comme le
+vrai, échoue sans dépôt nommé : chaque appel `gh` porte `-R <origin du dépôt de travail>` (mandat
+EF). Résultat au 2026-11-20 : 91 contrôles, 0 en échec.
 
 ## Installer et activer
 
-Réservé à Marwane. Écrit, non exécuté par l'agent. Utilisateur `deploy`, sans sudo, depuis le
-checkout DEV à jour sur `main` après fusion :
+Sur décision nominative de Marwane. Utilisateur `deploy`, sans sudo. Le clone dédié est créé une
+fois, depuis le dépôt GitHub public, au commit de `main` à installer ; le checkout DEV partagé
+`/opt/automecanik/app` n'est ni lu ni modifié.
 
 ```bash
-cd /opt/automecanik/app
-git status --short scripts/ops/codex-controleur/    # vide attendu
+# 0. Clone dédié, à jour sur main
+mkdir -p /home/deploy/codex-controleur
+git clone -q https://github.com/ak125/nestjs-remix-monorepo.git /home/deploy/codex-controleur/app
+cd /home/deploy/codex-controleur/app
 git log -1 --format=%H                              # commit installé, à noter
 S=scripts/ops/codex-controleur
 bash "$S/codex-controleur.test.sh"                  # attendu : 0 en échec
 codex --version                                     # attendu : codex-cli 0.170.0
+bash "$S/codex-controleur.sh" commande              # commande Codex effective, à relire
 
-# 1. Curseur : point de départ choisi (ici, les fusions à partir du jour de l'installation)
-bash "$S/codex-controleur.sh" init --depuis "$(date -u +%Y-%m-%dT00:00:00Z)"
+# 1. Curseur : les fusions à partir de ce matin
+bash "$S/codex-controleur.sh" init --depuis 2026-11-19T00:00:00Z
 
-# 2. Unités
+# 2. Premier passage à la main, une seule PR (la plus ancienne depuis le curseur), puis lecture
+bash "$S/codex-controleur.sh" quotidien --max 1; echo "code=$?"   # 0 attendu, état « warn » (plafond)
+cat ~/.local/state/automecanik/cron/codex-controleur.json
+ls -R ~/.local/state/automecanik/codex-controleur/bruts/
+cat ~/.local/state/automecanik/codex-controleur/bruts/*/pr*/meta.json   # alerte absente attendue
+git worktree list                                   # seul le clone, aucun wt-* restant
+
+# 3. Unités, puis passage quotidien (le reste des PR depuis le curseur au prochain déclenchement)
+mkdir -p ~/.config/systemd/user
 install -m 0644 "$S/automecanik-codex-controleur.service" "$S/automecanik-codex-controleur.timer" ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now automecanik-codex-controleur.timer
-
-# 3. Recette : un premier passage tout de suite, puis lecture du résultat
-systemctl --user start automecanik-codex-controleur.service
-journalctl --user -u automecanik-codex-controleur -n 20 --no-pager
-cat ~/.local/state/automecanik/cron/codex-controleur.json
-ls ~/.local/state/automecanik/codex-controleur/
 systemctl --user list-timers automecanik-codex-controleur.timer
 ```
 
-Le `start` du service est bloquant jusqu'à la fin du passage (environ 3 min par PR mesurées en CP).
+Un passage lancé par le service (`systemctl --user start automecanik-codex-controleur.service`) est
+bloquant jusqu'à sa fin (environ 3 min par PR mesurées en CP) ; lire ensuite
+`journalctl --user -u automecanik-codex-controleur -n 20 --no-pager`.
+
+**Mise à jour** de la routine (script, consigne, unités) après une fusion qui les modifie : geste
+humain, hors passage. `git -C /home/deploy/codex-controleur/app pull --ff-only origin main`, puis
+le test, puis, si les unités ont changé, l'`install` et le `daemon-reload` de l'étape 3.
 
 **Arrêt** : `systemctl --user disable --now automecanik-codex-controleur.timer`. Le curseur reste :
 une réactivation reprend là où le dernier passage réussi s'était arrêté.
 **Retrait** : arrêt, puis `rm ~/.config/systemd/user/automecanik-codex-controleur.{service,timer}`
-et `systemctl --user daemon-reload` ; le dossier d'état peut être gardé pour ses constats.
+et `systemctl --user daemon-reload` ; le dossier d'état peut être gardé pour ses constats, le clone
+`/home/deploy/codex-controleur/app` peut être supprimé.
 
 ## Où vont les constats (proposition, rien n'est ouvert)
 

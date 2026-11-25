@@ -10153,9 +10153,9 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts"
       ]
     },
@@ -10712,6 +10712,7 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
         "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
       ]
     },

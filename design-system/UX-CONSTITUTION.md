@@ -9,7 +9,7 @@
 | Metric | Good | Needs Improvement | Poor | Blocking |
 |--------|------|-------------------|------|----------|
 | **LCP** | ≤ 2500ms | ≤ 4000ms | > 4000ms | Yes |
-| **CLS** | ≤ 0.05 | ≤ 0.10 | > 0.25 | Yes |
+| **CLS** | ≤ 0.05 | ≤ 0.10 | > 0.10 | Yes |
 | **INP** | ≤ 200ms | ≤ 500ms | > 500ms | No |
 | **TTFB** | ≤ 800ms | ≤ 1800ms | > 3000ms | No |
 | **FCP** | ≤ 1800ms | ≤ 3000ms | > 4500ms | No |
@@ -36,7 +36,7 @@ Inter, Roboto, Arial, Helvetica, Open Sans, system-ui, -apple-system
 - Gradient card headers
 - Glass morphism overuse
 - Excessive shadows (>3 layers)
-- Emojis as icons (use Lucide/Heroicons)
+- Emojis as icons (use Lucide)
 - Stock photos in hero sections
 
 ---
@@ -73,7 +73,7 @@ Inter, Roboto, Arial, Helvetica, Open Sans, system-ui, -apple-system
 
 ### 5. Mobile-First
 
-- **Default viewport:** 375x800 (iPhone SE)
+- **Default viewport:** 390 px wide (measurement reference), also measured at 1440 px; no page overflows at 360 px or 320 px (P48)
 - **Breakpoints:** 375px, 768px, 1024px, 1440px
 - **Touch-first:** All interactions work with touch
 - **Thumb zone:** Critical CTAs in bottom 60% of screen
@@ -84,7 +84,7 @@ Inter, Roboto, Arial, Helvetica, Open Sans, system-ui, -apple-system
 
 Before ANY component or page ships:
 
-- [ ] No emojis as icons (use Lucide/Heroicons)
+- [ ] No emojis as icons (use Lucide)
 - [ ] `cursor: pointer` on all clickables
 - [ ] Hover transitions: 150-300ms
 - [ ] Contrast ratio: 4.5:1 minimum verified
@@ -101,11 +101,11 @@ Before ANY component or page ships:
 
 | Pack | Intent | Tone | Colors |
 |------|--------|------|--------|
-| **Urgence** | repair-fast | Industrial/Bold | CTA: `#FF3B30`, Accent: `#FF9500` |
-| **Confiance** | trust-first | Luxury/Refined | CTA: `#34C759`, Secondary: `#007AFF` |
-| **Pro Mecano** | dense-technical | Editorial/Dense | Primary: `#1D1D1F`, Accent: `#FF6B35` |
-| **Budget** | value-for-money | Playful/Value | CTA: `#34C759`, Text: `#8E8E93` |
-| **Diagnostic** | symptom-to-part | Soft/Technical | Primary: `#0F766E`, CTA: `#059669` |
+| **Urgence** | repair-fast | Industrial/Bold | By role, from the tokens (P44) |
+| **Confiance** | trust-first | Luxury/Refined | By role, from the tokens (P44) |
+| **Pro Mecano** | dense-technical | Editorial/Dense | By role, from the tokens (P44) |
+| **Budget** | value-for-money | Playful/Value | By role, from the tokens (P44) |
+| **Diagnostic** | symptom-to-part | Soft/Technical | By role, from the tokens (P44) |
 
 ---
 

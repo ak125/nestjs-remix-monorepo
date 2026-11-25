@@ -50,7 +50,8 @@ interface PieceLink {
   map_has_item: number;
 }
 
-// NOTE: MarqueLink et MotorisationLink supprimés - remplacés par sitemap-vehicules.xml (V6)
+// NOTE: MarqueLink et MotorisationLink supprimés : marques → sitemap-brands.xml,
+// pages R8 → sitemap-vehicules.xml (SitemapV10Service)
 
 interface BlogLink {
   map_id: string;
@@ -93,8 +94,8 @@ ${entries}
 // FONCTIONS DE FETCH
 // ============================================
 // NOTE: fetchMarques() et fetchMotorisations() supprimées
-// Les marques, modèles et types sont maintenant générés par
-// SitemapUnifiedService V6 dans sitemap-vehicules.xml
+// Les marques (sitemap-brands.xml) et les pages R8 (sitemap-vehicules.xml)
+// sont générées par SitemapV10Service ; le niveau modèle n'est plus publié (ADR-084)
 
 async function fetchBlogArticles(): Promise<BlogLink[]> {
   console.log('Chargement des articles depuis __sitemap_blog...');
@@ -160,8 +161,8 @@ async function generateSitemaps(): Promise<void> {
 
   // ============================================
   // NOTE: sitemap-constructeurs.xml et sitemap-types.xml sont OBSOLÈTES
-  // Ils sont remplacés par sitemap-vehicules.xml généré par SitemapUnifiedService V6
-  // qui inclut: marques (35) + modèles (973) + types (12756) = 13764 URLs
+  // Remplacés par SitemapV10Service : marques dans sitemap-brands.xml,
+  // pages R8 indexables dans sitemap-vehicules.xml (modèles retirés, ADR-084)
   // ============================================
 
   // ============================================
