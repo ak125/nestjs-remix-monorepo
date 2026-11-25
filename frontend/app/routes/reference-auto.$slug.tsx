@@ -379,7 +379,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     const redirectTo = await redirectPromise;
     if (redirectTo) {
-      return redirect(redirectTo, 301);
+      // headers() ne s'applique pas à un Response renvoyé par le loader :
+      // le Cache-Control de la 301 est porté ici. no-store, comme la 301 de
+      // blog-pieces-auto.article.$slug : retour arrière servi dès que le
+      // drapeau s'éteint (aucun cache navigateur ni CDN de la redirection).
+      return redirect(redirectTo, {
+        status: 301,
+        headers: { "Cache-Control": "no-store" },
+      });
     }
 
     const res = await referencePromise;

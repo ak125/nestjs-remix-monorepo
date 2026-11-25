@@ -161,9 +161,11 @@ export class ReferenceController {
    * GET /api/seo/reference/redirect/:slug
    * `{ redirect_to: null }` : drapeau éteint, slug hors liste ou garde non satisfaite
    * (page non publiée, gamme sans alias, page conseils non servie).
+   * no-store : la réponse suit le drapeau ; la charge reste bornée par le
+   * snapshot de la garde (Redis, 10 min).
    */
   @Get('redirect/:slug')
-  @Header('Cache-Control', 'public, max-age=300')
+  @Header('Cache-Control', 'no-store')
   async getRedirect(
     @Param('slug') slug: string,
   ): Promise<{ redirect_to: string | null; pg_alias: string | null }> {

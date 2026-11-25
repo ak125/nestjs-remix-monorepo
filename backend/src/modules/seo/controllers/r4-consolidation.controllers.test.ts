@@ -2,6 +2,7 @@
  * Consolidation R4 → R3 (mandat ER) — routes R4 et R5 : redirection, liens.
  * Pas d'I/O : services en doublure.
  */
+import { HEADERS_METADATA } from '@nestjs/common/constants';
 import { ReferenceController } from './reference.controller';
 import { DiagnosticController } from './diagnostic.controller';
 import {
@@ -56,6 +57,14 @@ describe('GET /api/seo/reference/redirect/:slug', () => {
       redirect_to: null,
       pg_alias: null,
     });
+  });
+  it('en-tête Cache-Control : no-store, plus « public, max-age=300 »', () => {
+    expect(
+      Reflect.getMetadata(
+        HEADERS_METADATA,
+        ReferenceController.prototype.getRedirect,
+      ),
+    ).toEqual([{ name: 'Cache-Control', value: 'no-store' }]);
   });
   it('page redirigée → page conseils et alias', async () => {
     const ctl = referenceController(ON);

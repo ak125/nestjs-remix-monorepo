@@ -17,7 +17,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { loader } from "~/routes/reference-auto.$slug";
+import { headers, loader } from "~/routes/reference-auto.$slug";
 
 vi.mock("~/utils/logger", () => ({
   logger: { log: vi.fn(), error: vi.fn(), warn: vi.fn(), info: vi.fn() },
@@ -195,6 +195,39 @@ describe("reference-auto.$slug loader — consolidation R4 → R3 (mandat ER)", 
     expect(res.headers.get("Location")).toBe(
       "/blog-pieces-auto/conseils/thermostat",
     );
+  });
+
+  it("301 → Cache-Control explicite et court (no-store), retour arrière immédiat", async () => {
+    route(() =>
+      Promise.resolve(
+        okJson({
+          redirect_to: "/blog-pieces-auto/conseils/thermostat",
+          pg_alias: "thermostat",
+        }),
+      ),
+    );
+    const res = (await call()) as Response;
+    expect(res.status).toBe(301);
+    expect(res.headers.get("Cache-Control")).toBe("no-store");
+  });
+
+  it("drapeau éteint (sonde null) → en-têtes de la fiche inchangés", async () => {
+    const FICHE =
+      "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400";
+    route(() => Promise.resolve(okJson({ redirect_to: null, pg_alias: null })));
+    const res = (await call()) as {
+      init: { status?: number; headers: Record<string, string> };
+    };
+    expect(res.init.status).toBeUndefined();
+    expect(res.init.headers).toEqual({ "Cache-Control": FICHE });
+    expect(
+      headers({
+        loaderHeaders: new Headers(res.init.headers),
+        parentHeaders: new Headers(),
+        actionHeaders: new Headers(),
+        errorHeaders: undefined,
+      } as never),
+    ).toEqual({ "Cache-Control": FICHE });
   });
 
   it.each([
