@@ -2,10 +2,11 @@
  * Behavioural proof of the PROD rollout flags writer (2026-09-24; R6
  * consolidation flag added 2026-10-01, ADR-103 D6; diagnostic projection flag
  * added 2026-10-11, ADR-035 D5; diagnostic provenance flags added 2026-10-15,
- * ADR-035).
+ * ADR-035; R4 consolidation and R4 noindex flags added 2026-11-25, mandat EX).
  *
  * `prod-seo-projection-env.sh` writes the three SEO Projection rollout flags,
- * SEO_R6_CONSOLIDATION_ENABLED, DIAGNOSTIC_PROJECTION_ENABLED and the two
+ * SEO_R6_CONSOLIDATION_ENABLED, SEO_R4_CONSOLIDATION_ENABLED,
+ * SEO_R4_NOINDEX_ENABLED, DIAGNOSTIC_PROJECTION_ENABLED and the two
  * diagnostic provenance flags into ~/production/.env during the PROD deploy.
  * The code never fails on a bad value (`bool()` reads anything but `true` as
  * false; the canary is an exact-match allowlist), so a wrong value must stop
@@ -52,6 +53,8 @@ const KEYS = [
   "SEO_PROJECTION_READ_V1",
   "SEO_PROJECTION_READ_CANARY",
   "SEO_R6_CONSOLIDATION_ENABLED",
+  "SEO_R4_CONSOLIDATION_ENABLED",
+  "SEO_R4_NOINDEX_ENABLED",
   "DIAGNOSTIC_PROJECTION_ENABLED",
   "DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED",
   "DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED",
@@ -137,6 +140,12 @@ describe("unset config", () => {
     assert.deepEqual(linesStartingWith(s.file, "SEO_R6_CONSOLIDATION_ENABLED"), [
       "SEO_R6_CONSOLIDATION_ENABLED='false'",
     ]);
+    assert.deepEqual(linesStartingWith(s.file, "SEO_R4_CONSOLIDATION_ENABLED"), [
+      "SEO_R4_CONSOLIDATION_ENABLED='false'",
+    ]);
+    assert.deepEqual(linesStartingWith(s.file, "SEO_R4_NOINDEX_ENABLED"), [
+      "SEO_R4_NOINDEX_ENABLED='false'",
+    ]);
     assert.deepEqual(linesStartingWith(s.file, "DIAGNOSTIC_PROJECTION_ENABLED"), [
       "DIAGNOSTIC_PROJECTION_ENABLED='false'",
     ]);
@@ -152,12 +161,16 @@ describe("unset config", () => {
       SEO_PROJECTION_READ_V1: "false",
       SEO_PROJECTION_READ_CANARY: "",
       SEO_R6_CONSOLIDATION_ENABLED: "false",
+      SEO_R4_CONSOLIDATION_ENABLED: "false",
+      SEO_R4_NOINDEX_ENABLED: "false",
       DIAGNOSTIC_PROJECTION_ENABLED: "false",
       DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED: "false",
       DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED: "false",
     });
     assert.match(r.out, /SEO_PROJECTION_READ_CANARY=\(empty — fail-closed/);
     assert.match(r.out, /SEO_R6_CONSOLIDATION_ENABLED=false/);
+    assert.match(r.out, /SEO_R4_CONSOLIDATION_ENABLED=false/);
+    assert.match(r.out, /SEO_R4_NOINDEX_ENABLED=false/);
     assert.match(r.out, /DIAGNOSTIC_PROJECTION_ENABLED=false/);
     assert.match(r.out, /DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED=false/);
     assert.match(r.out, /DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED=false/);
@@ -189,6 +202,19 @@ describe("unset config", () => {
     assert.deepEqual(otherLines(s.file), UNRELATED);
   });
 
+  test("rollback: stale R4 lines set to true are replaced by false", () => {
+    const s = scratch(`${BASE_ENV}SEO_R4_CONSOLIDATION_ENABLED=true\nSEO_R4_NOINDEX_ENABLED='true'\n`);
+    const r = run(s.file);
+    assert.equal(r.code, 0, r.out);
+    assert.deepEqual(linesStartingWith(s.file, "SEO_R4_CONSOLIDATION_ENABLED"), [
+      "SEO_R4_CONSOLIDATION_ENABLED='false'",
+    ]);
+    assert.deepEqual(linesStartingWith(s.file, "SEO_R4_NOINDEX_ENABLED"), [
+      "SEO_R4_NOINDEX_ENABLED='false'",
+    ]);
+    assert.deepEqual(otherLines(s.file), UNRELATED);
+  });
+
   test("empty strings (GitHub renders an unset variable as '') behave as unset", () => {
     const s = scratch();
     const r = run(s.file, {
@@ -196,6 +222,8 @@ describe("unset config", () => {
       SEO_PROJECTION_READ_V1_OVERRIDE: "",
       SEO_PROJECTION_READ_CANARY_OVERRIDE: "",
       SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "",
+      SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: "",
+      SEO_R4_NOINDEX_ENABLED_OVERRIDE: "",
       DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "",
       DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "",
       DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "",
@@ -206,6 +234,8 @@ describe("unset config", () => {
       SEO_PROJECTION_READ_V1: "false",
       SEO_PROJECTION_READ_CANARY: "",
       SEO_R6_CONSOLIDATION_ENABLED: "false",
+      SEO_R4_CONSOLIDATION_ENABLED: "false",
+      SEO_R4_NOINDEX_ENABLED: "false",
       DIAGNOSTIC_PROJECTION_ENABLED: "false",
       DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED: "false",
       DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED: "false",
@@ -221,6 +251,8 @@ describe("values written", () => {
       SEO_PROJECTION_READ_V1_OVERRIDE: "true",
       SEO_PROJECTION_READ_CANARY_OVERRIDE: R3_TOKEN,
       SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+      SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+      SEO_R4_NOINDEX_ENABLED_OVERRIDE: "true",
       DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "true",
       DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "true",
       DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "true",
@@ -234,6 +266,8 @@ describe("values written", () => {
       SEO_PROJECTION_READ_V1: "true",
       SEO_PROJECTION_READ_CANARY: R3_TOKEN,
       SEO_R6_CONSOLIDATION_ENABLED: "true",
+      SEO_R4_CONSOLIDATION_ENABLED: "true",
+      SEO_R4_NOINDEX_ENABLED: "true",
       DIAGNOSTIC_PROJECTION_ENABLED: "true",
       DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED: "true",
       DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED: "true",
@@ -242,6 +276,8 @@ describe("values written", () => {
     assert.deepEqual(otherLines(s.file), UNRELATED);
     assert.match(r.out, /SEO_PROJECTION_READ_V1=true/);
     assert.match(r.out, /SEO_R6_CONSOLIDATION_ENABLED=true/);
+    assert.match(r.out, /SEO_R4_CONSOLIDATION_ENABLED=true/);
+    assert.match(r.out, /SEO_R4_NOINDEX_ENABLED=true/);
     assert.match(r.out, /DIAGNOSTIC_PROJECTION_ENABLED=true/);
     assert.match(r.out, /DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED=true/);
     assert.match(r.out, /DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED=true/);
@@ -255,6 +291,20 @@ describe("values written", () => {
     const read = bashRead(s.file, KEYS);
     assert.equal(read.DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED, "true");
     assert.equal(read.DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED, "false");
+    assert.deepEqual(otherLines(s.file), UNRELATED);
+  });
+
+  test("the two R4 flags are independent: consolidation ON, noindex explicitly OFF", () => {
+    const s = scratch();
+    const r = run(s.file, {
+      SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+      SEO_R4_NOINDEX_ENABLED_OVERRIDE: "false",
+    });
+    assert.equal(r.code, 0, r.out);
+    const read = bashRead(s.file, KEYS);
+    assert.equal(read.SEO_R4_CONSOLIDATION_ENABLED, "true");
+    assert.equal(read.SEO_R4_NOINDEX_ENABLED, "false");
+    assert.equal(read.SEO_R6_CONSOLIDATION_ENABLED, "false");
     assert.deepEqual(otherLines(s.file), UNRELATED);
   });
 
@@ -300,6 +350,8 @@ describe("values written", () => {
         SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE: "true",
         SEO_PROJECTION_READ_CANARY_OVERRIDE: canary,
         SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+        SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+        SEO_R4_NOINDEX_ENABLED_OVERRIDE: "false",
         DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "true",
         DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "true",
         DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "true",
@@ -321,6 +373,8 @@ describe("values written", () => {
     assert.equal(env.SEO_PROJECTION_READ_V1, "false");
     assert.equal(env.SEO_PROJECTION_READ_CANARY, canary);
     assert.equal(env.SEO_R6_CONSOLIDATION_ENABLED, "true");
+    assert.equal(env.SEO_R4_CONSOLIDATION_ENABLED, "true");
+    assert.equal(env.SEO_R4_NOINDEX_ENABLED, "false");
     assert.equal(env.DIAGNOSTIC_PROJECTION_ENABLED, "true");
     assert.equal(env.DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED, "true");
     assert.equal(env.DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED, "true");
@@ -364,6 +418,14 @@ describe("refusals leave the .env byte-identical", () => {
     "R6 'yes'": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "yes" },
     "R6 '1'": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "1" },
     "R6 'true ' (trailing space)": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true " },
+    "R4 consolidation 'True'": { SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: "True" },
+    "R4 consolidation 'yes'": { SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: "yes" },
+    "R4 consolidation '1'": { SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: "1" },
+    "R4 consolidation 'true ' (trailing space)": { SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: "true " },
+    "R4 noindex 'TRUE'": { SEO_R4_NOINDEX_ENABLED_OVERRIDE: "TRUE" },
+    "R4 noindex 'on'": { SEO_R4_NOINDEX_ENABLED_OVERRIDE: "on" },
+    "R4 noindex ' true' (leading space)": { SEO_R4_NOINDEX_ENABLED_OVERRIDE: " true" },
+    "R4 noindex 'true\\n' (trailing newline)": { SEO_R4_NOINDEX_ENABLED_OVERRIDE: "true\n" },
     "diagnostic 'True'": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "True" },
     "diagnostic 'yes'": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "yes" },
     "diagnostic '1'": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "1" },
@@ -431,6 +493,11 @@ describe("refusals leave the .env byte-identical", () => {
       SEO_PROJECTION_READ_V1_OVERRIDE: "true",
       SEO_PROJECTION_READ_CANARY_OVERRIDE: R3_TOKEN,
       SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "on",
+    },
+    "a bad R4 value among valid flags": {
+      SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+      SEO_R4_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+      SEO_R4_NOINDEX_ENABLED_OVERRIDE: "1",
     },
     "a bad diagnostic value among valid flags": {
       SEO_PROJECTION_READ_V1_OVERRIDE: "true",

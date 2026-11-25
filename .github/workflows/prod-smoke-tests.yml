@@ -675,6 +675,33 @@ jobs:
           if [ "$FAILED" = "1" ]; then exit 1; fi
           echo "✅ R6 posture matches the deployed flag (${FLAG})"
 
+      - name: 🧾 R4 references — flags the container runs with (read only)
+        id: r4-flags-read
+        # SEO_R4_CONSOLIDATION_ENABLED (mandat ER) and SEO_R4_NOINDEX_ENABLED
+        # (mandat EW) are written into the PROD .env by release-prod.yml
+        # (scripts/ci/prod-seo-projection-env.sh), like R6 above. Their values in
+        # the container are read the same way as in the R6 step and reported,
+        # nothing more: no served posture is checked, so this step never fails and
+        # blocks nothing. The code reads only the literal `true` as on (bool(),
+        # feature-flags.service.ts); unset = off.
+        continue-on-error: true
+        run: |
+          for KEY in SEO_R4_CONSOLIDATION_ENABLED SEO_R4_NOINDEX_ENABLED; do
+            FLAG_LINE=$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' $CONTAINER | grep "^${KEY}=" || true)
+            FLAG_RAW="${FLAG_LINE#"${KEY}="}"
+            if [ -z "$FLAG_LINE" ]; then
+              FLAG=off
+              echo "ℹ️ ${KEY} not set in $CONTAINER → off (code default)"
+            else
+              if [ "$FLAG_RAW" = "true" ]; then FLAG=on; else FLAG=off; fi
+              echo "ℹ️ ${KEY}='${FLAG_RAW}' in $CONTAINER → ${FLAG}"
+            fi
+            case "$KEY" in
+              SEO_R4_CONSOLIDATION_ENABLED) echo "consolidation=$FLAG" >> "$GITHUB_OUTPUT" ;;
+              SEO_R4_NOINDEX_ENABLED) echo "noindex=$FLAG" >> "$GITHUB_OUTPUT" ;;
+            esac
+          done
+
       - name: ⚡ LCP proxy checks
         id: lcp-check
         continue-on-error: true
@@ -864,6 +891,12 @@ jobs:
           echo "| LCP proxy | ${{ steps.lcp-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| CSP header | ${{ steps.csp-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| PageSpeed | ${{ steps.pagespeed-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### R4 flags in the container (read only, never fails)" >> $GITHUB_STEP_SUMMARY
+          echo "| Flag | State |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| SEO_R4_CONSOLIDATION_ENABLED | ${{ steps.r4-flags-read.outputs.consolidation || 'not read' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SEO_R4_NOINDEX_ENABLED | ${{ steps.r4-flags-read.outputs.noindex || 'not read' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "_Run: $(date -u '+%Y-%m-%d %H:%M UTC')_" >> $GITHUB_STEP_SUMMARY
 

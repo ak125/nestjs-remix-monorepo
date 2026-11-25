@@ -978,11 +978,19 @@ jobs:
           # See env block comment above for rationale.
           JWT_SECRET=${JWT_SECRET}
           READ_ONLY=true
+          # R4 noindex (mandat EW): the 62 listed /reference-auto/ pages are served
+          # noindex, follow. Code default off; PROD gets the flag from
+          # release-prod.yml (PROD_SEO_R4_NOINDEX_ENABLED, unset = false).
+          SEO_R4_NOINDEX_ENABLED=true
           # ADR-055 shadow activation: collect real preprod evidence before any
           # mode=on decision. Literal on remains blocked by backend boot guard.
           SEO_CHAIN_R7_MODE=shadow
           SEO_CHAIN_R8_MODE=shadow
           SEO_CHAIN_RM_MODE=shadow
+          # R4 consolidation (mandat ER): the 43 listed /reference-auto/ pages answer
+          # 301 to the conseils page of their gamme. Code default off; PROD gets the
+          # flag from release-prod.yml (PROD_SEO_R4_CONSOLIDATION_ENABLED, unset = false).
+          SEO_R4_CONSOLIDATION_ENABLED=true
           REDIS_URL=redis://redis-preprod:6379
           APP_URL=http://localhost:3200
           # RAG service disabled in preprod (4 rag-proxy services use
