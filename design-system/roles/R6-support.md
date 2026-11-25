@@ -44,19 +44,11 @@ R6 (Support) pages provide help, legal information, and customer service. They s
 
 ### Colors
 
-```css
---r6-primary: #1D1D1F;
---r6-secondary: #636366;
---r6-accent: #007AFF;
---r6-background: #FFFFFF;
-```
+Colors come from `packages/design-tokens/src/tokens.json`, by role, never as raw values (P44 of `.claude/governance/journal-des-principes.md`). Navy and orange are the brand colors. Orange marks the one primary action per screen, with navy text; other actions are outlined. Red is for errors and destructive actions only.
 
 ### Typography
 
-```css
---r6-heading: 'Merriweather', serif;
---r6-body: 'Source Sans Pro', sans-serif;
-```
+Outfit for headings, DM Sans for body text, Roboto Mono for codes the user copies, from the tokens (P46). Every weight used is loaded.
 
 ## Required Elements
 
