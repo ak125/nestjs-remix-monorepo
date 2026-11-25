@@ -1036,6 +1036,7 @@ describe('R3GuideService — liens vers les pages R4 redirigées (mandat ER)', (
       [PG_ALIAS, CONSEILS(PG_ALIAS)],
       ['thermostat', CONSEILS('thermostat')],
     ]),
+    degraded: false,
   });
 
   it('drapeau éteint : contenu et clé de cache inchangés', async () => {
@@ -1063,6 +1064,26 @@ describe('R3GuideService — liens vers les pages R4 redirigées (mandat ER)', (
       `<p>Voir la définition, <a href="${CONSEILS('thermostat')}">le thermostat</a> et <a href="${REF('alternateur')}">l'alternateur</a>.</p>`,
     );
     expect(await cache.get(`r3-guide:v3:r6c0.r4c1:${PG_ALIAS}`)).not.toBeNull();
+    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).toBeNull();
+  });
+
+  it('drapeau allumé, garde en panne : page servie sans redirection de lien, rien en cache sous .r4c1', async () => {
+    const { service, seoService, r4Consolidation, cache } =
+      await buildService();
+    r4Consolidation.cacheKeySegment.mockImplementation(
+      (base: string) => `${base}.r4c1`,
+    );
+    r4Consolidation.getSnapshot.mockResolvedValue({
+      enabled: true,
+      redirects: new Map(),
+      degraded: true,
+    });
+    seoService.getGammeConseil.mockResolvedValue([S2]);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.bodySections[0].html).toBe(S2.content);
+    expect(await cache.get(`r3-guide:v3:r6c0.r4c1:${PG_ALIAS}`)).toBeNull();
     expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).toBeNull();
   });
 

@@ -196,8 +196,13 @@ export class R3GuideService {
     const promise = (async () => {
       const computeStart = Date.now();
       try {
-        const payload = await this.computeLegacyPayload(pg_alias);
-        if (payload !== null) {
+        const { payload, degraded } = await this.computeLegacyPayload(pg_alias);
+        if (degraded) {
+          // Garde R4 en panne (mandat ER) : payload servi, jamais mis en cache.
+          this.logger.warn(
+            `[r3-cache] skip key=${cacheKey} — garde R4 non vérifiable, payload non caché`,
+          );
+        } else if (payload !== null) {
           // Cache write is best-effort: a Redis blip must not 500 a request
           // that already has a valid payload in hand. Inconsistent with
           // CacheService.set rethrow semantics; isolate the failure here.
@@ -215,7 +220,7 @@ export class R3GuideService {
           }
         }
         this.logger.log(
-          `[r3-cache] miss key=${cacheKey} duration_ms=${Date.now() - computeStart} cached=${payload !== null}`,
+          `[r3-cache] miss key=${cacheKey} duration_ms=${Date.now() - computeStart} cached=${payload !== null && !degraded}`,
         );
         return payload;
       } catch (err) {
@@ -327,9 +332,9 @@ export class R3GuideService {
    */
   private async computeLegacyPayload(
     pg_alias: string,
-  ): Promise<R3GuidePayload | null> {
+  ): Promise<{ payload: R3GuidePayload | null; degraded: boolean }> {
     const ctx = await this.loadGuideContext(pg_alias);
-    if (ctx === null) return null;
+    if (ctx === null) return { payload: null, degraded: false };
 
     // Step 3 — Resolve canonical sections (port of frontend resolveCanonicalSections)
     const body = await this.resolveCanonicalSections(
@@ -337,7 +342,10 @@ export class R3GuideService {
       ctx.article.sections,
       ctx.article,
     );
-    return this.assemblePayload(ctx, body);
+    return {
+      payload: await this.assemblePayload(ctx, body),
+      degraded: ctx.r4Snapshot.degraded,
+    };
   }
 
   /** Steps 1-2 — article + données de page, communs aux deux sources de corps. */

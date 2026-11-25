@@ -46,6 +46,11 @@ export interface R4ConsolidationSnapshot {
   enabled: boolean;
   /** Slug R4 → chemin conseils servi à sa place (pages qui passent la garde). */
   redirects: ReadonlyMap<string, string>;
+  /**
+   * true : garde non vérifiable (lecture en échec), rien n'est redirigé. Une
+   * réponse construite sur ce snapshot n'est ni mise en cache ni figée.
+   */
+  degraded: boolean;
 }
 
 /** Page R4 publiée telle que la garde la lit. */
@@ -75,6 +80,7 @@ export const R4_CONSOLIDATION_CACHE_SUFFIXES = ['', '.r4c1'] as const;
 export const R4_CONSOLIDATION_OFF: R4ConsolidationSnapshot = Object.freeze({
   enabled: false,
   redirects: new Map<string, string>(),
+  degraded: false,
 });
 
 const REFERENCE_PREFIX = '/reference-auto/';
@@ -230,7 +236,10 @@ export class R4ConsolidationPolicyService extends SupabaseBaseService {
       : base;
   }
 
-  /** Snapshot de la garde. Ne lève jamais : un échec ne redirige rien. */
+  /**
+   * Snapshot de la garde. Ne lève jamais : un échec ne redirige rien et rend
+   * un snapshot `degraded`.
+   */
   async getSnapshot(): Promise<R4ConsolidationSnapshot> {
     if (!this.featureFlags.seoR4ConsolidationEnabled) {
       return R4_CONSOLIDATION_OFF;
@@ -247,12 +256,13 @@ export class R4ConsolidationPolicyService extends SupabaseBaseService {
           rows,
           guideLinks.conseilsAliases,
         ),
+        degraded: false,
       };
     } catch (e) {
       this.logger.error(
         `${R4_CONSOLIDATION_SNAPSHOT_FAILED} ${e instanceof Error ? e.message : String(e)} — aucune page R4 redirigée`,
       );
-      return { enabled: true, redirects: new Map() };
+      return { enabled: true, redirects: new Map(), degraded: true };
     }
   }
 

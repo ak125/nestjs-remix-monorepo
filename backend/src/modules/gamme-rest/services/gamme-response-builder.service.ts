@@ -377,9 +377,12 @@ export class GammeResponseBuilderService {
       pageContent = out.html;
       guideLinksChanged += out.changed;
       // Liens vers les pages R4 redirigées (mandat ER) : vers leur page conseils.
+      // Garde en panne : même marqueur que les liens de gamme, réponse non cachée.
+      const r4Snapshot = await this.r4Consolidation.getSnapshot();
+      if (r4Snapshot.degraded) gammeLinksDegraded = true;
       const r4Links = applyReferenceLinkRuleToHtml(
         pageContent,
-        await this.r4Consolidation.getSnapshot(),
+        r4Snapshot,
         guideLinkCtx.currentPath,
       );
       if (r4Links.changed > 0) {
@@ -888,6 +891,7 @@ export class GammeResponseBuilderService {
     if (ref && ref.definition) {
       // Page R4 redirigée (mandat ER) : lien vers sa page conseils.
       const r4Snapshot = await this.r4Consolidation.getSnapshot();
+      if (r4Snapshot.degraded) gammeLinksDegraded = true;
       referenceData = {
         slug: ref.slug,
         title: ref.title,
@@ -1114,7 +1118,8 @@ export class GammeResponseBuilderService {
         buying_guide_gate_reasons: antiWikiGate.ok
           ? null
           : antiWikiGate.reasons.join(','),
-        // 1 : liens de gamme non vérifiés (repli) — réponse à ne pas cacher.
+        // 1 : liens de gamme non vérifiés (repli) ou garde R4 en panne —
+        // réponse à ne pas cacher.
         gamme_links_degraded: gammeLinksDegraded ? 1 : 0,
       },
     };

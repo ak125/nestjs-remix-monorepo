@@ -254,4 +254,59 @@ describe("reference-auto.$slug loader — consolidation R4 → R3 (mandat ER)", 
       { slug: "b", title: "B" },
     ]);
   });
+
+  // C7 (contre-vérification EV) : sonde bornée par un délai court, annulée à
+  // l'échéance ; la page R4 est alors servie comme sur une panne de la sonde.
+  it("sonde muette → appel annulé à l'échéance, page R4 servie", async () => {
+    let probeSignal: AbortSignal | undefined;
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      if (url.includes("/redirect/")) {
+        probeSignal = init?.signal ?? undefined;
+        return new Promise((_resolve, reject) => {
+          probeSignal?.addEventListener("abort", () =>
+            reject(probeSignal?.reason),
+          );
+        });
+      }
+      return url.endsWith("/related")
+        ? Promise.resolve(okJson({ related: [] }))
+        : Promise.resolve(okJson({ slug: SLUG, title: "Soupape" }));
+    });
+
+    const p = call();
+    expect(probeSignal).toBeInstanceOf(AbortSignal);
+    const body = ((await p) as { data: { reference: unknown } }).data;
+    expect(probeSignal?.aborted).toBe(true);
+    expect(body.reference).toEqual({ slug: SLUG, title: "Soupape" });
+  }, 5000);
+
+  // C8 : la promesse principale a un gestionnaire de rejet dès sa création ;
+  // un rejet pendant l'attente de la sonde n'est pas une rejection non gérée.
+  it("principal rejeté pendant l'attente de la sonde → aucune rejection non gérée, 503", async () => {
+    const probe = deferred<{ ok: boolean; json: () => Promise<unknown> }>();
+    const unhandled = vi.fn();
+    process.on("unhandledRejection", unhandled);
+    try {
+      // Fonction nue, pas vi.fn : le suivi des résultats de vi.fn attache un
+      // gestionnaire à la promesse rendue et masquerait la rejection.
+      vi.stubGlobal("fetch", (url: string) =>
+        url.includes("/redirect/")
+          ? probe.promise
+          : url.endsWith("/related")
+            ? Promise.resolve(okJson({ related: [] }))
+            : Promise.reject(new Error("ECONNRESET")),
+      );
+
+      const p = call().catch((e: unknown) => e);
+      await new Promise((r) => setTimeout(r, 20));
+      expect(unhandled).not.toHaveBeenCalled();
+
+      probe.resolve(okJson({ redirect_to: null }));
+      const thrown = (await p) as Response;
+      expect(thrown).toBeInstanceOf(Response);
+      expect(thrown.status).toBe(503);
+    } finally {
+      process.off("unhandledRejection", unhandled);
+    }
+  });
 });

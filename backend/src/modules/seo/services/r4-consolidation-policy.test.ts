@@ -33,6 +33,7 @@ const row = (
 const on = (entries: Array<[string, string]>): R4ConsolidationSnapshot => ({
   enabled: true,
   redirects: new Map(entries),
+  degraded: false,
 });
 const SNAP = on([
   ['disque-de-frein', CONSEILS('disque-de-frein')],
@@ -260,6 +261,7 @@ describe('R4ConsolidationPolicyService.getSnapshot', () => {
     opts: {
       flag?: boolean;
       cached?: unknown;
+      cacheGet?: Error;
       rpc?: { data: unknown; error: { message: string } | null };
       conseils?: string[] | Error;
     } = {},
@@ -268,7 +270,10 @@ describe('R4ConsolidationPolicyService.getSnapshot', () => {
       R4ConsolidationPolicyService.prototype,
     ) as R4ConsolidationPolicyService;
     const cacheService = {
-      get: jest.fn().mockResolvedValue(opts.cached ?? null),
+      get:
+        opts.cacheGet instanceof Error
+          ? jest.fn().mockRejectedValue(opts.cacheGet)
+          : jest.fn().mockResolvedValue(opts.cached ?? null),
       set: jest.fn().mockResolvedValue(undefined),
     };
     const callRpc = jest
@@ -302,6 +307,7 @@ describe('R4ConsolidationPolicyService.getSnapshot', () => {
       flag: false,
     });
     expect(await svc.getSnapshot()).toBe(R4_CONSOLIDATION_OFF);
+    expect(R4_CONSOLIDATION_OFF.degraded).toBe(false);
     expect(cacheService.get).not.toHaveBeenCalled();
     expect(callRpc).not.toHaveBeenCalled();
     expect(guideLinkPolicy.getSnapshot).not.toHaveBeenCalled();
@@ -312,6 +318,7 @@ describe('R4ConsolidationPolicyService.getSnapshot', () => {
     const { svc, cacheService, callRpc } = makeService();
     const snap = await svc.getSnapshot();
     expect(snap.enabled).toBe(true);
+    expect(snap.degraded).toBe(false);
     expect(snap.redirects.size).toBe(43);
     expect(snap.redirects.get('vanne-egr')).toBe(CONSEILS('vanne-egr'));
     expect(snap.redirects.has('alternateur')).toBe(false);
@@ -351,11 +358,15 @@ describe('R4ConsolidationPolicyService.getSnapshot', () => {
     ['réponse non tableau', { rpc: { data: {}, error: null } }],
     ['ligne sans slug', { rpc: { data: [{ pg_id: 1 }], error: null } }],
   ])(
-    '%s → aucune redirection, erreur marquée, rien en cache',
+    '%s → aucune redirection, snapshot dégradé, erreur marquée, rien en cache',
     async (_l, opts) => {
       const { svc, cacheService, logger } = makeService(opts as never);
       const snap = await svc.getSnapshot();
-      expect(snap).toEqual({ enabled: true, redirects: new Map() });
+      expect(snap).toEqual({
+        enabled: true,
+        redirects: new Map(),
+        degraded: true,
+      });
       expect(logger.error).toHaveBeenCalledWith(
         expect.stringContaining(R4_CONSOLIDATION_SNAPSHOT_FAILED),
       );
@@ -363,12 +374,36 @@ describe('R4ConsolidationPolicyService.getSnapshot', () => {
     },
   );
 
-  it('règle conseils en échec → aucune redirection, erreur marquée', async () => {
+  it('règle conseils en échec → aucune redirection, snapshot dégradé, erreur marquée', async () => {
     const { svc, logger } = makeService({ conseils: new Error('R6 down') });
     const snap = await svc.getSnapshot();
-    expect(snap).toEqual({ enabled: true, redirects: new Map() });
+    expect(snap).toEqual({
+      enabled: true,
+      redirects: new Map(),
+      degraded: true,
+    });
     expect(logger.error).toHaveBeenCalledWith(
       expect.stringContaining(R4_CONSOLIDATION_SNAPSHOT_FAILED),
+    );
+  });
+
+  it('lecture du cache Redis en échec → snapshot dégradé, aucune lecture RPC, erreur marquée', async () => {
+    const { svc, cacheService, callRpc, logger } = makeService({
+      cacheGet: new Error('redis down'),
+    });
+    const snap = await svc.getSnapshot();
+    expect(snap).toEqual({
+      enabled: true,
+      redirects: new Map(),
+      degraded: true,
+    });
+    expect(callRpc).not.toHaveBeenCalled();
+    expect(cacheService.set).not.toHaveBeenCalled();
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining(R4_CONSOLIDATION_SNAPSHOT_FAILED),
+    );
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringContaining('redis down'),
     );
   });
 });

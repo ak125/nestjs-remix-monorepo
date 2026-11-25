@@ -616,10 +616,29 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
+      const filePath = path.join(
+        this.xmlService.OUTPUT_DIR,
+        'sitemap-reference.xml',
+      );
+
       // Pages redirigées vers leur page conseils (mandat ER) : hors sitemap.
+      const r4Snapshot = await this.r4Consolidation.getSnapshot();
+      if (r4Snapshot.degraded) {
+        // Garde en panne : rien n'est figé. Le dernier fichier reste servi et
+        // déclaré ; sans fichier, la liste publiée est écrite entière (ces
+        // pages répondent 200 tant que la garde est en panne).
+        const previous = await fs.stat(filePath).then(
+          (s) => (s.isFile() ? filePath : null),
+          () => null,
+        );
+        this.logger.warn(
+          `⚠️ sitemap-reference.xml : garde R4 non vérifiable, ${previous ? 'fichier existant gardé' : 'aucun fichier existant, liste publiée écrite sans exclusion'}`,
+        );
+        if (previous) return previous;
+      }
       const { kept, excluded } = withoutR4Redirected(
         references as { slug: string; updated_at: string }[],
-        await this.r4Consolidation.getSnapshot(),
+        r4Snapshot,
       );
       if (excluded > 0) {
         this.logger.log(
@@ -637,10 +656,6 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         }),
       );
 
-      const filePath = path.join(
-        this.xmlService.OUTPUT_DIR,
-        'sitemap-reference.xml',
-      );
       await this.xmlService.writeStaticSitemapFile(filePath, urls);
       this.logger.log(`   ✅ sitemap-reference.xml: ${urls.length} URLs (R4)`);
       return filePath;

@@ -193,6 +193,7 @@ describe('BlogService.getArticleBySlug — liens vers les pages R4 redirigées (
   const r4On: R4ConsolidationSnapshot = {
     enabled: true,
     redirects: new Map([['disque-de-frein', conseils('disque-de-frein')]]),
+    degraded: false,
   };
 
   it('drapeau éteint : article servi tel quel', async () => {

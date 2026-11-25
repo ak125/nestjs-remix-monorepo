@@ -1,8 +1,12 @@
 /**
  * sitemap-reference.xml — consolidation R4 → R3 (mandat ER) : drapeau allumé,
  * les pages redirigées sortent du fichier ; éteint, le fichier est inchangé.
- * Pas d'I/O : client Supabase factice, écriture du fichier capturée.
+ * Pas d'I/O hors d'un dossier temporaire : client Supabase factice, écriture
+ * du fichier capturée.
  */
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { SitemapV10StaticService } from './sitemap-v10-static.service';
 import { type SitemapUrl } from './sitemap-v10.types';
 import {
@@ -16,7 +20,10 @@ const ROWS = [
   { slug: 'vanne-egr', updated_at: '2026-01-03T00:00:00.000Z' },
 ];
 
-async function generate(snap: R4ConsolidationSnapshot) {
+async function generate(
+  snap: R4ConsolidationSnapshot,
+  outputDir = '/sitemaps',
+) {
   let written: SitemapUrl[] = [];
   const logger = { log: jest.fn(), warn: jest.fn(), error: jest.fn() };
   const svc = Object.create(
@@ -35,7 +42,7 @@ async function generate(snap: R4ConsolidationSnapshot) {
     logger,
     r4Consolidation: { getSnapshot: jest.fn().mockResolvedValue(snap) },
     xmlService: {
-      OUTPUT_DIR: '/sitemaps',
+      OUTPUT_DIR: outputDir,
       writeStaticSitemapFile: async (_p: string, urls: SitemapUrl[]) => {
         written = urls;
       },
@@ -66,6 +73,7 @@ describe('generateReferenceSitemap — consolidation R4 → R3', () => {
         ['thermostat', '/blog-pieces-auto/conseils/thermostat'],
         ['vanne-egr', '/blog-pieces-auto/conseils/vanne-egr'],
       ]),
+      degraded: false,
     });
     expect(written.map((u) => u.url)).toEqual(['/reference-auto/alternateur']);
     expect(logger.log).toHaveBeenCalledWith(
@@ -73,8 +81,48 @@ describe('generateReferenceSitemap — consolidation R4 → R3', () => {
     );
   });
 
-  it('drapeau allumé, garde non vérifiable (aucune redirection) → aucune exclusion', async () => {
-    const { written } = await generate({ enabled: true, redirects: new Map() });
+  it('drapeau allumé, garde vérifiée sans redirection → aucune exclusion', async () => {
+    const { written } = await generate({
+      enabled: true,
+      redirects: new Map(),
+      degraded: false,
+    });
     expect(written).toHaveLength(3);
+  });
+
+  describe('drapeau allumé, garde en panne (snapshot dégradé)', () => {
+    const DEGRADED: R4ConsolidationSnapshot = {
+      enabled: true,
+      redirects: new Map(),
+      degraded: true,
+    };
+    let dir: string;
+    beforeEach(() => {
+      dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sitemap-r4-'));
+    });
+    afterEach(() => {
+      fs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    it('fichier existant → gardé tel quel, non réécrit, toujours déclaré', async () => {
+      const existing = path.join(dir, 'sitemap-reference.xml');
+      fs.writeFileSync(existing, '<urlset/>');
+      const { filePath, written, logger } = await generate(DEGRADED, dir);
+      expect(filePath).toBe(existing);
+      expect(written).toEqual([]);
+      expect(fs.readFileSync(existing, 'utf8')).toBe('<urlset/>');
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('garde R4 non vérifiable'),
+      );
+    });
+
+    it('aucun fichier → pages publiées écrites sans exclusion (servies en 200), panne journalisée', async () => {
+      const { filePath, written, logger } = await generate(DEGRADED, dir);
+      expect(filePath).toBe(path.join(dir, 'sitemap-reference.xml'));
+      expect(written).toHaveLength(3);
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('garde R4 non vérifiable'),
+      );
+    });
   });
 });

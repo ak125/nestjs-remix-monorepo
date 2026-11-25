@@ -316,6 +316,9 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
 /* ===========================
    Loader
 =========================== */
+/** Délai de la sonde de consolidation R4 (lecture d'un snapshot en cache côté backend). */
+const R4_REDIRECT_PROBE_TIMEOUT_MS = 1000;
+
 export async function loader({ params }: LoaderFunctionArgs) {
   const { slug } = params;
 
@@ -329,9 +332,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
     // Consolidation R4 → R3 (mandat ER, drapeau SEO_R4_CONSOLIDATION_ENABLED) :
     // le backend porte la liste close et la garde ; null → page servie. Un
     // échec de l'appel sert la page R4 comme aujourd'hui (jamais de 5xx ici).
+    // Appel borné par un délai court et annulé à l'échéance : page servie.
     const redirectPromise: Promise<string | null> = fetch(
       `${backendUrl}/api/seo/reference/redirect/${slug}`,
-      { headers: { Accept: "application/json" } },
+      {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(R4_REDIRECT_PROBE_TIMEOUT_MS),
+      },
     )
       .then(async (r) => {
         if (!r.ok) return null;
@@ -350,6 +357,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
     const referencePromise = fetch(`${backendUrl}/api/seo/reference/${slug}`, {
       headers: { "Content-Type": "application/json" },
     });
+    // Gestionnaire de rejet dès la création : un rejet pendant l'attente de la
+    // sonde n'est pas une rejection non gérée ; l'await plus bas le reçoit.
+    referencePromise.catch(() => undefined);
     const relatedRefsPromise: Promise<RelatedRef[]> = fetch(
       `${backendUrl}/api/seo/reference/${slug}/related`,
       { headers: { "Content-Type": "application/json" } },
@@ -369,8 +379,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     const redirectTo = await redirectPromise;
     if (redirectTo) {
-      // Promesse principale abandonnée : sa rejection éventuelle est absorbée.
-      referencePromise.catch(() => undefined);
       return redirect(redirectTo, 301);
     }
 

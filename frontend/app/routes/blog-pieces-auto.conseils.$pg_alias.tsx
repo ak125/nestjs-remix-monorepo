@@ -432,7 +432,7 @@ export const meta: MetaFunction<typeof loader> = ({
 };
 
 // ── Lien R4 de la carte : absent quand la page R4 est redirigée ici (mandat ER)
-function MaybeLink({
+export function MaybeLink({
   to,
   className,
   children,

@@ -14,6 +14,7 @@ const REF = (s: string) => `/reference-auto/${s}`;
 const ON: R4ConsolidationSnapshot = {
   enabled: true,
   redirects: new Map([['thermostat', CONSEILS('thermostat')]]),
+  degraded: false,
 };
 
 function referenceController(
