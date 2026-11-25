@@ -1,0 +1,64 @@
+type_id	marque	modele	modele_affiche	type_name	type_name_meta	type_fuel	type_power_ps	codes_moteur	famille	regle	ajoute	retire	preuve	r8_indexable	r8_sitemap	r2_servables	r2_indexables
+9505	ALFA ROMEO	145	145	2.0 16V	2.0 16V Quadrifoglio	Essence	155	AR 32301	preuve manquante	R9	QUADRIFOGLIO		QUADRIFOGLIO : non attesté (même marque, code moteur, puissance)	t	t	43	10
+7768	ALFA ROMEO	146	146	1.8 i.e. 16V	1.8 i.e. 16V TS	Essence	140	AR 38401,AR 67106	preuve manquante	R9	TS		TS : non attesté (même marque, code moteur, puissance)	t	t	45	10
+9504	ALFA ROMEO	146	146	1.8 i.e. 16V	1.8 i.e. 16V TS	Essence	144	AR 32201	preuve manquante	R9	TS		TS : non attesté (même marque, code moteur, puissance)	t	t	43	9
+9506	ALFA ROMEO	146	146	2.0 16V	2.0 16V Quadrifoglio	Essence	155	AR 32301	preuve manquante	R9	QUADRIFOGLIO		QUADRIFOGLIO : non attesté (même marque, code moteur, puissance)	t	t	41	11
+18932	ALFA ROMEO	147	147	1.9 JTDM	1.9 JTDM 8V	Diesel	120	937 A3.000	preuve manquante	R9	8V		8V : non attesté pour ce code moteur	t	t	46	12
+20628	CITROËN	C25 Camionnette	C25 Camionnette	1.9 D	1.9 D 1400	Diesel	69	DJY (XUD9A)	preuve manquante	R9	1400		1400 : non attesté (même marque, code moteur, puissance)	t	t	40	0
+20587	CITROËN	XM II	XM II	2.1 D VSX	2.1 D12 VSX	Diesel	82	P9A (XUD11A)	preuve manquante	R9	D12	D	D12 remplace « D » sans attestation, mais n'a pas d'autre usage établi (0+0 noms bruts)	t	t	36	8
+13802	CITROËN	XM II Break	XM II Break	2.1 D	2.1 D12	Diesel	82	P9A (XUD11A)	preuve manquante	R9	D12	D	D12 remplace « D » sans attestation, mais n'a pas d'autre usage établi (0+0 noms bruts)	t	t	37	11
+57399	DACIA	DOKKER	DOKKER	1.6	1.6 16V	Essence	83	K7M 812,K7M 828	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	42	6
+58607	DACIA	DOKKER Express	DOKKER Express	1.6	1.6 16V	Essence	83	K7M 812,K7M 828	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	42	7
+5739	FIAT	BRAVA	BRAVA	1.9 TD	1.9 TD S	Diesel	100	182 A7.000	preuve manquante	R9	S		S : non attesté (même marque, code moteur, puissance)	t	t	49	16
+5740	FIAT	BRAVA	BRAVA	1.9 TD	1.9 TD S	Diesel	75	182 A8.000	preuve manquante	R9	S		S : non attesté (même marque, code moteur, puissance)	t	t	48	15
+69637	IVECO	DAILY VI Chassis cabine	DAILY VI Chassis cabine	3.0 D 16V 35S17-55S17 4x4	3.0 D 35S17 HW - 35S17 HWD - 55S17 HW - 55S17 HWD 4x4	Diesel	170	F1CFL411F	preuve manquante	R9	HW HWD HW HWD	16V	HW : non attesté (même marque, code moteur, puissance) ; HWD : non attesté (même marque, code moteur, puissance) ; HW : non attesté (même marque, code moteur, puissance) ; HWD : non attesté (même marque, code moteur, puissance)	f	f	0	0
+21137	MAZDA	3 III	3 III	1.5	1.5 G Skyaktiv	Essence	100	P5Y1,P5Y4,P5Y5,P5Z3	preuve manquante	R9	G SKYAKTIV		G : non attesté (même marque, code moteur, puissance) ; SKYAKTIV : non attesté (même marque, code moteur, puissance)	t	t	25	3
+21146	MAZDA	3 III	3 III	2.0	2.0 G Skyaktiv	Essence	120	PEXL,PEY5,PEY7	preuve manquante	R9	G SKYAKTIV		G : non attesté (même marque, code moteur, puissance) ; SKYAKTIV : non attesté (même marque, code moteur, puissance)	t	t	27	3
+21148	MAZDA	3 III	3 III	2.2 D	2.2 D Skyaktiv	Diesel	150	SHY4,SHY6	preuve manquante	R9	SKYAKTIV		SKYAKTIV : non attesté (même marque, code moteur, puissance)	t	t	29	3
+3945	MERCEDES	CLASSE C (W202)	CLASSE C (W202)	200	200 CGI	Essence	136	M 111.941,M 111.945	preuve manquante	R9	CGI		CGI : non attesté (même marque, code moteur, puissance)	t	t	45	17
+73100	MERCEDES	CLASSE C (W205)	CLASSE C (W205)	250	250 CGI	Essence	211	M 274.920	preuve manquante	R9	CGI		CGI : non attesté (même marque, code moteur, puissance)	f	f	0	0
+74122	MINI	CLUBMAN (F54)	CLUBMAN (F54)	Cooper SD ALL4	Cooper SDX ALL4	Diesel	190	B47 C20 A,B47 C20 B	preuve manquante	R9	SDX	SD	SDX remplace « SD » sans attestation, mais n'a pas d'autre usage établi (0+0 noms bruts)	f	f	0	0
+16443	MITSUBISHI	SPACE STAR I MPV	SPACE STAR I MPV	1.6	1.6 16V	Essence	98	4G18	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	39	9
+17158	NISSAN	MICRA III	MICRA III	1.2	1.2 16V	Essence	80	CG12DE,CR12DE	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	44	16
+17159	NISSAN	MICRA III	MICRA III	1.4	1.4 16V	Essence	88	CR14DE	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	44	16
+17180	NISSAN	MICRA III	MICRA III	1.2	1.2 16V	Essence	65	CG12DE,CR12DE	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	44	16
+16191	OPEL	COMBO II	COMBO II	1.7 DI	1.7 Di 16V	Diesel	65	Y 17 DTL	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	48	17
+19147	OPEL	COMBO II	COMBO II	1.3 CDTI	1.3 CDTi 16V	Diesel	69	Z 13 DT	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	51	19
+19595	OPEL	COMBO II	COMBO II	1.3 CDTI	1.3 CDTi 16V	Diesel	75	Z 13 DTJ	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	51	18
+19948	OPEL	COMBO II	COMBO II	1.7 CDTI	1.7 CDTi 16V	Diesel	101	Z 17 DTH	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	49	13
+17261	OPEL	COMBO TOUR I	COMBO TOUR I	1.7 DI	1.7 Di 16V	Diesel	65	Y 17 DTL	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	48	15
+18558	OPEL	COMBO TOUR I	COMBO TOUR I	1.3 CDTI	1.3 CDTi 16V	Diesel	69	Y 13 DT,Z 13 DT	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	51	19
+19594	OPEL	COMBO TOUR I	COMBO TOUR I	1.3 CDTI	1.3 CDTi 16V	Diesel	75	Z 13 DTJ	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	51	19
+23132	OPEL	COMBO TOUR I	COMBO TOUR I	1.7 CDTI	1.7 CDTi 16V	Diesel	101	Z 17 DTH	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	49	13
+17068	OPEL	SIGNUM	SIGNUM	2.2 DGI 16V	2.2 direct	Essence	155	Z 22 YH	preuve manquante	R9	DIRECT	DGI 16V	DIRECT remplace « DGI » sans attestation, mais n'a pas d'autre usage établi (0+3 noms bruts)	t	t	44	14
+17937	OPEL	VECTRA C	VECTRA C	2.2 DGI 16V	2.2 Direct	Essence	155	Z 22 YH	preuve manquante	R9	DIRECT	DGI 16V	DIRECT remplace « DGI » sans attestation, mais n'a pas d'autre usage établi (0+3 noms bruts)	t	t	45	14
+17650	OPEL	VECTRA C Break	VECTRA C Break	2.2 DGI 16V	2.2 direct	Essence	155	Z 22 YH	preuve manquante	R9	DIRECT	DGI 16V	DIRECT remplace « DGI » sans attestation, mais n'a pas d'autre usage établi (0+3 noms bruts)	t	t	45	14
+17936	OPEL	VECTRA C GTS	VECTRA C GTS	2.2 DGI 16V	2.2 direct	Essence	155	Z 22 YH	preuve manquante	R9	DIRECT	DGI 16V	DIRECT remplace « DGI » sans attestation, mais n'a pas d'autre usage établi (0+3 noms bruts)	t	t	45	12
+11778	OPEL	ZAFIRA A	ZAFIRA A	2.0 DI	2.0 Di 16V	Diesel	82	X 20 DTL,Y 20 DTL	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	47	18
+5620	PEUGEOT	106 II	106 II	1.1	1.1 i Quicksilver	Essence	60	HDZ (TU1M+),HFX (TU1JP)	preuve manquante	R9	I QUICKSILVER		QUICKSILVER : non attesté (même marque, code moteur, puissance) ; i : injection essence, type_fuel=Essence	t	t	45	27
+18616	PEUGEOT	607	607	2.7 HDI	2.7 HDi 24V	Diesel	204	DT17TED4	preuve manquante	R9	24V		24V : non attesté pour ce code moteur	t	t	40	6
+14908	RENAULT	CLIO I	CLIO I	1.2 (Phase 2)	1.2 Chipie	Essence	54	C3G 720	preuve manquante	R9	CHIPIE	PHASE 2	CHIPIE : non attesté (même marque, code moteur, puissance)	t	t	41	18
+21359	RENAULT	ESPACE II	ESPACE II	2.1 TD RT Quadra	2.1 RTdT Quadra	Diesel	88	J8S 772	preuve manquante	R9	RTDT	TD RT	RTDT remplace « TD RT » sans attestation, mais n'a pas d'autre usage établi (0+0 noms bruts)	t	t	40	2
+7830	RENAULT	ESPACE III	ESPACE III	2.2 TD	2.2 12V TD	Diesel	113	G8T 714,G8T 716,G8T 760	preuve manquante	R9	12V		12V : non attesté pour ce code moteur	t	t	45	16
+22469	TOYOTA	AURIS I	AURIS I	1.6	1.6 VTi	Essence	124	1ZR-FE	preuve manquante	R9	VTI		VTI : non attesté (même marque, code moteur, puissance)	t	t	39	14
+22470	TOYOTA	AURIS I	AURIS I	1.4	1.4 VTi	Essence	97	4ZZ-FE	preuve manquante	R9	VTI		VTI : non attesté (même marque, code moteur, puissance)	t	t	40	12
+24667	TOYOTA	AURIS I	AURIS I	1.8	1.8 VTi	Essence	136	2ZR-FAE,2ZR-FE	preuve manquante	R9	VTI		VTI : non attesté (même marque, code moteur, puissance)	t	t	34	3
+16026	TOYOTA	AVENSIS VERSO	AVENSIS VERSO	2.0	2.0 VTi	Essence	150	1AZ-FE	preuve manquante	R9	VTI		VTI : non attesté (même marque, code moteur, puissance)	t	t	41	9
+19295	TOYOTA	RAV 4 III	RAV 4 III	2.0 4WD (Phase 1)	2.0 VTi 4WD	Essence	152	1AZ-FE	preuve manquante	R9	VTI	PHASE 1	VTI : non attesté (même marque, code moteur, puissance)	t	t	40	9
+19296	TOYOTA	RAV 4 III	RAV 4 III	2.2 D 4WD	2.2 D-4D 4WD	Diesel	136	2AD-FTV	preuve manquante	R9	4D		4D : non attesté (même marque, code moteur, puissance)	t	t	40	9
+31139	TOYOTA	RAV 4 III	RAV 4 III	2.2 D 4WD	2.2 D-4D 4WD	Diesel	150	2AD-FHV,2AD-FTV	preuve manquante	R9	4D		4D : non attesté (même marque, code moteur, puissance)	t	t	40	9
+34938	TOYOTA	RAV 4 III	RAV 4 III	2.2 D	2.2 D-4D	Diesel	150	2AD-FHV,2AD-FTV	preuve manquante	R9	4D		4D : non attesté (même marque, code moteur, puissance)	t	t	41	9
+50843	TOYOTA	RAV 4 III	RAV 4 III	2.0	2.0 VTi	Essence	148	3ZR-FAE	preuve manquante	R9	VTI		VTI : non attesté (même marque, code moteur, puissance)	t	t	31	4
+58616	TOYOTA	RAV 4 IV	RAV 4 IV	2.0 D	2.0 D-4D	Diesel	124	1AD-FTV	preuve manquante	R9	4D		4D : non attesté (même marque, code moteur, puissance)	t	t	37	4
+58618	TOYOTA	RAV 4 IV	RAV 4 IV	2.0 4WD	2.0 VTi 4WD	Essence	151	3ZR-FAE	preuve manquante	R9	VTI		VTI : non attesté (même marque, code moteur, puissance)	t	t	32	5
+58623	TOYOTA	RAV 4 IV	RAV 4 IV	2.2 D 4WD	2.2 D-4D 4WD	Diesel	150	2AD-FHV,2AD-FTV	preuve manquante	R9	4D		4D : non attesté (même marque, code moteur, puissance)	t	t	38	6
+58746	TOYOTA	RAV 4 IV	RAV 4 IV	2.0	2.0 VTi	Essence	146	3ZR-FE	preuve manquante	R9	VTI		VTI : non attesté (même marque, code moteur, puissance)	t	t	28	1
+80361	TOYOTA	RAV 4 IV	RAV 4 IV	2.0 4WD	2.0 VTi 4WD	Essence	151	3ZR-FAE	preuve manquante	R9	VTI		VTI : non attesté (même marque, code moteur, puissance)	f	f	0	0
+80363	TOYOTA	RAV 4 IV	RAV 4 IV	2.0 D	2.0 D-4D	Diesel	143	2WW	preuve manquante	R9	4D		4D : non attesté (même marque, code moteur, puissance)	f	f	0	0
+80364	TOYOTA	RAV 4 IV	RAV 4 IV	2.0 D 4WD	2.0 D-4D 4WD	Diesel	124	1AD-FTV	preuve manquante	R9	4D		4D : non attesté (même marque, code moteur, puissance)	f	f	0	0
+10466	TOYOTA	YARIS I	YARIS I	1.0	1.0 16V	Essence	68	1SZ-FE	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	44	20
+14287	TOYOTA	YARIS I	YARIS I	1.3 (Phase 1)	1.3 16V	Essence	86	2NZ-FE	preuve manquante	R9	16V	PHASE 1	16V : non attesté pour ce code moteur	t	t	43	17
+15984	TOYOTA	YARIS I	YARIS I	1.5 (Phase 1)	1.5 VTi TS	Essence	106	1NZ-FE	preuve manquante	R9	VTI TS	PHASE 1	VTI : non attesté (même marque, code moteur, puissance) ; TS : non attesté (même marque, code moteur, puissance)	t	t	43	14
+17569	TOYOTA	YARIS I	YARIS I	1.0	1.0 16V	Essence	65	1SZ-FE	preuve manquante	R9	16V		16V : non attesté pour ce code moteur	t	t	45	18
+17705	TOYOTA	YARIS I	YARIS I	1.5 (Phase 2)	1.5 TS	Essence	105	1NZ-FE	preuve manquante	R9	TS	PHASE 2	TS : non attesté (même marque, code moteur, puissance)	t	t	42	12
+19612	TOYOTA	YARIS I	YARIS I	1.5	1.5 VTi TS	Essence	150	1NZ-FE	preuve manquante	R9	VTI TS		VTI : non attesté (même marque, code moteur, puissance) ; TS : non attesté (même marque, code moteur, puissance)	t	t	41	9

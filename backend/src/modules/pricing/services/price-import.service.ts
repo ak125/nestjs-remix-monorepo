@@ -27,6 +27,7 @@ import {
   type PricingRule,
 } from './pricing-strategy.service';
 import { PricingRepository, type CommitRowPayload } from './pricing.repository';
+import { countInvariantRejections } from './price-guard-signal.core';
 import { SupplierTruthRepository } from '../../supplier-truth';
 
 const CHUNK_SIZE = 5000;
@@ -241,8 +242,11 @@ export class PriceImportService {
       operator: req.operator ?? null,
     });
     const report = await this.computeReport(req, lines);
+    // failed_rows = lignes refusées par le garde-fou des prix : état lu par le
+    // producteur du rapport du matin (price-guard-signal.core, mandat EI).
     await this.repo.setBatchStatus(batchId, 'DRY_RUN_OK', {
       checksum: sourceHash,
+      failed_rows: countInvariantRejections(report),
     });
     this.logger.log(
       `[PRICING_IMPORT] dry-run batchId=${batchId} rawId=${rawId} matched=${report.matchedCount} ` +
@@ -303,6 +307,7 @@ export class PriceImportService {
       }
       await this.repo.setBatchStatus(batchId, 'COMMITTED', {
         committed_rows: totals.committed,
+        failed_rows: countInvariantRejections(report),
         completed_at: new Date().toISOString(),
       });
       this.logger.log(

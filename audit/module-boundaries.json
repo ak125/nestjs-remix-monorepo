@@ -145,8 +145,8 @@
         "backend/src/modules/catalog/types",
         "backend/src/modules/catalog/utils"
       ],
-      "files_count": 40,
-      "loc_total": 10214,
+      "files_count": 43,
+      "loc_total": 11348,
       "has_barrel": false
     },
     "commercial": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 105,
-      "loc_total": 25201,
+      "loc_total": 25218,
       "has_barrel": true
     },
     "customers": {
@@ -226,7 +226,7 @@
         "backend/src/modules/rm/utils"
       ],
       "files_count": 15,
-      "loc_total": 3634,
+      "loc_total": 3642,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 247,
-      "loc_total": 115451,
+      "loc_total": 115525,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -441,7 +441,7 @@
         "backend/src/modules/media-factory/types"
       ],
       "files_count": 23,
-      "loc_total": 4989,
+      "loc_total": 5076,
       "has_barrel": false
     },
     "merchant-center": {
@@ -603,7 +603,7 @@
         "packages/seo-types/src"
       ],
       "files_count": 20,
-      "loc_total": 3595,
+      "loc_total": 4292,
       "has_barrel": true
     },
     "pkg-seo-url-contract": {
@@ -624,8 +624,8 @@
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 42,
-      "loc_total": 11409,
+      "files_count": 44,
+      "loc_total": 12051,
       "has_barrel": false
     },
     "products": {
@@ -635,10 +635,11 @@
         "backend/src/modules/products/dto",
         "backend/src/modules/products/schemas",
         "backend/src/modules/products/services",
+        "backend/src/modules/products/services/__tests__",
         "backend/src/modules/products/types"
       ],
-      "files_count": 27,
-      "loc_total": 7138,
+      "files_count": 28,
+      "loc_total": 7295,
       "has_barrel": true
     },
     "promo": {
@@ -663,10 +664,11 @@
         "backend/src/modules/rag-proxy/dto",
         "backend/src/modules/rag-proxy/events",
         "backend/src/modules/rag-proxy/services",
-        "backend/src/modules/rag-proxy/types"
+        "backend/src/modules/rag-proxy/types",
+        "backend/src/modules/rag-proxy/utils"
       ],
-      "files_count": 34,
-      "loc_total": 12052,
+      "files_count": 35,
+      "loc_total": 12191,
       "has_barrel": false
     },
     "scripts": {
@@ -703,8 +705,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 229,
-      "loc_total": 55537,
+      "files_count": 230,
+      "loc_total": 55702,
       "has_barrel": true
     },
     "search": {
@@ -770,8 +772,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 290,
-      "loc_total": 62777,
+      "files_count": 292,
+      "loc_total": 63487,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -941,7 +943,11 @@
         "backend/tests/unit/seo-control",
         "backend/tests/unit/seo-monitoring",
         "backend/tests/unit/trend-signals",
+        "docs/audit/design-system-revue-20261119/options/scripts",
+        "docs/audit/design-system-revue-20261119/scripts",
         "docs/audit/mandat-bb-20261116/scripts/mesure",
+        "docs/audit/mandat-ee-noms-motorisation-20261120",
+        "docs/audit/mandat-eh-sources-noms-motorisation-20261120",
         "docs/audits/editorial-filtre-huile-20261030/tools",
         "frontend",
         "frontend/frontend/tests/e2e",
@@ -964,8 +970,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 395,
-      "loc_total": 82362,
+      "files_count": 441,
+      "loc_total": 87720,
       "has_barrel": true
     },
     "upload": {
@@ -1991,7 +1997,7 @@
     {
       "from": "rag-proxy",
       "to": "config",
-      "count": 18
+      "count": 19
     },
     {
       "from": "rag-proxy",
@@ -2031,7 +2037,7 @@
     {
       "from": "seo",
       "to": "common",
-      "count": 12
+      "count": 13
     },
     {
       "from": "seo",

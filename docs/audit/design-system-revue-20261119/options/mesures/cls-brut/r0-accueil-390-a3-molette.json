@@ -1,0 +1,163 @@
+{
+ "id": "r0-accueil",
+ "route": "/",
+ "viewport": "390x844",
+ "variante": "a3",
+ "methode": "molette",
+ "correctif": null,
+ "debut": "2026-11-20T21:37:30.343Z",
+ "fin": "2026-11-20T21:37:55.177Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:37:36.202Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {
+  "pasDescente": 91,
+  "pasRemontee": 91
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-descente": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-remontee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 5228.7,
+   "y": 0
+  },
+  {
+   "p": "molette-descente",
+   "t": 6875.1,
+   "y": 0
+  },
+  {
+   "p": "molette-remontee",
+   "t": 15757.5,
+   "y": 7510
+  },
+  {
+   "p": "fin",
+   "t": 23138.2,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   6917.2,
+   100
+  ],
+  [
+   6946.2,
+   102
+  ],
+  [
+   7017.6,
+   202
+  ],
+  [
+   7100.9,
+   302
+  ],
+  [
+   7183.8,
+   402
+  ],
+  [
+   7267.2,
+   502
+  ],
+  [
+   7350.9,
+   602
+  ],
+  [
+   7434.3,
+   702
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 446,
+  "load": 711
+ },
+ "fonts": [
+  {
+   "t": 462.1,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 153,
+ "scrollHeight": 8352,
+ "erreurObs": null,
+ "requetesAbandonnees": 3,
+ "nonGet": 3
+}

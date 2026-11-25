@@ -1,0 +1,271 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "variante": "avant",
+ "methode": "sauts",
+ "correctif": null,
+ "debut": "2026-11-20T21:31:51.502Z",
+ "fin": "2026-11-20T21:32:01.061Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {},
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 1
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 1
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 1
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 1
+   },
+   "sauts": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 572.7,
+   "v": 0.03979,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "loading",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile NPS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      301,
+      177,
+      348
+     ],
+     "apres": [
+      13,
+      264,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile WIX FILTERS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      301,
+      177,
+      348
+     ],
+     "apres": [
+      200,
+      264,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile MGA — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      0,
+      177,
+      291
+     ],
+     "apres": [
+      13,
+      0,
+      177,
+      254
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      0,
+      177,
+      291
+     ],
+     "apres": [
+      200,
+      0,
+      177,
+      254
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 10.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      658,
+      177,
+      186
+     ],
+     "apres": [
+      13,
+      622,
+      177,
+      222
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 5282.9,
+   "y": 0
+  },
+  {
+   "p": "fin",
+   "t": 7852.5,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   5400.6,
+   700
+  ],
+  [
+   5420.3,
+   702
+  ],
+  [
+   5518.5,
+   1400
+  ],
+  [
+   5635,
+   2100
+  ],
+  [
+   5752.2,
+   2800
+  ],
+  [
+   5868.4,
+   3500
+  ],
+  [
+   5984.9,
+   4200
+  ],
+  [
+   6085.1,
+   4900
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 643,
+  "load": 773
+ },
+ "fonts": [
+  {
+   "t": 491.8,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800",
+    "Roboto Mono 400"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 13,
+ "scrollHeight": 13091,
+ "erreurObs": null,
+ "requetesAbandonnees": 6,
+ "nonGet": 6
+}

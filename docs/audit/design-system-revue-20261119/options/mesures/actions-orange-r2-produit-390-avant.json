@@ -1,0 +1,244 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "variante": "avant",
+ "debut": "2026-11-20T11:58:41.143Z",
+ "critere": "bouton ou lien visible, fond calculé orange (teinte 15°–45°, saturation ≥ 0,45, luminosité 0,3–0,9), non recouvert en son centre",
+ "ecrans": [
+  {
+   "ecran": 0,
+   "scrollY": 0,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900"
+   ]
+  },
+  {
+   "ecran": 1,
+   "scrollY": 846,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 2,
+   "scrollY": 1688,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 3,
+   "scrollY": 2532,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 4,
+   "scrollY": 3376,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 5,
+   "scrollY": 4220,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 6,
+   "scrollY": 5064,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 7,
+   "scrollY": 5908,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 8,
+   "scrollY": 6752,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 9,
+   "scrollY": 7596,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 10,
+   "scrollY": 8440,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 11,
+   "scrollY": 9284,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 12,
+   "scrollY": 10128,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 13,
+   "scrollY": 10972,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 14,
+   "scrollY": 11816,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 15,
+   "scrollY": 12580,
+   "entieres": 2,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #FF6900",
+    "Retour en haut (collant) #F97316"
+   ]
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "fin",
+   "presente": false,
+   "variante": null,
+   "regles": 0
+  }
+ ],
+ "toutePage": {
+  "nombre": 1,
+  "actions": [
+   {
+    "texte": "Panier",
+    "balise": "button",
+    "fond": "#FF6900",
+    "desactive": false,
+    "collant": true,
+    "rect": [
+     16,
+     738,
+     109,
+     50
+    ]
+   }
+  ]
+ },
+ "premierEcran": {
+  "ecran": 0,
+  "scrollY": 0,
+  "entieres": 1,
+  "partielles": 0,
+  "textes": [
+   "Panier (collant) #FF6900"
+  ]
+ },
+ "ecransAPlusieurs": 15,
+ "maxParEcran": 2,
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/funnel/event",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T11:58:58.409Z"
+}

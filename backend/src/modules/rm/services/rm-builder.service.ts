@@ -676,6 +676,13 @@ export class RmBuilderService extends SupabaseBaseService {
             min_price: result.minPrice ?? undefined,
             count: result.count,
             power_ps: seoCtx.type_power_ps || '',
+            // Noms d'affichage du titre R2 (mandat DW, complément 2) : clés
+            // ajoutées au RPC par 20261119_seo_r2_title_display_names_rpc.sql.
+            // RPC antérieur (clés absentes) → undefined : noms bruts servis,
+            // avertissement journalisé par SeoTemplateService. Les variables
+            // de l'observation fantôme restent brutes (h1, meta inchangés).
+            modele_name_meta: seoCtx.modele_name_meta ?? undefined,
+            type_name_meta: seoCtx.type_name_meta ?? undefined,
             // #VMotorisation# / #VCodeMoteur# (contenus legacy pg 468, 469,
             // 596, 1795, 3096) — valeurs déjà présentes dans la RPC. Pas de
             // `fuel`/`motor_codes` : ils changeraient aussi h1/title.

@@ -1,0 +1,48 @@
+{
+ "variante": "avant",
+ "id": "connexion",
+ "route": "/login",
+ "viewport": "390x844",
+ "journal": [
+  {
+   "etape": "avant attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "après attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "avant attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "après attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "avant attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "après attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "avant attente",
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "après attente",
+   "variante": "avant",
+   "injectee": false
+  }
+ ]
+}

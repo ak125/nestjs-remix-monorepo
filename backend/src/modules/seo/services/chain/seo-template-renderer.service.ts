@@ -3,6 +3,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { TABLES } from '@repo/database-types';
 import { type SurfaceKey } from '@repo/seo-role-contracts';
+import {
+  buildR2TitleTypeLabel,
+  normalizeVehicleNameCase,
+  pickVehicleDisplayName,
+} from '@repo/seo-types';
 
 import { PRIX_PAS_CHER, SeoVariables, VOUS_PROPOSE } from '../../seo-v4.types';
 
@@ -136,6 +141,11 @@ export class SeoTemplateRenderer extends SupabaseBaseService {
     v: TemplateVariables,
     useMeta: boolean,
   ): string {
+    const typeFuelPower = buildR2TitleTypeLabel({
+      typeName: useMeta ? pickVehicleDisplayName(v.typeMeta, v.type) : v.type,
+      powerPs: v.nbCh ? String(v.nbCh) : undefined,
+      fuel: v.fuel,
+    });
     const replacements: Record<string, string> = {
       '#Gamme#': useMeta ? v.gammeMeta : `<b>${v.gamme}</b>`,
       '#VMarque#': useMeta ? v.marqueMetaTitle : `<b>${v.marque}</b>`,
@@ -146,6 +156,20 @@ export class SeoTemplateRenderer extends SupabaseBaseService {
       '#VCarosserie#': `<b>${v.carosserie}</b>`,
       '#VMotorisation#': `<b>${v.fuel}</b>`,
       '#VCodeMoteur#': `<b>${v.codeMoteur}</b>`,
+      // Titre R2, complément 2 du mandat DW : marque brute et modèle
+      // d'affichage (`modeleMeta` fourni par l'appelant) en casse normale.
+      '#VMarqueAffichage#': useMeta
+        ? normalizeVehicleNameCase(v.marque)
+        : `<b>${normalizeVehicleNameCase(v.marque)}</b>`,
+      '#VModeleAffichage#': useMeta
+        ? normalizeVehicleNameCase(
+            pickVehicleDisplayName(v.modeleMeta, v.modele),
+          )
+        : `<b>${normalizeVehicleNameCase(v.modele)}</b>`,
+      // Même libellé que seo-template.service.ts (mandat DW 2026-11-19).
+      '#VTypeCarburantPuissance#': useMeta
+        ? typeFuelPower
+        : `<b>${typeFuelPower}</b>`,
       '#GammeLevel#': v.gammeLevel ? `niveau ${v.gammeLevel}` : '',
       '#IsTop#': v.isTopGamme ? 'gamme premium' : '',
     };

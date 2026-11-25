@@ -1,0 +1,875 @@
+{
+ "avant": {
+  "textesDeTeinteEtat": 156,
+  "sousSeuil": [
+   {
+    "passage": "connexion-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#ffffff",
+    "ratio": 2.8,
+    "seuil": 4.5,
+    "texte": "Mot de passe oublié ?",
+    "sel": "form.space-y-5 > div.space-y-1.5 > div.flex.items-center > a.text-xs.text-cta"
+   },
+   {
+    "passage": "connexion-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#ffffff",
+    "ratio": 2.73,
+    "seuil": 4.5,
+    "texte": "Créer mon compte",
+    "sel": "form.space-y-5 > div.text-center.pt-2 > p.text-sm.text-slate-600 > a.text-cta.font-medium"
+   },
+   {
+    "passage": "connexion-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#ffffff",
+    "ratio": 2.8,
+    "seuil": 4.5,
+    "texte": "Mot de passe oublié ?",
+    "sel": "form.space-y-5 > div.space-y-1.5 > div.flex.items-center > a.text-xs.text-cta"
+   },
+   {
+    "passage": "connexion-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#ffffff",
+    "ratio": 2.73,
+    "seuil": 4.5,
+    "texte": "Créer mon compte",
+    "sel": "form.space-y-5 > div.text-center.pt-2 > p.text-sm.text-slate-600 > a.text-cta.font-medium"
+   },
+   {
+    "passage": "panier-vide-1440",
+    "teinte": "vert",
+    "fg": "#009689",
+    "bg": "#ffffff",
+    "ratio": 3.67,
+    "seuil": 4.5,
+    "texte": "Lancer un diagnostic gratuit",
+    "sel": "div.rounded-xl.border > div.flex.items-start > div.space-y-2 > a.inline-flex.items-center"
+   },
+   {
+    "passage": "panier-vide-390",
+    "teinte": "vert",
+    "fg": "#009689",
+    "bg": "#ffffff",
+    "ratio": 3.67,
+    "seuil": 4.5,
+    "texte": "Lancer un diagnostic gratuit",
+    "sel": "div.rounded-xl.border > div.flex.items-start > div.space-y-2 > a.inline-flex.items-center"
+   },
+   {
+    "passage": "panier-vide-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#ffffff",
+    "ratio": 2.8,
+    "seuil": 4.5,
+    "texte": "Panier",
+    "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > nav[aria-label=\"Navigation mobile\"] > button.flex-1.flex"
+   },
+   {
+    "passage": "r0-accueil-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fef1e7",
+    "ratio": 2.53,
+    "seuil": 4.5,
+    "texte": "19",
+    "sel": "button#radix-_R_1d1j5_-trigger-Tout > span.px-1.5.py-0.5"
+   },
+   {
+    "passage": "r0-accueil-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 1 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 13 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 7 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 2 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 6 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 2 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-390",
+    "teinte": "rouge-orangé",
+    "fg": "#95450d",
+    "bg": "#f97316",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "Rechercher des pièces",
+    "sel": "div#tabpanel-mobile-0 > div.space-y-3 > button.inline-flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fef1e7",
+    "ratio": 2.53,
+    "seuil": 4.5,
+    "texte": "19",
+    "sel": "button#radix-_R_1d1j5_-trigger-Tout > span.px-1.5.py-0.5"
+   },
+   {
+    "passage": "r0-accueil-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 1 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 13 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 7 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 2 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 6 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#fff9f1",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "+ 2 autres gammes",
+    "sel": "div.group.flex > div.flex.flex-col > div.flex.flex-col > button.flex.items-center"
+   },
+   {
+    "passage": "r0-accueil-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#ffffff",
+    "ratio": 2.8,
+    "seuil": 4.5,
+    "texte": "Accueil",
+    "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > nav[aria-label=\"Navigation mobile\"] > a.no-style.no-visited"
+   },
+   {
+    "passage": "r1-gamme-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#f8fafc",
+    "ratio": 3.08,
+    "seuil": 4.5,
+    "texte": "Conseils entretien",
+    "sel": "div.py-4.px-4 > div.mx-auto.flex > div.flex.items-center > a.text-emerald-600.transition-colors"
+   },
+   {
+    "passage": "r1-gamme-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f54a00",
+    "bg": "#fff7ed",
+    "ratio": 3.37,
+    "seuil": 4.5,
+    "texte": "2 min",
+    "sel": "div.bg-white.border > div.px-5.pt-4 > div.flex.items-center > span.inline-flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#f5f7fa",
+    "ratio": 2.61,
+    "seuil": 4.5,
+    "texte": "Voir les références",
+    "sel": "div.flex.flex-col > div.flex.items-start > div.flex-1.min-w-0 > div.flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#f5f7fa",
+    "ratio": 2.61,
+    "seuil": 4.5,
+    "texte": "Trouver la pièce compatible",
+    "sel": "div.flex.flex-col > div.flex.items-start > div.flex-1.min-w-0 > div.flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#f5f7fa",
+    "ratio": 2.61,
+    "seuil": 4.5,
+    "texte": "Sélectionner par véhicule",
+    "sel": "div.flex.flex-col > div.flex.items-start > div.flex-1.min-w-0 > div.flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#f5f7fa",
+    "ratio": 2.61,
+    "seuil": 4.5,
+    "texte": "Voir les prix",
+    "sel": "div.flex.flex-col > div.flex.items-start > div.flex-1.min-w-0 > div.flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-390",
+    "teinte": "rouge-orangé",
+    "fg": "#95450d",
+    "bg": "#f97316",
+    "ratio": 2.68,
+    "seuil": 4.5,
+    "texte": "Rechercher des pièces",
+    "sel": "div.relative.border > div.border.border-slate-200 > div.space-y-3 > button.inline-flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#f8fafc",
+    "ratio": 3.49,
+    "seuil": 4.5,
+    "texte": "Conseils entretien",
+    "sel": "div.py-4.px-4 > div.mx-auto.flex > div.flex.items-center > a.text-emerald-600.transition-colors"
+   },
+   {
+    "passage": "r1-gamme-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f54a00",
+    "bg": "#fff7ed",
+    "ratio": 3.37,
+    "seuil": 4.5,
+    "texte": "2 min",
+    "sel": "div.bg-white.border > div.px-5.pt-4 > div.flex.items-center > span.inline-flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#f5f7fa",
+    "ratio": 2.61,
+    "seuil": 4.5,
+    "texte": "Voir les références",
+    "sel": "div.flex.flex-col > div.flex.items-start > div.flex-1.min-w-0 > div.flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#f5f7fa",
+    "ratio": 2.61,
+    "seuil": 4.5,
+    "texte": "Trouver la pièce compatible",
+    "sel": "div.flex.flex-col > div.flex.items-start > div.flex-1.min-w-0 > div.flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#f5f7fa",
+    "ratio": 2.61,
+    "seuil": 4.5,
+    "texte": "Sélectionner par véhicule",
+    "sel": "div.flex.flex-col > div.flex.items-start > div.flex-1.min-w-0 > div.flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#f5f7fa",
+    "ratio": 2.61,
+    "seuil": 4.5,
+    "texte": "Voir les prix",
+    "sel": "div.flex.flex-col > div.flex.items-start > div.flex-1.min-w-0 > div.flex.items-center"
+   },
+   {
+    "passage": "r1-gamme-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#ffffff",
+    "ratio": 2.8,
+    "seuil": 4.5,
+    "texte": "Catalogue",
+    "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > nav[aria-label=\"Navigation mobile\"] > a.no-style.no-visited"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#00a63e",
+    "bg": "#fefeff",
+    "ratio": 3.06,
+    "seuil": 4.5,
+    "texte": "5,00 €",
+    "sel": "div.flex.items-center > div.flex.items-center > span.text-sm.font-semibold > span.text-green-600"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.65,
+    "seuil": 4.5,
+    "texte": "8",
+    "sel": "div[aria-label=\"Voir Filtre à huile BOSCH — 11.00\"] > div.flex.items-center > div.flex-1.flex > span.text-xs.font-black"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.65,
+    "seuil": 4.5,
+    "texte": "8",
+    "sel": "div[aria-label=\"Voir Filtre à huile BOSCH — 13.00\"] > div.flex.items-center > div.flex-1.flex > span.text-xs.font-black"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-1440",
+    "teinte": "rouge-orangé",
+    "fg": "#ff6900",
+    "bg": "#ffffff",
+    "ratio": 2.89,
+    "seuil": 4.5,
+    "texte": "•",
+    "sel": "div.bg-gradient-to-br.from-orange-50 > ul.space-y-2.text-sm > li.flex.items-start > span.text-orange-500.mt-0.5"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#00a63e",
+    "bg": "#fefeff",
+    "ratio": 3.06,
+    "seuil": 4.5,
+    "texte": "5,00 €",
+    "sel": "div.flex.flex-col > div.flex.items-center > div.flex.items-center > span.text-sm.font-bold"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.65,
+    "seuil": 4.5,
+    "texte": "8",
+    "sel": "div[aria-label=\"Voir Filtre à huile BOSCH — 11.00\"] > div.flex.items-center > div.flex-1.flex > span.text-xs.font-black"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.65,
+    "seuil": 4.5,
+    "texte": "8",
+    "sel": "div[aria-label=\"Voir Filtre à huile BOSCH — 13.00\"] > div.flex.items-center > div.flex-1.flex > span.text-xs.font-black"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "vert",
+    "fg": "#009966",
+    "bg": "#ffffff",
+    "ratio": 3.58,
+    "seuil": 4.5,
+    "texte": "Livré 24-48h",
+    "sel": "div.flex.items-center > div.flex.flex-col > div.flex.items-center > span"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "rouge-orangé",
+    "fg": "#ff6900",
+    "bg": "#ffffff",
+    "ratio": 2.89,
+    "seuil": 4.5,
+    "texte": "•",
+    "sel": "div.bg-gradient-to-br.from-orange-50 > ul.space-y-2.text-sm > li.flex.items-start > span.text-orange-500.mt-0.5"
+   },
+   {
+    "passage": "r2-produit-390",
+    "teinte": "rouge-orangé",
+    "fg": "#f97316",
+    "bg": "#ffffff",
+    "ratio": 2.8,
+    "seuil": 4.5,
+    "texte": "Catalogue",
+    "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > nav[aria-label=\"Navigation mobile\"] > a.no-style.no-visited"
+   }
+  ]
+ },
+ "a2": {
+  "textesDeTeinteEtat": 63,
+  "sousSeuil": []
+ },
+ "a3": {
+  "textesDeTeinteEtat": 23,
+  "sousSeuil": []
+ }
+}

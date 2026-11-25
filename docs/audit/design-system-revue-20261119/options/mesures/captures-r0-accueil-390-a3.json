@@ -1,0 +1,163 @@
+{
+ "id": "r0-accueil",
+ "route": "/",
+ "viewport": "390x844",
+ "debut": "2026-11-20T12:09:44.489Z",
+ "variantes": {
+  "a3": {
+   "debut": "2026-11-20T12:09:44.567Z",
+   "statut": 200,
+   "injection": [
+    {
+     "variante": "a3",
+     "at": "2026-11-20T12:09:50.321Z",
+     "dejaPresente": false,
+     "presente": true,
+     "regles": 83,
+     "reinjectionsObservateur": 0
+    },
+    {
+     "etape": "avant captures",
+     "presente": true,
+     "variante": "a3",
+     "regles": 83
+    },
+    {
+     "etape": "fin",
+     "presente": true,
+     "variante": "a3",
+     "regles": 83
+    }
+   ],
+   "residus": {
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 118,
+    "stylesEnLigneCouleur": 1,
+    "svgCouleurEnDur": 0
+   },
+   "residusSurvol": {
+    "elementsForces": 469,
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 118,
+    "stylesEnLigneCouleur": 1,
+    "svgCouleurEnDur": 0
+   },
+   "boutons": [
+    {
+     "bouton": "Rechercher des pièces (sélecteur véhicule)",
+     "selecteur": "button[class~=\"bg-cta\"][class~=\"disabled:opacity-40\"]",
+     "etats": [
+      {
+       "etat": "désactivé (état réel servi, aucun véhicule choisi)",
+       "texte": "Rechercher des pièces",
+       "fond": "#FED7AA",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 12.28,
+       "ratioBoutonPage": 1.35,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": true,
+       "capture": "bouton-r0-accueil-390-rechercher-a3-désactivé (état réel servi, aucun véhicule choisi).png"
+      },
+      {
+       "etat": "repos",
+       "texte": "Rechercher des pièces",
+       "fond": "#F97316",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 5.93,
+       "ratioBoutonPage": 2.8,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": false,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-r0-accueil-390-rechercher-a3-repos.png",
+       "note": "état actif simulé : attribut disabled retiré dans le DOM"
+      },
+      {
+       "etat": "survol",
+       "texte": "Rechercher des pièces",
+       "fond": "#EA580C",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 4.67,
+       "ratioBoutonPage": 3.56,
+       "opacite": "1",
+       "survol": true,
+       "focusVisible": false,
+       "desactive": false,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-r0-accueil-390-rechercher-a3-survol.png",
+       "note": "état actif simulé : attribut disabled retiré dans le DOM"
+      },
+      {
+       "etat": "focus",
+       "texte": "Rechercher des pièces",
+       "fond": "#F97316",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 5.93,
+       "ratioBoutonPage": 2.8,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": true,
+       "desactive": false,
+       "anneau": "2px solid #0F1E38",
+       "ratioAnneauPage": 16.63,
+       "ratioAnneauBouton": 5.93,
+       "capture": "bouton-r0-accueil-390-rechercher-a3-focus.png",
+       "note": "état actif simulé : attribut disabled retiré dans le DOM"
+      },
+      {
+       "etat": "désactivé (simulé : attribut disabled posé dans le DOM)",
+       "texte": "Rechercher des pièces",
+       "fond": "#FED7AA",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 12.28,
+       "ratioBoutonPage": 1.35,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": true,
+       "capture": "bouton-r0-accueil-390-rechercher-a3-désactivé (simulé : attribut disabled posé dans le DOM).png"
+      }
+     ]
+    }
+   ],
+   "fin": "2026-11-20T12:10:34.750Z"
+  }
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T12:10:34.760Z"
+}

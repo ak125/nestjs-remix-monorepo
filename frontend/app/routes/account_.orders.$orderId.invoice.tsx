@@ -131,7 +131,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     depositTTC: parseFloat(orderData.ord_deposit_ttc || 0),
     shippingFeeTTC: parseFloat(orderData.ord_shipping_fee_ttc || 0),
     totalTTC: parseFloat(orderData.ord_total_ttc || 0),
-    isPaid: orderData.ord_is_pay === 1 || orderData.ord_is_pay === true,
+    // `ord_is_pay` est une colonne texte ('1' / '0').
+    isPaid:
+      orderData.ord_is_pay === "1" ||
+      orderData.ord_is_pay === 1 ||
+      orderData.ord_is_pay === true,
     isSupplementOrder: orderData.ord_parent && orderData.ord_parent !== "0",
     parentOrderId:
       orderData.ord_parent && orderData.ord_parent !== "0"

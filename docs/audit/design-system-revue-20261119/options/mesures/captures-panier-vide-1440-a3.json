@@ -1,0 +1,210 @@
+{
+ "id": "panier-vide",
+ "route": "/cart",
+ "viewport": "1440x900",
+ "debut": "2026-11-20T11:53:37.674Z",
+ "variantes": {
+  "a3": {
+   "debut": "2026-11-20T11:53:37.742Z",
+   "statut": 200,
+   "injection": [
+    {
+     "variante": "a3",
+     "at": "2026-11-20T11:53:43.027Z",
+     "dejaPresente": false,
+     "presente": true,
+     "regles": 83,
+     "reinjectionsObservateur": 0
+    },
+    {
+     "etape": "avant captures",
+     "presente": true,
+     "variante": "a3",
+     "regles": 83
+    },
+    {
+     "etape": "fin",
+     "presente": true,
+     "variante": "a3",
+     "regles": 83
+    }
+   ],
+   "residus": {
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 0,
+    "stylesEnLigneCouleur": 0,
+    "svgCouleurEnDur": 0
+   },
+   "residusSurvol": {
+    "elementsForces": 54,
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 0,
+    "stylesEnLigneCouleur": 0,
+    "svgCouleurEnDur": 0
+   },
+   "boutons": [
+    {
+     "bouton": "Inscription (en-tête, action secondaire)",
+     "selecteur": "nav a[href=\"/register\"][class~=\"bg-cta\"]",
+     "etats": [
+      {
+       "etat": "repos",
+       "texte": "Inscription",
+       "fond": "#0F1E38",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#0F1E38",
+       "ratioTexte": 16.63,
+       "ratioBoutonPage": 1,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "contour": "2px solid #FFFFFF",
+       "ratioContourPage": 16.63,
+       "capture": "bouton-panier-vide-1440-inscription-a3-repos.png"
+      },
+      {
+       "etat": "survol",
+       "texte": "Inscription",
+       "fond": "#2C3950",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#0F1E38",
+       "ratioTexte": 11.61,
+       "ratioBoutonPage": 1.43,
+       "opacite": "1",
+       "survol": true,
+       "focusVisible": false,
+       "contour": "2px solid #FFFFFF",
+       "ratioContourPage": 16.63,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-panier-vide-1440-inscription-a3-survol.png"
+      },
+      {
+       "etat": "focus",
+       "texte": "Inscription",
+       "fond": "#0F1E38",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#0F1E38",
+       "ratioTexte": 16.63,
+       "ratioBoutonPage": 1,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": true,
+       "contour": "2px solid #FFFFFF",
+       "ratioContourPage": 16.63,
+       "anneau": "2px solid #FFFFFF",
+       "ratioAnneauPage": 16.63,
+       "ratioAnneauBouton": 16.63,
+       "capture": "bouton-panier-vide-1440-inscription-a3-focus.png"
+      },
+      {
+       "etat": "désactivé (simulé : attribut disabled posé dans le DOM)",
+       "texte": "Inscription",
+       "fond": "#0F1E38",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#0F1E38",
+       "ratioTexte": 16.63,
+       "ratioBoutonPage": 1,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "contour": "2px solid #FFFFFF",
+       "ratioContourPage": 16.63,
+       "capture": "bouton-panier-vide-1440-inscription-a3-désactivé (simulé : attribut disabled posé dans le DOM).png"
+      }
+     ]
+    },
+    {
+     "bouton": "Trouver une pièce (panier vide)",
+     "selecteur": "a[class~=\"bg-blue-600\"][class~=\"h-12\"][class~=\"px-8\"]",
+     "etats": [
+      {
+       "etat": "repos",
+       "texte": "Trouver une pièce",
+       "fond": "#F97316",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 5.93,
+       "ratioBoutonPage": 2.8,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "capture": "bouton-panier-vide-1440-trouver-a3-repos.png"
+      },
+      {
+       "etat": "survol",
+       "texte": "Trouver une pièce",
+       "fond": "#EA580C",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 4.67,
+       "ratioBoutonPage": 3.56,
+       "opacite": "1",
+       "survol": true,
+       "focusVisible": false,
+       "capture": "bouton-panier-vide-1440-trouver-a3-survol.png"
+      },
+      {
+       "etat": "focus",
+       "texte": "Trouver une pièce",
+       "fond": "#F97316",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 5.93,
+       "ratioBoutonPage": 2.8,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": true,
+       "anneau": "2px solid #0F1E38",
+       "ratioAnneauPage": 16.63,
+       "ratioAnneauBouton": 5.93,
+       "capture": "bouton-panier-vide-1440-trouver-a3-focus.png"
+      },
+      {
+       "etat": "désactivé (simulé : attribut disabled posé dans le DOM)",
+       "texte": "Trouver une pièce",
+       "fond": "#F97316",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 5.93,
+       "ratioBoutonPage": 2.8,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "capture": "bouton-panier-vide-1440-trouver-a3-désactivé (simulé : attribut disabled posé dans le DOM).png"
+      }
+     ]
+    }
+   ],
+   "fin": "2026-11-20T11:53:52.216Z"
+  }
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T11:53:52.222Z"
+}

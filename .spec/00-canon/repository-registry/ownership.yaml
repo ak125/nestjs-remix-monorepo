@@ -150,6 +150,20 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Mandat DW et complément 1 (19/11/2026) : titre R2 sans prix, toutes gammes
+  # (gabarit __seo_gamme_car.sgc_title, 118 lignes). Couvre .sql + .down.sql.
+  - glob: backend/supabase/migrations/20261119_seo_r2_title_all_gammes*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # Mandat DW, complément 2 (19/11/2026) : noms d'affichage dans seo_context
+  # du RPC rm_get_page_complete_v2 (titre R2). Couvre .sql + .down.sql.
+  - glob: backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   # Fix get_page_quality_features 22023 (jsonb_array_length sur jsonb non-array) — débloque
   # le recompute du quality-scoring (de-RAG v2.2 #935). Owner GO session 2026-06-11. Glob exact.
   - glob: backend/supabase/migrations/20260611_fix_get_page_quality_features_jsonb_array_length_guard.sql
@@ -1939,5 +1953,21 @@ entries:
   - glob: backend/supabase/migrations/20261118_r2_images_bmp_extension*.sql
     domain: D1
     owner: '@ak125/catalog-team'
+    sourceConfidence: high
+    risk: medium
+  # Mandat EE (20/11/2026), restreint par les mandats EH et EK : 163 type_name_meta
+  # d'auto_type remis au nom brut (title R8), migration gardée. Couvre .sql +
+  # .down.sql. Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+  # Mandat EH (20/11/2026), complété par EK : 5 type_name d'auto_type (nom d'origine faux selon
+  # sources extérieures) corrigés, migration gardée. Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium

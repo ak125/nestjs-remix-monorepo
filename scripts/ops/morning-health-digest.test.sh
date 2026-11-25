@@ -198,6 +198,19 @@ check "sans label : aucune issue lue pour ce label" '[ "$(calls sanslabel "label
 run urgence vide alerts-dependabot=17
 check "urgence : incident listé, mail tenté" 'contient $T/urgence.md "## Urgences en cours" && contient $T/urgence.md "Alerte de sécurité critique (Dependabot) — depuis" && contient $T/urgence.md "mail : canal indisponible"'
 
+# 11. Garde-fou des prix : fichier écrit par scripts/ops/garde-prix-read.ts (mandat EI).
+printf '%s' '{"schema":"garde-prix.v1","generated_at":"2026-11-20T06:00:00.000Z","declenchements":[{"cle":"invariants:71","at":"2026-11-19T10:00:00Z"},{"cle":"perte:pm4200","at":"2026-11-20T06:00:00.000Z"}]}' > "$T/gp-rouge.json"
+printf '%s' '{"schema":"garde-prix.v1","generated_at":"2026-11-20T06:00:00.000Z","declenchements":[]}' > "$T/gp-vert.json"
+run prixrouge vide -- GARDE_PRIX_JSON="$T/gp-rouge.json"
+FP=$(printf '%s' 'perte:pm4200' | sha256sum | cut -c1-12)
+check "prix rouge : deux déclenchements en cours" 'contient $T/prixrouge.md "2 déclenchement(s) en cours"'
+check "prix rouge : incident par empreinte, mail tenté" 'contient $T/prixrouge.md "## Urgences en cours" && contient $T/prixrouge.md "Garde-fou des prix déclenché" && contient $T/prixrouge.md "prix:$FP"'
+check "prix rouge : clé en clair jamais publiée" 'absent $T/prixrouge.md "perte:pm4200" && absent $T/prixrouge.md "invariants:71"'
+run prixvert vide -- GARDE_PRIX_JSON="$T/gp-vert.json"
+check "prix vert : aucun déclenchement" 'contient $T/prixvert.md "aucun déclenchement" && absent $T/prixvert.md "Garde-fou des prix déclenché"'
+run prixabsent vide -- GARDE_PRIX_JSON="$T/gp-absent.json"
+check "prix fichier absent : indisponible, jamais vert" 'contient $T/prixabsent.md "entrée absente ou format invalide" && absent $T/prixabsent.md "aucun déclenchement"'
+
 echo ""
 echo "$((N - FAIL))/$N vérifications réussies"
 [ "$FAIL" -eq 0 ]

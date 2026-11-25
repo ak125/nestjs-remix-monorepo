@@ -1,8 +1,8 @@
 {
   "schema": "r2-golden/v1",
-  "captured_at": "2026-09-02T00:50:13.509Z",
+  "captured_at": "2026-11-19T12:46:10.084Z",
   "captured_from": "http://localhost:3000",
-  "git_sha": "b9bffc494f7816b165e39ab2d903f55124142d72",
+  "git_sha": "8d93b7ec5eefe050686743414fd3543436606f7c",
   "fixtures": [
     {
       "id": "plaquettes-402-x-57414",
@@ -13,8 +13,8 @@
       "expected": {
         "classification": "ok",
         "success": true,
-        "count": 56,
-        "relationsCount": 56,
+        "count": 53,
+        "relationsCount": 53,
         "products": [
           {
             "piece_id": 70707,
@@ -117,30 +117,6 @@
             "pm_id": 3410,
             "quality": "EQUIV",
             "piece_position": "Arrière",
-            "filtre_gamme": "Plaquettes de frein",
-            "is_accessory": false
-          },
-          {
-            "piece_id": 1957088,
-            "pm_id": 2590,
-            "quality": "EQUIV",
-            "piece_position": "Avant",
-            "filtre_gamme": "Plaquettes de frein",
-            "is_accessory": false
-          },
-          {
-            "piece_id": 1960005,
-            "pm_id": 2590,
-            "quality": "EQUIV",
-            "piece_position": "Arrière",
-            "filtre_gamme": "Plaquettes de frein",
-            "is_accessory": false
-          },
-          {
-            "piece_id": 1960834,
-            "pm_id": 2590,
-            "quality": "EQUIV",
-            "piece_position": "Avant",
             "filtre_gamme": "Plaquettes de frein",
             "is_accessory": false
           },
@@ -507,7 +483,6 @@
               1091576,
               1356255,
               1821098,
-              1960005,
               2012668,
               2012675,
               3747891,
@@ -544,8 +519,6 @@
               1349864,
               1821091,
               1821096,
-              1957088,
-              1960834,
               2006174,
               2006352,
               2006896,
@@ -585,11 +558,11 @@
           "sides": [
             {
               "value": "Arrière",
-              "count": 20
+              "count": 19
             },
             {
               "value": "Avant",
-              "count": 33
+              "count": 31
             }
           ],
           "brands": [
@@ -620,10 +593,6 @@
             {
               "pm_id": 1810,
               "count": 2
-            },
-            {
-              "pm_id": 2590,
-              "count": 3
             },
             {
               "pm_id": 2910,
@@ -661,7 +630,7 @@
           "qualities": [
             {
               "value": "EQUIV",
-              "count": 43
+              "count": 40
             },
             {
               "value": "OE",
@@ -704,8 +673,8 @@
       "expected": {
         "classification": "ok",
         "success": true,
-        "count": 61,
-        "relationsCount": 61,
+        "count": 57,
+        "relationsCount": 57,
         "products": [
           {
             "piece_id": 67153,
@@ -856,38 +825,6 @@
             "pm_id": 380,
             "quality": "OE",
             "piece_position": "Avant",
-            "filtre_gamme": "Disque de frein",
-            "is_accessory": false
-          },
-          {
-            "piece_id": 2016691,
-            "pm_id": 2590,
-            "quality": "EQUIV",
-            "piece_position": "Avant",
-            "filtre_gamme": "Disque de frein",
-            "is_accessory": false
-          },
-          {
-            "piece_id": 2029807,
-            "pm_id": 2590,
-            "quality": "EQUIV",
-            "piece_position": "Avant",
-            "filtre_gamme": "Disque de frein",
-            "is_accessory": false
-          },
-          {
-            "piece_id": 2029850,
-            "pm_id": 2590,
-            "quality": "EQUIV",
-            "piece_position": "Arrière",
-            "filtre_gamme": "Disque de frein",
-            "is_accessory": false
-          },
-          {
-            "piece_id": 2029906,
-            "pm_id": 2590,
-            "quality": "EQUIV",
-            "piece_position": "Arrière",
             "filtre_gamme": "Disque de frein",
             "is_accessory": false
           },
@@ -1209,8 +1146,6 @@
               1641807,
               1940812,
               1940813,
-              2029850,
-              2029906,
               2726140,
               2726292,
               3688313,
@@ -1256,8 +1191,6 @@
               1641789,
               1941647,
               1941648,
-              2016691,
-              2029807,
               2726178,
               2726573,
               3688314,
@@ -1304,11 +1237,11 @@
           "sides": [
             {
               "value": "Arrière",
-              "count": 28
+              "count": 26
             },
             {
               "value": "Avant",
-              "count": 28
+              "count": 26
             }
           ],
           "brands": [
@@ -1339,10 +1272,6 @@
             {
               "pm_id": 1810,
               "count": 5
-            },
-            {
-              "pm_id": 2590,
-              "count": 4
             },
             {
               "pm_id": 2910,
@@ -1384,7 +1313,7 @@
           "qualities": [
             {
               "value": "EQUIV",
-              "count": 45
+              "count": 41
             },
             {
               "value": "OE",
@@ -1424,8 +1353,8 @@
       "expected": {
         "classification": "ok",
         "success": true,
-        "count": 13,
-        "relationsCount": 13,
+        "count": 12,
+        "relationsCount": 12,
         "products": [
           {
             "piece_id": 830645,
@@ -1500,14 +1429,6 @@
             "is_accessory": false
           },
           {
-            "piece_id": 6494376,
-            "pm_id": 2590,
-            "quality": "EQUIV",
-            "piece_position": null,
-            "filtre_gamme": "Filtre à huile",
-            "is_accessory": false
-          },
-          {
             "piece_id": 6494560,
             "pm_id": 3130,
             "quality": "EQUIV",
@@ -1546,14 +1467,12 @@
               6381971,
               6382215,
               6442773,
-              6494376,
               6494560,
               7256504
             ],
             "oemRefs": [
               "25 195 775",
-              "55560748",
-              "93190129"
+              "55560748"
             ]
           },
           {
@@ -1593,10 +1512,6 @@
               "count": 2
             },
             {
-              "pm_id": 2590,
-              "count": 1
-            },
-            {
               "pm_id": 3130,
               "count": 1
             },
@@ -1616,7 +1531,7 @@
             },
             {
               "value": "EQUIV",
-              "count": 10
+              "count": 9
             },
             {
               "value": "OE",
@@ -1626,8 +1541,7 @@
         },
         "oemRefs": [
           "25 195 775",
-          "55560748",
-          "93190129"
+          "55560748"
         ],
         "crossSelling": []
       }

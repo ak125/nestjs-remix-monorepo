@@ -1,0 +1,154 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "390x844",
+ "variante": "avant",
+ "methode": "molette",
+ "correctif": "c1-gamme-image-cadre-fixe.css (dans le HTML)",
+ "debut": "2026-11-20T21:51:32.812Z",
+ "fin": "2026-11-20T21:52:09.191Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {
+  "pasDescente": 170,
+  "pasRemontee": 170
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-descente": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-remontee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "molette-descente",
+   "t": 5243.5,
+   "y": 0
+  },
+  {
+   "p": "molette-remontee",
+   "t": 20699.6,
+   "y": 15480
+  },
+  {
+   "p": "fin",
+   "t": 34698,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   5295.1,
+   100
+  ],
+  [
+   5379.2,
+   200
+  ],
+  [
+   5462.2,
+   300
+  ],
+  [
+   5545.6,
+   400
+  ],
+  [
+   5629.7,
+   500
+  ],
+  [
+   5711.9,
+   600
+  ],
+  [
+   5796,
+   700
+  ],
+  [
+   5879.1,
+   800
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 500,
+  "load": 725
+ },
+ "fonts": [
+  {
+   "t": 517,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  },
+  {
+   "t": 1350.4,
+   "polices": [
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 310,
+ "scrollHeight": 16322,
+ "erreurObs": null,
+ "requetesAbandonnees": 3,
+ "nonGet": 3
+}

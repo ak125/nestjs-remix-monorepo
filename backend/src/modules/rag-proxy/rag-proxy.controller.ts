@@ -26,6 +26,7 @@ import { RagVideoManagementService } from './services/rag-video-management.servi
 import { RagGammeDetectionService } from './services/rag-gamme-detection.service';
 import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audit.service';
 import { WebhookAuditService } from './services/webhook-audit.service';
+import { resolveConfinedPath } from './utils/rag-paths.util';
 import type { Phase2aArtifactType } from './types/rag-phase2a.types';
 import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
@@ -514,17 +515,19 @@ export class RagProxyController {
     const knowledgeBasePath = RAG_KNOWLEDGE_PATH;
 
     const { readdirSync } = await import('node:fs');
-    const { join, resolve } = await import('node:path');
+    const { join } = await import('node:path');
 
     const parts = body.pattern.split('/');
     const dir = join(knowledgeBasePath, parts[0]);
 
-    // Path traversal guard: resolved dir must stay inside knowledgeBasePath
-    const resolvedDir = resolve(dir);
-    if (!resolvedDir.startsWith(resolve(knowledgeBasePath))) {
-      throw new BadRequestException(
-        'Invalid directory: path traversal detected',
-      );
+    // Le répertoire lu est confiné à la base de connaissances.
+    const realDir = resolveConfinedPath(
+      knowledgeBasePath,
+      parts[0],
+      'directory',
+    );
+    if (!realDir) {
+      throw new BadRequestException('Cannot read directory');
     }
 
     // Build regex from glob — escape metacharacters first, then convert * and ?
@@ -537,11 +540,11 @@ export class RagProxyController {
 
     let files: string[] = [];
     try {
-      files = readdirSync(dir)
+      files = readdirSync(realDir)
         .filter((f: string) => regex.test(f) && f.endsWith('.md'))
         .map((f: string) => join(dir, f));
     } catch {
-      throw new BadRequestException(`Cannot read directory: ${parts[0]}/`);
+      throw new BadRequestException('Cannot read directory');
     }
 
     if (files.length > MAX_FILES) {

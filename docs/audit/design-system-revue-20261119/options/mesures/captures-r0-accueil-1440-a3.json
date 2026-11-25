@@ -1,0 +1,149 @@
+{
+ "id": "r0-accueil",
+ "route": "/",
+ "viewport": "1440x900",
+ "debut": "2026-11-20T11:42:41.453Z",
+ "variantes": {
+  "a3": {
+   "debut": "2026-11-20T11:42:41.524Z",
+   "statut": 200,
+   "injection": [
+    {
+     "variante": "a3",
+     "at": "2026-11-20T11:42:47.341Z",
+     "dejaPresente": false,
+     "presente": true,
+     "regles": 83,
+     "reinjectionsObservateur": 0
+    },
+    {
+     "etape": "avant captures",
+     "presente": true,
+     "variante": "a3",
+     "regles": 83
+    },
+    {
+     "etape": "fin",
+     "presente": true,
+     "variante": "a3",
+     "regles": 83
+    }
+   ],
+   "residus": {
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 121,
+    "stylesEnLigneCouleur": 1,
+    "svgCouleurEnDur": 0
+   },
+   "residusSurvol": {
+    "elementsForces": 469,
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 121,
+    "stylesEnLigneCouleur": 1,
+    "svgCouleurEnDur": 0
+   },
+   "boutons": [
+    {
+     "bouton": "Inscription (en-tête, action secondaire)",
+     "selecteur": "nav a[href=\"/register\"][class~=\"bg-cta\"]",
+     "etats": [
+      {
+       "etat": "repos",
+       "texte": "Inscription",
+       "fond": "#0F1E38",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#0F1E38",
+       "ratioTexte": 16.63,
+       "ratioBoutonPage": 1,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "contour": "2px solid #FFFFFF",
+       "ratioContourPage": 16.63,
+       "capture": "bouton-r0-accueil-1440-inscription-a3-repos.png"
+      },
+      {
+       "etat": "survol",
+       "texte": "Inscription",
+       "fond": "#2C3950",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#0F1E38",
+       "ratioTexte": 11.61,
+       "ratioBoutonPage": 1.43,
+       "opacite": "1",
+       "survol": true,
+       "focusVisible": false,
+       "contour": "2px solid #FFFFFF",
+       "ratioContourPage": 16.63,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-r0-accueil-1440-inscription-a3-survol.png"
+      },
+      {
+       "etat": "focus",
+       "texte": "Inscription",
+       "fond": "#0F1E38",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#0F1E38",
+       "ratioTexte": 16.63,
+       "ratioBoutonPage": 1,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": true,
+       "contour": "2px solid #FFFFFF",
+       "ratioContourPage": 16.63,
+       "anneau": "2px solid #FFFFFF",
+       "ratioAnneauPage": 16.63,
+       "ratioAnneauBouton": 16.63,
+       "capture": "bouton-r0-accueil-1440-inscription-a3-focus.png"
+      },
+      {
+       "etat": "désactivé (simulé : attribut disabled posé dans le DOM)",
+       "texte": "Inscription",
+       "fond": "#0F1E38",
+       "texteCouleur": "#FFFFFF",
+       "fondPage": "#0F1E38",
+       "ratioTexte": 16.63,
+       "ratioBoutonPage": 1,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "contour": "2px solid #FFFFFF",
+       "ratioContourPage": 16.63,
+       "capture": "bouton-r0-accueil-1440-inscription-a3-désactivé (simulé : attribut disabled posé dans le DOM).png"
+      }
+     ]
+    }
+   ],
+   "fin": "2026-11-20T11:43:35.874Z"
+  }
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T11:43:35.884Z"
+}

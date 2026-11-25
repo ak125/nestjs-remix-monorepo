@@ -1,0 +1,1697 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "1440x900",
+ "variante": "avant",
+ "debut": "2026-11-20T10:06:38.882Z",
+ "critere": "teinte 75°–170°, saturation ≥ 0,25, luminosité 0,12–0,85 ; élément visible, non recouvert en son centre ; texte, fond, dégradé, bord, fill, stroke",
+ "ecrans": [
+  {
+   "ecran": "premier-ecran",
+   "scrollY": 0,
+   "boutonsAchat": [
+    {
+     "texte": "Ajouter",
+     "rect": [
+      625,
+      1348,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      931,
+      1348,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      1236,
+      1348,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      625,
+      1813,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      931,
+      1813,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      1236,
+      1813,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      625,
+      2278,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      931,
+      2278,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      1236,
+      2278,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      625,
+      2742,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      931,
+      2742,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      1236,
+      2742,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      625,
+      3207,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      931,
+      3207,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      1236,
+      3207,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      625,
+      3672,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      931,
+      3672,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      1236,
+      3672,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      625,
+      4137,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      931,
+      4137,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Panier",
+     "rect": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "entierementVisible": false
+    }
+   ],
+   "verts": [
+    {
+     "tag": "span",
+     "texte": "Livraison gratuite dès 150€",
+     "classes": "flex items-center gap-1.5 text-emerald-300 whitespace-nowrap",
+     "props": [
+      [
+       "texte",
+       "#5EE9B5"
+      ]
+     ],
+     "rect": [
+      499,
+      88,
+      174,
+      16
+     ],
+     "docY": 88,
+     "achat": false
+    },
+    {
+     "tag": "button",
+     "texte": "8+",
+     "classes": "flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-colors duration-200 border-2 bg-emerald-50 text-emerald-700 bo",
+     "props": [
+      [
+       "texte",
+       "#007A55"
+      ],
+      [
+       "bord",
+       "#00D492"
+      ]
+     ],
+     "rect": [
+      270,
+      742,
+      44,
+      42
+     ],
+     "docY": 742,
+     "achat": false
+    },
+    {
+     "tag": "div",
+     "texte": "",
+     "classes": "h-full bg-gradient-to-r from-emerald-400 via-green-500 to-lime-500 rounded-full",
+     "props": [
+      [
+       "dégradé",
+       "#00D492"
+      ]
+     ],
+     "rect": [
+      250,
+      890,
+      74,
+      4
+     ],
+     "docY": 890,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "8.0",
+     "classes": "text-[9px] font-bold text-emerald-700",
+     "props": [
+      [
+       "texte",
+       "#007A55"
+      ]
+     ],
+     "rect": [
+      346,
+      885,
+      14,
+      14
+     ],
+     "docY": 885,
+     "achat": false
+    },
+    {
+     "tag": "svg",
+     "texte": "",
+     "classes": "lucide lucide-euro w-4 h-4 text-green-600",
+     "props": [
+      [
+       "stroke",
+       "#00A63E"
+      ]
+     ],
+     "rect": [
+      619,
+      668,
+      16,
+      16
+     ],
+     "docY": 668,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "5,00 €",
+     "classes": "text-green-600",
+     "props": [
+      [
+       "texte",
+       "#00A63E"
+      ]
+     ],
+     "rect": [
+      671,
+      667,
+      46,
+      18
+     ],
+     "docY": 667,
+     "achat": false
+    },
+    {
+     "tag": "svg",
+     "texte": "",
+     "classes": "lucide lucide-lock w-4 h-4 shrink-0 text-green-600",
+     "props": [
+      [
+       "stroke",
+       "#00A63E"
+      ]
+     ],
+     "rect": [
+      675,
+      840,
+      16,
+      16
+     ],
+     "docY": 840,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "",
+     "classes": "absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white",
+     "props": [
+      [
+       "fond",
+       "#00C950"
+      ]
+     ],
+     "rect": [
+      1404,
+      820,
+      12,
+      12
+     ],
+     "docY": 820,
+     "achat": false
+    }
+   ],
+   "nombreVertsHorsAchat": 8,
+   "capture": "verts-r2-produit-1440-avant-premier-ecran-annote"
+  },
+  {
+   "ecran": "ecran-du-bouton-ajouter",
+   "scrollY": 708,
+   "boutonsAchat": [
+    {
+     "texte": "Ajouter",
+     "rect": [
+      625,
+      630,
+      98,
+      44
+     ],
+     "entierementVisible": true
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      931,
+      630,
+      98,
+      44
+     ],
+     "entierementVisible": true
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      1236,
+      630,
+      98,
+      44
+     ],
+     "entierementVisible": true
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      625,
+      1095,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      931,
+      1095,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      1236,
+      1095,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      625,
+      1560,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      931,
+      1560,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      1236,
+      1560,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      625,
+      2024,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      931,
+      2024,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      1236,
+      2024,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      625,
+      2489,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      931,
+      2489,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Ajouter",
+     "rect": [
+      1236,
+      2489,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      625,
+      2954,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      931,
+      2954,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      1236,
+      2954,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      625,
+      3419,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "",
+     "rect": [
+      931,
+      3419,
+      98,
+      44
+     ],
+     "entierementVisible": false
+    },
+    {
+     "texte": "Panier",
+     "rect": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "entierementVisible": false
+    }
+   ],
+   "verts": [
+    {
+     "tag": "button",
+     "texte": "8+",
+     "classes": "flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-colors duration-200 border-2 bg-emerald-50 text-emerald-700 bo",
+     "props": [
+      [
+       "texte",
+       "#007A55"
+      ],
+      [
+       "bord",
+       "#00D492"
+      ]
+     ],
+     "rect": [
+      270,
+      209,
+      44,
+      42
+     ],
+     "docY": 917,
+     "achat": false
+    },
+    {
+     "tag": "div",
+     "texte": "",
+     "classes": "h-full bg-gradient-to-r from-emerald-400 via-green-500 to-lime-500 rounded-full",
+     "props": [
+      [
+       "dégradé",
+       "#00D492"
+      ]
+     ],
+     "rect": [
+      250,
+      357,
+      74,
+      4
+     ],
+     "docY": 1065,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "8.0",
+     "classes": "text-[9px] font-bold text-emerald-700",
+     "props": [
+      [
+       "texte",
+       "#007A55"
+      ]
+     ],
+     "rect": [
+      346,
+      352,
+      14,
+      14
+     ],
+     "docY": 1060,
+     "achat": false
+    },
+    {
+     "tag": "svg",
+     "texte": "",
+     "classes": "lucide lucide-euro w-4 h-4 text-green-600",
+     "props": [
+      [
+       "stroke",
+       "#00A63E"
+      ]
+     ],
+     "rect": [
+      619,
+      135,
+      16,
+      16
+     ],
+     "docY": 843,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "5,00 €",
+     "classes": "text-green-600",
+     "props": [
+      [
+       "texte",
+       "#00A63E"
+      ]
+     ],
+     "rect": [
+      671,
+      134,
+      46,
+      18
+     ],
+     "docY": 842,
+     "achat": false
+    },
+    {
+     "tag": "div",
+     "texte": "",
+     "classes": "h-full bg-gradient-to-r from-emerald-400 via-green-500 to-lime-500 rounded-full transition-all duration-500",
+     "props": [
+      [
+       "dégradé",
+       "#00D492"
+      ]
+     ],
+     "rect": [
+      641,
+      270,
+      48,
+      6
+     ],
+     "docY": 978,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "8",
+     "classes": "text-xs font-black text-emerald-600 min-w-[16px]",
+     "props": [
+      [
+       "texte",
+       "#009966"
+      ]
+     ],
+     "rect": [
+      707,
+      265,
+      16,
+      16
+     ],
+     "docY": 973,
+     "achat": false
+    },
+    {
+     "tag": "svg",
+     "texte": "",
+     "classes": "lucide lucide-truck w-3 h-3",
+     "props": [
+      [
+       "stroke",
+       "#009966"
+      ]
+     ],
+     "rect": [
+      458,
+      660,
+      12,
+      12
+     ],
+     "docY": 1368,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "Livré 24-48h",
+     "classes": "",
+     "props": [
+      [
+       "texte",
+       "#009966"
+      ]
+     ],
+     "rect": [
+      474,
+      658,
+      70,
+      16
+     ],
+     "docY": 1366,
+     "achat": false
+    },
+    {
+     "tag": "div",
+     "texte": "",
+     "classes": "h-full bg-gradient-to-r from-emerald-400 via-green-500 to-lime-500 rounded-full transition-all duration-500",
+     "props": [
+      [
+       "dégradé",
+       "#00D492"
+      ]
+     ],
+     "rect": [
+      947,
+      270,
+      48,
+      6
+     ],
+     "docY": 978,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "8",
+     "classes": "text-xs font-black text-emerald-600 min-w-[16px]",
+     "props": [
+      [
+       "texte",
+       "#009966"
+      ]
+     ],
+     "rect": [
+      1013,
+      265,
+      16,
+      16
+     ],
+     "docY": 973,
+     "achat": false
+    },
+    {
+     "tag": "svg",
+     "texte": "",
+     "classes": "lucide lucide-truck w-3 h-3",
+     "props": [
+      [
+       "stroke",
+       "#009966"
+      ]
+     ],
+     "rect": [
+      763,
+      660,
+      12,
+      12
+     ],
+     "docY": 1368,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "Livré 24-48h",
+     "classes": "",
+     "props": [
+      [
+       "texte",
+       "#009966"
+      ]
+     ],
+     "rect": [
+      779,
+      658,
+      70,
+      16
+     ],
+     "docY": 1366,
+     "achat": false
+    },
+    {
+     "tag": "svg",
+     "texte": "",
+     "classes": "lucide lucide-truck w-3 h-3",
+     "props": [
+      [
+       "stroke",
+       "#009966"
+      ]
+     ],
+     "rect": [
+      1069,
+      660,
+      12,
+      12
+     ],
+     "docY": 1368,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "Livré 24-48h",
+     "classes": "",
+     "props": [
+      [
+       "texte",
+       "#009966"
+      ]
+     ],
+     "rect": [
+      1085,
+      658,
+      70,
+      16
+     ],
+     "docY": 1366,
+     "achat": false
+    },
+    {
+     "tag": "span",
+     "texte": "",
+     "classes": "absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white",
+     "props": [
+      [
+       "fond",
+       "#00C950"
+      ]
+     ],
+     "rect": [
+      1404,
+      820,
+      12,
+      12
+     ],
+     "docY": 1528,
+     "achat": false
+    }
+   ],
+   "nombreVertsHorsAchat": 16,
+   "capture": "verts-r2-produit-1440-avant-ecran-du-bouton-ajouter-annote"
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "fin",
+   "presente": false,
+   "variante": null,
+   "regles": 0
+  }
+ ],
+ "toutePage": {
+  "verts": [
+   {
+    "tag": "span",
+    "texte": "Livraison gratuite dès 150€",
+    "classes": "flex items-center gap-1.5 text-emerald-300 whitespace-nowrap",
+    "props": [
+     [
+      "texte",
+      "#5EE9B5"
+     ]
+    ],
+    "docY": 76,
+    "achat": false
+   },
+   {
+    "tag": "button",
+    "texte": "8+",
+    "classes": "flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-colors duration-200 border-2 bg-emerald-50 text-emerald-700 bo",
+    "props": [
+     [
+      "texte",
+      "#007A55"
+     ],
+     [
+      "bord",
+      "#00D492"
+     ]
+    ],
+    "docY": 917,
+    "achat": false
+   },
+   {
+    "tag": "div",
+    "texte": "",
+    "classes": "h-full bg-gradient-to-r from-emerald-400 via-green-500 to-lime-500 rounded-full",
+    "props": [
+     [
+      "dégradé",
+      "#00D492"
+     ]
+    ],
+    "docY": 1065,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "8.0",
+    "classes": "text-[9px] font-bold text-emerald-700",
+    "props": [
+     [
+      "texte",
+      "#007A55"
+     ]
+    ],
+    "docY": 1060,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-euro w-4 h-4 text-green-600",
+    "props": [
+     [
+      "stroke",
+      "#00A63E"
+     ]
+    ],
+    "docY": 843,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "5,00 €",
+    "classes": "text-green-600",
+    "props": [
+     [
+      "texte",
+      "#00A63E"
+     ]
+    ],
+    "docY": 842,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-lock w-4 h-4 shrink-0 text-green-600",
+    "props": [
+     [
+      "stroke",
+      "#00A63E"
+     ]
+    ],
+    "docY": 830,
+    "achat": false
+   },
+   {
+    "tag": "div",
+    "texte": "",
+    "classes": "h-full bg-gradient-to-r from-emerald-400 via-green-500 to-lime-500 rounded-full transition-all duration-500",
+    "props": [
+     [
+      "dégradé",
+      "#00D492"
+     ]
+    ],
+    "docY": 978,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "8",
+    "classes": "text-xs font-black text-emerald-600 min-w-[16px]",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 973,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 1368,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 1366,
+    "achat": false
+   },
+   {
+    "tag": "div",
+    "texte": "",
+    "classes": "h-full bg-gradient-to-r from-emerald-400 via-green-500 to-lime-500 rounded-full transition-all duration-500",
+    "props": [
+     [
+      "dégradé",
+      "#00D492"
+     ]
+    ],
+    "docY": 978,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "8",
+    "classes": "text-xs font-black text-emerald-600 min-w-[16px]",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 973,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 1368,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 1366,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 1368,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 1366,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 1833,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 1831,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 1833,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 1831,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 1833,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 1831,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 2298,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 2296,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 2298,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 2296,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 2298,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 2296,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 2763,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 2761,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 2763,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 2761,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 2763,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 2761,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 3228,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 3226,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 3228,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 3226,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 3228,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "Livré 24-48h",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 3226,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 3693,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 3691,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 3693,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 3691,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 3693,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 3691,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 4158,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 4156,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "lucide lucide-truck w-3 h-3",
+    "props": [
+     [
+      "stroke",
+      "#009966"
+     ]
+    ],
+    "docY": 4158,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "",
+    "classes": "",
+    "props": [
+     [
+      "texte",
+      "#009966"
+     ]
+    ],
+    "docY": 4156,
+    "achat": false
+   },
+   {
+    "tag": "svg",
+    "texte": "",
+    "classes": "w-5 h-5 text-green-600",
+    "props": [
+     [
+      "stroke",
+      "#00A63E"
+     ]
+    ],
+    "docY": 6566,
+    "achat": false
+   },
+   {
+    "tag": "div",
+    "texte": "",
+    "classes": "text-2xl font-bold text-green-600",
+    "props": [
+     [
+      "texte",
+      "#00A63E"
+     ]
+    ],
+    "docY": 7789,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "",
+    "classes": "font-medium text-green-700",
+    "props": [
+     [
+      "texte",
+      "#008236"
+     ]
+    ],
+    "docY": 7901,
+    "achat": false
+   },
+   {
+    "tag": "div",
+    "texte": "",
+    "classes": "h-full bg-gradient-to-r from-green-400 to-green-600",
+    "props": [
+     [
+      "dégradé",
+      "#05DF72"
+     ]
+    ],
+    "docY": 7921,
+    "achat": false
+   },
+   {
+    "tag": "span",
+    "texte": "",
+    "classes": "absolute top-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white",
+    "props": [
+     [
+      "fond",
+      "#00C950"
+     ]
+    ],
+    "docY": 1528,
+    "achat": false
+   }
+  ],
+  "nombreHorsAchat": 56
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/funnel/event",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T10:06:50.532Z"
+}
