@@ -32343,7 +32343,6 @@
         "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
         "backend/src/modules/rm/services/rm-alternatives.service.ts",
         "backend/src/modules/rm/services/rm-builder.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
         "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
@@ -32352,7 +32351,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 525,
+      "loc": 518,
       "owner": "@ak125",
       "path": "backend/src/config/cache-ttl.config.ts",
       "risk": "medium",
@@ -32943,7 +32942,6 @@
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.test.ts",
         "backend/src/modules/seo-projection/seo-projection-writer.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
@@ -32953,7 +32951,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 559,
+      "loc": 542,
       "owner": "@ak125",
       "path": "backend/src/config/feature-flags.service.ts",
       "risk": "medium",
@@ -41100,14 +41098,12 @@
       ],
       "imports": [
         "@common/exceptions",
-        "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/constructeur.service.ts",
         "backend/src/modules/blog/services/glossary.service.ts",
-        "backend/src/modules/blog/services/guide.service.ts",
-        "backend/src/modules/seo/index.ts"
+        "backend/src/modules/blog/services/guide.service.ts"
       ],
       "kind": "controller",
-      "loc": 648,
+      "loc": 607,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/controllers/content.controller.ts",
       "risk": "medium",
@@ -41180,7 +41176,6 @@
       "domain": "D5",
       "id": "backend/src/modules/blog/interfaces/blog.interfaces.ts",
       "importedBy": [
-        "backend/src/modules/blog/controllers/content.controller.ts",
         "backend/src/modules/blog/interfaces/r3-guide.interfaces.ts",
         "backend/src/modules/blog/services/advice-enrichment.service.ts",
         "backend/src/modules/blog/services/advice-transform.service.ts",
@@ -41650,11 +41645,10 @@
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
         "backend/src/modules/blog/services/blog.service.ts",
-        "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "test",
-      "loc": 223,
+      "loc": 165,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/blog.service.test.ts",
       "risk": "medium",
@@ -41685,12 +41679,11 @@
         "backend/src/modules/blog/services/blog-cache.service.ts",
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
-        "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 410,
+      "loc": 369,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/blog.service.ts",
       "risk": "medium",
@@ -41889,12 +41882,11 @@
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts",
         "backend/src/modules/blog/services/r3-projection-decision.service.ts",
-        "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "test",
-      "loc": 1082,
+      "loc": 1003,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-guide.service.test.ts",
       "risk": "medium",
@@ -41926,13 +41918,12 @@
         "backend/src/modules/blog/services/r3-projection-decision.service.ts",
         "backend/src/modules/blog/utils/html-normalize.utils.ts",
         "backend/src/modules/blog/utils/projection-r3-section-presenter.ts",
-        "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/seo-v4.types.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 734,
+      "loc": 705,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-guide.service.ts",
       "risk": "medium",
@@ -47041,11 +47032,10 @@
         "@cache/cache.service",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/index.ts",
-        "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 195,
+      "loc": 190,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "medium",
@@ -47101,7 +47091,7 @@
         "backend/src/modules/seo/index.ts"
       ],
       "kind": "test",
-      "loc": 122,
+      "loc": 121,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
       "risk": "medium",
@@ -47123,7 +47113,7 @@
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
       ],
       "kind": "test",
-      "loc": 62,
+      "loc": 61,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
       "risk": "medium",
@@ -47146,7 +47136,7 @@
         "backend/src/modules/seo/registries/seo-feature-flag.registry.ts"
       ],
       "kind": "test",
-      "loc": 222,
+      "loc": 221,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
       "risk": "medium",
@@ -47297,7 +47287,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 1320,
+      "loc": 1293,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "medium",
@@ -47352,11 +47342,10 @@
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.schema.ts",
-        "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 589,
+      "loc": 586,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
       "risk": "medium",
@@ -60236,17 +60225,15 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/controllers/diagnostic.controller.ts",
       "importedBy": [
-        "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
         "@auth/is-admin.guard",
         "@common/exceptions",
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "controller",
-      "loc": 335,
+      "loc": 311,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/diagnostic.controller.ts",
       "risk": "high",
@@ -60315,45 +60302,19 @@
         "manual"
       ],
       "domain": "D3",
-      "id": "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/seo/controllers/diagnostic.controller.ts",
-        "backend/src/modules/seo/controllers/reference.controller.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts"
-      ],
-      "kind": "test",
-      "loc": 196,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
       "id": "backend/src/modules/seo/controllers/reference.controller.ts",
       "importedBy": [
-        "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
         "@auth/is-admin.guard",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "controller",
-      "loc": 488,
+      "loc": 413,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/reference.controller.ts",
       "risk": "high",
@@ -60853,29 +60814,21 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/index.ts",
       "importedBy": [
-        "backend/src/modules/blog/controllers/content.controller.ts",
-        "backend/src/modules/blog/services/blog.service.test.ts",
-        "backend/src/modules/blog/services/blog.service.ts",
-        "backend/src/modules/blog/services/r3-guide.service.test.ts",
-        "backend/src/modules/blog/services/r3-guide.service.ts",
-        "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
         "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-gamme-links.test.ts",
-        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
-        "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts"
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
       ],
       "imports": [
         "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/seo.controller.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/seo.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts",
         "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts",
         "backend/src/modules/seo/validation/purchase-guide-validation.dto.ts",
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
       "kind": "service",
-      "loc": 24,
+      "loc": 14,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/index.ts",
       "risk": "high",
@@ -62938,7 +62891,6 @@
         "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
         "backend/src/modules/seo/services/policies/seo-unavailable-policy.service.ts",
         "backend/src/modules/seo/services/product-image.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/services/risk-flags-engine.service.ts",
@@ -62974,7 +62926,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 394,
+      "loc": 391,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/seo.module.ts",
       "risk": "high",
@@ -63950,90 +63902,6 @@
         "manual"
       ],
       "domain": "D3",
-      "id": "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
-      "importedBy": [
-        "backend/src/modules/seo/controllers/diagnostic.controller.ts",
-        "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
-        "backend/src/modules/seo/controllers/reference.controller.ts",
-        "backend/src/modules/seo/index.ts",
-        "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.test.ts",
-        "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
-        "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
-      ],
-      "imports": [
-        "@cache/cache.service",
-        "@database/services/supabase-base.service",
-        "@security/rpc-gate/rpc-gate.service",
-        "backend/src/config/cache-ttl.config.ts",
-        "backend/src/config/feature-flags.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation.config.ts",
-        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
-      ],
-      "kind": "service",
-      "loc": 294,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
-      "risk": "high",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
-      "id": "backend/src/modules/seo/services/r4-consolidation-policy.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation.config.ts"
-      ],
-      "kind": "test",
-      "loc": 375,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/services/r4-consolidation-policy.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual",
-        "reachability"
-      ],
-      "domain": "D3",
-      "id": "backend/src/modules/seo/services/r4-consolidation.config.ts",
-      "importedBy": [
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.test.ts"
-      ],
-      "imports": [],
-      "kind": "config",
-      "loc": 67,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/services/r4-consolidation.config.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
       "id": "backend/src/modules/seo/services/r4-family-guard.test.ts",
       "importedBy": [],
       "imports": [
@@ -64091,7 +63959,6 @@
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.test.ts"
       ],
       "imports": [
@@ -64102,7 +63969,7 @@
         "backend/src/config/feature-flags.service.ts"
       ],
       "kind": "service",
-      "loc": 310,
+      "loc": 308,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
       "risk": "high",
@@ -64832,30 +64699,6 @@
         "manual"
       ],
       "domain": "D3",
-      "id": "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10.types.ts"
-      ],
-      "kind": "test",
-      "loc": 81,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
       "id": "backend/src/modules/seo/services/sitemap-v10-scheduler.heartbeat.test.ts",
       "importedBy": [],
       "imports": [
@@ -64940,7 +64783,6 @@
         "backend/src/modules/seo/services/sitemap-v10-blog-hub.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
-        "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
       "imports": [
@@ -64948,7 +64790,6 @@
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/seo/helpers/r8-vehicle-selection.helper.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.types.ts",
@@ -64957,7 +64798,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 757,
+      "loc": 741,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "high",
@@ -65048,7 +64889,6 @@
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-indexability.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
@@ -73412,7 +73252,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 538,
+      "loc": 525,
       "owner": "@ak125",
       "path": "backend/tests/unit/gamme-r3-cache-invalidation.http-guards.test.ts",
       "risk": "medium",
@@ -73432,7 +73272,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 689,
+      "loc": 677,
       "owner": "@ak125",
       "path": "backend/tests/unit/gamme-response-builder.service.test.ts",
       "risk": "medium",
@@ -92682,7 +92522,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 895,
+      "loc": 868,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
       "risk": "medium",
@@ -92783,7 +92623,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1109,
+      "loc": 1106,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat.$pg_alias.tsx",
       "risk": "medium",
@@ -93968,7 +93808,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 931,
+      "loc": 926,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/diagnostic-auto.$slug.tsx",
       "risk": "medium",
@@ -94804,7 +94644,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1303,
+      "loc": 1275,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/reference-auto.$slug.tsx",
       "risk": "medium",
@@ -94838,7 +94678,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 522,
+      "loc": 520,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/reference-auto._index.tsx",
       "risk": "medium",
@@ -101544,7 +101384,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 258,
+      "loc": 151,
       "owner": "@ak125",
       "path": "frontend/tests/unit/reference-auto-loader-parallel.test.ts",
       "risk": "medium",
@@ -111401,11 +111241,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4bd8407a831a3385f4c3e8845dd213a18f13ec99e6a3528a63160c01e78749ae",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "5cf3b6fe4187f9e2c081481a11ff878f7f3bcdbd9929730f79259fc381e1e7ba",
+      "audit/registry/files.json": "25e26afa920160f777c8b32bb40c1c75ca57891835f138b4a9b4071a684a1256",
       "audit/registry/rpc.json": "ae924a85483e215265b47c3f6c98988c62512b08260e003ab3ab96db651b6211",
-      "audit/registry/runtime.json": "21687cd8f7a227509538b09d5865681be3684520dad4dd2bd2bf9079351997ac"
+      "audit/registry/runtime.json": "4950b9611ddfa67b77433a772064549b6a82173cb60b05cc2b24d34510d4a82d"
     },
-    "sotFingerprint": "faafa3827942"
+    "sotFingerprint": "13c01ffe7c7b"
   },
   "runtime": [
     {
@@ -117860,7 +117700,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo/controllers/diagnostic.controller.ts",
@@ -117883,7 +117722,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts",
         "runtime:backend/src/modules/seo/validation/diagnostic.service.ts"
@@ -118501,7 +118339,6 @@
         "runtime:backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
         "runtime:backend/src/modules/seo/services/policies/seo-unavailable-policy.service.ts",
         "runtime:backend/src/modules/seo/services/product-image.service.ts",
-        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts",
         "runtime:backend/src/modules/seo/services/risk-flags-engine.service.ts",
@@ -118711,18 +118548,6 @@
       "id": "runtime:backend/src/modules/seo/services/product-image.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/seo/services/product-image.service.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
-        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
-      "kind": "nestjs-service",
-      "path": "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -118941,7 +118766,6 @@
     {
       "dependsOn": [
         "runtime:backend/src/config/feature-flags.service.ts",
-        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-xml.service.ts"
       ],
