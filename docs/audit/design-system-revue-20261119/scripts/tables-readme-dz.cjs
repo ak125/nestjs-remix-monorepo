@@ -34,7 +34,7 @@ const jeton = (fg, bg, seuil) => {
 };
 const nb = (x) => String(x).replace(".", ",");
 const pagesDe = (l) => [...new Set(l.map((p) => p.split("@")[0]))];
-const esc = (t) => String(t ?? "").replace(/\|/g, "\\|").replace(/\n/g, " ").slice(0, 70);
+const esc = (t) => String(t ?? "").replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\n/g, " ").slice(0, 70);
 const out = [];
 const T = (titre, entetes, lignes) => { out.push(`\n#### ${titre}\n`, "| " + entetes.join(" | ") + " |", "|" + entetes.map(() => "---").join("|") + "|", ...lignes.map((l) => "| " + l.map(esc).join(" | ") + " |")); };
 

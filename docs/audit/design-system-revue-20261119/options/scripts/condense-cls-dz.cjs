@@ -27,7 +27,7 @@ T("Méthode « parcours » (ordre de mesure-dz.cjs) : somme par phase", ["page",
 T("Injection de la feuille A3 après chargement (artefact de la maquette, exclu ci-dessus)", ["page", "largeur", "méthode", "somme", "règles lues"],
   runs.filter((r) => r.variante === "a3").map((r) => [r.id, W(r), r.methode, nb(r.cls.parPhase.injection ? r.cls.parPhase.injection.somme : null), r.injection && r.injection.regles]));
 
-const court = (s) => (s || "").replace(/\|/g, "\\|").slice(0, 110);
+const court = (s) => (s || "").replace(/\\/g, "\\\\").replace(/\|/g, "\\|").slice(0, 110);
 const lignes = [];
 for (const r of runs) for (const s of r.shifts) {
   if (s.v < 0.01) continue;

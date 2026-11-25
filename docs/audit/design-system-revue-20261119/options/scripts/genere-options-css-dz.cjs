@@ -21,7 +21,7 @@ const OPTIONS = {
         desactive: { fond: "#FED7AA", texte: T.navy }, logo: "#F97316",
         note: "comme A2 (fond cta.500 #F97316, texte navy ; survol cta.600 #EA580C ; désactivé #FED7AA, texte navy, opacité 1), sauf « Ajouter » des cartes de la liste R2 : contour navy 2 px, fond transparent, texte navy ; survol fond navy à 8 % ; désactivé fond neutral.50 #F5F7FA, contour et texte neutral.500 #4B5563 en pointillé. Une seule action orange par écran : « Panier » de la barre collante (390) ou l'achat principal de la fiche" },
 };
-const q = (c) => `[class~="${c.replace(/"/g, '\\"')}"]`;                 // classe rendue exacte
+const q = (c) => `[class~="${c.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"]`;                 // classe rendue exacte
 const L = (...cs) => cs.map(q).join(",\n");
 const hov = (...cs) => cs.map((c) => `${q(c)}:hover`).join(",\n");
 const gh = (...cs) => cs.map((c) => `[class~="group"]:hover ${q(c)}`).join(",\n");
