@@ -19,6 +19,10 @@ import {
   applyGuideLinkRuleToHtml,
   R6GuideLinkPolicyService,
 } from '../../seo/services/r6-guide-link-policy.service';
+import {
+  applyReferenceLinkRuleToHtml,
+  R4ConsolidationPolicyService,
+} from '../../seo/services/r4-consolidation-policy.service';
 
 /**
  * 📰 BlogService - Orchestrateur principal du module blog
@@ -47,6 +51,7 @@ export class BlogService {
     private readonly seoService: BlogSeoService,
     private readonly relationService: BlogArticleRelationService,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
   ) {}
 
   // =====================================================
@@ -146,8 +151,44 @@ export class BlogService {
 
   async getArticleBySlug(slug: string): Promise<BlogArticle | null> {
     const article = await this.dataService.getArticleBySlug(slug);
-    if (!article || article.type === 'guide') return article;
-    return this.applyGuideLinkRule(article);
+    if (!article) return article;
+    const linked =
+      article.type === 'guide'
+        ? article
+        : await this.applyGuideLinkRule(article);
+    return this.applyReferenceLinkRule(linked);
+  }
+
+  /**
+   * Liens vers les pages R4 redirigées (mandat ER) : vers leur page conseils.
+   * Drapeau éteint ou aucun lien concerné : l'article est rendu tel quel.
+   */
+  private async applyReferenceLinkRule(
+    article: BlogArticle,
+  ): Promise<BlogArticle> {
+    const snapshot = await this.r4Consolidation.getSnapshot();
+    if (!snapshot.enabled) return article;
+    const currentPath = `/blog-pieces-auto/article/${article.slug}`;
+    const content = applyReferenceLinkRuleToHtml(
+      article.content,
+      snapshot,
+      currentPath,
+    );
+    let changed = content.changed;
+    const sections = article.sections.map((section) => {
+      const r = applyReferenceLinkRuleToHtml(
+        section.content,
+        snapshot,
+        currentPath,
+      );
+      changed += r.changed;
+      return r.changed === 0 ? section : { ...section, content: r.html };
+    });
+    if (changed === 0) return article;
+    this.logger.log(
+      `[R4-LINKS] article=${article.slug} contenu=${changed} lien(s) modifié(s)`,
+    );
+    return { ...article, content: content.html, sections };
   }
 
   /**

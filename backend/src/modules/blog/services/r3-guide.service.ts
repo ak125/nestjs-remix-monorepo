@@ -41,13 +41,19 @@ import {
   R6GuideLinkPolicyService,
   resolveGuideLink,
 } from '../../seo/services/r6-guide-link-policy.service';
+import {
+  applyReferenceLinkRuleToHtml,
+  R4_CONSOLIDATION_CACHE_SUFFIXES,
+  R4ConsolidationPolicyService,
+} from '../../seo/services/r4-consolidation-policy.service';
 
 /** Cache key prefix versionnée — bump v1→v2 invalide tous les payloads.
  *  v2 (2026-05-24) : compatible vehicles capped à 24 (LCP /blog-pieces-auto/conseils/* — voir PR LCP-R3-PR1).
  *  v3 (2026-09-11) : sections META hors contrat « liens » retirées du payload
  *  (sinon les payloads v2 cachés continueraient de servir le JSON 24 h).
  *  La clé porte ensuite le segment du drapeau R6 (`r6c0`/`r6c1`, ADR-103 D5) :
- *  les liens vers les guides dépendent du drapeau. */
+ *  les liens vers les guides dépendent du drapeau. Drapeau R4 allumé (mandat ER),
+ *  le segment est suffixé (`r6c0.r4c1`) : les liens vers les pages R4 en dépendent. */
 const R3_CACHE_PREFIX = 'r3-guide:v3:';
 
 /** Motif de rejet d'une section META hors contrat « liens ». */
@@ -89,6 +95,7 @@ interface R3GuideContext {
   guideLinkSnapshot: Awaited<
     ReturnType<R6GuideLinkPolicyService['getSnapshot']>
   >;
+  r4Snapshot: Awaited<ReturnType<R4ConsolidationPolicyService['getSnapshot']>>;
 }
 
 /** Corps servi d'une page conseil : sections + mode de rendu. */
@@ -133,6 +140,7 @@ export class R3GuideService {
     private readonly internalLinkingService: InternalLinkingService,
     private readonly projectionDecision: R3ProjectionDecisionService,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
   ) {}
 
   /**
@@ -168,7 +176,7 @@ export class R3GuideService {
       return this.computeTargetedPayload(pg_alias);
     }
 
-    const cacheKey = `${R3_CACHE_PREFIX}${this.guideLinkPolicy.cacheKeySegment()}:${pg_alias}`;
+    const cacheKey = `${R3_CACHE_PREFIX}${this.r4Consolidation.cacheKeySegment(this.guideLinkPolicy.cacheKeySegment())}:${pg_alias}`;
     const startedAt = Date.now();
 
     const cached = await this.cacheService.get<R3GuidePayload | null>(cacheKey);
@@ -300,8 +308,10 @@ export class R3GuideService {
     pg_alias: string,
     origin = 'admin request',
   ): Promise<string[]> {
-    const keys = R6_GUIDE_LINK_CACHE_SEGMENTS.map(
-      (segment) => `${R3_CACHE_PREFIX}${segment}:${pg_alias}`,
+    const keys = R6_GUIDE_LINK_CACHE_SEGMENTS.flatMap((segment) =>
+      R4_CONSOLIDATION_CACHE_SUFFIXES.map(
+        (suffix) => `${R3_CACHE_PREFIX}${segment}${suffix}:${pg_alias}`,
+      ),
     );
     await this.cacheService.delStrict(keys);
     this.logger.log(
@@ -356,6 +366,7 @@ export class R3GuideService {
       adjacent,
       seoBrief,
       guideLinkSnapshot,
+      r4Snapshot,
     ] = await Promise.all([
       this.seoService.getGammeConseil(gammeData.pg_id),
       this.seoService.getSeoItemSwitches(gammeData.pg_id),
@@ -368,6 +379,7 @@ export class R3GuideService {
       this.dataService.getAdjacentArticles(article.slug),
       this.seoService.getSeoBrief(gammeData.pg_id),
       this.guideLinkPolicy.getSnapshot(),
+      this.r4Consolidation.getSnapshot(),
     ]);
 
     return {
@@ -381,6 +393,7 @@ export class R3GuideService {
       adjacent,
       seoBrief,
       guideLinkSnapshot,
+      r4Snapshot,
     };
   }
 
@@ -402,6 +415,7 @@ export class R3GuideService {
       adjacent,
       seoBrief,
       guideLinkSnapshot,
+      r4Snapshot,
     } = ctx;
     const {
       s1Sections,
@@ -417,6 +431,7 @@ export class R3GuideService {
       linkedPaths: new Set<string>(),
     };
     let guideLinksChanged = 0;
+    let referenceLinksChanged = 0;
     for (const section of [...s1Sections, ...bodySections, ...mappedMeta]) {
       const out = applyGuideLinkRuleToHtml(
         section.html,
@@ -425,6 +440,20 @@ export class R3GuideService {
       );
       section.html = out.html;
       guideLinksChanged += out.changed;
+      // Liens vers les pages R4 redirigées (mandat ER) : vers leur page conseils,
+      // dépliés quand cette page conseils est la page courante.
+      const r4Out = applyReferenceLinkRuleToHtml(
+        section.html,
+        r4Snapshot,
+        guideLinkCtx.currentPath,
+      );
+      section.html = r4Out.html;
+      referenceLinksChanged += r4Out.changed;
+    }
+    if (referenceLinksChanged > 0) {
+      this.logger.log(
+        `[R4-LINKS] pg_alias=${pg_alias} contenu=${referenceLinksChanged} lien(s) modifié(s)`,
+      );
     }
     const buyingGuideHref = resolveGuideLink(
       pg_alias,

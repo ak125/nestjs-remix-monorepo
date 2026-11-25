@@ -142,6 +142,23 @@ export class FeatureFlagsService {
     return this.bool('SEO_R6_CONSOLIDATION_ENABLED', false);
   }
 
+  /**
+   * Gates the R4→R3 consolidation of a closed list of 43 reference pages
+   * (`modules/seo/services/r4-consolidation.config.ts`, mandat ER). When ON:
+   *   - each listed /reference-auto/{slug} answers 301 (one hop) to the R3
+   *     conseils page of its gamme — self-gated per page: published, gamme
+   *     alias present, R3 page served (same gate as the R3 route and the R6
+   *     redirect). A page failing the gate is served as today;
+   *   - sitemap-reference.xml drops the redirected URLs (next generation);
+   *   - every served internal link to a redirected page targets its R3 page
+   *     directly, and disappears on that R3 page itself.
+   * The other reference pages and the hub /reference-auto are unchanged.
+   * Default: false (inert — zero change). Rollback: turn the flag off.
+   */
+  get seoR4ConsolidationEnabled(): boolean {
+    return this.bool('SEO_R4_CONSOLIDATION_ENABLED', false);
+  }
+
   // ── SEO Projection forward-writer (ADR-059 P2-B) — allowlists role-scoped ──
 
   /**

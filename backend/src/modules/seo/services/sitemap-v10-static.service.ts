@@ -25,6 +25,10 @@ import {
 } from '../helpers/r8-vehicle-selection.helper';
 import { isR6GuideAchatSurface } from '../types/page-role.types';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
+import {
+  R4ConsolidationPolicyService,
+  withoutR4Redirected,
+} from './r4-consolidation-policy.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { type SitemapUrl, STATIC_PAGES } from './sitemap-v10.types';
 
@@ -78,6 +82,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
     private readonly dataService: SitemapV10DataService,
     private readonly xmlService: SitemapV10XmlService,
     private readonly featureFlags: FeatureFlagsService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
   ) {
     super(configService);
     this.rpcGate = rpcGate;
@@ -611,7 +616,18 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
-      const urls: SitemapUrl[] = references.map(
+      // Pages redirigées vers leur page conseils (mandat ER) : hors sitemap.
+      const { kept, excluded } = withoutR4Redirected(
+        references as { slug: string; updated_at: string }[],
+        await this.r4Consolidation.getSnapshot(),
+      );
+      if (excluded > 0) {
+        this.logger.log(
+          `   🔀 R4 consolidation ON: ${excluded} URL(s) référence exclue(s) du sitemap (301 → conseils)`,
+        );
+      }
+
+      const urls: SitemapUrl[] = kept.map(
         (r: { slug: string; updated_at: string }) => ({
           url: `/reference-auto/${r.slug}`,
           page_type: 'reference',

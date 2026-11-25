@@ -1,5 +1,11 @@
 import { GammeResponseBuilderService } from '../../src/modules/gamme-rest/services/gamme-response-builder.service';
 import { BuyingGuideDataService } from '../../src/modules/gamme-rest/services/buying-guide-data.service';
+import { R4_CONSOLIDATION_OFF } from '../../src/modules/seo/services/r4-consolidation-policy.service';
+
+/** Drapeau R4 éteint (mandat ER) : aucun lien ne change. */
+const r4ConsolidationOff = {
+  getSnapshot: jest.fn(async () => R4_CONSOLIDATION_OFF),
+} as any;
 
 // Résolveur des liens conseils du texte R1 : passe-plat ici, couvert par
 // internal-linking.service.conseils-links.test.ts.
@@ -192,6 +198,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainFlags,
       guideLinkPolicy,
       internalLinking,
+      r4ConsolidationOff,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -262,6 +269,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainFlags,
       guideLinkPolicy,
       internalLinking,
+      r4ConsolidationOff,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -332,6 +340,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainFlags,
       guideLinkPolicy,
       internalLinking,
+      r4ConsolidationOff,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -390,6 +399,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
         { mode: jest.fn(() => 'off') } as any,
         guideLinkPolicy,
         internalLinking,
+        r4ConsolidationOff,
       );
     };
 
@@ -462,6 +472,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
         })),
       } as any,
       internalLinking,
+      r4ConsolidationOff,
     );
 
     await service.buildRpcV2Response('7');
@@ -518,6 +529,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
           })),
         } as any,
         internalLinking,
+        r4ConsolidationOff,
       ).buildRpcV2Response('479');
 
     const withContract = (faqSource: 'db' | 'mixed' | 'fallback') =>

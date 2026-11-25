@@ -11,6 +11,7 @@ import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 import { GammeRpcAggregatedDataSchema } from './gamme-rpc.schema';
 import { HomepageRpcService } from '../../catalog/services/homepage-rpc.service';
 import { R6_GUIDE_LINK_CACHE_SEGMENTS } from '../../seo/services/r6-guide-link-policy.service';
+import { R4_CONSOLIDATION_CACHE_SUFFIXES } from '../../seo/services/r4-consolidation-policy.service';
 
 /** Champs de get_homepage_families lus pour les vignettes gamme. */
 interface HomepageFamiliesShape {
@@ -96,13 +97,15 @@ export class GammeRpcService extends SupabaseBaseService {
     return `gamme:resp:v2:${segment}:${pgId}`;
   }
 
-  /** Clés Redis d'une gamme : données RPC, copie de secours, réponse par segment R6. */
+  /** Clés Redis d'une gamme : données RPC, copie de secours, réponse par segment R6 (et drapeau R4). */
   private cacheKeysOf(pgId: string): string[] {
     return [
       this.getCacheKey(pgId),
       this.getStaleCacheKey(pgId),
-      ...R6_GUIDE_LINK_CACHE_SEGMENTS.map((segment) =>
-        this.getResponseCacheKey(pgId, segment),
+      ...R6_GUIDE_LINK_CACHE_SEGMENTS.flatMap((segment) =>
+        R4_CONSOLIDATION_CACHE_SUFFIXES.map((suffix) =>
+          this.getResponseCacheKey(pgId, `${segment}${suffix}`),
+        ),
       ),
     ];
   }

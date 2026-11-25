@@ -76,8 +76,10 @@ const GUIDE_PATH_RE =
   /^\/blog-pieces-auto\/guide-achat\/([^/?#\s"']+)\/?(?:[?#].*)?$/;
 const CONSEILS_PATH_RE =
   /^\/blog-pieces-auto\/conseils\/([^/?#\s"']+)\/?(?:[?#].*)?$/;
-const ANCHOR_RE = /<a\b([^>]*)>([\s\S]*?)<\/a\s*>/gi;
-const HREF_ATTR_RE = /(\bhref\s*=\s*)(["'])([^"']*)\2/i;
+/** Lien HTML : attributs, contenu. Partagé avec la règle des liens R4 (r4-consolidation-policy.service.ts). */
+export const ANCHOR_RE = /<a\b([^>]*)>([\s\S]*?)<\/a\s*>/gi;
+/** Attribut `href` d'une balise : préfixe, guillemet, valeur. */
+export const HREF_ATTR_RE = /(\bhref\s*=\s*)(["'])([^"']*)\2/i;
 const HREF_VALUE_RE = /\bhref\s*=\s*(["'])([^"']*)\1/gi;
 
 const guidePath = (alias: string) => `${GUIDE_PREFIX}${alias}`;

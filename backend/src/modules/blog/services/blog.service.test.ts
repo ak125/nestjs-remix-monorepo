@@ -18,6 +18,11 @@ import type {
   R6GuideLinkSnapshot,
 } from '../../seo/services/r6-guide-link-policy.service';
 import type { BlogArticle } from '../interfaces/blog.interfaces';
+import {
+  R4_CONSOLIDATION_OFF,
+  type R4ConsolidationPolicyService,
+  type R4ConsolidationSnapshot,
+} from '../../seo/services/r4-consolidation-policy.service';
 
 const SLUG = 'bien-choisir-ses-pieces';
 const guide = (alias: string) => `/blog-pieces-auto/guide-achat/${alias}`;
@@ -67,7 +72,11 @@ function article(overrides: Partial<BlogArticle> = {}): BlogArticle {
   };
 }
 
-function buildService(found: BlogArticle | null, snap: R6GuideLinkSnapshot) {
+function buildService(
+  found: BlogArticle | null,
+  snap: R6GuideLinkSnapshot,
+  r4: R4ConsolidationSnapshot = R4_CONSOLIDATION_OFF,
+) {
   const dataService = {
     getArticleBySlug: jest.fn().mockResolvedValue(found),
   };
@@ -82,6 +91,9 @@ function buildService(found: BlogArticle | null, snap: R6GuideLinkSnapshot) {
     {} as BlogSeoService,
     {} as BlogArticleRelationService,
     guideLinkPolicy as unknown as R6GuideLinkPolicyService,
+    {
+      getSnapshot: jest.fn().mockResolvedValue(r4),
+    } as unknown as R4ConsolidationPolicyService,
   );
   return { service, guideLinkPolicy };
 }
@@ -160,5 +172,51 @@ describe('BlogService.getArticleBySlug — liens vers les guides (ADR-103 D5)', 
     await expect(service.getArticleBySlug(SLUG)).rejects.toThrow(
       'R6_GUIDE_LINK_SNAPSHOT_FAILED',
     );
+  });
+});
+
+describe('BlogService.getArticleBySlug — liens vers les pages R4 redirigées (mandat ER)', () => {
+  const ref = (s: string) => `/reference-auto/${s}`;
+  const withRefs = (type: BlogArticle['type']) =>
+    article({
+      type,
+      content: `<p><a href="${ref('disque-de-frein')}">Disque</a> et <a href="${ref('alternateur')}">alternateur</a>.</p>`,
+      sections: [
+        {
+          level: 2,
+          title: 'Freinage',
+          anchor: 'freinage',
+          content: `<p><a href='${ref('disque-de-frein')}' class="x">disque</a></p>`,
+        },
+      ],
+    });
+  const r4On: R4ConsolidationSnapshot = {
+    enabled: true,
+    redirects: new Map([['disque-de-frein', conseils('disque-de-frein')]]),
+  };
+
+  it('drapeau éteint : article servi tel quel', async () => {
+    const found = withRefs('advice');
+    const { service } = buildService(found, snapshot(false));
+    const out = await service.getArticleBySlug(SLUG);
+    expect(out?.content).toBe(found.content);
+    expect(out?.sections[0].content).toBe(found.sections[0].content);
+  });
+
+  it('drapeau allumé : lien vers une page redirigée → page conseils, autre lien R4 gardé', async () => {
+    const { service } = buildService(withRefs('advice'), snapshot(false), r4On);
+    const out = await service.getArticleBySlug(SLUG);
+    expect(out?.content).toBe(
+      `<p><a href="${conseils('disque-de-frein')}">Disque</a> et <a href="${ref('alternateur')}">alternateur</a>.</p>`,
+    );
+    expect(out?.sections[0].content).toBe(
+      `<p><a href='${conseils('disque-de-frein')}' class="x">disque</a></p>`,
+    );
+  });
+
+  it('drapeau allumé : la règle s’applique aussi à un article guide', async () => {
+    const { service } = buildService(withRefs('guide'), snapshot(false), r4On);
+    const out = await service.getArticleBySlug(SLUG);
+    expect(out?.content).toContain(conseils('disque-de-frein'));
   });
 });

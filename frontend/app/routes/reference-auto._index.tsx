@@ -48,6 +48,8 @@ interface ReferenceItem {
     name: string | null;
     url: string | null;
   };
+  /** Lien servi (mandat ER) : présent drapeau R4 allumé, page conseils si redirigée. */
+  href?: string | null;
 }
 
 // Gamme color: delegue a la source unique getFamilyTheme()
@@ -147,7 +149,7 @@ function SchemaJsonLd({ references }: { references: ReferenceItem[] }) {
     hasDefinedTerm: references.slice(0, 20).map((ref) => ({
       "@type": "DefinedTerm",
       name: ref.title.replace(/ : Définition.*$/, ""),
-      url: absUrl(`/reference-auto/${ref.slug}`),
+      url: absUrl(ref.href ?? `/reference-auto/${ref.slug}`),
     })),
   };
 
@@ -429,7 +431,7 @@ export default function ReferenceIndexPage() {
                       return (
                         <Link
                           key={ref.slug}
-                          to={`/reference-auto/${ref.slug}`}
+                          to={ref.href ?? `/reference-auto/${ref.slug}`}
                           className="group"
                         >
                           <Card

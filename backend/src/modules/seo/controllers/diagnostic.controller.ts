@@ -18,6 +18,11 @@ import {
   SeoDiagnosticListItem,
   DiagnosticQualityResult,
 } from '../validation/diagnostic.service';
+import {
+  R4ConsolidationPolicyService,
+  referenceLinkPath,
+  referencePath,
+} from '../services/r4-consolidation-policy.service';
 
 /**
  * Controleur API pour les pages Diagnostic (R5)
@@ -30,7 +35,10 @@ import {
 export class DiagnosticController {
   private readonly logger = new Logger(DiagnosticController.name);
 
-  constructor(private readonly diagnosticService: DiagnosticService) {}
+  constructor(
+    private readonly diagnosticService: DiagnosticService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
+  ) {}
 
   // ============================================
   // ROUTES STATIQUES (AVANT les routes avec :slug)
@@ -283,9 +291,9 @@ export class DiagnosticController {
    */
   @Get(':slug')
   @Header('Cache-Control', 'public, max-age=3600') // Cache 1 heure
-  async getBySlug(
-    @Param('slug') slug: string,
-  ): Promise<{ data: SeoDiagnostic }> {
+  async getBySlug(@Param('slug') slug: string): Promise<{
+    data: SeoDiagnostic & { related_reference_hrefs?: string[] };
+  }> {
     this.logger.debug(`GET /api/seo/diagnostic/${slug}`);
 
     const diagnostic = await this.diagnosticService.getBySlug(slug);
@@ -303,6 +311,22 @@ export class DiagnosticController {
     if (!diagnostic.schema_org) {
       diagnostic.schema_org =
         this.diagnosticService.generateSchemaOrg(diagnostic);
+    }
+
+    // Liens « Comprendre » vers les pages R4 (mandat ER) : drapeau allumé, une
+    // page redirigée est liée à sa page conseils. Champ absent drapeau éteint.
+    const r4 = await this.r4Consolidation.getSnapshot();
+    if (r4.enabled && diagnostic.related_references?.length) {
+      const currentPath = `/diagnostic-auto/${diagnostic.slug}`;
+      return {
+        data: {
+          ...diagnostic,
+          related_reference_hrefs: diagnostic.related_references.map(
+            (ref) =>
+              referenceLinkPath(ref, r4, currentPath) ?? referencePath(ref),
+          ),
+        },
+      };
     }
 
     return { data: diagnostic };

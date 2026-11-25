@@ -7,7 +7,7 @@
  */
 
 import { ArrowLeft, Tag, BookOpen, ExternalLink } from "lucide-react";
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef, type ReactNode } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -206,8 +206,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         const r4Controller = new AbortController();
         const r4Timeout = setTimeout(() => r4Controller.abort(), 2000);
 
+        // `from` : page où le lien est affiché (mandat ER, règle unique des liens R4).
         const byGammeUrl = getInternalApiUrlFromRequest(
-          `/api/seo/reference/by-gamme/${pgId}`,
+          `/api/seo/reference/by-gamme/${pgId}?from=${encodeURIComponent(`/blog-pieces-auto/conseils/${pg_alias}`)}`,
           request,
         );
         const byGammeRes = await fetch(byGammeUrl, {
@@ -218,7 +219,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           return null;
         }
 
-        const { slug: r4Slug } = await byGammeRes.json();
+        const { slug: r4Slug, url: r4Url } = await byGammeRes.json();
         if (!r4Slug) {
           clearTimeout(r4Timeout);
           return null;
@@ -239,7 +240,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           title: ref.title ?? "",
           definition: ref.definition ?? "",
           roleMecanique: ref.roleMecanique ?? ref.role_mecanique ?? null,
-          canonicalUrl: `/reference-auto/${r4Slug}`,
+          // null : page R4 redirigée vers cette page même (lien retiré, carte gardée).
+          canonicalUrl:
+            r4Url === undefined ? `/reference-auto/${r4Slug}` : (r4Url ?? null),
         };
       } catch {
         return null; // R4 reference is optional — fail silently
@@ -427,6 +430,28 @@ export const meta: MetaFunction<typeof loader> = ({
 
   return result;
 };
+
+// ── Lien R4 de la carte : absent quand la page R4 est redirigée ici (mandat ER)
+function MaybeLink({
+  to,
+  className,
+  children,
+}: {
+  to: string | null;
+  className: string;
+  children: ReactNode;
+}) {
+  if (!to) {
+    return (
+      <div className={className.replace(/\s*\bgroup\b/, "")}>{children}</div>
+    );
+  }
+  return (
+    <Link to={to} className={className}>
+      {children}
+    </Link>
+  );
+}
 
 // ── R4 Fallback (glossaire générique) ──────────────────────
 function R4FallbackCard() {
@@ -791,8 +816,8 @@ export default function R3GuidePage() {
                       resolvedR4 ? (
                         <Card className="border-indigo-200 bg-muted/50">
                           <div className="p-4">
-                            <Link
-                              to={`/reference-auto/${resolvedR4.slug}`}
+                            <MaybeLink
+                              to={resolvedR4.canonicalUrl}
                               className="flex items-start gap-3 group"
                             >
                               <div className="p-2 bg-muted rounded-lg shrink-0">
@@ -807,11 +832,13 @@ export default function R3GuidePage() {
                                     {resolvedR4.roleMecanique}
                                   </p>
                                 )}
-                                <p className="text-xs text-foreground mt-1 font-medium">
-                                  Voir la fiche technique
-                                </p>
+                                {resolvedR4.canonicalUrl && (
+                                  <p className="text-xs text-foreground mt-1 font-medium">
+                                    Voir la fiche technique
+                                  </p>
+                                )}
                               </div>
-                            </Link>
+                            </MaybeLink>
                           </div>
                         </Card>
                       ) : (
