@@ -1,0 +1,80 @@
+{
+ "variante": "a2",
+ "id": "r0-accueil",
+ "route": "/",
+ "viewport": "1440x900",
+ "journal": [
+  {
+   "etape": "avant attente",
+   "variante": "a2",
+   "at": "2026-11-20T10:25:22.938Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a2",
+   "at": "2026-11-20T10:25:27.698Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a2",
+   "at": "2026-11-20T10:26:06.374Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a2",
+   "at": "2026-11-20T10:26:10.131Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a2",
+   "at": "2026-11-20T10:26:13.893Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a2",
+   "at": "2026-11-20T10:26:17.152Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a2",
+   "at": "2026-11-20T10:26:18.515Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a2",
+   "at": "2026-11-20T10:26:21.775Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  }
+ ]
+}

@@ -1,0 +1,100 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "390x844",
+ "variante": "a3",
+ "debut": "2026-11-20T12:17:48.442Z",
+ "positions": [
+  {
+   "mode": "premier-ecran",
+   "scrollY": 0,
+   "scrollPaddingTop": "131px",
+   "scrollPaddingBottom": "216px",
+   "bouton": [
+    40,
+    873,
+    310,
+    48
+   ],
+   "dansFenetre": false,
+   "centreCouvertPar": "nav.fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-",
+   "recouvrementMaxPx": 0,
+   "fixes": []
+  },
+  {
+   "mode": "end",
+   "scrollY": 293,
+   "scrollPaddingTop": "131px",
+   "scrollPaddingBottom": "216px",
+   "bouton": [
+    40,
+    582,
+    310,
+    48
+   ],
+   "dansFenetre": true,
+   "centreCouvertPar": "div.space-y-3",
+   "recouvrementMaxPx": 0,
+   "fixes": []
+  },
+  {
+   "mode": "center",
+   "scrollY": 519,
+   "scrollPaddingTop": "131px",
+   "scrollPaddingBottom": "216px",
+   "bouton": [
+    40,
+    356,
+    310,
+    48
+   ],
+   "dansFenetre": true,
+   "centreCouvertPar": "div.space-y-3",
+   "recouvrementMaxPx": 0,
+   "fixes": []
+  },
+  {
+   "mode": "start",
+   "scrollY": 744,
+   "scrollPaddingTop": "131px",
+   "scrollPaddingBottom": "216px",
+   "bouton": [
+    40,
+    131,
+    310,
+    48
+   ],
+   "dansFenetre": true,
+   "centreCouvertPar": "div.space-y-3",
+   "recouvrementMaxPx": 0,
+   "fixes": []
+  }
+ ],
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T12:17:54.030Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T12:17:57.257Z"
+}

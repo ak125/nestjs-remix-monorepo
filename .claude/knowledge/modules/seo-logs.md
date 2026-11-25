@@ -2,16 +2,16 @@
 module: seo-logs
 sources:
 - backend/src/modules/seo-logs
-last_scan: '2026-07-02'
+last_scan: '2026-11-19'
 primary_files:
 - backend/src/modules/seo-logs/controllers/crawl-budget-audit.controller.ts
 - backend/src/modules/seo-logs/controllers/crawl-budget-experiment.controller.ts
+- backend/src/modules/seo-logs/controllers/seo-audit.controller.test.ts
 - backend/src/modules/seo-logs/controllers/seo-audit.controller.ts
+- backend/src/modules/seo-logs/controllers/seo-kpi.controller.test.ts
 - backend/src/modules/seo-logs/controllers/seo-kpi.controller.ts
 - backend/src/modules/seo-logs/dto/crawl-budget-experiment.dto.ts
-- backend/src/modules/seo-logs/seo-logs.module.ts
-- backend/src/modules/seo-logs/services/crawl-budget-audit.service.ts
-- backend/src/modules/seo-logs/services/crawl-budget-experiment.service.ts
+- backend/src/modules/seo-logs/dto/seo-logs-query.schema.test.ts
 depends_on: []
 ---
 
@@ -39,12 +39,12 @@ _Section à rédiger._
 ### Fichiers primaires
 - [backend/src/modules/seo-logs/controllers/crawl-budget-audit.controller.ts](../../../backend/src/modules/seo-logs/controllers/crawl-budget-audit.controller.ts)
 - [backend/src/modules/seo-logs/controllers/crawl-budget-experiment.controller.ts](../../../backend/src/modules/seo-logs/controllers/crawl-budget-experiment.controller.ts)
+- [backend/src/modules/seo-logs/controllers/seo-audit.controller.test.ts](../../../backend/src/modules/seo-logs/controllers/seo-audit.controller.test.ts)
 - [backend/src/modules/seo-logs/controllers/seo-audit.controller.ts](../../../backend/src/modules/seo-logs/controllers/seo-audit.controller.ts)
+- [backend/src/modules/seo-logs/controllers/seo-kpi.controller.test.ts](../../../backend/src/modules/seo-logs/controllers/seo-kpi.controller.test.ts)
 - [backend/src/modules/seo-logs/controllers/seo-kpi.controller.ts](../../../backend/src/modules/seo-logs/controllers/seo-kpi.controller.ts)
 - [backend/src/modules/seo-logs/dto/crawl-budget-experiment.dto.ts](../../../backend/src/modules/seo-logs/dto/crawl-budget-experiment.dto.ts)
-- [backend/src/modules/seo-logs/seo-logs.module.ts](../../../backend/src/modules/seo-logs/seo-logs.module.ts)
-- [backend/src/modules/seo-logs/services/crawl-budget-audit.service.ts](../../../backend/src/modules/seo-logs/services/crawl-budget-audit.service.ts)
-- [backend/src/modules/seo-logs/services/crawl-budget-experiment.service.ts](../../../backend/src/modules/seo-logs/services/crawl-budget-experiment.service.ts)
+- [backend/src/modules/seo-logs/dto/seo-logs-query.schema.test.ts](../../../backend/src/modules/seo-logs/dto/seo-logs-query.schema.test.ts)
 
 <!-- END AUTO-GENERATED -->
 

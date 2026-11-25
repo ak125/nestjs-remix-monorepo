@@ -7903,6 +7903,43 @@
         {
           "mode": "IN",
           "name": "p_gamme_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20261119_seo_r2_title_display_names_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rm_get_page_complete_v2#sig:3cac04eb",
+      "language": "plpgsql",
+      "name": "rm_get_page_complete_v2",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
           "type": "INT"
         },
         {
@@ -7920,7 +7957,7 @@
         "20260408_rm_page_v2_seo_extraction.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.rm_get_page_complete_v2",
+      "id": "public.rm_get_page_complete_v2#sig:d2fcf588",
       "language": "plpgsql",
       "name": "rm_get_page_complete_v2",
       "owner": "__unassigned__",
@@ -8461,6 +8498,46 @@
       "usedBy": []
     },
     {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pm_id",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_sources",
+          "type": "jsonb"
+        },
+        {
+          "mode": "IN",
+          "name": "p_by",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20261119_xtr_supplier_link_pm_sources.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.supplier_brand_sources_put",
+      "language": "plpgsql",
+      "name": "supplier_brand_sources_put",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE (link_id text, source_rank bigint, created boolean)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
       "args": [],
       "definedInMigrations": [
         "20260523_pricing_decision_snapshot_and_offers.sql"
@@ -8476,6 +8553,81 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_supplier_id",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_brand_pm_id",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_scope_level",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_scope_code",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_effective_from",
+          "type": "timestamptz"
+        },
+        {
+          "mode": "IN",
+          "name": "p_effective_to",
+          "type": "timestamptz"
+        },
+        {
+          "mode": "IN",
+          "name": "p_remise_pct",
+          "type": "numeric"
+        },
+        {
+          "mode": "IN",
+          "name": "p_marge_pct",
+          "type": "numeric"
+        },
+        {
+          "mode": "IN",
+          "name": "p_change_reason",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_by",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20261118_supplier_price_profiles_default_pct.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.supplier_price_condition_put",
+      "language": "plpgsql",
+      "name": "supplier_price_condition_put",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE (rule_id bigint, rule_version bigint, replaced_id bigint)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
       "securityDefiner": false,
       "sourceConfidence": "high",
       "status": "UNKNOWN",

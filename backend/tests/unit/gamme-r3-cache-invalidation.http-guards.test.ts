@@ -19,8 +19,8 @@
  *   aucun message de succès ; le corps vérifié est celui que sert le filtre global
  *   de production (`GlobalErrorFilter`, installé dans chaque application de test) ;
  * - routes admin `gamme-cache` rebuild et mark-stale : l'écriture en base est
- *   faite avant la purge, qui efface les 4 clés de chaque gamme (réponse
- *   construite comprise) en un seul DEL ; Redis indisponible → 503 qui annonce
+ *   faite avant la purge, qui efface les 6 clés de chaque gamme (réponse
+ *   construite par segment R6 et R4 comprise) en un seul DEL ; Redis indisponible → 503 qui annonce
  *   l'état partiel ;
  * - les routes de lecture restent publiques.
  *
@@ -51,6 +51,7 @@ import { GammeRestRpcV2Controller } from '../../src/modules/gamme-rest/gamme-res
 import { GammeResponseBuilderService } from '../../src/modules/gamme-rest/services';
 import { GammeRpcService } from '../../src/modules/gamme-rest/services/gamme-rpc.service';
 import { InternalLinkingService } from '../../src/modules/seo/internal-linking.service';
+import { R4ConsolidationPolicyService } from '../../src/modules/seo/services/r4-consolidation-policy.service';
 import { R6GuideLinkPolicyService } from '../../src/modules/seo/services/r6-guide-link-policy.service';
 
 type Persona = { id: string; email: string; isAdmin?: boolean; level?: number };
@@ -72,12 +73,16 @@ const r1Keys = (pgId: string) => [
   `gamme:rpc:v2:${pgId}`,
   `gamme:rpc:v2:stale:${pgId}`,
   `gamme:resp:v2:r6c0:${pgId}`,
+  `gamme:resp:v2:r6c0.r4c1:${pgId}`,
   `gamme:resp:v2:r6c1:${pgId}`,
+  `gamme:resp:v2:r6c1.r4c1:${pgId}`,
 ];
 const R1_KEYS = r1Keys(PG_ID);
 const R3_KEYS = [
   `r3-guide:v3:r6c0:${PG_ALIAS}`,
+  `r3-guide:v3:r6c0.r4c1:${PG_ALIAS}`,
   `r3-guide:v3:r6c1:${PG_ALIAS}`,
+  `r3-guide:v3:r6c1.r4c1:${PG_ALIAS}`,
 ];
 const R1_PATH = `/api/gamme-rest/${PG_ID}/cache/invalidate`;
 const R3_PATH = `/api/r3-guide/${PG_ALIAS}/cache/invalidate`;
@@ -235,6 +240,14 @@ async function makeApp(
         useValue: { cacheKeySegment: () => 'r6c0', getSnapshot: jest.fn() },
       },
       {
+        // Drapeau R4 éteint : segment inchangé (mandat ER).
+        provide: R4ConsolidationPolicyService,
+        useValue: {
+          cacheKeySegment: (base: string) => base,
+          getSnapshot: jest.fn(),
+        },
+      },
+      {
         provide: R3ProjectionDecisionService,
         useValue: { isTargeted: () => false, decide: jest.fn() },
       },
@@ -364,7 +377,7 @@ describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
   );
 
   it.each([['level7'], ['adminFlag']])(
-    'administrateur (%s) → R1 efface ses 4 clés, rien de R3',
+    'administrateur (%s) → R1 efface ses 6 clés, rien de R3',
     async (persona) => {
       const res = await post(app, R1_PATH, persona);
       expect(res.status).toBe(201);
@@ -377,7 +390,7 @@ describe('Invalidation des caches R1/R3 — guards admin (HTTP)', () => {
   );
 
   it.each([['level7'], ['adminFlag']])(
-    'administrateur (%s) → R3 efface ses 2 clés et les renvoie, rien de R1',
+    'administrateur (%s) → R3 efface ses 4 clés et les renvoie, rien de R1',
     async (persona) => {
       const res = await post(app, R3_PATH, persona);
       expect(res.status).toBe(201);
@@ -456,7 +469,7 @@ describe('Routes admin gamme-cache — purge Redis après écriture en base (HTT
   const MARK_STALE_PATH = '/api/admin/gamme-cache/mark-stale';
   const BOTH_KEYS = [...R1_KEYS, ...r1Keys('8')];
 
-  it('Redis disponible → 201 : écriture en base puis purge des 4 clés, réponse construite comprise', async () => {
+  it('Redis disponible → 201 : écriture en base puis purge des 6 clés, réponse construite comprise', async () => {
     const cacheDouble = makeCache();
     cacheDouble.seed();
     const envBefore = configEnv();

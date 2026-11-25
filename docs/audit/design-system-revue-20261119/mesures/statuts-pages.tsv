@@ -1,0 +1,18 @@
+id	route	statut	redirection	duree_s	heure_utc
+r0-accueil	/	200		0.207701	2026-11-20T01:06:33Z
+r1-gamme	/pieces/filtre-a-huile-7.html	200		0.196645	2026-11-20T01:06:33Z
+r2-produit	/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html	200		0.545155	2026-11-20T01:06:33Z
+r3-conseils	/blog-pieces-auto/conseils/filtre-a-huile	200		0.369119	2026-11-20T01:06:34Z
+r4-reference	/reference-auto/filtre-a-huile	200		0.299151	2026-11-20T01:06:34Z
+r5-diagnostic	/diagnostic-auto/voyant-disque-de-frein	301	http://127.0.0.1:3000/blog-pieces-auto/conseils/disque-de-frein#diagnostic-rapide	0.052533	2026-11-20T01:06:34Z
+r6-guide-achat	/blog-pieces-auto/guide-achat/filtre-a-huile	200		0.563579	2026-11-20T01:06:34Z
+r7-marque	/constructeurs/renault-140.html	200		0.353906	2026-11-20T01:06:35Z
+r8-vehicule	/constructeurs/renault-140/clio-iii-140004/1-5-dci-19052.html	200		0.171508	2026-11-20T01:06:35Z
+panier-vide	/cart	200		0.053437	2026-11-20T01:06:36Z
+recherche	/search?q=filtre+a+huile	200		0.587880	2026-11-20T01:06:36Z
+connexion	/login	200		0.032829	2026-11-20T01:06:36Z
+inscription	/register	200		0.052594	2026-11-20T01:06:36Z
+legale	/mentions-legales	200		0.133851	2026-11-20T01:06:36Z
+erreur-404	/__dz-probe-404-inexistant	404		0.118494	2026-11-20T01:06:37Z
+r5-index	/diagnostic-auto	200		0.201830	2026-11-20T01:06:37Z
+commande	/checkout	302	http://127.0.0.1:3000/cart	0.013037	2026-11-20T01:06:37Z

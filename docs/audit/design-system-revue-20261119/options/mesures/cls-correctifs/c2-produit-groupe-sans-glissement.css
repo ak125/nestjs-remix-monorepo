@@ -1,0 +1,5 @@
+/* Complément n° 6 DZ — démonstration, pas une implémentation. PiecesGroupedDisplay.tsx:197 : le groupe de cartes
+   « animate-in fade-in slide-in-from-top » part de translateY(-100 %) de sa propre hauteur ; pendant 500 ms la grille
+   traverse l'écran et les cartes (content-visibility:auto, réserve 360 px, global.css:411-414) passent de la réserve
+   à leur vraie hauteur. Ici le fondu reste, le glissement est retiré, pour ce seul groupe de cartes. */
+.animate-in.slide-in-from-top:has(> .grid > .pieces-product-card) { --tw-enter-translate-y: 0; }

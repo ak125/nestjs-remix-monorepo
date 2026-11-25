@@ -13,7 +13,7 @@
  * Sitemaps générés (7 types):
  * 1. sitemap-racine.xml       - Homepage (1 URL)
  * 2. sitemap-categories.xml   - Gammes INDEX (~123 URLs)
- * 3. sitemap-vehicules.xml    - Marques+Modèles+Types (~13.8k URLs)
+ * 3. sitemap-vehicules.xml    - Pages R8 indexables (~8.8k URLs, marques → sitemap-brands.xml)
  * 4. sitemap-{bucket}-*.xml   - Pièces par température (~714k URLs)
  * 5. sitemap-blog.xml         - Articles blog (~109 URLs)
  * 6. sitemap-pages.xml        - Pages statiques (~9 URLs)

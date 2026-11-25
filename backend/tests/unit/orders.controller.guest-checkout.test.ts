@@ -16,7 +16,7 @@
  */
 
 import 'reflect-metadata';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, ConflictException, Logger } from '@nestjs/common';
 import { DomainConflictException, ErrorCodes } from '@common/exceptions';
 import { OrdersController } from '../../src/modules/orders/controllers/orders.controller';
 import {
@@ -101,12 +101,19 @@ function makeController(
     emailRegistered?: boolean;
     lookupError?: Error;
     supabase?: ReturnType<typeof makeSupabase>;
+    linesRefusal?: Error;
   } = {},
 ) {
   const supabase = opts.supabase ?? makeSupabase();
   const ordersService = {
     getSupabaseClient: jest.fn(() => supabase.client),
-    createOrder: jest.fn().mockResolvedValue(createdOrder()),
+    // Lignes vérifiées (article, quantité, tarif) avant la création du compte.
+    lignesAuTarifEnVigueur: opts.linesRefusal
+      ? jest.fn().mockRejectedValue(opts.linesRefusal)
+      : jest.fn().mockResolvedValue([]),
+    createOrder: opts.linesRefusal
+      ? jest.fn().mockRejectedValue(opts.linesRefusal)
+      : jest.fn().mockResolvedValue(createdOrder()),
     getOrderById: jest.fn().mockResolvedValue(createdOrder()),
   };
   const authService = {
@@ -270,6 +277,24 @@ describe('OrdersController.createGuestOrder', () => {
 
     expect(authService.register).not.toHaveBeenCalled();
     expect(ordersService.createOrder).not.toHaveBeenCalled();
+    expectNoSessionOpened(req);
+  });
+
+  it('commande refusée (article, quantité ou tarif) → aucun compte créé', async () => {
+    // Un compte créé sans commande renverrait ce client vers la connexion à
+    // son essai suivant, avec un mot de passe qu'il ne connaît pas.
+    const refusal = new ConflictException('prix changé');
+    const { controller, authService, ordersService, mailService } =
+      makeController({ linesRefusal: refusal });
+    const req = guestRequest();
+
+    await expect(
+      controller.createGuestOrder(body(), req as never),
+    ).rejects.toBe(refusal);
+
+    expect(authService.register).not.toHaveBeenCalled();
+    expect(ordersService.createOrder).not.toHaveBeenCalled();
+    expect(mailService.sendGuestAccountActivation).not.toHaveBeenCalled();
     expectNoSessionOpened(req);
   });
 

@@ -1,0 +1,80 @@
+{
+ "variante": "a3",
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "journal": [
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T12:14:20.462Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T12:14:25.224Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T12:15:19.436Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T12:15:23.196Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T12:15:27.040Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T12:15:30.300Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "avant attente",
+   "variante": "a3",
+   "at": "2026-11-20T12:15:31.707Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "après attente",
+   "variante": "a3",
+   "at": "2026-11-20T12:15:34.966Z",
+   "dejaPresente": true,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  }
+ ]
+}

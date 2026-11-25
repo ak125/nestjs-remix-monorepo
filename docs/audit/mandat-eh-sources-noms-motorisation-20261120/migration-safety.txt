@@ -1,0 +1,29 @@
+== 2026-11-20T11:08:06Z Migration Safety (étapes de ci.yml rejouées en local), HEAD 30704d234
+-- 1. squawk 2.52.1 (les .down.sql sont exclus, comme en CI)
+
+Found 0 issues in 2 files 🎉
+exit=0
+-- 2. marqueurs @non_transactional
+OK — @non_transactional reconciled on 2 file(s).
+exit=0
+-- 3. compilation PL/pgSQL des blocs DO (PostgreSQL 17 jetable)
+serveur : 17.11 (Debian 17.11-1.pgdg13+2)
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.001s
+
+OK
+auto-test exit=0
+1 bloc(s) DO à compiler
+témoin négatif : détecté (attendu)
+4 bloc(s) DO à compiler
+backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.sql : bloc DO $mandat_ee$, corps à partir de la ligne 39
+backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.down.sql : bloc DO $mandat_ee$, corps à partir de la ligne 39
+backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.sql : bloc DO $mandat_eh$, corps à partir de la ligne 43
+backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.down.sql : bloc DO $mandat_eh$, corps à partir de la ligne 43
+compilation migrations + retours exit=0
+-- 4. surface DEFINER/anon
+auto-test exit=0
+
+OK — surface DEFINER/anon inchangée (54 migration(s) jugée(s) depuis 20260917, 35 fonction(s) dans l'ensemble fermé, 12 exception(s) motivée(s)).
+exit=0

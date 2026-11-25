@@ -90,6 +90,15 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   Application : L1 pour l'allocateur
   (`backend/supabase/migrations/20260615_massdoc_type_id_allocator.sql`). Son usage n'est imposé
   par aucun appelant, contrainte ou trigger : intention seulement. État de la base non vérifié.
+- **P32.** Importer un tarif, activer une pièce (la rendre vendable) et l'afficher au catalogue
+  sont trois étapes distinctes. Source : ADR-084 « écriture du tarif » (PR vault #315, jamais
+  fusionnée).
+  Application : L3 pour les tests (check requis `🧪 Backend Tests`, relevé vert sur `main` le
+  2026-11-17). Trois services de `backend/src/modules/pricing/services/` :
+  `price-import.service.ts` écrit le coût et laisse la disponibilité inchangée par défaut ;
+  `price-activation.service.ts` ne change que `pri_dispo` ; `catalog-display-activation.service.ts`
+  ne change que `piece_display`, pour des pièces déjà vendables. Écart : l'option `activate` de
+  l'import, fermée par défaut, rend vendable dans le même commit. Usage en service non observé.
 
 ## Paiement et chaîne logicielle
 
@@ -193,6 +202,107 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   `CHECK (reviewed)` ; `scripts/wiki/validate-gamme-diagnostic-relations.py` et son test). Les
   drapeaux de projection sont éteints par défaut.
 
+## Interface et design system
+
+Décisions de l'owner du 20 nov. 2026, heure de Paris, prises sur l'audit de la PR #2215
+(`docs/audit/design-system-revue-20261119/`, en brouillon et non fusionnée au relevé, tête
+`89ad601b6`) et ratifiées par « oui » à 22:53. Ordre d'application retenu à 22:44 : « journal,
+puis tokens, puis composants et pages ». Les chiffres de rendu cités sont ceux de cet audit ; les
+comptes tirés du code sont relevés le 2026-11-20 sur `main` `1210455cd`, dans `frontend/app`
+hors admin sauf mention.
+
+- **P44.** Couleurs. Sur les pages publiques, une couleur s'emploie par son rôle, jamais par une
+  valeur brute. Le navy et l'orange sont les couleurs de la marque. L'orange signale l'action
+  principale : une seule par écran, avec un texte navy ; les autres actions sont en contour. Le
+  rouge est réservé à l'erreur et à l'action destructive. Il n'y a ni violet, indigo, rose ou
+  fuchsia, ni couleur par famille de pièces, ni thème sombre.
+  Source : décisions de l'owner du 20 nov. 2026 (option A3 retenue à 17:29 ; thème sombre
+  retiré à 21:56 ; rouge réservé à l'erreur à 21:58 ; violets retirés à 22:29 ; couleur par
+  famille retirée à 22:31), ratifiées à 22:53. Audit de la PR #2215, non fusionnée, option A3
+  (`options/README.md`, l. 448-461).
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L2. Rôles de couleur dans
+  `packages/design-tokens/src/tokens.json` (groupes `navy`, `cta`, `semantic`) ; contrat Zod
+  `packages/design-tokens/scripts/tokens-schema.mjs` (rampes `cta` et `navy`) et tests
+  `packages/design-tokens/tests/tokens.test.mjs`, lancés par le job « 🎨 Design-tokens gate »
+  (`.github/workflows/ci.yml`, l. 150-158). Le ratchet `.github/workflows/impeccable-ratchet.yml`
+  bloque un nouveau constat (`audit/impeccable/baseline.json` : 9, dont `ai-color-palette` 1).
+  Écarts : 223 emplois de `violet|indigo|pink|fuchsia|purple-NNN` dans 60 fichiers (le mandat
+  cite 213 hors admin ; chiffre absent de l'audit #2215) ; jeton `color.accent.persianIndigo`
+  `#350B60` ; `frontend/app/utils/family-theme.ts` (couleur par famille, 11 fichiers l'emploient) ;
+  57 classes `dark:` dans 6 fichiers, 50 hors admin (le mandat cite 62 ; absent de l'audit) ;
+  clés `dark` et `shadcnDark` de `tokens.json`, exigées par `tokens-schema.mjs`.
+- **P45.** Lisibilité. Un texte a un contraste d'au moins 4,5:1 (3:1 pour un grand texte) et une
+  taille d'au moins 12 px ; un champ de saisie fait 16 px sur mobile. Le bord d'un champ ou d'un
+  contrôle atteint 3:1. Le focus au clavier est toujours visible et n'est jamais couvert par un
+  élément collant. Une cible tactile fait au moins 44 px. Les animations s'arrêtent quand
+  l'utilisateur demande moins de mouvement.
+  Source : décisions de l'owner du 20 nov. 2026 (option A3 à 17:29 ; 12 px minimum à 22:02),
+  ratifiées à 22:53. WCAG 2.2, critères 1.4.3, 1.4.11, 2.4.7, 2.4.11, 2.5.8 et 2.3.3. Audit de
+  la PR #2215, non fusionnée (`options/README.md`, l. 79 ; `README.md`, §f et §g).
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L1. Contrastes des paires de tokens
+  calculés dans `packages/design-tokens/tests/tokens.test.mjs` ; arrêt des animations CSS dans
+  `frontend/app/styles/animations.css` (l. 175-182, chargé par `frontend/app/root.tsx`, l. 418-425)
+  et `frontend/app/global.css` (l. 920-925). Cibles de 44 px et débordement contrôlés par
+  `frontend/tests/e2e/mobile-audit-complete.spec.ts`, absent du jeu e2e de la CI.
+  `@axe-core/playwright` est déclaré dans `frontend/package.json` sans test qui l'emploie.
+  Écarts, mesurés par l'audit #2215 sur dix passages : 466 textes sous le seuil de contraste,
+  61 bords sous 3:1, 75 focus invisibles ou couverts ; textes de 10 px dans la barre du bas (§f).
+  Le mandat cite 111 textes sous 12 px hors admin, chiffre absent de l'audit ; le code compte
+  113 classes `text-[6px]` à `text-[11px]` dans 54 fichiers. `focus:ring-blue-500` : 175 emplois,
+  admin compris. `frontend/app/hooks/useScrollBehavior.ts` (l. 15) impose le défilement doux sans
+  condition.
+- **P46.** Valeurs. Toute valeur d'interface vient des tokens, dont la source unique est
+  `packages/design-tokens/src/tokens.json`, sans valeur en double. Trois rayons à rôle fixe
+  (8 px champs et boutons, 12 px cartes, 16 px grands blocs) et la pilule ; trois ombres ; trois
+  polices (Outfit pour les titres, DM Sans pour le texte, Roboto Mono pour les codes qu'on
+  recopie). Toute graisse employée est chargée. Aucune taille, couleur, espacement, rayon ni
+  ombre n'est écrit en dur.
+  Source : décisions de l'owner du 20 nov. 2026 (rayons 8/12/16 et trois ombres à 22:05 ; Roboto
+  Mono pour les codes à 22:14), ratifiées à 22:53. Audit de la PR #2215, non fusionnée
+  (`README.md`, §f).
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L2. Source unique `tokens.json`,
+  sorties générées vérifiées octet pour octet (`build:check`) et contrat `tokens-schema.mjs` dans
+  le job « 🎨 Design-tokens gate » (`.github/workflows/ci.yml`, l. 150-158). Aucune règle ne
+  refuse une valeur en dur : `frontend/eslint.config.js` (l. 22-38) ne vise que `w-screen` et
+  `hidden`, et `.ast-grep/rules/` n'a aucune règle d'interface. Écarts :
+  `borderRadius` a 9 valeurs et `shadows` 8 ; `fontWeight` va de 100 à 900 alors que
+  `frontend/app/global.css` (l. 24-52) charge Outfit 400 à 800, DM Sans 400 à 700 et Roboto Mono
+  400 (audit §f : Outfit 900 et DM Sans 800-900 employés, non chargés ; `font-black` 13 emplois et
+  `font-extrabold` 25, admin compris) ; la pile `mono` place Roboto Mono en quatrième. Le mandat
+  cite 22 groupes de valeurs en double, chiffre absent de l'audit ; un regroupement par groupe et
+  par valeur en donne 38 (dont `color.primary.*` égal à `color.navy.*`). 37 `rounded-[…]` et
+  48 `shadow-[…]` en valeur arbitraire.
+- **P47.** Composants. Un bouton, un champ ou une icône vient du composant partagé et de la
+  bibliothèque d'icônes unique. Aucun n'est refait à la main dans une page.
+  Source : décisions de l'owner du 20 nov. 2026, ratifiées à 22:53. Audit de la PR #2215, non
+  fusionnée.
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L0. `.claude/rules/frontend.md` (l. 20)
+  prescrit `~/components/ui/` et `lucide-react` ; aucune garde. `lucide-react` est la seule
+  bibliothèque d'icônes de `frontend/package.json`. Écarts, hors `components/ui` : 307 `<button`
+  et 143 `<input` natifs, 189 `<svg` écrits en ligne dans 50 fichiers.
+- **P48.** Stabilité et mesure. Le décalage de mise en page (CLS) ne dépasse pas 0,1, au
+  chargement et après défilement, sur chaque type de page. Une image déclare ses dimensions. Les
+  mesures se font à 390 px (référence) et 1440 px ; aucune page ne déborde à 360 px ni à 320 px.
+  Source : décisions de l'owner du 20 nov. 2026 (CLS à 0,1 à 22:18 ; largeurs 390, 360 et 320 à
+  22:21), ratifiées à 22:53. Core Web Vitals : un CLS de 0,1 ou moins est « bon ». Audit de la PR
+  #2215, non fusionnée (`README.md`, §h).
+  Application (relevé du 2026-11-20, `main` `1210455cd`) : L1. `scripts/lighthouse-cron.sh`
+  (l. 28) fixe `THRESH_CLS=0.1`, planification non vérifiée. `.github/workflows/visual-gate.yml`
+  (déclenchement manuel) mesure à 390 × 844 et 1920 × 1080 ;
+  `frontend/tests/e2e/mobile-audit-complete.spec.ts` contrôle le débordement à 320 px, hors CI.
+  Écarts : les CLS après défilement de l'audit #2215 (§h : 0,9179 et 0,5814 sur la page produit,
+  0,4103 sur la gamme) sont un artefact de mesure : la sonde force puis retire
+  `content-visibility` (`scripts/mesure-dz.cjs`, l. 256 et 269). À la molette, aucune des cinq
+  pages ne dépasse 0,0177 après défilement (`options/mesures/cls-causes-dz.md`, PR #2215, tête
+  `8d7ba709c`, non fusionnée). Restent deux décalages réels au chargement, sous 0,1 : gamme
+  0,0175 à 390 px et 0,0226 à 1440 px, image du haut déclarée carrée et servie en 3:2
+  (`GammeHero.tsx`, l. 107-112) ; page produit 0,0199 à 0,0602 à 390 px et 0 à 0,0247 à 1440 px,
+  cartes à réserve de 360 px rendues visibles par un glissement (`PiecesGroupedDisplay.tsx`,
+  l. 197 ; `global.css`, l. 411-414). 55 `<img>` sur 108 sans dimensions (audit, §h) ;
+  `frontend/lighthouse-budget.json` (l. 9) admet un CLS de 0,25 ; aucune mesure à 360 px trouvée.
+  La méthode de mesure du CLS reste à fixer avant tout contrôle bloquant : session à part,
+  défilement à la molette, plus grande fenêtre de session.
+
 ## Changements, revue et fusion
 
 - **P20.** Un changement passe par une branche et une PR. La fusion suit l'un des trois circuits.
@@ -290,6 +400,18 @@ depuis porte sa date : celles du 2026-11-17 sont relevées sur `main` `03ffd4f1e
   `.spec/reports/incident-2026-04-14-payments-sev1.md`). Une fiche ouverte figure dans la liste
   que lit la routine de P24 (`scripts/ops/pilote-file.sh`, l. 58), qui liste toutes les issues
   ouvertes. À relever à nouveau à la fusion.
+- **P33.** Un test de la Definition of Done nomme une mesure qui existe et dit ce qu'elle compare.
+  Ce qui n'est pas mesuré est écrit comme tel dans la preuve, sans être retiré de l'exigence.
+  Source : ADR-134 (PR vault #415, jamais fusionnée).
+  Application : L0 pour le texte, appliqué à DoD5. La Definition of Done est dans ce dépôt
+  (`.spec/00-canon/canon-distribution/rules-engineering-definition-of-done.md`, version 1.4.0,
+  décision 139, PR #2142 fusionnée le 2026-11-17) : les tests 1 à 4 de DoD5 nomment chacun un
+  contrôle et ce qu'il compare, et sa section « Non mesuré » liste ce qu'aucun contrôle ne vérifie.
+  L3 pour deux de ces mesures, relevées vertes sur `main` le 2026-11-19
+  (`migration-ledger-freshness.yml`, `registry-fresh.yml`). Écart : les sections « Escape hatch »
+  et « Enforcement automatique » de la DoD citent `weekly-vault-lint.yml` et `vault-governance.yml`,
+  absents de ce dépôt (question D19). Aucune garde ne vérifie qu'un test de la DoD nomme une
+  mesure existante : intention seulement.
 
 ## Méthode
 

@@ -1,0 +1,633 @@
+type_id	marque	modele	modele_affiche	type_name	type_name_meta	type_fuel	type_power_ps	codes_moteur	famille	regle	ajoute	retire	preuve
+1052	ABARTH	500	500	1.4 16V	1.4 Abarth	Essence	180	312 A3.000,312 B3.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+1053	ABARTH	500	500	1.4 16V (Phase 2)	1.4 Abarth	Essence	190	312 A1.000,312 A9.000	suffixe ou précision justifiés	R11	ABARTH	16V PHASE 2	ABARTH : nom de la marque ; retire : 16V PHASE 2
+28251	ABARTH	500	500	1.4 16V	1.4 Abarth	Essence	135	312 A1.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+33667	ABARTH	500	500	1.4 16V (Phase 1)	1.4 Abarth	Essence	160	312 A1.000,312 A3.000,312 B4.000	suffixe ou précision justifiés	R11	ABARTH	16V PHASE 1	ABARTH : nom de la marque ; retire : 16V PHASE 1
+58731	ABARTH	500	500	1.4 16V	1.4 Abarth	Essence	140	312 A3.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+1054	ABARTH	500 C	500 C	1.4 16V	1.4 Abarth	Essence	140	312 A1.000,312 A3.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+20872	ABARTH	500 C	500 C	1.4 16V (Phase 1)	1.4 Abarth	Essence	160	312 A1.000,312 A3.000,312 B4.000	suffixe ou précision justifiés	R11	ABARTH	16V PHASE 1	ABARTH : nom de la marque ; retire : 16V PHASE 1
+59224	ABARTH	500 C	500 C	1.4 16V	1.4 Abarth	Essence	180	312 A3.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+59698	ABARTH	500 C	500 C	1.4 16V	1.4 Abarth	Essence	135	312 A1.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+23484	ABARTH	GRANDE PUNTO	GRANDE PUNTO	1.4 16V	1.4 Abarth	Essence	155	199 A8.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+33668	ABARTH	GRANDE PUNTO	GRANDE PUNTO	1.4 16V	1.4 Abarth	Essence	180	199 A8.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+1060	ABARTH	PUNTO	PUNTO	1.4 16V	1.4 Abarth	Essence	163	955 A8.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+56931	ABARTH	PUNTO	PUNTO	1.4 16V	1.4 Abarth	Essence	180	955 A8.000	suffixe ou précision justifiés	R11	ABARTH	16V	ABARTH : nom de la marque ; retire : 16V
+25154	ALFA ROMEO	156	156	2.0 16V T.Spark	2.0 Twin Spark	Essence	162	932 A2.000	suffixe ou précision justifiés	R11	TWIN SPARK	16V T.SPARK	TWIN : synonyme de « T.SPARK » ; SPARK : synonyme de « T.SPARK » ; retire : 16V T.SPARK
+5838	ALFA ROMEO	MITO	MITO	1.4 TURBO MultiAir	1.4 TB	Essence	163	955 A8.000	suffixe ou précision justifiés	R11	TB	TURBO MULTIAIR	TB : attesté même marque, code moteur et puissance, types 7206 ; collision préexistante signalée : = nom brut de type 60052 « 1.4 TB » 140 ch ≠ 163 ch ; retire : TURBO MULTIAIR
+32398	ALFA ROMEO	MITO	MITO	1.4 TJet	1.4 Turbo	Essence	150	198 A1.000	suffixe ou précision justifiés	R11	TURBO	TJET	TURBO : synonyme de « TJET » ; retire : TJET
+32742	ALFA ROMEO	MITO	MITO	1.4 MultiAir	1.4 TB	Essence	170	940 A2.000	suffixe ou précision justifiés	R11	TB	MULTIAIR	TB : attesté même marque, code moteur et puissance, types 33299 ; collision préexistante signalée : = nom brut de type 60052 « 1.4 TB » 140 ch ≠ 170 ch ; retire : MULTIAIR
+60469	AUDI	A7 I Sportback	A7 I Sportback	RS7 Performance 4.0 Quattro	RS7 4.0 Performance Quattro	Essence	605	CWUC	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+28404	AUDI	TT II	TT II	2.0 TTS Quattro	2.0 Quattro	Essence	265	CDLA,CDMA	simplification (mentions retirées)	R10		TTS	retire : TTS
+10030	BMW	X1 (E84)	X1 (E84)	28 i xDrive	xDrive 28 i	Essence	245	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+11952	BMW	X1 (E84)	X1 (E84)	20 i sDrive	sDrive 20 i	Essence	184	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+11953	BMW	X1 (E84)	X1 (E84)	20 i xDrive	xDrive 20 i	Essence	184	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+26980	BMW	X1 (E84)	X1 (E84)	18 i sDrive	sDrive 18 i	Essence	136	N46 B20 B,N46 B20 BD	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+32113	BMW	X1 (E84)	X1 (E84)	18 d sDrive	sDrive 18 d	Diesel	143	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+32114	BMW	X1 (E84)	X1 (E84)	18 d xDrive 	xDrive 18 d	Diesel	143	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+32115	BMW	X1 (E84)	X1 (E84)	20 d xDrive 	xDrive 20 d	Diesel	177	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+32116	BMW	X1 (E84)	X1 (E84)	20 d sDrive	sDrive 20 d	Diesel	177	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+32117	BMW	X1 (E84)	X1 (E84)	23 d xDrive 	xDrive 23 d	Diesel	204	N47 D20 D	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+34988	BMW	X1 (E84)	X1 (E84)	20 d xDrive	xDrive 20 d	Diesel	163	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+34989	BMW	X1 (E84)	X1 (E84)	20 d sDrive	sDrive 20 d	Diesel	163	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+34990	BMW	X1 (E84)	X1 (E84)	18 d sDrive	sDrive 18 d	Diesel	136	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+34991	BMW	X1 (E84)	X1 (E84)	18 d xDrive 	xDrive 18 d	Diesel	136	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+34992	BMW	X1 (E84)	X1 (E84)	18 i sDrive	sDrive 18 i	Essence	150	N46 B20 B,N46 B20 BD,N46 B20 C,N46 B20 CC,N46 B20 CD,N46 B20 E	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+56616	BMW	X1 (E84)	X1 (E84)	28 i sDrive	sDrive 28 i	Essence	245	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+57251	BMW	X1 (E84)	X1 (E84)	25 d xDrive	xDrive 25 d	Diesel	218	N47 D20 D	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+57548	BMW	X1 (E84)	X1 (E84)	16 d sDrive	sDrive 16 d	Diesel	116	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+57551	BMW	X1 (E84)	X1 (E84)	20 d xDrive	xDrive 20 d	Diesel	184	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+58951	BMW	X1 (E84)	X1 (E84)	20 d sDrive	sDrive 20 d	Diesel	184	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61894	BMW	X1 (E84)	X1 (E84)	16 i sDrive	sDrive 16 i	Essence	143	N20 B16 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62063	BMW	X1 (F48)	X1 (F48)	16 d sDrive	sDrive 16 d	Diesel	116	B37 C15 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62064	BMW	X1 (F48)	X1 (F48)	18 d sDrive	sDrive 18 d	Diesel	150	B47 C20 A,B47 C20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62065	BMW	X1 (F48)	X1 (F48)	18 d sDrive	sDrive 18 d	Diesel	136	B47 C20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62066	BMW	X1 (F48)	X1 (F48)	18 d xDrive	xDrive 18 d	Diesel	150	B47 C20 A,B47 C20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62067	BMW	X1 (F48)	X1 (F48)	18 d xDrive	xDrive 18 d	Diesel	136	B47 C20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62068	BMW	X1 (F48)	X1 (F48)	18 i sDrive	sDrive 18 i	Essence	136	B38 A15 A,B38A15F	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62070	BMW	X1 (F48)	X1 (F48)	20 d sDrive	sDrive 20 d	Diesel	190	B47 C20 A,B47 C20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62071	BMW	X1 (F48)	X1 (F48)	20 d sDrive	sDrive 20 d	Diesel	163	B47 C20 A,B47 C20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62072	BMW	X1 (F48)	X1 (F48)	20 d xDrive	xDrive 20 d	Diesel	190	B47 C20 A,B47 C20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62073	BMW	X1 (F48)	X1 (F48)	20 d xDrive	xDrive 20 d	Diesel	163	B47 C20 A,B47 C20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62074	BMW	X1 (F48)	X1 (F48)	20 i sDrive	sDrive 20 i	Essence	192	B42 S20 A,B48 A20 A,B48 A20 F	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62075	BMW	X1 (F48)	X1 (F48)	20 i xDrive	xDrive 20 i	Essence	192	B48 A20 A,B48 A20 B,B48 A20 F	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62076	BMW	X1 (F48)	X1 (F48)	25 d xDrive	xDrive 25 d	Diesel	231	B47 C20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62077	BMW	X1 (F48)	X1 (F48)	25 i xDrive	xDrive 25 i	Essence	231	B42 S20 A,B46 A20 B,B48 A20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+10575	BMW	X3 (E83)	X3 (E83)	20 d xDrive	xDrive 20 d	Diesel	163	N47 D20 A,N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+10578	BMW	X3 (E83)	X3 (E83)	30 d xDrive	xDrive 30 d	Diesel	211	M57 D30 (306D3)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+31008	BMW	X3 (E83)	X3 (E83)	20 i xDrive	xDrive 20 i	Essence	150	N46 B20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+31011	BMW	X3 (E83)	X3 (E83)	20 d xDrive	xDrive 20 d	Diesel	177	N47 D20 A,N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+31012	BMW	X3 (E83)	X3 (E83)	18 d xDrive	xDrive 18 d	Diesel	143	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+31013	BMW	X3 (E83)	X3 (E83)	30 d xDrive	xDrive 30 d	Diesel	218	M57 D30 (306D3)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+31014	BMW	X3 (E83)	X3 (E83)	35 d xDrive	xDrive 35 d	Diesel	286	M57 D30 (306D5)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+52887	BMW	X3 (E83)	X3 (E83)	18 d xDrive	xDrive 18 d	Diesel	136	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+10576	BMW	X3 (F25)	X3 (F25)	30 d xDrive	xDrive 30 d	Diesel	258	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+11888	BMW	X3 (F25)	X3 (F25)	35 d xDrive	xDrive 35 d	Diesel	313	N57 D30 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+11954	BMW	X3 (F25)	X3 (F25)	20 i xDrive	xDrive 20 i	Essence	184	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+55252	BMW	X3 (F25)	X3 (F25)	28 i xDrive	xDrive 28 i	Essence	245	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+56809	BMW	X3 (F25)	X3 (F25)	18 d sDrive	sDrive 18 d	Diesel	136	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+56810	BMW	X3 (F25)	X3 (F25)	18 d sDrive	sDrive 18 d	Diesel	143	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+58611	BMW	X3 (F25)	X3 (F25)	20 d xDrive	xDrive 20 d	Diesel	163	B47 D20 A,N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61904	BMW	X3 (F25)	X3 (F25)	18 d sDrive	sDrive 18 d	Diesel	150	B47 D20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61905	BMW	X3 (F25)	X3 (F25)	20 d xDrive	xDrive 20 d	Diesel	190	B47 D20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61906	BMW	X3 (F25)	X3 (F25)	20 i sDrive	sDrive 20 i	Essence	184	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61908	BMW	X3 (F25)	X3 (F25)	28 d xDrive	xDrive 28 d	Diesel	182	N47 D20 C	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61909	BMW	X3 (F25)	X3 (F25)	28 i sDrive	sDrive 28 i	Essence	245	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61910	BMW	X3 (F25)	X3 (F25)	30 d xDrive	xDrive 30 d	Diesel	211	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61914	BMW	X4 (F26)	X4 (F26)	20 d xDrive	xDrive 20 d	Diesel	190	B47 D20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61915	BMW	X4 (F26)	X4 (F26)	20 d xDrive	xDrive 20 d	Diesel	163	B47 D20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61916	BMW	X4 (F26)	X4 (F26)	20 i xDrive	xDrive 20 i	Essence	184	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61917	BMW	X4 (F26)	X4 (F26)	28 i xDrive	xDrive 28 i	Essence	245	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61918	BMW	X4 (F26)	X4 (F26)	30 d xDrive	xDrive 30 d	Diesel	258	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61919	BMW	X4 (F26)	X4 (F26)	30 d xDrive	xDrive 30 d	Diesel	211	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61923	BMW	X4 (F26)	X4 (F26)	35 d xDrive	xDrive 35 d	Diesel	313	N57 D30 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+1097	BMW	X5 (E70)	X5 (E70)	30 d xDrive	xDrive 30 d	Diesel	245	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+1098	BMW	X5 (E70)	X5 (E70)	40 d xDrive	xDrive 40 d	Diesel	306	N57 D30 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+30908	BMW	X5 (E70)	X5 (E70)	30 d xDrive	xDrive 30 d	Diesel	235	M57 D30 (306D3)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+30909	BMW	X5 (E70)	X5 (E70)	35 d xDrive	xDrive 35 d	Diesel	286	M57 D30 (306D5)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+59334	BMW	X5 (E70)	X5 (E70)	30 d xDrive	xDrive 30 d	Diesel	211	M57 D30 (306D3),N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61934	BMW	X5 (F15)	X5 (F15)	25 d sDrive	sDrive 25 d	Diesel	218	N47 D20 D	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61935	BMW	X5 (F15)	X5 (F15)	25 d sDrive	sDrive 25 d	Diesel	231	B47 D20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61936	BMW	X5 (F15)	X5 (F15)	25 d sDrive	sDrive 25 d	Diesel	211	B47 D20 B,N47 D20 D	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61937	BMW	X5 (F15)	X5 (F15)	25 d xDrive	xDrive 25 d	Diesel	218	N47 D20 D	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61938	BMW	X5 (F15)	X5 (F15)	25 d xDrive	xDrive 25 d	Diesel	231	B47 D20 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61939	BMW	X5 (F15)	X5 (F15)	25 d xDrive	xDrive 25 d	Diesel	211	N47 D20 D	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61940	BMW	X5 (F15)	X5 (F15)	25 d xDrive	xDrive 25 d	Diesel	218	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61941	BMW	X5 (F15)	X5 (F15)	28 i xDrive	xDrive 28 i	Essence	245	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61942	BMW	X5 (F15)	X5 (F15)	30 d xDrive	xDrive 30 d	Diesel	277	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61943	BMW	X5 (F15)	X5 (F15)	30 d xDrive	xDrive 30 d	Diesel	249	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+61948	BMW	X5 (F15)	X5 (F15)	40 d xDrive	xDrive 40 d	Diesel	313	N57 D30 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+1108	BMW	X6 (E71-E72)	X6 (E71-E72)	30 d xDrive	xDrive 30 d	Diesel	245	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+1169	BMW	X6 (E71-E72)	X6 (E71-E72)	40 d xDrive	xDrive 40 d	Diesel	306	N57 D30 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+9946	BMW	X6 (E71-E72)	X6 (E71-E72)	30 d xDrive	xDrive 30 d	Diesel	211	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+31006	BMW	X6 (E71-E72)	X6 (E71-E72)	30 d xDrive	xDrive 30 d	Diesel	235	M57 D30 (306D3)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+31007	BMW	X6 (E71-E72)	X6 (E71-E72)	35 d xDrive	xDrive 35 d	Diesel	286	M57 D30 (306D5)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62084	BMW	X6 (F16-F86)	X6 (F16-F86)	28 i xDrive	xDrive 28 i	Essence	245	N20 B20 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62085	BMW	X6 (F16-F86)	X6 (F16-F86)	30 d xDrive	xDrive 30 d	Diesel	258	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62086	BMW	X6 (F16-F86)	X6 (F16-F86)	30 d xDrive	xDrive 30 d	Diesel	211	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62087	BMW	X6 (F16-F86)	X6 (F16-F86)	30 d xDrive	xDrive 30 d	Diesel	277	N57 D30 A	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+62093	BMW	X6 (F16-F86)	X6 (F16-F86)	40 d xDrive	xDrive 40 d	Diesel	313	N57 D30 B	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+5719	CITROËN	BERLINGO I (MF-GJK-GFK)	BERLINGO I	1.4	1.4 i	Essence	75	KFW (TU3A),KFW (TU3JP),KFX (TU3JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5722	CITROËN	BERLINGO I (MF-GJK-GFK)	BERLINGO I	1.1	1.1 i	Essence	60	HDZ (TU1M),HFX (TU1JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8955	CITROËN	BERLINGO I (MF-GJK-GFK)	BERLINGO I	1.8	1.8 i	Essence	90	LFX (XU7JB)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+15050	CITROËN	BERLINGO I (MF-GJK-GFK)	BERLINGO I	1.8 4WD	1.8 i 4WD	Essence	90	LFX (XU7JB)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+20479	CITROËN	BERLINGO I (MF-GJK-GFK)	BERLINGO I	1.6 Multispace 16V	1.6 16V	Essence	110	NFU (TU5JP4)	simplification (mentions retirées)	R10		MULTISPACE	retire : MULTISPACE
+2246	CITROËN	C15	C15	1.1	1.1 i	Essence	60	HDZ (TU1M)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+2247	CITROËN	C15	C15	1.4	1.4 i	Essence	75	KDY (TU3FM),KDY (TU3M)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+23813	CITROËN	C25 Camionnette	C25 Camionnette	2.5 TD	2.5 DT	Diesel	95	CRD93LS (U25/673)	suffixe ou précision justifiés	R11	DT	TD	DT : attesté même marque, code moteur et puissance, types 20633 ; retire : TD
+23814	CITROËN	C25 Camionnette	C25 Camionnette	2.5 TD 4x4	2.5 DT 4x4	Diesel	95	CRD93LS (U25/673)	suffixe ou précision justifiés	R11	DT	TD	DT : attesté même marque, code moteur et puissance, types 20633 ; retire : TD
+16330	CITROËN	C3 I	C3 I	1.1	1.1 i	Essence	60	HFX (TU1A),HFX (TU1JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+16336	CITROËN	C3 I	C3 I	1.4 HDi 16V	1.4 16V HDi	Diesel	90	8HY (DV4TED4)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+19017	CITROËN	C3 I	C3 I	1.6 HDi 16V	1.6 16V HDi	Diesel	109	9HZ (DV6TED4)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+19340	CITROËN	C3 I	C3 I	1.6 HDi 16V	1.6 16V HDi	Diesel	90	9HX (DV6ATED4)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+23183	CITROËN	C3 I	C3 I	1.4	1.4 i	Essence	73	KFV (TU3A),KFV (TU3JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+22481	CITROËN	C4 GRAND PICASSO I	C4 GRAND PICASSO I	1.8 16V	1.8 i 16V	Essence	125	6FY (EW7A)	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 65117
+22482	CITROËN	C4 GRAND PICASSO I	C4 GRAND PICASSO I	2.0 16V	2.0 i 16V	Essence	140	RFJ (EW10A)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+58220	CITROËN	C4 GRAND PICASSO I	C4 GRAND PICASSO I	2.0 16V Exclusive	2.0 i 16V	Essence	143	RFJ (EW10A)	suffixe ou précision justifiés	R11	I	EXCLUSIVE	i : injection essence, type_fuel=Essence ; retire : EXCLUSIVE
+19747	CITROËN	C4 PICASSO I	C4 PICASSO I	1.8 16V	1.8 i 16V	Essence	125	6FY (EW7A)	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 65117
+19748	CITROËN	C4 PICASSO I	C4 PICASSO I	2.0 16V	2.0 i 16V	Essence	140	RFJ (EW10A)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+15912	CITROËN	C5 I	C5 I	2.0 HPi 16V	2.0 16V HPI	Essence	140	RLZ (EW10D)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+15927	CITROËN	C5 I Break	C5 I Break	2.0 HPi 16V	2.0 16V HPI	Essence	140	RLZ (EW10D)	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+65159	CITROËN	C5 III	C5 III	2.0 HDi-BlueHDi	2.0 BlueHDi	Diesel	150	AHR (DW10FD),AHX (DW10FD),RHE (DW10CTED4)	simplification (mentions retirées)	R10		HDI	retire : HDI
+50144	CITROËN	DS5	DS5	2.0 BlueHDi	2.0 HDi	Diesel	180	AHW (DW10FC)	suffixe ou précision justifiés	R11	HDI	BLUEHDI	HDI : attesté même marque, code moteur et puissance, types 65157,65162 ; collision préexistante signalée : = nom brut de type 10886 « 2.0 HDi » 163 ch ≠ 180 ch ; retire : BLUEHDI
+27854	CITROËN	JUMPER I Fourgon (230L)	JUMPER I Fourgon (230L)	2.5 TD 4x4	2.5 DT 4x4	Diesel	103	THZ (DJ5T)	suffixe ou précision justifiés	R11	DT	TD	DT : synonyme de « TD » ; retire : TD
+15098	CITROËN	JUMPY I (U6U)	JUMPY I	2.0 16V	2.0 i 16V	Essence	138	RFN (EW10J4)	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 15099
+20035	CITROËN	JUMPY II (VF7)	JUMPY II	2.0	2.0 i	Essence	140	RFH (EW10A),RFJ (EW10A)	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 20039
+65203	CITROËN	JUMPY II (VF7)	JUMPY II	1.6 HDi	1.6 HDi 8V	Diesel	90	9HH (DV6DUM),9HM (DV6UC)	suffixe ou précision justifiés	R11	8V		8V : attesté même marque, code moteur et puissance, types 65394,65398
+2266	CITROËN	XANTIA	XANTIA	1.6	1.6 i	Essence	88	BFZ (XU5JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+2267	CITROËN	XANTIA	XANTIA	1.8	1.8 i	Essence	101	LFZ (XU7JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+2268	CITROËN	XANTIA	XANTIA	2.0	2.0 i	Essence	121	RFX (XU10J2C)	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 65209
+4044	CITROËN	XANTIA	XANTIA	2.0 16V	2.0 i 16V	Essence	150	RFT (XU10J4/Z)	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 4047
+5141	CITROËN	XANTIA	XANTIA	1.8 16V	1.8 i 16V	Essence	110	LFY  (XU7JP4)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5142	CITROËN	XANTIA	XANTIA	2.0 16V	2.0 i 16V	Essence	132	RFV (XU10J4R)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8357	CITROËN	XANTIA	XANTIA	1.8	1.8 i	Essence	90	LFX (XU7JB)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5145	CITROËN	XANTIA Break	XANTIA Break	2.0	2.0 i	Essence	121	RFX (XU10J2C)	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 65209
+5146	CITROËN	XANTIA Break	XANTIA Break	1.8	1.8 i	Essence	101	LFZ (XU7JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5147	CITROËN	XANTIA Break	XANTIA Break	2.0 16V	2.0 i 16V	Essence	132	RFV (XU10J4R)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8358	CITROËN	XANTIA Break	XANTIA Break	1.8	1.8 i	Essence	90	LFX (XU7JB)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+11082	CITROËN	XANTIA Break	XANTIA Break	1.8 16V	1.8 i 16V	Essence	110	LFY  (XU7JP4)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+4038	CITROËN	XM II	XM II	2.0 16V	2.0 i 16V	Essence	132	RFV (XU10J4R)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+4039	CITROËN	XM II Break	XM II Break	2.0 16V	2.0 i 16V	Essence	132	RFV (XU10J4R)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8753	CITROËN	XSARA	XSARA	1.8	1.8 i	Essence	90	LFX (XU7JB)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8754	CITROËN	XSARA	XSARA	1.8 AUTOMATIQUE	1.8 i Aut.	Essence	101	LFZ (XU7JP)	suffixe ou précision justifiés	R11	I AUT.	AUTOMATIQUE	i : injection essence, type_fuel=Essence ; AUT. : synonyme de « AUTOMATIQUE » ; retire : AUTOMATIQUE
+8755	CITROËN	XSARA	XSARA	1.8 16V	1.8 i 16V	Essence	110	LFY  (XU7JP4)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8803	CITROËN	XSARA	XSARA	1.4	1.4 i	Essence	75	KFW (TU3JP),KFX (TU3JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8805	CITROËN	XSARA	XSARA	1.6	1.6 i	Essence	88	NFZ (TU5JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8913	CITROËN	XSARA Break	XSARA Break	1.4	1.4 i	Essence	75	KFW (TU3JP),KFX (TU3JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8914	CITROËN	XSARA Break	XSARA Break	1.6	1.6 i	Essence	88	NFZ (TU5JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8915	CITROËN	XSARA Break	XSARA Break	1.8	1.8 i	Essence	90	LFX (XU7JB)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8916	CITROËN	XSARA Break	XSARA Break	1.8 AUTOMATIQUE	1.8 i Aut.	Essence	101	LFZ (XU7JP)	suffixe ou précision justifiés	R11	I AUT.	AUTOMATIQUE	i : injection essence, type_fuel=Essence ; AUT. : synonyme de « AUTOMATIQUE » ; retire : AUTOMATIQUE
+8917	CITROËN	XSARA Break	XSARA Break	1.8 16V	1.8 i 16V	Essence	110	LFY  (XU7JP4)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+9096	CITROËN	XSARA Coupé	XSARA Coupé	1.8	1.8 i	Essence	90	LFX (XU7JB)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+9097	CITROËN	XSARA Coupé	XSARA Coupé	1.8 16V	1.8 i 16V	Essence	110	LFY  (XU7JP4)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+9098	CITROËN	XSARA Coupé	XSARA Coupé	2.0 16V	2.0 i 16V	Essence	163	RFS (XU10J4RS)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+15123	CITROËN	XSARA Coupé	XSARA Coupé	1.4	1.4 i	Essence	75	KFW (TU3JP),KFX (TU3JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+16559	CITROËN	XSARA Coupé	XSARA Coupé	1.6	1.6 i	Essence	88	NFZ (TU5JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+16560	CITROËN	XSARA Coupé	XSARA Coupé	1.8	1.8 i	Essence	101	LFZ (XU7JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+2260	CITROËN	ZX	ZX	1.4	1.4 i	Essence	75	KDX (TU3M/Z),KDZ (TU3M/Z),KFX (TU3JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+2261	CITROËN	ZX	ZX	1.6	1.6 i	Essence	88	BDY (XU5M),BFZ (XU5JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+2262	CITROËN	ZX	ZX	1.8	1.8 i	Essence	101	LFZ (XU7JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+2263	CITROËN	ZX	ZX	1.9	1.9 i	Essence	120	DKZ (XU9JA)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+2264	CITROËN	ZX	ZX	2.0	2.0 i	Essence	121	RFX (XU10J2C)	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 65209
+2265	CITROËN	ZX	ZX	2.0 16V	2.0 i 16V	Essence	152	RFT (XU10J4/Z),RFY (XU10J4/Z)	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 2269,4047
+5716	CITROËN	ZX	ZX	2.0 16V	2.0 i 16V	Essence	163	RFS (XU10J4RS)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+10119	CITROËN	ZX	ZX	1.8 16V	1.8 i 16V	Essence	110	LFY  (XU7JP4)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+28631	CITROËN	ZX	ZX	1.9 TD (Phase 2)	1.9 DT	Diesel	88	DHY (XUD9TE/Y)	suffixe ou précision justifiés	R11	DT	TD PHASE 2	DT : synonyme de « TD » ; retire : TD PHASE 2
+28632	CITROËN	ZX	ZX	1.9 TD (Phase 1)	1.9 DT	Diesel	92	DHY (XUD9TE/Y)	suffixe ou précision justifiés	R11	DT	TD PHASE 1	DT : synonyme de « TD » ; retire : TD PHASE 1
+4031	CITROËN	ZX Break	ZX Break	1.8	1.8 i	Essence	101	LFZ (XU7JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+4032	CITROËN	ZX Break	ZX Break	1.4	1.4 i	Essence	75	KDX (TU3M/Z),KDY (TU3M),KFX (TU3JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+4034	CITROËN	ZX Break	ZX Break	1.6	1.6 i	Essence	88	BDY (XU5M),BFZ (XU5JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+10120	CITROËN	ZX Break	ZX Break	1.8 16V	1.8 i 16V	Essence	110	LFY  (XU7JP4)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+66211	FIAT	500X	500X	2.0 D Multijet 4x4	2.0 D 4x4	Diesel	140	552 63 087,552 63 088	simplification (mentions retirées)	R10		MULTIJET	retire : MULTIJET
+50685	FIAT	BRAVA	BRAVA	1.8 HGT 16V	1.8 16V	Essence	132	183 A1.000	simplification (mentions retirées)	R10		HGT	retire : HGT
+5263	FIAT	DOBLO Cargo I	DOBLO Cargo I	1.9 D Multijet	1.9 JTD	Diesel	120	186 A9.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 19984 ; collision préexistante signalée : = nom brut de type 16661 « 1.9 JTD » 100 ch ≠ 120 ch ; retire : D MULTIJET
+9634	FIAT	DOBLO Cargo I	DOBLO Cargo I	1.2 Fire 16V	1.2 16V	Essence	80	223 A3.011	simplification (mentions retirées)	R10		FIRE	retire : FIRE
+65960	FIAT	DOBLO Cargo II	DOBLO Cargo II	1.3 D Multijet	1.3 JTD	Diesel	95	330 A1.000,552 83 775	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 66352 ; retire : D MULTIJET
+65961	FIAT	DOBLO Cargo II	DOBLO Cargo II	1.3 D Multijet	1.3 JTD	Diesel	80	225 A2.000,552 83 775	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 65905 ; retire : D MULTIJET
+9633	FIAT	DOBLO I	DOBLO I	1.2 EX 16V	1.2 16V	Essence	80	223 A3.011	simplification (mentions retirées)	R10		EX	retire : EX
+58735	FIAT	DOBLO I	DOBLO I	1.3 JTD	1.3 JTD 16V	Diesel	70	188 A9.000	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 18206
+65964	FIAT	DOBLO II	DOBLO II	1.3 D Multijet	1.3 JTD	Diesel	95	330 A1.000,552 83 775	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 66352 ; retire : D MULTIJET
+9624	FIAT	DUCATO IV Fourgon (244)	DUCATO IV Fourgon (244)	2.8 TD	2.8 TDS	Diesel	103	8140.23.2200	suffixe ou précision justifiés	R11	TDS	TD	TDS : attesté même marque, code moteur et puissance, types 9622,9625 ; retire : TD
+17841	FIAT	IDEA	IDEA	1.3 D Multijet	1.3 JTD	Diesel	70	188 A9.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 17392,18206,20573 ; retire : D MULTIJET
+10807	FIAT	LINEA	LINEA	1.3 D Multijet	1.3 JTD	Diesel	93	199 A3.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 66018 ; retire : D MULTIJET
+10797	FIAT	PALIO I	PALIO I	1.3 D Multijet	1.3 JTD	Diesel	75	188 A9.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 17392,18206,20573 ; retire : D MULTIJET
+1498	FIAT	PANDA II	PANDA II	1.3 JTD Multijet  4x4	1.3 D 4x4	Diesel	75	169 A1.000,169 A5.000	suffixe ou précision justifiés	R11	D	JTD MULTIJET	D : attesté même marque, code moteur et puissance, types 12194,23177,27951 ; retire : JTD MULTIJET
+18092	FIAT	PANDA II	PANDA II	1.3 D Multijet 4x4	1.3 D 4x4	Diesel	70	188 A8.000	simplification (mentions retirées)	R10		MULTIJET	retire : MULTIJET
+56740	FIAT	PANDA III	PANDA III	1.3 D Multijet 4x4	1.3 D 4x4	Diesel	75	199 A1.000,199 A9.000	simplification (mentions retirées)	R10		MULTIJET	retire : MULTIJET
+66070	FIAT	PANDA III	PANDA III	1.3 D Multijet 4x4	1.3 D 4x4	Diesel	80	199 A9.000,225 A2.000,312 A8.000,312 B2.000	simplification (mentions retirées)	R10		MULTIJET	retire : MULTIJET
+66071	FIAT	PANDA III	PANDA III	1.3 D Multijet 4x4	1.3 D 4x4	Diesel	95	199 B1.000,312 B1.000,330 A1.000	simplification (mentions retirées)	R10		MULTIJET	retire : MULTIJET
+12194	FIAT	PANDA VAN II	PANDA VAN II	1.3 D Multijet 4x4	1.3 JTD 4x4	Diesel	75	169 A1.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 1498 ; retire : D MULTIJET
+27951	FIAT	PANDA VAN II	PANDA VAN II	1.3 D Multijet	1.3 JTD	Diesel	75	169 A1.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 1498 ; retire : D MULTIJET
+27952	FIAT	PANDA VAN II	PANDA VAN II	1.3 D Multijet	1.3 JTD	Diesel	70	188 A8.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 18206 ; retire : D MULTIJET
+66232	FIAT	PANDA VAN II	PANDA VAN II	1.3 D Multijet 4x4	1.3 JTD 4x4	Diesel	70	188 A8.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 18206 ; retire : D MULTIJET
+66242	FIAT	PANDA VAN III	PANDA VAN III	1.3 D Multijet	1.3 JTD	Diesel	75	199 A9.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 66353 ; retire : D MULTIJET
+66243	FIAT	PANDA VAN III	PANDA VAN III	1.3 D Multijet	1.3 JTD	Diesel	80	225 A2.000,312 A8.000,312 B2.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 65905 ; retire : D MULTIJET
+66244	FIAT	PANDA VAN III	PANDA VAN III	1.3 D Multijet 4x4	1.3 JTD 4x4	Diesel	75	199 A9.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 66353 ; retire : D MULTIJET
+66245	FIAT	PANDA VAN III	PANDA VAN III	1.3 D Multijet 4x4	1.3 JTD 4x4	Diesel	80	225 A2.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 65905 ; retire : D MULTIJET
+17392	FIAT	PUNTO II	PUNTO II	1.3 JTD	1.3 JTD 16V	Diesel	70	188 A9.000	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 18206
+12144	FIAT	SCUDO II (270. 272)	SCUDO II	2.0 D Multijet 4x4	2.0 D 4x4	Diesel	120	RHK	simplification (mentions retirées)	R10		MULTIJET	retire : MULTIJET
+24380	FIAT	SCUDO II (270. 272)	SCUDO II	2.0 D Multijet 4x4	2.0 D 4x4	Diesel	128	RH02	simplification (mentions retirées)	R10		MULTIJET	retire : MULTIJET
+1800	FIAT	SEDICI	SEDICI	2.0 D Multijet 4x4	2.0 D 4x4	Diesel	135	D20AA	simplification (mentions retirées)	R10		MULTIJET	retire : MULTIJET
+19516	FIAT	SEDICI	SEDICI	1.9 D Multijet 4x4	1.9 D 4x4	Diesel	120	D19AA	simplification (mentions retirées)	R10		MULTIJET	retire : MULTIJET
+19937	FIAT	STRADA Pick-up (178)	STRADA I PickUp	1.3 D Multijet	1.3 JTD	Diesel	85	223 A9.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 5260 ; retire : D MULTIJET
+23857	FIAT	STRADA Pick-up (178)	STRADA I PickUp	1.3 D Multijet	1.3 JTD	Diesel	95	199 B1.000	suffixe ou précision justifiés	R11	JTD	D MULTIJET	JTD : attesté même marque, code moteur et puissance, types 66168,66352 ; retire : D MULTIJET
+17702	FORD	FIESTA V	FIESTA V	1.2 16V	1.25 16V	Essence	70	M7JA,M7JB	suffixe ou précision justifiés	R11	1.25	1.2	1.25 : type_liter=125 ; retire : 1.2
+17703	FORD	FIESTA V	FIESTA V	1.2 16V	1.25 16V	Essence	75	FUJA,FUJB	suffixe ou précision justifiés	R11	1.25	1.2	1.25 : type_liter=125 ; retire : 1.2
+28235	FORD	FIESTA VI	FIESTA VI	1.2 16V	1.25	Essence	60	STJA,STJB,STJC,STJD	suffixe ou précision justifiés	R11	1.25	1.2 16V	1.25 : type_liter=125 ; retire : 1.2 16V
+28236	FORD	FIESTA VI	FIESTA VI	1.2 16V	1.25	Essence	82	SNJA,SNJB,SNJC,SNJD	suffixe ou précision justifiés	R11	1.25	1.2 16V	1.25 : type_liter=125 ; retire : 1.2 16V
+56094	FORD	FIESTA VI Berline	FIESTA VI Berline	1.6 16V	1.4	Essence	95	M6JA	suffixe ou précision justifiés	R11	1.4	1.6 16V	1.4 : type_liter=140 ; retire : 1.6 16V
+66997	FORD	FIGO	FIGO	1.2 (TK) 16V	1.2 16V	Essence	85	YSKD,YSKE	simplification (mentions retirées)	R10		TK	retire : TK
+5801	FORD	KA I	KA I	1.3 (Phase 1)	1.3 i	Essence	50	JJB	suffixe ou précision justifiés	R11	I	PHASE 1	i : injection essence, type_fuel=Essence ; retire : PHASE 1
+5802	FORD	KA I	KA I	1.3	1.3 i	Essence	60	BAA,J4D,J4K,J4M,J4N,J4P,J4S	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+12059	FORD	KA I	KA I	1.3 (Phase 2)	1.3 i	Essence	49	JJD,JJF,JJG,JJH,JJL	suffixe ou précision justifiés	R11	I	PHASE 2	i : injection essence, type_fuel=Essence ; retire : PHASE 2
+15279	FORD	KA I	KA I	1.0	1.0 i	Essence	52	ZH10JRB	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 66767
+17177	FORD	KA I	KA I	1.3	1.3 i	Essence	70	A9A,A9B	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+17305	FORD	KA I	KA I	1.6	1.6 i	Essence	95	CDB,CDC	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+16939	FORD	TOURNEO CONNECT I	TOURNEO CONNECT I	1.8 TDCI-TDDI-DI	1.8 DI	Diesel	75	BHPA,P7PA,P7PB,R2PA	simplification (mentions retirées)	R10		TDCI TDDI	retire : TDCI TDDI
+17485	HONDA	ACCORD VII	ACCORD VII	2.2 CDTI	2.2 i CTDi	Diesel	140	N22A1	suffixe ou précision justifiés	R11	I CTDI	CDTI	i : nomenclature Honda i-CTDi / i-DTEC (liste fermée, hors base) ; CTDI : attesté même marque, code moteur et puissance, types 17486 ; retire : CDTI
+29480	HONDA	ACCORD VIII	ACCORD VIII	2.0	2.0 i	Essence	156	R20A3	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+29482	HONDA	ACCORD VIII	ACCORD VIII	2.2 DTEC	2.2 i DTec	Diesel	150	N22B1	suffixe ou précision justifiés	R11	I		i : nomenclature Honda i-CTDi / i-DTEC (liste fermée, hors base)
+34928	HONDA	ACCORD VIII	ACCORD VIII	2.2 DTEC	2.2 i DTec	Diesel	180	N22B2	suffixe ou précision justifiés	R11	I		i : nomenclature Honda i-CTDi / i-DTEC (liste fermée, hors base)
+13918	HONDA	CIVIC IX	CIVIC IX	1.4 VTEC	1.4 i VTec	Essence	99	L13Z4	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+13926	HONDA	CIVIC IX	CIVIC IX	1.8 VTEC	1.8 i VTec	Essence	141	R18Z4	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+13927	HONDA	CIVIC IX	CIVIC IX	2.2 DTEC	2.2 i DTec	Diesel	150	N22B4	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 67309
+58791	HONDA	CIVIC IX	CIVIC IX	1.6 DTEC	1.6 i DTec	Diesel	120	N16A1	suffixe ou précision justifiés	R11	I		i : nomenclature Honda i-CTDi / i-DTEC (liste fermée, hors base)
+9358	HONDA	CR-V III	CR-V III	2.0 VTEC	2.0 i VTec	Essence	143	R20A2	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+22650	HONDA	CR-V III	CR-V III	2.0 VTEC 4WD	2.0 i 4WD	Essence	150	R20A1,R20A2	suffixe ou précision justifiés	R11	I	VTEC	i : injection essence, type_fuel=Essence ; retire : VTEC
+22651	HONDA	CR-V III	CR-V III	2.2 CTDI 4WD	2.2 i CTDi 4WD	Diesel	140	N22A2	suffixe ou précision justifiés	R11	I		i : nomenclature Honda i-CTDi / i-DTEC (liste fermée, hors base)
+34931	HONDA	CR-V III	CR-V III	2.2 DTEC 4WD	2.2 i DTec 4WD	Diesel	150	N22B3	suffixe ou précision justifiés	R11	I		i : nomenclature Honda i-CTDi / i-DTEC (liste fermée, hors base)
+30358	HONDA	JAZZ III	JAZZ III	1.3	1.4 i	Essence	100	L13A,L13Z1,L13Z2	suffixe ou précision justifiés	R11	1.4 I	1.3	1.4 : attesté types 11672,12959,30357 ; i : injection essence, type_fuel=Essence ; retire : 1.3
+33211	HONDA	JAZZ III	JAZZ III	1.5 VTEC	1.5 i	Essence	120	L15-A7	suffixe ou précision justifiés	R11	I	VTEC	i : injection essence, type_fuel=Essence ; retire : VTEC
+16814	HYUNDAI	GETZ	GETZ	1.3	1.3 i	Essence	82	G4EA	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+19917	HYUNDAI	GETZ	GETZ	1.4	1.4 i	Essence	97	G4EE	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+21570	HYUNDAI	GETZ	GETZ	1.5	1.5 i	Essence	99	G4EC	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+68892	HYUNDAI	TUCSON II	TUCSON II	1.6 T GDI Traction Intégrale (Phase 1)	1.6 Traction intégrale	Essence	177	G4FJ	simplification (mentions retirées)	R10		T GDI PHASE 1	retire : T GDI PHASE 1
+68898	HYUNDAI	TUCSON II	TUCSON II	2.0	2.0 GDi	Essence	155	G4NA	suffixe ou précision justifiés	R11	GDI		GDI : attesté même marque, code moteur et puissance, types 68676,68678 ; collision préexistante signalée : = nom brut de type 68912 « 2.0 GDi » 165 ch ≠ 155 ch
+68902	HYUNDAI	TUCSON II	TUCSON II	2.0 CRDI	2.0 CRDI FWD	Diesel	185	D4HA	suffixe ou précision justifiés	R11	FWD		FWD : aucune mention 4x4 dans le nom brut
+68918	HYUNDAI	TUCSON II	TUCSON II	2.0 Traction Intégrale	2.0 GDi 4WD	Essence	156	G4NA	suffixe ou précision justifiés	R11	GDI 4WD	TRACTION INTÉGRALE	GDI : attesté même marque, code moteur et puissance, types 68676,68678 ; 4WD : attesté même marque, code moteur et puissance, types 68665,68667,68678 ; retire : TRACTION INTÉGRALE
+34245	IVECO	DAILY III Fourgon	DAILY III Fourgon	2.3 D 16V 29L10 V	2.3 D 29L10 V	Diesel	95	F1AE0481A	simplification (mentions retirées)	R10		16V	retire : 16V
+34247	IVECO	DAILY III Fourgon	DAILY III Fourgon	2.3 D 16V 29L12 V	2.3 D 29L12 V	Diesel	116	F1AE0481B	simplification (mentions retirées)	R10		16V	retire : 16V
+34262	IVECO	DAILY III Fourgon	DAILY III Fourgon	2.3 D 16V 35S10	2.3 D 35S10	Diesel	95	F1AE0481A	simplification (mentions retirées)	R10		16V	retire : 16V
+34265	IVECO	DAILY III Fourgon	DAILY III Fourgon	2.3 D 16V 35C12 V-35S12 V	2.3 D 35C12V	Diesel	116	F1AE0481B	simplification (mentions retirées)	R10		16V 35S12 V	retire : 16V 35S12 V
+34425	IVECO	DAILY III Fourgon	DAILY III Fourgon	2.3 D 16V 29L14	2.3 D 29L14	Diesel	136	F1AE0481M	simplification (mentions retirées)	R10		16V	retire : 16V
+34427	IVECO	DAILY III Fourgon	DAILY III Fourgon	2.3 D 16V 35C14-35S14	2.3 D 35C14	Diesel	136	F1AE0481M	simplification (mentions retirées)	R10		16V 35S14	retire : 16V 35S14
+34430	IVECO	DAILY III Fourgon	DAILY III Fourgon	3.0 D 16V 35C14	3.0 D 35C14	Diesel	136	F1CE0481A,F1CE0481E	simplification (mentions retirées)	R10		16V	retire : 16V
+34433	IVECO	DAILY III Fourgon	DAILY III Fourgon	3.0 D 16V 40C14	3.0 D 40C14	Diesel	136	F1CE0481A	simplification (mentions retirées)	R10		16V	retire : 16V
+34435	IVECO	DAILY III Fourgon	DAILY III Fourgon	3.0 D 16V 50C14	3.0 D 50C14	Diesel	136	F1CE0481A,F1CE0481E	simplification (mentions retirées)	R10		16V	retire : 16V
+34437	IVECO	DAILY III Fourgon	DAILY III Fourgon	3.0 D 16V 65C14	3.0 D 65C14	Diesel	136	F1CE0481A,F1CE0481E	simplification (mentions retirées)	R10		16V	retire : 16V
+34442	IVECO	DAILY III Fourgon	DAILY III Fourgon	3.0 D 16V 35C17-35S17	3.0 D 35C17	Diesel	166	F1CE0481B	simplification (mentions retirées)	R10		16V 35S17	retire : 16V 35S17
+34444	IVECO	DAILY III Fourgon	DAILY III Fourgon	3.0 D 16V 40C17-40S17	3.0 D 40C17	Diesel	166	F1CE0481B	simplification (mentions retirées)	R10		16V 40S17	retire : 16V 40S17
+34446	IVECO	DAILY III Fourgon	DAILY III Fourgon	3.0 D 16V 50C17	3.0 D 50C17	Diesel	166	F1CE0481B	simplification (mentions retirées)	R10		16V	retire : 16V
+34448	IVECO	DAILY III Fourgon	DAILY III Fourgon	3.0 D 16V 65C17	3.0 D 65C17	Diesel	166	F1CE0481B	simplification (mentions retirées)	R10		16V	retire : 16V
+59783	IVECO	DAILY III Fourgon	DAILY III Fourgon	3.0 D 16V 45C14	3.0 D 45C14	Diesel	136	F1CE0481A	simplification (mentions retirées)	R10		16V	retire : 16V
+34303	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 29L10 V	2.3 D 29L10 V	Diesel	95	F1AE0481F	simplification (mentions retirées)	R10		16V	retire : 16V
+34304	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 29L14 C-29L14 C P-29L14 V-29L14 V P	2.3 D 29L14 C	Diesel	136	F1AE0481H	simplification (mentions retirées)	R10		16V P V V P	retire : 16V P V V P
+34305	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 29L12 V-29L12 V P	2.3 D 29L12 V	Diesel	116	F1AE0481G	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34306	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 35C10-35S10	2.3 D 35C10	Diesel	95	F1AE0481F	simplification (mentions retirées)	R10		16V 35S10	retire : 16V 35S10
+34307	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 35C12 V-35C12 V P-35S12 V-35S12 V P	2.3 D 35C12 V	Diesel	116	F1AE0481G,F1AE0481R	simplification (mentions retirées)	R10		16V P 35S12 35S12 P	retire : 16V P 35S12 35S12 P
+34308	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 35C15 V-35C15 V P	3.0 D 35C15 V	Diesel	146	F1CE0481F,F1CE0481L	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34309	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 35C18 V-35C18 V P-35S18 V-35S18 V P	3.0 D 35C18 V	Diesel	176	F1CE0481H	simplification (mentions retirées)	R10		16V P 35S18 35S18 P	retire : 16V P 35S18 35S18 P
+34310	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 35S14 C-35S14 C P-35S14 V-35S14 V P-35C14 V	2.3 D 35S14 C	Diesel	136	F1AE0481H	simplification (mentions retirées)	R10		16V P V V P 35C14 V	retire : 16V P V V P 35C14 V
+34311	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 40C10 V	2.3 D 40C10 V	Diesel	95	F1AE0481F	simplification (mentions retirées)	R10		16V	retire : 16V
+34312	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 40C12 V-40C14 V P	2.3 D 40C12 V	Diesel	116	F1AE0481G	simplification (mentions retirées)	R10		16V 40C14 P	retire : 16V 40C14 P
+34313	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 40C15 V-40C15 V P	3.0 D 40C15 V	Diesel	146	F1CE0481F	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34314	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 40C18 V-40C18 V P	3.0 D 40C18 V	Diesel	176	F1CE0481H	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34315	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 45C15 V	3.0 D 45C15 V	Diesel	146	F1CE0481F	simplification (mentions retirées)	R10		16V	retire : 16V
+34316	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 45C18	3.0 D 45C18	Diesel	176	F1CE0481H	simplification (mentions retirées)	R10		16V	retire : 16V
+34317	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 50C15 V-50C15 V P	3.0 D 50C15 V	Diesel	146	F1CE0481F	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34318	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 50C18 V-50C18 V P	3.0 D 50C18 V	Diesel	176	F1CE0481H	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34319	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 60C15 V	3.0 D 60C15 V	Diesel	146	F1CE0481F	simplification (mentions retirées)	R10		16V	retire : 16V
+34320	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 60C18	3.0 D 60C18	Diesel	176	F1CE0481H	simplification (mentions retirées)	R10		16V	retire : 16V
+34321	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 65C15	3.0 D 65C15	Diesel	146	F1CE0481F	simplification (mentions retirées)	R10		16V	retire : 16V
+34322	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 65C18	3.0 D 65C18	Diesel	176	F1CE0481H	simplification (mentions retirées)	R10		16V	retire : 16V
+34452	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 50C17 V-50C17 V P	3.0 D 50C17 V	Diesel	170	F1CE3481C	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34453	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 40C14 V-40C14 V P	3.0 D 40C14 V	Diesel	140	F1CE3481L	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34456	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 50C14 V-50C14 V P	3.0 D 50C14 V	Diesel	140	F1CE3481L	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34457	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 40C17 V-40C17 V P	3.0 D 40C17 V	Diesel	170	F1CE3481C	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34458	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 60C17 V-60C17 V P	3.0 D 60C17 V	Diesel	170	F1CE3481C	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34459	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 40C13 V-40C13 V P	2.3 D 40C13 V	Diesel	126	F1AE0481V	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34460	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 40C11 V	2.3 D 40C11 V	Diesel	106	F1AE0481U	simplification (mentions retirées)	R10		16V	retire : 16V
+34461	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 35C14 V-35C14 V P-35S14 V-35S14 V P	3.0 D 35C14 V	Diesel	140	F1CE3481L	simplification (mentions retirées)	R10		16V P 35S14 35S14 P	retire : 16V P 35S14 35S14 P
+34462	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 45C17 V-45C17 V P	3.0 D 45C17 V	Diesel	170	F1CE3481C	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34463	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 65C17 V-65C17 V P	3.0 D 65C17 V	Diesel	170	F1CE3481C	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34464	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 65C14 V-65C14 V P	3.0 D 65C14 V	Diesel	140	F1CE3481L	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34465	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 35C17 V-35C17 V P-35S17 V-35S17 V P	3.0 D 35C17 V	Diesel	170	F1CE3481C	simplification (mentions retirées)	R10		16V P 35S17 35S17 P	retire : 16V P 35S17 35S17 P
+34466	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 35C13 V-35C13 V P-35S13 V-35S13 V P	2.3 D 35C13 V	Diesel	126	F1AE0481V	simplification (mentions retirées)	R10		16V P 35S13 35S13 P	retire : 16V P 35S13 35S13 P
+34467	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 70C14 V-70C14 V P	3.0 D 70C14 V	Diesel	140	F1CE3481L	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34468	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 70C17V-70C17 V P	3.0 D 70C17 V	Diesel	170	F1CE3481C	simplification (mentions retirées)	R10		16V P	retire : 16V P
+34469	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	2.3 D 16V 35C11 V-35S11 V	2.3 D 35C11 V	Diesel	106	F1AE0481U	simplification (mentions retirées)	R10		16V 35S11	retire : 16V 35S11
+57546	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 35S15	3.0 D 35S15	Diesel	145	F1CE0481L	simplification (mentions retirées)	R10		16V	retire : 16V
+69606	IVECO	DAILY IV Fourgon	DAILY IV Fourgon	3.0 D 16V 55C17	3.0 D 55C17	Diesel	170		simplification (mentions retirées)	R10		16V	retire : 16V
+56697	IVECO	DAILY V Fourgon	DAILY V Fourgon	3.0 D 16V 35C17 V-35S17 V-40C17 V-45C17 V-50C17 V-60C17 V	3.0 D 35C17 V	Diesel	170	F1CE3481C,F1CE3481K	simplification (mentions retirées)	R10		16V 35S17 40C17 45C17 50C17 60C17	retire : 16V 35S17 40C17 45C17 50C17 60C17
+57760	IVECO	DAILY V Fourgon	DAILY V Fourgon	2.3 D 16V 29L11 V-35C11 V-35S11 V-40C11 V	2.3 D 29L11 V	Diesel	106	F1AE3481A	simplification (mentions retirées)	R10		16V 35C11 35S11 40C11	retire : 16V 35C11 35S11 40C11
+57761	IVECO	DAILY V Fourgon	DAILY V Fourgon	2.3 D 16V 29L13 V-35C13 V-35S13 V-40C13 V-40S13 V	2.3 D 29L13 V	Diesel	126	F1AE3481B	simplification (mentions retirées)	R10		16V 35C13 35S13 40C13 40S13	retire : 16V 35C13 35S13 40C13 40S13
+57763	IVECO	DAILY V Fourgon	DAILY V Fourgon	2.3 D 16V 29L15 V-35S15 V-35C15L V-40C15L V-50C15L V	2.3 D 29L15 V	Diesel	146	F1AE3481C	simplification (mentions retirées)	R10		16V 35S15 35C15L 40C15L 50C15L	retire : 16V 35S15 35C15L 40C15L 50C15L
+57775	IVECO	DAILY V Fourgon	DAILY V Fourgon	3.0 D 16V 35C21 V-35S21 V-40C21 V-45C21 V-50C21 V	3.0 D 35C21 V	Diesel	204	F1CE3481D	simplification (mentions retirées)	R10		16V 35S21 40C21 45C21 50C21	retire : 16V 35S21 40C21 45C21 50C21
+57779	IVECO	DAILY V Fourgon	DAILY V Fourgon	3.0 D 16V 35C15 V-40C15 V-50C15 V-60C15 V	3.0 D 35C15 V	Diesel	146	F1CE3481B,F1CE3481J	simplification (mentions retirées)	R10		16V 40C15 50C15 60C15	retire : 16V 40C15 50C15 60C15
+69586	IVECO	DAILY V Fourgon	DAILY V Fourgon	3.0 D 16V 35S14	3.0 D 35S14	Diesel	150	F1CE3481L	simplification (mentions retirées)	R10		16V	retire : 16V
+69628	IVECO	DAILY VI Chassis cabine	DAILY VI Chassis cabine	2.3 D 16V 33S11-35S11-35C11	2.3 D 33S11	Diesel	106	F1AFL411A	simplification (mentions retirées)	R10		16V 35S11 35C11	retire : 16V 35S11 35C11
+69630	IVECO	DAILY VI Chassis cabine	DAILY VI Chassis cabine	2.3 D 16V 33S13-35S13-35C13	2.3 D 33S13	Diesel	126	F1AFL411B	simplification (mentions retirées)	R10		16V 35S13 35C13	retire : 16V 35S13 35C13
+69632	IVECO	DAILY VI Chassis cabine	DAILY VI Chassis cabine	2.3 D 16V 33S15-35S15-35C15	2.3 D 33S15 - 35S15 - 35C15	Diesel	146	F1AFL411C	simplification (mentions retirées)	R10		16V	retire : 16V
+69634	IVECO	DAILY VI Chassis cabine	DAILY VI Chassis cabine	3.0 D 16V 35S14-35S15-35C15-40S14-40C15-50C15-65C15-70C15	3.0 D 35S15 - 35C15 - 40C15, 50C15 - 65C15 - 70C15	Diesel	146	F1CE3481J,F1CFL411E,F1CFL411J	simplification (mentions retirées)	R10		16V 35S14 40S14	retire : 16V 35S14 40S14
+69636	IVECO	DAILY VI Chassis cabine	DAILY VI Chassis cabine	3.0 D 16V 35S17-35C17-40C17-45S17-45C17-50C17-55C17-65C17	3.0 D 35S17 - 35C17 - 40C17 - 50C17 - 65C17 - 70C17	Diesel	170	F1CFL411F,F1CFL411H	suffixe ou précision justifiés	R11	70C17	16V 45S17 45C17 55C17	70C17 : attesté même marque, code moteur et puissance, types 69616 ; retire : 16V 45S17 45C17 55C17
+69640	IVECO	DAILY VI Chassis cabine	DAILY VI Chassis cabine	3.0 D 16V 35S21-35C21-40C21-50C21-65C21-70C21	3.0 D 35S21 - 35C21 - 40C21 - 50C21 - 65C21 - 70C21	Diesel	205	F1CFL411G,F1CGL411C	simplification (mentions retirées)	R10		16V	retire : 16V
+16225	JEEP	CHEROKEE III	CHEROKEE III	2.5 CRD 4x4	2.5 CRD 4WD	Diesel	143	ENJ,R 425 DOHC	suffixe ou précision justifiés	R11	4WD	4X4	4WD : synonyme de « 4X4 » ; retire : 4X4
+17258	JEEP	CHEROKEE III	CHEROKEE III	2.8 CRD 4x4	2.8 CRD 4WD	Diesel	150	ENR	suffixe ou précision justifiés	R11	4WD	4X4	4WD : synonyme de « 4X4 » ; retire : 4X4
+18793	JEEP	CHEROKEE III	CHEROKEE III	2.8 CRD 4x4	2.8 CRD 4WD	Diesel	163	ENR	suffixe ou précision justifiés	R11	4WD	4X4	4WD : synonyme de « 4X4 » ; retire : 4X4
+45002	JEEP	CHEROKEE III	CHEROKEE III	2.8 CRD	2.8 D	Diesel	163	ENR	suffixe ou précision justifiés	R11	D	CRD	D : diesel, type_fuel=Diesel ; retire : CRD
+31278	JEEP	CHEROKEE IV	CHEROKEE IV	2.8 CRD 4x4	2.8 CRD 4WD	Diesel	177	ENS	suffixe ou précision justifiés	R11	4WD	4X4	4WD : synonyme de « 4X4 » ; retire : 4X4
+70300	KIA	CEE'D II	CEE'D II	1.6 CRDI	1.6 CRDi 136	Diesel	136	D4FB	suffixe ou précision justifiés	R11	136		136 : = type_power_ps
+70307	KIA	CEE'D SW II	CEE'D SW II	1.6 CRDI	1.6 CRDi 136	Diesel	136	D4FB	suffixe ou précision justifiés	R11	136		136 : = type_power_ps
+19506	KIA	SORENTO I	SORENTO I	2.5 CRDI	2.5 D CRDi	Diesel	170	D4CB	suffixe ou précision justifiés	R11	D		D : diesel, type_fuel=Diesel
+18502	KIA	SPORTAGE II	SPORTAGE II	2.0 16V	2.0 i 16V	Essence	141	G4GC	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+17876	MAZDA	3 I	3 I	1.6 TD	1.6 Di Turbo	Diesel	109	Y601,Y603,Y605,Y642	suffixe ou précision justifiés	R11	DI TURBO	TD	DI : attesté même marque, code moteur et puissance, types 17875 ; TURBO : attesté même marque, code moteur et puissance, types 17875 ; retire : TD
+73082	MERCEDES	CLASSE C (W205)	CLASSE C (W205)	180 D BlueTEC	180 BlueTEC D	Diesel	116	OM 626.951	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73092	MERCEDES	CLASSE C (W205)	CLASSE C (W205)	200 D BlueTEC	200 BlueTEC D	Diesel	136	OM 626.951	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73098	MERCEDES	CLASSE C (W205)	CLASSE C (W205)	220 D BlueTEC	220 BlueTEC D	Diesel	170	OM 651.921	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73099	MERCEDES	CLASSE C (W205)	CLASSE C (W205)	220 D BlueTEC	220 BlueTEC D	Diesel	163	OM 651.921	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73101	MERCEDES	CLASSE C (W205)	CLASSE C (W205)	250 D BlueTEC	250 BlueTEC D	Diesel	204	OM 651.921	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73102	MERCEDES	CLASSE C (W205)	CLASSE C (W205)	250 D BlueTEC 4-Matic	250 BlueTEC D 4Matic	Diesel	204	OM 651.921	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+5405	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	180	180 T	Essence	122	M 111.920,M 111.921	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) »
+5406	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	200	200 T	Essence	136	M 111.941,M 111.945	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) »
+5407	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	220 D	220 TD	Diesel	95	OM 604.910	suffixe ou précision justifiés	R11	TD	D	TD : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) » ; retire : D
+5977	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	200 D	200 TD	Diesel	88	OM 604.915	suffixe ou précision justifiés	R11	TD	D	TD : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) » ; retire : D
+8889	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	220 CDI	220 T CDI	Diesel	125	OM 611.960	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) »
+9039	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	200 Kompressor	200 T Kompressor	Essence	192	M 111.944	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) »
+10966	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	200 CDI	200 T CDI	Diesel	102	OM 611.960	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) »
+11080	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	220 D	220 TD	Diesel	75	OM 604.910	suffixe ou précision justifiés	R11	TD	D	TD : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) » ; retire : D
+15037	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	180	180 T	Essence	129	M 111.952	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) »
+15038	MERCEDES	CLASSE C Break (S202)	CLASSE C Break (S202)	200 Kompressor	200 T Kompressor	Essence	163	M 111.956	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE C Break (S202) »
+59483	MERCEDES	CLASSE CLS (C218)	CLASSE CLS (C218)	350 D BlueTEC	350 BlueTEC	Diesel	252	OM 642.852,OM 642.853	simplification (mentions retirées)	R10		D	retire : D
+59484	MERCEDES	CLASSE CLS (C218)	CLASSE CLS (C218)	350 D BlueTEC 4-Matic	350 BlueTEC 4Matic	Diesel	252	OM 642.854,OM 642.858	simplification (mentions retirées)	R10		D	retire : D
+73321	MERCEDES	CLASSE CLS (C218)	CLASSE CLS (C218)	220 D BlueTEC	220 BlueTEC	Diesel	163	OM 651.924	simplification (mentions retirées)	R10		D	retire : D
+73322	MERCEDES	CLASSE CLS (C218)	CLASSE CLS (C218)	220 D BlueTEC	220 BlueTEC D	Diesel	170	OM 651.924	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73324	MERCEDES	CLASSE CLS (C218)	CLASSE CLS (C218)	250 D BlueTEC 4-Matic	250 BlueTEC D 4Matic	Diesel	204	OM 651.924	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73329	MERCEDES	CLASSE CLS (C218)	CLASSE CLS (C218)	350 D BlueTEC	350 BlueTEC D	Diesel	258	OM 642.852,OM 642.853	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73337	MERCEDES	CLASSE CLS Break (X218)	CLASSE CLS Break (X218)	220 D BlueTEC	220 BlueTEC	Diesel	163	OM 651.924	simplification (mentions retirées)	R10		D	retire : D
+73338	MERCEDES	CLASSE CLS Break (X218)	CLASSE CLS Break (X218)	220 D BlueTEC	220 BlueTEC D	Diesel	170	OM 651.924	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73340	MERCEDES	CLASSE CLS Break (X218)	CLASSE CLS Break (X218)	250 D BlueTEC 4-Matic	250 BlueTEC D 4Matic	Diesel	204	OM 651.924	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73342	MERCEDES	CLASSE CLS Break (X218)	CLASSE CLS Break (X218)	350 D BlueTEC	350 BlueTEC D	Diesel	258	OM 642.852,OM 642.853	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73343	MERCEDES	CLASSE CLS Break (X218)	CLASSE CLS Break (X218)	350 D BlueTEC 4-Matic	350 BlueTEC 4Matic	Diesel	252	OM 642.854,OM 642.858	simplification (mentions retirées)	R10		D	retire : D
+9941	MERCEDES	CLASSE E (W212)	CLASSE E (W212)	250 CDI BlueTEC 4-Matic	250 CDI 4Matic	Diesel	204	OM 651.924	simplification (mentions retirées)	R10		BLUETEC	retire : BLUETEC
+5540	MERCEDES	CLASSE E Break (S210)	CLASSE E Break (S210)	200	200 T	Essence	136	M 111.942	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE E Break (S210) »
+8691	MERCEDES	CLASSE E Break (S210)	CLASSE E Break (S210)	200 Kompressor	200 T Kompressor	Essence	186	M 111.947	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE E Break (S210) »
+10145	MERCEDES	CLASSE E Break (S210)	CLASSE E Break (S210)	220 CDI	220 T CDI	Diesel	125	OM 611.961	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE E Break (S210) »
+12588	MERCEDES	CLASSE E Break (S210)	CLASSE E Break (S210)	320 CDI	320 T CDI	Diesel	197	OM 613.961	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE E Break (S210) »
+12590	MERCEDES	CLASSE E Break (S210)	CLASSE E Break (S210)	270 CDI	270 T CDI	Diesel	170	OM 612.961	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE E Break (S210) »
+12642	MERCEDES	CLASSE E Break (S210)	CLASSE E Break (S210)	220 CDI	220 T CDI	Diesel	143	OM 611.961	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE E Break (S210) »
+15063	MERCEDES	CLASSE E Break (S210)	CLASSE E Break (S210)	200 Kompressor	200 T Kompressor	Essence	163	M 111.957	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE E Break (S210) »
+54935	MERCEDES	CLASSE E Break (S210)	CLASSE E Break (S210)	220 CDI	220 T CDI	Diesel	136	OM 611.961	suffixe ou précision justifiés	R11	T		T : désignation Mercedes du break (T-Modell), modèle « CLASSE E Break (S210) »
+59452	MERCEDES	CLASSE E Coupé (C207)	CLASSE E Coupé (C207)	350 D BlueTEC	350 BlueTEC	Diesel	252	OM 642.838	simplification (mentions retirées)	R10		D	retire : D
+73165	MERCEDES	CLASSE E Coupé (C207)	CLASSE E Coupé (C207)	350 D BlueTEC	350 BlueTEC D	Diesel	258	OM 642.838	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73170	MERCEDES	CLASSE E Décapotable (A207)	CLASSE E Décapotable (A207)	220 D BlueTEC	220 BlueTEC	Diesel	177	OM 651.911	simplification (mentions retirées)	R10		D	retire : D
+73172	MERCEDES	CLASSE E Décapotable (A207)	CLASSE E Décapotable (A207)	350 D BlueTEC	350 BlueTEC D	Diesel	258	OM 642.838	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+73217	MERCEDES	CLASSE GLA (X156)	CLASSE GLA (X156)	220 CDI 4-Matic	220 CDI D 4Matic	Diesel	163	OM 651.930	suffixe ou précision justifiés	R11	D		D : attesté même marque, code moteur et puissance, types 73056,73057,73069
+13163	MERCEDES	CLASSE M (W163)	CLASSE M (W163)	270 CDI	ML 270 CDI	Diesel	163	OM 612.963	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+16149	MERCEDES	CLASSE M (W163)	CLASSE M (W163)	400 CDI	ML 400 CDI	Diesel	250	OM 628.963	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+18593	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	280 CDI 4-Matic	ML 280 CDI 4Matic	Diesel	190	OM 642.940	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+18594	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	320 CDI 4-Matic	ML 320 CDI 4Matic	Diesel	224	OM 642.940	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+19735	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	420 CDI 4-Matic	ML 420 CDI 4 Matic	Diesel	306	OM 629.912	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+32165	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	300 CDI 4-Matic	ML 300 CDI 4Matic	Diesel	190	OM 642.940	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+32166	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	350 CDI 4-Matic	ML 350 CDI	Diesel	224	OM 642.940	suffixe ou précision justifiés	R11	ML	4 MATIC	ML : préfixe commercial de la Classe M ; retire : 4 MATIC
+32167	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	350 CDI 4-Matic	ML 350 CDI 4Matic	Diesel	211	OM 642.820	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+32168	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	450 CDI 4-Matic	ML 450 CDI 4 Matic	Diesel	306	OM 629.912	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+33045	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	300 CDI 4-Matic	ML 300 CDI 4Matic	Diesel	204	OM 642.820	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+33046	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	350 CDI 4-Matic	ML 350 CDI 4Matic	Diesel	231	OM 642.820	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+52722	MERCEDES	CLASSE M (W164)	CLASSE M (W164)	350 CDI 4-Matic	ML 350 CDI 4Matic	Diesel	258	OM 642.822	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+12309	MERCEDES	CLASSE M (W166)	CLASSE M (W166)	250 CDI BlueTEC 4-Matic	ML 250 CDI BlueTEC 4Matic	Diesel	204	OM 651.960	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+12310	MERCEDES	CLASSE M (W166)	CLASSE M (W166)	350 BlueTEC 4-Matic	ML 350 BlueTEC 4Matic	Diesel	258	OM 642.826,OM 642.864	suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+14027	MERCEDES	CLASSE M (W166)	CLASSE M (W166)	350 CDI 4-Matic	ML 350 CDI 4Matic	Diesel	231		suffixe ou précision justifiés	R11	ML		ML : préfixe commercial de la Classe M
+9870	MERCEDES	CLASSE S (W221)	CLASSE S (W221)	350 D BlueTEC	350 BlueTEC	Diesel	258	OM 642.862	simplification (mentions retirées)	R10		D	retire : D
+9871	MERCEDES	CLASSE S (W221)	CLASSE S (W221)	350 D BlueTEC 4-Matic	350 BlueTEC 4Matic	Diesel	258	OM 642.868	simplification (mentions retirées)	R10		D	retire : D
+59008	MERCEDES	CLASSE S (W222)	CLASSE S (W222)	350 D BlueTEC	350 BlueTEC	Diesel	258	OM 642.861	simplification (mentions retirées)	R10		D	retire : D
+73261	MERCEDES	CLASSE S (W222)	CLASSE S (W222)	350 D BlueTEC 4-Matic	350 BlueTEC 4Matic	Diesel	258	OM 642.861,OM 642.867	simplification (mentions retirées)	R10		D	retire : D
+73262	MERCEDES	CLASSE S (W222)	CLASSE S (W222)	350 D BlueTEC 4-Matic	350 BlueTEC 4Matic	Diesel	252	OM 642.867	simplification (mentions retirées)	R10		D	retire : D
+74052	MINI	(F56)	(F56)	Cooper	1.5 Cooper	Essence	136	B36 A15 A,B38 A15 A,B38 A15 F	suffixe ou précision justifiés	R11	1.5		1.5 : type_liter=150
+74053	MINI	(F56)	(F56)	Cooper D	1.5 Cooper D	Diesel	116	B37 C15 A	suffixe ou précision justifiés	R11	1.5		1.5 : type_liter=150
+74054	MINI	(F56)	(F56)	Cooper S	2.0 Cooper S	Essence	192	B46 A20 A,B48 A20 A,B48 A20 F	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+74064	MINI	(F56)	(F56)	One	1.2 One	Essence	102	B38 A12 A	suffixe ou précision justifiés	R11	1.2		1.2 : type_liter=120
+74066	MINI	(F56)	(F56)	One D	1.5 One D	Diesel	95	B37 C15 A	suffixe ou précision justifiés	R11	1.5		1.5 : type_liter=150
+15889	MINI	(R50-R53)	(R50-R53)	One	1.6 One	Essence	90	W10 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+15890	MINI	(R50-R53)	(R50-R53)	Cooper	1.6 Cooper	Essence	116	W10 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+16600	MINI	(R50-R53)	(R50-R53)	Cooper S	1.6 Cooper S	Essence	163	W11 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+17171	MINI	(R50-R53)	(R50-R53)	One D	1.4 One D	Diesel	75	1ND	suffixe ou précision justifiés	R11	1.4		1.4 : type_liter=140
+17793	MINI	(R50-R53)	(R50-R53)	Works	1.6 Works	Essence	210	W11 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+18307	MINI	(R50-R53)	(R50-R53)	Cooper S	1.6 Cooper S	Essence	170	W11 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+19304	MINI	(R50-R53)	(R50-R53)	One D	1.4 One D	Diesel	88	W17 D14 (1ND)	suffixe ou précision justifiés	R11	1.4		1.4 : type_liter=140
+25139	MINI	(R50-R53)	(R50-R53)	S Works	1.6 S Works	Essence	203	W11 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+27975	MINI	(R50-R53)	(R50-R53)	One	1.4	Essence	75	W10 B14 A	suffixe ou précision justifiés	R11	1.4	ONE	1.4 : type_liter=140 ; retire : ONE
+28363	MINI	(R50-R53)	(R50-R53)	John Cooper Works	1.6 John Cooper Works	Essence	218	W11 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+3040	MINI	(R56)	(R56)	One D	1.6 One D	Diesel	90	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+5373	MINI	(R56)	(R56)	Cooper	1.6 Cooper	Essence	115	N12 B16 A,N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+6449	MINI	(R56)	(R56)	Cooper SD	2.0 Cooper SD	Diesel	136	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+7071	MINI	(R56)	(R56)	Cooper S	1.6 Cooper S	Essence	163	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+9894	MINI	(R56)	(R56)	Cooper D	2.0 Cooper D	Diesel	112	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+9895	MINI	(R56)	(R56)	Cooper SD	2.0 Cooper SD	Diesel	143	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+11881	MINI	(R56)	(R56)	Cooper S	1.6 Cooper S	Essence	200	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+19859	MINI	(R56)	(R56)	Cooper	1.6 Cooper	Essence	120	N12 B16 A,N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+19862	MINI	(R56)	(R56)	Cooper S	1.6 Cooper S	Essence	174	N14 B16 A,N14 B16 AB	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+22485	MINI	(R56)	(R56)	One	1.4 One	Essence	95	N12 B14 A	suffixe ou précision justifiés	R11	1.4		1.4 : type_liter=140
+22486	MINI	(R56)	(R56)	Cooper D	1.6 Cooper D	Diesel	109	9HZ (DV6TED4),W16 D16 (9HZ)	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+31111	MINI	(R56)	(R56)	One	1.4 One	Essence	75	N12 B14 A	suffixe ou précision justifiés	R11	1.4		1.4 : type_liter=140
+32009	MINI	(R56)	(R56)	John Cooper Works	1.6 John Cooper Works	Essence	211	N14 B16 C,N18 B16 C	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33051	MINI	(R56)	(R56)	One	1.6 One	Essence	75	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33052	MINI	(R56)	(R56)	One	1.6 One	Essence	98	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33053	MINI	(R56)	(R56)	Cooper	1.6 Cooper	Essence	122	N12 B16 A,N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33054	MINI	(R56)	(R56)	Cooper S	1.6 Cooper S	Essence	184	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33056	MINI	(R56)	(R56)	One D	1.6 One D	Diesel	90	9HZ (DV6TED4)	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34920	MINI	(R56)	(R56)	Cooper D	1.6 Cooper D	Diesel	112	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+57564	MINI	(R56)	(R56)	John Cooper Works GP	1.6 John Cooper Works GP	Essence	218	N14 B16 C,N18 B16 C	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+59416	MINI	(R56)	(R56)	Cooper S John Cooper Works	1.6 John Cooper Works	Essence	192	N14 B16 A,N14 B16 AB	suffixe ou précision justifiés	R11	1.6	S	1.6 : type_liter=160 ; retire : S
+9359	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper S	1.6 Cooper S	Essence	200	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+9896	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper D	2.0 Cooper D	Diesel	112	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+9897	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper SD	2.0 Cooper SD	Diesel	143	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+15059	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper SD	2.0 Cooper SD	Diesel	136	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+17256	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper	1.6 Cooper	Essence	115	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+23444	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper S	1.6 Cooper S	Essence	163	N14 B16 AB,N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+23445	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper S	1.6 Cooper S	Essence	174	N14 B16 A,N14 B16 AB	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+23446	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper	1.6 Cooper	Essence	120	N12 B16 A,N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+23447	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper D	1.6 Cooper D	Diesel	109	9HZ (DV6TED4)	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+32012	MINI	CLUBMAN (R55)	CLUBMAN (R55)	John Cooper Works	1.6 John Cooper Works	Essence	211	N14 B16 C,N18 B16 C	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33074	MINI	CLUBMAN (R55)	CLUBMAN (R55)	One	1.6 One	Essence	98	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33075	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper	1.6 Cooper	Essence	122	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33076	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper S	1.6 Cooper S	Essence	184	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34918	MINI	CLUBMAN (R55)	CLUBMAN (R55)	One D	1.6 One D	Diesel	90	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34919	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper D	1.6 Cooper D	Diesel	112	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34994	MINI	CLUBMAN (R55)	CLUBMAN (R55)	One	1.4 One	Essence	95	N12 B14 A	suffixe ou précision justifiés	R11	1.4		1.4 : type_liter=140
+53158	MINI	CLUBMAN (R55)	CLUBMAN (R55)	Cooper S John Cooper Works	1.6 John Cooper Works	Essence	192	N14 B16 AB	suffixe ou précision justifiés	R11	1.6	S	1.6 : type_liter=160 ; retire : S
+58525	MINI	CLUBVAN (R55)	CLUBVAN (R55)	Cooper	1.6 Cooper	Essence	122	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+58526	MINI	CLUBVAN (R55)	CLUBVAN (R55)	One	1.6 One	Essence	98	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+58527	MINI	CLUBVAN (R55)	CLUBVAN (R55)	Cooper D	1.6 Cooper D	Diesel	112	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+6074	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper S ALL4	1.6 Cooper S ALL4	Essence	163	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+6443	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper SD ALL4	2.0 Cooper SD ALL4	Diesel	136	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+7423	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper S	1.6 Cooper S	Essence	200	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+9916	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper D	2.0 Cooper D	Diesel	112	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+9917	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper SD	2.0 Cooper SD	Diesel	143	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+9918	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper SD ALL4	2.0 Cooper SD ALL4	Diesel	143	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+9926	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper D ALL4	2.0 Cooper D ALL4	Diesel	112	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+16133	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper	1.6 Cooper	Essence	115	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34921	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	One	1.6 One	Essence	98	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34922	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	One D	1.6 One D	Diesel	90	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34923	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper	1.6 Cooper	Essence	122	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34924	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper D	1.6 Cooper D	Diesel	112	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34925	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper S	1.6 Cooper S	Essence	184	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34926	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper D ALL4	1.6 Cooper D ALL4	Diesel	112	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34927	MINI	COUNTRYMAN (R60)	COUNTRYMAN (R60)	Cooper S ALL4	1.6 Cooper S ALL4	Essence	184	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+7450	MINI	Coupé (R58)	Coupé (R58)	Cooper S JCW	1.6 Cooper S	Essence	200	N18 B16 A	suffixe ou précision justifiés	R11	1.6	JCW	1.6 : type_liter=160 ; retire : JCW
+11693	MINI	Coupé (R58)	Coupé (R58)	Cooper	1.6 Cooper	Essence	122	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+11698	MINI	Coupé (R58)	Coupé (R58)	Cooper S	1.6 Cooper S	Essence	184	N14 B16 A,N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+11701	MINI	Coupé (R58)	Coupé (R58)	John Cooper Works	1.6 John Cooper Works	Essence	211	N14 B16 C,N18 B16 C	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+11705	MINI	Coupé (R58)	Coupé (R58)	Cooper SD	2.0 Cooper SD	Diesel	143	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+17420	MINI	Coupé (R58)	Coupé (R58)	Cooper S	1.6 Cooper S	Essence	163	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+17434	MINI	Coupé (R58)	Coupé (R58)	Cooper	1.6 Cooper	Essence	115	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+17453	MINI	Coupé (R58)	Coupé (R58)	Cooper SD	2.0 Cooper SD	Diesel	136	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+17816	MINI	Décapotable (R52)	Décapotable (R52)	One	1.6 One	Essence	90	W10 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+17817	MINI	Décapotable (R52)	Décapotable (R52)	Cooper	1.6 Cooper	Essence	116	W10 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+17818	MINI	Décapotable (R52)	Décapotable (R52)	Cooper S	1.6 Cooper S	Essence	170	W11 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+19303	MINI	Décapotable (R52)	Décapotable (R52)	John Cooper Works	1.6 John Cooper Works	Essence	210	W11 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+21092	MINI	Décapotable (R52)	Décapotable (R52)	Cooper S	1.6 Cooper S	Essence	163	W11 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+3783	MINI	Décapotable (R57)	Décapotable (R57)	Cooper S	1.6 Cooper S	Essence	200	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+9898	MINI	Décapotable (R57)	Décapotable (R57)	Cooper D	2.0 Cooper D	Diesel	112	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+9915	MINI	Décapotable (R57)	Décapotable (R57)	Cooper SD	2.0 Cooper SD	Diesel	143	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+16125	MINI	Décapotable (R57)	Décapotable (R57)	Cooper	1.6 Cooper	Essence	116	N12 B16 A,N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+31140	MINI	Décapotable (R57)	Décapotable (R57)	Cooper	1.6 Cooper	Essence	120	N12 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+31141	MINI	Décapotable (R57)	Décapotable (R57)	Cooper S	1.6 Cooper S	Essence	174	N14 B16 A,N14 B16 AB	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+32010	MINI	Décapotable (R57)	Décapotable (R57)	John Cooper Works	1.6 John Cooper Works	Essence	211	N14 B16 C,N18 B16 C	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33077	MINI	Décapotable (R57)	Décapotable (R57)	One	1.6 One	Essence	98	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33078	MINI	Décapotable (R57)	Décapotable (R57)	Cooper	1.6 Cooper	Essence	122	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+33079	MINI	Décapotable (R57)	Décapotable (R57)	Cooper S	1.6 Cooper S	Essence	184	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+34917	MINI	Décapotable (R57)	Décapotable (R57)	Cooper D	1.6 Cooper D	Diesel	112	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+53236	MINI	PACEMAN (R61)	PACEMAN (R61)	Cooper D ALL4	2.0 Cooper D ALL4	Diesel	112	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+58868	MINI	PACEMAN (R61)	PACEMAN (R61)	Cooper	1.6 Cooper	Essence	122	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+58870	MINI	PACEMAN (R61)	PACEMAN (R61)	Cooper S	1.6 Cooper S	Essence	184	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+58872	MINI	PACEMAN (R61)	PACEMAN (R61)	Cooper S ALL4	1.6 Cooper S ALL4	Essence	184	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+58873	MINI	PACEMAN (R61)	PACEMAN (R61)	Cooper D	1.6 Cooper D	Diesel	112	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+58881	MINI	PACEMAN (R61)	PACEMAN (R61)	Cooper D ALL4	1.6 Cooper D ALL4	Diesel	112	N47 C16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+58882	MINI	PACEMAN (R61)	PACEMAN (R61)	Cooper SD	2.0 Cooper SD	Diesel	143	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+58883	MINI	PACEMAN (R61)	PACEMAN (R61)	Cooper SD ALL4	2.0 Cooper SD ALL4	Diesel	143	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+58887	MINI	PACEMAN (R61)	PACEMAN (R61)	John Cooper Works	1.6 John Cooper Works	Essence	218	N18 B16 C	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+74084	MINI	PACEMAN (R61)	PACEMAN (R61)	Cooper	1.6 Cooper	Essence	120	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+3775	MINI	Roadster (R59)	Roadster (R59)	Cooper S JCW	1.6 Cooper S	Essence	200	N18 B16 A	suffixe ou précision justifiés	R11	1.6	JCW	1.6 : type_liter=160 ; retire : JCW
+3952	MINI	Roadster (R59)	Roadster (R59)	Cooper S	1.6 Cooper S	Essence	163	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+15285	MINI	Roadster (R59)	Roadster (R59)	Cooper	1.6 Cooper	Essence	122	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+15286	MINI	Roadster (R59)	Roadster (R59)	Cooper S	1.6 Cooper S	Essence	184	N18 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+15287	MINI	Roadster (R59)	Roadster (R59)	John Cooper Works	1.6 John Cooper Works	Essence	211	N14 B16 C,N18 B16 C	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+15288	MINI	Roadster (R59)	Roadster (R59)	Cooper SD	2.0 Cooper SD	Diesel	143	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+17492	MINI	Roadster (R59)	Roadster (R59)	Cooper	1.6 Cooper	Essence	115	N16 B16 A	suffixe ou précision justifiés	R11	1.6		1.6 : type_liter=160
+17619	MINI	Roadster (R59)	Roadster (R59)	Cooper SD	2.0 Cooper SD	Diesel	136	N47 C20 A	suffixe ou précision justifiés	R11	2.0		2.0 : type_liter=200
+5514	MITSUBISHI	ASX	ASX	2.0	2.0 i	Essence	150	4B11,4J11	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 74221,74222
+5517	MITSUBISHI	ASX	ASX	2.0 4WD	2.0 i 4WD	Essence	150	4B11,4J11	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 74221,74222
+54898	MITSUBISHI	ASX	ASX	2.0	2.0 i	Essence	160	4B11	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 74221,74222
+54899	MITSUBISHI	ASX	ASX	2.0 4WD	2.0 i 4WD	Essence	160	4B11	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 74221,74222 ; collision préexistante signalée : = nom brut de type 74221 « 2.0 i 4WD » 148 ch ≠ 160 ch
+33209	MITSUBISHI	PAJERO IV	PAJERO IV	3.2 DID 4WD	3.2 TD 4WD	Diesel	200	4M41	suffixe ou précision justifiés	R11	TD	DID	TD : attesté même marque, code moteur et puissance, types 12484 ; retire : DID
+74597	MITSUBISHI	eK SPACE II	eK SPACE II	0.7 Hybrid (Mild Hybrid) Traction intégrale (B37A)	0.7 Hybrid Traction intégrale	Essence-Électrique	52	BR06	simplification (mentions retirées)	R10		MILD B37A	retire : MILD B37A
+74598	MITSUBISHI	eK SPACE II	eK SPACE II	0.7 Hybrid (Mild Hybrid) Traction intégrale (B38A)	0.7 Hybrid Traction intégrale	Essence-Électrique	64	BR06	simplification (mentions retirées)	R10		MILD B38A	retire : MILD B38A
+74601	MITSUBISHI	eK X	eK X	0.7 Hybrid (Mild Hybrid) Traction intégrale (B37W)	0.7 Hybrid Traction intégrale	Essence-Électrique	52	BR06	simplification (mentions retirées)	R10		MILD B37W	retire : MILD B37W
+74602	MITSUBISHI	eK X	eK X	0.7 Hybrid (Mild Hybrid) Traction intégrale (B38W)	0.7 Hybrid Traction intégrale	Essence-Électrique	64	BR06	simplification (mentions retirées)	R10		MILD B38W	retire : MILD B38W
+74605	MITSUBISHI	eK X SPACE	eK X SPACE	0.7 Hybrid (Mild Hybrid) 4WD (B37A)	0.7 Hybrid 4WD	Essence-Électrique	52	BR06	simplification (mentions retirées)	R10		MILD B37A	retire : MILD B37A
+74606	MITSUBISHI	eK X SPACE	eK X SPACE	0.7 Hybrid (Mild Hybrid) 4WD (B38A)	0.7 Hybrid 4WD	Essence-Électrique	64	BR06	simplification (mentions retirées)	R10		MILD B38A	retire : MILD B38A
+75024	NISSAN	QASHQAI II (J11)	QASHQAI	1.6 dCi ALL MODE 4x4	1.6 dCi 4x4	Diesel	130	R9M	simplification (mentions retirées)	R10		ALL MODE	retire : ALL MODE
+10163	OPEL	ASTRA G	ASTRA G	1.4 (Phase 1) 16V	1.4 16V	Essence	90	X 14 XE,Z 14 XE	simplification (mentions retirées)	R10		PHASE 1	retire : PHASE 1
+10166	OPEL	ASTRA G Break	ASTRA G Break	1.4 (Phase 1) 16V	1.4 16V	Essence	90	X 14 XE,Z 14 XE	simplification (mentions retirées)	R10		PHASE 1	retire : PHASE 1
+17899	OPEL	ASTRA H	ASTRA H	2.0 16V TURBO	2.0 Turbo	Essence	170	Z 20 LEL	simplification (mentions retirées)	R10		16V	retire : 16V
+18064	OPEL	ASTRA H	ASTRA H	2.0 16V TURBO	2.0 Turbo	Essence	200	Z 20 LER	simplification (mentions retirées)	R10		16V	retire : 16V
+19116	OPEL	ASTRA H	ASTRA H	2.0 16V TURBO	2.0 Turbo	Essence	240	Z 20 LEH	simplification (mentions retirées)	R10		16V	retire : 16V
+22676	OPEL	ASTRA H	ASTRA H	1.6 16V TURBO	1.6 Turbo	Essence	180	A 16 LET,Z 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+18076	OPEL	ASTRA H Break	ASTRA H Break	2.0 16V TURBO	2.0 Turbo	Essence	170	Z 20 LEL	simplification (mentions retirées)	R10		16V	retire : 16V
+18077	OPEL	ASTRA H Break	ASTRA H Break	2.0 16V TURBO	2.0 Turbo	Essence	200	Z 20 LER	simplification (mentions retirées)	R10		16V	retire : 16V
+22678	OPEL	ASTRA H Break	ASTRA H Break	1.6 16V TURBO	1.6 Turbo	Essence	180	A 16 LET,Z 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+18294	OPEL	ASTRA H GTC	ASTRA H GTC	2.0 16V TURBO	2.0 Turbo	Essence	200	Z 20 LER	simplification (mentions retirées)	R10		16V	retire : 16V
+18298	OPEL	ASTRA H GTC	ASTRA H GTC	2.0 16V TURBO	2.0 Turbo	Essence	170	Z 20 LEL	simplification (mentions retirées)	R10		16V	retire : 16V
+19988	OPEL	ASTRA H GTC	ASTRA H GTC	2.0 16V TURBO	2.0 Turbo	Essence	240	Z 20 LEH	simplification (mentions retirées)	R10		16V	retire : 16V
+22679	OPEL	ASTRA H GTC	ASTRA H GTC	1.6 16V TURBO	1.6 Turbo	Essence	180	A 16 LET,Z 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+9160	OPEL	ASTRA J	ASTRA J	1.4 16V TURBO	1.4 Turbo	Essence	120	A 14 NEL,B 14 NEL	simplification (mentions retirées)	R10		16V	retire : 16V
+32088	OPEL	ASTRA J	ASTRA J	1.4 16V TURBO	1.4 Turbo	Essence	140	A 14 NET,B 14 NET	simplification (mentions retirées)	R10		16V	retire : 16V
+32089	OPEL	ASTRA J	ASTRA J	1.6 16V TURBO	1.6 Turbo	Essence	180	A 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+57392	OPEL	ASTRA J	ASTRA J	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	194	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+55380	OPEL	ASTRA J Berline	ASTRA J Berline	1.6 16V TURBO	1.6 Turbo	Essence	180	A 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+55382	OPEL	ASTRA J Berline	ASTRA J Berline	1.4 16V TURBO	1.4 Turbo	Essence	140	A 14 NET,B 14 NET	simplification (mentions retirées)	R10		16V	retire : 16V
+56774	OPEL	ASTRA J Berline	ASTRA J Berline	1.4 16V TURBO	1.4 Turbo	Essence	120	A 14 NEL,B 14 NEL	simplification (mentions retirées)	R10		16V	retire : 16V
+57391	OPEL	ASTRA J GTC	ASTRA J GTC	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	194	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+884	OPEL	ASTRA J Sports Break	ASTRA J Sports Break	1.4 16V TURBO	1.4 Turbo	Essence	120	A 14 NEL,B 14 NEL	simplification (mentions retirées)	R10		16V	retire : 16V
+908	OPEL	ASTRA J Sports Break	ASTRA J Sports Break	1.4 16V TURBO	1.4 Turbo	Essence	140	A 14 NET,B 14 NET	simplification (mentions retirées)	R10		16V	retire : 16V
+927	OPEL	ASTRA J Sports Break	ASTRA J Sports Break	1.6 16V TURBO	1.6 Turbo	Essence	180	A 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+57395	OPEL	ASTRA J Sports Break	ASTRA J Sports Break	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	194	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+75974	OPEL	ASTRA K	ASTRA K	1.4 16V TURBO	1.4 Turbo	Essence	125	B 14 XFL,D 14 XFL	simplification (mentions retirées)	R10		16V	retire : 16V
+75975	OPEL	ASTRA K	ASTRA K	1.4 16V TURBO	1.4 Turbo	Essence	150	B 14 XFT,D 14 XFT	simplification (mentions retirées)	R10		16V	retire : 16V
+75982	OPEL	ASTRA K	ASTRA K	1.6 16V TURBO	1.6 Turbo	Essence	200	B 16 SHT,D 16 SHT	simplification (mentions retirées)	R10		16V	retire : 16V
+75993	OPEL	ASTRA K Sports Break	ASTRA K Sports Break	1.4 16V TURBO	1.4 Turbo	Essence	125	B 14 XFL,D 14 XFL	simplification (mentions retirées)	R10		16V	retire : 16V
+75994	OPEL	ASTRA K Sports Break	ASTRA K Sports Break	1.4 16V TURBO	1.4 Turbo	Essence	150	B 14 XFT,D 14 XFT	simplification (mentions retirées)	R10		16V	retire : 16V
+76000	OPEL	ASTRA K Sports Break	ASTRA K Sports Break	1.6 16V TURBO	1.6 Turbo	Essence	200	B 16 SHT,D 16 SHT	simplification (mentions retirées)	R10		16V	retire : 16V
+16208	OPEL	COMBO II	COMBO II	1.7 DTI	1.7 DTi 16V	Diesel	75	Y 17 DT	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 13860,13861,14182
+17262	OPEL	COMBO TOUR I	COMBO TOUR I	1.7 DTI	1.7 DTi 16V	Diesel	75	Y 17 DT	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 13860,13861,14182
+1839	OPEL	CORSA B	CORSA B	1.2	1.2 i	Essence	45	C 12 NZ,X 12 SZ	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+1840	OPEL	CORSA B	CORSA B	1.4	1.4 i	Essence	60	C 14 NZ,X 14 SZ	suffixe ou précision justifiés	R11	I		I : attesté même marque, code moteur et puissance, types 54924
+3875	OPEL	CORSA B	CORSA B	1.4 16V	1.4 i 16V	Essence	90	X 14 XE	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+3876	OPEL	CORSA B	CORSA B	1.6 16V	1.6 i 16V	Essence	106	X 16 XE	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+7863	OPEL	CORSA B	CORSA B	1.0 12V	1.0 i 12V	Essence	54	X 10 XE	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+9012	OPEL	CORSA B	CORSA B	1.2 16V	1.2 i 16V	Essence	65	X 12 XE	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+16641	OPEL	CORSA B	CORSA B	1.6 16V	1.6 i 16V	Essence	100	C 16 SEL	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+18229	OPEL	CORSA C	CORSA C	1.2 16V Twinport	1.2 Twinport	Essence	80	Z 12 XEP	simplification (mentions retirées)	R10		16V	retire : 16V
+18467	OPEL	CORSA C	CORSA C	1.4 16V Twinport	1.4 Twinport	Essence	90	Z 14 XEP	simplification (mentions retirées)	R10		16V	retire : 16V
+10446	OPEL	CORSA D	CORSA D	1.6 16V TURBO	1.6 Turbo	Essence	211	A 16 LES	simplification (mentions retirées)	R10		16V	retire : 16V
+22675	OPEL	CORSA D	CORSA D	1.6 16V TURBO	1.6 Turbo	Essence	192	A 16 LER,B 16 LER,Z 16 LER	simplification (mentions retirées)	R10		16V	retire : 16V
+23497	OPEL	CORSA D	CORSA D	1.6 16V TURBO	1.6 Turbo	Essence	150	A 16 LEL,Z 16 LEL	simplification (mentions retirées)	R10		16V	retire : 16V
+76012	OPEL	CORSA E	CORSA E	1.4 16V TURBO	1.4 Turbo	Essence	101	B 14 NEJ,D 14 NEJ	simplification (mentions retirées)	R10		16V	retire : 16V
+76013	OPEL	CORSA E	CORSA E	1.4 16V TURBO	1.4 Turbo	Essence	150	B 14 NEH,D 14 NEH	simplification (mentions retirées)	R10		16V	retire : 16V
+76016	OPEL	CORSA E	CORSA E	1.6 16V TURBO	1.6 Turbo	Essence	207	B 16 LER,B 16 LES	simplification (mentions retirées)	R10		16V	retire : 16V
+13727	OPEL	INSIGNIA A	INSIGNIA A	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	195	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+13729	OPEL	INSIGNIA A	INSIGNIA A	2.0 CDTI  BI-TURBO 4x4	2.0 Biturbo CDTi 4x4	Diesel	195	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+28216	OPEL	INSIGNIA A	INSIGNIA A	2.0 16V TURBO	2.0 Turbo	Essence	220	A 20 NFT,A 20 NHT	simplification (mentions retirées)	R10		16V	retire : 16V
+29930	OPEL	INSIGNIA A	INSIGNIA A	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	190	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+31120	OPEL	INSIGNIA A	INSIGNIA A	1.6 16V TURBO	1.6 Turbo	Essence	180	A 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+31122	OPEL	INSIGNIA A	INSIGNIA A	2.0 CDTI  BI-TURBO 4x4	2.0 Biturbo CDTi 4x4	Diesel	190	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+13732	OPEL	INSIGNIA A Berline	INSIGNIA A Berline	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	195	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+13734	OPEL	INSIGNIA A Berline	INSIGNIA A Berline	2.0 CDTI  BI-TURBO 4x4	2.0 Biturbo CDTi 4x4	Diesel	195	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+28223	OPEL	INSIGNIA A Berline	INSIGNIA A Berline	2.0 16V TURBO	2.0 Turbo	Essence	220	A 20 NFT,A 20 NHT	simplification (mentions retirées)	R10		16V	retire : 16V
+29931	OPEL	INSIGNIA A Berline	INSIGNIA A Berline	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	190	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+30962	OPEL	INSIGNIA A Berline	INSIGNIA A Berline	1.6 16V TURBO	1.6 Turbo	Essence	180	A 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+31123	OPEL	INSIGNIA A Berline	INSIGNIA A Berline	2.0 CDTI  BI-TURBO 4x4	2.0 Biturbo CDTi 4x4	Diesel	190	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+13736	OPEL	INSIGNIA A Sport Break	INSIGNIA A Sport Brea	2.0 CDTI  BI-TURBO 4x4	2.0 Biturbo CDTi 4x4	Diesel	195	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+13737	OPEL	INSIGNIA A Sport Break	INSIGNIA A Sport Brea	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	195	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+29925	OPEL	INSIGNIA A Sport Break	INSIGNIA A Sport Brea	2.0 16V TURBO	2.0 Turbo	Essence	220	A 20 NFT,A 20 NHT	simplification (mentions retirées)	R10		16V	retire : 16V
+29932	OPEL	INSIGNIA A Sport Break	INSIGNIA A Sport Brea	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	190	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+30963	OPEL	INSIGNIA A Sport Break	INSIGNIA A Sport Brea	1.6 16V TURBO	1.6 Turbo	Essence	180	A 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+31124	OPEL	INSIGNIA A Sport Break	INSIGNIA A Sport Brea	2.0 CDTI  BI-TURBO 4x4	2.0 Biturbo CDTi 4x4	Diesel	190	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+19933	OPEL	MERIVA A	MERIVA A	1.6 16V TURBO	1.6 Turbo	Essence	180	Z 16 LET	simplification (mentions retirées)	R10		16V	retire : 16V
+55118	OPEL	MOKKA-MOKKA X	MOKKA	1.4 16V 4x4	1.4 4x4	Essence	140	A 14 NET,B 14 NET,D 14 NET	simplification (mentions retirées)	R10		16V	retire : 16V
+17208	OPEL	SIGNUM	SIGNUM	2.0 16V TURBO	2.0 Turbo	Essence	175	Z 20 NET	simplification (mentions retirées)	R10		16V	retire : 16V
+17651	OPEL	VECTRA C Break	VECTRA C Break	2.0 16V TURBO	2.0 Turbo	Essence	175	Z 20 NET	simplification (mentions retirées)	R10		16V	retire : 16V
+9712	OPEL	ZAFIRA A	ZAFIRA A	2.2 DTI	2.2 DTi 16V	Diesel	117	Y 22 DTR	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 16451,16746,54921
+15333	OPEL	ZAFIRA A	ZAFIRA A	2.0 DTI	2.0 DTi 16V	Diesel	101	Y 20 DTH	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 13742,13743,14181
+16579	OPEL	ZAFIRA A	ZAFIRA A	2.2 DTI	2.2 DTi 16V	Diesel	125	Y 22 DTR	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 16451,16746,54921
+57296	OPEL	ZAFIRA C	ZAFIRA C	2.0 CDTI  BI-TURBO	2.0 Biturbo CDTi	Diesel	194	A 20 DTR	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+57431	OPEL	ZAFIRA C	ZAFIRA C	1.6 16V	1.6 SiDi	Essence	170	A 16 XHT,B 16 SHL,D 16 SHL	suffixe ou précision justifiés	R11	SIDI	16V	SIDI : attesté même marque, code moteur et puissance, types 57432,57434,57435 ; retire : 16V
+5619	PEUGEOT	106 II	106 II	1.0	1.0 i	Essence	45	CDY (TU9M)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5621	PEUGEOT	106 II	106 II	1.4	1.4 i	Essence	75	K5A (TU32),KFW (TU3JP),KFX (TU3JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5622	PEUGEOT	106 II	106 II	1.6	1.6 i	Essence	89	NFZ (TU5JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5624	PEUGEOT	106 II	106 II	1.6	1.6 i	Essence	101	NFW (TU5J2),NFY (TU5J2)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8395	PEUGEOT	106 II	106 II	1.1	1.1 i	Essence	54	HDY (TU1M+)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+8396	PEUGEOT	106 II	106 II	1.0	1.0 i	Essence	50	CDZ (TU9M)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+76355	PEUGEOT	2008 I	2008	1.6 BlueHDI	1.6 HDi	Diesel	116	BHX (DV6FC)	suffixe ou précision justifiés	R11	HDI	BLUEHDI	HDI : attesté même marque, code moteur et puissance, types 59730,76387,76392 ; collision préexistante signalée : = nom brut de type 58876 « 1.6 HDI » 92 ch ≠ 116 ch ; retire : BLUEHDI
+9465	PEUGEOT	206	206	1.1	1.1 i	Essence	60	HFX (TU1JP),HFZ (TU1JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+9466	PEUGEOT	206	206	1.4	1.4 i	Essence	75	KFW (TU3A),KFW (TU3JP),KFX (TU3JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+9467	PEUGEOT	206	206	1.6	1.6 i	Essence	89	NFZ (TU5JP)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+33838	PEUGEOT	206+	206+	1.4	1.4 i	Essence	75	KFW (TU3A)	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+2476	PEUGEOT	306	306	1.9 TD	1.9 DT	Diesel	90	DHY (XUD9TE)	suffixe ou précision justifiés	R11	DT	TD	DT : synonyme de « TD » ; retire : TD
+76448	PEUGEOT	308 II	308 II	2.0 BlueHDI	2.0 HDi	Diesel	150	AHX (DW10FCD),AHX (DW10FD)	suffixe ou précision justifiés	R11	HDI	BLUEHDI	HDI : attesté même marque, code moteur et puissance, types 12772,12783,30824 ; retire : BLUEHDI
+76469	PEUGEOT	308 SW II	308 SW II	2.0 GT HDI-BlueHDI	2.0 GT BlueHDi	Diesel	181	AHW (DW10FC)	simplification (mentions retirées)	R10		HDI	retire : HDI
+5354	PEUGEOT	406	406	2.1 TD	2.1 TD 12V	Diesel	109	P8C (XUD11BTE)	suffixe ou précision justifiés	R11	12V		12V : attesté même marque, code moteur et puissance, types 10121
+7870	PEUGEOT	406 Break	406 Break	2.1 TD	2.1 TD 12V	Diesel	109	P8C (XUD11BTE)	suffixe ou précision justifiés	R11	12V		12V : attesté même marque, code moteur et puissance, types 10121
+5615	PEUGEOT	806	806	2.1 TD	2.1 TD 12V	Diesel	109	P8C (XUD11BTE)	suffixe ou précision justifiés	R11	12V		12V : attesté même marque, code moteur et puissance, types 10121
+76549	PEUGEOT	EXPERT II (VF3A-VF3X)	EXPERT II	1.6 HDI	1.6 HDi 8V	Diesel	90	9HH (DV6DUM),9HM (DV6UC)	suffixe ou précision justifiés	R11	8V		8V : attesté même marque, code moteur et puissance, types 76741
+76552	PEUGEOT	EXPERT II Tepee (VF3X)	EXPERT II Tepee	1.6 HDI	1.6 HDi 8V	Diesel	90	9HH (DV6DUM),9HM (DV6UC)	suffixe ou précision justifiés	R11	8V		8V : attesté même marque, code moteur et puissance, types 76741
+23812	PEUGEOT	J5 II Camionnette (290L)	J5 II	2.5 TD	2.5 DT	Diesel	95	CRD93L	suffixe ou précision justifiés	R11	DT	TD	DT : attesté même marque, code moteur et puissance, types 23811,27176,30054 ; retire : TD
+56877	PORSCHE	CAYENNE (92A)	CAYENNE (92A)	4.2 S D	4.2 D S	Diesel	382	MCU.DB	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+76946	PORSCHE	CAYENNE (92A)	CAYENNE (92A)	4.2 S D	4.2 D S	Diesel	385	MCU.DC	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+77280	RENAULT	MASTER II	MASTER II	2.8 dTi L1H1 4x4	2.8 dTi 4x4	Diesel	86	S8W 700	simplification (mentions retirées)	R10		L1H1	retire : L1H1
+77281	RENAULT	MASTER II	MASTER II	2.8 dTi MB L2H2 4x4	2.8 dTi 4x4	Diesel	114		simplification (mentions retirées)	R10		MB L2H2	retire : MB L2H2
+11493	RENAULT	MEGANE I	MEGANE I	2.0	2.0 i	Essence	109	F3R 750,F3R 751	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+11483	RENAULT	MEGANE I Coupé	MEGANE I Coupé	2.0	2.0 i	Essence	109	F3R 750,F3R 751,F3R 791,F3R 796,F3R 797,F3R 798	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+18081	RENAULT	MEGANE II	MEGANE II	2.0 Sport	2.0 Renault Sport	Essence	224	F4R 774,F4Rt 774	suffixe ou précision justifiés	R11	RENAULT		RENAULT : nom de la marque
+5653	RENAULT	MEGANE SCENIC	MEGANE SCENIC	1.4	1.4 i	Essence	75	E7J 764	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5654	RENAULT	MEGANE SCENIC	MEGANE SCENIC	1.6	1.6 i	Essence	75	K7M 720	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5656	RENAULT	MEGANE SCENIC	MEGANE SCENIC	2.0	2.0 i	Essence	114	F3R 750,F3R 751	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+5657	RENAULT	MEGANE SCENIC	MEGANE SCENIC	1.9 TD	1.9 dT	Diesel	90	F8Q 784,F8Q 786	suffixe ou précision justifiés	R11	DT	TD	DT : attesté même marque, code moteur et puissance, types 77321 ; retire : TD
+4805	RENAULT	SAFRANE I	SAFRANE I	2.5 TD	2.5 dT	Diesel	113	S8U 762,S8U 763	suffixe ou précision justifiés	R11	DT	TD	DT : synonyme de « TD » ; retire : TD
+27984	RENAULT	VEL SATIS	VEL SATIS	2.0 16V TURBO	2.0 Turbo	Essence	147	F4R 867	simplification (mentions retirées)	R10		16V	retire : 16V
+5674	SEAT	ALHAMBRA I	ALHAMBRA I	2.0	2.0 i	Essence	115	ADY,ATM	suffixe ou précision justifiés	R11	I		i : injection essence, type_fuel=Essence
+57592	SEAT	LEON III	LEON III	1.8 TSI	1.8 TFSi	Essence	180	CJSA	suffixe ou précision justifiés	R11	TFSI	TSI	TFSI : attesté même marque, code moteur et puissance, types 77866,77884 ; retire : TSI
+79408	SUZUKI	SWIFT V	SWIFT V	1.2 Hybrid (Mild Hybrid) AllGrip (A2L412)	1.2 Hybrid AllGrip	Essence-Électrique	83	K12D	simplification (mentions retirées)	R10		MILD A2L412	retire : MILD A2L412
+79191	SUZUKI	SX4 S-CROSSOVER	SX4 S-CROSSOVER	1.4 Hybrid (Mild Hybrid) AllGrip (AKK 414)	1.4 Hybrid AllGrip	Essence-Électrique	129	K14D	simplification (mentions retirées)	R10		MILD AKK 414	retire : MILD AKK 414
+78942	SUZUKI	VITARA (LY)	VITARA (LY)	1.4 Hybrid (Mild Hybrid) AllGrip	1.4 Hybrid AllGrip	Essence-Electrique	129	K14D	simplification (mentions retirées)	R10		MILD	retire : MILD
+79319	SUZUKI	VITARA III	VITARA III	1.4 Hybrid (Mild Hybrid) AllGrip (APK414)	1.4 Hybrid AllGrip	Essence-Électrique	129	K14D	simplification (mentions retirées)	R10		MILD APK414	retire : MILD APK414
+16027	TOYOTA	AVENSIS VERSO	AVENSIS VERSO	2.0 D	2.0 D-4D	Diesel	116	1CD-FTV	suffixe ou précision justifiés	R11	4D		4D : attesté même marque, code moteur et puissance, types 20843
+19297	TOYOTA	RAV 4 III	RAV 4 III	2.2 D 4WD	2.2 D-CAT 4WD	Diesel	177	2AD-FHV	suffixe ou précision justifiés	R11	CAT		CAT : attesté même marque, code moteur et puissance, types 19249,19250,19251
+11253	TOYOTA	YARIS III (P13)	YARIS III	1.4 D	1.4 D-4D	Diesel	90	1ND-TV	suffixe ou précision justifiés	R11	4D		4D : attesté même marque, code moteur et puissance, types 18735,59595
+11160	VOLKSWAGEN	CADDY III	CADDY III	2.0 TDI 4Motion 16V	2.0 TDI 16V 4Motion	Diesel	140	CFHC	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+19694	VOLKSWAGEN	CADDY III	CADDY III	1.4	1.4 16V	Essence	80	BUD	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 19465,19468,19697
+11158	VOLKSWAGEN	CADDY III Combi	CADDY III Break	2.0 TDI 4Motion 16V	2.0 TDI 16V 4Motion	Diesel	140	CFHC	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+19693	VOLKSWAGEN	CADDY III Combi	CADDY III Break	1.4	1.4 16V	Essence	80	BUD	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 19465,19468,19697
+18385	VOLKSWAGEN	GOLF V	GOLF V	2.0 TDI 4Motion 16V	2.0 TDI 16V 4Motion	Diesel	140	BKD	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+32585	VOLKSWAGEN	GOLF VI Break	GOLF VI Break	2.0 TDI	2.0 TDI 16V	Diesel	140	CBDB,CFHC,CJAA	suffixe ou précision justifiés	R11	16V		16V : attesté même marque, code moteur et puissance, types 11158,11160,18393
+19630	VOLKSWAGEN	PASSAT VI B6	PASSAT VI	2.0 TDI 4Motion 16V	2.0 TDI 16V 4Motion	Diesel	140	BKP,CBAB	réordonnancement	R10			mêmes jetons, ordre ou casse différents
+19632	VOLKSWAGEN	PASSAT VI B6 Break	PASSAT VI Break	2.0 TDI 4Motion 16V	2.0 TDI 16V 4Motion	Diesel	140	BKP,CBAB	réordonnancement	R10			mêmes jetons, ordre ou casse différents

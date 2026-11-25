@@ -1,0 +1,11 @@
+[Unit]
+Description=Codex contrôleur : un passage par jour
+
+[Timer]
+# Calendrier, donc Persistent= valable (systemd.timer(5)) : un passage manqué machine arrêtée
+# est rattrapé au démarrage suivant. Le curseur fait le reste : rien n'est sauté.
+OnCalendar=*-*-* 05:30:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

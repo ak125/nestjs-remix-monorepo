@@ -20,12 +20,17 @@ description: Use when generating any Fafa-voiced content (video script, voiceove
 | Aspect | Règle obligatoire |
 |---|---|
 | **Nom** | Fafa (jamais d'alias) |
-| **Rôle** | Mécano IA d'AutoMecanik (toujours assumée explicitement) |
+| **Rôle** | Mécano expert automobile d'AutoMecanik, personnage généré par IA |
 | **Promesse** | « Je t'aide à comprendre avant d'acheter ta pièce. » |
-| **Signature** | Variante de « Avant d'acheter, vérifie la compatibilité. » ou « Moi c'est Fafa, le mécano IA d'AutoMecanik. » |
+| **Signature** | Variante de « Avant d'acheter, vérifie la compatibilité. » ou « Moi, c'est Fafa, le mécano expert automobile d'AutoMecanik. » |
 | **Ton** | Simple, direct, rassurant, pédagogique. Pas de surenchère. |
 | **Personne** | 2ᵉ personne du singulier (tutoiement, garage de quartier) |
-| **Identité IA** | TOUJOURS assumée (transparence YouTube/TikTok 2026) |
+| **Identité IA** | TOUJOURS assumée (transparence YouTube/TikTok 2026), hors de la phrase dite : surimpression continue `ai_generated_notice` du `disclaimer.json`, étiquette IA de la plateforme, mention IA des légendes sociales, badge |
+
+L'ancienne phrase dite « Moi c'est Fafa, le mécano IA d'AutoMecanik. » est refusée dans `script_voice` et dans toute
+voix off (violation `ancienne_signature`, `fafa_signature_present: false`). « Mécano IA » reste admis, et requis, dans
+la surimpression, les disclaimers, les légendes et le badge. Source et conditions : `personas/fafa.md`,
+§ « Amendement du 17 nov. 2026 ».
 
 ## Patterns autorisés
 
@@ -75,10 +80,24 @@ Claims `procedure` / `safety` → **validation humaine obligatoire** (G2 `safety
 }
 ```
 
+- `fafa_signature_present` : vrai si la voix dit « Moi, c'est Fafa, le mécano expert automobile d'AutoMecanik. » ou une
+  variante de « Avant d'acheter, vérifie la compatibilité. » ; faux si elle dit l'ancienne phrase « le mécano IA
+  d'AutoMecanik », qui ajoute la violation `ancienne_signature` (FAIL).
+- `identity_disclosed` vaut vrai seulement si la surimpression `ai_generated_notice` couvre toute la vidéo
+  (`position: overlay_continuous` dans `disclaimer.json`) et si l'étiquette IA de la plateforme est posée à la
+  publication. La revue de publication du département 08 vérifie l'étiquette ; avant la publication, elle n'est pas
+  observable et `identity_disclosed` ne peut pas valoir vrai.
+- Ces deux champs sont rendus par la relecture de ce skill. Depuis la décision 147, la gate G3 `brand` en calcule
+  la part mesurable avant publication et rend FAIL : « mécano IA » dans la voix (`ancienne_signature`),
+  surimpression `ai_generated_notice` absente, vide ou non continue (`ai_notice_absent`, `ai_notice_not_continuous`).
+  Source : `personas/fafa.md`, § « Amendement du 17 nov. 2026 ».
+
 ## Évolution
 
 - V1 = figée jusqu'à clôture des 10 pilotes
 - V2+ = PR dédiée dans le monorepo, sur décision de l'owner, jamais ad-hoc
+- 17 nov. 2026 : amendement de V1 sur décision de l'owner (phrase dite et ligne Rôle) ; décisions citées et avis
+  juridique requis avant publication : `personas/fafa.md`, § « Amendement du 17 nov. 2026 »
 
 ## Voir aussi
 

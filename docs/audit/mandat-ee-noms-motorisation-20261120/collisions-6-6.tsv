@@ -1,0 +1,206 @@
+type_id	modele	type_name	meta_actuel	valeur_corrigee	r8_meme_nom_avant	r8_meme_nom_apres	r2_meme_titre_avant	r2_meme_titre_apres	verdict_6_6	motif
+68	C-MAX II	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V	69	69			retenue	
+69	C-MAX II	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V	68	68			retenue	
+74	GRAND C-MAX	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V	75	75			retenue	
+75	GRAND C-MAX	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V	74	74			retenue	
+5260	DOBLO Cargo I	1.3 JTD Multijet 16V	1.3 JTD 16V	1.3 JTD Multijet 16V	18206				retenue	
+5530	6 II Break	2.2 MZR-CD	2.2 MRZ CD	2.2 MZR-CD					retenue	
+5544	CLASSE E Break (S210)	250 D	250 TD	250 D	8389				retenue	
+6915	S-MAX I	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V					retenue	
+6921	S-MAX I	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V	59495	59495			retenue	
+6932	GALAXY III	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V					retenue	
+6939	MONDEO IV	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V					retenue	
+6951	MONDEO IV	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V					retenue	
+7015	MONDEO IV Break	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V					retenue	
+7019	MONDEO IV Break	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V					retenue	
+7761	YARIS II	1.3 VVTi	1.3 VTi	1.3 VVTi					retenue	
+7969	FOCUS III Berline	1.6 EcoBoost 16V	1.6 Econetic 16V	1.6 EcoBoost 16V	7970	7970			retenue	
+7970	FOCUS III Berline	1.6 EcoBoost 16V	1.6 Econetic 16V	1.6 EcoBoost 16V	7969	7969			retenue	
+8019	FOCUS III	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V	8022	8022			retenue	
+8022	FOCUS III	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V	8019	8019			retenue	
+8151	FOCUS III Break	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V	8165	8165			retenue	
+8165	FOCUS III Break	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V	8151	8151			retenue	
+8241	205 II	1.8 TD	1.7 TD	1.8 TD					retenue	
+9030	LANOS	1.3	1.4	1.3					retenue	
+9129	DUCATO V (250)	3.0 D Multijet	3.0 JTD	3.0 D Multijet	10209,19976,59928	10209,19976,59928			retenue	
+9257	YARIS II	1.33 VVTi	1.33 VTi	1.33 VVTi	30845	30845			retenue	
+9619	GRANDE PUNTO	1.4 T-Jet 16V	1.4 16V	1.4 T-Jet 16V	9316,19817				retenue	
+10201	DUCATO V (250)	2.0 D Multijet	2.0 JTD	2.0 D Multijet					retenue	
+10205	DUCATO V (250)	2.3 D Multijet Extralongo	2.3 JTD Extralongo	2.3 D Multijet Extralongo					retenue	
+10206	DUCATO V (250)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	15957,19975,66325,66326,66327,66328,66329	15957,19975,66325,66326,66327,66328,66329	66325	66325	retenue	
+10209	DUCATO V (250)	3.0 D Multijet	3.0 JTD	3.0 D Multijet	9129,19976,59928	9129,19976,59928			retenue	
+10362	ESPACE III	1.9 dTi	1.9 TDi	1.9 dTi					retenue	
+11364	A4 I B5	1.9 TDI	1.9 DI	1.9 TDI					écartée	R8 : type 11364 « 1.9 tdi » deviendrait identique à 4618,5125,11300 (tour 1)
+11365	A4 I B5 Break	1.9 TDI	1.9 DI	1.9 TDI					écartée	R8 : type 11365 « 1.9 tdi » deviendrait identique à 5310,5311,11301 (tour 1)
+11832	Série 5 (F10-F18)	520 i	523 i	520 i	14030,33006,61825	4736,61824			retenue	
+11838	Série 5 (F10-F18)	530 d	535 d	530 d	11854,33764	33012,61827			retenue	
+11853	Série 5 (F10-F18)	530 d xDrive	535 d xDrive	530 d xDrive	11855	11855			écartée	R8 : type 61828 « 530 d xdrive » deviendrait identique à 11853 (tour 1)
+11857	Série 5 Touring (F11)	520 i	523 i	520 i	33770	33770			écartée	R8 : type 61861 « 520 i » deviendrait identique à 11857 (tour 1)
+12028	DUCATO V Fourgon (250-290)	2.3 D Multijet 4x4	2.3 JTD 4x4	2.3 D Multijet 4x4	65981,65982	65981,65982			retenue	
+12470	Série 3 (F30-F35)	328 i	320i	328 i					retenue	
+12472	Série 3 (F30-F35)	320 d	328 d	320 d					écartée	R8 : type 12472 « 320 d » deviendrait identique à 12473,61540,61541 (tour 1)
+12605	RANGER III	2.2 TDCI 4x4	2.2 TDi	2.2 TDCI 4x4					écartée	R8 : type 12605 « 2.2 tdci 4x4 » deviendrait identique à 12574,66818,66819 (tour 1)
+13620	PUNTO II	1.9 D	1.9 DS	1.9 D					retenue	
+14826	SPRINTER 3-t (B903)	311 CDI	313 CDI	311 CDI	14827				retenue	
+15490	MONDEO III	2.0 DI-TDDI-TDCI	2.0 16V TDi TDCi	2.0 DI-TDDI-TDCI	15492				retenue	
+15491	MONDEO III Break	2.0 DI- TDDI-TDCI	2.0 16V TDi TDCi	2.0 DI- TDDI-TDCI	15493				retenue	
+15492	MONDEO III	2.0 TDDI-TDCI	2.0 16V TDi TDCi	2.0 TDDI-TDCI	15490				retenue	
+15493	MONDEO III Break	2.0 TDDI-TDCI	2.0 16V TDi TDCi	2.0 TDDI-TDCI	15491				retenue	
+15957	DUCATO V (250)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	10206,19975,66325,66326,66327,66328,66329	10206,19975,66325,66326,66327,66328,66329	66326	66326	retenue	
+19254	YARIS II	1.0 VVTi	1.0 VTi	1.0 VVTi					retenue	
+19974	DUCATO V (250)	2.2 D Multijet	2.2 JTD	2.2 D Multijet	66324	66324			retenue	
+19975	DUCATO V (250)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	10206,15957,66325,66326,66327,66328,66329	10206,15957,66325,66326,66327,66328,66329			retenue	
+19976	DUCATO V (250)	3.0 D Multijet	3.0 JTD	3.0 D Multijet	9129,10209,59928	9129,10209,59928	59928	59928	retenue	
+21691	X5 (F15)	30 d xDrive	xDrive 35 d	30 d xDrive					écartée	R8 : type 21691 « 30 d xdrive » deviendrait identique à 61944 (tour 1)
+22475	YARIS II	1.8 VVTi (Phase 2)	1.8 VTi	1.8 VVTi (Phase 2)					retenue	
+23358	PHEDRA	2.0 D Multijet	2.0 JTD	2.0 D Multijet	16806,17797,19526,33593	33593			retenue	
+24472	TT II	2.0 TTS Quattro	2.0 TFSI Quattro	2.0 TTS Quattro	6496,31072				retenue	
+26765	CLASSE CLA Coupé (C117)	250 4-Matic	260	250 4-Matic					retenue	
+28249	MITO	1.4 TJet	1.4 TB	1.4 TJet	5838,32741,32742,60052				retenue	
+29566	FOCUS III	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	29567,66723	29567,66723			retenue	
+29567	FOCUS III	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	29566,66723	29566,66723			retenue	
+29807	MONDEO V Berline	2.0 EcoBoost 4x4 16V	2.0 Econetic 4x4 16V	2.0 EcoBoost 4x4 16V					retenue	
+30438	FOCUS III Break	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	30487,66743	30487,66743			retenue	
+30487	FOCUS III Break	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	30438,66743	30438,66743			retenue	
+30845	YARIS II	1.33 VVTi	1.33 VTi	1.33 VVTi	9257	9257			retenue	
+31094	FOCUS III Berline	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	31095,67133	31095,67133			retenue	
+31095	FOCUS III Berline	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	31094,67133	31094,67133			retenue	
+31115	AURIS I	1.33 Dual VVTi	1.33 Dual-VTi	1.33 Dual VVTi					retenue	
+32741	MITO	1.4 TURBO MultiAir	1.4 TB	1.4 TURBO MultiAir	5838,28249,32742,60052				retenue	
+33010	Série 5 (F10-F18)	520 d	523 d	520 d					écartée	R8 : type 33010 « 520 d » deviendrait identique à 61812,61813,61814,61815,61816,61817 (tour 1)
+33063	CLASSE GL (X164)	320 CDI 4-Matic	320 CDI 350 BlueTEC 4Matic	320 CDI 4-Matic					retenue	
+33251	A3 II	1.2 TFSI	1.2 TSI	1.2 TFSI					retenue	
+33252	A3 II Sportback	1.2 TFSI	1.2 TSI	1.2 TFSI					retenue	
+33593	PHEDRA	2.0 D Multijet	2.0 JTD	2.0 D Multijet	16806,17797,19526,23358	23358			retenue	
+33773	Série 5 Touring (F11)	520 d	523 d	520 d					écartée	R8 : type 33773 « 520 d » deviendrait identique à 61849,61850,61851,61852,61853,61854 (tour 1)
+33778	X3 (F25)	20 d xDrive	xDrive 28 d	20 d xDrive	61908				retenue	
+38703	ECOSPORT	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	66655,66656	66655,66656			écartée	R8 : type 66657 « 1.0 ecoboost » deviendrait identique à 38703,66655,66656 (tour 1)
+47547	TOURNEO CONNECT II	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V					retenue	
+53336	TOURNEO CONNECT II	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost					retenue	
+53394	TRANSIT CONNECT II	1.6 EcoBoost 16V	1.6 Econetic 16V	1.6 EcoBoost 16V					retenue	
+53399	TRANSIT CONNECT II	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost					retenue	
+55105	B-MAX	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	55106,59492,66618	55106,59492,66618			retenue	
+55106	B-MAX	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	55105,59492,66618	55105,59492,66618			retenue	
+55354	Série 7 (F01-F02-F03-F04)	730 d xDrive	740 Ld	730 d xDrive					écartée	R8 : type 55354 « 730 d xdrive » deviendrait identique à 61890 (tour 1)
+55786	i30 II	1.6	1.6 GDi	1.6	16283,68623	16283,68623			écartée	R8 : type 9441 « 1.6 » deviendrait identique à 55786 (tour 1)
+55928	CHEROKEE IV	2.8 CRD 4x4	2.8 CRDi 4WD	2.8 CRD 4x4					retenue	
+56172	COUNTRYMAN (R60)	John Cooper Works ALL4	1.6 Cooper S JCW	John Cooper Works ALL4					écartée	R8 : type 56172 « john cooper works all4 » deviendrait identique à 74078 (tour 1)
+56757	C-MAX II	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	56760	56760			écartée	R2 : type 56757 « c-max ii 1.0 ecoboost 100 ch » deviendrait identique à 66626 (tour 1)
+56758	GRAND C-MAX	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	56761	56761			écartée	R2 : type 56758 « grand c-max 1.0 ecoboost 100 ch » deviendrait identique à 66757 (tour 1)
+56760	C-MAX II	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	56757	56757			écartée	R2 : type 56760 « c-max ii 1.0 ecoboost 125 ch » deviendrait identique à 66627 (tour 1)
+56761	GRAND C-MAX	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	56758	56758			écartée	R2 : type 56761 « grand c-max 1.0 ecoboost 125 ch » deviendrait identique à 66758 (tour 1)
+57293	Série 3 (F30-F35)	320 d xDrive	328 d xDrive	320 d xDrive					écartée	R8 : type 57293 « 320 d xdrive » deviendrait identique à 53235,61542,61543 (tour 1)
+57446	DUCATO V Fourgon (250-290)	3.0 D Multijet	3.0 JTD	3.0 D Multijet					retenue	
+58546	KUGA II	1.6 EcoBoost 16V	1.6 Econetic	1.6 EcoBoost 16V					retenue	
+58547	KUGA II	1.6 EcoBoost 4x4 16V	1.6 Econetic 4x4	1.6 EcoBoost 4x4 16V					écartée	R8 : type 58547 « 1.6 ecoboost 4x4 16v » deviendrait identique à 66781 (tour 1)
+58967	FIESTA VI	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	58968	58968			retenue	
+58968	FIESTA VI	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	58967	58967			retenue	
+59406	Série 3 Touring (F31)	320 d xDrive	328 d xDrive	320 d xDrive					écartée	R8 : type 59406 « 320 d xdrive » deviendrait identique à 61670,61671,61672 (tour 1)
+59492	B-MAX	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	55105,55106,66618	55105,55106,66618			retenue	
+59494	GALAXY III	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V					retenue	
+59495	S-MAX I	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V	6921	6921			retenue	
+59928	DUCATO V (250)	3.0 D Multijet	3.0 JTD	3.0 D Multijet	9129,10209,19976	9129,10209,19976	19976	19976	retenue	
+60342	A3 III Sportback	2.0 45 TFSI	2.0 TFSI	2.0 45 TFSI	60343				retenue	
+61907	X3 (F25)	20 i sDrive	sDrive 18 i	20 i sDrive					retenue	
+62033	Série 7 (G11-G12)	730 d Ld xDrive	730 d xDrive	730 d Ld xDrive	62035				retenue	
+65057	BERLINGO II - BERLINGO MULTISPACE (B9)	1.6 HDi-BlueHDi	1.6 BlueHDi	1.6 HDi-BlueHDi	65053,65054				retenue	
+65090	C3 II	1.2 THP	1.2 VTi	1.2 THP	58664				retenue	
+65167	DS3	1.2 THP	1.2 VTi	1.2 THP	58578				retenue	
+65168	DS3	1.6 BlueHDi	1.6 HDi	1.6 BlueHDi	32036,32037,58582,65171	65169,65170			retenue	
+65173	DS3 Décapotable	1.2 THP	1.2 VTi	1.2 THP	58583				retenue	
+65963	DOBLO Cargo II	1.6 D Multijet	1.6 JTD	1.6 D Multijet					retenue	
+65967	DOBLO II	1.6 D Multijet	1.6 JTD	1.6 D Multijet					retenue	
+65972	DUCATO V Fourgon (250-290)	2.2 D Multijet	2.2 JTD	2.2 D Multijet	65973,65974,65975	65973,65974,65975			retenue	
+65973	DUCATO V Fourgon (250-290)	2.2 D Multijet	2.2 JTD	2.2 D Multijet	65972,65974,65975	65972,65974,65975			retenue	
+65974	DUCATO V Fourgon (250-290)	2.2 D Multijet	2.2 JTD	2.2 D Multijet	65972,65973,65975	65972,65973,65975			retenue	
+65975	DUCATO V Fourgon (250-290)	2.2 D Multijet	2.2 JTD	2.2 D Multijet	65972,65973,65974	65972,65973,65974			retenue	
+65978	DUCATO V Fourgon (250-290)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	65979,65980	65979,65980			retenue	
+65979	DUCATO V Fourgon (250-290)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	65978,65980	65978,65980			retenue	
+65980	DUCATO V Fourgon (250-290)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	65978,65979	65978,65979			retenue	
+65981	DUCATO V Fourgon (250-290)	2.3 D Multijet 4x4	2.3 JTD 4x4	2.3 D Multijet 4x4	12028,65982	12028,65982			retenue	
+65982	DUCATO V Fourgon (250-290)	2.3 D Multijet 4x4	2.3 JTD 4x4	2.3 D Multijet 4x4	12028,65981	12028,65981			retenue	
+65983	DUCATO V Fourgon (250-290)	3.0 D Multijet 4x4	3.0 JTD 4x4	3.0 D Multijet 4x4					retenue	
+66132	500	1.3 D Multijet	1.3 JTD	1.3 D Multijet					retenue	
+66212	500X	2.0 D Multijet 4x4	2.0 JTD 4x4	2.0 D Multijet 4x4					écartée	R8 : type 66212 « 2.0 d multijet 4x4 » deviendrait identique à 66213 (tour 1)
+66324	DUCATO V (250)	2.2 D Multijet	2.2 JTD	2.2 D Multijet	19974	19974			retenue	
+66325	DUCATO V (250)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	10206,15957,19975,66326,66327,66328,66329	10206,15957,19975,66326,66327,66328,66329	10206	10206	retenue	
+66326	DUCATO V (250)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	10206,15957,19975,66325,66327,66328,66329	10206,15957,19975,66325,66327,66328,66329	15957	15957	retenue	
+66327	DUCATO V (250)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	10206,15957,19975,66325,66326,66328,66329	10206,15957,19975,66325,66326,66328,66329			retenue	
+66328	DUCATO V (250)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	10206,15957,19975,66325,66326,66327,66329	10206,15957,19975,66325,66326,66327,66329			retenue	
+66329	DUCATO V (250)	2.3 D Multijet	2.3 JTD	2.3 D Multijet	10206,15957,19975,66325,66326,66327,66328	10206,15957,19975,66325,66326,66327,66328			retenue	
+66330	DUCATO V (250)	2.3 D Multijet 4x4	2.3 JTD 4x4	2.3 D Multijet 4x4	66331	66331			retenue	
+66331	DUCATO V (250)	2.3 D Multijet 4x4	2.3 JTD 4x4	2.3 D Multijet 4x4	66330	66330			retenue	
+66332	DUCATO V (250)	3.0 D Multijet 4x4	3.0 JTD 4x4	3.0 D Multijet 4x4					retenue	
+66618	B-MAX	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	55105,55106,59492	55105,55106,59492			retenue	
+66628	C-MAX II	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66629	66629			retenue	
+66629	C-MAX II	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66628	66628			retenue	
+66655	ECOSPORT	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	38703,66656	38703,66656			écartée	R8 : type 66657 « 1.0 ecoboost » deviendrait identique à 38703,66655,66656 (tour 1)
+66656	ECOSPORT	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	38703,66655	38703,66655			écartée	R8 : type 66657 « 1.0 ecoboost » deviendrait identique à 38703,66655,66656 (tour 1)
+66723	FOCUS III	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	29566,29567	29566,29567			retenue	
+66725	FOCUS III	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66726	66726			retenue	
+66726	FOCUS III	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66725	66725			retenue	
+66743	FOCUS III Break	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	30438,30487	30438,30487			retenue	
+66744	FOCUS III Break	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66745	66745			retenue	
+66745	FOCUS III Break	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66744	66744			retenue	
+66759	GRAND C-MAX	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66760	66760			retenue	
+66760	GRAND C-MAX	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66759	66759			retenue	
+66769	KUGA II	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66770	66770			retenue	
+66770	KUGA II	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V	66769	66769			retenue	
+66771	KUGA II	1.5 EcoBoost 16V	1.5 Econetic 16V	1.5 EcoBoost 16V					écartée	R8 : type 66771 « 1.5 ecoboost 16v » deviendrait identique à 66769,66770 (tour 1)
+66774	KUGA II	1.5 EcoBoost 4x4 16V	1.5 Econetic 4x4	1.5 EcoBoost 4x4 16V					retenue	
+66781	KUGA II	1.6 EcoBoost 4x4 16V	1.6 Econetic 4x4 16V	1.6 EcoBoost 4x4 16V					écartée	R8 : type 66781 « 1.6 ecoboost 4x4 16v » deviendrait identique à 58547 (tour 1)
+66788	KUGA II	2.0 EcoBoost 4x4 16V	2.0 Econetic 4x4 16V	2.0 EcoBoost 4x4 16V					retenue	
+66841	TOURNEO COURIER Combi	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost					retenue	
+66884	TRANSIT COURIER	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost					retenue	
+66889	TRANSIT COURIER Combi	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost					retenue	
+66951	FIESTA VI Berline	1.0 Titanium Plus EcoBoost	1.0 Econetic	1.0 Titanium Plus EcoBoost					retenue	
+66959	GALAXY IV	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V					retenue	
+66967	GALAXY IV	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V					retenue	
+67007	MONDEO V Berline	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost					retenue	
+67011	MONDEO V Berline	1.5 EcoBoost 16V	1.5 Econetic 16V	1.5 EcoBoost 16V					retenue	
+67019	MONDEO V Berline	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V					retenue	
+67040	MONDEO V	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost					retenue	
+67041	MONDEO V	1.5 EcoBoost 16V	1.5 Econetic 16V	1.5 EcoBoost 16V	67042	67042			retenue	
+67042	MONDEO V	1.5 EcoBoost 16V	1.5 Econetic 16V	1.5 EcoBoost 16V	67041	67041			retenue	
+67049	MONDEO V	2.0 EcoBoost 16V	2.0 Econetic 16V	2.0 EcoBoost 16V	67050	67050			retenue	
+67050	MONDEO V	2.0 EcoBoost 16V	2.0 Econetic 16V	2.0 EcoBoost 16V	67049	67049			retenue	
+67056	MONDEO V Break	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost					retenue	
+67057	MONDEO V Break	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V					écartée	R8 : type 67057 « 1.5 ecoboost 16v » deviendrait identique à 67058 (tour 1)
+67058	MONDEO V Break	1.5 EcoBoost 16V	1.5 Econetic 16V	1.5 EcoBoost 16V					écartée	R8 : type 67058 « 1.5 ecoboost 16v » deviendrait identique à 67057 (tour 1)
+67065	MONDEO V Break	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V	67066	67066			retenue	
+67066	MONDEO V Break	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V	67065	67065			retenue	
+67074	S-MAX II	1.5 EcoBoost 16V	1.5 Econetic	1.5 EcoBoost 16V					retenue	
+67082	S-MAX II	2.0 EcoBoost 16V	2.0 Econetic	2.0 EcoBoost 16V					retenue	
+67112	FIESTA VII	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67113,67114,67115	67114,67115,67116,67117			retenue	
+67113	FIESTA VII	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67112,67114,67115				écartée	R2 : type 67113 « fiesta vii 1.0 ecoboost 125 ch » deviendrait identique à 67117 (tour 1)
+67114	FIESTA VII	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67112,67113,67115	67112,67115,67116,67117			retenue	
+67115	FIESTA VII	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67112,67113,67114	67112,67114,67116,67117			retenue	
+67128	FIESTA VII	1.5 ST EcoBoost	1.5 ST Econetic	1.5 ST EcoBoost					retenue	
+67133	FOCUS III Berline	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	31094,31095	31094,31095			retenue	
+67135	FOCUS III Berline	1.5 EcoBoost 16V	1.5 Econetic 16V	1.5 EcoBoost 16V	67136	67136			retenue	
+67136	FOCUS III Berline	1.5 EcoBoost 16V	1.5 Econetic 16V	1.5 EcoBoost 16V	67135	67135			retenue	
+67148	FOCUS IV	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67149,67150	67149,67150			retenue	
+67149	FOCUS IV	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67148,67150	67148,67150			retenue	
+67150	FOCUS IV	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67148,67149	67148,67149			retenue	
+67156	FOCUS IV	1.5 EcoBoost	1.5 Econetic	1.5 EcoBoost	67157	67157			retenue	
+67157	FOCUS IV	1.5 EcoBoost	1.5 Econetic	1.5 EcoBoost	67156	67156			retenue	
+67169	FOCUS IV Break	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67170,67171	67170,67171			retenue	
+67170	FOCUS IV Break	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67169,67171	67169,67171			retenue	
+67171	FOCUS IV Break	1.0 EcoBoost	1.0 Econetic	1.0 EcoBoost	67169,67170	67169,67170			retenue	
+67176	FOCUS IV Break	1.5 EcoBoost	1.5 Econetic	1.5 EcoBoost	67177	67177			retenue	
+67177	FOCUS IV Break	1.5 EcoBoost	1.5 Econetic	1.5 EcoBoost	67176	67176			retenue	
+67190	MONDEO IV Berline	1.6 EcoBoost 16V	1.6 Econetic 16V	1.6 EcoBoost 16V					retenue	
+67193	MONDEO IV Berline	2.0 EcoBoost 16V	2.0 Econetic 16V	2.0 EcoBoost 16V					retenue	
+68897	TUCSON II	1.7 CRDI	1.7 CDi FWD	1.7 CRDI					écartée	R8 : type 68896 « 1.7 crdi » deviendrait identique à 68897 (tour 1)
+70010	WRANGLER IV	2.2 Multijet II	2.2  II	2.2 Multijet II					retenue	
+73442	CLASSE C Coupé (C205)	200 D	220 d	200 D	73447	73443			retenue	
+73446	CLASSE C Coupé (C205)	220 D	200 D	220 D	73443	73447			retenue	
+73531	CALSSE GLC (X253)	220 D 4-Matic	200 D 4Matic	220 D 4-Matic	73532	73532			écartée	R8 : type 73533 « 220 d 4-matic » deviendrait identique à 73531,73532 (tour 1)
+73532	CALSSE GLC (X253)	220 D 4-Matic	200 D 4Matic	220 D 4-Matic	73531	73531			écartée	R8 : type 73533 « 220 d 4-matic » deviendrait identique à 73531,73532 (tour 1)
+73534	CALSSE GLC (X253)	250 4-Matic	300	250 4-Matic					retenue	
+73557	CLASSE GLE (W166)	250 D 4-Matic	300 D	250 D 4-Matic					retenue	
+74115	CLUBMAN (F54)	Cooper S ALL4	Cooper SX ALL4	Cooper S ALL4					écartée	R8 : type 74115 « cooper s all4 » deviendrait identique à 74116,74117 (tour 1)
+76570	PARTNER II	1.6 HDI-BlueHDI	1.6 BlueHDi	1.6 HDI-BlueHDI	76564,76565				retenue	
+76577	PARTNER II Tepee	1.6 HDI- BlueHDI	1.6 BlueHDi	1.6 HDI- BlueHDI	76572,76573				retenue	
+78179	OCTAVIA III	2.0 TDI RS 4x4	2.0 TDI 4x4	2.0 TDI RS 4x4	78178				retenue	
+78195	OCTAVIA III Combi	2.0 TDI RS 4x4	2.0 TDI 4x4	2.0 TDI RS 4x4	59490				retenue	

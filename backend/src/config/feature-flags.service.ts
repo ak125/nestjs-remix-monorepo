@@ -121,6 +121,23 @@ export class FeatureFlagsService {
     return this.bool('R8_OWNED_EDITORIAL_ENABLED', false);
   }
 
+  // ── R4 noindex (liste fermée de 62 fiches, mandat EW) ──
+
+  /**
+   * Gates `noindex, follow` on a closed list of 62 reference pages
+   * (`modules/seo/services/r4-noindex.config.ts`, mandat EW). When ON:
+   *   - each listed, published /reference-auto/{slug} is still served 200 with
+   *     the same content and its own canonical, but `robots: noindex, follow`
+   *     (field `robots` of GET /api/seo/reference/:slug, read by the meta);
+   *   - sitemap-reference.xml drops the listed URLs (next generation).
+   * No redirect, no robots.txt change, internal links unchanged. The other
+   * reference pages and the hub /reference-auto are unchanged.
+   * Default: false (inert — zero change). Rollback: turn the flag off.
+   */
+  get seoR4NoindexEnabled(): boolean {
+    return this.bool('SEO_R4_NOINDEX_ENABLED', false);
+  }
+
   // ── R6 Consolidation (guide d'achat → R3 conseils, décision owner 2026-06-10) ──
 
   /**
@@ -140,6 +157,23 @@ export class FeatureFlagsService {
    */
   get seoR6ConsolidationEnabled(): boolean {
     return this.bool('SEO_R6_CONSOLIDATION_ENABLED', false);
+  }
+
+  /**
+   * Gates the R4→R3 consolidation of a closed list of 43 reference pages
+   * (`modules/seo/services/r4-consolidation.config.ts`, mandat ER). When ON:
+   *   - each listed /reference-auto/{slug} answers 301 (one hop) to the R3
+   *     conseils page of its gamme — self-gated per page: published, gamme
+   *     alias present, R3 page served (same gate as the R3 route and the R6
+   *     redirect). A page failing the gate is served as today;
+   *   - sitemap-reference.xml drops the redirected URLs (next generation);
+   *   - every served internal link to a redirected page targets its R3 page
+   *     directly, and disappears on that R3 page itself.
+   * The other reference pages and the hub /reference-auto are unchanged.
+   * Default: false (inert — zero change). Rollback: turn the flag off.
+   */
+  get seoR4ConsolidationEnabled(): boolean {
+    return this.bool('SEO_R4_CONSOLIDATION_ENABLED', false);
   }
 
   // ── SEO Projection forward-writer (ADR-059 P2-B) — allowlists role-scoped ──

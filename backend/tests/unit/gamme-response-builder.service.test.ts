@@ -1,5 +1,11 @@
 import { GammeResponseBuilderService } from '../../src/modules/gamme-rest/services/gamme-response-builder.service';
 import { BuyingGuideDataService } from '../../src/modules/gamme-rest/services/buying-guide-data.service';
+import { R4_CONSOLIDATION_OFF } from '../../src/modules/seo/services/r4-consolidation-policy.service';
+
+/** Drapeau R4 éteint (mandat ER) : aucun lien ne change. */
+const r4ConsolidationOff = {
+  getSnapshot: jest.fn(async () => R4_CONSOLIDATION_OFF),
+} as any;
 
 // Résolveur des liens conseils du texte R1 : passe-plat ici, couvert par
 // internal-linking.service.conseils-links.test.ts.
@@ -192,6 +198,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainFlags,
       guideLinkPolicy,
       internalLinking,
+      r4ConsolidationOff,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -262,6 +269,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainFlags,
       guideLinkPolicy,
       internalLinking,
+      r4ConsolidationOff,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -332,6 +340,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       chainFlags,
       guideLinkPolicy,
       internalLinking,
+      r4ConsolidationOff,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -390,6 +399,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
         { mode: jest.fn(() => 'off') } as any,
         guideLinkPolicy,
         internalLinking,
+        r4ConsolidationOff,
       );
     };
 
@@ -412,6 +422,89 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
 
       expect(result.guideAchat?.link).toBe(conseilsPath);
       expect(result.hero.buyingGuideHref).toBeNull();
+    });
+  });
+
+  // Consolidation R4 → R3 (mandat ER) : une garde R4 en panne pose le même
+  // marqueur que les liens de gamme non vérifiés — réponse à ne pas cacher.
+  describe('garde R4 en panne : réponse marquée gamme_links_degraded', () => {
+    const r4Degraded = {
+      getSnapshot: jest.fn(async () => ({
+        enabled: true,
+        redirects: new Map<string, string>(),
+        degraded: true,
+      })),
+    } as any;
+    const r4Verified = {
+      getSnapshot: jest.fn(async () => ({
+        enabled: true,
+        redirects: new Map<string, string>(),
+        degraded: false,
+      })),
+    } as any;
+
+    const build = (
+      r4: unknown,
+      opts: { content?: string; reference?: Record<string, unknown> | null },
+    ) =>
+      new GammeResponseBuilderService(
+        makeTransformerMock(),
+        makeRpcServiceMock(),
+        {
+          getBuyingGuideContractV1: jest.fn(async () => null),
+          toBuyingGuideV1: jest.fn(),
+          passesBuyingGuideAntiWikiGate: jest.fn(() => ({ ok: false, reasons: [] })),
+          buildAutoBuyingGuideV1: jest.fn(() => makeAutoGuide()),
+        } as any,
+        { getByPgId: jest.fn().mockResolvedValue(opts.reference ?? null) } as any,
+        {
+          resolve: jest.fn(() => ({
+            title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1',
+            content: opts.content ?? '',
+          })),
+        } as any,
+        { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any,
+        { run: jest.fn() } as any,
+        { mode: jest.fn(() => 'off') } as any,
+        {
+          getSnapshot: jest.fn(async () => ({
+            consolidationEnabled: false,
+            publishedGuideAliases: new Set<string>(),
+            conseilsAliases: new Set<string>(),
+          })),
+        } as any,
+        {
+          resolveConseilsLinks: jest.fn(async (html: string) => html),
+          resolveGammeAliasLinks: jest.fn(async (html: string) => html),
+        } as any,
+        r4 as any,
+      );
+
+    const CONTENT = '<p>Voir <a href="/reference-auto/disque-de-frein">la définition</a>.</p>';
+    const REFERENCE = {
+      slug: 'disque-de-frein',
+      title: 'Disque de frein',
+      definition: 'Pièce du freinage.',
+      roleMecanique: null,
+      canonicalUrl: null,
+    };
+
+    it('texte R1 avec garde en panne → 1', async () => {
+      const result = await build(r4Degraded, { content: CONTENT }).buildRpcV2Response('479');
+      expect(result.performance.gamme_links_degraded).toBe(1);
+    });
+
+    it('carte référence avec garde en panne → 1', async () => {
+      const result = await build(r4Degraded, { reference: REFERENCE }).buildRpcV2Response('479');
+      expect(result.performance.gamme_links_degraded).toBe(1);
+    });
+
+    it('garde vérifiée (aucune redirection) → 0', async () => {
+      const result = await build(r4Verified, {
+        content: CONTENT,
+        reference: REFERENCE,
+      }).buildRpcV2Response('479');
+      expect(result.performance.gamme_links_degraded).toBe(0);
     });
   });
 
@@ -462,6 +555,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
         })),
       } as any,
       internalLinking,
+      r4ConsolidationOff,
     );
 
     await service.buildRpcV2Response('7');
@@ -518,6 +612,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
           })),
         } as any,
         internalLinking,
+        r4ConsolidationOff,
       ).buildRpcV2Response('479');
 
     const withContract = (faqSource: 'db' | 'mixed' | 'fallback') =>

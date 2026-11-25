@@ -1,0 +1,463 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "1440x900",
+ "variante": "avant",
+ "methode": "sauts",
+ "correctif": null,
+ "debut": "2026-11-20T21:29:29.527Z",
+ "fin": "2026-11-20T21:29:38.900Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {},
+ "cls": {
+  "total": {
+   "somme": 0.0273,
+   "officiel": 0.0226,
+   "n": 3,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0.0273,
+   "officiel": 0.0226,
+   "n": 3,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0.0226,
+   "officiel": 0.0226,
+   "n": 1,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0.0047,
+   "officiel": 0.0046,
+   "n": 2,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0.0226,
+    "officiel": 0.0226,
+    "n": 1,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0.0047,
+    "officiel": 0.0046,
+    "n": 2,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 427.5,
+   "v": 0.02259,
+   "input": false,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "interactive",
+   "feuilles": 3,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.min-h-screen.bg-neutral-50 > section.relative.overflow-hidden",
+     "texte": "Diagnostic gratuit GRATUIT 2 min Notre diagnostic identifie ",
+     "trace": [
+      "section.relative.overflow-hidden.py-section-sm.bg-slate-50",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      0,
+      684,
+      1440,
+      216
+     ],
+     "apres": [
+      0,
+      611,
+      1440,
+      250
+     ]
+    },
+    {
+     "sel": "main.grow.flex > div.grow > div.min-h-screen.bg-neutral-50 > nav.bg-white.border-b",
+     "texte": "Bien choisir Prix & Marques Emplacement Compatibilité FAQ Vo",
+     "trace": [
+      "nav.bg-white.border-b.border-slate-100.py-3",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      622,
+      1440,
+      62
+     ],
+     "apres": [
+      0,
+      549,
+      1440,
+      62
+     ]
+    },
+    {
+     "sel": "main.grow.flex > div.grow > div.min-h-screen.bg-neutral-50 > div.py-4.px-4",
+     "texte": "Compatibilité vérifiée Livraison 24-48h Retours 30 jours Pai",
+     "trace": [
+      "div.py-4.px-4.sm:px-6.bg-slate-50.border-b.border-slate-100",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      573,
+      1440,
+      49
+     ],
+     "apres": [
+      0,
+      500,
+      1440,
+      49
+     ]
+    },
+    {
+     "sel": "section#bien-choisir",
+     "texte": "Bien choisir votre filtre à huile Types de filtre à huile Co",
+     "trace": [
+      "section#bien-choisir.py-10.px-4.sm:px-6.bg-white.cv-auto",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      0,
+      860,
+      1440,
+      40
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  },
+  {
+   "t": 5480.4,
+   "v": 0.00013,
+   "input": false,
+   "phase": "sauts",
+   "y": 1396,
+   "yRappel": 1394,
+   "etat": "complete",
+   "feuilles": 3,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      179,
+      16,
+      657,
+      40
+     ],
+     "apres": [
+      174,
+      16,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      616,
+      6,
+      240,
+      80
+     ],
+     "apres": [
+      611,
+      6,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      860,
+      12,
+      221,
+      48
+     ],
+     "apres": [
+      855,
+      12,
+      226,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 6586.8,
+   "v": 0.00455,
+   "input": false,
+   "phase": "sauts",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "complete",
+   "feuilles": 3,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > main.grow.flex",
+     "texte": "Aller au contenu principal Accueil Pièces Auto Filtre à huil",
+     "trace": [
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      103,
+      1440,
+      797
+     ],
+     "apres": [
+      0,
+      106,
+      1440,
+      794
+     ]
+    },
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > div.bg-gradient-to-b.from-navy",
+     "texte": "Livraison gratuite dès 150€ · Retours 30j · 01 48 47 96 27",
+     "trace": [
+      "div.bg-gradient-to-b.from-navy.to-navy-light.border-b.border-white/[0.06]",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      70,
+      1440,
+      33
+     ],
+     "apres": [
+      0,
+      73,
+      1440,
+      33
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      175,
+      15,
+      657,
+      40
+     ],
+     "apres": [
+      181,
+      17,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      612,
+      5,
+      240,
+      80
+     ],
+     "apres": [
+      618,
+      7,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      856,
+      11,
+      225,
+      48
+     ],
+     "apres": [
+      862,
+      13,
+      219,
+      48
+     ]
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 5198.7,
+   "y": 0
+  },
+  {
+   "p": "fin",
+   "t": 7648.9,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   5317.8,
+   700
+  ],
+  [
+   5339.3,
+   702
+  ],
+  [
+   5373.2,
+   701
+  ],
+  [
+   5413.5,
+   700
+  ],
+  [
+   5435.1,
+   1398
+  ],
+  [
+   5454.7,
+   1396
+  ],
+  [
+   5480.5,
+   1395
+  ],
+  [
+   5502,
+   1393
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 427,
+  "load": 682
+ },
+ "fonts": [
+  {
+   "t": 495.6,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 19,
+ "scrollHeight": 8789,
+ "erreurObs": null,
+ "requetesAbandonnees": 3,
+ "nonGet": 3
+}

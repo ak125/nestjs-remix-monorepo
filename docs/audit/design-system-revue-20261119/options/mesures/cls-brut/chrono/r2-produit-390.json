@@ -1,0 +1,548 @@
+{
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "statut": 200,
+ "date": "2026-11-20T21:48:40.244Z",
+ "nav": {
+  "dcl": 633,
+  "load": 752
+ },
+ "shifts": [
+  [
+   516,
+   0.02043,
+   true
+  ],
+  [
+   568,
+   0.03979,
+   true
+  ]
+ ],
+ "points": [
+  {
+   "t": 323,
+   "etat": "loading",
+   "feuilles": 1,
+   "liens": 2,
+   "styles": 0,
+   "hauteur": 844,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": null,
+   "carte3": null,
+   "nCartes": 0,
+   "main": null
+  },
+  {
+   "t": 478,
+   "etat": "loading",
+   "feuilles": 4,
+   "liens": 3,
+   "styles": 1,
+   "hauteur": 7466,
+   "polices": "loading",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    -2401,
+    360
+   ],
+   "carte3": [
+    -2025,
+    360
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6551
+   ]
+  },
+  {
+   "t": 522,
+   "etat": "loading",
+   "feuilles": 4,
+   "liens": 3,
+   "styles": 1,
+   "hauteur": 7447,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    -1807,
+    360
+   ],
+   "carte3": [
+    -1431,
+    360
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6533
+   ]
+  },
+  {
+   "t": 529,
+   "etat": "loading",
+   "feuilles": 4,
+   "liens": 3,
+   "styles": 1,
+   "hauteur": 7447,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    -1550,
+    360
+   ],
+   "carte3": [
+    -1174,
+    360
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6533
+   ]
+  },
+  {
+   "t": 583,
+   "etat": "loading",
+   "feuilles": 4,
+   "liens": 3,
+   "styles": 1,
+   "hauteur": 7411,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    -686,
+    342
+   ],
+   "carte3": [
+    -328,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6496
+   ]
+  },
+  {
+   "t": 619,
+   "etat": "loading",
+   "feuilles": 4,
+   "liens": 3,
+   "styles": 1,
+   "hauteur": 7411,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    -197,
+    342
+   ],
+   "carte3": [
+    161,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6496
+   ]
+  },
+  {
+   "t": 629,
+   "etat": "loading",
+   "feuilles": 4,
+   "liens": 3,
+   "styles": 1,
+   "hauteur": 7411,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    14,
+    342
+   ],
+   "carte3": [
+    371,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6496
+   ]
+  },
+  {
+   "t": 655,
+   "etat": "interactive",
+   "feuilles": 4,
+   "liens": 3,
+   "styles": 1,
+   "hauteur": 7411,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    201,
+    342
+   ],
+   "carte3": [
+    559,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6496
+   ]
+  },
+  {
+   "t": 679,
+   "etat": "interactive",
+   "feuilles": 4,
+   "liens": 3,
+   "styles": 1,
+   "hauteur": 7411,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    517,
+    342
+   ],
+   "carte3": [
+    874,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6496
+   ]
+  },
+  {
+   "t": 704,
+   "etat": "interactive",
+   "feuilles": 4,
+   "liens": 3,
+   "styles": 1,
+   "hauteur": 7411,
+   "polices": "loaded",
+   "hydrate": false,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    649,
+    342
+   ],
+   "carte3": [
+    1006,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6496
+   ]
+  },
+  {
+   "t": 756,
+   "etat": "complete",
+   "feuilles": 5,
+   "liens": 3,
+   "styles": 2,
+   "hauteur": 7411,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    958,
+    342
+   ],
+   "carte3": [
+    1316,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    6496
+   ]
+  },
+  {
+   "t": 779,
+   "etat": "complete",
+   "feuilles": 5,
+   "liens": 3,
+   "styles": 2,
+   "hauteur": 8111,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    1106,
+    342
+   ],
+   "carte3": [
+    1463,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    7196
+   ]
+  },
+  {
+   "t": 804,
+   "etat": "complete",
+   "feuilles": 5,
+   "liens": 3,
+   "styles": 2,
+   "hauteur": 8111,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    1165,
+    342
+   ],
+   "carte3": [
+    1523,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    7196
+   ]
+  },
+  {
+   "t": 829,
+   "etat": "complete",
+   "feuilles": 5,
+   "liens": 3,
+   "styles": 2,
+   "hauteur": 8111,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    1259,
+    342
+   ],
+   "carte3": [
+    1617,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    7196
+   ]
+  },
+  {
+   "t": 914,
+   "etat": "complete",
+   "feuilles": 5,
+   "liens": 3,
+   "styles": 2,
+   "hauteur": 8111,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    1377,
+    342
+   ],
+   "carte3": [
+    1734,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    7196
+   ]
+  },
+  {
+   "t": 938,
+   "etat": "complete",
+   "feuilles": 5,
+   "liens": 3,
+   "styles": 2,
+   "hauteur": 8111,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    1384,
+    342
+   ],
+   "carte3": [
+    1741,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    7196
+   ]
+  },
+  {
+   "t": 960,
+   "etat": "complete",
+   "feuilles": 5,
+   "liens": 3,
+   "styles": 2,
+   "hauteur": 8111,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    1386,
+    342
+   ],
+   "carte3": [
+    1744,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    7196
+   ]
+  },
+  {
+   "t": 1146,
+   "etat": "complete",
+   "feuilles": 4,
+   "liens": 2,
+   "styles": 2,
+   "hauteur": 7356,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    1386,
+    342
+   ],
+   "carte3": [
+    1744,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    7196
+   ]
+  },
+  {
+   "t": 1195,
+   "etat": "complete",
+   "feuilles": 4,
+   "liens": 2,
+   "styles": 2,
+   "hauteur": 8111,
+   "polices": "loaded",
+   "hydrate": true,
+   "image": null,
+   "imageCharge": null,
+   "carte1": [
+    1386,
+    342
+   ],
+   "carte3": [
+    1744,
+    342
+   ],
+   "nCartes": 20,
+   "main": [
+    160,
+    7196
+   ]
+  }
+ ],
+ "fin": {
+  "images": [
+   {
+    "src": "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipem",
+    "attrL": null,
+    "attrH": null,
+    "naturel": [
+     100,
+     80
+    ],
+    "rendu": [
+     48,
+     48
+    ]
+   },
+   {
+    "src": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/30/F0264",
+    "attrL": "400",
+    "attrH": "400",
+    "naturel": [
+     200,
+     133
+    ],
+    "rendu": [
+     163,
+     163
+    ]
+   },
+   {
+    "src": "https://www.automecanik.com/imgproxy/rs:fit:200/q:90/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/equipem",
+    "attrL": null,
+    "attrH": null,
+    "naturel": [
+     100,
+     80
+    ],
+    "rendu": [
+     48,
+     48
+    ]
+   },
+   {
+    "src": "https://www.automecanik.com/imgproxy/rs:fit:200/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/30/04511",
+    "attrL": "400",
+    "attrH": "400",
+    "naturel": [
+     200,
+     200
+    ],
+    "rendu": [
+     163,
+     163
+    ]
+   }
+  ],
+  "hauteur": 8111
+ },
+ "nonGet": 6
+}

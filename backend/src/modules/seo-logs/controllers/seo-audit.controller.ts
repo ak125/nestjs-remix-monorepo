@@ -2,14 +2,38 @@ import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { SeoAuditSchedulerService } from '../services/seo-audit-scheduler.service';
 import { getErrorMessage } from '@common/utils/error.utils';
+import { StrictZodQueryValidationPipe } from '@common/pipes/strict-zod-query-validation.pipe';
+import {
+  SEO_AUDIT_LIST_MAX_LIMIT,
+  SEO_AUDIT_TREND_PERIODS_DAYS,
+  SeoAuditListQuerySchema,
+  SeoAuditTrendsQuerySchema,
+  type SeoAuditListQueryDto,
+  type SeoAuditTrendsQueryDto,
+} from '../dto/seo-logs-query.schema';
 
-const execAsync = promisify(exec);
+// Paramètres de requête validés avant l'entrée dans la route : toute valeur
+// hors contrat reçoit un 400. Voir `../dto/seo-logs-query.schema.ts`.
+const auditListQueryPipe = new StrictZodQueryValidationPipe(
+  SeoAuditListQuerySchema,
+);
+const auditTrendsQueryPipe = new StrictZodQueryValidationPipe(
+  SeoAuditTrendsQuerySchema,
+);
+
+// Répertoire où le script d'audit écrit un sous-répertoire par exécution.
+const AUDIT_OUTPUT_ROOT = '/tmp';
+const AUDIT_DIR_PREFIX = 'seo-audit-';
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+interface AuditDir {
+  path: string;
+  mtimeMs: number;
+}
 
 interface AuditReport {
   audit_date: string;
@@ -40,14 +64,48 @@ interface AuditReport {
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 @Controller('seo-logs/audit')
 export class SeoAuditController {
-  private readonly scriptsPath = path.join(
-    process.cwd(),
-    '..',
-    'scripts',
-    'seo-audit-weekly.sh',
-  );
-
   constructor(private readonly schedulerService: SeoAuditSchedulerService) {}
+
+  /**
+   * Répertoires d'audit présents au premier niveau du répertoire de sortie,
+   * avec leur date de modification. Lecture par l'API fichiers.
+   */
+  private async listAuditDirs(): Promise<AuditDir[]> {
+    const entries = await fs.readdir(AUDIT_OUTPUT_ROOT, {
+      withFileTypes: true,
+    });
+    const dirs = await Promise.all(
+      entries
+        .filter(
+          (entry) =>
+            entry.isDirectory() && entry.name.startsWith(AUDIT_DIR_PREFIX),
+        )
+        .map(async (entry): Promise<AuditDir | null> => {
+          const dirPath = path.join(AUDIT_OUTPUT_ROOT, entry.name);
+          try {
+            const { mtimeMs } = await fs.stat(dirPath);
+            return { path: dirPath, mtimeMs };
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (_e) {
+            // Répertoire supprimé entre la liste et la lecture de sa date
+            return null;
+          }
+        }),
+    );
+    return dirs.filter((dir): dir is AuditDir => dir !== null);
+  }
+
+  /** Répertoires d'audit, du plus récent au plus ancien. */
+  private async listAuditDirsNewestFirst(): Promise<string[]> {
+    const dirs = await this.listAuditDirs();
+    return dirs
+      .sort(
+        (a, b) =>
+          b.mtimeMs - a.mtimeMs ||
+          (a.path < b.path ? -1 : a.path > b.path ? 1 : 0),
+      )
+      .map((dir) => dir.path);
+  }
 
   /**
    * 🚀 Déclencher un audit SEO complet (via BullMQ)
@@ -113,9 +171,13 @@ export class SeoAuditController {
     name: 'limit',
     required: false,
     type: Number,
+    minimum: 1,
+    maximum: SEO_AUDIT_LIST_MAX_LIMIT,
     example: 10,
   })
-  async getRecentJobs(@Query('limit') limit: number = 10) {
+  async getRecentJobs(
+    @Query(auditListQueryPipe) { limit }: SeoAuditListQueryDto,
+  ) {
     const jobs = await this.schedulerService.getRecentJobs(limit);
 
     return {
@@ -141,9 +203,7 @@ export class SeoAuditController {
     try {
       // Le script hérite de l'environnement du processus et porte lui-même
       // ses valeurs par défaut (SITEMAP_URL, LOKI_URL, MEILISEARCH_*).
-      const { stdout, stderr } = await execAsync(this.scriptsPath, {
-        maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-      });
+      const { stdout, stderr } = await this.schedulerService.runAuditScript();
 
       // Extraire le chemin du rapport depuis stdout
       const outputDirMatch = stdout.match(/output_dir":\s*"([^"]+)"/);
@@ -195,12 +255,7 @@ export class SeoAuditController {
   async getLatestReport() {
     try {
       // Trouver le répertoire d'audit le plus récent
-      const tmpDir = '/tmp';
-      const { stdout } = await execAsync(
-        `ls -td ${tmpDir}/seo-audit-* 2>/dev/null | head -1`,
-      );
-
-      const latestDir = stdout.trim();
+      const [latestDir] = await this.listAuditDirsNewestFirst();
 
       if (!latestDir) {
         return {
@@ -299,16 +354,15 @@ export class SeoAuditController {
     name: 'limit',
     required: false,
     type: Number,
+    minimum: 1,
+    maximum: SEO_AUDIT_LIST_MAX_LIMIT,
     example: 10,
   })
-  async getAuditHistory(@Query('limit') limit: number = 10) {
+  async getAuditHistory(
+    @Query(auditListQueryPipe) { limit }: SeoAuditListQueryDto,
+  ) {
     try {
-      const tmpDir = '/tmp';
-      const { stdout } = await execAsync(
-        `ls -td ${tmpDir}/seo-audit-* 2>/dev/null | head -${limit}`,
-      );
-
-      const auditDirs = stdout.trim().split('\n').filter(Boolean);
+      const auditDirs = (await this.listAuditDirsNewestFirst()).slice(0, limit);
 
       if (auditDirs.length === 0) {
         return {
@@ -365,17 +419,20 @@ export class SeoAuditController {
   @ApiQuery({
     name: 'period',
     required: false,
-    type: Number,
+    enum: [...SEO_AUDIT_TREND_PERIODS_DAYS],
     example: 30,
-    description: 'Période en jours',
+    description: 'Période en jours (liste fermée ; autre valeur : 400)',
   })
-  async getTrends(@Query('period') period: number = 30) {
+  async getTrends(
+    @Query(auditTrendsQueryPipe) { period }: SeoAuditTrendsQueryDto,
+  ) {
     try {
-      const { stdout } = await execAsync(
-        `find /tmp -name 'seo-audit-*' -type d -mtime -${period} | sort`,
-      );
-
-      const auditDirs = stdout.trim().split('\n').filter(Boolean);
+      // Audits modifiés dans la période, dans l'ordre de leur nom (daté)
+      const since = Date.now() - period * DAY_MS;
+      const auditDirs = (await this.listAuditDirs())
+        .filter((dir) => dir.mtimeMs > since)
+        .map((dir) => dir.path)
+        .sort();
 
       if (auditDirs.length < 2) {
         return {

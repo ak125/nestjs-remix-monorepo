@@ -2,7 +2,7 @@
 module: orders
 sources:
 - backend/src/modules/orders
-last_scan: '2026-11-19'
+last_scan: '2026-11-18'
 primary_files:
 - backend/src/modules/orders/config/supplier-order-preparation.config.ts
 - backend/src/modules/orders/controllers/order-actions.controller.ts

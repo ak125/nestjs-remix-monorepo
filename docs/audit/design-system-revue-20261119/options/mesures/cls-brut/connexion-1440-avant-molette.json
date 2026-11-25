@@ -1,0 +1,124 @@
+{
+ "id": "connexion",
+ "route": "/login",
+ "viewport": "1440x900",
+ "variante": "avant",
+ "methode": "molette",
+ "correctif": null,
+ "debut": "2026-11-20T21:45:22.090Z",
+ "fin": "2026-11-20T21:45:32.157Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {
+  "pasDescente": 16,
+  "pasRemontee": 16
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-descente": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-remontee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "molette-descente",
+   "t": 4834.7,
+   "y": 0
+  },
+  {
+   "p": "molette-remontee",
+   "t": 7345.6,
+   "y": 82
+  },
+  {
+   "p": "fin",
+   "t": 8360.3,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   4856.5,
+   82
+  ],
+  [
+   7373.4,
+   0
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 173,
+  "load": 320
+ },
+ "fonts": [
+  {
+   "t": 176.1,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 2,
+ "scrollHeight": 982,
+ "erreurObs": null,
+ "requetesAbandonnees": 3,
+ "nonGet": 3
+}

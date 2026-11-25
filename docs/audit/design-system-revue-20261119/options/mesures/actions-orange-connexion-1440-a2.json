@@ -1,0 +1,92 @@
+{
+ "id": "connexion",
+ "route": "/login",
+ "viewport": "1440x900",
+ "variante": "a2",
+ "debut": "2026-11-20T10:38:08.340Z",
+ "critere": "bouton ou lien visible, fond calculé orange (teinte 15°–45°, saturation ≥ 0,45, luminosité 0,3–0,9), non recouvert en son centre",
+ "ecrans": [
+  {
+   "ecran": 0,
+   "scrollY": 0,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Se connecter #F97316"
+   ]
+  },
+  {
+   "ecran": 1,
+   "scrollY": 82,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Se connecter #F97316"
+   ]
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "a2",
+   "at": "2026-11-20T10:38:13.556Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "fin",
+   "presente": true,
+   "variante": "a2",
+   "regles": 67
+  }
+ ],
+ "toutePage": {
+  "nombre": 1,
+  "actions": [
+   {
+    "texte": "Se connecter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     569,
+     668,
+     302,
+     56
+    ]
+   }
+  ]
+ },
+ "premierEcran": {
+  "ecran": 0,
+  "scrollY": 0,
+  "entieres": 1,
+  "partielles": 0,
+  "textes": [
+   "Se connecter #F97316"
+  ]
+ },
+ "ecransAPlusieurs": 0,
+ "maxParEcran": 1,
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T10:38:17.226Z"
+}

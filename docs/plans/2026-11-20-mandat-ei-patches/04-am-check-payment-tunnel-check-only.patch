@@ -1,0 +1,63 @@
+diff --git a/scripts/monitoring/check-payment-tunnel.sh b/scripts/monitoring/check-payment-tunnel.sh
+index b525126aa7..ea040c3c28 100755
+--- a/scripts/monitoring/check-payment-tunnel.sh
++++ b/scripts/monitoring/check-payment-tunnel.sh
+@@ -39,6 +39,12 @@
+ #   0 = OK (tunnel sain ou signal insuffisant)
+ #   1 = erreur technique (API down, creds manquants, parsing)
+ #   2 = alerte envoyée (dedup actif)
++#   3 = CHECK_ONLY=1 : une règle s'est déclenchée (aucun mail, aucun cache dedup)
++#
++# CHECK_ONLY=1 (lecture seule, utilisé par .github/scripts/morning-health-digest.sh) :
++# mêmes lectures et mêmes règles, sans variable Gmail requise, sans dedup ni envoi.
++# Imprime sur stdout une ligne agrégée, sans identifiant de commande :
++#   CHECK_ONLY_RESULT rule=<none|CREATION|SUSTAINED|BURST> silence_days=<n> ...
+ 
+ set -euo pipefail
+ 
+@@ -48,12 +54,32 @@ log() { echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) [${SCRIPT_NAME}] $*" >&2; }
+ # --- Validation env --------------------------------------------------------
+ : "${SUPABASE_URL:?SUPABASE_URL manquant}"
+ : "${SUPABASE_SERVICE_ROLE_KEY:?SUPABASE_SERVICE_ROLE_KEY manquant}"
++CHECK_ONLY="${CHECK_ONLY:-0}"
++if [ "$CHECK_ONLY" != "1" ]; then
+ : "${GMAIL_CLIENT_ID:?GMAIL_CLIENT_ID manquant}"
+ : "${GMAIL_CLIENT_SECRET:?GMAIL_CLIENT_SECRET manquant}"
+ : "${GMAIL_REFRESH_TOKEN:?GMAIL_REFRESH_TOKEN manquant}"
+ : "${GMAIL_USER_EMAIL:?GMAIL_USER_EMAIL manquant (ex: contact@automecanik.com)}"
+ : "${ALERT_EMAIL_TO:?ALERT_EMAIL_TO manquant (ex: admin@automecanik.com)}"
+ : "${EMAIL_FROM:?EMAIL_FROM manquant (ex: Automecanik <alerts@automecanik.com>)}"
++fi
++
++# CHECK_ONLY : une ligne d'état agrégée en sortie, seulement si la lecture a abouti
++# (code 0 = aucune règle, 3 = règle déclenchée). Jamais d'identifiant de commande.
++check_only_report() {
++  local rc=$? rule=none
++  [ "$CHECK_ONLY" = "1" ] || return 0
++  case "$rc" in 0|3) ;; *) return 0 ;; esac
++  case "${ALERT_SUBJECT:-}" in
++    *"ORDER CREATION"*) rule=CREATION ;;
++    *"No payment"*) rule=SUSTAINED ;;
++    *"Payment tunnel"*) rule=BURST ;;
++  esac
++  printf 'CHECK_ONLY_RESULT rule=%s silence_days=%s unpaid_since_last=%s orders_window=%s paid_window=%s window_hours=%s oc_completed=%s oc_failed=%s\n' \
++    "$rule" "${silence_days:--1}" "${unpaid_since_last:--1}" "${orders_count:--1}" "${paid_count:--1}" \
++    "${WINDOW_HOURS:-?}" "${oc_completed:--1}" "${oc_failed:--1}"
++}
++trap check_only_report EXIT
+ 
+ WINDOW_HOURS="${WINDOW_HOURS:-2}"
+ MIN_ORDERS_THRESHOLD="${MIN_ORDERS_THRESHOLD:-2}"
+@@ -361,6 +387,12 @@ if [ -z "$ALERT_SUBJECT" ]; then
+   exit 0
+ fi
+ 
++# CHECK_ONLY : la règle a parlé ; ni dedup ni envoi.
++if [ "$CHECK_ONLY" = "1" ]; then
++  log "CHECK_ONLY: règle déclenchée, aucun envoi"
++  exit 3
++fi
++
+ # --- Anti-spam (keyed on CONTENT, not on elapsed time alone) ---------------
+ # A time-only cooldown shorter than the observation window re-alerts on the very
+ # same rows once it expires — that is why 2026-09-07 produced two identical

@@ -8,11 +8,16 @@ import {
   DefaultValuePipe,
 } from '@nestjs/common';
 import { GuideService, GuideFilters } from '../services/guide.service';
+import type { BlogArticle } from '../interfaces/blog.interfaces';
 import {
   ConstructeurService,
   ConstructeurFilters,
 } from '../services/constructeur.service';
 import { GlossaryService, GlossaryFilters } from '../services/glossary.service';
+import {
+  applyReferenceLinkRuleToHtml,
+  R4ConsolidationPolicyService,
+} from '../../seo';
 import {
   OperationFailedException,
   DomainNotFoundException,
@@ -33,6 +38,7 @@ export class ContentController {
     private readonly guideService: GuideService,
     private readonly constructeurService: ConstructeurService,
     private readonly glossaryService: GlossaryService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
   ) {}
 
   // =====================================
@@ -106,7 +112,7 @@ export class ContentController {
 
       return {
         success: true,
-        data: guide,
+        data: await this.applyReferenceLinkRule(guide),
       };
     } catch (error) {
       if (error instanceof DomainNotFoundException) {
@@ -602,5 +608,40 @@ export class ContentController {
         message: 'Erreur lors de la récupération',
       });
     }
+  }
+  /**
+   * Liens vers les pages R4 redirigées (mandat ER) : vers leur page conseils.
+   * Appliqué après le cache du guide. Drapeau éteint : guide rendu tel quel.
+   */
+  private async applyReferenceLinkRule(
+    guide: BlogArticle,
+  ): Promise<BlogArticle> {
+    const snapshot = await this.r4Consolidation.getSnapshot();
+    if (!snapshot.enabled) return guide;
+    const currentPath = `/blog-pieces-auto/guide/${guide.slug}`;
+    const content = applyReferenceLinkRuleToHtml(
+      guide.content ?? '',
+      snapshot,
+      currentPath,
+    );
+    let changed = content.changed;
+    const sections = guide.sections?.map((section) => {
+      const r = applyReferenceLinkRuleToHtml(
+        section.content ?? '',
+        snapshot,
+        currentPath,
+      );
+      changed += r.changed;
+      return r.changed === 0 ? section : { ...section, content: r.html };
+    });
+    if (changed === 0) return guide;
+    this.logger.log(
+      `[R4-LINKS] guide=${guide.slug} contenu=${changed} lien(s) modifié(s)`,
+    );
+    return {
+      ...guide,
+      ...(content.changed > 0 ? { content: content.html } : {}),
+      sections,
+    };
   }
 }

@@ -1,0 +1,987 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "1440x900",
+ "variante": "a3",
+ "methode": "parcours",
+ "correctif": null,
+ "debut": "2026-11-20T21:28:58.519Z",
+ "fin": "2026-11-20T21:29:29.117Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:29:04.366Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {
+  "centrage": 90
+ },
+ "cls": {
+  "total": {
+   "somme": 0.907,
+   "officiel": 0.8802,
+   "n": 6,
+   "nSaisie": 2
+  },
+  "horsInjection": {
+   "somme": 0.907,
+   "officiel": 0.8802,
+   "n": 6,
+   "nSaisie": 2
+  },
+  "chargement": {
+   "somme": 0.0226,
+   "officiel": 0.0226,
+   "n": 1,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0.8844,
+   "officiel": 0.8802,
+   "n": 5,
+   "nSaisie": 2
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0.0226,
+    "officiel": 0.0226,
+    "n": 1,
+    "nSaisie": 0
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "tabulation": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 2
+   },
+   "sauts": {
+    "somme": 0.0041,
+    "officiel": 0.0039,
+    "n": 2,
+    "nSaisie": 0
+   },
+   "centrage": {
+    "somme": 0.0001,
+    "officiel": 0.0001,
+    "n": 1,
+    "nSaisie": 0
+   },
+   "cv-forcee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "cv-retiree": {
+    "somme": 0.8757,
+    "officiel": 0.8757,
+    "n": 1,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0.0045,
+    "officiel": 0.0045,
+    "n": 1,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 436.7,
+   "v": 0.02259,
+   "input": false,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "interactive",
+   "feuilles": 3,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "main.grow.flex > div.grow > div.min-h-screen.bg-neutral-50 > section.relative.overflow-hidden",
+     "texte": "Diagnostic gratuit GRATUIT 2 min Notre diagnostic identifie ",
+     "trace": [
+      "section.relative.overflow-hidden.py-section-sm.bg-slate-50",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      0,
+      684,
+      1440,
+      216
+     ],
+     "apres": [
+      0,
+      611,
+      1440,
+      250
+     ]
+    },
+    {
+     "sel": "main.grow.flex > div.grow > div.min-h-screen.bg-neutral-50 > nav.bg-white.border-b",
+     "texte": "Bien choisir Prix & Marques Emplacement Compatibilité FAQ Vo",
+     "trace": [
+      "nav.bg-white.border-b.border-slate-100.py-3",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      622,
+      1440,
+      62
+     ],
+     "apres": [
+      0,
+      549,
+      1440,
+      62
+     ]
+    },
+    {
+     "sel": "main.grow.flex > div.grow > div.min-h-screen.bg-neutral-50 > div.py-4.px-4",
+     "texte": "Compatibilité vérifiée Livraison 24-48h Retours 30 jours Pai",
+     "trace": [
+      "div.py-4.px-4.sm:px-6.bg-slate-50.border-b.border-slate-100",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      573,
+      1440,
+      49
+     ],
+     "apres": [
+      0,
+      500,
+      1440,
+      49
+     ]
+    },
+    {
+     "sel": "section#bien-choisir",
+     "texte": "Bien choisir votre filtre à huile Types de filtre à huile Co",
+     "trace": [
+      "section#bien-choisir.py-10.px-4.sm:px-6.bg-white.cv-auto",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      0,
+      860,
+      1440,
+      40
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  },
+  {
+   "t": 11856.3,
+   "v": 0.00013,
+   "input": true,
+   "phase": "tabulation",
+   "y": 675,
+   "yRappel": 722,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      179,
+      16,
+      657,
+      40
+     ],
+     "apres": [
+      175,
+      15,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      616,
+      6,
+      240,
+      80
+     ],
+     "apres": [
+      612,
+      5,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      860,
+      12,
+      217,
+      48
+     ],
+     "apres": [
+      856,
+      11,
+      221,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 13853.6,
+   "v": 0.00016,
+   "input": true,
+   "phase": "tabulation",
+   "y": 80,
+   "yRappel": 84,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      175,
+      16,
+      657,
+      40
+     ],
+     "apres": [
+      181,
+      18,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      612,
+      6,
+      240,
+      80
+     ],
+     "apres": [
+      618,
+      8,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      856,
+      12,
+      221,
+      48
+     ],
+     "apres": [
+      862,
+      14,
+      215,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 14600.7,
+   "v": 0.00018,
+   "input": false,
+   "phase": "sauts",
+   "y": 1398,
+   "yRappel": 1393,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      181,
+      17,
+      657,
+      40
+     ],
+     "apres": [
+      174,
+      15,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      618,
+      7,
+      240,
+      80
+     ],
+     "apres": [
+      611,
+      5,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      862,
+      13,
+      215,
+      48
+     ],
+     "apres": [
+      855,
+      11,
+      222,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 15985.9,
+   "v": 0.00389,
+   "input": false,
+   "phase": "sauts",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > main.grow.flex",
+     "texte": "Aller au contenu principal Accueil Pièces Auto Filtre à huil",
+     "trace": [
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      105,
+      1440,
+      795
+     ],
+     "apres": [
+      0,
+      108,
+      1440,
+      792
+     ]
+    },
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > div.bg-gradient-to-b.from-navy",
+     "texte": "Livraison gratuite dès 150€ · Retours 30j · 01 48 47 96 27",
+     "trace": [
+      "div.bg-gradient-to-b.from-navy.to-navy-light.border-b.border-white/[0.06]",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      72,
+      1440,
+      33
+     ],
+     "apres": [
+      0,
+      75,
+      1440,
+      33
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      175,
+      16,
+      657,
+      40
+     ],
+     "apres": [
+      181,
+      18,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      612,
+      6,
+      240,
+      80
+     ],
+     "apres": [
+      618,
+      8,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      856,
+      12,
+      221,
+      48
+     ],
+     "apres": [
+      862,
+      14,
+      215,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 20852.1,
+   "v": 0.00013,
+   "input": false,
+   "phase": "centrage",
+   "y": 124,
+   "yRappel": 121,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      179,
+      16,
+      657,
+      40
+     ],
+     "apres": [
+      174,
+      15,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      616,
+      6,
+      240,
+      80
+     ],
+     "apres": [
+      611,
+      5,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      860,
+      12,
+      217,
+      48
+     ],
+     "apres": [
+      855,
+      11,
+      222,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "t": 28630.2,
+   "v": 0.87568,
+   "input": false,
+   "phase": "cv-retiree",
+   "y": 2105,
+   "yRappel": 2105,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "section#qualite-prix > div.mx-auto",
+     "texte": "Qualité, prix et marques Différences de qualité filtre à hui",
+     "trace": [
+      "div.max-w-[1280px].mx-auto",
+      "section#qualite-prix.py-10.px-4.sm:px-6.bg-slate-50.cv-auto",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      0,
+      0,
+      0
+     ],
+     "apres": [
+      60,
+      48,
+      1320,
+      852
+     ]
+    },
+    {
+     "sel": "section#bien-choisir > div.mx-auto",
+     "texte": "Bien choisir votre filtre à huile Types de filtre à huile Co",
+     "trace": [
+      "div.max-w-[1280px].mx-auto",
+      "section#bien-choisir.py-10.px-4.sm:px-6.bg-white.cv-auto",
+      "div.min-h-screen.bg-neutral-50.font-body",
+      "div.grow",
+      "main.grow.flex.flex-col"
+     ],
+     "position": "static",
+     "avant": [
+      80,
+      0,
+      1280,
+      8
+     ],
+     "apres": [
+      0,
+      0,
+      0,
+      0
+     ]
+    }
+   ],
+   "poussoirs": [
+    {
+     "t": 28563.5,
+     "type": "retrait",
+     "tag": "style",
+     "cls": "",
+     "sel": "html.h-full > head",
+     "texte": "Filtre à huile | Trouvez la référence compatible | AutoMeca…",
+     "trace": [
+      "head",
+      "html.h-full"
+     ],
+     "position": "static"
+    }
+   ],
+   "poussoirsTotal": 1
+  },
+  {
+   "t": 29063.6,
+   "v": 0.00451,
+   "input": false,
+   "phase": "fin",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "complete",
+   "feuilles": 4,
+   "hydrate": true,
+   "sources": [
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > main.grow.flex",
+     "texte": "Aller au contenu principal Accueil Pièces Auto Filtre à huil",
+     "trace": [
+      "main.grow.flex.flex-col",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      103,
+      1440,
+      797
+     ],
+     "apres": [
+      0,
+      108,
+      1440,
+      792
+     ]
+    },
+    {
+     "sel": "body.h-full.bg-gray-100 > div.min-h-screen.flex > div.bg-gradient-to-b.from-navy",
+     "texte": "Livraison gratuite dès 150€ · Retours 30j · 01 48 47 96 27",
+     "trace": [
+      "div.bg-gradient-to-b.from-navy.to-navy-light.border-b.border-white/[0.06]",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100",
+      "html.h-full"
+     ],
+     "position": "static",
+     "avant": [
+      0,
+      70,
+      1440,
+      33
+     ],
+     "apres": [
+      0,
+      75,
+      1440,
+      33
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center",
+     "texte": "Catalogue pièces auto Marques & Constructeurs Blog Diagnosti",
+     "trace": [
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "static",
+     "avant": [
+      175,
+      15,
+      657,
+      40
+     ],
+     "apres": [
+      181,
+      18,
+      657,
+      40
+     ]
+    },
+    {
+     "sel": "nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > div.hidden.items-center > a.no-style.no-visited",
+     "texte": "Diagnostic GRATUIT",
+     "trace": [
+      "a.no-style.no-visited.relative.px-5.py-2.5.text-sm",
+      "div.hidden.lg:flex.items-center.gap-1.min-w-0.shrink",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]"
+     ],
+     "position": "relative",
+     "avant": [
+      612,
+      5,
+      240,
+      80
+     ],
+     "apres": [
+      618,
+      8,
+      240,
+      80
+     ]
+    },
+    {
+     "sel": "div.min-h-screen.flex > nav[aria-label=\"Navigation principale\"] > div.flex.flex-wrap > form.hidden.flex-1",
+     "texte": "",
+     "trace": [
+      "form.hidden.lg:flex.flex-1.max-w-sm.xl:max-w-lg.relative",
+      "div.flex.flex-wrap.lg:flex-nowrap.justify-between.items-center.gap-2.5",
+      "nav.sticky.top-0.z-50.bg-navy.text-white.transition-all",
+      "div.min-h-screen.flex.flex-col.max-w-[100vw]",
+      "body.h-full.bg-gray-100"
+     ],
+     "position": "relative",
+     "avant": [
+      856,
+      11,
+      221,
+      48
+     ],
+     "apres": [
+      862,
+      14,
+      215,
+      48
+     ]
+    }
+   ]
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 5216.9,
+   "y": 0
+  },
+  {
+   "p": "tabulation",
+   "t": 6854.5,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 14280.5,
+   "y": 88
+  },
+  {
+   "p": "centrage",
+   "t": 17018.3,
+   "y": 0
+  },
+  {
+   "p": "cv-forcee",
+   "t": 28179.1,
+   "y": 2105
+  },
+  {
+   "p": "cv-retiree",
+   "t": 28561.5,
+   "y": 2105
+  },
+  {
+   "p": "fin",
+   "t": 28866.3,
+   "y": 2105
+  }
+ ],
+ "scrollDebut": [
+  [
+   11602.2,
+   2
+  ],
+  [
+   11618.8,
+   10
+  ],
+  [
+   11635.5,
+   27
+  ],
+  [
+   11659.4,
+   56
+  ],
+  [
+   11670.1,
+   107
+  ],
+  [
+   11695.4,
+   194
+  ],
+  [
+   11710.1,
+   313
+  ],
+  [
+   11722.6,
+   421
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 481,
+  "load": 702
+ },
+ "fonts": [
+  {
+   "t": 496.6,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 154,
+ "scrollHeight": 8789,
+ "erreurObs": null,
+ "requetesAbandonnees": 4,
+ "nonGet": 4
+}
