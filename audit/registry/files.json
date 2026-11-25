@@ -46112,6 +46112,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-ee-noms-motorisation-20261120/09-collisions.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 102,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-ee-noms-motorisation-20261120/09-collisions.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/mandat-eh-sources-noms-motorisation-20261120/14-collisions.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 104,
+      "owner": "__unassigned__",
+      "path": "docs/audit/mandat-eh-sources-noms-motorisation-20261120/14-collisions.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-assets.cjs",
       "importedBy": [],
       "imports": [],

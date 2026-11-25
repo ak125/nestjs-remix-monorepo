@@ -2892,6 +2892,10 @@
       "backend/supabase/migrations/20261119_seo_r2_title_all_gammes.sql",
       "backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.down.sql",
       "backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.sql",
+      "backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.down.sql",
+      "backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.sql",
+      "backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.down.sql",
+      "backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3089,7 +3093,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1673,
+  "runtime_files_count": 1677,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4420,6 +4424,10 @@
     "backend/supabase/migrations/20261119_seo_r2_title_all_gammes.sql",
     "backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.down.sql",
     "backend/supabase/migrations/20261119_seo_r2_title_display_names_rpc.sql",
+    "backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.down.sql",
+    "backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.sql",
+    "backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.down.sql",
+    "backend/supabase/migrations/20261120_auto_type_name_origine_corrections_mandat_eh.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",

@@ -76585,6 +76585,46 @@
         "depcruise",
         "manual"
       ],
+      "domain": "D15",
+      "id": "docs/audit/mandat-ee-noms-motorisation-20261120/09-collisions.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 102,
+      "owner": "@ak125",
+      "path": "docs/audit/mandat-ee-noms-motorisation-20261120/09-collisions.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "docs/audit/mandat-eh-sources-noms-motorisation-20261120/14-collisions.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 104,
+      "owner": "@ak125",
+      "path": "docs/audit/mandat-eh-sources-noms-motorisation-20261120/14-collisions.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
       "domain": "D5",
       "id": "docs/audits/editorial-filtre-huile-20261030/tools/build-assets.cjs",
       "importedBy": [],
@@ -111197,15 +111237,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "85c0b47b4c1ae5c3b66f42d0ee6414e7f0442a23ed9c3b983e45c87d65e282ac",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "d7fe97dca7cd62e5ab49cc062cfe55a9534b263c69aa89a64e116f4c83feccc0",
+      ".spec/00-canon/repository-registry/ownership.yaml": "64e0c56755490a127d7c8d4be401552de47708d9b5333763a0148574583618a5",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4bd8407a831a3385f4c3e8845dd213a18f13ec99e6a3528a63160c01e78749ae",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "89d06ebf0410befb82cc3fb438d1d56a9c8336b0eddbba125df99586989d26f3",
+      "audit/registry/files.json": "25e26afa920160f777c8b32bb40c1c75ca57891835f138b4a9b4071a684a1256",
       "audit/registry/rpc.json": "ae924a85483e215265b47c3f6c98988c62512b08260e003ab3ab96db651b6211",
       "audit/registry/runtime.json": "4950b9611ddfa67b77433a772064549b6a82173cb60b05cc2b24d34510d4a82d"
     },
-    "sotFingerprint": "b9380586b887"
+    "sotFingerprint": "13c01ffe7c7b"
   },
   "runtime": [
     {

@@ -1,0 +1,98 @@
+releve_utc	min	max	sum
+2026-11-20 09:08:26.248643	2026-08-20	2026-11-17	185180
+fam	query	imp	clics
+bmw:colle(320d)	alternateur bmw 320d	4	0
+bmw:colle(320d)	pieces detachees bmw 530d	3	0
+bmw:colle(320d)	schema courroie accessoire bmw 320d e90	2	0
+bmw:colle(320d)	catalyseur bmw e46 320d	2	0
+bmw:colle(320d)	bmw e34 540i	2	0
+bmw:colle(320d)	huile moteur bmw serie 1 118i	1	0
+bmw:colle(320d)	disque de frein bmw e46 320d	1	0
+bmw:colle(320d)	schema courroie accessoire bmw 118d	1	0
+bmw:colle(320d)	bmw 320i e90	1	0
+bmw:colle(320d)	bmw e46 320d thermostat	1	0
+bmw:colle(320d)	vanne egr bmw 120d	1	0
+bmw:colle(320d)	320i bmw e90	1	0
+bmw:colle(320d)	sonda lambda bmw e46 318i	1	0
+bmw:colle(320d)	vanne egr bmw serie 1 118d	1	0
+bmw:colle(320d)	schéma courroie accessoire bmw 118d	1	0
+bmw:colle(320d)	bmw e90 320i	1	0
+bmw:colle(320d)	galet tendeur bmw e46 320d	1	0
+bmw:colle(320d)	bmw f20 118d	1	0
+bmw:colle(320d)	e34 bmw 540i	1	0
+bmw:colle(320d)	pièce bmw série 1 118d	1	0
+bmw:colle(320d)	filtre à gasoil bmw série 1 118d	1	0
+bmw:colle(320d)	bmw 540i e34	1	0
+bmw:colle(320d)	bmw e46 318i water pump	1	0
+fiat:jtd	capteur de vitesse fiat ducato 2.8 jtd	13	0
+fiat:jtd	courroie accessoire 1.9 jtd	8	0
+fiat:jtd	alternateur fiat doblo 1.9 jtd	6	0
+fiat:jtd	filtre a huile fiat ducato 2.8 jtd	4	0
+fiat:jtd	ducato 244 2.3 jtd	3	0
+fiat:jtd	embrayage fiat doblo 1.9 jtd	2	0
+fiat:jtd	fiat ducato 244 2.3 jtd	2	0
+fiat:jtd	alfa 147 1.9 jtd	2	0
+fiat:jtd	schema courroie accessoire alfa 147 1.9 jtd	1	0
+fiat:jtd	filtre habitacle fiat ducato 2.8 jtd	1	0
+fiat:jtd	courroie accessoire alfa 147 1.9 jtd	1	0
+fiat:jtd	alternator fiat bravo 1.9 jtd	1	0
+fiat:jtd	lancia zeta 2.0 jtd	1	0
+fiat:jtd	ducato 244 2.8 jtd	1	0
+fiat:jtd	distribution ducato 2.3 jtd	1	0
+fiat:jtd	fiat ducato 244 2.8 jtd	1	0
+fiat:multijet	filtre à huile fiat doblo 1.3 multijet	21	1
+fiat:multijet	pompe a eau fiat doblo 1.3 multijet	11	0
+fiat:multijet	thermostat fiat doblo 1.3 multijet	9	0
+fiat:multijet	filtre à huile fiat doblo 1.6 multijet	9	0
+fiat:multijet	courroie de distribution fiat doblo 1.6 multijet	9	1
+fiat:multijet	filtre à huile fiat doblo 13 multijet	8	0
+fiat:multijet	alternateur fiat doblo 1.3 multijet	6	0
+fiat:multijet	vanne egr fiat punto 1.3 multijet	5	0
+fiat:multijet	thermostat fiat ducato 2.3 multijet	5	0
+fiat:multijet	chaîne distribution fiat punto 1.3 multijet	4	0
+fiat:multijet	courroie accessoire fiat ducato 2.3 multijet	4	0
+fiat:multijet	filtre à huile fiat punto 1.3 multijet	4	0
+fiat:multijet	courroie accessoire 1.3 multijet	4	0
+fiat:multijet	débitmètre fiat doblo 1.3 multijet	4	0
+fiat:multijet	courroie alternateur fiat doblo 1.3 multijet	3	0
+fiat:multijet	boitier papillon fiat ducato 2.3 multijet	3	0
+fiat:multijet	vanne egr ducato 2.3 multijet	3	0
+fiat:multijet	filtre a gasoil fiat doblo 1.3 multijet	2	0
+fiat:multijet	émetteur embrayage fiat ducato 2.3 multijet	2	0
+fiat:multijet	schema courroie accessoire 1.3 multijet	2	0
+fiat:multijet	distribution fiat doblo 1.6 multijet 105	2	0
+fiat:multijet	intercooler fiat grande punto 1.3 multijet	1	0
+fiat:multijet	pompe à eau fiat ducato 2.3 multijet	1	0
+fiat:multijet	vanne egr fiat grande punto 1.3 multijet	1	0
+fiat:multijet	boitier papillon fiat ducato 130 multijet	1	0
+fiat:multijet	vanne egr fiat doblo 1.3 multijet	1	0
+fiat:multijet	termostato lancia ypsilon 1.3 multijet	1	0
+fiat:multijet	filtre a air fiat doblo 1.3 multijet	1	0
+fiat:multijet	airbox grande punto 1.3 multijet	1	0
+fiat:multijet	courroie accessoire ducato 2.3 multijet	1	0
+fiat:multijet	distribution jeep renegade 1.6 multijet 120	1	0
+fiat:multijet	vanne egr fiat ducato 130 multijet	1	0
+fiat:multijet	alternatore croma 1.9 multijet	1	0
+fiat:multijet	schema courroie accessoire fiat doblo 1.6 multijet	1	0
+fiat:multijet	prix remplacement courroie distribution fiat ducato 2.3 multijet	1	0
+fiat:multijet	multijet 1.3	1	0
+fiat:multijet	capteur pression turbo fiat ducato 2.3 multijet	1	0
+fiat:multijet	distribution fiat ducato 2.3 multijet 150 cv	1	0
+fiat:multijet	démarreur fiat punto 1.3 multijet	1	0
+fiat:multijet	cardan fiat punto 1.3 multijet	1	0
+fiat:multijet	1.3 multijet	1	0
+fiat:multijet	embrayage fiat punto 1.3 multijet	1	0
+fiat:multijet	distribution fiat ducato 2.3 multijet 140 cv	1	0
+fiat:multijet	vanne egr fiat ducato 2.3 multijet	1	0
+ford:ecoboost	thermostat ford focus 1.0 ecoboost	11	0
+ford:ecoboost	courroie de distribution ford focus 1.0 ecoboost	1	0
+ford:econetic	ford b max econetic	1	0
+toyota:vvti	courroie accessoire toyota yaris 1.3 vvti	51	3
+toyota:vvti	courroie accessoire toyota yaris 13 vvti	9	0
+toyota:vvti	schema courroie accessoire toyota yaris vvti	6	0
+toyota:vvti	toyota corolla e12 1.6 vvti	4	0
+toyota:vvti	filtre essence yaris 1.3 vvti	3	0
+toyota:vvti	yaris 2 1.33 vvti	1	0
+toyota:vvti	toyota 1.6 vvti	1	0
+toyota:vvti	corolla verso 1.6 vvti	1	0
+toyota:vvti	corolla e12 1.6 vvti	1	0

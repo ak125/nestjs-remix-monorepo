@@ -1,0 +1,26 @@
+== 2026-11-19T23:55:46Z Migration Safety (étapes du job de ci.yml rejouées en local), base dd1975f4a, migration à 173 lignes
+-- 1. squawk 2.52.1 (le .down.sql est exclu, comme en CI)
+
+Found 0 issues in 1 file 🎉
+exit=0
+-- 2. marqueurs
+OK — @non_transactional reconciled on 1 file(s).
+exit=0
+-- 3. compilation PL/pgSQL des blocs DO (PostgreSQL 17.11 jetable)
+OK
+auto-test exit=0
+1 bloc(s) DO à compiler
+témoin négatif : détecté (attendu)
+2 bloc(s) DO à compiler
+backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.sql : bloc DO $mandat_ee$, corps à partir de la ligne 36
+backend/supabase/migrations/20261120_auto_type_name_meta_corrections_mandat_ee.down.sql : bloc DO $mandat_ee$, corps à partir de la ligne 36
+compilation migration + down exit=0
+-- 4. surface DEFINER/anon
+auto-test exit=0
+OK — surface DEFINER/anon inchangée (53 migration(s) jugée(s) depuis 20260917, 35 fonction(s) dans l'ensemble fermé, 12 exception(s) motivée(s)).
+exit=0
+-- hors job : check-no-direct-vehicle-cache-stale.sh
+❌ INC-2026-007 violation: backend/supabase/migrations/20260917_definer_rpc_anon_lockdown.sql uses UPDATE __vehicle_page_cache SET stale directly
+   → use SELECT mark_stale_with_followup_rebuild(ARRAY[...], 'reason') instead
+(échec préexistant sur main : 20260917_definer_rpc_anon_lockdown.sql, pas sur ce fichier)
+0
