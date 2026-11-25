@@ -95,6 +95,13 @@ describe("reference-auto.$slug headers — cohérence meta / en-tête", () => {
 });
 
 describe("reference-auto.$slug loader — transmet robots sans appel de plus", () => {
+  // Appels du loader de main (mandat ER compris) : sonde de redirection, fiche,
+  // fiches liées. EW n'en ajoute aucun.
+  const EXPECTED_URLS = [
+    `http://internal/api/seo/reference/redirect/${SLUG}`,
+    `http://internal/api/seo/reference/${SLUG}`,
+    `http://internal/api/seo/reference/${SLUG}/related`,
+  ];
   const fetchMock = vi.fn();
   beforeEach(() => {
     fetchMock.mockReset();
@@ -115,17 +122,23 @@ describe("reference-auto.$slug loader — transmet robots sans appel de plus", (
     } as never);
 
   for (const body of [ref(), ref({ robots: "noindex, follow" })]) {
-    it(`deux fetch exactement, robots=${String(body.robots)}`, async () => {
+    it(`mêmes 3 fetch que main, robots=${String(body.robots)}`, async () => {
       fetchMock.mockImplementation((u: string) =>
         Promise.resolve(
-          u.endsWith("/related") ? okJson({ related: [] }) : okJson(body),
+          u.endsWith("/related")
+            ? okJson({ related: [] })
+            : u.includes("/redirect/")
+              ? okJson({ redirect_to: null, pg_alias: null })
+              : okJson(body),
         ),
       );
       const res = (await run()) as unknown as {
         data: { reference: Record<string, unknown> };
         init: { headers: Record<string, string> };
       };
-      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls.map(([u]) => String(u)).sort()).toEqual(
+        [...EXPECTED_URLS].sort(),
+      );
       expect(res.data.reference.robots).toBe(body.robots);
       expect(res.init.headers["X-Robots-Tag"]).toBeUndefined();
     });

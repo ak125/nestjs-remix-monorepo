@@ -11,6 +11,10 @@ import * as path from 'path';
 import { SitemapV10StaticService } from './sitemap-v10-static.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { R4_NOINDEX_SLUGS } from './r4-noindex.config';
+import {
+  R4_CONSOLIDATION_OFF,
+  type R4ConsolidationSnapshot,
+} from './r4-consolidation-policy.service';
 
 type Result = { data: unknown; error: { message: string } | null };
 
@@ -26,7 +30,12 @@ function fakeQuery(result: Result, calls: string[]) {
   return q;
 }
 
-function buildService(result: Result, flag: boolean, outDir: string) {
+function buildService(
+  result: Result,
+  flag: boolean,
+  outDir: string,
+  r4: R4ConsolidationSnapshot = R4_CONSOLIDATION_OFF,
+) {
   const calls: string[] = [];
   const tables: string[] = [];
   const logger = { log: jest.fn(), warn: jest.fn(), error: jest.fn() };
@@ -43,6 +52,8 @@ function buildService(result: Result, flag: boolean, outDir: string) {
     logger,
     xmlService: xml,
     featureFlags: { seoR4NoindexEnabled: flag },
+    // Consolidation R4 (mandat ER) : éteinte sauf demande du test.
+    r4Consolidation: { getSnapshot: jest.fn(async () => r4) },
   });
   return { svc: svc as SitemapV10StaticService, calls, tables, logger };
 }
@@ -110,6 +121,28 @@ describe('sitemap-reference.xml — R4 noindex (mandat EW)', () => {
     const { svc } = buildService({ data: all, error: null }, true, outDir);
     const file = await svc.generateReferenceSitemap();
     expect(await locs(file as string)).toEqual(OTHERS.map(url));
+  });
+
+  it('drapeaux EW et ER allumés : chacune de ses pages sort, comptée à part', async () => {
+    const er: R4ConsolidationSnapshot = {
+      enabled: true,
+      redirects: new Map([[OTHERS[1], '/blog-pieces-auto/conseils/x']]),
+      degraded: false,
+    };
+    const { svc, logger } = buildService(
+      { data: rows, error: null },
+      true,
+      outDir,
+      er,
+    );
+    const file = await svc.generateReferenceSitemap();
+    expect(await locs(file as string)).toEqual([OTHERS[0], OTHERS[2]].map(url));
+    expect(logger.log).toHaveBeenCalledWith(
+      expect.stringContaining('R4 noindex ON: 2 URL(s)'),
+    );
+    expect(logger.log).toHaveBeenCalledWith(
+      expect.stringContaining('R4 consolidation ON: 1 URL(s)'),
+    );
   });
 
   it('lecture en échec, drapeau allumé : null, aucun fichier écrit', async () => {

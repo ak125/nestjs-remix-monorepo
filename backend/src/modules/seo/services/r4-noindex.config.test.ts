@@ -8,6 +8,7 @@ import {
   R4_NOINDEX_SLUGS,
   r4NoindexRobots,
 } from './r4-noindex.config';
+import { R4_CONSOLIDATION_TARGETS } from './r4-consolidation.config';
 
 /** Une fiche de la liste et une fiche publiée hors liste. */
 const LISTED = 'capteur-de-pluie';
@@ -22,6 +23,12 @@ describe('R4 noindex — liste fermée (mandat EW)', () => {
       expect(s).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     }
     expect(Object.isFrozen(R4_NOINDEX_SLUGS)).toBe(true);
+  });
+
+  it('disjointe des 43 pages redirigées du mandat ER', () => {
+    const er = R4_CONSOLIDATION_TARGETS.map((t) => t.slug);
+    expect(new Set(er).size).toBe(43);
+    expect(R4_NOINDEX_SLUGS.filter((s) => er.includes(s))).toEqual([]);
   });
 
   it('directive = noindex, follow (liens suivis)', () => {

@@ -40,6 +40,8 @@ async function generate(
       }),
     },
     logger,
+    // R4 noindex (mandat EW) éteint : lu par le même générateur.
+    featureFlags: { seoR4NoindexEnabled: false },
     r4Consolidation: { getSnapshot: jest.fn().mockResolvedValue(snap) },
     xmlService: {
       OUTPUT_DIR: outputDir,
