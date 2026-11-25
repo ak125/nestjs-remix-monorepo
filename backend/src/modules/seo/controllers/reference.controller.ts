@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Logger,
   Header,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
@@ -28,6 +29,16 @@ import {
   applyGuideLinkRuleToHtml,
 } from '../services/r6-guide-link-policy.service';
 import { DiagnosticService } from '../validation/diagnostic.service';
+import {
+  R4ConsolidationPolicyService,
+  applyReferenceLinkRuleToHtml,
+  r4RedirectTarget,
+  referenceLinkPath,
+} from '../services/r4-consolidation-policy.service';
+
+/** Hub R4 : page courante des liens de la liste. */
+const REFERENCE_HUB_PATH = '/reference-auto';
+const CONSEILS_PREFIX = '/blog-pieces-auto/conseils/';
 
 /**
  * Interface de réponse API pour une référence
@@ -88,6 +99,11 @@ interface ReferenceListResponse {
       name: string | null;
       url: string | null;
     };
+    /**
+     * Lien à suivre vers la page (règle R4 → R3, mandat ER). Présent seulement
+     * drapeau SEO_R4_CONSOLIDATION_ENABLED allumé.
+     */
+    href?: string | null;
   }>;
   total: number;
 }
@@ -108,6 +124,7 @@ export class ReferenceController {
     private readonly featureFlags: FeatureFlagsService,
     private readonly guideLinkPolicy: R6GuideLinkPolicyService,
     private readonly diagnosticService: DiagnosticService,
+    private readonly r4Consolidation: R4ConsolidationPolicyService,
   ) {}
 
   // ============================================
@@ -123,7 +140,10 @@ export class ReferenceController {
   async listReferences(): Promise<ReferenceListResponse> {
     this.logger.debug('📚 GET /api/seo/reference - List all');
 
-    const references = await this.referenceService.getAll();
+    const [references, r4] = await Promise.all([
+      this.referenceService.getAll(),
+      this.r4Consolidation.getSnapshot(),
+    ]);
 
     return {
       references: references.map((ref) => ({
@@ -139,8 +159,34 @@ export class ReferenceController {
               ? `/pieces/${ref.gammeSlug}-${ref.pgId}.html`
               : null,
         },
+        ...(r4.enabled
+          ? { href: referenceLinkPath(ref.slug, r4, REFERENCE_HUB_PATH) }
+          : {}),
       })),
       total: references.length,
+    };
+  }
+
+  /**
+   * Redirection 301 d'une page R4 de la liste close de consolidation (mandat ER).
+   * GET /api/seo/reference/redirect/:slug
+   * `{ redirect_to: null }` : drapeau éteint, slug hors liste ou garde non satisfaite
+   * (page non publiée, gamme sans alias, page conseils non servie).
+   * no-store : la réponse suit le drapeau ; la charge reste bornée par le
+   * snapshot de la garde (Redis, 10 min).
+   */
+  @Get('redirect/:slug')
+  @Header('Cache-Control', 'no-store')
+  async getRedirect(
+    @Param('slug') slug: string,
+  ): Promise<{ redirect_to: string | null; pg_alias: string | null }> {
+    const target = r4RedirectTarget(
+      slug,
+      await this.r4Consolidation.getSnapshot(),
+    );
+    return {
+      redirect_to: target,
+      pg_alias: target ? target.slice(CONSEILS_PREFIX.length) : null,
     };
   }
 
@@ -198,6 +244,7 @@ export class ReferenceController {
   @Header('Cache-Control', 'public, max-age=86400') // Cache 24h
   async getReferenceByGamme(
     @Param('pgId') pgId: string,
+    @Query('from') from?: string,
   ): Promise<{ slug: string | null; url: string | null }> {
     const pgIdNum = parseInt(pgId, 10);
 
@@ -207,9 +254,17 @@ export class ReferenceController {
 
     const slug = await this.referenceService.getReferenceSlugByGammeId(pgIdNum);
 
+    // `url` : lien à suivre (règle R4 → R3) ; null sur la page conseils cible.
+    // `from` : chemin de la page qui affiche le lien.
     return {
       slug,
-      url: slug ? `/reference-auto/${slug}` : null,
+      url: slug
+        ? referenceLinkPath(
+            slug,
+            await this.r4Consolidation.getSnapshot(),
+            from ?? '',
+          )
+        : null,
     };
   }
 
@@ -234,20 +289,29 @@ export class ReferenceController {
    */
   @Get(':slug/related')
   @Header('Cache-Control', 'public, max-age=3600')
-  async getRelatedReferences(
-    @Param('slug') slug: string,
-  ): Promise<{ related: SeoReferenceListItem[] }> {
+  async getRelatedReferences(@Param('slug') slug: string): Promise<{
+    related: Array<SeoReferenceListItem & { href?: string | null }>;
+  }> {
     const reference = await this.referenceService.getBySlug(slug);
 
     if (!reference) {
       throw new NotFoundException(`Référence non trouvée: ${slug}`);
     }
 
-    const related = await this.referenceService.getRelatedReferences(
-      reference.id,
-    );
+    const [related, r4] = await Promise.all([
+      this.referenceService.getRelatedReferences(reference.id),
+      this.r4Consolidation.getSnapshot(),
+    ]);
 
-    return { related };
+    // `href` (règle R4 → R3) seulement drapeau allumé : réponse inchangée sinon.
+    if (!r4.enabled) return { related };
+    const currentPath = `/reference-auto/${reference.slug}`;
+    return {
+      related: related.map((item) => ({
+        ...item,
+        href: referenceLinkPath(item.slug, r4, currentPath),
+      })),
+    };
   }
 
   /**
@@ -356,6 +420,19 @@ export class ReferenceController {
       if (guideLinks.changed > 0) {
         this.logger.log(
           `[R6-LINKS] reference=${reference.slug} consolidation=${snapshot.consolidationEnabled} contenu=${guideLinks.changed} lien(s) modifié(s)`,
+        );
+      }
+
+      // Liens vers les pages R4 redirigées (mandat ER) : vers leur page conseils.
+      const r4Links = applyReferenceLinkRuleToHtml(
+        response.contentHtml,
+        await this.r4Consolidation.getSnapshot(),
+        `/reference-auto/${reference.slug}`,
+      );
+      if (r4Links.changed > 0) {
+        response.contentHtml = r4Links.html;
+        this.logger.log(
+          `[R4-LINKS] reference=${reference.slug} contenu=${r4Links.changed} lien(s) modifié(s)`,
         );
       }
     }

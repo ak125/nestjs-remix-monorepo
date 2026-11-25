@@ -6452,6 +6452,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo/controllers/diagnostic.controller.ts",
@@ -6474,7 +6475,7 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts",
         "runtime:backend/src/modules/seo/validation/diagnostic.service.ts"
@@ -7092,6 +7093,7 @@
         "runtime:backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
         "runtime:backend/src/modules/seo/services/policies/seo-unavailable-policy.service.ts",
         "runtime:backend/src/modules/seo/services/product-image.service.ts",
+        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts",
         "runtime:backend/src/modules/seo/services/risk-flags-engine.service.ts",
@@ -7301,6 +7303,18 @@
       "id": "runtime:backend/src/modules/seo/services/product-image.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/seo/services/product-image.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -7519,6 +7533,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-xml.service.ts"
       ],

@@ -93,6 +93,8 @@ interface DiagnosticData {
   ctx_freq: string;
   cluster_id: string;
   related_references: string[];
+  /** Liens servis, parallèles à related_references (mandat ER, drapeau R4 allumé). */
+  related_reference_hrefs?: string[];
   related_blog_articles: string[];
   related_gammes: number[];
   recommended_actions: Array<{
@@ -809,10 +811,13 @@ export default function DiagnosticAutoDetail() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {diagnostic.related_references.map((ref) => (
+                      {diagnostic.related_references.map((ref, i) => (
                         <Link
                           key={ref}
-                          to={`/reference-auto/${ref}`}
+                          to={
+                            diagnostic.related_reference_hrefs?.[i] ??
+                            `/reference-auto/${ref}`
+                          }
                           className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                         >
                           <span className="text-blue-700">

@@ -32,6 +32,7 @@ import {
   type MetaFunction,
   data,
   Link,
+  redirect,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
@@ -237,6 +238,8 @@ function sectionTitle(
 interface RelatedRef {
   slug: string;
   title: string;
+  /** Lien servi (mandat ER) : présent drapeau R4 allumé, page conseils si redirigée. */
+  href?: string | null;
 }
 
 /**
@@ -322,6 +325,9 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
 /* ===========================
    Loader
 =========================== */
+/** Délai de la sonde de consolidation R4 (lecture d'un snapshot en cache côté backend). */
+const R4_REDIRECT_PROBE_TIMEOUT_MS = 1000;
+
 export async function loader({ params }: LoaderFunctionArgs) {
   const { slug } = params;
 
@@ -332,6 +338,27 @@ export async function loader({ params }: LoaderFunctionArgs) {
   try {
     const backendUrl = getInternalApiUrl("");
 
+    // Consolidation R4 → R3 (mandat ER, drapeau SEO_R4_CONSOLIDATION_ENABLED) :
+    // le backend porte la liste close et la garde ; null → page servie. Un
+    // échec de l'appel sert la page R4 comme aujourd'hui (jamais de 5xx ici).
+    // Appel borné par un délai court et annulé à l'échéance : page servie.
+    const redirectPromise: Promise<string | null> = fetch(
+      `${backendUrl}/api/seo/reference/redirect/${slug}`,
+      {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(R4_REDIRECT_PROBE_TIMEOUT_MS),
+      },
+    )
+      .then(async (r) => {
+        if (!r.ok) return null;
+        const body = (await r.json()) as { redirect_to?: unknown };
+        return typeof body?.redirect_to === "string" &&
+          body.redirect_to.startsWith("/blog-pieces-auto/conseils/")
+          ? body.redirect_to
+          : null;
+      })
+      .catch(() => null);
+
     // ⚡ LCP/TTFB (audit 2026-07-14 §2C) : le fetch principal et /related ne
     // dépendent que de `slug` → lancés en parallèle. La promesse related ne
     // rejette jamais (.catch → []) : si le principal throw 404, elle est
@@ -339,6 +366,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
     const referencePromise = fetch(`${backendUrl}/api/seo/reference/${slug}`, {
       headers: { "Content-Type": "application/json" },
     });
+    // Gestionnaire de rejet dès la création : un rejet pendant l'attente de la
+    // sonde n'est pas une rejection non gérée ; l'await plus bas le reçoit.
+    referencePromise.catch(() => undefined);
     const relatedRefsPromise: Promise<RelatedRef[]> = fetch(
       `${backendUrl}/api/seo/reference/${slug}/related`,
       { headers: { "Content-Type": "application/json" } },
@@ -347,13 +377,26 @@ export async function loader({ params }: LoaderFunctionArgs) {
         if (!relRes.ok) return [] as RelatedRef[];
         const relData = await relRes.json();
         return (relData.related || []).map(
-          (r: { slug: string; title: string }) => ({
+          (r: { slug: string; title: string; href?: string | null }) => ({
             slug: r.slug,
             title: r.title,
+            ...(r.href !== undefined ? { href: r.href } : {}),
           }),
         );
       })
       .catch(() => [] as RelatedRef[]); // Silently ignore — related refs are optional
+
+    const redirectTo = await redirectPromise;
+    if (redirectTo) {
+      // headers() ne s'applique pas à un Response renvoyé par le loader :
+      // le Cache-Control de la 301 est porté ici. no-store, comme la 301 de
+      // blog-pieces-auto.article.$slug : retour arrière servi dès que le
+      // drapeau s'éteint (aucun cache navigateur ni CDN de la redirection).
+      return redirect(redirectTo, {
+        status: 301,
+        headers: { "Cache-Control": "no-store" },
+      });
+    }
 
     const res = await referencePromise;
 
@@ -1229,7 +1272,7 @@ export default function ReferenceDetailPage() {
                     {relatedRefs.map((ref) => (
                       <li key={ref.slug}>
                         <Link
-                          to={`/reference-auto/${ref.slug}`}
+                          to={ref.href ?? `/reference-auto/${ref.slug}`}
                           className="flex items-center gap-2 p-2 rounded hover:bg-muted text-gray-700 hover:text-foreground transition-colors text-sm"
                         >
                           <Badge
