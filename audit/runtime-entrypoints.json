@@ -1338,6 +1338,7 @@
       "R3GuideService",
       "R3ImagePromptService",
       "R3ProjectionDecisionService",
+      "R4ConsolidationPolicyService",
       "R4ContentEnricherService",
       "R4LintGatesService",
       "R6GuideController",
@@ -2251,6 +2252,7 @@
       "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
       "backend/src/modules/seo/services/policies/seo-unavailable-policy.service.ts",
       "backend/src/modules/seo/services/product-image.service.ts",
+      "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
       "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
       "backend/src/modules/seo/services/reference.service.ts",
       "backend/src/modules/seo/services/risk-flags-engine.service.ts",
@@ -3093,7 +3095,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1677,
+  "runtime_files_count": 1678,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3806,6 +3808,7 @@
     "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
     "backend/src/modules/seo/services/policies/seo-unavailable-policy.service.ts",
     "backend/src/modules/seo/services/product-image.service.ts",
+    "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
     "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
     "backend/src/modules/seo/services/reference.service.ts",
     "backend/src/modules/seo/services/risk-flags-engine.service.ts",

@@ -22,7 +22,7 @@ import {
   R4_CONSOLIDATION_OFF,
   type R4ConsolidationPolicyService,
   type R4ConsolidationSnapshot,
-} from '../../seo/services/r4-consolidation-policy.service';
+} from '../../seo';
 
 const SLUG = 'bien-choisir-ses-pieces';
 const guide = (alias: string) => `/blog-pieces-auto/guide-achat/${alias}`;

@@ -17,7 +17,7 @@ import { GlossaryService, GlossaryFilters } from '../services/glossary.service';
 import {
   applyReferenceLinkRuleToHtml,
   R4ConsolidationPolicyService,
-} from '../../seo/services/r4-consolidation-policy.service';
+} from '../../seo';
 import {
   OperationFailedException,
   DomainNotFoundException,

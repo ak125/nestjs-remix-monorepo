@@ -33,10 +33,7 @@ import {
   R6GuideLinkPolicyService,
   type R6GuideLinkSnapshot,
 } from '../../seo/services/r6-guide-link-policy.service';
-import {
-  R4_CONSOLIDATION_OFF,
-  R4ConsolidationPolicyService,
-} from '../../seo/services/r4-consolidation-policy.service';
+import { R4_CONSOLIDATION_OFF, R4ConsolidationPolicyService } from '../../seo';
 
 interface CacheEntry {
   value: unknown;

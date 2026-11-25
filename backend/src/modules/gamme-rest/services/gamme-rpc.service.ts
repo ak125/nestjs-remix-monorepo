@@ -11,7 +11,7 @@ import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 import { GammeRpcAggregatedDataSchema } from './gamme-rpc.schema';
 import { HomepageRpcService } from '../../catalog/services/homepage-rpc.service';
 import { R6_GUIDE_LINK_CACHE_SEGMENTS } from '../../seo/services/r6-guide-link-policy.service';
-import { R4_CONSOLIDATION_CACHE_SUFFIXES } from '../../seo/services/r4-consolidation-policy.service';
+import { R4_CONSOLIDATION_CACHE_SUFFIXES } from '../../seo';
 
 /** Champs de get_homepage_families lus pour les vignettes gamme. */
 interface HomepageFamiliesShape {

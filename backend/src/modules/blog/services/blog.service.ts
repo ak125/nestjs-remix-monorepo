@@ -22,7 +22,7 @@ import {
 import {
   applyReferenceLinkRuleToHtml,
   R4ConsolidationPolicyService,
-} from '../../seo/services/r4-consolidation-policy.service';
+} from '../../seo';
 
 /**
  * 📰 BlogService - Orchestrateur principal du module blog

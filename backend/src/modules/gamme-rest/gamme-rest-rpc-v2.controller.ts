@@ -16,7 +16,7 @@ import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
 import { CacheService } from '@cache/cache.service';
 import { R6GuideLinkPolicyService } from '../seo/services/r6-guide-link-policy.service';
-import { R4ConsolidationPolicyService } from '../seo/services/r4-consolidation-policy.service';
+import { R4ConsolidationPolicyService } from '../seo';
 
 /** Réponse construite d'une page gamme, telle qu'elle est mise en cache. */
 type GammePageResponse = Awaited<

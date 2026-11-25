@@ -35,11 +35,12 @@ import {
   resolveGuideLink,
 } from '../../seo/services/r6-guide-link-policy.service';
 import {
+  InternalLinkingService,
   R4ConsolidationPolicyService,
   applyReferenceLinkRuleToHtml,
   referenceLinkPath,
-} from '../../seo/services/r4-consolidation-policy.service';
-import { InternalLinkingService, unlinkGammeAliasLinks } from '../../seo';
+  unlinkGammeAliasLinks,
+} from '../../seo';
 
 interface MotorizationRow {
   type_id: number;

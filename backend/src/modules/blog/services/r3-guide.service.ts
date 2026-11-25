@@ -45,7 +45,7 @@ import {
   applyReferenceLinkRuleToHtml,
   R4_CONSOLIDATION_CACHE_SUFFIXES,
   R4ConsolidationPolicyService,
-} from '../../seo/services/r4-consolidation-policy.service';
+} from '../../seo';
 
 /** Cache key prefix versionnée — bump v1→v2 invalide tous les payloads.
  *  v2 (2026-05-24) : compatible vehicles capped à 24 (LCP /blog-pieces-auto/conseils/* — voir PR LCP-R3-PR1).
