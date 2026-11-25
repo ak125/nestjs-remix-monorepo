@@ -60386,12 +60386,13 @@
       "imports": [
         "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
+        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "test",
-      "loc": 133,
+      "loc": 243,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
       "risk": "high",
@@ -64025,10 +64026,12 @@
       "importedBy": [
         "backend/src/modules/seo/controllers/diagnostic.controller.ts",
         "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
+        "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/r4-consolidation-policy.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
@@ -64085,7 +64088,8 @@
       "id": "backend/src/modules/seo/services/r4-consolidation.config.ts",
       "importedBy": [
         "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.test.ts"
+        "backend/src/modules/seo/services/r4-consolidation-policy.test.ts",
+        "backend/src/modules/seo/services/r4-noindex.config.test.ts"
       ],
       "imports": [],
       "kind": "config",
@@ -64154,10 +64158,11 @@
       "id": "backend/src/modules/seo/services/r4-noindex.config.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/seo/services/r4-consolidation.config.ts",
         "backend/src/modules/seo/services/r4-noindex.config.ts"
       ],
       "kind": "test",
-      "loc": 68,
+      "loc": 75,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/r4-noindex.config.test.ts",
       "risk": "high",
@@ -64956,6 +64961,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r4-noindex.config.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
@@ -64964,7 +64970,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 125,
+      "loc": 158,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
       "risk": "high",
@@ -64991,7 +64997,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 129,
+      "loc": 131,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
       "risk": "high",
@@ -101842,7 +101848,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 134,
+      "loc": 147,
       "owner": "@ak125",
       "path": "frontend/tests/unit/reference-auto-r4-noindex.test.ts",
       "risk": "medium",
@@ -111699,11 +111705,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4bd8407a831a3385f4c3e8845dd213a18f13ec99e6a3528a63160c01e78749ae",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "1a1b144c49bd74e233f540ac9643edf3a6daa29417c89fd7692e8c3efba85bc3",
+      "audit/registry/files.json": "e022929f02a8b1a95baa47efd5f5184bd4e271e29dba6f7f4964de6d7e450e96",
       "audit/registry/rpc.json": "d2adfc5c28fa116a45b81fc8f46b8714110c5db624a7c495f90de474f7c6b314",
       "audit/registry/runtime.json": "3a4f60e7cf1802be2c0ace6a5e7533f12581b579b99cf9df4ecb91b938f61e66"
     },
-    "sotFingerprint": "657e1a92b0c1"
+    "sotFingerprint": "14fd3845516f"
   },
   "runtime": [
     {

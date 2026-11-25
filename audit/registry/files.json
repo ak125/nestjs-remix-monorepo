@@ -30488,12 +30488,13 @@
       "imports": [
         "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
+        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "test",
-      "loc": 133,
+      "loc": 243,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
       "risk": "low",
@@ -33991,10 +33992,12 @@
       "importedBy": [
         "backend/src/modules/seo/controllers/diagnostic.controller.ts",
         "backend/src/modules/seo/controllers/r4-consolidation.controllers.test.ts",
+        "backend/src/modules/seo/controllers/reference.controller.r4-noindex.test.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/index.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/r4-consolidation-policy.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
@@ -34049,7 +34052,8 @@
       "id": "backend/src/modules/seo/services/r4-consolidation.config.ts",
       "importedBy": [
         "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
-        "backend/src/modules/seo/services/r4-consolidation-policy.test.ts"
+        "backend/src/modules/seo/services/r4-consolidation-policy.test.ts",
+        "backend/src/modules/seo/services/r4-noindex.config.test.ts"
       ],
       "imports": [],
       "kind": "config",
@@ -34115,10 +34119,11 @@
       "id": "backend/src/modules/seo/services/r4-noindex.config.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/seo/services/r4-consolidation.config.ts",
         "backend/src/modules/seo/services/r4-noindex.config.ts"
       ],
       "kind": "test",
-      "loc": 68,
+      "loc": 75,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/r4-noindex.config.test.ts",
       "risk": "low",
@@ -34889,6 +34894,7 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/seo/services/r4-consolidation-policy.service.ts",
         "backend/src/modules/seo/services/r4-noindex.config.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
@@ -34897,7 +34903,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 125,
+      "loc": 158,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-reference-r4-noindex.test.ts",
       "risk": "low",
@@ -34923,7 +34929,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 129,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-reference-r4.test.ts",
       "risk": "low",
@@ -70385,7 +70391,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 134,
+      "loc": 147,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/reference-auto-r4-noindex.test.ts",
       "risk": "low",
