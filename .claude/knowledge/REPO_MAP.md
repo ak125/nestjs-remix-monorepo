@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: fdd809385ecf1963591075e16112c3a58bc10d6f8b33946c8ff3b5519583f9ae
+source_sha256: dfb6bb33712b2bd22d78f03631af1716ee30619e0b7407ba5155871a137496be
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3318 |
+| Files (Layer 1) | 3323 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 272 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1022 |
 
-Source sotFingerprint: `81e59ea5cc4a`.
+Source sotFingerprint: `e1ce028e5f73`.
 
 ## Comment l'utiliser
 
@@ -45,19 +45,19 @@ Source sotFingerprint: `81e59ea5cc4a`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 188 (test=171, service=12, config=4, controller=1)
+- **Files**: 189 (test=172, service=12, config=4, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (173), __unassigned__ (15)
+- **Top owners**: @ak125 (174), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=173
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=174
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 448 (service=221, test=138, controller=34, config=29, script=26)
+- **Files**: 452 (service=221, test=141, controller=34, config=30, script=26)
 - **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (448)
+- **Top owners**: @ak125/seo-team (452)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=225, UNKNOWN=223
+- **Status**: LIVE=226, UNKNOWN=226
 
 ### D4 — Vehicle / Compatibility
 

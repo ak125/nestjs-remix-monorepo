@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 105,
-      "loc_total": 25218,
+      "loc_total": 25235,
       "has_barrel": true
     },
     "customers": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 248,
-      "loc_total": 115979,
+      "loc_total": 115988,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -772,8 +772,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 292,
-      "loc_total": 63487,
+      "files_count": 296,
+      "loc_total": 63950,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -970,8 +970,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 442,
-      "loc_total": 87993,
+      "files_count": 443,
+      "loc_total": 88127,
       "has_barrel": true
     },
     "upload": {
@@ -2042,7 +2042,7 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 40
+      "count": 42
     },
     {
       "from": "seo",
