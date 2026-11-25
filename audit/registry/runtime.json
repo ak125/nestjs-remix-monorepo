@@ -10174,6 +10174,15 @@
     },
     {
       "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
       "id": "runtime:frontend/app/routes/admin.suppliers.new.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/admin.suppliers.new.tsx",
