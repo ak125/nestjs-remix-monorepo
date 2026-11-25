@@ -1,0 +1,128 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "1440x900",
+ "variante": "a3",
+ "debut": "2026-11-20T11:47:37.966Z",
+ "critere": "bouton ou lien visible, fond calculé orange (teinte 15°–45°, saturation ≥ 0,45, luminosité 0,3–0,9), non recouvert en son centre",
+ "ecrans": [
+  {
+   "ecran": 0,
+   "scrollY": 0,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 1,
+   "scrollY": 890,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 2,
+   "scrollY": 1800,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 3,
+   "scrollY": 2700,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 4,
+   "scrollY": 3600,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 5,
+   "scrollY": 4500,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 6,
+   "scrollY": 5400,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 7,
+   "scrollY": 6300,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 8,
+   "scrollY": 7200,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 9,
+   "scrollY": 7879,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "a3",
+   "at": "2026-11-20T11:47:43.523Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 83,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "fin",
+   "presente": true,
+   "variante": "a3",
+   "regles": 83
+  }
+ ],
+ "toutePage": {
+  "nombre": 0,
+  "actions": []
+ },
+ "premierEcran": {
+  "ecran": 0,
+  "scrollY": 0,
+  "entieres": 0,
+  "partielles": 0,
+  "textes": []
+ },
+ "ecransAPlusieurs": 0,
+ "maxParEcran": 0,
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T11:47:52.408Z"
+}

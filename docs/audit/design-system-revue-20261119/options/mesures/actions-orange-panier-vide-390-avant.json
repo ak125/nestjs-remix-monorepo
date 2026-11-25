@@ -1,0 +1,68 @@
+{
+ "id": "panier-vide",
+ "route": "/cart",
+ "viewport": "390x844",
+ "variante": "avant",
+ "debut": "2026-11-20T11:59:15.592Z",
+ "critere": "bouton ou lien visible, fond calculé orange (teinte 15°–45°, saturation ≥ 0,45, luminosité 0,3–0,9), non recouvert en son centre",
+ "ecrans": [
+  {
+   "ecran": 0,
+   "scrollY": 0,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 1,
+   "scrollY": 257,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "avant",
+   "injectee": false
+  },
+  {
+   "etape": "fin",
+   "presente": false,
+   "variante": null,
+   "regles": 0
+  }
+ ],
+ "toutePage": {
+  "nombre": 0,
+  "actions": []
+ },
+ "premierEcran": {
+  "ecran": 0,
+  "scrollY": 0,
+  "entieres": 0,
+  "partielles": 0,
+  "textes": []
+ },
+ "ecransAPlusieurs": 0,
+ "maxParEcran": 0,
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T11:59:24.142Z"
+}

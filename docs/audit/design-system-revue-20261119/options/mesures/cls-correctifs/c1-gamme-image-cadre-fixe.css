@@ -1,0 +1,4 @@
+/* Complément n° 6 DZ — démonstration, pas une implémentation. GammeHero.tsx:107-112 : l'image déclare 360×360
+   (carré) alors que l'image servie est en 3:2 (360×240 ou 390×260 mesurés) ; à son arrivée elle rapetisse.
+   Le cadre est ici fixé indépendamment de l'image (object-cover déjà présent recadre l'image dans le cadre). */
+picture.block.w-full.h-full > img.object-cover { aspect-ratio: 3 / 2; }

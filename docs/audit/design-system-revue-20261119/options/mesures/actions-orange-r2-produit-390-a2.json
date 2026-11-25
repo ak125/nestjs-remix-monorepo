@@ -1,0 +1,506 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "variante": "a2",
+ "debut": "2026-11-20T10:37:04.738Z",
+ "critere": "bouton ou lien visible, fond calculé orange (teinte 15°–45°, saturation ≥ 0,45, luminosité 0,3–0,9), non recouvert en son centre",
+ "ecrans": [
+  {
+   "ecran": 0,
+   "scrollY": 0,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 1,
+   "scrollY": 846,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 2,
+   "scrollY": 1688,
+   "entieres": 4,
+   "partielles": 0,
+   "textes": [
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 3,
+   "scrollY": 2532,
+   "entieres": 5,
+   "partielles": 0,
+   "textes": [
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 4,
+   "scrollY": 3376,
+   "entieres": 3,
+   "partielles": 0,
+   "textes": [
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 5,
+   "scrollY": 4220,
+   "entieres": 5,
+   "partielles": 0,
+   "textes": [
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Ajouter #F97316",
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 6,
+   "scrollY": 5064,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 7,
+   "scrollY": 5908,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 8,
+   "scrollY": 6752,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 9,
+   "scrollY": 7596,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 10,
+   "scrollY": 8440,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 11,
+   "scrollY": 9284,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 12,
+   "scrollY": 10128,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 13,
+   "scrollY": 10972,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 14,
+   "scrollY": 11816,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  },
+  {
+   "ecran": 15,
+   "scrollY": 12580,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Panier (collant) #F97316"
+   ]
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "a2",
+   "at": "2026-11-20T10:37:10.613Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "fin",
+   "presente": true,
+   "variante": "a2",
+   "regles": 67
+  }
+ ],
+ "toutePage": {
+  "nombre": 21,
+  "actions": [
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     1668,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     1668,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     2025,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     2025,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     2383,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     2383,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     2740,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     2740,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     3098,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     3098,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     3456,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     3456,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     3813,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     3813,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     4171,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     4171,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     4528,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     4528,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     102,
+     4886,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Ajouter Filtre à huile au panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": false,
+    "rect": [
+     289,
+     4886,
+     75,
+     44
+    ]
+   },
+   {
+    "texte": "Panier",
+    "balise": "button",
+    "fond": "#F97316",
+    "desactive": false,
+    "collant": true,
+    "rect": [
+     16,
+     738,
+     109,
+     50
+    ]
+   }
+  ]
+ },
+ "premierEcran": {
+  "ecran": 0,
+  "scrollY": 0,
+  "entieres": 1,
+  "partielles": 0,
+  "textes": [
+   "Panier (collant) #F97316"
+  ]
+ },
+ "ecransAPlusieurs": 4,
+ "maxParEcran": 5,
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/funnel/event",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/track-impression",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T10:37:22.721Z"
+}

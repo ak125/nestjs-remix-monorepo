@@ -1,0 +1,73 @@
+{
+ "id": "r1-gamme",
+ "route": "/pieces/filtre-a-huile-7.html",
+ "viewport": "1440x900",
+ "debut": "2026-11-20T10:27:31.454Z",
+ "variantes": {
+  "a2": {
+   "debut": "2026-11-20T10:27:31.514Z",
+   "statut": 200,
+   "injection": [
+    {
+     "variante": "a2",
+     "at": "2026-11-20T10:27:37.051Z",
+     "dejaPresente": false,
+     "presente": true,
+     "regles": 67,
+     "reinjectionsObservateur": 0
+    },
+    {
+     "etape": "avant captures",
+     "presente": true,
+     "variante": "a2",
+     "regles": 67
+    },
+    {
+     "etape": "fin",
+     "presente": true,
+     "variante": "a2",
+     "regles": 67
+    }
+   ],
+   "residus": {
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 26,
+    "stylesEnLigneCouleur": 0,
+    "svgCouleurEnDur": 0
+   },
+   "residusSurvol": {
+    "elementsForces": 236,
+    "totalProprietes": 0,
+    "logoOrangeExclu": 1,
+    "parFamille": {},
+    "exemples": {},
+    "imagesVisibles": 26,
+    "stylesEnLigneCouleur": 0,
+    "svgCouleurEnDur": 0
+   },
+   "boutons": [],
+   "fin": "2026-11-20T10:27:50.829Z"
+  }
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T10:27:50.837Z"
+}

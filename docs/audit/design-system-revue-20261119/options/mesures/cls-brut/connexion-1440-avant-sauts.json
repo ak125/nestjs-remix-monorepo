@@ -1,0 +1,110 @@
+{
+ "id": "connexion",
+ "route": "/login",
+ "viewport": "1440x900",
+ "variante": "avant",
+ "methode": "sauts",
+ "correctif": null,
+ "debut": "2026-11-20T21:45:03.655Z",
+ "fin": "2026-11-20T21:45:11.714Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {},
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 4911.8,
+   "y": 0
+  },
+  {
+   "p": "fin",
+   "t": 6348,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   5033,
+   82
+  ],
+  [
+   5145.4,
+   0
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 203,
+  "load": 389
+ },
+ "fonts": [
+  {
+   "t": 207.7,
+   "polices": [
+    "Outfit 400 800",
+    "DM Sans 400 700"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 2,
+ "scrollHeight": 982,
+ "erreurObs": null,
+ "requetesAbandonnees": 3,
+ "nonGet": 3
+}

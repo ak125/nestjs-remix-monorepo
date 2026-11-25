@@ -1,0 +1,149 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "variante": "avant",
+ "methode": "molette",
+ "correctif": "c2-produit-groupe-sans-glissement.css (dans le HTML)",
+ "debut": "2026-11-20T21:57:17.673Z",
+ "fin": "2026-11-20T21:57:49.674Z",
+ "statut": 200,
+ "injection": {
+  "variante": "avant",
+  "injectee": false
+ },
+ "deroule": {
+  "pasDescente": 141,
+  "pasRemontee": 141
+ },
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-descente": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "molette-remontee": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "molette-descente",
+   "t": 5711.6,
+   "y": 0
+  },
+  {
+   "p": "molette-remontee",
+   "t": 18756.2,
+   "y": 12580
+  },
+  {
+   "p": "fin",
+   "t": 30303.2,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   5734.5,
+   100
+  ],
+  [
+   5834,
+   200
+  ],
+  [
+   5919.1,
+   300
+  ],
+  [
+   6001.6,
+   400
+  ],
+  [
+   6101.2,
+   500
+  ],
+  [
+   6184.5,
+   600
+  ],
+  [
+   6268.8,
+   700
+  ],
+  [
+   6351.9,
+   800
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 958,
+  "load": 1199
+ },
+ "fonts": [
+  {
+   "t": 959.3,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800",
+    "Roboto Mono 400"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 252,
+ "scrollHeight": 13422,
+ "erreurObs": null,
+ "requetesAbandonnees": 6,
+ "nonGet": 6
+}

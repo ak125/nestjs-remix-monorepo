@@ -1,0 +1,146 @@
+{
+ "id": "r0-accueil",
+ "route": "/",
+ "viewport": "390x844",
+ "variante": "a2",
+ "debut": "2026-11-20T10:36:01.862Z",
+ "critere": "bouton ou lien visible, fond calculé orange (teinte 15°–45°, saturation ≥ 0,45, luminosité 0,3–0,9), non recouvert en son centre",
+ "ecrans": [
+  {
+   "ecran": 0,
+   "scrollY": 0,
+   "entieres": 1,
+   "partielles": 0,
+   "textes": [
+    "Rechercher des pièces (désactivé) #FED7AA"
+   ]
+  },
+  {
+   "ecran": 1,
+   "scrollY": 846,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 2,
+   "scrollY": 1688,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 3,
+   "scrollY": 2532,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 4,
+   "scrollY": 3376,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 5,
+   "scrollY": 4220,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 6,
+   "scrollY": 5064,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 7,
+   "scrollY": 5908,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 8,
+   "scrollY": 6752,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  },
+  {
+   "ecran": 9,
+   "scrollY": 7510,
+   "entieres": 0,
+   "partielles": 0,
+   "textes": []
+  }
+ ],
+ "statut": 200,
+ "injection": [
+  {
+   "variante": "a2",
+   "at": "2026-11-20T10:36:07.537Z",
+   "dejaPresente": false,
+   "presente": true,
+   "regles": 67,
+   "reinjectionsObservateur": 0
+  },
+  {
+   "etape": "fin",
+   "presente": true,
+   "variante": "a2",
+   "regles": 67
+  }
+ ],
+ "toutePage": {
+  "nombre": 1,
+  "actions": [
+   {
+    "texte": "Rechercher des pièces",
+    "balise": "button",
+    "fond": "#FED7AA",
+    "desactive": true,
+    "collant": false,
+    "rect": [
+     48,
+     629,
+     294,
+     48
+    ]
+   }
+  ]
+ },
+ "premierEcran": {
+  "ecran": 0,
+  "scrollY": 0,
+  "entieres": 1,
+  "partielles": 0,
+  "textes": [
+   "Rechercher des pièces (désactivé) #FED7AA"
+  ]
+ },
+ "ecransAPlusieurs": 0,
+ "maxParEcran": 1,
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T10:36:16.457Z"
+}

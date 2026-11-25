@@ -1,0 +1,397 @@
+{
+ "id": "r2-produit",
+ "route": "/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html",
+ "viewport": "390x844",
+ "variante": "a3",
+ "methode": "sauts",
+ "correctif": null,
+ "debut": "2026-11-20T21:32:01.434Z",
+ "fin": "2026-11-20T21:32:12.666Z",
+ "statut": 200,
+ "injection": {
+  "variante": "a3",
+  "at": "2026-11-20T21:32:07.375Z",
+  "dejaPresente": false,
+  "presente": true,
+  "regles": 83,
+  "reinjectionsObservateur": 0
+ },
+ "deroule": {},
+ "cls": {
+  "total": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "horsInjection": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "chargement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 2
+  },
+  "defilement": {
+   "somme": 0,
+   "officiel": 0,
+   "n": 0,
+   "nSaisie": 0
+  },
+  "parPhase": {
+   "chargement": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 2
+   },
+   "injection": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "sauts": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   },
+   "fin": {
+    "somme": 0,
+    "officiel": 0,
+    "n": 0,
+    "nSaisie": 0
+   }
+  }
+ },
+ "shifts": [
+  {
+   "t": 609.1,
+   "v": 0.02043,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "loading",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile NPS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      285,
+      177,
+      348
+     ],
+     "apres": [
+      13,
+      266,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile WIX FILTERS — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      285,
+      177,
+      348
+     ],
+     "apres": [
+      200,
+      266,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile MGA — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      0,
+      177,
+      275
+     ],
+     "apres": [
+      13,
+      0,
+      177,
+      257
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 9.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      0,
+      177,
+      275
+     ],
+     "apres": [
+      200,
+      0,
+      177,
+      257
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "Voir Filtre à huile COOPERS FIAAM — 10.00",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      642,
+      177,
+      202
+     ],
+     "apres": [
+      13,
+      624,
+      177,
+      220
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  },
+  {
+   "t": 647.8,
+   "v": 0.01661,
+   "input": true,
+   "phase": "chargement",
+   "y": 0,
+   "yRappel": 0,
+   "etat": "loading",
+   "feuilles": 4,
+   "hydrate": false,
+   "sources": [
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MECAFILTER | ELH4391 5 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      176,
+      177,
+      348
+     ],
+     "apres": [
+      13,
+      158,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MANN FILTER | W 75/3 6 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      176,
+      177,
+      348
+     ],
+     "apres": [
+      200,
+      158,
+      177,
+      348
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MANN FILTER | W 79 7 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      13,
+      534,
+      177,
+      310
+     ],
+     "apres": [
+      13,
+      515,
+      177,
+      329
+     ]
+    },
+    {
+     "sel": "div.space-y-8 > div.animate-in.fade-in > div.grid.grid-cols-2 > div.pieces-product-card.group",
+     "texte": "7 MGA | FH1001 8 ,00€ Livré 24-48h Ajouter",
+     "trace": [
+      "div.pieces-product-card.group.relative.bg-white.rounded-xl.transition-all",
+      "div.grid.grid-cols-2.sm:grid-cols-2.lg:grid-cols-3.gap-4.sm:gap-5",
+      "div.animate-in.fade-in.slide-in-from-top.duration-500",
+      "div.space-y-8",
+      "div.transition-opacity.duration-150"
+     ],
+     "position": "relative",
+     "avant": [
+      200,
+      534,
+      177,
+      310
+     ],
+     "apres": [
+      200,
+      515,
+      177,
+      329
+     ]
+    }
+   ],
+   "poussoirs": [],
+   "poussoirsTotal": 0
+  }
+ ],
+ "phases": [
+  {
+   "p": "chargement",
+   "t": 0,
+   "y": 0
+  },
+  {
+   "p": "injection",
+   "t": 5293.9,
+   "y": 0
+  },
+  {
+   "p": "sauts",
+   "t": 6961.5,
+   "y": 0
+  },
+  {
+   "p": "fin",
+   "t": 9532.7,
+   "y": 0
+  }
+ ],
+ "scrollDebut": [
+  [
+   7079.2,
+   700
+  ],
+  [
+   7114.7,
+   702
+  ],
+  [
+   7194.6,
+   1400
+  ],
+  [
+   7312.2,
+   2100
+  ],
+  [
+   7429.5,
+   2800
+  ],
+  [
+   7545.3,
+   3500
+  ],
+  [
+   7661.9,
+   4200
+  ],
+  [
+   7777.3,
+   4900
+  ]
+ ],
+ "navigation": {
+  "domContentLoaded": 664,
+  "load": 780
+ },
+ "fonts": [
+  {
+   "t": 511.1,
+   "polices": [
+    "DM Sans 400 700",
+    "Outfit 400 800",
+    "Roboto Mono 400"
+   ]
+  }
+ ],
+ "imgs": 0,
+ "imgsSansDims": [],
+ "nScroll": 13,
+ "scrollHeight": 13091,
+ "erreurObs": null,
+ "requetesAbandonnees": 6,
+ "nonGet": 6
+}

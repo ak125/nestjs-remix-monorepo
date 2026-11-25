@@ -45390,6 +45390,671 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/actions-orange-a2-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 48,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/actions-orange-a2-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/chronologie-chargement-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 49,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/chronologie-chargement-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/cls-causes-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 154,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/cls-causes-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/condense-cls-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 47,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/condense-cls-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/condense-option-a2-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 67,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/condense-option-a2-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/condense-option-a3-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 156,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/condense-option-a3-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/condense-option-c-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 46,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/condense-option-c-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/condense-options-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 68,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/condense-options-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/etats-vert-rouge-a3-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 16,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/etats-vert-rouge-a3-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/fonds-sombres-options-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 30,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/fonds-sombres-options-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/genere-options-css-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 206,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/genere-options-css-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/injection-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 26,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/injection-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/inventaire-options-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 30,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/inventaire-options-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/mesure-option-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 18,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/mesure-option-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/options-captures-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 139,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/options-captures-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/roles-options-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 28,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/roles-options-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/sonde-collants-a3-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 27,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/sonde-collants-a3-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/sonde-point-ajouter-a3-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 22,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/sonde-point-ajouter-a3-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/sonde-rechercher-1440-a3-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 19,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/sonde-rechercher-1440-a3-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/sonde-recouvrement-a3-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 38,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/sonde-recouvrement-a3-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/options/scripts/verts-option-c-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 90,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/options/scripts/verts-option-c-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/compactage-json-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 13,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/compactage-json-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/composants-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 40,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/composants-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/jetons-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 25,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/jetons-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/lib-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 132,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/lib-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/mesure-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 378,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/mesure-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/reflow-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 131,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/reflow-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/selecteur-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 173,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/selecteur-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/sonde-entete-espacements-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 22,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/sonde-entete-espacements-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/sonde-feuilles-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 29,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/sonde-feuilles-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/sonde-focus-marque-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 31,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/sonde-focus-marque-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/sonde-superpositions-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 45,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/sonde-superpositions-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/synthese-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 107,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/synthese-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/tables-readme-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 107,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/tables-readme-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "docs/audit/design-system-revue-20261119/scripts/verif-manuelle-dz.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 50,
+      "owner": "__unassigned__",
+      "path": "docs/audit/design-system-revue-20261119/scripts/verif-manuelle-dz.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "docs/audit/mandat-bb-20261116/scripts/mesure/ownership-coverage.cjs",
       "importedBy": [],
       "imports": [],

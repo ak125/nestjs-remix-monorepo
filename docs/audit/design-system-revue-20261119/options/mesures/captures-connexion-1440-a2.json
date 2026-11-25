@@ -1,0 +1,230 @@
+{
+ "id": "connexion",
+ "route": "/login",
+ "viewport": "1440x900",
+ "debut": "2026-11-20T10:34:47.819Z",
+ "variantes": {
+  "a2": {
+   "debut": "2026-11-20T10:34:47.872Z",
+   "statut": 200,
+   "injection": [
+    {
+     "variante": "a2",
+     "at": "2026-11-20T10:34:53.073Z",
+     "dejaPresente": false,
+     "presente": true,
+     "regles": 67,
+     "reinjectionsObservateur": 0
+    },
+    {
+     "etape": "avant captures",
+     "presente": true,
+     "variante": "a2",
+     "regles": 67
+    },
+    {
+     "etape": "fin",
+     "presente": true,
+     "variante": "a2",
+     "regles": 67
+    }
+   ],
+   "residus": {
+    "totalProprietes": 4,
+    "logoOrangeExclu": 1,
+    "parFamille": {
+     "bleu, cyan": 1,
+     "vert vif": 1,
+     "orange, ambre, jaune": 1,
+     "rouge, corail": 1
+    },
+    "exemples": {
+     "bleu, cyan": [
+      {
+       "prop": "fill",
+       "couleur": "#4285F4",
+       "balise": "path",
+       "classes": "",
+       "texte": ""
+      }
+     ],
+     "vert vif": [
+      {
+       "prop": "fill",
+       "couleur": "#34A853",
+       "balise": "path",
+       "classes": "",
+       "texte": ""
+      }
+     ],
+     "orange, ambre, jaune": [
+      {
+       "prop": "fill",
+       "couleur": "#FBBC05",
+       "balise": "path",
+       "classes": "",
+       "texte": ""
+      }
+     ],
+     "rouge, corail": [
+      {
+       "prop": "fill",
+       "couleur": "#EA4335",
+       "balise": "path",
+       "classes": "",
+       "texte": ""
+      }
+     ]
+    },
+    "imagesVisibles": 0,
+    "stylesEnLigneCouleur": 0,
+    "svgCouleurEnDur": 4
+   },
+   "residusSurvol": {
+    "elementsForces": 17,
+    "totalProprietes": 4,
+    "logoOrangeExclu": 1,
+    "parFamille": {
+     "bleu, cyan": 1,
+     "vert vif": 1,
+     "orange, ambre, jaune": 1,
+     "rouge, corail": 1
+    },
+    "exemples": {
+     "bleu, cyan": [
+      {
+       "prop": "fill",
+       "couleur": "#4285F4",
+       "balise": "path",
+       "classes": "",
+       "texte": ""
+      }
+     ],
+     "vert vif": [
+      {
+       "prop": "fill",
+       "couleur": "#34A853",
+       "balise": "path",
+       "classes": "",
+       "texte": ""
+      }
+     ],
+     "orange, ambre, jaune": [
+      {
+       "prop": "fill",
+       "couleur": "#FBBC05",
+       "balise": "path",
+       "classes": "",
+       "texte": ""
+      }
+     ],
+     "rouge, corail": [
+      {
+       "prop": "fill",
+       "couleur": "#EA4335",
+       "balise": "path",
+       "classes": "",
+       "texte": ""
+      }
+     ]
+    },
+    "imagesVisibles": 0,
+    "stylesEnLigneCouleur": 0,
+    "svgCouleurEnDur": 4
+   },
+   "boutons": [
+    {
+     "bouton": "Se connecter (bouton principal du formulaire)",
+     "selecteur": "form[method=\"post\" i] button[type=\"submit\"]",
+     "etats": [
+      {
+       "etat": "repos",
+       "texte": "Se connecter",
+       "fond": "#F97316",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 5.93,
+       "ratioBoutonPage": 2.8,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": false,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-connexion-1440-connexion-a2-repos.png"
+      },
+      {
+       "etat": "survol",
+       "texte": "Se connecter",
+       "fond": "#EA580C",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 4.67,
+       "ratioBoutonPage": 3.56,
+       "opacite": "1",
+       "survol": true,
+       "focusVisible": false,
+       "desactive": false,
+       "ombreOuAnneau": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0",
+       "capture": "bouton-connexion-1440-connexion-a2-survol.png"
+      },
+      {
+       "etat": "focus",
+       "texte": "Se connecter",
+       "fond": "#F97316",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 5.93,
+       "ratioBoutonPage": 2.8,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": true,
+       "desactive": false,
+       "anneau": "2px solid #0F1E38",
+       "ratioAnneauPage": 16.63,
+       "ratioAnneauBouton": 5.93,
+       "capture": "bouton-connexion-1440-connexion-a2-focus.png"
+      },
+      {
+       "etat": "désactivé (simulé : attribut disabled posé dans le DOM)",
+       "texte": "Se connecter",
+       "fond": "#FED7AA",
+       "texteCouleur": "#0F1E38",
+       "fondPage": "#FFFFFF",
+       "ratioTexte": 12.28,
+       "ratioBoutonPage": 1.35,
+       "opacite": "1",
+       "survol": false,
+       "focusVisible": false,
+       "desactive": true,
+       "capture": "bouton-connexion-1440-connexion-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+      }
+     ]
+    }
+   ],
+   "fin": "2026-11-20T10:34:59.676Z"
+  }
+ },
+ "requetesAbandonnees": [
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/attribution/landing",
+   "raison": "non GET"
+  },
+  {
+   "method": "POST",
+   "url": "http://127.0.0.1:3000/api/seo/cwv/beacon",
+   "raison": "non GET"
+  }
+ ],
+ "fin": "2026-11-20T10:34:59.686Z"
+}

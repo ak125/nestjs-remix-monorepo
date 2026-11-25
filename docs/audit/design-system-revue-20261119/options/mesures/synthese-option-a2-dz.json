@@ -1,0 +1,2711 @@
+{
+ "genere": "2026-11-20T10:38:32.653Z",
+ "sources": {
+  "avant/r0-accueil-390": {
+   "sha256": "8e436a28444c30cd5f0c3ca0c4a4cc36371061b155dd46351ec531a5884e557d",
+   "debut": "2026-11-20T08:53:00.929Z"
+  },
+  "a/r0-accueil-390": {
+   "sha256": "97a02e798376f920d734ec8b60feeaa6255be17b153042ab6b99b44b7563f781",
+   "debut": "2026-11-20T09:34:33.724Z"
+  },
+  "a2/r0-accueil-390": {
+   "sha256": "fb2a64afb1d8bf2a442d7559c52adfd0a19ec8ae6df485ff32e87ef1659d1ef5",
+   "debut": "2026-11-20T10:23:32.823Z"
+  },
+  "b/r0-accueil-390": {
+   "sha256": "b3189f8e79a75704262b0dbba31b609b4964cafb5791e3d9d3879024aeae0865",
+   "debut": "2026-11-20T09:43:09.992Z"
+  },
+  "avant/r0-accueil-1440": {
+   "sha256": "d965c4c2826e7274b58fcd10e9c3e71e9fcebdc7f2dc98cd16a894ee5b66a231",
+   "debut": "2026-11-20T08:54:00.025Z"
+  },
+  "a/r0-accueil-1440": {
+   "sha256": "ebb86dd81bf647655eb913d43aead61cb9628fa7e1c205cf5e71897252baf0ea",
+   "debut": "2026-11-20T09:35:32.201Z"
+  },
+  "a2/r0-accueil-1440": {
+   "sha256": "5df43127d2686f63a2b172c0ad0ff0a8955fab70fd680ed82c95162112060894",
+   "debut": "2026-11-20T10:25:21.643Z"
+  },
+  "b/r0-accueil-1440": {
+   "sha256": "ce42c3617236f1dbfdf7d4f4482011c3218ae3ccfb3cb7cde7eb74ef75a2f077",
+   "debut": "2026-11-20T09:44:08.278Z"
+  },
+  "avant/r1-gamme-390": {
+   "sha256": "aca1716de6d1e9317e597feac39e0a7a42397b8b0d6f1ce887437f93f191b031",
+   "debut": "2026-11-20T08:55:01.515Z"
+  },
+  "a/r1-gamme-390": {
+   "sha256": "c9d2feba45a9b791a3fee217bece467064a92585f9c50af838b2540d6cab265f",
+   "debut": "2026-11-20T09:36:32.527Z"
+  },
+  "a2/r1-gamme-390": {
+   "sha256": "d35d1df9e7a8d61230d1ad995ad7f04f6765c8224abeb9c608ffc91077e432bb",
+   "debut": "2026-11-20T10:26:42.104Z"
+  },
+  "b/r1-gamme-390": {
+   "sha256": "8783ad55b83541102f9e79262f13d26673d7b10d3a526ca308642504aa248357",
+   "debut": "2026-11-20T09:45:08.866Z"
+  },
+  "avant/r1-gamme-1440": {
+   "sha256": "bb88990156b985a6fc547bab5818613d8cc7a1378bb3ff56151f63f365f048ac",
+   "debut": "2026-11-20T08:55:56.662Z"
+  },
+  "a/r1-gamme-1440": {
+   "sha256": "10f97752d52fb2baa0f0533c9318aaf65e94bd9c2ff04b8d08cc21d8ea75b8a7",
+   "debut": "2026-11-20T09:37:21.670Z"
+  },
+  "a2/r1-gamme-1440": {
+   "sha256": "df86024394237a1f3221c94738ee94e11c954c9448dd7e37c65b6d818e730169",
+   "debut": "2026-11-20T10:27:51.294Z"
+  },
+  "b/r1-gamme-1440": {
+   "sha256": "081e2a5b64912156edbe4703635e5705d8bd4f67ce7e1520dcbae22532d6bb78",
+   "debut": "2026-11-20T09:45:58.537Z"
+  },
+  "avant/r2-produit-390": {
+   "sha256": "65ca36b111cad69e8ed8c0ec2a5db9050a6d2c7ff22957d168f37d4f07c301db",
+   "debut": "2026-11-20T08:56:54.895Z"
+  },
+  "a/r2-produit-390": {
+   "sha256": "958675482a015d4e1afc3b65f837fc8b36b62feed86a61cad2c4da9efd228ce4",
+   "debut": "2026-11-20T09:38:15.170Z"
+  },
+  "a2/r2-produit-390": {
+   "sha256": "e37632691acffb2376fdc0370334bc91305572a38a5b0b6a80811eea849d1623",
+   "debut": "2026-11-20T10:29:13.216Z"
+  },
+  "b/r2-produit-390": {
+   "sha256": "11d96d5c650d62956a4a57d0149876e54c10800a15c226f7c30917eee470a508",
+   "debut": "2026-11-20T09:46:52.201Z"
+  },
+  "avant/r2-produit-1440": {
+   "sha256": "82fb38ffa9a14ad7cc9c2b8c9420f276a27be601a175454430ad3ddafeda2ffd",
+   "debut": "2026-11-20T08:58:09.540Z"
+  },
+  "a/r2-produit-1440": {
+   "sha256": "e06c6d704d87c7c57823f464ff242d7d7bdddb6f70902fcb63cb5ada63386aca",
+   "debut": "2026-11-20T09:39:31.540Z"
+  },
+  "a2/r2-produit-1440": {
+   "sha256": "651fda503e0699373f84d438c45ed48c0e0a8257353548c4dea2d2cb3055fa5a",
+   "debut": "2026-11-20T10:31:04.414Z"
+  },
+  "b/r2-produit-1440": {
+   "sha256": "93207d3407bbbf2d123f37a2370ca96ff903b9c649a1eb193c584462173adb3c",
+   "debut": "2026-11-20T09:48:08.379Z"
+  },
+  "avant/panier-vide-390": {
+   "sha256": "60ceed27583682f4e2c1d0ea8b3dc30b85ef2862e65bac0e43e6269305d99f99",
+   "debut": "2026-11-20T08:59:25.306Z"
+  },
+  "a/panier-vide-390": {
+   "sha256": "66d8e75d9c966ba817092ebffd4c2b291e52bfce7d958094ab4f6685ee60f8fb",
+   "debut": "2026-11-20T09:40:50.487Z"
+  },
+  "a2/panier-vide-390": {
+   "sha256": "e993ee7dc8848bc77364ba8e71593cc136546e86a9d33b4082041ff460ca0fa8",
+   "debut": "2026-11-20T10:32:36.670Z"
+  },
+  "b/panier-vide-390": {
+   "sha256": "3182385a87341bd5005dd7a9886acdcc87feba0119143253a02e2b52361dc73b",
+   "debut": "2026-11-20T09:49:27.882Z"
+  },
+  "avant/panier-vide-1440": {
+   "sha256": "46eab5c6884513c70fb633dfde729d849f6ef508a2f024255584bb8b9162fba7",
+   "debut": "2026-11-20T08:59:59.502Z"
+  },
+  "a/panier-vide-1440": {
+   "sha256": "f8efb726f4f46d42a7d6ef4a09040ee8856e685b114f4c60521f8f96c18b3d27",
+   "debut": "2026-11-20T09:41:25.890Z"
+  },
+  "a2/panier-vide-1440": {
+   "sha256": "8b85c76dd085c8bba13761429a716b149b30137f472af7383c66d295bfcc14cc",
+   "debut": "2026-11-20T10:33:24.936Z"
+  },
+  "b/panier-vide-1440": {
+   "sha256": "827fadfd3a6bf719ac9e28d671709f84758842d93b2ed93c368da8ea3f2da091",
+   "debut": "2026-11-20T09:50:03.389Z"
+  },
+  "avant/connexion-390": {
+   "sha256": "8f2e3aa36ad412959119be425128617bf8e645aca2f5960b1675db06a8a47ea6",
+   "debut": "2026-11-20T09:00:34.687Z"
+  },
+  "a/connexion-390": {
+   "sha256": "ecc70f2c27b1afa09546424d7135e635b1846d0504adb01174c5a064dfa5c4b0",
+   "debut": "2026-11-20T09:42:02.914Z"
+  },
+  "a2/connexion-390": {
+   "sha256": "443744ee3273c69162d6ef69631a65678aeb072b532de1ac900d20d639722db4",
+   "debut": "2026-11-20T10:34:14.385Z"
+  },
+  "b/connexion-390": {
+   "sha256": "22d96ac1c9e2993f1883acf58308924bdb2db01f1fd21a4dad254081f6935c6f",
+   "debut": "2026-11-20T09:50:40.229Z"
+  },
+  "avant/connexion-1440": {
+   "sha256": "896efa8f91099203885869453c995dcee379867d4af56c5f542f1e346ad77719",
+   "debut": "2026-11-20T09:01:06.421Z"
+  },
+  "a/connexion-1440": {
+   "sha256": "e06f840c2e040a62fe56e4c00f071548b083b2f8132a3601deb964571bbbacf8",
+   "debut": "2026-11-20T09:42:36.227Z"
+  },
+  "a2/connexion-1440": {
+   "sha256": "d442a45e0f803c00dad4fc62360fb70a502258d0a52404654baba14ff5c5d6de",
+   "debut": "2026-11-20T10:35:00.115Z"
+  },
+  "b/connexion-1440": {
+   "sha256": "809df7cc5100169e44e553cc744150f3d9f58280c16f0d62be2990d1354552a5",
+   "debut": "2026-11-20T09:51:13.426Z"
+  }
+ },
+ "defauts": {
+  "r0-accueil-390": {
+   "AVANT": {
+    "textes": 39,
+    "bords": 3,
+    "focus": 12,
+    "axeContraste": 31,
+    "exemplesTextes": [
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15"
+     },
+     {
+      "texte": "Retours 30j",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "text-white/40 whitespace-nowrap"
+     },
+     {
+      "texte": "Année",
+      "fg": "#90a1b9",
+      "bg": "#ffffff",
+      "ratio": 2.63,
+      "seuil": 4.5,
+      "classes": "mb-1.5 block text-[13px] font-semibold text-slate-400"
+     },
+     {
+      "texte": "Modèle",
+      "fg": "#90a1b9",
+      "bg": "#ffffff",
+      "ratio": 2.63,
+      "seuil": 4.5,
+      "classes": "mb-1.5 block text-[13px] font-semibold text-slate-400"
+     },
+     {
+      "texte": "Motorisation",
+      "fg": "#90a1b9",
+      "bg": "#ffffff",
+      "ratio": 2.63,
+      "seuil": 4.5,
+      "classes": "mb-1.5 block text-[13px] font-semibold text-slate-400"
+     },
+     {
+      "texte": "19",
+      "fg": "#f97316",
+      "bg": "#fef1e7",
+      "ratio": 2.53,
+      "seuil": 4.5,
+      "classes": "px-1.5 py-0.5 text-xs rounded-full bg-slate-200/60 font-medium leading-none group-data-[state=active]:bg-cta/10 group-data-[state=active]:text-cta"
+     }
+    ]
+   },
+   "A": {
+    "textes": 3,
+    "bords": 0,
+    "focus": 4,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "Le système de filtration du véhicule est",
+      "fg": "#4b5563",
+      "bg": "#ffffff",
+      "ratio": 1.27,
+      "seuil": 4.5,
+      "classes": "text-[12px] text-slate-400 mb-3 line-clamp-1 leading-relaxed"
+     },
+     {
+      "texte": "Le système de freinage est l'élément de ",
+      "fg": "#4b5563",
+      "bg": "#ffffff",
+      "ratio": 1.27,
+      "seuil": 4.5,
+      "classes": "text-[12px] text-slate-400 mb-3 line-clamp-1 leading-relaxed"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-4 right-4 px-2.5 py-1 bg-neutral-900/20 backdrop-blur rounded-full text-[10px] font-semibold text-white flex"
+     }
+    ]
+   },
+   "A2": {
+    "textes": 3,
+    "bords": 0,
+    "focus": 5,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "Le système de filtration du véhicule est",
+      "fg": "#4b5563",
+      "bg": "#ffffff",
+      "ratio": 1.27,
+      "seuil": 4.5,
+      "classes": "text-[12px] text-slate-400 mb-3 line-clamp-1 leading-relaxed"
+     },
+     {
+      "texte": "Le système de freinage est l'élément de ",
+      "fg": "#4b5563",
+      "bg": "#ffffff",
+      "ratio": 1.27,
+      "seuil": 4.5,
+      "classes": "text-[12px] text-slate-400 mb-3 line-clamp-1 leading-relaxed"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-4 right-4 px-2.5 py-1 bg-neutral-900/20 backdrop-blur rounded-full text-[10px] font-semibold text-white flex"
+     }
+    ]
+   },
+   "B": {
+    "textes": 3,
+    "bords": 0,
+    "focus": 5,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "Le système de filtration du véhicule est",
+      "fg": "#4b5563",
+      "bg": "#ffffff",
+      "ratio": 1.27,
+      "seuil": 4.5,
+      "classes": "text-[12px] text-slate-400 mb-3 line-clamp-1 leading-relaxed"
+     },
+     {
+      "texte": "Le système de freinage est l'élément de ",
+      "fg": "#4b5563",
+      "bg": "#ffffff",
+      "ratio": 1.27,
+      "seuil": 4.5,
+      "classes": "text-[12px] text-slate-400 mb-3 line-clamp-1 leading-relaxed"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-4 right-4 px-2.5 py-1 bg-neutral-900/20 backdrop-blur rounded-full text-[10px] font-semibold text-white flex"
+     }
+    ]
+   }
+  },
+  "r0-accueil-1440": {
+   "AVANT": {
+    "textes": 41,
+    "bords": 3,
+    "focus": 3,
+    "axeContraste": 26,
+    "exemplesTextes": [
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15"
+     },
+     {
+      "texte": "Retours 30j",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "text-white/40 whitespace-nowrap"
+     },
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15 hidden lg:inline"
+     },
+     {
+      "texte": "01 48 47 96 27",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "hidden lg:flex items-center gap-1.5 text-white/40 hover:text-white transition-colors whitespace-nowrap"
+     },
+     {
+      "texte": "Type Mine",
+      "fg": "#62748e",
+      "bg": "#f1f5f9",
+      "ratio": 4.35,
+      "seuil": 4.5,
+      "classes": "flex h-12 items-center justify-center gap-2 rounded-[16px] text-[14px] font-semibold transition-all text-slate-500 hover:text-slate-800"
+     },
+     {
+      "texte": "Référence",
+      "fg": "#62748e",
+      "bg": "#f1f5f9",
+      "ratio": 4.35,
+      "seuil": 4.5,
+      "classes": "flex h-12 items-center justify-center gap-2 rounded-[16px] text-[14px] font-semibold transition-all text-slate-500 hover:text-slate-800"
+     }
+    ]
+   },
+   "A": {
+    "textes": 4,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 1,
+    "exemplesTextes": [
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#d3d3d4",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     }
+    ]
+   },
+   "A2": {
+    "textes": 4,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 1,
+    "exemplesTextes": [
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#d3d3d4",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     }
+    ]
+   },
+   "B": {
+    "textes": 4,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 1,
+    "exemplesTextes": [
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#c8cbcf",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     },
+     {
+      "texte": "5 min",
+      "fg": "#ffffff",
+      "bg": "#d3d3d4",
+      "ratio": 1.5,
+      "seuil": 4.5,
+      "classes": "absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex"
+     }
+    ]
+   }
+  },
+  "r1-gamme-390": {
+   "AVANT": {
+    "textes": 79,
+    "bords": 3,
+    "focus": 14,
+    "axeContraste": 25,
+    "exemplesTextes": [
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15"
+     },
+     {
+      "texte": "Retours 30j",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "text-white/40 whitespace-nowrap"
+     },
+     {
+      "texte": "Accueil",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.64,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     },
+     {
+      "texte": "Pièces Auto",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.64,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     },
+     {
+      "texte": "Année",
+      "fg": "#90a1b9",
+      "bg": "#ffffff",
+      "ratio": 2.63,
+      "seuil": 4.5,
+      "classes": "mb-1.5 block text-[13px] font-semibold text-slate-400"
+     },
+     {
+      "texte": "Modèle",
+      "fg": "#90a1b9",
+      "bg": "#ffffff",
+      "ratio": 2.63,
+      "seuil": 4.5,
+      "classes": "mb-1.5 block text-[13px] font-semibold text-slate-400"
+     }
+    ]
+   },
+   "A": {
+    "textes": 2,
+    "bords": 0,
+    "focus": 6,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "Accueil",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.64,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     },
+     {
+      "texte": "Pièces Auto",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.64,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     }
+    ]
+   },
+   "A2": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 6,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "B": {
+    "textes": 2,
+    "bords": 0,
+    "focus": 6,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "Accueil",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.64,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     },
+     {
+      "texte": "Pièces Auto",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.64,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     }
+    ]
+   }
+  },
+  "r1-gamme-1440": {
+   "AVANT": {
+    "textes": 76,
+    "bords": 3,
+    "focus": 1,
+    "axeContraste": 21,
+    "exemplesTextes": [
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15"
+     },
+     {
+      "texte": "Retours 30j",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "text-white/40 whitespace-nowrap"
+     },
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15 hidden lg:inline"
+     },
+     {
+      "texte": "01 48 47 96 27",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "hidden lg:flex items-center gap-1.5 text-white/40 hover:text-white transition-colors whitespace-nowrap"
+     },
+     {
+      "texte": "Accueil",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.62,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     },
+     {
+      "texte": "Pièces Auto",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.62,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     }
+    ]
+   },
+   "A": {
+    "textes": 2,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "Accueil",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.62,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     },
+     {
+      "texte": "Pièces Auto",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.62,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     }
+    ]
+   },
+   "A2": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "B": {
+    "textes": 2,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "Accueil",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.62,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     },
+     {
+      "texte": "Pièces Auto",
+      "fg": "#0d4473",
+      "bg": "#f5f7fa",
+      "ratio": 1.62,
+      "seuil": 4.5,
+      "classes": "hover:text-white/50 transition-colors"
+     }
+    ]
+   }
+  },
+  "r2-produit-390": {
+   "AVANT": {
+    "textes": 97,
+    "bords": 22,
+    "focus": 25,
+    "axeContraste": 9,
+    "exemplesTextes": [
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15"
+     },
+     {
+      "texte": "Retours 30j",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "text-white/40 whitespace-nowrap"
+     },
+     {
+      "texte": "Filtre à huile RENAULT CLIO III 1.5 dCi ",
+      "fg": "#020817",
+      "bg": "#f3f4f6",
+      "ratio": 1.44,
+      "seuil": 3,
+      "classes": "text-foreground from-white via-white to-white/90 drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+     },
+     {
+      "texte": "À partir de",
+      "fg": "#fcfdfd",
+      "bg": "#f5f6f7",
+      "ratio": 3.21,
+      "seuil": 4.5,
+      "classes": "font-body text-[10px] font-bold uppercase tracking-wider text-white/75"
+     },
+     {
+      "texte": "22",
+      "fg": "#ffffff",
+      "bg": "#f4f5f7",
+      "ratio": 2.73,
+      "seuil": 4.5,
+      "classes": "font-bold"
+     },
+     {
+      "texte": "référence s",
+      "fg": "#ffffff",
+      "bg": "#f4f5f7",
+      "ratio": 2.12,
+      "seuil": 4.5,
+      "classes": "font-body"
+     }
+    ]
+   },
+   "A": {
+    "textes": 0,
+    "bords": 20,
+    "focus": 15,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "A2": {
+    "textes": 0,
+    "bords": 20,
+    "focus": 15,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "B": {
+    "textes": 0,
+    "bords": 20,
+    "focus": 15,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   }
+  },
+  "r2-produit-1440": {
+   "AVANT": {
+    "textes": 105,
+    "bords": 21,
+    "focus": 5,
+    "axeContraste": 5,
+    "exemplesTextes": [
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15"
+     },
+     {
+      "texte": "Retours 30j",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "text-white/40 whitespace-nowrap"
+     },
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15 hidden lg:inline"
+     },
+     {
+      "texte": "01 48 47 96 27",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "hidden lg:flex items-center gap-1.5 text-white/40 hover:text-white transition-colors whitespace-nowrap"
+     },
+     {
+      "texte": "Filtre à huile RENAULT CLIO III 1.5 dCi ",
+      "fg": "#020817",
+      "bg": "#f3f4f6",
+      "ratio": 1.95,
+      "seuil": 3,
+      "classes": "text-foreground from-white via-white to-white/90 drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+     },
+     {
+      "texte": "À partir de",
+      "fg": "#fcfdfd",
+      "bg": "#f5f6f7",
+      "ratio": 2.93,
+      "seuil": 4.5,
+      "classes": "font-body text-[10px] font-bold uppercase tracking-wider text-white/75"
+     }
+    ]
+   },
+   "A": {
+    "textes": 3,
+    "bords": 20,
+    "focus": 2,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "22",
+      "fg": "#ffffff",
+      "bg": "#ffffff",
+      "ratio": 3.14,
+      "seuil": 4.5,
+      "classes": "text-white font-bold text-xs"
+     },
+     {
+      "texte": "résultat s",
+      "fg": "#ffffff",
+      "bg": "#ffffff",
+      "ratio": 1.48,
+      "seuil": 4.5,
+      "classes": "text-white/60 text-[10px] ml-1"
+     },
+     {
+      "texte": "Numéros de pièce d'origine pour votre RE",
+      "fg": "#9ca3af",
+      "bg": "#ffffff",
+      "ratio": 2.54,
+      "seuil": 4.5,
+      "classes": "text-slate-300 text-sm mt-1"
+     }
+    ]
+   },
+   "A2": {
+    "textes": 4,
+    "bords": 20,
+    "focus": 2,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "Véhicule sélectionné",
+      "fg": "#4b5563",
+      "bg": "#feffff",
+      "ratio": 3.32,
+      "seuil": 4.5,
+      "classes": "text-xs text-gray-400 md:text-gray-500 hidden md:block"
+     },
+     {
+      "texte": "22",
+      "fg": "#ffffff",
+      "bg": "#ffffff",
+      "ratio": 3.14,
+      "seuil": 4.5,
+      "classes": "text-white font-bold text-xs"
+     },
+     {
+      "texte": "résultat s",
+      "fg": "#ffffff",
+      "bg": "#ffffff",
+      "ratio": 1.48,
+      "seuil": 4.5,
+      "classes": "text-white/60 text-[10px] ml-1"
+     },
+     {
+      "texte": "Numéros de pièce d'origine pour votre RE",
+      "fg": "#9ca3af",
+      "bg": "#ffffff",
+      "ratio": 2.54,
+      "seuil": 4.5,
+      "classes": "text-slate-300 text-sm mt-1"
+     }
+    ]
+   },
+   "B": {
+    "textes": 3,
+    "bords": 20,
+    "focus": 2,
+    "axeContraste": 0,
+    "exemplesTextes": [
+     {
+      "texte": "22",
+      "fg": "#ffffff",
+      "bg": "#ffffff",
+      "ratio": 3.14,
+      "seuil": 4.5,
+      "classes": "text-white font-bold text-xs"
+     },
+     {
+      "texte": "résultat s",
+      "fg": "#ffffff",
+      "bg": "#ffffff",
+      "ratio": 1.48,
+      "seuil": 4.5,
+      "classes": "text-white/60 text-[10px] ml-1"
+     },
+     {
+      "texte": "Numéros de pièce d'origine pour votre RE",
+      "fg": "#9ca3af",
+      "bg": "#ffffff",
+      "ratio": 2.54,
+      "seuil": 4.5,
+      "classes": "text-slate-300 text-sm mt-1"
+     }
+    ]
+   }
+  },
+  "panier-vide-390": {
+   "AVANT": {
+    "textes": 8,
+    "bords": 1,
+    "focus": 5,
+    "axeContraste": 6,
+    "exemplesTextes": [
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15"
+     },
+     {
+      "texte": "Retours 30j",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "text-white/40 whitespace-nowrap"
+     },
+     {
+      "texte": "Lancer un diagnostic gratuit",
+      "fg": "#009689",
+      "bg": "#ffffff",
+      "ratio": 3.67,
+      "seuil": 4.5,
+      "classes": "inline-flex items-center gap-1.5 text-xs font-medium text-teal-600 hover:text-teal-800"
+     },
+     {
+      "texte": "Accueil",
+      "fg": "#90a1b9",
+      "bg": "#ffffff",
+      "ratio": 2.63,
+      "seuil": 4.5,
+      "classes": "no-style no-visited flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-all relative"
+     },
+     {
+      "texte": "Catalogue",
+      "fg": "#90a1b9",
+      "bg": "#ffffff",
+      "ratio": 2.63,
+      "seuil": 4.5,
+      "classes": "no-style no-visited flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-all relative"
+     },
+     {
+      "texte": "Diagnostic",
+      "fg": "#90a1b9",
+      "bg": "#ffffff",
+      "ratio": 2.63,
+      "seuil": 4.5,
+      "classes": "no-style no-visited flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-all relative"
+     }
+    ]
+   },
+   "A": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 3,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "A2": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 3,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "B": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 3,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   }
+  },
+  "panier-vide-1440": {
+   "AVANT": {
+    "textes": 5,
+    "bords": 1,
+    "focus": 1,
+    "axeContraste": 1,
+    "exemplesTextes": [
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15"
+     },
+     {
+      "texte": "Retours 30j",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "text-white/40 whitespace-nowrap"
+     },
+     {
+      "texte": "·",
+      "fg": "#f5f6f7",
+      "bg": "#f3f4f6",
+      "ratio": 1.59,
+      "seuil": 4.5,
+      "classes": "text-white/15 hidden lg:inline"
+     },
+     {
+      "texte": "01 48 47 96 27",
+      "fg": "#f8f8fa",
+      "bg": "#f3f4f6",
+      "ratio": 3.55,
+      "seuil": 4.5,
+      "classes": "hidden lg:flex items-center gap-1.5 text-white/40 hover:text-white transition-colors whitespace-nowrap"
+     },
+     {
+      "texte": "Lancer un diagnostic gratuit",
+      "fg": "#009689",
+      "bg": "#ffffff",
+      "ratio": 3.67,
+      "seuil": 4.5,
+      "classes": "inline-flex items-center gap-1.5 text-xs font-medium text-teal-600 hover:text-teal-800"
+     }
+    ]
+   },
+   "A": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "A2": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "B": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   }
+  },
+  "connexion-390": {
+   "AVANT": {
+    "textes": 8,
+    "bords": 2,
+    "focus": 7,
+    "axeContraste": 5,
+    "exemplesTextes": [
+     {
+      "texte": "Mot de passe oublié ?",
+      "fg": "#f97316",
+      "bg": "#ffffff",
+      "ratio": 2.8,
+      "seuil": 4.5,
+      "classes": "text-xs text-cta hover:text-cta-hover transition-colors"
+     },
+     {
+      "texte": "Créer mon compte",
+      "fg": "#f97316",
+      "bg": "#ffffff",
+      "ratio": 2.73,
+      "seuil": 4.5,
+      "classes": "text-cta hover:text-cta-hover font-medium"
+     },
+     {
+      "texte": "En vous connectant, vous acceptez nos et",
+      "fg": "#90a1b9",
+      "bg": "#f8fafc",
+      "ratio": 2.34,
+      "seuil": 4.5,
+      "classes": "text-center text-xs text-slate-400 font-body mt-6"
+     },
+     {
+      "texte": "conditions d'utilisation",
+      "fg": "#90a1b9",
+      "bg": "#f8fafc",
+      "ratio": 1.28,
+      "seuil": 4.5,
+      "classes": "underline hover:text-slate-600"
+     },
+     {
+      "texte": "politique de confidentialité",
+      "fg": "#90a1b9",
+      "bg": "#f8fafc",
+      "ratio": 1.28,
+      "seuil": 4.5,
+      "classes": "underline hover:text-slate-600"
+     },
+     {
+      "texte": "|",
+      "fg": "#3f4b60",
+      "bg": "#0f1e38",
+      "ratio": 1.89,
+      "seuil": 4.5,
+      "classes": "text-white/20"
+     }
+    ]
+   },
+   "A": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 3,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "A2": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 3,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "B": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 3,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   }
+  },
+  "connexion-1440": {
+   "AVANT": {
+    "textes": 8,
+    "bords": 2,
+    "focus": 2,
+    "axeContraste": 5,
+    "exemplesTextes": [
+     {
+      "texte": "Mot de passe oublié ?",
+      "fg": "#f97316",
+      "bg": "#ffffff",
+      "ratio": 2.8,
+      "seuil": 4.5,
+      "classes": "text-xs text-cta hover:text-cta-hover transition-colors"
+     },
+     {
+      "texte": "Créer mon compte",
+      "fg": "#f97316",
+      "bg": "#ffffff",
+      "ratio": 2.73,
+      "seuil": 4.5,
+      "classes": "text-cta hover:text-cta-hover font-medium"
+     },
+     {
+      "texte": "En vous connectant, vous acceptez nos et",
+      "fg": "#90a1b9",
+      "bg": "#f8fafc",
+      "ratio": 2.34,
+      "seuil": 4.5,
+      "classes": "text-center text-xs text-slate-400 font-body mt-6"
+     },
+     {
+      "texte": "conditions d'utilisation",
+      "fg": "#90a1b9",
+      "bg": "#f8fafc",
+      "ratio": 2.34,
+      "seuil": 4.5,
+      "classes": "underline hover:text-slate-600"
+     },
+     {
+      "texte": "politique de confidentialité",
+      "fg": "#90a1b9",
+      "bg": "#f8fafc",
+      "ratio": 2.34,
+      "seuil": 4.5,
+      "classes": "underline hover:text-slate-600"
+     },
+     {
+      "texte": "|",
+      "fg": "#3f4b60",
+      "bg": "#0f1e38",
+      "ratio": 1.89,
+      "seuil": 4.5,
+      "classes": "text-white/20"
+     }
+    ]
+   },
+   "A": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "A2": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   },
+   "B": {
+    "textes": 0,
+    "bords": 0,
+    "focus": 0,
+    "axeContraste": 0,
+    "exemplesTextes": []
+   }
+  }
+ },
+ "axe": {
+  "r0-accueil-390": {
+   "AVANT": [
+    "aria-valid-attr-value:1",
+    "color-contrast:31"
+   ],
+   "A": [
+    "aria-valid-attr-value:1"
+   ],
+   "A2": [
+    "aria-valid-attr-value:1"
+   ],
+   "B": [
+    "aria-valid-attr-value:1"
+   ]
+  },
+  "r0-accueil-1440": {
+   "AVANT": [
+    "color-contrast:26"
+   ],
+   "A": [
+    "color-contrast:1"
+   ],
+   "A2": [
+    "color-contrast:1"
+   ],
+   "B": [
+    "color-contrast:1"
+   ]
+  },
+  "r1-gamme-390": {
+   "AVANT": [
+    "color-contrast:25",
+    "target-size:1"
+   ],
+   "A": [
+    "target-size:1"
+   ],
+   "A2": [
+    "target-size:1"
+   ],
+   "B": [
+    "target-size:1"
+   ]
+  },
+  "r1-gamme-1440": {
+   "AVANT": [
+    "color-contrast:21",
+    "link-in-text-block:1",
+    "target-size:1"
+   ],
+   "A": [
+    "link-in-text-block:1",
+    "target-size:1"
+   ],
+   "A2": [
+    "link-in-text-block:1",
+    "target-size:1"
+   ],
+   "B": [
+    "link-in-text-block:1",
+    "target-size:1"
+   ]
+  },
+  "r2-produit-390": {
+   "AVANT": [
+    "color-contrast:9",
+    "list:1",
+    "listitem:5",
+    "nested-interactive:20",
+    "select-name:1",
+    "target-size:2"
+   ],
+   "A": [
+    "list:1",
+    "listitem:5",
+    "nested-interactive:20",
+    "select-name:1",
+    "target-size:2"
+   ],
+   "A2": [
+    "list:1",
+    "listitem:5",
+    "nested-interactive:20",
+    "select-name:1",
+    "target-size:2"
+   ],
+   "B": [
+    "list:1",
+    "listitem:5",
+    "nested-interactive:20",
+    "select-name:1",
+    "target-size:2"
+   ]
+  },
+  "r2-produit-1440": {
+   "AVANT": [
+    "color-contrast:5",
+    "list:1",
+    "listitem:5",
+    "nested-interactive:20"
+   ],
+   "A": [
+    "list:1",
+    "listitem:5",
+    "nested-interactive:20"
+   ],
+   "A2": [
+    "list:1",
+    "listitem:5",
+    "nested-interactive:20"
+   ],
+   "B": [
+    "list:1",
+    "listitem:5",
+    "nested-interactive:20"
+   ]
+  },
+  "panier-vide-390": {
+   "AVANT": [
+    "color-contrast:6"
+   ],
+   "A": [],
+   "A2": [],
+   "B": []
+  },
+  "panier-vide-1440": {
+   "AVANT": [
+    "color-contrast:1"
+   ],
+   "A": [],
+   "A2": [],
+   "B": []
+  },
+  "connexion-390": {
+   "AVANT": [
+    "color-contrast:5"
+   ],
+   "A": [],
+   "A2": [],
+   "B": []
+  },
+  "connexion-1440": {
+   "AVANT": [
+    "color-contrast:5"
+   ],
+   "A": [],
+   "A2": [],
+   "B": []
+  }
+ },
+ "residus": {
+  "r0-accueil-390": {
+   "AVANT": {
+    "repos": 243,
+    "survol": 319,
+    "elementsSurvolForces": 469,
+    "familles": {
+     "orange, ambre, jaune": 189,
+     "vert vif": 25,
+     "bleu, cyan": 24,
+     "rouge, corail": 3,
+     "violet, rose": 2
+    }
+   },
+   "A": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 469,
+    "familles": {}
+   },
+   "A2": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 469,
+    "logoOrangeExclu": 1,
+    "familles": {}
+   },
+   "B": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 469,
+    "familles": {}
+   },
+   "requetesAbandonneesA2": 4
+  },
+  "r0-accueil-1440": {
+   "AVANT": {
+    "repos": 283,
+    "survol": 363,
+    "elementsSurvolForces": 469,
+    "familles": {
+     "orange, ambre, jaune": 203,
+     "vert vif": 25,
+     "bleu, cyan": 50,
+     "rouge, corail": 3,
+     "violet, rose": 2
+    }
+   },
+   "A": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 469,
+    "familles": {}
+   },
+   "A2": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 469,
+    "logoOrangeExclu": 1,
+    "familles": {}
+   },
+   "B": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 469,
+    "familles": {}
+   },
+   "requetesAbandonneesA2": 3
+  },
+  "r1-gamme-390": {
+   "AVANT": {
+    "repos": 252,
+    "survol": 248,
+    "elementsSurvolForces": 236,
+    "familles": {
+     "orange, ambre, jaune": 62,
+     "vert vif": 42,
+     "bleu, cyan": 120,
+     "rouge, corail": 28
+    }
+   },
+   "A": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 236,
+    "familles": {}
+   },
+   "A2": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 236,
+    "logoOrangeExclu": 1,
+    "familles": {}
+   },
+   "B": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 236,
+    "familles": {}
+   },
+   "requetesAbandonneesA2": 4
+  },
+  "r1-gamme-1440": {
+   "AVANT": {
+    "repos": 255,
+    "survol": 265,
+    "elementsSurvolForces": 236,
+    "familles": {
+     "orange, ambre, jaune": 74,
+     "vert vif": 42,
+     "bleu, cyan": 111,
+     "rouge, corail": 28
+    }
+   },
+   "A": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 236,
+    "familles": {}
+   },
+   "A2": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 236,
+    "logoOrangeExclu": 1,
+    "familles": {}
+   },
+   "B": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 236,
+    "familles": {}
+   },
+   "requetesAbandonneesA2": 3
+  },
+  "r2-produit-390": {
+   "AVANT": {
+    "repos": 563,
+    "survol": 585,
+    "elementsSurvolForces": 367,
+    "familles": {
+     "orange, ambre, jaune": 54,
+     "vert vif": 258,
+     "bleu, cyan": 251
+    }
+   },
+   "A": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 367,
+    "familles": {}
+   },
+   "A2": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 367,
+    "logoOrangeExclu": 1,
+    "familles": {}
+   },
+   "B": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 367,
+    "familles": {}
+   },
+   "requetesAbandonneesA2": 7
+  },
+  "r2-produit-1440": {
+   "AVANT": {
+    "repos": 620,
+    "survol": 663,
+    "elementsSurvolForces": 367,
+    "familles": {
+     "orange, ambre, jaune": 54,
+     "vert vif": 262,
+     "bleu, cyan": 304
+    }
+   },
+   "A": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 367,
+    "familles": {}
+   },
+   "A2": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 367,
+    "logoOrangeExclu": 1,
+    "familles": {}
+   },
+   "B": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 367,
+    "familles": {}
+   },
+   "requetesAbandonneesA2": 7
+  },
+  "panier-vide-390": {
+   "AVANT": {
+    "repos": 32,
+    "survol": 100,
+    "elementsSurvolForces": 54,
+    "familles": {
+     "orange, ambre, jaune": 14,
+     "vert vif": 12,
+     "bleu, cyan": 6
+    }
+   },
+   "A": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 54,
+    "familles": {}
+   },
+   "A2": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 54,
+    "logoOrangeExclu": 1,
+    "familles": {}
+   },
+   "B": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 54,
+    "familles": {}
+   },
+   "requetesAbandonneesA2": 4
+  },
+  "panier-vide-1440": {
+   "AVANT": {
+    "repos": 25,
+    "survol": 107,
+    "elementsSurvolForces": 54,
+    "familles": {
+     "orange, ambre, jaune": 7,
+     "vert vif": 12,
+     "bleu, cyan": 6
+    }
+   },
+   "A": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 54,
+    "familles": {}
+   },
+   "A2": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 54,
+    "logoOrangeExclu": 1,
+    "familles": {}
+   },
+   "B": {
+    "repos": 0,
+    "survol": 0,
+    "elementsSurvolForces": 54,
+    "familles": {}
+   },
+   "requetesAbandonneesA2": 4
+  },
+  "connexion-390": {
+   "AVANT": {
+    "repos": 10,
+    "survol": 10,
+    "elementsSurvolForces": 17,
+    "familles": {
+     "orange, ambre, jaune": 6,
+     "bleu, cyan": 1,
+     "vert vif": 2,
+     "rouge, corail": 1
+    }
+   },
+   "A": {
+    "repos": 4,
+    "survol": 4,
+    "elementsSurvolForces": 17,
+    "familles": {
+     "bleu, cyan": 1,
+     "vert vif": 1,
+     "orange, ambre, jaune": 1,
+     "rouge, corail": 1
+    }
+   },
+   "A2": {
+    "repos": 4,
+    "survol": 4,
+    "elementsSurvolForces": 17,
+    "logoOrangeExclu": 1,
+    "familles": {
+     "bleu, cyan": 1,
+     "vert vif": 1,
+     "orange, ambre, jaune": 1,
+     "rouge, corail": 1
+    }
+   },
+   "B": {
+    "repos": 4,
+    "survol": 4,
+    "elementsSurvolForces": 17,
+    "familles": {
+     "bleu, cyan": 1,
+     "vert vif": 1,
+     "orange, ambre, jaune": 1,
+     "rouge, corail": 1
+    }
+   },
+   "requetesAbandonneesA2": 4
+  },
+  "connexion-1440": {
+   "AVANT": {
+    "repos": 10,
+    "survol": 10,
+    "elementsSurvolForces": 17,
+    "familles": {
+     "orange, ambre, jaune": 6,
+     "bleu, cyan": 1,
+     "vert vif": 2,
+     "rouge, corail": 1
+    }
+   },
+   "A": {
+    "repos": 4,
+    "survol": 4,
+    "elementsSurvolForces": 17,
+    "familles": {
+     "bleu, cyan": 1,
+     "vert vif": 1,
+     "orange, ambre, jaune": 1,
+     "rouge, corail": 1
+    }
+   },
+   "A2": {
+    "repos": 4,
+    "survol": 4,
+    "elementsSurvolForces": 17,
+    "logoOrangeExclu": 1,
+    "familles": {
+     "bleu, cyan": 1,
+     "vert vif": 1,
+     "orange, ambre, jaune": 1,
+     "rouge, corail": 1
+    }
+   },
+   "B": {
+    "repos": 4,
+    "survol": 4,
+    "elementsSurvolForces": 17,
+    "familles": {
+     "bleu, cyan": 1,
+     "vert vif": 1,
+     "orange, ambre, jaune": 1,
+     "rouge, corail": 1
+    }
+   },
+   "requetesAbandonneesA2": 4
+  }
+ },
+ "boutons": {
+  "r0-accueil-390 · Rechercher des pièces (sélecteur véhicule)": {
+   "A2": [
+    {
+     "etat": "désactivé (réel)",
+     "fond": "#FED7AA",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 12.28,
+     "ratioBoutonPage": 1.35,
+     "opacite": "1",
+     "capture": "bouton-r0-accueil-390-rechercher-a2-désactivé (état réel servi, aucun véhicule choisi).png"
+    },
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "note": "état actif simulé : attribut disabled retiré dans le DOM",
+     "capture": "bouton-r0-accueil-390-rechercher-a2-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "note": "état actif simulé : attribut disabled retiré dans le DOM",
+     "capture": "bouton-r0-accueil-390-rechercher-a2-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "note": "état actif simulé : attribut disabled retiré dans le DOM",
+     "capture": "bouton-r0-accueil-390-rechercher-a2-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#FED7AA",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 12.28,
+     "ratioBoutonPage": 1.35,
+     "opacite": "1",
+     "capture": "bouton-r0-accueil-390-rechercher-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ]
+  },
+  "r1-gamme-390 · Rechercher des pièces (sélecteur véhicule)": {
+   "A2": [
+    {
+     "etat": "désactivé (réel)",
+     "fond": "#FED7AA",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 12.28,
+     "ratioBoutonPage": 1.35,
+     "opacite": "1",
+     "capture": "bouton-r1-gamme-390-rechercher-a2-désactivé (état réel servi, aucun véhicule choisi).png"
+    },
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "note": "état actif simulé : attribut disabled retiré dans le DOM",
+     "capture": "bouton-r1-gamme-390-rechercher-a2-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "note": "état actif simulé : attribut disabled retiré dans le DOM",
+     "capture": "bouton-r1-gamme-390-rechercher-a2-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "note": "état actif simulé : attribut disabled retiré dans le DOM",
+     "capture": "bouton-r1-gamme-390-rechercher-a2-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#FED7AA",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 12.28,
+     "ratioBoutonPage": 1.35,
+     "opacite": "1",
+     "capture": "bouton-r1-gamme-390-rechercher-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ]
+  },
+  "r2-produit-390 · Ajouter … au panier": {
+   "A": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-ajouter-a-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-ajouter-a-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-r2-produit-390-ajouter-a-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-ajouter-a-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ],
+   "A2": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-ajouter-a2-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-ajouter-a2-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-r2-produit-390-ajouter-a2-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#FED7AA",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 12.28,
+     "ratioBoutonPage": 1.35,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-ajouter-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ]
+  },
+  "r2-produit-390 · Panier (bouton collant)": {
+   "A": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-panier-a-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-panier-a-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-r2-produit-390-panier-a-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-panier-a-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ],
+   "A2": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-panier-a2-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-panier-a2-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-r2-produit-390-panier-a2-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#FED7AA",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 12.28,
+     "ratioBoutonPage": 1.35,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-390-panier-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ]
+  },
+  "r2-produit-1440 · Ajouter … au panier": {
+   "A": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-1440-ajouter-a-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-1440-ajouter-a-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-r2-produit-1440-ajouter-a-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-1440-ajouter-a-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ],
+   "A2": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-1440-ajouter-a2-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-1440-ajouter-a2-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-r2-produit-1440-ajouter-a2-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#FED7AA",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 12.28,
+     "ratioBoutonPage": 1.35,
+     "opacite": "1",
+     "capture": "bouton-r2-produit-1440-ajouter-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ]
+  },
+  "panier-vide-390 · Trouver une pièce (panier vide)": {
+   "A2": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-panier-vide-390-trouver-a2-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-panier-vide-390-trouver-a2-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-panier-vide-390-trouver-a2-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-panier-vide-390-trouver-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ]
+  },
+  "panier-vide-1440 · Trouver une pièce (panier vide)": {
+   "A2": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-panier-vide-1440-trouver-a2-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-panier-vide-1440-trouver-a2-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-panier-vide-1440-trouver-a2-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-panier-vide-1440-trouver-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ]
+  },
+  "connexion-390 · Se connecter (bouton principal du formulaire)": {
+   "A": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-connexion-390-connexion-a-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-connexion-390-connexion-a-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-connexion-390-connexion-a-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "0.5",
+     "ratioTexteEffectif": 1.93,
+     "capture": "bouton-connexion-390-connexion-a-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ],
+   "A2": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-connexion-390-connexion-a2-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-connexion-390-connexion-a2-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-connexion-390-connexion-a2-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#FED7AA",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 12.28,
+     "ratioBoutonPage": 1.35,
+     "opacite": "1",
+     "capture": "bouton-connexion-390-connexion-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ]
+  },
+  "connexion-1440 · Se connecter (bouton principal du formulaire)": {
+   "A": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-connexion-1440-connexion-a-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-connexion-1440-connexion-a-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-connexion-1440-connexion-a-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "0.5",
+     "ratioTexteEffectif": 1.93,
+     "capture": "bouton-connexion-1440-connexion-a-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ],
+   "A2": [
+    {
+     "etat": "repos",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "capture": "bouton-connexion-1440-connexion-a2-repos.png"
+    },
+    {
+     "etat": "survol",
+     "fond": "#EA580C",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 4.67,
+     "ratioBoutonPage": 3.56,
+     "opacite": "1",
+     "capture": "bouton-connexion-1440-connexion-a2-survol.png"
+    },
+    {
+     "etat": "focus",
+     "fond": "#F97316",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 5.93,
+     "ratioBoutonPage": 2.8,
+     "opacite": "1",
+     "anneau": "2px solid #0F1E38",
+     "ratioAnneauPage": 16.63,
+     "ratioAnneauBouton": 5.93,
+     "capture": "bouton-connexion-1440-connexion-a2-focus.png"
+    },
+    {
+     "etat": "désactivé (simulé)",
+     "fond": "#FED7AA",
+     "texte": "#0F1E38",
+     "fondPage": "#FFFFFF",
+     "ratioTexte": 12.28,
+     "ratioBoutonPage": 1.35,
+     "opacite": "1",
+     "capture": "bouton-connexion-1440-connexion-a2-désactivé (simulé : attribut disabled posé dans le DOM).png"
+    }
+   ]
+  }
+ },
+ "actionsOrange": {
+  "r0-accueil-390": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 1,
+    "partielles": 0,
+    "textes": [
+     "Rechercher des pièces (désactivé) #FED7AA"
+    ]
+   },
+   "ecrans": 10,
+   "ecransAPlusieurs": 0,
+   "maxParEcran": 1,
+   "detailEcransAPlusieurs": [],
+   "toutePage": 1
+  },
+  "r0-accueil-1440": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 0,
+    "partielles": 0,
+    "textes": []
+   },
+   "ecrans": 6,
+   "ecransAPlusieurs": 0,
+   "maxParEcran": 0,
+   "detailEcransAPlusieurs": [],
+   "toutePage": 0
+  },
+  "r1-gamme-390": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 0,
+    "partielles": 0,
+    "textes": []
+   },
+   "ecrans": 19,
+   "ecransAPlusieurs": 0,
+   "maxParEcran": 0,
+   "detailEcransAPlusieurs": [],
+   "toutePage": 1
+  },
+  "r1-gamme-1440": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 0,
+    "partielles": 0,
+    "textes": []
+   },
+   "ecrans": 10,
+   "ecransAPlusieurs": 0,
+   "maxParEcran": 0,
+   "detailEcransAPlusieurs": [],
+   "toutePage": 0
+  },
+  "r2-produit-390": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 1,
+    "partielles": 0,
+    "textes": [
+     "Panier (collant) #F97316"
+    ]
+   },
+   "ecrans": 16,
+   "ecransAPlusieurs": 4,
+   "maxParEcran": 5,
+   "detailEcransAPlusieurs": [
+    {
+     "ecran": 2,
+     "scrollY": 1688,
+     "entieres": 4,
+     "partielles": 0,
+     "textes": [
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Panier (collant) #F97316"
+     ]
+    },
+    {
+     "ecran": 3,
+     "scrollY": 2532,
+     "entieres": 5,
+     "partielles": 0,
+     "textes": [
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Panier (collant) #F97316"
+     ]
+    },
+    {
+     "ecran": 4,
+     "scrollY": 3376,
+     "entieres": 3,
+     "partielles": 0,
+     "textes": [
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Panier (collant) #F97316"
+     ]
+    },
+    {
+     "ecran": 5,
+     "scrollY": 4220,
+     "entieres": 5,
+     "partielles": 0,
+     "textes": [
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Panier (collant) #F97316"
+     ]
+    }
+   ],
+   "toutePage": 21
+  },
+  "r2-produit-1440": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 0,
+    "partielles": 0,
+    "textes": []
+   },
+   "ecrans": 12,
+   "ecransAPlusieurs": 4,
+   "maxParEcran": 3,
+   "detailEcransAPlusieurs": [
+    {
+     "ecran": 1,
+     "scrollY": 890,
+     "entieres": 3,
+     "partielles": 0,
+     "textes": [
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Ajouter #F97316"
+     ]
+    },
+    {
+     "ecran": 2,
+     "scrollY": 1800,
+     "entieres": 3,
+     "partielles": 0,
+     "textes": [
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Ajouter #F97316"
+     ]
+    },
+    {
+     "ecran": 3,
+     "scrollY": 2700,
+     "entieres": 3,
+     "partielles": 0,
+     "textes": [
+      "Ajouter #F97316",
+      "Ajouter #F97316",
+      "Ajouter #F97316"
+     ]
+    },
+    {
+     "ecran": 4,
+     "scrollY": 3600,
+     "entieres": 2,
+     "partielles": 0,
+     "textes": [
+      "Ajouter #F97316",
+      "Ajouter #F97316"
+     ]
+    }
+   ],
+   "toutePage": 20
+  },
+  "panier-vide-390": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 1,
+    "partielles": 0,
+    "textes": [
+     "Trouver une pièce #F97316"
+    ]
+   },
+   "ecrans": 2,
+   "ecransAPlusieurs": 0,
+   "maxParEcran": 1,
+   "detailEcransAPlusieurs": [],
+   "toutePage": 1
+  },
+  "panier-vide-1440": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 1,
+    "partielles": 0,
+    "textes": [
+     "Trouver une pièce #F97316"
+    ]
+   },
+   "ecrans": 2,
+   "ecransAPlusieurs": 0,
+   "maxParEcran": 1,
+   "detailEcransAPlusieurs": [],
+   "toutePage": 1
+  },
+  "connexion-390": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 1,
+    "partielles": 0,
+    "textes": [
+     "Se connecter #F97316"
+    ]
+   },
+   "ecrans": 2,
+   "ecransAPlusieurs": 0,
+   "maxParEcran": 1,
+   "detailEcransAPlusieurs": [],
+   "toutePage": 1
+  },
+  "connexion-1440": {
+   "premierEcran": {
+    "ecran": 0,
+    "scrollY": 0,
+    "entieres": 1,
+    "partielles": 0,
+    "textes": [
+     "Se connecter #F97316"
+    ]
+   },
+   "ecrans": 2,
+   "ecransAPlusieurs": 0,
+   "maxParEcran": 1,
+   "detailEcransAPlusieurs": [],
+   "toutePage": 1
+  }
+ }
+}

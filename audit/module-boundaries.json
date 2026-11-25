@@ -943,6 +943,8 @@
         "backend/tests/unit/seo-control",
         "backend/tests/unit/seo-monitoring",
         "backend/tests/unit/trend-signals",
+        "docs/audit/design-system-revue-20261119/options/scripts",
+        "docs/audit/design-system-revue-20261119/scripts",
         "docs/audit/mandat-bb-20261116/scripts/mesure",
         "docs/audits/editorial-filtre-huile-20261030/tools",
         "frontend",
@@ -966,8 +968,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 404,
-      "loc_total": 84907,
+      "files_count": 439,
+      "loc_total": 87514,
       "has_barrel": true
     },
     "upload": {
