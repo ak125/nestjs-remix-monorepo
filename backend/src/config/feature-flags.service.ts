@@ -121,6 +121,23 @@ export class FeatureFlagsService {
     return this.bool('R8_OWNED_EDITORIAL_ENABLED', false);
   }
 
+  // ── R4 noindex (liste fermée de 62 fiches, mandat EW) ──
+
+  /**
+   * Gates `noindex, follow` on a closed list of 62 reference pages
+   * (`modules/seo/services/r4-noindex.config.ts`, mandat EW). When ON:
+   *   - each listed, published /reference-auto/{slug} is still served 200 with
+   *     the same content and its own canonical, but `robots: noindex, follow`
+   *     (field `robots` of GET /api/seo/reference/:slug, read by the meta);
+   *   - sitemap-reference.xml drops the listed URLs (next generation).
+   * No redirect, no robots.txt change, internal links unchanged. The other
+   * reference pages and the hub /reference-auto are unchanged.
+   * Default: false (inert — zero change). Rollback: turn the flag off.
+   */
+  get seoR4NoindexEnabled(): boolean {
+    return this.bool('SEO_R4_NOINDEX_ENABLED', false);
+  }
+
   // ── R6 Consolidation (guide d'achat → R3 conseils, décision owner 2026-06-10) ──
 
   /**
