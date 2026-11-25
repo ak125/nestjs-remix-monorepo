@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { SupplierCardService, toPatch } from './supplier-card.service';
 import {
+  BrandSourcesConflictError,
+  BrandSourcesRejectedError,
   PriceRuleConflictError,
   SupplierIdConflictError,
   type SupplierCardRepository,
@@ -37,6 +39,7 @@ function row(overrides: Partial<SupplierCardRow> = {}): SupplierCardRow {
     spl_city: 'Gennevilliers',
     spl_country: 'FR',
     spl_supply_mode: 'flux_tendu',
+    spl_fallback_mode: 'transporteur',
     spl_location_validated_at: '2026-11-18T14:35:00Z',
     spl_location_validated_by: 'u-admin',
     spl_payment_terms: null,
@@ -113,6 +116,16 @@ const PROFILES: SupplierPriceProfileRow[] = [
   profile(),
 ];
 
+function summary(
+  splId: string,
+  name: string,
+  type: string,
+  supplyMode: string | null,
+  status = 'actif',
+) {
+  return { splId, name, type, status, supplyMode, fallbackMode: null };
+}
+
 function setup(
   current: SupplierCardRow | null = row(),
   profiles: SupplierPriceProfileRow[] = PROFILES,
@@ -134,6 +147,54 @@ function setup(
     updateCard: jest.fn().mockResolvedValue(true),
     archive: jest.fn().mockResolvedValue(true),
     validateLocation: jest.fn().mockResolvedValue(true),
+    getBrand: jest.fn().mockResolvedValue({ name: 'MEAT & DORIA' }),
+    getBrandLinks: jest.fn().mockResolvedValue([
+      {
+        linkId: '97',
+        splId: '45',
+        displayed: true,
+        rank: 2,
+        deliverySplId: '21',
+        stockKind: 'commande',
+        surchargeCents: 300,
+        updatedAt: '2026-11-19T15:10:00+00:00',
+        updatedBy: 'u-42',
+      },
+      {
+        linkId: '98',
+        splId: '52',
+        displayed: true,
+        rank: 1,
+        deliverySplId: null,
+        stockKind: 'stock',
+        surchargeCents: 0,
+        updatedAt: '2026-11-19T15:10:00+00:00',
+        updatedBy: 'u-42',
+      },
+      {
+        linkId: '30',
+        splId: '26',
+        displayed: true,
+        rank: null,
+        deliverySplId: null,
+        stockKind: null,
+        surchargeCents: null,
+        updatedAt: null,
+        updatedBy: null,
+      },
+    ]),
+    listSummaries: jest
+      .fn()
+      .mockResolvedValue([
+        summary('21', 'CS', 'plateforme', 'flux_tendu'),
+        summary('26', 'DISTRICASH', 'plateforme', null, 'archive'),
+        summary('45', 'MEAT & DORIA', 'marque_directe', null),
+        summary('52', 'OTTOGO', 'plateforme', 'flux_tendu'),
+      ]),
+    putBrandSources: jest.fn().mockResolvedValue([
+      { linkId: '98', rank: 1, created: true },
+      { linkId: '97', rank: 2, created: false },
+    ]),
   };
   const service = new SupplierCardService(
     repo as unknown as SupplierCardRepository,
@@ -477,5 +538,103 @@ describe('toPatch', () => {
         spl_franco_ht_cents: 0,
       },
     );
+  });
+});
+
+describe('SupplierCardService — sources d’achat par marque (mandat DQ)', () => {
+  it('lit les sources classées, les liens non classés et les fiches actives', async () => {
+    const { service, repo } = setup();
+    const view = await service.getBrandSources('3030');
+    expect(repo.getBrandLinks).toHaveBeenCalledWith(3030);
+    expect(view.brandName).toBe('MEAT & DORIA');
+    expect(
+      view.sources.map((s) => [
+        s.rank,
+        s.source.name,
+        s.delivery.name,
+        s.surchargeCents,
+        s.updatedBy,
+      ]),
+    ).toEqual([
+      [1, 'OTTOGO', 'OTTOGO', 0, 'u-42'],
+      [2, 'MEAT & DORIA', 'CS', 300, 'u-42'],
+    ]);
+    expect(view.issues).toEqual([]);
+    expect(view.unrankedLinks).toEqual([
+      { linkId: '30', splId: '26', name: 'DISTRICASH', displayed: true },
+    ]);
+    // Une fiche archivée n'est pas proposée comme source.
+    expect(view.activeSuppliers.map((c) => c.splId)).toEqual([
+      '21',
+      '45',
+      '52',
+    ]);
+  });
+
+  it('400 sur un identifiant de marque non numérique, 404 sur une marque inconnue', async () => {
+    const { service, repo } = setup();
+    await expect(service.getBrandSources('30a')).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    repo.getBrand.mockResolvedValue(null);
+    await expect(service.getBrandSources('9999')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+  });
+
+  it('écrit la liste dans l’ordre reçu, avec l’auteur', async () => {
+    const { service, repo } = setup();
+    const res = await service.putBrandSources(
+      '3030',
+      {
+        sources: [
+          { splId: '52', stockKind: 'stock', surchargeCents: 0 },
+          {
+            splId: '45',
+            linkId: '97',
+            deliverySplId: '21',
+            stockKind: 'commande',
+            surchargeCents: 300,
+          },
+        ],
+      },
+      'u-42',
+    );
+    expect(repo.putBrandSources).toHaveBeenCalledWith(
+      3030,
+      [
+        {
+          splId: '52',
+          linkId: null,
+          deliverySplId: null,
+          stockKind: 'stock',
+          surchargeCents: 0,
+        },
+        {
+          splId: '45',
+          linkId: '97',
+          deliverySplId: '21',
+          stockKind: 'commande',
+          surchargeCents: 300,
+        },
+      ],
+      'u-42',
+    );
+    expect(res.pmId).toBe(3030);
+    expect(res.written).toHaveLength(2);
+  });
+
+  it('refus de la fonction → 400, rang pris entre-temps → 409', async () => {
+    const { service, repo } = setup();
+    repo.putBrandSources.mockRejectedValueOnce(
+      new BrandSourcesRejectedError('fournisseur 26 non actif (archive)'),
+    );
+    await expect(
+      service.putBrandSources('3030', { sources: [] }, 'u'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    repo.putBrandSources.mockRejectedValueOnce(new BrandSourcesConflictError());
+    await expect(
+      service.putBrandSources('3030', { sources: [] }, 'u'),
+    ).rejects.toBeInstanceOf(ConflictException);
   });
 });

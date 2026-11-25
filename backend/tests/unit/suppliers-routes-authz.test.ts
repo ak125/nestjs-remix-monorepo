@@ -154,6 +154,9 @@ const CONTROLLERS: Array<[string, Type<any>, string[]]> = [
       'validateLocation',
       'createPriceRule',
       'retirePriceRule',
+      // Sources d'achat ordonnées par marque (mandat DQ) : lecture, écriture.
+      'getBrandSources',
+      'putBrandSources',
     ],
   ],
   [

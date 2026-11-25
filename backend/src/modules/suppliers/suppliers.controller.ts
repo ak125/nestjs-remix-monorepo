@@ -20,9 +20,11 @@ import { SupplierCardService } from './supplier-card.service';
 import {
   CreatePriceRuleSchema,
   CreateSupplierCardSchema,
+  PutBrandSourcesSchema,
   UpdateSupplierCardSchema,
   type CreatePriceRuleDto,
   type CreateSupplierCardDto,
+  type PutBrandSourcesDto,
   type UpdateSupplierCardDto,
 } from './dto/supplier.schemas';
 
@@ -109,6 +111,26 @@ export class SuppliersController {
   ) {
     await this.supplierCards.retirePriceRule(id, ruleId, actorOf(userId));
     return { success: true, id: ruleId };
+  }
+
+  // ===== SOURCES D'ACHAT PAR MARQUE (mandat DQ) =====
+  // Liste ordonnée des fiches qui fournissent une marque (plateforme puis
+  // direct), point de livraison, nature et surcoût. Non lue par les prix.
+
+  @Get('brands/:pmId/sources')
+  getBrandSources(@Param('pmId') pmId: string) {
+    return this.supplierCards.getBrandSources(pmId);
+  }
+
+  /** Remplace la liste entière : rang = position, auteur tracé. */
+  @Put('brands/:pmId/sources')
+  putBrandSources(
+    @Param('pmId') pmId: string,
+    @Body(new ZodValidationPipe(PutBrandSourcesSchema))
+    body: PutBrandSourcesDto,
+    @User('id') userId: unknown,
+  ) {
+    return this.supplierCards.putBrandSources(pmId, body, actorOf(userId));
   }
 
   /**

@@ -260,8 +260,8 @@
         "frontend/app/routes",
         "frontend/app/routes/_public+"
       ],
-      "files_count": 247,
-      "loc_total": 115525,
+      "files_count": 248,
+      "loc_total": 115979,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -343,7 +343,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 590,
-      "loc_total": 112123,
+      "loc_total": 112254,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -882,7 +882,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 59,
-      "loc_total": 8487,
+      "loc_total": 8703,
       "has_barrel": true
     },
     "suppliers": {
@@ -890,8 +890,8 @@
         "backend/src/modules/suppliers",
         "backend/src/modules/suppliers/dto"
       ],
-      "files_count": 14,
-      "loc_total": 3440,
+      "files_count": 16,
+      "loc_total": 4324,
       "has_barrel": true
     },
     "support": {
@@ -970,8 +970,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 441,
-      "loc_total": 87720,
+      "files_count": 442,
+      "loc_total": 87993,
       "has_barrel": true
     },
     "upload": {

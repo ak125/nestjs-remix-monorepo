@@ -36698,7 +36698,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 34,
+      "loc": 39,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/index.ts",
       "risk": "low",
@@ -36792,7 +36792,7 @@
         "backend/src/modules/supplier-truth/supplier-card.repository.ts"
       ],
       "kind": "test",
-      "loc": 190,
+      "loc": 216,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-card.repository.test.ts",
       "risk": "low",
@@ -36817,7 +36817,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 435,
+      "loc": 620,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
       "risk": "low",
@@ -37399,11 +37399,12 @@
       "imports": [
         "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/suppliers/dto/supplier.schemas.ts",
+        "backend/src/modules/suppliers/supplier-brand-source.ts",
         "fs",
         "path"
       ],
       "kind": "test",
-      "loc": 257,
+      "loc": 361,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/dto/supplier.schemas.test.ts",
       "risk": "low",
@@ -37426,11 +37427,59 @@
         "backend/src/modules/suppliers/supplier-card.service.ts",
         "backend/src/modules/suppliers/suppliers.controller.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/suppliers/supplier-brand-source.ts"
+      ],
       "kind": "service",
-      "loc": 273,
+      "loc": 368,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/dto/supplier.schemas.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/suppliers/supplier-brand-source.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/suppliers/supplier-brand-source.ts"
+      ],
+      "kind": "test",
+      "loc": 207,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/suppliers/supplier-brand-source.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/suppliers/supplier-brand-source.ts",
+      "importedBy": [
+        "backend/src/modules/suppliers/dto/supplier.schemas.test.ts",
+        "backend/src/modules/suppliers/dto/supplier.schemas.ts",
+        "backend/src/modules/suppliers/supplier-brand-source.test.ts",
+        "backend/src/modules/suppliers/supplier-card.service.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 168,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/suppliers/supplier-brand-source.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -37450,7 +37499,7 @@
         "backend/src/modules/suppliers/supplier-card.service.ts"
       ],
       "kind": "test",
-      "loc": 482,
+      "loc": 641,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/supplier-card.service.test.ts",
       "risk": "low",
@@ -37474,11 +37523,12 @@
       "imports": [
         "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/suppliers/dto/supplier.schemas.ts",
+        "backend/src/modules/suppliers/supplier-brand-source.ts",
         "backend/src/modules/suppliers/supplier-name.ts",
         "backend/src/modules/suppliers/supplier-price-rule.ts"
       ],
       "kind": "service",
-      "loc": 501,
+      "loc": 630,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/supplier-card.service.ts",
       "risk": "low",
@@ -37621,7 +37671,7 @@
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 505,
+      "loc": 527,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers.controller.ts",
       "risk": "low",
@@ -44957,7 +45007,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 218,
+      "loc": 221,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/suppliers-routes-authz.test.ts",
       "risk": "low",
@@ -47465,7 +47515,7 @@
         "~/components/ui/select"
       ],
       "kind": "config",
-      "loc": 381,
+      "loc": 389,
       "owner": "__unassigned__",
       "path": "frontend/app/components/admin/suppliers/SupplierCardForm.tsx",
       "risk": "low",
@@ -47508,7 +47558,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 301,
+      "loc": 424,
       "owner": "__unassigned__",
       "path": "frontend/app/components/admin/suppliers/supplier-card.ts",
       "risk": "low",
@@ -60515,7 +60565,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 663,
+      "loc": 680,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.suppliers.$id.tsx",
       "risk": "low",
@@ -60564,6 +60614,36 @@
       "loc": 288,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.suppliers._index.tsx",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/admin/suppliers/supplier-card",
+        "~/components/admin/suppliers/supplier-card.server",
+        "~/components/ui/alert",
+        "~/components/ui/badge",
+        "~/components/ui/button",
+        "~/components/ui/card",
+        "~/components/ui/input",
+        "~/components/ui/select",
+        "~/components/ui/table",
+        "~/utils/meta-helpers"
+      ],
+      "kind": "route",
+      "loc": 437,
+      "owner": "__unassigned__",
+      "path": "frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -67610,6 +67690,25 @@
       "loc": 280,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/account-settings-marketing-consent.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/admin-brand-sources.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 270,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/admin-brand-sources.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

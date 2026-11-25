@@ -9061,6 +9061,46 @@
         "usedBy": []
       },
       {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_pm_id",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_sources",
+            "type": "jsonb"
+          },
+          {
+            "mode": "IN",
+            "name": "p_by",
+            "type": "text"
+          }
+        ],
+        "definedInMigrations": [
+          "20261119_xtr_supplier_link_pm_sources.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.supplier_brand_sources_put",
+        "language": "plpgsql",
+        "name": "supplier_brand_sources_put",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "TABLE (link_id text, source_rank bigint, created boolean)",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "public",
+          "pg_temp"
+        ],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
         "args": [],
         "definedInMigrations": [
           "20260523_pricing_decision_snapshot_and_offers.sql"
@@ -66794,7 +66834,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 34,
+      "loc": 39,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/index.ts",
       "risk": "high",
@@ -66892,7 +66932,7 @@
         "backend/src/modules/supplier-truth/supplier-card.repository.ts"
       ],
       "kind": "test",
-      "loc": 190,
+      "loc": 216,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-card.repository.test.ts",
       "risk": "high",
@@ -66918,7 +66958,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 435,
+      "loc": 620,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-card.repository.ts",
       "risk": "high",
@@ -67521,11 +67561,12 @@
       "imports": [
         "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/suppliers/dto/supplier.schemas.ts",
+        "backend/src/modules/suppliers/supplier-brand-source.ts",
         "fs",
         "path"
       ],
       "kind": "test",
-      "loc": 257,
+      "loc": 361,
       "owner": "@ak125",
       "path": "backend/src/modules/suppliers/dto/supplier.schemas.test.ts",
       "risk": "low",
@@ -67548,15 +67589,65 @@
         "backend/src/modules/suppliers/supplier-card.service.ts",
         "backend/src/modules/suppliers/suppliers.controller.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/suppliers/supplier-brand-source.ts"
+      ],
       "kind": "service",
-      "loc": 273,
+      "loc": 368,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/dto/supplier.schemas.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/suppliers/supplier-brand-source.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/suppliers/supplier-brand-source.ts"
+      ],
+      "kind": "test",
+      "loc": 207,
+      "owner": "@ak125",
+      "path": "backend/src/modules/suppliers/supplier-brand-source.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/suppliers/supplier-brand-source.ts",
+      "importedBy": [
+        "backend/src/modules/suppliers/dto/supplier.schemas.test.ts",
+        "backend/src/modules/suppliers/dto/supplier.schemas.ts",
+        "backend/src/modules/suppliers/supplier-brand-source.test.ts",
+        "backend/src/modules/suppliers/supplier-card.service.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 168,
+      "owner": "@ak125",
+      "path": "backend/src/modules/suppliers/supplier-brand-source.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
@@ -67573,7 +67664,7 @@
         "backend/src/modules/suppliers/supplier-card.service.ts"
       ],
       "kind": "test",
-      "loc": 482,
+      "loc": 641,
       "owner": "@ak125",
       "path": "backend/src/modules/suppliers/supplier-card.service.test.ts",
       "risk": "low",
@@ -67598,11 +67689,12 @@
       "imports": [
         "backend/src/modules/supplier-truth/index.ts",
         "backend/src/modules/suppliers/dto/supplier.schemas.ts",
+        "backend/src/modules/suppliers/supplier-brand-source.ts",
         "backend/src/modules/suppliers/supplier-name.ts",
         "backend/src/modules/suppliers/supplier-price-rule.ts"
       ],
       "kind": "service",
-      "loc": 501,
+      "loc": 630,
       "owner": "@ak125",
       "path": "backend/src/modules/suppliers/supplier-card.service.ts",
       "risk": "medium",
@@ -67749,7 +67841,7 @@
         "backend/src/modules/suppliers/suppliers.service.ts"
       ],
       "kind": "controller",
-      "loc": 505,
+      "loc": 527,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers.controller.ts",
       "risk": "low",
@@ -75372,7 +75464,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 218,
+      "loc": 221,
       "owner": "@ak125",
       "path": "backend/tests/unit/suppliers-routes-authz.test.ts",
       "risk": "medium",
@@ -77990,7 +78082,7 @@
         "~/components/ui/select"
       ],
       "kind": "config",
-      "loc": 381,
+      "loc": 389,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/admin/suppliers/SupplierCardForm.tsx",
       "risk": "low",
@@ -78035,7 +78127,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 301,
+      "loc": 424,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/admin/suppliers/supplier-card.ts",
       "risk": "low",
@@ -91554,7 +91646,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 663,
+      "loc": 680,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.suppliers.$id.tsx",
       "risk": "medium",
@@ -91605,6 +91697,37 @@
       "loc": 288,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.suppliers._index.tsx",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/admin/suppliers/supplier-card",
+        "~/components/admin/suppliers/supplier-card.server",
+        "~/components/ui/alert",
+        "~/components/ui/badge",
+        "~/components/ui/button",
+        "~/components/ui/card",
+        "~/components/ui/input",
+        "~/components/ui/select",
+        "~/components/ui/table",
+        "~/utils/meta-helpers"
+      ],
+      "kind": "route",
+      "loc": 437,
+      "owner": "@ak125/admin-team",
+      "path": "frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
       "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -98887,6 +99010,26 @@
       "loc": 280,
       "owner": "@ak125",
       "path": "frontend/tests/unit/account-settings-marketing-consent.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/admin-brand-sources.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 270,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/admin-brand-sources.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -111237,15 +111380,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "85c0b47b4c1ae5c3b66f42d0ee6414e7f0442a23ed9c3b983e45c87d65e282ac",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "64e0c56755490a127d7c8d4be401552de47708d9b5333763a0148574583618a5",
+      ".spec/00-canon/repository-registry/ownership.yaml": "9dc191271ca039805d22255e8dc42afdbb8e0519dfa68b4889f714d79edd1a2a",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4bd8407a831a3385f4c3e8845dd213a18f13ec99e6a3528a63160c01e78749ae",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "25e26afa920160f777c8b32bb40c1c75ca57891835f138b4a9b4071a684a1256",
-      "audit/registry/rpc.json": "ae924a85483e215265b47c3f6c98988c62512b08260e003ab3ab96db651b6211",
-      "audit/registry/runtime.json": "4950b9611ddfa67b77433a772064549b6a82173cb60b05cc2b24d34510d4a82d"
+      "audit/registry/files.json": "90f552897c4ca435d7accc6ea49a8534200cd6f611c1b64536476e76e42c2bde",
+      "audit/registry/rpc.json": "d2adfc5c28fa116a45b81fc8f46b8714110c5db624a7c495f90de474f7c6b314",
+      "audit/registry/runtime.json": "6aa3b82fc1d5d4df245eacd74d33ad5212b2e6d291d63b5e08fd3fba79b280dd"
     },
-    "sotFingerprint": "13c01ffe7c7b"
+    "sotFingerprint": "81e59ea5cc4a"
   },
   "runtime": [
     {
@@ -121416,6 +121559,15 @@
       "id": "runtime:frontend/app/routes/admin.suppliers._index.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/admin.suppliers._index.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.suppliers.marques.$pmId.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
