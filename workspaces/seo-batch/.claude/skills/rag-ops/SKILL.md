@@ -597,8 +597,8 @@ Le workflow Diagnose et l'audit `--score` produisent un rapport structure :
 ## Key Files
 
 ### Backend (NestJS Proxy)
-- `backend/src/modules/rag-proxy/rag-proxy.controller.ts` — 195 lignes, tous les endpoints REST
-- `backend/src/modules/rag-proxy/rag-proxy.service.ts` — 1271 lignes, circuit breaker, intent, ingestion
+- `backend/src/modules/rag-proxy/rag-proxy.controller.ts` — tous les endpoints REST
+- `backend/src/modules/rag-proxy/rag-proxy.service.ts` — façade ; circuit breaker, intent et ingestion dans `services/` (`rag-circuit-breaker`, `rag-chat`, `rag-knowledge`…)
 - `backend/src/modules/rag-proxy/rag-proxy.module.ts` — Module registration
 - `backend/src/modules/rag-proxy/dto/chat.dto.ts` — Zod: ChatRequest (message 1-2000, sessionId?, context?)
 - `backend/src/modules/rag-proxy/dto/search.dto.ts` — Zod: SearchRequest (query 1-500, limit 1-50, filters?)

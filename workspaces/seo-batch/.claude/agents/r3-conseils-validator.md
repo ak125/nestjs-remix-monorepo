@@ -206,8 +206,6 @@ alors :
 
 # REPO AWARENESS
 Cette sortie est consommée, validée ou compilée par :
-- `backend/src/modules/admin/services/conseil-enricher.service.ts`
-- `backend/src/modules/admin/services/content-refresh.service.ts`
 - `backend/src/config/page-contract-r3.schema.ts`
 - `backend/src/config/keyword-plan.constants.ts`
 - routes frontend conseils

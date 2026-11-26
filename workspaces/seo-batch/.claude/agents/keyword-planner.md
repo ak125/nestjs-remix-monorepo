@@ -132,10 +132,8 @@ Tu ne dois pas :
 
 Tes sorties sont consommees ou exploitees par :
 
-- `conseil-enricher.service.ts`
 - `buying-guide-enricher.service.ts`
 - `diagnostic.service.ts`
-- `rag-safe-distill.service.ts`
 - `section-compiler.service.ts`
 - `page-contract-r1.schema.ts` à `page-contract-r8.schema.ts`
 
