@@ -120,11 +120,30 @@ fi
 # - gh workflow run|enable, gh api .../dispatches|enable, of release-prod.yml or of the
 #   retired deploy-prod.yml, by file name, display name (any case) or numeric id
 #   (417610500 = release-prod.yml, 224452325 = deploy-prod.yml).
+# Same analyser, same words: an agent session never merges a pull request, never arms its
+# merge and never approves it (CLAUDE.md, Gouvernance: "Un agent ne fusionne jamais et
+# n'arme jamais l'auto-fusion" ; journal des principes, P20). gh on this host carries the
+# owner's login, so the command would run with the owner's rights. Covers:
+# - gh pr merge in every form (--auto, --squash, --merge, --rebase, --admin, no option);
+#   gh api writes to .../pulls/<n>/merge; graphql mergePullRequest,
+#   enablePullRequestAutoMerge, enqueuePullRequest (query in a field, a here-document or
+#   a pipe);
+# - gh pr review --approve / -a; gh api writes to .../pulls/<n>/reviews with event=APPROVE
+#   (field, here-document or pipe); graphql add/submitPullRequestReview with APPROVE.
+# Allowed: reads (gh pr view|list|checks|diff|status, GET on the same endpoints), comments
+# (gh pr comment, gh pr review --comment|--request-changes), gh pr create|edit|ready|close,
+# a branch push, and disarming (gh pr merge --disable-auto, disablePullRequestAutoMerge).
+# It cannot see: a command built indirectly (variable, script file, gh alias or extension),
+# a body or a query read from a file (--input f.json, -F query=@f.graphql), another HTTP
+# client (curl), the branch merge API (POST .../merges, mergeBranch), a word whose letters
+# are split by quotes or escapes (mer''ge, as ta''g above). A message that only quotes
+# such a command (commit, PR body) is read as the command: write it to a file.
 # Fail closed: no python3, a non-zero exit, or a command it cannot read = block.
-if grep -qE '\b(git|gh)\b' <<<"$COMMAND" \
-   && grep -qE '\b(tag|push|release|api|workflow)\b' <<<"$COMMAND"; then
+if { grep -qE '\b(git|gh)\b' <<<"$COMMAND" \
+     && grep -qE '\b(tag|push|release|api|workflow)\b' <<<"$COMMAND"; } \
+   || { grep -qE '\bgh\b' <<<"$COMMAND" && grep -qE '\b(merge|review)\b' <<<"$COMMAND"; }; then
   if ! command -v python3 &>/dev/null; then
-    echo "BLOCKED: python3 requis pour le Guard 6 (git/gh tag, push, release, api, workflow). Garde en echec ferme." >&2
+    echo "BLOCKED: python3 requis pour le Guard 6 (git/gh tag, push, release, api, workflow ; gh merge, review). Garde en echec ferme." >&2
     exit 2
   fi
   if ! GUARD6=$(python3 -I "$(dirname "${BASH_SOURCE[0]}")/prod-trigger-check.py" <<<"$COMMAND"); then
@@ -133,13 +152,19 @@ if grep -qE '\b(git|gh)\b' <<<"$COMMAND" \
   fi
   case " $GUARD6 " in
     *" unparsable "*)
-      echo "BLOCKED: commande illisible (guillemet ou here-document non fermes) qui cite git/gh tag, push, release, api ou workflow : le Guard 6 ne peut pas la verifier. Ecrire le texte dans un fichier." >&2
+      echo "BLOCKED: commande illisible (guillemet ou here-document non fermes) qui cite git/gh tag, push, release, api ou workflow, ou gh merge ou review : le Guard 6 ne peut pas la verifier. Ecrire le texte dans un fichier." >&2
       exit 2 ;;
     *" tag "*)
       echo "BLOCKED: tag v* = declencheur deploy PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
       exit 2 ;;
     *" workflow "*)
       echo "BLOCKED: lancement manuel ou reactivation d'un workflow de deploiement PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
+      exit 2 ;;
+    *" merge "*)
+      echo "BLOCKED: fusion d'une PR ou armement de sa fusion (gh pr merge, --auto compris ; gh api .../pulls/<n>/merge ; mergePullRequest, enablePullRequestAutoMerge). Un agent ne fusionne jamais et n'arme jamais l'auto-fusion (CLAUDE.md, Gouvernance) : remettre a l'owner le numero de la PR et le SHA de tete. Desarmer reste permis (gh pr merge --disable-auto). Si la commande ne fait que citer ce texte, l'ecrire dans un fichier." >&2
+      exit 2 ;;
+    *" approve "*)
+      echo "BLOCKED: approbation d'une PR (gh pr review --approve ; revue APPROVE par gh api). L'approbation est un acte de l'owner : un agent n'approuve pas. Une revue en commentaire reste permise (gh pr review --comment). Si la commande ne fait que citer ce texte, l'ecrire dans un fichier." >&2
       exit 2 ;;
   esac
 fi
