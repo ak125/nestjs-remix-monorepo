@@ -31869,6 +31869,52 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "backend/src/common/utils/email-validation.util.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/utils/email-validation.util.ts",
+        "perf_hooks"
+      ],
+      "kind": "test",
+      "loc": 85,
+      "owner": "@ak125",
+      "path": "backend/src/common/utils/email-validation.util.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "backend/src/common/utils/email-validation.util.ts",
+      "importedBy": [
+        "backend/src/common/utils/email-validation.util.test.ts",
+        "backend/src/common/utils/index.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 27,
+      "owner": "@ak125",
+      "path": "backend/src/common/utils/email-validation.util.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -31906,6 +31952,7 @@
         "backend/src/common/index.ts"
       ],
       "imports": [
+        "backend/src/common/utils/email-validation.util.ts",
         "backend/src/common/utils/error.utils.ts",
         "backend/src/common/utils/postgrest-filter.util.ts",
         "backend/src/common/utils/splat-path.util.ts",
@@ -31913,7 +31960,7 @@
         "backend/src/common/utils/url-builder.utils.ts"
       ],
       "kind": "service",
-      "loc": 20,
+      "loc": 21,
       "owner": "@ak125",
       "path": "backend/src/common/utils/index.ts",
       "risk": "medium",
@@ -51173,6 +51220,7 @@
         "@auth/is-admin.guard",
         "@cache/cache.service",
         "@common/exceptions",
+        "@common/utils/email-validation.util",
         "@repo/domain-commerce",
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/guards/optional-auth.guard.ts",
@@ -51181,7 +51229,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1099,
+      "loc": 1100,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "high",
@@ -68704,6 +68752,29 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/modules/support/services/contact.email-validation.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/utils/email-validation.util",
+        "backend/src/modules/support/services/contact.service.ts"
+      ],
+      "kind": "test",
+      "loc": 84,
+      "owner": "@ak125",
+      "path": "backend/src/modules/support/services/contact.email-validation.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/modules/support/services/contact.service.ts",
       "importedBy": [
         "backend/src/modules/support/controllers/ai-support.controller.ts",
@@ -68711,10 +68782,12 @@
         "backend/src/modules/support/index.ts",
         "backend/src/modules/support/services/ai-analysis.service.ts",
         "backend/src/modules/support/services/ai-smart-response.service.ts",
+        "backend/src/modules/support/services/contact.email-validation.test.ts",
         "backend/src/modules/support/services/support-analytics.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@common/utils/email-validation.util",
         "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
@@ -68722,7 +68795,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 910,
+      "loc": 906,
       "owner": "@ak125",
       "path": "backend/src/modules/support/services/contact.service.ts",
       "risk": "medium",
@@ -68911,21 +68984,48 @@
         "manual"
       ],
       "domain": "D11",
+      "id": "backend/src/modules/support/services/quote-review.email-validation.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "@common/utils/email-validation.util",
+        "backend/src/modules/support/services/quote.service.ts",
+        "backend/src/modules/support/services/review.service.ts"
+      ],
+      "kind": "test",
+      "loc": 122,
+      "owner": "@ak125",
+      "path": "backend/src/modules/support/services/quote-review.email-validation.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
       "id": "backend/src/modules/support/services/quote.service.ts",
       "importedBy": [
         "backend/src/modules/support/controllers/quote.controller.ts",
         "backend/src/modules/support/index.ts",
+        "backend/src/modules/support/services/quote-review.email-validation.test.ts",
         "backend/src/modules/support/services/support-analytics.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
         "@common/exceptions",
+        "@common/utils/email-validation.util",
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
         "backend/src/modules/support/services/notification.service.ts"
       ],
       "kind": "service",
-      "loc": 709,
+      "loc": 705,
       "owner": "@ak125",
       "path": "backend/src/modules/support/services/quote.service.ts",
       "risk": "medium",
@@ -68948,12 +69048,14 @@
         "backend/src/modules/support/index.ts",
         "backend/src/modules/support/services/ai-analysis.service.ts",
         "backend/src/modules/support/services/ai-smart-response.service.ts",
+        "backend/src/modules/support/services/quote-review.email-validation.test.ts",
         "backend/src/modules/support/services/review.verify-purchase.test.ts",
         "backend/src/modules/support/services/support-analytics.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
         "@common/exceptions",
+        "@common/utils/email-validation.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/support/services/notification.service.ts"
@@ -74125,7 +74227,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 466,
+      "loc": 490,
       "owner": "@ak125",
       "path": "backend/tests/unit/orders.controller.guest-checkout.test.ts",
       "risk": "medium",
@@ -111705,11 +111807,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4bd8407a831a3385f4c3e8845dd213a18f13ec99e6a3528a63160c01e78749ae",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "e022929f02a8b1a95baa47efd5f5184bd4e271e29dba6f7f4964de6d7e450e96",
+      "audit/registry/files.json": "07cd6a7b671ba0520fbce3e2703ef2cf43a0ed230af839448d0b9ef1b0ce76b5",
       "audit/registry/rpc.json": "d2adfc5c28fa116a45b81fc8f46b8714110c5db624a7c495f90de474f7c6b314",
       "audit/registry/runtime.json": "3a4f60e7cf1802be2c0ace6a5e7533f12581b579b99cf9df4ecb91b938f61e66"
     },
-    "sotFingerprint": "14fd3845516f"
+    "sotFingerprint": "5f2f014231bb"
   },
   "runtime": [
     {

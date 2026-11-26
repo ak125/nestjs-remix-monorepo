@@ -15,6 +15,8 @@
 # Action proposée : suggestion seulement, JAMAIS d'auto-edit. L'humain décide.
 #
 # Désactivation : CLAUDE_HOOKS_DISABLE=1
+# Sans écriture : CLAUDE_MD_SUGGEST_NO_MARKER=1 (posé par stop-log-session-suggest.sh) :
+# le marqueur est lu, jamais créé ni écrit ; la suggestion peut alors se répéter.
 
 set -u
 
@@ -44,8 +46,9 @@ fi
 CORRECTIONS=$(printf '%s\n' "$SUBJECTS" | grep -cE '^(fix|revert|correction|hotfix)(\(|:)' || true)
 
 # Marker pour éviter de spammer le même conseil à chaque Stop sur le même HEAD
+NO_MARKER="${CLAUDE_MD_SUGGEST_NO_MARKER:-0}"
 MARKER_DIR="${REPO_ROOT}/.claude/.session-log-state"
-mkdir -p "$MARKER_DIR" 2>/dev/null
+[ "$NO_MARKER" = "1" ] || mkdir -p "$MARKER_DIR" 2>/dev/null
 SUGGEST_MARKER="${MARKER_DIR}/last-claude-md-suggest-head"
 last_head="$(cat "$SUGGEST_MARKER" 2>/dev/null || echo '')"
 current_head="$(git rev-parse HEAD 2>/dev/null || echo '')"
@@ -71,7 +74,7 @@ $(printf '%s\n' "$SUBJECTS" | grep -E '^(fix|revert|correction|hotfix)(\(|:)' | 
   3. Sinon : skip — pas de capture nécessaire.
 
 EOF
-  printf '%s\n' "$current_head" > "$SUGGEST_MARKER"
+  [ "$NO_MARKER" = "1" ] || printf '%s\n' "$current_head" > "$SUGGEST_MARKER"
 fi
 
 exit 0

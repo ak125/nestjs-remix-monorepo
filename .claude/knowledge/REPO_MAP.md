@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 0f7165b951c402c28f023955a46660429cdec9a616553353d38cde348058b6bf
+source_sha256: 34c7bba8a3f4b4d2d681727716035ea79b39a82f1aabae0d23ea693365b11a3c
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3329 |
+| Files (Layer 1) | 3333 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 272 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1023 |
 
-Source sotFingerprint: `14fd3845516f`.
+Source sotFingerprint: `5f2f014231bb`.
 
 ## Comment l'utiliser
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `14fd3845516f`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 338 (service=212, test=84, controller=40, config=2)
+- **Files**: 340 (service=212, test=86, controller=40, config=2)
 - **Runtime entrypoints**: 135
-- **Top owners**: @ak125 (152), @ak125/payments-team (95), @ak125/auth-team (79)
+- **Top owners**: @ak125 (154), @ak125/payments-team (95), @ak125/auth-team (79)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`suppliers`](modules/suppliers.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=198, UNKNOWN=140
+- **Status**: LIVE=198, UNKNOWN=142
 
 ### D12 — Marketing & Video
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `14fd3845516f`.
 
 ### D13 — Config & System
 
-- **Files**: 258 (script=94, service=74, config=54, test=36)
+- **Files**: 260 (script=94, service=75, config=54, test=37)
 - **Runtime entrypoints**: 16
-- **Top owners**: @ak125 (258)
-- **Status**: LIVE=93, UNKNOWN=165
+- **Top owners**: @ak125 (260)
+- **Status**: LIVE=93, UNKNOWN=167
 
 ### D14 — Gamme Aggregates & V-Level
 

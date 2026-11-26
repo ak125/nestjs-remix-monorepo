@@ -2924,6 +2924,50 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/common/utils/email-validation.util.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/utils/email-validation.util.ts",
+        "perf_hooks"
+      ],
+      "kind": "test",
+      "loc": 85,
+      "owner": "__unassigned__",
+      "path": "backend/src/common/utils/email-validation.util.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/common/utils/email-validation.util.ts",
+      "importedBy": [
+        "backend/src/common/utils/email-validation.util.test.ts",
+        "backend/src/common/utils/index.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 27,
+      "owner": "__unassigned__",
+      "path": "backend/src/common/utils/email-validation.util.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -2960,6 +3004,7 @@
         "backend/src/common/index.ts"
       ],
       "imports": [
+        "backend/src/common/utils/email-validation.util.ts",
         "backend/src/common/utils/error.utils.ts",
         "backend/src/common/utils/postgrest-filter.util.ts",
         "backend/src/common/utils/splat-path.util.ts",
@@ -2967,7 +3012,7 @@
         "backend/src/common/utils/url-builder.utils.ts"
       ],
       "kind": "service",
-      "loc": 20,
+      "loc": 21,
       "owner": "__unassigned__",
       "path": "backend/src/common/utils/index.ts",
       "risk": "low",
@@ -21599,6 +21644,7 @@
         "@auth/is-admin.guard",
         "@cache/cache.service",
         "@common/exceptions",
+        "@common/utils/email-validation.util",
         "@repo/domain-commerce",
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/guards/optional-auth.guard.ts",
@@ -21607,7 +21653,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1099,
+      "loc": 1100,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "low",
@@ -38506,6 +38552,28 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/support/services/contact.email-validation.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/utils/email-validation.util",
+        "backend/src/modules/support/services/contact.service.ts"
+      ],
+      "kind": "test",
+      "loc": 84,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/support/services/contact.email-validation.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/support/services/contact.service.ts",
       "importedBy": [
         "backend/src/modules/support/controllers/ai-support.controller.ts",
@@ -38513,10 +38581,12 @@
         "backend/src/modules/support/index.ts",
         "backend/src/modules/support/services/ai-analysis.service.ts",
         "backend/src/modules/support/services/ai-smart-response.service.ts",
+        "backend/src/modules/support/services/contact.email-validation.test.ts",
         "backend/src/modules/support/services/support-analytics.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@common/utils/email-validation.util",
         "@common/utils/postgrest-filter.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
@@ -38524,7 +38594,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 910,
+      "loc": 906,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/contact.service.ts",
       "risk": "low",
@@ -38706,21 +38776,47 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/support/services/quote-review.email-validation.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "@common/utils/email-validation.util",
+        "backend/src/modules/support/services/quote.service.ts",
+        "backend/src/modules/support/services/review.service.ts"
+      ],
+      "kind": "test",
+      "loc": 122,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/support/services/quote-review.email-validation.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/support/services/quote.service.ts",
       "importedBy": [
         "backend/src/modules/support/controllers/quote.controller.ts",
         "backend/src/modules/support/index.ts",
+        "backend/src/modules/support/services/quote-review.email-validation.test.ts",
         "backend/src/modules/support/services/support-analytics.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
         "@common/exceptions",
+        "@common/utils/email-validation.util",
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
         "backend/src/modules/support/services/notification.service.ts"
       ],
       "kind": "service",
-      "loc": 709,
+      "loc": 705,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/quote.service.ts",
       "risk": "low",
@@ -38742,12 +38838,14 @@
         "backend/src/modules/support/index.ts",
         "backend/src/modules/support/services/ai-analysis.service.ts",
         "backend/src/modules/support/services/ai-smart-response.service.ts",
+        "backend/src/modules/support/services/quote-review.email-validation.test.ts",
         "backend/src/modules/support/services/review.verify-purchase.test.ts",
         "backend/src/modules/support/services/support-analytics.service.ts",
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
         "@common/exceptions",
+        "@common/utils/email-validation.util",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/support/services/notification.service.ts"
@@ -43740,7 +43838,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 466,
+      "loc": 490,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/orders.controller.guest-checkout.test.ts",
       "risk": "low",

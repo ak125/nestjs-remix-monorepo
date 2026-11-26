@@ -12,6 +12,7 @@ import {
   DomainValidationException,
   ErrorCodes,
 } from '@common/exceptions';
+import { isValidEmail } from '@common/utils/email-validation.util';
 
 export interface ReviewData {
   msg_id: string;
@@ -780,8 +781,7 @@ export class ReviewService extends SupabaseBaseService {
     }
 
     // Validation email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.email)) {
+    if (!isValidEmail(data.email)) {
       throw new BadRequestException('Format email invalide');
     }
   }
