@@ -3,7 +3,7 @@
 > Conformité [[ADR-061-workspace-governance]] §2 (structure obligatoire) + §5 (`AGENTS.md` exhaustif).
 > Workspace wiki documentaire : Phase 2 [[ADR-033-wiki-gamme-diagnostic-relations-contract]].
 >
-> Historique (décisions 72 et 73) : les ADR citées dans ce fichier sont des archives du vault ; elles expliquent une décision sans être normatives. Une règle est en vigueur si le journal des principes la reprend (`../../.claude/governance/journal-des-principes.md`) : ADR-031 → P10 et P11 ; ADR-033 (relation diagnostic relue) → P19. ADR-039, ADR-060 et ADR-061 n'y ont aucun principe : leurs règles restent écrites ici, écart signalé sous l'issue #2232.
+> Historique (décisions 72 et 73) : les ADR citées dans ce fichier sont des archives du vault ; elles expliquent une décision sans être normatives. Une règle est en vigueur si le journal des principes la reprend (`../../.claude/governance/journal-des-principes.md`) : ADR-031 → P10 et P11 ; ADR-033 (relation diagnostic relue) → P19. ADR-039, ADR-060 et ADR-061 n'y ont aucun principe : leurs règles restent écrites ici, écart à trancher par l'owner (issue #2232).
 
 ## Règle d'ownership
 

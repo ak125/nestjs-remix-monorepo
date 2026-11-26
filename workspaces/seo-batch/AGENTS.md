@@ -2,7 +2,7 @@
 
 > **Phase 1 PR-C** du plan refondation R-stack. Définit **1 LIVE générateur par rôle R0-R8** + liste les 5 déviants à archiver. Implémente [[ADR-046-r-stack-single-generator-and-layers]] + [[ADR-047-seo-role-contracts-as-code]].
 >
-> Historique (décisions 72 et 73) : les ADR citées dans ce fichier sont des archives du vault ; elles expliquent une décision sans être normatives. Une règle est en vigueur si le journal des principes la reprend (`../../.claude/governance/journal-des-principes.md`) : ADR-046 et ADR-047 → P12 (un seul générateur par rôle, encore une cible) ; ADR-031 → P10 et P11. ADR-027 et ADR-050 n'y ont aucun principe : leurs règles restent écrites ici, écart signalé sous l'issue #2232.
+> Historique (décisions 72 et 73) : les ADR citées dans ce fichier sont des archives du vault ; elles expliquent une décision sans être normatives. Une règle est en vigueur si le journal des principes la reprend (`../../.claude/governance/journal-des-principes.md`) : ADR-046 et ADR-047 → P12 (un seul générateur par rôle, encore une cible) ; ADR-031 → P10 et P11. ADR-027 et ADR-050 n'y ont aucun principe : leurs règles restent écrites ici, écart à trancher par l'owner (issue #2232).
 
 ## Règle d'ownership
 

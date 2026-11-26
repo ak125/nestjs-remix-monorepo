@@ -67,7 +67,7 @@ metadata:
 ### `llm_safe`
 
 - `true` si les outputs sont dérivés déterministiquement de fichiers + tools (pas d'invention LLM de faits métier)
-- `false` si le skill génère du contenu métier potentiellement hallucinable (slug, prix, compatibilité véhicule) → DOIT s'appuyer sur le WIKI validé, jamais sur RAW ni sur le RAG (journal des principes, P10 et P11)
+- `false` si le skill génère du contenu métier potentiellement hallucinable (slug, prix, compatibilité véhicule) → DOIT suivre RAW → WIKI → projections/DB → consommateurs : faits lus dans le WIKI validé, ses projections ou la base, jamais dans RAW ; le RAG n'a aucune autorité de production de contenu (CLAUDE.md, invariant 4 ; journal des principes, P10 et P11)
 
 ### `domain`
 
